@@ -19,6 +19,7 @@ import {
   type SessionRow,
   type TradeRow,
 } from '../../src/modules/bots/bot-history.service.js';
+import { tradingDayPredicate } from '../../src/modules/strategy-config/strategy-config.calendar.js';
 import type { DatabaseService } from '../../src/platform/database/index.js';
 
 const ID = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
@@ -188,6 +189,41 @@ describe('tradeView (Bot SPEC 8.6 formulas)', () => {
       reason_code: null,
       reason_label: null,
     });
+  });
+
+  it('T07 holding sessions are trading days from the buy session up to the sell session', () => {
+    const calendar = tradingDayPredicate({ holidays: JSON.stringify(['2026-09-30']) })!;
+    // Fri 2026-09-25 -> Tue 2026-09-29: Fri + Mon = 2 sessions (the sell session is not counted),
+    // although the stored nav-row count says 1 because the Bot did not run on one of the days.
+    const view = tradeView(
+      tradeRow({
+        opened_session: '2026-09-25',
+        sell_session: '2026-09-29',
+        holding_sessions: 1,
+        holding_days: 4,
+      }),
+      calendar,
+    );
+    expect(view.holding_sessions).toBe(2);
+    expect(view.holding_days).toBe(4);
+    // Across a holiday and a weekend: Mon 28, Tue 29, (Wed 30 holiday), Thu 1, Fri 2 -> sold Mon 5.
+    expect(
+      tradeView(
+        tradeRow({ opened_session: '2026-09-28', sell_session: '2026-10-05', holding_sessions: 9 }),
+        calendar,
+      ).holding_sessions,
+    ).toBe(4);
+    // Bought and sold in the same session: nothing held across a session.
+    expect(
+      tradeView(tradeRow({ opened_session: '2026-09-29', sell_session: '2026-09-29' }), calendar)
+        .holding_sessions,
+    ).toBe(0);
+  });
+
+  it('T08 without a verified calendar the nav-row count is kept as the fallback', () => {
+    expect(tradeView(tradeRow({ holding_sessions: 5 }), null).holding_sessions).toBe(5);
+    expect(tradeView(tradeRow({ holding_sessions: 5 })).holding_sessions).toBe(5);
+    expect(tradeView(tradeRow({ holding_sessions: null })).holding_sessions).toBe(0);
   });
 
   it('T06 exposes stop/target/amplitude only as legacy_* fields, null/empty for the new policy', () => {
@@ -522,7 +558,11 @@ describe('BotHistoryService paging and owner scope', () => {
 
   it('P01 trades: asks for limit + 1 rows, trims the page and returns the last id as the cursor', async () => {
     const rows = [10, 9, 8, 7].map((n) => tradeRow({ id: ID(n) }));
-    const { database, calls } = fakeDatabase([account, [/from bot_positions p/, () => rows]]);
+    const { database, calls } = fakeDatabase([
+      account,
+      [/from bot_positions p/, () => rows],
+      [/from virtual_trading_configs/, () => [{ holidays: [] }]],
+    ]);
     const page = await new BotHistoryService(database).trades(USER, { limit: 3 });
     expect(page.items.map((item) => item.id)).toEqual([ID(10), ID(9), ID(8)]);
     expect(page.next_cursor).toBe(ID(8));
@@ -532,7 +572,11 @@ describe('BotHistoryService paging and owner scope', () => {
     expect(select.text).toContain('order by sx.executed_at desc, p.id desc');
 
     const last = await new BotHistoryService(
-      fakeDatabase([account, [/from bot_positions p/, () => rows.slice(0, 3)]]).database,
+      fakeDatabase([
+        account,
+        [/from bot_positions p/, () => rows.slice(0, 3)],
+        [/from virtual_trading_configs/, () => []],
+      ]).database,
     ).trades(USER, { limit: 3 });
     expect(last.items).toHaveLength(3);
     expect(last.next_cursor).toBeNull();

@@ -218,8 +218,8 @@ describe('practice form descriptor (no Premium registry call needed)', () => {
 describe('practice set definition', () => {
   const set = loadPracticeSet();
 
-  it('is the owner-pending vn30-practice-2024h1-v1 set of 30 distinct symbols', () => {
-    expect(set.set_version).toBe('vn30-practice-2024h1-v1');
+  it('is the owner-pending opaque mini-set-01 set of 30 distinct symbols', () => {
+    expect(set.set_version).toBe('mini-set-01');
     expect(set.owner_confirmation).toBe('pending');
     expect(set.symbols).toHaveLength(30);
     expect(new Set(set.symbols).size).toBe(30);

@@ -1,3 +1,4 @@
+import type { ConfigService } from '@nestjs/config';
 import { describe, expect, it, vi } from 'vitest';
 
 import {
@@ -13,6 +14,7 @@ import {
   type BotUniverseEvidence,
   type BotUniversePort,
 } from '../../src/modules/bots/index.js';
+import type { Environment } from '../../src/platform/config/environment.js';
 import type { DatabaseService } from '../../src/platform/database/index.js';
 import type { QuantMarketDataProvider } from '../../src/modules/quant/quant.types.js';
 import { configHash, defaultConfig, type SharedConfig } from '../../src/modules/quant/v2/index.js';
@@ -26,6 +28,12 @@ const USER = '00000000-0000-4000-8000-000000000001';
 const ACCOUNT = '00000000-0000-4000-8000-0000000000aa';
 
 type Row = Record<string, unknown>;
+
+/** `BOT_NEW_BUYS_ENABLED` as the Nest config service answers it (the flag defaults to false). */
+const newBuysConfig = (enabled: boolean) =>
+  ({
+    get: (key: string) => (key === 'BOT_NEW_BUYS_ENABLED' ? enabled : undefined),
+  }) as unknown as ConfigService<Environment, true>;
 
 /** In-memory stand-in for the SQL BotService issues during one account session. */
 class FakeBotDatabase {
@@ -45,6 +53,8 @@ class FakeBotDatabase {
   failOnSql: ((sql: string) => boolean) | null = null;
   reconciliationValid = true;
   executedSql: string[] = [];
+  /** Holidays of the active trading config; null = no verified calendar (nav-row fallback). */
+  holidays: string[] | null = null;
 
   constructor(positions: Row[]) {
     this.positions = positions.map((row) => ({ ...row }));
@@ -278,6 +288,9 @@ class FakeBotDatabase {
     }
     if (sql.startsWith('select r.* from bot_run_receipts r where r.user_id = $1')) {
       return [...this.receipts].reverse().slice(0, 1);
+    }
+    if (sql.startsWith('select holidays from virtual_trading_configs')) {
+      return this.holidays === null ? [] : [{ holidays: this.holidays }];
     }
     if (sql.startsWith('select p.*, s.icb_lv2 as sector')) {
       return this.positions
@@ -754,6 +767,8 @@ async function runBot(
     db?: FakeBotDatabase;
     universe?: string[] | BotUniverseEvidence;
     universeOptions?: { revisionId?: string | null; consume?: boolean[] };
+    /** Existing buy scenarios run with real buys on; the flag itself is tested separately. */
+    newBuys?: boolean;
   } = {},
 ) {
   const db = options.db ?? new FakeBotDatabase(options.positions ?? []);
@@ -771,6 +786,8 @@ async function runBot(
     configReader,
     marketData(options.trends ?? {}),
     universe,
+    undefined,
+    newBuysConfig(options.newBuys ?? true),
   );
   const result = await service.runAccountSession(USER, SESSION);
   for (const row of db.decisions) {
@@ -1546,6 +1563,76 @@ describe('BotService: candidates, ranking and sizing', () => {
     expect(executions(run.db, 'buy')).toHaveLength(2);
   });
 
+  it('N01 BOT_NEW_BUYS_ENABLED=false still sells but journals every would-be buy as skipped', async () => {
+    const symbols: Record<string, BotSnapshotSymbol> = {
+      P1: held('18800'),
+      AAA: member(),
+      BBB: member({ trading_value_avg20_vnd: '900000000000' }),
+      CCC: member(),
+    };
+    const run = await runBot({
+      config: academyConfig({ buy: ['ma'], sell: ['ma'] }),
+      positions: [position({ symbol: 'P1' })],
+      snapshot: marketSnapshot({ symbols }),
+      universe: ['AAA', 'BBB', 'CCC'],
+      trends: { AAA: 'up', BBB: 'up', CCC: 'down', P1: 'down' },
+      cash: '94000000',
+      newBuys: false,
+    });
+    // The Sell step is unchanged ...
+    expect(executions(run.db, 'sell')).toHaveLength(1);
+    // ... and nothing is bought: no execution, no position, no ledger row, no buy count.
+    expect(executions(run.db, 'buy')).toEqual([]);
+    expect(run.db.positions.filter((row) => row.symbol !== 'P1')).toEqual([]);
+    expect(run.db.ledger.filter((row) => String(row.sql).includes("'buy'"))).toEqual([]);
+    expect(run.result.buyCount).toBe(0);
+    expect(decisions(run.db, 'academy_buy')).toEqual([]);
+    // Every candidate that would have been bought is a skip with the dedicated reason and label.
+    const unconfirmed = decisions(run.db, 'candidate_order_unconfirmed');
+    expect(unconfirmed.map((row) => row.symbol)).toEqual(['BBB', 'AAA']);
+    for (const row of unconfirmed) {
+      expect(row.action).toBe('skip');
+      expect(String(row.reason)).toContain('Chưa bật mua mới: thứ tự ứng viên chờ xác nhận');
+    }
+    // A candidate whose Buy condition is not met keeps its own reason.
+    expect(decisions(run.db, 'academy_buy_not_met').map((row) => row.symbol)).toEqual(['CCC']);
+  });
+
+  it('N02 the flag only gates real buys: it is read per run and a retry stays idempotent', async () => {
+    const config = academyConfig({ buy: ['ma'] });
+    const off = await runBot({ config, trends: { AAA: 'up' }, newBuys: false });
+    expect(executions(off.db, 'buy')).toEqual([]);
+    expect(decisions(off.db, 'candidate_order_unconfirmed')).toHaveLength(1);
+    const again = await off.service.runAccountSession(USER, SESSION);
+    expect(again).toEqual(off.result);
+    expect(decisions(off.db, 'candidate_order_unconfirmed')).toHaveLength(1);
+
+    const on = await runBot({ config, trends: { AAA: 'up' }, newBuys: true });
+    expect(executions(on.db, 'buy')).toHaveLength(1);
+    expect(decisions(on.db, 'candidate_order_unconfirmed')).toEqual([]);
+  });
+
+  it('N03 the flag is false unless configured, and the overview exposes it', async () => {
+    const db = new FakeBotDatabase([]);
+    const unset = new BotService(db as unknown as DatabaseService, undefined, reader(null));
+    expect(unset.newBuysEnabled()).toBe(false);
+    const overview = async (enabled: boolean | undefined) => {
+      const service = new BotService(
+        db as unknown as DatabaseService,
+        undefined,
+        reader(null),
+        undefined,
+        undefined,
+        undefined,
+        enabled === undefined ? undefined : newBuysConfig(enabled),
+      );
+      return (await service.overview(USER)) as { bot: { new_buys_enabled: boolean } };
+    };
+    expect((await overview(undefined)).bot.new_buys_enabled).toBe(false);
+    expect((await overview(false)).bot.new_buys_enabled).toBe(false);
+    expect((await overview(true)).bot.new_buys_enabled).toBe(true);
+  });
+
   it('E05 a symbol held or sold in the run stays blocked across retry', async () => {
     const db = new FakeBotDatabase([position({ symbol: 'AAA' })]);
     db.cash = '98000000';
@@ -1764,6 +1851,8 @@ describe('BotService: idempotency and retries', () => {
       newer,
       marketData({ AAA: 'down' }),
       universePort(verifiedUniverse(['AAA'])),
+      undefined,
+      newBuysConfig(true),
     );
     const again = await retry.runAccountSession(USER, SESSION);
     expect(again).toEqual(first.result);
@@ -1799,6 +1888,8 @@ describe('BotService: idempotency and retries', () => {
       reader(academyConfig({ buy: ['ma'], revision: 4 })),
       marketData({ AAA: 'up', BBB: 'up', CCC: 'up' }),
       universePort(verifiedUniverse(['AAA', 'BBB', 'CCC'])),
+      undefined,
+      newBuysConfig(true),
     );
     await changed.runAccountSession(USER, SESSION);
     expect(executions(first.db, 'buy')).toHaveLength(2);
@@ -1998,6 +2089,42 @@ describe('BotService: read models', () => {
       action: 'hold',
       reason_code: 'no_active_sell_conditions',
     });
+  });
+
+  it('R06b open-position holding sessions count trading days by the Bot calendar, not nav rows', async () => {
+    const db = new FakeBotDatabase([position({ symbol: 'OUTSIDE', opened_session: '2026-09-14' })]);
+    // Mon 14 .. Wed 23 September: 8 weekdays, one of them a configured holiday.
+    db.holidays = ['2026-09-16'];
+    const run = await runBot({
+      db,
+      config: academyConfig({ buy: ['ma'] }),
+      snapshot: marketSnapshot({ symbols: { AAA: member(), OUTSIDE: held('19500') } }),
+      universe: ['AAA'],
+      trends: { AAA: 'up' },
+    });
+    const response = (await run.service.positions(USER)) as {
+      items: Array<Record<string, unknown>>;
+    };
+    // The fake's nav-row count is 3: a day without a run must not shorten the holding.
+    expect(response.items.find((item) => item.symbol === 'OUTSIDE')?.holding_sessions).toBe(7);
+    // Bought in this very session: one session so far.
+    expect(response.items.find((item) => item.symbol === 'AAA')?.holding_sessions).toBe(1);
+  });
+
+  it('R06c without a verified calendar the nav-row count is kept as the fallback', async () => {
+    const db = new FakeBotDatabase([position({ symbol: 'OUTSIDE', opened_session: '2026-09-14' })]);
+    db.holidays = null;
+    const run = await runBot({
+      db,
+      config: academyConfig({ buy: ['ma'] }),
+      snapshot: marketSnapshot({ symbols: { AAA: member(), OUTSIDE: held('19500') } }),
+      universe: ['AAA'],
+      trends: { AAA: 'up' },
+    });
+    const response = (await run.service.positions(USER)) as {
+      items: Array<Record<string, unknown>>;
+    };
+    expect(response.items.find((item) => item.symbol === 'OUTSIDE')?.holding_sessions).toBe(3);
   });
 
   it('R07 the journal explains each outcome in Vietnamese and persists revision and operands', async () => {

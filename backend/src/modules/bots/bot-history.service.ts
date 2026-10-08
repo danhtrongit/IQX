@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
+import type { IsTradingDay } from '../strategy-config/strategy-config.calendar.js';
 import { BOT_REASON_LABELS, parseInteger, ratioString } from './bot.domain.js';
+import { loadTradingCalendar, tradingSessionsBetween } from './bot-holding.js';
 import type {
   BotSessionDecisionView,
   BotSessionDecisionsPage,
@@ -65,6 +67,7 @@ export type TradeRow = {
   amplitude_at_entry_vnd: string | null;
   amplitude_source_ref: string | null;
   filter_ids: unknown;
+  /** Count of `bot_nav_daily` rows: only the fallback when the trading calendar is unavailable. */
   holding_sessions: number | string | null;
   holding_days: number | string | null;
   buy_execution_id: string | null;
@@ -98,8 +101,12 @@ export type TradeRow = {
  *   sell_net     = qty x price - sell_fee - sell_tax (cash in; the stored net_cash_delta)
  *   realized_pnl = sell_net - entry_buy_value - entry_buy_fee
  * The tax is part of `sell_net` already, so it is never subtracted a second time.
+ *
+ * `holding_sessions` counts the trading sessions from the buy session (inclusive) to the sell
+ * session (exclusive) with the Bot's own calendar (weekdays minus the configured holidays), so a
+ * day without a run still counts. Without a calendar it falls back to the nav-row count.
  */
-export function tradeView(row: TradeRow): BotTradeView {
+export function tradeView(row: TradeRow, isTradingDay: IsTradingDay | null = null): BotTradeView {
   const buyGross = parseInteger(row.entry_value_vnd, 'entry_value_vnd');
   const buyFee = parseInteger(row.entry_fee_vnd, 'entry_fee_vnd');
   const buyTotal = buyGross + buyFee;
@@ -149,7 +156,9 @@ export function tradeView(row: TradeRow): BotTradeView {
     realized_pnl_vnd: realized.toString(),
     // (realized x 100 + cost - cost) / cost: a percentage, e.g. "2.5" = +2.5 %.
     realized_pnl_pct: buyTotal > 0n ? ratioString(realized * 100n + buyTotal, buyTotal) : null,
-    holding_sessions: Number(row.holding_sessions ?? 0),
+    holding_sessions: isTradingDay
+      ? tradingSessionsBetween(row.opened_session, row.sell_session, isTradingDay)
+      : Number(row.holding_sessions ?? 0),
     holding_days: Number(row.holding_days ?? 0),
     // Retired-policy audit values only; null/empty for iqx-bot-v1.0 lots.
     legacy_stop_loss_vnd: optionalString(row.stop_loss_vnd),
@@ -400,8 +409,10 @@ export class BotHistoryService {
     );
     const page = rows.slice(0, query.limit);
     const last = page.at(-1);
+    // One calendar read per page; null (no verified calendar) keeps the nav-row count.
+    const calendar = page.length ? await loadTradingCalendar(this.database) : null;
     return {
-      items: page.map(tradeView),
+      items: page.map((row) => tradeView(row, calendar)),
       next_cursor: rows.length > query.limit && last ? last.id : null,
     };
   }

@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { formatDate } from "../format"
 import type { InvalidSymbol, SavedList, UniverseEffective } from "../types"
 import { ConfirmDialog } from "../confirm-dialog"
-import { CHANGE_NOTE, invalidReasonLabel, sourceName } from "./labels"
+import { CHANGE_NOTE, LIST_NOT_VERIFIED_NOTE, invalidReasonLabel, isListBotVerified, sourceName } from "./labels"
 import type { UniverseActions } from "./use-universe"
 
 const PILL = "inline-flex items-center rounded-sm border border-border bg-muted/40 px-2 py-0.5 text-[11px] font-medium tabular-nums"
@@ -149,23 +149,36 @@ export function SavedListsDialog({
         </div>
       ) : (
         <ul className="space-y-3">
-          {lists.map((list) => (
-            <li key={list.id} className="rounded-md border border-border bg-background/40 p-3">
-              <h3 className="text-sm font-semibold">{list.name}</h3>
-              <ul className="mt-2 flex flex-wrap gap-1" aria-label={`Mã trong ${list.name}`}>
-                {list.tickers.slice(0, PREVIEW_SYMBOLS).map((symbol) => <li key={symbol} className={PILL}>{symbol}</li>)}
-                {list.tickers.length > PREVIEW_SYMBOLS && <li className={`${PILL} text-muted-foreground`}>+{list.tickers.length - PREVIEW_SYMBOLS} mã</li>}
-              </ul>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="text-[11px] text-muted-foreground">
-                  {list.tickers.length} mã · dữ liệu đến {formatDate(list.as_of)}{list.filter_version ? ` · bộ lọc bản ${list.filter_version}` : ""}
-                </span>
-                <Button type="button" size="sm" className="ml-auto" disabled={list.tickers.length === 0} onClick={() => onPick(list)}>
-                  Chọn danh mục<span className="sr-only"> {list.name}</span>
-                </Button>
-              </div>
-            </li>
-          ))}
+          {lists.map((list) => {
+            const verified = isListBotVerified(list)
+            return (
+              <li key={list.id} className="rounded-md border border-border bg-background/40 p-3">
+                <h3 className="text-sm font-semibold">{list.name}</h3>
+                <ul className="mt-2 flex flex-wrap gap-1" aria-label={`Mã trong ${list.name}`}>
+                  {list.tickers.slice(0, PREVIEW_SYMBOLS).map((symbol) => <li key={symbol} className={PILL}>{symbol}</li>)}
+                  {list.tickers.length > PREVIEW_SYMBOLS && <li className={`${PILL} text-muted-foreground`}>+{list.tickers.length - PREVIEW_SYMBOLS} mã</li>}
+                </ul>
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-[11px] text-muted-foreground">
+                    {list.tickers.length} mã · dữ liệu đến {formatDate(list.as_of)}{list.filter_version ? ` · bộ lọc bản ${list.filter_version}` : ""}
+                  </span>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="ml-auto"
+                    disabled={list.tickers.length === 0 || !verified}
+                    aria-describedby={verified ? undefined : `unverified-${list.id}`}
+                    onClick={() => onPick(list)}
+                  >
+                    Chọn danh mục<span className="sr-only"> {list.name}</span>
+                  </Button>
+                </div>
+                {!verified && (
+                  <p id={`unverified-${list.id}`} className="mt-1.5 text-[11px] leading-4 text-muted-foreground">{LIST_NOT_VERIFIED_NOTE}</p>
+                )}
+              </li>
+            )
+          })}
         </ul>
       )}
     </Shell>

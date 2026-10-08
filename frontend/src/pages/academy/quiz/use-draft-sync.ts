@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from "react"
 
-import { isAlreadySubmitted, isDraftConflict, resumeAttempt, saveDraftAnswers, type DraftState } from "../api"
+import { conflictDraft, isAlreadySubmitted, isDraftConflict, resumeAttempt, saveDraftAnswers, type DraftState } from "../api"
 
 export type DraftStatus = "idle" | "saving" | "error"
 
@@ -50,15 +50,19 @@ export function useDraftSync({
             return
           }
           try {
-            // The conflict body does not carry the draft over HTTP: read it back from the resume route.
-            const latest = await resumeAttempt(lessonId)
-            if (latest.attempt?.attempt_id !== attemptId) {
-              onAlreadySubmitted()
-              return
+            // The 409 carries the stored draft in `details[0].draft`; read the resume route only when it does not.
+            let latestDraft = conflictDraft(error)
+            if (!latestDraft) {
+              const latest = await resumeAttempt(lessonId)
+              if (latest.attempt?.attempt_id !== attemptId) {
+                onAlreadySubmitted()
+                return
+              }
+              latestDraft = latest.attempt.draft
             }
-            revision.current = latest.attempt.draft.revision
+            revision.current = latestDraft.revision
             // Everything saved elsewhere stays; the choice just made wins for its own question.
-            onAdopt([...latest.attempt.draft.answers.filter((answer) => answer.question_id !== questionId), ...answers])
+            onAdopt([...latestDraft.answers.filter((answer) => answer.question_id !== questionId), ...answers])
             setAdopted(true)
             const saved = await saveDraftAnswers(attemptId, { answers, expected_revision: revision.current })
             revision.current = saved.revision

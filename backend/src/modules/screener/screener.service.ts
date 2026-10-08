@@ -331,6 +331,8 @@ export class ScreenerService {
         capability: `metric:${locked[0]}`,
         reason: 'not_learned',
         capabilities: locked.map((id) => `metric:${id}`),
+        // the v2 error filter forwards only `code`, `message` and array `details`
+        details: locked.map((id) => ({ capability: `metric:${id}`, reason: 'not_learned' })),
       });
   }
 

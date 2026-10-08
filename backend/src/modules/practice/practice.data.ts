@@ -172,7 +172,7 @@ export class PracticeDataService implements PracticeCaseDataPort {
     const from = Math.max(0, history.startIndex - set.warmup.sessions_requested);
     const kept = history.records.slice(from).filter((record) => record.time <= set.test.to);
     const warmupBars = Math.max(0, history.startIndex - from);
-    // Provider quotes may be in thousand VND; a VN30 share never trades below 1,000 VND.
+    // Provider quotes may be in thousand VND; a large-cap share never trades below 1,000 VND.
     const priceScale = kept.length && medianClose(kept.map(toRow(1))) < 1_000 ? 1_000 : 1;
     const rows = kept.map(toRow(priceScale));
     const calendar = buildCalendar(rows, set);

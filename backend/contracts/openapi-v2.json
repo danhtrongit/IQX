@@ -1685,6 +1685,9 @@
           "initial_cash_vnd": {
             "type": "string"
           },
+          "new_buys_enabled": {
+            "type": "boolean"
+          },
           "policy_version": {
             "enum": [
               "iqx-bot-v1.0"
@@ -1712,7 +1715,8 @@
           "activated_at",
           "policy_version",
           "candidate_order",
-          "candidate_order_owner_confirmation"
+          "candidate_order_owner_confirmation",
+          "new_buys_enabled"
         ],
         "type": "object"
       },

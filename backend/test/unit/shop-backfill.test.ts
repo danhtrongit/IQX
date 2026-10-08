@@ -106,6 +106,29 @@ describe('shop reward backfill: planning (dry run output)', () => {
     expect(plan.totalXu).toBe(100);
   });
 
+  it('Shop spec 10.2: plans legacy_migration completions (lessons done before the Shop), once per lesson', () => {
+    const plan = planBackfill(
+      [
+        row(USER_A, 'technical:rsi', { completionMethod: 'legacy_migration' }),
+        row(USER_A, 'fundamental:roe', { completionMethod: 'legacy_migration' }),
+        row(USER_A, 'guide:ch02-l01', { completionMethod: 'guide' }),
+        row(USER_B, 'concept:hop_luu', { completionMethod: 'legacy_migration' }),
+        // a legacy positional id that was never mapped is still reported, never paid
+        row(USER_B, 'ch07-l01', { completionMethod: 'legacy_migration' }),
+      ],
+      new Map(),
+    );
+    expect(plan.credits.map((c) => [c.lessonKey, c.completionMethod])).toEqual([
+      ['technical:rsi', 'legacy_migration'],
+      ['fundamental:roe', 'legacy_migration'],
+      ['guide:ch02-l01', 'guide'],
+      ['concept:hop_luu', 'legacy_migration'],
+    ]);
+    expect(plan.skipped.map((s) => s.reason)).toEqual(['invalid_lesson_key']);
+    expect(plan.totalXu).toBe(400);
+    expect(formatPlan(plan, false)).toContain('legacy_migration');
+  });
+
   it('reads candidates as completions without a reward row and balances read-only', async () => {
     const queries: Array<{ text: string; values: readonly unknown[] | undefined }> = [];
     const db: SqlClient = {
@@ -174,6 +197,35 @@ describe('shop reward backfill: apply goes through the shared reward service', (
     expect(rows.find((r) => r.ref.lesson_key === 'technical:macd')?.ref.completed_at).toBe(
       '2026-08-01T00:00:00.000Z',
     );
+  });
+
+  it('applies legacy_migration completions with the shared key and never pays them twice', async () => {
+    const h = memoryHarness();
+    const userId = await h.newUser();
+    const plan = planBackfill(
+      [
+        row(userId, 'technical:rsi', { completionMethod: 'legacy_migration' }),
+        row(userId, 'fundamental:roe', { completionMethod: 'legacy_migration' }),
+      ],
+      new Map(),
+    );
+    const first = await applyBackfill(plan, (op) => h.database.transaction(op), h.rewards);
+    expect(first).toMatchObject({ credited: 2, alreadyRewarded: 0, xuCredited: 200, failed: [] });
+    const second = await applyBackfill(plan, (op) => h.database.transaction(op), h.rewards);
+    expect(second).toMatchObject({ credited: 0, alreadyRewarded: 2, failed: [] });
+    // the realtime path for the same lesson later finds the reward already there
+    const realtime = await h.database.transaction((tx) =>
+      h.rewards.creditFirstCompletion(tx, {
+        userId,
+        lessonKey: 'technical:rsi',
+        lessonId: 'ch01-l01',
+        catalogVersion: 'v1',
+        completionMethod: 'quiz',
+        completedAt: new Date().toISOString(),
+      }),
+    );
+    expect(realtime.status).toBe('already_rewarded');
+    await expectLedgerConsistent(h, userId, 200);
   });
 
   it('M04: a concurrent realtime reward and the backfill still pay a lesson once', async () => {

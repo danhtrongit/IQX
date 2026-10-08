@@ -129,6 +129,34 @@ describe.each(harnessFactories)('learning coins: wallet and ledger ($name)', ({ 
     expect(await allLedger(h, userId)).toHaveLength(0);
   });
 
+  it('pays a legacy_migration completion only through the backfill (Shop spec 10.2)', async () => {
+    const userId = await h.newUser();
+    const legacy = lesson(userId, 'technical:macd', { completionMethod: 'legacy_migration' });
+    // The realtime Academy hook never sends it, so it is refused there and writes nothing.
+    await expect(credit(legacy)).rejects.toThrow(TypeError);
+    expect(await allLedger(h, userId)).toHaveLength(0);
+
+    const first = await h.database.transaction((tx) =>
+      h.rewards.creditFirstCompletion(tx, legacy, { source: 'backfill' }),
+    );
+    expect(first).toMatchObject({ status: 'credited', delta: 100, balanceAfter: 100 });
+    // Same (user, lesson_key) gate and ledger key as a realtime reward: never paid twice.
+    const replay = await h.database.transaction((tx) =>
+      h.rewards.creditFirstCompletion(tx, legacy, { source: 'backfill' }),
+    );
+    expect(replay).toEqual({ status: 'already_rewarded', balanceAfter: 100 });
+    expect(await credit(lesson(userId, 'technical:macd'))).toEqual({
+      status: 'already_rewarded',
+      balanceAfter: 100,
+    });
+    const rows = await expectLedgerConsistent(h, userId, 100);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.ref).toMatchObject({
+      completion_method: 'legacy_migration',
+      source: 'backfill',
+    });
+  });
+
   it('keeps the old completion time in the evidence and writes the ledger at write time', async () => {
     const userId = await h.newUser();
     const before = Date.now();

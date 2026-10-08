@@ -13,6 +13,13 @@ import { ShopRepository } from './shop.repository.js';
 /** Stable lesson keys: `technical:rsi`, `fundamental:roe`, `concept:hop_luu`, `guide:ch02-l01`. */
 const LESSON_KEY = /^(technical|fundamental|concept|guide):[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$/;
 
+/** `legacy_migration` completions (carried over from the old Academy) are paid by the backfill. */
+const REWARD_COMPLETION_METHODS: ReadonlySet<string> = new Set([
+  'quiz',
+  'guide',
+  'legacy_migration',
+]);
+
 export type RewardSource = 'realtime' | 'backfill';
 
 export interface CreditOptions {
@@ -24,7 +31,7 @@ export function lessonRewardUniqueKey(userId: string, lessonKey: string): string
   return `lesson_first_completion:${userId}:${lessonKey}`;
 }
 
-function assertValidInput(input: LessonRewardInput): Date {
+function assertValidInput(input: LessonRewardInput, source: RewardSource): Date {
   if (!input.userId) throw new TypeError('userId is required');
   if (!LESSON_KEY.test(input.lessonKey)) {
     throw new TypeError(`Invalid stable lesson key: ${input.lessonKey}`);
@@ -32,8 +39,11 @@ function assertValidInput(input: LessonRewardInput): Date {
   if (!input.lessonId || !input.catalogVersion) {
     throw new TypeError('lessonId and catalogVersion are required');
   }
-  if (input.completionMethod !== 'quiz' && input.completionMethod !== 'guide') {
+  if (!REWARD_COMPLETION_METHODS.has(input.completionMethod)) {
     throw new TypeError(`Invalid completion method: ${String(input.completionMethod)}`);
+  }
+  if (input.completionMethod === 'legacy_migration' && source !== 'backfill') {
+    throw new TypeError('legacy_migration completions are only paid by the backfill');
   }
   const completedAt = new Date(input.completedAt);
   if (Number.isNaN(completedAt.getTime())) throw new TypeError('completedAt is not a valid date');
@@ -57,7 +67,7 @@ export class LessonRewardService implements LessonRewardPort {
     input: LessonRewardInput,
     options: CreditOptions = {},
   ): Promise<LessonRewardResult> {
-    const completedAt = assertValidInput(input);
+    const completedAt = assertValidInput(input, options.source ?? 'realtime');
     const ledgerId = randomUUID();
 
     const inserted = await this.repository.insertRewardIfAbsent(tx, {

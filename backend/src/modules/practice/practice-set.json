@@ -1,6 +1,6 @@
 {
-  "set_version": "vn30-practice-2024h1-v1",
-  "title": "Bộ luyện tập 30 tình huống · quan sát 2024H1 · kiểm thử 24 tháng",
+  "set_version": "mini-set-01",
+  "title": "Bộ luyện tập 30 tình huống",
   "owner_confirmation": "pending",
   "observation": { "from": "2024-01-01", "to": "2024-06-30" },
   "test": { "from": "2024-07-01", "to": "2026-06-30", "months": 24 },

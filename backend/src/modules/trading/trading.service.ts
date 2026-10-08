@@ -146,32 +146,17 @@ export class TradingService {
     private readonly rights: TradingRightsService,
   ) {}
 
+  /**
+   * Legacy `POST /virtual-trading/account/activate`. It funds exactly like onboarding
+   * (`ensureInitialAccount`: a fixed 100,000,000 VND and the `manual:initial_funding:<user>`
+   * ledger key), never `config.initialCashVnd`, so the two paths cannot fund an account twice.
+   * An account that already exists (for example created by onboarding) is returned untouched.
+   */
   async activateAccount(userId: string) {
-    return this.repository.transaction(async (tx) => {
-      const config = await this.repository.ensureConfig(tx);
-      if (!config.tradingEnabled)
-        throw new ForbiddenException('Giao dịch ảo hiện đang bị tạm dừng');
-      if (await this.repository.getAccountByUser(userId, tx, true)) {
-        throw new ConflictException('Tài khoản giao dịch ảo đã tồn tại');
-      }
-      let account: TradingAccount;
-      try {
-        account = await this.repository.createAccount(tx, userId, config.initialCashVnd);
-      } catch (error) {
-        if ((error as { code?: string }).code === '23505') {
-          throw new ConflictException('Tài khoản giao dịch ảo đã tồn tại');
-        }
-        throw error;
-      }
-      await this.repository.insertLedger(tx, {
-        accountId: account.id,
-        amount: config.initialCashVnd,
-        balanceAfter: config.initialCashVnd,
-        kind: 'activate',
-        note: `Số dư ban đầu theo cấu hình: ${config.initialCashVnd} VND`,
-      });
-      return accountResponse(account);
-    });
+    const config = await this.getOrCreateConfig();
+    if (!config.tradingEnabled) throw new ForbiddenException('Giao dịch ảo hiện đang bị tạm dừng');
+    const { account } = await this.ensureInitialAccount(userId);
+    return accountResponse(account);
   }
 
   /**

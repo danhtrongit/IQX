@@ -620,6 +620,31 @@ describe('SavedResultsService', () => {
     expect(database.snapshots).toHaveLength(1);
   });
 
+  it('serializes keyed list creation per user (a replay never inserts a second snapshot)', async () => {
+    const { database, service } = setup();
+    const keyed = listFromResultSchema.parse({
+      name: 'Khóa',
+      run_id: RUN_ID,
+      selection: { mode: 'all' },
+      idempotency_key: 'list-from-result-lock',
+    });
+    await service.createListFromResult(USER_A, keyed);
+    await service.createListFromResult(USER_A, keyed);
+    // One per-user lock for each keyed request, taken before the replay check.
+    expect(database.locks).toBe(2);
+    expect(database.snapshots).toHaveLength(1);
+    // Without a key there is nothing to replay and no lock is needed.
+    await service.createListFromResult(
+      USER_A,
+      listFromResultSchema.parse({
+        name: 'Không khóa',
+        run_id: RUN_ID,
+        selection: { mode: 'all' },
+      }),
+    );
+    expect(database.locks).toBe(2);
+  });
+
   it('refuses to delete a snapshot whose list is the Bot buy source, then soft-deletes once released', async () => {
     const { database, service } = setup();
     const list = await service.createListFromResult(

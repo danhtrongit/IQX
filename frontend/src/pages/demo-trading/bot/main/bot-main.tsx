@@ -22,7 +22,7 @@ import { ConditionCards } from "./condition-cards"
 import { KpiStrip } from "./kpi-strip"
 import { MascotCard } from "./mascot-card"
 import { PortfolioBlock } from "./portfolio-block"
-import { configStateChip } from "./state"
+import { configStateChip, newBuysEnabledOf } from "./state"
 
 export function BotMain({ mascotId }: { mascotId: MascotId }) {
   const { isAuthenticated, openAuth } = useAuth()
@@ -68,7 +68,13 @@ export function BotMain({ mascotId }: { mascotId: MascotId }) {
         chips={chips}
       />
 
-      <ConditionCards loading={overview.isPending} conditions={conditions} config={config.state} indicators={config.indicators} />
+      <ConditionCards
+        loading={overview.isPending}
+        conditions={conditions}
+        config={config.state}
+        indicators={config.indicators}
+        newBuysEnabled={newBuysEnabledOf(data)}
+      />
 
       {run && (run.status === "failed" || runIssues.length > 0) && (
         <div role="status" className="flex items-start gap-2 rounded-md border border-price-ref/40 bg-price-ref/10 p-3 text-xs leading-5 text-price-ref">

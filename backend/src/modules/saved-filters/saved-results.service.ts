@@ -285,6 +285,16 @@ export class SavedResultsService {
       visibility: input.visibility,
     });
     return this.database.transaction(async (client) => {
+      // The evidence snapshot has no idempotency key of its own, so two concurrent requests with
+      // the same key would both insert one before the list's unique key stops the second. A
+      // per-user transaction lock serializes them: the loser waits, then replays the winner's
+      // committed list and never leaves an orphan snapshot.
+      if (key !== null) {
+        await client.query(
+          `SELECT pg_advisory_xact_lock(hashtext('saved_results_create_list:' || $1::text))`,
+          [userId],
+        );
+      }
       const replay = await this.findIdempotent(client, 'list_snapshots', userId, key, requestHash);
       if (replay) return this.loadList(client, userId, replay);
 

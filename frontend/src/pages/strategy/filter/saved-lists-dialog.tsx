@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/use-auth"
 import { ConfirmDialog as BotConfirmDialog } from "@/pages/demo-trading/bot/confirm-dialog"
+import { LIST_NOT_VERIFIED_NOTE, isListBotVerified } from "@/pages/demo-trading/bot/universe/labels"
 import { Vn30Dialog } from "@/pages/demo-trading/bot/universe/universe-dialogs"
 import { useBotUniverse, type UniverseActions } from "@/pages/demo-trading/bot/universe/use-universe"
 
@@ -160,7 +161,7 @@ function ListDetailDialog({
         <>
           <Button type="button" variant="outline" onClick={onClose}>Đóng</Button>
           <Button type="button" variant="outline" onClick={onAlert}><Bell aria-hidden="true" />Tạo cảnh báo</Button>
-          <Button type="button" onClick={onApply}>Áp dụng cho Bot</Button>
+          <Button type="button" disabled={!isListBotVerified(list)} aria-describedby={isListBotVerified(list) ? undefined : `unverified-detail-${list.id}`} onClick={onApply}>Áp dụng cho Bot</Button>
         </>
       }
     >
@@ -174,6 +175,9 @@ function ListDetailDialog({
           </li>
         ))}
       </ul>
+      {!isListBotVerified(list) && (
+        <p id={`unverified-detail-${list.id}`} className="rounded-md border border-border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">{LIST_NOT_VERIFIED_NOTE}</p>
+      )}
       {criteria && <p className="rounded-md border border-border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">{criteria}</p>}
       {snapshotId ? (
         snapshot.isPending ? (
@@ -270,7 +274,15 @@ export function SavedListsDialog({
                   </h3>
                   <div className="flex items-center gap-1.5">
                     <Button type="button" variant="outline" size="sm" onClick={() => setDetail(list)}>Xem<span className="sr-only"> {list.name}</span></Button>
-                    <Button type="button" size="sm" disabled={list.tickers.length === 0} onClick={() => onApply(list)}>Áp dụng cho Bot<span className="sr-only"> {list.name}</span></Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={list.tickers.length === 0 || !isListBotVerified(list)}
+                      aria-describedby={isListBotVerified(list) ? undefined : `unverified-${list.id}`}
+                      onClick={() => onApply(list)}
+                    >
+                      Áp dụng cho Bot<span className="sr-only"> {list.name}</span>
+                    </Button>
                     <Button
                       type="button"
                       variant="ghost"
@@ -284,6 +296,9 @@ export function SavedListsDialog({
                   </div>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{list.tickers.length} mã · mốc dữ liệu {fmtDate(list.as_of)}{list.filter_version ? ` · bộ lọc bản ${list.filter_version}` : ""}</p>
+                {!isListBotVerified(list) && (
+                  <p id={`unverified-${list.id}`} className="mt-1 text-[11px] leading-4 text-muted-foreground">{LIST_NOT_VERIFIED_NOTE}</p>
+                )}
                 <ul className="mt-2 flex flex-wrap gap-1" aria-label={`Mã trong ${list.name}`}>
                   {list.tickers.slice(0, PREVIEW).map((symbol) => <li key={symbol} className={PILL}>{symbol}</li>)}
                   {list.tickers.length > PREVIEW && <li className={`${PILL} text-muted-foreground`}>+{list.tickers.length - PREVIEW} mã</li>}

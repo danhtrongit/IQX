@@ -12,7 +12,11 @@ export interface LessonRewardInput {
   readonly lessonKey: string;
   readonly lessonId: string;
   readonly catalogVersion: string;
-  readonly completionMethod: 'quiz' | 'guide';
+  /**
+   * `legacy_migration` only comes from the compensation backfill (Shop spec 10.2) for lessons
+   * completed before the Shop; the realtime Academy path sends `quiz` or `guide`.
+   */
+  readonly completionMethod: 'quiz' | 'guide' | 'legacy_migration';
   readonly completedAt: string;
 }
 

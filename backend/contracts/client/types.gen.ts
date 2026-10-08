@@ -422,6 +422,7 @@ export type BotConfig = {
   candidate_order_owner_confirmation: "pending";
   execution_model: "same_session_close";
   initial_cash_vnd: string;
+  new_buys_enabled: boolean;
   policy_version: "iqx-bot-v1.0";
   strategy_id: "iqx_standard";
   strategy_version: 1;

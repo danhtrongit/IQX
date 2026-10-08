@@ -71,6 +71,20 @@ describe("Bot main", () => {
     expect(screen.queryByText(/Cấu hình chờ hiệu lực/)).toBeNull()
   })
 
+  it("says that new buys are off while the candidate order awaits confirmation, and nothing otherwise", async () => {
+    world.newBuysEnabled = false
+    await renderMain()
+    const note = await screen.findByTestId("new-buys-off-note")
+    expect(note.textContent).toMatch(/Chưa bật mua mới: thứ tự ứng viên chờ xác nhận/)
+    expect(note.textContent).toMatch(/vẫn xét Bán/)
+  })
+
+  it.each([true, null] as const)("shows no new-buys note when the server says %s", async (value) => {
+    world.newBuysEnabled = value
+    await renderMain()
+    expect(screen.queryByTestId("new-buys-off-note")).toBeNull()
+  })
+
   it("never triggers a run or any write: only GET reads", async () => {
     const user = userEvent.setup()
     await renderMain()

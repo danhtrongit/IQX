@@ -4,7 +4,10 @@
  *   node dist/scripts/shop-reward-backfill.js            # dry run (default): prints, never writes
  *   node dist/scripts/shop-reward-backfill.js --apply    # credits through the same service
  *
- * Candidates are rows of `academy_completions` that have no `lesson_rewards` row. Credits go
+ * Candidates are rows of `academy_completions` that have no `lesson_rewards` row: quiz and guide
+ * completions plus the `legacy_migration` ones (lessons completed before the Shop that map to the
+ * current catalog, Shop spec 10.2). Lessons that did not map were never written to
+ * `academy_completions`, so they cannot be rewarded. Credits go
  * through LessonRewardService, i.e. the same `(user_id, lesson_key)` gate and ledger unique key
  * `lesson_first_completion:<user>:<lesson_key>` as the realtime Academy hook, so running it
  * twice, or while users keep completing lessons, can never pay a lesson twice.
@@ -27,6 +30,16 @@ import type { SqlClient } from '../src/platform/database/database.service.js';
 
 const STABLE_LESSON_KEY = /^(technical|fundamental|concept|guide):[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Completion methods that earn xu. `legacy_migration` rows are the lessons completed before the
+ * Shop that map to the current catalog (migration 0014), which Shop spec 10.2 pays retroactively.
+ */
+export type RewardableMethod = 'quiz' | 'guide' | 'legacy_migration';
+
+export function isRewardableMethod(method: string): method is RewardableMethod {
+  return method === 'quiz' || method === 'guide' || method === 'legacy_migration';
+}
 
 export interface CandidateRow {
   readonly userId: string;
@@ -122,7 +135,7 @@ export function planBackfill(
       skipped.push({ row, reason: 'invalid_lesson_key' });
       continue;
     }
-    if (row.completionMethod !== 'quiz' && row.completionMethod !== 'guide') {
+    if (!isRewardableMethod(row.completionMethod)) {
       skipped.push({ row, reason: 'invalid_completion_method' });
       continue;
     }
@@ -218,7 +231,7 @@ export async function applyBackfill(
             lessonKey: credit.lessonKey,
             lessonId: credit.lessonId,
             catalogVersion: credit.catalogVersion,
-            completionMethod: credit.completionMethod as 'quiz' | 'guide',
+            completionMethod: credit.completionMethod as RewardableMethod,
             completedAt: credit.completedAt.toISOString(),
           },
           { source },

@@ -8,7 +8,9 @@ import {
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
+import type { Environment } from '../../platform/config/environment.js';
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
 import {
   IndexMembershipService,
@@ -44,6 +46,7 @@ import {
   type Candidate,
   type FeeRules,
 } from './bot.domain.js';
+import { loadTradingCalendar, openHoldingSessions } from './bot-holding.js';
 import {
   blockedGate,
   gateConfigSides,
@@ -324,7 +327,18 @@ export class BotService {
     private readonly universe?: BotUniversePort,
     @Optional()
     private readonly membership?: IndexMembershipService,
+    @Optional()
+    private readonly config?: ConfigService<Environment, true>,
   ) {}
+
+  /**
+   * Bot SPEC 8.4 / 18.2: real new buys stay off until the owner confirms the candidate ordering.
+   * `BOT_NEW_BUYS_ENABLED` defaults to false; without a config source it is false too. Sells and
+   * the whole decision journal run either way.
+   */
+  newBuysEnabled(): boolean {
+    return this.config?.get('BOT_NEW_BUYS_ENABLED', { infer: true }) === true;
+  }
 
   /** Stable integration aliases used by workspace onboarding hooks. */
   initializeAccount(userId: string): Promise<{ initialized: boolean; instanceId: string | null }> {
@@ -1583,6 +1597,7 @@ export class BotService {
 
       // candidate_order gtgd20_desc_symbol_asc (owner confirmation pending, see BOT_POLICY).
       ranked = rankCandidates(rawCandidates);
+      const newBuysEnabled = this.newBuysEnabled();
       for (const candidate of ranked) {
         if (buyCount >= BOT_POLICY.max_new_buys_per_session) {
           await this.insertDecision(tx, run.id, {
@@ -1622,6 +1637,23 @@ export class BotService {
             reason: `Không mua ${candidate.symbol}: ${BOT_REASON_LABELS[code] ?? code}.`,
             rankTuple: rankTuple(candidate),
             dataRefs: candidate.sourceRefs,
+            budgetVnd: (navBasis * 12n) / 100n,
+            decisionConfigRevision: revision,
+            conditionSnapshot: conditionFor(candidate.symbol, 'buy'),
+          });
+          continue;
+        }
+        if (!newBuysEnabled) {
+          // SPEC 8.4 / 18.2: the candidate ordering is not owner-confirmed, so a would-be buy is
+          // journaled as skipped and nothing is written to the ledger, positions or cash.
+          await this.insertDecision(tx, run.id, {
+            key: `bot:academy:${run.id}:${candidate.symbol}:skip`,
+            symbol: candidate.symbol,
+            action: 'skip',
+            reasonCode: 'candidate_order_unconfirmed',
+            reason: `${BOT_REASON_LABELS.candidate_order_unconfirmed}; không mua ${candidate.symbol}.`,
+            rankTuple: rankTuple(candidate),
+            dataRefs: { ...candidate.sourceRefs, entry_source: entrySource },
             budgetVnd: (navBasis * 12n) / 100n,
             decisionConfigRevision: revision,
             conditionSnapshot: conditionFor(candidate.symbol, 'buy'),
@@ -2222,6 +2254,8 @@ export class BotService {
             policy_version: BOT_POLICY.policy_version,
             candidate_order: BOT_POLICY.candidate_order,
             candidate_order_owner_confirmation: BOT_POLICY.candidate_order_owner_confirmation,
+            // false while the candidate order awaits owner confirmation: sells run, buys do not.
+            new_buys_enabled: this.newBuysEnabled(),
           }
         : null,
       conditions,
@@ -2329,6 +2363,12 @@ export class BotService {
     } catch {
       buySource = null;
     }
+    const calendar = rows.length ? await loadTradingCalendar(this.database) : null;
+    const lastSession = snapshot
+      ? isoDate(snapshot.trading_date)
+      : nav
+        ? isoDate(nav.trading_date)
+        : null;
     let complete = Boolean(snapshot);
     const items = rows.map((row) => {
       const close = this.officialClose(payload?.symbols[row.symbol]);
@@ -2366,7 +2406,12 @@ export class BotService {
           ? objectValue(row.entry_source_snapshot)
           : null,
         entry_config_revision: row.entry_config_revision ?? null,
-        holding_sessions: Number(row.holding_sessions ?? 0),
+        // Trading sessions from the opened session through the last processed session, by the
+        // Bot's own calendar; the nav-row count only when that calendar is unavailable.
+        holding_sessions:
+          calendar && lastSession
+            ? openHoldingSessions(isoDate(row.opened_session), lastSession, calendar)
+            : Number(row.holding_sessions ?? 0),
         last_decision: last
           ? {
               trading_date: isoDate(last.trading_date),

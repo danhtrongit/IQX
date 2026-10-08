@@ -12,6 +12,7 @@ import {
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
 import { ACADEMY_GRANTS, type AcademyGrantsPort } from '../academy/academy.ports.js';
 import { IndexMembershipService } from '../market-integration/index-membership.service.js';
+import { readStoredDefinition } from '../screener/screener.definition.js';
 import {
   nextEffectiveSession,
   tradingDayPredicate,
@@ -66,6 +67,9 @@ type ListRow = {
   as_of: Date | string;
   data_source: string;
   scope: Record<string, unknown> | null;
+  /** Evidence written by POST /strategy/lists/from-result; null for a client-declared list. */
+  result_snapshot_id: string | null;
+  run_id: string | null;
   created_at: Date | string;
 };
 
@@ -97,6 +101,19 @@ function sortedUnique(values: readonly string[]): string[] {
 
 export function universeSymbolsHash(symbols: readonly string[]): string {
   return canonicalHash(sortedUnique(symbols));
+}
+
+/**
+ * 422 for a list the server cannot tie to a stored screener result (Bot SPEC 6.2, Strategy SPEC
+ * 8.4): the ticker set of such a list is client-declared, so the Bot never buys from it.
+ */
+function listNotVerified(reason: 'no_result' | 'result_missing' | 'tickers_outside_result') {
+  return new UnprocessableEntityException({
+    code: 'LIST_NOT_VERIFIED',
+    message:
+      'Danh mục này chưa có bằng chứng từ một kết quả Bộ lọc do hệ thống lưu nên chưa thể áp dụng cho Bot. Hãy lọc lại ở Bộ lọc rồi lưu danh mục từ kết quả đó.',
+    details: [{ field: 'list_id', reason }],
+  });
 }
 
 /** The v2 error envelope forwards `code`, `message` and an array `details` only. */
@@ -260,7 +277,8 @@ export class BotUniverseService implements BotUniversePort {
       await this.assertRevision(tx, userId, input.expected_revision);
 
       const list = await this.ownedList(tx, userId, input.list_id);
-      await this.assertFilterGrants(tx, userId, list);
+      const resultMetrics = await this.verifiedResultMetrics(tx, userId, list);
+      await this.assertMetricGrants(userId, resultMetrics);
       const selected = sortedUnique(input.symbols);
       await this.assertSelection(tx, list, selected);
 
@@ -278,6 +296,7 @@ export class BotUniverseService implements BotUniversePort {
           list.filter_id && list.filter_version
             ? { id: list.filter_id, version: list.filter_version }
             : null,
+        result: { snapshot_id: list.result_snapshot_id, run_id: list.run_id },
         cutoff: day(list.as_of),
         selected_count: selected.length,
         symbols_hash: universeSymbolsHash(selected),
@@ -452,7 +471,8 @@ export class BotUniverseService implements BotUniversePort {
   private async ownedList(tx: SqlClient, userId: string, listId: string): Promise<ListRow> {
     const list = (
       await tx.query<ListRow>(
-        `select id, name, tickers, filter_id, filter_version, as_of, data_source, scope, created_at
+        `select id, name, tickers, filter_id, filter_version, as_of, data_source, scope,
+                result_snapshot_id, run_id, created_at
            from list_snapshots where id = $1 and user_id = $2 and deleted_at is null`,
         [listId, userId],
       )
@@ -463,22 +483,42 @@ export class BotUniverseService implements BotUniversePort {
     return list;
   }
 
-  /** A list produced by a fundamental filter needs `metric:<id>` for every metric it used. */
-  private async assertFilterGrants(tx: SqlClient, userId: string, list: ListRow): Promise<void> {
-    if (!list.filter_id || !list.filter_version) return;
-    const version = (
-      await tx.query<{ definition: { rules?: Array<{ metric_id?: unknown }> } | null }>(
-        'select definition from filter_versions where filter_id = $1 and version = $2',
-        [list.filter_id, list.filter_version],
+  /**
+   * The Bot buys only from a list the server can tie to a stored screener result: the list must
+   * carry `result_snapshot_id` (set by POST /strategy/lists/from-result from a server-held run or
+   * snapshot), the snapshot must exist for the same user and freeze every ticker of the list.
+   * Returns the metrics of the result's filter definition (rules and columns), which are the ones
+   * the user must have learned (`metric:<id>`).
+   */
+  private async verifiedResultMetrics(
+    tx: SqlClient,
+    userId: string,
+    list: ListRow,
+  ): Promise<string[]> {
+    if (!list.result_snapshot_id) throw listNotVerified('no_result');
+    const snapshot = (
+      await tx.query<{ symbols: string[]; definition: unknown }>(
+        // A soft-deleted snapshot keeps its evidence; only a missing row fails verification.
+        'select symbols, definition from result_snapshots where id = $1 and user_id = $2',
+        [list.result_snapshot_id, userId],
       )
     )[0];
-    const metrics = [
-      ...new Set(
-        (version?.definition?.rules ?? [])
-          .map((rule) => rule.metric_id)
-          .filter((id): id is string => typeof id === 'string' && id.length > 0),
-      ),
-    ];
+    const definition = snapshot ? readStoredDefinition(snapshot.definition)?.definition : undefined;
+    if (!snapshot || !definition) throw listNotVerified('result_missing');
+    const frozen = new Set(sortedUnique(snapshot.symbols));
+    if (sortedUnique(list.tickers).some((symbol) => !frozen.has(symbol))) {
+      throw listNotVerified('tickers_outside_result');
+    }
+    return [
+      ...new Set([
+        ...definition.rules.map((rule) => rule.metric_id),
+        ...(definition.columns ?? []).map((column) => column.metric_id),
+      ]),
+    ].sort();
+  }
+
+  /** Applying a list needs `metric:<id>` for every metric the result's filter used. */
+  private async assertMetricGrants(userId: string, metrics: readonly string[]): Promise<void> {
     if (!metrics.length) return;
     const granted = await this.grants.grantedCapabilities(userId);
     const locked = metrics.filter((id) => !granted.has(`metric:${id}`));

@@ -146,6 +146,8 @@ export type World = {
   conditions: BotConditions | null
   /** When set, applying a list is refused with these symbols (422 `UNIVERSE_SYMBOLS_INVALID`). */
   invalidSymbols: { symbol: string; reason: string }[] | null
+  /** `bot.new_buys_enabled` of the overview; `null` leaves it out like an older API. */
+  newBuysEnabled: boolean | null
   /** Per-route replacements: `"PATCH /strategy/shared-config"` -> handler (may throw). */
   override: Record<string, (body: Record<string, unknown> | null) => unknown>
   calls: Call[]
@@ -176,11 +178,15 @@ export function universeState(partial: Partial<UniverseState> = {}): UniverseSta
   }
 }
 
-export function savedList(id: string, name: string, tickers: string[]): SavedList {
+/**
+ * A list saved from a stored Bộ lọc result (`result_snapshot_id` set), which the Bot may use.
+ * Pass `{ declared: true }` for a client-declared list (POST /strategy/lists): no result evidence.
+ */
+export function savedList(id: string, name: string, tickers: string[], options: { declared?: boolean } = {}): SavedList {
   return {
     id, name, tickers, as_of: "2026-10-06", data_source: "screener", filter_id: null, filter_version: null,
     kind: "static_retrospective", scope: {}, created_at: "2026-10-06T00:00:00Z",
-    provenance: null, result_snapshot_id: null, run_id: null, visibility: "saved",
+    provenance: null, result_snapshot_id: options.declared ? null : `snapshot-${id}`, run_id: null, visibility: "saved",
   }
 }
 
@@ -197,7 +203,7 @@ export function createWorld(partial: Partial<World> = {}): World {
     granted: ["rsi", "macd", "ma", "bollinger", "volume"],
     savedRevision: 0, effectiveRevision: null, effectiveSession: null, status: "pending",
     indicators, effectiveIndicators: null, omitEffective: false, universe: universeState(), lists: [], positions: [],
-    trades: [], sessions: [], decisions: {}, conditions: null, invalidSymbols: null,
+    trades: [], sessions: [], decisions: {}, conditions: null, invalidSymbols: null, newBuysEnabled: true,
     override: {}, calls: [], ...partial,
   }
 }
@@ -216,7 +222,9 @@ function overview(world: World): BotOverview {
     bot: {
       activated_at: "2026-10-01T00:00:00Z", candidate_order: "gtgd20_desc_symbol_asc", candidate_order_owner_confirmation: "pending",
       execution_model: "same_session_close", initial_cash_vnd: "100000000", policy_version: "iqx-bot-v1.0", strategy_id: "iqx_standard", strategy_version: 1,
-    },
+      ...(world.newBuysEnabled === null ? {} : { new_buys_enabled: world.newBuysEnabled }),
+      // An older API without the flag is simulated by leaving it out.
+    } as BotOverview["bot"],
     conditions,
     account: { as_of_session: "2026-10-07", cash_vnd: "100000000", market_value_vnd: "0", nav_vnd: "100000000", pnl_total_net_vnd: "0", return_total: "0", valuation_complete: true },
     bot_run: { issues: [], last_updated_at: null, latest_run_id: null, processed_unseen_sessions: 0, status: "idle" },

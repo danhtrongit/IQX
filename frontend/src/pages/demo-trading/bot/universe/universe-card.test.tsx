@@ -200,6 +200,36 @@ describe("apply a saved list", () => {
     expect(await within(dialog).findByText(/hoàn thành bài học của chỉ tiêu/)).toBeTruthy()
   })
 
+  it("marks a list without a stored Bộ lọc result as not applicable: the action is disabled and a short note says why", async () => {
+    world.lists = [savedList(LIST_ID, "Cổ phiếu tăng trưởng", ["FPT", "MWG"]), savedList("33333333-3333-4333-8333-333333333333", "Tự nhập", ["VCB", "BID"], { declared: true })]
+    const user = userEvent.setup()
+    await renderCard()
+    await user.click(within(card()).getByRole("button", { name: "Danh mục đã lưu" }))
+    const lists = await screen.findByRole("dialog", { name: "Danh mục từ Bộ lọc" })
+    const declared = within(lists).getByRole("button", { name: /Chọn danh mục Tự nhập/ }) as HTMLButtonElement
+    const verified = within(lists).getByRole("button", { name: /Chọn danh mục Cổ phiếu tăng trưởng/ }) as HTMLButtonElement
+    expect(declared.disabled).toBe(true)
+    expect(verified.disabled).toBe(false)
+    expect(within(lists).getAllByText(/không lưu từ kết quả Bộ lọc/)).toHaveLength(1)
+    await user.click(declared)
+    expect(screen.queryByRole("dialog", { name: "Áp dụng danh mục cho Bot" })).toBeNull()
+    expect(posts("/bot/universe/apply-list")).toHaveLength(0)
+  })
+
+  it("maps 422 LIST_NOT_VERIFIED to a message that sends the user back to Bộ lọc", async () => {
+    world.override["POST /bot/universe/apply-list"] = () => {
+      throw new FakeApiError("server text", 422, { code: "LIST_NOT_VERIFIED" })
+    }
+    const user = userEvent.setup()
+    await renderCard()
+    const dialog = await openApply(user)
+    await user.click(within(dialog).getByRole("button", { name: "Áp dụng cho Bot" }))
+    const alert = await within(dialog).findByRole("alert")
+    expect(alert.textContent).toMatch(/lưu lại danh mục từ Bộ lọc/)
+    expect(alert.textContent).not.toMatch(/server text/)
+    expect(world.universe.pending).toBeNull()
+  })
+
   it("Quay lại returns to the saved lists", async () => {
     const user = userEvent.setup()
     await renderCard()

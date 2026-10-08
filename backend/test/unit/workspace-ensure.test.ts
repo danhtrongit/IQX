@@ -53,6 +53,11 @@ class FakeTradingStore {
     const account = this.accounts.get(userId);
     return account ? { ...account } : null;
   }
+  /** Admin-configured legacy settings: a funding amount the manual account must never use. */
+  config = { tradingEnabled: true, initialCashVnd: 250_000_000n };
+  async ensureConfig() {
+    return { id: 'config', ...this.config };
+  }
   async createAccountIfAbsent(_tx: unknown, userId: string, initialCash: bigint) {
     if (this.accounts.has(userId)) return null; // on conflict (user_id) do nothing
     const now = new Date();
@@ -202,6 +207,69 @@ describe('workspace ensure: manual demo account funding', () => {
     expect(store.accounts.size).toBe(0);
     expect((await trading.ensureInitialAccount(userId)).created).toBe(true);
     expect(store.ledger).toHaveLength(1);
+  });
+});
+
+describe('legacy POST /virtual-trading/account/activate', () => {
+  it('funds a fixed 100,000,000 VND with the shared funding key, not the configured amount', async () => {
+    const { h, store, trading } = build();
+    const userId = await h.newUser();
+    const response = await trading.activateAccount(userId);
+    expect(response).toMatchObject({
+      user_id: userId,
+      status: 'active',
+      initial_cash_vnd: 100_000_000,
+      cash_available_vnd: 100_000_000,
+      total_cash_vnd: 100_000_000,
+    });
+    // same response keys as before
+    expect(Object.keys(response).sort()).toEqual(
+      [
+        'activated_at',
+        'cash_available_vnd',
+        'cash_pending_vnd',
+        'cash_reserved_vnd',
+        'created_at',
+        'id',
+        'initial_cash_vnd',
+        'reset_at',
+        'status',
+        'total_cash_vnd',
+        'user_id',
+      ].sort(),
+    );
+    expect(store.ledger).toEqual([
+      expect.objectContaining({
+        amount: 100_000_000n,
+        kind: 'activate',
+        idempotencyKey: manualFundingKey(userId),
+      }),
+    ]);
+  });
+
+  it('shares one funding with onboarding: activate then ensure (and the reverse) pays once', async () => {
+    const { h, store, trading } = build();
+    const first = await h.newUser();
+    await trading.activateAccount(first);
+    expect((await trading.ensureInitialAccount(first)).created).toBe(false);
+    const second = await h.newUser();
+    await trading.ensureInitialAccount(second);
+    const again = await trading.activateAccount(second);
+    expect(again.cash_available_vnd).toBe(100_000_000);
+    await Promise.all([trading.activateAccount(first), trading.activateAccount(second)]);
+    expect(store.accounts.size).toBe(2);
+    expect(store.ledger.map((row) => row.idempotencyKey).sort()).toEqual(
+      [manualFundingKey(first), manualFundingKey(second)].sort(),
+    );
+  });
+
+  it('keeps the trading switch: a paused demo trading refuses activation and writes nothing', async () => {
+    const { h, store, trading } = build();
+    store.config.tradingEnabled = false;
+    const userId = await h.newUser();
+    await expect(trading.activateAccount(userId)).rejects.toMatchObject({ status: 403 });
+    expect(store.accounts.size).toBe(0);
+    expect(store.ledger).toHaveLength(0);
   });
 });
 

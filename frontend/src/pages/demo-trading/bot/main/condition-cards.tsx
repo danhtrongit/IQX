@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { activeConditions, effectiveConfigOf, pendingConfigOf, pendingStartText, type ConditionItem } from "../config/summary"
 import type { Side, SharedConfigState, TechnicalIndicator } from "../config/types"
 import type { BotConditions } from "../types"
-import { pendingConfigNote, sideBlocks } from "./state"
+import { NEW_BUYS_OFF_NOTE, pendingConfigNote, sideBlocks } from "./state"
 
 const SIDE_TITLE: Record<Side, string> = { buy: "ĐIỀU KIỆN MUA", sell: "ĐIỀU KIỆN BÁN" }
 const SIDE_TONE: Record<Side, string> = { buy: "text-price-up", sell: "text-price-down" }
@@ -104,11 +104,14 @@ export function ConditionCards({
   conditions,
   config,
   indicators,
+  newBuysEnabled = null,
 }: {
   loading?: boolean
   conditions: BotConditions | null
   config: SharedConfigState | undefined
   indicators: readonly TechnicalIndicator[]
+  /** `false` while the server keeps real new buys off (candidate order awaiting confirmation). */
+  newBuysEnabled?: boolean | null
 }) {
   const note = pendingConfigNote(conditions)
   if (loading) {
@@ -128,6 +131,11 @@ export function ConditionCards({
       {note && (
         <p role="status" className="rounded-md border border-price-ref/40 bg-price-ref/10 p-3 text-xs leading-5 text-price-ref">
           {note}
+        </p>
+      )}
+      {newBuysEnabled === false && (
+        <p role="status" data-testid="new-buys-off-note" className="rounded-md border border-border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">
+          {NEW_BUYS_OFF_NOTE}
         </p>
       )}
     </>

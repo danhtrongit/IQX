@@ -441,6 +441,8 @@ export class PracticeService {
         message: `Cần hoàn thành bài học của chỉ báo ${entry.name} (8/8) trước khi luyện tập.`,
         capability,
         reason: 'not_learned',
+        // the v2 error filter forwards only `code`, `message` and array `details`
+        details: [{ capability, reason: 'not_learned', indicator: entry.id }],
       });
     }
     return entry;

@@ -4,6 +4,8 @@ import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { definitionHash } from '../../src/modules/alerts/strategy-alerts.evaluation.js';
+import { BotUniverseService } from '../../src/modules/bots/bot-universe.service.js';
+import type { IndexMembershipService } from '../../src/modules/market-integration/index-membership.service.js';
 import { StrategyAlertsRepository } from '../../src/modules/alerts/strategy-alerts.repository.js';
 import type { NewVersionInput } from '../../src/modules/alerts/strategy-alerts.store.js';
 import {
@@ -327,69 +329,69 @@ describe.skipIf(!URL)('Strategy SQL against PostgreSQL', () => {
     for (const alert of [mine, paused, free]) await alerts.remove(alert.user_id, alert.id);
   });
 
-  it('screener runs: owner-scoped storage, immutability and bounded retention', async () => {
-    const cell = (status: string) => ({
-      metric_id: 'roe',
-      period_mode: 'ttm',
-      status,
-      value: status === 'ok' ? 0.2 : null,
-      unit: 'ratio',
-      actual_period_label: 'TTM Q4/2025',
-      comparison_period_label: null,
-      published_at: '2026-01-30',
-      available_at: '2026-01-31T00:00:00+07:00',
-      source_revision: 'VCI:2026-01-30T10:00:00',
-      components: [],
-    });
-    const rows = (symbols: string[]): ScreenerRow[] =>
-      symbols.map((symbol) => ({
-        symbol,
-        name: symbol,
-        sector: 'S',
-        exchange: 'HOSE',
-        passed: symbol !== 'PGX',
-        metrics: { roe: cell(symbol === 'PGX' ? 'missing' : 'ok') } as never,
-      }));
-    const header = (): Omit<ScreenerRunHeader, 'result_id'> => ({
+  const cell = (status: string) => ({
+    metric_id: 'roe',
+    period_mode: 'ttm',
+    status,
+    value: status === 'ok' ? 0.2 : null,
+    unit: 'ratio',
+    actual_period_label: 'TTM Q4/2025',
+    comparison_period_label: null,
+    published_at: '2026-01-30',
+    available_at: '2026-01-31T00:00:00+07:00',
+    source_revision: 'VCI:2026-01-30T10:00:00',
+    components: [],
+  });
+  const rows = (symbols: string[]): ScreenerRow[] =>
+    symbols.map((symbol) => ({
+      symbol,
+      name: symbol,
+      sector: 'S',
+      exchange: 'HOSE',
+      passed: symbol !== 'PGX',
+      metrics: { roe: cell(symbol === 'PGX' ? 'missing' : 'ok') } as never,
+    }));
+  const header = (): Omit<ScreenerRunHeader, 'result_id'> => ({
+    schema_version: '3.0',
+    data_mode: 'latest_disclosed',
+    as_of: '2026-02-01T03:00:00.000Z',
+    definition: {
       schema_version: '3.0',
+      name: 'ROE',
+      logic: 'AND',
       data_mode: 'latest_disclosed',
-      as_of: '2026-02-01T03:00:00.000Z',
-      definition: {
-        schema_version: '3.0',
-        name: 'ROE',
-        logic: 'AND',
-        data_mode: 'latest_disclosed',
-        rules: [
-          {
-            id: 'r1',
-            metric_id: 'roe',
-            period: 'ttm',
-            operator: '>',
-            value: 0.1,
-            api_unit: 'ratio',
-          },
-        ],
-        scope: { market: 'HOSE', sector: '' },
-      },
-      legacy_review: null,
-      data_source: 'VCI',
-      calculation_version: 'iqx-fund-2.0',
-      registry_version: 'iqx-fund-registry-2.1',
-      universe_truncated: false,
-      provenance_notes: {
-        period_dates: 'not_provided_by_source',
-        report_scope: 'not_provided_by_source',
-        availability_rule: 'x',
-      },
-      counts: {
-        universe: 3,
-        passed: 2,
-        failed_threshold: 0,
-        with_required_exceptions: 1,
-        missing: 1,
-      },
-      data_quality: { metrics: [] },
-    });
+      rules: [
+        {
+          id: 'r1',
+          metric_id: 'roe',
+          period: 'ttm',
+          operator: '>',
+          value: 0.1,
+          api_unit: 'ratio',
+        },
+      ],
+      scope: { market: 'HOSE', sector: '' },
+    },
+    legacy_review: null,
+    data_source: 'VCI',
+    calculation_version: 'iqx-fund-2.0',
+    registry_version: 'iqx-fund-registry-2.1',
+    universe_truncated: false,
+    provenance_notes: {
+      period_dates: 'not_provided_by_source',
+      report_scope: 'not_provided_by_source',
+      availability_rule: 'x',
+    },
+    counts: {
+      universe: 3,
+      passed: 2,
+      failed_threshold: 0,
+      with_required_exceptions: 1,
+      missing: 1,
+    },
+    data_quality: { metrics: [] },
+  });
+  it('screener runs: owner-scoped storage, immutability and bounded retention', async () => {
     const id = await runs.insert({
       user_id: admin,
       definition_hash: '9'.repeat(64),
@@ -555,5 +557,108 @@ describe.skipIf(!URL)('Strategy SQL against PostgreSQL', () => {
       ])
     ).rows;
     expect(count).toBe(30);
+  });
+
+  it('list from result: concurrent requests with one idempotency key leave one list and one snapshot', async () => {
+    const runId = await runs.insert({
+      user_id: admin,
+      definition_hash: 'c'.repeat(64),
+      header: header(),
+      results: rows(['PGA', 'PGB', 'PGX']),
+    });
+    const key = `${NAME_PREFIX}-race-${randomUUID()}`;
+    const input = {
+      name: `${NAME_PREFIX} race`,
+      run_id: runId,
+      selection: { mode: 'all' as const },
+      visibility: 'internal' as const,
+      idempotency_key: key,
+    };
+    const made = await Promise.all(
+      Array.from({ length: 6 }, () => results.createListFromResult(admin, input)),
+    );
+    expect(new Set(made.map((list) => list.id)).size).toBe(1);
+    expect(new Set(made.map((list) => list.result_snapshot_id)).size).toBe(1);
+    const [counts] = (
+      await pool.query(
+        `SELECT (SELECT count(*)::int FROM result_snapshots WHERE user_id = $1 AND run_id = $2) AS snapshots,
+                (SELECT count(*)::int FROM list_snapshots WHERE user_id = $1 AND idempotency_key = $3) AS lists`,
+        [admin, runId, key],
+      )
+    ).rows;
+    // No orphan evidence snapshot from the losing requests.
+    expect(counts).toEqual({ snapshots: 1, lists: 1 });
+    // A different payload under the same key is still refused.
+    await expect(
+      results.createListFromResult(admin, { ...input, name: `${NAME_PREFIX} other` }),
+    ).rejects.toMatchObject({ response: { code: 'IDEMPOTENCY_KEY_CONFLICT' } });
+  });
+
+  it('Bot apply-list: only a list tied to a stored result is accepted, grants follow its definition', async () => {
+    const buyer = randomUUID();
+    await insertUser(buyer, 'user');
+    await pool.query(
+      `INSERT INTO bot_accounts (id, user_id, initial_cash_vnd, cash_vnd, activated_at)
+       VALUES ($1, $2, 100000000, 100000000, now())`,
+      [randomUUID(), buyer],
+    );
+    const granted = new Set<string>();
+    const bot = new BotUniverseService(
+      db,
+      { latestOnOrBefore: async () => null } as unknown as IndexMembershipService,
+      { grantedCapabilities: async () => granted },
+    );
+    const runId = await runs.insert({
+      user_id: buyer,
+      definition_hash: 'd'.repeat(64),
+      header: header(),
+      results: rows(['PGA', 'PGB', 'PGX']),
+    });
+    const verified = await results.createListFromResult(buyer, {
+      name: `${NAME_PREFIX} verified`,
+      run_id: runId,
+      selection: { mode: 'all' },
+      visibility: 'internal',
+    });
+    // POST /strategy/lists accepts any client-declared tickers: it carries no result evidence.
+    const declared = await lists.createList(buyer, {
+      name: `${NAME_PREFIX} declared`,
+      tickers: ['PGA'],
+      as_of: '2026-02-01',
+      data_source: 'client',
+      scope: {},
+    });
+    expect(declared.result_snapshot_id).toBeNull();
+    const apply = (listId: string) =>
+      bot.applyList(buyer, {
+        list_id: listId,
+        symbols: ['PGA'],
+        expected_revision: 0,
+        idempotency_key: `${NAME_PREFIX}-apply-${randomUUID()}`,
+      });
+    const stored = async () =>
+      (
+        await pool.query(
+          `SELECT count(*)::int AS count FROM bot_universe_revisions WHERE user_id = $1`,
+          [buyer],
+        )
+      ).rows[0].count as number;
+
+    await expect(apply(declared.id)).rejects.toMatchObject({
+      response: { code: 'LIST_NOT_VERIFIED' },
+    });
+    // The rule of the stored result is on roe, which this account has not learned yet.
+    await expect(apply(verified.id)).rejects.toMatchObject({
+      response: { code: 'CAPABILITY_LOCKED', details: [{ capability: 'metric:roe' }] },
+    });
+    expect(await stored()).toBe(0);
+
+    granted.add('metric:roe');
+    const applied = await apply(verified.id);
+    expect(applied.request).toMatchObject({ kind: 'custom', saved_list_id: verified.id });
+    expect(applied.request.provenance).toMatchObject({
+      result: { snapshot_id: verified.result_snapshot_id, run_id: runId },
+    });
+    expect(await stored()).toBe(1);
   });
 });

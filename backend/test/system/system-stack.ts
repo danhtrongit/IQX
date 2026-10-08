@@ -59,6 +59,9 @@ const DEFAULT_ENV: Record<string, string> = {
   SEPAY_CHECKOUT_URL: 'https://pay.invalid/checkout',
   APP_PUBLIC_URL: 'http://127.0.0.1:3001',
   TRADING_ENABLED: 'true',
+  // The acceptance scenarios exercise real Bot buys; production keeps this off until the owner
+  // confirms the candidate ordering (Bot SPEC 8.4 / 18.2).
+  BOT_NEW_BUYS_ENABLED: 'true',
 };
 
 function requireExternalUrl(name: string): string {

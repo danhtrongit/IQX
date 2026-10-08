@@ -27,3 +27,18 @@ export function pendingSessionText(request: Pick<UniverseRequest, "effective_ses
 }
 
 export const CHANGE_NOTE = "Không bán cổ phiếu đang giữ. Thay đổi có hiệu lực từ phiên giao dịch tiếp theo."
+
+/**
+ * Bot SPEC 6.2 / Strategy SPEC 8.4: the Bot buys only from a list the server can tie to a stored
+ * Bộ lọc result (`result_snapshot_id`). A list whose tickers the client declared is shown but
+ * cannot be applied; the server answers 422 `LIST_NOT_VERIFIED` if it is tried anyway.
+ */
+export function isListBotVerified(list: { result_snapshot_id?: string | null }): boolean {
+  return typeof list.result_snapshot_id === "string" && list.result_snapshot_id !== ""
+}
+
+/** Short note shown next to a disabled "Áp dụng cho Bot". */
+export const LIST_NOT_VERIFIED_NOTE = "Chưa áp dụng được cho Bot: danh mục này không lưu từ kết quả Bộ lọc. Hãy lưu lại danh mục từ Bộ lọc."
+
+/** Message for 422 `LIST_NOT_VERIFIED`. */
+export const LIST_NOT_VERIFIED_MESSAGE = "Danh mục này không được lưu từ kết quả Bộ lọc nên chưa áp dụng được cho Bot. Hãy lưu lại danh mục từ Bộ lọc rồi thử lại."

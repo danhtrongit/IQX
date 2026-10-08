@@ -192,6 +192,7 @@ describe("quiz: resuming from the server", () => {
     await startQuiz(user, "Tiếp tục bài kiểm tra").catch(() => undefined)
     await screen.findByRole("heading", { level: 3, name: /^Câu hỏi 1/ }).catch(() => undefined)
     await user.click(screen.getByRole("button", { name: "Câu 3" }))
+    const readsBefore = fake.calls.filter((call) => call === "GET /academy/lessons/ch01-l01/attempt").length
     fake.state.draftConflict = true
     await user.click(radio("A"))
     expect(await screen.findByText("Lựa chọn đã được cập nhật từ một thiết bị khác.")).toBeTruthy()
@@ -200,7 +201,24 @@ describe("quiz: resuming from the server", () => {
     expect((radio("A") as HTMLInputElement).checked).toBe(true)
     await user.click(screen.getByRole("button", { name: "Câu 1, đã trả lời" }))
     expect((radio("D") as HTMLInputElement).checked).toBe(true)
-    expect(fake.calls.filter((call) => call === "GET /academy/lessons/ch01-l01/attempt").length).toBeGreaterThanOrEqual(2)
+    // The 409 carries the stored draft in details[0].draft: no extra read of the resume route.
+    expect(fake.calls.filter((call) => call === "GET /academy/lessons/ch01-l01/attempt")).toHaveLength(readsBefore)
+  })
+
+  it("falls back to re-reading the resume route when the 409 carries no draft", async () => {
+    install({ openAttempt: { draft: { q2: "q2c" }, revision: 1 } })
+    const user = userEvent.setup()
+    await openLesson()
+    await startQuiz(user, "Tiếp tục bài kiểm tra").catch(() => undefined)
+    await screen.findByRole("heading", { level: 3, name: /^Câu hỏi 1/ }).catch(() => undefined)
+    await user.click(screen.getByRole("button", { name: "Câu 3" }))
+    const readsBefore = fake.calls.filter((call) => call === "GET /academy/lessons/ch01-l01/attempt").length
+    fake.state.draftConflict = true
+    fake.state.conflictWithoutDraft = true
+    await user.click(radio("A"))
+    expect(await screen.findByText("Lựa chọn đã được cập nhật từ một thiết bị khác.")).toBeTruthy()
+    expect(screen.getByText("Đã trả lời 3 / 8")).toBeTruthy()
+    expect(fake.calls.filter((call) => call === "GET /academy/lessons/ch01-l01/attempt")).toHaveLength(readsBefore + 1)
   })
 
   it("reuses the same idempotency key when starting is retried after a failure", async () => {

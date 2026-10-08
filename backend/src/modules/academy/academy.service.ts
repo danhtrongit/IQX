@@ -248,7 +248,8 @@ export class AcademyService implements OnModuleInit {
           code: 'INVALID_ANSWERS',
           message:
             'Mỗi lựa chọn phải thuộc một câu của lượt làm bài, mỗi câu tối đa một đáp án hợp lệ.',
-          issues,
+          // The v2 error filter forwards only `code`, `message` and array `details`.
+          details: issues,
         });
 
       const current = await store.draft(attempt.id);
@@ -261,7 +262,8 @@ export class AcademyService implements OnModuleInit {
         throw new ConflictException({
           code: 'DRAFT_REVISION_CONFLICT',
           message: 'Bản nháp đã được lưu ở nơi khác. Tải lại để xem lựa chọn mới nhất.',
-          draft: view(current),
+          // `details[0].draft` is the stored draft, so the client can adopt it without a re-read.
+          details: [{ draft: view(current) }],
         });
 
       const selections = Object.fromEntries(
@@ -345,7 +347,7 @@ export class AcademyService implements OnModuleInit {
         throw new UnprocessableEntityException({
           code: 'INVALID_ANSWERS',
           message: `Cần trả lời đủ ${QUESTIONS_PER_LESSON} câu của lượt làm bài, mỗi câu một đáp án hợp lệ.`,
-          issues,
+          details: issues,
         });
 
       const graded = gradeAnswers(assessment.questions, attempt.question_ids, input.answers);
@@ -409,7 +411,7 @@ export class AcademyService implements OnModuleInit {
       throw new ConflictException({
         code: 'CONTENT_VERSION_MISMATCH',
         message: 'Nội dung bài học đã được cập nhật. Vui lòng tải lại trang.',
-        content_version: published.content_version,
+        details: [{ content_version: published.content_version }],
       });
 
     return this.repository.transaction(async (store, tx) => {

@@ -549,6 +549,28 @@ describe("áp dụng cho Bot", () => {
     expect(posts("/bot/universe/apply-list")[0]!.body).toMatchObject({ list_id: LIST_ID, symbols: ["FPT", "HPG"], expected_revision: 0 })
     expect(posts("/strategy/lists/from-result")).toHaveLength(0)
   })
+
+  it("does not offer a list without a stored result to the Bot: disabled action, short note, also in the detail", async () => {
+    const user = userEvent.setup()
+    world.lists = [
+      savedList(LIST_ID, "Cổ phiếu tăng trưởng", ["FPT", "HPG"]),
+      savedList("44444444-4444-4444-8444-444444444444", "Tự nhập", ["VCB", "BID"], { declared: true }),
+    ]
+    await renderTab()
+    await user.click(screen.getByRole("button", { name: "Danh mục đã lưu" }))
+    const lists = await screen.findByRole("dialog", { name: "Danh mục đã lưu" })
+    const declared = await within(lists).findByRole("button", { name: /Áp dụng cho Bot Tự nhập/ })
+    const verified = within(lists).getByRole("button", { name: /Áp dụng cho Bot Cổ phiếu tăng trưởng/ })
+    expect((declared as HTMLButtonElement).disabled).toBe(true)
+    expect((verified as HTMLButtonElement).disabled).toBe(false)
+    expect(within(lists).getAllByText(/không lưu từ kết quả Bộ lọc/)).toHaveLength(1)
+    // The detail dialog offers the same action with the same rule.
+    await user.click(within(lists).getByRole("button", { name: /Xem Tự nhập/ }))
+    const detail = await screen.findByRole("dialog", { name: "Tự nhập" })
+    expect((within(detail).getByRole("button", { name: "Áp dụng cho Bot" }) as HTMLButtonElement).disabled).toBe(true)
+    expect(detail.textContent).toMatch(/không lưu từ kết quả Bộ lọc/)
+    expect(posts("/bot/universe/apply-list")).toHaveLength(0)
+  })
 })
 
 describe("Bot source block", () => {

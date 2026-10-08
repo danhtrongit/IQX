@@ -446,6 +446,7 @@ describe('ScreenerService.run', () => {
       code: 'CAPABILITY_LOCKED',
       capability: 'metric:revenue_yoy',
       reason: 'not_learned',
+      details: [{ capability: 'metric:revenue_yoy', reason: 'not_learned' }],
     });
     const column = await svc
       .run(

@@ -237,7 +237,11 @@ describe('system acceptance: Bot policy iqx-bot-v1.0 on a real ledger', () => {
     expect(overview.json()).toMatchObject({
       eligible: true,
       account: { cash_vnd: '100000000', nav_vnd: '100000000', valuation_complete: true },
-      bot: { policy_version: 'iqx-bot-v1.0', candidate_order: 'gtgd20_desc_symbol_asc' },
+      bot: {
+        policy_version: 'iqx-bot-v1.0',
+        candidate_order: 'gtgd20_desc_symbol_asc',
+        new_buys_enabled: true,
+      },
       conditions: { state: 'waiting_for_conditions', state_label: 'Chờ thiết lập điều kiện' },
       bot_run: { status: 'succeeded', latest_run_id: run.id },
     });
@@ -352,11 +356,35 @@ describe('system acceptance: Bot policy iqx-bot-v1.0 on a real ledger', () => {
     expect(bought).toMatchObject({ status: 'succeeded', buyCount: 1 });
 
     // Apply a list without VCB; it takes effect on the next session only.
+    // A list the Bot may buy from is tied to a stored screener result (server-held evidence).
+    const snapshotId = (
+      await stack.query<{ id: string }>(
+        `insert into result_snapshots
+           (user_id, name, definition, definition_hash, as_of, run_at, data_source,
+            calculation_version, registry_version, selection, symbols, rows)
+         values ($1, 'Kết quả thử', $2::jsonb, $3, now(), now(), 'VCI', 'iqx-fund-2.0',
+                 'iqx-fund-registry-2.1', '{"mode":"all","symbols":["VNM"]}'::jsonb,
+                 ARRAY['VNM'], '[]'::jsonb)
+         returning id`,
+        [
+          user.id,
+          JSON.stringify({
+            schema_version: '3.0',
+            name: 'Thử',
+            logic: 'AND',
+            data_mode: 'latest_disclosed',
+            rules: [],
+            scope: { market: 'HOSE', sector: '' },
+          }),
+          'a'.repeat(64),
+        ],
+      )
+    )[0]!.id;
     const listId = (
       await stack.query<{ id: string }>(
-        `insert into list_snapshots (user_id, name, tickers, as_of, data_source, scope)
-         values ($1, 'Chỉ VNM', ARRAY['VNM'], $2, 'VCI', '{}'::jsonb) returning id`,
-        [user.id, entry],
+        `insert into list_snapshots (user_id, name, tickers, as_of, data_source, scope, result_snapshot_id)
+         values ($1, 'Chỉ VNM', ARRAY['VNM'], $2, 'VCI', '{}'::jsonb, $3) returning id`,
+        [user.id, entry, snapshotId],
       )
     )[0]!.id;
     // Service calls: the HTTP access token (30 minutes of REAL time) is not valid at the

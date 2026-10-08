@@ -277,6 +277,11 @@ export class SavedFiltersService {
     return toSavedList(row);
   }
 
+  /**
+   * A list with client-declared tickers (`POST /strategy/lists`). It carries no result evidence
+   * (`result_snapshot_id` stays null), so it is fine for "Danh mục đã lưu" and alerts but the Bot
+   * refuses it with 422 `LIST_NOT_VERIFIED`; only `createListFromResult` lists can feed the Bot.
+   */
   createList(userId: string, input: ListCreateInput): Promise<SavedList> {
     const { idempotency_key: idempotencyKey, ...payload } = input;
     const requestHash = canonicalHash(payload);

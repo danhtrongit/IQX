@@ -180,6 +180,18 @@ describe('practice grants and indicator whitelist', () => {
     expect((await service.state(USER, 'macd')).status).toBe('ready');
   });
 
+  it('forwards the lock capability and reason in `details` (the error filter drops other extras)', async () => {
+    const { service } = build({ [USER]: ['indicator:macd'] });
+    const error = await service.state(USER, 'rsi').then(
+      () => null,
+      (caught: unknown) => caught as { getResponse: () => Record<string, unknown> },
+    );
+    expect(error?.getResponse()).toMatchObject({
+      code: 'CAPABILITY_LOCKED',
+      details: [{ capability: 'indicator:rsi', reason: 'not_learned', indicator: 'rsi' }],
+    });
+  });
+
   it('accepts only the 16 indicators of Appendix B', async () => {
     const { service } = build({ [USER]: ['indicator:adx', 'indicator:atr', ...ALL_GRANTS] });
     for (const id of ['adx', 'atr', 'keltner', 'psar', 'rs_market', 'ad_line', 'nope']) {
@@ -599,11 +611,37 @@ describe('practice run results', () => {
 
 describe('practice data hiding', () => {
   const dateLike = /\d{4}-\d{2}-\d{2}/;
+  const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
 
   function stripTimestamps(payload: unknown): string {
     return JSON.stringify(payload, (key, value: unknown) =>
       key === 'locked_at' || key === 'completed_at' ? undefined : value,
     );
+  }
+
+  /** Every object key and string value of a payload (ids stripped), so a year-like number never trips it. */
+  function textOf(payload: unknown): string {
+    const parts: string[] = [];
+    const walk = (value: unknown): void => {
+      if (typeof value === 'string') parts.push(value);
+      else if (Array.isArray(value)) value.forEach(walk);
+      else if (value && typeof value === 'object') {
+        for (const [key, item] of Object.entries(value)) {
+          parts.push(key);
+          walk(item);
+        }
+      }
+    };
+    walk(JSON.parse(stripTimestamps(payload)));
+    return parts.join('\n').replace(UUID, 'id');
+  }
+
+  /** No calendar year and no set identity (index name, period, set label) in text of any payload. */
+  function assertNoSetIdentity(payload: unknown) {
+    const text = textOf(payload);
+    expect(text).not.toMatch(/20\d\d/);
+    expect(text).not.toMatch(/vn30/i);
+    expect(text).not.toMatch(/2024h1/i);
   }
 
   function assertNoLeak(json: string, extraDates: readonly string[] = []) {
@@ -641,7 +679,11 @@ describe('practice data hiding', () => {
     const history = await service.history(USER, 'rsi', { page: 1, page_size: 10 });
     for (const payload of [list, state, preview, draft, run, reread, afterState, history]) {
       assertNoLeak(stripTimestamps(payload), dates);
+      assertNoSetIdentity(payload);
     }
+    // the set label is opaque: it names neither the index nor the observation period
+    expect(run.versions.set_version).toMatch(/^[a-z0-9-]+$/);
+    expect(set.set_version).not.toMatch(/vn30|20\d\d/i);
     // the payload keys that exist are session-based, never calendar-based
     expect(Object.keys(run.chart!)).toEqual([
       'first_session',
@@ -651,6 +693,47 @@ describe('practice data hiding', () => {
       'series',
       'plot',
     ]);
+  });
+
+  it('never names the set, the index or a year in an error body', async () => {
+    const bodies: unknown[] = [];
+    const capture = async (promise: Promise<unknown>) => {
+      try {
+        await promise;
+      } catch (error) {
+        const e = error as { message: string; getResponse: () => unknown; getStatus: () => number };
+        bodies.push({ status: e.getStatus(), response: e.getResponse(), message: e.message });
+        return;
+      }
+      throw new Error('expected the call to be rejected');
+    };
+    const locked = build({ [USER]: [] });
+    await capture(locked.service.state(USER, 'rsi'));
+    await capture(locked.service.history(USER, 'rsi', { page: 1, page_size: 10 }));
+
+    const { data, service } = build();
+    await capture(service.state(USER, 'nope'));
+    await capture(service.preview(USER, 'rsi', { buy_params: { period: 3, level: 30 } }));
+    const state = await service.state(USER, 'rsi');
+    await capture(
+      service.startRun(USER, 'rsi', {
+        idempotency_key: newKey(),
+        ordinal: 2,
+        case_id: state.case.case_id,
+        config: state.draft,
+      }),
+    );
+    data.failWith = new PracticeDataError('DATA_UNAVAILABLE', 'Dữ liệu tạm thời chưa sẵn sàng.');
+    await capture(
+      service.startRun(USER, 'rsi', {
+        idempotency_key: newKey(),
+        ordinal: 1,
+        case_id: state.case.case_id,
+        config: state.draft,
+      }),
+    );
+    expect(bodies).toHaveLength(6);
+    for (const body of bodies) assertNoSetIdentity(body);
   });
 
   it('shows only the observation window before start: no warmup, no future, no seed from it', async () => {

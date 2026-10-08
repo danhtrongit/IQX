@@ -1011,7 +1011,10 @@ describe('AcademyService quiz attempts', () => {
     for (const body of invalid)
       await expect(
         service.submit(USER, attempt.attempt_id, { answers: body }),
-      ).rejects.toMatchObject({ status: 422, response: { code: 'INVALID_ANSWERS' } });
+      ).rejects.toMatchObject({
+        status: 422,
+        response: { code: 'INVALID_ANSWERS', details: expect.any(Array) },
+      });
     expect(memory.attempts[0]!.status).toBe('open');
     expect(memory.answerRows).toHaveLength(0);
   });
@@ -1245,7 +1248,10 @@ describe('AcademyService guide completion', () => {
       service.completeGuide(USER, 'ch02-l01', guideInput('request-guide-0001', '0.9.0')),
     ).rejects.toMatchObject({
       status: 409,
-      response: { code: 'CONTENT_VERSION_MISMATCH', content_version: 'ch02-v3.0' },
+      response: {
+        code: 'CONTENT_VERSION_MISMATCH',
+        details: [{ content_version: 'ch02-v3.0' }],
+      },
     });
     // The content version of another chapter's package is not accepted either.
     await expect(

@@ -17,6 +17,7 @@ import {
   revertUniverseToVn30,
 } from "../api"
 import type { InvalidSymbol, SavedList, UniverseMutationResult, UniverseState } from "../types"
+import { LIST_NOT_VERIFIED_MESSAGE } from "./labels"
 
 export function useBotUniverse() {
   const { user, isAuthenticated } = useAuth()
@@ -44,7 +45,7 @@ export type UniverseOutcome =
   | { ok: true; state: UniverseState; request: UniverseMutationResult["request"] }
   | {
       ok: false
-      reason: "conflict" | "invalid_symbols" | "locked" | "not_found" | "already" | "error"
+      reason: "conflict" | "invalid_symbols" | "locked" | "not_found" | "not_verified" | "already" | "error"
       message: string
       invalid: InvalidSymbol[]
     }
@@ -109,6 +110,12 @@ export function useUniverseActions(): UniverseActions {
         if (isApiError(error, 422, "UNIVERSE_SYMBOLS_INVALID")) {
           attempt.current = null
           return failure("invalid_symbols", error.message, invalidSymbolsOf(error))
+        }
+        if (isApiError(error, 422, "LIST_NOT_VERIFIED")) {
+          // The list has no stored Bộ lọc result behind it: it must be saved again from Bộ lọc.
+          attempt.current = null
+          void queryClient.invalidateQueries({ queryKey: botKeys.lists(userId) })
+          return failure("not_verified", LIST_NOT_VERIFIED_MESSAGE)
         }
         if (isApiError(error, 403)) {
           attempt.current = null

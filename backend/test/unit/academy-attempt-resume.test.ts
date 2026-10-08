@@ -270,7 +270,7 @@ describe('AcademyService draft selections', () => {
           { question_id: q0!.id, option_id: 'zzz' },
         ],
       })
-      .catch((error: { response: { issues: unknown } }) => error.response.issues);
+      .catch((error: { response: { details: unknown } }) => error.response.details);
     expect(reasons).toEqual([
       { question_id: 'ch01-l01-q99', reason: 'unknown_question' },
       { question_id: q0!.id, reason: 'unknown_option' },
@@ -341,7 +341,7 @@ describe('AcademyService draft selections', () => {
       status: 409,
       response: {
         code: 'DRAFT_REVISION_CONFLICT',
-        draft: { revision: 2, answered_count: 4, answers: picks.slice(0, 4) },
+        details: [{ draft: { revision: 2, answered_count: 4, answers: picks.slice(0, 4) } }],
       },
     });
     // First save with a wrong guess is refused too.

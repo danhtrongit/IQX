@@ -75,12 +75,53 @@ describe('system acceptance: Bot buy universe (VN30 default, applied list snapsh
     return user;
   }
 
+  /**
+   * A list made "from a result": the stored result snapshot is the server-held evidence the Bot
+   * requires. `verified: false` models a client-declared list (POST /strategy/lists).
+   */
   async function savedList(userId: string, tickers: string[], extra: Json = {}) {
     const id = randomUUID();
+    let snapshotId: string | null = null;
+    if (extra.verified !== false) {
+      snapshotId = randomUUID();
+      const rules = ((extra.metrics as string[] | undefined) ?? []).map((metric, index) => ({
+        id: `r${index}`,
+        metric_id: metric,
+        period: 'ttm',
+        operator: '>',
+        value: 0.1,
+        api_unit: 'ratio',
+      }));
+      await stack.query(
+        `insert into result_snapshots
+           (id, user_id, name, definition, definition_hash, as_of, run_at, data_source,
+            calculation_version, registry_version, selection, symbols, rows)
+         values ($1, $2, 'Kết quả thử', $3::jsonb, $4, '2026-09-29T03:00:00Z',
+                 '2026-09-29T03:00:00Z', 'VCI', 'iqx-fund-2.0', 'iqx-fund-registry-2.1',
+                 $5::jsonb, $6::text[], '[]'::jsonb)`,
+        [
+          snapshotId,
+          userId,
+          JSON.stringify({
+            schema_version: '3.0',
+            name: 'Thử',
+            logic: 'AND',
+            data_mode: 'latest_disclosed',
+            rules,
+            scope: { market: 'HOSE', sector: '' },
+          }),
+          'a'.repeat(64),
+          JSON.stringify({ mode: 'all', symbols: tickers }),
+          tickers,
+        ],
+      );
+    }
     await stack.query(
       `insert into list_snapshots
-         (id, user_id, name, filter_id, filter_version, tickers, as_of, data_source, scope)
-       values ($1, $2, $3, $4, $5, $6::text[], '2026-09-29', 'VCI', '{"market":"HOSE"}'::jsonb)`,
+         (id, user_id, name, filter_id, filter_version, tickers, as_of, data_source, scope,
+          result_snapshot_id)
+       values ($1, $2, $3, $4, $5, $6::text[], '2026-09-29', 'VCI', '{"market":"HOSE"}'::jsonb,
+               $7)`,
       [
         id,
         userId,
@@ -88,6 +129,7 @@ describe('system acceptance: Bot buy universe (VN30 default, applied list snapsh
         extra.filterId ?? null,
         extra.filterVersion ?? null,
         tickers,
+        snapshotId,
       ],
     );
     return id;
@@ -259,6 +301,24 @@ describe('system acceptance: Bot buy universe (VN30 default, applied list snapsh
     ).toEqual([]);
   });
 
+  it('U20 a client-declared list (no stored result) is refused with LIST_NOT_VERIFIED', async () => {
+    const user = await botUser('universe-unverified');
+    const declared = await savedList(user.id, ['VCB', 'VNM'], { verified: false });
+    const refused = await post(user.accessToken, 'apply-list', {
+      list_id: declared,
+      symbols: ['VCB'],
+      expected_revision: 0,
+      idempotency_key: key(),
+    });
+    expect(refused.statusCode, refused.body).toBe(422);
+    const error = (refused.json() as Json).error;
+    expect(error.code).toBe('LIST_NOT_VERIFIED');
+    expect(error.message).toMatch(/Bộ lọc/);
+    expect(
+      await stack.query('select 1 from bot_universe_revisions where user_id = $1', [user.id]),
+    ).toEqual([]);
+  });
+
   it('U16 another user list, a deleted list and a missing metric grant are refused', async () => {
     const owner = await botUser('universe-owner');
     const stranger = await botUser('universe-stranger');
@@ -295,7 +355,11 @@ describe('system acceptance: Bot buy universe (VN30 default, applied list snapsh
         'b'.repeat(64),
       ],
     );
-    const filtered = await savedList(owner.id, ['VCB', 'VNM'], { filterId, filterVersion: 1 });
+    const filtered = await savedList(owner.id, ['VCB', 'VNM'], {
+      filterId,
+      filterVersion: 1,
+      metrics: ['roe'],
+    });
     const locked = await post(owner.accessToken, 'apply-list', {
       list_id: filtered,
       symbols: ['VCB'],

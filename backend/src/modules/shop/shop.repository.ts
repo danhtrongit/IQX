@@ -47,7 +47,7 @@ export interface NewReward {
   readonly lessonKey: string;
   readonly lessonId: string;
   readonly catalogVersion: string;
-  readonly completionMethod: 'quiz' | 'guide';
+  readonly completionMethod: 'quiz' | 'guide' | 'legacy_migration';
   readonly completedAt: Date;
   readonly ledgerId: string;
   readonly policyVersion: string;

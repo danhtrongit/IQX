@@ -1500,6 +1500,7 @@ function localResponseSchemas(): Record<string, SchemaObject> {
       policy_version: { type: 'string', enum: ['iqx-bot-v1.0'] },
       candidate_order: { type: 'string', enum: ['gtgd20_desc_symbol_asc'] },
       candidate_order_owner_confirmation: { type: 'string', enum: ['pending'] },
+      new_buys_enabled: boolean(),
     }),
     BotSideBlock: object({
       reason: {

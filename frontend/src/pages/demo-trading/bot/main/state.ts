@@ -50,6 +50,18 @@ export function configStateChip(conditions: BotConditions | null | undefined): S
 }
 
 /**
+ * `bot.new_buys_enabled` of the overview (Bot SPEC 8.4 / 18.2). `null` while the server does not
+ * say (no Bot account, older API): then the page shows no note rather than guessing.
+ */
+export function newBuysEnabledOf(overview: { bot?: unknown } | null | undefined): boolean | null {
+  const bot = overview?.bot as { new_buys_enabled?: unknown } | null | undefined
+  return typeof bot?.new_buys_enabled === "boolean" ? bot.new_buys_enabled : null
+}
+
+/** Shown under the conditions while real new buys are switched off (candidate order unconfirmed). */
+export const NEW_BUYS_OFF_NOTE = "Chưa bật mua mới: thứ tự ứng viên chờ xác nhận. Bot vẫn xét Bán cho các mã đang giữ; các lượt Mua chỉ được ghi vào nhật ký là bỏ qua."
+
+/**
  * The saved-vs-effective note under the condition cards, or `null` when nothing is
  * waiting. The session is the server's; with no trading calendar it is reported as such.
  */

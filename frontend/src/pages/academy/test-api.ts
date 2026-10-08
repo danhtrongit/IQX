@@ -40,7 +40,7 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
   const drafts = new Map<string, Draft>()
   let sequence = 0
   let open: string | null = null
-  const state = { draftConflict: false, rewardStatus: "credited" as "credited" | "unavailable" | "already_rewarded", submittedReplay: false }
+  const state = { draftConflict: false, conflictWithoutDraft: false, rewardStatus: "credited" as "credited" | "unavailable" | "already_rewarded", submittedReplay: false }
 
   if (options.openAttempt) {
     attempts.set(ATTEMPT_ID, { attempt: buildAttempt({}, bank), key: "seeded-key-0001" })
@@ -154,7 +154,12 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
         draft.selections.q1 = "q1d"
         draft.revision += 1
         drafts.set(match[1], draft)
-        throw new ApiError("Bản nháp đã được lưu ở nơi khác.", 409, "DRAFT_REVISION_CONFLICT")
+        // The real server forwards the stored draft in `details[0].draft`; `conflictWithoutDraft` models an old server.
+        throw new ApiError(
+          "Bản nháp đã được lưu ở nơi khác.",
+          409,
+          state.conflictWithoutDraft ? "DRAFT_REVISION_CONFLICT" : { code: "DRAFT_REVISION_CONFLICT", details: [{ draft: draftState(draft) }] },
+        )
       }
       for (const answer of (body?.answers as { question_id: string; option_id: string }[]) ?? []) draft.selections[answer.question_id] = answer.option_id
       draft.revision += 1

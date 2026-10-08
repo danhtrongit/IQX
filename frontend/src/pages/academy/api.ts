@@ -147,6 +147,21 @@ export function isVersionConflict(error: unknown): boolean {
 }
 
 export const isDraftConflict = (error: unknown) => hasCode(error, 409, "DRAFT_REVISION_CONFLICT")
+
+/**
+ * The stored draft a 409 DRAFT_REVISION_CONFLICT carries in `details[0].draft` (the error filter only
+ * forwards array `details`). Null when absent or malformed, so the caller can fall back to a re-read.
+ */
+export function conflictDraft(error: unknown): DraftState | null {
+  if (!isDraftConflict(error)) return null
+  const details = (error as ApiError).details
+  const draft = Array.isArray(details) ? (details[0] as { draft?: Partial<DraftState> } | undefined)?.draft : undefined
+  if (!draft || typeof draft.revision !== "number" || !Array.isArray(draft.answers)) return null
+  const valid = draft.answers.every(
+    (answer) => answer && typeof answer.question_id === "string" && typeof answer.option_id === "string",
+  )
+  return valid ? (draft as DraftState) : null
+}
 export const isAlreadySubmitted = (error: unknown) => hasCode(error, 409, "ATTEMPT_ALREADY_SUBMITTED")
 export const isAttemptNotFound = (error: unknown) => hasCode(error, 404, "ATTEMPT_NOT_FOUND")
 export const isLessonNotFound = (error: unknown) => hasCode(error, 404, "LESSON_NOT_FOUND")
