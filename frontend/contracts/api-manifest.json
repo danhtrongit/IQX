@@ -47,6 +47,11 @@
       "requestType": "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData",
       "responseType": "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses"
     },
+    "DELETE /api/v2/strategy/alerts/{alertId}": {
+      "operationId": "strategyAlertDelete",
+      "requestType": "StrategyAlertDeleteData",
+      "responseType": "StrategyAlertDeleteResponses"
+    },
     "DELETE /api/v2/strategy/filters/{filterId}": {
       "operationId": "deleteStrategySavedFilter",
       "requestType": "DeleteStrategySavedFilterData",
@@ -56,6 +61,11 @@
       "operationId": "deleteStrategySavedList",
       "requestType": "DeleteStrategySavedListData",
       "responseType": "DeleteStrategySavedListResponses"
+    },
+    "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": {
+      "operationId": "deleteStrategyResultSnapshot",
+      "requestType": "DeleteStrategyResultSnapshotData",
+      "responseType": "DeleteStrategyResultSnapshotResponses"
     },
     "DELETE /api/v2/users/{userId}": {
       "operationId": "UsersController_remove[1]",
@@ -1057,6 +1067,26 @@
       "requestType": "GetShopPurchaseStatusData",
       "responseType": "GetShopPurchaseStatusResponses"
     },
+    "GET /api/v2/strategy/alerts": {
+      "operationId": "strategyAlertsList",
+      "requestType": "StrategyAlertsListData",
+      "responseType": "StrategyAlertsListResponses"
+    },
+    "GET /api/v2/strategy/alerts/{alertId}": {
+      "operationId": "strategyAlertGet",
+      "requestType": "StrategyAlertGetData",
+      "responseType": "StrategyAlertGetResponses"
+    },
+    "GET /api/v2/strategy/alerts/events": {
+      "operationId": "strategyAlertEventsList",
+      "requestType": "StrategyAlertEventsListData",
+      "responseType": "StrategyAlertEventsListResponses"
+    },
+    "GET /api/v2/strategy/alerts/events/{eventId}": {
+      "operationId": "strategyAlertEventGet",
+      "requestType": "StrategyAlertEventGetData",
+      "responseType": "StrategyAlertEventGetResponses"
+    },
     "GET /api/v2/strategy/backtests": {
       "operationId": "strategyBacktestsList",
       "requestType": "StrategyBacktestsListData",
@@ -1066,6 +1096,11 @@
       "operationId": "strategyBacktestsGet",
       "requestType": "StrategyBacktestsGetData",
       "responseType": "StrategyBacktestsGetResponses"
+    },
+    "GET /api/v2/strategy/backtests/{id}/trades": {
+      "operationId": "strategyBacktestsTrades",
+      "requestType": "StrategyBacktestsTradesData",
+      "responseType": "StrategyBacktestsTradesResponses"
     },
     "GET /api/v2/strategy/filters": {
       "operationId": "listStrategySavedFilters",
@@ -1092,10 +1127,25 @@
       "requestType": "StrategyConfigTechnicalRegistryData",
       "responseType": "StrategyConfigTechnicalRegistryResponses"
     },
+    "GET /api/v2/strategy/result-snapshots": {
+      "operationId": "listStrategyResultSnapshots",
+      "requestType": "ListStrategyResultSnapshotsData",
+      "responseType": "ListStrategyResultSnapshotsResponses"
+    },
+    "GET /api/v2/strategy/result-snapshots/{snapshotId}": {
+      "operationId": "getStrategyResultSnapshot",
+      "requestType": "GetStrategyResultSnapshotData",
+      "responseType": "GetStrategyResultSnapshotResponses"
+    },
     "GET /api/v2/strategy/screener/metrics": {
       "operationId": "screenerMetrics",
       "requestType": "ScreenerMetricsData",
       "responseType": "ScreenerMetricsResponses"
+    },
+    "GET /api/v2/strategy/screener/results/{resultId}": {
+      "operationId": "screenerResultGet",
+      "requestType": "ScreenerResultGetData",
+      "responseType": "ScreenerResultGetResponses"
     },
     "GET /api/v2/strategy/shared-config": {
       "operationId": "strategyConfigGetSharedConfig",
@@ -1231,6 +1281,11 @@
       "operationId": "adminUpdatePremiumPlan_patch_api_v2_premium_admin_plans_plan_id",
       "requestType": "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData",
       "responseType": "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses"
+    },
+    "PATCH /api/v2/strategy/alerts/{alertId}": {
+      "operationId": "strategyAlertUpdate",
+      "requestType": "StrategyAlertUpdateData",
+      "responseType": "StrategyAlertUpdateResponses"
     },
     "PATCH /api/v2/strategy/shared-config": {
       "operationId": "strategyConfigPatchSharedConfig",
@@ -1772,6 +1827,16 @@
       "requestType": "PurchaseShopMascotData",
       "responseType": "PurchaseShopMascotResponses"
     },
+    "POST /api/v2/strategy/alerts": {
+      "operationId": "strategyAlertsCreate",
+      "requestType": "StrategyAlertsCreateData",
+      "responseType": "StrategyAlertsCreateResponses"
+    },
+    "POST /api/v2/strategy/alerts/source-preview": {
+      "operationId": "strategyAlertsSourcePreview",
+      "requestType": "StrategyAlertsSourcePreviewData",
+      "responseType": "StrategyAlertsSourcePreviewResponses"
+    },
     "POST /api/v2/strategy/backtests": {
       "operationId": "strategyBacktestsCreate",
       "requestType": "StrategyBacktestsCreateData",
@@ -1786,6 +1851,16 @@
       "operationId": "createStrategySavedList",
       "requestType": "CreateStrategySavedListData",
       "responseType": "CreateStrategySavedListResponses"
+    },
+    "POST /api/v2/strategy/lists/from-result": {
+      "operationId": "createStrategySavedListFromResult",
+      "requestType": "CreateStrategySavedListFromResultData",
+      "responseType": "CreateStrategySavedListFromResultResponses"
+    },
+    "POST /api/v2/strategy/result-snapshots": {
+      "operationId": "createStrategyResultSnapshot",
+      "requestType": "CreateStrategyResultSnapshotData",
+      "responseType": "CreateStrategyResultSnapshotResponses"
     },
     "POST /api/v2/strategy/screener/run": {
       "operationId": "screenerRun",

@@ -11,8 +11,10 @@ export interface OperationMap {
   "DELETE /api/v2/cap5/watchlist/{symbol}": { request: T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolData; response: T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses[keyof T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses] }
   "DELETE /api/v2/chart-drawings/{symbol}": { request: T.DeleteChartDrawingV2Data; response: T.DeleteChartDrawingV2Responses[keyof T.DeleteChartDrawingV2Responses] }
   "DELETE /api/v2/premium/admin/plans/{plan_id}": { request: T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData; response: T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses[keyof T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses] }
+  "DELETE /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertDeleteData; response: T.StrategyAlertDeleteResponses[keyof T.StrategyAlertDeleteResponses] }
   "DELETE /api/v2/strategy/filters/{filterId}": { request: T.DeleteStrategySavedFilterData; response: T.DeleteStrategySavedFilterResponses[keyof T.DeleteStrategySavedFilterResponses] }
   "DELETE /api/v2/strategy/lists/{listId}": { request: T.DeleteStrategySavedListData; response: T.DeleteStrategySavedListResponses[keyof T.DeleteStrategySavedListResponses] }
+  "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: T.DeleteStrategyResultSnapshotData; response: T.DeleteStrategyResultSnapshotResponses[keyof T.DeleteStrategyResultSnapshotResponses] }
   "DELETE /api/v2/users/{userId}": { request: T.UsersControllerRemove1Data; response: T.UsersControllerRemove1Responses[keyof T.UsersControllerRemove1Responses] }
   "DELETE /api/v2/watchlists/{symbol}": { request: T.RemoveWatchlistItemV2Data; response: T.RemoveWatchlistItemV2Responses[keyof T.RemoveWatchlistItemV2Responses] }
   "GET /api/v2/academy/attempts/{attemptId}": { request: T.AcademyAttemptReviewData; response: T.AcademyAttemptReviewResponses[keyof T.AcademyAttemptReviewResponses] }
@@ -213,14 +215,22 @@ export interface OperationMap {
   "GET /api/v2/shop": { request: T.GetShopData; response: T.GetShopResponses[keyof T.GetShopResponses] }
   "GET /api/v2/shop/coin-ledger": { request: T.ListShopCoinLedgerData; response: T.ListShopCoinLedgerResponses[keyof T.ListShopCoinLedgerResponses] }
   "GET /api/v2/shop/purchases/{idempotencyKey}": { request: T.GetShopPurchaseStatusData; response: T.GetShopPurchaseStatusResponses[keyof T.GetShopPurchaseStatusResponses] }
+  "GET /api/v2/strategy/alerts": { request: T.StrategyAlertsListData; response: T.StrategyAlertsListResponses[keyof T.StrategyAlertsListResponses] }
+  "GET /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertGetData; response: T.StrategyAlertGetResponses[keyof T.StrategyAlertGetResponses] }
+  "GET /api/v2/strategy/alerts/events": { request: T.StrategyAlertEventsListData; response: T.StrategyAlertEventsListResponses[keyof T.StrategyAlertEventsListResponses] }
+  "GET /api/v2/strategy/alerts/events/{eventId}": { request: T.StrategyAlertEventGetData; response: T.StrategyAlertEventGetResponses[keyof T.StrategyAlertEventGetResponses] }
   "GET /api/v2/strategy/backtests": { request: T.StrategyBacktestsListData; response: T.StrategyBacktestsListResponses[keyof T.StrategyBacktestsListResponses] }
   "GET /api/v2/strategy/backtests/{id}": { request: T.StrategyBacktestsGetData; response: T.StrategyBacktestsGetResponses[keyof T.StrategyBacktestsGetResponses] }
+  "GET /api/v2/strategy/backtests/{id}/trades": { request: T.StrategyBacktestsTradesData; response: T.StrategyBacktestsTradesResponses[keyof T.StrategyBacktestsTradesResponses] }
   "GET /api/v2/strategy/filters": { request: T.ListStrategySavedFiltersData; response: T.ListStrategySavedFiltersResponses[keyof T.ListStrategySavedFiltersResponses] }
   "GET /api/v2/strategy/filters/{filterId}": { request: T.GetStrategySavedFilterData; response: T.GetStrategySavedFilterResponses[keyof T.GetStrategySavedFilterResponses] }
   "GET /api/v2/strategy/lists": { request: T.ListStrategySavedListsData; response: T.ListStrategySavedListsResponses[keyof T.ListStrategySavedListsResponses] }
   "GET /api/v2/strategy/lists/{listId}": { request: T.GetStrategySavedListData; response: T.GetStrategySavedListResponses[keyof T.GetStrategySavedListResponses] }
   "GET /api/v2/strategy/registry/technical": { request: T.StrategyConfigTechnicalRegistryData; response: T.StrategyConfigTechnicalRegistryResponses[keyof T.StrategyConfigTechnicalRegistryResponses] }
+  "GET /api/v2/strategy/result-snapshots": { request: T.ListStrategyResultSnapshotsData; response: T.ListStrategyResultSnapshotsResponses[keyof T.ListStrategyResultSnapshotsResponses] }
+  "GET /api/v2/strategy/result-snapshots/{snapshotId}": { request: T.GetStrategyResultSnapshotData; response: T.GetStrategyResultSnapshotResponses[keyof T.GetStrategyResultSnapshotResponses] }
   "GET /api/v2/strategy/screener/metrics": { request: T.ScreenerMetricsData; response: T.ScreenerMetricsResponses[keyof T.ScreenerMetricsResponses] }
+  "GET /api/v2/strategy/screener/results/{resultId}": { request: T.ScreenerResultGetData; response: T.ScreenerResultGetResponses[keyof T.ScreenerResultGetResponses] }
   "GET /api/v2/strategy/shared-config": { request: T.StrategyConfigGetSharedConfigData; response: T.StrategyConfigGetSharedConfigResponses[keyof T.StrategyConfigGetSharedConfigResponses] }
   "GET /api/v2/strategy/shared-config/revisions": { request: T.StrategyConfigListRevisionsData; response: T.StrategyConfigListRevisionsResponses[keyof T.StrategyConfigListRevisionsResponses] }
   "GET /api/v2/users": { request: T.UsersControllerList1Data; response: T.UsersControllerList1Responses[keyof T.UsersControllerList1Responses] }
@@ -248,6 +258,7 @@ export interface OperationMap {
   "PATCH /api/v2/cap5/task": { request: T.Cap5TaskPatchApiV2Cap5TaskData; response: T.Cap5TaskPatchApiV2Cap5TaskResponses[keyof T.Cap5TaskPatchApiV2Cap5TaskResponses] }
   "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop": { request: T.SetCap8DynamicStopV2Data; response: T.SetCap8DynamicStopV2Responses[keyof T.SetCap8DynamicStopV2Responses] }
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData; response: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses[keyof T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses] }
+  "PATCH /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertUpdateData; response: T.StrategyAlertUpdateResponses[keyof T.StrategyAlertUpdateResponses] }
   "PATCH /api/v2/strategy/shared-config": { request: T.StrategyConfigPatchSharedConfigData; response: T.StrategyConfigPatchSharedConfigResponses[keyof T.StrategyConfigPatchSharedConfigResponses] }
   "PATCH /api/v2/users/{userId}": { request: T.UsersControllerUpdate1Data; response: T.UsersControllerUpdate1Responses[keyof T.UsersControllerUpdate1Responses] }
   "PATCH /api/v2/users/me": { request: T.UsersControllerUpdateMe1Data; response: T.UsersControllerUpdateMe1Responses[keyof T.UsersControllerUpdateMe1Responses] }
@@ -356,9 +367,13 @@ export interface OperationMap {
   "POST /api/v2/premium/checkout": { request: T.CreatePremiumCheckoutPostApiV2PremiumCheckoutData; response: T.CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses[keyof T.CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses] }
   "POST /api/v2/premium/sepay/ipn": { request: T.ReceiveSePayIpnPostApiV2PremiumSepayIpnData; response: T.ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses[keyof T.ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses] }
   "POST /api/v2/shop/purchases": { request: T.PurchaseShopMascotData; response: T.PurchaseShopMascotResponses[keyof T.PurchaseShopMascotResponses] }
+  "POST /api/v2/strategy/alerts": { request: T.StrategyAlertsCreateData; response: T.StrategyAlertsCreateResponses[keyof T.StrategyAlertsCreateResponses] }
+  "POST /api/v2/strategy/alerts/source-preview": { request: T.StrategyAlertsSourcePreviewData; response: T.StrategyAlertsSourcePreviewResponses[keyof T.StrategyAlertsSourcePreviewResponses] }
   "POST /api/v2/strategy/backtests": { request: T.StrategyBacktestsCreateData; response: T.StrategyBacktestsCreateResponses[keyof T.StrategyBacktestsCreateResponses] }
   "POST /api/v2/strategy/filters": { request: T.CreateStrategySavedFilterData; response: T.CreateStrategySavedFilterResponses[keyof T.CreateStrategySavedFilterResponses] }
   "POST /api/v2/strategy/lists": { request: T.CreateStrategySavedListData; response: T.CreateStrategySavedListResponses[keyof T.CreateStrategySavedListResponses] }
+  "POST /api/v2/strategy/lists/from-result": { request: T.CreateStrategySavedListFromResultData; response: T.CreateStrategySavedListFromResultResponses[keyof T.CreateStrategySavedListFromResultResponses] }
+  "POST /api/v2/strategy/result-snapshots": { request: T.CreateStrategyResultSnapshotData; response: T.CreateStrategyResultSnapshotResponses[keyof T.CreateStrategyResultSnapshotResponses] }
   "POST /api/v2/strategy/screener/run": { request: T.ScreenerRunData; response: T.ScreenerRunResponses[keyof T.ScreenerRunResponses] }
   "POST /api/v2/telegram/webhook/{secret}": { request: T.TelegramControllerWebhook1Data; response: T.TelegramControllerWebhook1Responses[keyof T.TelegramControllerWebhook1Responses] }
   "POST /api/v2/users": { request: T.UsersControllerCreate1Data; response: T.UsersControllerCreate1Responses[keyof T.UsersControllerCreate1Responses] }
@@ -391,8 +406,10 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "DELETE /api/v2/cap5/watchlist/{symbol}": { request: "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolData", response: "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses" },
   "DELETE /api/v2/chart-drawings/{symbol}": { request: "DeleteChartDrawingV2Data", response: "DeleteChartDrawingV2Responses" },
   "DELETE /api/v2/premium/admin/plans/{plan_id}": { request: "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData", response: "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses" },
+  "DELETE /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertDeleteData", response: "StrategyAlertDeleteResponses" },
   "DELETE /api/v2/strategy/filters/{filterId}": { request: "DeleteStrategySavedFilterData", response: "DeleteStrategySavedFilterResponses" },
   "DELETE /api/v2/strategy/lists/{listId}": { request: "DeleteStrategySavedListData", response: "DeleteStrategySavedListResponses" },
+  "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: "DeleteStrategyResultSnapshotData", response: "DeleteStrategyResultSnapshotResponses" },
   "DELETE /api/v2/users/{userId}": { request: "UsersControllerRemove1Data", response: "UsersControllerRemove1Responses" },
   "DELETE /api/v2/watchlists/{symbol}": { request: "RemoveWatchlistItemV2Data", response: "RemoveWatchlistItemV2Responses" },
   "GET /api/v2/academy/attempts/{attemptId}": { request: "AcademyAttemptReviewData", response: "AcademyAttemptReviewResponses" },
@@ -593,14 +610,22 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/shop": { request: "GetShopData", response: "GetShopResponses" },
   "GET /api/v2/shop/coin-ledger": { request: "ListShopCoinLedgerData", response: "ListShopCoinLedgerResponses" },
   "GET /api/v2/shop/purchases/{idempotencyKey}": { request: "GetShopPurchaseStatusData", response: "GetShopPurchaseStatusResponses" },
+  "GET /api/v2/strategy/alerts": { request: "StrategyAlertsListData", response: "StrategyAlertsListResponses" },
+  "GET /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertGetData", response: "StrategyAlertGetResponses" },
+  "GET /api/v2/strategy/alerts/events": { request: "StrategyAlertEventsListData", response: "StrategyAlertEventsListResponses" },
+  "GET /api/v2/strategy/alerts/events/{eventId}": { request: "StrategyAlertEventGetData", response: "StrategyAlertEventGetResponses" },
   "GET /api/v2/strategy/backtests": { request: "StrategyBacktestsListData", response: "StrategyBacktestsListResponses" },
   "GET /api/v2/strategy/backtests/{id}": { request: "StrategyBacktestsGetData", response: "StrategyBacktestsGetResponses" },
+  "GET /api/v2/strategy/backtests/{id}/trades": { request: "StrategyBacktestsTradesData", response: "StrategyBacktestsTradesResponses" },
   "GET /api/v2/strategy/filters": { request: "ListStrategySavedFiltersData", response: "ListStrategySavedFiltersResponses" },
   "GET /api/v2/strategy/filters/{filterId}": { request: "GetStrategySavedFilterData", response: "GetStrategySavedFilterResponses" },
   "GET /api/v2/strategy/lists": { request: "ListStrategySavedListsData", response: "ListStrategySavedListsResponses" },
   "GET /api/v2/strategy/lists/{listId}": { request: "GetStrategySavedListData", response: "GetStrategySavedListResponses" },
   "GET /api/v2/strategy/registry/technical": { request: "StrategyConfigTechnicalRegistryData", response: "StrategyConfigTechnicalRegistryResponses" },
+  "GET /api/v2/strategy/result-snapshots": { request: "ListStrategyResultSnapshotsData", response: "ListStrategyResultSnapshotsResponses" },
+  "GET /api/v2/strategy/result-snapshots/{snapshotId}": { request: "GetStrategyResultSnapshotData", response: "GetStrategyResultSnapshotResponses" },
   "GET /api/v2/strategy/screener/metrics": { request: "ScreenerMetricsData", response: "ScreenerMetricsResponses" },
+  "GET /api/v2/strategy/screener/results/{resultId}": { request: "ScreenerResultGetData", response: "ScreenerResultGetResponses" },
   "GET /api/v2/strategy/shared-config": { request: "StrategyConfigGetSharedConfigData", response: "StrategyConfigGetSharedConfigResponses" },
   "GET /api/v2/strategy/shared-config/revisions": { request: "StrategyConfigListRevisionsData", response: "StrategyConfigListRevisionsResponses" },
   "GET /api/v2/users": { request: "UsersControllerList1Data", response: "UsersControllerList1Responses" },
@@ -628,6 +653,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PATCH /api/v2/cap5/task": { request: "Cap5TaskPatchApiV2Cap5TaskData", response: "Cap5TaskPatchApiV2Cap5TaskResponses" },
   "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop": { request: "SetCap8DynamicStopV2Data", response: "SetCap8DynamicStopV2Responses" },
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData", response: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses" },
+  "PATCH /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertUpdateData", response: "StrategyAlertUpdateResponses" },
   "PATCH /api/v2/strategy/shared-config": { request: "StrategyConfigPatchSharedConfigData", response: "StrategyConfigPatchSharedConfigResponses" },
   "PATCH /api/v2/users/{userId}": { request: "UsersControllerUpdate1Data", response: "UsersControllerUpdate1Responses" },
   "PATCH /api/v2/users/me": { request: "UsersControllerUpdateMe1Data", response: "UsersControllerUpdateMe1Responses" },
@@ -736,9 +762,13 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/premium/checkout": { request: "CreatePremiumCheckoutPostApiV2PremiumCheckoutData", response: "CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses" },
   "POST /api/v2/premium/sepay/ipn": { request: "ReceiveSePayIpnPostApiV2PremiumSepayIpnData", response: "ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses" },
   "POST /api/v2/shop/purchases": { request: "PurchaseShopMascotData", response: "PurchaseShopMascotResponses" },
+  "POST /api/v2/strategy/alerts": { request: "StrategyAlertsCreateData", response: "StrategyAlertsCreateResponses" },
+  "POST /api/v2/strategy/alerts/source-preview": { request: "StrategyAlertsSourcePreviewData", response: "StrategyAlertsSourcePreviewResponses" },
   "POST /api/v2/strategy/backtests": { request: "StrategyBacktestsCreateData", response: "StrategyBacktestsCreateResponses" },
   "POST /api/v2/strategy/filters": { request: "CreateStrategySavedFilterData", response: "CreateStrategySavedFilterResponses" },
   "POST /api/v2/strategy/lists": { request: "CreateStrategySavedListData", response: "CreateStrategySavedListResponses" },
+  "POST /api/v2/strategy/lists/from-result": { request: "CreateStrategySavedListFromResultData", response: "CreateStrategySavedListFromResultResponses" },
+  "POST /api/v2/strategy/result-snapshots": { request: "CreateStrategyResultSnapshotData", response: "CreateStrategyResultSnapshotResponses" },
   "POST /api/v2/strategy/screener/run": { request: "ScreenerRunData", response: "ScreenerRunResponses" },
   "POST /api/v2/telegram/webhook/{secret}": { request: "TelegramControllerWebhook1Data", response: "TelegramControllerWebhook1Responses" },
   "POST /api/v2/users": { request: "UsersControllerCreate1Data", response: "UsersControllerCreate1Responses" },

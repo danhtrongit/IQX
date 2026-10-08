@@ -42215,6 +42215,1019 @@ export type GetShopPurchaseStatusResponses = {
 export type GetShopPurchaseStatusResponse =
   GetShopPurchaseStatusResponses[keyof GetShopPurchaseStatusResponses];
 
+export type StrategyAlertsListData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/alerts";
+};
+
+export type StrategyAlertsListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertsListError =
+  StrategyAlertsListErrors[keyof StrategyAlertsListErrors];
+
+export type StrategyAlertsListResponses = {
+  200: {
+    items: Array<{
+      created_at: string;
+      current_version: number;
+      enabled: boolean;
+      id: string;
+      last_check: {
+        blocked: number;
+        evaluated_at: string | null;
+        not_satisfied: number;
+        pairs_checked: number;
+        pairs_expected: number;
+        satisfied: number;
+        session: string | null;
+        unknown: number;
+      };
+      name: string;
+      observation_started_at: string;
+      paused_at: string | null;
+      status:
+        "watching" | "paused" | "unchecked" | "waiting_data" | "config_error";
+      updated_at: string;
+      version: {
+        calculation_version: string;
+        config_hash: string;
+        created_at: string;
+        definition_hash: string;
+        rule_version: string;
+        schema_version: string;
+        scope:
+          | {
+              kind: "symbols";
+            }
+          | {
+              kind: "saved_list";
+              list_as_of: string;
+              list_id: string;
+              list_name: string;
+              list_ticker_count: number;
+              list_version: 1;
+            };
+        sides: Array<"buy" | "sell">;
+        sides_detail: {
+          buy: {
+            indicator_ids: Array<string>;
+            valid: boolean;
+            watched: boolean;
+          };
+          sell: {
+            indicator_ids: Array<string>;
+            valid: boolean;
+            watched: boolean;
+          };
+        };
+        source:
+          | {
+              kind: "shared_config";
+              revision: number;
+              saved_at: string;
+              stored_config_hash: string;
+            }
+          | {
+              end: string;
+              kind: "backtest_run";
+              run_created_at: string;
+              run_id: string;
+              shared_revision: number;
+              start: string;
+              symbol: string;
+            };
+        symbols: Array<string>;
+        version: number;
+      };
+    }>;
+  };
+};
+
+export type StrategyAlertsListResponse =
+  StrategyAlertsListResponses[keyof StrategyAlertsListResponses];
+
+export type StrategyAlertsCreateData = {
+  body: {
+    enabled?: boolean;
+    idempotency_key?: string;
+    name: string;
+    scope:
+      | {
+          kind: "symbols";
+          symbols: Array<string>;
+        }
+      | {
+          kind: "saved_list";
+          list_id: string;
+          symbols?: Array<string>;
+        };
+    sides: Array<"buy" | "sell">;
+    source:
+      | {
+          kind: "shared_config";
+          revision: number;
+        }
+      | {
+          kind: "backtest_run";
+          run_id: string;
+        };
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/alerts";
+};
+
+export type StrategyAlertsCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertsCreateError =
+  StrategyAlertsCreateErrors[keyof StrategyAlertsCreateErrors];
+
+export type StrategyAlertsCreateResponses = {
+  201: {
+    created_at: string;
+    current_version: number;
+    enabled: boolean;
+    id: string;
+    last_check: {
+      blocked: number;
+      evaluated_at: string | null;
+      not_satisfied: number;
+      pairs_checked: number;
+      pairs_expected: number;
+      satisfied: number;
+      session: string | null;
+      unknown: number;
+    };
+    name: string;
+    observation_started_at: string;
+    paused_at: string | null;
+    status:
+      "watching" | "paused" | "unchecked" | "waiting_data" | "config_error";
+    updated_at: string;
+    version: {
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    };
+    versions: Array<{
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    }>;
+  };
+};
+
+export type StrategyAlertsCreateResponse =
+  StrategyAlertsCreateResponses[keyof StrategyAlertsCreateResponses];
+
+export type StrategyAlertEventsListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    side?: "buy" | "sell";
+    alert_id?: string;
+    symbol?: string;
+    offset?: number;
+    limit?: number;
+  };
+  url: "/api/v2/strategy/alerts/events";
+};
+
+export type StrategyAlertEventsListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertEventsListError =
+  StrategyAlertEventsListErrors[keyof StrategyAlertEventsListErrors];
+
+export type StrategyAlertEventsListResponses = {
+  200: {
+    items: Array<{
+      alert_id: string;
+      alert_name: string;
+      alert_version: number;
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      data_version: string;
+      evaluated_at: string;
+      event_kind: "first_observation" | "new_signal";
+      event_kind_label: string;
+      evidence: {
+        bar: {
+          close: number;
+          date: string;
+          high: number;
+          low: number;
+          open: number;
+          volume: number;
+        } | null;
+        indicator_ids: Array<string>;
+        indicator_params: {
+          [key: string]: {
+            [key: string]: number;
+          };
+        };
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: string;
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+        session: string;
+      };
+      id: string;
+      message: string;
+      previous_valid_result: boolean | null;
+      previous_valid_session: string | null;
+      rule_version: string;
+      side: "buy" | "sell";
+      side_label: "Mua" | "Bán";
+      signal_session: string;
+      symbol: string;
+    }>;
+    limit: number;
+    offset: number;
+    total: number;
+  };
+};
+
+export type StrategyAlertEventsListResponse =
+  StrategyAlertEventsListResponses[keyof StrategyAlertEventsListResponses];
+
+export type StrategyAlertEventGetData = {
+  body?: never;
+  path: {
+    eventId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/alerts/events/{eventId}";
+};
+
+export type StrategyAlertEventGetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertEventGetError =
+  StrategyAlertEventGetErrors[keyof StrategyAlertEventGetErrors];
+
+export type StrategyAlertEventGetResponses = {
+  200: {
+    alert_id: string;
+    alert_name: string;
+    alert_version: number;
+    calculation_version: string;
+    config_hash: string;
+    created_at: string;
+    data_version: string;
+    evaluated_at: string;
+    event_kind: "first_observation" | "new_signal";
+    event_kind_label: string;
+    evidence: {
+      bar: {
+        close: number;
+        date: string;
+        high: number;
+        low: number;
+        open: number;
+        volume: number;
+      } | null;
+      indicator_ids: Array<string>;
+      indicator_params: {
+        [key: string]: {
+          [key: string]: number;
+        };
+      };
+      rules: Array<{
+        id: string;
+        indicator: string;
+        lhs: number | null;
+        missing: boolean;
+        op: string;
+        previous_lhs?: number | null;
+        previous_rhs?: number | null;
+        result: boolean | null;
+        rhs: number | null;
+        rhs_lower?: number | null;
+        rhs_upper?: number | null;
+        side: "buy" | "sell";
+      }>;
+      session: string;
+    };
+    id: string;
+    message: string;
+    previous_valid_result: boolean | null;
+    previous_valid_session: string | null;
+    rule_version: string;
+    side: "buy" | "sell";
+    side_label: "Mua" | "Bán";
+    signal_session: string;
+    symbol: string;
+  };
+};
+
+export type StrategyAlertEventGetResponse =
+  StrategyAlertEventGetResponses[keyof StrategyAlertEventGetResponses];
+
+export type StrategyAlertsSourcePreviewData = {
+  body: {
+    source:
+      | {
+          kind: "shared_config";
+          revision: number;
+        }
+      | {
+          kind: "backtest_run";
+          run_id: string;
+        };
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/alerts/source-preview";
+};
+
+export type StrategyAlertsSourcePreviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertsSourcePreviewError =
+  StrategyAlertsSourcePreviewErrors[keyof StrategyAlertsSourcePreviewErrors];
+
+export type StrategyAlertsSourcePreviewResponses = {
+  200: {
+    calculation_version: string;
+    config_hash: string;
+    rule_version: string;
+    sides_detail: {
+      buy: {
+        indicator_ids: Array<string>;
+        valid: boolean;
+        watched: boolean;
+      };
+      sell: {
+        indicator_ids: Array<string>;
+        valid: boolean;
+        watched: boolean;
+      };
+    };
+    source:
+      | {
+          kind: "shared_config";
+          revision: number;
+          saved_at: string;
+          stored_config_hash: string;
+        }
+      | {
+          end: string;
+          kind: "backtest_run";
+          run_created_at: string;
+          run_id: string;
+          shared_revision: number;
+          start: string;
+          symbol: string;
+        };
+    suggested_symbol: string | null;
+  };
+};
+
+export type StrategyAlertsSourcePreviewResponse =
+  StrategyAlertsSourcePreviewResponses[keyof StrategyAlertsSourcePreviewResponses];
+
+export type StrategyAlertDeleteData = {
+  body?: never;
+  path: {
+    alertId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/alerts/{alertId}";
+};
+
+export type StrategyAlertDeleteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertDeleteError =
+  StrategyAlertDeleteErrors[keyof StrategyAlertDeleteErrors];
+
+export type StrategyAlertDeleteResponses = {
+  /**
+   * Đã xóa cảnh báo
+   */
+  204: void;
+};
+
+export type StrategyAlertDeleteResponse =
+  StrategyAlertDeleteResponses[keyof StrategyAlertDeleteResponses];
+
+export type StrategyAlertGetData = {
+  body?: never;
+  path: {
+    alertId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/alerts/{alertId}";
+};
+
+export type StrategyAlertGetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertGetError =
+  StrategyAlertGetErrors[keyof StrategyAlertGetErrors];
+
+export type StrategyAlertGetResponses = {
+  200: {
+    created_at: string;
+    current_version: number;
+    enabled: boolean;
+    id: string;
+    last_check: {
+      blocked: number;
+      evaluated_at: string | null;
+      not_satisfied: number;
+      pairs_checked: number;
+      pairs_expected: number;
+      satisfied: number;
+      session: string | null;
+      unknown: number;
+    };
+    name: string;
+    observation_started_at: string;
+    paused_at: string | null;
+    status:
+      "watching" | "paused" | "unchecked" | "waiting_data" | "config_error";
+    updated_at: string;
+    version: {
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    };
+    versions: Array<{
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    }>;
+  };
+};
+
+export type StrategyAlertGetResponse =
+  StrategyAlertGetResponses[keyof StrategyAlertGetResponses];
+
+export type StrategyAlertUpdateData = {
+  body: {
+    enabled?: boolean;
+    expected_version?: number;
+    name?: string;
+    scope?:
+      | {
+          kind: "symbols";
+          symbols: Array<string>;
+        }
+      | {
+          kind: "saved_list";
+          list_id: string;
+          symbols?: Array<string>;
+        };
+    sides?: Array<"buy" | "sell">;
+    source?:
+      | {
+          kind: "shared_config";
+          revision: number;
+        }
+      | {
+          kind: "backtest_run";
+          run_id: string;
+        }
+      | {
+          kind: "keep";
+        };
+  };
+  path: {
+    alertId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/alerts/{alertId}";
+};
+
+export type StrategyAlertUpdateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertUpdateError =
+  StrategyAlertUpdateErrors[keyof StrategyAlertUpdateErrors];
+
+export type StrategyAlertUpdateResponses = {
+  200: {
+    created_at: string;
+    current_version: number;
+    enabled: boolean;
+    id: string;
+    last_check: {
+      blocked: number;
+      evaluated_at: string | null;
+      not_satisfied: number;
+      pairs_checked: number;
+      pairs_expected: number;
+      satisfied: number;
+      session: string | null;
+      unknown: number;
+    };
+    name: string;
+    observation_started_at: string;
+    paused_at: string | null;
+    status:
+      "watching" | "paused" | "unchecked" | "waiting_data" | "config_error";
+    updated_at: string;
+    version: {
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    };
+    versions: Array<{
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    }>;
+  };
+};
+
+export type StrategyAlertUpdateResponse =
+  StrategyAlertUpdateResponses[keyof StrategyAlertUpdateResponses];
+
 export type StrategyBacktestsListData = {
   body?: never;
   path?: never;
@@ -42268,15 +43281,12 @@ export type StrategyBacktestsListResponses = {
         | "walk_forward"
         | "portfolio";
       kpis: {
-        buy_hold_return: number;
-        cagr: number;
-        market_return: number | null;
-        max_drawdown: number;
-        n_trades: number;
-        n_wins: number;
-        net_return: number;
-        profit_factor: number | null;
-        win_rate: number | null;
+        annualized_return_pct: number | null;
+        buy_hold_return_pct: number;
+        closed_trade_count: number;
+        max_drawdown_pct: number;
+        total_return_pct: number;
+        win_rate_pct: number | null;
       } | null;
       run_id: string;
       shared_revision: number;
@@ -42447,6 +43457,27 @@ export type StrategyBacktestsCreateResponses = {
         signalIndex: number;
       }>;
       cash: number;
+      chart: {
+        baseline_field: "initial";
+        point_count: number;
+        series: Array<{
+          available: boolean;
+          end_value_pct: number | null;
+          field: "return_pct" | "buy_hold_pct" | "market_pct";
+          id: "strategy" | "buy_hold" | "market";
+          label: string;
+          unavailable_reason: string | null;
+        }>;
+        title: "Lợi nhuận danh mục (%)";
+        unit: "percent_points";
+      };
+      contract: "iqx-strategy-backtest-1.0";
+      counts: {
+        buy_count: number;
+        closed_trade_count: number;
+        open_position_count: number;
+        pending_order_count: number;
+      };
       curve: Array<{
         buy_hold_pct: number;
         date: string;
@@ -42465,20 +43496,37 @@ export type StrategyBacktestsCreateResponses = {
         return_pct: number;
         value: number;
       };
+      kpi_basis: {
+        [key: string]: unknown;
+      };
       kpis: {
-        buy_hold_return: number;
-        cagr: number;
-        market_return: number | null;
-        max_drawdown: number;
-        n_trades: number;
-        n_wins: number;
-        net_return: number;
-        profit_factor: number | null;
-        win_rate: number | null;
+        annualized_return_pct: number | null;
+        buy_hold_return_pct: number;
+        closed_trade_count: number;
+        max_drawdown_pct: number;
+        total_return_pct: number;
+        win_rate_pct: number | null;
       };
       open_position: {
         cost: number;
         date: string;
+        entry_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         index: number;
         last_price: number;
         market_value: number;
@@ -42486,7 +43534,31 @@ export type StrategyBacktestsCreateResponses = {
         qty: number;
         signal_date: string;
         unrealized_pnl: number;
+        unrealized_pnl_basis: "market_value_at_last_close_minus_entry_total_before_sell_costs";
       } | null;
+      pending_orders: Array<{
+        action: "buy" | "sell";
+        evidence: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
+        note: string;
+        reason: "end_of_range";
+        signal_date: string;
+      }>;
       profile: {
         lot_size: number;
         max_holding: null;
@@ -42561,6 +43633,26 @@ export type StrategyBacktestsCreateResponses = {
         } | null;
         revision_saved_at: string;
         shared_revision: number;
+        simulation?: {
+          annualization_sessions: 252;
+          buy_hold_basis: "close_ratio_before_fees_and_dividends";
+          caveat: string;
+          contract: "iqx-strategy-backtest-1.0";
+          execution: "next_open" | "same_close";
+          execution_label: string;
+          exits: "none: no stop, take-profit, trailing or max holding";
+          fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
+          fill_price: string;
+          liquidity: "not_modelled";
+          min_held_bars: number;
+          min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
+          position_policy: "single_symbol_long_only_one_position";
+          price_adjustment: "provider_adjusted" | "not_confirmed";
+          settlement: "not_modelled";
+          signal_after_open_fill: boolean;
+          sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
+          slippage: "not_modelled";
+        };
         skipped_rows: number;
         slippage: "not_modelled";
         symbol: string;
@@ -42592,17 +43684,61 @@ export type StrategyBacktestsCreateResponses = {
         warmup_bars: number;
         warmup_sessions_requested: number;
       };
+      supplementary: {
+        profit_factor: number | null;
+        winning_trade_count: number;
+      };
       trades: Array<{
         concurrent_reasons?: Array<string>;
+        entry_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         entry_date: string;
+        entry_fee: number;
         entry_price: number;
         entry_signal_date: string;
+        entry_total: number;
+        exit_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         exit_date: string;
+        exit_fee_tax: number;
+        exit_gross: number;
+        exit_net: number;
         exit_price: number;
         exit_reason: string;
         exit_signal_date: string;
         hold: number;
         number: number;
+        outcome: "win" | "loss" | "flat";
         pnl: number;
         pnl_pct: number;
         qty: number;
@@ -42673,6 +43809,26 @@ export type StrategyBacktestsCreateResponses = {
       } | null;
       revision_saved_at: string;
       shared_revision: number;
+      simulation?: {
+        annualization_sessions: 252;
+        buy_hold_basis: "close_ratio_before_fees_and_dividends";
+        caveat: string;
+        contract: "iqx-strategy-backtest-1.0";
+        execution: "next_open" | "same_close";
+        execution_label: string;
+        exits: "none: no stop, take-profit, trailing or max holding";
+        fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
+        fill_price: string;
+        liquidity: "not_modelled";
+        min_held_bars: number;
+        min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
+        position_policy: "single_symbol_long_only_one_position";
+        price_adjustment: "provider_adjusted" | "not_confirmed";
+        settlement: "not_modelled";
+        signal_after_open_fill: boolean;
+        sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
+        slippage: "not_modelled";
+      };
       skipped_rows: number;
       slippage: "not_modelled";
       symbol: string;
@@ -42841,6 +43997,27 @@ export type StrategyBacktestsGetResponses = {
         signalIndex: number;
       }>;
       cash: number;
+      chart: {
+        baseline_field: "initial";
+        point_count: number;
+        series: Array<{
+          available: boolean;
+          end_value_pct: number | null;
+          field: "return_pct" | "buy_hold_pct" | "market_pct";
+          id: "strategy" | "buy_hold" | "market";
+          label: string;
+          unavailable_reason: string | null;
+        }>;
+        title: "Lợi nhuận danh mục (%)";
+        unit: "percent_points";
+      };
+      contract: "iqx-strategy-backtest-1.0";
+      counts: {
+        buy_count: number;
+        closed_trade_count: number;
+        open_position_count: number;
+        pending_order_count: number;
+      };
       curve: Array<{
         buy_hold_pct: number;
         date: string;
@@ -42859,20 +44036,37 @@ export type StrategyBacktestsGetResponses = {
         return_pct: number;
         value: number;
       };
+      kpi_basis: {
+        [key: string]: unknown;
+      };
       kpis: {
-        buy_hold_return: number;
-        cagr: number;
-        market_return: number | null;
-        max_drawdown: number;
-        n_trades: number;
-        n_wins: number;
-        net_return: number;
-        profit_factor: number | null;
-        win_rate: number | null;
+        annualized_return_pct: number | null;
+        buy_hold_return_pct: number;
+        closed_trade_count: number;
+        max_drawdown_pct: number;
+        total_return_pct: number;
+        win_rate_pct: number | null;
       };
       open_position: {
         cost: number;
         date: string;
+        entry_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         index: number;
         last_price: number;
         market_value: number;
@@ -42880,7 +44074,31 @@ export type StrategyBacktestsGetResponses = {
         qty: number;
         signal_date: string;
         unrealized_pnl: number;
+        unrealized_pnl_basis: "market_value_at_last_close_minus_entry_total_before_sell_costs";
       } | null;
+      pending_orders: Array<{
+        action: "buy" | "sell";
+        evidence: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
+        note: string;
+        reason: "end_of_range";
+        signal_date: string;
+      }>;
       profile: {
         lot_size: number;
         max_holding: null;
@@ -42955,6 +44173,26 @@ export type StrategyBacktestsGetResponses = {
         } | null;
         revision_saved_at: string;
         shared_revision: number;
+        simulation?: {
+          annualization_sessions: 252;
+          buy_hold_basis: "close_ratio_before_fees_and_dividends";
+          caveat: string;
+          contract: "iqx-strategy-backtest-1.0";
+          execution: "next_open" | "same_close";
+          execution_label: string;
+          exits: "none: no stop, take-profit, trailing or max holding";
+          fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
+          fill_price: string;
+          liquidity: "not_modelled";
+          min_held_bars: number;
+          min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
+          position_policy: "single_symbol_long_only_one_position";
+          price_adjustment: "provider_adjusted" | "not_confirmed";
+          settlement: "not_modelled";
+          signal_after_open_fill: boolean;
+          sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
+          slippage: "not_modelled";
+        };
         skipped_rows: number;
         slippage: "not_modelled";
         symbol: string;
@@ -42986,17 +44224,61 @@ export type StrategyBacktestsGetResponses = {
         warmup_bars: number;
         warmup_sessions_requested: number;
       };
+      supplementary: {
+        profit_factor: number | null;
+        winning_trade_count: number;
+      };
       trades: Array<{
         concurrent_reasons?: Array<string>;
+        entry_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         entry_date: string;
+        entry_fee: number;
         entry_price: number;
         entry_signal_date: string;
+        entry_total: number;
+        exit_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         exit_date: string;
+        exit_fee_tax: number;
+        exit_gross: number;
+        exit_net: number;
         exit_price: number;
         exit_reason: string;
         exit_signal_date: string;
         hold: number;
         number: number;
+        outcome: "win" | "loss" | "flat";
         pnl: number;
         pnl_pct: number;
         qty: number;
@@ -43067,6 +44349,26 @@ export type StrategyBacktestsGetResponses = {
       } | null;
       revision_saved_at: string;
       shared_revision: number;
+      simulation?: {
+        annualization_sessions: 252;
+        buy_hold_basis: "close_ratio_before_fees_and_dividends";
+        caveat: string;
+        contract: "iqx-strategy-backtest-1.0";
+        execution: "next_open" | "same_close";
+        execution_label: string;
+        exits: "none: no stop, take-profit, trailing or max holding";
+        fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
+        fill_price: string;
+        liquidity: "not_modelled";
+        min_held_bars: number;
+        min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
+        position_policy: "single_symbol_long_only_one_position";
+        price_adjustment: "provider_adjusted" | "not_confirmed";
+        settlement: "not_modelled";
+        signal_after_open_fill: boolean;
+        sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
+        slippage: "not_modelled";
+      };
       skipped_rows: number;
       slippage: "not_modelled";
       symbol: string;
@@ -43159,6 +44461,173 @@ export type StrategyBacktestsGetResponses = {
 export type StrategyBacktestsGetResponse =
   StrategyBacktestsGetResponses[keyof StrategyBacktestsGetResponses];
 
+export type StrategyBacktestsTradesData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: {
+    offset?: number;
+    limit?: number;
+  };
+  url: "/api/v2/strategy/backtests/{id}/trades";
+};
+
+export type StrategyBacktestsTradesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyBacktestsTradesError =
+  StrategyBacktestsTradesErrors[keyof StrategyBacktestsTradesErrors];
+
+export type StrategyBacktestsTradesResponses = {
+  200: {
+    counts: {
+      buy_count: number;
+      closed_trade_count: number;
+      open_position_count: number;
+      pending_order_count: number;
+    };
+    items: Array<{
+      concurrent_reasons?: Array<string>;
+      entry_conditions: {
+        indicator_ids: Array<string>;
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: ">" | "<" | "∈" | "∉";
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+      } | null;
+      entry_date: string;
+      entry_fee: number;
+      entry_price: number;
+      entry_signal_date: string;
+      entry_total: number;
+      exit_conditions: {
+        indicator_ids: Array<string>;
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: ">" | "<" | "∈" | "∉";
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+      } | null;
+      exit_date: string;
+      exit_fee_tax: number;
+      exit_gross: number;
+      exit_net: number;
+      exit_price: number;
+      exit_reason: string;
+      exit_signal_date: string;
+      hold: number;
+      number: number;
+      outcome: "win" | "loss" | "flat";
+      pnl: number;
+      pnl_pct: number;
+      qty: number;
+    }>;
+    limit: number;
+    offset: number;
+    open_position: {
+      cost: number;
+      date: string;
+      entry_conditions: {
+        indicator_ids: Array<string>;
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: ">" | "<" | "∈" | "∉";
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+      } | null;
+      index: number;
+      last_price: number;
+      market_value: number;
+      price: number;
+      qty: number;
+      signal_date: string;
+      unrealized_pnl: number;
+      unrealized_pnl_basis: "market_value_at_last_close_minus_entry_total_before_sell_costs";
+    } | null;
+    pending_orders: Array<{
+      action: "buy" | "sell";
+      evidence: {
+        indicator_ids: Array<string>;
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: ">" | "<" | "∈" | "∉";
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+      } | null;
+      note: string;
+      reason: "end_of_range";
+      signal_date: string;
+    }>;
+    run_id: string;
+    total: number;
+  };
+};
+
+export type StrategyBacktestsTradesResponse =
+  StrategyBacktestsTradesResponses[keyof StrategyBacktestsTradesResponses];
+
 export type ListStrategySavedFiltersData = {
   body?: never;
   path?: never;
@@ -43202,6 +44671,53 @@ export type ListStrategySavedFiltersResponses = {
       created_at: string;
       current_version: number;
       definition: {
+        columns?: Array<{
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          period: "quarter" | "ttm" | "year" | "three_year";
+        }>;
+        data_mode: "latest_disclosed";
         logic: "AND";
         name: string;
         rules: Array<{
@@ -43251,18 +44767,32 @@ export type ListStrategySavedFiltersResponses = {
             | "buyback_yield"
             | "shareholder_yield";
           operator: ">" | "<";
+          period: "quarter" | "ttm" | "year" | "three_year";
           value: number;
         }>;
-        schema_version: "2.0";
+        schema_version: "3.0";
         scope: {
           market: string;
-          period: "TTM" | "annual" | "quarter";
           sector: string;
         };
       };
       definition_hash: string;
       id: string;
+      legacy_review: {
+        legacy_period: "TTM" | "annual" | "quarter";
+        needs_review: boolean;
+        rules: Array<{
+          legacy_period: "TTM" | "annual" | "quarter";
+          mapped_period: string;
+          metric_id: string;
+          reason: string | null;
+          rule_id: string;
+          status: "ok" | "needs_review";
+        }>;
+        stored_schema_version: "2.0";
+      } | null;
       name: string;
+      stored_schema_version: string;
       updated_at: string;
       version: number;
     }>;
@@ -43275,6 +44805,53 @@ export type ListStrategySavedFiltersResponse =
 export type CreateStrategySavedFilterData = {
   body: {
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode?: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -43324,12 +44901,12 @@ export type CreateStrategySavedFilterData = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
@@ -43376,6 +44953,53 @@ export type CreateStrategySavedFilterResponses = {
     created_at: string;
     current_version: number;
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -43425,18 +45049,32 @@ export type CreateStrategySavedFilterResponses = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
     definition_hash: string;
     id: string;
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: string;
+        metric_id: string;
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
     name: string;
+    stored_schema_version: string;
     updated_at: string;
     version: number;
     versions: Array<{
@@ -43545,6 +45183,53 @@ export type GetStrategySavedFilterResponses = {
     created_at: string;
     current_version: number;
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -43594,18 +45279,32 @@ export type GetStrategySavedFilterResponses = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
     definition_hash: string;
     id: string;
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: string;
+        metric_id: string;
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
     name: string;
+    stored_schema_version: string;
     updated_at: string;
     version: number;
     versions: Array<{
@@ -43622,6 +45321,53 @@ export type GetStrategySavedFilterResponse =
 export type UpdateStrategySavedFilterData = {
   body: {
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode?: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -43671,12 +45417,12 @@ export type UpdateStrategySavedFilterData = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
@@ -43724,6 +45470,53 @@ export type UpdateStrategySavedFilterResponses = {
     created_at: string;
     current_version: number;
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -43773,18 +45566,32 @@ export type UpdateStrategySavedFilterResponses = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
     definition_hash: string;
     id: string;
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: string;
+        metric_id: string;
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
     name: string;
+    stored_schema_version: string;
     updated_at: string;
     version: number;
     versions: Array<{
@@ -43801,7 +45608,9 @@ export type UpdateStrategySavedFilterResponse =
 export type ListStrategySavedListsData = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: {
+    include_internal?: boolean;
+  };
   url: "/api/v2/strategy/lists";
 };
 
@@ -43846,10 +45655,16 @@ export type ListStrategySavedListsResponses = {
       id: string;
       kind: "static_retrospective";
       name: string;
+      provenance: {
+        [key: string]: unknown;
+      } | null;
+      result_snapshot_id: string | null;
+      run_id: string | null;
       scope: {
         [key: string]: string | number | boolean | null;
       };
       tickers: Array<string>;
+      visibility: "saved" | "internal";
     }>;
   };
 };
@@ -43915,15 +45730,100 @@ export type CreateStrategySavedListResponses = {
     id: string;
     kind: "static_retrospective";
     name: string;
+    provenance: {
+      [key: string]: unknown;
+    } | null;
+    result_snapshot_id: string | null;
+    run_id: string | null;
     scope: {
       [key: string]: string | number | boolean | null;
     };
     tickers: Array<string>;
+    visibility: "saved" | "internal";
   };
 };
 
 export type CreateStrategySavedListResponse =
   CreateStrategySavedListResponses[keyof CreateStrategySavedListResponses];
+
+export type CreateStrategySavedListFromResultData = {
+  body: {
+    filter_id?: string;
+    filter_version?: number;
+    idempotency_key?: string;
+    name: string;
+    result_snapshot_id?: string;
+    run_id?: string;
+    selection:
+      | {
+          mode: "all";
+        }
+      | {
+          mode: "subset";
+          symbols: Array<string>;
+        };
+    visibility?: "saved" | "internal";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/lists/from-result";
+};
+
+export type CreateStrategySavedListFromResultErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CreateStrategySavedListFromResultError =
+  CreateStrategySavedListFromResultErrors[keyof CreateStrategySavedListFromResultErrors];
+
+export type CreateStrategySavedListFromResultResponses = {
+  201: {
+    as_of: string;
+    created_at: string;
+    data_source: string;
+    filter_id: string | null;
+    filter_version: number | null;
+    id: string;
+    kind: "static_retrospective";
+    name: string;
+    provenance: {
+      [key: string]: unknown;
+    } | null;
+    result_snapshot_id: string | null;
+    run_id: string | null;
+    scope: {
+      [key: string]: string | number | boolean | null;
+    };
+    tickers: Array<string>;
+    visibility: "saved" | "internal";
+  };
+};
+
+export type CreateStrategySavedListFromResultResponse =
+  CreateStrategySavedListFromResultResponses[keyof CreateStrategySavedListFromResultResponses];
 
 export type DeleteStrategySavedListData = {
   body?: never;
@@ -44023,10 +45923,16 @@ export type GetStrategySavedListResponses = {
     id: string;
     kind: "static_retrospective";
     name: string;
+    provenance: {
+      [key: string]: unknown;
+    } | null;
+    result_snapshot_id: string | null;
+    run_id: string | null;
     scope: {
       [key: string]: string | number | boolean | null;
     };
     tickers: Array<string>;
+    visibility: "saved" | "internal";
   };
 };
 
@@ -44315,6 +46221,495 @@ export type StrategyConfigTechnicalRegistryResponses = {
 export type StrategyConfigTechnicalRegistryResponse =
   StrategyConfigTechnicalRegistryResponses[keyof StrategyConfigTechnicalRegistryResponses];
 
+export type ListStrategyResultSnapshotsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    include_internal?: boolean;
+  };
+  url: "/api/v2/strategy/result-snapshots";
+};
+
+export type ListStrategyResultSnapshotsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListStrategyResultSnapshotsError =
+  ListStrategyResultSnapshotsErrors[keyof ListStrategyResultSnapshotsErrors];
+
+export type ListStrategyResultSnapshotsResponses = {
+  200: {
+    items: Array<{
+      as_of: string;
+      calculation_version: string;
+      created_at: string;
+      data_source: string;
+      definition_hash: string;
+      filter_id: string | null;
+      filter_version: number | null;
+      id: string;
+      name: string;
+      registry_version: string;
+      row_count: number;
+      run_at: string;
+      run_id: string | null;
+      selection: {
+        mode: "all" | "subset";
+        symbols: Array<string>;
+      };
+      symbols: Array<string>;
+      totals: {
+        [key: string]: unknown;
+      };
+      visibility: "saved" | "internal";
+    }>;
+  };
+};
+
+export type ListStrategyResultSnapshotsResponse =
+  ListStrategyResultSnapshotsResponses[keyof ListStrategyResultSnapshotsResponses];
+
+export type CreateStrategyResultSnapshotData = {
+  body: {
+    filter_id?: string;
+    filter_version?: number;
+    idempotency_key?: string;
+    name: string;
+    run_id: string;
+    selection:
+      | {
+          mode: "all";
+        }
+      | {
+          mode: "subset";
+          symbols: Array<string>;
+        };
+    visibility?: "saved" | "internal";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/result-snapshots";
+};
+
+export type CreateStrategyResultSnapshotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CreateStrategyResultSnapshotError =
+  CreateStrategyResultSnapshotErrors[keyof CreateStrategyResultSnapshotErrors];
+
+export type CreateStrategyResultSnapshotResponses = {
+  201: {
+    as_of: string;
+    calculation_version: string;
+    created_at: string;
+    data_source: string;
+    definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
+        value: number;
+      }>;
+      schema_version: "3.0";
+      scope: {
+        market: string;
+        sector: string;
+      };
+    };
+    definition_hash: string;
+    filter_id: string | null;
+    filter_version: number | null;
+    id: string;
+    name: string;
+    registry_version: string;
+    row_count: number;
+    rows: Array<{
+      [key: string]: unknown;
+    }>;
+    run_at: string;
+    run_id: string | null;
+    selection: {
+      mode: "all" | "subset";
+      symbols: Array<string>;
+    };
+    symbols: Array<string>;
+    totals: {
+      [key: string]: unknown;
+    };
+    visibility: "saved" | "internal";
+  };
+};
+
+export type CreateStrategyResultSnapshotResponse =
+  CreateStrategyResultSnapshotResponses[keyof CreateStrategyResultSnapshotResponses];
+
+export type DeleteStrategyResultSnapshotData = {
+  body?: never;
+  path: {
+    snapshotId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/result-snapshots/{snapshotId}";
+};
+
+export type DeleteStrategyResultSnapshotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DeleteStrategyResultSnapshotError =
+  DeleteStrategyResultSnapshotErrors[keyof DeleteStrategyResultSnapshotErrors];
+
+export type DeleteStrategyResultSnapshotResponses = {
+  /**
+   * Đã xóa kết quả đã lưu
+   */
+  204: void;
+};
+
+export type DeleteStrategyResultSnapshotResponse =
+  DeleteStrategyResultSnapshotResponses[keyof DeleteStrategyResultSnapshotResponses];
+
+export type GetStrategyResultSnapshotData = {
+  body?: never;
+  path: {
+    snapshotId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/result-snapshots/{snapshotId}";
+};
+
+export type GetStrategyResultSnapshotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetStrategyResultSnapshotError =
+  GetStrategyResultSnapshotErrors[keyof GetStrategyResultSnapshotErrors];
+
+export type GetStrategyResultSnapshotResponses = {
+  200: {
+    as_of: string;
+    calculation_version: string;
+    created_at: string;
+    data_source: string;
+    definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
+        value: number;
+      }>;
+      schema_version: "3.0";
+      scope: {
+        market: string;
+        sector: string;
+      };
+    };
+    definition_hash: string;
+    filter_id: string | null;
+    filter_version: number | null;
+    id: string;
+    name: string;
+    registry_version: string;
+    row_count: number;
+    rows: Array<{
+      [key: string]: unknown;
+    }>;
+    run_at: string;
+    run_id: string | null;
+    selection: {
+      mode: "all" | "subset";
+      symbols: Array<string>;
+    };
+    symbols: Array<string>;
+    totals: {
+      [key: string]: unknown;
+    };
+    visibility: "saved" | "internal";
+  };
+};
+
+export type GetStrategyResultSnapshotResponse =
+  GetStrategyResultSnapshotResponses[keyof GetStrategyResultSnapshotResponses];
+
 export type ScreenerMetricsData = {
   body?: never;
   path?: never;
@@ -44354,8 +46749,13 @@ export type ScreenerMetricsError =
 
 export type ScreenerMetricsResponses = {
   200: Array<{
+    allowed_periods: Array<{
+      id: "quarter" | "ttm" | "year" | "three_year";
+      label: string;
+    }>;
     api_unit: "ratio" | "lần" | "ngày" | "năm";
     applicability: "all" | "non_financial";
+    default_period: "quarter" | "ttm" | "year" | "three_year";
     id:
       | "revenue_yoy"
       | "profit_yoy"
@@ -44404,6 +46804,7 @@ export type ScreenerMetricsResponses = {
     name: string;
     operators: Array<">" | "<">;
     period: string;
+    readiness: "ready" | "definition_pending" | "data_unavailable";
     supported: boolean;
     unit: string;
     unsupported_reason: string | null;
@@ -44413,66 +46814,540 @@ export type ScreenerMetricsResponses = {
 export type ScreenerMetricsResponse =
   ScreenerMetricsResponses[keyof ScreenerMetricsResponses];
 
-export type ScreenerRunData = {
-  body: {
-    logic: "AND";
-    name: string;
-    rules: Array<{
-      api_unit: "ratio" | "lần" | "ngày" | "năm";
-      id: string;
-      metric_id:
-        | "revenue_yoy"
-        | "profit_yoy"
-        | "eps_yoy"
-        | "gross_margin"
-        | "net_margin"
-        | "roe"
-        | "roa"
-        | "roic"
-        | "debt_equity"
-        | "net_debt_ebitda"
-        | "current_ratio"
-        | "interest_coverage"
-        | "cfo_margin"
-        | "cfo_profit"
-        | "fcf_margin"
-        | "fcf_yoy"
-        | "capex_revenue"
-        | "accrual"
-        | "pe"
-        | "pb"
-        | "ps"
-        | "ev_ebitda"
-        | "peg"
-        | "fcf_yield"
-        | "revenue_cagr3"
-        | "profit_cagr3"
-        | "eps_cagr3"
-        | "asset_turnover"
-        | "ccc"
-        | "working_cap_turnover"
-        | "revenue_growth_stability"
-        | "eps_growth_stability"
-        | "net_margin_stability"
-        | "roic_stability"
-        | "fcf_positive_streak"
-        | "profit_positive_streak"
-        | "dividend_yield"
-        | "payout_ratio"
-        | "dividend_cagr3"
-        | "share_count_yoy"
-        | "buyback_yield"
-        | "shareholder_yield";
-      operator: ">" | "<";
-      value: number;
-    }>;
-    schema_version: "2.0";
-    scope: {
-      market: string;
-      period: "TTM" | "annual" | "quarter";
-      sector: string;
-    };
+export type ScreenerResultGetData = {
+  body?: never;
+  path: {
+    resultId: string;
   };
+  query?: {
+    offset?: number;
+    limit?: number;
+    passed_only?: boolean;
+  };
+  url: "/api/v2/strategy/screener/results/{resultId}";
+};
+
+export type ScreenerResultGetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ScreenerResultGetError =
+  ScreenerResultGetErrors[keyof ScreenerResultGetErrors];
+
+export type ScreenerResultGetResponses = {
+  200: {
+    as_of: string;
+    calculation_version: string;
+    counts: {
+      failed_threshold: number;
+      missing: number;
+      passed: number;
+      universe: number;
+      with_required_exceptions: number;
+    };
+    data_mode: "latest_disclosed";
+    data_quality: {
+      metrics: Array<{
+        by_reason: {
+          [key: string]: number;
+        };
+        by_status: {
+          [key: string]: number;
+        };
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period_mode: "quarter" | "ttm" | "year" | "three_year";
+        role: "condition" | "reference";
+      }>;
+    };
+    data_source: string;
+    definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
+        value: number;
+      }>;
+      schema_version: "3.0";
+      scope: {
+        market: string;
+        sector: string;
+      };
+    };
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: "quarter" | "ttm" | "year" | "three_year";
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
+    limit: number;
+    offset: number;
+    provenance_notes: {
+      availability_rule: string;
+      period_dates: "not_provided_by_source";
+      report_scope: "not_provided_by_source";
+    };
+    registry_version: string;
+    result_id: string;
+    results: Array<{
+      exchange: string | null;
+      metrics: {
+        [key: string]: {
+          actual_period_label: string | null;
+          available_at: string | null;
+          comparison_period_label: string | null;
+          components: Array<{
+            label: string;
+            published_at: string | null;
+            updated_at: string | null;
+          }>;
+          lower_bound?: boolean;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          period_mode: "quarter" | "ttm" | "year" | "three_year";
+          published_at: string | null;
+          reason?: string;
+          reason_code?: string;
+          source_revision: string | null;
+          status:
+            | "ok"
+            | "missing"
+            | "not_applicable"
+            | "insufficient_base"
+            | "definition_pending"
+            | "data_unavailable";
+          unit: "ratio" | "lần" | "ngày" | "năm";
+          value: number | null;
+        };
+      };
+      name: string | null;
+      passed: boolean;
+      sector: string | null;
+      symbol: string;
+    }>;
+    schema_version: "3.0";
+    total: number;
+    universe_truncated: boolean;
+  };
+};
+
+export type ScreenerResultGetResponse =
+  ScreenerResultGetResponses[keyof ScreenerResultGetResponses];
+
+export type ScreenerRunData = {
+  body:
+    | {
+        columns?: Array<{
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          period: "quarter" | "ttm" | "year" | "three_year";
+        }>;
+        data_mode?: "latest_disclosed";
+        logic: "AND";
+        name: string;
+        rules: Array<{
+          api_unit: "ratio" | "lần" | "ngày" | "năm";
+          id: string;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          operator: ">" | "<";
+          period: "quarter" | "ttm" | "year" | "three_year";
+          value: number;
+        }>;
+        schema_version: "3.0";
+        scope: {
+          market: string;
+          sector: string;
+        };
+      }
+    | {
+        logic: "AND";
+        name: string;
+        rules: Array<{
+          api_unit: "ratio" | "lần" | "ngày" | "năm";
+          id: string;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          operator: ">" | "<";
+          value: number;
+        }>;
+        schema_version: "2.0";
+        scope: {
+          market: string;
+          period: "TTM" | "annual" | "quarter";
+          sector: string;
+        };
+      };
   path?: never;
   query?: never;
   url: "/api/v2/strategy/screener/run";
@@ -44512,22 +47387,305 @@ export type ScreenerRunResponses = {
     as_of: string;
     calculation_version: string;
     counts: {
+      failed_threshold: number;
       missing: number;
       passed: number;
       universe: number;
+      with_required_exceptions: number;
+    };
+    data_mode: "latest_disclosed";
+    data_quality: {
+      metrics: Array<{
+        by_reason: {
+          [key: string]: number;
+        };
+        by_status: {
+          [key: string]: number;
+        };
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period_mode: "quarter" | "ttm" | "year" | "three_year";
+        role: "condition" | "reference";
+      }>;
     };
     data_source: string;
-    period: "TTM" | "annual" | "quarter";
+    definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
+        value: number;
+      }>;
+      schema_version: "3.0";
+      scope: {
+        market: string;
+        sector: string;
+      };
+    };
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: "quarter" | "ttm" | "year" | "three_year";
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
+    provenance_notes: {
+      availability_rule: string;
+      period_dates: "not_provided_by_source";
+      report_scope: "not_provided_by_source";
+    };
+    registry_version: string;
+    result_id: string;
     results: Array<{
       exchange: string | null;
       metrics: {
         [key: string]: {
+          actual_period_label: string | null;
           available_at: string | null;
+          comparison_period_label: string | null;
+          components: Array<{
+            label: string;
+            published_at: string | null;
+            updated_at: string | null;
+          }>;
           lower_bound?: boolean;
-          period: string | null;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          period_mode: "quarter" | "ttm" | "year" | "three_year";
+          published_at: string | null;
           reason?: string;
+          reason_code?: string;
           source_revision: string | null;
-          status: "ok" | "missing" | "not_applicable" | "insufficient_base";
+          status:
+            | "ok"
+            | "missing"
+            | "not_applicable"
+            | "insufficient_base"
+            | "definition_pending"
+            | "data_unavailable";
           unit: "ratio" | "lần" | "ngày" | "năm";
           value: number | null;
         };
@@ -44537,11 +47695,7 @@ export type ScreenerRunResponses = {
       sector: string | null;
       symbol: string;
     }>;
-    scope: {
-      market: string;
-      period: "TTM" | "annual" | "quarter";
-      sector: string;
-    };
+    schema_version: "3.0";
     universe_truncated: boolean;
   };
 };
