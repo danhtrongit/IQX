@@ -142,7 +142,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch02-l02",
@@ -155,7 +155,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch02-l03",
@@ -168,7 +168,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch02-l04",
@@ -181,7 +181,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch02-l05",
@@ -194,7 +194,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch02-l06",
@@ -207,7 +207,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         }
       ]
     },
@@ -354,7 +354,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch04-l02",
@@ -367,7 +367,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch04-l03",
@@ -380,7 +380,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch04-l04",
@@ -393,7 +393,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch04-l05",
@@ -406,7 +406,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         },
         {
           "id": "ch04-l06",
@@ -419,7 +419,7 @@
           },
           "capability_binding": null,
           "legacy_lesson_ids": [],
-          "content_status": "not_published"
+          "content_status": "published"
         }
       ]
     },

@@ -1,25 +1,7 @@
 {
   "lesson_id": "ch01-l01",
-  "content_version": "2.0.0",
-  "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2",
-  "sections": [
-    {
-      "title": "Khái niệm và cách đọc",
-      "html": "<p><strong>RSI so sánh mức độ tăng giá với mức độ giảm giá</strong> và biểu diễn kết quả trên thang từ 0 đến 100. Chỉ báo giúp đọc đà giá: các biến động tăng hay giảm đang chiếm ưu thế trong phép tính. RSI không phải giá cổ phiếu hoặc phần trăm lợi nhuận.</p>\n<p>Một đường RSI được tính từ chuỗi giá đóng cửa. Trên biểu đồ dưới đây, giá nằm ở phía trên và RSI ở phía dưới; hai phần dùng cùng các phiên giao dịch.</p>\n<div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Giá trị RSI</th><th scope=\"col\">Ý nghĩa</th></tr></thead><tbody><tr><td>Trên 50</td><td>Mức tăng trung bình lớn hơn mức giảm trung bình trong phép tính.</td></tr><tr><td>Bằng 50</td><td>Hai mức trung bình bằng nhau, khi cả hai đều dương. Không có nghĩa giá đứng yên.</td></tr><tr><td>Dưới 50</td><td>Mức giảm trung bình lớn hơn mức tăng trung bình trong phép tính.</td></tr></tbody></table></div><h3>Quá mua và quá bán</h3><p><strong>Trên 70</strong> thường gọi là vùng quá mua; <strong>dưới 30</strong> thường gọi là vùng quá bán. Đây là các mốc tham chiếu, không phải hai mức giá cổ phiếu và không phải lệnh mua hoặc bán tự động.</p>\n<p>RSI có thể duy trì ở vùng cao hoặc thấp nhiều phiên. Do đó, RSI cao không đồng nghĩa giá phải giảm ngay, RSI thấp không đồng nghĩa giá phải tăng ngay. Khoảng giữa hai ngưỡng cũng không phải một “vùng an toàn”.</p>\n<p>Khi đọc, cần tách <strong>vị trí</strong> và <strong>chiều thay đổi</strong>. RSI từ 42 lên 47 đang tăng nhưng vẫn dưới 50. RSI từ 65 xuống 60 đang giảm nhưng vẫn trên 50.</p>"
-    },
-    {
-      "title": "Công thức và ví dụ tính",
-      "html": "<p>Công thức gồm hai bước: tính tỷ số giữa mức tăng trung bình và mức giảm trung bình, sau đó chuyển tỷ số này thành RSI.</p><div class=\"formula-group\"><div class=\"math-eq\">RS = <span class=\"frac\"><span>G</span><span>D</span></span></div><div class=\"math-eq\">RSI = 100 − <span class=\"frac\"><span>100</span><span>1 + RS</span></span></div></div><div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Ký hiệu</th><th scope=\"col\">Ý nghĩa</th></tr></thead><tbody><tr><td>G</td><td>Mức tăng trung bình dùng để tính RSI.</td></tr><tr><td>D</td><td>Mức giảm trung bình, ghi bằng số không âm. Giảm 2 đơn vị thì ghi mức giảm là 2.</td></tr><tr><td>RS</td><td>Tỷ số G chia D.</td></tr><tr><td>N</td><td>Chu kỳ RSI; thiết lập tham chiếu là 14.</td></tr></tbody></table></div><h3>2.1. Từ giá đóng cửa đến mức tăng, mức giảm</h3><p>Giả sử có sáu giá đóng cửa liên tiếp: <strong>100, 101, 100, 102, 101, 104</strong>, cùng một đơn vị giá. Chọn chu kỳ <strong>N = 5</strong> để minh họa. Sáu giá tạo ra năm lần thay đổi.</p><div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Giá đóng cửa</th><th scope=\"col\">Mức tăng</th><th scope=\"col\">Mức giảm</th></tr></thead><tbody><tr><td>100 → 101</td><td>1</td><td>0</td></tr><tr><td>101 → 100</td><td>0</td><td>1</td></tr><tr><td>100 → 102</td><td>2</td><td>0</td></tr><tr><td>102 → 101</td><td>0</td><td>1</td></tr><tr><td>101 → 104</td><td>3</td><td>0</td></tr></tbody></table></div><p>Mỗi phiên lấy giá đóng cửa trừ giá đóng cửa trước đó. Phiên tăng ghi mức giảm bằng 0; phiên giảm ghi mức tăng bằng 0; giá không đổi thì cả hai bằng 0.</p>\n<h3>2.2. Tính RSI đầu tiên</h3><p>Hai mức trung bình ban đầu được tính bằng tổng mức tăng và tổng mức giảm, cùng chia cho <strong>đủ N lần thay đổi</strong>, kể cả các số 0. Không chia riêng cho số phiên tăng hoặc số phiên giảm.</p><div class=\"formula-group\"><div class=\"math-eq\">G = (1 + 0 + 2 + 0 + 3) / 5 = 1,2</div><div class=\"math-eq\">D = (0 + 1 + 0 + 1 + 0) / 5 = 0,4</div><div class=\"math-eq\">RS = 1,2 / 0,4 = 3</div><div class=\"math-eq\">RSI = 100 − 100 / (1 + 3) = <strong>75</strong></div></div><p>G gấp ba D nên tỷ số RS bằng 3. <strong>RSI 75 không có nghĩa 75% số phiên tăng hoặc xác suất có lời là 75%.</strong> Con số này được tạo ra từ tương quan giữa hai mức trung bình.</p>\n<h3>2.3. Cập nhật khi có phiên mới</h3><p>Sau lần tính đầu, cách tính Wilder cập nhật G và D theo công thức dưới đây. Phần dữ liệu trước vẫn tham gia kết quả; không lấy lại trung bình cộng của riêng N phiên gần nhất ở mỗi bước.</p><div class=\"formula-group\"><div class=\"math-eq\">G mới = <span class=\"frac\"><span>(N − 1) × G trước + Mức tăng mới</span><span>N</span></span></div><div class=\"math-eq\">D mới = <span class=\"frac\"><span>(N − 1) × D trước + Mức giảm mới</span><span>N</span></span></div></div><div class=\"worked\"><h3>Ví dụ tiếp nối: giá từ 104 giảm xuống 103</h3><p>Mức tăng mới là 0, mức giảm mới là 1. Vẫn dùng chu kỳ 5 và hai kết quả G = 1,2; D = 0,4 vừa tính.</p><div class=\"formula-group\"><div class=\"math-eq\">G mới = (4 × 1,2 + 0) / 5 = 0,96</div><div class=\"math-eq\">D mới = (4 × 0,4 + 1) / 5 = 0,52</div><div class=\"math-eq\">RSI mới = 100 − 100 / (1 + 0,96 / 0,52)</div><div class=\"math-eq\">RSI mới ≈ <strong>64,86</strong></div></div><p>Một phiên giảm làm RSI từ 75 xuống khoảng 64,86 trong ví dụ này. Các biến động tăng trước đó vẫn còn ảnh hưởng tới kết quả.</p></div>\n<p>Với D = 0 và G &gt; 0, RSI ở 100; với G = 0 và D &gt; 0, RSI ở 0. Khi cả hai bằng 0, tỷ số không xác định. Bản mẫu không tạo tín hiệu từ trường hợp đó.</p>"
-    },
-    {
-      "title": "Tham số, Mua và Bán",
-      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 14, \"level\": 30}</td><td>RSI phiên trước &lt; Ngưỡng quá bán AND RSI hiện tại &gt; RSI phiên trước</td></tr><tr><td>BÁN</td><td>{\"period\": 14, \"level\": 70}</td><td>RSI phiên trước &gt; Ngưỡng quá mua AND RSI hiện tại &lt; RSI phiên trước</td></tr></tbody></table></div>"
-    },
-    {
-      "title": "Vận dụng và giới hạn",
-      "html": "<p>RSI cao có thể kéo dài nhiều phiên. Đổi dấu trong cấu hình tạo một giả thuyết khác, không còn bắt buộc là hồi từ vùng quá bán.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
-    }
-  ],
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
   "fixture": {
     "type": "scalar",
     "label": "RSI",
@@ -29,15 +11,5 @@
     "formula": "G = trung bình Wilder của max(ΔGiá, 0)\nD = trung bình Wilder của max(−ΔGiá, 0)\nRSI = 100 − 100 / (1 + G/D)",
     "tolerance": 0.015,
     "synthetic": true
-  },
-  "sources": [
-    "source:technical-registry-v1",
-    "author:calculation-contract-v2"
-  ],
-  "review_status": "editorial-v2; subject-matter review and production parity still required",
-  "rehomed_from": {
-    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
-    "lesson_id": "ch01-l01",
-    "chapter": 1
   }
 }

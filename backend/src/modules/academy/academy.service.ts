@@ -7,6 +7,7 @@ import {
   NotFoundException,
   Optional,
   UnprocessableEntityException,
+  type OnModuleInit,
 } from '@nestjs/common';
 
 import type { SqlClient } from '../../platform/database/index.js';
@@ -15,24 +16,30 @@ import {
   type LessonRewardPort,
 } from '../../platform/ports/lesson-reward.port.js';
 import { capabilitiesFromCompletions } from './academy-grants.service.js';
+import type { LessonAssessment } from './academy.banks.js';
 import {
   loadAcademyContent,
   QUESTIONS_PER_LESSON,
+  resolveAssessment,
   type AcademyContent,
   type AcademyLesson,
 } from './academy.content.js';
 import {
   attemptQuestionViews,
-  buildOptionOrders,
+  buildAttemptOrder,
+  buildReview,
   findInvalidAnswers,
   gradeAnswers,
+  secureRandomInt,
   type GradedAnswer,
+  type RandomInt,
 } from './academy.grading.js';
 import {
   AcademyRepository,
   type AcademyStore,
   type AcademyStoreProvider,
   type AttemptRow,
+  type AttemptStats,
   type CompletionRow,
 } from './academy.repository.js';
 import type {
@@ -52,14 +59,21 @@ import type {
 type CompletionView = SubmitResponse['completion'];
 
 @Injectable()
-export class AcademyService {
+export class AcademyService implements OnModuleInit {
   protected readonly content: () => AcademyContent = loadAcademyContent;
+  /** Source of the per-attempt question and option shuffles (overridden by seeded tests). */
+  protected readonly random: RandomInt = secureRandomInt;
 
   constructor(
     @Inject(AcademyRepository) private readonly repository: AcademyStoreProvider,
     /** Learning-coin hook (Shop module); absent or failing hooks never change completion rules. */
     @Optional() @Inject(LESSON_REWARD_PORT) private readonly rewards?: LessonRewardPort,
   ) {}
+
+  /** Content packages are validated at boot: a broken package stops the API, not a learner's request. */
+  onModuleInit(): void {
+    this.content();
+  }
 
   /** Full 13-chapter / 71-lesson catalog metadata. Never carries answers or private banks. */
   catalog(): CatalogResponse {
@@ -84,25 +98,47 @@ export class AcademyService {
     return buildProgress(content, completions);
   }
 
+  /**
+   * Typed sections (blocks), the chart models of the lesson's chart blocks, nav labels and
+   * completion info. Never carries questions, answers or explanations.
+   */
   async lesson(userId: string, lessonId: string): Promise<LessonResponse> {
     const content = this.content();
     const lesson = requireLesson(content, lessonId);
-    const completion = await this.repository.store().completion(userId, lesson.lesson_key);
+    const store = this.repository.store();
     const published = lesson.content_status === 'published' ? lesson.content : null;
+    const [completion, stats] = await Promise.all([
+      store.completion(userId, lesson.lesson_key),
+      published && lesson.completion.mode === 'quiz'
+        ? store.attemptStats(userId, lesson.lesson_key)
+        : Promise.resolve<AttemptStats>({ best_score: null, attempts_submitted: 0 }),
+    ]);
     return {
       ...lessonMeta(lesson),
       catalog_version: content.catalog_version,
       completed: completion !== null,
       completion_method: completion?.completion_method ?? null,
       completed_at: completion?.completed_at.toISOString() ?? null,
-      sections: published?.sections.map((section) => structuredClone(section)) ?? [],
-      assets: published?.assets.map((asset) => ({ ...asset })) ?? [],
+      reward:
+        completion && 'reward' in completion.source ? rewardFromSource(completion.source) : null,
+      best_score: stats.best_score,
+      attempts_submitted: stats.attempts_submitted,
+      title: published?.title ?? lesson.name,
+      lead: published?.lead ?? null,
+      nav_labels: published?.nav_labels ? [...published.nav_labels] : null,
+      sections: published?.sections ?? [],
+      charts: published?.charts ?? {},
       fixture: published?.fixture ?? null,
-      sources: published ? [...published.sources] : [],
+      sources: published?.sources ?? [],
       review_status: published?.review_status ?? null,
     };
   }
 
+  /**
+   * Starts an attempt: the lesson's 8 questions, shuffled once, with each question's options
+   * shuffled once; both orders are stored on the attempt and never change. A retake is a new
+   * attempt (new idempotency key) over the same 8 questions in a new order.
+   */
   async createAttempt(userId: string, input: AttemptCreateInput): Promise<AttemptResponse> {
     const content = this.content();
     assertCatalogVersion(content, input.catalog_version);
@@ -117,6 +153,7 @@ export class AcademyService {
     const existing = await store.attemptByIdempotencyKey(userId, input.idempotency_key);
     if (existing) return this.attemptView(content, existing, input);
 
+    const order = buildAttemptOrder(assessment.questions, this.random);
     const inserted = await store.insertAttempt({
       id: randomUUID(),
       user_id: userId,
@@ -125,8 +162,8 @@ export class AcademyService {
       catalog_version: content.catalog_version,
       content_version: published.content_version,
       questions_version: assessment.version,
-      question_ids: assessment.questions.map((question) => question.id),
-      option_orders: buildOptionOrders(assessment.questions),
+      question_ids: order.question_ids,
+      option_orders: order.option_orders,
       idempotency_key: input.idempotency_key,
     });
     // A concurrent request with the same key won the insert; return its attempt.
@@ -136,6 +173,10 @@ export class AcademyService {
     return this.attemptView(content, attempt, input);
   }
 
+  /**
+   * Grades the attempt against the question bank it was created with (the lesson's current bank,
+   * or the archived bank of that version) and returns the committed result with the review.
+   */
   submit(userId: string, attemptId: string, input: AttemptSubmitInput): Promise<SubmitResponse> {
     const content = this.content();
     return this.repository.transaction(async (store, tx) => {
@@ -146,9 +187,7 @@ export class AcademyService {
           message: 'Không tìm thấy lượt làm bài.',
         });
       if (attempt.status === 'submitted') return this.storedResult(content, store, attempt);
-      const lesson = pinnedLesson(content, attempt);
-      const assessment = lesson.assessment;
-      if (!assessment) throw notPublished(lesson);
+      const { lesson, assessment } = pinnedAttempt(content, attempt);
 
       const issues = findInvalidAnswers(assessment.questions, attempt.question_ids, input.answers);
       if (issues.length || attempt.question_ids.length !== QUESTIONS_PER_LESSON)
@@ -176,11 +215,9 @@ export class AcademyService {
       );
 
       // 8/8: the completion, its reward and the capability derivation share this transaction.
-      let created: CompletionRow | null = null;
-      let reward: RewardResult = null;
       if (graded.passed) {
         await store.lockUser(userId);
-        created = await store.insertCompletion({
+        const created = await store.insertCompletion({
           user_id: userId,
           lesson_key: lesson.lesson_key,
           catalog_version: content.catalog_version,
@@ -188,6 +225,7 @@ export class AcademyService {
           completion_method: 'quiz',
           attempt_id: attempt.id,
           request_id: null,
+          // The version of the lesson text the learner studied when the attempt was created.
           content_version: attempt.content_version,
           source: {
             score: graded.score,
@@ -195,15 +233,10 @@ export class AcademyService {
             assessment_version: attempt.questions_version,
           },
         });
-        if (created) reward = await this.creditReward(store, tx, created, 'quiz');
+        if (created) await this.creditReward(store, tx, created, 'quiz');
       }
-      return this.submitResult(content, store, attempt, lesson, {
-        score: graded.score,
-        passed: graded.passed,
-        results: graded.results,
-        created,
-        reward,
-      });
+      // The committed state is the response, so a replay returns exactly this.
+      return this.storedResult(content, store, submitted);
     });
   }
 
@@ -294,80 +327,75 @@ export class AcademyService {
     return view;
   }
 
-  private async submitResult(
-    content: AcademyContent,
-    store: AcademyStore,
-    attempt: AttemptRow,
-    lesson: AcademyLesson,
-    outcome: {
-      score: number;
-      passed: boolean;
-      results: GradedAnswer[];
-      created: CompletionRow | null;
-      reward: RewardResult;
-    },
-  ): Promise<SubmitResponse> {
-    const [existing, completions] = await Promise.all([
-      outcome.created ?? store.completion(attempt.user_id, lesson.lesson_key),
-      store.completions(attempt.user_id),
-    ]);
-    return {
-      attempt_id: attempt.id,
-      lesson_id: lesson.id,
-      lesson_key: lesson.lesson_key,
-      score: outcome.score,
-      total: QUESTIONS_PER_LESSON,
-      passed: outcome.passed,
-      results: outcome.results,
-      completion: completionView(existing, existing !== null && existing.attempt_id === attempt.id),
-      granted_capabilities: capabilitiesFromCompletions(content, completions),
-      newly_granted: outcome.created ? [...lesson.capabilities] : [],
-      progress_revision: completions.length,
-      reward: outcome.reward,
-    };
-  }
-
-  /** Stored outcome of a submitted attempt; never completes or rewards again. */
+  /**
+   * The committed outcome of a submitted attempt, rebuilt from the stored rows and the bank the
+   * attempt was pinned to. It never completes, rewards or re-grades anything. An attempt of the
+   * legacy 18-chapter catalog (or whose bank is gone) answers with its stored score and no review.
+   */
   private async storedResult(
     content: AcademyContent,
     store: AcademyStore,
     attempt: AttemptRow,
   ): Promise<SubmitResponse> {
-    const lesson = pinnedLesson(content, attempt, { submitted: true });
-    const answers = await store.answers(attempt.id);
-    const completion = await store.completion(attempt.user_id, lesson.lesson_key);
-    const questions = new Map(
-      (lesson.assessment?.questions ?? []).map((question) => [question.id, question]),
-    );
-    const byQuestion = new Map(answers.map((answer) => [answer.question_id, answer]));
-    const results = attempt.question_ids.flatMap((questionId): GradedAnswer[] => {
-      const answer = byQuestion.get(questionId);
-      if (!answer) return [];
-      const question = questions.get(questionId);
-      return [
-        {
-          question_id: questionId,
-          option_id: answer.option_id,
-          correct: answer.correct,
-          correct_option_id:
-            question?.correct_option_id ?? (answer.correct ? answer.option_id : ''),
-          explanation: question?.explanation ?? '',
-        },
-      ];
-    });
-    const completions = await store.completions(attempt.user_id);
+    // Attempts of the legacy catalog have no lesson key: they keep their stored score, no review.
+    const lessonKey =
+      attempt.catalog_version === content.catalog_version ? attempt.lesson_key : null;
+    const lesson = lessonKey ? content.lessonsByKey.get(lessonKey) : undefined;
+    if (lessonKey && (!lesson || lesson.id !== attempt.lesson_id))
+      throw new NotFoundException({ code: 'LESSON_NOT_FOUND', message: 'Không tìm thấy bài học.' });
+
+    const [answers, completions, stats, completion] = await Promise.all([
+      store.answers(attempt.id),
+      store.completions(attempt.user_id),
+      lesson
+        ? store.attemptStats(attempt.user_id, lesson.lesson_key)
+        : Promise.resolve<AttemptStats>({ best_score: null, attempts_submitted: 0 }),
+      lesson ? store.completion(attempt.user_id, lesson.lesson_key) : Promise.resolve(null),
+    ]);
+    const assessment = lesson
+      ? resolveAssessment(content, lesson, attempt.questions_version)
+      : null;
+    const graded = new Map(answers.map((answer) => [answer.question_id, answer]));
+    const review = assessment
+      ? buildReview(
+          assessment.questions,
+          attempt.question_ids,
+          attempt.option_orders,
+          attempt.question_ids.flatMap((questionId): GradedAnswer[] => {
+            const answer = graded.get(questionId);
+            return answer
+              ? [
+                  {
+                    question_id: questionId,
+                    option_id: answer.option_id,
+                    correct: answer.correct,
+                  },
+                ]
+              : [];
+          }),
+        )
+      : null;
+
+    const score = attempt.score ?? 0;
     const created = completion !== null && completion.attempt_id === attempt.id;
     return {
       attempt_id: attempt.id,
-      lesson_id: lesson.id,
-      lesson_key: lesson.lesson_key,
-      score: attempt.score ?? 0,
+      lesson_id: attempt.lesson_id,
+      lesson_key: lesson?.lesson_key ?? null,
+      catalog_version: attempt.catalog_version,
+      score,
       total: QUESTIONS_PER_LESSON,
+      correct: score,
+      wrong: QUESTIONS_PER_LESSON - score,
       passed: attempt.passed === true,
-      results,
+      submitted_at: attempt.submitted_at?.toISOString() ?? null,
+      best_score: stats.best_score,
+      attempts_submitted: stats.attempts_submitted,
+      review_available: review !== null,
+      results: review ?? [],
       completion: completionView(completion, created),
       granted_capabilities: capabilitiesFromCompletions(content, completions),
-      newly_granted: created ? [...lesson.capabilities] : [],
+      newly_granted: created && lesson ? [...lesson.capabilities] : [],
       progress_revision: completions.length,
       reward: created && completion ? rewardFromSource(completion.source) : null,
     };
@@ -386,9 +414,9 @@ export class AcademyService {
         code: 'IDEMPOTENCY_KEY_REUSED',
         message: 'Khóa idempotency đã được dùng cho một bài học khác.',
       });
-    const lesson = pinnedLesson(content, attempt);
+    const { lesson, assessment } = pinnedAttempt(content, attempt);
     const views = attemptQuestionViews(
-      lesson.assessment?.questions ?? [],
+      assessment.questions,
       attempt.question_ids,
       attempt.option_orders,
     );
@@ -404,6 +432,7 @@ export class AcademyService {
       catalog_version: attempt.catalog_version,
       content_version: attempt.content_version,
       assessment_version: attempt.questions_version,
+      status: attempt.status,
       questions: views,
     };
   }
@@ -427,6 +456,7 @@ export function lessonMeta(lesson: AcademyLesson): LessonMeta {
         lesson.completion.mode === 'quiz' ? lesson.completion.required_correct : null,
       assessment_ready: ready,
       assessment_version: ready ? (lesson.assessment?.version ?? null) : null,
+      button_label: published ? (lesson.content?.completion_button_label ?? null) : null,
     },
     capability_binding: lesson.capability_binding ? { ...lesson.capability_binding } : null,
     capability_id: lesson.capabilities[0] ?? null,
@@ -507,14 +537,15 @@ function requireLesson(content: AcademyContent, lessonId: string): AcademyLesson
 }
 
 /**
- * The lesson an attempt was pinned to. An attempt of another catalog (legacy), an unknown lesson
- * or a changed content/assessment version is never graded against the current bank.
+ * The lesson and question bank an open attempt was created against. An attempt of another
+ * catalog (legacy) is never graded; an attempt of an older bank is graded with that bank (the
+ * archived copy of its `questions_version`), never with the current one. Changed lesson text does
+ * not matter: only the pinned questions do. An unknown version is refused, not guessed.
  */
-function pinnedLesson(
+function pinnedAttempt(
   content: AcademyContent,
   attempt: AttemptRow,
-  options: { submitted?: boolean } = {},
-): AcademyLesson {
+): { lesson: AcademyLesson; assessment: LessonAssessment } {
   if (attempt.catalog_version !== content.catalog_version || attempt.lesson_key === null)
     throw new ConflictException({
       code: 'CATALOG_VERSION_MISMATCH',
@@ -524,22 +555,13 @@ function pinnedLesson(
   const lesson = content.lessonsByKey.get(attempt.lesson_key);
   if (!lesson || lesson.id !== attempt.lesson_id)
     throw new NotFoundException({ code: 'LESSON_NOT_FOUND', message: 'Không tìm thấy bài học.' });
-  if (options.submitted) return lesson;
-  if (
-    !lesson.content ||
-    !lesson.assessment ||
-    attempt.content_version !== lesson.content.content_version
-  )
-    throw new ConflictException({
-      code: 'CONTENT_VERSION_MISMATCH',
-      message: 'Nội dung Học viện đã được cập nhật. Vui lòng bắt đầu lượt làm bài mới.',
-    });
-  if (attempt.questions_version !== lesson.assessment.version)
+  const assessment = resolveAssessment(content, lesson, attempt.questions_version);
+  if (!assessment)
     throw new ConflictException({
       code: 'ASSESSMENT_VERSION_MISMATCH',
       message: 'Bộ câu hỏi đã được cập nhật. Vui lòng bắt đầu lượt làm bài mới.',
     });
-  return lesson;
+  return { lesson, assessment };
 }
 
 function assertCatalogVersion(content: AcademyContent, requested: string): void {

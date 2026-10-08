@@ -1,25 +1,7 @@
 {
   "lesson_id": "ch01-l05",
-  "content_version": "2.0.0",
-  "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2",
-  "sections": [
-    {
-      "title": "Khái niệm và cách đọc",
-      "html": "<p>Khối lượng giao dịch là số cổ phiếu được giao dịch trong một phiên theo phạm vi nguồn dữ liệu. Đây là dữ liệu đếm, không phải giá trị được suy ra từ giá cổ phiếu.</p>\n<div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Đại lượng</th><th scope=\"col\">Đơn vị và ý nghĩa</th></tr></thead><tbody><tr><td>Khối lượng</td><td>Số cổ phiếu được giao dịch.</td></tr><tr><td>Giá trị giao dịch</td><td>Số tiền giao dịch; phụ thuộc cả giá và số lượng.</td></tr><tr><td>Số người giao dịch</td><td>Không suy trực tiếp từ tổng khối lượng.</td></tr><tr><td>Mua ròng của một nhóm</td><td>Lượng mua trừ lượng bán của chính nhóm đó.</td></tr></tbody></table></div>\n<p>Một người có thể giao dịch nhiều lần và mỗi giao dịch khớp có cả bên mua lẫn bên bán. Khối lượng 10 triệu cổ phiếu không có nghĩa có 10 triệu người mua hoặc một nhóm đã mua ròng 10 triệu cổ phiếu.</p>\n<p>Một con số khối lượng cần được đặt cạnh mức tham chiếu để xác định cao hay thấp. Hướng giá được phân tích riêng, không suy ra chỉ từ tổng khối lượng.</p>"
-    },
-    {
-      "title": "Công thức và ví dụ tính",
-      "html": "<div class=\"formula-group\"><div class=\"math-eq\">A = <span class=\"frac\"><span>V₁ + V₂ + … + V<sub>N</sub></span><span>N</span></span></div><div class=\"math-eq\">R = <span class=\"frac\"><span>Khối lượng hiện tại</span><span>A</span></span></div><div class=\"math-eq\">Ngưỡng lựa chọn = k × A</div></div>\n<div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Ký hiệu</th><th scope=\"col\">Ý nghĩa</th></tr></thead><tbody><tr><td>V₁ … V<sub>N</sub></td><td>Khối lượng của N phiên trước phiên hiện tại.</td></tr><tr><td>A</td><td>Khối lượng trung bình tham chiếu.</td></tr><tr><td>R</td><td>Khối lượng hiện tại gấp bao nhiêu lần A.</td></tr><tr><td>k</td><td>Hệ số đặt ngưỡng lựa chọn.</td></tr></tbody></table></div>\n<p>Trong các ví dụ của bài, cửa sổ tham chiếu chỉ gồm các phiên trước, không gồm phiên đang được so sánh. Đây là quy ước của phép đo được sử dụng, không phải yêu cầu cho mọi đường trung bình khối lượng.</p>\n<div class=\"worked\"><h3>Ví dụ: N = 5, k = 1,5</h3><p>Năm phiên trước có khối lượng lần lượt 2, 3, 4, 5, 6 triệu cổ phiếu. Phiên hiện tại có 7 triệu cổ phiếu.</p><div class=\"formula-group\"><div class=\"math-eq\">A = (2 + 3 + 4 + 5 + 6) / 5 = 4 triệu</div><div class=\"math-eq\">R = 7 / 4 = 1,75</div><div class=\"math-eq\">Ngưỡng = 1,5 × 4 = 6 triệu</div></div><p>Khối lượng hiện tại cao hơn ngưỡng 6 triệu. Nếu lấy 3, 4, 5, 6, 7 để tính trung bình thì đã dùng một cửa sổ khác, bao gồm cả phiên hiện tại.</p></div>\n<div class=\"formula-group\"><div class=\"math-eq\">Mức cao hơn trung bình (%) = (R − 1) × 100</div></div>\n<p>R = 1,75 tương ứng cao hơn mức trung bình 75%. Tỷ lệ này mô tả khối lượng, không cho biết mức tăng giá hoặc số người mua. Khi A bằng 0, phép chia để xác định R không có giá trị xác định.</p>"
-    },
-    {
-      "title": "Tham số, Mua và Bán",
-      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"lookback\": 20, \"mult\": 1.0}</td><td>Giá hiện tại &gt; Giá phiên trước AND Khối lượng &gt; k × TB N phiên</td></tr><tr><td>BÁN</td><td>{\"lookback\": 20, \"mult\": 1.0}</td><td>Giá hiện tại &lt; Giá phiên trước AND Khối lượng &gt; k × TB N phiên</td></tr></tbody></table></div>"
-    },
-    {
-      "title": "Vận dụng và giới hạn",
-      "html": "<p>Không suy mọi giao dịch lớn là mua ròng. Cùng một khối lượng luôn có bên mua và bên bán; chỉ báo dùng quan hệ giá và lượng.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
-    }
-  ],
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
   "fixture": {
     "type": "scalar",
     "label": "Khối lượng",
@@ -29,15 +11,5 @@
     "formula": "A = Tổng khối lượng N phiên trước / N\nNgưỡng = k × A",
     "tolerance": 0.015,
     "synthetic": true
-  },
-  "sources": [
-    "source:technical-registry-v1",
-    "author:calculation-contract-v2"
-  ],
-  "review_status": "editorial-v2; subject-matter review and production parity still required",
-  "rehomed_from": {
-    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
-    "lesson_id": "ch01-l05",
-    "chapter": 1
   }
 }

@@ -1,25 +1,7 @@
 {
   "lesson_id": "ch01-l02",
-  "content_version": "2.0.0",
-  "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2",
-  "sections": [
-    {
-      "title": "Khái niệm và cách đọc",
-      "html": "<p><strong>MACD là chênh lệch giữa một EMA nhanh và một EMA chậm.</strong> Hai đường trung bình này cùng được tính từ giá đóng cửa, nhưng dùng hai chu kỳ khác nhau. MACD giúp quan sát sự thay đổi của đà giá thông qua khoảng cách giữa chúng.</p><div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Thành phần</th><th scope=\"col\">Ý nghĩa</th></tr></thead><tbody><tr><td>Đường MACD</td><td>EMA nhanh trừ EMA chậm.</td></tr><tr><td>Đường tín hiệu</td><td>Một EMA được tính từ chính chuỗi MACD, dùng làm đường đối chiếu.</td></tr><tr><td>Cột chênh lệch</td><td>MACD trừ đường tín hiệu. Cột có thể dương, âm hoặc bằng 0.</td></tr><tr><td>Mốc 0</td><td>Đường ngang cố định. Không phải đường tín hiệu.</td></tr></tbody></table></div><p>MACD trên 0 cho biết EMA nhanh cao hơn EMA chậm. MACD trên đường tín hiệu lại là một quan hệ khác. Vì vậy, MACD có thể âm nhưng vẫn nằm trên đường tín hiệu, hoặc dương nhưng nằm dưới đường tín hiệu.</p><p>MACD mang cùng đơn vị với dữ liệu giá. MACD bằng 2 không có nghĩa giá sẽ tăng 2% và cũng không phải xác suất tăng. Khi giá đi ngang, quan hệ hai đường có thể thay đổi nhiều lần mà không hình thành một xu hướng kéo dài.</p>"
-    },
-    {
-      "title": "Công thức và ví dụ tính",
-      "html": "<div class=\"formula-group\"><div class=\"math-eq\">MACD = EMA nhanh − EMA chậm</div><div class=\"math-eq\">Đường tín hiệu = EMA của chuỗi MACD</div><div class=\"math-eq\">Cột chênh lệch = MACD − Đường tín hiệu</div></div>\n<p>Bộ tham số 12 / 26 / 9 lần lượt chỉ chu kỳ EMA nhanh, EMA chậm và EMA của đường tín hiệu.</p>\n<h3>Công thức EMA sử dụng trong MACD</h3>\n<div class=\"formula-group\"><div class=\"math-eq\">α = <span class=\"frac\"><span>2</span><span>N + 1</span></span></div><div class=\"math-eq\">EMA mới = α × Giá trị mới + (1 − α) × EMA trước</div></div>\n<p>Với hai EMA giá, giá trị mới là giá đóng cửa. Với đường tín hiệu, giá trị mới là MACD vừa tính. α là tỷ trọng dành cho quan sát mới; N là chu kỳ của đường đang được tính.</p>\n<div class=\"worked\"><h3>Ví dụ: cập nhật bộ tham số 12 / 26 / 9</h3><p>Giá đóng cửa mới bằng 110; EMA 12 trước và EMA 26 trước đều bằng 100; đường tín hiệu trước bằng 0. Các giá trị ban đầu được cho sẵn.</p><div class=\"formula-group\"><div class=\"math-eq\">EMA 12 mới = (2/13) × 110 + (11/13) × 100 ≈ 101,5385</div><div class=\"math-eq\">EMA 26 mới = (2/27) × 110 + (25/27) × 100 ≈ 100,7407</div><div class=\"math-eq\">MACD mới = 10 × (2/13 − 2/27) ≈ 0,7977</div><div class=\"math-eq\">Đường tín hiệu mới = 0,2 × MACD mới + 0,8 × 0 ≈ 0,1595</div><div class=\"math-eq\">Cột chênh lệch ≈ 0,7977 − 0,1595 ≈ 0,6382</div></div><p>Kết quả dương của cột cho biết MACD đang trên đường tín hiệu. Các phép tính sử dụng giá trị đầy đủ; các số hiển thị được làm tròn.</p></div>\n<div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">MACD</th><th scope=\"col\">Đường tín hiệu</th><th scope=\"col\">Cột chênh lệch</th><th scope=\"col\">Diễn giải</th></tr></thead><tbody><tr><td>−0,4</td><td>−0,7</td><td>+0,3</td><td>MACD dưới 0 nhưng trên đường tín hiệu.</td></tr><tr><td>+0,6</td><td>+0,8</td><td>−0,2</td><td>MACD trên 0 nhưng dưới đường tín hiệu.</td></tr></tbody></table></div>"
-    },
-    {
-      "title": "Tham số, Mua và Bán",
-      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"fast\": 12, \"slow\": 26, \"signal\": 9}</td><td>MACD &gt; Signal</td></tr><tr><td>BÁN</td><td>{\"fast\": 12, \"slow\": 26, \"signal\": 9}</td><td>MACD &lt; Signal</td></tr></tbody></table></div>"
-    },
-    {
-      "title": "Vận dụng và giới hạn",
-      "html": "<p>MACD trên Signal nhưng cả hai âm vẫn có thể đạt điều kiện Mua đã cấu hình. Không thêm mốc 0 vào engine nếu người dùng chưa chọn.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
-    }
-  ],
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
   "fixture": {
     "type": "scalar",
     "label": "MACD",
@@ -29,15 +11,5 @@
     "formula": "MACD = EMA nhanh − EMA chậm\nSignal = EMA(MACD, chu kỳ tín hiệu)\nHistogram = MACD − Signal",
     "tolerance": 0.015,
     "synthetic": true
-  },
-  "sources": [
-    "source:technical-registry-v1",
-    "author:calculation-contract-v2"
-  ],
-  "review_status": "editorial-v2; subject-matter review and production parity still required",
-  "rehomed_from": {
-    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
-    "lesson_id": "ch01-l02",
-    "chapter": 1
   }
 }

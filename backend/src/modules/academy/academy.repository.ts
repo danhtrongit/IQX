@@ -44,6 +44,9 @@ export type AnswerRow = {
   correct: boolean;
 };
 
+/** Submitted attempts of one lesson key: the best score only ever grows, whatever a retake scores. */
+export type AttemptStats = { best_score: number | null; attempts_submitted: number };
+
 export type CompletionMethod = 'quiz' | 'guide' | 'legacy_migration';
 
 export type CompletionRow = {
@@ -81,6 +84,8 @@ export interface AcademyStore {
   markSubmitted(attemptId: string, score: number, passed: boolean): Promise<AttemptRow | null>;
   answers(attemptId: string): Promise<AnswerRow[]>;
   insertAnswers(answers: readonly AnswerRow[]): Promise<void>;
+  /** Best score and number of submitted attempts of the owner's lesson (current catalog only). */
+  attemptStats(userId: string, lessonKey: string): Promise<AttemptStats>;
   /** Serializes the owner's completion writes for the rest of the transaction. */
   lockUser(userId: string): Promise<void>;
   completion(userId: string, lessonKey: string): Promise<CompletionRow | null>;
@@ -179,6 +184,19 @@ export class AcademySqlStore implements AcademyStore {
         answers.map((answer) => answer.correct),
       ],
     );
+  }
+
+  async attemptStats(userId: string, lessonKey: string): Promise<AttemptStats> {
+    const rows = await this.client.query<{ best_score: number | null; attempts_submitted: number }>(
+      `select max(score) as best_score, count(*)::int as attempts_submitted
+       from academy_attempts
+       where user_id = $1 and lesson_key = $2 and status = 'submitted'`,
+      [userId, lessonKey],
+    );
+    return {
+      best_score: rows[0]?.best_score ?? null,
+      attempts_submitted: Number(rows[0]?.attempts_submitted ?? 0),
+    };
   }
 
   async lockUser(userId: string) {

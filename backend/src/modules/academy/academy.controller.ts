@@ -64,7 +64,8 @@ export class AcademyController {
   @Get('lessons/:lessonId')
   @ApiOperation({
     operationId: 'academyLesson',
-    summary: 'Published lesson content without quiz answers, or content_status not_published',
+    summary:
+      'Typed lesson sections, chart models and nav labels (never questions or answers), plus completion info',
   })
   @ApiOkResponse({ schema: openApi(lessonResponseSchema) })
   lesson(
@@ -77,7 +78,8 @@ export class AcademyController {
   @Post('attempts')
   @ApiOperation({
     operationId: 'academyCreateAttempt',
-    summary: 'Start (or replay by idempotency key) an 8-question quiz of a published quiz lesson',
+    summary:
+      'Start (or replay by idempotency key) a quiz attempt: the 8 questions in a per-attempt order, no answer key',
   })
   @ApiCreatedResponse({ schema: openApi(attemptResponseSchema) })
   createAttempt(
@@ -91,7 +93,8 @@ export class AcademyController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'academySubmitAttempt',
-    summary: 'Grade an attempt server-side; 8/8 records the lesson completion once',
+    summary:
+      'Grade an attempt server-side against its pinned bank; returns the review. 8/8 records the lesson completion once',
   })
   @ApiOkResponse({ schema: openApi(submitResponseSchema) })
   submit(

@@ -8,10 +8,7 @@ import { Test } from '@nestjs/testing';
 import { describe, expect, it } from 'vitest';
 
 import { AcademyEnabledGuard } from '../../src/modules/academy/academy-enabled.guard.js';
-import {
-  AcademyGrantsService,
-  capabilitiesFromCompletions,
-} from '../../src/modules/academy/academy-grants.service.js';
+import { capabilitiesFromCompletions } from '../../src/modules/academy/academy-grants.service.js';
 import { capabilitiesForLesson } from '../../src/modules/academy/academy.capabilities.js';
 import {
   ACADEMY_CATALOG_VERSION,
@@ -21,7 +18,6 @@ import {
   canonicalJson,
   loadAcademyContent,
   readAcademyContentFiles,
-  type AcademyContent,
   type AcademyContentFiles,
 } from '../../src/modules/academy/academy.content.js';
 import {
@@ -37,302 +33,31 @@ import {
 import {
   AcademyRepository,
   AcademySqlStore,
-  type AcademyStore,
-  type AcademyStoreProvider,
-  type AnswerRow,
-  type AttemptRow,
   type CompletionRow,
 } from '../../src/modules/academy/academy.repository.js';
 import { AcademyService, buildProgress } from '../../src/modules/academy/academy.service.js';
 import { loadTechnicalRegistry } from '../../src/modules/quant/v2/index.js';
 import { loadFundamentalRegistry } from '../../src/modules/screener/screener.registry.js';
 import type { Environment } from '../../src/platform/config/environment.js';
-import type { SqlClient } from '../../src/platform/database/index.js';
-import {
-  LESSON_REWARD_PORT,
-  type LessonRewardInput,
-  type LessonRewardPort,
-  type LessonRewardResult,
-} from '../../src/platform/ports/lesson-reward.port.js';
+import { LESSON_REWARD_PORT } from '../../src/platform/ports/lesson-reward.port.js';
 import { buildLegacyMappingReport } from '../../scripts/academy-legacy-mapping-report.js';
+import {
+  FakeRewards,
+  MemoryAcademy,
+  OTHER_USER,
+  USER,
+  answerKey,
+  correctAnswers,
+  deepKeys,
+  pass,
+  setup,
+  start,
+  wrongAnswer,
+} from './academy-test-kit.js';
 
-const USER = '00000000-0000-4000-8000-000000000001';
-const OTHER_USER = '00000000-0000-4000-8000-000000000002';
 const here = dirname(fileURLToPath(import.meta.url));
 const contentDir = join(here, '../../src/modules/academy/content');
 const readJson = (path: string): unknown => JSON.parse(readFileSync(path, 'utf8')) as unknown;
-
-/** In-memory store; transactions are serialized and rolled back on error like the row lock + tx. */
-class MemoryAcademy implements AcademyStoreProvider, AcademyStore {
-  attempts: AttemptRow[] = [];
-  answerRows: AnswerRow[] = [];
-  completionRows: CompletionRow[] = [];
-  legacyCapabilities = new Map<string, string[]>();
-  readonly tx = { query: () => Promise.resolve([]) } as unknown as SqlClient;
-  private queue: Promise<unknown> = Promise.resolve();
-
-  store(): AcademyStore {
-    return this;
-  }
-
-  transaction<T>(operation: (store: AcademyStore, tx: SqlClient) => Promise<T>): Promise<T> {
-    const run = this.queue.then(async () => {
-      const snapshot = structuredClone({
-        attempts: this.attempts,
-        answerRows: this.answerRows,
-        completionRows: this.completionRows,
-      });
-      try {
-        return await operation(this, this.tx);
-      } catch (error) {
-        Object.assign(this, snapshot);
-        throw error;
-      }
-    });
-    this.queue = run.catch(() => undefined);
-    return run;
-  }
-
-  async insertAttempt(attempt: Parameters<AcademyStore['insertAttempt']>[0]) {
-    await Promise.resolve();
-    if (
-      this.attempts.some(
-        (row) => row.user_id === attempt.user_id && row.idempotency_key === attempt.idempotency_key,
-      )
-    )
-      return null;
-    const row: AttemptRow = {
-      ...structuredClone(attempt),
-      status: 'open',
-      created_at: new Date(),
-      submitted_at: null,
-      score: null,
-      passed: null,
-    };
-    this.attempts.push(row);
-    return structuredClone(row);
-  }
-
-  async attemptByIdempotencyKey(userId: string, key: string) {
-    await Promise.resolve();
-    const row = this.attempts.find(
-      (item) => item.user_id === userId && item.idempotency_key === key,
-    );
-    return row ? structuredClone(row) : null;
-  }
-
-  async lockAttempt(userId: string, attemptId: string) {
-    await Promise.resolve();
-    const row = this.attempts.find((item) => item.id === attemptId && item.user_id === userId);
-    return row ? structuredClone(row) : null;
-  }
-
-  async markSubmitted(attemptId: string, score: number, passed: boolean) {
-    await Promise.resolve();
-    const row = this.attempts.find((item) => item.id === attemptId && item.status === 'open');
-    if (!row) return null;
-    Object.assign(row, { status: 'submitted', submitted_at: new Date(), score, passed });
-    return structuredClone(row);
-  }
-
-  async answers(attemptId: string) {
-    await Promise.resolve();
-    return this.answerRows.filter((row) => row.attempt_id === attemptId);
-  }
-
-  async insertAnswers(answers: readonly AnswerRow[]) {
-    await Promise.resolve();
-    for (const answer of answers) {
-      if (
-        this.answerRows.some(
-          (row) => row.attempt_id === answer.attempt_id && row.question_id === answer.question_id,
-        )
-      )
-        throw new Error('duplicate answer primary key');
-      this.answerRows.push({ ...answer });
-    }
-  }
-
-  async lockUser() {
-    await Promise.resolve();
-  }
-
-  async completion(userId: string, lessonKey: string) {
-    await Promise.resolve();
-    const row = this.completionRows.find(
-      (item) => item.user_id === userId && item.lesson_key === lessonKey,
-    );
-    return row ? structuredClone(row) : null;
-  }
-
-  async completionByRequestId(userId: string, requestId: string) {
-    await Promise.resolve();
-    const row = this.completionRows.find(
-      (item) => item.user_id === userId && item.request_id === requestId,
-    );
-    return row ? structuredClone(row) : null;
-  }
-
-  async insertCompletion(completion: Parameters<AcademyStore['insertCompletion']>[0]) {
-    await Promise.resolve();
-    if (
-      this.completionRows.some(
-        (row) => row.user_id === completion.user_id && row.lesson_key === completion.lesson_key,
-      )
-    )
-      return null;
-    if (
-      completion.request_id !== null &&
-      this.completionRows.some(
-        (row) => row.user_id === completion.user_id && row.request_id === completion.request_id,
-      )
-    )
-      throw new Error('unique (user_id, request_id) violated');
-    const row: CompletionRow = { ...structuredClone(completion), completed_at: new Date() };
-    this.completionRows.push(row);
-    return structuredClone(row);
-  }
-
-  async attachReward(userId: string, lessonKey: string, reward: Record<string, unknown>) {
-    await Promise.resolve();
-    const row = this.completionRows.find(
-      (item) => item.user_id === userId && item.lesson_key === lessonKey,
-    );
-    if (row) row.source = { ...row.source, reward };
-  }
-
-  async completions(userId: string) {
-    await Promise.resolve();
-    return this.completionRows
-      .filter((row) => row.user_id === userId)
-      .map((row) => structuredClone(row));
-  }
-
-  async legacyLessonCapabilities(userId: string) {
-    await Promise.resolve();
-    return this.legacyCapabilities.get(userId) ?? [];
-  }
-}
-
-/** Reward hook double: credits 100 once per (user, lesson key) like the Shop ledger would. */
-class FakeRewards implements LessonRewardPort {
-  readonly calls: Array<{ tx: SqlClient; input: LessonRewardInput }> = [];
-  private readonly rewarded = new Set<string>();
-  balance = 0;
-  failWith: Error | null = null;
-
-  creditFirstCompletion(tx: SqlClient, input: LessonRewardInput): Promise<LessonRewardResult> {
-    this.calls.push({ tx, input });
-    if (this.failWith) return Promise.reject(this.failWith);
-    const key = `${input.userId}|${input.lessonKey}`;
-    if (this.rewarded.has(key))
-      return Promise.resolve({ status: 'already_rewarded', balanceAfter: this.balance });
-    this.rewarded.add(key);
-    this.balance += 100;
-    return Promise.resolve({
-      status: 'credited',
-      delta: 100,
-      balanceAfter: this.balance,
-      ledgerEntryId: `ledger-${this.calls.length}`,
-    });
-  }
-}
-
-class TestAcademyService extends AcademyService {
-  constructor(
-    repository: AcademyStoreProvider,
-    rewards: LessonRewardPort | undefined,
-    private readonly fixture?: AcademyContent,
-  ) {
-    super(repository, rewards);
-  }
-  protected override readonly content = (): AcademyContent => this.fixture ?? loadAcademyContent();
-}
-
-/** Real content with chosen guide lessons published (typed blocks) to exercise the guide flow. */
-function contentWithPublishedGuides(...lessonIds: string[]): AcademyContent {
-  const files = readAcademyContentFiles();
-  const catalog = structuredClone(files.catalog) as {
-    chapters: Array<{ lessons: Array<{ id: string; content_status: string }> }>;
-  };
-  const lessons = new Map(files.lessons);
-  for (const lesson of catalog.chapters.flatMap((chapter) => chapter.lessons)) {
-    if (!lessonIds.includes(lesson.id)) continue;
-    lesson.content_status = 'published';
-    lessons.set(lesson.id, {
-      lesson_id: lesson.id,
-      content_version: '1.0.0',
-      sections: [
-        {
-          id: 'overview',
-          title: 'Tổng quan',
-          blocks: [
-            { type: 'text', text: 'Giới thiệu.' },
-            { type: 'formula', expression: 'a < b ∈ (0, 1)' },
-            { type: 'table', header: ['Cột'], rows: [['1']] },
-            { type: 'image', asset_id: 'img1', alt: 'Ảnh hướng dẫn' },
-            { type: 'chart', chart_id: 'ch1' },
-          ],
-        },
-      ],
-      assets: [
-        { id: 'img1', kind: 'image', ref: 'assets/img1.png' },
-        { id: 'ch1', kind: 'chart', ref: 'charts/ch1' },
-      ],
-    });
-  }
-  return buildAcademyContent({ ...files, catalog, lessons });
-}
-
-function setup(options: { rewards?: boolean; content?: AcademyContent } = {}) {
-  const memory = new MemoryAcademy();
-  const rewards = options.rewards === false ? undefined : new FakeRewards();
-  return {
-    memory,
-    rewards,
-    service: new TestAcademyService(memory, rewards, options.content),
-    grants: new AcademyGrantsService(memory),
-  };
-}
-
-function answerKey(lessonId: string) {
-  return loadAcademyContent().lessons.get(lessonId)!.assessment!.questions;
-}
-
-function correctAnswers(lessonId: string) {
-  return answerKey(lessonId).map((question) => ({
-    question_id: question.id,
-    option_id: question.correct_option_id,
-  }));
-}
-
-function wrongAnswer(lessonId: string, index: number) {
-  const question = answerKey(lessonId)[index]!;
-  return question.options.find((option) => option.id !== question.correct_option_id)!.id;
-}
-
-function deepKeys(value: unknown, keys: Set<string> = new Set()): Set<string> {
-  if (Array.isArray(value)) value.forEach((item) => deepKeys(item, keys));
-  else if (value && typeof value === 'object')
-    for (const [key, item] of Object.entries(value)) {
-      keys.add(key);
-      deepKeys(item, keys);
-    }
-  return keys;
-}
-
-async function start(service: AcademyService, lessonId = 'ch01-l01', key = 'attempt-key-0001') {
-  return service.createAttempt(USER, {
-    lesson_id: lessonId,
-    catalog_version: ACADEMY_CATALOG_VERSION,
-    idempotency_key: key,
-  });
-}
-
-async function pass(service: AcademyService, lessonId: string, key: string) {
-  const attempt = await start(service, lessonId, key);
-  return service.submit(USER, attempt.attempt_id, { answers: correctAnswers(lessonId) });
-}
 
 describe('academy catalog (13 chapters / 71 lessons)', () => {
   const content = loadAcademyContent();
@@ -444,26 +169,34 @@ describe('academy catalog (13 chapters / 71 lessons)', () => {
     expect([...chapters].sort((a, b) => a - b)).toEqual([3, 6, 8, 9, 11, 12, 13]);
   });
 
-  it('publishes the 59 re-homed quiz lessons and leaves the 12 guides not_published', () => {
+  it('publishes all 71 lessons: 47 re-homed (chapters 5-13) and 24 from the chapter 1-4 packages', () => {
     for (const lesson of lessons) {
+      expect(lesson.content_status, lesson.id).toBe('published');
+      expect(lesson.content?.sections.length, lesson.id).toBeGreaterThan(0);
       if (lesson.completion.mode === 'quiz') {
-        expect(lesson.content_status, lesson.id).toBe('published');
-        expect(lesson.content?.sections.length, lesson.id).toBeGreaterThan(0);
         expect(lesson.assessment?.questions, lesson.id).toHaveLength(8);
         expect(lesson.assessment?.version, lesson.id).toMatch(/^[a-f0-9]{64}$/);
-        expect(lesson.content?.content_version).toBe('2.0.0');
       } else {
-        expect(lesson.content_status, lesson.id).toBe('not_published');
-        expect(lesson.content, lesson.id).toBeNull();
         expect(lesson.assessment, lesson.id).toBeNull();
+      }
+      if (lesson.chapter <= 4) {
+        expect(lesson.content?.origin, lesson.id).toBe('package');
+        expect(lesson.content?.content_version, lesson.id).toBe(
+          { 1: 'ch01-v2.0', 2: 'ch02-v3.0', 3: 'ch03-v2.0', 4: 'ch04-v1.0' }[lesson.chapter],
+        );
+      } else {
+        expect(lesson.content?.origin, lesson.id).toBe('legacy');
+        expect(lesson.content?.content_version, lesson.id).toBe('2.0.0');
       }
     }
     const files = readAcademyContentFiles();
+    // Chapters 1 and 3 are served from their packages: only the superseded stubs remain in lessons/.
     expect(files.lessons.size).toBe(59);
-    expect(files.assessments.size).toBe(59);
+    expect(files.assessments.size).toBe(47);
+    expect(files.packages?.size).toBe(4);
     expect(
       [...content.lessons.values()].flatMap((lesson) => lesson.assessment?.questions ?? []),
-    ).toHaveLength(472);
+    ).toHaveLength(59 * 8);
   });
 
   it('keeps removed lessons out of the catalog, in the legacy folder only', () => {
@@ -504,14 +237,13 @@ describe('academy catalog (13 chapters / 71 lessons)', () => {
       copy.delete(id);
       return { ...files, [source]: copy };
     };
-    expect(() => buildAcademyContent(without('ch01-l01', 'lessons'))).toThrow(/no lesson file/);
-    expect(() => buildAcademyContent(without('ch01-l01', 'assessments'))).toThrow(/no assessment/);
+    expect(() => buildAcademyContent(without('ch05-l01', 'lessons'))).toThrow(/no lesson file/);
+    expect(() => buildAcademyContent(without('ch05-l01', 'assessments'))).toThrow(/no assessment/);
 
+    // A packaged lesson may only keep a stub that names the package version that superseded it.
     const stray = new Map(files.lessons);
-    stray.set('ch02-l01', structuredClone(files.lessons.get('ch01-l01')));
-    expect(() => buildAcademyContent({ ...files, lessons: stray })).toThrow(
-      /not_published but has content|declares/,
-    );
+    stray.set('ch02-l01', structuredClone(files.lessons.get('ch05-l01')));
+    expect(() => buildAcademyContent({ ...files, lessons: stray })).toThrow(/superseded_by/);
 
     const catalog = (
       mutate: (c: { chapters: Array<{ lessons: Array<Record<string, unknown>> }> }) => void,
@@ -547,47 +279,18 @@ describe('academy catalog (13 chapters / 71 lessons)', () => {
     ).toThrow(/concept lessons open no capability/);
 
     const banks = new Map(files.assessments);
-    const bank = structuredClone(files.assessments.get('ch01-l01')) as {
+    const bank = structuredClone(files.assessments.get('ch05-l01')) as {
       questions: Array<{ correct_index: number }>;
     };
     bank.questions.pop();
-    banks.set('ch01-l01', bank);
+    banks.set('ch05-l01', bank);
     expect(() => buildAcademyContent({ ...files, assessments: banks })).toThrow(/7 questions/);
-    const broken = structuredClone(files.assessments.get('ch01-l01')) as {
+    const broken = structuredClone(files.assessments.get('ch05-l01')) as {
       questions: Array<{ correct_index: number }>;
     };
     broken.questions[0]!.correct_index = (broken.questions[0]!.correct_index + 1) % 4;
-    banks.set('ch01-l01', broken);
+    banks.set('ch05-l01', broken);
     expect(() => buildAcademyContent({ ...files, assessments: banks })).toThrow(/answer key/);
-  });
-
-  it('accepts typed blocks and validates asset references', () => {
-    const guide = contentWithPublishedGuides('ch02-l01').lessons.get('ch02-l01')!;
-    expect(guide.content_status).toBe('published');
-    expect(guide.assessment).toBeNull();
-    expect(guide.content?.sections[0]?.blocks.map((block) => block.type)).toEqual([
-      'text',
-      'formula',
-      'table',
-      'image',
-      'chart',
-    ]);
-    expect(() => {
-      const files = readAcademyContentFiles();
-      const catalog = structuredClone(files.catalog) as {
-        chapters: Array<{ lessons: Array<{ content_status: string }> }>;
-      };
-      catalog.chapters[1]!.lessons[0]!.content_status = 'published';
-      const lessons = new Map(files.lessons);
-      lessons.set('ch02-l01', {
-        lesson_id: 'ch02-l01',
-        content_version: '1.0.0',
-        sections: [
-          { id: 's', title: 'x', blocks: [{ type: 'image', asset_id: 'missing', alt: 'a' }] },
-        ],
-      });
-      buildAcademyContent({ ...files, catalog, lessons });
-    }).toThrow(/missing image asset/);
   });
 
   it('keeps re-homed content stable: a legacy lesson keeps its approved sections and bank text', () => {
@@ -601,13 +304,35 @@ describe('academy catalog (13 chapters / 71 lessons)', () => {
 
   it('derives the per-lesson assessment version from that lesson bank only', () => {
     const lesson = content.lessons.get('ch01-l01')!;
-    expect(lesson.assessment?.version).toBe(canonicalHash(lesson.assessment?.questions));
+    expect(lesson.assessment?.format).toBe('package-v1');
     expect(canonicalJson({ b: 1, a: { d: [2, 1], c: null } })).toBe(
       '{"a":{"c":null,"d":[2,1]},"b":1}',
     );
     expect(content.lessons.get('ch01-l02')?.assessment?.version).not.toBe(
       lesson.assessment?.version,
     );
+    // Legacy banks keep the hash of their parsed question file, so attempts pinned before the
+    // package import stay valid. These are the values the production attempts carry.
+    expect(content.lessons.get('ch05-l01')?.assessment).toMatchObject({
+      format: 'legacy-v1',
+      version: '64128a1993c68e5a8047a0208be9cd75e20c9b9de0d69d9e0a4f3502e01e831b',
+    });
+    expect(content.lessons.get('ch13-l06')?.assessment?.version).toBe(
+      'f968c095e527a5cf48a29cdb6c2eecc512b7a3302bede22e418629f84c05719d',
+    );
+    const raw = readAcademyContentFiles().assessments.get('ch07-l03') as {
+      questions: Array<Record<string, unknown>>;
+    };
+    const known = raw.questions.map((question) => ({
+      id: question.id,
+      lesson_id: question.lesson_id,
+      question: question.question,
+      options: question.options,
+      correct_index: question.correct_index,
+      correct_option_id: question.correct_option_id,
+      explanation: question.explanation,
+    }));
+    expect(content.lessons.get('ch07-l03')?.assessment?.version).toBe(canonicalHash(known));
   });
 });
 
@@ -808,15 +533,21 @@ describe('AcademyService catalog, lessons and progress', () => {
     });
     const lessons = catalog.chapters.flatMap((chapter) => chapter.lessons);
     expect(lessons).toHaveLength(71);
-    expect(lessons.filter((lesson) => lesson.content_status === 'published')).toHaveLength(59);
+    expect(lessons.filter((lesson) => lesson.content_status === 'published')).toHaveLength(71);
     const rsi = lessons.find((lesson) => lesson.id === 'ch01-l01')!;
     expect(rsi).toMatchObject({
       lesson_key: 'technical:rsi',
       kind: 'technical',
       capability_id: 'indicator:rsi',
-      completion: { mode: 'quiz', question_count: 8, required_correct: 8, assessment_ready: true },
+      completion: {
+        mode: 'quiz',
+        question_count: 8,
+        required_correct: 8,
+        assessment_ready: true,
+        button_label: null,
+      },
       content_status: 'published',
-      content_version: '2.0.0',
+      content_version: 'ch01-v2.0',
     });
     const guide = lessons.find((lesson) => lesson.id === 'ch02-l01')!;
     expect(guide).toMatchObject({
@@ -826,8 +557,10 @@ describe('AcademyService catalog, lessons and progress', () => {
         question_count: null,
         assessment_ready: false,
         assessment_version: null,
+        button_label: 'Hoàn thành bài học',
       },
-      content_status: 'not_published',
+      content_status: 'published',
+      content_version: 'ch02-v3.0',
       capability_binding: null,
       capability_id: null,
     });
@@ -842,30 +575,52 @@ describe('AcademyService catalog, lessons and progress', () => {
     ).toEqual([]);
   });
 
-  it('returns published content without answers, or not_published for guides, 404 for unknown', async () => {
+  it('returns published content without answers: typed package lessons and legacy html lessons', async () => {
     const { service } = setup();
     const lesson = await service.lesson(USER, 'ch01-l01');
     expect(lesson).toMatchObject({
       id: 'ch01-l01',
       content_status: 'published',
+      content_version: 'ch01-v2.0',
+      title: 'Chỉ báo RSI',
+      nav_labels: ['Khái niệm', 'Công thức', 'Tham số', 'Vận dụng'],
       completed: false,
       completed_at: null,
+      best_score: null,
+      attempts_submitted: 0,
+      fixture: null,
     });
-    expect(lesson.sections.length).toBeGreaterThan(0);
-    expect(lesson.sections[0]!.blocks[0]!.type).toBe('html');
-    expect(lesson.fixture).not.toBeNull();
+    expect(lesson.lead).toEqual(expect.any(String));
+    expect(lesson.sections.map((section) => section.id)).toEqual(['s1', 's2', 's3', 's4']);
     const keys = deepKeys(lesson);
     expect(keys.has('questions')).toBe(false);
     expect(keys.has('correct_option_id')).toBe(false);
 
+    // Chapters without a package keep their html sections, served as one html block each.
+    const legacy = await service.lesson(USER, 'ch05-l01');
+    expect(legacy).toMatchObject({
+      content_version: '2.0.0',
+      title: legacy.name,
+      lead: null,
+      nav_labels: null,
+      charts: {},
+    });
+    expect(legacy.fixture).not.toBeNull();
+    expect(legacy.sections.length).toBeGreaterThan(0);
+    for (const section of legacy.sections) {
+      expect(section.blocks).toHaveLength(1);
+      expect(section.blocks[0]!.type).toBe('html');
+    }
+
     const guide = await service.lesson(USER, 'ch02-l01');
     expect(guide).toMatchObject({
-      content_status: 'not_published',
-      content_version: null,
-      sections: [],
-      assets: [],
+      content_status: 'published',
+      content_version: 'ch02-v3.0',
+      completion: { mode: 'guide', button_label: 'Hoàn thành bài học' },
       fixture: null,
       completed: false,
+      best_score: null,
+      attempts_submitted: 0,
     });
     await expect(service.lesson(USER, 'ch99-l99')).rejects.toBeInstanceOf(NotFoundException);
     await expect(service.lesson(USER, 'ch01-l07')).rejects.toBeInstanceOf(NotFoundException);
@@ -974,16 +729,21 @@ describe('AcademyService quiz attempts', () => {
       lesson_id: 'ch01-l01',
       lesson_key: 'technical:rsi',
       catalog_version: ACADEMY_CATALOG_VERSION,
-      content_version: '2.0.0',
+      content_version: 'ch01-v2.0',
+      status: 'open',
     });
     expect(attempt.questions).toHaveLength(8);
     const keys = deepKeys(attempt);
-    expect([...keys].filter((key) => /correct|explanation/i.test(key))).toEqual([]);
+    expect([...keys].filter((key) => /correct|explanation|source_id/i.test(key))).toEqual([]);
     const text = JSON.stringify(attempt);
-    // Some explanations repeat the correct option text verbatim; only distinct ones can leak.
+    // Some explanations repeat an option text verbatim; only distinct ones can leak.
     for (const question of answerKey('ch01-l01'))
-      if (!question.options.some((option) => option.text === question.explanation))
-        expect(text).not.toContain(question.explanation);
+      for (const option of question.options)
+        if (
+          option.explanation &&
+          !question.options.some((other) => other.text === option.explanation)
+        )
+          expect(text).not.toContain(option.explanation);
     expect(attempt.assessment_version).toBe(
       loadAcademyContent().lessons.get('ch01-l01')!.assessment!.version,
     );
@@ -999,9 +759,11 @@ describe('AcademyService quiz attempts', () => {
     expect(stored).toMatchObject({
       catalog_version: ACADEMY_CATALOG_VERSION,
       lesson_key: 'technical:rsi',
-      content_version: '2.0.0',
+      content_version: 'ch01-v2.0',
       questions_version: first.assessment_version,
     });
+    // The attempt payload follows the stored question order and the stored option orders.
+    expect(first.questions.map((question) => question.id)).toEqual(stored.question_ids);
     for (const question of first.questions)
       expect(question.options.map((option) => option.id)).toEqual(
         stored.option_orders[question.id],
@@ -1040,18 +802,18 @@ describe('AcademyService quiz attempts', () => {
     const catalog = structuredClone(files.catalog) as {
       chapters: Array<{ lessons: Array<{ content_status: string }> }>;
     };
-    catalog.chapters[0]!.lessons[1]!.content_status = 'not_published';
+    catalog.chapters[4]!.lessons[1]!.content_status = 'not_published';
     const lessons = new Map(files.lessons);
-    lessons.delete('ch01-l02');
+    lessons.delete('ch05-l02');
     const assessments = new Map(files.assessments);
-    assessments.delete('ch01-l02');
-    const content = buildAcademyContent({ catalog, lessons, assessments });
+    assessments.delete('ch05-l02');
+    const content = buildAcademyContent({ ...files, catalog, lessons, assessments });
     const { service } = setup({ content });
-    await expect(start(service, 'ch01-l02')).rejects.toMatchObject({
+    await expect(start(service, 'ch05-l02')).rejects.toMatchObject({
       status: 409,
       response: { code: 'NOT_PUBLISHED' },
     });
-    expect(service.catalog().chapters[0]!.lessons[1]!.completion.assessment_ready).toBe(false);
+    expect(service.catalog().chapters[4]!.lessons[1]!.completion.assessment_ready).toBe(false);
   });
 
   it('7/8 does not complete and opens nothing; the failed result lists the review', async () => {
@@ -1070,7 +832,12 @@ describe('AcademyService quiz attempts', () => {
       reward: null,
       completion: { completed: false, completion_method: null, newly_completed: false },
     });
-    expect(failed.results[5]).toMatchObject({ correct: false });
+    expect(failed).toMatchObject({ correct: 7, wrong: 1, review_available: true });
+    expect(failed.results).toHaveLength(8);
+    expect(failed.results.filter((item) => !item.correct)).toHaveLength(1);
+    expect(failed.results.find((item) => item.question_id === seven[5]!.question_id)).toMatchObject(
+      { correct: false },
+    );
     expect(memory.completionRows).toHaveLength(0);
     expect(rewards!.calls).toHaveLength(0);
   });
@@ -1093,7 +860,15 @@ describe('AcademyService quiz attempts', () => {
       completion: { completed: true, completion_method: 'quiz', newly_completed: true },
       reward: { status: 'credited', delta: 100, balance_after: 100 },
     });
-    expect(result.results.every((item) => item.correct && item.explanation)).toBe(true);
+    expect(
+      result.results.every(
+        (item) =>
+          item.correct &&
+          item.options.length === 4 &&
+          item.options.every((option) => option.explanation) &&
+          item.options.filter((option) => option.correct && option.chosen).length === 1,
+      ),
+    ).toBe(true);
     expect(memory.completionRows).toHaveLength(1);
     expect(memory.completionRows[0]).toMatchObject({
       user_id: USER,
@@ -1103,7 +878,7 @@ describe('AcademyService quiz attempts', () => {
       completion_method: 'quiz',
       attempt_id: attempt.attempt_id,
       request_id: null,
-      content_version: '2.0.0',
+      content_version: 'ch01-v2.0',
     });
 
     // Retry after a timeout / double click: the committed result, no second completion or reward.
@@ -1332,30 +1107,54 @@ describe('AcademyService quiz attempts', () => {
 });
 
 describe('AcademyService guide completion', () => {
-  const guideInput = (request_id = 'request-guide-0001', content_version = '1.0.0') => ({
+  const GUIDE_VERSIONS: Record<string, string> = { ch02: 'ch02-v3.0', ch04: 'ch04-v1.0' };
+  const guideInput = (request_id = 'request-guide-0001', content_version = 'ch02-v3.0') => ({
     catalog_version: ACADEMY_CATALOG_VERSION,
     content_version,
     request_id,
   });
 
-  it('refuses all 12 current guides until their content is published (409 NOT_PUBLISHED)', async () => {
+  it('completes each of the 12 published guides with the served content version (+100 xu each)', async () => {
     const { service, memory, rewards } = setup();
     const guides = [...loadAcademyContent().lessons.values()].filter(
       (lesson) => lesson.kind === 'guide',
     );
-    for (const guide of guides)
-      await expect(
-        service.completeGuide(USER, guide.id, guideInput(`request-${guide.id}`)),
-      ).rejects.toMatchObject({ status: 409, response: { code: 'NOT_PUBLISHED' } });
-    expect(memory.completionRows).toHaveLength(0);
-    expect(rewards!.calls).toHaveLength(0);
+    expect(guides).toHaveLength(12);
+    let balance = 0;
+    for (const guide of guides) {
+      const version = GUIDE_VERSIONS[guide.id.slice(0, 4)]!;
+      expect((await service.lesson(USER, guide.id)).content_version).toBe(version);
+      const result = await service.completeGuide(
+        USER,
+        guide.id,
+        guideInput(`request-${guide.id}`, version),
+      );
+      balance += 100;
+      expect(result).toMatchObject({
+        lesson_id: guide.id,
+        lesson_key: `guide:${guide.id}`,
+        completion: { completed: true, completion_method: 'guide', newly_completed: true },
+        granted_capabilities: [],
+        reward: { status: 'credited', delta: 100, balance_after: balance },
+      });
+    }
+    expect(memory.completionRows).toHaveLength(12);
+    expect(memory.completionRows.every((row) => row.completion_method === 'guide')).toBe(true);
+    expect(rewards!.calls).toHaveLength(12);
+    expect(rewards!.balance).toBe(1200);
+    const progress = await service.progress(USER);
+    expect(progress.course_done).toBe(12);
+    expect(progress.chapters.filter((chapter) => chapter.done === 6).map((c) => c.no)).toEqual([
+      2, 4,
+    ]);
+    expect(progress.granted_capabilities).toEqual([]);
   });
 
   it('refuses the guide button for quiz lessons (422 COMPLETION_MODE_MISMATCH)', async () => {
-    const { service, memory } = setup({ content: contentWithPublishedGuides('ch02-l01') });
-    for (const lessonId of ['ch01-l01', 'ch03-l06', 'ch01-l06'])
+    const { service, memory } = setup();
+    for (const lessonId of ['ch01-l01', 'ch03-l06', 'ch01-l06', 'ch05-l01'])
       await expect(
-        service.completeGuide(USER, lessonId, guideInput('request-quiz-0001', '2.0.0')),
+        service.completeGuide(USER, lessonId, guideInput('request-quiz-0001', 'ch01-v2.0')),
       ).rejects.toMatchObject({ status: 422, response: { code: 'COMPLETION_MODE_MISMATCH' } });
     expect(memory.completionRows).toHaveLength(0);
     await expect(service.completeGuide(USER, 'ch99-l01', guideInput())).rejects.toBeInstanceOf(
@@ -1364,8 +1163,7 @@ describe('AcademyService guide completion', () => {
   });
 
   it('completes a published guide once: no quiz, no capability, reward once, idempotent per request id', async () => {
-    const content = contentWithPublishedGuides('ch02-l01', 'ch04-l06');
-    const { service, memory, rewards, grants } = setup({ content });
+    const { service, memory, rewards, grants } = setup();
     const first = await service.completeGuide(USER, 'ch02-l01', guideInput());
     expect(first).toMatchObject({
       lesson_id: 'ch02-l01',
@@ -1381,7 +1179,7 @@ describe('AcademyService guide completion', () => {
       completion_method: 'guide',
       attempt_id: null,
       request_id: 'request-guide-0001',
-      content_version: '1.0.0',
+      content_version: 'ch02-v3.0',
     });
     expect(rewards!.calls[0]!.input).toMatchObject({
       completionMethod: 'guide',
@@ -1404,12 +1202,27 @@ describe('AcademyService guide completion', () => {
     const progress = await service.progress(USER);
     expect(progress.course_done).toBe(1);
     expect(progress.chapters[1]).toEqual({ no: 2, done: 1, total: 6 });
-    expect((await service.lesson(USER, 'ch02-l01')).completed).toBe(true);
+    const reread = await service.lesson(USER, 'ch02-l01');
+    expect(reread).toMatchObject({
+      completed: true,
+      completion_method: 'guide',
+      reward: { status: 'credited', delta: 100, balance_after: 100 },
+    });
+    // A lesson that was never completed, or completed without a reward record, reports none.
+    expect((await service.lesson(USER, 'ch02-l02')).reward).toBeNull();
+    memory.completionRows.push({
+      ...memory.completionRows[0]!,
+      lesson_key: 'guide:ch02-l03',
+      lesson_id: 'ch02-l03',
+      completion_method: 'legacy_migration',
+      request_id: null,
+      source: {},
+    });
+    expect((await service.lesson(USER, 'ch02-l03')).reward).toBeNull();
   });
 
   it('is idempotent under concurrent clicks and rejects a request id reused for another lesson', async () => {
-    const content = contentWithPublishedGuides('ch02-l01', 'ch02-l02');
-    const { service, memory, rewards } = setup({ content });
+    const { service, memory, rewards } = setup();
     const results = await Promise.all(
       Array.from({ length: 4 }, () => service.completeGuide(USER, 'ch02-l01', guideInput())),
     );
@@ -1424,21 +1237,30 @@ describe('AcademyService guide completion', () => {
   });
 
   it('rejects stale catalog and content versions and unknown request payloads', async () => {
-    const content = contentWithPublishedGuides('ch02-l01');
-    const { service, memory } = setup({ content });
+    const { service, memory } = setup();
     await expect(
       service.completeGuide(USER, 'ch02-l01', { ...guideInput(), catalog_version: 'old' }),
     ).rejects.toMatchObject({ status: 409, response: { code: 'CATALOG_VERSION_MISMATCH' } });
     await expect(
       service.completeGuide(USER, 'ch02-l01', guideInput('request-guide-0001', '0.9.0')),
+    ).rejects.toMatchObject({
+      status: 409,
+      response: { code: 'CONTENT_VERSION_MISMATCH', content_version: 'ch02-v3.0' },
+    });
+    // The content version of another chapter's package is not accepted either.
+    await expect(
+      service.completeGuide(USER, 'ch02-l01', guideInput('request-guide-0001', 'ch04-v1.0')),
     ).rejects.toMatchObject({ status: 409, response: { code: 'CONTENT_VERSION_MISMATCH' } });
     expect(memory.completionRows).toHaveLength(0);
   });
 
   it('guide completion by a reward-less deployment still completes (reward unavailable)', async () => {
-    const content = contentWithPublishedGuides('ch04-l06');
-    const { service } = setup({ content, rewards: false });
-    const result = await service.completeGuide(USER, 'ch04-l06', guideInput());
+    const { service } = setup({ rewards: false });
+    const result = await service.completeGuide(
+      USER,
+      'ch04-l06',
+      guideInput('request-guide-0001', 'ch04-v1.0'),
+    );
     expect(result.completion.newly_completed).toBe(true);
     expect(result.reward).toEqual({ status: 'unavailable' });
   });
@@ -1555,6 +1377,30 @@ describe('academy SQL store', () => {
     expect(statements[0]!.text).toMatch(/catalog_version, content_version/);
     expect(statements[0]!.values).toContain(ACADEMY_CATALOG_VERSION);
     expect(statements[0]!.values).toContain('technical:rsi');
+  });
+
+  it('counts best score and submitted attempts of the owner and lesson key only', async () => {
+    const statements: Array<{ text: string; values?: readonly unknown[] }> = [];
+    const store = new AcademySqlStore({
+      query: (text: string, values?: readonly unknown[]) => {
+        statements.push({ text, values });
+        return Promise.resolve([{ best_score: 7, attempts_submitted: 3 }]);
+      },
+    } as never);
+    expect(await store.attemptStats(USER, 'technical:rsi')).toEqual({
+      best_score: 7,
+      attempts_submitted: 3,
+    });
+    expect(statements[0]!.text).toMatch(/max\(score\)/);
+    expect(statements[0]!.text).toMatch(
+      /user_id = \$1 and lesson_key = \$2 and status = 'submitted'/,
+    );
+    expect(statements[0]!.values).toEqual([USER, 'technical:rsi']);
+    const empty = new AcademySqlStore({ query: () => Promise.resolve([]) } as never);
+    expect(await empty.attemptStats(USER, 'technical:rsi')).toEqual({
+      best_score: null,
+      attempts_submitted: 0,
+    });
   });
 
   it('reads only lesson:* capabilities from the legacy grants and never writes academy_grants', async () => {

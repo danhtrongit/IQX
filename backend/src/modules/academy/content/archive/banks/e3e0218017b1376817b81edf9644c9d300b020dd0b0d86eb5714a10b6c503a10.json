@@ -1,0 +1,237 @@
+{
+  "format": "legacy-v1",
+  "questions_version": "e3e0218017b1376817b81edf9644c9d300b020dd0b0d86eb5714a10b6c503a10",
+  "lesson_id": "ch03-l02",
+  "lesson_key": "fundamental:profit_yoy",
+  "content_version": "2.0.0",
+  "superseded_by": "ch03-v2.0",
+  "assessment": {
+    "lesson_id": "ch03-l02",
+    "questions": [
+      {
+        "question": "Dùng các dữ liệu: Lợi nhuận kỳ này = 150; Lợi nhuận cùng kỳ = 120. Tăng trưởng LNST YoY bằng bao nhiêu theo công thức bài học?",
+        "options": [
+          {
+            "text": "35 %",
+            "id": "o1"
+          },
+          {
+            "text": "25 %",
+            "id": "o2"
+          },
+          {
+            "text": "40,5 %",
+            "id": "o3"
+          },
+          {
+            "text": "11,5 %",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 1,
+        "explanation": "Áp dụng (Lợi nhuận kỳ này / Lợi nhuận cùng kỳ − 1) × 100; kết quả 25 %.",
+        "skill": "tính toán",
+        "fixture": null,
+        "id": "ch03-l02-q01",
+        "lesson_id": "ch03-l02",
+        "correct_option_id": "o2"
+      },
+      {
+        "question": "Tăng trưởng LNST YoY đang bằng đúng 25 %. Bộ lọc đặt > 25 %. Kết quả nào đúng?",
+        "options": [
+          {
+            "text": "Đạt nếu giá cổ phiếu tăng.",
+            "id": "o1"
+          },
+          {
+            "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+            "id": "o2"
+          },
+          {
+            "text": "Không đạt điều kiện.",
+            "id": "o3"
+          },
+          {
+            "text": "Đạt vì bằng ngưỡng cũng được tính.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 2,
+        "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch03-l02-q02",
+        "lesson_id": "ch03-l02",
+        "correct_option_id": "o3"
+      },
+      {
+        "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Tăng trưởng LNST YoY?",
+        "options": [
+          {
+            "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+            "id": "o1"
+          },
+          {
+            "text": "Lỗ từ −100 còn −50 là thu hẹp lỗ; phép chia thông thường cho ra −50% gây hiểu sai. Bản đặc tả này trả trạng thái kỳ gốc không dương thay vì một tỷ lệ tăng trưởng thông thường.",
+            "id": "o2"
+          },
+          {
+            "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+            "id": "o3"
+          },
+          {
+            "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 1,
+        "explanation": "Lợi nhuận tăng nhanh hơn doanh thu có thể phản ánh cải thiện biên lợi nhuận, nhưng cũng có thể đến từ khoản thu không lặp lại. Lỗ từ −100 còn −50 là thu hẹp lỗ; phép chia thông thường cho ra −50% gây hiểu sai. Bản đặc tả này trả trạng thái kỳ gốc không dương thay vì một tỷ lệ tăng trưởng thông thường.",
+        "skill": "phản biện",
+        "fixture": null,
+        "id": "ch03-l02-q03",
+        "lesson_id": "ch03-l02",
+        "correct_option_id": "o2"
+      },
+      {
+        "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Tăng trưởng LNST YoY. Bộ lọc nên làm gì?",
+        "options": [
+          {
+            "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+            "id": "o1"
+          },
+          {
+            "text": "Điền 0 rồi kiểm tra như số thật.",
+            "id": "o2"
+          },
+          {
+            "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+            "id": "o3"
+          },
+          {
+            "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 0,
+        "explanation": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+        "skill": "dữ liệu",
+        "fixture": null,
+        "id": "ch03-l02-q04",
+        "lesson_id": "ch03-l02",
+        "correct_option_id": "o1"
+      },
+      {
+        "question": "Nhận định nào đúng với Tăng trưởng LNST YoY?",
+        "options": [
+          {
+            "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+            "id": "o1"
+          },
+          {
+            "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+            "id": "o2"
+          },
+          {
+            "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+            "id": "o3"
+          },
+          {
+            "text": "Lợi nhuận tăng nhanh hơn doanh thu có thể phản ánh cải thiện biên lợi nhuận, nhưng cũng có thể đến từ khoản thu không lặp lại.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 3,
+        "explanation": "Lợi nhuận tăng nhanh hơn doanh thu có thể phản ánh cải thiện biên lợi nhuận, nhưng cũng có thể đến từ khoản thu không lặp lại. Trong chỉ tiêu này dùng lợi nhuận sau thuế thuộc cổ đông công ty mẹ trên báo cáo hợp nhất. Không so lợi nhuận toàn tập đoàn kỳ này với lợi nhuận thuộc công ty mẹ kỳ trước. Lợi nhuận là kết quả kế toán sau thuế, không phải tiền thuần vào tài khoản.",
+        "skill": "diễn giải",
+        "fixture": null,
+        "id": "ch03-l02-q05",
+        "lesson_id": "ch03-l02",
+        "correct_option_id": "o4"
+      },
+      {
+        "question": "Hai doanh nghiệp A và B lần lượt có Tăng trưởng LNST YoY bằng 23 và 27 %. Điều kiện < 25 % giữ lại ai?",
+        "options": [
+          {
+            "text": "Cả A và B.",
+            "id": "o1"
+          },
+          {
+            "text": "Không doanh nghiệp nào.",
+            "id": "o2"
+          },
+          {
+            "text": "Chỉ A.",
+            "id": "o3"
+          },
+          {
+            "text": "Chỉ B.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 2,
+        "explanation": "23 < 25 đúng, 27 < 25 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch03-l02-q06",
+        "lesson_id": "ch03-l02",
+        "correct_option_id": "o3"
+      },
+      {
+        "question": "Báo cáo dùng tính Tăng trưởng LNST YoY kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+        "options": [
+          {
+            "text": "Có, nếu sau này công ty hoạt động tốt.",
+            "id": "o1"
+          },
+          {
+            "text": "Có, nhưng nhân kết quả với 0,5.",
+            "id": "o2"
+          },
+          {
+            "text": "Không; thông tin chưa có tại ngày 10/04.",
+            "id": "o3"
+          },
+          {
+            "text": "Có, vì kỳ kế toán đã kết thúc.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 2,
+        "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+        "skill": "thời điểm dữ liệu",
+        "fixture": null,
+        "id": "ch03-l02-q07",
+        "lesson_id": "ch03-l02",
+        "correct_option_id": "o3"
+      },
+      {
+        "question": "Doanh nghiệp đạt điều kiện Tăng trưởng LNST YoY, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+        "options": [
+          {
+            "text": "Giữ vì một điều kiện đạt đã đủ.",
+            "id": "o1"
+          },
+          {
+            "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+            "id": "o2"
+          },
+          {
+            "text": "Tự bỏ điều kiện chưa đạt.",
+            "id": "o3"
+          },
+          {
+            "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 3,
+        "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch03-l02-q08",
+        "lesson_id": "ch03-l02",
+        "correct_option_id": "o4"
+      }
+    ]
+  }
+}

@@ -117,6 +117,29 @@ stored in opaque-id order so neither the id nor the position reveals the key (al
 `o1` in the source). `toPublicQuestion()` is the projection allowed before submit.
 `reference_periods`, `datasets`, `proof`, `basis`, `change_log`, `reference_*` are not imported.
 
+## Serving the packages (runtime, `src/modules/academy`)
+
+`academy.content.ts` loads `content/packages/ch01..ch04` with `package.schema.ts` at boot
+(`AcademyService.onModuleInit`) and serves chapters 1-4 from them; chapters 5-13 keep their re-homed
+lesson files. A package lesson must equal its catalog entry (`lesson_key`, kind, name, order,
+`config_id` = capability binding, quiz ↔ `quiz`, `manual` ↔ `guide`) and a chapter package must cover
+all of its catalog lessons, otherwise the API does not start. Containers (`callout`, `details`) may hold
+leaf blocks only; chart blocks, computed-table charts and question figures must resolve in
+`charts.vi.json`; images must be under `/assets/academy/chNN/`.
+
+- The lesson API returns the blocks as they are plus the chart models its chart blocks use; the
+  attempt API projects questions field by field (`id topic section prompt hint figure options[id,text]`),
+  never `source_id`, the key or an explanation. Question and option order are shuffled per attempt.
+- A bank is identified by `questions_version`: sha256 of the lesson's 8 private questions plus the
+  chart models of their figures (`package-v1`), or of the parsed legacy question file (`legacy-v1`).
+  **Changing a bank (or a question chart) changes its version.** Before shipping the change, move the
+  previous bank to `content/archive/banks/<questions_version>.json` (`packageBankArchiveFile()` builds
+  the file), mark it `superseded` in `content/archive/banks.index.json` and register the new version as
+  `current`; `academy-content.test.ts` fails until you do. Open attempts are graded with the bank they
+  were created with.
+- `content/lessons/ch01-l0N` and `ch03-l0N` keep only a stub (`superseded_by` + the worked `fixture`
+  read by the quant registry tests); their sections and banks live in the packages and the archive.
+
 ## Do-not-copy enforcement
 
 `verify.ts` (and the extractor) scan every string and key of the public files and the question

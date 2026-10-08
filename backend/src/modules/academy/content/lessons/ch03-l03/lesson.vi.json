@@ -1,25 +1,7 @@
 {
   "lesson_id": "ch03-l03",
-  "content_version": "2.0.0",
-  "origin": "biên soạn mới theo đề cương đã chốt",
-  "sections": [
-    {
-      "title": "Khái niệm và cách đọc",
-      "html": "<p><strong>Tăng trưởng EPS YoY</strong> đo mức thay đổi lợi nhuận cơ bản trên mỗi cổ phiếu so với cùng kỳ.</p><p>EPS cơ bản lấy lợi nhuận dành cho cổ đông phổ thông chia số cổ phiếu phổ thông bình quân gia quyền. Không thay số bình quân bằng số cuối kỳ. Bộ dữ liệu phải có cờ điều chỉnh so sánh; thiếu cơ sở điều chỉnh thì không tự ghép hai EPS.</p><p>EPS giúp kiểm tra phần lợi nhuận tính trên mỗi cổ phiếu; tổng lợi nhuận tăng chưa đủ nếu số cổ phiếu cũng tăng mạnh.</p>"
-    },
-    {
-      "title": "Công thức và ví dụ tính",
-      "html": "<div class=\"formula\">(EPS kỳ này / EPS cùng kỳ − 1) × 100</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>EPS kỳ này</td><td>2.400</td></tr><tr><td>EPS cùng kỳ</td><td>2.000</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>20 %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
-    },
-    {
-      "title": "Kỳ dữ liệu và giới hạn",
-      "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100.</p><p>Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.</p><p>Tách cổ phiếu hoặc cổ tức bằng cổ phiếu có thể làm hai kỳ không còn so sánh trực tiếp nếu EPS chưa được điều chỉnh cùng cơ sở.</p>"
-    },
-    {
-      "title": "Vận dụng trong Bộ lọc",
-      "html": "<p>Thêm <strong>Tăng trưởng EPS YoY</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị %.</p><p>Với kết quả minh họa 20 %, điều kiện “Tăng trưởng EPS YoY &gt; 19 %” đạt. Điều kiện “Tăng trưởng EPS YoY &gt; 20 %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
-    }
-  ],
+  "superseded_by": "ch03-v2.0",
+  "note": "Served from content/packages/ch03. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
   "fixture": {
     "type": "scalar",
     "label": "Tăng trưởng EPS YoY",
@@ -39,15 +21,5 @@
     "tolerance": 0.015,
     "synthetic": true,
     "prompt": "EPS kỳ này = 2400; EPS cùng kỳ = 2000. Tính Tăng trưởng EPS YoY theo công thức của bài."
-  },
-  "sources": [
-    "source:fundamental-registry-v1",
-    "author:financial-contract-v2"
-  ],
-  "review_status": "editorial-v2; subject-matter review and production parity still required",
-  "rehomed_from": {
-    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
-    "lesson_id": "ch03-l03",
-    "chapter": 3
   }
 }

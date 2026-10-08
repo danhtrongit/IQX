@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+import { lessonBlockSchema } from './academy.blocks.js';
+import { chartModelSchema } from './content/packages/package.schema.js';
+
 export const lessonIdParamSchema = z.string().regex(/^ch\d{2}-l\d{2}$/);
 export const attemptIdParamSchema = z.uuid();
 
@@ -51,6 +54,8 @@ const completionInfoSchema = z.object({
   assessment_ready: z.boolean(),
   /** Pinned by attempts; null until the bank is published. */
   assessment_version: z.string().nullable(),
+  /** Guide lessons: label of the completion button ("Hoàn thành bài học"); null for quizzes. */
+  button_label: z.string().nullable(),
 });
 
 /** Catalog metadata of one lesson. Never carries answers. */
@@ -111,60 +116,6 @@ export const progressResponseSchema = z.object({
 });
 export type ProgressResponse = z.infer<typeof progressResponseSchema>;
 
-const sectionBlockSchema = z.discriminatedUnion('type', [
-  z.object({ type: z.literal('html'), html: z.string() }),
-  z.object({ type: z.literal('text'), text: z.string() }),
-  z.object({ type: z.literal('formula'), expression: z.string(), caption: z.string().optional() }),
-  z.object({
-    type: z.literal('table'),
-    caption: z.string().optional(),
-    header: z.array(z.string()),
-    rows: z.array(z.array(z.string())),
-    note: z.string().optional(),
-  }),
-  z.object({ type: z.literal('chart'), chart_id: z.string(), caption: z.string().optional() }),
-  z.object({
-    type: z.literal('image'),
-    asset_id: z.string(),
-    alt: z.string(),
-    caption: z.string().optional(),
-  }),
-]);
-
-export const lessonResponseSchema = lessonMetaSchema.extend({
-  catalog_version: z.string(),
-  /** Reading never completes a lesson. */
-  completed: z.boolean(),
-  completion_method: completionMethodSchema.nullable(),
-  completed_at: z.string().nullable(),
-  /** Empty when `content_status` is `not_published`. */
-  sections: z.array(
-    z.object({ id: z.string(), title: z.string(), blocks: z.array(sectionBlockSchema) }),
-  ),
-  assets: z.array(z.object({ id: z.string(), kind: z.enum(['image', 'chart']), ref: z.string() })),
-  fixture: z.record(z.string(), z.unknown()).nullable(),
-  sources: z.array(z.string()),
-  review_status: z.string().nullable(),
-});
-export type LessonResponse = z.infer<typeof lessonResponseSchema>;
-
-export const attemptResponseSchema = z.object({
-  attempt_id: z.string(),
-  lesson_id: z.string(),
-  lesson_key: z.string(),
-  catalog_version: z.string(),
-  content_version: z.string(),
-  assessment_version: z.string(),
-  questions: z.array(
-    z.object({
-      id: z.string(),
-      question: z.string(),
-      options: z.array(z.object({ id: z.string(), text: z.string() })),
-    }),
-  ),
-});
-export type AttemptResponse = z.infer<typeof attemptResponseSchema>;
-
 /** Outcome of the learning-coin hook of the completion that created this result, if any. */
 export const rewardResultSchema = z
   .discriminatedUnion('status', [
@@ -179,6 +130,78 @@ export const rewardResultSchema = z
   .nullable();
 export type RewardResult = z.infer<typeof rewardResultSchema>;
 
+export const lessonResponseSchema = lessonMetaSchema.extend({
+  catalog_version: z.string(),
+  /** Reading never completes a lesson. */
+  completed: z.boolean(),
+  completion_method: completionMethodSchema.nullable(),
+  completed_at: z.string().nullable(),
+  /**
+   * Coin outcome stored with the completion ("Đã nhận 100 xu" on re-read; `unavailable` = still
+   * updating). null when not completed or when the completion carries no reward record.
+   */
+  reward: rewardResultSchema,
+  /** Best score over the owner's submitted attempts (only ever grows); null without a submission. */
+  best_score: z.number().int().nullable(),
+  /** Submitted attempts of the owner for this lesson (quiz lessons; 0 for guides). */
+  attempts_submitted: z.number().int(),
+  /** Reader heading: the package title, or the catalog name for chapters without a package. */
+  title: z.string(),
+  lead: z.string().nullable(),
+  /** Labels of the four section tabs (s1..s4); null for chapters without a package. */
+  nav_labels: z.array(z.string()).length(4).nullable(),
+  /** Empty when `content_status` is `not_published`. */
+  sections: z.array(
+    z.object({ id: z.string(), title: z.string(), blocks: z.array(lessonBlockSchema) }),
+  ),
+  /** Chart models of this lesson's chart blocks, keyed by `chart_id`. */
+  charts: z.record(z.string(), chartModelSchema),
+  fixture: z.record(z.string(), z.unknown()).nullable(),
+  sources: z.array(z.string()),
+  review_status: z.string().nullable(),
+});
+export type LessonResponse = z.infer<typeof lessonResponseSchema>;
+
+/** Figure of a question: a chart model carried inline, or a small table. */
+export const questionFigureSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('chart'), chart_id: z.string(), chart: chartModelSchema }),
+  z.object({
+    type: z.literal('table'),
+    head: z.array(z.string()),
+    rows: z.array(z.array(z.string())),
+  }),
+]);
+
+const questionContentShape = {
+  topic: z.string().nullable(),
+  /** Lesson section (1-4) the question revises; null for chapters without a package. */
+  section: z.number().int().min(1).max(4).nullable(),
+  prompt: z.string(),
+  /** Public hint (e.g. the formula to use); null when the question has none. */
+  hint: z.string().nullable(),
+  figure: questionFigureSchema.nullable(),
+};
+
+export const attemptResponseSchema = z.object({
+  attempt_id: z.string(),
+  lesson_id: z.string(),
+  lesson_key: z.string(),
+  catalog_version: z.string(),
+  content_version: z.string(),
+  assessment_version: z.string(),
+  /** `submitted` when the key replays an attempt that was already graded: ask submit for the result. */
+  status: z.enum(['open', 'submitted']),
+  /** The 8 questions in this attempt's own (stored, stable) order; options likewise. */
+  questions: z.array(
+    z.object({
+      id: z.string(),
+      ...questionContentShape,
+      options: z.array(z.object({ id: z.string(), text: z.string() })),
+    }),
+  ),
+});
+export type AttemptResponse = z.infer<typeof attemptResponseSchema>;
+
 const completionResultSchema = z.object({
   /** The lesson is completed after this call (a failed quiz attempt on a new lesson: false). */
   completed: z.boolean(),
@@ -188,22 +211,49 @@ const completionResultSchema = z.object({
   newly_completed: z.boolean(),
 });
 
+const reviewOptionSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  /** The learner chose this option. */
+  chosen: z.boolean(),
+  /** This option is the right answer. */
+  correct: z.boolean(),
+  /** Why this option is right or wrong (chapters 1 and 3); null for the other chapters. */
+  explanation: z.string().nullable(),
+});
+
+/** One question of a submitted attempt, in the attempt's order, with the key and explanations. */
+const reviewItemSchema = z.object({
+  question_id: z.string(),
+  ...questionContentShape,
+  /** The option the learner chose. */
+  option_id: z.string(),
+  correct: z.boolean(),
+  correct_option_id: z.string(),
+  /** One explanation for the whole question (chapters 5-13); null where options carry theirs. */
+  explanation: z.string().nullable(),
+  /** In the order the learner saw, so letters A-D match the attempt. */
+  options: z.array(reviewOptionSchema),
+});
+
 export const submitResponseSchema = z.object({
   attempt_id: z.string(),
   lesson_id: z.string(),
-  lesson_key: z.string(),
+  /** null only for an attempt of the legacy 18-chapter catalog (read-only history). */
+  lesson_key: z.string().nullable(),
+  catalog_version: z.string(),
   score: z.number().int(),
   total: z.literal(8),
+  correct: z.number().int(),
+  wrong: z.number().int(),
   passed: z.boolean(),
-  results: z.array(
-    z.object({
-      question_id: z.string(),
-      option_id: z.string(),
-      correct: z.boolean(),
-      correct_option_id: z.string(),
-      explanation: z.string(),
-    }),
-  ),
+  submitted_at: z.string().nullable(),
+  /** Best score over the owner's submitted attempts of this lesson; never lowered by a retake. */
+  best_score: z.number().int().nullable(),
+  attempts_submitted: z.number().int(),
+  /** false when the pinned question bank is no longer available (legacy history): `results` is empty. */
+  review_available: z.boolean(),
+  results: z.array(reviewItemSchema),
   completion: completionResultSchema,
   granted_capabilities: z.array(z.string()),
   newly_granted: z.array(z.string()),

@@ -1,25 +1,7 @@
 {
   "lesson_id": "ch01-l06",
-  "content_version": "2.0.0",
-  "origin": "biên soạn mới theo đề cương đã chốt",
-  "sections": [
-    {
-      "title": "Hai tập điều kiện độc lập",
-      "html": "<p>Hợp lưu là kết hợp điều kiện theo một quy tắc đã xác định. Trong Chương 1, nhóm Mua và nhóm Bán đều dùng AND nhưng không cần dùng cùng các chỉ báo. Mỗi chỉ báo trong nhóm có tham số và toán tử của chính phía đó.</p><p>Ví dụ Mua dùng RSI 14 và SMA 20. Bán dùng MACD 8/21/5 và SMA 50. Không lấy giá trị SMA 20 Mua để đánh giá điều kiện SMA 50 Bán. Công tắc tổng tắt một chỉ báo ở cả hai phía mà không xóa tham số.</p>"
-    },
-    {
-      "title": "AND, dữ liệu và thời điểm",
-      "html": "<div class=\"formula\">Mua đủ tín hiệu = mọi điều kiện Mua đang có hiệu lực đều đúng<br/>Bán đủ tín hiệu = có ít nhất một điều kiện Bán và mọi điều kiện Bán đều đúng</div><p>Điều kiện được tính mới tại từng phiên từ dữ liệu đã có. Nếu RSI chỉ đúng ngày thứ hai còn MACD chỉ đúng ngày thứ ba, không ghép thành một tín hiệu ở ngày thứ ba. Thiếu dữ liệu không phải bằng 0 và không tạo điều kiện đúng khi đảo dấu.</p><p>Backtest một mã yêu cầu ít nhất một điều kiện Mua. Không có điều kiện Bán nghĩa là không có thoát theo chỉ báo. Không được dùng all([]) để tự bán. Bot mua theo cấu hình Mua/Bán đã lưu trong Học viện và cắt lỗ riêng; Backtest chỉ kiểm thử chỉ báo đang cấu hình, không tự mô phỏng Bot.</p>"
-    },
-    {
-      "title": "Ví dụ đối chiếu",
-      "html": "<div class=\"table-wrap\"><table><thead><tr><th>Phiên</th><th>RSI Mua</th><th>MA Mua</th><th>Nhóm Mua</th><th>MACD Bán</th></tr></thead><tbody><tr><td>A</td><td>Đúng</td><td>Đúng</td><td>Đúng</td><td>Sai</td></tr><tr><td>B</td><td>Sai</td><td>Đúng</td><td>Sai</td><td>Đúng</td></tr><tr><td>C</td><td>Thiếu</td><td>Đúng</td><td>Chưa thỏa</td><td>Đúng</td></tr></tbody></table></div><p>Nếu Bán chỉ dùng MACD, phía Bán có tín hiệu tại B và C. RSI chỉ dùng Mua nên RSI thiếu ở C không chặn Bán. Nhưng bán thực tế vẫn cần có vị thế có thể bán. Khi Mua và Bán cùng đúng, trạng thái vị thế quyết định xử lý, không tự mở hai giao dịch đối ứng.</p>"
-    },
-    {
-      "title": "Vận dụng",
-      "html": "<p>Ở Cấu hình, đặt Mua RSI ON, Bán RSI OFF; Mua MA ON, Bán MA OFF; Mua MACD OFF, Bán MACD ON. Backtest hiển thị hai chỉ báo Mua và một chỉ báo Bán. Đổi RSI Mua không được làm nhãn Bán thay đổi.</p><p>Trong prototype, khi trống vị thế chỉ xét mở theo Mua; khi có vị thế chỉ xét thoát theo Bán nếu đã đủ điều kiện khớp. Không mua lại trong cùng phiên vừa bán. Nhiều tín hiệu không tạo nhiều vị thế trên cùng mã trong chế độ một vị thế.</p>"
-    }
-  ],
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
   "fixture": {
     "type": "scalar",
     "prompt": "Bốn điều kiện Mua có ba đúng, một sai. Có bao nhiêu nhóm AND Mua đạt (0 hoặc 1)?",
@@ -27,15 +9,5 @@
     "unit": "nhóm",
     "tolerance": 0,
     "synthetic": true
-  },
-  "sources": [
-    "source:curriculum-v1",
-    "source:audit-A01-A13"
-  ],
-  "review_status": "editorial-v2; subject-matter review and production parity still required",
-  "rehomed_from": {
-    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
-    "lesson_id": "ch01-l06",
-    "chapter": 1
   }
 }
