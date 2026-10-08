@@ -18,6 +18,7 @@ import { NewsPanel } from "./market/news-panel"
 import { PatternsPanel } from "./market/patterns-panel"
 import { QuoteSummary } from "./market/quote-summary"
 import { PortfolioPanel } from "./portfolio/portfolio-panel"
+import { PracticeMain, PracticePanel, PracticeProvider, parsePracticeParam } from "./practice"
 import { ShopMain, ShopPanel } from "./shop"
 import { TradingRuntime } from "./trading"
 import { OrderPanel } from "./trading/order-panel"
@@ -122,6 +123,8 @@ function DemoWorkspace() {
   const rawSymbol = params.get("symbol")?.toUpperCase()
   const symbol = rawSymbol && /^[A-Z0-9]{1,10}$/.test(rawSymbol) ? rawSymbol : "VNM"
   const content = parseDemoContent(params.get("content"))
+  // `view=bot&practice=<indicator_id>` opens the optional mini practice in place of the Bot panel.
+  const practiceId = activeId === "bot" ? parsePracticeParam(params.get("practice")) : null
 
   function selectSymbol(nextSymbol: string) {
     const next = new URLSearchParams(params)
@@ -138,6 +141,7 @@ function DemoWorkspace() {
     setParams(withDemoContent(params, nextContent), { replace: true })
   }
   function panel() {
+    if (practiceId) return <PracticePanel />
     switch (activeId) {
       case "trading": return <OrderPanel symbol={symbol} onSymbolChange={selectSymbol} />
       case "portfolio": return <PortfolioPanel symbol={symbol} onSymbolChange={selectSymbol} onNavigate={navigatePanel} />
@@ -156,15 +160,19 @@ function DemoWorkspace() {
       ? <PriceBoardPage embedded />
       : content === "ai-analysis"
         ? <MarketWorkspacePage embedded />
-        : <Overview toolId={activeId} symbol={symbol} mascotId={mascotId} onSymbolChange={selectSymbol} onNavigate={navigatePanel} />
+        : practiceId
+          ? <PracticeMain />
+          : <Overview toolId={activeId} symbol={symbol} mascotId={mascotId} onSymbolChange={selectSymbol} onNavigate={navigatePanel} />
 
   return <>
-    <WorkspaceFrame
-      panelLabel={activeItem?.label ?? "Học viện"}
-      defaultPanelOpen={params.has("view")}
-      main={<ContentTabs active={content} onSelect={selectContent}>{mainContent}</ContentTabs>}
-      panel={panel()}
-    />
+    <PracticeProvider indicatorId={practiceId}>
+      <WorkspaceFrame
+        panelLabel={activeItem?.label ?? "Học viện"}
+        defaultPanelOpen={params.has("view")}
+        main={<ContentTabs active={content} onSelect={selectContent}>{mainContent}</ContentTabs>}
+        panel={panel()}
+      />
+    </PracticeProvider>
     <TradingRuntime />
   </>
 }
