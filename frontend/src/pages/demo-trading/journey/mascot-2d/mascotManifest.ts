@@ -1,5 +1,6 @@
-import type { Lop } from "../../trading/plan-math"
 import type { MascotId, MascotState } from "../types"
+
+type Lop = "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc"
 
 export const MASCOT_ASSET_VERSION = "2.0.1"
 export const MASCOT_SLUG_BY_ID = {

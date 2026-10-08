@@ -53,10 +53,10 @@ function LocationProbe() {
 
 const SHARED_NAV = [
   ["Giới thiệu", "/"],
-  ["Demo Trading", "/demo-trading"],
+  ["Demo Trading", "/demo-trading?view=trading"],
   ["Chiến lược", "/chien-luoc"],
   ["Bài học", "/bai-hoc"],
-  ["Học viện", "/hoc-vien"],
+  ["Học viện", "/demo-trading?view=academy"],
 ] as const
 
 describe("Header", () => {
@@ -69,7 +69,7 @@ describe("Header", () => {
     expect(within(header).getByRole("link", { name: "IQX - Trang chủ" }).getAttribute("href")).toBe("/")
     const nav = within(header).getByRole("navigation", { name: "Điều hướng chính" })
     expect(within(nav).getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")])).toEqual(SHARED_NAV)
-    expect(within(header).getByRole("link", { name: "Bắt đầu ngay" }).getAttribute("href")).toBe("/demo-trading?view=journey")
+    expect(within(header).getByRole("link", { name: "Bắt đầu ngay" }).getAttribute("href")).toBe("/demo-trading?view=academy")
 
     await user.click(within(header).getByRole("button", { name: "Chế độ sáng" }))
     expect(within(header).getByRole("button", { name: "Chế độ tối" })).toBeTruthy()
@@ -98,7 +98,7 @@ describe("Header", () => {
     let menu = screen.getByRole("dialog", { name: "Điều hướng IQX" })
     const nav = within(menu).getByRole("navigation", { name: "Điều hướng di động" })
     expect(within(nav).getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")])).toEqual(SHARED_NAV)
-    expect(within(menu).getByRole("link", { name: "Bắt đầu ngay" }).getAttribute("href")).toBe("/demo-trading?view=journey")
+    expect(within(menu).getByRole("link", { name: "Bắt đầu ngay" }).getAttribute("href")).toBe("/demo-trading?view=academy")
 
     await user.click(within(menu).getByRole("button", { name: "Đóng menu điều hướng" }))
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Điều hướng IQX" })).toBeNull())
@@ -123,7 +123,7 @@ describe("Header", () => {
     const menu = screen.getByRole("dialog", { name: "Điều hướng IQX" })
     await user.click(within(menu).getByRole("link", { name: "Demo Trading" }))
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Điều hướng IQX" })).toBeNull())
-    expect(screen.getByTestId("location").textContent).toBe("/demo-trading")
+    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?view=trading")
   })
 
   it("keeps workspace active navigation in the mobile menu and closes after a route change", async () => {
@@ -140,13 +140,43 @@ describe("Header", () => {
   })
 
   it.each([
-    ["/demo-trading", "Demo Trading"],
-    ["/hoc-vien", "Học viện"],
-    ["/hoc-vien/ch01-l01", "Học viện"],
-  ])("marks only %s as the active content route", (pathname, label) => {
-    renderHeader(pathname)
+    ["/demo-trading?view=trading", "Demo Trading"],
+    ["/demo-trading?view=portfolio&symbol=FPT", "Demo Trading"],
+    ["/demo-trading?view=hunt", "Demo Trading"],
+    ["/demo-trading?view=academy", "Học viện"],
+    ["/demo-trading?view=academy&lesson=ch01-l01", "Học viện"],
+    ["/demo-trading", "Học viện"],
+    ["/demo-trading?view=journey", "Học viện"],
+  ])("marks only %s as the active workspace entry", (path, label) => {
+    renderHeader(path)
     const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
     expect(within(nav).getAllByRole("link", { current: "page" }).map((link) => link.textContent)).toEqual([label])
+  })
+
+  it("opens the workspace academy tool from the Học viện entry and keeps the symbol", async () => {
+    const user = userEvent.setup()
+    renderHeader("/demo-trading?view=hunt&symbol=FPT&content=board")
+    const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
+    await user.click(within(nav).getByRole("link", { name: "Học viện" }))
+    const location = new URL(`http://x${screen.getByTestId("location").textContent}`)
+    expect(location.pathname).toBe("/demo-trading")
+    expect(location.searchParams.get("view")).toBe("academy")
+    expect(location.searchParams.get("symbol")).toBe("FPT")
+    expect(location.searchParams.has("content")).toBe(false)
+  })
+
+  it("moves from the academy tool to the order tool through Demo Trading but keeps any other tool", async () => {
+    const user = userEvent.setup()
+    const { unmount } = renderHeader("/demo-trading?view=academy")
+    let nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
+    await user.click(within(nav).getByRole("link", { name: "Demo Trading" }))
+    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?view=trading")
+    unmount()
+
+    renderHeader("/demo-trading?view=portfolio&symbol=VIC")
+    nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
+    await user.click(within(nav).getByRole("link", { name: "Demo Trading" }))
+    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?view=portfolio&symbol=VIC")
   })
 
   it("closes an open mobile menu when the viewport reaches desktop width", async () => {

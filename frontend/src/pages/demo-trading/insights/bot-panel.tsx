@@ -1,12 +1,12 @@
 /**
- * «Bot của tôi» - the post-graduation Bot panel (Cấp 6 completed).
+ * «Bot» - the Bot account panel.
  *
  * Read-only by construction: the only action is a refresh (query invalidation)
- * and journal paging. Eligibility and every number come from the server; before
- * Cấp 6 graduation the panel explains the gate instead of inventing a Bot, and
- * the disclosure text is the server's own string.
+ * and journal paging. Every number comes from the server and nothing here gates
+ * the panel behind a level or a graduation; the disclosure text is the server's
+ * own string.
  */
-import { Bot, Info, LoaderCircle, RefreshCw, TriangleAlert } from "lucide-react"
+import { Bot, LoaderCircle, RefreshCw, TriangleAlert } from "lucide-react"
 
 import { SidebarPanel } from "@/components/layout/sidebar-panel"
 import { Badge } from "@/components/ui/badge"
@@ -19,7 +19,6 @@ import {
   formatDateTimeVn,
   formatInt,
   formatRatioPercent,
-  levelName,
 } from "./copy"
 import {
   ACTION_COPY,
@@ -34,7 +33,6 @@ import {
   useBotOverview,
   useBotPerformance,
   useBotPositions,
-  useInsightsLevel,
   useRefreshBot,
 } from "./hooks"
 import {
@@ -61,19 +59,18 @@ const ACTION_TONE: Record<string, string> = {
   warn: "bg-price-ref/15 text-price-ref",
 }
 
-/** One line describing what the Bot does with the saved Academy conditions right now. */
+/** One line naming which saved conditions the Bot currently evaluates. */
 function conditionsText(conditions: BotConditions): string {
   switch (conditions.state) {
     case "waiting_for_conditions":
-      return "Chờ kích hoạt điều kiện trong Học viện."
+      return "Chờ thiết lập điều kiện."
     case "entry_enabled":
       return conditions.has_active_sell
-        ? "Mua theo cấu hình. Bán theo điều kiện Bán hoặc cắt lỗ."
-        : "Mua theo cấu hình. Thoát bằng cắt lỗ."
+        ? "Đã bật Mua và Bán."
+        : "Đã bật điều kiện Mua."
     case "exit_only":
-      return "Không mua mới. Bán vị thế theo điều kiện Bán hoặc cắt lỗ."
     case "protection_only":
-      return "Không mua mới. Vị thế đang giữ vẫn được quản lý cắt lỗ."
+      return "Chỉ xét điều kiện Bán."
   }
 }
 
@@ -170,12 +167,8 @@ function PerformanceChart({ performance }: { performance: BotPerformance }) {
 }
 
 export function BotPanel() {
-  const { level } = useInsightsLevel()
   const overview = useBotOverview()
-  const eligible = Boolean(
-    overview.data?.eligible && overview.data.cap6_graduated_at
-  )
-  const hasBot = eligible && Boolean(overview.data?.bot)
+  const hasBot = Boolean(overview.data?.bot)
   const positions = useBotPositions(hasBot)
   const journal = useBotJournal(hasBot)
   const performance = useBotPerformance(hasBot)
@@ -194,8 +187,8 @@ export function BotPanel() {
 
   return (
     <SidebarPanel
-      title="Bot của tôi"
-      description="Bot demo mô phỏng theo cấu hình Học viện của bạn"
+      title="Bot"
+      description="Tài khoản Bot riêng · mô phỏng theo giá đóng cửa"
       actions={
         <Button
           variant="ghost"
@@ -233,13 +226,6 @@ export function BotPanel() {
               <Badge variant="outline" className="h-4 px-1.5 text-[11px]">
                 Mô phỏng theo giá đóng cửa
               </Badge>
-              {data.bot && (
-                <span className="text-xs text-muted-foreground">
-                  {data.bot.product_stage === "bot_v2_academy"
-                    ? "Bot V2 · Học viện"
-                    : "Bot V1 · chờ cấu hình"}
-                </span>
-              )}
             </div>
             {data.conditions && (
               <div className="space-y-1" aria-label="Điều kiện Bot">
@@ -286,16 +272,11 @@ export function BotPanel() {
             )}
           </SectionCard>
 
-          {!eligible ? (
-            <SectionCard title="Mở sau khi tốt nghiệp Cấp 6">
-              <NoteLine>{`Bạn đang ở Cấp ${formatInt(data.current_level)} «${levelName(data.current_level)}». Bot chỉ được backend khởi tạo sau khi ghi nhận tốt nghiệp Cấp 6; việc mở màn này không tạo Bot hoặc cấp vốn.`}</NoteLine>
-              <HintLine>{`Cấp hiện tại của phiên làm việc: ${formatInt(level)}. Bot cấp vốn và giao dịch mô phỏng hoàn toàn phía máy chủ.`}</HintLine>
-            </SectionCard>
-          ) : !data.bot ? (
-            <SectionCard title="Bot đang được khởi tạo">
+          {!data.bot ? (
+            <SectionCard title="Tài khoản Bot">
               <NoteLine>
-                Hệ thống đã ghi nhận tốt nghiệp Cấp 6 nhưng tài khoản Bot chưa
-                sẵn sàng. Hãy làm mới sau.
+                Tài khoản Bot chưa sẵn sàng. Việc mở màn này không tạo Bot hoặc
+                cấp vốn; hãy làm mới sau.
               </NoteLine>
             </SectionCard>
           ) : (
@@ -445,19 +426,6 @@ export function BotPanel() {
                               )}
                             />
                             <KeyValueRow
-                              label="Cắt lỗ"
-                              value={formatMoney(
-                                toFiniteNumber(position.stop_loss_vnd)
-                              )}
-                              tone="down"
-                            />
-                            <KeyValueRow
-                              label="Biên độ khi mua"
-                              value={formatMoney(
-                                toFiniteNumber(position.amplitude_at_entry_vnd)
-                              )}
-                            />
-                            <KeyValueRow
                               label="Phiên mua"
                               value={formatDateOnly(position.opened_session)}
                             />
@@ -466,22 +434,6 @@ export function BotPanel() {
                             <HintLine>
                               Chưa có giá đóng cửa hợp lệ cho phiên đang xem.
                             </HintLine>
-                          )}
-                          {position.filter_ids.length > 0 && (
-                            <div
-                              className="flex flex-wrap gap-1"
-                              aria-label="Nguồn săn mã"
-                            >
-                              {position.filter_ids.map((id) => (
-                                <Badge
-                                  key={id}
-                                  variant="outline"
-                                  className="h-4 px-1.5 text-[11px]"
-                                >
-                                  {formatFilter(id)}
-                                </Badge>
-                              ))}
-                            </div>
                           )}
                         </article>
                       )
@@ -603,48 +555,16 @@ export function BotPanel() {
             </>
           )}
 
-          <SectionCard title="Bot hoạt động như thế nào">
-            <ol className="list-decimal space-y-1 pl-4 text-xs">
-              <li>
-                Bot chỉ xét mua khi bạn đã bật và lưu ít nhất một điều kiện Mua
-                trong Học viện và tất cả điều kiện Mua đang bật cùng đúng tại
-                phiên. Không bật Bán vẫn mua được; khi đó vị thế chỉ thoát bằng
-                cắt lỗ.
-              </li>
-              <li>
-                Ứng viên lấy tối đa 10 mã từ mỗi bộ lọc Săn mã: Khối ngoại gom,
-                Tự doanh gom, Khối lượng đột biến, Vượt đỉnh 20 phiên, Tăng mạnh
-                kèm khối lượng; gộp tối đa 50 mã, ưu tiên mã xuất hiện ở nhiều
-                bộ lọc rồi GTGD 20 phiên.
-              </li>
-              <li>
-                Mỗi lần mua dùng tối đa 12% NAV đã khóa đầu phiên, gồm phí; tối
-                đa 30% NAV cho một mã và hai giao dịch mua mới mỗi phiên.
-              </li>
-              <li>
-                Bot không mua thêm mã đang giữ hoặc mua lại mã vừa bán trong
-                cùng phiên.
-              </li>
-              <li>
-                Cắt lỗ được khóa tại giá mua − 2× Biên độ L1 lúc mua. Khi giá
-                đóng cửa chạm mốc, Bot bán mô phỏng toàn bộ tại chính giá đóng
-                cửa phiên đó, bất kể cấu hình đang bật hay tắt.
-              </li>
-              <li>
-                Bán theo điều kiện khi tất cả điều kiện Bán đang bật cùng đúng.
-                Không còn mốc chốt lời cố định.
-              </li>
-            </ol>
-          </SectionCard>
-
-          <SectionCard title="Hướng dẫn">
+          <SectionCard title="Nguyên tắc Bot">
+            <ul className="list-disc space-y-1 pl-4 text-xs">
+              <li>Vốn khởi tạo 100.000.000 đồng, tài khoản riêng, cấp một lần.</li>
+              <li>Mua mới trong VN30 hoặc danh mục đã áp dụng; bán mọi mã đang giữ theo điều kiện Bán đang có hiệu lực.</li>
+              <li>Mỗi lần mua dùng 12% giá trị danh mục tham chiếu, gồm phí; tối đa 2 lần mua mới mỗi phiên và 30% tỷ trọng mỗi mã.</li>
+              <li>Không mua thêm mã đang giữ. Không có cắt lỗ, chốt lời hay giới hạn thời gian giữ tự động.</li>
+            </ul>
             <HintLine>
-              Bật và lưu điều kiện Mua/Bán trong Học viện → Cấu hình; bản lưu có
-              hiệu lực từ phiên kế tiếp.
-            </HintLine>
-            <HintLine>
-              <Info className="mr-1 inline size-3" />
-              Quy tắc Demo Trading nằm ở panel Phân tích danh mục theo từng cấp.
+              Lưu cấu hình hoặc áp dụng danh mục không tạo giao dịch ngay; thay
+              đổi có hiệu lực từ phiên giao dịch kế tiếp.
             </HintLine>
           </SectionCard>
 

@@ -7,7 +7,6 @@
  * - `GET /instruments/{symbol}` — kiểm tra mã là CỔ PHIẾU
  * - `GET /instruments?q=...` — tên/sàn/ngành của mã
  * - `GET /market-data/quotes/{symbol}/ohlcv` — sparkline 3 tháng
- * - `GET /virtual-trading/orders` — bằng chứng lệnh MUA đã khớp (cổng ★ Cấp 0)
  * - `POST /virtual-trading/orders/{id}/cancel`
  * - `POST /portfolio-manager/analyze` — báo cáo AI (premium)
  *
@@ -16,8 +15,6 @@
  * thì giữ `null` (UI render "—"), KHÔNG bao giờ ép về 0.
  */
 import { api, ApiError } from "@/lib/api"
-import type { JourneyProgress, OrderPage } from "@/pages/demo-trading/types"
-import { taskDone } from "@/pages/demo-trading/journey/journey-state"
 
 type Raw = Record<string, unknown>
 
@@ -248,37 +245,6 @@ export async function fetchDailyCloses(
 }
 
 /* ── Lệnh ────────────────────────────────────────────────────────────────── */
-
-/**
- * Bằng chứng lệnh MUA đã khớp cho một mã — điều kiện để Cấp 0 ghi nhận ★ của
- * nhiệm vụ ①. Trả `true` khi server đã có ít nhất một lệnh MUA khớp của mã đó.
- *
- * Ném lỗi khi không tra được (người gọi coi như KHÔNG có bằng chứng).
- */
-export async function hasFilledBuyEvidence(symbol: string): Promise<boolean> {
-  const params = new URLSearchParams({
-    status: "filled",
-    side: "buy",
-    symbol: symbol.trim().toUpperCase(),
-    page: "1",
-    page_size: "1",
-  })
-  const page = await api<OrderPage>(`/virtual-trading/orders?${params}`)
-  return (page.total ?? 0) > 0
-}
-
-/** Reconcile the Cấp 0 star gate after a successful watchlist action. */
-export async function recordCap0TaskAfterStar(
-  symbol: string,
-  journey: { isLoading: boolean; level: number; progress: JourneyProgress | null },
-  completeTask: (task: number, gate: "star") => Promise<void>,
-): Promise<boolean> {
-  if (journey.isLoading || journey.level !== 0 || !journey.progress) return false
-  if (taskDone(0, 1, journey.progress)) return false
-  if (!(await hasFilledBuyEvidence(symbol))) return false
-  await completeTask(1, "star")
-  return true
-}
 
 /** `POST /virtual-trading/orders/{id}/cancel` — chỉ lệnh đang chờ mới huỷ được. */
 export async function cancelOrder(id: string): Promise<void> {

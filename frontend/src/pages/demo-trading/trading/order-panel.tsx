@@ -1,22 +1,16 @@
 /**
- * `OrderPanel` — the demo-trading order ticket ("Đặt lệnh").
+ * `OrderPanel` — the manual order ticket ("Đặt lệnh").
  *
- * Level semantics (cumulative, server-owned — `JourneyPlanService`):
- * Cấp 0 = 5-chip Kế hoạch + practice cash; Cấp 1 adds lý do + vùng mua;
- * Cấp 2 adds cắt lỗ/chốt lời + the durable nhồi-lệnh pre-flight; Cấp 3 adds
- * khẩu vị × tự tin × cách khối lượng; Cấp 4/5 replace the lý-do field with the
- * four-layer self-read; Cấp 6 replaces it with the server's conflict table.
+ * A plain order form for the self-trading demo account: symbol, side, order
+ * type, price, quantity (with 25/50/75/100% helpers) and a confirm button.
+ * Nothing here depends on lessons, the Bot or any level; the server remains the
+ * authority on lot size, balances, price bands, sessions, fees and settlement,
+ * and the ticket only adds the client-side guards in `checkOrderInput`.
  *
- * What each level requires is enforced twice: `planGate` disables the button,
- * and the backend re-validates the same cumulative `journey_plan` atomically
- * before any cash moves, so a rejected BUY cannot leave an order without its
- * learning snapshot. Trading stays available at every journey level. Premium
- * only unlocks AI/BCTC reads; without it, the form records an unavailable
- * verdict rather than blocking practice.
- *
- * Must be rendered inside `JourneyProvider` (it reads the level from there).
+ * Opening it with a symbol (from the URL, Săn mã or the watch list) only fills
+ * the form; the order is placed solely by the confirm button.
  */
-import { useMemo, useRef, useState } from "react"
+import { useState } from "react"
 import { LoaderCircle, Star } from "lucide-react"
 import { toast } from "sonner"
 
@@ -37,37 +31,12 @@ import { useAuth } from "@/hooks/use-auth"
 import { useTradingAccount, useTradingPortfolio } from "@/hooks/use-trading"
 import { errorMessage } from "@/lib/api"
 import { formatMoney, formatNumber } from "@/lib/format"
-import {
-  useAddToWatchlist,
-  useRemoveFromWatchlist,
-  useWatchlist,
-} from "../portfolio/hooks"
-import { recordCap0TaskAfterStar } from "../portfolio/api"
-import { useJourney } from "../journey/use-journey"
+import { cn } from "@/lib/utils"
+import { SymbolPicker } from "../market/symbol-picker"
 import { useQuote } from "../market/use-quote"
-import { NhoiLenhDialog } from "./blocks/alerts"
-import { QuanLyVonBlock, SlTpBlock } from "./blocks/commitments"
-import { AiInsightDetailDialog, AiThanhTraCard, PlanBlockCap0, PlanFormCap1 } from "./blocks/plan-form"
-import { Doc5LopBlock, MauThuanBlock } from "./blocks/reading"
-import type { PlanContext, PlanDraft } from "./journey-plan"
-import { buildJourneyPlan, effectiveLyDo, emptyPlanDraft, planGate } from "./journey-plan"
-import type { Lop, NhanDinhLop, Verdict } from "./plan-math"
-import { BOARD_LOT, coBangMauThuan, conflictLevelLabel, roundToLo } from "./plan-math"
-import { aiLayers, verdictForLyDo } from "./stock-insight"
-import type { StockInsight } from "./stock-insight"
-import type { Cap2Alert } from "./use-plan-data"
-import {
-  useCap2AlertAction,
-  useCap2PreBuyAlert,
-  useCap3Progress,
-  useCap6MauThuan,
-  useCap6Skip,
-  useSetKhauVi,
-} from "./use-plan-data"
-import { useStockInsight } from "./use-stock-insight"
+import { useAddToWatchlist, useRemoveFromWatchlist, useWatchlist } from "../portfolio/hooks"
+import { BOARD_LOT, FEE_RATE, QUICK_PERCENTS, checkOrderInput, quantityForPercent } from "./order-math"
 import { useActivateAccount, usePlaceOrder } from "./use-trading-orders"
-
-const FEE_RATE = 0.0015
 
 export type OrderPanelProps = {
   symbol: string
@@ -76,15 +45,13 @@ export type OrderPanelProps = {
 }
 
 export function OrderPanel({ symbol, onSymbolChange }: OrderPanelProps) {
-  // A symbol change starts a NEW investment decision: remounting drops buy
-  // reason, AI read, vùng mua, SL/TP, confidence, sizing and the four-layer
-  // answers, so none of them can be filed against a different stock's order.
+  // A symbol change starts a NEW order: remounting drops the typed quantity and
+  // limit price so they cannot be sent for a different stock.
   return <OrderTicket key={symbol} symbol={symbol} onSymbolChange={onSymbolChange} />
 }
 
 function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
-  const { isAuthenticated, isPremium, isLoading: authLoading, openAuth } = useAuth()
-  const journey = useJourney()
+  const { isAuthenticated, isLoading: authLoading, openAuth } = useAuth()
   const { data: quote, isLoading: quoteLoading } = useQuote(symbol)
   const { data: account } = useTradingAccount()
   const { data: portfolio } = useTradingPortfolio()
@@ -93,215 +60,61 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
   const removeFromWatchlist = useRemoveFromWatchlist()
   const activate = useActivateAccount()
   const placeOrder = usePlaceOrder()
-  const setKhauVi = useSetKhauVi()
-  const preBuyAlert = useCap2PreBuyAlert()
-  const alertAction = useCap2AlertAction()
-  const skipCap6 = useCap6Skip()
 
-  const level = isAuthenticated ? journey.level : null
   const [side, setSide] = useState<"buy" | "sell">("buy")
   const [method, setMethod] = useState<"market" | "limit">("market")
   const [limitPrice, setLimitPrice] = useState<number | null>(null)
   const [quantity, setQuantity] = useState<number>(BOARD_LOT)
-  const [draft, setDraft] = useState<PlanDraft>(emptyPlanDraft)
-  const [detailOpen, setDetailOpen] = useState(false)
-  const [skipMarked, setSkipMarked] = useState(false)
-  const [pendingAlert, setPendingAlert] = useState<{
-    alert: Cap2Alert
-    intendedQuantity: number
-    intendedPrice: number
-    signature: string
-  } | null>(null)
-  const attemptKeyRef = useRef<string | null>(null)
-  const inFlightRef = useRef(false)
 
-  const patch = (partial: Partial<PlanDraft>) => setDraft((previous) => ({ ...previous, ...partial }))
-
-  const position = portfolio?.positions?.find((row) => row.symbol === symbol.toUpperCase())
+  const code = symbol.toUpperCase()
+  const position = portfolio?.positions?.find((row) => row.symbol === code)
   const sellable = position?.quantity_sellable ?? 0
   const currentPrice = quote?.price ?? 0
   const holdingElsewhere = (portfolio?.positions ?? []).find(
-    (row) => row.quantity_total > 0 && row.symbol !== symbol.toUpperCase(),
+    (row) => row.quantity_total > 0 && row.symbol !== code,
   )
-  const watched = (watchlist.data ?? []).some((item) => item.symbol === symbol.toUpperCase())
-
-  const completeCap0TaskAfterStar = async (code: string) => {
-    try {
-      if (await recordCap0TaskAfterStar(code, journey, journey.completeTask)) {
-        toast.success("Đã ghi nhận nhiệm vụ 1 của Cấp 0")
-      }
-    } catch {
-      // The server re-checks the filled BUY and its Cấp 0 plan; keep the
-      // journey pending when either prerequisite is missing or unavailable.
-    }
-  }
+  const watched = (watchlist.data ?? []).some((item) => item.symbol === code)
 
   const toggleWatch = async () => {
     if (!isAuthenticated) {
       openAuth("login")
       return
     }
-    const code = symbol.toUpperCase()
     const mutation = watched ? removeFromWatchlist : addToWatchlist
     try {
       await mutation.mutateAsync(code)
       toast.success(watched ? `Đã bỏ ${code} khỏi danh mục theo dõi` : `Đã thêm ${code} vào danh mục theo dõi`)
-      if (!watched) await completeCap0TaskAfterStar(code)
     } catch (error) {
       toast.error(errorMessage(error))
     }
   }
 
-  /* ── level-scoped data ──────────────────────────────────────────────── */
-  const needsAiRead = side === "buy" && level !== null && level >= 1
-  const { data: insight, isLoading: insightLoading, isError: insightError } = useStockInsight(symbol, needsAiRead)
-  const { data: cap3Progress } = useCap3Progress(level !== null && level >= 3)
-  const { data: mauThuan, isLoading: mauThuanLoading } = useCap6MauThuan(symbol, level !== null && level >= 6)
-  const cap6HasConflict = coBangMauThuan(mauThuan ?? null)
-
-  /* ── derived plan values ────────────────────────────────────────────── */
-  const ai5Lop = useMemo(() => aiLayers(insight ?? null), [insight])
-  const lyDo = effectiveLyDo({
-    level: level ?? 0,
-    draft,
-    ai5Lop,
-    mauThuan: mauThuan ?? null,
-  })
-  const vungMua = draft.vungMua === undefined ? (currentPrice > 0 ? currentPrice : null) : draft.vungMua
-  // The recorded trạng thái + snapshot come from the SAME read the user sees,
-  // so the AI Thanh tra card and the stored evidence can never disagree.
-  const aiRead: { verdict: Verdict; snapshot: Record<string, unknown> } | null =
-    needsAiRead && lyDo
-      ? insightRead(insight ?? null, insightError, insightLoading, lyDo)
-      : null
-  const planContext: PlanContext = {
-    level,
-    draft: {
-      ...draft,
-      vungMua,
-      // Khẩu vị is SERVER state (Cấp 3–6): fall back to the saved value when
-      // this order did not change it, so the body always carries what the
-      // backend's cumulative validation requires.
-      khauVi: draft.khauVi ?? cap3Progress?.khau_vi ?? null,
-    },
-    lyDo,
-    verdict: aiRead?.verdict ?? null,
-    snapshot: aiRead?.snapshot ?? null,
-    requiresReason: !journey.progress?.task_1_done_at,
-  }
-  const gate = planGate(planContext)
-  const buyDisabled = side === "buy" && !gate.ok
-
   const effectivePrice = method === "limit" ? (limitPrice ?? 0) : currentPrice
   const orderValue = effectivePrice * quantity
   const fee = Math.round(orderValue * FEE_RATE)
-  const showPriceField = level === 0 ? !!journey.progress?.task_1_done_at : level !== null
 
-  /* ── quantity helpers ───────────────────────────────────────────────── */
   const applyPercent = (percent: number) => {
-    if (side === "buy") {
-      if (currentPrice <= 0 || !account) return
-      const maxShares =
-        Math.floor(account.cash_available_vnd / (currentPrice * (1 + FEE_RATE)) / BOARD_LOT) * BOARD_LOT
-      setQuantity(Math.max(BOARD_LOT, roundToLo((maxShares * percent) / 100)))
-      return
-    }
-    if (sellable <= 0) return
-    setQuantity(Math.max(BOARD_LOT, roundToLo((sellable * percent) / 100)))
+    const next = quantityForPercent({
+      side,
+      percent,
+      price: currentPrice,
+      cashAvailable: account?.cash_available_vnd ?? null,
+      sellable,
+    })
+    if (next != null) setQuantity(next)
   }
 
-  /* ── submit ─────────────────────────────────────────────────────────── */
-  async function submit(boundAlertId: string | null) {
-    if (!quote || currentPrice <= 0) {
-      toast.error("Không có dữ liệu mã CK")
+  async function submit() {
+    const check = checkOrderInput({ hasQuote: !!quote && currentPrice > 0, quantity, method, limitPrice })
+    if (!check.ok) {
+      if (check.message === "Không có dữ liệu mã CK") toast.error(check.message)
+      else toast.warning(check.message)
       return
     }
-    if (quantity < BOARD_LOT) {
-      toast.warning(`Khối lượng tối thiểu là ${BOARD_LOT} CP`)
-      return
-    }
-    if (quantity % BOARD_LOT !== 0) {
-      toast.warning(`Khối lượng phải là bội số của ${BOARD_LOT}`)
-      return
-    }
-    if (method === "limit" && (limitPrice ?? 0) <= 0) {
-      toast.warning("Vui lòng nhập giá hợp lệ cho lệnh giới hạn")
-      return
-    }
-    if (side === "buy" && !gate.ok) {
-      toast.warning(gate.message)
-      return
-    }
-
     const price = method === "limit" ? (limitPrice ?? 0) : currentPrice
-
-    // Cấp 2 §9 — the durable nhồi-lệnh check MUST run before the order. The
-    // backend owns loss detection, quota, auto-mute and escalation; a failing
-    // warning endpoint is a SOFT intervention and never hard-blocks a trade.
-    let alertId = boundAlertId
-    if (side === "buy" && (level ?? 0) >= 2 && alertId === null) {
-      if (inFlightRef.current) return
-      inFlightRef.current = true
-      try {
-        const key =
-          attemptKeyRef.current ??
-          `cap2-${globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`}`
-        attemptKeyRef.current = key
-        const result = await preBuyAlert.mutateAsync({
-          symbol,
-          idempotencyKey: key,
-          quantity,
-          orderType: method,
-          limitPriceVnd: method === "limit" ? price : null,
-        })
-        if (result.triggered && result.alert) {
-          if (result.alert.status === "shown") {
-            setPendingAlert({
-              alert: result.alert,
-              intendedQuantity: quantity,
-              intendedPrice: price,
-              signature: JSON.stringify([symbol, method, quantity, method === "limit" ? price : null]),
-            })
-            return
-          }
-          // A suppressed trigger shows no impression, but the attempt must
-          // still be recorded so the clean-10 auto-mute can re-enable it.
-          if (
-            result.alert.status === "suppressed" &&
-            result.alert.suppression_reason === "auto_mute_last_10_clean"
-          ) {
-            await alertAction.mutateAsync({ alertId: result.alert.id, action: "proceed_buy" })
-            alertId = result.alert.id
-          }
-        }
-        attemptKeyRef.current = null
-        if (result.data_status === "unavailable") {
-          toast.warning("Chưa kiểm tra được cảnh báo nhồi lệnh; lệnh vẫn có thể tiếp tục.")
-        }
-      } catch {
-        toast.warning("Chưa kiểm tra được cảnh báo nhồi lệnh; lệnh vẫn có thể tiếp tục.")
-        attemptKeyRef.current = null
-      } finally {
-        inFlightRef.current = false
-      }
-    }
-
-    const plan = buildJourneyPlan(
-      alertId ? { ...planContext, draft: { ...planContext.draft, alertId } } : planContext,
-    )
     const label = side === "buy" ? "MUA" : "BÁN"
     try {
-      const order = await placeOrder.mutateAsync({
-        symbol,
-        side,
-        method,
-        quantity,
-        price,
-        journeyPlan: side === "buy" ? plan : null,
-        level: side === "buy" ? level : null,
-        vonBanDau: cap3Progress?.von_ban_dau ?? null,
-        ai5Lop,
-      })
+      const order = await placeOrder.mutateAsync({ symbol, side, method, quantity, price })
       const filled = order.filled_price_vnd ?? order.limit_price_vnd ?? price
       const total = (order.gross_amount_vnd ?? filled * order.quantity).toLocaleString("vi-VN")
       toast.success(
@@ -309,17 +122,9 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
           "vi-VN",
         )} = ${total} VND${order.status.toLowerCase() === "pending" ? " (chờ khớp)" : ""}`,
       )
-      // If the user starred this mã before buying, reconcile the Cấp 0 gate
-      // after the fill. The helper still requires a server-confirmed filled
-      // BUY and lets the PATCH endpoint validate the saved plan.
-      if (side === "buy" && order.status === "filled" && watched) {
-        await completeCap0TaskAfterStar(symbol)
-      }
-      setDraft(emptyPlanDraft())
       setQuantity(BOARD_LOT)
       setLimitPrice(null)
       setMethod("market")
-      setSkipMarked(false)
     } catch (error) {
       const message = errorMessage(error)
       if (/premium/i.test(message)) {
@@ -331,84 +136,31 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
     }
   }
 
-  const savingOrder = placeOrder.isPending || preBuyAlert.isPending || alertAction.isPending
-
-  if (authLoading || (isAuthenticated && journey.isLoading)) {
+  if (authLoading) {
     return (
       <SidebarPanel title="Đặt lệnh" description={symbol}>
-        <PanelState title="Đang tải hành trình" loading />
+        <PanelState title="Đang tải tài khoản" loading />
       </SidebarPanel>
     )
   }
 
-  // All journey levels are free; premium only controls the AI evidence blocks.
-
   return (
     <SidebarPanel
       title="Đặt lệnh"
-      description={`${symbol}${quote?.reference ? ` · TC ${formatNumber(quote.reference)}` : ""}`}
+      description={`Tài khoản tự giao dịch · ${symbol}${quote?.reference ? ` · TC ${formatNumber(quote.reference)}` : ""}`}
       footer={
         !isAuthenticated ? undefined : (
           <div className="space-y-2">
-            {level !== null && level >= 6 && side === "buy" && cap6HasConflict && (
-              <>
-                <Button
-                  type="button"
-                  variant={skipMarked ? "default" : "outline"}
-                  className="w-full"
-                  aria-pressed={skipMarked}
-                  onClick={() => {
-                    if (skipMarked) {
-                      setSkipMarked(false)
-                      return
-                    }
-                    setSkipMarked(true)
-                    // Only a level the user actually picked is recorded — the
-                    // note below says so when they picked none, instead of
-                    // filing a judgement they never made.
-                    if (draft.conflictLevel) {
-                      void skipCap6
-                        .mutateAsync({ symbol, conflictLevel: draft.conflictLevel })
-                        .catch((error) => toast.error(errorMessage(error)))
-                    }
-                  }}
-                >
-                  Không mua lần này
-                </Button>
-                {skipMarked && (
-                  <p className="text-[11px] text-muted-foreground">
-                    {draft.conflictLevel
-                      ? `Bạn đọc mâu thuẫn ở mức “${conflictLevelLabel(draft.conflictLevel)}” và chọn đứng ngoài. Lần đứng ngoài này sẽ hiện ở Phân tích danh mục như một hành động có kỷ luật.`
-                      : "Bạn chưa chọn mức nhận định nào, nên IQX chỉ ghi nhận quyết định đứng ngoài — chọn một mức ở trên thì lần này mới được xếp vào đúng nhóm ở Phân tích danh mục."}
-                  </p>
-                )}
-              </>
-            )}
             <Button
               type="button"
-              className={`w-full font-bold text-white ${
-                side === "buy" ? "bg-price-up hover:bg-price-up/90" : "bg-price-down hover:bg-price-down/90"
-              }`}
-              disabled={savingOrder || buyDisabled || !!pendingAlert}
-              onClick={() => void submit(null)}
+              className={cn("w-full font-bold text-white", side === "buy" ? "bg-price-up hover:bg-price-up/90" : "bg-price-down hover:bg-price-down/90")}
+              disabled={placeOrder.isPending || !account}
+              onClick={() => void submit()}
             >
-              {savingOrder && <LoaderCircle className="size-4 animate-spin" />}
+              {placeOrder.isPending && <LoaderCircle className="size-4 animate-spin" />}
               {side === "buy" ? "ĐẶT LỆNH MUA" : "ĐẶT LỆNH BÁN"}
             </Button>
-            {buyDisabled && (
-              <p className="text-[11px] text-muted-foreground">
-                {level === 0 && !gate.ok && gate.reason === "reason"
-                  ? "Chọn lý do ở khối Kế hoạch để mở nút đặt lệnh."
-                  : gate.ok
-                    ? ""
-                    : gate.message}
-              </p>
-            )}
-            {pendingAlert && (
-              <p className="text-[11px] text-price-ceiling">
-                Chọn Huỷ hoặc Vẫn mua thêm trong cảnh báo trước.
-              </p>
-            )}
+            <p className="text-[11px] text-muted-foreground">Lệnh và tiền thuộc tài khoản tự giao dịch.</p>
           </div>
         )
       }
@@ -431,7 +183,7 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
             }}
             id={`order-side-${value}`}
             onClick={() => setSide(value)}
-            className={`rounded-md px-2 py-1.5 text-sm font-semibold transition-colors ${
+            className={`rounded-md px-2 py-1.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:outline-none ${
               side === value
                 ? value === "buy"
                   ? "bg-price-up text-white"
@@ -444,11 +196,15 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
         ))}
       </div>
 
+      <div className="space-y-1">
+        <Label className="text-xs">Mã cổ phiếu</Label>
+        <SymbolPicker symbol={code} onSymbolChange={onSymbolChange} className="w-full justify-between" />
+      </div>
+
       <TickerCard
         symbol={symbol}
         quote={quote ?? null}
         loading={quoteLoading}
-        revealStats={level !== null && level >= 1}
         watched={watched}
         watchPending={addToWatchlist.isPending || removeFromWatchlist.isPending}
         onToggleWatch={toggleWatch}
@@ -462,7 +218,7 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
           {!isAuthenticated ? (
             <>
               <p className="text-xs text-muted-foreground">
-                Đăng nhập để mở Sân tập 100 triệu VND và bắt đầu hành trình.
+                Đăng nhập để dùng tài khoản Demo Trading 100 triệu VND.
               </p>
               <Button type="button" size="sm" className="w-full" onClick={() => openAuth("login")}>
                 Đăng nhập
@@ -470,11 +226,11 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
             </>
           ) : account === undefined ? (
             <p className="flex items-center gap-2 text-xs text-muted-foreground">
-              <LoaderCircle className="size-3.5 animate-spin" /> Đang đọc tài khoản Đấu trường ảo…
+              <LoaderCircle className="size-3.5 animate-spin" /> Đang đọc tài khoản Demo Trading…
             </p>
           ) : account === null ? (
             <>
-              <p className="text-xs text-muted-foreground">Bạn chưa có tài khoản Đấu trường ảo.</p>
+              <p className="text-xs text-muted-foreground">Bạn chưa có tài khoản Demo Trading.</p>
               <Button
                 type="button"
                 size="sm"
@@ -484,7 +240,7 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
                   activate.mutate(undefined, {
                     onSuccess: (created) =>
                       toast.success(
-                        `Kích hoạt Đấu trường ảo thành công — bạn nhận ${created.cash_available_vnd.toLocaleString(
+                        `Đã mở tài khoản Demo Trading — bạn nhận ${created.cash_available_vnd.toLocaleString(
                           "vi-VN",
                         )} VND ảo.`,
                       ),
@@ -493,41 +249,41 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
                 }}
               >
                 {activate.isPending && <LoaderCircle className="size-4 animate-spin" />}
-                Kích hoạt Đấu trường ảo
+                Mở tài khoản Demo Trading
               </Button>
             </>
           ) : (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] text-muted-foreground">
-                  {level === 0 ? "Số dư Sân tập" : "Số dư khả dụng"}
-                </span>
+                <span className="text-[11px] text-muted-foreground">Tiền khả dụng</span>
                 <span className="text-sm font-bold tabular-nums">{formatMoney(account.cash_available_vnd)}</span>
               </div>
-              {level !== 0 && (
-                <div className="flex flex-wrap items-center gap-3 text-[11px]">
-                  <span
-                    className={`font-medium tabular-nums ${
-                      portfolio?.total_unrealized_pnl_vnd == null
-                        ? "text-muted-foreground"
-                        : portfolio.total_unrealized_pnl_vnd >= 0
-                          ? "text-price-up"
-                          : "text-price-down"
-                    }`}
-                  >
-                    {portfolio?.total_unrealized_pnl_vnd == null
-                      ? "—"
-                      : `${formatMoney(portfolio.total_unrealized_pnl_vnd)} (${portfolio.return_pct.toFixed(2)}%)`}
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-muted-foreground">CP có thể bán</span>
+                <span className="text-xs font-medium tabular-nums">{sellable.toLocaleString("vi-VN")} CP</span>
+              </div>
+              <div className="flex flex-wrap items-center gap-3 text-[11px]">
+                <span
+                  className={`font-medium tabular-nums ${
+                    portfolio?.total_unrealized_pnl_vnd == null
+                      ? "text-muted-foreground"
+                      : portfolio.total_unrealized_pnl_vnd >= 0
+                        ? "text-price-up"
+                        : "text-price-down"
+                  }`}
+                >
+                  {portfolio?.total_unrealized_pnl_vnd == null
+                    ? "—"
+                    : `${formatMoney(portfolio.total_unrealized_pnl_vnd)} (${portfolio.return_pct.toFixed(2)}%)`}
+                </span>
+                {position && (
+                  <span className="tabular-nums text-muted-foreground">
+                    Đang giữ {position.quantity_total.toLocaleString("vi-VN")} CP
+                    {position.quantity_sellable !== position.quantity_total &&
+                      ` · bán được ${position.quantity_sellable.toLocaleString("vi-VN")}`}
                   </span>
-                  {position && (
-                    <span className="tabular-nums text-muted-foreground">
-                      Đang giữ {position.quantity_total.toLocaleString("vi-VN")} CP
-                      {position.quantity_sellable !== position.quantity_total &&
-                        ` · bán được ${position.quantity_sellable.toLocaleString("vi-VN")}`}
-                    </span>
-                  )}
-                </div>
-              )}
+                )}
+              </div>
             </div>
           )}
         </CardContent>
@@ -536,47 +292,45 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
       {!isAuthenticated ? (
         <Card className="gap-2 py-3">
           <CardContent className="px-3 text-xs text-muted-foreground">
-            Phiếu lệnh mở sau khi bạn đăng nhập. Hành trình và dữ liệu thị trường vẫn xem được.
+            Phiếu lệnh mở sau khi bạn đăng nhập. Dữ liệu thị trường vẫn xem được.
           </CardContent>
         </Card>
       ) : (
         <>
-          {showPriceField && (
-            <div className="space-y-2">
-              <div className="space-y-1">
-                <Label className="text-xs">Loại lệnh</Label>
-                <Select value={method} onValueChange={(value) => setMethod(value as "market" | "limit")}>
-                  <SelectTrigger className="w-full" size="sm">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="market">MP — Thị trường</SelectItem>
-                    <SelectItem value="limit">LO — Giới hạn</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="limit-price" className="text-xs">
-                  Giá
-                </Label>
-                <Input
-                  id="limit-price"
-                  inputMode="numeric"
-                  disabled={method === "market"}
-                  value={limitPrice == null ? "" : String(limitPrice)}
-                  placeholder={currentPrice > 0 ? String(Math.round(currentPrice)) : "0"}
-                  onChange={(event) => {
-                    const raw = event.target.value.replace(/[^\d]/g, "")
-                    setLimitPrice(raw === "" ? null : Number(raw))
-                  }}
-                  className="tabular-nums"
-                />
-                <p className="text-[11px] text-muted-foreground">
-                  MP khớp ngay ở giá bên bán; LO chỉ khớp khi giá về đúng mức bạn nhập.
-                </p>
-              </div>
+          <div className="space-y-2">
+            <div className="space-y-1">
+              <Label htmlFor="order-type" className="text-xs">Loại lệnh</Label>
+              <Select value={method} onValueChange={(value) => setMethod(value as "market" | "limit")}>
+                <SelectTrigger id="order-type" className="w-full" size="sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="market">MP — Thị trường</SelectItem>
+                  <SelectItem value="limit">LO — Giới hạn</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-          )}
+            <div className="space-y-1">
+              <Label htmlFor="limit-price" className="text-xs">
+                Giá đặt (đồng)
+              </Label>
+              <Input
+                id="limit-price"
+                inputMode="numeric"
+                disabled={method === "market"}
+                value={limitPrice == null ? "" : String(limitPrice)}
+                placeholder={currentPrice > 0 ? String(Math.round(currentPrice)) : "0"}
+                onChange={(event) => {
+                  const raw = event.target.value.replace(/[^\d]/g, "")
+                  setLimitPrice(raw === "" ? null : Number(raw))
+                }}
+                className="tabular-nums"
+              />
+              <p className="text-[11px] text-muted-foreground">
+                MP khớp ngay ở giá bên bán; LO chỉ khớp khi giá về đúng mức bạn nhập.
+              </p>
+            </div>
+          </div>
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
@@ -599,197 +353,45 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
               }}
               className="tabular-nums"
             />
-            {level !== 0 && (
-              <div className="flex gap-1.5 pt-0.5">
-                {[10, 25, 50, 100].map((percent) => (
-                  <Button
-                    key={percent}
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    className="h-6 flex-1 text-[11px]"
-                    onClick={() => applyPercent(percent)}
-                  >
-                    {percent}%
-                  </Button>
-                ))}
-              </div>
-            )}
+            <div className="flex gap-1.5 pt-0.5" role="group" aria-label="Chọn nhanh khối lượng theo tỷ lệ">
+              {QUICK_PERCENTS.map((percent) => (
+                <Button
+                  key={percent}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="h-6 flex-1 text-[11px]"
+                  onClick={() => applyPercent(percent)}
+                >
+                  {percent}%
+                </Button>
+              ))}
+            </div>
           </div>
-
-          {/* Cấp 3 — explains how the quantity above was arrived at. Shown as
-              soon as the Cấp 3 row exists: when khẩu vị was never chosen the
-              block IS the choice (the server owns the value, this only asks
-              for it once and saves it). */}
-          {side === "buy" && level !== null && level >= 3 && cap3Progress != null && (
-            <QuanLyVonBlock
-              khauVi={draft.khauVi ?? cap3Progress.khau_vi}
-              vonBanDau={cap3Progress.von_ban_dau}
-              giaVao={vungMua ?? currentPrice}
-              mucTuTin={draft.mucTuTin}
-              cachKhoiLuong={draft.cachKhoiLuong}
-              onMucTuTin={(value) => patch({ mucTuTin: value })}
-              onCachKhoiLuong={(value) => patch({ cachKhoiLuong: value })}
-              onKhoiLuong={(suggested) => setQuantity(suggested)}
-              dangDoiKhauVi={setKhauVi.isPending}
-              onChonKhauVi={(value) => {
-                setKhauVi.mutate(value, {
-                  onSuccess: () => patch({ khauVi: value }),
-                  onError: (error) => toast.error(errorMessage(error)),
-                })
-              }}
-            />
-          )}
 
           <div className="space-y-1 rounded-lg bg-muted/50 p-2 text-xs">
-            {level !== 0 && (
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Giá trị</span>
-                <span className="font-medium tabular-nums">
-                  {orderValue > 0 ? formatMoney(orderValue) : "—"}
-                </span>
-              </div>
-            )}
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Phí giao dịch (0,15%)</span>
+              <span className="text-muted-foreground">Giá trị đặt</span>
+              <span className="font-medium tabular-nums">{orderValue > 0 ? formatMoney(orderValue) : "—"}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-muted-foreground">Phí dự kiến (0,15%)</span>
               <span className="font-medium tabular-nums">{fee > 0 ? formatMoney(fee) : "—"}</span>
             </div>
-            {level !== 0 && (
-              <div className="flex justify-between border-t border-border pt-1 text-sm font-semibold">
-                <span>Tổng</span>
-                <span className="tabular-nums text-primary">
-                  {orderValue > 0 ? formatMoney(orderValue + fee) : "—"}
-                </span>
-              </div>
-            )}
+            <div className="flex justify-between border-t border-border pt-1 text-sm font-semibold">
+              <span>Tổng</span>
+              <span className="tabular-nums text-primary">{orderValue > 0 ? formatMoney(orderValue + fee) : "—"}</span>
+            </div>
           </div>
 
-          {side === "buy" && level === 0 && (
-            <PlanBlockCap0 symbol={symbol} reason={draft.reason} onReason={(slug) => patch({ reason: slug })} />
-          )}
-
-          {side === "buy" && level !== null && level >= 1 && (
-            <div className="space-y-2">
-              <PlanFormCap1
-                symbol={symbol}
-                lyDo={draft.lyDo}
-                onLyDoChange={(value) => patch({ lyDo: value, docChiTiet: false })}
-                hideLyDo={(level >= 4 && level <= 5) || (level >= 6 && lyDo != null)}
-                derivedLyDo={lyDo}
-                vungMua={vungMua}
-                onVungMuaChange={(value) => patch({ vungMua: value })}
-                currentPrice={currentPrice}
-              />
-
-              {level >= 4 && level <= 5 && (
-                <Doc5LopBlock
-                  symbol={symbol}
-                  doc5Lop={draft.doc5Lop}
-                  ai5Lop={ai5Lop}
-                  insight={insight ?? null}
-                  insightLoading={insightLoading}
-                  premiumBlocked={!isPremium}
-                  onRate={(lop: Lop, value: NhanDinhLop) =>
-                    patch({ doc5Lop: { ...draft.doc5Lop, [lop]: value } })
-                  }
-                />
-              )}
-
-              {level >= 6 && (
-                <MauThuanBlock
-                  mauThuan={mauThuan ?? null}
-                  nhanDinh={draft.conflictLevel}
-                  onNhanDinh={(value) => patch({ conflictLevel: value })}
-                  loading={mauThuanLoading}
-                />
-              )}
-
-              {level >= 1 && level <= 3 && draft.lyDo && (
-                <AiThanhTraCard
-                  symbol={symbol}
-                  lyDo={draft.lyDo}
-                  insight={insight ?? null}
-                  loading={insightLoading}
-                  failed={insightError}
-                  premiumBlocked={!isPremium}
-                  onDocChiTiet={() => patch({ docChiTiet: true })}
-                  onChonLyDoKhac={() => patch({ lyDo: null })}
-                  onOpenDetail={() => setDetailOpen(true)}
-                />
-              )}
-
-              {level >= 2 && (
-                <SlTpBlock
-                  giaVao={vungMua ?? currentPrice}
-                  selected={draft.slTpMethod}
-                  catLo={draft.catLo}
-                  chotLoi={draft.chotLoi}
-                  insight={insight ?? null}
-                  loading={insightLoading}
-                  onSelect={(slTpMethod, catLo, chotLoi) => patch({ slTpMethod, catLo, chotLoi })}
-                />
-              )}
-            </div>
-          )}
-
-          {/* Sổ lệnh — Cấp 2 and up only ("không hiện ở Cấp 0 và Cấp 1"). */}
-          {level !== null && level >= 2 && quote && <OrderBook bids={quote.bids} asks={quote.asks} />}
+          {quote && <OrderBook bids={quote.bids} asks={quote.asks} />}
         </>
       )}
-
-      {pendingAlert && (
-        <NhoiLenhDialog
-          alert={pendingAlert.alert}
-          intendedQuantity={pendingAlert.intendedQuantity}
-          intendedPrice={pendingAlert.intendedPrice}
-          pending={alertAction.isPending}
-          onCancel={() => {
-            const current = pendingAlert
-            setPendingAlert(null)
-            attemptKeyRef.current = null
-            void alertAction
-              .mutateAsync({ alertId: current.alert.id, action: "cancel_buy" })
-              .then(() => toast.success("Đã huỷ lệnh mua theo cảnh báo."))
-              .catch((error) => toast.error(errorMessage(error)))
-          }}
-          onProceed={(phrase) => {
-            const current = pendingAlert
-            setPendingAlert(null)
-            void alertAction
-              .mutateAsync({ alertId: current.alert.id, action: "proceed_buy", confirmationPhrase: phrase })
-              .then(() => {
-                attemptKeyRef.current = null
-                return submit(current.alert.id)
-              })
-              .catch((error) => toast.error(errorMessage(error)))
-          }}
-        />
-      )}
-
-      <AiInsightDetailDialog
-        open={detailOpen}
-        onOpenChange={setDetailOpen}
-        symbol={symbol}
-        insight={insight ?? null}
-        loading={insightLoading}
-      />
     </SidebarPanel>
   )
 }
 
 /* ── helpers ──────────────────────────────────────────────────────────── */
-
-function insightRead(
-  insight: StockInsight | null,
-  failed: boolean,
-  loading: boolean,
-  lyDo: Lop,
-): { verdict: Verdict; snapshot: Record<string, unknown> } | null {
-  if (failed || loading) return null
-  const read = verdictForLyDo(insight, lyDo)
-  if (!read) return null
-  return { verdict: read.verdict, snapshot: { lyDo, statusLabel: read.statusLabel } }
-}
 
 type QuoteView = {
   price: number | null
@@ -805,7 +407,6 @@ function TickerCard({
   symbol,
   quote,
   loading,
-  revealStats,
   watched,
   watchPending,
   onToggleWatch,
@@ -815,7 +416,6 @@ function TickerCard({
   symbol: string
   quote: QuoteView | null
   loading: boolean
-  revealStats: boolean
   watched: boolean
   watchPending: boolean
   onToggleWatch: () => void
@@ -864,14 +464,10 @@ function TickerCard({
     { label: "Trần", value: quote.ceiling == null ? "—" : formatNumber(quote.ceiling) },
     { label: "TC", value: quote.reference == null ? "—" : formatNumber(quote.reference) },
     { label: "Sàn", value: quote.floor == null ? "—" : formatNumber(quote.floor) },
+    { label: "Cao", value: quote.high == null ? "—" : formatNumber(quote.high) },
+    { label: "Thấp", value: quote.low == null ? "—" : formatNumber(quote.low) },
+    { label: "KL", value: quote.volume == null ? "—" : formatNumber(quote.volume) },
   ]
-  if (revealStats) {
-    stats.push(
-      { label: "Cao", value: quote.high == null ? "—" : formatNumber(quote.high) },
-      { label: "Thấp", value: quote.low == null ? "—" : formatNumber(quote.low) },
-      { label: "KL", value: quote.volume == null ? "—" : formatNumber(quote.volume) },
-    )
-  }
 
   return (
     <Card className="gap-2 py-3">
@@ -927,7 +523,7 @@ function TickerCard({
   )
 }
 
-/** Bid/ask ladder — Cấp 2+ only. Bids descend, asks ascend, both from real depth. */
+/** Bid/ask ladder from the real depth: bids descend, asks ascend. */
 function OrderBook({
   bids,
   asks,

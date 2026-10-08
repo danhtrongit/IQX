@@ -1,21 +1,12 @@
 /**
- * Pure derivations for the hunt/watchlist and Bot panels.
+ * Pure derivations for the hunt and Bot panels.
  *
- * Three-state discipline (rule 1): `kha_dung === false` means "not enough data
- * to run this filter" and is never drawn as "0 mã"; a missing consensus score
- * is "-/4", never "0/4"; a missing price is "-", never 0.
+ * Three-state discipline: `kha_dung === false` means "not enough data to run
+ * this filter" and is never drawn as "0 mã"; a missing price is "-", never 0.
  */
-import {
-  LOP_DEFS,
-  NOTABLE_MIN_LOP,
-  TONG_SO_LOP,
-  huntFilterLabel,
-  type HuntFilterKey,
-} from "./copy"
+import type { HuntFilterKey } from "./copy"
 import type {
   BotJournalItem,
-  Cap5LopChiTiet,
-  Cap5WatchlistItem,
   HuntResult,
   LocSanTieuChi,
   SanMaIndex,
@@ -91,152 +82,6 @@ export function describeHuntBaoPhu(result: HuntResult): CoverageState {
   return {
     trangThai: "chua_biet",
     text: "Máy chủ chưa cho biết đã xét được bao nhiêu mã trong rổ, nên chưa thể nói con số trên là của cả sàn.",
-  }
-}
-
-/* ── Watchlist derivation (spec §6.1/§6.2) ─────────────────────────────── */
-
-export type WatchStatus =
-  "chua_cham" | "chua_ket_luan" | "du_lieu_cu" | "watching" | "notable"
-
-export const WATCH_STATUS_LABEL: Record<WatchStatus, string> = {
-  chua_cham: "Chưa chấm 4 lớp",
-  chua_ket_luan: "Chưa kết luận",
-  du_lieu_cu: "Điểm đã cũ",
-  watching: "Đang quan sát",
-  notable: "Đáng chú ý",
-}
-
-/** The real denominator: how many layers the system actually scored. `null` = unknown. */
-export function soLopDaCham(item: Cap5WatchlistItem): number | null {
-  if (item.consensus_da_cham != null) return item.consensus_da_cham
-  if (item.lop_chi_tiet != null)
-    return item.lop_chi_tiet.filter(
-      (row) => row.ung_ho != null || row.muc != null
-    ).length
-  if (item.lop != null)
-    return LOP_DEFS.filter((def) => item.lop?.[def.lop] != null).length
-  return null
-}
-
-/** Never says "Đang quan sát" for a score that simply has not been computed. */
-export function watchStatus(item: Cap5WatchlistItem): WatchStatus {
-  const score = item.consensus_today
-  if (score == null) return "chua_cham"
-  if (item.consensus_het_han === true) return "du_lieu_cu"
-  if (score >= NOTABLE_MIN_LOP) return "notable"
-  const scored = soLopDaCham(item)
-  if (scored == null) return "chua_ket_luan"
-  const unknown = Math.max(0, TONG_SO_LOP - scored)
-  if (score + unknown < NOTABLE_MIN_LOP) return "watching"
-  return "chua_ket_luan"
-}
-
-export function describeConsensus(item: Cap5WatchlistItem): {
-  text: string
-  canhBao: string | null
-} {
-  if (item.consensus_today == null)
-    return { text: "-/4", canhBao: "Chưa chấm 4 lớp cho mã này" }
-  const scored = soLopDaCham(item)
-  const unknown = scored == null ? null : Math.max(0, TONG_SO_LOP - scored)
-  return {
-    text: `${item.consensus_today.toLocaleString("vi-VN")}/${TONG_SO_LOP}`,
-    canhBao:
-      unknown != null && unknown > 0
-        ? `${unknown.toLocaleString("vi-VN")} lớp chưa có dữ liệu - chưa chấm đủ 4 lớp`
-        : null,
-  }
-}
-
-function formatSessionDate(raw: string): string {
-  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(raw)
-  return match ? `${match[3]}/${match[2]}/${match[1]}` : raw
-}
-
-export function describeConsensusFreshness(
-  item: Cap5WatchlistItem
-): string | null {
-  const window =
-    item.so_phien_hieu_luc != null
-      ? ` trong ${item.so_phien_hieu_luc.toLocaleString("vi-VN")} phiên gần nhất`
-      : " đủ mới"
-  if (item.consensus_het_han === true)
-    return `Điểm ${describeConsensus(item).text} đã cũ - chưa có bản phân tích mới${window}.`
-  if (item.consensus_session_date)
-    return `Điểm đồng thuận từ phiên ${formatSessionDate(item.consensus_session_date)}.`
-  if (item.consensus_today == null && item.consensus_session_date_qua_han) {
-    return `Bản phân tích gần nhất từ phiên ${formatSessionDate(item.consensus_session_date_qua_han)} đã quá cũ - chưa có bản mới${window}.`
-  }
-  return null
-}
-
-export type TrendTone = "up" | "down" | "flat" | "unknown"
-
-export function describeConsensusTrend(item: Cap5WatchlistItem): {
-  text: string
-  tone: TrendTone
-} {
-  const now = item.consensus_today
-  const prev = item.consensus_prev
-  if (now == null) return { text: "chưa chấm lần nào", tone: "unknown" }
-  if (prev == null)
-    return { text: "chưa có phiên trước để so", tone: "unknown" }
-  const head = `${prev}/${TONG_SO_LOP} → ${now}/${TONG_SO_LOP}`
-  if (now > prev) return { text: `${head} (cải thiện)`, tone: "up" }
-  if (now < prev) return { text: `${head} (yếu đi)`, tone: "down" }
-  return { text: `${head} (đi ngang)`, tone: "flat" }
-}
-
-/** "Săn từ [bộ lọc] · N phiên trước" - missing data is stated, never invented. */
-export function describeHuntSource(item: Cap5WatchlistItem): string {
-  const ten =
-    item.hunt_filter == null
-      ? null
-      : (item.hunt_filter_ten ?? huntFilterLabel(item.hunt_filter))
-  const nguon = ten ? `Săn từ ${ten}` : "Thêm tay - không qua bộ lọc săn"
-  if (item.so_phien_tu_khi_san != null)
-    return `${nguon} · ${item.so_phien_tu_khi_san.toLocaleString("vi-VN")} phiên trước`
-  const raw = item.hunt_at ?? item.added_at ?? null
-  if (raw) {
-    const date = new Date(raw)
-    if (!Number.isNaN(date.getTime()))
-      return `${nguon} · thêm ngày ${date.toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`
-  }
-  return nguon
-}
-
-export type LopMark = "ok" | "bad" | "neu" | "unknown"
-
-/** `ung_ho === false` is neutral-or-warning on the wire - it is never drawn as a warning. */
-export function lopMarkFromUngHo(row: Cap5LopChiTiet | null): LopMark {
-  if (row == null) return "unknown"
-  if (row.muc != null) return row.muc
-  if (row.ung_ho === true) return "ok"
-  if (row.ung_ho === false) return "neu"
-  return "unknown"
-}
-
-export function lopIconRow(
-  item: Cap5WatchlistItem
-): { lop: string; mark: LopMark }[] {
-  const rows = item.lop_chi_tiet
-  return LOP_DEFS.map((def) => ({
-    lop: def.lop,
-    mark:
-      rows != null
-        ? lopMarkFromUngHo(rows.find((row) => row.lop === def.lop) ?? null)
-        : ((item.lop?.[def.lop] ?? "unknown") as LopMark),
-  }))
-}
-
-export function countWatchTabs(items: readonly Cap5WatchlistItem[]): {
-  tatCa: number
-  dangChuY: number
-} {
-  return {
-    tatCa: items.length,
-    dangChuY: items.filter((item) => watchStatus(item) === "notable").length,
   }
 }
 
@@ -380,4 +225,4 @@ export function toFiniteNumber(
 }
 
 export const HUNT_TOP_NOTE =
-  "Bấm “Theo dõi” để đưa mã vào danh sách quan sát - săn chưa phải là mua."
+  "Tích Theo dõi để đưa mã vào danh sách quan sát - săn mã chưa phải là mua."

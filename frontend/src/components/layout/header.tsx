@@ -19,10 +19,7 @@ const mobileNavClass = "flex min-h-11 items-center rounded-sm px-3 py-2.5 text-s
 
 type HeaderNavItem = { readonly to: string; readonly label: string }
 
-/** Học viện (bot-v2 Academy) sits right after the existing learning item. */
-const ACADEMY_NAV_ITEM: HeaderNavItem = { to: "/hoc-vien", label: "Học viện" }
-const NAV_ITEMS: readonly HeaderNavItem[] = HEADER_NAV.flatMap(item =>
-  item.to === "/bai-hoc" ? [item, ACADEMY_NAV_ITEM] : [item])
+const NAV_ITEMS: readonly HeaderNavItem[] = HEADER_NAV
 
 function HeaderLinks({ items, mobile = false, onNavigate }: {
   items: readonly HeaderNavItem[]
@@ -68,7 +65,7 @@ function MobileHeaderMenu({ items, isIntroduction }: {
       <SheetContent side="right" showCloseButton={false} className="gap-0 data-[side=right]:w-[min(20rem,85vw)] motion-reduce:animate-none motion-reduce:transition-none">
         <SheetHeader className="border-b border-border pr-14">
           <SheetTitle>Điều hướng IQX</SheetTitle>
-          <SheetDescription className="sr-only">Truy cập các công cụ và hành trình học đầu tư.</SheetDescription>
+          <SheetDescription className="sr-only">Truy cập các công cụ và bài học đầu tư.</SheetDescription>
         </SheetHeader>
         <ScrollArea className="min-h-0 flex-1">
           <nav aria-label="Điều hướng di động" className="grid gap-1 p-3">
@@ -79,7 +76,7 @@ function MobileHeaderMenu({ items, isIntroduction }: {
           <SheetFooter className="border-t border-border">
             <SheetClose asChild>
               <Button asChild className="min-h-11 w-full">
-                <Link to="/demo-trading?view=journey">Bắt đầu ngay</Link>
+                <Link to="/demo-trading?view=academy">Bắt đầu ngay</Link>
               </Button>
             </SheetClose>
           </SheetFooter>
@@ -138,7 +135,7 @@ export function Header() {
         </div>
         {isIntroduction && (
           <Button asChild className="hidden xl:inline-flex">
-            <Link to="/demo-trading?view=journey">Bắt đầu ngay</Link>
+            <Link to="/demo-trading?view=academy">Bắt đầu ngay</Link>
           </Button>
         )}
         <MobileHeaderMenu key={locationKey} items={NAV_ITEMS} isIntroduction={isIntroduction} />

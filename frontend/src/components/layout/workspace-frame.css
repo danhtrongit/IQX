@@ -1,0 +1,150 @@
+/*
+ * Three-column workspace frame: main | context panel | tool rail.
+ * The measures follow the approved v4 frame (410px panel / 78px rail, wider from
+ * 1750px, narrower below 1260px and 1030px). They are scoped to this frame and
+ * never replace the app-wide --sidebar-width / --rail-width tokens.
+ *
+ * At 900px and below the panel becomes a layer that slides in next to the rail;
+ * the rail stays on the right and a closed panel is hidden from focus and clicks.
+ */
+.workspace-frame {
+  --ws-side: 410px;
+  --ws-rail: 78px;
+  position: relative;
+  display: grid;
+  flex: 1 1 0%;
+  grid-template-columns: minmax(0, 1fr) var(--ws-side) var(--ws-rail);
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.workspace-main {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.workspace-panel {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.workspace-rail {
+  grid-column: 3;
+  grid-row: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+@media (min-width: 1750px) {
+  .workspace-frame {
+    --ws-side: 25.2vw;
+    --ws-rail: 86px;
+  }
+}
+
+@media (max-width: 1260px) {
+  .workspace-frame {
+    --ws-side: 370px;
+    --ws-rail: 70px;
+  }
+
+  .workspace-tool-label {
+    font-size: 10px;
+  }
+
+  .workspace-rail-list {
+    padding: 4px;
+    gap: 2px;
+  }
+}
+
+@media (min-width: 901px) and (max-width: 1030px) {
+  .workspace-frame {
+    --ws-side: 340px;
+    --ws-rail: 64px;
+  }
+}
+
+@media (max-width: 900px) {
+  .workspace-frame {
+    --ws-rail: 61px;
+    grid-template-columns: minmax(0, 1fr) var(--ws-rail);
+  }
+
+  .workspace-rail {
+    grid-column: 2;
+  }
+
+  .workspace-rail-title {
+    font-size: 8px;
+  }
+
+  .workspace-rail-list {
+    padding: 2px;
+    gap: 2px;
+  }
+
+  .workspace-tool {
+    min-height: 4rem;
+    gap: 6px;
+    padding-block: 8px;
+  }
+
+  .workspace-tool-label {
+    font-size: 8.5px;
+    line-height: 12px;
+  }
+
+  .workspace-panel {
+    /* An absolutely positioned child of a grid is placed against its grid area:
+       span every column so the layer is positioned against the whole frame. */
+    grid-column: 1 / -1;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: var(--ws-rail);
+    z-index: 30;
+    width: min(405px, calc(100% - var(--ws-rail)));
+    border-right: 1px solid var(--border);
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(110%);
+    /* Closing keeps the layer visible until it has slid out. */
+    transition:
+      transform 150ms ease,
+      visibility 0s linear 150ms;
+  }
+
+  .workspace-frame[data-panel-open="true"] .workspace-panel {
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    box-shadow: -20px 0 35px rgb(0 0 0 / 0.35);
+    /* Opening is focusable at once (no visibility delay). */
+    transition:
+      transform 150ms ease,
+      visibility 0s;
+  }
+}
+
+@media (max-width: 380px) {
+  .workspace-frame {
+    --ws-rail: 54px;
+  }
+
+  .workspace-tool-label {
+    font-size: 7.5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .workspace-panel {
+    transition: none;
+  }
+}

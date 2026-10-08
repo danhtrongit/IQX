@@ -9,9 +9,7 @@
  *   mục "Bỏ theo dõi" trong menu ⋯.
  * - Đổi thứ tự: `PUT /watchlists/reorder` — thứ tự nằm ở server nên tải lại
  *   trang vẫn giữ nguyên.
- * - Cổng ★ của Cấp 0: chỉ gọi `journey.completeTask(1, "star")` SAU KHI đã có
- *   bằng chứng lệnh MUA đã khớp cho chính mã vừa thêm (server kiểm lại lần nữa,
- *   và từ chối nếu lệnh mua đó không kèm kế hoạch Cấp 0).
+ * - "Đặt lệnh" trong menu ⋯ chỉ điền mã vào form đặt lệnh thủ công; không đặt lệnh.
  */
 import { useId, useMemo, useState } from "react"
 import {
@@ -22,6 +20,7 @@ import {
   LoaderCircle,
   MoreHorizontal,
   Plus,
+  ShoppingCart,
   Star,
   Trash2,
 } from "lucide-react"
@@ -41,9 +40,8 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { errorMessage } from "@/lib/api"
 import { formatNumber, formatPercent } from "@/lib/format"
-import { useJourney } from "@/pages/demo-trading/journey/use-journey"
 import { useQuote, quoteChange } from "@/pages/demo-trading/market/use-quote"
-import { recordCap0TaskAfterStar, validateStockSymbol, type WatchlistItem } from "./api"
+import { validateStockSymbol, type WatchlistItem } from "./api"
 import {
   useAddToWatchlist,
   useDailyCloses,
@@ -57,7 +55,6 @@ import { displayPrice, priceToneClass, QUOTE_TONE_CLASS } from "./quote"
 /** Ô nhập + nút thêm mã; đặt ở footer của panel nên tách khỏi phần danh sách. */
 export function useWatchlistAdd() {
   const add = useAddToWatchlist()
-  const journey = useJourney()
   const [value, setValue] = useState("")
 
   async function submit() {
@@ -78,18 +75,6 @@ export function useWatchlistAdd() {
     }
     setValue("")
     toast.success(`Đã thêm ${symbol} vào danh mục theo dõi`)
-
-    // Nhiệm vụ ① Cấp 0 = lý do mua + lệnh MUA đã khớp + ★. Hai điều kiện đầu do
-    // server giữ; ở đây chỉ xác nhận có lệnh MUA đã khớp cho ĐÚNG mã vừa ★ rồi
-    // mới báo hoàn thành. Không có bằng chứng (hoặc server từ chối) thì không
-    // ghi gì — thanh Hành trình vẫn hiển thị đúng phần còn thiếu.
-    try {
-      if (await recordCap0TaskAfterStar(symbol, journey, journey.completeTask)) {
-        toast.success("Đã ghi nhận nhiệm vụ 1 của Cấp 0")
-      }
-    } catch {
-      // Lệnh mua chưa kèm kế hoạch Cấp 0 (hoặc lỗi mạng) — bỏ qua.
-    }
   }
 
   return { value, setValue, submit, pending: add.isPending }
@@ -129,9 +114,12 @@ export function WatchlistAddBar() {
 export function WatchlistTab({
   symbol,
   onSymbolChange,
+  onOrder,
 }: {
   symbol: string
   onSymbolChange: (symbol: string) => void
+  /** Pre-fills the manual order form for this mã; it never places an order. */
+  onOrder?: (symbol: string) => void
 }) {
   const { data, isLoading, isError, error, refetch } = useWatchlist()
   const reorder = useReorderWatchlist()
@@ -194,6 +182,7 @@ export function WatchlistTab({
             canMoveUp={index > 0}
             canMoveDown={index < items.length - 1}
             onSelect={() => onSymbolChange(item.symbol)}
+            onOrder={onOrder ? () => onOrder(item.symbol) : undefined}
             onMove={(delta) => move(item, delta)}
           />
         ))}
@@ -208,6 +197,7 @@ function WatchlistRow({
   canMoveUp,
   canMoveDown,
   onSelect,
+  onOrder,
   onMove,
 }: {
   item: WatchlistItem
@@ -215,6 +205,7 @@ function WatchlistRow({
   canMoveUp: boolean
   canMoveDown: boolean
   onSelect: () => void
+  onOrder?: () => void
   onMove: (delta: number) => void
 }) {
   const { data: quote } = useQuote(item.symbol)
@@ -300,6 +291,15 @@ function WatchlistRow({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
+          {onOrder && (
+            <>
+              <DropdownMenuItem onSelect={onOrder}>
+                <ShoppingCart />
+                Đặt lệnh
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </>
+          )}
           <DropdownMenuItem disabled={!canMoveUp} onSelect={() => onMove(-1)}>
             <ChevronUp />
             Chuyển lên
