@@ -10,7 +10,7 @@ import { useRail } from "@/context/rail"
 import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 import { parseDemoContent, withDemoContent, type DemoContent } from "./content-tabs-state"
-import { BotPanel } from "./insights/bot-panel"
+import { BotMain, BotPanel } from "./bot"
 import { HuntMain } from "./insights/hunt-main"
 import { HuntPanel } from "./insights/hunt-panel"
 import type { MascotId } from "./journey/types"
@@ -95,6 +95,8 @@ function Overview({ toolId, symbol, mascotId, onSymbolChange, onNavigate }: {
         <div className="min-w-0 space-y-3 p-1.5 min-[901px]:p-3 min-[1750px]:p-5">
           {toolId === "hunt" ? (
             <HuntMain symbol={symbol} onSymbolChange={onSymbolChange} onNavigate={onNavigate} />
+          ) : toolId === "bot" ? (
+            <BotMain mascotId={mascotId} />
           ) : toolId === "shop" ? (
             <ShopMain onNavigate={onNavigate} />
           ) : (

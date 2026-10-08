@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { demoChrome } from "@/config/chrome"
 import { RailProvider } from "@/context/rail"
+import { createFakeApi, createWorld } from "./bot/test-support"
 import { DemoTradingPage } from "./demo-trading-page"
 import { demoTradingLoader } from "./workspace-url"
 import { createShopBackend, type ShopBackend } from "./shop/shop-test-support"
@@ -56,6 +57,8 @@ const account = {
   cash_reserved_vnd: 0, cash_pending_vnd: 0, total_cash_vnd: 100_000_000, activated_at: "2026-10-01T00:00:00Z", reset_at: null, created_at: "2026-10-01T00:00:00Z",
 }
 
+let botApi = createFakeApi(createWorld())
+
 async function respond(path: string, init?: RequestInit): Promise<unknown> {
   const { ApiError } = await import("@/lib/api")
   if (path === "/workspace/ensure") {
@@ -72,8 +75,9 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
     return { account, positions: [], total_market_value_vnd: 0, nav_vnd: 100_000_000, total_unrealized_pnl_vnd: 0, return_pct: 0, refresh_warnings: [] }
   }
   if (path === "/virtual-trading/refresh") return { orders_filled: 0, orders_expired: 0, settlements_settled: 0, warnings: [] }
-  if (path === "/bot") {
-    return { data: { eligible: false, current_level: 0, cap6_graduated_at: null, disclosure: "Mô phỏng, không phải khuyến nghị.", bot: null, conditions: null, account: null, bot_run: { status: "idle", latest_run_id: null, last_updated_at: null, processed_unseen_sessions: 0, issues: [] } } }
+  if (path === "/bot" || path.startsWith("/bot/") || path.startsWith("/strategy/")) {
+    // The Bot tool's own reads (overview, positions, journal, universe, registry, shared config).
+    return botApi(path, init)
   }
   if (path.startsWith("/cap5/san-ma")) throw new ApiError("Not found", 404)
   if (path === "/watchlists") return { data: [] }
@@ -114,6 +118,7 @@ const panel = () => screen.getByRole("complementary")
 beforeEach(() => {
   mocks.api.mockReset()
   mocks.api.mockImplementation(respond)
+  botApi = createFakeApi(createWorld())
   shopBackend = createShopBackend({ balance: 300, lessons: 3 })
   mocks.mascot = "bach_ho"
   mocks.workspaceStatus = 200
@@ -213,7 +218,13 @@ describe("DemoTradingPage for a brand-new user", () => {
 
     await user.click(within(rail()).getByRole("button", { name: "Bot" }))
     await waitFor(() => expect(within(panel()).getByRole("heading", { name: "Bot" })).toBeTruthy())
-    await waitFor(() => expect(within(panel()).getByText("Tài khoản Bot chưa sẵn sàng. Việc mở màn này không tạo Bot hoặc cấp vốn; hãy làm mới sau.")).toBeTruthy())
+    // The Bot panel: buy source card, search and the 16 indicators; main: KPIs and the mascot with the config state.
+    await waitFor(() => expect(within(panel()).getAllByRole("article")).toHaveLength(16))
+    expect(within(panel()).getByText("5 / 16 chỉ báo đã mở")).toBeTruthy()
+    expect(within(panel()).getByRole("region", { name: "Danh mục mua mới" })).toBeTruthy()
+    expect(within(panel()).getByRole("searchbox", { name: "Tìm chỉ báo" })).toBeTruthy()
+    expect(await screen.findByTestId("bot-state-chip")).toBeTruthy()
+    expect(screen.getByText("Vốn Bot ban đầu")).toBeTruthy()
     expect(panel().textContent).not.toMatch(/tốt nghiệp|Cấp \d|trứng/i)
 
     await user.click(within(rail()).getByRole("button", { name: "Shop" }))
