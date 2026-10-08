@@ -7,6 +7,7 @@
  */
 import { formatNum } from "../format"
 import type {
+  CrossField,
   IndicatorConfig,
   RegistryField,
   Rule,
@@ -107,10 +108,13 @@ export function rebaseDraft(draft: IndicatorDraft, oldBase: IndicatorConfig, new
 
 /* ── Validation ─────────────────────────────────────────────────────────── */
 
-/** `fast < slow` style constraints the API does not publish yet. */
-const FALLBACK_CROSS_FIELDS: Record<string, { left: string; right: string }[]> = {
-  macd: [{ left: "fast", right: "slow" }],
-  ma_cross: [{ left: "fast", right: "slow" }],
+/**
+ * `fast < slow` style constraints for a registry response that does not publish
+ * `validation.cross_fields`. A published list, even an empty one, always wins.
+ */
+const FALLBACK_CROSS_FIELDS: Record<string, CrossField[]> = {
+  macd: [{ left: "fast", op: "<", right: "slow" }],
+  ma_cross: [{ left: "fast", op: "<", right: "slow" }],
 }
 
 const EPSILON = 1e-6
@@ -127,35 +131,50 @@ export function paramError(field: RegistryField, text: string | undefined): stri
   return null
 }
 
-function crossFieldsOf(indicator: TechnicalIndicator): { left: string; right: string }[] {
+/** The cross-field constraints of an indicator: the registry's, or the built-in ones when it publishes none. */
+export function crossFieldsOf(indicator: TechnicalIndicator): CrossField[] {
   return indicator.validation?.cross_fields ?? FALLBACK_CROSS_FIELDS[indicator.id] ?? []
 }
 
-export type DraftErrors = Record<Side, { fields: Record<string, string>; form: string | null }>
+/** `Chu kỳ EMA nhanh` -> `chu kỳ EMA nhanh` inside a sentence; an acronym-first label keeps its case. */
+function inSentence(label: string): string {
+  return /^\p{Lu}\p{Ll}/u.test(label) ? label.charAt(0).toLowerCase() + label.slice(1) : label
+}
+
+/** `Chu kỳ EMA nhanh phải nhỏ hơn chu kỳ EMA chậm.` for `{ left: "fast", op: "<", right: "slow" }`. */
+export function crossFieldMessage(indicator: TechnicalIndicator, side: Side, cross: CrossField): string {
+  const label = (key: string) => sideField(indicator, side, key)?.label ?? key
+  return `${label(cross.left)} phải ${cross.op === "<" ? "nhỏ hơn" : "lớn hơn"} ${inSentence(label(cross.right))}.`
+}
+
+/** Per side: a message per param field (range, step or cross-field), keyed by the field the API would name. */
+export type DraftErrors = Record<Side, { fields: Record<string, string> }>
 
 export function draftErrors(indicator: TechnicalIndicator, draft: IndicatorDraft): DraftErrors {
-  const result: DraftErrors = { buy: { fields: {}, form: null }, sell: { fields: {}, form: null } }
+  const result: DraftErrors = { buy: { fields: {} }, sell: { fields: {} } }
   for (const side of SIDES) {
+    const fields = result[side].fields
     for (const field of sideFields(indicator, side)) {
       const error = paramError(field, draft[side].params[field.key])
-      if (error) result[side].fields[field.key] = error
+      if (error) fields[field.key] = error
     }
-    if (Object.keys(result[side].fields).length === 0) {
-      for (const constraint of crossFieldsOf(indicator)) {
-        const left = Number(draft[side].params[constraint.left])
-        const right = Number(draft[side].params[constraint.right])
-        if (!(left < right)) {
-          result[side].form = "Chu kỳ nhanh phải nhỏ hơn chu kỳ chậm."
-          break
-        }
-      }
+    // A cross-field rule is judged on two valid numbers only and reported on its left field, as the API does.
+    for (const cross of crossFieldsOf(indicator)) {
+      if (fields[cross.left] || fields[cross.right]) continue
+      const leftText = draft[side].params[cross.left]
+      const rightText = draft[side].params[cross.right]
+      if (leftText === undefined || rightText === undefined) continue
+      const left = Number(leftText)
+      const right = Number(rightText)
+      if (!Number.isFinite(left) || !Number.isFinite(right)) continue
+      if (!(cross.op === "<" ? left < right : left > right)) fields[cross.left] = crossFieldMessage(indicator, side, cross)
     }
   }
   return result
 }
 
 export function hasDraftErrors(errors: DraftErrors): boolean {
-  return SIDES.some((side) => Object.keys(errors[side].fields).length > 0 || errors[side].form !== null)
+  return SIDES.some((side) => Object.keys(errors[side].fields).length > 0)
 }
 
 /* ── Build the PATCH record ─────────────────────────────────────────────── */

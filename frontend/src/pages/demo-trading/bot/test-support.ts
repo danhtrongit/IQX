@@ -5,14 +5,16 @@
  */
 import type {
   BotConditions,
-  BotJournalItem,
   BotOverview,
   BotPosition,
+  BotSession,
+  BotSessionDecision,
+  BotTrade,
   SavedList,
   UniverseRequest,
   UniverseState,
 } from "./types"
-import type { IndicatorConfig, RegistryField, Rule, SharedConfigState, TechnicalIndicator, TechnicalRegistry } from "./config/types"
+import type { CrossField, IndicatorConfig, RegistryField, Rule, SharedConfigState, TechnicalIndicator, TechnicalRegistry } from "./config/types"
 
 export class FakeApiError extends Error {
   status: number
@@ -39,6 +41,8 @@ const compare = (id: string, lhs: ReturnType<typeof series> | { kind: "param"; k
 
 type IndicatorOptions = {
   family?: "state" | "event"
+  /** Published `validation.cross_fields`; none when omitted (as for most indicators). */
+  crossFields?: CrossField[]
   buyOverrides?: Record<string, Partial<RegistryField>>
   sellOverrides?: Record<string, Partial<RegistryField>>
   sellParams?: Record<string, number>
@@ -53,6 +57,7 @@ function indicator(
   return {
     id, name, chapter, lesson_id: `ch${String(chapter).padStart(2, "0")}-l${String(lessonNumber).padStart(2, "0")}`,
     family: options.family ?? "state", formula: "", availability: "ohlcv", fields, learned: false,
+    validation: { cross_fields: options.crossFields ?? [] },
     buy: { enabled: false, params: { ...params }, rules: buyRules, ...(options.buyOverrides ? { field_overrides: options.buyOverrides } : {}) },
     sell: { enabled: false, params: { ...(options.sellParams ?? params) }, rules: sellRules, ...(options.sellOverrides ? { field_overrides: options.sellOverrides } : {}) },
   }
@@ -79,7 +84,8 @@ export function buildRegistry(): TechnicalIndicator[] {
       [compare("r1", series("value", -1), ">", { kind: "param", key: "level" }), compare("r2", series("value"), "<", series("value", -1))],
       { sellParams: { period: 14, level: 70 }, buyOverrides: { level: { label: "Ngưỡng quá bán", min: 10, max: 49 } }, sellOverrides: { level: { label: "Ngưỡng quá mua", min: 51, max: 90 } } }),
     indicator("macd", "MACD", 1, 2, [field("fast", "Chu kỳ EMA nhanh", 2, 50), field("slow", "Chu kỳ EMA chậm", 5, 100), field("signal", "Chu kỳ đường tín hiệu", 2, 30)], { fast: 12, slow: 26, signal: 9 },
-      [compare("r1", series("value"), ">", series("signal"))], [compare("r1", series("value"), "<", series("signal"))]),
+      [compare("r1", series("value"), ">", series("signal"))], [compare("r1", series("value"), "<", series("signal"))],
+      { crossFields: [{ left: "fast", op: "<", right: "slow" }] }),
     indicator("ma", "MA / SMA", 1, 3, [field("period", "Chu kỳ SMA", 5, 200)], { period: 20 },
       [compare("r1", series("close"), ">", series("value"))], [compare("r1", series("close"), "<", series("value"))]),
     indicator("bollinger", "Bollinger Bands", 1, 4, [field("period", "Chu kỳ Bollinger", 10, 100), field("k", "Hệ số dải", 1, 3.5, 0.1, "", "number")], { period: 20, k: 2 }, bollingerBuy, bollingerSell),
@@ -89,7 +95,8 @@ export function buildRegistry(): TechnicalIndicator[] {
     simple("ema", "EMA", 5, 1),
     indicator("ma_cross", "MA Cross", 5, 2, [field("fast", "Chu kỳ SMA nhanh", 5, 100), field("slow", "Chu kỳ SMA chậm", 10, 250)], { fast: 20, slow: 50 },
       [{ id: "r1", kind: "cross", lhs: series("fast"), op: ">", rhs: series("slow"), allowed_ops: [">", "<"] }],
-      [{ id: "r1", kind: "cross", lhs: series("fast"), op: "<", rhs: series("slow"), allowed_ops: [">", "<"] }], { family: "event" }),
+      [{ id: "r1", kind: "cross", lhs: series("fast"), op: "<", rhs: series("slow"), allowed_ops: [">", "<"] }],
+      { family: "event", crossFields: [{ left: "fast", op: "<", right: "slow" }] }),
     simple("dmi", "DMI", 5, 3),
     simple("stochastic", "Stochastic", 5, 4),
     simple("cci", "CCI", 5, 5),
@@ -112,19 +119,30 @@ export function registryFor(granted: readonly string[]): TechnicalRegistry {
 
 /* ── World ──────────────────────────────────────────────────────────────── */
 
-export type Call = { method: string; path: string; body: Record<string, unknown> | null }
+export type Call = { method: string; path: string; body: Record<string, unknown> | null; query?: string }
 
 export type World = {
   granted: string[]
   savedRevision: number
   effectiveRevision: number | null
+  /** Session from which the LATEST SAVED revision counts. */
   effectiveSession: string | null
   status: "pending" | "effective" | "calendar_unavailable"
+  /** The latest saved config (what the form edits). */
   indicators: Record<string, IndicatorConfig>
+  /** Config of the effective revision when it is an older one than the saved config; the saved config otherwise. */
+  effectiveIndicators: Record<string, IndicatorConfig> | null
+  /** Leave `effective` out of the shared-config response, as a backend from before it existed would. */
+  omitEffective: boolean
   universe: UniverseState
   lists: SavedList[]
   positions: BotPosition[]
-  journal: BotJournalItem[]
+  /** Closed round trips, newest first. */
+  trades: BotTrade[]
+  /** One row per session, newest first. */
+  sessions: BotSession[]
+  /** Decisions per session date. */
+  decisions: Record<string, BotSessionDecision[]>
   conditions: BotConditions | null
   /** When set, applying a list is refused with these symbols (422 `UNIVERSE_SYMBOLS_INVALID`). */
   invalidSymbols: { symbol: string; reason: string }[] | null
@@ -178,7 +196,8 @@ export function createWorld(partial: Partial<World> = {}): World {
   return {
     granted: ["rsi", "macd", "ma", "bollinger", "volume"],
     savedRevision: 0, effectiveRevision: null, effectiveSession: null, status: "pending",
-    indicators, universe: universeState(), lists: [], positions: [], journal: [], conditions: null, invalidSymbols: null,
+    indicators, effectiveIndicators: null, omitEffective: false, universe: universeState(), lists: [], positions: [],
+    trades: [], sessions: [], decisions: {}, conditions: null, invalidSymbols: null,
     override: {}, calls: [], ...partial,
   }
 }
@@ -204,17 +223,39 @@ function overview(world: World): BotOverview {
   }
 }
 
+/** A hash that follows the content, like the server's: equal configs hash equal whatever their revision. */
+function contentHash(indicators: Record<string, IndicatorConfig>): string {
+  const text = JSON.stringify(indicators)
+  let hash = 5381
+  for (let index = 0; index < text.length; index += 1) hash = (hash * 33 + text.charCodeAt(index)) % 2147483647
+  return `sha-${hash}`
+}
+
 function sharedConfig(world: World): SharedConfigState {
-  return {
+  const inForce = world.effectiveRevision
+  const state: SharedConfigState = {
     saved_revision: world.savedRevision,
-    effective_revision: world.effectiveRevision,
+    effective_revision: inForce,
     effective_session: world.effectiveSession,
     status: world.status,
     config: { schema_version: "3.0", revision: world.savedRevision, rule_version: "iqx-rules-3.0", indicators: world.indicators },
-    config_hash: `h${world.savedRevision}`,
+    config_hash: contentHash(world.indicators),
     registry_version: "iqx-ta-2.0",
     granted_indicators: world.granted,
     legacy: null,
+  }
+  if (world.omitEffective) return state
+  return {
+    ...state,
+    effective: inForce === null
+      ? null
+      : {
+          revision: inForce,
+          effective_session: "2026-10-01",
+          config_hash: contentHash(world.effectiveIndicators ?? world.indicators),
+          config: { schema_version: "3.0", revision: inForce, rule_version: "iqx-rules-3.0", indicators: world.effectiveIndicators ?? world.indicators },
+          legacy: null,
+        },
   }
 }
 
@@ -232,29 +273,37 @@ function route(world: World) {
     const method = init?.method ?? "GET"
     const url = new URL(path, "http://test")
     const body = typeof init?.body === "string" ? (JSON.parse(init.body) as Record<string, unknown>) : null
-    world.calls.push({ method, path: url.pathname, body })
+    world.calls.push({ method, path: url.pathname, body, query: url.search })
     const key = `${method} ${url.pathname}`
     const override = world.override[key]
     if (override) return override(body)
+    const sessionDate = /^\/bot\/journal\/sessions\/(\d{4}-\d{2}-\d{2})$/.exec(url.pathname)?.[1]
+    if (method === "GET" && sessionDate) {
+      const session = world.sessions.find((item) => item.session === sessionDate)
+      if (!session) throw new FakeApiError("Không có phiên này.", 404, { code: "NOT_FOUND" })
+      return { session, ...page(world.decisions[sessionDate] ?? [], url, (decision) => decision.id) }
+    }
     switch (key) {
       case "GET /bot": return overview(world)
       case "GET /bot/positions": return { items: world.positions, valuation_complete: true, as_of_session: "2026-10-07" }
-      case "GET /bot/journal": {
-        const cursor = Number(url.searchParams.get("cursor") ?? 0)
-        const limit = Number(url.searchParams.get("limit") ?? 30)
-        return { items: world.journal.slice(cursor, cursor + limit), next_cursor: cursor + limit < world.journal.length ? String(cursor + limit) : null, issues: [] }
-      }
+      case "GET /bot/trades": return page(world.trades, url, (trade) => trade.id)
+      case "GET /bot/journal/sessions": return page(world.sessions, url, (session) => session.session)
       case "GET /bot/universe": return world.universe
       case "GET /strategy/lists": return { items: world.lists }
       case "GET /strategy/registry/technical": return registryFor(world.granted)
       case "GET /strategy/shared-config": return sharedConfig(world)
       case "PATCH /strategy/shared-config": {
-        if (body?.expected_revision !== world.savedRevision) throw new FakeApiError("Cấu hình đã được lưu ở nơi khác.", 409, { code: "REVISION_CONFLICT" })
+        if (body?.expected_revision !== world.savedRevision) {
+          throw new FakeApiError("Cấu hình đã được lưu ở nơi khác. Tải lại để xem bản mới nhất.", 409, {
+            code: "REVISION_CONFLICT",
+            details: [{ field: "expected_revision", current_revision: world.savedRevision }],
+          })
+        }
         Object.assign(world.indicators, body?.indicators as Record<string, IndicatorConfig>)
         world.savedRevision += 1
         world.effectiveSession = "2026-10-09"
         world.status = "pending"
-        return { revision: world.savedRevision, config: sharedConfig(world).config, config_hash: `h${world.savedRevision}`, effective_session: "2026-10-09", status: "pending" }
+        return { revision: world.savedRevision, config: sharedConfig(world).config, config_hash: contentHash(world.indicators), effective_session: "2026-10-09", status: "pending" }
       }
       case "POST /bot/universe/apply-list": {
         assertUniverseRevision(world, body?.expected_revision)
@@ -281,6 +330,16 @@ function route(world: World) {
   }
 }
 
+/** A cursor page of `items`: the cursor is the key of the last item of the previous page, like the API's. */
+function page<T>(items: readonly T[], url: URL, keyOf: (item: T) => string): { items: T[]; next_cursor: string | null } {
+  const limit = Number(url.searchParams.get("limit") ?? 30)
+  const cursor = url.searchParams.get("cursor")
+  const start = cursor ? items.findIndex((item) => keyOf(item) === cursor) + 1 : 0
+  const slice = items.slice(start, start + limit)
+  const last = slice.at(-1)
+  return { items: [...slice], next_cursor: last && start + limit < items.length ? keyOf(last) : null }
+}
+
 function assertUniverseRevision(world: World, expected: unknown) {
   if (expected !== world.universe.revision) {
     throw new FakeApiError("Nguồn mua đã được thay đổi ở nơi khác.", 409, {
@@ -297,4 +356,49 @@ function requestUniverse(world: World, created: UniverseRequest) {
 
 export function callsTo(world: World, method: string, path: string): Call[] {
   return world.calls.filter((call) => call.method === method && call.path === path)
+}
+
+/* ── Builders of the read models ────────────────────────────────────────── */
+
+/** A closed trade: FPT, 300 CP bought at 98.500 and sold at 101.200, +807.000 đ (+2,73%). */
+export function tradeFixture(partial: Partial<BotTrade> & Pick<BotTrade, "id">): BotTrade {
+  return {
+    symbol: "FPT",
+    buy: {
+      execution_id: "e-buy", decision_id: "d-buy", session: "2026-10-01", executed_at: "2026-10-01T07:30:00Z", price_vnd: "98500", qty: 300,
+      gross_value_vnd: "29550000", fee_vnd: "44325", total_vnd: "29594325", decision_config_revision: 3,
+      entry_source_snapshot: { kind: "vn30", name: "VN30", revision: 0 }, reason_code: "buy_all_conditions_met", reason_label: "Mua theo điều kiện Mua", reason: "raw buy",
+    },
+    sell: {
+      execution_id: "e-sell", decision_id: "d-sell", session: "2026-10-07", executed_at: "2026-10-07T07:30:00Z", price_vnd: "101200", qty: 300,
+      gross_value_vnd: "30360000", fee_vnd: "45540", tax_vnd: "30360", net_vnd: "30284100", decision_config_revision: 4,
+      reason_code: "sell_all_conditions_met", reason_label: "Bán theo điều kiện Bán", reason: "raw sell",
+    },
+    realized_pnl_vnd: "689775",
+    realized_pnl_pct: "2.330782",
+    holding_sessions: 4,
+    holding_days: 6,
+    legacy_amplitude_at_entry_vnd: null, legacy_amplitude_source_ref: null, legacy_filter_ids: [], legacy_stop_loss_vnd: null, legacy_take_profit_vnd: null,
+    ...partial,
+  }
+}
+
+/** One session row: a normal VN30 run on config revision 3 with nothing traded. */
+export function sessionFixture(partial: Partial<BotSession> & Pick<BotSession, "session">): BotSession {
+  return {
+    run_id: `run-${partial.session}`, run_status: "succeeded", started_at: `${partial.session}T10:00:00Z`, completed_at: `${partial.session}T10:05:00Z`,
+    policy_version: "iqx-bot-v1.0", universe: { kind: "vn30", name: "VN30", revision: 0 }, config_revision: 3,
+    counts: { buy: 0, sell: 0, hold: 0, skip: 0, total: 0 }, reasons: [], nav_end_vnd: "100000000", cash_end_vnd: "100000000", valuation_complete: true, issues: [],
+    ...partial,
+  }
+}
+
+/** One decision of a session. */
+export function decisionFixture(partial: Partial<BotSessionDecision> & Pick<BotSessionDecision, "id" | "trading_date" | "action">): BotSessionDecision {
+  return {
+    run_id: `run-${partial.trading_date}`, reason_code: "buy_not_met", reason_label: "Điều kiện Mua chưa đạt", reason: "raw reason", execution: null, symbol: "HPG",
+    in_universe: true, universe_kind: "vn30", universe_revision: 0, policy_version: "iqx-bot-v1.0", decision_config_revision: 3, condition_snapshot: null,
+    rank_tuple: null, legacy_filter_ids: [], legacy_threshold_vnd: null, source_refs: {}, created_at: `${partial.trading_date}T10:00:00Z`,
+    ...partial,
+  }
 }

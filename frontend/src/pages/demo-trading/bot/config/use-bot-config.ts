@@ -81,7 +81,7 @@ export function useBotConfig(): BotConfigController {
   const save = useCallback(
     async (indicatorId: string, config: IndicatorConfig, expectedRevision?: number): Promise<SaveOutcome> => {
       const latest = queryClient.getQueryData<SharedConfigState>(stateKey)
-      if (!latest) return { ok: false, reason: "error", message: "Chưa tải được cấu hình đã lưu.", errors: [], retryable: false }
+      if (!latest) return { ok: false, reason: "error", code: null, message: "Chưa tải được cấu hình đã lưu.", errors: [], locked: [], retryable: false }
       const expected = expectedRevision ?? latest.saved_revision
       const fingerprint = JSON.stringify([expected, indicatorId, config])
       if (attempt.current?.fingerprint !== fingerprint) attempt.current = { fingerprint, key: newIdempotencyKey() }
@@ -106,7 +106,8 @@ export function useBotConfig(): BotConfigController {
         void queryClient.invalidateQueries({ queryKey: botKeys.overview(userId) })
         return { ok: true, result }
       } catch (error) {
-        const outcome = saveOutcomeFromError(error)
+        const registry = queryClient.getQueryData<TechnicalRegistry>(botKeys.registry(userId))
+        const outcome = saveOutcomeFromError(error, (id) => registry?.indicators.find((entry) => entry.id === id)?.name)
         if (!outcome.ok && !outcome.retryable) attempt.current = null
         if (!outcome.ok && outcome.reason === "conflict") void queryClient.invalidateQueries({ queryKey: stateKey })
         return outcome

@@ -2,7 +2,7 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query"
 
 import { useAuth } from "@/hooks/use-auth"
 
-import { botKeys, fetchJournal, fetchOverview, fetchPositions } from "./api"
+import { botKeys, fetchJournalSessions, fetchOverview, fetchPositions, fetchSessionDecisions, fetchTrades } from "./api"
 
 /** Reads only: a failure is reported, never retried into a fake empty state. */
 export function useBotOverview() {
@@ -27,15 +27,43 @@ export function useBotPositions(enabled: boolean) {
   })
 }
 
-/** Every decision of the Bot, newest first, one cursor page at a time. */
-export function useBotJournal(enabled: boolean) {
+/** Closed trades with the server's realized P&L, newest first, one cursor page at a time. */
+export function useBotTrades(enabled: boolean) {
   const { user, isAuthenticated } = useAuth()
   return useInfiniteQuery({
-    queryKey: botKeys.journal(user?.id),
-    queryFn: ({ pageParam, signal }) => fetchJournal(pageParam, signal),
+    queryKey: botKeys.trades(user?.id),
+    queryFn: ({ pageParam, signal }) => fetchTrades(pageParam, signal),
     enabled: isAuthenticated && enabled,
     retry: false,
     staleTime: 15_000,
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+  })
+}
+
+/** One row per trading session (run status, source, config revision, reason counts), newest first. */
+export function useBotJournalSessions(enabled: boolean) {
+  const { user, isAuthenticated } = useAuth()
+  return useInfiniteQuery({
+    queryKey: botKeys.sessions(user?.id),
+    queryFn: ({ pageParam, signal }) => fetchJournalSessions(pageParam, signal),
+    enabled: isAuthenticated && enabled,
+    retry: false,
+    staleTime: 15_000,
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+  })
+}
+
+/** The decisions of one session; loaded only while its row is expanded. */
+export function useSessionDecisions(session: string, enabled: boolean) {
+  const { user, isAuthenticated } = useAuth()
+  return useInfiniteQuery({
+    queryKey: botKeys.sessionDecisions(user?.id, session),
+    queryFn: ({ pageParam, signal }) => fetchSessionDecisions(session, pageParam, signal),
+    enabled: isAuthenticated && enabled,
+    retry: false,
+    staleTime: 60_000,
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.next_cursor ?? undefined,
   })

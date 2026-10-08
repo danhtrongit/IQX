@@ -46,6 +46,14 @@ export function formatRatio(value: string | number | null | undefined): string {
   return parsed === null ? DASH : RATIO_PERCENT.format(parsed).replace("-", "−")
 }
 
+/** Signed percent already scaled (`"2.5"` = `+2,5%`, `"-1.2"` = `−1,2%`, zero is `0%`). */
+export function formatPercentSigned(value: string | number | null | undefined): string {
+  const parsed = toNumber(value)
+  if (parsed === null) return DASH
+  const text = NUMBER.format(Math.abs(parsed))
+  return parsed > 0 && text !== "0" ? `+${text}%` : parsed < 0 && text !== "0" ? `−${text}%` : "0%"
+}
+
 /** Percent already scaled (`12.5` = 12,5%). */
 export function formatPercentValue(value: string | number | null | undefined): string {
   const parsed = toNumber(value)

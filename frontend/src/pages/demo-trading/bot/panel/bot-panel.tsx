@@ -60,7 +60,7 @@ export function BotPanel() {
       const when = effectiveText(outcome.result.status, outcome.result.effective_session)
       toast.success(`Đã lưu trạng thái ${indicator.name} (bản ${outcome.result.revision}).${when ? ` ${when}.` : ""}`)
     } else if (outcome.reason === "conflict") {
-      toast.error(`${outcome.message} Đã tải lại bản mới nhất, hãy thử lại.`)
+      toast.error(`${outcome.message}${outcome.currentRevision === null ? "" : ` Bản mới nhất là #${outcome.currentRevision}.`} Đã tải lại bản mới nhất, hãy thử lại.`)
     } else {
       toast.error(outcome.message)
     }

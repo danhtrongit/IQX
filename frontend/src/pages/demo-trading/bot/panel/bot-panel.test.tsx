@@ -149,14 +149,30 @@ describe("Bot panel", () => {
       world.indicators.rsi!.buy.enabled = true
       world.savedRevision = 3
       world.override["PATCH /strategy/shared-config"] = () => {
-        throw new FakeApiError("Cấu hình đã được lưu ở nơi khác.", 409, { code: "REVISION_CONFLICT" })
+        throw new FakeApiError("Cấu hình đã được lưu ở nơi khác.", 409, { code: "REVISION_CONFLICT", details: [{ field: "expected_revision", current_revision: 4 }] })
       }
       const user = userEvent.setup()
       await renderPanel()
       await user.click(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }))
       await waitFor(() => expect(mocks.toast.error).toHaveBeenCalledWith(expect.stringContaining("Đã tải lại bản mới nhất")))
+      expect(mocks.toast.error).toHaveBeenCalledWith(expect.stringContaining("Bản mới nhất là #4."))
       expect(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }).getAttribute("aria-checked")).toBe("false")
       await waitFor(() => expect(callsTo(world, "GET", "/strategy/shared-config").length).toBeGreaterThan(1))
+    })
+
+    it("names the indicator whose quiz is missing when the server locks it (403 CAPABILITY_LOCKED)", async () => {
+      world.indicators.rsi!.buy.enabled = true
+      world.override["PATCH /strategy/shared-config"] = () => {
+        throw new FakeApiError("Cần hoàn thành bài học của chỉ báo rsi (8/8) trước khi bật.", 403, {
+          code: "CAPABILITY_LOCKED",
+          details: [{ capability: "indicator:rsi", reason: "not_learned", indicator: "rsi" }],
+        })
+      }
+      const user = userEvent.setup()
+      await renderPanel()
+      await user.click(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }))
+      await waitFor(() => expect(mocks.toast.error).toHaveBeenCalledWith("Hoàn thành bài kiểm tra 8/8 của chỉ báo RSI để bật."))
+      expect(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }).getAttribute("aria-checked")).toBe("false")
     })
   })
 })

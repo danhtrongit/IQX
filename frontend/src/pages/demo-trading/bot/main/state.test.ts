@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import type { BotConditions, BotJournalItem } from "../types"
-import { executionRows } from "./history"
-import { groupJournal, sessionSummary } from "./journal"
+import type { BotConditions } from "../types"
 import { configStateChip, pendingConfigNote } from "./state"
 
 function conditions(partial: Partial<BotConditions> = {}): BotConditions {
@@ -56,50 +54,5 @@ describe("pending config note", () => {
   it("is empty when nothing is waiting", () => {
     expect(pendingConfigNote(conditions())).toBeNull()
     expect(pendingConfigNote(null)).toBeNull()
-  })
-})
-
-function decision(partial: Partial<BotJournalItem> & Pick<BotJournalItem, "id" | "trading_date" | "action">): BotJournalItem {
-  return {
-    condition_snapshot: null, created_at: `${partial.trading_date}T12:00:00Z`, decision_config_revision: 3, execution: null, in_universe: true,
-    legacy_filter_ids: [], legacy_threshold_vnd: null, policy_version: "iqx-bot-v1.0", rank_tuple: null, reason: "raw", reason_code: "x",
-    reason_label: null, run_id: "r", source_refs: {}, symbol: null, universe_kind: "vn30", universe_revision: 0, ...partial,
-  }
-}
-const execution = (side: "buy" | "sell", net: string) => ({ id: "e", side, qty: 100, price_vnd: "10000", gross_value_vnd: "1000000", fee_vnd: "1500", tax_vnd: "0", net_cash_delta_vnd: net })
-
-describe("journal per session", () => {
-  const items = [
-    decision({ id: "3", trading_date: "2026-10-07", action: "skip", symbol: "HPG", reason_label: "Điều kiện Mua chưa đạt" }),
-    decision({ id: "2", trading_date: "2026-10-07", action: "skip", symbol: "MWG", reason_label: "Điều kiện Mua chưa đạt" }),
-    decision({ id: "1", trading_date: "2026-10-06", action: "buy", symbol: "FPT", reason_label: "Mua theo điều kiện Mua", execution: execution("buy", "-1001500") }),
-  ]
-
-  it("groups decisions by session, newest first, with the server's reason labels counted", () => {
-    const sessions = groupJournal(items)
-    expect(sessions.map((session) => session.date)).toEqual(["2026-10-07", "2026-10-06"])
-    expect(sessionSummary(sessions[0]!)).toBe("Điều kiện Mua chưa đạt ×2")
-    expect(sessionSummary(sessions[1]!)).toBe("Mua 1")
-    expect(sessions[0]).toMatchObject({ source: "VN30", revision: 3 })
-  })
-
-  it("falls back to the server's own text when a code has no label", () => {
-    const [session] = groupJournal([decision({ id: "9", trading_date: "2026-10-07", action: "hold", symbol: "FPT", reason: "Giữ FPT" })])
-    expect(session?.reasons).toEqual([{ label: "Giữ FPT", count: 1 }])
-  })
-})
-
-describe("history pairing", () => {
-  it("pairs a sell with the buy it closed and derives the realized P&L, leaving unpaired sells unknown", () => {
-    const items = [
-      decision({ id: "4", trading_date: "2026-10-07", action: "sell", symbol: "FPT", created_at: "2026-10-07T12:00:00Z", execution: execution("sell", "1098000") }),
-      decision({ id: "3", trading_date: "2026-10-01", action: "buy", symbol: "FPT", created_at: "2026-10-01T12:00:00Z", execution: execution("buy", "-1001500") }),
-      decision({ id: "2", trading_date: "2026-10-06", action: "sell", symbol: "ACB", created_at: "2026-10-06T12:00:00Z", execution: execution("sell", "500000") }),
-    ]
-    const rows = executionRows(items)
-    expect(rows.map((row) => row.id)).toEqual(["4", "2", "3"])
-    expect(rows[0]).toMatchObject({ realizedPnl: 96500, entryCost: 1001500, openedSession: "2026-10-01" })
-    expect(rows[1]?.realizedPnl).toBeNull()
-    expect(rows[2]?.realizedPnl).toBeNull()
   })
 })

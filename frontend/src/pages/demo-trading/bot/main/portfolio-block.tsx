@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useMemo, useState } from "react"
 import { Info } from "lucide-react"
 
 import { PanelState } from "@/components/layout/panel-state"
@@ -7,20 +7,13 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 import { messageOf } from "../api"
-import { useBotJournal, useBotPositions } from "../queries"
+import { useBotJournalSessions, useBotPositions, useBotTrades } from "../queries"
 import { DetailDialog, type DetailRow } from "./detail-dialog"
 import { HistoryTable } from "./history-table"
-import { executionRows } from "./history"
-import { groupJournal } from "./journal"
 import { JournalTable } from "./journal-table"
 import { PositionsTable } from "./positions-table"
 
 type PortfolioTab = "positions" | "history" | "journal"
-
-/** Execution rows the History tab tries to show before it stops loading by itself. */
-const HISTORY_TARGET = 20
-/** Journal pages the History tab loads on its own per visit; the button continues. */
-const AUTO_PAGE_LIMIT = 10
 
 const PRINCIPLES: DetailRow[] = [
   { label: "Vốn khởi tạo", value: "100.000.000 đồng · tài khoản riêng" },
@@ -57,38 +50,19 @@ function ListState({ loading, error, onRetry }: { loading: boolean; error: unkno
 
 /**
  * «Danh mục Bot»: Đang giữ / Lịch sử / Nhật ký. Real symbols and dates (only the
- * practice screens hide them). Positions come in one read; history and journal page
- * through the cursor until the whole record is reachable.
+ * practice screens hide them). Every tab shows what the server computed: positions in one
+ * read, closed trades with their realized P&L and sessions with their decisions through
+ * cursor pages that reach the whole record.
  */
 export function PortfolioBlock({ disclosure, names }: { disclosure: string | null; names: Readonly<Record<string, string>> }) {
   const [tab, setTab] = useState<PortfolioTab>("positions")
   const [info, setInfo] = useState(false)
   const positions = useBotPositions(true)
-  const journal = useBotJournal(tab !== "positions")
+  const trades = useBotTrades(tab === "history")
+  const sessions = useBotJournalSessions(tab === "journal")
 
-  const items = useMemo(() => journal.data?.pages.flatMap((page) => page.items) ?? [], [journal.data])
-  const issues = journal.data?.pages[0]?.issues ?? []
-  const executions = useMemo(() => executionRows(items), [items])
-  const sessions = useMemo(() => groupJournal(items), [items])
-
-  const autoPages = useRef(0)
-  const { hasNextPage, isFetchingNextPage, isPending, fetchNextPage } = journal
-  useEffect(() => {
-    if (tab !== "history") {
-      autoPages.current = 0
-      return
-    }
-    if (isPending || isFetchingNextPage || !hasNextPage) return
-    if (executions.length >= HISTORY_TARGET || autoPages.current >= AUTO_PAGE_LIMIT) return
-    autoPages.current += 1
-    void fetchNextPage()
-  }, [tab, executions.length, hasNextPage, isFetchingNextPage, isPending, fetchNextPage])
-
-  const loadingMore = journal.isFetchingNextPage || journal.isPending
-  const onLoadMore = () => {
-    autoPages.current = 0
-    void journal.fetchNextPage()
-  }
+  const tradeItems = useMemo(() => trades.data?.pages.flatMap((page) => page.items) ?? [], [trades.data])
+  const sessionItems = useMemo(() => sessions.data?.pages.flatMap((page) => page.items) ?? [], [sessions.data])
 
   return (
     <section aria-label="Danh mục Bot" className="rounded-lg border border-border bg-card">
@@ -115,17 +89,17 @@ export function PortfolioBlock({ disclosure, names }: { disclosure: string | nul
           )}
         </TabsContent>
         <TabsContent value="history">
-          {journal.isError ? (
-            <ListState loading={false} error={journal.error} onRetry={() => void journal.refetch()} />
+          {trades.isError ? (
+            <ListState loading={false} error={trades.error} onRetry={() => void trades.refetch()} />
           ) : (
-            <HistoryTable rows={executions} names={names} hasMore={journal.hasNextPage} loading={loadingMore} onLoadMore={onLoadMore} />
+            <HistoryTable trades={tradeItems} hasMore={trades.hasNextPage} loading={trades.isPending || trades.isFetchingNextPage} onLoadMore={() => void trades.fetchNextPage()} />
           )}
         </TabsContent>
         <TabsContent value="journal">
-          {journal.isError ? (
-            <ListState loading={false} error={journal.error} onRetry={() => void journal.refetch()} />
+          {sessions.isError ? (
+            <ListState loading={false} error={sessions.error} onRetry={() => void sessions.refetch()} />
           ) : (
-            <JournalTable sessions={sessions} issues={issues} hasMore={journal.hasNextPage} loading={loadingMore} onLoadMore={onLoadMore} />
+            <JournalTable sessions={sessionItems} names={names} hasMore={sessions.hasNextPage} loading={sessions.isPending || sessions.isFetchingNextPage} onLoadMore={() => void sessions.fetchNextPage()} />
           )}
         </TabsContent>
       </Tabs>

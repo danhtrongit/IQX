@@ -1644,7 +1644,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/api.ts",
-      "line": 44,
+      "line": 53,
       "callee": "requestOperation",
       "raw": "GET /api/v2/bot",
       "method": "GET",
@@ -1657,7 +1657,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/api.ts",
-      "line": 48,
+      "line": 57,
       "callee": "requestOperation",
       "raw": "GET /api/v2/bot/positions",
       "method": "GET",
@@ -1670,20 +1670,46 @@
     },
     {
       "file": "src/pages/demo-trading/bot/api.ts",
-      "line": 54,
-      "callee": "api",
-      "raw": "/bot/journal?{query}",
+      "line": 63,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/bot/trades",
       "method": "GET",
-      "route": "/api/v2/bot/journal",
-      "matchedOperation": "GET /api/v2/bot/journal",
+      "route": "/api/v2/bot/trades",
+      "matchedOperation": "GET /api/v2/bot/trades",
       "matchedOperations": [
-        "GET /api/v2/bot/journal"
+        "GET /api/v2/bot/trades"
       ],
       "classification": "api-call"
     },
     {
       "file": "src/pages/demo-trading/bot/api.ts",
-      "line": 58,
+      "line": 69,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/bot/journal/sessions",
+      "method": "GET",
+      "route": "/api/v2/bot/journal/sessions",
+      "matchedOperation": "GET /api/v2/bot/journal/sessions",
+      "matchedOperations": [
+        "GET /api/v2/bot/journal/sessions"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 76,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/bot/journal/sessions/{session}",
+      "method": "GET",
+      "route": "/api/v2/bot/journal/sessions/{session}",
+      "matchedOperation": "GET /api/v2/bot/journal/sessions/{session}",
+      "matchedOperations": [
+        "GET /api/v2/bot/journal/sessions/{session}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 81,
       "callee": "requestOperation",
       "raw": "GET /api/v2/bot/universe",
       "method": "GET",
@@ -1696,7 +1722,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/api.ts",
-      "line": 63,
+      "line": 86,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/lists",
       "method": "GET",
@@ -1709,7 +1735,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/api.ts",
-      "line": 74,
+      "line": 97,
       "callee": "requestOperation",
       "raw": "POST /api/v2/bot/universe/apply-list",
       "method": "POST",
@@ -1722,7 +1748,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/api.ts",
-      "line": 83,
+      "line": 106,
       "callee": "requestOperation",
       "raw": "POST /api/v2/bot/universe/revert-vn30",
       "method": "POST",
@@ -1735,7 +1761,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/api.ts",
-      "line": 89,
+      "line": 112,
       "callee": "requestOperation",
       "raw": "POST /api/v2/bot/universe/pending/cancel",
       "method": "POST",
@@ -1787,7 +1813,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/config/draft.test.ts",
-      "line": 21,
+      "line": 23,
       "callee": "get",
       "raw": "rsi",
       "method": "GET",
@@ -1798,7 +1824,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/config/draft.test.ts",
-      "line": 37,
+      "line": 41,
       "callee": "get",
       "raw": "bollinger",
       "method": "GET",
@@ -1809,9 +1835,9 @@
     },
     {
       "file": "src/pages/demo-trading/bot/config/draft.test.ts",
-      "line": 56,
+      "line": 59,
       "callee": "get",
-      "raw": "ma",
+      "raw": "macd",
       "method": "GET",
       "route": null,
       "matchedOperation": null,
@@ -1820,7 +1846,51 @@
     },
     {
       "file": "src/pages/demo-trading/bot/config/draft.test.ts",
-      "line": 118,
+      "line": 66,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 80,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 95,
+      "callee": "get",
+      "raw": "rsi",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 99,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 163,
       "callee": "get",
       "raw": "bollinger",
       "method": "GET",
@@ -3039,7 +3109,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/config/draft.test.ts",
-      "line": 21,
+      "line": 23,
       "callee": "get",
       "raw": "rsi",
       "method": "GET",
@@ -3050,7 +3120,7 @@
     },
     {
       "file": "src/pages/demo-trading/bot/config/draft.test.ts",
-      "line": 37,
+      "line": 41,
       "callee": "get",
       "raw": "bollinger",
       "method": "GET",
@@ -3061,9 +3131,9 @@
     },
     {
       "file": "src/pages/demo-trading/bot/config/draft.test.ts",
-      "line": 56,
+      "line": 59,
       "callee": "get",
-      "raw": "ma",
+      "raw": "macd",
       "method": "GET",
       "route": null,
       "matchedOperation": null,
@@ -3072,7 +3142,51 @@
     },
     {
       "file": "src/pages/demo-trading/bot/config/draft.test.ts",
-      "line": 118,
+      "line": 66,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 80,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 95,
+      "callee": "get",
+      "raw": "rsi",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 99,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 163,
       "callee": "get",
       "raw": "bollinger",
       "method": "GET",
@@ -3196,12 +3310,10 @@
     "GET /api/v2/ai/patterns/{kind}/symbols",
     "GET /api/v2/auth/reset-password",
     "GET /api/v2/auth/verify-email",
-    "GET /api/v2/bot/journal/sessions",
-    "GET /api/v2/bot/journal/sessions/{session}",
+    "GET /api/v2/bot/journal",
     "GET /api/v2/bot/mascot",
     "GET /api/v2/bot/performance",
     "GET /api/v2/bot/status",
-    "GET /api/v2/bot/trades",
     "GET /api/v2/cap0/kehoach",
     "GET /api/v2/cap0/placement",
     "GET /api/v2/cap0/progress",

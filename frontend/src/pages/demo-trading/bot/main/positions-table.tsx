@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils"
 import { formatDate, formatDong, formatDongSigned, formatInt, formatPercentValue, formatRatio, TONE_CLASS, toNumber, toneOf } from "../format"
 import type { BotPosition } from "../types"
 import { DetailDialog, type DetailRow } from "./detail-dialog"
-import { sourceLabel } from "./journal"
 import { PageControls } from "./page-controls"
 import { scopeBadge } from "./scope"
+import { snapshotSourceText } from "./source"
 import { usePaging } from "./use-paging"
 
 const PAGE_SIZE = 20
@@ -19,13 +19,6 @@ function priceChange(position: BotPosition): number | null {
   const close = toNumber(position.current_close_vnd)
   const entry = toNumber(position.entry_price_vnd)
   return close === null || entry === null || entry === 0 ? null : close / entry - 1
-}
-
-function entrySourceName(position: BotPosition): string {
-  const snapshot = position.entry_source_snapshot
-  const name = snapshot && typeof snapshot.name === "string" ? snapshot.name : null
-  const kind = snapshot && typeof snapshot.kind === "string" ? snapshot.kind : null
-  return kind === "vn30" ? "VN30" : (name ?? sourceLabel(kind, null))
 }
 
 function PositionDetail({ position, onClose }: { position: BotPosition; onClose: () => void }) {
@@ -41,7 +34,7 @@ function PositionDetail({ position, onClose }: { position: BotPosition; onClose:
     { label: "Lãi/lỗ tạm tính (sau phí)", value: formatDongSigned(position.unrealized_pnl_net_vnd), tone: TONE_CLASS[toneOf(position.unrealized_pnl_net_vnd)] },
     { label: "Phiên mua", value: formatDate(position.opened_session) },
     { label: "Số phiên đang giữ", value: `${position.holding_sessions} phiên` },
-    { label: "Nguồn mua lúc mở", value: entrySourceName(position) },
+    { label: "Nguồn mua lúc mở", value: snapshotSourceText(position.entry_source_snapshot) },
     { label: "Cấu hình lúc mua", value: position.entry_config_revision === null ? "—" : `Bản ${position.entry_config_revision}` },
     { label: "Phạm vi hiện tại", value: scopeBadge(position).label },
   ]
@@ -121,7 +114,7 @@ export function PositionsTable({ positions, valuationComplete }: { positions: Bo
                   {move !== null && <small className={cn("block text-[10px]", TONE_CLASS[toneOf(move)])} title="Chênh lệch giá tham chiếu so với giá vốn">{formatRatio(move)}</small>}
                 </TableCell>
                 <TableCell className="text-right">{position.holding_sessions} phiên</TableCell>
-                <TableCell>{entrySourceName(position)}</TableCell>
+                <TableCell>{snapshotSourceText(position.entry_source_snapshot)}</TableCell>
                 <TableCell>
                   <span className={cn("inline-flex items-center gap-1.5 rounded-sm border px-1.5 py-0.5 text-[11px] font-medium", scope.inSource === true ? "border-primary/40 bg-primary/10 text-primary" : scope.inSource === false ? "border-price-ref/40 bg-price-ref/10 text-price-ref" : "border-border text-muted-foreground")}>
                     <span aria-hidden="true" className={cn("size-1.5 rounded-full", scope.inSource === true ? "bg-primary" : scope.inSource === false ? "bg-price-ref" : "bg-muted-foreground")} />

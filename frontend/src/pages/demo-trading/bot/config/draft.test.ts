@@ -4,6 +4,7 @@ import { buildRegistry } from "../test-support"
 import {
   buildIndicatorConfig,
   createDraft,
+  crossFieldsOf,
   draftErrors,
   hasDraftErrors,
   isDraftDirty,
@@ -15,10 +16,13 @@ import {
   templateConfig,
 } from "./draft"
 import { masterToggleIntent } from "./master"
+import type { TechnicalIndicator } from "./types"
 
 const registry = buildRegistry()
 const get = (id: string) => registry.find((entry) => entry.id === id)!
 const rsi = get("rsi")
+/** A registry response from before `validation` was published. */
+const withoutValidation = (indicator: TechnicalIndicator): TechnicalIndicator => ({ ...indicator, validation: undefined })
 
 describe("registry field domains", () => {
   it("merges the side override into the field (RSI level is 10-49 to buy and 51-90 to sell)", () => {
@@ -40,21 +44,62 @@ describe("registry field domains", () => {
     expect(paramError(k, "2.15")).toMatch(/bước 0,1/)
   })
 
-  it("requires fast < slow for MACD and MA Cross even though the API does not publish the constraint", () => {
+  it("enforces the registry's published cross_fields (fast < slow) and names the left field", () => {
     for (const id of ["macd", "ma_cross"]) {
       const indicator = get(id)
+      expect(indicator.validation?.cross_fields).toEqual([{ left: "fast", op: "<", right: "slow" }])
       const draft = createDraft(templateConfig(indicator))
       expect(hasDraftErrors(draftErrors(indicator, draft))).toBe(false)
       draft.buy.params.fast = draft.buy.params.slow
       const errors = draftErrors(indicator, draft)
-      expect(errors.buy.form).toBe("Chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.")
-      expect(errors.sell.form).toBeNull()
+      expect(Object.keys(errors.buy.fields)).toEqual(["fast"])
+      expect(errors.buy.fields.fast).toMatch(/phải nhỏ hơn chu kỳ/)
+      expect(errors.sell.fields).toEqual({})
     }
+    const macd = get("macd")
+    const draft = createDraft(templateConfig(macd))
+    draft.sell.params.fast = draft.sell.params.slow
+    expect(draftErrors(macd, draft).sell.fields.fast).toBe("Chu kỳ EMA nhanh phải nhỏ hơn chu kỳ EMA chậm.")
   })
 
-  it("uses the published cross-field constraint when the API sends one", () => {
-    const indicator = { ...get("ma"), validation: { cross_fields: [{ left: "period", op: "<" as const, right: "period" }] } }
-    expect(draftErrors(indicator, createDraft(templateConfig(indicator))).buy.form).not.toBeNull()
+  it("follows the published constraint, including a `>` operator and any pair of fields", () => {
+    const base = get("macd")
+    const indicator = { ...base, validation: { cross_fields: [{ left: "slow", op: ">" as const, right: "signal" }] } }
+    const draft = createDraft(templateConfig(indicator))
+    expect(hasDraftErrors(draftErrors(indicator, draft))).toBe(false)
+    // fast >= slow is fine now: the published rule is slow > signal.
+    draft.buy.params.fast = "40"
+    draft.buy.params.slow = "20"
+    expect(hasDraftErrors(draftErrors(indicator, draft))).toBe(false)
+    draft.buy.params.slow = "9"
+    draft.buy.params.signal = "9"
+    expect(draftErrors(indicator, draft).buy.fields.slow).toBe("Chu kỳ EMA chậm phải lớn hơn chu kỳ đường tín hiệu.")
+  })
+
+  it("an empty published list means no cross-field rule, not the built-in fallback", () => {
+    const indicator = { ...get("macd"), validation: { cross_fields: [] } }
+    const draft = createDraft(templateConfig(indicator))
+    draft.buy.params.fast = draft.buy.params.slow
+    expect(hasDraftErrors(draftErrors(indicator, draft))).toBe(false)
+    expect(crossFieldsOf(indicator)).toEqual([])
+  })
+
+  it("falls back to fast < slow for MACD and MA Cross only when the registry does not publish validation", () => {
+    for (const id of ["macd", "ma_cross"]) {
+      const indicator = withoutValidation(get(id))
+      expect(crossFieldsOf(indicator)).toEqual([{ left: "fast", op: "<", right: "slow" }])
+      const draft = createDraft(templateConfig(indicator))
+      draft.buy.params.fast = draft.buy.params.slow
+      expect(draftErrors(indicator, draft).buy.fields.fast).toMatch(/phải nhỏ hơn/)
+    }
+    expect(crossFieldsOf(withoutValidation(get("rsi")))).toEqual([])
+  })
+
+  it("does not judge a cross-field rule while one of its fields has an error of its own", () => {
+    const indicator = get("macd")
+    const draft = createDraft(templateConfig(indicator))
+    draft.buy.params.slow = ""
+    expect(Object.keys(draftErrors(indicator, draft).buy.fields)).toEqual(["slow"])
   })
 })
 

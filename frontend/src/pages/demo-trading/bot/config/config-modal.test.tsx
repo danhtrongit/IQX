@@ -229,7 +229,104 @@ describe("Lưu", () => {
     expect(input("Ngưỡng quá bán").value).toBe("25")
   })
 
+  describe("field-level errors from the API", () => {
+    it("422 CONFIG_INVALID on the other tab: opens that tab, flags it, puts the message under the field and clears it when the field is edited", async () => {
+      world.override["PATCH /strategy/shared-config"] = () => {
+        throw new FakeApiError("Cấu hình không hợp lệ.", 422, {
+          code: "CONFIG_INVALID",
+          details: [{ path: "indicators.rsi.sell.params.level", message: "rsi Bán: Ngưỡng quá mua phải trong khoảng 51–90." }],
+        })
+      }
+      const user = userEvent.setup()
+      const dialog = await openConfig(user)
+      await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
+      await setValue(user, "Ngưỡng quá bán", "25")
+      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+
+      const sellTab = await within(dialog).findByRole("tab", { name: /Điều kiện Bán/ })
+      await waitFor(() => expect(sellTab.getAttribute("aria-selected")).toBe("true"))
+      expect(sellTab.textContent).toMatch(/có lỗi/)
+      expect(within(dialog).getByRole("tab", { name: "Điều kiện Mua" })).toBeTruthy()
+      expect(within(dialog).getByText("rsi Bán: Ngưỡng quá mua phải trong khoảng 51–90.")).toBeTruthy()
+      expect(input("Ngưỡng quá mua").getAttribute("aria-invalid")).toBe("true")
+      expect(within(dialog).getByText("Cấu hình không hợp lệ.")).toBeTruthy()
+
+      await setValue(user, "Ngưỡng quá mua", "80")
+      expect(within(dialog).queryByText(/phải trong khoảng 51–90/)).toBeNull()
+      expect(input("Ngưỡng quá mua").getAttribute("aria-invalid")).toBeNull()
+    })
+
+    it("422 on a cross-field rule names the left field of the pair", async () => {
+      world.override["PATCH /strategy/shared-config"] = () => {
+        throw new FakeApiError("Cấu hình không hợp lệ.", 422, {
+          code: "CONFIG_INVALID",
+          details: [{ path: "indicators.macd.buy.params.fast", message: "macd Mua: Chu kỳ EMA nhanh phải nhỏ hơn Chu kỳ EMA chậm." }],
+        })
+      }
+      const user = userEvent.setup()
+      const dialog = await openConfig(user, "MACD")
+      await setValue(user, "Chu kỳ EMA nhanh", "13")
+      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      expect(await within(dialog).findByText("macd Mua: Chu kỳ EMA nhanh phải nhỏ hơn Chu kỳ EMA chậm.")).toBeTruthy()
+      expect(input("Chu kỳ EMA nhanh").getAttribute("aria-invalid")).toBe("true")
+      expect(input("Chu kỳ EMA chậm").getAttribute("aria-invalid")).toBeNull()
+    })
+
+    it("422 SIDE_REQUIRED shows its message once and keeps the draft", async () => {
+      const message = "Chọn ít nhất một phía Mua hoặc Bán trước khi bật chỉ báo rsi."
+      world.override["PATCH /strategy/shared-config"] = () => {
+        throw new FakeApiError(message, 422, { code: "SIDE_REQUIRED", details: [{ path: "indicators.rsi", message }] })
+      }
+      const user = userEvent.setup()
+      const dialog = await openConfig(user)
+      await setValue(user, "Chu kỳ RSI", "20")
+      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      await within(dialog).findByText(message)
+      expect(within(dialog).getAllByText(message)).toHaveLength(1)
+      expect(input("Chu kỳ RSI").value).toBe("20")
+    })
+
+    it("403 CAPABILITY_LOCKED names the indicator whose quiz is missing", async () => {
+      world.override["PATCH /strategy/shared-config"] = () => {
+        throw new FakeApiError("Cần hoàn thành bài học của chỉ báo rsi (8/8) trước khi bật.", 403, {
+          code: "CAPABILITY_LOCKED",
+          details: [{ capability: "indicator:rsi", reason: "not_learned", indicator: "rsi" }],
+        })
+      }
+      const user = userEvent.setup()
+      const dialog = await openConfig(user)
+      await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
+      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      expect(await within(dialog).findByText("Hoàn thành bài kiểm tra 8/8 của chỉ báo RSI để bật.")).toBeTruthy()
+    })
+
+    it("blocks Lưu for MACD fast >= slow with the registry's cross-field message, flags the tab and clears when fixed", async () => {
+      const user = userEvent.setup()
+      const dialog = await openConfig(user, "MACD")
+      await setValue(user, "Chu kỳ EMA nhanh", "30")
+      expect(within(dialog).getByText("Chu kỳ EMA nhanh phải nhỏ hơn chu kỳ EMA chậm.")).toBeTruthy()
+      expect(input("Chu kỳ EMA nhanh").getAttribute("aria-invalid")).toBe("true")
+      expect((within(dialog).getByRole("button", { name: "Lưu" }) as HTMLButtonElement).disabled).toBe(true)
+      expect(within(dialog).getByRole("tab", { name: /Điều kiện Mua/ }).textContent).toMatch(/có lỗi/)
+      expect(within(dialog).getByRole("tab", { name: "Điều kiện Bán" })).toBeTruthy()
+
+      await setValue(user, "Chu kỳ EMA nhanh", "10")
+      expect(within(dialog).queryByText(/phải nhỏ hơn/)).toBeNull()
+      expect((within(dialog).getByRole("button", { name: "Lưu" }) as HTMLButtonElement).disabled).toBe(false)
+    })
+  })
+
   describe("409 conflict", () => {
+    it("names the newest revision the server reports before anything is reloaded", async () => {
+      world.savedRevision = 2
+      const user = userEvent.setup()
+      const dialog = await openConfig(user)
+      await setValue(user, "Ngưỡng quá bán", "25")
+      world.savedRevision = 5
+      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      expect(await within(dialog).findByText(/Bản mới nhất là #5, bản nháp của bạn dựa trên #2/)).toBeTruthy()
+    })
+
     it("keeps the draft, explains, blocks Lưu until reload, then merges the newer config with the user's edits", async () => {
       world.savedRevision = 2
       const user = userEvent.setup()

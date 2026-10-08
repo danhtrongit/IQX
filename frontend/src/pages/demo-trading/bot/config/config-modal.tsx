@@ -1,5 +1,5 @@
 import { useId, useMemo, useState } from "react"
-import { RefreshCw, X } from "lucide-react"
+import { RefreshCw, TriangleAlert, X } from "lucide-react"
 import { toast } from "sonner"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -12,7 +12,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
 import { ConfirmDialog } from "../confirm-dialog"
-import { fieldErrorFor, type ConfigFieldError } from "./api"
+import { fieldErrorFor, ruleErrorsFor, sideOfError, type ConfigFieldError } from "./api"
 import {
   buildIndicatorConfig,
   createDraft,
@@ -108,7 +108,12 @@ export function ConfigModal({
       setConflict({ reloaded: false, currentRevision: outcome.currentRevision })
       return
     }
-    if (outcome.reason === "invalid") setServerErrors(outcome.errors)
+    if (outcome.reason === "invalid") {
+      setServerErrors(outcome.errors)
+      // The messages sit under their fields: open the tab that has them.
+      const failing = outcome.errors.map(sideOfError).filter((target): target is Side => target !== null)
+      if (failing.length > 0 && !failing.includes(side)) setSide(failing[0] as Side)
+    }
     setServerMessage(outcome.message)
   }
 
@@ -127,9 +132,14 @@ export function ConfigModal({
   }
 
   const sideSwitchLabel = (target: Side) => `Sử dụng điều kiện ${SIDE_LABEL[target]}`
+  // A server message shown under its field or its rules is not repeated in the general list.
   const generalErrors = serverErrors.filter(
-    (error) => !SIDES.some((item) => sideFields(indicator, item).some((field) => fieldErrorFor([error], item, field.key))),
+    (error) =>
+      error.message !== serverMessage &&
+      !SIDES.some((item) => ruleErrorsFor([error], item).length > 0 || sideFields(indicator, item).some((field) => fieldErrorFor([error], item, field.key))),
   )
+  const sideHasError = (target: Side) =>
+    Object.keys(errors[target].fields).length > 0 || serverErrors.some((error) => sideOfError(error) === target)
   const masterNote = activate
     ? "Chọn phía muốn dùng. Lưu với ít nhất một phía bật sẽ bật chỉ báo cho Bot; Hủy thì chỉ báo vẫn tắt."
     : base.config.master_enabled
@@ -162,7 +172,7 @@ export function ConfigModal({
               <AlertDescription>
                 {conflict.reloaded
                   ? `Đã tải bản #${conflict.currentRevision}. Phần bạn đã sửa được giữ lại, phần còn lại theo bản mới. Kiểm tra rồi bấm Lưu.`
-                  : "Bản nháp của bạn vẫn được giữ và chưa có gì được ghi. Tải lại bản mới nhất, kiểm tra rồi lưu."}
+                  : `${conflict.currentRevision === null ? "" : `Bản mới nhất là #${conflict.currentRevision}, bản nháp của bạn dựa trên #${base.revision}. `}Bản nháp của bạn vẫn được giữ và chưa có gì được ghi. Tải lại bản mới nhất, kiểm tra rồi lưu.`}
               </AlertDescription>
               {!conflict.reloaded && (
                 <div className="col-start-2 mt-2">
@@ -189,6 +199,12 @@ export function ConfigModal({
                   className={cn("min-h-9 rounded-md border border-border bg-input/30 text-xs font-semibold text-muted-foreground", TAB_STYLE[item])}
                 >
                   Điều kiện {SIDE_LABEL[item]}
+                  {sideHasError(item) && (
+                    <>
+                      <TriangleAlert aria-hidden="true" className="size-3.5 text-destructive" />
+                      <span className="sr-only"> (có lỗi)</span>
+                    </>
+                  )}
                 </TabsTrigger>
               ))}
             </TabsList>
@@ -232,7 +248,11 @@ export function ConfigModal({
                               aria-invalid={error ? true : undefined}
                               aria-describedby={hintId}
                               className={cn("h-9 tabular-nums", field.unit && "pr-14")}
-                              onChange={(event) => updateSide(item, { params: { ...sideDraft.params, [field.key]: event.target.value } })}
+                              onChange={(event) => {
+                                updateSide(item, { params: { ...sideDraft.params, [field.key]: event.target.value } })
+                                // The server message was about the old value.
+                                setServerErrors((previous) => previous.filter((entry) => !fieldErrorFor([entry], item, field.key)))
+                              }}
                             />
                             {field.unit && (
                               <span aria-hidden="true" className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[11px] text-muted-foreground">
@@ -271,7 +291,11 @@ export function ConfigModal({
                         </li>
                       ))}
                     </ul>
-                    {sideErrors.form && <p className="text-xs text-destructive" role="alert">{sideErrors.form}</p>}
+                    {ruleErrorsFor(serverErrors, item).length > 0 && (
+                      <ul className="list-disc pl-5 text-xs text-destructive" role="alert">
+                        {ruleErrorsFor(serverErrors, item).map((error) => <li key={`${error.path}-${error.message}`}>{error.message}</li>)}
+                      </ul>
+                    )}
                   </div>
                 </TabsContent>
               )

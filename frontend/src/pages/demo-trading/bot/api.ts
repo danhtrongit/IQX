@@ -6,13 +6,15 @@
  * configuration only records a revision that becomes effective from a later
  * trading session.
  */
-import { api, ApiError } from "@/lib/api"
+import { ApiError } from "@/lib/api"
 import { requestOperation } from "@/lib/contract-client"
 
 import type {
-  BotJournal,
   BotOverview,
   BotPositions,
+  BotSessionDecisionsPage,
+  BotSessionsPage,
+  BotTradesPage,
   InvalidSymbol,
   SavedList,
   UniverseMutationResult,
@@ -27,13 +29,20 @@ function unwrap<T>(payload: unknown): T {
   return payload as T
 }
 
-export const JOURNAL_PAGE_SIZE = 100
+/** Closed trades per page of the Lịch sử tab. */
+export const TRADES_PAGE_SIZE = 30
+/** Sessions per page of the Nhật ký tab. */
+export const SESSIONS_PAGE_SIZE = 30
+/** Decisions per page of one expanded session (the server maximum). */
+export const DECISIONS_PAGE_SIZE = 100
 
 export const botKeys = {
   all: ["bot"] as const,
   overview: (userId: string | undefined) => ["bot", "overview", userId] as const,
   positions: (userId: string | undefined) => ["bot", "positions", userId] as const,
-  journal: (userId: string | undefined) => ["bot", "journal", userId] as const,
+  trades: (userId: string | undefined) => ["bot", "trades", userId] as const,
+  sessions: (userId: string | undefined) => ["bot", "sessions", userId] as const,
+  sessionDecisions: (userId: string | undefined, session: string) => ["bot", "sessions", userId, session] as const,
   universe: (userId: string | undefined) => ["bot", "universe", userId] as const,
   lists: (userId: string | undefined) => ["bot", "lists", userId] as const,
   registry: (userId: string | undefined) => ["bot", "config", "registry", userId] as const,
@@ -48,10 +57,24 @@ export async function fetchPositions(signal?: AbortSignal): Promise<BotPositions
   return unwrap<BotPositions>(await requestOperation("GET /api/v2/bot/positions", {}, { signal }))
 }
 
-export async function fetchJournal(cursor: string | null, signal?: AbortSignal): Promise<BotJournal> {
-  const query = new URLSearchParams({ limit: String(JOURNAL_PAGE_SIZE) })
-  if (cursor) query.set("cursor", cursor)
-  return unwrap<BotJournal>(await api<unknown>(`/bot/journal?${query}`, { signal }))
+/** Closed round trips (a buy and the sell that closed it), newest first, one cursor page at a time. */
+export async function fetchTrades(cursor: string | null, signal?: AbortSignal): Promise<BotTradesPage> {
+  const query = { limit: TRADES_PAGE_SIZE, ...(cursor ? { cursor } : {}) }
+  return unwrap<BotTradesPage>(await requestOperation("GET /api/v2/bot/trades", { query }, { signal }))
+}
+
+/** One row per trading session, newest first, one cursor page at a time. */
+export async function fetchJournalSessions(cursor: string | null, signal?: AbortSignal): Promise<BotSessionsPage> {
+  const query = { limit: SESSIONS_PAGE_SIZE, ...(cursor ? { cursor } : {}) }
+  return unwrap<BotSessionsPage>(await requestOperation("GET /api/v2/bot/journal/sessions", { query }, { signal }))
+}
+
+/** The decisions of one session, executed ones first. */
+export async function fetchSessionDecisions(session: string, cursor: string | null, signal?: AbortSignal): Promise<BotSessionDecisionsPage> {
+  const query = { limit: DECISIONS_PAGE_SIZE, ...(cursor ? { cursor } : {}) }
+  return unwrap<BotSessionDecisionsPage>(
+    await requestOperation("GET /api/v2/bot/journal/sessions/{session}", { path: { session }, query }, { signal }),
+  )
 }
 
 export async function fetchUniverse(signal?: AbortSignal): Promise<UniverseState> {

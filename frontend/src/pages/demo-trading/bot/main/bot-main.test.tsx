@@ -3,8 +3,8 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { renderBot, stubBrowser } from "../test-render"
-import { callsTo, createFakeApi, createWorld, type World } from "../test-support"
-import type { BotConditions, BotJournalItem, BotPosition } from "../types"
+import { createFakeApi, createWorld, type World } from "../test-support"
+import type { BotConditions, BotPosition } from "../types"
 import { BotMain } from "./bot-main"
 
 const mocks = vi.hoisted(() => ({ api: vi.fn(), openAuth: vi.fn() }))
@@ -51,17 +51,6 @@ const position = (partial: Partial<BotPosition> & Pick<BotPosition, "id" | "symb
   in_universe: true, source_scope: "in_buy_source", entry_source_snapshot: { kind: "vn30", name: "VN30" }, entry_config_revision: 2, holding_sessions: 4,
   last_decision: null, legacy_stop_loss_vnd: null, legacy_amplitude_at_entry_vnd: null, legacy_amplitude_source_ref: null, legacy_take_profit_vnd: null,
   legacy_filter_ids: [], opened_session: "2026-10-01", opened_at: "2026-10-01T08:00:00Z", sector: null, source_refs: {}, ...partial,
-})
-
-function decision(id: string, date: string, action: BotJournalItem["action"], extra: Partial<BotJournalItem> = {}): BotJournalItem {
-  return {
-    id, run_id: `run-${date}`, trading_date: date, action, reason_code: "x", reason_label: "Điều kiện Mua chưa đạt", reason: "raw", execution: null, symbol: "HPG",
-    in_universe: true, universe_kind: "vn30", universe_revision: 0, policy_version: "iqx-bot-v1.0", decision_config_revision: 3, condition_snapshot: null,
-    rank_tuple: null, legacy_filter_ids: [], legacy_threshold_vnd: null, source_refs: {}, created_at: `${date}T12:00:00Z`, ...extra,
-  }
-}
-const execution = (side: "buy" | "sell", qty: number, price: number, net: number) => ({
-  id: `e-${side}-${price}`, side, qty, price_vnd: String(price), gross_value_vnd: String(qty * price), fee_vnd: "1500", tax_vnd: side === "sell" ? "1000" : "0", net_cash_delta_vnd: String(net),
 })
 
 describe("Bot main", () => {
@@ -134,25 +123,128 @@ describe("Bot main", () => {
     expect(within(sell).getByText("MACD")).toBeTruthy()
     expect(within(sell).getByText("MACD < Đường tín hiệu")).toBeTruthy()
     expect(screen.queryByText(/Chưa có điều kiện hiệu lực/)).toBeNull()
+    // Nothing is waiting, so no "chờ hiệu lực" block.
+    expect(screen.queryByText(/Chờ hiệu lực/)).toBeNull()
   })
 
-  it("notes the pending revision beside the effective one and lists the pending conditions separately", async () => {
-    world.savedRevision = 5
-    world.effectiveRevision = 4
-    world.effectiveSession = "2026-10-09"
-    world.indicators.rsi!.master_enabled = true
-    world.indicators.rsi!.buy.enabled = true
-    world.conditions = conditions({
-      state: "waiting_for_conditions", saved_revision: 5, effective_revision: 4, effective_session: "2026-10-09", config_status: "pending",
-      pending: { revision: 5, effective_session: "2026-10-09", status: "pending" },
+  describe("effective config vs a newer saved revision", () => {
+    /** Revision 4 is in force (RSI buy < 25, MACD sell); revision 5 is saved and not in force yet. */
+    function pendingWorld(edit: (saved: World["indicators"]) => void) {
+      world.indicators.rsi!.master_enabled = true
+      world.indicators.rsi!.buy.enabled = true
+      world.indicators.rsi!.buy.params = { period: 14, level: 25 }
+      world.indicators.macd!.master_enabled = true
+      world.indicators.macd!.sell.enabled = true
+      world.effectiveIndicators = structuredClone(world.indicators)
+      edit(world.indicators)
+      world.savedRevision = 5
+      world.effectiveRevision = 4
+      world.effectiveSession = "2026-10-09"
+      world.status = "pending"
+      world.conditions = conditions({
+        state: "buy_and_sell", has_active_buy: true, has_active_sell: true, buy_condition_count: 1, sell_condition_count: 1, buy_status: "active", sell_status: "active",
+        saved_revision: 5, effective_revision: 4, effective_session: "2026-10-09", config_status: "pending",
+        pending: { revision: 5, effective_session: "2026-10-09", status: "pending" },
+      })
+    }
+
+    it("shows the conditions in force, then the pending revision apart under «Chờ hiệu lực từ phiên …»", async () => {
+      pendingWorld((saved) => {
+        saved.rsi!.buy.params = { period: 14, level: 20 }
+        saved.macd!.sell.enabled = false
+        saved.macd!.master_enabled = false
+      })
+      await renderMain()
+
+      expect(await screen.findByText("Đã lưu cấu hình bản 5. Bản 4 vẫn đang có hiệu lực; thay đổi bắt đầu từ phiên 09/10/2026.")).toBeTruthy()
+      expect(screen.getByText("Cấu hình chờ hiệu lực")).toBeTruthy()
+
+      const buy = screen.getByRole("region", { name: "ĐIỀU KIỆN MUA" })
+      const buyInForce = await within(buy).findByRole("list", { name: "ĐIỀU KIỆN MUA đang hiệu lực" })
+      expect(within(buyInForce).getByText("RSI phiên trước < 25")).toBeTruthy()
+      expect(within(buyInForce).queryByText("RSI phiên trước < 20")).toBeNull()
+      expect(within(buy).getByText("Đang hiệu lực · bản 4")).toBeTruthy()
+      expect(within(buy).getByText("Chờ hiệu lực từ phiên 09/10/2026 · bản 5")).toBeTruthy()
+      const buyPending = within(buy).getByRole("list", { name: "ĐIỀU KIỆN MUA chờ hiệu lực" })
+      expect(within(buyPending).getByText("RSI phiên trước < 20")).toBeTruthy()
+
+      // The Sell side lost its only condition in the pending revision; the effective one is still listed.
+      const sell = screen.getByRole("region", { name: "ĐIỀU KIỆN BÁN" })
+      expect(within(within(sell).getByRole("list", { name: "ĐIỀU KIỆN BÁN đang hiệu lực" })).getByText("MACD < Đường tín hiệu")).toBeTruthy()
+      expect(within(sell).getByText("Chờ hiệu lực từ phiên 09/10/2026 · bản 5")).toBeTruthy()
+      expect(within(sell).getByText("Không còn điều kiện nào được bật ở phía này.")).toBeTruthy()
+      expect(within(sell).queryByRole("list", { name: "ĐIỀU KIỆN BÁN chờ hiệu lực" })).toBeNull()
     })
-    await renderMain()
-    expect(await screen.findByText("Đã lưu cấu hình bản 5. Bản 4 vẫn đang có hiệu lực; thay đổi bắt đầu từ phiên 09/10/2026.")).toBeTruthy()
-    expect(screen.getByText("Cấu hình chờ hiệu lực")).toBeTruthy()
-    const buy = screen.getByRole("region", { name: "ĐIỀU KIỆN MUA" })
-    expect(within(buy).getByText("Chưa có điều kiện hiệu lực.")).toBeTruthy()
-    expect(within(buy).getByText(/Chờ hiệu lực · bản 5 · từ phiên 09\/10\/2026/)).toBeTruthy()
-    expect(within(buy).getByRole("list", { name: "ĐIỀU KIỆN MUA chờ hiệu lực" })).toBeTruthy()
+
+    it("lists a pending block only on the side where the saved revision differs", async () => {
+      pendingWorld((saved) => {
+        saved.macd!.sell.params = { fast: 8, slow: 21, signal: 5 }
+      })
+      await renderMain()
+      const sell = await screen.findByRole("region", { name: "ĐIỀU KIỆN BÁN" })
+      await within(sell).findByRole("list", { name: "ĐIỀU KIỆN BÁN chờ hiệu lực" })
+      const buy = screen.getByRole("region", { name: "ĐIỀU KIỆN MUA" })
+      expect(within(buy).queryByText(/Chờ hiệu lực/)).toBeNull()
+      expect(within(buy).queryByText(/Đang hiệu lực · bản/)).toBeNull()
+      expect(within(buy).getByRole("list", { name: "ĐIỀU KIỆN MUA đang hiệu lực" })).toBeTruthy()
+    })
+
+    it("before any revision is in force the cards say so and the saved revision is the pending one", async () => {
+      world.indicators.rsi!.master_enabled = true
+      world.indicators.rsi!.buy.enabled = true
+      world.savedRevision = 1
+      world.effectiveRevision = null
+      world.effectiveSession = "2026-10-09"
+      world.status = "pending"
+      world.conditions = conditions({ saved_revision: 1, effective_revision: null, config_status: "pending", pending: { revision: 1, effective_session: "2026-10-09", status: "pending" } })
+      await renderMain()
+      const buy = await screen.findByRole("region", { name: "ĐIỀU KIỆN MUA" })
+      await within(buy).findByText("Chờ hiệu lực từ phiên 09/10/2026 · bản 1")
+      expect(within(buy).getByText("Chưa có điều kiện hiệu lực.")).toBeTruthy()
+      expect(within(buy).getByRole("list", { name: "ĐIỀU KIỆN MUA chờ hiệu lực" })).toBeTruthy()
+      expect(within(buy).queryByRole("list", { name: "ĐIỀU KIỆN MUA đang hiệu lực" })).toBeNull()
+    })
+
+    it("does not invent a start session when the trading calendar is missing", async () => {
+      world.indicators.rsi!.master_enabled = true
+      world.indicators.rsi!.buy.enabled = true
+      world.savedRevision = 1
+      world.effectiveRevision = null
+      world.effectiveSession = null
+      world.status = "calendar_unavailable"
+      world.conditions = conditions({ saved_revision: 1, config_status: "calendar_unavailable", pending: { revision: 1, effective_session: null, status: "calendar_unavailable" } })
+      await renderMain()
+      const buy = await screen.findByRole("region", { name: "ĐIỀU KIỆN MUA" })
+      await within(buy).findByText("Chờ hiệu lực · chưa xác định phiên bắt đầu vì thiếu lịch giao dịch · bản 1")
+      expect(within(buy).queryByText(/từ phiên/)).toBeNull()
+    })
+
+    it("a newer revision with the same content as the one in force is not shown as pending", async () => {
+      world.indicators.rsi!.master_enabled = true
+      world.indicators.rsi!.buy.enabled = true
+      world.effectiveIndicators = structuredClone(world.indicators)
+      world.savedRevision = 5
+      world.effectiveRevision = 4
+      world.status = "effective"
+      world.conditions = conditions({ saved_revision: 5, effective_revision: 4, config_status: "effective" })
+      await renderMain()
+      const buy = await screen.findByRole("region", { name: "ĐIỀU KIỆN MUA" })
+      await within(buy).findByRole("list", { name: "ĐIỀU KIỆN MUA đang hiệu lực" })
+      expect(within(buy).queryByText(/Chờ hiệu lực/)).toBeNull()
+    })
+
+    it("still reads the saved config as the effective one from a response that has no `effective` field", async () => {
+      world.omitEffective = true
+      world.indicators.rsi!.master_enabled = true
+      world.indicators.rsi!.buy.enabled = true
+      world.savedRevision = 2
+      world.effectiveRevision = 2
+      world.status = "effective"
+      world.conditions = conditions({ saved_revision: 2, effective_revision: 2, config_status: "effective" })
+      await renderMain()
+      const buy = await screen.findByRole("region", { name: "ĐIỀU KIỆN MUA" })
+      expect(await within(buy).findByRole("list", { name: "ĐIỀU KIỆN MUA đang hiệu lực" })).toBeTruthy()
+    })
   })
 })
 
@@ -198,68 +290,4 @@ describe("Danh mục Bot", () => {
     expect(await screen.findByText("Chưa có cổ phiếu đang nắm giữ")).toBeTruthy()
   })
 
-  it("History lists executions with real symbols and dates and the realized P&L of a closed trade", async () => {
-    world.journal = [
-      decision("4", "2026-10-07", "sell", { symbol: "FPT", reason_label: "Bán theo điều kiện Bán", execution: execution("sell", 300, 101200, 30358500), created_at: "2026-10-07T12:00:00Z" }),
-      decision("3", "2026-10-06", "skip", { symbol: "HPG" }),
-      decision("2", "2026-10-01", "buy", { symbol: "FPT", reason_label: "Mua theo điều kiện Mua", execution: execution("buy", 300, 98500, -29551500), created_at: "2026-10-01T12:00:00Z", universe_kind: "custom", universe_revision: 2 }),
-    ]
-    const user = userEvent.setup()
-    await renderMain()
-    await user.click(screen.getByRole("tab", { name: "Lịch sử" }))
-    const table = await screen.findByRole("table", { name: "Lịch sử giao dịch Bot" })
-    const rows = within(table).getAllByRole("row").slice(1)
-    expect(rows).toHaveLength(2)
-    expect(within(rows[0]!).getByText("07/10/2026")).toBeTruthy()
-    expect(within(rows[0]!).getByText("FPT")).toBeTruthy()
-    expect(within(rows[0]!).getByText("Bán")).toBeTruthy()
-    expect(within(rows[0]!).getByText("+807.000 đ")).toBeTruthy()
-    expect(within(rows[0]!).getByText("Danh mục riêng · bản 2")).toBeTruthy()
-    expect(within(rows[1]!).getByText("Mua")).toBeTruthy()
-
-    await user.click(within(rows[0]!).getByRole("button", { name: /Chi tiết/ }))
-    const detail = await screen.findByRole("dialog", { name: "Bán FPT" })
-    expect(detail.textContent).toMatch(/Phiên mua01\/10\/2026/)
-    expect(detail.textContent).toMatch(/Cấu hình quyết định.*Bản 3/)
-  })
-
-  it("Journal groups decisions per session with the server's reasons and reaches the whole history page by page", async () => {
-    const items: BotJournalItem[] = []
-    for (let session = 0; session < 8; session += 1) {
-      const date = `2026-09-${String(30 - session).padStart(2, "0")}`
-      for (let index = 0; index < 30; index += 1) items.push(decision(`${date}-${index}`, date, "skip", { symbol: `S${index}`, created_at: `${date}T12:00:${String(59 - index).padStart(2, "0")}Z` }))
-    }
-    world.journal = items
-    const user = userEvent.setup()
-    await renderMain()
-    await user.click(screen.getByRole("tab", { name: "Nhật ký" }))
-    const table = await screen.findByRole("table", { name: "Nhật ký Bot theo phiên" })
-    expect(within(table).getAllByRole("row").length).toBeGreaterThan(1)
-    expect(within(table).getAllByText("Điều kiện Mua chưa đạt ×30").length).toBeGreaterThan(0)
-    expect(within(table).getAllByText("VN30").length).toBeGreaterThan(0)
-    expect(within(table).getAllByText("Bản 3").length).toBeGreaterThan(0)
-
-    const journalCalls = () => callsTo(world, "GET", "/bot/journal").length
-    expect(journalCalls()).toBe(1)
-    await user.click(screen.getByRole("button", { name: "Tải thêm nhật ký" }))
-    await waitFor(() => expect(journalCalls()).toBe(2))
-    await user.click(screen.getByRole("button", { name: "Tải thêm nhật ký" }))
-    await waitFor(() => expect(journalCalls()).toBe(3))
-    await waitFor(() => expect(screen.queryByRole("button", { name: "Tải thêm nhật ký" })).toBeNull())
-    // 8 sessions x 30 decisions = 240 items over three 100-item pages: every session is reachable.
-    expect(within(screen.getByRole("table", { name: "Nhật ký Bot theo phiên" })).getAllByRole("row")).toHaveLength(1 + 8)
-  })
-
-  it("History keeps loading older pages by itself until it has some trades", async () => {
-    const items: BotJournalItem[] = []
-    for (let index = 0; index < 150; index += 1) items.push(decision(`s-${index}`, "2026-10-07", "skip", { created_at: `2026-10-07T12:${String(59 - Math.floor(index / 60)).padStart(2, "0")}:${String(59 - (index % 60)).padStart(2, "0")}Z` }))
-    items.push(decision("buy", "2026-09-01", "buy", { symbol: "FPT", execution: execution("buy", 100, 90000, -9001500), created_at: "2026-09-01T12:00:00Z" }))
-    world.journal = items
-    const user = userEvent.setup()
-    await renderMain()
-    await user.click(screen.getByRole("tab", { name: "Lịch sử" }))
-    const table = await screen.findByRole("table", { name: "Lịch sử giao dịch Bot" })
-    expect(within(table).getByText("01/09/2026")).toBeTruthy()
-    expect(callsTo(world, "GET", "/bot/journal")).toHaveLength(2)
-  })
 })

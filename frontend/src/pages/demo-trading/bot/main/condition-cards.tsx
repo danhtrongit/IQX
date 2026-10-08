@@ -3,9 +3,8 @@ import { TriangleAlert } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
-import { activeConditions, type ConditionItem } from "../config/summary"
+import { activeConditions, effectiveConfigOf, pendingConfigOf, pendingStartText, type ConditionItem } from "../config/summary"
 import type { Side, SharedConfigState, TechnicalIndicator } from "../config/types"
-import { formatDate } from "../format"
 import type { BotConditions } from "../types"
 import { pendingConfigNote, sideBlocks } from "./state"
 
@@ -30,6 +29,11 @@ function ConditionList({ items, label }: { items: ConditionItem[]; label: string
   )
 }
 
+/**
+ * One side of the conditions the Bot FOLLOWS: the effective revision's config. A newer saved
+ * revision that does not count yet is listed apart, under «Chờ hiệu lực từ phiên …», and only
+ * on a side where it differs, so a saved edit never reads as already in force.
+ */
 function SideCard({
   side,
   conditions,
@@ -45,11 +49,11 @@ function SideCard({
   const effectiveRevision = conditions?.effective_revision ?? null
   const count = side === "buy" ? (conditions?.buy_condition_count ?? 0) : (conditions?.sell_condition_count ?? 0)
   const status = side === "buy" ? conditions?.buy_status : conditions?.sell_status
-  // The saved config is the effective one only when no newer revision is waiting.
-  const savedIsEffective = !!config && effectiveRevision !== null && config.saved_revision === effectiveRevision
-  const effectiveItems = savedIsEffective ? activeConditions(config.config, side, indicators) : []
-  const pending = conditions?.pending ?? null
-  const pendingItems = pending && config && config.saved_revision === pending.revision ? activeConditions(config.config, side, indicators) : []
+  const effective = effectiveConfigOf(config)
+  const pending = pendingConfigOf(config)
+  const effectiveItems = effective ? activeConditions(effective.config, side, indicators) : []
+  const pendingItems = pending ? activeConditions(pending.config, side, indicators) : []
+  const pendingDiffers = !!pending && JSON.stringify(pendingItems) !== JSON.stringify(effectiveItems)
   const title = SIDE_TITLE[side]
 
   return (
@@ -65,7 +69,12 @@ function SideCard({
           <span>Phía {side === "buy" ? "Mua" : "Bán"} đang bị chặn: {block.detail}</span>
         </p>
       ) : effectiveItems.length > 0 ? (
-        <ConditionList items={effectiveItems} label={`${title} đang hiệu lực`} />
+        <>
+          {pendingDiffers && effective && (
+            <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">Đang hiệu lực · bản {effective.revision}</p>
+          )}
+          <ConditionList items={effectiveItems} label={`${title} đang hiệu lực`} />
+        </>
       ) : status === "active" && count > 0 ? (
         <p className="text-xs leading-5 text-muted-foreground">
           {count} điều kiện đang hiệu lực theo bản {effectiveRevision}.
@@ -74,13 +83,16 @@ function SideCard({
         <p className="text-xs leading-5 text-muted-foreground">Chưa có điều kiện hiệu lực.</p>
       )}
 
-      {pendingItems.length > 0 && (
+      {pending && pendingDiffers && (
         <div className="mt-3 border-t border-border pt-2.5">
           <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-price-ref uppercase">
-            Chờ hiệu lực · bản {pending?.revision}
-            {pending?.effective_session ? ` · từ phiên ${formatDate(pending.effective_session)}` : ""}
+            {pendingStartText(pending)} · bản {pending.revision}
           </p>
-          <ConditionList items={pendingItems} label={`${title} chờ hiệu lực`} />
+          {pendingItems.length > 0 ? (
+            <ConditionList items={pendingItems} label={`${title} chờ hiệu lực`} />
+          ) : (
+            <p className="text-xs leading-5 text-muted-foreground">Không còn điều kiện nào được bật ở phía này.</p>
+          )}
         </div>
       )}
     </section>

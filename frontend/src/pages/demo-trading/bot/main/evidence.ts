@@ -1,5 +1,5 @@
 import { formatNum } from "../format"
-import type { BotJournalItem } from "../types"
+import type { BotSessionDecision } from "../types"
 
 export type EvidenceLine = { key: string; text: string; outcome: "met" | "not_met" | "missing" }
 
@@ -22,7 +22,7 @@ const num = (value: unknown): string => (typeof value === "number" ? formatNum(v
  * Rule evidence frozen with a decision (`condition_snapshot.rules`): the values the
  * Bot compared and whether the rule held. Missing data is "thiếu dữ liệu", never "không đạt".
  */
-export function evidenceLines(item: Pick<BotJournalItem, "condition_snapshot">, names: Readonly<Record<string, string>>): EvidenceLine[] {
+export function evidenceLines(item: Pick<BotSessionDecision, "condition_snapshot">, names: Readonly<Record<string, string>>): EvidenceLine[] {
   const rules = item.condition_snapshot?.rules
   if (!Array.isArray(rules)) return []
   return rules.flatMap((raw, index): EvidenceLine[] => {
