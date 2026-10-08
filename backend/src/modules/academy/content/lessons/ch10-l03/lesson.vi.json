@@ -1,0 +1,43 @@
+{
+  "lesson_id": "ch10-l03",
+  "content_version": "2.0.0",
+  "origin": "biên soạn mới theo đề cương và registry nguồn",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>Williams %R</strong> đo vị trí đóng cửa giữa đỉnh và đáy của N phiên trên thang −100 đến 0.</p><p>High N/Low N trong bài gồm T. −100 ở đáy,0 ở đỉnh. Đây không phải lợi nhuận âm của tài khoản.</p><p>Giá trị−80 gần đáy của cửa sổ. Khi chọn tăng từ vùng thấp phải xét hai giá trị được tính cùng period cho từng phía.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula\">%R = −100 × (High N − Close)/(High N − Low N)</div><p>High N = 110; Low N = 90; Close = 94. %R bằng bao nhiêu?</p><p>Kết quả là <strong>-80 </strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Cần N phiên, high N=low N trả missing. Cặp hai phiên cần N+1 bar; không latch.</p>"
+    },
+    {
+      "title": "Tham số, Mua và Bán",
+      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 14, \"level\": -80}</td><td>Williams %R phiên trước &lt; Ngưỡng AND Williams %R hiện tại &gt; Phiên trước</td></tr><tr><td>BÁN</td><td>{\"period\": 14, \"level\": -20}</td><td>Williams %R phiên trước &gt; Ngưỡng AND Williams %R hiện tại &lt; Phiên trước</td></tr></tbody></table></div>"
+    },
+    {
+      "title": "Vận dụng và giới hạn",
+      "html": "<p>Không đổi miền thành 0–100 như RSI hoặc nhầm −20 với mức lỗ 20%.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "Williams %R",
+    "prompt": "High N = 110; Low N = 90; Close = 94. %R bằng bao nhiêu?",
+    "expected": -80,
+    "unit": "",
+    "formula": "%R = −100 × (HighN − Close)/(HighN − LowN)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  "sources": [
+    "source:technical-registry-v1",
+    "author:calculation-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch11-l05",
+    "chapter": 11
+  }
+}

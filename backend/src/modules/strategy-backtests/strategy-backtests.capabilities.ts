@@ -1,6 +1,15 @@
 import { ForbiddenException } from '@nestjs/common';
 
-/** Advanced capability → lesson whose 8/8 pass unlocks it (CONTRACTS §2). */
+/**
+ * Advanced capability → LEGACY lesson (18-chapter / 125-lesson catalog) whose 8/8 pass unlocks it.
+ *
+ * These lessons (old ch02-l14..16 and ch16-18) are not part of the current 13-chapter / 71-lesson
+ * Academy catalog and the current catalog grants no `lesson:<id>` capability. The unlock is kept
+ * only for legacy holders: `ACADEMY_GRANTS` still returns the `lesson:<legacy id>` capabilities
+ * stored in the legacy `academy_grants` table, so existing users keep these backtest features
+ * behind the same `STRATEGY_ADVANCED_CAPABILITIES` allowlist. A user without a legacy grant
+ * cannot earn them any more (the Strategy spec removes these features from the product scope).
+ */
 export const CAPABILITY_LESSONS: Readonly<Record<string, string>> = Object.freeze({
   sensitivity: 'ch02-l14',
   out_of_sample: 'ch02-l15',
@@ -35,8 +44,8 @@ export type CapabilityLock = {
 /**
  * First locked capability of a run, or null when every one is usable. A
  * capability is usable only when it is in the `STRATEGY_ADVANCED_CAPABILITIES`
- * allowlist AND the user holds `lesson:<id>`. Flag problems are reported
- * before learning problems so a disabled feature never asks for a lesson.
+ * allowlist AND the user holds the legacy capability `lesson:<legacy id>`. Flag problems are
+ * reported before learning problems so a disabled feature never asks for a lesson.
  */
 export function findCapabilityLock(
   required: readonly string[],
@@ -63,7 +72,7 @@ export function capabilityLockedException(lock: CapabilityLock): ForbiddenExcept
     message:
       lock.reason === 'flag_off'
         ? `Tính năng nâng cao ${lock.capability} chưa được bật.`
-        : `Cần hoàn thành bài học ${lock.lesson_id ?? ''} (8/8) để dùng tính năng ${lock.capability}.`,
+        : `Tính năng nâng cao ${lock.capability} chỉ dành cho tài khoản đã hoàn thành bài học ${lock.lesson_id ?? ''} (8/8) của danh mục Học viện cũ; danh mục hiện tại không còn bài học này.`,
     capability: lock.capability,
     reason: lock.reason,
     lesson_id: lock.lesson_id,

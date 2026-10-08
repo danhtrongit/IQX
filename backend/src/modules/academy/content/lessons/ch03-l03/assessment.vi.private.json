@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch03-l03",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: EPS kỳ này = 2.400; EPS cùng kỳ = 2.000. Tăng trưởng EPS YoY bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "9 %",
+          "id": "o1"
+        },
+        {
+          "text": "30 %",
+          "id": "o2"
+        },
+        {
+          "text": "20 %",
+          "id": "o3"
+        },
+        {
+          "text": "33 %",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Áp dụng (EPS kỳ này / EPS cùng kỳ − 1) × 100; kết quả 20 %.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch03-l03-q01",
+      "lesson_id": "ch03-l03",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Tăng trưởng EPS YoY đang bằng đúng 20 %. Bộ lọc đặt > 20 %. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o1"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o2"
+        },
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o3"
+        },
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch03-l03-q02",
+      "lesson_id": "ch03-l03",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Tăng trưởng EPS YoY?",
+      "options": [
+        {
+          "text": "Tách cổ phiếu hoặc cổ tức bằng cổ phiếu có thể làm hai kỳ không còn so sánh trực tiếp nếu EPS chưa được điều chỉnh cùng cơ sở.",
+          "id": "o1"
+        },
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o2"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o3"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "EPS giúp kiểm tra phần lợi nhuận tính trên mỗi cổ phiếu; tổng lợi nhuận tăng chưa đủ nếu số cổ phiếu cũng tăng mạnh. Tách cổ phiếu hoặc cổ tức bằng cổ phiếu có thể làm hai kỳ không còn so sánh trực tiếp nếu EPS chưa được điều chỉnh cùng cơ sở.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch03-l03-q03",
+      "lesson_id": "ch03-l03",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Tăng trưởng EPS YoY. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o1"
+        },
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o2"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o3"
+        },
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch03-l03-q04",
+      "lesson_id": "ch03-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Nhận định nào đúng với Tăng trưởng EPS YoY?",
+      "options": [
+        {
+          "text": "EPS giúp kiểm tra phần lợi nhuận tính trên mỗi cổ phiếu; tổng lợi nhuận tăng chưa đủ nếu số cổ phiếu cũng tăng mạnh.",
+          "id": "o1"
+        },
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o2"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o3"
+        },
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "EPS giúp kiểm tra phần lợi nhuận tính trên mỗi cổ phiếu; tổng lợi nhuận tăng chưa đủ nếu số cổ phiếu cũng tăng mạnh. EPS cơ bản lấy lợi nhuận dành cho cổ đông phổ thông chia số cổ phiếu phổ thông bình quân gia quyền. Không thay số bình quân bằng số cuối kỳ. Bộ dữ liệu phải có cờ điều chỉnh so sánh; thiếu cơ sở điều chỉnh thì không tự ghép hai EPS.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch03-l03-q05",
+      "lesson_id": "ch03-l03",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có Tăng trưởng EPS YoY bằng 18 và 22 %. Điều kiện < 20 % giữ lại ai?",
+      "options": [
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o2"
+        },
+        {
+          "text": "Chỉ B.",
+          "id": "o3"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "18 < 20 đúng, 22 < 20 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch03-l03-q06",
+      "lesson_id": "ch03-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Báo cáo dùng tính Tăng trưởng EPS YoY kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o1"
+        },
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o2"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o3"
+        },
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch03-l03-q07",
+      "lesson_id": "ch03-l03",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện Tăng trưởng EPS YoY, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o2"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch03-l03-q08",
+      "lesson_id": "ch03-l03",
+      "correct_option_id": "o1"
+    }
+  ]
+}

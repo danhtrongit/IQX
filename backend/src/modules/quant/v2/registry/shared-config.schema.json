@@ -10,7 +10,7 @@
       "minimum": 1
     },
     "rule_version": {
-      "const": "iqx-rules-2.0"
+      "const": "iqx-rules-3.0"
     },
     "indicators": {
       "type": "object",
@@ -1924,7 +1924,7 @@
             "sell"
           ]
         },
-        "adx": {
+        "stochastic": {
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -1942,599 +1942,35 @@
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "period": {
+                    "k": {
                       "type": "integer",
                       "minimum": 5,
                       "maximum": 50,
                       "multipleOf": 1
                     },
-                    "level": {
-                      "type": "number",
-                      "minimum": 5,
-                      "maximum": 60,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
+                    "d": {
                       "type": "integer",
-                      "minimum": 5,
-                      "maximum": 50,
+                      "minimum": 2,
+                      "maximum": 20,
                       "multipleOf": 1
                     },
-                    "level": {
-                      "type": "number",
-                      "minimum": 5,
-                      "maximum": 60,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "atr": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
+                    "smooth": {
                       "type": "integer",
-                      "minimum": 5,
-                      "maximum": 50,
-                      "multipleOf": 1
-                    },
-                    "baseline": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "baseline"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "baseline",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 50,
-                      "multipleOf": 1
-                    },
-                    "baseline": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "baseline"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "baseline",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "atr_percent": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 50,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": 0.5,
-                      "maximum": 30,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 50,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": 0.5,
-                      "maximum": 30,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "relative_volume": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "lookback": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": 0.5,
+                      "minimum": 1,
                       "maximum": 10,
-                      "multipleOf": 0.1
+                      "multipleOf": 1
+                    },
+                    "level": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "multipleOf": 1
                     }
                   },
                   "required": [
-                    "lookback",
+                    "k",
+                    "d",
+                    "smooth",
                     "level"
                   ]
                 },
@@ -2585,11 +2021,57 @@
                         "allowed_ops",
                         "op"
                       ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "signal",
+                            "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 2,
+                  "maxItems": 2
                 }
               },
               "required": [
@@ -2609,21 +2091,35 @@
                   "type": "object",
                   "additionalProperties": false,
                   "properties": {
-                    "lookback": {
+                    "k": {
                       "type": "integer",
                       "minimum": 5,
-                      "maximum": 100,
+                      "maximum": 50,
+                      "multipleOf": 1
+                    },
+                    "d": {
+                      "type": "integer",
+                      "minimum": 2,
+                      "maximum": 20,
+                      "multipleOf": 1
+                    },
+                    "smooth": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 10,
                       "multipleOf": 1
                     },
                     "level": {
                       "type": "number",
-                      "minimum": 0.5,
-                      "maximum": 10,
-                      "multipleOf": 0.1
+                      "minimum": 0,
+                      "maximum": 100,
+                      "multipleOf": 1
                     }
                   },
                   "required": [
-                    "lookback",
+                    "k",
+                    "d",
+                    "smooth",
                     "level"
                   ]
                 },
@@ -2674,11 +2170,341 @@
                         "allowed_ops",
                         "op"
                       ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "signal",
+                            "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              },
+              "required": [
+                "enabled",
+                "params",
+                "rules"
+              ]
+            }
+          },
+          "required": [
+            "master_enabled",
+            "buy",
+            "sell"
+          ]
+        },
+        "cci": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "master_enabled": {
+              "type": "boolean"
+            },
+            "buy": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "params": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "period": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 100,
+                      "multipleOf": 1
+                    },
+                    "level": {
+                      "type": "number",
+                      "minimum": -300,
+                      "maximum": 300,
+                      "multipleOf": 1
+                    }
+                  },
+                  "required": [
+                    "period",
+                    "level"
+                  ]
+                },
+                "rules": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r1"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": -1
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "param",
+                            "key": "level"
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": -1
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
+                }
+              },
+              "required": [
+                "enabled",
+                "params",
+                "rules"
+              ]
+            },
+            "sell": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "params": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "period": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 100,
+                      "multipleOf": 1
+                    },
+                    "level": {
+                      "type": "number",
+                      "minimum": -300,
+                      "maximum": 300,
+                      "multipleOf": 1
+                    }
+                  },
+                  "required": [
+                    "period",
+                    "level"
+                  ]
+                },
+                "rules": {
+                  "type": "array",
+                  "prefixItems": [
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r1"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": -1
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "param",
+                            "key": "level"
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": -1
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    }
+                  ],
+                  "items": false,
+                  "minItems": 2,
+                  "maxItems": 2
                 }
               },
               "required": [
@@ -3350,1106 +3176,6 @@
             "sell"
           ]
         },
-        "n_day_high": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 252,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "close",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 252,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "close",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "n_day_low": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 252,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "close",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 252,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "close",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "distance_52w_high": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "level": {
-                      "type": "number",
-                      "minimum": -100,
-                      "maximum": 0,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "level": {
-                      "type": "number",
-                      "minimum": -100,
-                      "maximum": 0,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "gap": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "level": {
-                      "type": "number",
-                      "minimum": -20,
-                      "maximum": 20,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "level": {
-                      "type": "number",
-                      "minimum": -20,
-                      "maximum": 20,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "distance_support": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "pivot": {
-                      "type": "integer",
-                      "minimum": 2,
-                      "maximum": 10,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -20,
-                      "maximum": 30,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "pivot",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "pivot": {
-                      "type": "integer",
-                      "minimum": 2,
-                      "maximum": 10,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -20,
-                      "maximum": 30,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "pivot",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "distance_resistance": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "pivot": {
-                      "type": "integer",
-                      "minimum": 2,
-                      "maximum": 10,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -20,
-                      "maximum": 30,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "pivot",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "pivot": {
-                      "type": "integer",
-                      "minimum": 2,
-                      "maximum": 10,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -20,
-                      "maximum": 30,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "pivot",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
         "donchian": {
           "type": "object",
           "additionalProperties": false,
@@ -4587,420 +3313,6 @@
                             "kind": "series",
                             "key": "lower",
                             "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "keltner": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "ema": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    },
-                    "atr": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 50,
-                      "multipleOf": 1
-                    },
-                    "k": {
-                      "type": "number",
-                      "minimum": 0.5,
-                      "maximum": 5,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "ema",
-                    "atr",
-                    "k"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "close",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "upper",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "ema": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    },
-                    "atr": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 50,
-                      "multipleOf": 1
-                    },
-                    "k": {
-                      "type": "number",
-                      "minimum": 0.5,
-                      "maximum": 5,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "ema",
-                    "atr",
-                    "k"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "close",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "lower",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "bb_width": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 10,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    },
-                    "k": {
-                      "type": "number",
-                      "minimum": 1,
-                      "maximum": 3.5,
-                      "multipleOf": 0.1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 50,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "k",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 10,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    },
-                    "k": {
-                      "type": "number",
-                      "minimum": 1,
-                      "maximum": 3.5,
-                      "multipleOf": 0.1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 50,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "k",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
                           }
                         },
                         "allowed_ops": {
@@ -5519,1896 +3831,6 @@
             "buy",
             "sell"
           ]
-        },
-        "psar": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "step": {
-                      "type": "number",
-                      "minimum": 0.01,
-                      "maximum": 0.1,
-                      "multipleOf": 0.01
-                    },
-                    "max": {
-                      "type": "number",
-                      "minimum": 0.1,
-                      "maximum": 1,
-                      "multipleOf": 0.01
-                    }
-                  },
-                  "required": [
-                    "step",
-                    "max"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "close",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "step": {
-                      "type": "number",
-                      "minimum": 0.01,
-                      "maximum": 0.1,
-                      "multipleOf": 0.01
-                    },
-                    "max": {
-                      "type": "number",
-                      "minimum": 0.1,
-                      "maximum": 1,
-                      "multipleOf": 0.01
-                    }
-                  },
-                  "required": [
-                    "step",
-                    "max"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "close",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "rs_market": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "lookback": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 252,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -100,
-                      "maximum": 100,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "lookback",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "lookback": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 252,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -100,
-                      "maximum": 100,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "lookback",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "rs_sector": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "lookback": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 252,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -100,
-                      "maximum": 100,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "lookback",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "lookback": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 252,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -100,
-                      "maximum": 100,
-                      "multipleOf": 0.1
-                    }
-                  },
-                  "required": [
-                    "lookback",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "ad_line": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "baseline": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "baseline"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "baseline",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "baseline": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "baseline"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "baseline",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "breadth_ma50": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "level": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "level": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "new_high_low": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "level": {
-                      "type": "number",
-                      "minimum": -10000,
-                      "maximum": 10000,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "level": {
-                      "type": "number",
-                      "minimum": -10000,
-                      "maximum": 10000,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "index_ma": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 100,
-                      "maximum": 300,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "index",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 100,
-                      "maximum": 300,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "index",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "stochastic": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "k": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 50,
-                      "multipleOf": 1
-                    },
-                    "d": {
-                      "type": "integer",
-                      "minimum": 2,
-                      "maximum": 20,
-                      "multipleOf": 1
-                    },
-                    "smooth": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 10,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "k",
-                    "d",
-                    "smooth",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "signal",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "k": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 50,
-                      "multipleOf": 1
-                    },
-                    "d": {
-                      "type": "integer",
-                      "minimum": 2,
-                      "maximum": 20,
-                      "multipleOf": 1
-                    },
-                    "smooth": {
-                      "type": "integer",
-                      "minimum": 1,
-                      "maximum": 10,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": 0,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "k",
-                    "d",
-                    "smooth",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "signal",
-                            "offset": 0
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
-        },
-        "cci": {
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "master_enabled": {
-              "type": "boolean"
-            },
-            "buy": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -300,
-                      "maximum": 300,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            },
-            "sell": {
-              "type": "object",
-              "additionalProperties": false,
-              "properties": {
-                "enabled": {
-                  "type": "boolean"
-                },
-                "params": {
-                  "type": "object",
-                  "additionalProperties": false,
-                  "properties": {
-                    "period": {
-                      "type": "integer",
-                      "minimum": 5,
-                      "maximum": 100,
-                      "multipleOf": 1
-                    },
-                    "level": {
-                      "type": "number",
-                      "minimum": -300,
-                      "maximum": 300,
-                      "multipleOf": 1
-                    }
-                  },
-                  "required": [
-                    "period",
-                    "level"
-                  ]
-                },
-                "rules": {
-                  "type": "array",
-                  "prefixItems": [
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r1"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "param",
-                            "key": "level"
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
-                    }
-                  ],
-                  "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
-                }
-              },
-              "required": [
-                "enabled",
-                "params",
-                "rules"
-              ]
-            }
-          },
-          "required": [
-            "master_enabled",
-            "buy",
-            "sell"
-          ]
         }
       },
       "required": [
@@ -7420,33 +3842,14 @@
         "ema",
         "ma_cross",
         "dmi",
-        "adx",
-        "atr",
-        "atr_percent",
-        "relative_volume",
+        "stochastic",
+        "cci",
         "obv",
         "mfi",
         "cmf",
-        "n_day_high",
-        "n_day_low",
-        "distance_52w_high",
-        "gap",
-        "distance_support",
-        "distance_resistance",
         "donchian",
-        "keltner",
-        "bb_width",
         "roc",
-        "williams_r",
-        "psar",
-        "rs_market",
-        "rs_sector",
-        "ad_line",
-        "breadth_ma50",
-        "new_high_low",
-        "index_ma",
-        "stochastic",
-        "cci"
+        "williams_r"
       ]
     },
     "saved_at": {

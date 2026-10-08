@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, UseGuards } from '@nestjs/common';
 import {
   ApiCreatedResponse,
   ApiOkResponse,
@@ -15,42 +15,57 @@ import {
   attemptIdParamSchema,
   attemptResponseSchema,
   attemptSubmitSchema,
-  curriculumQuerySchema,
-  curriculumResponseSchema,
+  catalogResponseSchema,
+  guideCompleteResponseSchema,
+  guideCompleteSchema,
   lessonIdParamSchema,
   lessonResponseSchema,
+  progressResponseSchema,
   submitResponseSchema,
   type AttemptCreateInput,
   type AttemptSubmitInput,
-  type CurriculumQuery,
+  type GuideCompleteInput,
 } from './academy.schemas.js';
 import { AcademyService } from './academy.service.js';
 
 const openApi = (schema: z.ZodType) =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
 
-/** Learning is free for every authenticated user; strategy usage is gated elsewhere. */
+/**
+ * Learning is free for every authenticated user; strategy usage is gated elsewhere. The owner
+ * always comes from the session: no endpoint accepts a user id, score, pass flag or capability.
+ */
 @ApiTags('Academy')
 @UseGuards(AcademyEnabledGuard, ApiAuthGuard)
 @Controller(['api/v2/academy'])
 export class AcademyController {
   constructor(private readonly academy: AcademyService) {}
 
-  @Get('curriculum')
+  @Get('catalog')
   @ApiOperation({
-    operationId: 'academyCurriculum',
-    summary: 'Academy chapters with per-user lesson progress',
+    operationId: 'academyCatalog',
+    summary: 'The 13-chapter / 71-lesson catalog with completion mode, binding and content status',
   })
-  @ApiOkResponse({ schema: openApi(curriculumResponseSchema) })
-  curriculum(
-    @CurrentUser() user: AuthenticatedUser,
-    @Query({ schema: curriculumQuerySchema }) query: CurriculumQuery,
-  ) {
-    return this.academy.curriculum(user.id, query);
+  @ApiOkResponse({ schema: openApi(catalogResponseSchema) })
+  catalog() {
+    return this.academy.catalog();
+  }
+
+  @Get('progress')
+  @ApiOperation({
+    operationId: 'academyProgress',
+    summary: 'Completed lessons, per-chapter and course progress and opened capabilities',
+  })
+  @ApiOkResponse({ schema: openApi(progressResponseSchema) })
+  progress(@CurrentUser() user: AuthenticatedUser) {
+    return this.academy.progress(user.id);
   }
 
   @Get('lessons/:lessonId')
-  @ApiOperation({ operationId: 'academyLesson', summary: 'Lesson content without quiz answers' })
+  @ApiOperation({
+    operationId: 'academyLesson',
+    summary: 'Published lesson content without quiz answers, or content_status not_published',
+  })
   @ApiOkResponse({ schema: openApi(lessonResponseSchema) })
   lesson(
     @CurrentUser() user: AuthenticatedUser,
@@ -62,7 +77,7 @@ export class AcademyController {
   @Post('attempts')
   @ApiOperation({
     operationId: 'academyCreateAttempt',
-    summary: 'Start (or replay by idempotency key) an 8-question lesson quiz',
+    summary: 'Start (or replay by idempotency key) an 8-question quiz of a published quiz lesson',
   })
   @ApiCreatedResponse({ schema: openApi(attemptResponseSchema) })
   createAttempt(
@@ -76,7 +91,7 @@ export class AcademyController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'academySubmitAttempt',
-    summary: 'Grade an attempt server-side; 8/8 grants the lesson capabilities',
+    summary: 'Grade an attempt server-side; 8/8 records the lesson completion once',
   })
   @ApiOkResponse({ schema: openApi(submitResponseSchema) })
   submit(
@@ -85,5 +100,20 @@ export class AcademyController {
     @Body({ schema: attemptSubmitSchema }) body: AttemptSubmitInput,
   ) {
     return this.academy.submit(user.id, attemptId, body);
+  }
+
+  @Post('lessons/:lessonId/complete')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'academyCompleteGuide',
+    summary: 'Complete a published guide lesson (Hoàn thành bài học); idempotent per request id',
+  })
+  @ApiOkResponse({ schema: openApi(guideCompleteResponseSchema) })
+  completeGuide(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
+    @Body({ schema: guideCompleteSchema }) body: GuideCompleteInput,
+  ) {
+    return this.academy.completeGuide(user.id, lessonId, body);
   }
 }

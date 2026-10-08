@@ -1,0 +1,1702 @@
+[
+  {
+    "id": "rsi",
+    "name": "RSI",
+    "chapter": 1,
+    "lesson_id": "ch01-l01",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 14,
+        "level": 30
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ],
+      "field_overrides": {
+        "level": {
+          "min": 10,
+          "max": 49,
+          "label": "Ngưỡng quá bán"
+        }
+      }
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 14,
+        "level": 70
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ],
+      "field_overrides": {
+        "level": {
+          "min": 51,
+          "max": 90,
+          "label": "Ngưỡng quá mua"
+        }
+      }
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ RSI",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng RSI",
+        "type": "number",
+        "min": 10,
+        "max": 90,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 1,
+    "new_lesson_id": "ch01-l01"
+  },
+  {
+    "id": "macd",
+    "name": "MACD",
+    "chapter": 1,
+    "lesson_id": "ch01-l02",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "fast": 12,
+        "slow": 26,
+        "signal": 9
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "fast": 12,
+        "slow": 26,
+        "signal": 9
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "fast",
+        "label": "Chu kỳ EMA nhanh",
+        "type": "integer",
+        "min": 2,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "slow",
+        "label": "Chu kỳ EMA chậm",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "signal",
+        "label": "Chu kỳ đường tín hiệu",
+        "type": "integer",
+        "min": 2,
+        "max": 30,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "validation": {
+      "cross_fields": [
+        {
+          "left": "fast",
+          "op": "<",
+          "right": "slow"
+        }
+      ],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 1,
+    "new_lesson_id": "ch01-l02"
+  },
+  {
+    "id": "ma",
+    "name": "MA / SMA",
+    "chapter": 1,
+    "lesson_id": "ch01-l03",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ SMA",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 1,
+    "new_lesson_id": "ch01-l03"
+  },
+  {
+    "id": "bollinger",
+    "name": "Bollinger Bands",
+    "chapter": 1,
+    "lesson_id": "ch01-l04",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 20,
+        "k": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "lower",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "membership",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "∈",
+          "rhs": {
+            "kind": "interval",
+            "lower": {
+              "kind": "series",
+              "key": "lower",
+              "offset": 0
+            },
+            "upper": {
+              "kind": "series",
+              "key": "upper",
+              "offset": 0
+            },
+            "bounds": "open"
+          },
+          "allowed_ops": ["∈", "∉"]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 20,
+        "k": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "upper",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "membership",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "∈",
+          "rhs": {
+            "kind": "interval",
+            "lower": {
+              "kind": "series",
+              "key": "lower",
+              "offset": 0
+            },
+            "upper": {
+              "kind": "series",
+              "key": "upper",
+              "offset": 0
+            },
+            "bounds": "open"
+          },
+          "allowed_ops": ["∈", "∉"]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ Bollinger",
+        "type": "integer",
+        "min": 10,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "k",
+        "label": "Hệ số dải",
+        "type": "number",
+        "min": 1,
+        "max": 3.5,
+        "step": 0.1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": "warn_diagnostics_not_blanket_reject"
+    },
+    "new_chapter": 1,
+    "new_lesson_id": "ch01-l04"
+  },
+  {
+    "id": "volume",
+    "name": "Khối lượng",
+    "chapter": 1,
+    "lesson_id": "ch01-l05",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "lookback": 20,
+        "mult": 1.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "volume",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "threshold",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "lookback": 20,
+        "mult": 1.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "volume",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "threshold",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "lookback",
+        "label": "Số phiên tham chiếu",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "mult",
+        "label": "Hệ số khối lượng",
+        "type": "number",
+        "min": 0.5,
+        "max": 3,
+        "step": 0.1,
+        "unit": "lần",
+        "api_scale": 1,
+        "wire_unit": "lần"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 1,
+    "new_lesson_id": "ch01-l05"
+  },
+  {
+    "id": "ema",
+    "name": "EMA",
+    "chapter": 5,
+    "lesson_id": "ch05-l01",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ EMA",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 5,
+    "new_lesson_id": "ch05-l01"
+  },
+  {
+    "id": "ma_cross",
+    "name": "MA Cross",
+    "chapter": 5,
+    "lesson_id": "ch05-l02",
+    "family": "event",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "fast": 20,
+        "slow": 50
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "cross",
+          "lhs": {
+            "kind": "series",
+            "key": "fast",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "slow",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "fast": 20,
+        "slow": 50
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "cross",
+          "lhs": {
+            "kind": "series",
+            "key": "fast",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "slow",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "fast",
+        "label": "Chu kỳ SMA nhanh",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "slow",
+        "label": "Chu kỳ SMA chậm",
+        "type": "integer",
+        "min": 10,
+        "max": 250,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "validation": {
+      "cross_fields": [
+        {
+          "left": "fast",
+          "op": "<",
+          "right": "slow"
+        }
+      ],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 5,
+    "new_lesson_id": "ch05-l02"
+  },
+  {
+    "id": "dmi",
+    "name": "DMI",
+    "chapter": 5,
+    "lesson_id": "ch05-l03",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 14
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "plus",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "minus",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 14
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "plus",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "minus",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ DMI",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 5,
+    "new_lesson_id": "ch05-l03"
+  },
+  {
+    "id": "stochastic",
+    "name": "Stochastic",
+    "chapter": 5,
+    "lesson_id": "ch05-l05",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "k": 14,
+        "d": 3,
+        "smooth": 3,
+        "level": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "k": 14,
+        "d": 3,
+        "smooth": 3,
+        "level": 80
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "k",
+        "label": "Chu kỳ %K",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "d",
+        "label": "Chu kỳ %D",
+        "type": "integer",
+        "min": 2,
+        "max": 20,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "smooth",
+        "label": "Chu kỳ trung bình %K",
+        "type": "integer",
+        "min": 1,
+        "max": 10,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng %K",
+        "type": "number",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 5,
+    "new_lesson_id": "ch05-l04"
+  },
+  {
+    "id": "cci",
+    "name": "CCI",
+    "chapter": 5,
+    "lesson_id": "ch05-l06",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 20,
+        "level": -100
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 20,
+        "level": 100
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ CCI",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng CCI",
+        "type": "number",
+        "min": -300,
+        "max": 300,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 5,
+    "new_lesson_id": "ch05-l05"
+  },
+  {
+    "id": "obv",
+    "name": "OBV",
+    "chapter": 7,
+    "lesson_id": "ch07-l04",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "baseline": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "baseline",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "baseline": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "baseline",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "baseline",
+        "label": "Chu kỳ SMA của OBV",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l01"
+  },
+  {
+    "id": "mfi",
+    "name": "MFI",
+    "chapter": 7,
+    "lesson_id": "ch07-l05",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 14,
+        "level": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 14,
+        "level": 80
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ MFI",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng MFI",
+        "type": "number",
+        "min": 0,
+        "max": 100,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l02"
+  },
+  {
+    "id": "cmf",
+    "name": "Chaikin Money Flow",
+    "chapter": 7,
+    "lesson_id": "ch07-l06",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 20,
+        "level": 0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 20,
+        "level": 0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ CMF",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng CMF",
+        "type": "number",
+        "min": -1,
+        "max": 1,
+        "step": 0.01,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l03"
+  },
+  {
+    "id": "donchian",
+    "name": "Donchian Channel",
+    "chapter": 11,
+    "lesson_id": "ch11-l01",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "upper",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "lower",
+            "offset": 0
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ Donchian",
+        "type": "integer",
+        "min": 5,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 10,
+    "new_lesson_id": "ch10-l01"
+  },
+  {
+    "id": "roc",
+    "name": "ROC",
+    "chapter": 11,
+    "lesson_id": "ch11-l04",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 20,
+        "level": 5.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 20,
+        "level": -5.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ ROC",
+        "type": "integer",
+        "min": 2,
+        "max": 252,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng ROC",
+        "type": "number",
+        "min": -100,
+        "max": 100,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 10,
+    "new_lesson_id": "ch10-l02"
+  },
+  {
+    "id": "williams_r",
+    "name": "Williams %R",
+    "chapter": 11,
+    "lesson_id": "ch11-l05",
+    "family": "state",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "period": 14,
+        "level": -80
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "period": 14,
+        "level": -20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [">", "<"]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": -1
+          },
+          "allowed_ops": [">", "<"]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ Williams %R",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng Williams %R",
+        "type": "number",
+        "min": -100,
+        "max": 0,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "new_chapter": 10,
+    "new_lesson_id": "ch10-l03"
+  }
+]

@@ -1,0 +1,1430 @@
+{
+  "catalog_version": "iqx-academy-outline-13ch-71lessons-v1",
+  "legacy_catalog_version": "iqx-academy-legacy-18ch-125lessons",
+  "chapters": [
+    {
+      "no": 1,
+      "title": "Chỉ báo kỹ thuật nền tảng",
+      "type": "technical",
+      "lessons": [
+        {
+          "id": "ch01-l01",
+          "order": 1,
+          "name": "RSI",
+          "lesson_key": "technical:rsi",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "rsi"
+          },
+          "legacy_lesson_ids": [
+            "ch01-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch01-l02",
+          "order": 2,
+          "name": "MACD",
+          "lesson_key": "technical:macd",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "macd"
+          },
+          "legacy_lesson_ids": [
+            "ch01-l02"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch01-l03",
+          "order": 3,
+          "name": "MA / SMA",
+          "lesson_key": "technical:ma",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "ma"
+          },
+          "legacy_lesson_ids": [
+            "ch01-l03"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch01-l04",
+          "order": 4,
+          "name": "Bollinger Bands",
+          "lesson_key": "technical:bollinger",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "bollinger"
+          },
+          "legacy_lesson_ids": [
+            "ch01-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch01-l05",
+          "order": 5,
+          "name": "Khối lượng",
+          "lesson_key": "technical:volume",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "volume"
+          },
+          "legacy_lesson_ids": [
+            "ch01-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch01-l06",
+          "order": 6,
+          "name": "Hợp lưu",
+          "lesson_key": "concept:hop_luu",
+          "kind": "concept",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [
+            "ch01-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 2,
+      "title": "Sử dụng Backtest",
+      "type": "tool",
+      "lessons": [
+        {
+          "id": "ch02-l01",
+          "order": 1,
+          "name": "Bắt đầu với Backtest",
+          "lesson_key": "guide:ch02-l01",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch02-l02",
+          "order": 2,
+          "name": "Thiết lập điều kiện Mua",
+          "lesson_key": "guide:ch02-l02",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch02-l03",
+          "order": 3,
+          "name": "Thiết lập điều kiện Bán",
+          "lesson_key": "guide:ch02-l03",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch02-l04",
+          "order": 4,
+          "name": "Chọn giả định và chạy kiểm thử",
+          "lesson_key": "guide:ch02-l04",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch02-l05",
+          "order": 5,
+          "name": "Đọc kết quả và lịch sử giao dịch",
+          "lesson_key": "guide:ch02-l05",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch02-l06",
+          "order": 6,
+          "name": "Điều chỉnh, so sánh và lưu kết quả",
+          "lesson_key": "guide:ch02-l06",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        }
+      ]
+    },
+    {
+      "no": 3,
+      "title": "Phân tích cơ bản nền tảng",
+      "type": "fundamental",
+      "lessons": [
+        {
+          "id": "ch03-l01",
+          "order": 1,
+          "name": "Tăng trưởng doanh thu YoY",
+          "lesson_key": "fundamental:revenue_yoy",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "revenue_yoy"
+          },
+          "legacy_lesson_ids": [
+            "ch03-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch03-l02",
+          "order": 2,
+          "name": "Tăng trưởng LNST YoY",
+          "lesson_key": "fundamental:profit_yoy",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "profit_yoy"
+          },
+          "legacy_lesson_ids": [
+            "ch03-l02"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch03-l03",
+          "order": 3,
+          "name": "Tăng trưởng EPS YoY",
+          "lesson_key": "fundamental:eps_yoy",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "eps_yoy"
+          },
+          "legacy_lesson_ids": [
+            "ch03-l03"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch03-l04",
+          "order": 4,
+          "name": "Biên lợi nhuận gộp",
+          "lesson_key": "fundamental:gross_margin",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "gross_margin"
+          },
+          "legacy_lesson_ids": [
+            "ch03-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch03-l05",
+          "order": 5,
+          "name": "Biên lợi nhuận ròng",
+          "lesson_key": "fundamental:net_margin",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "net_margin"
+          },
+          "legacy_lesson_ids": [
+            "ch03-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch03-l06",
+          "order": 6,
+          "name": "ROE",
+          "lesson_key": "fundamental:roe",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "roe"
+          },
+          "legacy_lesson_ids": [
+            "ch03-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 4,
+      "title": "Sử dụng Bộ lọc",
+      "type": "tool",
+      "lessons": [
+        {
+          "id": "ch04-l01",
+          "order": 1,
+          "name": "Bắt đầu với Bộ lọc",
+          "lesson_key": "guide:ch04-l01",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch04-l02",
+          "order": 2,
+          "name": "Thiết lập điều kiện lọc",
+          "lesson_key": "guide:ch04-l02",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch04-l03",
+          "order": 3,
+          "name": "Chọn kỳ tính cho từng chỉ tiêu",
+          "lesson_key": "guide:ch04-l03",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch04-l04",
+          "order": 4,
+          "name": "Đọc và kiểm tra kết quả",
+          "lesson_key": "guide:ch04-l04",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch04-l05",
+          "order": 5,
+          "name": "Điều chỉnh và lưu bộ lọc",
+          "lesson_key": "guide:ch04-l05",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        },
+        {
+          "id": "ch04-l06",
+          "order": 6,
+          "name": "Lưu và áp dụng danh mục cho Bot",
+          "lesson_key": "guide:ch04-l06",
+          "kind": "guide",
+          "completion": {
+            "mode": "guide"
+          },
+          "capability_binding": null,
+          "legacy_lesson_ids": [],
+          "content_status": "not_published"
+        }
+      ]
+    },
+    {
+      "no": 5,
+      "title": "Xu hướng và động lượng nâng cao",
+      "type": "technical",
+      "lessons": [
+        {
+          "id": "ch05-l01",
+          "order": 1,
+          "name": "EMA",
+          "lesson_key": "technical:ema",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "ema"
+          },
+          "legacy_lesson_ids": [
+            "ch05-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch05-l02",
+          "order": 2,
+          "name": "MA Cross",
+          "lesson_key": "technical:ma_cross",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "ma_cross"
+          },
+          "legacy_lesson_ids": [
+            "ch05-l02"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch05-l03",
+          "order": 3,
+          "name": "DMI",
+          "lesson_key": "technical:dmi",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "dmi"
+          },
+          "legacy_lesson_ids": [
+            "ch05-l03"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch05-l04",
+          "order": 4,
+          "name": "Stochastic",
+          "lesson_key": "technical:stochastic",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "stochastic"
+          },
+          "legacy_lesson_ids": [
+            "ch05-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch05-l05",
+          "order": 5,
+          "name": "CCI",
+          "lesson_key": "technical:cci",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "cci"
+          },
+          "legacy_lesson_ids": [
+            "ch05-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 6,
+      "title": "Sức khỏe tài chính doanh nghiệp",
+      "type": "fundamental",
+      "lessons": [
+        {
+          "id": "ch06-l01",
+          "order": 1,
+          "name": "ROA",
+          "lesson_key": "fundamental:roa",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "roa"
+          },
+          "legacy_lesson_ids": [
+            "ch06-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch06-l02",
+          "order": 2,
+          "name": "ROIC",
+          "lesson_key": "fundamental:roic",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "roic"
+          },
+          "legacy_lesson_ids": [
+            "ch06-l02"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch06-l03",
+          "order": 3,
+          "name": "D/E — Nợ vay / Vốn chủ sở hữu",
+          "lesson_key": "fundamental:debt_equity",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "debt_equity"
+          },
+          "legacy_lesson_ids": [
+            "ch06-l03"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch06-l04",
+          "order": 4,
+          "name": "Net Debt / EBITDA",
+          "lesson_key": "fundamental:net_debt_ebitda",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "net_debt_ebitda"
+          },
+          "legacy_lesson_ids": [
+            "ch06-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch06-l05",
+          "order": 5,
+          "name": "Current Ratio",
+          "lesson_key": "fundamental:current_ratio",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "current_ratio"
+          },
+          "legacy_lesson_ids": [
+            "ch06-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch06-l06",
+          "order": 6,
+          "name": "Interest Coverage",
+          "lesson_key": "fundamental:interest_coverage",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "interest_coverage"
+          },
+          "legacy_lesson_ids": [
+            "ch06-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 7,
+      "title": "Khối lượng và dòng tiền",
+      "type": "technical",
+      "lessons": [
+        {
+          "id": "ch07-l01",
+          "order": 1,
+          "name": "OBV",
+          "lesson_key": "technical:obv",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "obv"
+          },
+          "legacy_lesson_ids": [
+            "ch07-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch07-l02",
+          "order": 2,
+          "name": "MFI",
+          "lesson_key": "technical:mfi",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "mfi"
+          },
+          "legacy_lesson_ids": [
+            "ch07-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch07-l03",
+          "order": 3,
+          "name": "Chaikin Money Flow — CMF",
+          "lesson_key": "technical:cmf",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "cmf"
+          },
+          "legacy_lesson_ids": [
+            "ch07-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 8,
+      "title": "Chất lượng dòng tiền doanh nghiệp",
+      "type": "fundamental",
+      "lessons": [
+        {
+          "id": "ch08-l01",
+          "order": 1,
+          "name": "CFO Margin",
+          "lesson_key": "fundamental:cfo_margin",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "cfo_margin"
+          },
+          "legacy_lesson_ids": [
+            "ch08-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch08-l02",
+          "order": 2,
+          "name": "CFO / LNST",
+          "lesson_key": "fundamental:cfo_profit",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "cfo_profit"
+          },
+          "legacy_lesson_ids": [
+            "ch08-l02"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch08-l03",
+          "order": 3,
+          "name": "FCF Margin",
+          "lesson_key": "fundamental:fcf_margin",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "fcf_margin"
+          },
+          "legacy_lesson_ids": [
+            "ch08-l03"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch08-l04",
+          "order": 4,
+          "name": "FCF Growth YoY",
+          "lesson_key": "fundamental:fcf_yoy",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "fcf_yoy"
+          },
+          "legacy_lesson_ids": [
+            "ch08-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch08-l05",
+          "order": 5,
+          "name": "Capex / Revenue",
+          "lesson_key": "fundamental:capex_revenue",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "capex_revenue"
+          },
+          "legacy_lesson_ids": [
+            "ch08-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch08-l06",
+          "order": 6,
+          "name": "Accrual Ratio",
+          "lesson_key": "fundamental:accrual",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "accrual"
+          },
+          "legacy_lesson_ids": [
+            "ch08-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 9,
+      "title": "Định giá doanh nghiệp",
+      "type": "fundamental",
+      "lessons": [
+        {
+          "id": "ch09-l01",
+          "order": 1,
+          "name": "P/E",
+          "lesson_key": "fundamental:pe",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "pe"
+          },
+          "legacy_lesson_ids": [
+            "ch10-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch09-l02",
+          "order": 2,
+          "name": "P/B",
+          "lesson_key": "fundamental:pb",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "pb"
+          },
+          "legacy_lesson_ids": [
+            "ch10-l02"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch09-l03",
+          "order": 3,
+          "name": "P/S",
+          "lesson_key": "fundamental:ps",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "ps"
+          },
+          "legacy_lesson_ids": [
+            "ch10-l03"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch09-l04",
+          "order": 4,
+          "name": "EV / EBITDA",
+          "lesson_key": "fundamental:ev_ebitda",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "ev_ebitda"
+          },
+          "legacy_lesson_ids": [
+            "ch10-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch09-l05",
+          "order": 5,
+          "name": "PEG",
+          "lesson_key": "fundamental:peg",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "peg"
+          },
+          "legacy_lesson_ids": [
+            "ch10-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch09-l06",
+          "order": 6,
+          "name": "FCF Yield",
+          "lesson_key": "fundamental:fcf_yield",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "fcf_yield"
+          },
+          "legacy_lesson_ids": [
+            "ch10-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 10,
+      "title": "Kênh giá và động lượng",
+      "type": "technical",
+      "lessons": [
+        {
+          "id": "ch10-l01",
+          "order": 1,
+          "name": "Donchian Channel",
+          "lesson_key": "technical:donchian",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "donchian"
+          },
+          "legacy_lesson_ids": [
+            "ch11-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch10-l02",
+          "order": 2,
+          "name": "ROC",
+          "lesson_key": "technical:roc",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "roc"
+          },
+          "legacy_lesson_ids": [
+            "ch11-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch10-l03",
+          "order": 3,
+          "name": "Williams %R",
+          "lesson_key": "technical:williams_r",
+          "kind": "technical",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "technical",
+            "id": "williams_r"
+          },
+          "legacy_lesson_ids": [
+            "ch11-l05"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 11,
+      "title": "Tăng trưởng dài hạn và hiệu quả vận hành",
+      "type": "fundamental",
+      "lessons": [
+        {
+          "id": "ch11-l01",
+          "order": 1,
+          "name": "Revenue CAGR 3Y",
+          "lesson_key": "fundamental:revenue_cagr3",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "revenue_cagr3"
+          },
+          "legacy_lesson_ids": [
+            "ch12-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch11-l02",
+          "order": 2,
+          "name": "Net Profit CAGR 3Y",
+          "lesson_key": "fundamental:profit_cagr3",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "profit_cagr3"
+          },
+          "legacy_lesson_ids": [
+            "ch12-l02"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch11-l03",
+          "order": 3,
+          "name": "EPS CAGR 3Y",
+          "lesson_key": "fundamental:eps_cagr3",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "eps_cagr3"
+          },
+          "legacy_lesson_ids": [
+            "ch12-l03"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch11-l04",
+          "order": 4,
+          "name": "Asset Turnover",
+          "lesson_key": "fundamental:asset_turnover",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "asset_turnover"
+          },
+          "legacy_lesson_ids": [
+            "ch12-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch11-l05",
+          "order": 5,
+          "name": "Cash Conversion Cycle",
+          "lesson_key": "fundamental:ccc",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "ccc"
+          },
+          "legacy_lesson_ids": [
+            "ch12-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch11-l06",
+          "order": 6,
+          "name": "Working Capital Turnover",
+          "lesson_key": "fundamental:working_cap_turnover",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "working_cap_turnover"
+          },
+          "legacy_lesson_ids": [
+            "ch12-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 12,
+      "title": "Độ ổn định doanh nghiệp",
+      "type": "fundamental",
+      "lessons": [
+        {
+          "id": "ch12-l01",
+          "order": 1,
+          "name": "Revenue Growth Stability",
+          "lesson_key": "fundamental:revenue_growth_stability",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "revenue_growth_stability"
+          },
+          "legacy_lesson_ids": [
+            "ch14-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch12-l02",
+          "order": 2,
+          "name": "EPS Stability",
+          "lesson_key": "fundamental:eps_growth_stability",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "eps_growth_stability"
+          },
+          "legacy_lesson_ids": [
+            "ch14-l02"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch12-l03",
+          "order": 3,
+          "name": "Margin Stability",
+          "lesson_key": "fundamental:net_margin_stability",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "net_margin_stability"
+          },
+          "legacy_lesson_ids": [
+            "ch14-l03"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch12-l04",
+          "order": 4,
+          "name": "ROIC Stability",
+          "lesson_key": "fundamental:roic_stability",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "roic_stability"
+          },
+          "legacy_lesson_ids": [
+            "ch14-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch12-l05",
+          "order": 5,
+          "name": "FCF Positive Streak",
+          "lesson_key": "fundamental:fcf_positive_streak",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "fcf_positive_streak"
+          },
+          "legacy_lesson_ids": [
+            "ch14-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch12-l06",
+          "order": 6,
+          "name": "Profit Positive Streak",
+          "lesson_key": "fundamental:profit_positive_streak",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "profit_positive_streak"
+          },
+          "legacy_lesson_ids": [
+            "ch14-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    },
+    {
+      "no": 13,
+      "title": "Cổ đông và phân bổ vốn",
+      "type": "fundamental",
+      "lessons": [
+        {
+          "id": "ch13-l01",
+          "order": 1,
+          "name": "Dividend Yield",
+          "lesson_key": "fundamental:dividend_yield",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "dividend_yield"
+          },
+          "legacy_lesson_ids": [
+            "ch15-l01"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch13-l02",
+          "order": 2,
+          "name": "Payout Ratio",
+          "lesson_key": "fundamental:payout_ratio",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "payout_ratio"
+          },
+          "legacy_lesson_ids": [
+            "ch15-l02"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch13-l03",
+          "order": 3,
+          "name": "Dividend Growth",
+          "lesson_key": "fundamental:dividend_cagr3",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "dividend_cagr3"
+          },
+          "legacy_lesson_ids": [
+            "ch15-l03"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch13-l04",
+          "order": 4,
+          "name": "Share Count Growth",
+          "lesson_key": "fundamental:share_count_yoy",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "share_count_yoy"
+          },
+          "legacy_lesson_ids": [
+            "ch15-l04"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch13-l05",
+          "order": 5,
+          "name": "Buyback Yield",
+          "lesson_key": "fundamental:buyback_yield",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "buyback_yield"
+          },
+          "legacy_lesson_ids": [
+            "ch15-l05"
+          ],
+          "content_status": "published"
+        },
+        {
+          "id": "ch13-l06",
+          "order": 6,
+          "name": "Shareholder Yield",
+          "lesson_key": "fundamental:shareholder_yield",
+          "kind": "fundamental",
+          "completion": {
+            "mode": "quiz",
+            "question_count": 8,
+            "required_correct": 8
+          },
+          "capability_binding": {
+            "kind": "fundamental",
+            "id": "shareholder_yield"
+          },
+          "legacy_lesson_ids": [
+            "ch15-l06"
+          ],
+          "content_status": "published"
+        }
+      ]
+    }
+  ]
+}

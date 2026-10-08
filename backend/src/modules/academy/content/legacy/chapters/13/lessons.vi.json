@@ -1,0 +1,266 @@
+[
+  {
+    "id": "ch13-l01",
+    "chapter": 13,
+    "order": 1,
+    "name": "Relative Strength vs VN-Index",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Relative Strength vs VN-Index</strong> đo mức sinh lời cổ phiếu trừ mức sinh lời VN-Index trên cùng khoảng phiên.</p><p>Đây là chênh lệch điểm phần trăm, không phải RSI. Hai chuỗi phải căn cùng ngày đầu/cuối. Gói không dùng tỷ số giá cổ phiếu/chỉ số làm cùng mã.</p><p>RS dương là vượt thị trường trong cửa sổ, không có nghĩa cổ phiếu tăng: −3% trừ−8% vẫn=+5 điểm %.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">RS = Return cổ phiếu(N) − Return VN-Index(N)</div><p>Cổ phiếu tăng 12%, VN-Index tăng 5% cùng kỳ. RS bằng bao nhiêu?</p><p>Kết quả là <strong>7 điểm %</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Cần N+1 phiên cùng lịch; thiếu mốc benchmark trả missing. Nguồn VN-Index phải được đối soát.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"lookback\": 20, \"level\": 0.0}</td><td>Relative Strength &gt; Ngưỡng %</td></tr><tr><td>BÁN</td><td>{\"lookback\": 20, \"level\": 0.0}</td><td>Relative Strength &lt; Ngưỡng %</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Không điền giá chỉ số tương lai cho ngày thiếu để tạo đủ kỳ so.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Relative Strength vs VN-Index",
+      "prompt": "Cổ phiếu tăng 12%, VN-Index tăng 5% cùng kỳ. RS bằng bao nhiêu?",
+      "expected": 7,
+      "unit": "điểm %",
+      "formula": "RS = Return cổ phiếu(N) − Return VN-Index(N)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "rs_market",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch13-l02",
+    "chapter": 13,
+    "order": 2,
+    "name": "Relative Strength vs ngành",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Relative Strength vs ngành</strong> đo mức sinh lời cổ phiếu trừ mức sinh lời chỉ số ngành cùng kỳ.</p><p>Rổ ngành và phương pháp trọng số phải được xác định. Không tự lấy một cổ phiếu lớn nhất ngành làm chỉ số ngành.</p><p>Mã giảm ít hơn ngành có RS dương nhưng người giữ vẫn lỗ theo giá.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">RS ngành = Return cổ phiếu(N) − Return chỉ số ngành(N)</div><p>Cổ phiếu giảm 2%, chỉ số ngành giảm 6%. RS ngành bằng bao nhiêu?</p><p>Kết quả là <strong>4 điểm %</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Chỉ số ngành phải có lịch sử và thành phần đúng thời điểm; feed chưa có thì không bật điều kiện này ở production.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"lookback\": 20, \"level\": 0.0}</td><td>Relative Strength &gt; Ngưỡng %</td></tr><tr><td>BÁN</td><td>{\"lookback\": 20, \"level\": 0.0}</td><td>Relative Strength &lt; Ngưỡng %</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Dùng thành phần ngành hiện tại để dựng lại quá khứ có thể nhìn trước thông tin về các mã đã bị loại.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Relative Strength vs ngành",
+      "prompt": "Cổ phiếu giảm 2%, chỉ số ngành giảm 6%. RS ngành bằng bao nhiêu?",
+      "expected": 4,
+      "unit": "điểm %",
+      "formula": "RS ngành = Return cổ phiếu(N) − Return chỉ số ngành(N)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "rs_sector",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch13-l03",
+    "chapter": 13,
+    "order": 3,
+    "name": "Advance / Decline Line",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Advance / Decline Line</strong> đo tổng tích lũy chênh số cổ phiếu tăng và giảm trong rổ thị trường.</p><p>Mã không đổi không cộng vào tăng/giảm. Chỉ số về số lượng mã, khác VN-Index gia quyền vốn hóa. Không phải chỉ báo Accumulation/Distribution cùng viết tắt A/D.</p><p>AD Line đi lên nghĩa số mã tăng lũy kế chiếm ưu thế trong rổ, không đồng nghĩa lợi nhuận của rổ.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Net Advances = Số mã tăng − Số mã giảm<br/>AD Line mới = AD Line trước + Net Advances</div><p>AD Line trước=1000; có 180 mã tăng và 120 mã giảm. AD Line mới bằng bao nhiêu?</p><p>Kết quả là <strong>1.060 </strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Rổ point-in-time, số mã đủ dữ liệu cần≥95% rổ đủ điều kiện; thấp hơn trả missing, không coi mã thiếu là mã đứng giá. Baseline SMA gồm T.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"baseline\": 20}</td><td>Advance / Decline Line &gt; SMA</td></tr><tr><td>BÁN</td><td>{\"baseline\": 20}</td><td>Advance / Decline Line &lt; SMA</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Thay rổ hoặc seed giữa chuỗi có thể làm số lũy kế đứt mạch. Chỉ số không được so giá trị tuyệt đối giữa hai feed khác rổ.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Advance / Decline Line",
+      "prompt": "AD Line trước=1000; có 180 mã tăng và 120 mã giảm. AD Line mới bằng bao nhiêu?",
+      "expected": 1060,
+      "unit": "",
+      "formula": "Net Advances = Số mã tăng − Số mã giảm\nAD Line mới = AD Line trước + Net Advances",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "ad_line",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch13-l04",
+    "chapter": 13,
+    "order": 4,
+    "name": "% cổ phiếu trên MA50",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>% cổ phiếu trên MA 50</strong> đo tỷ lệ số cổ phiếu có giá đóng cửa trên SMA 50 trong rổ xác định.</p><p>Mẫu số không phải tất cả mã niêm yết kể cả mã chưa đủ 50 phiên. Cần công bố cả rổ và tỷ lệ bao phủ.</p><p>60% cho biết độ rộng xu hướng trên rổ đang đo. Một vài mã vốn hóa lớn tăng không đủ quyết định tỷ lệ này.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Tỷ lệ = Số mã Close&gt;SMA 50 / Số mã đủ dữ liệu × 100</div><p>Có 120 mã trên MA 50 trong 200 mã đủ dữ liệu. Tỷ lệ bằng bao nhiêu?</p><p>Kết quả là <strong>60 %</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>SMA 50 cố định ở bài này; mốc ngưỡng tùy chỉnh 0–100%. Coverageguard 95% theo đặc tả mới phải xác nhận gói dữ liệu.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"level\": 50.0}</td><td>% cổ phiếu trên MA 50 &gt; Ngưỡng %</td></tr><tr><td>BÁN</td><td>{\"level\": 50.0}</td><td>% cổ phiếu trên MA 50 &lt; Ngưỡng %</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Nếu chỉ 30% rổ có dữ liệu, tỷ lệ của phần còn lại không đại diện đáng tin cho toàn rổ.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "% cổ phiếu trên MA50",
+      "prompt": "Có 120 mã trên MA 50 trong 200 mã đủ dữ liệu. Tỷ lệ bằng bao nhiêu?",
+      "expected": 60,
+      "unit": "%",
+      "formula": "Tỷ lệ = Số mã Close>SMA50 / Số mã đủ dữ liệu × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "breadth_ma50",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch13-l05",
+    "chapter": 13,
+    "order": 5,
+    "name": "New High – New Low",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>New High – New Low</strong> đo chênh số cổ phiếu tạo đỉnh mới và đáy mới theo cửa sổ 252 phiên.</p><p>Giá trị là số mã, không phải phần trăm. Một mã có thể ở cả hai phía trong phiên biến động lớn; đóng góp ròng 0.</p><p>Số dương cho biết đỉnh mới nhiều hơn đáy mới, không chỉ ra hướng của mọi cổ phiếu.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">NHNL = Số mã High vượt max 252 phiên trước − Số mã Low dưới min 252 phiên trước</div><p>Có 40 mã tạo đỉnh mới và 15 mã tạo đáy mới. NHNL bằng bao nhiêu?</p><p>Kết quả là <strong>25 mã</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Mỗi mã cần 253 phiên, rổ lịch sử; chỉ đếm ngưỡng&gt;và<nghiêmngặt, bằngđỉnhcũkhôngphải=\"\" p=\"\" trongbiếnthểnày.<=\"\" đỉnhmới=\"\"></nghiêmngặt,></p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"level\": 0}</td><td>New High − New Low &gt; Ngưỡng</td></tr><tr><td>BÁN</td><td>{\"level\": 0}</td><td>New High − New Low &lt; Ngưỡng</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Không đưa phiên hiện tại vào mốc 252 trước rồi yêu cầu vượt nghiêm ngặt.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "New High – New Low",
+      "prompt": "Có 40 mã tạo đỉnh mới và 15 mã tạo đáy mới. NHNL bằng bao nhiêu?",
+      "expected": 25,
+      "unit": "mã",
+      "formula": "NHNL = Số mã High vượt max252phiên trước − Số mã Low dưới min252phiên trước",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "new_high_low",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch13-l06",
+    "chapter": 13,
+    "order": 6,
+    "name": "VN-Index vs MA200",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>VN-Index vs MA 200</strong> đo vị trí VN-Index so với SMA có chu kỳ tham chiếu 200.</p><p>Điều kiện có thể dùng cho sàng lọc bối cảnh nhưng không đồng nghĩa lệnh mua mọi mã. Nếu đổi chu kỳ, nhãn trong cấu hình phải đổi theo N.</p><p>VN-Index trên SMA 200 mô tả thị trường trên một trung bình; không bảo lãnh mọi ngành cùng mạnh.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">SMA(N) của VN-Index = Tổng N giá trị chốt phiên / N</div><p>VN-Index=1250; SMA 200=1200. Khoảng chênh chỉ số trừ SMA bằng bao nhiêu?</p><p>Kết quả là <strong>50 điểm</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>N giá trị chốt phiên liên tiếp; lịch chỉ số/dataset version được lưu theo run.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 200}</td><td>VN-Index &gt; MA 200</td></tr><tr><td>BÁN</td><td>{\"period\": 200}</td><td>VN-Index &lt; MA 200</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Bài mang tên mốc 200 nhưng cho phép 100–300 trong cấu hình. Không được hiển thị MA 200 khi thực tính MA 150.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "VN-Index vs MA200",
+      "prompt": "VN-Index=1250; SMA 200=1200. Khoảng chênh chỉ số trừ SMA bằng bao nhiêu?",
+      "expected": 50,
+      "unit": "điểm",
+      "formula": "SMA(N) củaVN-Index = Tổng N giá trịchốtphiên / N",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "index_ma",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  }
+]

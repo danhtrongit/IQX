@@ -1,0 +1,43 @@
+{
+  "lesson_id": "ch01-l04",
+  "content_version": "2.0.0",
+  "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p>Bollinger Bands gồm một đường giữa và hai dải đặt hai bên đường giữa. Trong cách tính của bài học, đường giữa là SMA; khoảng cách từ đường giữa tới mỗi dải bằng hệ số dải nhân với độ lệch chuẩn của giá.</p>\n<div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Thành phần</th><th scope=\"col\">Ý nghĩa</th></tr></thead><tbody><tr><td>Đường giữa</td><td>Mức giá đóng cửa trung bình trong chu kỳ.</td></tr><tr><td>Độ lệch chuẩn</td><td>Mức phân tán của các giá quanh đường giữa.</td></tr><tr><td>Dải trên và dải dưới</td><td>Hai mức đối xứng quanh đường giữa theo hệ số được chọn.</td></tr><tr><td>Độ rộng chuẩn hóa</td><td>Khoảng cách giữa hai dải chia cho đường giữa.</td></tr></tbody></table></div>\n<p>Vị trí giá và độ rộng dải là hai thông tin khác nhau. Giá trên đường giữa không đồng nghĩa độ rộng đang tăng. Dải rộng hơn không tự cho biết hướng giá tiếp theo.</p>\n<p>Giá có thể bám gần dải trên hoặc dải dưới trong nhiều phiên. Việc chạm dải không tự xác định một lệnh mua, lệnh bán hoặc thời điểm đảo chiều.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula-group\"><div class=\"math-eq\">M = <span class=\"frac\"><span>P₁ + P₂ + … + P<sub>N</sub></span><span>N</span></span></div><div class=\"math-eq\">σ = √(<span class=\"frac\"><span>(P₁ − M)² + … + (P<sub>N</sub> − M)²</span><span>N</span></span>)</div><div class=\"math-eq\">Dải trên = M + k × σ</div><div class=\"math-eq\">Dải dưới = M − k × σ</div></div>\n<div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Ký hiệu</th><th scope=\"col\">Ý nghĩa</th></tr></thead><tbody><tr><td>N</td><td>Số phiên trong chu kỳ.</td></tr><tr><td>P₁ … P<sub>N</sub></td><td>Các giá đóng cửa trong cửa sổ, gồm phiên đang tính.</td></tr><tr><td>M</td><td>Đường giữa, bằng SMA theo chu kỳ N.</td></tr><tr><td>σ</td><td>Độ lệch chuẩn, cùng đơn vị với giá.</td></tr><tr><td>k</td><td>Hệ số xác định khoảng cách từ đường giữa tới mỗi dải.</td></tr></tbody></table></div>\n<p>Bài sử dụng độ lệch chuẩn với mẫu số N. Dấu ² là bình phương và dấu √ là căn bậc hai. Bộ tham số 20 phiên và hệ số 2 là thiết lập tham chiếu.</p>\n<div class=\"worked\"><h3>Ví dụ 1: năm giá đóng cửa</h3><p>Năm giá giả định: 10, 12, 14, 12, 12; chọn N = 5 và k = 2.</p><div class=\"formula-group\"><div class=\"math-eq\">M = (10 + 12 + 14 + 12 + 12) / 5 = 12</div><div class=\"math-eq\">σ = √[(4 + 0 + 4 + 0 + 0) / 5] = √1,6 ≈ 1,2649</div><div class=\"math-eq\">Dải trên ≈ 12 + 2 × 1,2649 = 14,5298</div><div class=\"math-eq\">Dải dưới ≈ 12 − 2 × 1,2649 = 9,4702</div></div><p>Giá cuối cùng bằng đường giữa, nhưng độ lệch chuẩn vẫn dương do các giá trong cửa sổ không hoàn toàn giống nhau.</p></div>\n<h3>Độ rộng chuẩn hóa</h3>\n<div class=\"formula-group\"><div class=\"math-eq\">Độ rộng chuẩn hóa = <span class=\"frac\"><span>Dải trên − Dải dưới</span><span>M</span></span></div><div class=\"math-eq\">Độ rộng (%) = Độ rộng chuẩn hóa × 100</div></div>\n<p>Với ví dụ trên, độ rộng chuẩn hóa xấp xỉ (14,5298 − 9,4702) / 12 = 0,4216, tức 42,16%. Phép đo này yêu cầu đường giữa dương trong các tình huống đang xét.</p>\n<div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Hai trường hợp độc lập</th><th scope=\"col\">Khoảng cách hai dải</th><th scope=\"col\">Đường giữa</th><th scope=\"col\">Độ rộng</th></tr></thead><tbody><tr><td>A</td><td>10</td><td>100</td><td>10%</td></tr><tr><td>B</td><td>12</td><td>200</td><td>6%</td></tr></tbody></table></div>\n<p>Trường hợp B có khoảng cách hai dải lớn hơn nhưng độ rộng tương đối nhỏ hơn. So sánh chỉ bằng khoảng cách tuyệt đối sẽ bỏ qua mặt bằng giá.</p>"
+    },
+    {
+      "title": "Tham số, Mua và Bán",
+      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 20, \"k\": 2.0}</td><td>Giá phiên trước &lt; Dải dưới AND Giá hiện tại ∈ Dải Bollinger AND Giá hiện tại &gt; Giá phiên trước</td></tr><tr><td>BÁN</td><td>{\"period\": 20, \"k\": 2.0}</td><td>Giá phiên trước &gt; Dải trên AND Giá hiện tại ∈ Dải Bollinger AND Giá hiện tại &lt; Giá phiên trước</td></tr></tbody></table></div>"
+    },
+    {
+      "title": "Vận dụng và giới hạn",
+      "html": "<p>Không đồng nhất ∉ với thiếu dữ liệu. Khi chưa tính được dải, cả kiểm tra trong và không trong đều trả chưa xác định, không tạo tín hiệu.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "Bollinger Bands",
+    "prompt": "M = 100; σ = 3; k = 2. Dải trên bằng bao nhiêu?",
+    "expected": 106,
+    "unit": "",
+    "formula": "M = SMA(N)\nσ = sqrt[Σ(Giá − M)² / N]\nDải trên = M + kσ; Dải dưới = M − kσ",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  "sources": [
+    "source:technical-registry-v1",
+    "author:calculation-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch01-l04",
+    "chapter": 1
+  }
+}

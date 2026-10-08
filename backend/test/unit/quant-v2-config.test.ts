@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
+  RULE_VERSION,
   canonicalJson,
   configHash,
   defaultConfig,
   indicatorCapability,
+  loadLegacyTechnicalRegistry,
   loadTechnicalRegistry,
   sha256Hex,
   validateConfig,
@@ -38,11 +40,13 @@ function indicator(config: SharedConfig, id: string): IndicatorConfig {
   return item;
 }
 
-/** Reference test helper `ma()`: MA master ON, sell period 30. */
+/** Reference test helper `ma()`: MA master ON with both sides ON, sell period 30. */
 function maConfig(): SharedConfig {
   const c = defaultConfig();
   const ma = indicator(c, 'ma');
   ma.master_enabled = true;
+  ma.buy.enabled = true;
+  ma.sell.enabled = true;
   ma.sell.params.period = 30;
   return c;
 }
@@ -51,17 +55,19 @@ const paths = (config: unknown, grants?: string[] | ReadonlySet<string>) =>
   validateConfig(config, registry, grants).map((e) => e.path);
 
 describe('quant v2 defaultConfig', () => {
-  it('equals the reference defaultConfig (same JSON, same key order)', () => {
+  it('equals the reference defaultConfig (same JSON, same key order) apart from the rule version', () => {
     expect(JSON.stringify(defaultConfig())).toBe(
-      JSON.stringify(reference.defaultConfig(rawRegistry)),
+      JSON.stringify({ ...reference.defaultConfig(rawRegistry), rule_version: RULE_VERSION }),
     );
-    expect(Object.keys(defaultConfig().indicators)).toHaveLength(35);
+    expect(Object.keys(defaultConfig().indicators)).toHaveLength(16);
+    expect(defaultConfig().rule_version).toBe('iqx-rules-3.0');
   });
 
-  it('is valid, master OFF everywhere, and independent copies of the registry', () => {
+  it('is valid, master and both sides OFF everywhere, and independent copies of the registry', () => {
     const c = defaultConfig();
     expect(validateConfig(c)).toEqual([]);
     expect(Object.values(c.indicators).every((x) => !x.master_enabled)).toBe(true);
+    expect(Object.values(c.indicators).every((x) => !x.buy.enabled && !x.sell.enabled)).toBe(true);
     indicator(c, 'rsi').buy.params.period = 50;
     expect(registry.find((r) => r.id === 'rsi')?.buy.params.period).toBe(14);
     expect(indicator(defaultConfig(), 'rsi').buy.params.period).toBe(14);
@@ -92,7 +98,7 @@ describe('quant v2 validateConfig', () => {
     const cases: Array<(c: SharedConfig) => void> = [
       () => undefined,
       (c) => (indicator(c, 'macd').buy.params.fast = 30),
-      (c) => (indicator(c, 'psar').sell.params.step = 0.2),
+      (c) => (indicator(c, 'stochastic').sell.params.level = 101),
       (c) => (indicator(c, 'bollinger').buy.params.k = 2.05),
       (c) => (indicator(c, 'bollinger').buy.params.k = 2.3),
       (c) => (indicator(c, 'cmf').sell.params.level = -0.37),
@@ -107,8 +113,8 @@ describe('quant v2 validateConfig', () => {
       (c) => (indicator(c, 'bollinger').buy.rules[1]!.op = '∉'),
       (c) => (indicator(c, 'bollinger').buy.rules[1]!.op = '>'),
       (c) => indicator(c, 'stochastic').buy.rules.pop(),
-      (c) => (indicator(c, 'atr').buy.params.extra = 1),
-      (c) => delete indicator(c, 'atr').sell.params.baseline,
+      (c) => (indicator(c, 'cci').buy.params.extra = 1),
+      (c) => delete indicator(c, 'cci').sell.params.level,
     ];
     for (const [i, mutate] of cases.entries()) {
       const c = defaultConfig();
@@ -136,6 +142,27 @@ describe('quant v2 validateConfig', () => {
     expect(validateConfig(null)).toEqual([{ path: '', message: 'Thiếu cấu hình.' }]);
     expect(paths({ ...defaultConfig(), indicators: [] })).toEqual(['indicators']);
     expect(validateConfig({ ...defaultConfig(), saved_at: '2026-01-02T03:04:05Z' })).toEqual([]);
+  });
+
+  it('requires exactly the 16 current indicators: a historical 35-indicator config is not valid', () => {
+    const c = clone(defaultConfig()) as Omit<SharedConfig, 'rule_version'> & {
+      rule_version: string;
+    };
+    for (const entry of loadLegacyTechnicalRegistry()) {
+      c.indicators[entry.id] = {
+        master_enabled: false,
+        buy: { enabled: false, params: entry.buy.params, rules: entry.buy.rules },
+        sell: { enabled: false, params: entry.sell.params, rules: entry.sell.rules },
+      };
+    }
+    c.rule_version = 'iqx-rules-2.0';
+    const errorPaths = paths(c);
+    expect(errorPaths).toContain('rule_version');
+    expect(errorPaths.filter((p) => p.startsWith('indicators.'))).toHaveLength(19);
+    // Removed indicators are not valid as current even when OFF, with or without grants.
+    expect(
+      validateConfig(c, registry, ['indicator:adx']).some((e) => e.path === 'indicators.adx'),
+    ).toBe(true);
   });
 
   it('rejects unknown and missing indicators and unknown nested keys', () => {
@@ -168,20 +195,17 @@ describe('quant v2 validateConfig', () => {
         'indicators.bollinger.sell.params.k',
         (c) => (indicator(c, 'bollinger').sell.params.k = 2.05),
       ],
-      [
-        'indicators.atr_percent.buy.params.level',
-        (c) => (indicator(c, 'atr_percent').buy.params.level = 5.55),
-      ],
+      ['indicators.roc.buy.params.level', (c) => (indicator(c, 'roc').buy.params.level = 5.55)],
       ['indicators.macd.buy.params.fast', (c) => (indicator(c, 'macd').buy.params.fast = 26)],
       [
         'indicators.ma_cross.sell.params.fast',
         (c) => (indicator(c, 'ma_cross').sell.params.fast = 60),
       ],
       [
-        'indicators.psar.buy.params.step',
+        'indicators.macd.sell.params.fast',
         (c) => {
-          indicator(c, 'psar').buy.params.step = 0.1;
-          indicator(c, 'psar').buy.params.max = 0.1;
+          indicator(c, 'macd').sell.params.fast = 26;
+          indicator(c, 'macd').sell.params.slow = 26;
         },
       ],
     ];
@@ -193,7 +217,7 @@ describe('quant v2 validateConfig', () => {
     // Float steps are accepted within tolerance (0.1 + 0.2 style noise).
     const ok = defaultConfig();
     indicator(ok, 'bollinger').buy.params.k = 0.1 + 0.2 + 2;
-    indicator(ok, 'psar').buy.params.step = 0.07;
+    indicator(ok, 'roc').buy.params.level = 0.1 + 0.2 + 5;
     indicator(ok, 'cmf').buy.params.level = -0.37;
     expect(validateConfig(ok)).toEqual([]);
   });

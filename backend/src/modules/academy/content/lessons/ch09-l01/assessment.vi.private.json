@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch09-l01",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: Giá cổ phiếu = 40.000; EPS TTM = 4.000. P/E bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "20 lần",
+          "id": "o1"
+        },
+        {
+          "text": "10 lần",
+          "id": "o2"
+        },
+        {
+          "text": "18 lần",
+          "id": "o3"
+        },
+        {
+          "text": "4 lần",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Áp dụng Giá / EPS TTM; kết quả 10 lần.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch09-l01-q01",
+      "lesson_id": "ch09-l01",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "P/E đang bằng đúng 10 lần. Bộ lọc đặt > 10 lần. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o1"
+        },
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o3"
+        },
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l01-q02",
+      "lesson_id": "ch09-l01",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc P/E?",
+      "options": [
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o1"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o2"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o3"
+        },
+        {
+          "text": "P/E thấp có thể do lợi nhuận chu kỳ đang ở đỉnh hoặc khoản lãi bất thường. EPS âm không được đưa vào bộ lọc P/E thấp như một mã rẻ.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "P/E 10 lần cho biết giá bằng mười lần EPS TTM, không phải lời hứa hoàn vốn trong mười năm. P/E thấp có thể do lợi nhuận chu kỳ đang ở đỉnh hoặc khoản lãi bất thường. EPS âm không được đưa vào bộ lọc P/E thấp như một mã rẻ.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch09-l01-q03",
+      "lesson_id": "ch09-l01",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính P/E. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o2"
+        },
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o3"
+        },
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch09-l01-q04",
+      "lesson_id": "ch09-l01",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Nhận định nào đúng với P/E?",
+      "options": [
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o1"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o2"
+        },
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o3"
+        },
+        {
+          "text": "P/E 10 lần cho biết giá bằng mười lần EPS TTM, không phải lời hứa hoàn vốn trong mười năm.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "P/E 10 lần cho biết giá bằng mười lần EPS TTM, không phải lời hứa hoàn vốn trong mười năm. Giá lấy tại thời điểm quan sát. EPS TTM phải bao phủ bốn quý riêng đã công bố và cùng cơ sở cổ phiếu; nếu không thể tái lập chuỗi điều chỉnh, trả thiếu dữ liệu. Không dùng EPS dự phóng khi nhãn đang là P/E quá khứ.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch09-l01-q05",
+      "lesson_id": "ch09-l01",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có P/E bằng 8 và 12 lần. Điều kiện < 10 lần giữ lại ai?",
+      "options": [
+        {
+          "text": "Chỉ A.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ B.",
+          "id": "o2"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o3"
+        },
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "8 < 10 đúng, 12 < 10 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l01-q06",
+      "lesson_id": "ch09-l01",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Báo cáo dùng tính P/E kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o1"
+        },
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o2"
+        },
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o3"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch09-l01-q07",
+      "lesson_id": "ch09-l01",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện P/E, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o2"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o3"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l01-q08",
+      "lesson_id": "ch09-l01",
+      "correct_option_id": "o2"
+    }
+  ]
+}

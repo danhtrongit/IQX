@@ -869,7 +869,7 @@ describe('BotService academy activation acceptance', () => {
   });
 
   it('B09 missing Buy data does not block an independent Academy Sell', async () => {
-    const config = academyConfig({ buy: ['ma', 'index_ma'], sell: ['ma'] });
+    const config = academyConfig({ buy: ['ma', 'ma_cross'], sell: ['ma'] });
     const run = await runAcademy({
       config,
       positions: [position()],

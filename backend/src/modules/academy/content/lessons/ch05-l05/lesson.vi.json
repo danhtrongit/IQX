@@ -1,0 +1,43 @@
+{
+  "lesson_id": "ch05-l05",
+  "content_version": "2.0.0",
+  "origin": "biên soạn mới theo đề cương và registry nguồn",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>CCI</strong> đo độ lệch giá điển hình so với mức trung bình, chuẩn hóa bằng độ lệch tuyệt đối trung bình.</p><p>Hệ số 0,015 là thành phần định nghĩa CCI. MD khác độ lệch chuẩn dùng trong Bollinger: ở đây lấy trị tuyệt đối, không bình phương. CCI không bị giới hạn trong miền −100 đến 100.</p><p>CCI 100 nghĩa là độ lệch 3 được chuẩn hóa bởi 0,03. Điều kiện mẫu đọc vùng cực đo an phiên trước và chiều CCI hiện tại, nhưng các dấu được đổi độc lập.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula\">TP = (High + Low + Close)/3<br/>M = SMA(TP, N)<br/>MD = trung bình |TP − M| của N phiên<br/>CCI = (TP hiện tại − M)/(0,015 × MD)</div><p>TP hiện tại = 103; M = 100; MD = 2. CCI bằng bao nhiêu?</p><p>Kết quả là <strong>100 </strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Cần N TP để tính; MD=0 trả missing. Với cặp hiện tại/phiên trước cần N+1 bar hợp lệ. Không dùng độ lệch chuẩn thay MD.</p>"
+    },
+    {
+      "title": "Tham số, Mua và Bán",
+      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 20, \"level\": -100}</td><td>CCI phiên trước &lt; Ngưỡng AND CCI hiện tại &gt; CCI phiên trước</td></tr><tr><td>BÁN</td><td>{\"period\": 20, \"level\": 100}</td><td>CCI phiên trước &gt; Ngưỡng AND CCI hiện tại &lt; CCI phiên trước</td></tr></tbody></table></div>"
+    },
+    {
+      "title": "Vận dụng và giới hạn",
+      "html": "<p>Không gọi mọi CCI trên 100 là lệnh bán bắt buộc. Một xu hướng mạnh có thể duy trì CCI cao nhiều phiên.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "CCI",
+    "prompt": "TP hiện tại = 103; M = 100; MD = 2. CCI bằng bao nhiêu?",
+    "expected": 100,
+    "unit": "",
+    "formula": "TP = (High + Low + Close)/3\nM = SMA(TP, N)\nMD = trung bình |TP − M| của N phiên\nCCI = (TP hiện tại − M)/(0,015 × MD)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  "sources": [
+    "source:technical-registry-v1",
+    "author:calculation-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch05-l06",
+    "chapter": 5
+  }
+}

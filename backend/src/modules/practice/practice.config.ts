@@ -42,13 +42,15 @@ export function practiceEntry(
   return entry && availability !== 'needs_history_context' ? entry : null;
 }
 
+// A new practice draft starts with both sides ON (Bot SPEC §7.2); the registry template is
+// OFF for the Bot and that state is never copied here.
 const defaultSide = (entry: RegistryEntry, side: Side): PracticeSideInput => ({
-  enabled: entry[side].enabled,
+  enabled: true,
   params: { ...entry[side].params },
   ops: Object.fromEntries(entry[side].rules.map((rule) => [rule.id, rule.op])),
 });
 
-/** Registry template of an indicator: both sides, template params/operators, hold 60. */
+/** Registry template of an indicator: both sides ON, template params/operators, hold 60. */
 export function defaultPracticeConfig(entry: RegistryEntry): PracticeConfig {
   return {
     buy: defaultSide(entry, 'buy'),

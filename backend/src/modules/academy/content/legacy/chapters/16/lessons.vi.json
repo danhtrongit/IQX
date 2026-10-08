@@ -1,0 +1,272 @@
+[
+  {
+    "id": "ch16-l01",
+    "chapter": 16,
+    "order": 1,
+    "name": "Universe",
+    "kind": "system",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Universe là tập mã đủ điều kiện để chiến lược cân nhắc ở một thời điểm. Bộ lọc cơ bản chọn mã, còn điều kiện kỹ thuật chọn thời điểm; hai tầng không thay nhau.</p><p>Chỉ 4 mã đủ hai tầng. Bán các vị thế đang giữ không được bỏ qua nếu mã ra khỏi universe; quy tắc thoát phải được định nghĩa riêng.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Candidate(T) = Universe(T) ∩ Buy Signal(T)</div><p>Ngày T có 20 mã trong universe,7 mã có tín hiệu Mua; 4 mã ở cả hai. Có bao nhiêu ứng viên?</p><p>Kết quả: <strong>4 mã</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Chọn định nghĩa Bộ lọc đã lưu, chọn lịch tái tính, dữ liệu point-in-time; Backtest dùng rổ tại từng ngày, không chỉ lấy list cuối kỳ.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Không dùng danh sách tĩnh hôm nay như bằng chứng universe lịch sử đáng tin.</p><p>Mã đang giữ không còn trong universe. Engine có bỏ qua xét bán mã này không?</p><p>Kết luận: <strong>Không; vị thế còn tồn tại vẫn cần được quản lý.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Universe",
+      "prompt": "Ngày T có 20 mã trong universe,7 mã có tín hiệu Mua; 4 mã ở cả hai. Có bao nhiêu ứng viên?",
+      "expected": 4,
+      "unit": "mã",
+      "formula": "Candidate(T) = Universe(T) ∩ BuySignal(T)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch16-l02",
+    "chapter": 16,
+    "order": 2,
+    "name": "Ranking",
+    "kind": "system",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Ranking xếp ưu tiên trong nhóm đã đạt điều kiện. Nó quyết định chọn mã nào khi số ứng viên lớn hơn giới hạn vị thế hoặc khả năng vốn.</p><p>Giữ top 3 theo chỉ tiêu đã chọn, không chọn theo thứ tự ngẫu nhiên của API. Nếu đồng điểm, dùng khóa phụ ổn định như mã cổ phiếu để tái lập.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Lọc trước → xếp hạng sau → chọn tối đa K</div><p>Có 10 ứng viên, khả năng mở mới 3 vị thế. Ranking chọn tối đa bao nhiêu mã?</p><p>Kết quả: <strong>3 mã</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Chọn chỉ tiêu đã học, chiều xếp tăng/giảm, K và cách xử lý thiếu dữ liệu. Với nhiều chỉ tiêu phải đưa cùng thang trước khi gán trọng số.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Không cộng ROE 20 với P/E 10 theo số thô rồi gọi là điểm tổng; đơn vị và chiều mong muốn khác nhau.</p><p>Hai mã cùng điểm, kết quả API đổi thứ tự giữa hai lần chạy. Cần thêm gì?</p><p>Kết luận: <strong>Quy tắc phụ phát quyết hòa cố định, ví dụ xếp theo mã.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Ranking",
+      "prompt": "Có 10 ứng viên, khả năng mở mới 3 vị thế. Ranking chọn tối đa bao nhiêu mã?",
+      "expected": 3,
+      "unit": "mã",
+      "formula": "Lọc trước → xếp hạng sau → chọn tối đaK",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch16-l03",
+    "chapter": 16,
+    "order": 3,
+    "name": "Nested AND / OR / NOT",
+    "kind": "system",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Ngoặc nhóm quy định thứ tự kết hợp điều kiện. OR giữa các nhóm khác AND giữa tất cả các dòng; NOT cần giữ trạng thái thiếu dữ liệu thay vì biến thiếu thành đúng.</p><p>AANDB sai, nhưng COR cho phép nhóm đạt. Gói dùng logic ba giá trị với missing; NOT missing vẫn là missing.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">(A AND B) OR C</div><p>A đúng, Bsai, C đúng. Giá trị(A AND B) OR C là 1 đúng hay 0 sai?</p><p>Kết quả: <strong>1 </strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Tạo hai nhóm con, đặt ngoặc và nhập kịch bản đúng/sai. Dùng cây biểu thức có kiểu, không eval chuỗi do người dùng nhập.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>AND/OR không tự sửa vì đếm được nhiều tín hiệu. Một ngoặc sai có thể đổi toàn bộ chiến lược.</p><p>A=missing; dùng NOT A. Kết quả nên là gì?</p><p>Kết luận: <strong>Vẫn chưa xác định.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Nested AND / OR / NOT",
+      "prompt": "A đúng, Bsai, C đúng. Giá trị(A AND B) OR C là 1 đúng hay 0 sai?",
+      "expected": 1,
+      "unit": "",
+      "formula": "(A AND B) OR C",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch16-l04",
+    "chapter": 16,
+    "order": 4,
+    "name": "Multi-timeframe",
+    "kind": "system",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Đa khung thời gian kết hợp các chuỗi có độ dài bar khác nhau. Điều kiện ngày không được dùng giá đóng cửa tuần cuối cùng khi tuần đó chưa kết thúc.</p><p>Đóng cửa tuần phụ thuộc 2 phiên còn lại. Gói mặc định dùng bar tuần đã đóng gần nhất, không hình dung tuần đang chạy như đã kết thúc.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Ở ngày T, chỉ dùng bar khung lớn đã đóng và có sẵn trước T</div><p>Một tuần có 5 phiên; đang ở phiên thứ 3. Có bao nhiêu phiên của tuần hiện tại chưa xong?</p><p>Kết quả: <strong>2 phiên</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Chọn khung ngày cho RSI và khung tuần cho MA. So timestamp bar đã dùng tại từng lệnh. Giữ cùng nguồn giá và chính sách điều chỉnh.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Dùng weekly close đã hoàn chỉnh cho quyết định ngày thứ ba là look-ahead.</p><p>Đang thứ ba, MA 20 tuần cần dữ liệu tuần hiện tại chưa đóng. Nên lấy chuỗi nào?</p><p>Kết luận: <strong>Chuỗi tuần đã đóng gần nhất trước thời điểm quyết định.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Multi-timeframe",
+      "prompt": "Một tuần có 5 phiên; đang ở phiên thứ 3. Có bao nhiêu phiên của tuần hiện tại chưa xong?",
+      "expected": 2,
+      "unit": "phiên",
+      "formula": "ỞngàyT,chỉ dùngbar khunglớn đã đóngvàcósẵntrước T",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch16-l05",
+    "chapter": 16,
+    "order": 5,
+    "name": "Signal Priority",
+    "kind": "system",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Ưu tiên xử lý quyết định khi nhiều tín hiệu hoặc cơ chế thoát cùng kích hoạt. Một vị thế chỉ được ghi một giao dịch thoát, không nhân đôi số lượng vì có hai lý do.</p><p>Không bán 200 chỉ vì có hai lý do. Profile phải định nghĩa trình tự giá mở cửa, biên trong phiên và tín hiệu cuối phiên.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Một vị thế → một lần khớp thoát; lý do chính + lý do đồng thời</div><p>Cùng phiên cắt lỗ và điều kiện bán đều đạt. Với một vị thế 100 cổ phiếu, được bán tối đa bao nhiêu cổ phiếu?</p><p>Kết quả: <strong>100 cổ phiếu</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Trong kiểm thử tình huống, cho sell và stop đồng thời. Đọc lý do chính và log thành phần; đối soát số lượng và tiền mặt một lần.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Không cho điều kiện AND của chỉ báo chặn cắt lỗ bảo vệ. Cơ chế thoát bảo vệ nằm ngoài AND tín hiệu bán.</p><p>Giá mở cửa gap vượt chốt lời, rồi trong phiên giảm sâu xuyên stop. Khi mô hình theo OHLC, đánh giá gì nên trước?</p><p>Kết luận: <strong>Sự kiện đã xảy ra ở mở cửa trước biến động sau đó.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Signal Priority",
+      "prompt": "Cùng phiên cắt lỗ và điều kiện bán đều đạt. Với một vị thế 100 cổ phiếu, được bán tối đa bao nhiêu cổ phiếu?",
+      "expected": 100,
+      "unit": "cổ phiếu",
+      "formula": "Mộtvị thế → mộtlầnkhớpthoát; lýdochính + lýdođồng thời",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch16-l06",
+    "chapter": 16,
+    "order": 6,
+    "name": "Re-entry & Cooldown",
+    "kind": "system",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Cooldown là số phiên không mở lại sau khi đóng vị thế, độc lập với việc chỉ báo đã phát tín hiệu lại. Không mua lại cùng phiên bán vẫn là quy tắc nền của profile.</p><p>Chặn 11 và 12, xét lại từ 13. Đây là quy ước cụ thể phải được lưu; không để frontend và backend đếm khác nhau.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Bá nở S; chặn N phiên kế tiếp; mua sớm nhất ở S+N+1</div><p>Bán phiên 10, cooldown 2 phiên. Sớm nhất được xét mua phiên nào?</p><p>Kết quả: <strong>13 phiên</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Đặt N=2, chạy một chuỗi tín hiệu liên tiếp sau Bán. Kiểm tra đúng ngày được tái nhập và không re set cooldown khi phía thoát chạy lại khi thử lại.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Cooldown đếm phiên giao dịch, học khác với đếm ngày lịch; ngày lễ không tự thành phiên.</p><p>Bán thứ sáu, N=1, và thứ hai i là phiên giao dịch kế tiếp. Thứ hai có được mua lại không?</p><p>Kết luận: <strong>Không; thứ hai là phiên bị chặn.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Re-entry & Cooldown",
+      "prompt": "Bán phiên 10, cooldown 2 phiên. Sớm nhất được xét mua phiên nào?",
+      "expected": 13,
+      "unit": "phiên",
+      "formula": "BánởS;chặnN phiên kế tiếp;muasớmnhấtởS+N+1",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  }
+]

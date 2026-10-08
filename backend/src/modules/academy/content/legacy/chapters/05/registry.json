@@ -1,0 +1,110 @@
+[
+  {
+    "id": "adx",
+    "name": "ADX",
+    "chapter": 5,
+    "lesson_id": "ch05-l04",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "DX = 100 × |+DI − −DI| / (+DI + −DI)\nADX đầu = trung bình N DX\nADX mới = [(N−1) × ADX trước + DX mới]/N",
+    "seed_and_missing": "DMI khởi tạo trước; cần thêm đủ N DX hợp lệ. DX khi +DI+−DI=0 được đặt 0 nếu DMI hợp lệ; không áp cho DMI thiếu. Quy ước này có version riêng.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 25
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 14,
+        "level": 20
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "ADX",
+      "prompt": "+DI = 30; −DI = 10. DX bằng bao nhiêu?",
+      "expected": 50,
+      "unit": "",
+      "formula": "DX = 100 × |+DI − −DI| / (+DI + −DI)\nADX đầu = trung bình N DX\nADX mới = [(N−1) × ADX trước + DX mới]/N",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ ADX",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng ADX",
+        "type": "number",
+        "min": 5,
+        "max": 60,
+        "step": 1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  }
+]

@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch03-l04",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: Lợi nhuận gộp = 300; Doanh thu thuần = 1.000. Biên lợi nhuận gộp bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "48 %",
+          "id": "o1"
+        },
+        {
+          "text": "14 %",
+          "id": "o2"
+        },
+        {
+          "text": "40 %",
+          "id": "o3"
+        },
+        {
+          "text": "30 %",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Áp dụng Lợi nhuận gộp / Doanh thu thuần × 100; kết quả 30 %.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch03-l04-q01",
+      "lesson_id": "ch03-l04",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Biên lợi nhuận gộp đang bằng đúng 30 %. Bộ lọc đặt > 30 %. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o1"
+        },
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o2"
+        },
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch03-l04-q02",
+      "lesson_id": "ch03-l04",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Biên lợi nhuận gộp?",
+      "options": [
+        {
+          "text": "Không áp máy móc biên gộp cho ngân hàng. Cơ cấu doanh thu khác nhau cũng làm biên gộp khác nhau mà chưa chứng minh bên nào tốt hơn.",
+          "id": "o1"
+        },
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o2"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o3"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Biên 30% nghĩa là 100 đồng doanh thu còn 30 đồng sau giá vốn; vẫn chưa trừ các chi phí còn lại. Không áp máy móc biên gộp cho ngân hàng. Cơ cấu doanh thu khác nhau cũng làm biên gộp khác nhau mà chưa chứng minh bên nào tốt hơn.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch03-l04-q03",
+      "lesson_id": "ch03-l04",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Biên lợi nhuận gộp. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o1"
+        },
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o2"
+        },
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o3"
+        },
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch03-l04-q04",
+      "lesson_id": "ch03-l04",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Nhận định nào đúng với Biên lợi nhuận gộp?",
+      "options": [
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o1"
+        },
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o2"
+        },
+        {
+          "text": "Biên 30% nghĩa là 100 đồng doanh thu còn 30 đồng sau giá vốn; vẫn chưa trừ các chi phí còn lại.",
+          "id": "o3"
+        },
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Biên 30% nghĩa là 100 đồng doanh thu còn 30 đồng sau giá vốn; vẫn chưa trừ các chi phí còn lại. Lợi nhuận gộp bằng doanh thu thuần trừ giá vốn. Doanh thu thuần đã trừ các khoản giảm trừ. Phải dùng hai số của cùng kỳ, cùng báo cáo. Biên cao có thể phản ánh giá bán, cơ cấu sản phẩm hoặc chi phí đầu vào; phải tách các nguyên nhân khi phân tích.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch03-l04-q05",
+      "lesson_id": "ch03-l04",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có Biên lợi nhuận gộp bằng 28 và 32 %. Điều kiện < 30 % giữ lại ai?",
+      "options": [
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o2"
+        },
+        {
+          "text": "Chỉ B.",
+          "id": "o3"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "28 < 30 đúng, 32 < 30 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch03-l04-q06",
+      "lesson_id": "ch03-l04",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Báo cáo dùng tính Biên lợi nhuận gộp kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o1"
+        },
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o2"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o3"
+        },
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch03-l04-q07",
+      "lesson_id": "ch03-l04",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện Biên lợi nhuận gộp, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o3"
+        },
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch03-l04-q08",
+      "lesson_id": "ch03-l04",
+      "correct_option_id": "o4"
+    }
+  ]
+}

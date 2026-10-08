@@ -7,8 +7,10 @@ import { activeSideIndicators } from '../../src/modules/bots/bot.shared-config.j
 import {
   configHash,
   defaultConfig,
+  loadLegacyTechnicalRegistry,
   loadTechnicalRegistry,
   type IndicatorConfig,
+  type SharedConfig,
 } from '../../src/modules/quant/v2/index.js';
 import { StrategyConfigEnabledGuard } from '../../src/modules/strategy-config/strategy-config-enabled.guard.js';
 import {
@@ -169,11 +171,17 @@ class FakeGrants implements AcademyGrantsPort {
 const registry = loadTechnicalRegistry();
 const defaults = () => defaultConfig(registry);
 const indicator = (id: string): IndicatorConfig => structuredClone(defaults().indicators[id]!);
-const on = (id: string, patch: Partial<IndicatorConfig> = {}): IndicatorConfig => ({
-  ...indicator(id),
-  master_enabled: true,
-  ...patch,
-});
+/** Registry defaults are OFF on both sides; `on` is a master-ON indicator with both sides chosen. */
+const on = (id: string, patch: Partial<IndicatorConfig> = {}): IndicatorConfig => {
+  const base = indicator(id);
+  return {
+    ...base,
+    master_enabled: true,
+    buy: { ...base.buy, enabled: true },
+    sell: { ...base.sell, enabled: true },
+    ...patch,
+  };
+};
 
 /** Weekdays only, minus the listed holidays. */
 const weekdays =
@@ -493,9 +501,131 @@ describe('SharedConfigService', () => {
       config: saved.config,
       config_hash: saved.config_hash,
       saved_at: '2025-01-03T03:00:00.000Z',
+      legacy: null,
     });
     expect(await service.getRevision(OTHER_USER, 1)).toBeNull();
     expect(await service.getRevision(USER, 2)).toBeNull();
+  });
+
+  /** A historical `iqx-rules-2.0` revision: the 16 indicators plus the 19 removed ones. */
+  function seedLegacyRevision(
+    revision: number,
+    mutate: (indicators: Record<string, IndicatorConfig>) => void = () => undefined,
+    userId = USER,
+  ): { config: unknown; hash: string } {
+    const config = defaultConfig(registry) as unknown as {
+      rule_version: string;
+      revision: number;
+      indicators: Record<string, IndicatorConfig>;
+    };
+    for (const entry of loadLegacyTechnicalRegistry()) {
+      config.indicators[entry.id] = {
+        master_enabled: false,
+        buy: { enabled: true, params: entry.buy.params, rules: entry.buy.rules },
+        sell: { enabled: true, params: entry.sell.params, rules: entry.sell.rules },
+      };
+    }
+    config.rule_version = 'iqx-rules-2.0';
+    config.revision = revision;
+    mutate(config.indicators);
+    const hash = configHash(config as unknown as SharedConfig);
+    memory.revisions.push({
+      user_id: userId,
+      revision,
+      config: config as unknown as SharedConfig,
+      config_hash: hash,
+      before_hash: null,
+      patch: {},
+      requested_at: new Date('2024-12-02T03:00:00Z'),
+      saved_at: new Date('2024-12-02T03:00:00Z'),
+      actor_id: userId,
+      idempotency_key: `legacy-${revision}`,
+    });
+    memory.sessions.push({
+      user_id: userId,
+      revision,
+      effective_session: '2024-12-03',
+      status: 'effective',
+    });
+    return { config, hash };
+  }
+
+  it('reads a historical 35-indicator revision as the 16-indicator shape (clean legacy)', async () => {
+    const { hash } = seedLegacyRevision(1, (indicators) => {
+      indicators.rsi!.master_enabled = true;
+    });
+    const state = await service.current(USER);
+    expect(state.saved_revision).toBe(1);
+    expect(state.config.rule_version).toBe('iqx-rules-3.0');
+    expect(Object.keys(state.config.indicators)).toEqual(registry.map((entry) => entry.id));
+    expect(state.config.indicators.rsi!.master_enabled).toBe(true);
+    expect(state.config_hash).toBe(hash); // hash of the stored document, kept for receipts
+    expect(state.legacy).toMatchObject({
+      legacy: true,
+      needs_review: false,
+      buy: { status: 'ok', indicators: [] },
+      sell: { status: 'ok', indicators: [] },
+    });
+    expect(state.legacy!.removed_indicators).toHaveLength(19);
+    expect(await service.revisions(USER, 10)).toMatchObject([{ revision: 1, legacy: true }]);
+  });
+
+  it('flags legacy_needs_review for a side whose removed indicator was ON and never trades on the rest', async () => {
+    seedLegacyRevision(1, (indicators) => {
+      indicators.rsi!.master_enabled = true;
+      indicators.rsi!.buy.enabled = true;
+      indicators.atr!.master_enabled = true;
+      indicators.atr!.buy.enabled = true;
+      indicators.atr!.sell.enabled = false;
+    });
+    const effective = await service.effectiveFor(USER, '2025-01-03');
+    expect(effective).toMatchObject({ revision: 1 });
+    expect(effective!.legacy).toMatchObject({
+      needs_review: true,
+      buy: { status: 'legacy_needs_review', indicators: ['atr'] },
+      sell: { status: 'ok', indicators: [] },
+    });
+    // The mapped config still carries the 16 entries' choices, but a backtest/bot pin refuses the
+    // revision instead of silently running RSI without the ATR rule.
+    const error = await rejection(service.getRevision(USER, 1));
+    expect(error.getStatus()).toBe(422);
+    expect(error.getResponse()).toMatchObject({
+      code: 'LEGACY_CONFIG_NEEDS_REVIEW',
+      revision: 1,
+    });
+    const allowed = await service.getRevision(USER, 1, { allowLegacyReview: true });
+    expect(allowed!.legacy!.buy.status).toBe('legacy_needs_review');
+    expect(allowed!.config.indicators.rsi!.master_enabled).toBe(true);
+    expect(Object.keys(allowed!.config.indicators)).toHaveLength(16);
+  });
+
+  it('saves a new revision from a legacy base in the current shape; only the 16 are accepted', async () => {
+    const { hash } = seedLegacyRevision(1, (indicators) => {
+      indicators.rsi!.master_enabled = true;
+      indicators.rsi!.buy.enabled = true;
+      indicators.rsi!.sell.enabled = false;
+      indicators.psar!.master_enabled = true;
+    });
+    const result = await service.save(USER, patch({ macd: on('macd') }, 1));
+    expect(result.revision).toBe(2);
+    expect(result.config.rule_version).toBe('iqx-rules-3.0');
+    expect(Object.keys(result.config.indicators)).toEqual(registry.map((entry) => entry.id));
+    expect(result.config.indicators.rsi!.master_enabled).toBe(true); // 16-entry choices preserved
+    expect(result.config.indicators.rsi!.sell.enabled).toBe(false);
+    expect(result.config.indicators.macd!.master_enabled).toBe(true);
+    expect(memory.revisions[1]!.before_hash).toBe(hash);
+    expect(configHash(memory.revisions[1]!.config)).toBe(result.config_hash);
+    const state = await service.current(USER);
+    expect(state.legacy).toBeNull();
+    // The legacy revision stays readable and unchanged.
+    expect(memory.revisions[0]!.config.rule_version).toBe('iqx-rules-2.0');
+
+    const removed = await rejection(service.save(USER, patch({ atr: on('rsi') }, 2)));
+    expect(removed.getStatus()).toBe(422);
+    expect(removed.getResponse()).toMatchObject({ code: 'CONFIG_INVALID' });
+    expect((removed.getResponse().errors as Array<{ path: string }>)[0]!.path).toBe(
+      'indicators.atr',
+    );
   });
 
   it('validates the PATCH body shape', () => {

@@ -25,6 +25,11 @@ import {
   type SharedConfig,
 } from '../../src/modules/quant/v2/index.js';
 import { StrategyBacktestsEnabledGuard } from '../../src/modules/strategy-backtests/strategy-backtests-enabled.guard.js';
+import {
+  CAPABILITY_LESSONS,
+  capabilityLockedException,
+  findCapabilityLock,
+} from '../../src/modules/strategy-backtests/strategy-backtests.capabilities.js';
 import { StrategyBacktestExecutor } from '../../src/modules/strategy-backtests/strategy-backtests.executor.js';
 import type {
   BacktestRunRecord,
@@ -55,6 +60,8 @@ function indicator(config: SharedConfig, id: string): IndicatorConfig {
 function maConfig(): SharedConfig {
   const config = defaultConfig();
   indicator(config, 'ma').master_enabled = true;
+  indicator(config, 'ma').buy.enabled = true;
+  indicator(config, 'ma').sell.enabled = true;
   indicator(config, 'ma').buy.params.period = 20;
   indicator(config, 'ma').sell.params.period = 30;
   return config;
@@ -664,5 +671,38 @@ describe('backtestRunBodySchema', () => {
         research: { kind: 'out_of_sample', split_date: '2000-01-03' },
       }).success,
     ).toBe(false);
+  });
+});
+
+describe('advanced capabilities and the legacy lesson grants', () => {
+  const allowlist = Object.keys(CAPABILITY_LESSONS);
+
+  it('stay unlocked for legacy holders through lesson:<legacy id>', () => {
+    const legacy = new Set(['lesson:ch02-l14', 'lesson:ch16-l01', 'lesson:ch18-l01']);
+    expect(
+      findCapabilityLock(['sensitivity', 'universe', 'portfolio'], allowlist, legacy),
+    ).toBeNull();
+  });
+
+  it('cannot be earned from the current catalog: its completions grant indicator:/metric: only', () => {
+    const current = new Set(['indicator:rsi', 'indicator:obv', 'metric:roe']);
+    const lock = findCapabilityLock(['sensitivity'], allowlist, current);
+    expect(lock).toEqual({
+      capability: 'sensitivity',
+      reason: 'not_learned',
+      lesson_id: 'ch02-l14',
+    });
+    // A legacy ATR grant (lesson:ch07-l01) never unlocks anything here.
+    expect(
+      findCapabilityLock(['walk_forward'], allowlist, new Set(['lesson:ch07-l01'])),
+    ).toMatchObject({
+      reason: 'not_learned',
+    });
+    const response = capabilityLockedException(lock!).getResponse() as {
+      message: string;
+      code: string;
+    };
+    expect(response.code).toBe('CAPABILITY_LOCKED');
+    expect(response.message).toContain('Học viện cũ');
   });
 });

@@ -1,0 +1,53 @@
+{
+  "lesson_id": "ch06-l04",
+  "content_version": "2.0.0",
+  "origin": "biên soạn mới theo đề cương đã chốt",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>Net Debt / EBITDA</strong> đo nợ vay ròng so với quy mô EBITDA tạo ra trong kỳ.</p><p>Ví dụ nợ vay 600, tiền đủ điều kiện 200 cho nợ ròng 400. EBITDA = EBIT đã xác định + khấu hao và phân bổ cùng kỳ. Nợ ròng âm được giữ để thể hiện tiền vượt nợ; EBITDA không dương thì không dùng phép chia như một thước đo đòn bẩy bình thường.</p><p>Hai lần là tỷ lệ giữa một số dư nợ ròng và EBITDA một năm; không có nghĩa chắc chắn trả hết nợ trong hai năm.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula\">(Nợ vay có lãi − Tiền đủ điều kiện) / EBITDA TTM</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Nợ vay ròng</td><td>400</td></tr><tr><td>EBITDA TTM</td><td>200</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>2 lần</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+    },
+    {
+      "title": "Kỳ dữ liệu và giới hạn",
+      "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>EBITDA không phải tiền tự do trả nợ. Công ty vẫn phải nộp thuế, chi đầu tư và tài trợ vốn lưu động.</p>"
+    },
+    {
+      "title": "Vận dụng trong Bộ lọc",
+      "html": "<p>Thêm <strong>Net Debt / EBITDA</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị lần.</p><p>Với kết quả minh họa 2 lần, điều kiện “Net Debt / EBITDA &gt; 1 lần” đạt. Điều kiện “Net Debt / EBITDA &gt; 2 lần” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "Net Debt / EBITDA",
+    "inputs": [
+      [
+        "Nợ vay ròng",
+        400
+      ],
+      [
+        "EBITDA TTM",
+        200
+      ]
+    ],
+    "formula": "(Nợ vay có lãi − Tiền đủ điều kiện) / EBITDA TTM",
+    "expected": 2,
+    "unit": "lần",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Nợ vay ròng = 400; EBITDA TTM = 200. Tính Net Debt / EBITDA theo công thức của bài."
+  },
+  "sources": [
+    "source:fundamental-registry-v1",
+    "author:financial-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch06-l04",
+    "chapter": 6
+  }
+}

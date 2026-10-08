@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch09-l05",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: P/E = 15; Tăng trưởng EPS = 20. PEG bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "0,75 lần",
+          "id": "o1"
+        },
+        {
+          "text": "4,12 lần",
+          "id": "o2"
+        },
+        {
+          "text": "-0,62 lần",
+          "id": "o3"
+        },
+        {
+          "text": "10,75 lần",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Áp dụng P/E / tăng trưởng EPS tính theo số phần trăm; kết quả 0,75 lần.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch09-l05-q01",
+      "lesson_id": "ch09-l05",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "PEG đang bằng đúng 0,75 lần. Bộ lọc đặt > 0,75 lần. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o1"
+        },
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o3"
+        },
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l05-q02",
+      "lesson_id": "ch09-l05",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc PEG?",
+      "options": [
+        {
+          "text": "PEG thấp không tự chứng minh rẻ. Tăng trưởng bùng lên từ nền thấp có thể không lặp lại.",
+          "id": "o1"
+        },
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o2"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o3"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "P/E 15 và tăng trưởng EPS 20% cho PEG 0,75 lần; quy ước mẫu số dùng số 20, không dùng 0,20. PEG thấp không tự chứng minh rẻ. Tăng trưởng bùng lên từ nền thấp có thể không lặp lại.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch09-l05-q03",
+      "lesson_id": "ch09-l05",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính PEG. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o1"
+        },
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o2"
+        },
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o3"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch09-l05-q04",
+      "lesson_id": "ch09-l05",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Nhận định nào đúng với PEG?",
+      "options": [
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o1"
+        },
+        {
+          "text": "P/E 15 và tăng trưởng EPS 20% cho PEG 0,75 lần; quy ước mẫu số dùng số 20, không dùng 0,20.",
+          "id": "o2"
+        },
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o3"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "P/E 15 và tăng trưởng EPS 20% cho PEG 0,75 lần; quy ước mẫu số dùng số 20, không dùng 0,20. Phiên bản đầu dùng EPS YoY TTM quá khứ đã học, không âm thầm dùng dự phóng của chuyên gia. Cần cả EPS TTM dương và tăng trưởng EPS dương. Giá trị tăng trưởng rất gần 0 làm tỷ số cực nhạy; phải cho người dùng nhìn được mẫu số.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch09-l05-q05",
+      "lesson_id": "ch09-l05",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có PEG bằng -1,25 và 2,75 lần. Điều kiện < 0,75 lần giữ lại ai?",
+      "options": [
+        {
+          "text": "Chỉ B.",
+          "id": "o1"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o2"
+        },
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o3"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "-1,25 < 0,75 đúng, 2,75 < 0,75 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l05-q06",
+      "lesson_id": "ch09-l05",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Báo cáo dùng tính PEG kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o1"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o2"
+        },
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o3"
+        },
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch09-l05-q07",
+      "lesson_id": "ch09-l05",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện PEG, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o2"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l05-q08",
+      "lesson_id": "ch09-l05",
+      "correct_option_id": "o1"
+    }
+  ]
+}

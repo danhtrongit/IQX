@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { RULE_VERSION, SCHEMA_VERSION } from '../quant/v2/types.js';
+
 const compareOpSchema = z.enum(['>', '<']);
 const membershipOpSchema = z.enum(['∈', '∉']);
 
@@ -53,11 +55,33 @@ export const indicatorConfigSchema = z.strictObject({
 
 const indicatorIdSchema = z.string().regex(/^[a-z0-9_]{1,64}$/);
 
+/** The current contract: `iqx-rules-3.0`, exactly the 16 indicators of the Bot registry. */
 export const sharedConfigSchema = z.object({
-  schema_version: z.literal('2.0'),
+  schema_version: z.literal(SCHEMA_VERSION),
   revision: z.number().int().min(1),
-  rule_version: z.literal('iqx-rules-2.0'),
+  rule_version: z.literal(RULE_VERSION),
   indicators: z.record(z.string(), indicatorConfigSchema),
+});
+
+const legacySideReviewSchema = z.object({
+  status: z.enum(['ok', 'legacy_needs_review']),
+  /** Removed indicators that were master ON with this side ON. */
+  indicators: z.array(z.string()),
+});
+
+/**
+ * Present when the stored revision is a historical `iqx-rules-2.0` document (35 indicators).
+ * `config` is then the 16-indicator mapping of it; a side with `legacy_needs_review` must be
+ * blocked by the Bot instead of trading on the remaining rules.
+ */
+export const legacyConfigReviewSchema = z.object({
+  from_rule_version: z.string(),
+  legacy: z.boolean(),
+  removed_indicators: z.array(z.string()),
+  defaulted_indicators: z.array(z.string()),
+  buy: legacySideReviewSchema,
+  sell: legacySideReviewSchema,
+  needs_review: z.boolean(),
 });
 
 /** Only the listed indicators are replaced; every other saved indicator is kept as is. */
@@ -90,6 +114,8 @@ export const sharedConfigStateSchema = z.object({
   config_hash: z.string(),
   registry_version: z.string(),
   granted_indicators: z.array(z.string()),
+  /** null/absent unless the latest saved revision is a legacy (35-indicator) document. */
+  legacy: legacyConfigReviewSchema.nullable().optional(),
 });
 export type SharedConfigState = z.infer<typeof sharedConfigStateSchema>;
 
@@ -108,6 +134,8 @@ export const sharedConfigRevisionSchema = z.object({
   config_hash: z.string(),
   effective_session: sessionDateSchema.nullable(),
   status: effectiveStatusSchema,
+  /** true for a historical `iqx-rules-2.0` revision (35 indicators); still readable. */
+  legacy: z.boolean(),
 });
 export const sharedConfigRevisionListSchema = z.array(sharedConfigRevisionSchema);
 export type SharedConfigRevisionSummary = z.infer<typeof sharedConfigRevisionSchema>;

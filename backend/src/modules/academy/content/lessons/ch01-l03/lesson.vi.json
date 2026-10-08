@@ -1,0 +1,43 @@
+{
+  "lesson_id": "ch01-l03",
+  "content_version": "2.0.0",
+  "origin": "giữ phần khái niệm/công thức Chương 1; cập nhật cấu hình và kiểm tra v2",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>MA là tên chung của các đường trung bình giá.</strong> Thay vì chỉ nhìn giá của một phiên, đường trung bình tổng hợp nhiều phiên để tạo một mức tham chiếu.</p><div class=\"table-scroll\"><table><thead><tr><th scope=\"col\">Loại đường</th><th scope=\"col\">Cách hiểu</th></tr></thead><tbody><tr><td>SMA</td><td>Trung bình cộng của các giá trong chu kỳ. Mỗi giá có vai trò bằng nhau.</td></tr><tr><td>EMA</td><td>Kết hợp giá mới với EMA trước theo tỷ trọng xác định. Giá mới thường có ảnh hưởng lớn hơn so với một quan sát cũ riêng lẻ.</td></tr></tbody></table></div><p>Trong V2, công tắc MA sử dụng <strong>SMA</strong>. SMA 20 trên dữ liệu ngày là trung bình 20 giá đóng cửa gần nhất, gồm phiên đang xét. Số 20 chỉ số phiên giao dịch, không phải 20 ngày theo lịch.</p><p>Giá cao hơn SMA nghĩa là giá hiện tại cao hơn mức trung bình đang xét. Giá thấp hơn SMA nghĩa là giá hiện tại thấp hơn mức trung bình đó. Quan hệ này không cho biết cổ phiếu đắt hay rẻ so với giá trị doanh nghiệp.</p><p>Vị trí giá và hướng của SMA là hai thông tin khác nhau. Giá có thể ở trên một SMA đang giảm, hoặc ở dưới một SMA đang tăng. Cần xác định phép so sánh đang dùng trước khi kết luận.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula-group\"><div class=\"math-eq\">SMA<sub>N</sub> = <span class=\"frac\"><span>P₁ + P₂ + … + P<sub>N</sub></span><span>N</span></span></div></div>\n<p>P₁ đến P<sub>N</sub> là N giá đóng cửa trong cửa sổ tính; N là chu kỳ. Khi có phiên mới, SMA loại giá cũ nhất và thêm giá mới, giữ nguyên số quan sát.</p>\n<div class=\"worked\"><h3>Ví dụ 1: cập nhật SMA 5</h3><p>Năm giá đóng cửa lần lượt là 10, 11, 12, 11, 13.</p><div class=\"formula-group\"><div class=\"math-eq\">SMA 5 = (10 + 11 + 12 + 11 + 13) / 5 = 11,4</div></div><p>Phiên tiếp theo đóng cửa 12. Cửa sổ mới gồm 11, 12, 11, 13, 12.</p><div class=\"formula-group\"><div class=\"math-eq\">SMA 5 mới = (11 + 12 + 11 + 13 + 12) / 5 = 11,8</div></div><p>Giá giảm từ 13 xuống 12 nhưng SMA tăng từ 11,4 lên 11,8. Nguyên nhân là giá mới 12 cao hơn giá 10 vừa rời cửa sổ.</p></div>\n<h3>Công thức EMA</h3>\n<div class=\"formula-group\"><div class=\"math-eq\">α = <span class=\"frac\"><span>2</span><span>N + 1</span></span></div><div class=\"math-eq\">EMA mới = α × Giá mới + (1 − α) × EMA trước</div></div>\n<p>α là tỷ trọng dành cho giá mới; 1 − α là tỷ trọng dành cho EMA trước. Chu kỳ N xác định α. Một cách khởi tạo được dùng trong các ví dụ là lấy trung bình N giá đầu làm EMA đầu tiên; khi đối chiếu kết quả phải dùng cùng cách khởi tạo.</p>\n<div class=\"worked\"><h3>Ví dụ 2: hai EMA cùng điểm xuất phát</h3><p>Giả sử cả hai EMA trước đều bằng 100 và giá đóng cửa mới là 110.</p><div class=\"formula-group\"><div class=\"math-eq\">EMA 9: α = 2 / (9 + 1) = 0,2</div><div class=\"math-eq\">EMA 9 mới = 0,2 × 110 + 0,8 × 100 = 102</div><div class=\"math-eq\">EMA 19: α = 2 / (19 + 1) = 0,1</div><div class=\"math-eq\">EMA 19 mới = 0,1 × 110 + 0,9 × 100 = 101</div></div><p>Trong cùng điều kiện xuất phát, EMA 9 thay đổi nhiều hơn vì giá mới có tỷ trọng lớn hơn. Điều này không có nghĩa EMA ngắn luôn nằm trên EMA dài.</p></div>"
+    },
+    {
+      "title": "Tham số, Mua và Bán",
+      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 20}</td><td>Giá đóng cửa &gt; SMA(N)</td></tr><tr><td>BÁN</td><td>{\"period\": 20}</td><td>Giá đóng cửa &lt; SMA(N)</td></tr></tbody></table></div>"
+    },
+    {
+      "title": "Vận dụng và giới hạn",
+      "html": "<p>Giá trên SMA không đảm bảo giá sắp tăng. Không tự thêm độ dốc SMA hoặc yêu cầu giao cắt vào trạng thái trên/dưới.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "MA / SMA",
+    "prompt": "Năm giá là 10, 12, 11, 13, 14. SMA 5 bằng bao nhiêu?",
+    "expected": 12,
+    "unit": "",
+    "formula": "SMA(N) = Tổng N giá đóng cửa / N",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  "sources": [
+    "source:technical-registry-v1",
+    "author:calculation-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch01-l03",
+    "chapter": 1
+  }
+}

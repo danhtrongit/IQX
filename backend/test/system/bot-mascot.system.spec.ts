@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import {
-  ACADEMY_CONTENT_VERSION,
+  ACADEMY_CATALOG_VERSION,
   loadAcademyContent,
 } from '../../src/modules/academy/academy.content.js';
 import { AcademyService } from '../../src/modules/academy/academy.service.js';
@@ -94,11 +94,11 @@ describe('system acceptance: Bot sessions reach the mascot API', () => {
     const lessonId = 'ch01-l01';
     const attempt = await academy.createAttempt(userId, {
       lesson_id: lessonId,
-      content_version: ACADEMY_CONTENT_VERSION,
+      catalog_version: ACADEMY_CATALOG_VERSION,
       idempotency_key: `bot-system-attempt-${suffix}`,
     });
     await academy.submit(userId, attempt.attempt_id, {
-      answers: content.questionsByLesson.get(lessonId)!.map((question) => ({
+      answers: content.lessons.get(lessonId)!.assessment!.questions.map((question) => ({
         question_id: question.id,
         option_id: question.correct_option_id,
       })),

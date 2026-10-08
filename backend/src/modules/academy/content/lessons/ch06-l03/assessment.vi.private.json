@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch06-l03",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: Nợ vay có lãi = 300; Vốn chủ sở hữu hợp nhất = 500. D/E (Nợ vay / Vốn chủ sở hữu) bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "10,6 lần",
+          "id": "o1"
+        },
+        {
+          "text": "0,6 lần",
+          "id": "o2"
+        },
+        {
+          "text": "3,9 lần",
+          "id": "o3"
+        },
+        {
+          "text": "-0,7 lần",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Áp dụng Nợ vay có lãi / Vốn chủ sở hữu hợp nhất; kết quả 0,6 lần.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch06-l03-q01",
+      "lesson_id": "ch06-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "D/E (Nợ vay / Vốn chủ sở hữu) đang bằng đúng 0,6 lần. Bộ lọc đặt > 0,6 lần. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o2"
+        },
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o3"
+        },
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch06-l03-q02",
+      "lesson_id": "ch06-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc D/E (Nợ vay / Vốn chủ sở hữu)?",
+      "options": [
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o1"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o2"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o3"
+        },
+        {
+          "text": "Không thay nợ vay bằng tổng nợ phải trả. Khoản phải trả nhà cung cấp không mặc nhiên là nợ vay có lãi.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "D/E 0,6 lần nghĩa là 0,6 đồng nợ vay trên một đồng vốn chủ tại ngày báo cáo. Không thay nợ vay bằng tổng nợ phải trả. Khoản phải trả nhà cung cấp không mặc nhiên là nợ vay có lãi.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch06-l03-q03",
+      "lesson_id": "ch06-l03",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính D/E (Nợ vay / Vốn chủ sở hữu). Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o1"
+        },
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o2"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o3"
+        },
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch06-l03-q04",
+      "lesson_id": "ch06-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Nhận định nào đúng với D/E (Nợ vay / Vốn chủ sở hữu)?",
+      "options": [
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o1"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o2"
+        },
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o3"
+        },
+        {
+          "text": "D/E 0,6 lần nghĩa là 0,6 đồng nợ vay trên một đồng vốn chủ tại ngày báo cáo.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "D/E 0,6 lần nghĩa là 0,6 đồng nợ vay trên một đồng vốn chủ tại ngày báo cáo. Nợ vay gồm phần ngắn hạn, dài hạn và nghĩa vụ thuê có lãi theo hợp đồng dữ liệu. Đây là ảnh chụp số dư tại một ngày; không dùng bình quân nếu tên chỉ tiêu không yêu cầu. Vốn chủ âm hoặc bằng 0 phải có trạng thái riêng.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch06-l03-q05",
+      "lesson_id": "ch06-l03",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có D/E (Nợ vay / Vốn chủ sở hữu) bằng -1,4 và 2,6 lần. Điều kiện < 0,6 lần giữ lại ai?",
+      "options": [
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o2"
+        },
+        {
+          "text": "Chỉ B.",
+          "id": "o3"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "-1,4 < 0,6 đúng, 2,6 < 0,6 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch06-l03-q06",
+      "lesson_id": "ch06-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Báo cáo dùng tính D/E (Nợ vay / Vốn chủ sở hữu) kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o1"
+        },
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o2"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o3"
+        },
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch06-l03-q07",
+      "lesson_id": "ch06-l03",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện D/E (Nợ vay / Vốn chủ sở hữu), nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o2"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o3"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch06-l03-q08",
+      "lesson_id": "ch06-l03",
+      "correct_option_id": "o2"
+    }
+  ]
+}

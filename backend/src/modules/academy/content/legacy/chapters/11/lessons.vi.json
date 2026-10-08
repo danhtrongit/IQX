@@ -1,0 +1,134 @@
+[
+  {
+    "id": "ch11-l02",
+    "chapter": 11,
+    "order": 2,
+    "name": "Keltner Channel",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Keltner Channel</strong> đo kênh theo EMA giá và ATR, khác dải độ lệch chuẩn của Bollinger.</p><p>Gói chọn biến thể EMA + ATR đã có trong registry nguồn; không lấy biến thể Keltner cổ điển dùng trung bình Typical Price và High−Low. N và M có thể khác.</p><p>Hai bộ N/M/k của Mua và Bán độc lập. Keltner dùng ATR trong công thức kênh, không tạo một điều khiển cắt lỗ ATR riêng.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Middle = EMA(Close, N)<br/>Upper = Middle + k × ATR(M)<br/>Lower = Middle − k × ATR(M)</div><p>EMA = 100; ATR = 3; k = 2. Upper bằng bao nhiêu?</p><p>Kết quả là <strong>106 </strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Cả EMA và ATR hợp lệ cùng T; ATR Wilder. Đợi đủ chuỗi dài hơn. Keltner không áp ràng buộc k²<n−1 chuẩn.<=\"\" của=\"\" dải=\"\" lệch=\"\" p=\"\" độ=\"\"></n−1></p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"ema\": 20, \"atr\": 10, \"k\": 2.0}</td><td>Giá đóng cửa &gt; Keltner Upper</td></tr><tr><td>BÁN</td><td>{\"ema\": 20, \"atr\": 10, \"k\": 2.0}</td><td>Giá đóng cửa &lt; Keltner Lower</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Bollinger và Keltner không tương đương dù mặc định cùng có chu kỳ 20 và hệ số 2. Đổi thuật toán sẽ đổi dải.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Keltner Channel",
+      "prompt": "EMA = 100; ATR = 3; k = 2. Upper bằng bao nhiêu?",
+      "expected": 106,
+      "unit": "",
+      "formula": "Middle = EMA(Close, N)\nUpper = Middle + k × ATR(M)\nLower = Middle − k × ATR(M)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "keltner",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch11-l03",
+    "chapter": 11,
+    "order": 3,
+    "name": "Bollinger BandWidth",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Bollinger Band Width</strong> đo độ rộng của dải Bollinger chuẩn hóa theo đường giữa.</p><p>Upper/Lower dùng cùng N và k theo bài Bollinger. Giá trị đo độ rộng, không cho hướng giá. API lưu dạng tỷ lệ.</p><p>Band Width nhỏ cho biết dải hẹp theo quy ước đo, không đảm bảo giá sắp bứt phá lên thay vì xuống.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Band Width = (Upper − Lower)/Middle × 100</div><p>Upper = 110; Lower = 90; Middle = 100. Band Width bằng bao nhiêu?</p><p>Kết quả là <strong>20 %</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Cần N giá, Middle&gt;0. Độ lệch 0 tạo Band Width 0 hợp lệ; không tự coi là thiếu.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 20, \"k\": 2.0, \"level\": 5.0}</td><td>Band Width &lt; Ngưỡng %</td></tr><tr><td>BÁN</td><td>{\"period\": 20, \"k\": 2.0, \"level\": 8.0}</td><td>Band Width &gt; Ngưỡng %</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Không suy ngưỡng 5% hợp mọi cổ phiếu và mọi chu kỳ. Mốc là điều kiện do user kiểm thử.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Bollinger BandWidth",
+      "prompt": "Upper = 110; Lower = 90; Middle = 100. Band Width bằng bao nhiêu?",
+      "expected": 20,
+      "unit": "%",
+      "formula": "BandWidth = (Upper − Lower)/Middle × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "bb_width",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch11-l06",
+    "chapter": 11,
+    "order": 6,
+    "name": "Parabolic SAR",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Parabolic SAR</strong> đo mức tham chiếu di chuyển theo cực trị và hệ số gia tốc trong một xu hướng.</p><p>EP là cực trị của xu hướng đang theo dõi, AF tăng theo bước khi có cực trị mới tới mức tối đa. Khi xu hướng đổi thì SAR/EP/AF được khởi tạo theo nhánh đảo đã định nghĩa.</p><p>Giá trên SAR có thể dùng phía Mua, dưới SAR dùng phía Bán. Trong hệ thống chỉ mua-rồi bán, tín hiệu Bán không tự mở bán khống.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">SAR dự kiến = SAR trước + AF × (EP − SAR trước)</div><p>SAR trước = 95; EP = 110; AF = 0,02. SAR dự kiến trước ràng buộc biên bằng bao nhiêu?</p><p>Kết quả là <strong>95,3 </strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Seed hướng từ hai đóng cửa đầu; SAR bằng cực trị đối diện hai bar, EP cực trị cùng hướng, AF=step. Clamp SAR theohai low/high trước; đảo khi biên giá xuyên; chi tiết trong CALCULATION-CONTRACT.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"step\": 0.02, \"max\": 0.2}</td><td>Giá đóng cửa &gt; Parabolic SAR</td></tr><tr><td>BÁN</td><td>{\"step\": 0.02, \"max\": 0.2}</td><td>Giá đóng cửa &lt; Parabolic SAR</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Thị trường đi ngang có thể làm SAR đổi phía nhiều. Nhiều lần đảo không tự chứng minh có lợi nhuận sau phí.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Parabolic SAR",
+      "prompt": "SAR trước = 95; EP = 110; AF = 0,02. SAR dự kiến trước ràng buộc biên bằng bao nhiêu?",
+      "expected": 95.3,
+      "unit": "",
+      "formula": "SAR dự kiến = SAR trước + AF × (EP − SAR trước)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "psar",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  }
+]
