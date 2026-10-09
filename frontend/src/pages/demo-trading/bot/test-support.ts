@@ -220,7 +220,7 @@ function overview(world: World): BotOverview {
     eligible: true,
     disclosure: "Mô phỏng theo giá đóng cửa, không phải khuyến nghị đầu tư.",
     bot: {
-      activated_at: "2026-10-01T00:00:00Z", candidate_order: "gtgd20_desc_symbol_asc", candidate_order_owner_confirmation: "pending",
+      activated_at: "2026-10-01T00:00:00Z", candidate_order: "gtgd20_desc_symbol_asc", candidate_order_owner_confirmation: "confirmed",
       execution_model: "same_session_close", initial_cash_vnd: "100000000", policy_version: "iqx-bot-v1.0", strategy_id: "iqx_standard", strategy_version: 1,
       ...(world.newBuysEnabled === null ? {} : { new_buys_enabled: world.newBuysEnabled }),
       // An older API without the flag is simulated by leaving it out.

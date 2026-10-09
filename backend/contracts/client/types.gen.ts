@@ -419,7 +419,7 @@ export type BotConditions = {
 export type BotConfig = {
   activated_at: string;
   candidate_order: "gtgd20_desc_symbol_asc";
-  candidate_order_owner_confirmation: "pending";
+  candidate_order_owner_confirmation: "confirmed";
   execution_model: "same_session_close";
   initial_cash_vnd: string;
   new_buys_enabled: boolean;

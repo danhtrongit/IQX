@@ -73,7 +73,7 @@ describe('Bot policy iqx-bot-v1.0 OpenAPI contract', () => {
     expect(properties(document, 'BotConfig')).not.toHaveProperty('product_stage');
     expect(properties(document, 'BotConfig').candidate_order_owner_confirmation).toEqual({
       type: 'string',
-      enum: ['pending'],
+      enum: ['confirmed'],
     });
     expect(properties(document, 'BotConditions').state).toEqual({
       type: 'string',

@@ -35,8 +35,8 @@ export const BOT_POLICY = Object.freeze({
   sell_scope: 'all_positions_held_at_session_start',
   config_side_failure: 'block_side_with_reason',
   candidate_order: 'gtgd20_desc_symbol_asc',
-  // The product spec marks this order as a template choice that still needs owner confirmation.
-  candidate_order_owner_confirmation: 'pending',
+  // The product owner confirmed this order (gtgd20 descending, then symbol ascending).
+  candidate_order_owner_confirmation: 'confirmed',
   max_new_buys_per_session: 2,
   buy_budget_nav_ratio: '0.12',
   max_symbol_nav_ratio: '0.30',

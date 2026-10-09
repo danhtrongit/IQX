@@ -1672,7 +1672,7 @@
           },
           "candidate_order_owner_confirmation": {
             "enum": [
-              "pending"
+              "confirmed"
             ],
             "type": "string"
           },

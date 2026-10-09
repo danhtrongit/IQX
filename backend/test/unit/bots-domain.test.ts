@@ -76,7 +76,7 @@ describe('Bot policy iqx-bot-v1.0 domain', () => {
     expect(BOT_POLICY.sell_scope).toBe('all_positions_held_at_session_start');
     expect(BOT_POLICY.candidate_order).toBe('gtgd20_desc_symbol_asc');
     // The ordering is a template choice the product owner has not confirmed yet.
-    expect(BOT_POLICY.candidate_order_owner_confirmation).toBe('pending');
+    expect(BOT_POLICY.candidate_order_owner_confirmation).toBe('confirmed');
     expect(BOT_POLICY.l1_required).toBe(false);
     expect(BOT_POLICY.protective_stop_enabled).toBe(false);
     expect(BOT_POLICY.fixed_take_profit_enabled).toBe(false);
@@ -89,7 +89,7 @@ describe('Bot policy iqx-bot-v1.0 domain', () => {
     expect(BOT_POLICY_HASH).toBe(canonicalHash(BOT_POLICY_SNAPSHOT));
     // Pins the policy: any change to a rule must be a deliberate new version/hash.
     expect(BOT_POLICY_HASH).toBe(
-      '8d62680b69f0c645f418595b5943dc274a4cbdffc78ea956af276da662d2b878',
+      'f06da0d40a06a60055a98af6d5c85e17c11d5f9314ab4f498d18602f6c805974',
     );
     expect(Object.isFrozen(BOT_POLICY)).toBe(true);
     expect(Object.isFrozen(BOT_POLICY.universe)).toBe(true);
