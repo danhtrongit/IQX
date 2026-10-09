@@ -18,11 +18,17 @@ import {
   canonicalHash,
   type BotPolicySnapshot,
 } from './bot.domain.js';
-import { LEGACY_BOT_V1_RULE_HASH, isLegacyBotV1Snapshot } from './bot.legacy.js';
+import {
+  LEGACY_ACADEMY_POLICY_HASH,
+  LEGACY_ACADEMY_POLICY_VERSION,
+  LEGACY_BOT_V1_RULE_HASH,
+  isLegacyBotV1Snapshot,
+} from './bot.legacy.js';
 import type {
   BotConditionSnapshot,
   BotMarketSnapshotInput,
   BotSharedConfigSignals,
+  BotUniversePin,
 } from './bot.types.js';
 
 export const BOT_SHARED_CONFIG_WARMUP_SESSIONS = 400;
@@ -34,28 +40,42 @@ export type BotSharedConfigPin = {
   effective_session: string;
 };
 
-export type BotAcademyRuleSnapshot = BotPolicySnapshot & {
+/** Immutable receipt of an `iqx-bot-v1.0` run: policy + config pin + grants + universe pin. */
+export type BotRuleSnapshot = BotPolicySnapshot & {
+  shared_config: BotSharedConfigPin | null;
+  granted_capabilities: string[];
+  data_hash: string;
+  /** The buy universe captured with this run (the policy's own `universe` key is static). */
+  universe_pin: BotUniversePin | null;
+};
+
+/** Receipt layout of the retired `iqx-bot-academy-activation-1` policy (verification only). */
+export type BotAcademyRuleSnapshot = Record<string, unknown> & {
   shared_config: BotSharedConfigPin | null;
   granted_capabilities: string[];
   data_hash: string;
 };
 
 export type BotRuleReceipt = {
-  snapshot: BotAcademyRuleSnapshot;
+  snapshot: BotRuleSnapshot;
   hash: string;
   policyVersion: typeof BOT_POLICY_SNAPSHOT.policy_version;
 };
 
+export type BotReceiptKind = 'bot' | 'academy' | 'legacy-v1';
+
 export type BotReceiptVerification = {
   valid: boolean;
   pin: BotSharedConfigPin | null;
-  kind: 'academy' | 'legacy-v1' | null;
-  policyVersion: typeof BOT_POLICY_SNAPSHOT.policy_version | null;
+  kind: BotReceiptKind | null;
+  /** Policy version string of a valid policy receipt (`null` for frozen V1 receipts). */
+  policyVersion: string | null;
   grantedCapabilities: string[];
   dataHash: string | null;
+  universe: BotUniversePin | null;
 };
 
-export type BotExitReason = 'stop_loss' | 'academy_sell';
+export type BotExitReason = 'academy_sell';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -81,22 +101,38 @@ export function botRuleReceipt(
   pin: BotSharedConfigPin | null,
   grantedCapabilities: readonly string[],
   dataHash: string,
+  universe: BotUniversePin | null = null,
 ): BotRuleReceipt {
   if (!HASH.test(dataHash)) throw new Error('Bot receipt data hash must be a SHA-256 hex value');
   if (pin !== null && parseSharedConfigPin(pin) === null) {
     throw new Error('Bot receipt shared-config pin is invalid');
   }
-  const snapshot: BotAcademyRuleSnapshot = {
+  if (universe !== null && parseUniversePin(universe) === null) {
+    throw new Error('Bot receipt universe pin is invalid');
+  }
+  const snapshot: BotRuleSnapshot = {
     ...BOT_POLICY_SNAPSHOT,
     shared_config: pin,
     granted_capabilities: normalizedCapabilities(grantedCapabilities),
     data_hash: dataHash,
+    universe_pin: universe,
   };
   return {
     snapshot,
     hash: canonicalHash(snapshot),
     policyVersion: BOT_POLICY_SNAPSHOT.policy_version,
   };
+}
+
+export function parseUniversePin(value: unknown): BotUniversePin | null {
+  if (!isRecord(value)) return null;
+  const { kind, revision, status, effective_session: session, symbols_hash: hash } = value;
+  if (kind !== 'vn30' && kind !== 'custom') return null;
+  if (typeof revision !== 'number' || !Number.isSafeInteger(revision) || revision < 0) return null;
+  if (status !== 'verified' && status !== 'unavailable') return null;
+  if (session !== null && (typeof session !== 'string' || !DATE.test(session))) return null;
+  if (hash !== null && (typeof hash !== 'string' || !HASH.test(hash))) return null;
+  return { kind, revision, status, effective_session: session, symbols_hash: hash };
 }
 
 const invalidReceipt = (): BotReceiptVerification => ({
@@ -106,9 +142,21 @@ const invalidReceipt = (): BotReceiptVerification => ({
   policyVersion: null,
   grantedCapabilities: [],
   dataHash: null,
+  universe: null,
 });
 
-/** Verify immutable Academy receipts and the frozen V1 historical format. */
+function sortedCapabilities(value: unknown): string[] | null {
+  if (!Array.isArray(value) || !value.every((item) => typeof item === 'string')) return null;
+  const capabilities = value as string[];
+  return JSON.stringify(capabilities) === JSON.stringify(normalizedCapabilities(capabilities))
+    ? [...capabilities]
+    : null;
+}
+
+/**
+ * Verify immutable receipts: the current `iqx-bot-v1.0` policy, the retired
+ * `iqx-bot-academy-activation-1` policy (read-only history) and the frozen V1 format.
+ */
 export function verifyRuleReceipt(
   ruleSnapshot: unknown,
   ruleHash: string | null,
@@ -120,23 +168,50 @@ export function verifyRuleReceipt(
       shared_config: rawPin,
       granted_capabilities: rawCapabilities,
       data_hash: dataHash,
+      universe_pin: rawUniverse,
       ...policy
     } = ruleSnapshot;
     const pin = rawPin === null ? null : parseSharedConfigPin(rawPin);
-    if (rawPin !== null && pin === null) return invalidReceipt();
+    const universe = rawUniverse === null ? null : parseUniversePin(rawUniverse);
+    const capabilities = sortedCapabilities(rawCapabilities);
     if (
-      !Array.isArray(rawCapabilities) ||
-      !rawCapabilities.every((item) => typeof item === 'string')
-    ) {
-      return invalidReceipt();
-    }
-    const capabilities = rawCapabilities as string[];
-    if (
+      (rawPin !== null && pin === null) ||
+      (rawUniverse !== null && universe === null) ||
+      capabilities === null ||
       canonicalHash(policy) !== BOT_POLICY_HASH ||
       canonicalHash(ruleSnapshot) !== ruleHash ||
       typeof dataHash !== 'string' ||
-      !HASH.test(dataHash) ||
-      JSON.stringify(capabilities) !== JSON.stringify(normalizedCapabilities(capabilities))
+      !HASH.test(dataHash)
+    ) {
+      return invalidReceipt();
+    }
+    return {
+      valid: true,
+      pin,
+      kind: 'bot',
+      policyVersion: BOT_POLICY_SNAPSHOT.policy_version,
+      grantedCapabilities: capabilities,
+      dataHash,
+      universe,
+    };
+  }
+
+  if (ruleSnapshot.policy_version === LEGACY_ACADEMY_POLICY_VERSION) {
+    const {
+      shared_config: rawPin,
+      granted_capabilities: rawCapabilities,
+      data_hash: dataHash,
+      ...policy
+    } = ruleSnapshot;
+    const pin = rawPin === null ? null : parseSharedConfigPin(rawPin);
+    const capabilities = sortedCapabilities(rawCapabilities);
+    if (
+      (rawPin !== null && pin === null) ||
+      capabilities === null ||
+      canonicalHash(policy) !== LEGACY_ACADEMY_POLICY_HASH ||
+      canonicalHash(ruleSnapshot) !== ruleHash ||
+      typeof dataHash !== 'string' ||
+      !HASH.test(dataHash)
     ) {
       return invalidReceipt();
     }
@@ -144,9 +219,10 @@ export function verifyRuleReceipt(
       valid: true,
       pin,
       kind: 'academy',
-      policyVersion: BOT_POLICY_SNAPSHOT.policy_version,
-      grantedCapabilities: [...capabilities],
+      policyVersion: LEGACY_ACADEMY_POLICY_VERSION,
+      grantedCapabilities: capabilities,
       dataHash,
+      universe: null,
     };
   }
 
@@ -159,6 +235,7 @@ export function verifyRuleReceipt(
           policyVersion: null,
           grantedCapabilities: [],
           dataHash: null,
+          universe: null,
         }
       : invalidReceipt();
   }
@@ -174,6 +251,7 @@ export function verifyRuleReceipt(
     policyVersion: null,
     grantedCapabilities: [],
     dataHash: null,
+    universe: null,
   };
 }
 
@@ -283,12 +361,28 @@ export function conditionSnapshot(
   };
 }
 
+/**
+ * Universe symbols whose Buy conditions are worth evaluating: official close, verified
+ * tradable status and a 20-session average traded value. Anything else is skipped with a
+ * per-symbol reason at buy time, so no history is fetched for it.
+ */
 export function sharedConfigBuySymbols(input: BotMarketSnapshotInput): string[] {
-  const symbols = Object.entries(input.symbols)
-    .filter(([, row]) => Boolean(row.filter_ids?.length))
-    .map(([symbol]) => symbol.trim().toUpperCase())
-    .filter(Boolean);
-  return [...new Set(symbols)].sort();
+  const universe = input.universe;
+  if (!universe || universe.status !== 'verified') return [];
+  const eligible = universe.symbols
+    .map((symbol) => symbol.trim().toUpperCase())
+    .filter(Boolean)
+    .filter((symbol) => {
+      const row = input.symbols[symbol];
+      return (
+        row?.close_is_official === true &&
+        row.security_status_verified === true &&
+        row.tradable_security_status === true &&
+        row.trading_value_avg20_vnd !== undefined &&
+        row.trading_value_avg20_vnd !== null
+      );
+    });
+  return [...new Set(eligible)].sort();
 }
 
 function signalMap(value: unknown): Record<string, boolean | null> | null {
@@ -319,22 +413,31 @@ export function parseSharedConfigSignals(
   return value as BotSharedConfigSignals;
 }
 
+/** Buy-side verdict from the frozen signals; `null` means the symbol may be bought. */
 export function sharedConfigBuyBlock(
   signals: BotSharedConfigSignals | null,
   symbol: string,
-): 'no_active_buy_conditions' | 'academy_buy_not_met' | 'academy_condition_missing' | null {
-  if (!signals?.buy_active) return 'no_active_buy_conditions';
+):
+  | 'no_active_buy_conditions'
+  | 'config_invalid_or_unauthorized'
+  | 'legacy_needs_review'
+  | 'academy_buy_not_met'
+  | 'academy_condition_missing'
+  | null {
+  if (!signals) return 'no_active_buy_conditions';
+  if (signals.buy_status === 'blocked')
+    return signals.buy_block?.reason ?? 'config_invalid_or_unauthorized';
+  if (!signals.buy_active) return 'no_active_buy_conditions';
   const signal = signals.buy[symbol];
   if (signal === true) return null;
   return signal === false ? 'academy_buy_not_met' : 'academy_condition_missing';
 }
 
+/** Sell-side verdict; stops no longer exist, only the effective Sell conditions can exit. */
 export function sharedConfigExitReason(
-  stopSignal: 'stop_loss' | null,
   signals: BotSharedConfigSignals | null,
   symbol: string,
 ): BotExitReason | null {
-  if (stopSignal) return stopSignal;
   if (!signals?.sell_active) return null;
   return signals.sell[symbol] === true ? 'academy_sell' : null;
 }

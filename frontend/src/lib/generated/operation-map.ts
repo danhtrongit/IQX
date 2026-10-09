@@ -11,12 +11,18 @@ export interface OperationMap {
   "DELETE /api/v2/cap5/watchlist/{symbol}": { request: T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolData; response: T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses[keyof T.Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses] }
   "DELETE /api/v2/chart-drawings/{symbol}": { request: T.DeleteChartDrawingV2Data; response: T.DeleteChartDrawingV2Responses[keyof T.DeleteChartDrawingV2Responses] }
   "DELETE /api/v2/premium/admin/plans/{plan_id}": { request: T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData; response: T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses[keyof T.AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses] }
+  "DELETE /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertDeleteData; response: T.StrategyAlertDeleteResponses[keyof T.StrategyAlertDeleteResponses] }
   "DELETE /api/v2/strategy/filters/{filterId}": { request: T.DeleteStrategySavedFilterData; response: T.DeleteStrategySavedFilterResponses[keyof T.DeleteStrategySavedFilterResponses] }
   "DELETE /api/v2/strategy/lists/{listId}": { request: T.DeleteStrategySavedListData; response: T.DeleteStrategySavedListResponses[keyof T.DeleteStrategySavedListResponses] }
+  "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: T.DeleteStrategyResultSnapshotData; response: T.DeleteStrategyResultSnapshotResponses[keyof T.DeleteStrategyResultSnapshotResponses] }
   "DELETE /api/v2/users/{userId}": { request: T.UsersControllerRemove1Data; response: T.UsersControllerRemove1Responses[keyof T.UsersControllerRemove1Responses] }
   "DELETE /api/v2/watchlists/{symbol}": { request: T.RemoveWatchlistItemV2Data; response: T.RemoveWatchlistItemV2Responses[keyof T.RemoveWatchlistItemV2Responses] }
-  "GET /api/v2/academy/curriculum": { request: T.AcademyCurriculumData; response: T.AcademyCurriculumResponses[keyof T.AcademyCurriculumResponses] }
+  "GET /api/v2/academy/attempts/{attemptId}": { request: T.AcademyAttemptReviewData; response: T.AcademyAttemptReviewResponses[keyof T.AcademyAttemptReviewResponses] }
+  "GET /api/v2/academy/catalog": { request: T.AcademyCatalogData; response: T.AcademyCatalogResponses[keyof T.AcademyCatalogResponses] }
   "GET /api/v2/academy/lessons/{lessonId}": { request: T.AcademyLessonData; response: T.AcademyLessonResponses[keyof T.AcademyLessonResponses] }
+  "GET /api/v2/academy/lessons/{lessonId}/attempt": { request: T.AcademyResumeAttemptData; response: T.AcademyResumeAttemptResponses[keyof T.AcademyResumeAttemptResponses] }
+  "GET /api/v2/academy/lessons/{lessonId}/attempts": { request: T.AcademyLessonAttemptsData; response: T.AcademyLessonAttemptsResponses[keyof T.AcademyLessonAttemptsResponses] }
+  "GET /api/v2/academy/progress": { request: T.AcademyProgressData; response: T.AcademyProgressResponses[keyof T.AcademyProgressResponses] }
   "GET /api/v2/admin/alerts/factor-library": { request: T.AdminAlertsControllerFactorLibrary1Data; response: T.AdminAlertsControllerFactorLibrary1Responses[keyof T.AdminAlertsControllerFactorLibrary1Responses] }
   "GET /api/v2/admin/alerts/indicators": { request: T.AdminAlertsControllerIndicators1Data; response: T.AdminAlertsControllerIndicators1Responses[keyof T.AdminAlertsControllerIndicators1Responses] }
   "GET /api/v2/admin/alerts/signals": { request: T.AdminAlertsControllerSignals1Data; response: T.AdminAlertsControllerSignals1Responses[keyof T.AdminAlertsControllerSignals1Responses] }
@@ -67,10 +73,14 @@ export interface OperationMap {
   "GET /api/v2/backtest/strategies": { request: T.QuantControllerList0Data; response: T.QuantControllerList0Responses[keyof T.QuantControllerList0Responses] }
   "GET /api/v2/bot": { request: T.GetBotOverviewGetApiV2BotData; response: T.GetBotOverviewGetApiV2BotResponses[keyof T.GetBotOverviewGetApiV2BotResponses] }
   "GET /api/v2/bot/journal": { request: T.GetBotJournalGetApiV2BotJournalData; response: T.GetBotJournalGetApiV2BotJournalResponses[keyof T.GetBotJournalGetApiV2BotJournalResponses] }
+  "GET /api/v2/bot/journal/sessions": { request: T.ListBotJournalSessionsData; response: T.ListBotJournalSessionsResponses[keyof T.ListBotJournalSessionsResponses] }
+  "GET /api/v2/bot/journal/sessions/{session}": { request: T.GetBotJournalSessionData; response: T.GetBotJournalSessionResponses[keyof T.GetBotJournalSessionResponses] }
   "GET /api/v2/bot/mascot": { request: T.JourneyIdentityControllerGetMascot1Data; response: T.JourneyIdentityControllerGetMascot1Responses[keyof T.JourneyIdentityControllerGetMascot1Responses] }
   "GET /api/v2/bot/performance": { request: T.GetBotPerformanceGetApiV2BotPerformanceData; response: T.GetBotPerformanceGetApiV2BotPerformanceResponses[keyof T.GetBotPerformanceGetApiV2BotPerformanceResponses] }
   "GET /api/v2/bot/positions": { request: T.GetBotPositionsGetApiV2BotPositionsData; response: T.GetBotPositionsGetApiV2BotPositionsResponses[keyof T.GetBotPositionsGetApiV2BotPositionsResponses] }
   "GET /api/v2/bot/status": { request: T.GetBotStatusGetApiV2BotStatusData; response: T.GetBotStatusGetApiV2BotStatusResponses[keyof T.GetBotStatusGetApiV2BotStatusResponses] }
+  "GET /api/v2/bot/trades": { request: T.GetBotTradesData; response: T.GetBotTradesResponses[keyof T.GetBotTradesResponses] }
+  "GET /api/v2/bot/universe": { request: T.GetBotUniverseData; response: T.GetBotUniverseResponses[keyof T.GetBotUniverseResponses] }
   "GET /api/v2/cap0/kehoach": { request: T.Cap0ControllerGetKehoach1Data; response: T.Cap0ControllerGetKehoach1Responses[keyof T.Cap0ControllerGetKehoach1Responses] }
   "GET /api/v2/cap0/placement": { request: T.Cap0ControllerGetPlacement1Data; response: T.Cap0ControllerGetPlacement1Responses[keyof T.Cap0ControllerGetPlacement1Responses] }
   "GET /api/v2/cap0/progress": { request: T.Cap0ControllerProgress1Data; response: T.Cap0ControllerProgress1Responses[keyof T.Cap0ControllerProgress1Responses] }
@@ -196,19 +206,34 @@ export interface OperationMap {
   "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary": { request: T.MarketDataControllerSupplySummary1Data; response: T.MarketDataControllerSupplySummary1Responses[keyof T.MarketDataControllerSupplySummary1Responses] }
   "GET /api/v2/media/{token}": { request: T.MediaControllerDownloadData; response: T.MediaControllerDownloadResponses[keyof T.MediaControllerDownloadResponses] }
   "GET /api/v2/portfolio-manager/report": { request: T.GetPortfolioReportV2Data; response: T.GetPortfolioReportV2Responses[keyof T.GetPortfolioReportV2Responses] }
+  "GET /api/v2/practice/{indicatorId}/history": { request: T.PracticeHistoryData; response: T.PracticeHistoryResponses[keyof T.PracticeHistoryResponses] }
+  "GET /api/v2/practice/{indicatorId}/state": { request: T.PracticeStateData; response: T.PracticeStateResponses[keyof T.PracticeStateResponses] }
+  "GET /api/v2/practice/indicators": { request: T.PracticeIndicatorsData; response: T.PracticeIndicatorsResponses[keyof T.PracticeIndicatorsResponses] }
+  "GET /api/v2/practice/runs/{runId}": { request: T.PracticeGetRunData; response: T.PracticeGetRunResponses[keyof T.PracticeGetRunResponses] }
   "GET /api/v2/premium/admin/plans": { request: T.AdminListPremiumPlansGetApiV2PremiumAdminPlansData; response: T.AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses[keyof T.AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses] }
   "GET /api/v2/premium/me": { request: T.GetMyPremiumSubscriptionGetApiV2PremiumMeData; response: T.GetMyPremiumSubscriptionGetApiV2PremiumMeResponses[keyof T.GetMyPremiumSubscriptionGetApiV2PremiumMeResponses] }
   "GET /api/v2/premium/my-orders": { request: T.ListMyPremiumOrdersGetApiV2PremiumMyOrdersData; response: T.ListMyPremiumOrdersGetApiV2PremiumMyOrdersResponses[keyof T.ListMyPremiumOrdersGetApiV2PremiumMyOrdersResponses] }
   "GET /api/v2/premium/plans": { request: T.ListPremiumPlansGetApiV2PremiumPlansData; response: T.ListPremiumPlansGetApiV2PremiumPlansResponses[keyof T.ListPremiumPlansGetApiV2PremiumPlansResponses] }
   "GET /api/v2/referrals/me": { request: T.ReferralsControllerMine1Data; response: T.ReferralsControllerMine1Responses[keyof T.ReferralsControllerMine1Responses] }
+  "GET /api/v2/shop": { request: T.GetShopData; response: T.GetShopResponses[keyof T.GetShopResponses] }
+  "GET /api/v2/shop/coin-ledger": { request: T.ListShopCoinLedgerData; response: T.ListShopCoinLedgerResponses[keyof T.ListShopCoinLedgerResponses] }
+  "GET /api/v2/shop/purchases/{idempotencyKey}": { request: T.GetShopPurchaseStatusData; response: T.GetShopPurchaseStatusResponses[keyof T.GetShopPurchaseStatusResponses] }
+  "GET /api/v2/strategy/alerts": { request: T.StrategyAlertsListData; response: T.StrategyAlertsListResponses[keyof T.StrategyAlertsListResponses] }
+  "GET /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertGetData; response: T.StrategyAlertGetResponses[keyof T.StrategyAlertGetResponses] }
+  "GET /api/v2/strategy/alerts/events": { request: T.StrategyAlertEventsListData; response: T.StrategyAlertEventsListResponses[keyof T.StrategyAlertEventsListResponses] }
+  "GET /api/v2/strategy/alerts/events/{eventId}": { request: T.StrategyAlertEventGetData; response: T.StrategyAlertEventGetResponses[keyof T.StrategyAlertEventGetResponses] }
   "GET /api/v2/strategy/backtests": { request: T.StrategyBacktestsListData; response: T.StrategyBacktestsListResponses[keyof T.StrategyBacktestsListResponses] }
   "GET /api/v2/strategy/backtests/{id}": { request: T.StrategyBacktestsGetData; response: T.StrategyBacktestsGetResponses[keyof T.StrategyBacktestsGetResponses] }
+  "GET /api/v2/strategy/backtests/{id}/trades": { request: T.StrategyBacktestsTradesData; response: T.StrategyBacktestsTradesResponses[keyof T.StrategyBacktestsTradesResponses] }
   "GET /api/v2/strategy/filters": { request: T.ListStrategySavedFiltersData; response: T.ListStrategySavedFiltersResponses[keyof T.ListStrategySavedFiltersResponses] }
   "GET /api/v2/strategy/filters/{filterId}": { request: T.GetStrategySavedFilterData; response: T.GetStrategySavedFilterResponses[keyof T.GetStrategySavedFilterResponses] }
   "GET /api/v2/strategy/lists": { request: T.ListStrategySavedListsData; response: T.ListStrategySavedListsResponses[keyof T.ListStrategySavedListsResponses] }
   "GET /api/v2/strategy/lists/{listId}": { request: T.GetStrategySavedListData; response: T.GetStrategySavedListResponses[keyof T.GetStrategySavedListResponses] }
   "GET /api/v2/strategy/registry/technical": { request: T.StrategyConfigTechnicalRegistryData; response: T.StrategyConfigTechnicalRegistryResponses[keyof T.StrategyConfigTechnicalRegistryResponses] }
+  "GET /api/v2/strategy/result-snapshots": { request: T.ListStrategyResultSnapshotsData; response: T.ListStrategyResultSnapshotsResponses[keyof T.ListStrategyResultSnapshotsResponses] }
+  "GET /api/v2/strategy/result-snapshots/{snapshotId}": { request: T.GetStrategyResultSnapshotData; response: T.GetStrategyResultSnapshotResponses[keyof T.GetStrategyResultSnapshotResponses] }
   "GET /api/v2/strategy/screener/metrics": { request: T.ScreenerMetricsData; response: T.ScreenerMetricsResponses[keyof T.ScreenerMetricsResponses] }
+  "GET /api/v2/strategy/screener/results/{resultId}": { request: T.ScreenerResultGetData; response: T.ScreenerResultGetResponses[keyof T.ScreenerResultGetResponses] }
   "GET /api/v2/strategy/shared-config": { request: T.StrategyConfigGetSharedConfigData; response: T.StrategyConfigGetSharedConfigResponses[keyof T.StrategyConfigGetSharedConfigResponses] }
   "GET /api/v2/strategy/shared-config/revisions": { request: T.StrategyConfigListRevisionsData; response: T.StrategyConfigListRevisionsResponses[keyof T.StrategyConfigListRevisionsResponses] }
   "GET /api/v2/users": { request: T.UsersControllerList1Data; response: T.UsersControllerList1Responses[keyof T.UsersControllerList1Responses] }
@@ -224,6 +249,7 @@ export interface OperationMap {
   "GET /api/v2/virtual-trading/trades": { request: T.TradingControllerTrades1Data; response: T.TradingControllerTrades1Responses[keyof T.TradingControllerTrades1Responses] }
   "GET /api/v2/watchlists": { request: T.ListWatchlistV2Data; response: T.ListWatchlistV2Responses[keyof T.ListWatchlistV2Responses] }
   "GET /api/v2/watchlists/{symbol}/status": { request: T.CheckWatchlistItemV2Data; response: T.CheckWatchlistItemV2Responses[keyof T.CheckWatchlistItemV2Responses] }
+  "GET /api/v2/workspace/state": { request: T.GetWorkspaceStateData; response: T.GetWorkspaceStateResponses[keyof T.GetWorkspaceStateResponses] }
   "PATCH /api/v2/admin/lessons/courses/{courseId}": { request: T.AdminLearningControllerUpdateCourse1Data; response: T.AdminLearningControllerUpdateCourse1Responses[keyof T.AdminLearningControllerUpdateCourse1Responses] }
   "PATCH /api/v2/admin/lessons/episodes/{episodeId}": { request: T.AdminLearningControllerUpdateEpisode1Data; response: T.AdminLearningControllerUpdateEpisode1Responses[keyof T.AdminLearningControllerUpdateEpisode1Responses] }
   "PATCH /api/v2/admin/vt/config": { request: T.AdminVtControllerUpdateConfig1Data; response: T.AdminVtControllerUpdateConfig1Responses[keyof T.AdminVtControllerUpdateConfig1Responses] }
@@ -235,12 +261,14 @@ export interface OperationMap {
   "PATCH /api/v2/cap5/task": { request: T.Cap5TaskPatchApiV2Cap5TaskData; response: T.Cap5TaskPatchApiV2Cap5TaskResponses[keyof T.Cap5TaskPatchApiV2Cap5TaskResponses] }
   "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop": { request: T.SetCap8DynamicStopV2Data; response: T.SetCap8DynamicStopV2Responses[keyof T.SetCap8DynamicStopV2Responses] }
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData; response: T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses[keyof T.AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses] }
+  "PATCH /api/v2/strategy/alerts/{alertId}": { request: T.StrategyAlertUpdateData; response: T.StrategyAlertUpdateResponses[keyof T.StrategyAlertUpdateResponses] }
   "PATCH /api/v2/strategy/shared-config": { request: T.StrategyConfigPatchSharedConfigData; response: T.StrategyConfigPatchSharedConfigResponses[keyof T.StrategyConfigPatchSharedConfigResponses] }
   "PATCH /api/v2/users/{userId}": { request: T.UsersControllerUpdate1Data; response: T.UsersControllerUpdate1Responses[keyof T.UsersControllerUpdate1Responses] }
   "PATCH /api/v2/users/me": { request: T.UsersControllerUpdateMe1Data; response: T.UsersControllerUpdateMe1Responses[keyof T.UsersControllerUpdateMe1Responses] }
   "PATCH /api/v2/virtual-trading/admin/config": { request: T.LegacyVirtualTradingAdminControllerUpdateConfig1Data; response: T.LegacyVirtualTradingAdminControllerUpdateConfig1Responses[keyof T.LegacyVirtualTradingAdminControllerUpdateConfig1Responses] }
   "POST /api/v2/academy/attempts": { request: T.AcademyCreateAttemptData; response: T.AcademyCreateAttemptResponses[keyof T.AcademyCreateAttemptResponses] }
   "POST /api/v2/academy/attempts/{attemptId}/submit": { request: T.AcademySubmitAttemptData; response: T.AcademySubmitAttemptResponses[keyof T.AcademySubmitAttemptResponses] }
+  "POST /api/v2/academy/lessons/{lessonId}/complete": { request: T.AcademyCompleteGuideData; response: T.AcademyCompleteGuideResponses[keyof T.AcademyCompleteGuideResponses] }
   "POST /api/v2/admin/alerts/seed": { request: T.AdminAlertsControllerSeed1Data; response: T.AdminAlertsControllerSeed1Responses[keyof T.AdminAlertsControllerSeed1Responses] }
   "POST /api/v2/admin/alerts/signals": { request: T.AdminAlertsControllerCreate1Data; response: T.AdminAlertsControllerCreate1Responses[keyof T.AdminAlertsControllerCreate1Responses] }
   "POST /api/v2/admin/alerts/telegram/webhook": { request: T.AdminAlertsControllerSetupTelegramWebhook1Data; response: T.AdminAlertsControllerSetupTelegramWebhook1Responses[keyof T.AdminAlertsControllerSetupTelegramWebhook1Responses] }
@@ -281,6 +309,9 @@ export interface OperationMap {
   "POST /api/v2/backtest/run": { request: T.QuantControllerRun0Data; response: T.QuantControllerRun0Responses[keyof T.QuantControllerRun0Responses] }
   "POST /api/v2/backtest/strategies": { request: T.QuantControllerCreate0Data; response: T.QuantControllerCreate0Responses[keyof T.QuantControllerCreate0Responses] }
   "POST /api/v2/bot/mascot/ui-events": { request: T.JourneyIdentityControllerUiEvent1Data; response: T.JourneyIdentityControllerUiEvent1Responses[keyof T.JourneyIdentityControllerUiEvent1Responses] }
+  "POST /api/v2/bot/universe/apply-list": { request: T.ApplyBotUniverseListData; response: T.ApplyBotUniverseListResponses[keyof T.ApplyBotUniverseListResponses] }
+  "POST /api/v2/bot/universe/pending/cancel": { request: T.CancelBotUniversePendingData; response: T.CancelBotUniversePendingResponses[keyof T.CancelBotUniversePendingResponses] }
+  "POST /api/v2/bot/universe/revert-vn30": { request: T.RevertBotUniverseToVn30Data; response: T.RevertBotUniverseToVn30Responses[keyof T.RevertBotUniverseToVn30Responses] }
   "POST /api/v2/cap0/enter": { request: T.Cap0ControllerEnter1Data; response: T.Cap0ControllerEnter1Responses[keyof T.Cap0ControllerEnter1Responses] }
   "POST /api/v2/cap0/graduate": { request: T.Cap0ControllerGraduate1Data; response: T.Cap0ControllerGraduate1Responses[keyof T.Cap0ControllerGraduate1Responses] }
   "POST /api/v2/cap0/kehoach": { request: T.Cap0ControllerKehoach1Data; response: T.Cap0ControllerKehoach1Responses[keyof T.Cap0ControllerKehoach1Responses] }
@@ -331,13 +362,21 @@ export interface OperationMap {
   "POST /api/v2/market-data/screening/search": { request: T.MarketExtendedControllerScreeningSearch1Data; response: T.MarketExtendedControllerScreeningSearch1Responses[keyof T.MarketExtendedControllerScreeningSearch1Responses] }
   "POST /api/v2/market-data/trading/price-board": { request: T.MarketDataControllerPriceBoard1Data; response: T.MarketDataControllerPriceBoard1Responses[keyof T.MarketDataControllerPriceBoard1Responses] }
   "POST /api/v2/portfolio-manager/analyze": { request: T.AnalyzePortfolioV2Data; response: T.AnalyzePortfolioV2Responses[keyof T.AnalyzePortfolioV2Responses] }
+  "POST /api/v2/practice/{indicatorId}/next": { request: T.PracticeNextData; response: T.PracticeNextResponses[keyof T.PracticeNextResponses] }
+  "POST /api/v2/practice/{indicatorId}/preview": { request: T.PracticePreviewData; response: T.PracticePreviewResponses[keyof T.PracticePreviewResponses] }
+  "POST /api/v2/practice/{indicatorId}/runs": { request: T.PracticeStartRunData; response: T.PracticeStartRunResponses[keyof T.PracticeStartRunResponses] }
   "POST /api/v2/premium/admin/plans": { request: T.AdminCreatePremiumPlanPostApiV2PremiumAdminPlansData; response: T.AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses[keyof T.AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses] }
   "POST /api/v2/premium/admin/users/{user_id}/grant": { request: T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantData; response: T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses[keyof T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses] }
   "POST /api/v2/premium/checkout": { request: T.CreatePremiumCheckoutPostApiV2PremiumCheckoutData; response: T.CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses[keyof T.CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses] }
   "POST /api/v2/premium/sepay/ipn": { request: T.ReceiveSePayIpnPostApiV2PremiumSepayIpnData; response: T.ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses[keyof T.ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses] }
+  "POST /api/v2/shop/purchases": { request: T.PurchaseShopMascotData; response: T.PurchaseShopMascotResponses[keyof T.PurchaseShopMascotResponses] }
+  "POST /api/v2/strategy/alerts": { request: T.StrategyAlertsCreateData; response: T.StrategyAlertsCreateResponses[keyof T.StrategyAlertsCreateResponses] }
+  "POST /api/v2/strategy/alerts/source-preview": { request: T.StrategyAlertsSourcePreviewData; response: T.StrategyAlertsSourcePreviewResponses[keyof T.StrategyAlertsSourcePreviewResponses] }
   "POST /api/v2/strategy/backtests": { request: T.StrategyBacktestsCreateData; response: T.StrategyBacktestsCreateResponses[keyof T.StrategyBacktestsCreateResponses] }
   "POST /api/v2/strategy/filters": { request: T.CreateStrategySavedFilterData; response: T.CreateStrategySavedFilterResponses[keyof T.CreateStrategySavedFilterResponses] }
   "POST /api/v2/strategy/lists": { request: T.CreateStrategySavedListData; response: T.CreateStrategySavedListResponses[keyof T.CreateStrategySavedListResponses] }
+  "POST /api/v2/strategy/lists/from-result": { request: T.CreateStrategySavedListFromResultData; response: T.CreateStrategySavedListFromResultResponses[keyof T.CreateStrategySavedListFromResultResponses] }
+  "POST /api/v2/strategy/result-snapshots": { request: T.CreateStrategyResultSnapshotData; response: T.CreateStrategyResultSnapshotResponses[keyof T.CreateStrategyResultSnapshotResponses] }
   "POST /api/v2/strategy/screener/run": { request: T.ScreenerRunData; response: T.ScreenerRunResponses[keyof T.ScreenerRunResponses] }
   "POST /api/v2/telegram/webhook/{secret}": { request: T.TelegramControllerWebhook1Data; response: T.TelegramControllerWebhook1Responses[keyof T.TelegramControllerWebhook1Responses] }
   "POST /api/v2/users": { request: T.UsersControllerCreate1Data; response: T.UsersControllerCreate1Responses[keyof T.UsersControllerCreate1Responses] }
@@ -348,10 +387,14 @@ export interface OperationMap {
   "POST /api/v2/virtual-trading/orders/{orderId}/cancel": { request: T.TradingControllerCancel1Data; response: T.TradingControllerCancel1Responses[keyof T.TradingControllerCancel1Responses] }
   "POST /api/v2/virtual-trading/refresh": { request: T.TradingControllerRefresh1Data; response: T.TradingControllerRefresh1Responses[keyof T.TradingControllerRefresh1Responses] }
   "POST /api/v2/watchlists": { request: T.AddWatchlistItemV2Data; response: T.AddWatchlistItemV2Responses[keyof T.AddWatchlistItemV2Responses] }
+  "POST /api/v2/workspace/ensure": { request: T.EnsureWorkspaceData; response: T.EnsureWorkspaceResponses[keyof T.EnsureWorkspaceResponses] }
+  "PUT /api/v2/academy/attempts/{attemptId}/answers": { request: T.AcademySaveDraftAnswersData; response: T.AcademySaveDraftAnswersResponses[keyof T.AcademySaveDraftAnswersResponses] }
   "PUT /api/v2/admin/alerts/signals/{key}": { request: T.AdminAlertsControllerUpdate1Data; response: T.AdminAlertsControllerUpdate1Responses[keyof T.AdminAlertsControllerUpdate1Responses] }
   "PUT /api/v2/alerts/rules/{ruleId}": { request: T.AlertsControllerUpdateRule1Data; response: T.AlertsControllerUpdateRule1Responses[keyof T.AlertsControllerUpdateRule1Responses] }
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: T.QuantControllerUpdate0Data; response: T.QuantControllerUpdate0Responses[keyof T.QuantControllerUpdate0Responses] }
   "PUT /api/v2/chart-drawings/{symbol}": { request: T.SaveChartDrawingV2Data; response: T.SaveChartDrawingV2Responses[keyof T.SaveChartDrawingV2Responses] }
+  "PUT /api/v2/practice/{indicatorId}/draft": { request: T.PracticeSaveDraftData; response: T.PracticeSaveDraftResponses[keyof T.PracticeSaveDraftResponses] }
+  "PUT /api/v2/shop/active-mascot": { request: T.SetShopActiveMascotData; response: T.SetShopActiveMascotResponses[keyof T.SetShopActiveMascotResponses] }
   "PUT /api/v2/strategy/filters/{filterId}": { request: T.UpdateStrategySavedFilterData; response: T.UpdateStrategySavedFilterResponses[keyof T.UpdateStrategySavedFilterResponses] }
   "PUT /api/v2/watchlists/reorder": { request: T.ReorderWatchlistV2Data; response: T.ReorderWatchlistV2Responses[keyof T.ReorderWatchlistV2Responses] }
 }
@@ -366,12 +409,18 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "DELETE /api/v2/cap5/watchlist/{symbol}": { request: "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolData", response: "Cap5RemoveWatchlistDeleteApiV2Cap5WatchlistSymbolResponses" },
   "DELETE /api/v2/chart-drawings/{symbol}": { request: "DeleteChartDrawingV2Data", response: "DeleteChartDrawingV2Responses" },
   "DELETE /api/v2/premium/admin/plans/{plan_id}": { request: "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdData", response: "AdminDeletePremiumPlanDeleteApiV2PremiumAdminPlansPlanIdResponses" },
+  "DELETE /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertDeleteData", response: "StrategyAlertDeleteResponses" },
   "DELETE /api/v2/strategy/filters/{filterId}": { request: "DeleteStrategySavedFilterData", response: "DeleteStrategySavedFilterResponses" },
   "DELETE /api/v2/strategy/lists/{listId}": { request: "DeleteStrategySavedListData", response: "DeleteStrategySavedListResponses" },
+  "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: "DeleteStrategyResultSnapshotData", response: "DeleteStrategyResultSnapshotResponses" },
   "DELETE /api/v2/users/{userId}": { request: "UsersControllerRemove1Data", response: "UsersControllerRemove1Responses" },
   "DELETE /api/v2/watchlists/{symbol}": { request: "RemoveWatchlistItemV2Data", response: "RemoveWatchlistItemV2Responses" },
-  "GET /api/v2/academy/curriculum": { request: "AcademyCurriculumData", response: "AcademyCurriculumResponses" },
+  "GET /api/v2/academy/attempts/{attemptId}": { request: "AcademyAttemptReviewData", response: "AcademyAttemptReviewResponses" },
+  "GET /api/v2/academy/catalog": { request: "AcademyCatalogData", response: "AcademyCatalogResponses" },
   "GET /api/v2/academy/lessons/{lessonId}": { request: "AcademyLessonData", response: "AcademyLessonResponses" },
+  "GET /api/v2/academy/lessons/{lessonId}/attempt": { request: "AcademyResumeAttemptData", response: "AcademyResumeAttemptResponses" },
+  "GET /api/v2/academy/lessons/{lessonId}/attempts": { request: "AcademyLessonAttemptsData", response: "AcademyLessonAttemptsResponses" },
+  "GET /api/v2/academy/progress": { request: "AcademyProgressData", response: "AcademyProgressResponses" },
   "GET /api/v2/admin/alerts/factor-library": { request: "AdminAlertsControllerFactorLibrary1Data", response: "AdminAlertsControllerFactorLibrary1Responses" },
   "GET /api/v2/admin/alerts/indicators": { request: "AdminAlertsControllerIndicators1Data", response: "AdminAlertsControllerIndicators1Responses" },
   "GET /api/v2/admin/alerts/signals": { request: "AdminAlertsControllerSignals1Data", response: "AdminAlertsControllerSignals1Responses" },
@@ -422,10 +471,14 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/backtest/strategies": { request: "QuantControllerList0Data", response: "QuantControllerList0Responses" },
   "GET /api/v2/bot": { request: "GetBotOverviewGetApiV2BotData", response: "GetBotOverviewGetApiV2BotResponses" },
   "GET /api/v2/bot/journal": { request: "GetBotJournalGetApiV2BotJournalData", response: "GetBotJournalGetApiV2BotJournalResponses" },
+  "GET /api/v2/bot/journal/sessions": { request: "ListBotJournalSessionsData", response: "ListBotJournalSessionsResponses" },
+  "GET /api/v2/bot/journal/sessions/{session}": { request: "GetBotJournalSessionData", response: "GetBotJournalSessionResponses" },
   "GET /api/v2/bot/mascot": { request: "JourneyIdentityControllerGetMascot1Data", response: "JourneyIdentityControllerGetMascot1Responses" },
   "GET /api/v2/bot/performance": { request: "GetBotPerformanceGetApiV2BotPerformanceData", response: "GetBotPerformanceGetApiV2BotPerformanceResponses" },
   "GET /api/v2/bot/positions": { request: "GetBotPositionsGetApiV2BotPositionsData", response: "GetBotPositionsGetApiV2BotPositionsResponses" },
   "GET /api/v2/bot/status": { request: "GetBotStatusGetApiV2BotStatusData", response: "GetBotStatusGetApiV2BotStatusResponses" },
+  "GET /api/v2/bot/trades": { request: "GetBotTradesData", response: "GetBotTradesResponses" },
+  "GET /api/v2/bot/universe": { request: "GetBotUniverseData", response: "GetBotUniverseResponses" },
   "GET /api/v2/cap0/kehoach": { request: "Cap0ControllerGetKehoach1Data", response: "Cap0ControllerGetKehoach1Responses" },
   "GET /api/v2/cap0/placement": { request: "Cap0ControllerGetPlacement1Data", response: "Cap0ControllerGetPlacement1Responses" },
   "GET /api/v2/cap0/progress": { request: "Cap0ControllerProgress1Data", response: "Cap0ControllerProgress1Responses" },
@@ -551,19 +604,34 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary": { request: "MarketDataControllerSupplySummary1Data", response: "MarketDataControllerSupplySummary1Responses" },
   "GET /api/v2/media/{token}": { request: "MediaControllerDownloadData", response: "MediaControllerDownloadResponses" },
   "GET /api/v2/portfolio-manager/report": { request: "GetPortfolioReportV2Data", response: "GetPortfolioReportV2Responses" },
+  "GET /api/v2/practice/{indicatorId}/history": { request: "PracticeHistoryData", response: "PracticeHistoryResponses" },
+  "GET /api/v2/practice/{indicatorId}/state": { request: "PracticeStateData", response: "PracticeStateResponses" },
+  "GET /api/v2/practice/indicators": { request: "PracticeIndicatorsData", response: "PracticeIndicatorsResponses" },
+  "GET /api/v2/practice/runs/{runId}": { request: "PracticeGetRunData", response: "PracticeGetRunResponses" },
   "GET /api/v2/premium/admin/plans": { request: "AdminListPremiumPlansGetApiV2PremiumAdminPlansData", response: "AdminListPremiumPlansGetApiV2PremiumAdminPlansResponses" },
   "GET /api/v2/premium/me": { request: "GetMyPremiumSubscriptionGetApiV2PremiumMeData", response: "GetMyPremiumSubscriptionGetApiV2PremiumMeResponses" },
   "GET /api/v2/premium/my-orders": { request: "ListMyPremiumOrdersGetApiV2PremiumMyOrdersData", response: "ListMyPremiumOrdersGetApiV2PremiumMyOrdersResponses" },
   "GET /api/v2/premium/plans": { request: "ListPremiumPlansGetApiV2PremiumPlansData", response: "ListPremiumPlansGetApiV2PremiumPlansResponses" },
   "GET /api/v2/referrals/me": { request: "ReferralsControllerMine1Data", response: "ReferralsControllerMine1Responses" },
+  "GET /api/v2/shop": { request: "GetShopData", response: "GetShopResponses" },
+  "GET /api/v2/shop/coin-ledger": { request: "ListShopCoinLedgerData", response: "ListShopCoinLedgerResponses" },
+  "GET /api/v2/shop/purchases/{idempotencyKey}": { request: "GetShopPurchaseStatusData", response: "GetShopPurchaseStatusResponses" },
+  "GET /api/v2/strategy/alerts": { request: "StrategyAlertsListData", response: "StrategyAlertsListResponses" },
+  "GET /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertGetData", response: "StrategyAlertGetResponses" },
+  "GET /api/v2/strategy/alerts/events": { request: "StrategyAlertEventsListData", response: "StrategyAlertEventsListResponses" },
+  "GET /api/v2/strategy/alerts/events/{eventId}": { request: "StrategyAlertEventGetData", response: "StrategyAlertEventGetResponses" },
   "GET /api/v2/strategy/backtests": { request: "StrategyBacktestsListData", response: "StrategyBacktestsListResponses" },
   "GET /api/v2/strategy/backtests/{id}": { request: "StrategyBacktestsGetData", response: "StrategyBacktestsGetResponses" },
+  "GET /api/v2/strategy/backtests/{id}/trades": { request: "StrategyBacktestsTradesData", response: "StrategyBacktestsTradesResponses" },
   "GET /api/v2/strategy/filters": { request: "ListStrategySavedFiltersData", response: "ListStrategySavedFiltersResponses" },
   "GET /api/v2/strategy/filters/{filterId}": { request: "GetStrategySavedFilterData", response: "GetStrategySavedFilterResponses" },
   "GET /api/v2/strategy/lists": { request: "ListStrategySavedListsData", response: "ListStrategySavedListsResponses" },
   "GET /api/v2/strategy/lists/{listId}": { request: "GetStrategySavedListData", response: "GetStrategySavedListResponses" },
   "GET /api/v2/strategy/registry/technical": { request: "StrategyConfigTechnicalRegistryData", response: "StrategyConfigTechnicalRegistryResponses" },
+  "GET /api/v2/strategy/result-snapshots": { request: "ListStrategyResultSnapshotsData", response: "ListStrategyResultSnapshotsResponses" },
+  "GET /api/v2/strategy/result-snapshots/{snapshotId}": { request: "GetStrategyResultSnapshotData", response: "GetStrategyResultSnapshotResponses" },
   "GET /api/v2/strategy/screener/metrics": { request: "ScreenerMetricsData", response: "ScreenerMetricsResponses" },
+  "GET /api/v2/strategy/screener/results/{resultId}": { request: "ScreenerResultGetData", response: "ScreenerResultGetResponses" },
   "GET /api/v2/strategy/shared-config": { request: "StrategyConfigGetSharedConfigData", response: "StrategyConfigGetSharedConfigResponses" },
   "GET /api/v2/strategy/shared-config/revisions": { request: "StrategyConfigListRevisionsData", response: "StrategyConfigListRevisionsResponses" },
   "GET /api/v2/users": { request: "UsersControllerList1Data", response: "UsersControllerList1Responses" },
@@ -579,6 +647,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/virtual-trading/trades": { request: "TradingControllerTrades1Data", response: "TradingControllerTrades1Responses" },
   "GET /api/v2/watchlists": { request: "ListWatchlistV2Data", response: "ListWatchlistV2Responses" },
   "GET /api/v2/watchlists/{symbol}/status": { request: "CheckWatchlistItemV2Data", response: "CheckWatchlistItemV2Responses" },
+  "GET /api/v2/workspace/state": { request: "GetWorkspaceStateData", response: "GetWorkspaceStateResponses" },
   "PATCH /api/v2/admin/lessons/courses/{courseId}": { request: "AdminLearningControllerUpdateCourse1Data", response: "AdminLearningControllerUpdateCourse1Responses" },
   "PATCH /api/v2/admin/lessons/episodes/{episodeId}": { request: "AdminLearningControllerUpdateEpisode1Data", response: "AdminLearningControllerUpdateEpisode1Responses" },
   "PATCH /api/v2/admin/vt/config": { request: "AdminVtControllerUpdateConfig1Data", response: "AdminVtControllerUpdateConfig1Responses" },
@@ -590,12 +659,14 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PATCH /api/v2/cap5/task": { request: "Cap5TaskPatchApiV2Cap5TaskData", response: "Cap5TaskPatchApiV2Cap5TaskResponses" },
   "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop": { request: "SetCap8DynamicStopV2Data", response: "SetCap8DynamicStopV2Responses" },
   "PATCH /api/v2/premium/admin/plans/{plan_id}": { request: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdData", response: "AdminUpdatePremiumPlanPatchApiV2PremiumAdminPlansPlanIdResponses" },
+  "PATCH /api/v2/strategy/alerts/{alertId}": { request: "StrategyAlertUpdateData", response: "StrategyAlertUpdateResponses" },
   "PATCH /api/v2/strategy/shared-config": { request: "StrategyConfigPatchSharedConfigData", response: "StrategyConfigPatchSharedConfigResponses" },
   "PATCH /api/v2/users/{userId}": { request: "UsersControllerUpdate1Data", response: "UsersControllerUpdate1Responses" },
   "PATCH /api/v2/users/me": { request: "UsersControllerUpdateMe1Data", response: "UsersControllerUpdateMe1Responses" },
   "PATCH /api/v2/virtual-trading/admin/config": { request: "LegacyVirtualTradingAdminControllerUpdateConfig1Data", response: "LegacyVirtualTradingAdminControllerUpdateConfig1Responses" },
   "POST /api/v2/academy/attempts": { request: "AcademyCreateAttemptData", response: "AcademyCreateAttemptResponses" },
   "POST /api/v2/academy/attempts/{attemptId}/submit": { request: "AcademySubmitAttemptData", response: "AcademySubmitAttemptResponses" },
+  "POST /api/v2/academy/lessons/{lessonId}/complete": { request: "AcademyCompleteGuideData", response: "AcademyCompleteGuideResponses" },
   "POST /api/v2/admin/alerts/seed": { request: "AdminAlertsControllerSeed1Data", response: "AdminAlertsControllerSeed1Responses" },
   "POST /api/v2/admin/alerts/signals": { request: "AdminAlertsControllerCreate1Data", response: "AdminAlertsControllerCreate1Responses" },
   "POST /api/v2/admin/alerts/telegram/webhook": { request: "AdminAlertsControllerSetupTelegramWebhook1Data", response: "AdminAlertsControllerSetupTelegramWebhook1Responses" },
@@ -636,6 +707,9 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/backtest/run": { request: "QuantControllerRun0Data", response: "QuantControllerRun0Responses" },
   "POST /api/v2/backtest/strategies": { request: "QuantControllerCreate0Data", response: "QuantControllerCreate0Responses" },
   "POST /api/v2/bot/mascot/ui-events": { request: "JourneyIdentityControllerUiEvent1Data", response: "JourneyIdentityControllerUiEvent1Responses" },
+  "POST /api/v2/bot/universe/apply-list": { request: "ApplyBotUniverseListData", response: "ApplyBotUniverseListResponses" },
+  "POST /api/v2/bot/universe/pending/cancel": { request: "CancelBotUniversePendingData", response: "CancelBotUniversePendingResponses" },
+  "POST /api/v2/bot/universe/revert-vn30": { request: "RevertBotUniverseToVn30Data", response: "RevertBotUniverseToVn30Responses" },
   "POST /api/v2/cap0/enter": { request: "Cap0ControllerEnter1Data", response: "Cap0ControllerEnter1Responses" },
   "POST /api/v2/cap0/graduate": { request: "Cap0ControllerGraduate1Data", response: "Cap0ControllerGraduate1Responses" },
   "POST /api/v2/cap0/kehoach": { request: "Cap0ControllerKehoach1Data", response: "Cap0ControllerKehoach1Responses" },
@@ -686,13 +760,21 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/market-data/screening/search": { request: "MarketExtendedControllerScreeningSearch1Data", response: "MarketExtendedControllerScreeningSearch1Responses" },
   "POST /api/v2/market-data/trading/price-board": { request: "MarketDataControllerPriceBoard1Data", response: "MarketDataControllerPriceBoard1Responses" },
   "POST /api/v2/portfolio-manager/analyze": { request: "AnalyzePortfolioV2Data", response: "AnalyzePortfolioV2Responses" },
+  "POST /api/v2/practice/{indicatorId}/next": { request: "PracticeNextData", response: "PracticeNextResponses" },
+  "POST /api/v2/practice/{indicatorId}/preview": { request: "PracticePreviewData", response: "PracticePreviewResponses" },
+  "POST /api/v2/practice/{indicatorId}/runs": { request: "PracticeStartRunData", response: "PracticeStartRunResponses" },
   "POST /api/v2/premium/admin/plans": { request: "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansData", response: "AdminCreatePremiumPlanPostApiV2PremiumAdminPlansResponses" },
   "POST /api/v2/premium/admin/users/{user_id}/grant": { request: "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantData", response: "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses" },
   "POST /api/v2/premium/checkout": { request: "CreatePremiumCheckoutPostApiV2PremiumCheckoutData", response: "CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses" },
   "POST /api/v2/premium/sepay/ipn": { request: "ReceiveSePayIpnPostApiV2PremiumSepayIpnData", response: "ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses" },
+  "POST /api/v2/shop/purchases": { request: "PurchaseShopMascotData", response: "PurchaseShopMascotResponses" },
+  "POST /api/v2/strategy/alerts": { request: "StrategyAlertsCreateData", response: "StrategyAlertsCreateResponses" },
+  "POST /api/v2/strategy/alerts/source-preview": { request: "StrategyAlertsSourcePreviewData", response: "StrategyAlertsSourcePreviewResponses" },
   "POST /api/v2/strategy/backtests": { request: "StrategyBacktestsCreateData", response: "StrategyBacktestsCreateResponses" },
   "POST /api/v2/strategy/filters": { request: "CreateStrategySavedFilterData", response: "CreateStrategySavedFilterResponses" },
   "POST /api/v2/strategy/lists": { request: "CreateStrategySavedListData", response: "CreateStrategySavedListResponses" },
+  "POST /api/v2/strategy/lists/from-result": { request: "CreateStrategySavedListFromResultData", response: "CreateStrategySavedListFromResultResponses" },
+  "POST /api/v2/strategy/result-snapshots": { request: "CreateStrategyResultSnapshotData", response: "CreateStrategyResultSnapshotResponses" },
   "POST /api/v2/strategy/screener/run": { request: "ScreenerRunData", response: "ScreenerRunResponses" },
   "POST /api/v2/telegram/webhook/{secret}": { request: "TelegramControllerWebhook1Data", response: "TelegramControllerWebhook1Responses" },
   "POST /api/v2/users": { request: "UsersControllerCreate1Data", response: "UsersControllerCreate1Responses" },
@@ -703,10 +785,14 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/virtual-trading/orders/{orderId}/cancel": { request: "TradingControllerCancel1Data", response: "TradingControllerCancel1Responses" },
   "POST /api/v2/virtual-trading/refresh": { request: "TradingControllerRefresh1Data", response: "TradingControllerRefresh1Responses" },
   "POST /api/v2/watchlists": { request: "AddWatchlistItemV2Data", response: "AddWatchlistItemV2Responses" },
+  "POST /api/v2/workspace/ensure": { request: "EnsureWorkspaceData", response: "EnsureWorkspaceResponses" },
+  "PUT /api/v2/academy/attempts/{attemptId}/answers": { request: "AcademySaveDraftAnswersData", response: "AcademySaveDraftAnswersResponses" },
   "PUT /api/v2/admin/alerts/signals/{key}": { request: "AdminAlertsControllerUpdate1Data", response: "AdminAlertsControllerUpdate1Responses" },
   "PUT /api/v2/alerts/rules/{ruleId}": { request: "AlertsControllerUpdateRule1Data", response: "AlertsControllerUpdateRule1Responses" },
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: "QuantControllerUpdate0Data", response: "QuantControllerUpdate0Responses" },
   "PUT /api/v2/chart-drawings/{symbol}": { request: "SaveChartDrawingV2Data", response: "SaveChartDrawingV2Responses" },
+  "PUT /api/v2/practice/{indicatorId}/draft": { request: "PracticeSaveDraftData", response: "PracticeSaveDraftResponses" },
+  "PUT /api/v2/shop/active-mascot": { request: "SetShopActiveMascotData", response: "SetShopActiveMascotResponses" },
   "PUT /api/v2/strategy/filters/{filterId}": { request: "UpdateStrategySavedFilterData", response: "UpdateStrategySavedFilterResponses" },
   "PUT /api/v2/watchlists/reorder": { request: "ReorderWatchlistV2Data", response: "ReorderWatchlistV2Responses" },
 }

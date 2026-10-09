@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch08-l04",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: FCF kỳ này = 120; FCF cùng kỳ = 80. FCF Growth YoY bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "24 %",
+          "id": "o1"
+        },
+        {
+          "text": "60 %",
+          "id": "o2"
+        },
+        {
+          "text": "50 %",
+          "id": "o3"
+        },
+        {
+          "text": "78 %",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Áp dụng (FCF kỳ này / FCF cùng kỳ − 1) × 100; kết quả 50 %.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch08-l04-q01",
+      "lesson_id": "ch08-l04",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "FCF Growth YoY đang bằng đúng 50 %. Bộ lọc đặt > 50 %. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o2"
+        },
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o3"
+        },
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch08-l04-q02",
+      "lesson_id": "ch08-l04",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc FCF Growth YoY?",
+      "options": [
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o1"
+        },
+        {
+          "text": "Từ FCF −80 lên +20 là chuyển sang dương; gói không biến trường hợp đó thành tăng trưởng phần trăm thông thường.",
+          "id": "o2"
+        },
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o3"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Tăng 50% cần phân biệt CFO cải thiện hay chỉ do giảm Capex trong kỳ. Từ FCF −80 lên +20 là chuyển sang dương; gói không biến trường hợp đó thành tăng trưởng phần trăm thông thường.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch08-l04-q03",
+      "lesson_id": "ch08-l04",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính FCF Growth YoY. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o1"
+        },
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o2"
+        },
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o3"
+        },
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch08-l04-q04",
+      "lesson_id": "ch08-l04",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Nhận định nào đúng với FCF Growth YoY?",
+      "options": [
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o1"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o2"
+        },
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o3"
+        },
+        {
+          "text": "Tăng 50% cần phân biệt CFO cải thiện hay chỉ do giảm Capex trong kỳ.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Tăng 50% cần phân biệt CFO cải thiện hay chỉ do giảm Capex trong kỳ. Trước tiên tính FCF của từng kỳ theo cùng CFO − Capex. Sau đó mới so tỷ lệ. Không so FCF năm hiện tại với CFO năm trước. Kỳ gốc phải dương; nếu không, hiển thị trạng thái chuyển lỗ, chuyển dương hoặc thiếu cơ sở tùy dữ liệu gốc.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch08-l04-q05",
+      "lesson_id": "ch08-l04",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có FCF Growth YoY bằng 48 và 52 %. Điều kiện < 50 % giữ lại ai?",
+      "options": [
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o2"
+        },
+        {
+          "text": "Chỉ B.",
+          "id": "o3"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "48 < 50 đúng, 52 < 50 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch08-l04-q06",
+      "lesson_id": "ch08-l04",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Báo cáo dùng tính FCF Growth YoY kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o1"
+        },
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o2"
+        },
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o3"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch08-l04-q07",
+      "lesson_id": "ch08-l04",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện FCF Growth YoY, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o3"
+        },
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch08-l04-q08",
+      "lesson_id": "ch08-l04",
+      "correct_option_id": "o4"
+    }
+  ]
+}

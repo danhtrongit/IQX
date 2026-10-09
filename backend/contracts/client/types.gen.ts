@@ -391,27 +391,39 @@ export type BotAccountSummary = {
 
 export type BotConditions = {
   buy_condition_count: number;
-  config_status: "none" | "pending" | "effective" | "calendar_unavailable";
+  buy_status: "active" | "inactive" | "blocked";
+  config_status:
+    "none" | "pending" | "effective" | "calendar_unavailable" | "unavailable";
   effective_revision: number | null;
   effective_session: string | null;
+  errors: {
+    buy: BotSideBlock | null;
+    sell: BotSideBlock | null;
+  };
   has_active_buy: boolean;
   has_active_sell: boolean;
   open_positions: number;
+  pending: BotPendingConfig | null;
   saved_revision: number | null;
   sell_condition_count: number;
+  sell_status: "active" | "inactive" | "blocked";
   state:
     | "waiting_for_conditions"
-    | "entry_enabled"
-    | "exit_only"
-    | "protection_only";
+    | "buy_only"
+    | "sell_only"
+    | "buy_and_sell"
+    | "error";
+  state_label: string;
 };
 
 export type BotConfig = {
   activated_at: string;
+  candidate_order: "gtgd20_desc_symbol_asc";
+  candidate_order_owner_confirmation: "pending";
   execution_model: "same_session_close";
   initial_cash_vnd: string;
-  policy_version: "iqx-bot-academy-activation-1";
-  product_stage: "bot_v1_waiting" | "bot_v2_academy";
+  new_buys_enabled: boolean;
+  policy_version: "iqx-bot-v1.0";
   strategy_id: "iqx_standard";
   strategy_version: 1;
 };
@@ -447,40 +459,55 @@ export type BotJournalItem = {
   created_at: string;
   decision_config_revision: number | null;
   execution: BotExecution | null;
-  filter_ids: Array<string>;
   id: string;
+  in_universe: boolean | null;
+  legacy_filter_ids: Array<string>;
+  legacy_threshold_vnd: string | null;
   policy_version: string | null;
+  rank_tuple: Array<JsonValue> | null;
   reason: string;
   reason_code: string;
+  reason_label: string | null;
   run_id: string;
   source_refs: {
     [key: string]: JsonValue;
   };
-  supporting_count: number | null;
   symbol: string | null;
-  threshold_vnd: string | null;
   trading_date: string;
+  universe_kind: "vn30" | "custom" | null;
+  universe_revision: number | null;
 };
 
 export type BotOverview = {
   account: BotAccountSummary | null;
   bot: BotConfig | null;
   bot_run: BotRunStatus;
-  cap6_graduated_at: string | null;
   conditions: BotConditions | null;
-  current_level: number;
   disclosure: string;
   eligible: boolean;
 };
 
+export type BotPendingConfig = {
+  effective_session: string | null;
+  revision: number;
+  status: "pending" | "effective" | "calendar_unavailable";
+};
+
 export type BotPosition = {
-  amplitude_at_entry_vnd: string;
-  amplitude_source_ref: string;
   current_close_vnd: string | null;
   entry_config_revision: number | null;
   entry_price_vnd: string;
-  filter_ids: Array<string>;
+  entry_source_snapshot: {
+    [key: string]: JsonValue;
+  } | null;
+  holding_sessions: number;
   id: string;
+  in_universe: boolean | null;
+  last_decision: BotPositionDecision | null;
+  legacy_amplitude_at_entry_vnd: string | null;
+  legacy_amplitude_source_ref: string | null;
+  legacy_filter_ids: Array<string>;
+  legacy_stop_loss_vnd: string | null;
   legacy_take_profit_vnd: string | null;
   market_value_vnd: string | null;
   opened_at: string;
@@ -490,10 +517,19 @@ export type BotPosition = {
   source_refs: {
     [key: string]: JsonValue;
   };
-  stop_loss_vnd: string;
+  source_scope: "in_buy_source" | "sell_watch_only" | null;
   symbol: string;
   unrealized_pnl_net_vnd: string | null;
   weight_pct: string | null;
+};
+
+export type BotPositionDecision = {
+  action: "buy" | "sell" | "hold" | "skip";
+  decision_config_revision: number | null;
+  reason: string;
+  reason_code: string;
+  reason_label: string | null;
+  trading_date: string;
 };
 
 export type BotPositions = {
@@ -508,6 +544,12 @@ export type BotRunStatus = {
   latest_run_id: string | null;
   processed_unseen_sessions: number;
   status: "idle" | "running" | "succeeded" | "failed";
+};
+
+export type BotSideBlock = {
+  detail: string;
+  indicator_ids: Array<string>;
+  reason: "config_invalid_or_unauthorized" | "legacy_needs_review";
 };
 
 export type BotStatus = {
@@ -24935,7 +24977,7 @@ export type RemoveWatchlistItemV1Response =
 
 export type AcademyCreateAttemptData = {
   body: {
-    content_version: string;
+    catalog_version: string;
     idempotency_key: string;
     lesson_id: string;
   };
@@ -24972,23 +25014,460 @@ export type AcademyCreateAttemptError =
 
 export type AcademyCreateAttemptResponses = {
   201: {
+    assessment_version: string;
     attempt_id: string;
+    catalog_version: string;
     content_version: string;
     lesson_id: string;
+    lesson_key: string;
     questions: Array<{
+      figure:
+        | {
+            chart:
+              | {
+                  kind: "series_panels";
+                  marks: Array<{
+                    i: number;
+                    label: string;
+                  }>;
+                  panels: Array<{
+                    band?: {
+                      lower: Array<number | null>;
+                      upper: Array<number | null>;
+                    };
+                    bars?: {
+                      colors: Array<"pos" | "neg" | "neutral">;
+                      name: string;
+                      values: Array<number | null>;
+                    };
+                    bounds?: [number, number];
+                    digits?: number;
+                    levels?: Array<{
+                      role: "buy" | "sell";
+                      value: number;
+                    }>;
+                    nonnegative?: true;
+                    series: Array<{
+                      dash?: true;
+                      name: string;
+                      role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
+                      values: Array<number | null>;
+                    }>;
+                    ticks?: Array<number>;
+                    title: string;
+                    zero?: true;
+                  }>;
+                  x: {
+                    end: number;
+                    start: number;
+                    ticks?: Array<string>;
+                  };
+                }
+              | {
+                  kind: "grouped";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "line";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "stacked";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "timeline";
+                  labels: Array<string>;
+                  rows: Array<{
+                    detail: string;
+                    end: number;
+                    name: string;
+                    start: number;
+                  }>;
+                  title: string;
+                }
+              | {
+                  kind: "waterfall";
+                  steps: Array<{
+                    name: string;
+                    total?: true;
+                    value: number;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "panels";
+                  panels: Array<
+                    | {
+                        kind: "grouped";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                    | {
+                        kind: "line";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                    | {
+                        kind: "stacked";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                  >;
+                  title: string;
+                };
+            chart_id: string;
+            type: "chart";
+          }
+        | {
+            head: Array<string>;
+            rows: Array<Array<string>>;
+            type: "table";
+          }
+        | null;
+      hint: string | null;
       id: string;
       options: Array<{
         id: string;
         text: string;
       }>;
-      question: string;
+      prompt: string;
+      section: number | null;
+      topic: string | null;
     }>;
-    questions_version: string;
+    status: "open" | "submitted";
   };
 };
 
 export type AcademyCreateAttemptResponse =
   AcademyCreateAttemptResponses[keyof AcademyCreateAttemptResponses];
+
+export type AcademyAttemptReviewData = {
+  body?: never;
+  path: {
+    attemptId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/attempts/{attemptId}";
+};
+
+export type AcademyAttemptReviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyAttemptReviewError =
+  AcademyAttemptReviewErrors[keyof AcademyAttemptReviewErrors];
+
+export type AcademyAttemptReviewResponses = {
+  200: {
+    attempt_id: string;
+    attempts_submitted: number;
+    best_score: number | null;
+    catalog_version: string;
+    completion: {
+      completed: boolean;
+      completed_at: string | null;
+      completion_method: "quiz" | "guide" | "legacy_migration";
+      newly_completed: boolean;
+    };
+    correct: number;
+    granted_capabilities: Array<string>;
+    lesson_id: string;
+    lesson_key: string | null;
+    newly_granted: Array<string>;
+    passed: boolean;
+    progress_revision: number;
+    results: Array<{
+      correct: boolean;
+      correct_option_id: string;
+      explanation: string | null;
+      figure:
+        | {
+            chart:
+              | {
+                  kind: "series_panels";
+                  marks: Array<{
+                    i: number;
+                    label: string;
+                  }>;
+                  panels: Array<{
+                    band?: {
+                      lower: Array<number | null>;
+                      upper: Array<number | null>;
+                    };
+                    bars?: {
+                      colors: Array<"pos" | "neg" | "neutral">;
+                      name: string;
+                      values: Array<number | null>;
+                    };
+                    bounds?: [number, number];
+                    digits?: number;
+                    levels?: Array<{
+                      role: "buy" | "sell";
+                      value: number;
+                    }>;
+                    nonnegative?: true;
+                    series: Array<{
+                      dash?: true;
+                      name: string;
+                      role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
+                      values: Array<number | null>;
+                    }>;
+                    ticks?: Array<number>;
+                    title: string;
+                    zero?: true;
+                  }>;
+                  x: {
+                    end: number;
+                    start: number;
+                    ticks?: Array<string>;
+                  };
+                }
+              | {
+                  kind: "grouped";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "line";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "stacked";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "timeline";
+                  labels: Array<string>;
+                  rows: Array<{
+                    detail: string;
+                    end: number;
+                    name: string;
+                    start: number;
+                  }>;
+                  title: string;
+                }
+              | {
+                  kind: "waterfall";
+                  steps: Array<{
+                    name: string;
+                    total?: true;
+                    value: number;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "panels";
+                  panels: Array<
+                    | {
+                        kind: "grouped";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                    | {
+                        kind: "line";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                    | {
+                        kind: "stacked";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                  >;
+                  title: string;
+                };
+            chart_id: string;
+            type: "chart";
+          }
+        | {
+            head: Array<string>;
+            rows: Array<Array<string>>;
+            type: "table";
+          }
+        | null;
+      hint: string | null;
+      option_id: string;
+      options: Array<{
+        chosen: boolean;
+        correct: boolean;
+        explanation: string | null;
+        id: string;
+        text: string;
+      }>;
+      prompt: string;
+      question_id: string;
+      section: number | null;
+      topic: string | null;
+    }>;
+    review_available: boolean;
+    reward:
+      | {
+          balance_after: number;
+          delta: number;
+          status: "credited";
+        }
+      | {
+          balance_after: number;
+          status: "already_rewarded";
+        }
+      | {
+          status: "unavailable";
+        }
+      | null;
+    score: number;
+    submitted_at: string | null;
+    total: 8;
+    wrong: number;
+  };
+};
+
+export type AcademyAttemptReviewResponse =
+  AcademyAttemptReviewResponses[keyof AcademyAttemptReviewResponses];
+
+export type AcademySaveDraftAnswersData = {
+  body: {
+    answers: Array<{
+      option_id: string;
+      question_id: string;
+    }>;
+    expected_revision?: number;
+  };
+  path: {
+    attemptId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/attempts/{attemptId}/answers";
+};
+
+export type AcademySaveDraftAnswersErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademySaveDraftAnswersError =
+  AcademySaveDraftAnswersErrors[keyof AcademySaveDraftAnswersErrors];
+
+export type AcademySaveDraftAnswersResponses = {
+  200: {
+    answered_count: number;
+    answers: Array<{
+      option_id: string;
+      question_id: string;
+    }>;
+    attempt_id: string;
+    revision: number;
+    total: 8;
+    updated_at: string | null;
+  };
+};
+
+export type AcademySaveDraftAnswersResponse =
+  AcademySaveDraftAnswersResponses[keyof AcademySaveDraftAnswersResponses];
 
 export type AcademySubmitAttemptData = {
   body: {
@@ -25034,34 +25513,211 @@ export type AcademySubmitAttemptError =
 export type AcademySubmitAttemptResponses = {
   200: {
     attempt_id: string;
+    attempts_submitted: number;
+    best_score: number | null;
+    catalog_version: string;
+    completion: {
+      completed: boolean;
+      completed_at: string | null;
+      completion_method: "quiz" | "guide" | "legacy_migration";
+      newly_completed: boolean;
+    };
+    correct: number;
     granted_capabilities: Array<string>;
+    lesson_id: string;
+    lesson_key: string | null;
     newly_granted: Array<string>;
     passed: boolean;
+    progress_revision: number;
     results: Array<{
       correct: boolean;
       correct_option_id: string;
-      explanation: string;
+      explanation: string | null;
+      figure:
+        | {
+            chart:
+              | {
+                  kind: "series_panels";
+                  marks: Array<{
+                    i: number;
+                    label: string;
+                  }>;
+                  panels: Array<{
+                    band?: {
+                      lower: Array<number | null>;
+                      upper: Array<number | null>;
+                    };
+                    bars?: {
+                      colors: Array<"pos" | "neg" | "neutral">;
+                      name: string;
+                      values: Array<number | null>;
+                    };
+                    bounds?: [number, number];
+                    digits?: number;
+                    levels?: Array<{
+                      role: "buy" | "sell";
+                      value: number;
+                    }>;
+                    nonnegative?: true;
+                    series: Array<{
+                      dash?: true;
+                      name: string;
+                      role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
+                      values: Array<number | null>;
+                    }>;
+                    ticks?: Array<number>;
+                    title: string;
+                    zero?: true;
+                  }>;
+                  x: {
+                    end: number;
+                    start: number;
+                    ticks?: Array<string>;
+                  };
+                }
+              | {
+                  kind: "grouped";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "line";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "stacked";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "timeline";
+                  labels: Array<string>;
+                  rows: Array<{
+                    detail: string;
+                    end: number;
+                    name: string;
+                    start: number;
+                  }>;
+                  title: string;
+                }
+              | {
+                  kind: "waterfall";
+                  steps: Array<{
+                    name: string;
+                    total?: true;
+                    value: number;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "panels";
+                  panels: Array<
+                    | {
+                        kind: "grouped";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                    | {
+                        kind: "line";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                    | {
+                        kind: "stacked";
+                        labels: Array<string>;
+                        series: Array<{
+                          name: string;
+                          values: Array<number | null>;
+                        }>;
+                        title: string;
+                        unit: string;
+                      }
+                  >;
+                  title: string;
+                };
+            chart_id: string;
+            type: "chart";
+          }
+        | {
+            head: Array<string>;
+            rows: Array<Array<string>>;
+            type: "table";
+          }
+        | null;
+      hint: string | null;
       option_id: string;
+      options: Array<{
+        chosen: boolean;
+        correct: boolean;
+        explanation: string | null;
+        id: string;
+        text: string;
+      }>;
+      prompt: string;
       question_id: string;
+      section: number | null;
+      topic: string | null;
     }>;
+    review_available: boolean;
+    reward:
+      | {
+          balance_after: number;
+          delta: number;
+          status: "credited";
+        }
+      | {
+          balance_after: number;
+          status: "already_rewarded";
+        }
+      | {
+          status: "unavailable";
+        }
+      | null;
     score: number;
+    submitted_at: string | null;
     total: 8;
+    wrong: number;
   };
 };
 
 export type AcademySubmitAttemptResponse =
   AcademySubmitAttemptResponses[keyof AcademySubmitAttemptResponses];
 
-export type AcademyCurriculumData = {
+export type AcademyCatalogData = {
   body?: never;
   path?: never;
-  query?: {
-    content_version?: string;
-  };
-  url: "/api/v2/academy/curriculum";
+  query?: never;
+  url: "/api/v2/academy/catalog";
 };
 
-export type AcademyCurriculumErrors = {
+export type AcademyCatalogErrors = {
   /**
    * Bad request
    */
@@ -25084,35 +25740,48 @@ export type AcademyCurriculumErrors = {
   503: ApiErrorV2;
 };
 
-export type AcademyCurriculumError =
-  AcademyCurriculumErrors[keyof AcademyCurriculumErrors];
+export type AcademyCatalogError =
+  AcademyCatalogErrors[keyof AcademyCatalogErrors];
 
-export type AcademyCurriculumResponses = {
+export type AcademyCatalogResponses = {
   200: {
+    catalog_version: string;
+    chapter_count: number;
     chapters: Array<{
-      bot: string | null;
       lessons: Array<{
-        attempts: number;
-        best_score: number | null;
-        capabilities: Array<string>;
-        config_id: string | null;
+        capability_binding: {
+          id: string;
+          kind: "technical" | "fundamental";
+        } | null;
+        capability_id: string | null;
+        chapter: number;
+        completion: {
+          assessment_ready: boolean;
+          assessment_version: string | null;
+          button_label: string | null;
+          mode: "quiz" | "guide";
+          question_count: number | null;
+          required_correct: number | null;
+        };
+        content_status: "published" | "not_published";
+        content_version: string | null;
         id: string;
-        kind: "technical" | "fundamental" | "tool" | "system";
+        kind: "technical" | "fundamental" | "concept" | "guide";
+        legacy_lesson_ids: Array<string>;
+        lesson_key: string;
         name: string;
         order: number;
-        passed: boolean;
       }>;
       no: number;
       title: string;
-      type: "technical" | "fundamental" | "tool" | "system";
+      type: "technical" | "fundamental" | "tool";
     }>;
-    content_version: string;
-    granted_capabilities: Array<string>;
+    lesson_count: number;
   };
 };
 
-export type AcademyCurriculumResponse =
-  AcademyCurriculumResponses[keyof AcademyCurriculumResponses];
+export type AcademyCatalogResponse =
+  AcademyCatalogResponses[keyof AcademyCatalogResponses];
 
 export type AcademyLessonData = {
   body?: never;
@@ -25150,29 +25819,753 @@ export type AcademyLessonError = AcademyLessonErrors[keyof AcademyLessonErrors];
 
 export type AcademyLessonResponses = {
   200: {
+    attempts_submitted: number;
+    best_score: number | null;
+    capability_binding: {
+      id: string;
+      kind: "technical" | "fundamental";
+    } | null;
+    capability_id: string | null;
+    catalog_version: string;
     chapter: number;
-    config_id: string | null;
-    content_version: string;
+    charts: {
+      [key: string]:
+        | {
+            kind: "series_panels";
+            marks: Array<{
+              i: number;
+              label: string;
+            }>;
+            panels: Array<{
+              band?: {
+                lower: Array<number | null>;
+                upper: Array<number | null>;
+              };
+              bars?: {
+                colors: Array<"pos" | "neg" | "neutral">;
+                name: string;
+                values: Array<number | null>;
+              };
+              bounds?: [number, number];
+              digits?: number;
+              levels?: Array<{
+                role: "buy" | "sell";
+                value: number;
+              }>;
+              nonnegative?: true;
+              series: Array<{
+                dash?: true;
+                name: string;
+                role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
+                values: Array<number | null>;
+              }>;
+              ticks?: Array<number>;
+              title: string;
+              zero?: true;
+            }>;
+            x: {
+              end: number;
+              start: number;
+              ticks?: Array<string>;
+            };
+          }
+        | {
+            kind: "grouped";
+            labels: Array<string>;
+            series: Array<{
+              name: string;
+              values: Array<number | null>;
+            }>;
+            title: string;
+            unit: string;
+          }
+        | {
+            kind: "line";
+            labels: Array<string>;
+            series: Array<{
+              name: string;
+              values: Array<number | null>;
+            }>;
+            title: string;
+            unit: string;
+          }
+        | {
+            kind: "stacked";
+            labels: Array<string>;
+            series: Array<{
+              name: string;
+              values: Array<number | null>;
+            }>;
+            title: string;
+            unit: string;
+          }
+        | {
+            kind: "timeline";
+            labels: Array<string>;
+            rows: Array<{
+              detail: string;
+              end: number;
+              name: string;
+              start: number;
+            }>;
+            title: string;
+          }
+        | {
+            kind: "waterfall";
+            steps: Array<{
+              name: string;
+              total?: true;
+              value: number;
+            }>;
+            title: string;
+            unit: string;
+          }
+        | {
+            kind: "panels";
+            panels: Array<
+              | {
+                  kind: "grouped";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "line";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+              | {
+                  kind: "stacked";
+                  labels: Array<string>;
+                  series: Array<{
+                    name: string;
+                    values: Array<number | null>;
+                  }>;
+                  title: string;
+                  unit: string;
+                }
+            >;
+            title: string;
+          };
+    };
+    completed: boolean;
+    completed_at: string | null;
+    completion: {
+      assessment_ready: boolean;
+      assessment_version: string | null;
+      button_label: string | null;
+      mode: "quiz" | "guide";
+      question_count: number | null;
+      required_correct: number | null;
+    };
+    completion_method: "quiz" | "guide" | "legacy_migration";
+    content_status: "published" | "not_published";
+    content_version: string | null;
     fixture: {
       [key: string]: unknown;
-    };
+    } | null;
     id: string;
-    kind: "technical" | "fundamental" | "tool" | "system";
+    kind: "technical" | "fundamental" | "concept" | "guide";
+    lead: string | null;
+    legacy_lesson_ids: Array<string>;
+    lesson_key: string;
     name: string;
+    nav_labels: [string, string, string, string] | null;
     order: number;
-    passed: boolean;
-    prerequisites: Array<string>;
-    review_status: string;
+    review_status: string | null;
+    reward:
+      | {
+          balance_after: number;
+          delta: number;
+          status: "credited";
+        }
+      | {
+          balance_after: number;
+          status: "already_rewarded";
+        }
+      | {
+          status: "unavailable";
+        }
+      | null;
     sections: Array<{
-      html: string;
+      blocks: Array<
+        | {
+            html: string;
+            type: "html";
+          }
+        | {
+            align?: Array<"l" | "r" | "c">;
+            aria_label?: string;
+            head: Array<string>;
+            rows: Array<Array<string>>;
+            source?: {
+              chart_id?: string;
+              hook: "macd-seed" | "application";
+              kind: "computed";
+            };
+            type: "table";
+          }
+        | {
+            caption?: string;
+            chart_id: string;
+            illustrative?: boolean;
+            table_toggle: boolean;
+            title: string;
+            type: "chart";
+          }
+        | {
+            alt: string;
+            asset_id: string;
+            caption?: string;
+            height: number;
+            max_width?: number;
+            src: string;
+            title: string;
+            type: "image";
+            width: number;
+            zoom_title: string;
+          }
+        | {
+            items: Array<{
+              html: string;
+              no: string;
+              title: string;
+            }>;
+            type: "steps";
+          }
+        | {
+            aria_label?: string;
+            blocks: Array<
+              | {
+                  html: string;
+                  type: "html";
+                }
+              | {
+                  align?: Array<"l" | "r" | "c">;
+                  aria_label?: string;
+                  head: Array<string>;
+                  rows: Array<Array<string>>;
+                  source?: {
+                    chart_id?: string;
+                    hook: "macd-seed" | "application";
+                    kind: "computed";
+                  };
+                  type: "table";
+                }
+              | {
+                  caption?: string;
+                  chart_id: string;
+                  illustrative?: boolean;
+                  table_toggle: boolean;
+                  title: string;
+                  type: "chart";
+                }
+              | {
+                  alt: string;
+                  asset_id: string;
+                  caption?: string;
+                  height: number;
+                  max_width?: number;
+                  src: string;
+                  title: string;
+                  type: "image";
+                  width: number;
+                  zoom_title: string;
+                }
+              | {
+                  items: Array<{
+                    html: string;
+                    no: string;
+                    title: string;
+                  }>;
+                  type: "steps";
+                }
+            >;
+            title?: string;
+            type: "callout";
+            variant:
+              | "notice"
+              | "worked"
+              | "signal-buy"
+              | "signal-sell"
+              | "filter-example";
+          }
+        | {
+            blocks: Array<
+              | {
+                  html: string;
+                  type: "html";
+                }
+              | {
+                  align?: Array<"l" | "r" | "c">;
+                  aria_label?: string;
+                  head: Array<string>;
+                  rows: Array<Array<string>>;
+                  source?: {
+                    chart_id?: string;
+                    hook: "macd-seed" | "application";
+                    kind: "computed";
+                  };
+                  type: "table";
+                }
+              | {
+                  caption?: string;
+                  chart_id: string;
+                  illustrative?: boolean;
+                  table_toggle: boolean;
+                  title: string;
+                  type: "chart";
+                }
+              | {
+                  alt: string;
+                  asset_id: string;
+                  caption?: string;
+                  height: number;
+                  max_width?: number;
+                  src: string;
+                  title: string;
+                  type: "image";
+                  width: number;
+                  zoom_title: string;
+                }
+              | {
+                  items: Array<{
+                    html: string;
+                    no: string;
+                    title: string;
+                  }>;
+                  type: "steps";
+                }
+            >;
+            summary: string;
+            type: "details";
+          }
+      >;
+      id: string;
       title: string;
     }>;
     sources: Array<string>;
+    title: string;
   };
 };
 
 export type AcademyLessonResponse =
   AcademyLessonResponses[keyof AcademyLessonResponses];
+
+export type AcademyResumeAttemptData = {
+  body?: never;
+  path: {
+    lessonId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/lessons/{lessonId}/attempt";
+};
+
+export type AcademyResumeAttemptErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyResumeAttemptError =
+  AcademyResumeAttemptErrors[keyof AcademyResumeAttemptErrors];
+
+export type AcademyResumeAttemptResponses = {
+  200: {
+    attempt: {
+      assessment_version: string;
+      attempt_id: string;
+      catalog_version: string;
+      content_version: string;
+      created_at: string;
+      draft: {
+        answered_count: number;
+        answers: Array<{
+          option_id: string;
+          question_id: string;
+        }>;
+        revision: number;
+        total: 8;
+        updated_at: string | null;
+      };
+      lesson_id: string;
+      lesson_key: string;
+      questions: Array<{
+        figure:
+          | {
+              chart:
+                | {
+                    kind: "series_panels";
+                    marks: Array<{
+                      i: number;
+                      label: string;
+                    }>;
+                    panels: Array<{
+                      band?: {
+                        lower: Array<number | null>;
+                        upper: Array<number | null>;
+                      };
+                      bars?: {
+                        colors: Array<"pos" | "neg" | "neutral">;
+                        name: string;
+                        values: Array<number | null>;
+                      };
+                      bounds?: [number, number];
+                      digits?: number;
+                      levels?: Array<{
+                        role: "buy" | "sell";
+                        value: number;
+                      }>;
+                      nonnegative?: true;
+                      series: Array<{
+                        dash?: true;
+                        name: string;
+                        role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
+                        values: Array<number | null>;
+                      }>;
+                      ticks?: Array<number>;
+                      title: string;
+                      zero?: true;
+                    }>;
+                    x: {
+                      end: number;
+                      start: number;
+                      ticks?: Array<string>;
+                    };
+                  }
+                | {
+                    kind: "grouped";
+                    labels: Array<string>;
+                    series: Array<{
+                      name: string;
+                      values: Array<number | null>;
+                    }>;
+                    title: string;
+                    unit: string;
+                  }
+                | {
+                    kind: "line";
+                    labels: Array<string>;
+                    series: Array<{
+                      name: string;
+                      values: Array<number | null>;
+                    }>;
+                    title: string;
+                    unit: string;
+                  }
+                | {
+                    kind: "stacked";
+                    labels: Array<string>;
+                    series: Array<{
+                      name: string;
+                      values: Array<number | null>;
+                    }>;
+                    title: string;
+                    unit: string;
+                  }
+                | {
+                    kind: "timeline";
+                    labels: Array<string>;
+                    rows: Array<{
+                      detail: string;
+                      end: number;
+                      name: string;
+                      start: number;
+                    }>;
+                    title: string;
+                  }
+                | {
+                    kind: "waterfall";
+                    steps: Array<{
+                      name: string;
+                      total?: true;
+                      value: number;
+                    }>;
+                    title: string;
+                    unit: string;
+                  }
+                | {
+                    kind: "panels";
+                    panels: Array<
+                      | {
+                          kind: "grouped";
+                          labels: Array<string>;
+                          series: Array<{
+                            name: string;
+                            values: Array<number | null>;
+                          }>;
+                          title: string;
+                          unit: string;
+                        }
+                      | {
+                          kind: "line";
+                          labels: Array<string>;
+                          series: Array<{
+                            name: string;
+                            values: Array<number | null>;
+                          }>;
+                          title: string;
+                          unit: string;
+                        }
+                      | {
+                          kind: "stacked";
+                          labels: Array<string>;
+                          series: Array<{
+                            name: string;
+                            values: Array<number | null>;
+                          }>;
+                          title: string;
+                          unit: string;
+                        }
+                    >;
+                    title: string;
+                  };
+              chart_id: string;
+              type: "chart";
+            }
+          | {
+              head: Array<string>;
+              rows: Array<Array<string>>;
+              type: "table";
+            }
+          | null;
+        hint: string | null;
+        id: string;
+        options: Array<{
+          id: string;
+          text: string;
+        }>;
+        prompt: string;
+        section: number | null;
+        topic: string | null;
+      }>;
+      status: "open" | "submitted";
+    } | null;
+    catalog_version: string;
+    lesson_id: string;
+    lesson_key: string;
+  };
+};
+
+export type AcademyResumeAttemptResponse =
+  AcademyResumeAttemptResponses[keyof AcademyResumeAttemptResponses];
+
+export type AcademyLessonAttemptsData = {
+  body?: never;
+  path: {
+    lessonId: string;
+  };
+  query?: {
+    limit?: number;
+    offset?: number;
+  };
+  url: "/api/v2/academy/lessons/{lessonId}/attempts";
+};
+
+export type AcademyLessonAttemptsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyLessonAttemptsError =
+  AcademyLessonAttemptsErrors[keyof AcademyLessonAttemptsErrors];
+
+export type AcademyLessonAttemptsResponses = {
+  200: {
+    catalog_version: string;
+    items: Array<{
+      attempt_id: string;
+      passed: boolean;
+      review_available: boolean;
+      score: number;
+      submitted_at: string;
+      total: 8;
+    }>;
+    lesson_id: string;
+    lesson_key: string;
+    limit: number;
+    next_offset: number | null;
+    offset: number;
+    total: number;
+  };
+};
+
+export type AcademyLessonAttemptsResponse =
+  AcademyLessonAttemptsResponses[keyof AcademyLessonAttemptsResponses];
+
+export type AcademyCompleteGuideData = {
+  body: {
+    catalog_version: string;
+    content_version: string;
+    request_id: string;
+  };
+  path: {
+    lessonId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/lessons/{lessonId}/complete";
+};
+
+export type AcademyCompleteGuideErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyCompleteGuideError =
+  AcademyCompleteGuideErrors[keyof AcademyCompleteGuideErrors];
+
+export type AcademyCompleteGuideResponses = {
+  200: {
+    catalog_version: string;
+    completion: {
+      completed: boolean;
+      completed_at: string | null;
+      completion_method: "quiz" | "guide" | "legacy_migration";
+      newly_completed: boolean;
+    };
+    granted_capabilities: Array<string>;
+    lesson_id: string;
+    lesson_key: string;
+    progress_revision: number;
+    reward:
+      | {
+          balance_after: number;
+          delta: number;
+          status: "credited";
+        }
+      | {
+          balance_after: number;
+          status: "already_rewarded";
+        }
+      | {
+          status: "unavailable";
+        }
+      | null;
+  };
+};
+
+export type AcademyCompleteGuideResponse =
+  AcademyCompleteGuideResponses[keyof AcademyCompleteGuideResponses];
+
+export type AcademyProgressData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/academy/progress";
+};
+
+export type AcademyProgressErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyProgressError =
+  AcademyProgressErrors[keyof AcademyProgressErrors];
+
+export type AcademyProgressResponses = {
+  200: {
+    catalog_version: string;
+    chapters: Array<{
+      done: number;
+      no: number;
+      total: number;
+    }>;
+    completed: Array<{
+      completed_at: string;
+      completion_method: "quiz" | "guide" | "legacy_migration";
+      lesson_id: string;
+      lesson_key: string;
+    }>;
+    completed_lesson_ids: Array<string>;
+    course_done: number;
+    course_total: number;
+    granted_capabilities: Array<string>;
+    progress_revision: number;
+  };
+};
+
+export type AcademyProgressResponse =
+  AcademyProgressResponses[keyof AcademyProgressResponses];
 
 export type AdminAlertsControllerFactorLibrary1Data = {
   body?: never;
@@ -30117,6 +31510,203 @@ export type GetBotJournalGetApiV2BotJournalResponses = {
 export type GetBotJournalGetApiV2BotJournalResponse =
   GetBotJournalGetApiV2BotJournalResponses[keyof GetBotJournalGetApiV2BotJournalResponses];
 
+export type ListBotJournalSessionsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    cursor?: string;
+    limit?: number;
+  };
+  url: "/api/v2/bot/journal/sessions";
+};
+
+export type ListBotJournalSessionsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListBotJournalSessionsError =
+  ListBotJournalSessionsErrors[keyof ListBotJournalSessionsErrors];
+
+export type ListBotJournalSessionsResponses = {
+  200: {
+    items: Array<{
+      cash_end_vnd: string | null;
+      completed_at: string | null;
+      config_revision: number | null;
+      counts: {
+        buy: number;
+        hold: number;
+        sell: number;
+        skip: number;
+        total: number;
+      };
+      issues: Array<{
+        code: string;
+        detail: string | null;
+        symbol: string | null;
+      }>;
+      nav_end_vnd: string | null;
+      policy_version: string | null;
+      reasons: Array<{
+        action: "buy" | "sell" | "hold" | "skip";
+        count: number;
+        reason_code: string;
+        reason_label: string | null;
+      }>;
+      run_id: string;
+      run_status: "running" | "succeeded" | "failed";
+      session: string;
+      started_at: string;
+      universe: {
+        kind: "vn30" | "custom";
+        name: string | null;
+        revision: number;
+      } | null;
+      valuation_complete: boolean | null;
+    }>;
+    next_cursor: string | null;
+  };
+};
+
+export type ListBotJournalSessionsResponse =
+  ListBotJournalSessionsResponses[keyof ListBotJournalSessionsResponses];
+
+export type GetBotJournalSessionData = {
+  body?: never;
+  path: {
+    session: string;
+  };
+  query?: {
+    cursor?: string;
+    limit?: number;
+  };
+  url: "/api/v2/bot/journal/sessions/{session}";
+};
+
+export type GetBotJournalSessionErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetBotJournalSessionError =
+  GetBotJournalSessionErrors[keyof GetBotJournalSessionErrors];
+
+export type GetBotJournalSessionResponses = {
+  200: {
+    items: Array<{
+      action: "buy" | "sell" | "hold" | "skip";
+      condition_snapshot: {
+        [key: string]: unknown;
+      } | null;
+      created_at: string;
+      decision_config_revision: number | null;
+      execution: {
+        fee_vnd: string;
+        gross_value_vnd: string;
+        id: string;
+        net_cash_delta_vnd: string;
+        price_vnd: string;
+        qty: number;
+        side: "buy" | "sell";
+        tax_vnd: string;
+      } | null;
+      id: string;
+      in_universe: boolean | null;
+      legacy_filter_ids: Array<string>;
+      legacy_threshold_vnd: string | null;
+      policy_version: string | null;
+      rank_tuple: Array<unknown> | null;
+      reason: string;
+      reason_code: string;
+      reason_label: string | null;
+      run_id: string;
+      source_refs: {
+        [key: string]: unknown;
+      };
+      symbol: string | null;
+      trading_date: string;
+      universe_kind: "vn30" | "custom";
+      universe_revision: number | null;
+    }>;
+    next_cursor: string | null;
+    session: {
+      cash_end_vnd: string | null;
+      completed_at: string | null;
+      config_revision: number | null;
+      counts: {
+        buy: number;
+        hold: number;
+        sell: number;
+        skip: number;
+        total: number;
+      };
+      issues: Array<{
+        code: string;
+        detail: string | null;
+        symbol: string | null;
+      }>;
+      nav_end_vnd: string | null;
+      policy_version: string | null;
+      reasons: Array<{
+        action: "buy" | "sell" | "hold" | "skip";
+        count: number;
+        reason_code: string;
+        reason_label: string | null;
+      }>;
+      run_id: string;
+      run_status: "running" | "succeeded" | "failed";
+      session: string;
+      started_at: string;
+      universe: {
+        kind: "vn30" | "custom";
+        name: string | null;
+        revision: number;
+      } | null;
+      valuation_complete: boolean | null;
+    };
+  };
+};
+
+export type GetBotJournalSessionResponse =
+  GetBotJournalSessionResponses[keyof GetBotJournalSessionResponses];
+
 export type JourneyIdentityControllerGetMascot1Data = {
   body?: never;
   path?: never;
@@ -30330,6 +31920,643 @@ export type GetBotStatusGetApiV2BotStatusResponses = {
 
 export type GetBotStatusGetApiV2BotStatusResponse =
   GetBotStatusGetApiV2BotStatusResponses[keyof GetBotStatusGetApiV2BotStatusResponses];
+
+export type GetBotTradesData = {
+  body?: never;
+  path?: never;
+  query?: {
+    cursor?: string;
+    limit?: number;
+  };
+  url: "/api/v2/bot/trades";
+};
+
+export type GetBotTradesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetBotTradesError = GetBotTradesErrors[keyof GetBotTradesErrors];
+
+export type GetBotTradesResponses = {
+  200: {
+    items: Array<{
+      buy: {
+        decision_config_revision: number | null;
+        decision_id: string | null;
+        entry_source_snapshot: {
+          [key: string]: unknown;
+        } | null;
+        executed_at: string;
+        execution_id: string | null;
+        fee_vnd: string;
+        gross_value_vnd: string;
+        price_vnd: string;
+        qty: number;
+        reason: string | null;
+        reason_code: string | null;
+        reason_label: string | null;
+        session: string;
+        total_vnd: string;
+      };
+      holding_days: number;
+      holding_sessions: number;
+      id: string;
+      legacy_amplitude_at_entry_vnd: string | null;
+      legacy_amplitude_source_ref: string | null;
+      legacy_filter_ids: Array<string>;
+      legacy_stop_loss_vnd: string | null;
+      legacy_take_profit_vnd: string | null;
+      realized_pnl_pct: string | null;
+      realized_pnl_vnd: string;
+      sell: {
+        decision_config_revision: number | null;
+        decision_id: string | null;
+        executed_at: string;
+        execution_id: string;
+        fee_vnd: string;
+        gross_value_vnd: string;
+        net_vnd: string;
+        price_vnd: string;
+        qty: number;
+        reason: string | null;
+        reason_code: string | null;
+        reason_label: string | null;
+        session: string;
+        tax_vnd: string;
+      };
+      symbol: string;
+    }>;
+    next_cursor: string | null;
+  };
+};
+
+export type GetBotTradesResponse =
+  GetBotTradesResponses[keyof GetBotTradesResponses];
+
+export type GetBotUniverseData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/universe";
+};
+
+export type GetBotUniverseErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetBotUniverseError =
+  GetBotUniverseErrors[keyof GetBotUniverseErrors];
+
+export type GetBotUniverseResponses = {
+  200: {
+    effective: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      membership_session: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+      symbols: Array<{
+        exchange: string | null;
+        name: string | null;
+        symbol: string;
+      }>;
+      unavailable_reason: string | null;
+    };
+    history: Array<{
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    }>;
+    pending: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    } | null;
+    revision: number;
+    server_date: string;
+  };
+};
+
+export type GetBotUniverseResponse =
+  GetBotUniverseResponses[keyof GetBotUniverseResponses];
+
+export type ApplyBotUniverseListData = {
+  body: {
+    expected_revision: number;
+    idempotency_key: string;
+    list_id: string;
+    symbols: Array<string>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/universe/apply-list";
+};
+
+export type ApplyBotUniverseListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ApplyBotUniverseListError =
+  ApplyBotUniverseListErrors[keyof ApplyBotUniverseListErrors];
+
+export type ApplyBotUniverseListResponses = {
+  201: {
+    request: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    };
+    state: {
+      effective: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        membership_session: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+        symbols: Array<{
+          exchange: string | null;
+          name: string | null;
+          symbol: string;
+        }>;
+        unavailable_reason: string | null;
+      };
+      history: Array<{
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      }>;
+      pending: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      } | null;
+      revision: number;
+      server_date: string;
+    };
+  };
+};
+
+export type ApplyBotUniverseListResponse =
+  ApplyBotUniverseListResponses[keyof ApplyBotUniverseListResponses];
+
+export type CancelBotUniversePendingData = {
+  body: {
+    expected_revision: number;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/universe/pending/cancel";
+};
+
+export type CancelBotUniversePendingErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CancelBotUniversePendingError =
+  CancelBotUniversePendingErrors[keyof CancelBotUniversePendingErrors];
+
+export type CancelBotUniversePendingResponses = {
+  200: {
+    request: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    };
+    state: {
+      effective: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        membership_session: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+        symbols: Array<{
+          exchange: string | null;
+          name: string | null;
+          symbol: string;
+        }>;
+        unavailable_reason: string | null;
+      };
+      history: Array<{
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      }>;
+      pending: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      } | null;
+      revision: number;
+      server_date: string;
+    };
+  };
+};
+
+export type CancelBotUniversePendingResponse =
+  CancelBotUniversePendingResponses[keyof CancelBotUniversePendingResponses];
+
+export type RevertBotUniverseToVn30Data = {
+  body: {
+    expected_revision: number;
+    idempotency_key: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/bot/universe/revert-vn30";
+};
+
+export type RevertBotUniverseToVn30Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type RevertBotUniverseToVn30Error =
+  RevertBotUniverseToVn30Errors[keyof RevertBotUniverseToVn30Errors];
+
+export type RevertBotUniverseToVn30Responses = {
+  201: {
+    request: {
+      cancelled_at: string | null;
+      effective_session: string | null;
+      kind: "vn30" | "custom";
+      list_as_of: string | null;
+      name: string;
+      provenance: {
+        [key: string]: unknown;
+      };
+      requested_at: string | null;
+      revision: number;
+      saved_list_id: string | null;
+      status:
+        | "implicit"
+        | "pending"
+        | "effective"
+        | "cancelled"
+        | "superseded"
+        | "calendar_unavailable";
+      superseded_by: number | null;
+      symbol_count: number | null;
+    };
+    state: {
+      effective: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        membership_session: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+        symbols: Array<{
+          exchange: string | null;
+          name: string | null;
+          symbol: string;
+        }>;
+        unavailable_reason: string | null;
+      };
+      history: Array<{
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      }>;
+      pending: {
+        cancelled_at: string | null;
+        effective_session: string | null;
+        kind: "vn30" | "custom";
+        list_as_of: string | null;
+        name: string;
+        provenance: {
+          [key: string]: unknown;
+        };
+        requested_at: string | null;
+        revision: number;
+        saved_list_id: string | null;
+        status:
+          | "implicit"
+          | "pending"
+          | "effective"
+          | "cancelled"
+          | "superseded"
+          | "calendar_unavailable";
+        superseded_by: number | null;
+        symbol_count: number | null;
+      } | null;
+      revision: number;
+      server_date: string;
+    };
+  };
+};
+
+export type RevertBotUniverseToVn30Response =
+  RevertBotUniverseToVn30Responses[keyof RevertBotUniverseToVn30Responses];
 
 export type Cap0ControllerEnter1Data = {
   body?: never;
@@ -37936,6 +40163,1535 @@ export type GetPortfolioReportV2Responses = {
 export type GetPortfolioReportV2Response =
   GetPortfolioReportV2Responses[keyof GetPortfolioReportV2Responses];
 
+export type PracticeIndicatorsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/practice/indicators";
+};
+
+export type PracticeIndicatorsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeIndicatorsError =
+  PracticeIndicatorsErrors[keyof PracticeIndicatorsErrors];
+
+export type PracticeIndicatorsResponses = {
+  200: {
+    hold: {
+      default: number;
+      max: number;
+      min: number;
+    };
+    indicators: Array<{
+      granted: boolean;
+      indicator_id: string;
+      lesson_key: string;
+      name: string;
+      progress: {
+        completed_count: number;
+        cursor: number;
+        status: "not_started" | "in_progress" | "completed";
+        total: number;
+      } | null;
+    }>;
+    profile: {
+      buy_fee_rate: number;
+      capital: number;
+      lot: number;
+      profile_version: string;
+      sell_cost_rate: number;
+      verified: boolean;
+      [key: string]: unknown;
+    };
+    set: {
+      case_count: number;
+      set_version: string;
+      test_months: number;
+      window_bars: number;
+    };
+  };
+};
+
+export type PracticeIndicatorsResponse =
+  PracticeIndicatorsResponses[keyof PracticeIndicatorsResponses];
+
+export type PracticeGetRunData = {
+  body?: never;
+  path: {
+    runId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/runs/{runId}";
+};
+
+export type PracticeGetRunErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeGetRunError =
+  PracticeGetRunErrors[keyof PracticeGetRunErrors];
+
+export type PracticeGetRunResponses = {
+  200: {
+    attempts: number;
+    case_id: string;
+    chart: {
+      bars: {
+        close: Array<number>;
+        high: Array<number>;
+        low: Array<number>;
+        open: Array<number>;
+        volume: Array<number>;
+      };
+      first_session: number;
+      last_observed_session: 0;
+      last_session: number;
+      plot: {
+        buy: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+        sell: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+      };
+      series: {
+        buy: {
+          [key: string]: Array<number | null>;
+        };
+        sell: {
+          [key: string]: Array<number | null>;
+        };
+      };
+    } | null;
+    completed_at: string | null;
+    config: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    error: {
+      code: string;
+      message: string;
+    } | null;
+    indicator_id: string;
+    locked_at: string;
+    ordinal: number;
+    result: {
+      comment: {
+        rule_id: string;
+        status: "ok" | "unavailable";
+        text: string | null;
+        values: {
+          [key: string]: unknown;
+        };
+        version: string;
+      };
+      data_notes: Array<string>;
+      events: Array<{
+        price: number;
+        reason?: "indicator" | "max_holding";
+        session: number;
+        side: "buy" | "sell";
+        trade_ordinal: number;
+      }>;
+      first_session: 1;
+      kpis: {
+        buy_count: number;
+        capital_initial: number;
+        cash_end: number;
+        closed_trade_count: number;
+        insufficient_cash_buys: number;
+        nav_end: number | null;
+        open_position: boolean;
+        open_position_value: number | null;
+        total_return: number | null;
+        valuation: "ok" | "missing";
+      };
+      last_session: number;
+      missed_buys: Array<{
+        cash: number;
+        fill_session: number;
+        price: number;
+        signal_session: number;
+      }>;
+      nav: Array<number>;
+      pending_orders: Array<{
+        reason: "indicator" | "max_holding" | "buy_signal";
+        side: "buy" | "sell";
+        signal_session: number;
+        status: "unfilled_end_of_window";
+        time_due: boolean;
+      }>;
+      trades: Array<{
+        buy: {
+          evidence: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            result: boolean | null;
+            rules: Array<{
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs: number | null;
+              missing: boolean;
+              op: ">" | "<" | "∈" | "∉";
+              result: boolean | null;
+              rhs: number | null;
+              right_label: string;
+              rule_id: string;
+              [key: string]: unknown;
+            }>;
+            side: "buy" | "sell";
+            signal_session: number;
+          };
+          fee: number;
+          price: number;
+          session: number;
+          signal_session: number;
+          total_cost: number;
+        };
+        holding_sessions: number;
+        mark: {
+          market_value: number;
+          price: number;
+          session: number;
+        } | null;
+        ordinal: number;
+        pnl_kind: "realized" | "unrealized";
+        pnl_ratio: number;
+        pnl_vnd: number;
+        qty: number;
+        sell: {
+          evidence: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            result: boolean | null;
+            rules: Array<{
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs: number | null;
+              missing: boolean;
+              op: ">" | "<" | "∈" | "∉";
+              result: boolean | null;
+              rhs: number | null;
+              right_label: string;
+              rule_id: string;
+              [key: string]: unknown;
+            }>;
+            side: "buy" | "sell";
+            signal_session: number;
+          };
+          fee: number;
+          indicator_met: boolean;
+          net_proceeds: number;
+          price: number;
+          reason: "indicator" | "max_holding";
+          session: number;
+          signal_session: number;
+          time_due: boolean;
+          time_exit: {
+            due: boolean;
+            held_sessions_at_signal: number;
+            hold_max_sessions: number;
+          };
+        } | null;
+        status: "closed" | "open";
+      }>;
+    } | null;
+    run_id: string;
+    status: "computing" | "succeeded" | "failed";
+    total: number;
+    versions: {
+      calculation_version: string;
+      comment_version: string;
+      data_version: string;
+      engine_version: string;
+      execution_version: string;
+      profile_version: string;
+      rule_version: string;
+      set_version: string;
+    };
+  };
+};
+
+export type PracticeGetRunResponse =
+  PracticeGetRunResponses[keyof PracticeGetRunResponses];
+
+export type PracticeSaveDraftData = {
+  body: {
+    draft: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    expected_revision: number;
+  };
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/draft";
+};
+
+export type PracticeSaveDraftErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeSaveDraftError =
+  PracticeSaveDraftErrors[keyof PracticeSaveDraftErrors];
+
+export type PracticeSaveDraftResponses = {
+  200: {
+    draft: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    draft_revision: number;
+    validation: {
+      errors: Array<{
+        message: string;
+        path: string;
+      }>;
+      valid: boolean;
+    };
+  };
+};
+
+export type PracticeSaveDraftResponse =
+  PracticeSaveDraftResponses[keyof PracticeSaveDraftResponses];
+
+export type PracticeHistoryData = {
+  body?: never;
+  path: {
+    indicatorId: string;
+  };
+  query?: {
+    page?: number;
+    page_size?: number;
+  };
+  url: "/api/v2/practice/{indicatorId}/history";
+};
+
+export type PracticeHistoryErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeHistoryError =
+  PracticeHistoryErrors[keyof PracticeHistoryErrors];
+
+export type PracticeHistoryResponses = {
+  200: {
+    items: Array<{
+      case_id: string;
+      completed_at: string | null;
+      config: {
+        buy: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+        hold_max_sessions: number;
+        sell: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+      };
+      kpis: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+      ordinal: number;
+      run_id: string;
+      versions: {
+        calculation_version: string;
+        comment_version: string;
+        data_version: string;
+        engine_version: string;
+        execution_version: string;
+        profile_version: string;
+        rule_version: string;
+        set_version: string;
+      };
+    }>;
+    page: number;
+    page_size: number;
+    total: number;
+  };
+};
+
+export type PracticeHistoryResponse =
+  PracticeHistoryResponses[keyof PracticeHistoryResponses];
+
+export type PracticeNextData = {
+  body: {
+    expected_cursor: number;
+    idempotency_key: string;
+  };
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/next";
+};
+
+export type PracticeNextErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeNextError = PracticeNextErrors[keyof PracticeNextErrors];
+
+export type PracticeNextResponses = {
+  200: {
+    can_next: boolean;
+    can_retry: boolean;
+    can_start: boolean;
+    case: {
+      case_id: string;
+      ordinal: number;
+      window_bars: number;
+    };
+    completed_count: number;
+    current_run: {
+      case_id: string;
+      ordinal: number;
+      run_id: string;
+      status: "computing" | "succeeded" | "failed";
+      summary: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+    } | null;
+    draft: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    draft_revision: number;
+    form: {
+      buy: {
+        fields: Array<{
+          key: string;
+          label: string;
+          max: number;
+          min: number;
+          step: number;
+          type: "integer" | "number";
+          unit: string;
+        }>;
+        rules: Array<{
+          allowed_ops: Array<">" | "<" | "∈" | "∉">;
+          default_op: ">" | "<" | "∈" | "∉";
+          kind: "compare" | "cross" | "membership";
+          left_label: string;
+          lhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              };
+          rhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              }
+            | {
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+          right_label: string;
+          rule_id: string;
+        }>;
+      };
+      cross_fields: Array<{
+        left: string;
+        op: ">" | "<";
+        right: string;
+      }>;
+      defaults: {
+        buy: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+        hold_max_sessions: number;
+        sell: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+      };
+      indicator_id: string;
+      sell: {
+        fields: Array<{
+          key: string;
+          label: string;
+          max: number;
+          min: number;
+          step: number;
+          type: "integer" | "number";
+          unit: string;
+        }>;
+        rules: Array<{
+          allowed_ops: Array<">" | "<" | "∈" | "∉">;
+          default_op: ">" | "<" | "∈" | "∉";
+          kind: "compare" | "cross" | "membership";
+          left_label: string;
+          lhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              };
+          rhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              }
+            | {
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+          right_label: string;
+          rule_id: string;
+        }>;
+      };
+    };
+    indicator: {
+      id: string;
+      name: string;
+    };
+    ordinal: number;
+    profile: {
+      buy_fee_rate: number;
+      capital: number;
+      lot: number;
+      profile_version: string;
+      sell_cost_rate: number;
+      verified: boolean;
+      [key: string]: unknown;
+    };
+    runs: Array<{
+      case_id: string;
+      ordinal: number;
+      run_id: string;
+      status: "computing" | "succeeded" | "failed";
+      summary: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+    }>;
+    set_version: string;
+    status: "ready" | "computing" | "failed" | "completed" | "set_completed";
+    total: number;
+    validation: {
+      errors: Array<{
+        message: string;
+        path: string;
+      }>;
+      valid: boolean;
+    };
+  };
+};
+
+export type PracticeNextResponse =
+  PracticeNextResponses[keyof PracticeNextResponses];
+
+export type PracticePreviewData = {
+  body: {
+    buy_params?: {
+      [key: string]: number;
+    };
+    sell_params?: {
+      [key: string]: number;
+    };
+  };
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/preview";
+};
+
+export type PracticePreviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticePreviewError =
+  PracticePreviewErrors[keyof PracticePreviewErrors];
+
+export type PracticePreviewResponses = {
+  200: {
+    case_id: string;
+    chart: {
+      bars: {
+        close: Array<number>;
+        high: Array<number>;
+        low: Array<number>;
+        open: Array<number>;
+        volume: Array<number>;
+      };
+      first_session: number;
+      last_observed_session: 0;
+      last_session: number;
+      plot: {
+        buy: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+        sell: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+      };
+      series: {
+        buy: {
+          [key: string]: Array<number | null>;
+        };
+        sell: {
+          [key: string]: Array<number | null>;
+        };
+      };
+    };
+    data_notes: Array<string>;
+    ordinal: number;
+    window_bars: number;
+  };
+};
+
+export type PracticePreviewResponse =
+  PracticePreviewResponses[keyof PracticePreviewResponses];
+
+export type PracticeStartRunData = {
+  body: {
+    case_id: string;
+    config: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    idempotency_key: string;
+    ordinal: number;
+  };
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/runs";
+};
+
+export type PracticeStartRunErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeStartRunError =
+  PracticeStartRunErrors[keyof PracticeStartRunErrors];
+
+export type PracticeStartRunResponses = {
+  201: {
+    attempts: number;
+    case_id: string;
+    chart: {
+      bars: {
+        close: Array<number>;
+        high: Array<number>;
+        low: Array<number>;
+        open: Array<number>;
+        volume: Array<number>;
+      };
+      first_session: number;
+      last_observed_session: 0;
+      last_session: number;
+      plot: {
+        buy: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+        sell: {
+          bounds: [number, number] | null;
+          histogram_key: string | null;
+          lines: Array<{
+            key: string;
+            label: string;
+          }>;
+          nonnegative: boolean;
+          overlay: boolean;
+          reference_levels: Array<number>;
+          threshold_levels: Array<number>;
+          volume_key: string | null;
+          zero_line: boolean;
+        };
+      };
+      series: {
+        buy: {
+          [key: string]: Array<number | null>;
+        };
+        sell: {
+          [key: string]: Array<number | null>;
+        };
+      };
+    } | null;
+    completed_at: string | null;
+    config: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    error: {
+      code: string;
+      message: string;
+    } | null;
+    indicator_id: string;
+    locked_at: string;
+    ordinal: number;
+    result: {
+      comment: {
+        rule_id: string;
+        status: "ok" | "unavailable";
+        text: string | null;
+        values: {
+          [key: string]: unknown;
+        };
+        version: string;
+      };
+      data_notes: Array<string>;
+      events: Array<{
+        price: number;
+        reason?: "indicator" | "max_holding";
+        session: number;
+        side: "buy" | "sell";
+        trade_ordinal: number;
+      }>;
+      first_session: 1;
+      kpis: {
+        buy_count: number;
+        capital_initial: number;
+        cash_end: number;
+        closed_trade_count: number;
+        insufficient_cash_buys: number;
+        nav_end: number | null;
+        open_position: boolean;
+        open_position_value: number | null;
+        total_return: number | null;
+        valuation: "ok" | "missing";
+      };
+      last_session: number;
+      missed_buys: Array<{
+        cash: number;
+        fill_session: number;
+        price: number;
+        signal_session: number;
+      }>;
+      nav: Array<number>;
+      pending_orders: Array<{
+        reason: "indicator" | "max_holding" | "buy_signal";
+        side: "buy" | "sell";
+        signal_session: number;
+        status: "unfilled_end_of_window";
+        time_due: boolean;
+      }>;
+      trades: Array<{
+        buy: {
+          evidence: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            result: boolean | null;
+            rules: Array<{
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs: number | null;
+              missing: boolean;
+              op: ">" | "<" | "∈" | "∉";
+              result: boolean | null;
+              rhs: number | null;
+              right_label: string;
+              rule_id: string;
+              [key: string]: unknown;
+            }>;
+            side: "buy" | "sell";
+            signal_session: number;
+          };
+          fee: number;
+          price: number;
+          session: number;
+          signal_session: number;
+          total_cost: number;
+        };
+        holding_sessions: number;
+        mark: {
+          market_value: number;
+          price: number;
+          session: number;
+        } | null;
+        ordinal: number;
+        pnl_kind: "realized" | "unrealized";
+        pnl_ratio: number;
+        pnl_vnd: number;
+        qty: number;
+        sell: {
+          evidence: {
+            enabled: boolean;
+            params: {
+              [key: string]: number;
+            };
+            result: boolean | null;
+            rules: Array<{
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs: number | null;
+              missing: boolean;
+              op: ">" | "<" | "∈" | "∉";
+              result: boolean | null;
+              rhs: number | null;
+              right_label: string;
+              rule_id: string;
+              [key: string]: unknown;
+            }>;
+            side: "buy" | "sell";
+            signal_session: number;
+          };
+          fee: number;
+          indicator_met: boolean;
+          net_proceeds: number;
+          price: number;
+          reason: "indicator" | "max_holding";
+          session: number;
+          signal_session: number;
+          time_due: boolean;
+          time_exit: {
+            due: boolean;
+            held_sessions_at_signal: number;
+            hold_max_sessions: number;
+          };
+        } | null;
+        status: "closed" | "open";
+      }>;
+    } | null;
+    run_id: string;
+    status: "computing" | "succeeded" | "failed";
+    total: number;
+    versions: {
+      calculation_version: string;
+      comment_version: string;
+      data_version: string;
+      engine_version: string;
+      execution_version: string;
+      profile_version: string;
+      rule_version: string;
+      set_version: string;
+    };
+  };
+};
+
+export type PracticeStartRunResponse =
+  PracticeStartRunResponses[keyof PracticeStartRunResponses];
+
+export type PracticeStateData = {
+  body?: never;
+  path: {
+    indicatorId: string;
+  };
+  query?: never;
+  url: "/api/v2/practice/{indicatorId}/state";
+};
+
+export type PracticeStateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PracticeStateError = PracticeStateErrors[keyof PracticeStateErrors];
+
+export type PracticeStateResponses = {
+  200: {
+    can_next: boolean;
+    can_retry: boolean;
+    can_start: boolean;
+    case: {
+      case_id: string;
+      ordinal: number;
+      window_bars: number;
+    };
+    completed_count: number;
+    current_run: {
+      case_id: string;
+      ordinal: number;
+      run_id: string;
+      status: "computing" | "succeeded" | "failed";
+      summary: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+    } | null;
+    draft: {
+      buy: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+      hold_max_sessions: number;
+      sell: {
+        enabled: boolean;
+        ops: {
+          [key: string]: ">" | "<" | "∈" | "∉";
+        };
+        params: {
+          [key: string]: number;
+        };
+      };
+    };
+    draft_revision: number;
+    form: {
+      buy: {
+        fields: Array<{
+          key: string;
+          label: string;
+          max: number;
+          min: number;
+          step: number;
+          type: "integer" | "number";
+          unit: string;
+        }>;
+        rules: Array<{
+          allowed_ops: Array<">" | "<" | "∈" | "∉">;
+          default_op: ">" | "<" | "∈" | "∉";
+          kind: "compare" | "cross" | "membership";
+          left_label: string;
+          lhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              };
+          rhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              }
+            | {
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+          right_label: string;
+          rule_id: string;
+        }>;
+      };
+      cross_fields: Array<{
+        left: string;
+        op: ">" | "<";
+        right: string;
+      }>;
+      defaults: {
+        buy: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+        hold_max_sessions: number;
+        sell: {
+          enabled: boolean;
+          ops: {
+            [key: string]: ">" | "<" | "∈" | "∉";
+          };
+          params: {
+            [key: string]: number;
+          };
+        };
+      };
+      indicator_id: string;
+      sell: {
+        fields: Array<{
+          key: string;
+          label: string;
+          max: number;
+          min: number;
+          step: number;
+          type: "integer" | "number";
+          unit: string;
+        }>;
+        rules: Array<{
+          allowed_ops: Array<">" | "<" | "∈" | "∉">;
+          default_op: ">" | "<" | "∈" | "∉";
+          kind: "compare" | "cross" | "membership";
+          left_label: string;
+          lhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              };
+          rhs:
+            | {
+                key: string;
+                kind: "series";
+                offset?: number;
+              }
+            | {
+                key: string;
+                kind: "param";
+              }
+            | {
+                kind: "constant";
+                value: number;
+              }
+            | {
+                lower:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+                upper:
+                  | {
+                      key: string;
+                      kind: "series";
+                      offset?: number;
+                    }
+                  | {
+                      key: string;
+                      kind: "param";
+                    }
+                  | {
+                      kind: "constant";
+                      value: number;
+                    };
+              };
+          right_label: string;
+          rule_id: string;
+        }>;
+      };
+    };
+    indicator: {
+      id: string;
+      name: string;
+    };
+    ordinal: number;
+    profile: {
+      buy_fee_rate: number;
+      capital: number;
+      lot: number;
+      profile_version: string;
+      sell_cost_rate: number;
+      verified: boolean;
+      [key: string]: unknown;
+    };
+    runs: Array<{
+      case_id: string;
+      ordinal: number;
+      run_id: string;
+      status: "computing" | "succeeded" | "failed";
+      summary: {
+        buy_count: number;
+        closed_trade_count: number;
+        comment_rule_id: string | null;
+        open_position: boolean;
+        total_return: number | null;
+      } | null;
+    }>;
+    set_version: string;
+    status: "ready" | "computing" | "failed" | "completed" | "set_completed";
+    total: number;
+    validation: {
+      errors: Array<{
+        message: string;
+        path: string;
+      }>;
+      valid: boolean;
+    };
+  };
+};
+
+export type PracticeStateResponse =
+  PracticeStateResponses[keyof PracticeStateResponses];
+
 export type AdminListPremiumPlansGetApiV2PremiumAdminPlansData = {
   body?: never;
   path?: never;
@@ -38421,6 +42177,1346 @@ export type ReferralsControllerMine1Responses = {
 export type ReferralsControllerMine1Response =
   ReferralsControllerMine1Responses[keyof ReferralsControllerMine1Responses];
 
+export type GetShopData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/shop";
+};
+
+export type GetShopErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetShopError = GetShopErrors[keyof GetShopErrors];
+
+export type GetShopResponses = {
+  200: {
+    active: {
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      revision: number;
+      updated_at: string | null;
+    };
+    catalog: Array<{
+      asset_root: string;
+      asset_slug: string;
+      for_sale: boolean;
+      is_default: boolean;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      name: string;
+      price_xu: number;
+      sort_order: number;
+    }>;
+    catalog_version: string;
+    owned: Array<{
+      acquired_at: string | null;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      source: "default" | "purchase" | "legacy_grant";
+    }>;
+    owned_count: number;
+    provisioned: boolean;
+    total_count: number;
+    totals: {
+      earned_xu: number;
+      lessons_rewarded: number;
+      spent_xu: number;
+    };
+    wallet: {
+      balance: number;
+      last_seq: number;
+    };
+  };
+};
+
+export type GetShopResponse = GetShopResponses[keyof GetShopResponses];
+
+export type SetShopActiveMascotData = {
+  body: {
+    expected_revision: number;
+    mascot_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/shop/active-mascot";
+};
+
+export type SetShopActiveMascotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * MASCOT_NOT_OWNED, or REVISION_CONFLICT (details[0] has current_revision/active_mascot_id)
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type SetShopActiveMascotError =
+  SetShopActiveMascotErrors[keyof SetShopActiveMascotErrors];
+
+export type SetShopActiveMascotResponses = {
+  200: {
+    active: {
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      revision: number;
+      updated_at: string | null;
+    };
+    changed: boolean;
+  };
+};
+
+export type SetShopActiveMascotResponse =
+  SetShopActiveMascotResponses[keyof SetShopActiveMascotResponses];
+
+export type ListShopCoinLedgerData = {
+  body?: never;
+  path?: never;
+  query?: {
+    cursor?: string;
+    limit?: number;
+  };
+  url: "/api/v2/shop/coin-ledger";
+};
+
+export type ListShopCoinLedgerErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListShopCoinLedgerError =
+  ListShopCoinLedgerErrors[keyof ListShopCoinLedgerErrors];
+
+export type ListShopCoinLedgerResponses = {
+  200: {
+    items: Array<{
+      balance_after: number;
+      created_at: string;
+      delta: number;
+      id: string;
+      kind: "lesson_first_completion" | "mascot_purchase" | "adjustment";
+      label: {
+        lesson_id: string | null;
+        lesson_key: string | null;
+        mascot_id: string | null;
+        mascot_name: string | null;
+      };
+      seq: number;
+    }>;
+    next_cursor: string | null;
+  };
+};
+
+export type ListShopCoinLedgerResponse =
+  ListShopCoinLedgerResponses[keyof ListShopCoinLedgerResponses];
+
+export type PurchaseShopMascotData = {
+  body: {
+    catalog_version: string;
+    expected_price_xu: number;
+    idempotency_key: string;
+    mascot_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/shop/purchases";
+};
+
+export type PurchaseShopMascotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * IDEMPOTENCY_KEY_REUSED (same key, different payload), CATALOG_CHANGED, PRICE_CHANGED, MASCOT_NOT_FOR_SALE, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu)
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PurchaseShopMascotError =
+  PurchaseShopMascotErrors[keyof PurchaseShopMascotErrors];
+
+export type PurchaseShopMascotResponses = {
+  200: {
+    active: {
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      revision: number;
+      updated_at: string | null;
+    };
+    catalog_version: string;
+    owned: Array<{
+      acquired_at: string | null;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      source: "default" | "purchase" | "legacy_grant";
+    }>;
+    purchase: {
+      catalog_version: string;
+      created_at: string;
+      id: string;
+      idempotency_key: string;
+      ledger_id: string;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      price_xu: number;
+    } | null;
+    replayed: boolean;
+    status: "purchased" | "already_owned";
+    wallet: {
+      balance: number;
+      last_seq: number;
+    };
+  };
+};
+
+export type PurchaseShopMascotResponse =
+  PurchaseShopMascotResponses[keyof PurchaseShopMascotResponses];
+
+export type GetShopPurchaseStatusData = {
+  body?: never;
+  path: {
+    idempotencyKey: string;
+  };
+  query?: never;
+  url: "/api/v2/shop/purchases/{idempotencyKey}";
+};
+
+export type GetShopPurchaseStatusErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetShopPurchaseStatusError =
+  GetShopPurchaseStatusErrors[keyof GetShopPurchaseStatusErrors];
+
+export type GetShopPurchaseStatusResponses = {
+  200: {
+    idempotency_key: string;
+    purchase: {
+      catalog_version: string;
+      created_at: string;
+      id: string;
+      idempotency_key: string;
+      ledger_id: string;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      price_xu: number;
+    } | null;
+    status: "completed" | "not_found";
+    wallet: {
+      balance: number;
+      last_seq: number;
+    };
+  };
+};
+
+export type GetShopPurchaseStatusResponse =
+  GetShopPurchaseStatusResponses[keyof GetShopPurchaseStatusResponses];
+
+export type StrategyAlertsListData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/alerts";
+};
+
+export type StrategyAlertsListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertsListError =
+  StrategyAlertsListErrors[keyof StrategyAlertsListErrors];
+
+export type StrategyAlertsListResponses = {
+  200: {
+    items: Array<{
+      created_at: string;
+      current_version: number;
+      enabled: boolean;
+      id: string;
+      last_check: {
+        blocked: number;
+        evaluated_at: string | null;
+        not_satisfied: number;
+        pairs_checked: number;
+        pairs_expected: number;
+        satisfied: number;
+        session: string | null;
+        unknown: number;
+      };
+      name: string;
+      observation_started_at: string;
+      paused_at: string | null;
+      status:
+        "watching" | "paused" | "unchecked" | "waiting_data" | "config_error";
+      updated_at: string;
+      version: {
+        calculation_version: string;
+        config_hash: string;
+        created_at: string;
+        definition_hash: string;
+        rule_version: string;
+        schema_version: string;
+        scope:
+          | {
+              kind: "symbols";
+            }
+          | {
+              kind: "saved_list";
+              list_as_of: string;
+              list_id: string;
+              list_name: string;
+              list_ticker_count: number;
+              list_version: 1;
+            };
+        sides: Array<"buy" | "sell">;
+        sides_detail: {
+          buy: {
+            indicator_ids: Array<string>;
+            valid: boolean;
+            watched: boolean;
+          };
+          sell: {
+            indicator_ids: Array<string>;
+            valid: boolean;
+            watched: boolean;
+          };
+        };
+        source:
+          | {
+              kind: "shared_config";
+              revision: number;
+              saved_at: string;
+              stored_config_hash: string;
+            }
+          | {
+              end: string;
+              kind: "backtest_run";
+              run_created_at: string;
+              run_id: string;
+              shared_revision: number;
+              start: string;
+              symbol: string;
+            };
+        symbols: Array<string>;
+        version: number;
+      };
+    }>;
+  };
+};
+
+export type StrategyAlertsListResponse =
+  StrategyAlertsListResponses[keyof StrategyAlertsListResponses];
+
+export type StrategyAlertsCreateData = {
+  body: {
+    enabled?: boolean;
+    idempotency_key?: string;
+    name: string;
+    scope:
+      | {
+          kind: "symbols";
+          symbols: Array<string>;
+        }
+      | {
+          kind: "saved_list";
+          list_id: string;
+          symbols?: Array<string>;
+        };
+    sides: Array<"buy" | "sell">;
+    source:
+      | {
+          kind: "shared_config";
+          revision: number;
+        }
+      | {
+          kind: "backtest_run";
+          run_id: string;
+        };
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/alerts";
+};
+
+export type StrategyAlertsCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertsCreateError =
+  StrategyAlertsCreateErrors[keyof StrategyAlertsCreateErrors];
+
+export type StrategyAlertsCreateResponses = {
+  201: {
+    created_at: string;
+    current_version: number;
+    enabled: boolean;
+    id: string;
+    last_check: {
+      blocked: number;
+      evaluated_at: string | null;
+      not_satisfied: number;
+      pairs_checked: number;
+      pairs_expected: number;
+      satisfied: number;
+      session: string | null;
+      unknown: number;
+    };
+    name: string;
+    observation_started_at: string;
+    paused_at: string | null;
+    status:
+      "watching" | "paused" | "unchecked" | "waiting_data" | "config_error";
+    updated_at: string;
+    version: {
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    };
+    versions: Array<{
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    }>;
+  };
+};
+
+export type StrategyAlertsCreateResponse =
+  StrategyAlertsCreateResponses[keyof StrategyAlertsCreateResponses];
+
+export type StrategyAlertEventsListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    side?: "buy" | "sell";
+    alert_id?: string;
+    symbol?: string;
+    offset?: number;
+    limit?: number;
+  };
+  url: "/api/v2/strategy/alerts/events";
+};
+
+export type StrategyAlertEventsListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertEventsListError =
+  StrategyAlertEventsListErrors[keyof StrategyAlertEventsListErrors];
+
+export type StrategyAlertEventsListResponses = {
+  200: {
+    items: Array<{
+      alert_id: string;
+      alert_name: string;
+      alert_version: number;
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      data_version: string;
+      evaluated_at: string;
+      event_kind: "first_observation" | "new_signal";
+      event_kind_label: string;
+      evidence: {
+        bar: {
+          close: number;
+          date: string;
+          high: number;
+          low: number;
+          open: number;
+          volume: number;
+        } | null;
+        indicator_ids: Array<string>;
+        indicator_params: {
+          [key: string]: {
+            [key: string]: number;
+          };
+        };
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: string;
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+        session: string;
+      };
+      id: string;
+      message: string;
+      previous_valid_result: boolean | null;
+      previous_valid_session: string | null;
+      rule_version: string;
+      side: "buy" | "sell";
+      side_label: "Mua" | "Bán";
+      signal_session: string;
+      symbol: string;
+    }>;
+    limit: number;
+    offset: number;
+    total: number;
+  };
+};
+
+export type StrategyAlertEventsListResponse =
+  StrategyAlertEventsListResponses[keyof StrategyAlertEventsListResponses];
+
+export type StrategyAlertEventGetData = {
+  body?: never;
+  path: {
+    eventId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/alerts/events/{eventId}";
+};
+
+export type StrategyAlertEventGetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertEventGetError =
+  StrategyAlertEventGetErrors[keyof StrategyAlertEventGetErrors];
+
+export type StrategyAlertEventGetResponses = {
+  200: {
+    alert_id: string;
+    alert_name: string;
+    alert_version: number;
+    calculation_version: string;
+    config_hash: string;
+    created_at: string;
+    data_version: string;
+    evaluated_at: string;
+    event_kind: "first_observation" | "new_signal";
+    event_kind_label: string;
+    evidence: {
+      bar: {
+        close: number;
+        date: string;
+        high: number;
+        low: number;
+        open: number;
+        volume: number;
+      } | null;
+      indicator_ids: Array<string>;
+      indicator_params: {
+        [key: string]: {
+          [key: string]: number;
+        };
+      };
+      rules: Array<{
+        id: string;
+        indicator: string;
+        lhs: number | null;
+        missing: boolean;
+        op: string;
+        previous_lhs?: number | null;
+        previous_rhs?: number | null;
+        result: boolean | null;
+        rhs: number | null;
+        rhs_lower?: number | null;
+        rhs_upper?: number | null;
+        side: "buy" | "sell";
+      }>;
+      session: string;
+    };
+    id: string;
+    message: string;
+    previous_valid_result: boolean | null;
+    previous_valid_session: string | null;
+    rule_version: string;
+    side: "buy" | "sell";
+    side_label: "Mua" | "Bán";
+    signal_session: string;
+    symbol: string;
+  };
+};
+
+export type StrategyAlertEventGetResponse =
+  StrategyAlertEventGetResponses[keyof StrategyAlertEventGetResponses];
+
+export type StrategyAlertsSourcePreviewData = {
+  body: {
+    source:
+      | {
+          kind: "shared_config";
+          revision: number;
+        }
+      | {
+          kind: "backtest_run";
+          run_id: string;
+        };
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/alerts/source-preview";
+};
+
+export type StrategyAlertsSourcePreviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertsSourcePreviewError =
+  StrategyAlertsSourcePreviewErrors[keyof StrategyAlertsSourcePreviewErrors];
+
+export type StrategyAlertsSourcePreviewResponses = {
+  200: {
+    calculation_version: string;
+    config_hash: string;
+    rule_version: string;
+    sides_detail: {
+      buy: {
+        indicator_ids: Array<string>;
+        valid: boolean;
+        watched: boolean;
+      };
+      sell: {
+        indicator_ids: Array<string>;
+        valid: boolean;
+        watched: boolean;
+      };
+    };
+    source:
+      | {
+          kind: "shared_config";
+          revision: number;
+          saved_at: string;
+          stored_config_hash: string;
+        }
+      | {
+          end: string;
+          kind: "backtest_run";
+          run_created_at: string;
+          run_id: string;
+          shared_revision: number;
+          start: string;
+          symbol: string;
+        };
+    suggested_symbol: string | null;
+  };
+};
+
+export type StrategyAlertsSourcePreviewResponse =
+  StrategyAlertsSourcePreviewResponses[keyof StrategyAlertsSourcePreviewResponses];
+
+export type StrategyAlertDeleteData = {
+  body?: never;
+  path: {
+    alertId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/alerts/{alertId}";
+};
+
+export type StrategyAlertDeleteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertDeleteError =
+  StrategyAlertDeleteErrors[keyof StrategyAlertDeleteErrors];
+
+export type StrategyAlertDeleteResponses = {
+  /**
+   * Đã xóa cảnh báo
+   */
+  204: void;
+};
+
+export type StrategyAlertDeleteResponse =
+  StrategyAlertDeleteResponses[keyof StrategyAlertDeleteResponses];
+
+export type StrategyAlertGetData = {
+  body?: never;
+  path: {
+    alertId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/alerts/{alertId}";
+};
+
+export type StrategyAlertGetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertGetError =
+  StrategyAlertGetErrors[keyof StrategyAlertGetErrors];
+
+export type StrategyAlertGetResponses = {
+  200: {
+    created_at: string;
+    current_version: number;
+    enabled: boolean;
+    id: string;
+    last_check: {
+      blocked: number;
+      evaluated_at: string | null;
+      not_satisfied: number;
+      pairs_checked: number;
+      pairs_expected: number;
+      satisfied: number;
+      session: string | null;
+      unknown: number;
+    };
+    name: string;
+    observation_started_at: string;
+    paused_at: string | null;
+    status:
+      "watching" | "paused" | "unchecked" | "waiting_data" | "config_error";
+    updated_at: string;
+    version: {
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    };
+    versions: Array<{
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    }>;
+  };
+};
+
+export type StrategyAlertGetResponse =
+  StrategyAlertGetResponses[keyof StrategyAlertGetResponses];
+
+export type StrategyAlertUpdateData = {
+  body: {
+    enabled?: boolean;
+    expected_version?: number;
+    name?: string;
+    scope?:
+      | {
+          kind: "symbols";
+          symbols: Array<string>;
+        }
+      | {
+          kind: "saved_list";
+          list_id: string;
+          symbols?: Array<string>;
+        };
+    sides?: Array<"buy" | "sell">;
+    source?:
+      | {
+          kind: "shared_config";
+          revision: number;
+        }
+      | {
+          kind: "backtest_run";
+          run_id: string;
+        }
+      | {
+          kind: "keep";
+        };
+  };
+  path: {
+    alertId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/alerts/{alertId}";
+};
+
+export type StrategyAlertUpdateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyAlertUpdateError =
+  StrategyAlertUpdateErrors[keyof StrategyAlertUpdateErrors];
+
+export type StrategyAlertUpdateResponses = {
+  200: {
+    created_at: string;
+    current_version: number;
+    enabled: boolean;
+    id: string;
+    last_check: {
+      blocked: number;
+      evaluated_at: string | null;
+      not_satisfied: number;
+      pairs_checked: number;
+      pairs_expected: number;
+      satisfied: number;
+      session: string | null;
+      unknown: number;
+    };
+    name: string;
+    observation_started_at: string;
+    paused_at: string | null;
+    status:
+      "watching" | "paused" | "unchecked" | "waiting_data" | "config_error";
+    updated_at: string;
+    version: {
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    };
+    versions: Array<{
+      calculation_version: string;
+      config_hash: string;
+      created_at: string;
+      definition_hash: string;
+      rule_version: string;
+      schema_version: string;
+      scope:
+        | {
+            kind: "symbols";
+          }
+        | {
+            kind: "saved_list";
+            list_as_of: string;
+            list_id: string;
+            list_name: string;
+            list_ticker_count: number;
+            list_version: 1;
+          };
+      sides: Array<"buy" | "sell">;
+      sides_detail: {
+        buy: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+        sell: {
+          indicator_ids: Array<string>;
+          valid: boolean;
+          watched: boolean;
+        };
+      };
+      source:
+        | {
+            kind: "shared_config";
+            revision: number;
+            saved_at: string;
+            stored_config_hash: string;
+          }
+        | {
+            end: string;
+            kind: "backtest_run";
+            run_created_at: string;
+            run_id: string;
+            shared_revision: number;
+            start: string;
+            symbol: string;
+          };
+      symbols: Array<string>;
+      version: number;
+    }>;
+  };
+};
+
+export type StrategyAlertUpdateResponse =
+  StrategyAlertUpdateResponses[keyof StrategyAlertUpdateResponses];
+
 export type StrategyBacktestsListData = {
   body?: never;
   path?: never;
@@ -38474,15 +43570,12 @@ export type StrategyBacktestsListResponses = {
         | "walk_forward"
         | "portfolio";
       kpis: {
-        buy_hold_return: number;
-        cagr: number;
-        market_return: number | null;
-        max_drawdown: number;
-        n_trades: number;
-        n_wins: number;
-        net_return: number;
-        profit_factor: number | null;
-        win_rate: number | null;
+        annualized_return_pct: number | null;
+        buy_hold_return_pct: number;
+        closed_trade_count: number;
+        max_drawdown_pct: number;
+        total_return_pct: number;
+        win_rate_pct: number | null;
       } | null;
       run_id: string;
       shared_revision: number;
@@ -38653,6 +43746,27 @@ export type StrategyBacktestsCreateResponses = {
         signalIndex: number;
       }>;
       cash: number;
+      chart: {
+        baseline_field: "initial";
+        point_count: number;
+        series: Array<{
+          available: boolean;
+          end_value_pct: number | null;
+          field: "return_pct" | "buy_hold_pct" | "market_pct";
+          id: "strategy" | "buy_hold" | "market";
+          label: string;
+          unavailable_reason: string | null;
+        }>;
+        title: "Lợi nhuận danh mục (%)";
+        unit: "percent_points";
+      };
+      contract: "iqx-strategy-backtest-1.0";
+      counts: {
+        buy_count: number;
+        closed_trade_count: number;
+        open_position_count: number;
+        pending_order_count: number;
+      };
       curve: Array<{
         buy_hold_pct: number;
         date: string;
@@ -38671,20 +43785,37 @@ export type StrategyBacktestsCreateResponses = {
         return_pct: number;
         value: number;
       };
+      kpi_basis: {
+        [key: string]: unknown;
+      };
       kpis: {
-        buy_hold_return: number;
-        cagr: number;
-        market_return: number | null;
-        max_drawdown: number;
-        n_trades: number;
-        n_wins: number;
-        net_return: number;
-        profit_factor: number | null;
-        win_rate: number | null;
+        annualized_return_pct: number | null;
+        buy_hold_return_pct: number;
+        closed_trade_count: number;
+        max_drawdown_pct: number;
+        total_return_pct: number;
+        win_rate_pct: number | null;
       };
       open_position: {
         cost: number;
         date: string;
+        entry_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         index: number;
         last_price: number;
         market_value: number;
@@ -38692,7 +43823,31 @@ export type StrategyBacktestsCreateResponses = {
         qty: number;
         signal_date: string;
         unrealized_pnl: number;
+        unrealized_pnl_basis: "market_value_at_last_close_minus_entry_total_before_sell_costs";
       } | null;
+      pending_orders: Array<{
+        action: "buy" | "sell";
+        evidence: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
+        note: string;
+        reason: "end_of_range";
+        signal_date: string;
+      }>;
       profile: {
         lot_size: number;
         max_holding: null;
@@ -38767,6 +43922,26 @@ export type StrategyBacktestsCreateResponses = {
         } | null;
         revision_saved_at: string;
         shared_revision: number;
+        simulation?: {
+          annualization_sessions: 252;
+          buy_hold_basis: "close_ratio_before_fees_and_dividends";
+          caveat: string;
+          contract: "iqx-strategy-backtest-1.0";
+          execution: "next_open" | "same_close";
+          execution_label: string;
+          exits: "none: no stop, take-profit, trailing or max holding";
+          fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
+          fill_price: string;
+          liquidity: "not_modelled";
+          min_held_bars: number;
+          min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
+          position_policy: "single_symbol_long_only_one_position";
+          price_adjustment: "provider_adjusted" | "not_confirmed";
+          settlement: "not_modelled";
+          signal_after_open_fill: boolean;
+          sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
+          slippage: "not_modelled";
+        };
         skipped_rows: number;
         slippage: "not_modelled";
         symbol: string;
@@ -38798,17 +43973,61 @@ export type StrategyBacktestsCreateResponses = {
         warmup_bars: number;
         warmup_sessions_requested: number;
       };
+      supplementary: {
+        profit_factor: number | null;
+        winning_trade_count: number;
+      };
       trades: Array<{
         concurrent_reasons?: Array<string>;
+        entry_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         entry_date: string;
+        entry_fee: number;
         entry_price: number;
         entry_signal_date: string;
+        entry_total: number;
+        exit_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         exit_date: string;
+        exit_fee_tax: number;
+        exit_gross: number;
+        exit_net: number;
         exit_price: number;
         exit_reason: string;
         exit_signal_date: string;
         hold: number;
         number: number;
+        outcome: "win" | "loss" | "flat";
         pnl: number;
         pnl_pct: number;
         qty: number;
@@ -38879,6 +44098,26 @@ export type StrategyBacktestsCreateResponses = {
       } | null;
       revision_saved_at: string;
       shared_revision: number;
+      simulation?: {
+        annualization_sessions: 252;
+        buy_hold_basis: "close_ratio_before_fees_and_dividends";
+        caveat: string;
+        contract: "iqx-strategy-backtest-1.0";
+        execution: "next_open" | "same_close";
+        execution_label: string;
+        exits: "none: no stop, take-profit, trailing or max holding";
+        fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
+        fill_price: string;
+        liquidity: "not_modelled";
+        min_held_bars: number;
+        min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
+        position_policy: "single_symbol_long_only_one_position";
+        price_adjustment: "provider_adjusted" | "not_confirmed";
+        settlement: "not_modelled";
+        signal_after_open_fill: boolean;
+        sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
+        slippage: "not_modelled";
+      };
       skipped_rows: number;
       slippage: "not_modelled";
       symbol: string;
@@ -39047,6 +44286,27 @@ export type StrategyBacktestsGetResponses = {
         signalIndex: number;
       }>;
       cash: number;
+      chart: {
+        baseline_field: "initial";
+        point_count: number;
+        series: Array<{
+          available: boolean;
+          end_value_pct: number | null;
+          field: "return_pct" | "buy_hold_pct" | "market_pct";
+          id: "strategy" | "buy_hold" | "market";
+          label: string;
+          unavailable_reason: string | null;
+        }>;
+        title: "Lợi nhuận danh mục (%)";
+        unit: "percent_points";
+      };
+      contract: "iqx-strategy-backtest-1.0";
+      counts: {
+        buy_count: number;
+        closed_trade_count: number;
+        open_position_count: number;
+        pending_order_count: number;
+      };
       curve: Array<{
         buy_hold_pct: number;
         date: string;
@@ -39065,20 +44325,37 @@ export type StrategyBacktestsGetResponses = {
         return_pct: number;
         value: number;
       };
+      kpi_basis: {
+        [key: string]: unknown;
+      };
       kpis: {
-        buy_hold_return: number;
-        cagr: number;
-        market_return: number | null;
-        max_drawdown: number;
-        n_trades: number;
-        n_wins: number;
-        net_return: number;
-        profit_factor: number | null;
-        win_rate: number | null;
+        annualized_return_pct: number | null;
+        buy_hold_return_pct: number;
+        closed_trade_count: number;
+        max_drawdown_pct: number;
+        total_return_pct: number;
+        win_rate_pct: number | null;
       };
       open_position: {
         cost: number;
         date: string;
+        entry_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         index: number;
         last_price: number;
         market_value: number;
@@ -39086,7 +44363,31 @@ export type StrategyBacktestsGetResponses = {
         qty: number;
         signal_date: string;
         unrealized_pnl: number;
+        unrealized_pnl_basis: "market_value_at_last_close_minus_entry_total_before_sell_costs";
       } | null;
+      pending_orders: Array<{
+        action: "buy" | "sell";
+        evidence: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
+        note: string;
+        reason: "end_of_range";
+        signal_date: string;
+      }>;
       profile: {
         lot_size: number;
         max_holding: null;
@@ -39161,6 +44462,26 @@ export type StrategyBacktestsGetResponses = {
         } | null;
         revision_saved_at: string;
         shared_revision: number;
+        simulation?: {
+          annualization_sessions: 252;
+          buy_hold_basis: "close_ratio_before_fees_and_dividends";
+          caveat: string;
+          contract: "iqx-strategy-backtest-1.0";
+          execution: "next_open" | "same_close";
+          execution_label: string;
+          exits: "none: no stop, take-profit, trailing or max holding";
+          fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
+          fill_price: string;
+          liquidity: "not_modelled";
+          min_held_bars: number;
+          min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
+          position_policy: "single_symbol_long_only_one_position";
+          price_adjustment: "provider_adjusted" | "not_confirmed";
+          settlement: "not_modelled";
+          signal_after_open_fill: boolean;
+          sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
+          slippage: "not_modelled";
+        };
         skipped_rows: number;
         slippage: "not_modelled";
         symbol: string;
@@ -39192,17 +44513,61 @@ export type StrategyBacktestsGetResponses = {
         warmup_bars: number;
         warmup_sessions_requested: number;
       };
+      supplementary: {
+        profit_factor: number | null;
+        winning_trade_count: number;
+      };
       trades: Array<{
         concurrent_reasons?: Array<string>;
+        entry_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         entry_date: string;
+        entry_fee: number;
         entry_price: number;
         entry_signal_date: string;
+        entry_total: number;
+        exit_conditions: {
+          indicator_ids: Array<string>;
+          rules: Array<{
+            id: string;
+            indicator: string;
+            lhs: number | null;
+            missing: boolean;
+            op: ">" | "<" | "∈" | "∉";
+            previous_lhs?: number | null;
+            previous_rhs?: number | null;
+            result: boolean | null;
+            rhs: number | null;
+            rhs_lower?: number | null;
+            rhs_upper?: number | null;
+            side: "buy" | "sell";
+          }>;
+        } | null;
         exit_date: string;
+        exit_fee_tax: number;
+        exit_gross: number;
+        exit_net: number;
         exit_price: number;
         exit_reason: string;
         exit_signal_date: string;
         hold: number;
         number: number;
+        outcome: "win" | "loss" | "flat";
         pnl: number;
         pnl_pct: number;
         qty: number;
@@ -39273,6 +44638,26 @@ export type StrategyBacktestsGetResponses = {
       } | null;
       revision_saved_at: string;
       shared_revision: number;
+      simulation?: {
+        annualization_sessions: 252;
+        buy_hold_basis: "close_ratio_before_fees_and_dividends";
+        caveat: string;
+        contract: "iqx-strategy-backtest-1.0";
+        execution: "next_open" | "same_close";
+        execution_label: string;
+        exits: "none: no stop, take-profit, trailing or max holding";
+        fee_model: "buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate";
+        fill_price: string;
+        liquidity: "not_modelled";
+        min_held_bars: number;
+        min_held_bars_status: "carried_over_from_reference_engine_pending_product_decision";
+        position_policy: "single_symbol_long_only_one_position";
+        price_adjustment: "provider_adjusted" | "not_confirmed";
+        settlement: "not_modelled";
+        signal_after_open_fill: boolean;
+        sizing: "all_available_cash_including_buy_fee_rounded_down_to_lot";
+        slippage: "not_modelled";
+      };
       skipped_rows: number;
       slippage: "not_modelled";
       symbol: string;
@@ -39365,6 +44750,173 @@ export type StrategyBacktestsGetResponses = {
 export type StrategyBacktestsGetResponse =
   StrategyBacktestsGetResponses[keyof StrategyBacktestsGetResponses];
 
+export type StrategyBacktestsTradesData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: {
+    offset?: number;
+    limit?: number;
+  };
+  url: "/api/v2/strategy/backtests/{id}/trades";
+};
+
+export type StrategyBacktestsTradesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type StrategyBacktestsTradesError =
+  StrategyBacktestsTradesErrors[keyof StrategyBacktestsTradesErrors];
+
+export type StrategyBacktestsTradesResponses = {
+  200: {
+    counts: {
+      buy_count: number;
+      closed_trade_count: number;
+      open_position_count: number;
+      pending_order_count: number;
+    };
+    items: Array<{
+      concurrent_reasons?: Array<string>;
+      entry_conditions: {
+        indicator_ids: Array<string>;
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: ">" | "<" | "∈" | "∉";
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+      } | null;
+      entry_date: string;
+      entry_fee: number;
+      entry_price: number;
+      entry_signal_date: string;
+      entry_total: number;
+      exit_conditions: {
+        indicator_ids: Array<string>;
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: ">" | "<" | "∈" | "∉";
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+      } | null;
+      exit_date: string;
+      exit_fee_tax: number;
+      exit_gross: number;
+      exit_net: number;
+      exit_price: number;
+      exit_reason: string;
+      exit_signal_date: string;
+      hold: number;
+      number: number;
+      outcome: "win" | "loss" | "flat";
+      pnl: number;
+      pnl_pct: number;
+      qty: number;
+    }>;
+    limit: number;
+    offset: number;
+    open_position: {
+      cost: number;
+      date: string;
+      entry_conditions: {
+        indicator_ids: Array<string>;
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: ">" | "<" | "∈" | "∉";
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+      } | null;
+      index: number;
+      last_price: number;
+      market_value: number;
+      price: number;
+      qty: number;
+      signal_date: string;
+      unrealized_pnl: number;
+      unrealized_pnl_basis: "market_value_at_last_close_minus_entry_total_before_sell_costs";
+    } | null;
+    pending_orders: Array<{
+      action: "buy" | "sell";
+      evidence: {
+        indicator_ids: Array<string>;
+        rules: Array<{
+          id: string;
+          indicator: string;
+          lhs: number | null;
+          missing: boolean;
+          op: ">" | "<" | "∈" | "∉";
+          previous_lhs?: number | null;
+          previous_rhs?: number | null;
+          result: boolean | null;
+          rhs: number | null;
+          rhs_lower?: number | null;
+          rhs_upper?: number | null;
+          side: "buy" | "sell";
+        }>;
+      } | null;
+      note: string;
+      reason: "end_of_range";
+      signal_date: string;
+    }>;
+    run_id: string;
+    total: number;
+  };
+};
+
+export type StrategyBacktestsTradesResponse =
+  StrategyBacktestsTradesResponses[keyof StrategyBacktestsTradesResponses];
+
 export type ListStrategySavedFiltersData = {
   body?: never;
   path?: never;
@@ -39408,6 +44960,53 @@ export type ListStrategySavedFiltersResponses = {
       created_at: string;
       current_version: number;
       definition: {
+        columns?: Array<{
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          period: "quarter" | "ttm" | "year" | "three_year";
+        }>;
+        data_mode: "latest_disclosed";
         logic: "AND";
         name: string;
         rules: Array<{
@@ -39457,18 +45056,32 @@ export type ListStrategySavedFiltersResponses = {
             | "buyback_yield"
             | "shareholder_yield";
           operator: ">" | "<";
+          period: "quarter" | "ttm" | "year" | "three_year";
           value: number;
         }>;
-        schema_version: "2.0";
+        schema_version: "3.0";
         scope: {
           market: string;
-          period: "TTM" | "annual" | "quarter";
           sector: string;
         };
       };
       definition_hash: string;
       id: string;
+      legacy_review: {
+        legacy_period: "TTM" | "annual" | "quarter";
+        needs_review: boolean;
+        rules: Array<{
+          legacy_period: "TTM" | "annual" | "quarter";
+          mapped_period: string;
+          metric_id: string;
+          reason: string | null;
+          rule_id: string;
+          status: "ok" | "needs_review";
+        }>;
+        stored_schema_version: "2.0";
+      } | null;
       name: string;
+      stored_schema_version: string;
       updated_at: string;
       version: number;
     }>;
@@ -39481,6 +45094,53 @@ export type ListStrategySavedFiltersResponse =
 export type CreateStrategySavedFilterData = {
   body: {
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode?: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -39530,12 +45190,12 @@ export type CreateStrategySavedFilterData = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
@@ -39582,6 +45242,53 @@ export type CreateStrategySavedFilterResponses = {
     created_at: string;
     current_version: number;
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -39631,18 +45338,32 @@ export type CreateStrategySavedFilterResponses = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
     definition_hash: string;
     id: string;
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: string;
+        metric_id: string;
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
     name: string;
+    stored_schema_version: string;
     updated_at: string;
     version: number;
     versions: Array<{
@@ -39751,6 +45472,53 @@ export type GetStrategySavedFilterResponses = {
     created_at: string;
     current_version: number;
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -39800,18 +45568,32 @@ export type GetStrategySavedFilterResponses = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
     definition_hash: string;
     id: string;
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: string;
+        metric_id: string;
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
     name: string;
+    stored_schema_version: string;
     updated_at: string;
     version: number;
     versions: Array<{
@@ -39828,6 +45610,53 @@ export type GetStrategySavedFilterResponse =
 export type UpdateStrategySavedFilterData = {
   body: {
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode?: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -39877,12 +45706,12 @@ export type UpdateStrategySavedFilterData = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
@@ -39930,6 +45759,53 @@ export type UpdateStrategySavedFilterResponses = {
     created_at: string;
     current_version: number;
     definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
       logic: "AND";
       name: string;
       rules: Array<{
@@ -39979,18 +45855,32 @@ export type UpdateStrategySavedFilterResponses = {
           | "buyback_yield"
           | "shareholder_yield";
         operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "2.0";
+      schema_version: "3.0";
       scope: {
         market: string;
-        period: "TTM" | "annual" | "quarter";
         sector: string;
       };
     };
     definition_hash: string;
     id: string;
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: string;
+        metric_id: string;
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
     name: string;
+    stored_schema_version: string;
     updated_at: string;
     version: number;
     versions: Array<{
@@ -40007,7 +45897,9 @@ export type UpdateStrategySavedFilterResponse =
 export type ListStrategySavedListsData = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: {
+    include_internal?: boolean;
+  };
   url: "/api/v2/strategy/lists";
 };
 
@@ -40052,10 +45944,16 @@ export type ListStrategySavedListsResponses = {
       id: string;
       kind: "static_retrospective";
       name: string;
+      provenance: {
+        [key: string]: unknown;
+      } | null;
+      result_snapshot_id: string | null;
+      run_id: string | null;
       scope: {
         [key: string]: string | number | boolean | null;
       };
       tickers: Array<string>;
+      visibility: "saved" | "internal";
     }>;
   };
 };
@@ -40121,15 +46019,100 @@ export type CreateStrategySavedListResponses = {
     id: string;
     kind: "static_retrospective";
     name: string;
+    provenance: {
+      [key: string]: unknown;
+    } | null;
+    result_snapshot_id: string | null;
+    run_id: string | null;
     scope: {
       [key: string]: string | number | boolean | null;
     };
     tickers: Array<string>;
+    visibility: "saved" | "internal";
   };
 };
 
 export type CreateStrategySavedListResponse =
   CreateStrategySavedListResponses[keyof CreateStrategySavedListResponses];
+
+export type CreateStrategySavedListFromResultData = {
+  body: {
+    filter_id?: string;
+    filter_version?: number;
+    idempotency_key?: string;
+    name: string;
+    result_snapshot_id?: string;
+    run_id?: string;
+    selection:
+      | {
+          mode: "all";
+        }
+      | {
+          mode: "subset";
+          symbols: Array<string>;
+        };
+    visibility?: "saved" | "internal";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/lists/from-result";
+};
+
+export type CreateStrategySavedListFromResultErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CreateStrategySavedListFromResultError =
+  CreateStrategySavedListFromResultErrors[keyof CreateStrategySavedListFromResultErrors];
+
+export type CreateStrategySavedListFromResultResponses = {
+  201: {
+    as_of: string;
+    created_at: string;
+    data_source: string;
+    filter_id: string | null;
+    filter_version: number | null;
+    id: string;
+    kind: "static_retrospective";
+    name: string;
+    provenance: {
+      [key: string]: unknown;
+    } | null;
+    result_snapshot_id: string | null;
+    run_id: string | null;
+    scope: {
+      [key: string]: string | number | boolean | null;
+    };
+    tickers: Array<string>;
+    visibility: "saved" | "internal";
+  };
+};
+
+export type CreateStrategySavedListFromResultResponse =
+  CreateStrategySavedListFromResultResponses[keyof CreateStrategySavedListFromResultResponses];
 
 export type DeleteStrategySavedListData = {
   body?: never;
@@ -40229,10 +46212,16 @@ export type GetStrategySavedListResponses = {
     id: string;
     kind: "static_retrospective";
     name: string;
+    provenance: {
+      [key: string]: unknown;
+    } | null;
+    result_snapshot_id: string | null;
+    run_id: string | null;
     scope: {
       [key: string]: string | number | boolean | null;
     };
     tickers: Array<string>;
+    visibility: "saved" | "internal";
   };
 };
 
@@ -40513,6 +46502,13 @@ export type StrategyConfigTechnicalRegistryResponses = {
             }
         >;
       };
+      validation: {
+        cross_fields: Array<{
+          left: string;
+          op: ">" | "<";
+          right: string;
+        }>;
+      };
     }>;
     rule_version: string;
   };
@@ -40520,6 +46516,495 @@ export type StrategyConfigTechnicalRegistryResponses = {
 
 export type StrategyConfigTechnicalRegistryResponse =
   StrategyConfigTechnicalRegistryResponses[keyof StrategyConfigTechnicalRegistryResponses];
+
+export type ListStrategyResultSnapshotsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    include_internal?: boolean;
+  };
+  url: "/api/v2/strategy/result-snapshots";
+};
+
+export type ListStrategyResultSnapshotsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ListStrategyResultSnapshotsError =
+  ListStrategyResultSnapshotsErrors[keyof ListStrategyResultSnapshotsErrors];
+
+export type ListStrategyResultSnapshotsResponses = {
+  200: {
+    items: Array<{
+      as_of: string;
+      calculation_version: string;
+      created_at: string;
+      data_source: string;
+      definition_hash: string;
+      filter_id: string | null;
+      filter_version: number | null;
+      id: string;
+      name: string;
+      registry_version: string;
+      row_count: number;
+      run_at: string;
+      run_id: string | null;
+      selection: {
+        mode: "all" | "subset";
+        symbols: Array<string>;
+      };
+      symbols: Array<string>;
+      totals: {
+        [key: string]: unknown;
+      };
+      visibility: "saved" | "internal";
+    }>;
+  };
+};
+
+export type ListStrategyResultSnapshotsResponse =
+  ListStrategyResultSnapshotsResponses[keyof ListStrategyResultSnapshotsResponses];
+
+export type CreateStrategyResultSnapshotData = {
+  body: {
+    filter_id?: string;
+    filter_version?: number;
+    idempotency_key?: string;
+    name: string;
+    run_id: string;
+    selection:
+      | {
+          mode: "all";
+        }
+      | {
+          mode: "subset";
+          symbols: Array<string>;
+        };
+    visibility?: "saved" | "internal";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/strategy/result-snapshots";
+};
+
+export type CreateStrategyResultSnapshotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type CreateStrategyResultSnapshotError =
+  CreateStrategyResultSnapshotErrors[keyof CreateStrategyResultSnapshotErrors];
+
+export type CreateStrategyResultSnapshotResponses = {
+  201: {
+    as_of: string;
+    calculation_version: string;
+    created_at: string;
+    data_source: string;
+    definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
+        value: number;
+      }>;
+      schema_version: "3.0";
+      scope: {
+        market: string;
+        sector: string;
+      };
+    };
+    definition_hash: string;
+    filter_id: string | null;
+    filter_version: number | null;
+    id: string;
+    name: string;
+    registry_version: string;
+    row_count: number;
+    rows: Array<{
+      [key: string]: unknown;
+    }>;
+    run_at: string;
+    run_id: string | null;
+    selection: {
+      mode: "all" | "subset";
+      symbols: Array<string>;
+    };
+    symbols: Array<string>;
+    totals: {
+      [key: string]: unknown;
+    };
+    visibility: "saved" | "internal";
+  };
+};
+
+export type CreateStrategyResultSnapshotResponse =
+  CreateStrategyResultSnapshotResponses[keyof CreateStrategyResultSnapshotResponses];
+
+export type DeleteStrategyResultSnapshotData = {
+  body?: never;
+  path: {
+    snapshotId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/result-snapshots/{snapshotId}";
+};
+
+export type DeleteStrategyResultSnapshotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DeleteStrategyResultSnapshotError =
+  DeleteStrategyResultSnapshotErrors[keyof DeleteStrategyResultSnapshotErrors];
+
+export type DeleteStrategyResultSnapshotResponses = {
+  /**
+   * Đã xóa kết quả đã lưu
+   */
+  204: void;
+};
+
+export type DeleteStrategyResultSnapshotResponse =
+  DeleteStrategyResultSnapshotResponses[keyof DeleteStrategyResultSnapshotResponses];
+
+export type GetStrategyResultSnapshotData = {
+  body?: never;
+  path: {
+    snapshotId: string;
+  };
+  query?: never;
+  url: "/api/v2/strategy/result-snapshots/{snapshotId}";
+};
+
+export type GetStrategyResultSnapshotErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetStrategyResultSnapshotError =
+  GetStrategyResultSnapshotErrors[keyof GetStrategyResultSnapshotErrors];
+
+export type GetStrategyResultSnapshotResponses = {
+  200: {
+    as_of: string;
+    calculation_version: string;
+    created_at: string;
+    data_source: string;
+    definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
+        value: number;
+      }>;
+      schema_version: "3.0";
+      scope: {
+        market: string;
+        sector: string;
+      };
+    };
+    definition_hash: string;
+    filter_id: string | null;
+    filter_version: number | null;
+    id: string;
+    name: string;
+    registry_version: string;
+    row_count: number;
+    rows: Array<{
+      [key: string]: unknown;
+    }>;
+    run_at: string;
+    run_id: string | null;
+    selection: {
+      mode: "all" | "subset";
+      symbols: Array<string>;
+    };
+    symbols: Array<string>;
+    totals: {
+      [key: string]: unknown;
+    };
+    visibility: "saved" | "internal";
+  };
+};
+
+export type GetStrategyResultSnapshotResponse =
+  GetStrategyResultSnapshotResponses[keyof GetStrategyResultSnapshotResponses];
 
 export type ScreenerMetricsData = {
   body?: never;
@@ -40560,8 +47045,13 @@ export type ScreenerMetricsError =
 
 export type ScreenerMetricsResponses = {
   200: Array<{
+    allowed_periods: Array<{
+      id: "quarter" | "ttm" | "year" | "three_year";
+      label: string;
+    }>;
     api_unit: "ratio" | "lần" | "ngày" | "năm";
     applicability: "all" | "non_financial";
+    default_period: "quarter" | "ttm" | "year" | "three_year";
     id:
       | "revenue_yoy"
       | "profit_yoy"
@@ -40610,6 +47100,7 @@ export type ScreenerMetricsResponses = {
     name: string;
     operators: Array<">" | "<">;
     period: string;
+    readiness: "ready" | "definition_pending" | "data_unavailable";
     supported: boolean;
     unit: string;
     unsupported_reason: string | null;
@@ -40619,66 +47110,540 @@ export type ScreenerMetricsResponses = {
 export type ScreenerMetricsResponse =
   ScreenerMetricsResponses[keyof ScreenerMetricsResponses];
 
-export type ScreenerRunData = {
-  body: {
-    logic: "AND";
-    name: string;
-    rules: Array<{
-      api_unit: "ratio" | "lần" | "ngày" | "năm";
-      id: string;
-      metric_id:
-        | "revenue_yoy"
-        | "profit_yoy"
-        | "eps_yoy"
-        | "gross_margin"
-        | "net_margin"
-        | "roe"
-        | "roa"
-        | "roic"
-        | "debt_equity"
-        | "net_debt_ebitda"
-        | "current_ratio"
-        | "interest_coverage"
-        | "cfo_margin"
-        | "cfo_profit"
-        | "fcf_margin"
-        | "fcf_yoy"
-        | "capex_revenue"
-        | "accrual"
-        | "pe"
-        | "pb"
-        | "ps"
-        | "ev_ebitda"
-        | "peg"
-        | "fcf_yield"
-        | "revenue_cagr3"
-        | "profit_cagr3"
-        | "eps_cagr3"
-        | "asset_turnover"
-        | "ccc"
-        | "working_cap_turnover"
-        | "revenue_growth_stability"
-        | "eps_growth_stability"
-        | "net_margin_stability"
-        | "roic_stability"
-        | "fcf_positive_streak"
-        | "profit_positive_streak"
-        | "dividend_yield"
-        | "payout_ratio"
-        | "dividend_cagr3"
-        | "share_count_yoy"
-        | "buyback_yield"
-        | "shareholder_yield";
-      operator: ">" | "<";
-      value: number;
-    }>;
-    schema_version: "2.0";
-    scope: {
-      market: string;
-      period: "TTM" | "annual" | "quarter";
-      sector: string;
-    };
+export type ScreenerResultGetData = {
+  body?: never;
+  path: {
+    resultId: string;
   };
+  query?: {
+    offset?: number;
+    limit?: number;
+    passed_only?: boolean;
+  };
+  url: "/api/v2/strategy/screener/results/{resultId}";
+};
+
+export type ScreenerResultGetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ScreenerResultGetError =
+  ScreenerResultGetErrors[keyof ScreenerResultGetErrors];
+
+export type ScreenerResultGetResponses = {
+  200: {
+    as_of: string;
+    calculation_version: string;
+    counts: {
+      failed_threshold: number;
+      missing: number;
+      passed: number;
+      universe: number;
+      with_required_exceptions: number;
+    };
+    data_mode: "latest_disclosed";
+    data_quality: {
+      metrics: Array<{
+        by_reason: {
+          [key: string]: number;
+        };
+        by_status: {
+          [key: string]: number;
+        };
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period_mode: "quarter" | "ttm" | "year" | "three_year";
+        role: "condition" | "reference";
+      }>;
+    };
+    data_source: string;
+    definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
+        value: number;
+      }>;
+      schema_version: "3.0";
+      scope: {
+        market: string;
+        sector: string;
+      };
+    };
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: "quarter" | "ttm" | "year" | "three_year";
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
+    limit: number;
+    offset: number;
+    provenance_notes: {
+      availability_rule: string;
+      period_dates: "not_provided_by_source";
+      report_scope: "not_provided_by_source";
+    };
+    registry_version: string;
+    result_id: string;
+    results: Array<{
+      exchange: string | null;
+      metrics: {
+        [key: string]: {
+          actual_period_label: string | null;
+          available_at: string | null;
+          comparison_period_label: string | null;
+          components: Array<{
+            label: string;
+            published_at: string | null;
+            updated_at: string | null;
+          }>;
+          lower_bound?: boolean;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          period_mode: "quarter" | "ttm" | "year" | "three_year";
+          published_at: string | null;
+          reason?: string;
+          reason_code?: string;
+          source_revision: string | null;
+          status:
+            | "ok"
+            | "missing"
+            | "not_applicable"
+            | "insufficient_base"
+            | "definition_pending"
+            | "data_unavailable";
+          unit: "ratio" | "lần" | "ngày" | "năm";
+          value: number | null;
+        };
+      };
+      name: string | null;
+      passed: boolean;
+      sector: string | null;
+      symbol: string;
+    }>;
+    schema_version: "3.0";
+    total: number;
+    universe_truncated: boolean;
+  };
+};
+
+export type ScreenerResultGetResponse =
+  ScreenerResultGetResponses[keyof ScreenerResultGetResponses];
+
+export type ScreenerRunData = {
+  body:
+    | {
+        columns?: Array<{
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          period: "quarter" | "ttm" | "year" | "three_year";
+        }>;
+        data_mode?: "latest_disclosed";
+        logic: "AND";
+        name: string;
+        rules: Array<{
+          api_unit: "ratio" | "lần" | "ngày" | "năm";
+          id: string;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          operator: ">" | "<";
+          period: "quarter" | "ttm" | "year" | "three_year";
+          value: number;
+        }>;
+        schema_version: "3.0";
+        scope: {
+          market: string;
+          sector: string;
+        };
+      }
+    | {
+        logic: "AND";
+        name: string;
+        rules: Array<{
+          api_unit: "ratio" | "lần" | "ngày" | "năm";
+          id: string;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          operator: ">" | "<";
+          value: number;
+        }>;
+        schema_version: "2.0";
+        scope: {
+          market: string;
+          period: "TTM" | "annual" | "quarter";
+          sector: string;
+        };
+      };
   path?: never;
   query?: never;
   url: "/api/v2/strategy/screener/run";
@@ -40718,22 +47683,305 @@ export type ScreenerRunResponses = {
     as_of: string;
     calculation_version: string;
     counts: {
+      failed_threshold: number;
       missing: number;
       passed: number;
       universe: number;
+      with_required_exceptions: number;
+    };
+    data_mode: "latest_disclosed";
+    data_quality: {
+      metrics: Array<{
+        by_reason: {
+          [key: string]: number;
+        };
+        by_status: {
+          [key: string]: number;
+        };
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period_mode: "quarter" | "ttm" | "year" | "three_year";
+        role: "condition" | "reference";
+      }>;
     };
     data_source: string;
-    period: "TTM" | "annual" | "quarter";
+    definition: {
+      columns?: Array<{
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        period: "quarter" | "ttm" | "year" | "three_year";
+      }>;
+      data_mode: "latest_disclosed";
+      logic: "AND";
+      name: string;
+      rules: Array<{
+        api_unit: "ratio" | "lần" | "ngày" | "năm";
+        id: string;
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        operator: ">" | "<";
+        period: "quarter" | "ttm" | "year" | "three_year";
+        value: number;
+      }>;
+      schema_version: "3.0";
+      scope: {
+        market: string;
+        sector: string;
+      };
+    };
+    legacy_review: {
+      legacy_period: "TTM" | "annual" | "quarter";
+      needs_review: boolean;
+      rules: Array<{
+        legacy_period: "TTM" | "annual" | "quarter";
+        mapped_period: "quarter" | "ttm" | "year" | "three_year";
+        metric_id:
+          | "revenue_yoy"
+          | "profit_yoy"
+          | "eps_yoy"
+          | "gross_margin"
+          | "net_margin"
+          | "roe"
+          | "roa"
+          | "roic"
+          | "debt_equity"
+          | "net_debt_ebitda"
+          | "current_ratio"
+          | "interest_coverage"
+          | "cfo_margin"
+          | "cfo_profit"
+          | "fcf_margin"
+          | "fcf_yoy"
+          | "capex_revenue"
+          | "accrual"
+          | "pe"
+          | "pb"
+          | "ps"
+          | "ev_ebitda"
+          | "peg"
+          | "fcf_yield"
+          | "revenue_cagr3"
+          | "profit_cagr3"
+          | "eps_cagr3"
+          | "asset_turnover"
+          | "ccc"
+          | "working_cap_turnover"
+          | "revenue_growth_stability"
+          | "eps_growth_stability"
+          | "net_margin_stability"
+          | "roic_stability"
+          | "fcf_positive_streak"
+          | "profit_positive_streak"
+          | "dividend_yield"
+          | "payout_ratio"
+          | "dividend_cagr3"
+          | "share_count_yoy"
+          | "buyback_yield"
+          | "shareholder_yield";
+        reason: string | null;
+        rule_id: string;
+        status: "ok" | "needs_review";
+      }>;
+      stored_schema_version: "2.0";
+    } | null;
+    provenance_notes: {
+      availability_rule: string;
+      period_dates: "not_provided_by_source";
+      report_scope: "not_provided_by_source";
+    };
+    registry_version: string;
+    result_id: string;
     results: Array<{
       exchange: string | null;
       metrics: {
         [key: string]: {
+          actual_period_label: string | null;
           available_at: string | null;
+          comparison_period_label: string | null;
+          components: Array<{
+            label: string;
+            published_at: string | null;
+            updated_at: string | null;
+          }>;
           lower_bound?: boolean;
-          period: string | null;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          period_mode: "quarter" | "ttm" | "year" | "three_year";
+          published_at: string | null;
           reason?: string;
+          reason_code?: string;
           source_revision: string | null;
-          status: "ok" | "missing" | "not_applicable" | "insufficient_base";
+          status:
+            | "ok"
+            | "missing"
+            | "not_applicable"
+            | "insufficient_base"
+            | "definition_pending"
+            | "data_unavailable";
           unit: "ratio" | "lần" | "ngày" | "năm";
           value: number | null;
         };
@@ -40743,11 +47991,7 @@ export type ScreenerRunResponses = {
       sector: string | null;
       symbol: string;
     }>;
-    scope: {
-      market: string;
-      period: "TTM" | "annual" | "quarter";
-      sector: string;
-    };
+    schema_version: "3.0";
     universe_truncated: boolean;
   };
 };
@@ -40989,13 +48233,246 @@ export type StrategyConfigGetSharedConfigResponses = {
         };
       };
       revision: number;
-      rule_version: "iqx-rules-2.0";
+      rule_version: "iqx-rules-3.0";
       schema_version: "2.0";
     };
     config_hash: string;
+    effective?: {
+      config: {
+        indicators: {
+          [key: string]: {
+            buy: {
+              enabled: boolean;
+              params: {
+                [key: string]: number;
+              };
+              rules: Array<
+                | {
+                    allowed_ops: Array<">" | "<">;
+                    id: string;
+                    kind: "compare" | "cross";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: ">" | "<";
+                    rhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  }
+                | {
+                    allowed_ops: Array<"∈" | "∉">;
+                    id: string;
+                    kind: "membership";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: "∈" | "∉";
+                    rhs: {
+                      bounds?: "open";
+                      kind?: "interval";
+                      lower:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      upper:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    };
+                  }
+              >;
+            };
+            master_enabled: boolean;
+            sell: {
+              enabled: boolean;
+              params: {
+                [key: string]: number;
+              };
+              rules: Array<
+                | {
+                    allowed_ops: Array<">" | "<">;
+                    id: string;
+                    kind: "compare" | "cross";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: ">" | "<";
+                    rhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  }
+                | {
+                    allowed_ops: Array<"∈" | "∉">;
+                    id: string;
+                    kind: "membership";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: "∈" | "∉";
+                    rhs: {
+                      bounds?: "open";
+                      kind?: "interval";
+                      lower:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      upper:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    };
+                  }
+              >;
+            };
+          };
+        };
+        revision: number;
+        rule_version: "iqx-rules-3.0";
+        schema_version: "2.0";
+      };
+      config_hash: string;
+      effective_session: string;
+      legacy: {
+        buy: {
+          indicators: Array<string>;
+          status: "ok" | "legacy_needs_review";
+        };
+        defaulted_indicators: Array<string>;
+        from_rule_version: string;
+        legacy: boolean;
+        needs_review: boolean;
+        removed_indicators: Array<string>;
+        sell: {
+          indicators: Array<string>;
+          status: "ok" | "legacy_needs_review";
+        };
+      } | null;
+      revision: number;
+    } | null;
     effective_revision: number | null;
     effective_session: string | null;
     granted_indicators: Array<string>;
+    legacy?: {
+      buy: {
+        indicators: Array<string>;
+        status: "ok" | "legacy_needs_review";
+      };
+      defaulted_indicators: Array<string>;
+      from_rule_version: string;
+      legacy: boolean;
+      needs_review: boolean;
+      removed_indicators: Array<string>;
+      sell: {
+        indicators: Array<string>;
+        status: "ok" | "legacy_needs_review";
+      };
+    } | null;
     registry_version: string;
     saved_revision: number;
     status: "pending" | "effective" | "calendar_unavailable";
@@ -41435,7 +48912,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
         };
       };
       revision: number;
-      rule_version: "iqx-rules-2.0";
+      rule_version: "iqx-rules-3.0";
       schema_version: "2.0";
     };
     config_hash: string;
@@ -41491,6 +48968,7 @@ export type StrategyConfigListRevisionsResponses = {
   200: Array<{
     config_hash: string;
     effective_session: string | null;
+    legacy: boolean;
     revision: number;
     saved_at: string;
     status: "pending" | "effective" | "calendar_unavailable";
@@ -42794,6 +50272,142 @@ export type CheckWatchlistItemV2Responses = {
 
 export type CheckWatchlistItemV2Response =
   CheckWatchlistItemV2Responses[keyof CheckWatchlistItemV2Responses];
+
+export type EnsureWorkspaceData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/workspace/ensure";
+};
+
+export type EnsureWorkspaceErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type EnsureWorkspaceError =
+  EnsureWorkspaceErrors[keyof EnsureWorkspaceErrors];
+
+export type EnsureWorkspaceResponses = {
+  200: {
+    created: {
+      bot: boolean;
+      manual_account: boolean;
+      mascot_profile: boolean;
+      wallet: boolean;
+    };
+    state: {
+      bot: {
+        account_id: string | null;
+        cash_vnd: number | null;
+        exists: boolean;
+        instance_id: string | null;
+      };
+      manual_account: {
+        account_id: string | null;
+        cash_available_vnd: number | null;
+        exists: boolean;
+        initial_cash_vnd: number | null;
+        total_cash_vnd: number | null;
+      };
+      mascot: {
+        active_mascot_id:
+          "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+        provisioned: boolean;
+        revision: number;
+      };
+      wallet: {
+        balance: number;
+        provisioned: boolean;
+      };
+    };
+  };
+};
+
+export type EnsureWorkspaceResponse =
+  EnsureWorkspaceResponses[keyof EnsureWorkspaceResponses];
+
+export type GetWorkspaceStateData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/workspace/state";
+};
+
+export type GetWorkspaceStateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetWorkspaceStateError =
+  GetWorkspaceStateErrors[keyof GetWorkspaceStateErrors];
+
+export type GetWorkspaceStateResponses = {
+  200: {
+    bot: {
+      account_id: string | null;
+      cash_vnd: number | null;
+      exists: boolean;
+      instance_id: string | null;
+    };
+    manual_account: {
+      account_id: string | null;
+      cash_available_vnd: number | null;
+      exists: boolean;
+      initial_cash_vnd: number | null;
+      total_cash_vnd: number | null;
+    };
+    mascot: {
+      active_mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      provisioned: boolean;
+      revision: number;
+    };
+    wallet: {
+      balance: number;
+      provisioned: boolean;
+    };
+  };
+};
+
+export type GetWorkspaceStateResponse =
+  GetWorkspaceStateResponses[keyof GetWorkspaceStateResponses];
 
 export type HealthLiveData = {
   body?: never;

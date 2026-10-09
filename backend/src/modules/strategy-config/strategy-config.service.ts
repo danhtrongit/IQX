@@ -15,9 +15,12 @@ import {
   configHash,
   defaultConfig,
   indicatorCapability,
+  isLegacyConfig,
   loadTechnicalRegistry,
+  mapLegacyConfig,
   validateConfig,
   type IndicatorConfig,
+  type LegacyConfigReview,
   type RegistryEntry,
   type SharedConfig,
 } from '../quant/v2/index.js';
@@ -27,7 +30,11 @@ import {
   tradingDayPredicate,
   vnDate,
 } from './strategy-config.calendar.js';
-import type { EffectiveSharedConfig, SharedConfigReaderPort } from './strategy-config.ports.js';
+import type {
+  EffectiveSharedConfig,
+  GetRevisionOptions,
+  SharedConfigReaderPort,
+} from './strategy-config.ports.js';
 import {
   SharedConfigRepository,
   type RevisionRow,
@@ -35,12 +42,42 @@ import {
   type SharedConfigStoreProvider,
 } from './strategy-config.repository.js';
 import type {
+  EffectiveSharedConfigView,
   SharedConfigPatchInput,
   SharedConfigRevisionSummary,
   SharedConfigSaveResult,
   SharedConfigState,
   TechnicalRegistryResponse,
 } from './strategy-config.schemas.js';
+
+/** A stored revision read through the current 16-indicator contract. */
+export type StoredConfigView = { config: SharedConfig; legacy: LegacyConfigReview | null };
+
+const UNREADABLE_REVIEW: LegacyConfigReview = {
+  from_rule_version: 'unknown',
+  legacy: true,
+  removed_indicators: [],
+  defaulted_indicators: [],
+  buy: { status: 'legacy_needs_review', indicators: [] },
+  sell: { status: 'legacy_needs_review', indicators: [] },
+  needs_review: true,
+};
+
+/**
+ * Reads a stored config document. A current (`iqx-rules-3.0`) document is returned as is; a
+ * historical 35-indicator document is mapped to the 16-indicator shape together with its review
+ * (see `mapLegacyConfig`). A document that cannot be mapped is never trusted: it reads as the
+ * registry default with both sides flagged `legacy_needs_review`.
+ */
+export function readStoredConfig(
+  stored: unknown,
+  registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
+): StoredConfigView {
+  if (!isLegacyConfig(stored)) return { config: stored as SharedConfig, legacy: null };
+  const mapped = mapLegacyConfig(stored, registry);
+  if (mapped.ok) return { config: mapped.mapping.config, legacy: mapped.mapping.review };
+  return { config: defaultConfig(registry), legacy: UNREADABLE_REVIEW };
+}
 
 const isOn = (indicator: IndicatorConfig | undefined): boolean =>
   indicator?.master_enabled === true;
@@ -73,6 +110,12 @@ export function mergeIndicatorPatch(
           code: 'SIDE_REQUIRED',
           message: `Chọn ít nhất một phía Mua hoặc Bán trước khi bật chỉ báo ${id}.`,
           indicator: id,
+          details: [
+            {
+              path: `indicators.${id}`,
+              message: `Chọn ít nhất một phía Mua hoặc Bán trước khi bật chỉ báo ${id}.`,
+            },
+          ],
         });
       }
       next.master_enabled = false;
@@ -107,6 +150,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
         formula: entry.formula,
         availability: entry.availability,
         fields: structuredClone(entry.fields),
+        validation: { cross_fields: structuredClone(entry.validation?.cross_fields ?? []) },
         buy: structuredClone(entry.buy),
         sell: structuredClone(entry.sell),
         learned: grants.has(indicatorCapability(entry.id)),
@@ -122,7 +166,25 @@ export class SharedConfigService implements SharedConfigReaderPort {
       store.latestRevision(userId),
       store.effectiveRevision(userId, vnDate(now)),
     ]);
-    const config = latest?.config ?? defaultConfig(this.registry());
+    const stored = latest ? readStoredConfig(latest.config, this.registry()) : null;
+    const config = stored?.config ?? defaultConfig(this.registry());
+    // The config in force can be an older revision than the latest saved one (a newer save is
+    // pending until its effective session), so it is returned in full, read through the same
+    // legacy mapping as the saved one.
+    let inForce: EffectiveSharedConfigView | null = null;
+    if (effective?.effective_session) {
+      const view =
+        stored && effective.revision === latest?.revision
+          ? stored
+          : readStoredConfig(effective.config, this.registry());
+      inForce = {
+        revision: effective.revision,
+        effective_session: effective.effective_session,
+        config_hash: effective.config_hash,
+        config: view.config,
+        legacy: view.legacy,
+      };
+    }
     return {
       saved_revision: latest?.revision ?? 0,
       effective_revision: effective?.revision ?? null,
@@ -135,6 +197,8 @@ export class SharedConfigService implements SharedConfigReaderPort {
       granted_indicators: this.registry()
         .map((entry) => entry.id)
         .filter((id) => grants.has(indicatorCapability(id))),
+      legacy: stored?.legacy ?? null,
+      effective: inForce,
     };
   }
 
@@ -147,6 +211,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
       config_hash: row.config_hash,
       effective_session: row.effective_session,
       status: this.status(row, now),
+      legacy: isLegacyConfig(row.config),
     }));
   }
 
@@ -167,6 +232,8 @@ export class SharedConfigService implements SharedConfigReaderPort {
           code: 'REVISION_CONFLICT',
           message: 'Cấu hình đã được lưu ở nơi khác. Tải lại để xem bản mới nhất.',
           current_revision: currentRevision,
+          // The v2 error envelope forwards only `code`, `message` and an array `details`.
+          details: [{ field: 'expected_revision', current_revision: currentRevision }],
         });
       }
 
@@ -174,17 +241,23 @@ export class SharedConfigService implements SharedConfigReaderPort {
         (id) => !registry.some((entry) => entry.id === id),
       );
       if (unknown.length) {
+        const errors = unknown.map((id) => ({
+          path: `indicators.${id}`,
+          message: `Chỉ báo không được hỗ trợ: ${id}.`,
+        }));
         throw new UnprocessableEntityException({
           code: 'CONFIG_INVALID',
           message: 'Cấu hình không hợp lệ.',
-          errors: unknown.map((id) => ({
-            path: `indicators.${id}`,
-            message: `Chỉ báo không được hỗ trợ: ${id}.`,
-          })),
+          errors,
+          details: errors,
         });
       }
 
-      const base = latest?.config ?? defaultConfig(registry);
+      // A historical (35-indicator) revision is the base through its 16-indicator mapping; the new
+      // revision is saved in the current shape and `before_hash` keeps the stored document's hash.
+      const base = latest
+        ? readStoredConfig(latest.config, registry).config
+        : defaultConfig(registry);
       const merged = mergeIndicatorPatch(base, input.indicators);
       this.assertLearned(merged, input.indicators, grants);
       // Indicators already master ON in the saved config and untouched by this PATCH are not
@@ -202,6 +275,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
           code: 'CONFIG_INVALID',
           message: 'Cấu hình không hợp lệ.',
           errors,
+          details: errors,
         });
       }
 
@@ -235,22 +309,36 @@ export class SharedConfigService implements SharedConfigReaderPort {
   async effectiveFor(userId: string, sessionDate: string): Promise<EffectiveSharedConfig | null> {
     const row = await this.repository.store().effectiveRevision(userId, sessionDate);
     if (!row?.effective_session) return null;
+    const stored = readStoredConfig(row.config, this.registry());
     return {
       revision: row.revision,
-      config: row.config,
+      config: stored.config,
       config_hash: row.config_hash,
       effective_session: row.effective_session,
+      legacy: stored.legacy,
     };
   }
 
-  async getRevision(userId: string, revision: number) {
+  async getRevision(userId: string, revision: number, options: GetRevisionOptions = {}) {
     const row = await this.repository.store().revision(userId, revision);
     if (!row) return null;
+    const stored = readStoredConfig(row.config, this.registry());
+    if (stored.legacy?.needs_review && options.allowLegacyReview !== true) {
+      // Never hand out a mapping that silently omits an ON rule of a removed indicator.
+      throw new UnprocessableEntityException({
+        code: 'LEGACY_CONFIG_NEEDS_REVIEW',
+        message:
+          'Phiên bản cấu hình cũ dùng chỉ báo đã bỏ khỏi danh mục. Hãy kiểm tra và lưu cấu hình mới.',
+        revision: row.revision,
+        legacy: stored.legacy,
+      });
+    }
     return {
       revision: row.revision,
-      config: row.config,
+      config: stored.config,
       config_hash: row.config_hash,
       saved_at: row.saved_at.toISOString(),
+      legacy: stored.legacy,
     };
   }
 
@@ -266,7 +354,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
     }
     return {
       revision: row.revision,
-      config: row.config,
+      config: readStoredConfig(row.config, this.registry()).config,
       config_hash: row.config_hash,
       effective_session: row.effective_session,
       status: this.status(row, new Date()),
@@ -287,6 +375,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
           message: `Cần hoàn thành bài học của chỉ báo ${id} (8/8) trước khi bật.`,
           capability,
           reason: 'not_learned',
+          details: [{ capability, reason: 'not_learned', indicator: id }],
         });
       }
     }

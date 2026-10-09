@@ -1,8 +1,8 @@
 /**
- * Trang Chiến lược (`/chien-luoc`) — export duy nhất cho router của shell.
+ * Trang Chiến lược (`/chien-luoc`): export duy nhất cho router của shell.
  *
- * Gồm: tab Cảnh báo (Telegram, tín hiệu, cảnh báo của tôi, lịch sử tín hiệu) và
- * tab Backtest (thư viện chỉ tiêu, cấu hình, rủi ro, kết quả). Mọi dữ liệu đến
- * từ backend-v2 qua shared API boundary; cả hai tab đều premium-gated ở server.
+ * Ba tab: Cảnh báo (cảnh báo ghim phiên bản cấu hình, lịch sử tín hiệu), Backtest (một mã, cấu hình
+ * chung với Bot, kết quả bất biến) và Bộ lọc (kỳ tính riêng từng điều kiện, lưu bộ lọc/danh mục/kết
+ * quả, áp dụng danh mục mua mới cho Bot). Dữ liệu đến từ backend-v2 qua hợp đồng đã sinh.
  */
 export { StrategyPage } from "./strategy-page"

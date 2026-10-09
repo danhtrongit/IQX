@@ -4,8 +4,7 @@
  * Upstream is `GET /ai/patterns/{candles|charts}`, which is premium-gated
  * server-side (401 without a session, 403 without an active subscription), so
  * the panel gates itself the same way the legacy panel did: guests are invited
- * to sign in; signed-in free users can open the Premium plans without changing
- * their journey progress.
+ * to sign in; signed-in free users can open the Premium plans.
  *
  * The backend reports the patterns it actually recognised: an empty list is
  * rendered as "chưa có pattern cho mã này", never as invented analysis.
@@ -111,7 +110,7 @@ export function PatternsPanel({ symbol }: PatternsPanelProps) {
     body = (
       <PanelState
         title="Cần đăng nhập"
-        description="AI Mẫu nến phân tích mã đang xem cho tài khoản IQX. Đăng nhập để tiếp tục — hành trình của bạn không bị ảnh hưởng."
+        description="AI Mẫu nến phân tích mã đang xem cho tài khoản IQX. Đăng nhập để tiếp tục."
         action={{ label: "Đăng nhập", onClick: () => openAuth("login") }}
       />
     )
@@ -119,7 +118,7 @@ export function PatternsPanel({ symbol }: PatternsPanelProps) {
     body = (
       <PanelState
         title="Cần gói Premium"
-        description="Nhận diện mẫu nến và mẫu hình giá bằng AI chỉ dành cho tài khoản Premium. Hành trình học của bạn vẫn giữ nguyên."
+        description="Nhận diện mẫu nến và mẫu hình giá bằng AI chỉ dành cho tài khoản Premium. Các công cụ khác vẫn dùng bình thường."
         action={{ label: "Xem gói Premium", onClick: () => navigate("/nang-cap") }}
       />
     )

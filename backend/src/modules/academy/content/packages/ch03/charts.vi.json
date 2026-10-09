@@ -1,0 +1,332 @@
+{
+  "rev-quarters": {
+    "kind": "grouped",
+    "title": "Doanh thu cùng quý của hai năm",
+    "labels": ["Quý I", "Quý II", "Quý III", "Quý IV"],
+    "series": [
+      {
+        "name": "2024",
+        "values": [800, 1000, 1200, 1500]
+      },
+      {
+        "name": "2025",
+        "values": [960, 1250, 1380, 1650]
+      }
+    ],
+    "unit": "tỷ đồng"
+  },
+  "rev-growth": {
+    "kind": "line",
+    "title": "Doanh thu vẫn tăng, tốc độ tăng có thể chậm lại",
+    "labels": ["Quý I", "Quý II", "Quý III", "Quý IV"],
+    "series": [
+      {
+        "name": "Tăng trưởng doanh thu YoY",
+        "values": [19.999999999999996, 25, 14.999999999999991, 10.000000000000009]
+      }
+    ],
+    "unit": "%"
+  },
+  "rev-periods": {
+    "kind": "timeline",
+    "title": "Hai cửa sổ bốn quý cách nhau một năm",
+    "labels": ["Q3/23", "Q4/23", "Q1/24", "Q2/24", "Q3/24", "Q4/24", "Q1/25", "Q2/25"],
+    "rows": [
+      {
+        "name": "Kỳ so sánh",
+        "start": 0,
+        "end": 3,
+        "detail": "4.050 tỷ đồng"
+      },
+      {
+        "name": "Kỳ đang tính",
+        "start": 4,
+        "end": 7,
+        "detail": "4.910 tỷ đồng"
+      }
+    ]
+  },
+  "profit-growth": {
+    "kind": "grouped",
+    "title": "Tăng trưởng doanh thu và lợi nhuận",
+    "labels": ["Quý I", "Quý II", "Quý III", "Quý IV"],
+    "series": [
+      {
+        "name": "Doanh thu YoY",
+        "values": [19.999999999999996, 25, 14.999999999999991, 10.000000000000009]
+      },
+      {
+        "name": "LNST YoY",
+        "values": [10.000000000000009, 10.000000000000009, 10.000000000000009, -2.7272727272727226]
+      }
+    ],
+    "unit": "%"
+  },
+  "profit-base": {
+    "kind": "panels",
+    "title": "Phần trăm lớn khác với số tiền tăng thêm lớn",
+    "panels": [
+      {
+        "kind": "grouped",
+        "title": "LNST tăng thêm",
+        "labels": ["B", "C"],
+        "series": [
+          {
+            "name": "Tăng thêm",
+            "values": [10, 30]
+          }
+        ],
+        "unit": "tỷ đồng"
+      },
+      {
+        "kind": "grouped",
+        "title": "Tốc độ tăng trưởng",
+        "labels": ["B", "C"],
+        "series": [
+          {
+            "name": "Tăng trưởng YoY",
+            "values": [100, 30]
+          }
+        ],
+        "unit": "%"
+      }
+    ]
+  },
+  "eps-components": {
+    "kind": "panels",
+    "title": "LNST tăng 10%, EPS vẫn không đổi",
+    "panels": [
+      {
+        "kind": "grouped",
+        "title": "Lợi nhuận trong kỳ",
+        "labels": ["Q2/2024", "Q2/2025"],
+        "series": [
+          {
+            "name": "LNST dùng tính EPS",
+            "values": [80, 88]
+          }
+        ],
+        "unit": "tỷ đồng"
+      },
+      {
+        "kind": "grouped",
+        "title": "Số cổ phiếu bình quân",
+        "labels": ["Q2/2024", "Q2/2025"],
+        "series": [
+          {
+            "name": "Cổ phiếu bình quân",
+            "values": [100, 110]
+          }
+        ],
+        "unit": "triệu CP"
+      },
+      {
+        "kind": "grouped",
+        "title": "Lợi nhuận trên một cổ phiếu",
+        "labels": ["Q2/2024", "Q2/2025"],
+        "series": [
+          {
+            "name": "EPS",
+            "values": [800, 800]
+          }
+        ],
+        "unit": "đồng/CP"
+      }
+    ]
+  },
+  "eps-shares": {
+    "kind": "timeline",
+    "title": "Cổ phiếu bình quân theo thời gian",
+    "labels": ["Nửa đầu kỳ", "Nửa sau kỳ"],
+    "rows": [
+      {
+        "name": "100 triệu CP",
+        "start": 0,
+        "end": 0,
+        "detail": "50% thời gian"
+      },
+      {
+        "name": "120 triệu CP",
+        "start": 1,
+        "end": 1,
+        "detail": "50% thời gian"
+      }
+    ]
+  },
+  "gross-composition": {
+    "kind": "stacked",
+    "title": "Doanh thu gồm giá vốn và lợi nhuận gộp",
+    "labels": ["Q2/2024", "Q2/2025"],
+    "series": [
+      {
+        "name": "Giá vốn",
+        "values": [700, 850]
+      },
+      {
+        "name": "Lợi nhuận gộp",
+        "values": [300, 400]
+      }
+    ],
+    "unit": "tỷ đồng"
+  },
+  "gross-four-quarters": {
+    "kind": "line",
+    "title": "Biên bốn quý được tính từ tổng số tiền",
+    "labels": ["Q1", "Q2", "Q3", "Q4"],
+    "series": [
+      {
+        "name": "Biên từng quý",
+        "values": [10, 20, 30, 40]
+      },
+      {
+        "name": "Biên bốn quý",
+        "values": [30, 30, 30, 30]
+      }
+    ],
+    "unit": "%"
+  },
+  "net-bridge": {
+    "kind": "waterfall",
+    "title": "Từ doanh thu đến lợi nhuận sau thuế",
+    "unit": "tỷ đồng",
+    "steps": [
+      {
+        "name": "Doanh thu",
+        "value": 1250,
+        "total": true
+      },
+      {
+        "name": "Giá vốn",
+        "value": -850
+      },
+      {
+        "name": "Lợi nhuận gộp",
+        "value": 400,
+        "total": true
+      },
+      {
+        "name": "Bán hàng, quản lý",
+        "value": -220
+      },
+      {
+        "name": "Chi phí khác, thuần",
+        "value": -70
+      },
+      {
+        "name": "Thuế thu nhập",
+        "value": -22
+      },
+      {
+        "name": "LNST",
+        "value": 88,
+        "total": true
+      }
+    ]
+  },
+  "net-margins": {
+    "kind": "line",
+    "title": "Biên gộp tăng nhưng biên ròng giảm",
+    "labels": ["Q2/2024", "Q2/2025"],
+    "series": [
+      {
+        "name": "Biên gộp",
+        "values": [30, 32]
+      },
+      {
+        "name": "Biên ròng",
+        "values": [8, 7.04]
+      }
+    ],
+    "unit": "%"
+  },
+  "roe-window": {
+    "kind": "panels",
+    "title": "Lợi nhuận cả kỳ và vốn tại các thời điểm",
+    "panels": [
+      {
+        "kind": "grouped",
+        "title": "Cộng lợi nhuận bốn quý: 360 tỷ đồng",
+        "labels": ["Quý I", "Quý II", "Quý III", "Quý IV"],
+        "series": [
+          {
+            "name": "LNST 2025",
+            "values": [66, 88, 99, 107]
+          }
+        ],
+        "unit": "tỷ đồng"
+      },
+      {
+        "kind": "line",
+        "title": "Vốn đầu kỳ 1.800; vốn cuối kỳ 2.200",
+        "labels": ["Đầu kỳ", "Cuối Q1", "Cuối Q2", "Cuối Q3", "Cuối Q4"],
+        "series": [
+          {
+            "name": "Vốn chủ sở hữu",
+            "values": [1800, 1866, 2000, 2099, 2200]
+          }
+        ],
+        "unit": "tỷ đồng"
+      }
+    ]
+  },
+  "roe-compare": {
+    "kind": "panels",
+    "title": "Cùng lợi nhuận, khác quy mô vốn",
+    "panels": [
+      {
+        "kind": "grouped",
+        "title": "Cùng tạo 180 tỷ đồng LNST",
+        "labels": ["Doanh nghiệp B", "Doanh nghiệp C"],
+        "series": [
+          {
+            "name": "Vốn bình quân",
+            "values": [1000, 2000]
+          }
+        ],
+        "unit": "tỷ đồng"
+      },
+      {
+        "kind": "grouped",
+        "title": "ROE phụ thuộc cả lợi nhuận và vốn",
+        "labels": ["Doanh nghiệp B", "Doanh nghiệp C"],
+        "series": [
+          {
+            "name": "ROE",
+            "values": [18, 9]
+          }
+        ],
+        "unit": "%"
+      }
+    ]
+  },
+  "rev-quiz-trend": {
+    "kind": "panels",
+    "title": "Doanh thu và tốc độ tăng, Q2–Q4/2025",
+    "panels": [
+      {
+        "kind": "grouped",
+        "title": "Quy mô doanh thu",
+        "labels": ["Quý II", "Quý III", "Quý IV"],
+        "series": [
+          {
+            "name": "Doanh thu",
+            "values": [1250, 1380, 1650]
+          }
+        ],
+        "unit": "tỷ đồng"
+      },
+      {
+        "kind": "line",
+        "title": "Tăng trưởng so với cùng quý năm trước",
+        "labels": ["Quý II", "Quý III", "Quý IV"],
+        "series": [
+          {
+            "name": "YoY",
+            "values": [25, 15, 10]
+          }
+        ],
+        "unit": "%"
+      }
+    ]
+  }
+}

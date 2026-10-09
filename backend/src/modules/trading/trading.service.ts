@@ -2,26 +2,19 @@ import {
   BadRequestException,
   ConflictException,
   ForbiddenException,
-  Inject,
   Injectable,
   NotFoundException,
-  Optional,
   ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 
 import type { SqlClient } from '../../platform/database/database.service.js';
 import { addTradingDays, currentTradingDate, sessionExpiry } from './trading.calendar.js';
-import {
-  TRADING_JOURNEY_PORT,
-  TradingMarketPort,
-  type TradingJourneyPort,
-} from './trading.ports.js';
+import { TradingMarketPort } from './trading.ports.js';
 import { TradingRepository, mapConfig } from './trading.repository.js';
 import { TradingRightsService } from './rights.service.js';
 import type {
   ConfigSnapshot,
-  JourneyPlan,
   PlaceOrderInput,
   PlaceOrderResult,
   SettlementMode,
@@ -35,7 +28,12 @@ import type {
 const MAX_GROSS_VND = 100_000_000_000n;
 const MAX_PREFLIGHT_QUOTE_AGE_MS = 10_000;
 const LEADERBOARD_HARD_CAP = 200;
-const REQUIRED_LAYERS = new Set(['ky_thuat', 'dong_tien', 'noi_bo', 'tin_tuc']);
+/** Every user's manual demo account starts with exactly this once (Bot spec 3.1). */
+export const MANUAL_INITIAL_CASH_VND = 100_000_000n;
+
+export function manualFundingKey(userId: string): string {
+  return `manual:initial_funding:${userId}`;
+}
 
 function safeMoney(value: bigint | null): number | null {
   if (value == null) return null;
@@ -140,67 +138,58 @@ function configSnapshot(config: TradingConfig, settlementMode: SettlementMode): 
   };
 }
 
-function assertPlan(
-  level: number,
-  plan: JourneyPlan | null | undefined,
-): asserts plan is JourneyPlan {
-  if (!plan) throw new BadRequestException('Lệnh MUA trong hành trình cần journey_plan');
-  if (level === 0 && !plan.ly_do_doi_thuong?.trim()) {
-    throw new BadRequestException('Cấp 0 cần lý do đời thường trước khi mua');
-  }
-  if (level >= 1 && (!plan.lyDo || !plan.trangThai_luc_dat || !plan.vung_mua)) {
-    throw new BadRequestException('Cấp 1+ cần lý do, trạng thái và vùng mua');
-  }
-  if (level >= 2 && (!plan.phuong_phap_sl_tp || !plan.cat_lo || !plan.chot_loi)) {
-    throw new BadRequestException('Cấp 2+ cần phương pháp, cắt lỗ và chốt lời');
-  }
-  if (level >= 3 && (!plan.khau_vi || !plan.muc_tu_tin || !plan.cach_khoi_luong)) {
-    throw new BadRequestException('Cấp 3+ cần khẩu vị, mức tự tin và cách khối lượng');
-  }
-  if (level >= 4 && level <= 5) {
-    const keys = Object.keys(plan.doc_5_lop ?? {});
-    if (keys.length !== REQUIRED_LAYERS.size || keys.some((key) => !REQUIRED_LAYERS.has(key))) {
-      throw new BadRequestException('Cấp 4–5 cần tự đọc đủ chính xác 4 lớp');
-    }
-  }
-}
-
 @Injectable()
 export class TradingService {
   constructor(
     private readonly repository: TradingRepository,
     private readonly market: TradingMarketPort,
     private readonly rights: TradingRightsService,
-    @Optional()
-    @Inject(TRADING_JOURNEY_PORT)
-    private readonly journey?: TradingJourneyPort,
   ) {}
 
+  /**
+   * Legacy `POST /virtual-trading/account/activate`. It funds exactly like onboarding
+   * (`ensureInitialAccount`: a fixed 100,000,000 VND and the `manual:initial_funding:<user>`
+   * ledger key), never `config.initialCashVnd`, so the two paths cannot fund an account twice.
+   * An account that already exists (for example created by onboarding) is returned untouched.
+   */
   async activateAccount(userId: string) {
+    const config = await this.getOrCreateConfig();
+    if (!config.tradingEnabled) throw new ForbiddenException('Giao dịch ảo hiện đang bị tạm dừng');
+    const { account } = await this.ensureInitialAccount(userId);
+    return accountResponse(account);
+  }
+
+  /**
+   * Onboarding: the manual demo account is created at most once per user with exactly
+   * 100,000,000 VND and one funding ledger row keyed `manual:initial_funding:<user_id>`.
+   * Accounts that already exist (including legacy ones) are never touched or re-funded; two
+   * concurrent calls race on `uq_vt_accounts_user_id` and only the winner writes the funding row.
+   */
+  async ensureInitialAccount(
+    userId: string,
+  ): Promise<{ account: TradingAccount; created: boolean }> {
     return this.repository.transaction(async (tx) => {
-      const config = await this.repository.ensureConfig(tx);
-      if (!config.tradingEnabled)
-        throw new ForbiddenException('Giao dịch ảo hiện đang bị tạm dừng');
-      if (await this.repository.getAccountByUser(userId, tx, true)) {
-        throw new ConflictException('Tài khoản giao dịch ảo đã tồn tại');
-      }
-      let account: TradingAccount;
-      try {
-        account = await this.repository.createAccount(tx, userId, config.initialCashVnd);
-      } catch (error) {
-        if ((error as { code?: string }).code === '23505') {
-          throw new ConflictException('Tài khoản giao dịch ảo đã tồn tại');
-        }
-        throw error;
+      const existing = await this.repository.getAccountByUser(userId, tx);
+      if (existing) return { account: existing, created: false };
+      const created = await this.repository.createAccountIfAbsent(
+        tx,
+        userId,
+        MANUAL_INITIAL_CASH_VND,
+      );
+      if (!created) {
+        const winner = await this.repository.getAccountByUser(userId, tx);
+        if (!winner) throw new Error('Manual trading account conflict could not be resolved');
+        return { account: winner, created: false };
       }
       await this.repository.insertLedger(tx, {
-        accountId: account.id,
-        amount: config.initialCashVnd,
-        balanceAfter: config.initialCashVnd,
+        accountId: created.id,
+        amount: MANUAL_INITIAL_CASH_VND,
+        balanceAfter: MANUAL_INITIAL_CASH_VND,
         kind: 'activate',
-        note: `Số dư ban đầu theo cấu hình: ${config.initialCashVnd} VND`,
+        idempotencyKey: manualFundingKey(userId),
+        note: 'Vốn demo ban đầu 100.000.000 VND, cấp đúng một lần',
       });
-      return accountResponse(account);
+      return { account: created, created: true };
     });
   }
 
@@ -288,7 +277,7 @@ export class TradingService {
     return order;
   }
 
-  /** Stable transaction-scoped helpers for journey, bot and admin use cases. */
+  /** Stable transaction-scoped helpers for bot and admin use cases. */
   async getAccountSameTx(tx: SqlClient, userId: string, lock = false): Promise<TradingAccount> {
     const account = await this.repository.getAccountByUser(userId, tx, lock);
     if (!account) throw new NotFoundException('Không tìm thấy tài khoản giao dịch ảo');
@@ -356,24 +345,11 @@ export class TradingService {
         throw new ForbiddenException('Tài khoản tạm khóa');
       }
 
-      const level = this.journey ? await this.journey.getActiveLevel(tx, input.userId) : null;
-      if (input.side === 'buy' && level != null) assertPlan(level, input.journeyPlan);
-      if (input.journeyPlan && !this.journey) {
-        throw new ServiceUnavailableException({
-          code: 'JOURNEY_INTEGRATION_UNAVAILABLE',
-          message: 'Không thể lưu kế hoạch hành trình lúc này',
-        });
-      }
-
-      const mode =
-        level === 0
-          ? 'san_tap'
-          : level != null && level >= 1
-            ? 'thuc_chien'
-            : input.isPremium
-              ? 'thuc_chien'
-              : 'san_tap';
-      const settlementMode: SettlementMode = mode === 'san_tap' ? 'T0' : config.settlementMode;
+      // Demo trading is an ordinary account: no learning plan, level or Premium decides the
+      // profile. Every user trades the regular (non-practice) mode with the configured
+      // settlement. `journeyPlan`, if an old client still sends one, is ignored.
+      const mode = 'thuc_chien';
+      const settlementMode: SettlementMode = config.settlementMode;
       const snapshot = configSnapshot(config, settlementMode);
       const holidays = new Set(config.holidays);
       const tradingDate = currentTradingDate(new Date(), holidays);
@@ -469,37 +445,7 @@ export class TradingService {
         order = await this.fillOrderSameTx(tx, account, order, quote!, config);
       }
 
-      let planResult = { savedLevels: [] as number[], nhoiLenhAlertLinked: false };
-      if (
-        input.side === 'buy' &&
-        level != null &&
-        (order.status === 'pending' || order.status === 'filled')
-      ) {
-        assertPlan(level, input.journeyPlan);
-        planResult = await this.journey!.validateAndPersistBuyPlan({
-          tx,
-          userId: input.userId,
-          orderId: order.id,
-          symbol,
-          quantity: input.quantity,
-          referencePriceVnd: order.filledPriceVnd ?? order.limitPriceVnd!,
-          level,
-          plan: input.journeyPlan,
-        });
-        if (order.status === 'filled') {
-          await this.journey!.onBuyOrderFilled?.({
-            tx,
-            userId: input.userId,
-            orderId: order.id,
-            symbol,
-          });
-        }
-      }
-      return {
-        order,
-        journeyPlanSavedLevels: planResult.savedLevels,
-        nhoiLenhAlertLinked: planResult.nhoiLenhAlertLinked,
-      };
+      return { order, journeyPlanSavedLevels: [], nhoiLenhAlertLinked: false };
     });
 
     return orderResponse(result.order, {
@@ -756,12 +702,6 @@ export class TradingService {
         if (shouldFill) {
           lockedAccount = (await this.repository.getAccountById(tx, account.id, false))!;
           await this.fillOrderSameTx(tx, lockedAccount, order, quote, config);
-          await this.journey?.onBuyOrderFilled?.({
-            tx,
-            userId,
-            orderId: order.id,
-            symbol: order.symbol,
-          });
           lockedAccount = (await this.repository.getAccountById(tx, account.id, false))!;
           filled += 1;
         }

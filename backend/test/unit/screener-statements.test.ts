@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { METRIC_STATUSES } from '../../src/modules/screener/screener.metrics.js';
 import {
   evaluateScreenerMetric,
   normalizeVciStatements,
@@ -165,90 +166,95 @@ describe('evaluateScreenerMetric', () => {
   const statements = normalizeVciStatements(sections(periods), asOf);
 
   it('TTM growth uses four discrete quarters vs the prior four', () => {
-    const result = evaluateScreenerMetric('revenue_yoy', statements, noMarket, 'TTM');
-    expect(result).toMatchObject({ status: 'ok', unit: 'ratio', period: 'TTM Q4/2024' });
+    const result = evaluateScreenerMetric('revenue_yoy', statements, noMarket, 'ttm');
+    expect(result).toMatchObject({
+      status: 'ok',
+      unit: 'ratio',
+      actual_period_label: 'TTM Q4/2024',
+    });
     expect(result.value).toBeCloseTo(0.2, 12);
-    expect(result.available_at).toBe('2025-01-30T00:00:00+07:00');
+    expect(result.published_at).toBe('2025-01-30');
+    expect(result.available_at).toBe('2025-01-31T00:00:00+07:00');
     expect(result.source_revision).toBe('VCI:2025-01-30T10:00:00');
   });
 
   it('quarter growth compares with the same quarter one year earlier', () => {
     const result = evaluateScreenerMetric('profit_yoy', statements, noMarket, 'quarter');
-    expect(result).toMatchObject({ status: 'ok', period: 'Q4/2024' });
+    expect(result).toMatchObject({ status: 'ok', actual_period_label: 'Q4/2024' });
     expect(result.value).toBeCloseTo(0.2, 12);
   });
 
   it('annual growth compares fiscal years', () => {
-    const result = evaluateScreenerMetric('revenue_yoy', statements, noMarket, 'annual');
-    expect(result).toMatchObject({ status: 'ok', period: 'FY2024' });
+    const result = evaluateScreenerMetric('revenue_yoy', statements, noMarket, 'year');
+    expect(result).toMatchObject({ status: 'ok', actual_period_label: 'FY2024' });
     expect(result.value).toBeCloseTo(0.2, 12);
   });
 
   it('ROE divides parent profit by the average of both-end parent equity', () => {
     // equity − NCI: Q4/2024 620, Q4/2023 580 → avg 600; TTM profit 120.
-    const result = evaluateScreenerMetric('roe', statements, noMarket, 'TTM');
+    const result = evaluateScreenerMetric('roe', statements, noMarket, 'ttm');
     expect(result.value).toBeCloseTo(0.2, 12);
   });
 
   it('interest coverage reconciles EBIT = PBT + interest expense', () => {
     // TTM PBT 160 + interest 40 = 200 over 40.
     expect(
-      evaluateScreenerMetric('interest_coverage', statements, noMarket, 'TTM').value,
+      evaluateScreenerMetric('interest_coverage', statements, noMarket, 'ttm').value,
     ).toBeCloseTo(5, 12);
   });
 
   it('margins and balance ratios', () => {
-    expect(evaluateScreenerMetric('gross_margin', statements, noMarket, 'TTM').value).toBeCloseTo(
+    expect(evaluateScreenerMetric('gross_margin', statements, noMarket, 'ttm').value).toBeCloseTo(
       0.3,
       12,
     );
-    expect(evaluateScreenerMetric('current_ratio', statements, noMarket, 'TTM')).toMatchObject({
+    expect(evaluateScreenerMetric('current_ratio', statements, noMarket, 'ttm')).toMatchObject({
       value: 1.5,
-      period: 'Q4/2024',
+      actual_period_label: 'Q4/2024',
     });
-    expect(evaluateScreenerMetric('debt_equity', statements, noMarket, 'TTM').value).toBeCloseTo(
+    expect(evaluateScreenerMetric('debt_equity', statements, noMarket, 'ttm').value).toBeCloseTo(
       300 / 650,
       12,
     );
     // FCF TTM = (30+10)·4 − 15·4 = 100 over revenue 1200.
-    expect(evaluateScreenerMetric('fcf_margin', statements, noMarket, 'TTM').value).toBeCloseTo(
+    expect(evaluateScreenerMetric('fcf_margin', statements, noMarket, 'ttm').value).toBeCloseTo(
       100 / 1200,
       12,
     );
   });
 
   it('valuation needs an observed price and share count; never fabricates either', () => {
-    expect(evaluateScreenerMetric('pe', statements, noMarket, 'TTM')).toMatchObject({
+    expect(evaluateScreenerMetric('pe', statements, noMarket, 'ttm')).toMatchObject({
       status: 'missing',
       value: null,
     });
     expect(
-      evaluateScreenerMetric('pe', statements, { price: 10, shares: null }, 'TTM').status,
+      evaluateScreenerMetric('pe', statements, { price: 10, shares: null }, 'ttm').status,
     ).toBe('missing');
     const market = { price: 10, shares: 120 };
-    expect(evaluateScreenerMetric('pe', statements, market, 'TTM').value).toBeCloseTo(10, 12);
-    expect(evaluateScreenerMetric('ps', statements, market, 'TTM').value).toBeCloseTo(1, 12);
-    expect(evaluateScreenerMetric('pb', statements, market, 'TTM').value).toBeCloseTo(
+    expect(evaluateScreenerMetric('pe', statements, market, 'ttm').value).toBeCloseTo(10, 12);
+    expect(evaluateScreenerMetric('ps', statements, market, 'ttm').value).toBeCloseTo(1, 12);
+    expect(evaluateScreenerMetric('pb', statements, market, 'ttm').value).toBeCloseTo(
       1200 / 620,
       12,
     );
     // Buyback 2·4 − issuance 0 over cap 1200.
-    expect(evaluateScreenerMetric('buyback_yield', statements, market, 'TTM').value).toBeCloseTo(
+    expect(evaluateScreenerMetric('buyback_yield', statements, market, 'ttm').value).toBeCloseTo(
       8 / 1200,
       12,
     );
     // EV = 1200 + 0 + 300 + 30 − 80 = 1450; EBITDA = 160 + 40 + 20 = 220.
-    expect(evaluateScreenerMetric('ev_ebitda', statements, market, 'TTM').value).toBeCloseTo(
+    expect(evaluateScreenerMetric('ev_ebitda', statements, market, 'ttm').value).toBeCloseTo(
       1450 / 220,
       12,
     );
   });
 
   it('3-year metrics use four fiscal year points; non-positive points are insufficient_base', () => {
-    const cagr = evaluateScreenerMetric('revenue_cagr3', statements, noMarket, 'TTM');
-    expect(cagr).toMatchObject({ status: 'ok', period: 'FY2021–FY2024' });
+    const cagr = evaluateScreenerMetric('revenue_cagr3', statements, noMarket, 'ttm');
+    expect(cagr).toMatchObject({ status: 'ok', actual_period_label: 'FY2021–FY2024' });
     expect(cagr.value).toBeCloseTo((1200 / 800) ** (1 / 3) - 1, 12);
-    expect(evaluateScreenerMetric('profit_cagr3', statements, noMarket, 'TTM')).toMatchObject({
+    expect(evaluateScreenerMetric('profit_cagr3', statements, noMarket, 'ttm')).toMatchObject({
       status: 'insufficient_base',
       value: null,
     });
@@ -256,12 +262,12 @@ describe('evaluateScreenerMetric', () => {
 
   it('streaks walk fiscal years back and stop at the first non-positive year', () => {
     expect(
-      evaluateScreenerMetric('profit_positive_streak', statements, noMarket, 'TTM'),
+      evaluateScreenerMetric('profit_positive_streak', statements, noMarket, 'ttm'),
     ).toMatchObject({
       status: 'ok',
       value: 3,
     });
-    const fcf = evaluateScreenerMetric('fcf_positive_streak', statements, noMarket, 'TTM');
+    const fcf = evaluateScreenerMetric('fcf_positive_streak', statements, noMarket, 'ttm');
     // FCF FY2021 = 50 − 60 < 0.
     expect(fcf).toMatchObject({ status: 'ok', value: 3 });
     expect(fcf.lower_bound).toBeUndefined();
@@ -272,7 +278,7 @@ describe('evaluateScreenerMetric', () => {
     const mean = margins.reduce((s, x) => s + x, 0) / 3;
     const sd = Math.sqrt(margins.reduce((s, x) => s + (x - mean) ** 2, 0) / 3);
     expect(
-      evaluateScreenerMetric('net_margin_stability', statements, noMarket, 'TTM').value,
+      evaluateScreenerMetric('net_margin_stability', statements, noMarket, 'ttm').value,
     ).toBeCloseTo(sd, 12);
   });
 
@@ -281,30 +287,269 @@ describe('evaluateScreenerMetric', () => {
       sections(periods.filter((p) => !(p.year === 2023 && p.length !== 5))),
       asOf,
     );
-    expect(evaluateScreenerMetric('revenue_yoy', short, noMarket, 'TTM')).toMatchObject({
+    expect(evaluateScreenerMetric('revenue_yoy', short, noMarket, 'ttm')).toMatchObject({
       status: 'missing',
       value: null,
     });
-    expect(evaluateScreenerMetric('roe', short, noMarket, 'TTM').status).toBe('missing');
+    expect(evaluateScreenerMetric('roe', short, noMarket, 'ttm').status).toBe('missing');
   });
 
   it('non-financial metrics are not_applicable for bank templates', () => {
     const bank = normalizeVciStatements(sections(periods, { isb25: 5 }), asOf);
-    expect(evaluateScreenerMetric('gross_margin', bank, noMarket, 'TTM')).toMatchObject({
+    expect(evaluateScreenerMetric('gross_margin', bank, noMarket, 'ttm')).toMatchObject({
       status: 'not_applicable',
       value: null,
     });
-    expect(evaluateScreenerMetric('roe', bank, noMarket, 'TTM').status).toBe('ok');
+    expect(evaluateScreenerMetric('roe', bank, noMarket, 'ttm').status).toBe('ok');
   });
 
-  it('unsupported metrics are missing with their Vietnamese reason', () => {
-    const result = evaluateScreenerMetric(
+  it('metrics without data or definition report data_unavailable / definition_pending', () => {
+    const dividend = evaluateScreenerMetric(
       'dividend_yield',
       statements,
       { price: 10, shares: 120 },
-      'TTM',
+      'ttm',
     );
-    expect(result).toMatchObject({ status: 'missing', value: null, unit: 'ratio' });
-    expect(result.reason).toContain('cổ tức');
+    expect(dividend).toMatchObject({
+      status: 'data_unavailable',
+      value: null,
+      unit: 'ratio',
+      reason_code: 'data_unavailable',
+    });
+    expect(dividend.reason).toContain('cổ tức');
+    expect(evaluateScreenerMetric('roic', statements, noMarket, 'ttm')).toMatchObject({
+      status: 'definition_pending',
+      value: null,
+    });
+    // EPS growth needs split-adjusted EPS, which the source does not provide.
+    expect(evaluateScreenerMetric('eps_yoy', statements, noMarket, 'quarter').status).toBe(
+      'data_unavailable',
+    );
+  });
+});
+
+describe('period handling and provenance (Strategy spec §7.4-§7.5, §10.3)', () => {
+  const statements = normalizeVciStatements(sections(periods), asOf);
+
+  it('every cell echoes the requested period and the exact reports it used', () => {
+    const quarter = evaluateScreenerMetric('revenue_yoy', statements, noMarket, 'quarter');
+    expect(quarter).toMatchObject({
+      metric_id: 'revenue_yoy',
+      period_mode: 'quarter',
+      actual_period_label: 'Q4/2024',
+      comparison_period_label: 'Q4/2023',
+      published_at: '2025-01-30',
+    });
+    expect(quarter.components.map((item) => item.label)).toEqual(['Q4/2024', 'Q4/2023']);
+    const ttm = evaluateScreenerMetric('revenue_yoy', statements, noMarket, 'ttm');
+    expect(ttm.period_mode).toBe('ttm');
+    expect(ttm.comparison_period_label).toBe('TTM Q4/2023');
+    expect(ttm.components).toHaveLength(8);
+    const year = evaluateScreenerMetric('revenue_yoy', statements, noMarket, 'year');
+    expect(year.comparison_period_label).toBe('FY2023');
+    expect(year.components.map((item) => item.label)).toEqual(['FY2024', 'FY2023']);
+    expect(year.source_revision).toMatch(/^VCI:/);
+  });
+
+  it('changing one metric period changes only its figures (F04)', () => {
+    const profitQuarter = evaluateScreenerMetric('profit_yoy', statements, noMarket, 'quarter');
+    const profitYear = evaluateScreenerMetric('profit_yoy', statements, noMarket, 'year');
+    const roeTtm = evaluateScreenerMetric('roe', statements, noMarket, 'ttm');
+    expect(profitQuarter.actual_period_label).toBe('Q4/2024');
+    expect(profitYear.actual_period_label).toBe('FY2024');
+    expect(profitYear.value).toBeCloseTo(0.2, 12);
+    expect(roeTtm.actual_period_label).toBe('TTM Q4/2024');
+    expect(evaluateScreenerMetric('roe', statements, noMarket, 'ttm')).toEqual(roeTtm);
+  });
+
+  it('F05 quarter YoY compares the same quarter, not the previous quarter', () => {
+    const fixture = [
+      quarter(2023, 1, 100, 100, 600),
+      quarter(2023, 2, 100, 100, 600),
+      quarter(2023, 3, 100, 100, 600),
+      quarter(2023, 4, 100, 100, 600),
+      quarter(2024, 1, 100, 100, 600),
+      quarter(2024, 2, 100, 100, 600),
+      quarter(2024, 3, 125, 125, 600),
+      quarter(2024, 4, 150, 150, 600),
+    ];
+    // Prior quarter Q3/2024 = 125 would give +20%; same quarter Q4/2023 = 100 gives +50%.
+    const result = evaluateScreenerMetric(
+      'revenue_yoy',
+      normalizeVciStatements(sections(fixture), asOf),
+      noMarket,
+      'quarter',
+    );
+    expect(result.value).toBeCloseTo(0.5, 12);
+  });
+
+  it('F06 four-quarter YoY compares against the four quarters a year earlier', () => {
+    const fixture = [
+      ...[1, 2, 3, 4].map((q) => quarter(2023, q, 100, 100, 600)),
+      ...[1, 2, 3, 4].map((q) => quarter(2024, q, 150, 150, 600)),
+    ];
+    const result = evaluateScreenerMetric(
+      'revenue_yoy',
+      normalizeVciStatements(sections(fixture), asOf),
+      noMarket,
+      'ttm',
+    );
+    // 600 vs 400.
+    expect(result.value).toBeCloseTo(0.5, 12);
+  });
+
+  it('F10 an anchor with a missing quarter is not computable and does not fall back to an older TTM', () => {
+    const gap = periods.filter((p) => !(p.year === 2024 && p.length === 1));
+    const result = evaluateScreenerMetric(
+      'gross_margin',
+      normalizeVciStatements(sections(gap), asOf),
+      noMarket,
+      'ttm',
+    );
+    expect(result).toMatchObject({
+      status: 'missing',
+      value: null,
+      reason_code: 'no_report',
+      actual_period_label: null,
+    });
+  });
+
+  it('F11 gross margin TTM sums the underlying amounts, never averages the ratios', () => {
+    const gross = [
+      { revenue: 100, profit: 10 },
+      { revenue: 200, profit: 40 },
+      { revenue: 300, profit: 90 },
+      { revenue: 400, profit: 160 },
+    ];
+    const quarters = gross.map((item, index) => {
+      const spec = quarter(2024, index + 1, item.revenue, 10, 600);
+      spec.income.isa5 = item.profit;
+      return spec;
+    });
+    const result = evaluateScreenerMetric(
+      'gross_margin',
+      normalizeVciStatements(sections([...quarters, quarter(2023, 4, 100, 10, 600)]), asOf),
+      noMarket,
+      'ttm',
+    );
+    expect(result.value).toBeCloseTo(0.3, 12);
+    expect(result.value).not.toBeCloseTo(0.25, 6);
+  });
+
+  it('F13 ROE needs the opening equity: without it nothing is substituted', () => {
+    const noOpening = periods.filter((p) => !(p.year === 2023 && p.length === 4));
+    const result = evaluateScreenerMetric(
+      'roe',
+      normalizeVciStatements(sections(noOpening), asOf),
+      noMarket,
+      'ttm',
+    );
+    expect(result.status).toBe('missing');
+    expect(result.value).toBeNull();
+  });
+
+  it('F16 a non-positive base is insufficient_base, never an absolute value or infinity', () => {
+    const fixture = [
+      ...[1, 2, 3, 4].map((q) => quarter(2023, q, 100, q === 4 ? -10 : 10, 600)),
+      ...[1, 2, 3, 4].map((q) => quarter(2024, q, 100, 30, 600)),
+    ];
+    const result = evaluateScreenerMetric(
+      'profit_yoy',
+      normalizeVciStatements(sections(fixture), asOf),
+      noMarket,
+      'quarter',
+    );
+    expect(result).toMatchObject({
+      status: 'insufficient_base',
+      value: null,
+      reason_code: 'non_positive_base',
+    });
+  });
+
+  it('F16 a negative current figure over a positive base is a valid negative growth', () => {
+    const fixture = [
+      ...[1, 2, 3, 4].map((q) => quarter(2023, q, 100, 40, 600)),
+      ...[1, 2, 3, 4].map((q) => quarter(2024, q, 100, q === 4 ? -20 : 40, 600)),
+    ];
+    const result = evaluateScreenerMetric(
+      'profit_yoy',
+      normalizeVciStatements(sections(fixture), asOf),
+      noMarket,
+      'quarter',
+    );
+    expect(result.status).toBe('ok');
+    expect(result.value).toBeCloseTo(-1.5, 12);
+  });
+
+  it('F15 profit growth uses the parent profit, net margin the consolidated profit', () => {
+    const fixture = [
+      ...[1, 2, 3, 4].map((q) => {
+        const spec = quarter(2023, q, 100, 10, 600);
+        spec.income.isa22 = 8;
+        return spec;
+      }),
+      ...[1, 2, 3, 4].map((q) => {
+        const spec = quarter(2024, q, 100, 20, 600);
+        spec.income.isa22 = 12;
+        return spec;
+      }),
+    ];
+    const normalized = normalizeVciStatements(sections(fixture), asOf);
+    expect(evaluateScreenerMetric('profit_yoy', normalized, noMarket, 'quarter').value).toBeCloseTo(
+      12 / 8 - 1,
+      12,
+    );
+    expect(evaluateScreenerMetric('net_margin', normalized, noMarket, 'ttm').value).toBeCloseTo(
+      80 / 400,
+      12,
+    );
+  });
+
+  it('F07 the fiscal year is the latest reported full year, whatever the calendar says', () => {
+    // Only FY2023 and FY2024 were reported; the calendar is already 2026.
+    const late = new Date('2026-02-01T03:00:00Z');
+    const result = evaluateScreenerMetric(
+      'revenue_yoy',
+      normalizeVciStatements(sections(periods), late),
+      noMarket,
+      'year',
+    );
+    expect(result.actual_period_label).toBe('FY2024');
+  });
+
+  it('F08 a report is unavailable until the day after publication', () => {
+    const cutoffBefore = new Date('2025-01-30T03:00:00Z');
+    const early = evaluateScreenerMetric(
+      'revenue_yoy',
+      normalizeVciStatements(sections(periods), cutoffBefore),
+      noMarket,
+      'quarter',
+    );
+    // Q4/2024 was published on 2025-01-30: at that day's cutoff the latest is Q3/2024.
+    expect(early.actual_period_label).toBe('Q3/2024');
+    expect(early.published_at).toBe('2024-10-20');
+  });
+
+  it('F09 companies keep their own latest period', () => {
+    const q3Only = periods.filter((p) => !(p.year === 2024 && p.length === 4));
+    const a = evaluateScreenerMetric(
+      'revenue_yoy',
+      normalizeVciStatements(sections(q3Only), asOf),
+      noMarket,
+      'quarter',
+    );
+    const b = evaluateScreenerMetric('revenue_yoy', statements, noMarket, 'quarter');
+    expect([a.actual_period_label, b.actual_period_label]).toEqual(['Q3/2024', 'Q4/2024']);
+  });
+
+  it('the status enum is one documented list', () => {
+    expect([...METRIC_STATUSES]).toEqual([
+      'ok',
+      'missing',
+      'not_applicable',
+      'insufficient_base',
+      'definition_pending',
+      'data_unavailable',
+    ]);
   });
 });

@@ -41,9 +41,33 @@
  *    shareholder_yield (no per-share cash-dividend events by ex-date), share_count_yoy (no
  *    split/bonus event history to adjust the base share count).
  */
-import type { ScreenerMetricId } from './screener.registry.js';
+import { fundamentalMetric, type ScreenerMetricId } from './screener.registry.js';
 
-export type MetricStatus = 'ok' | 'missing' | 'not_applicable' | 'insufficient_base';
+/**
+ * The ONE status enum of a metric cell (documented in the OpenAPI `screenerMetricResult`):
+ *  - `ok`: `value` is valid (compare/sort on it unrounded); streak metrics may add `lower_bound`;
+ *  - `missing`: a report, a component or the provider is missing — never counts as a pass;
+ *  - `not_applicable`: the metric does not apply to this kind of company — never a pass;
+ *  - `insufficient_base`: the base period/denominator is not positive, so no ordinary ratio exists;
+ *  - `definition_pending`: no approved definition in the repo (the metric cannot run);
+ *  - `data_unavailable`: defined, but the data source cannot supply its inputs (cannot run).
+ */
+export type MetricStatus =
+  | 'ok'
+  | 'missing'
+  | 'not_applicable'
+  | 'insufficient_base'
+  | 'definition_pending'
+  | 'data_unavailable';
+
+export const METRIC_STATUSES = [
+  'ok',
+  'missing',
+  'not_applicable',
+  'insufficient_base',
+  'definition_pending',
+  'data_unavailable',
+] as const satisfies readonly MetricStatus[];
 
 export interface MetricValue {
   value: number | null;
@@ -102,6 +126,35 @@ export function metricSupport(id: ScreenerMetricId): {
   return reason
     ? { supported: false, unsupported_reason: reason }
     : { supported: true, unsupported_reason: null };
+}
+
+/** Machine-readable cause of a non-ok cell (stable codes; the Vietnamese `reason` is for display). */
+export const METRIC_REASON_CODES: Readonly<Record<keyof typeof METRIC_REASONS, string>> = {
+  missingInput: 'missing_input',
+  nonPositiveBase: 'non_positive_base',
+  nonPositivePoint: 'non_positive_point',
+  nonPositiveDenominator: 'non_positive_denominator',
+  invalidPrice: 'invalid_price',
+  noInterestExpense: 'no_interest_expense',
+  financialSector: 'financial_sector',
+  insufficientHistory: 'insufficient_history',
+  providerError: 'provider_error',
+  priceUnavailable: 'price_unavailable',
+  sharesUnavailable: 'shares_unavailable',
+  noReport: 'no_report',
+};
+
+export function reasonCode(status: MetricStatus, reason: string | undefined): string | undefined {
+  if (status === 'ok') return undefined;
+  const key = (Object.keys(METRIC_REASONS) as Array<keyof typeof METRIC_REASONS>).find(
+    (name) => METRIC_REASONS[name] === reason,
+  );
+  return key ? METRIC_REASON_CODES[key] : status;
+}
+
+/** Registry readiness of a metric: only `ready` metrics run (no formula is ever invented). */
+export function metricReadiness(id: ScreenerMetricId) {
+  return fundamentalMetric(id).readiness;
 }
 
 const GROWTH = new Set<ScreenerMetricId>([
@@ -210,6 +263,10 @@ export const notApplicable = (reason: string): MetricValue => ({
   status: 'not_applicable',
   reason,
 });
+export const notRunnable = (
+  status: 'definition_pending' | 'data_unavailable',
+  reason: string,
+): MetricValue => ({ value: null, status, reason });
 
 /** Population standard deviation of exactly three observations (÷3, not ÷2). */
 function populationStdev3(values: readonly number[]): number {

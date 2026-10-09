@@ -1,10 +1,14 @@
-import type { Bar, SeriesMap } from './types.js';
+import { CURRENT_INDICATOR_IDS, type Bar, type SeriesMap } from './types.js';
 
 /**
  * Exact port of the spec reference engine `calc` (bot-v2 assets/engine.js,
  * calculation_version iqx-ta-2.0). Arithmetic order is preserved on purpose so
  * the golden tests can compare series bit-for-bit; do not "optimise" rolling
  * windows into running sums.
+ *
+ * `calc` serves only the 16 indicators of the current registry (`iqx-rules-3.0`).
+ * `calcLegacy` additionally computes the 19 retired indicators so historical receipts can
+ * still be read and re-verified; nothing may offer them as current.
  */
 
 type Value = number | null;
@@ -129,12 +133,34 @@ function coverageBelowThreshold(coverage: number | null | undefined): boolean {
 const coverageAtLeastThreshold = (coverage: number | null | undefined): boolean =>
   typeof coverage === 'number' && coverage >= 0.95;
 
+const CURRENT_IDS: ReadonlySet<string> = new Set(CURRENT_INDICATOR_IDS);
+
+export const isCurrentIndicatorId = (id: string): boolean => CURRENT_IDS.has(id);
+
 /**
- * Compute the named series of one indicator instance. Context indicators
- * (rs_market, rs_sector, ad_line, breadth_ma50, new_high_low, index_ma) return
- * null where their context fields are missing — never zero.
+ * Compute the named series of one indicator instance of the current registry (16 ids).
+ * Anything else throws: removed indicators are legacy-only (`calcLegacy`).
  */
 export function calc(id: string, params: Record<string, number>, bars: readonly Bar[]): SeriesMap {
+  if (!CURRENT_IDS.has(id)) throw new Error(`Chỉ báo không được hỗ trợ: ${id}`);
+  return calcAny(id, params, bars);
+}
+
+/**
+ * Legacy engine surface (iqx-rules-2.0): the 16 current indicators plus the 19 retired ones.
+ * Only for reading/verifying historical configs and receipts; context indicators (rs_market,
+ * rs_sector, ad_line, breadth_ma50, new_high_low, index_ma) return null where their context
+ * fields are missing — never zero.
+ */
+export function calcLegacy(
+  id: string,
+  params: Record<string, number>,
+  bars: readonly Bar[],
+): SeriesMap {
+  return calcAny(id, params, bars);
+}
+
+function calcAny(id: string, params: Record<string, number>, bars: readonly Bar[]): SeriesMap {
   const p = (key: string): number => params[key] ?? Number.NaN;
   const b = bars;
   const n = b.length;
@@ -237,11 +263,18 @@ export function calc(id: string, params: Record<string, number>, bars: readonly 
       const atr = wilder(trueRange(b), period);
       const plus = div(wilder(plusDm, period), atr, 100);
       const minus = div(wilder(minusDm, period), atr, 100);
-      const dx = zip(plus, minus, (x, y) => (x + y === 0 ? 0 : (100 * Math.abs(x - y)) / (x + y)));
       o.plus = plus;
       o.minus = minus;
-      o.dx = dx;
-      o.value = wilder(dx, period);
+      if (id === 'adx') {
+        // ADX is a retired indicator: the current DMI exposes only +DI/−DI (Bot spec §9.1).
+        const dx = zip(plus, minus, (x, y) =>
+          x + y === 0 ? 0 : (100 * Math.abs(x - y)) / (x + y),
+        );
+        o.dx = dx;
+        o.value = wilder(dx, period);
+      } else {
+        o.value = plus;
+      }
       break;
     }
     case 'stochastic': {

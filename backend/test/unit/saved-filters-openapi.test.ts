@@ -22,6 +22,11 @@ const ROUTES: Array<[string, string, string]> = [
   ['/api/v2/strategy/lists', 'post', 'explicit'],
   ['/api/v2/strategy/lists/{listId}', 'get', 'explicit'],
   ['/api/v2/strategy/lists/{listId}', 'delete', 'no-content'],
+  ['/api/v2/strategy/lists/from-result', 'post', 'explicit'],
+  ['/api/v2/strategy/result-snapshots', 'get', 'explicit'],
+  ['/api/v2/strategy/result-snapshots', 'post', 'explicit'],
+  ['/api/v2/strategy/result-snapshots/{snapshotId}', 'get', 'explicit'],
+  ['/api/v2/strategy/result-snapshots/{snapshotId}', 'delete', 'no-content'],
 ];
 
 describe('saved filters OpenAPI contract', () => {

@@ -8,15 +8,20 @@ import {
   Optional,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
+import type { Environment } from '../../platform/config/environment.js';
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
+import {
+  IndexMembershipService,
+  type MembershipCaptureResult,
+} from '../market-integration/index-membership.service.js';
 import { QUANT_MARKET_DATA, type QuantMarketDataProvider } from '../quant/quant.types.js';
 import {
   configHash,
   indicatorCapability,
   loadTechnicalRegistry,
   sideSignalsWithEvidence,
-  validateConfig,
   type Bar,
   type SharedConfig,
 } from '../quant/v2/index.js';
@@ -27,24 +32,27 @@ import {
 } from '../strategy-config/strategy-config.ports.js';
 import {
   BOT_POLICY,
+  BOT_REASON_LABELS,
   candidateFromSnapshot,
-  candidateRank,
   canonicalHash,
   computeBuyQuantity,
-  computeProtectiveStop,
   feeRulesFromSnapshot,
-  formatDecimal4,
-  parseDecimal4,
   parseInteger,
   rankCandidates,
   ratioString,
   roundBasisPoints,
   sanitizeSnapshot,
   snapshotHash,
-  stopLossSignal,
   type Candidate,
   type FeeRules,
 } from './bot.domain.js';
+import { loadTradingCalendar, openHoldingSessions } from './bot-holding.js';
+import {
+  blockedGate,
+  gateConfigSides,
+  readLegacyReview,
+  type ConfigGate,
+} from './bot.config-gate.js';
 import {
   activeSideIndicators,
   BOT_SHARED_CONFIG_MARKET_SYMBOL,
@@ -58,6 +66,7 @@ import {
 } from './bot.shared-config.js';
 import {
   BOT_SNAPSHOT_PROVIDER,
+  BOT_UNIVERSE,
   type BotAccountRow,
   type BotBatchResult,
   type BotInstanceRow,
@@ -67,8 +76,13 @@ import {
   type BotRunResult,
   type BotRunRow,
   type BotSharedConfigSignals,
+  type BotSideBlock,
   type BotSnapshotProvider,
+  type BotUniverseEvidence,
+  type BotUniversePort,
+  type ResolvedBotUniverse,
 } from './bot.types.js';
+import { vnDate } from '../strategy-config/strategy-config.calendar.js';
 import type { SharedConfigState } from '../strategy-config/strategy-config.schemas.js';
 
 const DISCLOSURE =
@@ -82,7 +96,6 @@ const BOT_STRATEGY_VERSION = 1;
 const INITIAL_CASH_VND = BigInt(BOT_POLICY.initial_cash_vnd);
 
 const CRITICAL_ISSUES = new Set([
-  'filter_data_incomplete',
   'source_error',
   'reconciliation_failed',
   'snapshot_hash_mismatch',
@@ -96,8 +109,34 @@ type AcademyConfigReader = SharedConfigReaderPort & {
 type ConfigResolution = {
   effective: EffectiveSharedConfig | null;
   grants: string[];
+  /** The config could not be read or pinned at all: both sides are stopped. */
   invalid: boolean;
   detail: string | null;
+  /** Per-side verdict of the effective config; null when there is no effective config. */
+  gate: ConfigGate | null;
+};
+
+/** Upper bound of capture retries when state changes between resolution and capture. */
+const MAX_CAPTURE_ATTEMPTS = 3;
+
+type SideVerdict =
+  | { state: 'active' }
+  | { state: 'inactive'; reason: string }
+  | {
+      state: 'blocked';
+      reason: 'config_invalid_or_unauthorized' | 'legacy_needs_review';
+      detail: string;
+    };
+
+type BotConfigState =
+  'waiting_for_conditions' | 'buy_only' | 'sell_only' | 'buy_and_sell' | 'error';
+
+const CONFIG_STATE_LABELS: Record<BotConfigState, string> = {
+  waiting_for_conditions: 'Chờ thiết lập điều kiện',
+  buy_only: 'Đã bật điều kiện Mua',
+  sell_only: 'Chỉ xét điều kiện Bán',
+  buy_and_sell: 'Đã bật Mua và Bán',
+  error: 'Lỗi cấu hình hoặc quyền',
 };
 
 type ConditionRule = {
@@ -216,9 +255,8 @@ function configuredOperand(
   return null;
 }
 
-function uuidRank(candidate: Candidate): [number, string, string] {
-  const rank = candidateRank(candidate);
-  return [rank[0], rank[1].toString(), rank[2]];
+function rankTuple(candidate: Candidate): [string, string, string] {
+  return [BOT_POLICY.candidate_order, candidate.tradingValueAvg20Vnd.toString(), candidate.symbol];
 }
 
 function validateTradingDate(value: string): void {
@@ -284,9 +322,25 @@ export class BotService {
     @Optional()
     @Inject(QUANT_MARKET_DATA)
     private readonly marketData?: QuantMarketDataProvider,
+    @Optional()
+    @Inject(BOT_UNIVERSE)
+    private readonly universe?: BotUniversePort,
+    @Optional()
+    private readonly membership?: IndexMembershipService,
+    @Optional()
+    private readonly config?: ConfigService<Environment, true>,
   ) {}
 
-  /** Stable integration aliases used by Journey/Cap-6 hooks. */
+  /**
+   * Bot SPEC 8.4 / 18.2: real new buys stay off until the owner confirms the candidate ordering.
+   * `BOT_NEW_BUYS_ENABLED` defaults to false; without a config source it is false too. Sells and
+   * the whole decision journal run either way.
+   */
+  newBuysEnabled(): boolean {
+    return this.config?.get('BOT_NEW_BUYS_ENABLED', { infer: true }) === true;
+  }
+
+  /** Stable integration aliases used by workspace onboarding hooks. */
   initializeAccount(userId: string): Promise<{ initialized: boolean; instanceId: string | null }> {
     return this.initialize(userId);
   }
@@ -304,16 +358,14 @@ export class BotService {
       : this.runAccountSession(userId, tradingDate);
   }
 
-  /** Cap-6 graduation hook. It is the only path that grants the initial 100m VND. */
+  /**
+   * Gate-free, idempotent account initialisation (workspace ensure). One Bot instance and
+   * one Bot account per user; the initial 100m VND is granted exactly once under the
+   * ledger idempotency key `bot:v1:funding:<user>` (also what legacy accounts carry).
+   * Never called from a scheduled run and never from a GET.
+   */
   async initialize(userId: string): Promise<{ initialized: boolean; instanceId: string | null }> {
     return this.database.transaction(async (tx) => {
-      const progress = await tx.query<{ graduated_at: Date | string | null }>(
-        'select graduated_at from cap6_progress where user_id = $1 for update',
-        [userId],
-      );
-      const graduatedAt = progress[0]?.graduated_at;
-      if (!graduatedAt) return { initialized: false, instanceId: null };
-
       const existing = await tx.query<{ id: string }>(
         'select id from bot_instances where user_id = $1',
         [userId],
@@ -375,8 +427,8 @@ export class BotService {
         `insert into bot_instances
            (id, user_id, bot_account_id, strategy_id, strategy_version, execution_model,
             cap6_graduated_at, activated_at, created_at, updated_at)
-         values ($1, $2, $3, $4, $5, $6, $7, $8::timestamptz,
-                 $8::timestamptz at time zone 'UTC', $8::timestamptz at time zone 'UTC')
+         values ($1, $2, $3, $4, $5, $6, null, $7::timestamptz,
+                 $7::timestamptz at time zone 'UTC', $7::timestamptz at time zone 'UTC')
          on conflict (user_id) do nothing returning id`,
         [
           instanceId,
@@ -385,7 +437,6 @@ export class BotService {
           BOT_STRATEGY_ID,
           BOT_STRATEGY_VERSION,
           BOT_POLICY.execution_model,
-          graduatedAt,
           now,
         ],
       );
@@ -401,7 +452,26 @@ export class BotService {
     });
   }
 
-  /** Run every active account for one EOD session. No historical prices are synthesized. */
+  /**
+   * Stores today's VN30 constituents (job `market.index-membership`, before the Bot run).
+   * Past sessions are never written.
+   */
+  captureVn30Membership(sessionDate: string, now = new Date()): Promise<MembershipCaptureResult> {
+    validateTradingDate(sessionDate);
+    if (!this.membership) {
+      throw new ServiceUnavailableException({
+        code: 'INDEX_MEMBERSHIP_UNAVAILABLE',
+        message: 'Nguồn thành phần chỉ số chưa được cấu hình',
+      });
+    }
+    return this.membership.capture('VN30', sessionDate, now);
+  }
+
+  /**
+   * Run every EXISTING active account for one EOD session. Accounts are only created by
+   * `initialize` (workspace ensure); the scheduler never backfills or funds anyone. No
+   * historical prices are synthesized.
+   */
   async runSession(
     tradingDate: string,
     provider: BotSnapshotProvider | undefined = this.defaultSnapshotProvider,
@@ -420,22 +490,6 @@ export class BotService {
       failed: 0,
       skippedNotSession: 0,
     };
-
-    const missing = await this.database.query<{ user_id: string }>(
-      `select p.user_id
-       from cap6_progress p
-       left join bot_instances i on i.user_id = p.user_id
-       where p.graduated_at is not null and i.id is null
-       order by p.user_id`,
-    );
-    for (const row of missing) {
-      try {
-        const initialized = await this.initialize(row.user_id);
-        result.initialized += Number(initialized.initialized);
-      } catch {
-        // One broken account must not prevent other owners from running.
-      }
-    }
 
     const owners = await this.database.query<{ user_id: string }>(
       `select i.user_id
@@ -473,99 +527,140 @@ export class BotService {
     validateTradingDate(tradingDate);
     if (!provider) throw new Error('Bot snapshot provider is required');
 
-    const existing = (
-      await this.database.query<BotRunRow>(
-        `select * from bot_run_receipts
-         where user_id = $1 and trading_date = $2::date
-         order by started_at desc limit 1`,
-        [userId, tradingDate],
-      )
-    )[0];
-    if (existing) return this.resumeExistingRun(existing, userId, tradingDate);
+    for (let attempt = 0; attempt < MAX_CAPTURE_ATTEMPTS; attempt += 1) {
+      const existing = (
+        await this.database.query<BotRunRow>(
+          `select * from bot_run_receipts
+           where user_id = $1 and trading_date = $2::date
+           order by started_at desc limit 1`,
+          [userId, tradingDate],
+        )
+      )[0];
+      if (existing) return this.resumeExistingRun(existing, userId, tradingDate);
 
-    const context = await this.instanceAccount(this.database, userId);
-    if (!context) throw new Error('Bot chưa được khởi tạo');
-    if (context.account_status !== 'active') throw new Error('Tài khoản Bot đang tạm dừng');
-    this.assertActivated(context, tradingDate);
-    const openSymbols = (
-      await this.database.query<{ symbol: string }>(
-        `select symbol from bot_positions
-         where bot_account_id = $1 and status = 'open' order by symbol`,
-        [context.account_id],
-      )
-    ).map((row) => row.symbol);
+      const context = await this.instanceAccount(this.database, userId);
+      if (!context) throw new Error('Bot chưa được khởi tạo');
+      if (context.account_status !== 'active') throw new Error('Tài khoản Bot đang tạm dừng');
+      this.assertActivated(context, tradingDate);
+      const openSymbols = (
+        await this.database.query<{ symbol: string }>(
+          `select symbol from bot_positions
+           where bot_account_id = $1 and status = 'open' order by symbol`,
+          [context.account_id],
+        )
+      ).map((row) => row.symbol);
 
-    const resolution = await this.resolveConfig(userId, tradingDate);
-    const startedAt = Date.now();
-    this.logger.log(`Bot snapshot started for ${userId} (${tradingDate})`);
-    let timer: NodeJS.Timeout | undefined;
-    let input: BotMarketSnapshotInput;
-    try {
-      input = await Promise.race([
-        provider.buildSnapshot(tradingDate, { openSymbols }),
-        new Promise<never>((_, reject) => {
-          timer = setTimeout(() => {
-            const error = new Error('Bot snapshot deadline exceeded');
-            error.name = 'SnapshotDeadlineExceeded';
-            reject(error);
-          }, BOT_SNAPSHOT_DEADLINE_MS);
-          timer.unref?.();
-        }),
-      ]);
-      this.logger.log(`Bot snapshot built in ${Date.now() - startedAt}ms`);
-    } catch (error) {
-      const name = error instanceof Error ? error.name : 'UnknownError';
-      this.logger.warn(`Bot snapshot failed for ${userId}: ${name}`);
-      throw error;
-    } finally {
-      clearTimeout(timer);
-    }
+      // One snapshot: policy + effective config + grants + effective universe + data.
+      const resolution = await this.resolveConfig(userId, tradingDate);
+      const resolvedUniverse = await this.resolveUniverse(userId, tradingDate);
+      const universeEvidence = resolvedUniverse.evidence;
+      const buyUsable = resolution.gate?.buy.status === 'active';
+      const universeSymbols =
+        buyUsable && universeEvidence.status === 'verified' ? universeEvidence.symbols : [];
 
-    if (input.trading_date !== tradingDate) {
-      throw new Error('Snapshot không thuộc đúng phiên Bot');
-    }
-    if (resolution.effective && !resolution.invalid) {
+      const startedAt = Date.now();
+      this.logger.log(`Bot snapshot started for ${userId} (${tradingDate})`);
+      let timer: NodeJS.Timeout | undefined;
+      let input: BotMarketSnapshotInput;
       try {
-        input = await this.withSharedConfigSignals(
-          userId,
-          tradingDate,
-          input,
-          {
-            revision: resolution.effective.revision,
-            config_hash: resolution.effective.config_hash,
-            effective_session: resolution.effective.effective_session,
-          },
-          resolution.effective,
-          openSymbols,
-          resolution.grants,
-        );
+        input = await Promise.race([
+          provider.buildSnapshot(tradingDate, { openSymbols, universeSymbols }),
+          new Promise<never>((_, reject) => {
+            timer = setTimeout(() => {
+              const error = new Error('Bot snapshot deadline exceeded');
+              error.name = 'SnapshotDeadlineExceeded';
+              reject(error);
+            }, BOT_SNAPSHOT_DEADLINE_MS);
+            timer.unref?.();
+          }),
+        ]);
+        this.logger.log(`Bot snapshot built in ${Date.now() - startedAt}ms`);
       } catch (error) {
-        resolution.invalid = true;
-        resolution.detail = error instanceof Error ? error.message : 'Unknown config error';
+        const name = error instanceof Error ? error.name : 'UnknownError';
+        this.logger.warn(`Bot snapshot failed for ${userId}: ${name}`);
+        throw error;
+      } finally {
+        clearTimeout(timer);
       }
+
+      if (input.trading_date !== tradingDate) {
+        throw new Error('Snapshot không thuộc đúng phiên Bot');
+      }
+      input = { ...input, universe: universeEvidence };
+      if (resolution.effective && !resolution.invalid) {
+        try {
+          input = await this.withSharedConfigSignals(
+            userId,
+            tradingDate,
+            input,
+            {
+              revision: resolution.effective.revision,
+              config_hash: resolution.effective.config_hash,
+              effective_session: resolution.effective.effective_session,
+            },
+            resolution.effective,
+            openSymbols,
+            resolution.grants,
+            resolution.gate,
+          );
+        } catch (error) {
+          resolution.invalid = true;
+          resolution.detail = error instanceof Error ? error.message : 'Unknown config error';
+        }
+      }
+      if (resolution.invalid) {
+        input = {
+          ...input,
+          issues: [
+            ...(input.issues ?? []),
+            issue(
+              'config_invalid_or_unauthorized',
+              resolution.detail ?? 'Không thể thực thi cấu hình điều kiện an toàn',
+            ),
+          ],
+        };
+      }
+      const runId = await this.captureFrozenRun(
+        userId,
+        tradingDate,
+        context,
+        openSymbols,
+        resolution,
+        input,
+        resolvedUniverse,
+      );
+      if (runId !== null) return this.executeFrozenRun(runId, userId, tradingDate);
+      // State moved between resolution and capture (cash, positions or universe): retry.
     }
-    if (resolution.invalid) {
-      input = {
-        ...input,
-        issues: [
-          ...(input.issues ?? []),
-          issue(
-            'config_invalid_or_unauthorized',
-            resolution.detail ?? 'Không thể thực thi cấu hình Học viện an toàn',
-          ),
-        ],
-      };
+    throw new Error('Bot session could not be captured on a consistent state');
+  }
+
+  /** An unverifiable universe never falls back to another source: the run simply cannot buy. */
+  private async resolveUniverse(userId: string, tradingDate: string): Promise<ResolvedBotUniverse> {
+    const unavailable = (reason: string): ResolvedBotUniverse => ({
+      revisionId: null,
+      evidence: {
+        status: 'unavailable',
+        kind: 'vn30',
+        revision: 0,
+        name: 'VN30',
+        saved_list_id: null,
+        effective_session: null,
+        symbols: [],
+        symbols_hash: null,
+        membership: null,
+        unavailable_reason: reason,
+      },
+    });
+    if (!this.universe) return unavailable('Nguồn mua chưa được cấu hình');
+    try {
+      return await this.universe.resolveForSession(userId, tradingDate);
+    } catch (error) {
+      this.logger.warn(
+        `Bot universe unavailable for ${userId}: ${error instanceof Error ? error.name : 'error'}`,
+      );
+      return unavailable('Không đọc được nguồn mua');
     }
-    const runId = await this.captureFrozenRun(
-      userId,
-      tradingDate,
-      context,
-      openSymbols,
-      resolution,
-      input,
-    );
-    if (runId === null) return this.runAccountSession(userId, tradingDate, provider);
-    return this.executeFrozenRun(runId, userId, tradingDate);
   }
 
   private assertActivated(context: InstanceAccountRow, tradingDate: string): void {
@@ -586,29 +681,32 @@ export class BotService {
       ]);
       const grants = [...new Set(current.granted_indicators.map(indicatorCapability))].sort();
       if (!effective || effective.effective_session > tradingDate) {
-        return { effective: null, grants, invalid: false, detail: null };
+        return { effective: null, grants, invalid: false, detail: null, gate: null };
       }
       const registry = loadTechnicalRegistry();
-      const errors = validateConfig(effective.config, registry, new Set(grants));
-      if (
-        errors.length ||
+      // A historical (legacy-registry) revision is served as its 16-indicator mapping, so its
+      // stored-document hash cannot equal the mapped config hash; the reader verified it.
+      const drift =
         effective.config.revision !== effective.revision ||
-        configHash(effective.config) !== effective.config_hash
-      ) {
-        return {
-          effective,
-          grants,
-          invalid: true,
-          detail: errors[0]?.message ?? 'Revision hoặc hash cấu hình không khớp',
-        };
-      }
-      return { effective, grants, invalid: false, detail: null };
+        (!effective.legacy?.legacy && configHash(effective.config) !== effective.config_hash);
+      // Each side is judged on its own: an invalid, unauthorized or legacy participant
+      // stops that whole side with a reason; it is never dropped from the AND.
+      const gate = drift
+        ? blockedGate('Revision hoặc hash cấu hình không khớp')
+        : gateConfigSides(
+            effective.config,
+            new Set(grants),
+            registry,
+            readLegacyReview(effective.config, effective, current),
+          );
+      return { effective, grants, invalid: false, detail: null, gate };
     } catch (error) {
       return {
         effective: null,
         grants: [],
         invalid: true,
-        detail: error instanceof Error ? error.message : 'Không đọc được cấu hình Học viện',
+        detail: error instanceof Error ? error.message : 'Không đọc được cấu hình điều kiện',
+        gate: null,
       };
     }
   }
@@ -622,11 +720,13 @@ export class BotService {
     const source =
       effective?.revision === pin.revision
         ? effective
-        : await this.sharedConfigReader.getRevision(userId, pin.revision);
+        : await this.sharedConfigReader.getRevision(userId, pin.revision, {
+            allowLegacyReview: true,
+          });
     if (
       !source ||
       source.config_hash !== pin.config_hash ||
-      configHash(source.config) !== pin.config_hash
+      (!source.legacy?.legacy && configHash(source.config) !== pin.config_hash)
     ) {
       const error = new Error('Pinned shared config is unavailable');
       error.name = 'SharedConfigUnavailable';
@@ -673,7 +773,10 @@ export class BotService {
 
   /**
    * Evaluates the pinned config once per run and freezes the result into the market
-   * snapshot (and so into its hash): retries never re-read config or bars.
+   * snapshot (and so into its hash): retries never re-read config or bars. Only sides
+   * whose gate is `active` are evaluated; a blocked side carries its reason instead.
+   * Buy conditions are evaluated for the universe members the snapshot could value;
+   * Sell conditions for EVERY position held at session start.
    */
   private async withSharedConfigSignals(
     userId: string,
@@ -683,17 +786,25 @@ export class BotService {
     effective: EffectiveSharedConfig | null,
     openSymbols: readonly string[],
     grants: readonly string[],
+    knownGate: ConfigGate | null = null,
   ): Promise<BotMarketSnapshotInput> {
     const config = await this.pinnedSharedConfig(userId, pin, effective);
     const registry = loadTechnicalRegistry();
-    const validation = validateConfig(config, registry, new Set(grants));
-    if (validation.length) throw new Error(validation[0]!.message);
-    const buyEntries = activeSideIndicators(config, 'buy', registry);
-    const sellEntries = activeSideIndicators(config, 'sell', registry);
+    const sides =
+      knownGate ??
+      gateConfigSides(config, new Set(grants), registry, readLegacyReview(config, effective));
+    const buyEntries =
+      sides.buy.status === 'active' ? activeSideIndicators(config, 'buy', registry) : [];
+    const sellEntries =
+      sides.sell.status === 'active' ? activeSideIndicators(config, 'sell', registry) : [];
     const buyActive = buyEntries.length > 0;
     const sellActive = sellEntries.length > 0;
-    const buySymbols = buyActive ? sharedConfigBuySymbols(input) : [];
-    const sellSymbols = sellActive ? [...new Set(openSymbols)].sort() : [];
+    const held = new Set(openSymbols);
+    // Held symbols are never bought again, so their Buy conditions are not evaluated.
+    const buySymbols = buyActive
+      ? sharedConfigBuySymbols(input).filter((symbol) => !held.has(symbol))
+      : [];
+    const sellSymbols = sellActive ? [...held].sort() : [];
     const symbols = [...new Set([...buySymbols, ...sellSymbols])].sort();
     const marketSymbol =
       symbols.length && needsMarketContext(config, registry)
@@ -766,6 +877,10 @@ export class BotService {
       effective_session: pin.effective_session,
       buy_active: buyActive,
       sell_active: sellActive,
+      buy_status: sides.buy.status,
+      sell_status: sides.sell.status,
+      buy_block: sides.buy.block,
+      sell_block: sides.sell.block,
       buy_active_ids: buyEntries.map((entry) => entry.id),
       sell_active_ids: sellEntries.map((entry) => entry.id),
       buy: Object.fromEntries(
@@ -819,6 +934,16 @@ export class BotService {
   ): Promise<BotRunResult> {
     const verified = verifyRuleReceipt(run.rule_snapshot, run.rule_hash);
     if (verified.policyVersion !== BOT_POLICY.policy_version && run.status !== 'succeeded') {
+      // A run frozen under a retired policy is never executed by the current one; one that
+      // never completed is closed so it cannot block the account's later sessions.
+      if (run.status === 'running' && verified.valid) {
+        return this.failRun(run.id, [
+          issue(
+            'unsupported_rule_version',
+            'Phiên được chụp theo chính sách cũ chưa hoàn tất; không thực thi theo chính sách mới.',
+          ),
+        ]);
+      }
       return this.runResult(run);
     }
     return this.executeFrozenRun(run.id, userId, tradingDate);
@@ -831,6 +956,7 @@ export class BotService {
     expectedOpenSymbols: readonly string[],
     resolution: ConfigResolution,
     input: BotMarketSnapshotInput,
+    resolvedUniverse: ResolvedBotUniverse,
   ): Promise<string | null> {
     const payload = sanitizeSnapshot(input);
     const digest = snapshotHash(input);
@@ -841,7 +967,14 @@ export class BotService {
           effective_session: resolution.effective.effective_session,
         }
       : null;
-    const receipt = botRuleReceipt(pin, resolution.grants, digest);
+    const evidence = resolvedUniverse.evidence;
+    const receipt = botRuleReceipt(pin, resolution.grants, digest, {
+      kind: evidence.kind,
+      revision: evidence.revision,
+      status: evidence.status,
+      effective_session: evidence.effective_session,
+      symbols_hash: evidence.symbols_hash,
+    });
     return this.database.transaction(async (tx) => {
       const context = await this.instanceAccount(tx, userId, true);
       if (!context || context.account_status !== 'active')
@@ -887,6 +1020,11 @@ export class BotService {
         )
       ).map((row) => row.symbol);
       if (json(lockedSymbols) !== json([...expectedOpenSymbols])) return null;
+      // Marks the universe revision effective inside this transaction, so a concurrent
+      // cancel either wins before (we retry) or finds it consumed (409).
+      if (this.universe && !(await this.universe.consume(tx, userId, resolvedUniverse))) {
+        return null;
+      }
 
       const runId = randomUUID();
       const now = new Date();
@@ -896,9 +1034,9 @@ export class BotService {
              (id, user_id, trading_date, status, started_at, completed_at, issues,
               bot_account_id, strategy_id, strategy_version, execution_model,
               rule_snapshot, rule_hash, policy_version, source_snapshot_hash,
-              blocked_symbols_at_start, buy_count, sell_count)
+              blocked_symbols_at_start, buy_count, sell_count, universe_revision, universe_kind)
            values ($1,$2,$3::date,'running',$4,null,'[]'::jsonb,$5,$6,$7,$8,
-                   $9::jsonb,$10,$11,$12,$13::jsonb,0,0)
+                   $9::jsonb,$10,$11,$12,$13::jsonb,0,0,$14,$15)
            returning *`,
           [
             runId,
@@ -914,6 +1052,8 @@ export class BotService {
             BOT_POLICY.policy_version,
             digest,
             json(lockedSymbols),
+            evidence.revision,
+            evidence.kind,
           ],
         )
       )[0];
@@ -922,7 +1062,7 @@ export class BotService {
         `insert into bot_market_snapshots
            (id, bot_run_id, trading_date, data_version, observed_at, close_is_official,
             buy_inputs_complete, snapshot_hash, payload, source_refs)
-         values ($1,$2,$3::date,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb)`,
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb,$10::jsonb)`,
         [
           randomUUID(),
           runId,
@@ -974,7 +1114,7 @@ export class BotService {
       receipt.valid &&
       snapshotHash(payload) === snapshot.snapshot_hash &&
       run.source_snapshot_hash === snapshot.snapshot_hash &&
-      (receipt.kind !== 'academy' || receipt.dataHash === snapshot.snapshot_hash) &&
+      (receipt.dataHash === null || receipt.dataHash === snapshot.snapshot_hash) &&
       payload.trading_date === isoDate(run.trading_date)
     );
   }
@@ -1106,6 +1246,47 @@ export class BotService {
     }
   }
 
+  /**
+   * Verdict of one config side for this run, from the frozen signals. A blocked side
+   * (invalid, unauthorized, legacy) stops that side with its reason; it is never ANDed
+   * without the broken participant.
+   */
+  private sideVerdict(
+    shared: BotSharedConfigSignals | null,
+    configInvalid: boolean,
+    side: 'buy' | 'sell',
+    payload: BotMarketSnapshotInput,
+  ): SideVerdict {
+    if (configInvalid) {
+      const detail =
+        issues(payload.issues).find((row) => row.code === 'config_invalid_or_unauthorized')
+          ?.detail ?? 'Cấu hình điều kiện không thể thực thi an toàn';
+      return { state: 'blocked', reason: 'config_invalid_or_unauthorized', detail };
+    }
+    if (!shared) {
+      return {
+        state: 'inactive',
+        reason: side === 'buy' ? 'waiting_for_academy_conditions' : 'no_active_sell_conditions',
+      };
+    }
+    const status = side === 'buy' ? shared.buy_status : shared.sell_status;
+    const block: BotSideBlock | null | undefined =
+      side === 'buy' ? shared.buy_block : shared.sell_block;
+    if (status === 'blocked') {
+      return {
+        state: 'blocked',
+        reason: block?.reason ?? 'config_invalid_or_unauthorized',
+        detail: block?.detail ?? 'Cấu hình điều kiện không thể thực thi an toàn',
+      };
+    }
+    const active = side === 'buy' ? shared.buy_active : shared.sell_active;
+    if (active) return { state: 'active' };
+    return {
+      state: 'inactive',
+      reason: side === 'buy' ? 'no_active_buy_conditions' : 'no_active_sell_conditions',
+    };
+  }
+
   private async applyStrategy(
     tx: SqlClient,
     context: InstanceAccountRow,
@@ -1119,6 +1300,7 @@ export class BotService {
   ): Promise<BotRunRow> {
     let cash = parseInteger(context.cash_vnd, 'cash_vnd');
     const blocked = stringList(run.blocked_symbols_at_start);
+    const blockedSet = new Set(blocked);
     const startingPositions = await tx.query<BotPositionRow>(
       `select * from bot_positions
        where bot_account_id = $1 and symbol = any($2::varchar[])
@@ -1126,12 +1308,25 @@ export class BotService {
        order by symbol for update`,
       [context.account_id, blocked.length ? blocked : [''], isoDate(run.trading_date)],
     );
+    const universe: BotUniverseEvidence | null = payload.universe ?? null;
+    const universeVerified = universe?.status === 'verified';
+    const universeMembers = new Set(universeVerified ? universe.symbols : []);
+    const sellSide = this.sideVerdict(shared, configInvalid, 'sell', payload);
+    const buySide = this.sideVerdict(shared, configInvalid, 'buy', payload);
     let runIssues = [...issues(payload.issues)];
-    if (!shared?.buy_active && startingPositions.length === 0) {
+    if (buySide.state !== 'active' && startingPositions.length === 0) {
+      // Buy-only inputs cannot matter when nothing can be bought and nothing is held.
       runIssues = runIssues.filter(
-        (row) =>
-          !['filter_data_incomplete', 'source_error', 'missing_security_status'].includes(row.code),
+        (row) => !['source_error', 'missing_security_status'].includes(row.code),
       );
+    }
+    for (const [side, verdict] of [
+      ['Mua', buySide],
+      ['Bán', sellSide],
+    ] as const) {
+      if (verdict.state === 'blocked' && !configInvalid) {
+        runIssues.push(issue(verdict.reason, `Phía ${side}: ${verdict.detail}`));
+      }
     }
     const revision = pinnedRevision;
     const conditionFor = (symbol: string, side: 'buy' | 'sell'): ConditionSnapshot => {
@@ -1153,7 +1348,8 @@ export class BotService {
         symbol: null,
         action: 'skip',
         reasonCode: 'config_invalid_or_unauthorized',
-        reason: 'Cấu hình Học viện đã ghim không thể thực thi an toàn; phiên chỉ kiểm tra stop.',
+        reason:
+          'Cấu hình điều kiện đã ghim không thể thực thi an toàn; phiên không mua và không bán theo điều kiện.',
         decisionConfigRevision: revision,
         conditionSnapshot: conditionFor('', 'buy'),
       });
@@ -1184,44 +1380,36 @@ export class BotService {
       }
     }
 
+    // SELL STEP FIRST, over EVERY position held at session start, whatever the buy
+    // universe is and whether or not anything can be bought. There is no stop, target,
+    // trailing or holding-time exit: only the effective Sell conditions can sell.
     for (const position of startingPositions) {
       if (position.status !== 'open') continue;
+      const inUniverse = universeVerified ? universeMembers.has(position.symbol) : null;
+      const scopeNote = inUniverse === false ? ' (ngoài nguồn mua, chỉ theo dõi Bán)' : '';
+      const refs = { ...objectValue(position.source_refs), in_universe: inUniverse };
+      const hold = (reasonCode: string, key: string) =>
+        this.insertDecision(tx, run.id, {
+          key: `bot:academy:${run.id}:${position.symbol}:${key}`,
+          symbol: position.symbol,
+          action: 'hold',
+          reasonCode,
+          reason: `Giữ ${position.symbol}${scopeNote}: ${BOT_REASON_LABELS[reasonCode] ?? reasonCode}.`,
+          dataRefs: refs,
+          decisionConfigRevision: revision,
+          conditionSnapshot: conditionFor(position.symbol, 'sell'),
+        });
       const close = this.officialClose(payload.symbols[position.symbol]);
       if (close === null) {
-        await this.insertDecision(tx, run.id, {
-          key: `bot:academy:${run.id}:${position.symbol}:invalid-close`,
-          symbol: position.symbol,
-          action: 'hold',
-          reasonCode: 'invalid_close',
-          reason: 'Thiếu giá đóng cửa chính thức; không bán và không dựng giá thay thế.',
-          filterIds: stringList(position.filter_ids),
-          dataRefs: objectValue(position.source_refs),
-          decisionConfigRevision: revision,
-          conditionSnapshot: conditionFor(position.symbol, 'sell'),
-        });
+        await hold('invalid_close', 'invalid-close');
         continue;
       }
-      const stop4 = parseDecimal4(position.stop_loss_vnd);
-      const entry4 = parseDecimal4(position.entry_price_vnd);
-      const validStop = stop4 !== null && entry4 !== null && stop4 > 0n && stop4 < entry4;
-      if (!validStop) {
-        runIssues.push(issue('missing_stop', 'Vị thế thiếu stop gốc hợp lệ', position.symbol));
-        await this.insertDecision(tx, run.id, {
-          key: `bot:academy:${run.id}:${position.symbol}:missing-stop`,
-          symbol: position.symbol,
-          action: 'hold',
-          reasonCode: 'missing_stop',
-          reason: 'Không có stop gốc hợp lệ; Bot không dựng stop từ L1 hiện tại.',
-          filterIds: stringList(position.filter_ids),
-          dataRefs: objectValue(position.source_refs),
-          decisionConfigRevision: revision,
-          conditionSnapshot: conditionFor(position.symbol, 'sell'),
-        });
+      if (sellSide.state === 'blocked') {
+        await hold(sellSide.reason, 'sell-blocked');
+        continue;
       }
-      const stopHit = validStop && stopLossSignal(close, stop4) === 'stop_loss';
-      const academySell =
-        !configInvalid && shared?.sell_active ? shared.sell[position.symbol] : null;
-      if (stopHit || academySell === true) {
+      const signal = sellSide.state === 'active' ? (shared?.sell[position.symbol] ?? null) : null;
+      if (signal === true) {
         if (!feeRules) {
           await this.insertDecision(tx, run.id, {
             key: `bot:academy:${run.id}:${position.symbol}:ledger-error`,
@@ -1239,94 +1427,26 @@ export class BotService {
           context.account_id,
           position,
           close,
-          stopHit ? 'stop_loss' : 'academy_sell',
           feeRules,
           snapshot.snapshot_hash,
           cash,
           revision,
           conditionFor(position.symbol, 'sell'),
+          refs,
         );
         if (execution.applied) cash += execution.netCashDeltaVnd;
         continue;
       }
-      if (configInvalid) continue;
-      const reasonCode = !shared?.sell_active
-        ? 'no_active_sell_conditions'
-        : academySell === false
-          ? 'academy_sell_not_met'
-          : 'academy_condition_missing';
-      await this.insertDecision(tx, run.id, {
-        key: `bot:academy:${run.id}:${position.symbol}:hold`,
-        symbol: position.symbol,
-        action: 'hold',
-        reasonCode,
-        reason: `Giữ ${position.symbol}: ${reasonCode}.`,
-        filterIds: stringList(position.filter_ids),
-        dataRefs: objectValue(position.source_refs),
-        decisionConfigRevision: revision,
-        conditionSnapshot: conditionFor(position.symbol, 'sell'),
-      });
+      await hold(
+        sellSide.state !== 'active'
+          ? sellSide.reason
+          : signal === false
+            ? 'academy_sell_not_met'
+            : 'academy_condition_missing',
+        'hold',
+      );
     }
 
-    const rawCandidates: Candidate[] = [];
-    if (!configInvalid && shared?.buy_active && payload.buy_inputs_complete) {
-      for (const [symbol, row] of Object.entries(payload.symbols)) {
-        if (!row.filter_ids?.length) continue;
-        if (this.officialClose(row) === null) {
-          await this.insertDecision(tx, run.id, {
-            key: `bot:academy:${run.id}:${symbol}:invalid-close`,
-            symbol,
-            action: 'skip',
-            reasonCode: 'invalid_close',
-            reason: 'Ứng viên thiếu giá đóng cửa chính thức hợp lệ.',
-            filterIds: row.filter_ids,
-            dataRefs: row.source_refs ?? {},
-            decisionConfigRevision: revision,
-            conditionSnapshot: conditionFor(symbol, 'buy'),
-          });
-          continue;
-        }
-        if (row.security_status_verified !== true || row.tradable_security_status !== true) {
-          const reasonCode =
-            row.security_status_verified === true
-              ? 'security_status_blocked'
-              : 'missing_security_status';
-          await this.insertDecision(tx, run.id, {
-            key: `bot:academy:${run.id}:${symbol}:security`,
-            symbol,
-            action: 'skip',
-            reasonCode,
-            reason:
-              reasonCode === 'security_status_blocked'
-                ? 'Mã thuộc trạng thái không được phép mua.'
-                : 'Không xác minh được trạng thái giao dịch an toàn của mã.',
-            filterIds: row.filter_ids,
-            dataRefs: row.source_refs ?? {},
-            decisionConfigRevision: revision,
-            conditionSnapshot: conditionFor(symbol, 'buy'),
-          });
-          continue;
-        }
-        const candidate = candidateFromSnapshot(symbol, row);
-        if (!candidate) {
-          await this.insertDecision(tx, run.id, {
-            key: `bot:academy:${run.id}:${symbol}:invalid-close`,
-            symbol,
-            action: 'skip',
-            reasonCode: 'invalid_close',
-            reason: 'Ứng viên thiếu giá đóng cửa chính thức hợp lệ.',
-            filterIds: row.filter_ids,
-            dataRefs: row.source_refs ?? {},
-            decisionConfigRevision: revision,
-            conditionSnapshot: conditionFor(symbol, 'buy'),
-          });
-          continue;
-        }
-        rawCandidates.push(candidate);
-      }
-    }
-
-    const ranked = rankCandidates(rawCandidates);
     const executions = await tx.query<ExecutionRow>(
       'select id, symbol, side, fee_vnd, tax_vnd from bot_executions where bot_run_id = $1',
       [run.id],
@@ -1337,24 +1457,55 @@ export class BotService {
       0n,
     );
     let buyCount = executions.filter((row) => row.side === 'buy').length;
+    let buyEvaluated = false;
+    let ranked: Candidate[] = [];
+
+    // BUY STEP: only when E_buy is usable and the universe is verified. A missing source
+    // never falls back to another one; sells above already ran.
     if (configInvalid) {
-      // Stop-only mode already recorded above.
+      // Config-invalid decision already recorded above.
     } else if (!shared) {
       await this.insertDecision(tx, run.id, {
         key: `bot:academy:${run.id}:waiting`,
         symbol: null,
         action: 'skip',
         reasonCode: 'waiting_for_academy_conditions',
-        reason: 'Chưa có cấu hình Học viện hiệu lực; Bot chờ điều kiện.',
+        reason: 'Chưa có cấu hình điều kiện hiệu lực; Bot chờ thiết lập điều kiện.',
         conditionSnapshot: { buy_active_ids: [], sell_active_ids: [], rules: [] },
       });
-    } else if (!shared.buy_active) {
+    } else if (buySide.state === 'blocked') {
+      await this.insertDecision(tx, run.id, {
+        key: `bot:academy:${run.id}:buy-blocked`,
+        symbol: null,
+        action: 'skip',
+        reasonCode: buySide.reason,
+        reason: `Không mua mới: ${BOT_REASON_LABELS[buySide.reason] ?? buySide.reason}. ${buySide.detail}`,
+        decisionConfigRevision: revision,
+        conditionSnapshot: conditionFor('', 'buy'),
+      });
+    } else if (buySide.state !== 'active') {
       await this.insertDecision(tx, run.id, {
         key: `bot:academy:${run.id}:no-active-buy`,
         symbol: null,
         action: 'skip',
         reasonCode: 'no_active_buy_conditions',
-        reason: 'Cấu hình hiệu lực không có điều kiện Mua đang hoạt động.',
+        reason: 'Cấu hình hiệu lực không có điều kiện Mua đang hoạt động; không mua mới.',
+        decisionConfigRevision: revision,
+        conditionSnapshot: conditionFor('', 'buy'),
+      });
+    } else if (!universe || !universeVerified) {
+      runIssues.push(
+        issue(
+          'universe_unavailable',
+          universe?.unavailable_reason ?? 'Chưa xác minh được nguồn mua',
+        ),
+      );
+      await this.insertDecision(tx, run.id, {
+        key: `bot:academy:${run.id}:universe-unavailable`,
+        symbol: null,
+        action: 'skip',
+        reasonCode: 'universe_unavailable',
+        reason: `Không mua mới: ${universe?.unavailable_reason ?? 'chưa xác minh được nguồn mua'}. Các vị thế đang giữ vẫn được xét Bán.`,
         decisionConfigRevision: revision,
         conditionSnapshot: conditionFor('', 'buy'),
       });
@@ -1364,7 +1515,7 @@ export class BotService {
         symbol: null,
         action: 'skip',
         reasonCode: 'buy_inputs_incomplete',
-        reason: 'Nguồn Săn mã, trạng thái mã hoặc phí/lô chưa đầy đủ.',
+        reason: 'Trạng thái giao dịch của mã hoặc phí/lô chưa đầy đủ; không mua mới.',
         decisionConfigRevision: revision,
         conditionSnapshot: conditionFor('', 'buy'),
       });
@@ -1379,8 +1530,75 @@ export class BotService {
         conditionSnapshot: conditionFor('', 'buy'),
       });
     } else {
-      for (let index = 0; index < ranked.length; index += 1) {
-        const candidate = ranked[index]!;
+      buyEvaluated = true;
+      const entrySource = {
+        kind: universe.kind,
+        name: universe.name,
+        revision: universe.revision,
+        saved_list_id: universe.saved_list_id,
+        effective_session: universe.effective_session,
+        symbols_hash: universe.symbols_hash,
+        membership_session: universe.membership?.session_date ?? null,
+      };
+      const rawCandidates: Candidate[] = [];
+      for (const symbol of universe.symbols) {
+        const row = payload.symbols[symbol];
+        const skip = (reasonCode: string, reason: string, key: string) =>
+          this.insertDecision(tx, run.id, {
+            key: `bot:academy:${run.id}:${symbol}:${key}`,
+            symbol,
+            action: 'skip',
+            reasonCode,
+            reason,
+            dataRefs: row?.source_refs ?? {},
+            decisionConfigRevision: revision,
+            conditionSnapshot: conditionFor(symbol, 'buy'),
+          });
+        if (blockedSet.has(symbol)) {
+          // Held at session start: no add-on; sold in this run: no rebuy in the same run.
+          await skip(
+            traded.has(symbol) ? 'rebuy_same_session_blocked' : 'already_holding',
+            traded.has(symbol)
+              ? `Không mua lại ${symbol}: mã đã giao dịch trong phiên.`
+              : `Không mua thêm ${symbol}: đã đang giữ.`,
+            'skip',
+          );
+          continue;
+        }
+        if (this.officialClose(row) === null) {
+          await skip('invalid_close', 'Mã thiếu giá đóng cửa chính thức hợp lệ.', 'invalid-close');
+          continue;
+        }
+        if (row?.security_status_verified !== true || row.tradable_security_status !== true) {
+          const code =
+            row?.security_status_verified === true
+              ? 'security_status_blocked'
+              : 'missing_security_status';
+          await skip(
+            code,
+            code === 'security_status_blocked'
+              ? 'Mã thuộc trạng thái không được phép mua.'
+              : 'Không xác minh được trạng thái giao dịch an toàn của mã.',
+            'security',
+          );
+          continue;
+        }
+        const candidate = row ? candidateFromSnapshot(symbol, row) : null;
+        if (!candidate) {
+          await skip(
+            'missing_liquidity_data',
+            'Thiếu giá trị giao dịch bình quân 20 phiên; không thể xếp hạng mã.',
+            'liquidity',
+          );
+          continue;
+        }
+        rawCandidates.push(candidate);
+      }
+
+      // candidate_order gtgd20_desc_symbol_asc (owner confirmation pending, see BOT_POLICY).
+      ranked = rankCandidates(rawCandidates);
+      const newBuysEnabled = this.newBuysEnabled();
+      for (const candidate of ranked) {
         if (buyCount >= BOT_POLICY.max_new_buys_per_session) {
           await this.insertDecision(tx, run.id, {
             key: `bot:academy:${run.id}:session-buy-limit`,
@@ -1394,22 +1612,10 @@ export class BotService {
           break;
         }
         let reasonCode: string | null = null;
-        const open = await tx.query<{ exists: boolean }>(
-          `select exists(select 1 from bot_positions
-           where bot_account_id = $1 and symbol = $2 and status = 'open') as exists`,
-          [context.account_id, candidate.symbol],
-        );
-        if (open[0]?.exists) reasonCode = 'already_holding';
-        else if (blocked.includes(candidate.symbol) || traded.has(candidate.symbol)) {
-          reasonCode = 'rebuy_same_session_blocked';
-        }
+        if (traded.has(candidate.symbol)) reasonCode = 'rebuy_same_session_blocked';
         const buySignal = shared.buy[candidate.symbol];
         if (!reasonCode && buySignal !== true) {
           reasonCode = buySignal === false ? 'academy_buy_not_met' : 'academy_condition_missing';
-        }
-        const stop = computeProtectiveStop(candidate.closeVnd, candidate.amplitude4);
-        if (!reasonCode && (!stop || !candidate.amplitudeSourceRef)) {
-          reasonCode = 'invalid_or_missing_l1_amplitude';
         }
         const sizing = reasonCode
           ? null
@@ -1421,16 +1627,33 @@ export class BotService {
               feeRules,
             });
         reasonCode ??= sizing?.reasonCode ?? null;
-        if (reasonCode || !sizing || !stop) {
+        if (reasonCode || !sizing) {
+          const code = reasonCode ?? 'insufficient_cash_or_lot';
           await this.insertDecision(tx, run.id, {
             key: `bot:academy:${run.id}:${candidate.symbol}:skip`,
             symbol: candidate.symbol,
             action: 'skip',
-            reasonCode: reasonCode ?? 'insufficient_cash_or_lot',
-            reason: `Không mua ${candidate.symbol}: ${reasonCode ?? 'insufficient_cash_or_lot'}.`,
-            filterIds: candidate.filterIds,
-            rankTuple: uuidRank(candidate),
+            reasonCode: code,
+            reason: `Không mua ${candidate.symbol}: ${BOT_REASON_LABELS[code] ?? code}.`,
+            rankTuple: rankTuple(candidate),
             dataRefs: candidate.sourceRefs,
+            budgetVnd: (navBasis * 12n) / 100n,
+            decisionConfigRevision: revision,
+            conditionSnapshot: conditionFor(candidate.symbol, 'buy'),
+          });
+          continue;
+        }
+        if (!newBuysEnabled) {
+          // SPEC 8.4 / 18.2: the candidate ordering is not owner-confirmed, so a would-be buy is
+          // journaled as skipped and nothing is written to the ledger, positions or cash.
+          await this.insertDecision(tx, run.id, {
+            key: `bot:academy:${run.id}:${candidate.symbol}:skip`,
+            symbol: candidate.symbol,
+            action: 'skip',
+            reasonCode: 'candidate_order_unconfirmed',
+            reason: `${BOT_REASON_LABELS.candidate_order_unconfirmed}; không mua ${candidate.symbol}.`,
+            rankTuple: rankTuple(candidate),
+            dataRefs: { ...candidate.sourceRefs, entry_source: entrySource },
             budgetVnd: (navBasis * 12n) / 100n,
             decisionConfigRevision: revision,
             conditionSnapshot: conditionFor(candidate.symbol, 'buy'),
@@ -1443,12 +1666,12 @@ export class BotService {
           context.account_id,
           candidate,
           sizing,
-          stop,
           snapshot.snapshot_hash,
           cash,
           navBasis,
           revision,
           conditionFor(candidate.symbol, 'buy'),
+          entrySource,
         );
         if (execution.applied) {
           cash += execution.netCashDeltaVnd;
@@ -1508,13 +1731,13 @@ export class BotService {
       new Date(),
     ]);
 
-    if (shared?.buy_active && payload.buy_inputs_complete && ranked.length === 0) {
+    if (buyEvaluated && ranked.length === 0) {
       await this.insertDecision(tx, run.id, {
         key: `bot:academy:${run.id}:no-eligible-candidates`,
         symbol: null,
         action: 'skip',
         reasonCode: 'no_eligible_candidates',
-        reason: 'Đã xử lý đủ nguồn nhưng không có ứng viên Săn mã hợp lệ.',
+        reason: 'Không có mã nào trong nguồn mua đủ dữ liệu và điều kiện giao dịch để xét Mua.',
         decisionConfigRevision: revision,
         conditionSnapshot: conditionFor('', 'buy'),
       });
@@ -1523,9 +1746,7 @@ export class BotService {
       throw new Error('Bot reconciliation failed after strategy application');
     }
     const finalIssues = dedupeIssues(runIssues);
-    const failed =
-      (Boolean(shared?.buy_active) && !payload.buy_inputs_complete) ||
-      finalIssues.some((row) => CRITICAL_ISSUES.has(row.code));
+    const failed = finalIssues.some((row) => CRITICAL_ISSUES.has(row.code));
     const sellCount =
       (
         await tx.query<{ count: string }>(
@@ -1571,12 +1792,12 @@ export class BotService {
     accountId: string,
     position: BotPositionRow,
     close: bigint,
-    reasonCode: 'stop_loss' | 'academy_sell',
     feeRules: FeeRules,
     sourceHash: string,
     cashBefore: bigint,
     decisionConfigRevision: number | null,
     conditionSnapshot: ConditionSnapshot,
+    dataRefs: Record<string, unknown>,
   ): Promise<{ netCashDeltaVnd: bigint; applied: boolean }> {
     const key = `bot:academy:${accountId}:${isoDate(run.trading_date)}:${position.symbol}:sell`;
     const existing = await tx.query<{ net_cash_delta_vnd: string }>(
@@ -1614,8 +1835,8 @@ export class BotService {
         net.toString(),
         BOT_POLICY.execution_model,
         key,
-        json(stringList(position.filter_ids)),
-        reasonCode,
+        json([]),
+        'academy_sell',
         sourceHash,
       ],
     );
@@ -1647,14 +1868,9 @@ export class BotService {
       key: `${key}:decision`,
       symbol: position.symbol,
       action: 'sell',
-      reasonCode,
-      reason:
-        reasonCode === 'academy_sell'
-          ? `Điều kiện Bán Học viện đạt tại ${close}; Bot bán toàn bộ ${position.qty_open} cổ phiếu.`
-          : `Giá đóng cửa ${close} chạm stop đã lưu; Bot bán toàn bộ ${position.qty_open} cổ phiếu.`,
-      filterIds: stringList(position.filter_ids),
-      dataRefs: objectValue(position.source_refs),
-      thresholdVnd: reasonCode === 'stop_loss' ? position.stop_loss_vnd : undefined,
+      reasonCode: 'academy_sell',
+      reason: `Điều kiện Bán đạt tại ${close}; Bot bán toàn bộ ${position.qty_open} cổ phiếu.`,
+      dataRefs,
       executionId: id,
       decisionConfigRevision,
       conditionSnapshot,
@@ -1668,12 +1884,12 @@ export class BotService {
     accountId: string,
     candidate: Candidate,
     sizing: ReturnType<typeof computeBuyQuantity>,
-    stop: NonNullable<ReturnType<typeof computeProtectiveStop>>,
     sourceHash: string,
     cashBefore: bigint,
     navBasis: bigint,
     decisionConfigRevision: number | null,
     conditionSnapshot: ConditionSnapshot,
+    entrySource: Record<string, unknown>,
   ): Promise<{ netCashDeltaVnd: bigint; feeVnd: bigint; applied: boolean }> {
     const key = `bot:academy:${accountId}:${isoDate(run.trading_date)}:${candidate.symbol}:buy`;
     const existing = await tx.query<{ net_cash_delta_vnd: string; fee_vnd: string }>(
@@ -1689,14 +1905,17 @@ export class BotService {
     const positionId = randomUUID();
     const executionId = randomUUID();
     const now = new Date();
+    // No stop, amplitude or target is written: the position exits only through the
+    // effective Sell conditions.
     await tx.query(
       `insert into bot_positions
          (id, bot_account_id, symbol, qty_open, entry_price_vnd, entry_value_vnd,
           entry_fee_vnd, amplitude_at_entry_vnd, amplitude_source_ref, stop_loss_vnd,
-          take_profit_vnd, entry_config_revision, opened_session, opened_at, status, filter_ids, source_refs,
-          buy_execution_id, created_at, updated_at)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,null,$11,$12::date,$13::timestamptz,'open',$14::jsonb,
-               $15::jsonb,$16,$13::timestamptz at time zone 'UTC',$13::timestamptz at time zone 'UTC')`,
+          take_profit_vnd, entry_config_revision, opened_session, opened_at, status,
+          filter_ids, source_refs, buy_execution_id, entry_source_snapshot, created_at, updated_at)
+       values ($1,$2,$3,$4,$5,$6,$7,null,null,null,null,$8,$9::date,$10::timestamptz,'open',
+               '[]'::jsonb,$11::jsonb,$12,$13::jsonb,$10::timestamptz at time zone 'UTC',
+               $10::timestamptz at time zone 'UTC')`,
       [
         positionId,
         accountId,
@@ -1705,15 +1924,12 @@ export class BotService {
         candidate.closeVnd.toString(),
         sizing.grossVnd.toString(),
         sizing.feeVnd.toString(),
-        formatDecimal4(candidate.amplitude4!),
-        candidate.amplitudeSourceRef,
-        formatDecimal4(stop.stop4),
         decisionConfigRevision,
         isoDate(run.trading_date),
         now,
-        json(candidate.filterIds),
         json(candidate.sourceRefs),
         executionId,
+        json(entrySource),
       ],
     );
     const net = -sizing.totalVnd;
@@ -1740,7 +1956,7 @@ export class BotService {
         net.toString(),
         BOT_POLICY.execution_model,
         key,
-        json(candidate.filterIds),
+        json([]),
         sourceHash,
       ],
     );
@@ -1767,10 +1983,9 @@ export class BotService {
       symbol: candidate.symbol,
       action: 'buy',
       reasonCode: 'academy_buy',
-      reason: `Bot mua ${sizing.quantity} ${candidate.symbol} theo điều kiện Học viện tại đóng cửa ${isoDate(run.trading_date)}.`,
-      filterIds: candidate.filterIds,
-      rankTuple: uuidRank(candidate),
-      dataRefs: candidate.sourceRefs,
+      reason: `Bot mua ${sizing.quantity} ${candidate.symbol} theo điều kiện Mua tại đóng cửa ${isoDate(run.trading_date)}.`,
+      rankTuple: rankTuple(candidate),
+      dataRefs: { ...candidate.sourceRefs, entry_source: entrySource },
       budgetVnd: (navBasis * 12n) / 100n,
       proposedQty: sizing.quantity,
       executionId,
@@ -1896,106 +2111,114 @@ export class BotService {
     };
   }
 
+  /**
+   * Config state computed from the EFFECTIVE config (not from the saved switches), so a
+   * saved-but-pending revision never reads as "the Bot is buying". Errors are explicit.
+   */
   private async conditionState(
     userId: string,
     accountId: string,
-  ): Promise<{
-    conditions: Record<string, unknown>;
-    productStage: 'bot_v1_waiting' | 'bot_v2_academy';
-  }> {
+  ): Promise<Record<string, unknown>> {
     const position = (
-      await this.database.query<{ open_positions: string; policy_positions: string }>(
-        `select count(*)::text as open_positions,
-                count(*) filter (where entry_config_revision is not null)::text as policy_positions
+      await this.database.query<{ open_positions: string }>(
+        `select count(*)::text as open_positions
          from bot_positions where bot_account_id = $1 and status = 'open'`,
         [accountId],
       )
-    )[0] ?? { open_positions: '0', policy_positions: '0' };
+    )[0] ?? { open_positions: '0' };
     const openPositions = Number(position.open_positions);
+    const unavailable = {
+      state: 'error' as BotConfigState,
+      state_label: CONFIG_STATE_LABELS.error,
+      has_active_buy: false,
+      has_active_sell: false,
+      buy_condition_count: 0,
+      sell_condition_count: 0,
+      buy_status: 'blocked',
+      sell_status: 'blocked',
+      errors: {
+        buy: {
+          reason: 'config_invalid_or_unauthorized',
+          detail: 'Không đọc được cấu hình điều kiện',
+          indicator_ids: [],
+        },
+        sell: {
+          reason: 'config_invalid_or_unauthorized',
+          detail: 'Không đọc được cấu hình điều kiện',
+          indicator_ids: [],
+        },
+      },
+      saved_revision: null,
+      effective_revision: null,
+      effective_session: null,
+      config_status: 'unavailable',
+      pending: null,
+      open_positions: openPositions,
+    };
     try {
       const current = await this.sharedConfigReader.current(userId);
       const effective = current.effective_revision
-        ? await this.sharedConfigReader.getRevision(userId, current.effective_revision)
+        ? await this.sharedConfigReader.getRevision(userId, current.effective_revision, {
+            allowLegacyReview: true,
+          })
         : null;
       const registry = loadTechnicalRegistry();
       const grants = new Set(current.granted_indicators.map(indicatorCapability));
-      const valid = Boolean(
-        effective &&
-        effective.revision === current.effective_revision &&
-        configHash(effective.config) === effective.config_hash &&
-        validateConfig(effective.config, registry, grants).length === 0,
-      );
-      const buyCount =
-        valid && effective ? activeSideIndicators(effective.config, 'buy', registry).length : 0;
-      const sellCount =
-        valid && effective ? activeSideIndicators(effective.config, 'sell', registry).length : 0;
-      const hasBuy = buyCount > 0;
-      const hasSell = sellCount > 0;
-      const state = hasBuy
-        ? 'entry_enabled'
-        : hasSell
-          ? 'exit_only'
-          : openPositions > 0
-            ? 'protection_only'
-            : 'waiting_for_conditions';
+      const drift =
+        effective !== null &&
+        (effective.revision !== current.effective_revision ||
+          (!effective.legacy?.legacy && configHash(effective.config) !== effective.config_hash));
+      const gate: ConfigGate | null = effective
+        ? drift
+          ? blockedGate('Revision hoặc hash cấu hình không khớp')
+          : gateConfigSides(
+              effective.config,
+              grants,
+              registry,
+              readLegacyReview(effective.config, effective, current),
+            )
+        : null;
+      const buy = gate?.buy.status ?? 'inactive';
+      const sell = gate?.sell.status ?? 'inactive';
+      let state: BotConfigState = 'waiting_for_conditions';
+      if (buy === 'blocked' || sell === 'blocked') state = 'error';
+      else if (buy === 'active' && sell === 'active') state = 'buy_and_sell';
+      else if (buy === 'active') state = 'buy_only';
+      else if (sell === 'active') state = 'sell_only';
+      const savedRevision = current.saved_revision || null;
       return {
-        conditions: {
-          state,
-          has_active_buy: hasBuy,
-          has_active_sell: hasSell,
-          buy_condition_count: buyCount,
-          sell_condition_count: sellCount,
-          saved_revision: current.saved_revision || null,
-          effective_revision: current.effective_revision,
-          effective_session: current.effective_session,
-          config_status: current.saved_revision === 0 ? 'none' : current.status,
-          open_positions: openPositions,
-        },
-        productStage:
-          hasBuy || hasSell || Number(position.policy_positions) > 0
-            ? 'bot_v2_academy'
-            : 'bot_v1_waiting',
+        state,
+        state_label: CONFIG_STATE_LABELS[state],
+        has_active_buy: buy === 'active',
+        has_active_sell: sell === 'active',
+        buy_condition_count: gate?.buy.status === 'active' ? gate.buy.indicator_ids.length : 0,
+        sell_condition_count: gate?.sell.status === 'active' ? gate.sell.indicator_ids.length : 0,
+        buy_status: buy,
+        sell_status: sell,
+        errors: { buy: gate?.buy.block ?? null, sell: gate?.sell.block ?? null },
+        saved_revision: savedRevision,
+        effective_revision: current.effective_revision,
+        effective_session: current.effective_session,
+        config_status: current.saved_revision === 0 ? 'none' : current.status,
+        pending:
+          savedRevision !== null && savedRevision !== current.effective_revision
+            ? {
+                revision: savedRevision,
+                effective_session: current.effective_session,
+                status: current.status,
+              }
+            : null,
+        open_positions: openPositions,
       };
     } catch {
-      return {
-        conditions: {
-          state: openPositions > 0 ? 'protection_only' : 'waiting_for_conditions',
-          has_active_buy: false,
-          has_active_sell: false,
-          buy_condition_count: 0,
-          sell_condition_count: 0,
-          saved_revision: null,
-          effective_revision: null,
-          effective_session: null,
-          config_status: 'calendar_unavailable',
-          open_positions: openPositions,
-        },
-        productStage: Number(position.policy_positions) > 0 ? 'bot_v2_academy' : 'bot_v1_waiting',
-      };
+      return unavailable;
     }
   }
 
   async overview(userId: string): Promise<Record<string, unknown>> {
-    const progress = await this.database.query<{
-      current_level: number | null;
-      graduated_at: Date | string | null;
-    }>(
-      `select graduated_at,
-              case when graduated_at is not null then 6 else 5 end as current_level
-       from cap6_progress where user_id = $1`,
-      [userId],
-    );
     const context = await this.instanceAccount(this.database, userId);
-    const conditionState = context ? await this.conditionState(userId, context.account_id) : null;
+    const conditions = context ? await this.conditionState(userId, context.account_id) : null;
     const runStatus = await this.status(userId);
-    if (progress[0]?.graduated_at && !context) {
-      runStatus.issues.push(
-        issue(
-          'not_initialized',
-          'Bot chưa được service tốt nghiệp khởi tạo; GET không tự cấp vốn.',
-        ),
-      );
-    }
     const nav = context
       ? (
           await this.database.query<{
@@ -2018,9 +2241,8 @@ export class BotService {
         ? null
         : (context?.cash_vnd ?? null);
     return {
-      eligible: Boolean(progress[0]?.graduated_at),
-      current_level: progress[0]?.current_level ?? 0,
-      cap6_graduated_at: isoTimestamp(progress[0]?.graduated_at ?? null),
+      // Eligibility is simply "has a Bot account": no level, egg or graduation gate.
+      eligible: Boolean(context),
       disclosure: DISCLOSURE,
       bot: context
         ? {
@@ -2030,10 +2252,13 @@ export class BotService {
             initial_cash_vnd: context.initial_cash_vnd,
             activated_at: isoTimestamp(context.activated_at),
             policy_version: BOT_POLICY.policy_version,
-            product_stage: conditionState!.productStage,
+            candidate_order: BOT_POLICY.candidate_order,
+            candidate_order_owner_confirmation: BOT_POLICY.candidate_order_owner_confirmation,
+            // false while the candidate order awaits owner confirmation: sells run, buys do not.
+            new_buys_enabled: this.newBuysEnabled(),
           }
         : null,
-      conditions: conditionState?.conditions ?? null,
+      conditions,
       account: context
         ? {
             cash_vnd: nav?.cash_vnd ?? context.cash_vnd,
@@ -2051,6 +2276,11 @@ export class BotService {
     };
   }
 
+  /**
+   * Latest run status. `processed_unseen_sessions` was a mascot-animation cursor owned by
+   * the journey identity module; the Bot no longer reads that table, so it is always 0 here
+   * (the identity mascot endpoint computes its own value).
+   */
   async status(userId: string): Promise<{
     status: 'idle' | 'running' | 'succeeded' | 'failed';
     latest_run_id: string | null;
@@ -2058,27 +2288,19 @@ export class BotService {
     processed_unseen_sessions: number;
     issues: BotIssue[];
   }> {
-    const rows = await this.database.query<BotRunRow & { last_animated_bot_run_id: string | null }>(
-      `select r.*, ui.last_animated_bot_run_id
-       from bot_run_receipts r
-       left join journey_identity_ui ui on ui.user_id = r.user_id
+    const rows = await this.database.query<BotRunRow>(
+      `select r.* from bot_run_receipts r
        where r.user_id = $1
-       order by r.trading_date desc, r.started_at desc`,
+       order by r.trading_date desc, r.started_at desc
+       limit 1`,
       [userId],
     );
     const latest = rows[0];
-    const cursorId = latest?.last_animated_bot_run_id;
-    const cursor = cursorId ? rows.find((row) => row.id === cursorId) : undefined;
-    const unseen = rows.filter(
-      (row) =>
-        row.status === 'succeeded' &&
-        (!cursor || isoDate(row.trading_date) > isoDate(cursor.trading_date)),
-    ).length;
     return {
       status: latest?.status ?? 'idle',
       latest_run_id: latest?.id ?? null,
       last_updated_at: latest ? isoTimestamp(latest.completed_at ?? latest.started_at) : null,
-      processed_unseen_sessions: unseen,
+      processed_unseen_sessions: 0,
       issues: issues(latest?.issues),
     };
   }
@@ -2086,8 +2308,13 @@ export class BotService {
   async positions(userId: string): Promise<Record<string, unknown>> {
     const context = await this.instanceAccount(this.database, userId);
     if (!context) return { items: [], valuation_complete: false, as_of_session: null };
-    const rows = await this.database.query<BotPositionRow & { sector: string | null }>(
-      `select p.*, s.icb_lv2 as sector
+    const rows = await this.database.query<
+      BotPositionRow & { sector: string | null; holding_sessions?: number | string | null }
+    >(
+      `select p.*, s.icb_lv2 as sector,
+              (select count(*)::int from bot_nav_daily n
+                where n.bot_account_id = p.bot_account_id
+                  and n.trading_date >= p.opened_session) as holding_sessions
        from bot_positions p left join symbols s on s.symbol = p.symbol
        where p.bot_account_id = $1 and p.status = 'open' order by p.symbol`,
       [context.account_id],
@@ -2112,6 +2339,36 @@ export class BotService {
         [context.account_id],
       )
     )[0];
+    const lastDecisions = rows.length
+      ? await this.database.query<{
+          symbol: string;
+          action: string;
+          reason_code: string;
+          reason: string;
+          decision_config_revision: number | null;
+          trading_date: Date | string;
+        }>(
+          `select distinct on (d.symbol) d.symbol, d.action, d.reason_code, d.reason,
+                  d.decision_config_revision, r.trading_date
+           from bot_decisions d join bot_run_receipts r on r.id = d.bot_run_id
+           where r.bot_account_id = $1 and d.symbol = any($2::varchar[])
+           order by d.symbol, r.trading_date desc, d.created_at desc`,
+          [context.account_id, rows.map((row) => row.symbol)],
+        )
+      : [];
+    const lastBySymbol = new Map(lastDecisions.map((row) => [row.symbol, row]));
+    let buySource: ReadonlySet<string> | null = null;
+    try {
+      buySource = (await this.universe?.effectiveSymbols(userId, vnDate(new Date()))) ?? null;
+    } catch {
+      buySource = null;
+    }
+    const calendar = rows.length ? await loadTradingCalendar(this.database) : null;
+    const lastSession = snapshot
+      ? isoDate(snapshot.trading_date)
+      : nav
+        ? isoDate(nav.trading_date)
+        : null;
     let complete = Boolean(snapshot);
     const items = rows.map((row) => {
       const close = this.officialClose(payload?.symbols[row.symbol]);
@@ -2131,6 +2388,8 @@ export class BotService {
         marketValue === null
           ? null
           : marketValue - parseInteger(row.entry_value_vnd) - parseInteger(row.entry_fee_vnd);
+      const inUniverse = buySource ? buySource.has(row.symbol) : null;
+      const last = lastBySymbol.get(row.symbol);
       return {
         id: row.id,
         symbol: row.symbol,
@@ -2139,13 +2398,36 @@ export class BotService {
         current_close_vnd: close?.toString() ?? null,
         market_value_vnd: marketValue?.toString() ?? null,
         weight_pct: weight,
-        amplitude_at_entry_vnd: row.amplitude_at_entry_vnd,
-        amplitude_source_ref: row.amplitude_source_ref,
-        stop_loss_vnd: row.stop_loss_vnd,
-        legacy_take_profit_vnd: row.take_profit_vnd,
-        entry_config_revision: row.entry_config_revision ?? null,
         unrealized_pnl_net_vnd: pnl?.toString() ?? null,
-        filter_ids: stringList(row.filter_ids),
+        // Buy-source membership today; a position outside it is only watched for Sell.
+        in_universe: inUniverse,
+        source_scope: inUniverse === null ? null : inUniverse ? 'in_buy_source' : 'sell_watch_only',
+        entry_source_snapshot: row.entry_source_snapshot
+          ? objectValue(row.entry_source_snapshot)
+          : null,
+        entry_config_revision: row.entry_config_revision ?? null,
+        // Trading sessions from the opened session through the last processed session, by the
+        // Bot's own calendar; the nav-row count only when that calendar is unavailable.
+        holding_sessions:
+          calendar && lastSession
+            ? openHoldingSessions(isoDate(row.opened_session), lastSession, calendar)
+            : Number(row.holding_sessions ?? 0),
+        last_decision: last
+          ? {
+              trading_date: isoDate(last.trading_date),
+              action: last.action,
+              reason_code: last.reason_code,
+              reason: last.reason,
+              reason_label: BOT_REASON_LABELS[last.reason_code] ?? null,
+              decision_config_revision: last.decision_config_revision,
+            }
+          : null,
+        // Legacy history only: these never execute and are NULL for iqx-bot-v1.0 entries.
+        legacy_stop_loss_vnd: row.stop_loss_vnd,
+        legacy_amplitude_at_entry_vnd: row.amplitude_at_entry_vnd,
+        legacy_amplitude_source_ref: row.amplitude_source_ref,
+        legacy_take_profit_vnd: row.take_profit_vnd,
+        legacy_filter_ids: stringList(row.filter_ids),
         opened_session: isoDate(row.opened_session),
         opened_at: isoTimestamp(row.opened_at),
         sector: row.sector,
@@ -2192,11 +2474,11 @@ export class BotService {
     }
     const rows = await this.database.query<Record<string, unknown>>(
       `select d.*, r.trading_date, r.id as run_id, r.policy_version,
+              r.universe_revision, r.universe_kind,
               e.id as execution_id_joined, e.side as execution_side, e.qty as execution_qty,
               e.price_vnd as execution_price_vnd, e.gross_value_vnd as execution_gross_value_vnd,
               e.fee_vnd as execution_fee_vnd, e.tax_vnd as execution_tax_vnd,
-              e.net_cash_delta_vnd as execution_net_cash_delta_vnd,
-              e.supporting_count as execution_supporting_count
+              e.net_cash_delta_vnd as execution_net_cash_delta_vnd
        from bot_decisions d
        join bot_run_receipts r on r.id = d.bot_run_id
        left join bot_executions e on e.id = d.execution_id
@@ -2213,44 +2495,60 @@ export class BotService {
       )
     )[0];
     return {
-      items: page.map((row) => ({
-        id: row.id,
-        run_id: row.run_id,
-        trading_date: isoDate(row.trading_date as Date | string),
-        action: row.action,
-        reason_code: row.reason_code,
-        reason: row.reason,
-        execution: row.execution_id_joined
-          ? {
-              id: row.execution_id_joined,
-              side: row.execution_side,
-              qty: row.execution_qty,
-              price_vnd: String(row.execution_price_vnd),
-              gross_value_vnd: String(row.execution_gross_value_vnd),
-              fee_vnd: String(row.execution_fee_vnd),
-              tax_vnd: String(row.execution_tax_vnd),
-              net_cash_delta_vnd: String(row.execution_net_cash_delta_vnd),
-            }
-          : null,
-        symbol: row.symbol,
-        filter_ids: stringList(row.filter_ids),
-        supporting_count: row.execution_supporting_count ?? null,
-        policy_version:
-          row.policy_version === null || row.policy_version === undefined
-            ? null
-            : String(row.policy_version),
-        decision_config_revision:
-          row.decision_config_revision === null || row.decision_config_revision === undefined
-            ? null
-            : Number(row.decision_config_revision),
-        condition_snapshot:
-          row.condition_snapshot === null || row.condition_snapshot === undefined
-            ? null
-            : objectValue(row.condition_snapshot),
-        threshold_vnd: row.threshold_vnd === null ? null : String(row.threshold_vnd),
-        source_refs: objectValue(row.data_refs),
-        created_at: isoTimestamp(row.created_at as Date | string),
-      })),
+      items: page.map((row) => {
+        const refs = objectValue(row.data_refs);
+        const reasonCode = String(row.reason_code);
+        return {
+          id: row.id,
+          run_id: row.run_id,
+          trading_date: isoDate(row.trading_date as Date | string),
+          action: row.action,
+          reason_code: reasonCode,
+          reason_label: BOT_REASON_LABELS[reasonCode] ?? null,
+          reason: row.reason,
+          execution: row.execution_id_joined
+            ? {
+                id: row.execution_id_joined,
+                side: row.execution_side,
+                qty: row.execution_qty,
+                price_vnd: String(row.execution_price_vnd),
+                gross_value_vnd: String(row.execution_gross_value_vnd),
+                fee_vnd: String(row.execution_fee_vnd),
+                tax_vnd: String(row.execution_tax_vnd),
+                net_cash_delta_vnd: String(row.execution_net_cash_delta_vnd),
+              }
+            : null,
+          symbol: row.symbol,
+          // Buy-source membership of a held symbol at decision time (Sell holds only).
+          in_universe: typeof refs.in_universe === 'boolean' ? refs.in_universe : null,
+          universe_revision:
+            row.universe_revision === null || row.universe_revision === undefined
+              ? null
+              : Number(row.universe_revision),
+          universe_kind:
+            row.universe_kind === null || row.universe_kind === undefined
+              ? null
+              : String(row.universe_kind),
+          policy_version:
+            row.policy_version === null || row.policy_version === undefined
+              ? null
+              : String(row.policy_version),
+          decision_config_revision:
+            row.decision_config_revision === null || row.decision_config_revision === undefined
+              ? null
+              : Number(row.decision_config_revision),
+          condition_snapshot:
+            row.condition_snapshot === null || row.condition_snapshot === undefined
+              ? null
+              : objectValue(row.condition_snapshot),
+          rank_tuple: Array.isArray(row.rank_tuple) ? row.rank_tuple : null,
+          // Legacy decisions only; always empty / null for iqx-bot-v1.0 rows.
+          legacy_filter_ids: stringList(row.filter_ids),
+          legacy_threshold_vnd: row.threshold_vnd == null ? null : String(row.threshold_vnd),
+          source_refs: refs,
+          created_at: isoTimestamp(row.created_at as Date | string),
+        };
+      }),
       next_cursor: rows.length > limit ? String(page.at(-1)?.id ?? '') || null : null,
       issues: issues(latest?.issues),
     };

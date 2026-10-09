@@ -34,11 +34,14 @@ const MISSING_ID = '00000000-0000-4000-8000-0000000000ff';
 
 function definition(overrides: Partial<FilterDefinition> = {}): FilterDefinition {
   return {
-    schema_version: '2.0',
+    schema_version: '3.0',
     name: 'ROE cao',
     logic: 'AND',
-    rules: [{ id: 'r1', metric_id: 'roe', operator: '>', value: 0.15, api_unit: 'ratio' }],
-    scope: { market: 'HOSE', sector: '', period: 'TTM' },
+    data_mode: 'latest_disclosed',
+    rules: [
+      { id: 'r1', metric_id: 'roe', period: 'ttm', operator: '>', value: 0.15, api_unit: 'ratio' },
+    ],
+    scope: { market: 'HOSE', sector: '' },
     ...overrides,
   };
 }
@@ -74,15 +77,44 @@ type ListRecord = {
   as_of: string;
   data_source: string;
   scope: Record<string, unknown>;
+  visibility?: 'saved' | 'internal';
+  result_snapshot_id?: string | null;
+  run_id?: string | null;
+  provenance?: Record<string, unknown> | null;
   idempotency_key: string | null;
   request_hash: string | null;
   created_at: Date;
   deleted_at: Date | null;
 };
-type State = { filters: FilterRecord[]; versions: VersionRecord[]; lists: ListRecord[] };
+/** What the Bot-usage query would return (the SQL itself is exercised against Postgres). */
+type BotUsageRecord = {
+  user_id: string;
+  saved_list_id: string;
+  revision: number;
+  role: 'effective' | 'pending';
+  status: string;
+  effective_session: string | null;
+  source_name: string;
+};
+type BotUsageRow = BotUsageRecord;
+type State = {
+  filters: FilterRecord[];
+  versions: VersionRecord[];
+  lists: ListRecord[];
+  botUsage: BotUsageRecord[];
+  usageQueries: unknown[][];
+  advisoryLocks: unknown[];
+};
 
 class FakeSavedFiltersDatabase {
-  state: State = { filters: [], versions: [], lists: [] };
+  state: State = {
+    filters: [],
+    versions: [],
+    lists: [],
+    botUsage: [],
+    usageQueries: [],
+    advisoryLocks: [],
+  };
   private tick = Date.parse('2026-01-02T03:04:05.000Z');
 
   private now(): Date {
@@ -194,6 +226,7 @@ class FakeSavedFiltersDatabase {
           name: filter.name,
           current_version: filter.current_version,
           definition_hash: joined.definition_hash,
+          definition: joined.definition,
         },
       ];
     }
@@ -298,9 +331,25 @@ class FakeSavedFiltersDatabase {
       list.deleted_at = this.now();
       return [{ id: list.id }];
     }
+    if (sql.startsWith('SELECT pg_advisory_xact_lock')) {
+      this.state.advisoryLocks.push(v[0]);
+      return [];
+    }
+    if (sql.includes('FROM bot_universe_revisions r')) {
+      this.state.usageQueries.push([...v]);
+      const wanted = new Set(v[1] as string[]);
+      return this.state.botUsage
+        .filter((item) => item.user_id === v[0] && wanted.has(item.saved_list_id))
+        .map(({ user_id: _user, ...row }) => row);
+    }
     if (sql.includes('FROM list_snapshots WHERE user_id = $1 AND deleted_at IS NULL')) {
       return lists
-        .filter((item) => item.user_id === v[0] && item.deleted_at === null)
+        .filter(
+          (item) =>
+            item.user_id === v[0] &&
+            item.deleted_at === null &&
+            (v[1] === true || (item.visibility ?? 'saved') === 'saved'),
+        )
         .sort((a, b) => b.created_at.getTime() - a.created_at.getTime())
         .map((item) => this.listRow(item));
     }
@@ -371,37 +420,51 @@ describe('saved filter definition schema mirrors filter.schema.json', () => {
     expect(filterDefinitionSchema.parse(definition({ rules: [] })).rules).toEqual([]);
   });
 
+  const rule = (patch: Record<string, unknown>) => ({
+    id: 'r',
+    metric_id: 'roe',
+    period: 'ttm',
+    operator: '>',
+    value: 1,
+    api_unit: 'ratio',
+    ...patch,
+  });
+
   it.each([
-    [
-      'unknown metric',
-      { rules: [{ id: 'r', metric_id: 'magic', operator: '>', value: 1, api_unit: 'ratio' }] },
-    ],
-    [
-      'non-strict operator',
-      { rules: [{ id: 'r', metric_id: 'roe', operator: '>=', value: 1, api_unit: 'ratio' }] },
-    ],
-    [
-      'unknown unit',
-      { rules: [{ id: 'r', metric_id: 'roe', operator: '>', value: 1, api_unit: '%' }] },
-    ],
-    [
-      'non-finite value',
-      {
-        rules: [{ id: 'r', metric_id: 'roe', operator: '>', value: Number.NaN, api_unit: 'ratio' }],
-      },
-    ],
-    [
-      'extra rule key',
-      { rules: [{ id: 'r', metric_id: 'roe', operator: '>', value: 1, api_unit: 'ratio', x: 1 }] },
-    ],
+    ['unknown metric', { rules: [rule({ metric_id: 'magic' })] }],
+    ['non-strict operator', { rules: [rule({ operator: '>=' })] }],
+    ['unknown unit', { rules: [rule({ api_unit: '%' })] }],
+    ['non-finite value', { rules: [rule({ value: Number.NaN })] }],
+    ['extra rule key', { rules: [rule({ x: 1 })] }],
+    ['missing rule period', { rules: [rule({ period: undefined })] }],
+    ['unknown rule period', { rules: [rule({ period: 'weekly' })] }],
+    ['ROE quarter (not an allowed period of ROE)', { rules: [rule({ period: 'quarter' })] }],
+    ['a repeated metric', { rules: [rule({}), rule({ id: 'r2', period: 'year' })] }],
     ['wrong schema version', { schema_version: '1.0' }],
+    ['the retired schema version 2.0', { schema_version: '2.0' }],
     ['OR logic', { logic: 'OR' }],
     ['empty name', { name: '' }],
     ['long name', { name: 'x'.repeat(121) }],
-    ['bad period', { scope: { market: 'HOSE', sector: '', period: 'weekly' } }],
-    ['missing sector', { scope: { market: 'HOSE', period: 'TTM' } }],
+    ['a filter-wide period in scope', { scope: { market: 'HOSE', sector: '', period: 'TTM' } }],
+    ['missing sector', { scope: { market: 'HOSE' } }],
+    ['a client date', { as_of: '2026-01-02' }],
   ])('rejects %s', (_label, overrides) => {
     expect(filterDefinitionSchema.safeParse({ ...definition(), ...overrides }).success).toBe(false);
+  });
+
+  it('accepts per-rule periods and display-only columns from the registry policy', () => {
+    const parsed = filterDefinitionSchema.safeParse({
+      ...definition(),
+      rules: [
+        rule({ metric_id: 'profit_yoy', period: 'quarter' }),
+        rule({ id: 'r2', period: 'year' }),
+      ],
+      columns: [{ metric_id: 'gross_margin', period: 'ttm' }],
+    });
+    expect(parsed.success).toBe(true);
+    // `data_mode` is optional on input and always present in the parsed definition.
+    const { data_mode: _mode, ...withoutMode } = definition();
+    expect(filterDefinitionSchema.parse(withoutMode).data_mode).toBe('latest_disclosed');
   });
 
   it('rejects unknown top-level keys in definitions and request bodies', () => {
@@ -459,11 +522,21 @@ describe('saved list request schema', () => {
 describe('canonical definition hash', () => {
   it('is independent of key order and stable across runs', () => {
     const reordered = {
-      scope: { period: 'TTM', sector: '', market: 'HOSE' },
-      rules: [{ api_unit: 'ratio', value: 0.15, operator: '>', metric_id: 'roe', id: 'r1' }],
+      scope: { sector: '', market: 'HOSE' },
+      rules: [
+        {
+          api_unit: 'ratio',
+          value: 0.15,
+          operator: '>',
+          metric_id: 'roe',
+          period: 'ttm',
+          id: 'r1',
+        },
+      ],
       logic: 'AND',
+      data_mode: 'latest_disclosed',
       name: 'ROE cao',
-      schema_version: '2.0',
+      schema_version: '3.0',
     };
     expect(canonicalJson(reordered)).toBe(canonicalJson(definition()));
     expect(canonicalHash(reordered)).toBe(canonicalHash(definition()));
@@ -477,8 +550,8 @@ describe('canonical definition hash', () => {
   it('changes when rule order or values change', () => {
     const base = definition({
       rules: [
-        { id: 'a', metric_id: 'roe', operator: '>', value: 0.15, api_unit: 'ratio' },
-        { id: 'b', metric_id: 'pe', operator: '<', value: 12, api_unit: 'lần' },
+        { id: 'a', metric_id: 'roe', period: 'ttm', operator: '>', value: 0.15, api_unit: 'ratio' },
+        { id: 'b', metric_id: 'pe', period: 'ttm', operator: '<', value: 12, api_unit: 'lần' },
       ],
     });
     expect(canonicalHash({ ...base, rules: [...base.rules].reverse() })).not.toBe(
@@ -514,7 +587,9 @@ describe('SavedFiltersService filters', () => {
     const { service } = setup();
     const created = await service.createFilter(USER_A, createInput());
     const changedDefinition = definition({
-      rules: [{ id: 'r1', metric_id: 'roe', operator: '>', value: 0.2, api_unit: 'ratio' }],
+      rules: [
+        { id: 'r1', metric_id: 'roe', period: 'ttm', operator: '>', value: 0.2, api_unit: 'ratio' },
+      ],
     });
     const v2 = await service.updateFilter(USER_A, created.id, { definition: changedDefinition });
     expect(v2.current_version).toBe(2);
@@ -686,6 +761,181 @@ describe('SavedFiltersService lists', () => {
       ConflictException,
       'IDEMPOTENCY_KEY_CONFLICT',
     );
+  });
+});
+
+describe('SavedFiltersService reads stored 2.0 definitions without rewriting them (I05 / I06)', () => {
+  const legacy = (period: 'TTM' | 'annual' | 'quarter', metric = 'roe') => ({
+    schema_version: '2.0',
+    name: 'Bộ lọc cũ',
+    logic: 'AND',
+    rules: [{ id: 'r1', metric_id: metric, operator: '>', value: 0.15, api_unit: 'ratio' }],
+    scope: { market: 'HOSE', sector: '', period },
+  });
+
+  function seedLegacy(
+    database: FakeSavedFiltersDatabase,
+    stored: unknown,
+    userId = USER_A,
+  ): string {
+    const id = '00000000-0000-4000-8000-0000000000f1';
+    const when = new Date('2026-01-01T00:00:00Z');
+    database.state.filters.push({
+      id,
+      user_id: userId,
+      name: 'Cũ',
+      current_version: 1,
+      idempotency_key: null,
+      request_hash: null,
+      deleted_at: null,
+      created_at: when,
+      updated_at: when,
+    });
+    database.state.versions.push({
+      filter_id: id,
+      version: 1,
+      definition: stored,
+      definition_hash: canonicalHash(stored),
+      created_at: when,
+    });
+    return id;
+  }
+
+  it('maps the filter-wide period onto each rule on read and leaves the stored row alone', async () => {
+    const { database, service } = setup();
+    const stored = legacy('annual', 'revenue_yoy');
+    const id = seedLegacy(database, stored);
+    const filter = await service.getFilter(USER_A, id);
+    expect(filter.stored_schema_version).toBe('2.0');
+    expect(filter.definition).toMatchObject({
+      schema_version: '3.0',
+      data_mode: 'latest_disclosed',
+      rules: [{ metric_id: 'revenue_yoy', period: 'year' }],
+      scope: { market: 'HOSE', sector: '' },
+    });
+    expect(filter.definition.scope).not.toHaveProperty('period');
+    expect(filter.legacy_review).toMatchObject({ needs_review: false, legacy_period: 'annual' });
+    // The stored version is byte-for-byte what was saved, and so is its hash.
+    expect(database.state.versions[0]?.definition).toEqual(stored);
+    expect(filter.definition_hash).toBe(canonicalHash(stored));
+    const listed = await service.listFilters(USER_A);
+    expect(listed.items[0]?.definition.rules[0]?.period).toBe('year');
+  });
+
+  it('I06 flags a period that is no longer supported instead of turning ROE quarter into TTM', async () => {
+    const { database, service } = setup();
+    const id = seedLegacy(database, legacy('quarter', 'roe'));
+    const filter = await service.getFilter(USER_A, id);
+    expect(filter.definition.rules[0]).toMatchObject({ metric_id: 'roe', period: 'quarter' });
+    expect(filter.legacy_review).toMatchObject({
+      needs_review: true,
+      rules: [{ rule_id: 'r1', status: 'needs_review', legacy_period: 'quarter' }],
+    });
+  });
+
+  it('re-saving the mapped definition unchanged does not create a version; editing does (n+1, 3.0)', async () => {
+    const { database, service } = setup();
+    const id = seedLegacy(database, legacy('TTM', 'roe'));
+    const mapped = (await service.getFilter(USER_A, id)).definition;
+    const same = await service.updateFilter(USER_A, id, { name: 'Đổi tên', definition: mapped });
+    expect(same.current_version).toBe(1);
+    expect(database.state.versions).toHaveLength(1);
+    const edited = await service.updateFilter(USER_A, id, {
+      definition: { ...mapped, rules: [{ ...mapped.rules[0]!, period: 'year' }] },
+    });
+    expect(edited.current_version).toBe(2);
+    expect(edited.stored_schema_version).toBe('3.0');
+    expect(edited.legacy_review).toBeNull();
+    // Version 1 is still the untouched 2.0 document.
+    expect(
+      (database.state.versions[0]?.definition as { schema_version: string }).schema_version,
+    ).toBe('2.0');
+    const first = await service.getFilter(USER_A, id, 1);
+    expect(first.stored_schema_version).toBe('2.0');
+  });
+});
+
+describe('SavedFiltersService.deleteList and the Bot buy source (Strategy spec §8.7)', () => {
+  const usage = (listId: string, patch: Partial<BotUsageRow> = {}): BotUsageRow => ({
+    user_id: USER_A,
+    saved_list_id: listId,
+    revision: 3,
+    role: 'effective',
+    status: 'effective',
+    effective_session: '2026-01-05',
+    source_name: 'Danh sách ROE',
+    ...patch,
+  });
+
+  it('refuses with 409 LIST_IN_USE_BY_BOT while the list is the effective or pending source', async () => {
+    const { database, service } = setup();
+    const list = await service.createList(USER_A, listInput());
+    for (const role of ['effective', 'pending'] as const) {
+      database.state.botUsage = [
+        usage(list.id, { role, status: role === 'effective' ? 'effective' : 'pending' }),
+      ];
+      const error = await service.deleteList(USER_A, list.id).then(
+        () => null,
+        (reason: unknown) => reason,
+      );
+      expect(error).toBeInstanceOf(ConflictException);
+      const body = (error as ConflictException).getResponse() as {
+        code: string;
+        message: string;
+        details: Array<Record<string, unknown>>;
+      };
+      expect(body.code).toBe('LIST_IN_USE_BY_BOT');
+      expect(body.message).toContain('VN30');
+      expect(body.details).toEqual([
+        expect.objectContaining({
+          role,
+          revision: 3,
+          saved_list_id: list.id,
+          source_name: 'Danh sách ROE',
+          next_step:
+            role === 'pending'
+              ? 'cancel_pending_bot_source_or_wait_for_it_to_take_effect'
+              : 'switch_bot_source_to_another_list_or_vn30_first',
+        }),
+      ]);
+      // The list is untouched: still listed, not soft-deleted.
+      expect(database.state.lists[0]?.deleted_at).toBeNull();
+      expect((await service.listLists(USER_A)).items).toHaveLength(1);
+    }
+  });
+
+  it('deletes once the Bot no longer uses the list, under the Bot per-user lock and VN date', async () => {
+    const { database, service } = setup();
+    const list = await service.createList(USER_A, listInput());
+    // A cancelled / superseded / replaced revision does not come back from the usage query.
+    database.state.botUsage = [];
+    // 2026-01-02T18:30Z is already 2026-01-03 in Asia/Ho_Chi_Minh.
+    await service.deleteList(USER_A, list.id, new Date('2026-01-02T18:30:00Z'));
+    expect(database.state.lists[0]?.deleted_at).toBeInstanceOf(Date);
+    expect(database.state.advisoryLocks).toEqual([USER_A]);
+    expect(database.state.usageQueries).toEqual([[USER_A, [list.id], '2026-01-03']]);
+  });
+
+  it('only counts the Bot usage of the owner: another user list is simply not found', async () => {
+    const { database, service } = setup();
+    const list = await service.createList(USER_A, listInput());
+    database.state.botUsage = [usage(list.id)];
+    await expectHttpError(service.deleteList(USER_B, list.id), NotFoundException, 'LIST_NOT_FOUND');
+    expect(database.state.lists[0]?.deleted_at).toBeNull();
+  });
+
+  it('internal lists (Bot apply from an unsaved result) are hidden unless asked for', async () => {
+    const { database, service } = setup();
+    const visible = await service.createList(USER_A, listInput({ name: 'Hiển thị' }));
+    const created = await service.createList(USER_A, listInput({ name: 'Nội bộ' }));
+    const hidden = database.state.lists.find((item) => item.id === created.id)!;
+    hidden.visibility = 'internal';
+    expect((await service.listLists(USER_A)).items.map((item) => item.id)).toEqual([visible.id]);
+    const all = await service.listLists(USER_A, true);
+    expect(all.items.map((item) => [item.id, item.visibility])).toEqual([
+      [created.id, 'internal'],
+      [visible.id, 'saved'],
+    ]);
   });
 });
 

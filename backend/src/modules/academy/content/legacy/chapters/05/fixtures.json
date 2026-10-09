@@ -1,0 +1,13 @@
+[
+  {
+    "lesson_id": "ch05-l04",
+    "type": "scalar",
+    "label": "ADX",
+    "prompt": "+DI = 30; −DI = 10. DX bằng bao nhiêu?",
+    "expected": 50,
+    "unit": "",
+    "formula": "DX = 100 × |+DI − −DI| / (+DI + −DI)\nADX đầu = trung bình N DX\nADX mới = [(N−1) × ADX trước + DX mới]/N",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

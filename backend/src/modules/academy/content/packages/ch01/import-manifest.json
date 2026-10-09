@@ -1,0 +1,109 @@
+{
+  "format": 1,
+  "chapter": 1,
+  "package": "iqx-ch1-lessons",
+  "package_version": "iqx-ch1-lessons-2026-10-07-v2.0",
+  "content_version": "ch01-v2.0",
+  "source": {
+    "html_file": "IQX-Hoc-Vien-Chuong-1-MAU-v2.0.html",
+    "html_bytes": 695316,
+    "html_sha256": "af4da733c6065cad6f381916395a3a2fe3cf737fa0d9bf6f8596a6f7ef5eaff0",
+    "payload_script_id": "ch1-content-data",
+    "payload_text_sha256": "377bd65337dfbbad2e73ae5183b8dddf0a22e32c4cc6b3b1fde7e3e8fb387354",
+    "payload_text_in_spec": true,
+    "objects": {
+      "questions": "54a2a8105d42c4aedbacfcbf62a00d115a5b17a45e9955e7231a7e7cd8eb0fd0"
+    },
+    "lessons": {
+      "ch01-l01": "150544b0588586e30781273fdade40ca2aea873b234034fcb9dd336a259dfade",
+      "ch01-l02": "deeab26d7d200f344243b77672b84c895c5138184867108c642c7800b75fb1f4",
+      "ch01-l03": "b8f7ce7916dc6fad4ce65ac1c7c7a8d4fef9c86526924849e91675312c51c7c5",
+      "ch01-l04": "3e01340cc13a75fc5076f9935efa7699c3a1a302ddff38f45c1541d5becfce5b",
+      "ch01-l05": "05a62df48cd15face41db502dd242c9c174ef0fc0d6d9aad356e4c777759e066",
+      "ch01-l06": "fd80eb57dafac167516496cece2e729f8e50cddf3b6758b6a62372e8aab14308"
+    },
+    "lessons_in_spec": true,
+    "copied": {},
+    "gates": ["html_bytes", "html_sha256", "payload_text_sha256", "payload_version", "object:questions", "lesson:ch01-l01", "lesson:ch01-l02", "lesson:ch01-l03", "lesson:ch01-l04", "lesson:ch01-l05", "lesson:ch01-l06"]
+  },
+  "counts": {
+    "lessons": 6,
+    "sections": 24,
+    "lesson_charts": 16,
+    "images": 0,
+    "tables": 41,
+    "computed_tables": 6,
+    "html_blocks": 105,
+    "questions": 48,
+    "legends_dropped": 1,
+    "chart_models": 26,
+    "question_charts": 10,
+    "question_tables": 2,
+    "hints": 9,
+    "explanations": 192,
+    "hooks_macd_seed": 1,
+    "hooks_application": 5
+  },
+  "per_lesson": {
+    "ch01-l01": {
+      "charts": 3,
+      "images": 0,
+      "tables": 7,
+      "computed_tables": 1,
+      "questions": 8
+    },
+    "ch01-l02": {
+      "charts": 3,
+      "images": 0,
+      "tables": 6,
+      "computed_tables": 2,
+      "questions": 8
+    },
+    "ch01-l03": {
+      "charts": 3,
+      "images": 0,
+      "tables": 6,
+      "computed_tables": 1,
+      "questions": 8
+    },
+    "ch01-l04": {
+      "charts": 3,
+      "images": 0,
+      "tables": 9,
+      "computed_tables": 1,
+      "questions": 8
+    },
+    "ch01-l05": {
+      "charts": 4,
+      "images": 0,
+      "tables": 5,
+      "computed_tables": 1,
+      "questions": 8
+    },
+    "ch01-l06": {
+      "charts": 0,
+      "images": 0,
+      "tables": 8,
+      "computed_tables": 0,
+      "questions": 8
+    }
+  },
+  "text_equivalence": {
+    "sections_checked": 24,
+    "matched": 24
+  },
+  "outputs": {
+    "lessons.vi.json": {
+      "sha256": "cb1574a876f306fd73fdf2884c9d18bf62a36c30ea0b369f4e87d1204fe36ac2",
+      "bytes": 97587
+    },
+    "questions.vi.private.json": {
+      "sha256": "3522d73984adff45fb53985b90bb38f3118ea50a4c15fe385be1592e63235ab9",
+      "bytes": 70511
+    },
+    "charts.vi.json": {
+      "sha256": "60d88482039898917ec99d37df01b09d22a5d348e89875acd58954a8b45d3481",
+      "bytes": 66208
+    }
+  }
+}

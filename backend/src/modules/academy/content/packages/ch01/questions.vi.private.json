@@ -1,0 +1,1750 @@
+[
+  {
+    "id": "ch01-l01-q01",
+    "source_id": "rsi-q1",
+    "lesson_id": "ch01-l01",
+    "topic": "Tính RSI đầu tiên",
+    "section": 2,
+    "hint": "RS = G / D; RSI = 100 − 100 / (1 + RS).",
+    "prompt": "Sáu giá đóng cửa lần lượt là 60, 62, 61, 63, 61, 64. Với chu kỳ 5, G và D ban đầu đều chia cho đủ năm lần thay đổi. Bộ kết quả nào đúng?",
+    "options": [
+      {
+        "id": "029f196d20",
+        "source_id": "o2",
+        "text": "G = 2,33; D = 1,5; RSI ≈ 60,87.",
+        "explanation": "Đã chia tổng mức tăng cho ba phiên tăng và tổng mức giảm cho hai phiên giảm. Cả G và D ban đầu phải cùng chia cho 5."
+      },
+      {
+        "id": "812a0fa1cb",
+        "source_id": "o3",
+        "text": "G = 1,4; D = 0,6; RSI = 60.",
+        "explanation": "60% là tỷ lệ ba phiên tăng trên năm lần thay đổi, không phải cách tính RSI. RSI tính từ độ lớn các biến động."
+      },
+      {
+        "id": "900d28e944",
+        "source_id": "o4",
+        "text": "G = 0,6; D = 1,4; RSI = 30.",
+        "explanation": "Đã đổi chỗ mức tăng và mức giảm. Trong chuỗi này, tổng tăng bằng 7 và tổng giảm bằng 3."
+      },
+      {
+        "id": "c1086cdbc1",
+        "source_id": "o1",
+        "text": "G = 1,4; D = 0,6; RSI = 70.",
+        "explanation": "Mức tăng là 2, 0, 2, 0, 3; mức giảm là 0, 1, 0, 2, 0. G = 7/5 = 1,4; D = 3/5 = 0,6. RSI = 100 − 100/(1 + 1,4/0,6) = 70."
+      }
+    ],
+    "correct_option_id": "c1086cdbc1"
+  },
+  {
+    "id": "ch01-l01-q02",
+    "source_id": "rsi-q2",
+    "lesson_id": "ch01-l01",
+    "topic": "Cập nhật sau một phiên tăng",
+    "section": 2,
+    "hint": "G mới = (4 × G trước + Mức tăng mới) / 5; D mới = (4 × D trước + Mức giảm mới) / 5. Sau đó tính RSI từ G mới và D mới.",
+    "prompt": "RSI dùng chu kỳ 5. Trước phiên này, G = 0,8 và D = 1,2. Giá đóng cửa mới tăng 1 đơn vị. RSI mới xấp xỉ bao nhiêu?",
+    "options": [
+      {
+        "id": "04909b89e6",
+        "source_id": "o4",
+        "text": "41,18",
+        "explanation": "41,18 xuất hiện khi cập nhật G thành 0,84 nhưng giữ D ở 1,2. Phải cập nhật D thành 0,96, dù phiên mới không giảm giá."
+      },
+      {
+        "id": "1281e3fe7b",
+        "source_id": "o2",
+        "text": "53,33",
+        "explanation": "53,33 là kết quả khi đổi chỗ G mới và D mới. Mức tăng mới đi vào G, không đi vào D."
+      },
+      {
+        "id": "968c7ead45",
+        "source_id": "o1",
+        "text": "40,00",
+        "explanation": "40,00 là RSI trước phiên mới: 100 × 0,8/(0,8 + 1,2). Cần cập nhật cả hai mức trung bình."
+      },
+      {
+        "id": "d5cf1deb35",
+        "source_id": "o3",
+        "text": "46,67",
+        "explanation": "G mới = (4 × 0,8 + 1)/5 = 0,84; D mới = (4 × 1,2 + 0)/5 = 0,96. RSI = 100 − 100/(1 + 0,84/0,96) ≈ 46,67."
+      }
+    ],
+    "correct_option_id": "d5cf1deb35"
+  },
+  {
+    "id": "ch01-l01-q03",
+    "source_id": "rsi-q3",
+    "lesson_id": "ch01-l01",
+    "topic": "Đọc vị trí và chiều thay đổi",
+    "section": 1,
+    "prompt": "Quan sát đường RSI 14. Từ điểm A đến điểm B, mô tả nào đúng với dữ liệu trên biểu đồ?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l01-q03"
+    },
+    "options": [
+      {
+        "id": "3228f81522",
+        "source_id": "o3",
+        "text": "RSI tăng và điểm B đã vượt ngưỡng 70.",
+        "explanation": "Điểm B khoảng 45,04; chưa vượt 50, càng chưa vượt 70."
+      },
+      {
+        "id": "6b20160f2f",
+        "source_id": "o1",
+        "text": "RSI giảm và điểm B vẫn ở dưới mốc 50.",
+        "explanation": "Giá trị tại B lớn hơn tại A, không phải giảm."
+      },
+      {
+        "id": "c3939b6985",
+        "source_id": "o4",
+        "text": "RSI giảm nhưng điểm B vẫn ở trên mốc 50.",
+        "explanation": "Cả chiều thay đổi và vị trí mốc đều bị đọc ngược: B cao hơn A nhưng vẫn dưới 50."
+      },
+      {
+        "id": "ea18dd5bf6",
+        "source_id": "o2",
+        "text": "RSI tăng nhưng điểm B vẫn ở dưới mốc 50.",
+        "explanation": "RSI tại A xấp xỉ 37,15 và tại B xấp xỉ 45,04. Chỉ báo tăng giữa hai điểm nhưng chưa vượt 50."
+      }
+    ],
+    "correct_option_id": "ea18dd5bf6"
+  },
+  {
+    "id": "ch01-l01-q04",
+    "source_id": "rsi-q4",
+    "lesson_id": "ch01-l01",
+    "topic": "So sánh hai chu kỳ trên biểu đồ",
+    "section": 3,
+    "prompt": "Hai đường được tính từ cùng chuỗi giá. Tại điểm B, kết luận nào phù hợp?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l01-q04"
+    },
+    "options": [
+      {
+        "id": "11ab46c8c3",
+        "source_id": "o2",
+        "text": "Hai đường phải trùng nhau vì cùng dùng giá đóng cửa.",
+        "explanation": "Cùng chuỗi giá nhưng khác chu kỳ có thể tạo các giá trị RSI khác nhau."
+      },
+      {
+        "id": "528f8f8a8c",
+        "source_id": "o4",
+        "text": "RSI 7 đang thấp hơn RSI 14; ngắn hơn không có nghĩa luôn cao hơn.",
+        "explanation": "Tại B, RSI 7 khoảng 13,28 còn RSI 14 khoảng 29,23. Hai đường cùng dữ liệu nhưng khác chu kỳ; giá trị RSI ngắn không luôn cao hơn."
+      },
+      {
+        "id": "5453434c08",
+        "source_id": "o1",
+        "text": "RSI 7 có chu kỳ nhỏ hơn nên phải luôn nằm cao hơn RSI 14.",
+        "explanation": "Biểu đồ cho một phản ví dụ trực tiếp: RSI 7 thấp hơn RSI 14 tại B. Chu kỳ quyết định độ phản ứng, không tạo thứ tự cao/thấp cố định."
+      },
+      {
+        "id": "6c1353f028",
+        "source_id": "o3",
+        "text": "Đổi ngưỡng quá bán đã làm đường RSI 7 nằm thấp hơn.",
+        "explanation": "Ngưỡng không tham gia tính đường RSI. Hai đường khác nhau vì chu kỳ, không phải vì ngưỡng."
+      }
+    ],
+    "correct_option_id": "528f8f8a8c"
+  },
+  {
+    "id": "ch01-l01-q05",
+    "source_id": "rsi-q5",
+    "lesson_id": "ch01-l01",
+    "topic": "Đổi ngưỡng quá bán",
+    "section": 3,
+    "prompt": "Dùng cấu hình mẫu được mô tả trong bài. Giữ cùng dữ liệu và chu kỳ. RSI từ 31 lên 34. Người dùng tăng ngưỡng quá bán từ 30 lên 32, giữ ngưỡng quá mua 70. Kết quả riêng RSI thay đổi thế nào?",
+    "options": [
+      {
+        "id": "5f3ecfdc4d",
+        "source_id": "o4",
+        "text": "Đường RSI giảm xuống 32, vì ngưỡng mới bằng 32.",
+        "explanation": "Ngưỡng là mốc xác định tín hiệu, không ép giá trị của RSI bằng mốc đó."
+      },
+      {
+        "id": "e3e925ff6b",
+        "source_id": "o3",
+        "text": "Có thêm tín hiệu bán vì vùng ở giữa bị thu hẹp.",
+        "explanation": "Ngưỡng quá bán được dùng cho phía mua. Điều kiện bán vẫn xét RSI phiên trước so với ngưỡng quá mua 70."
+      },
+      {
+        "id": "f06982e677",
+        "source_id": "o1",
+        "text": "Có thêm tín hiệu mua; đường RSI vẫn giữ nguyên.",
+        "explanation": "Với ngưỡng 30, phiên trước 31 không dưới ngưỡng. Với ngưỡng 32, 31 < 32 và 34 > 31 nên có tín hiệu mua. Thay ngưỡng không đổi đường RSI."
+      },
+      {
+        "id": "f80de8ae05",
+        "source_id": "o2",
+        "text": "Không có tín hiệu mua vì RSI hiện tại đã vượt 32.",
+        "explanation": "Quy tắc kiểm tra vị trí của RSI phiên trước, không yêu cầu RSI hiện tại vẫn ở dưới ngưỡng."
+      }
+    ],
+    "correct_option_id": "f06982e677"
+  },
+  {
+    "id": "ch01-l01-q06",
+    "source_id": "rsi-q6",
+    "lesson_id": "ch01-l01",
+    "topic": "Tham số và toán tử độc lập",
+    "section": 3,
+    "prompt": "RSI Mua dùng chu kỳ 14, hai giá trị 35 → 38. RSI Bán dùng chu kỳ 10, hai giá trị 78 → 74. Đổi riêng dấu so ngưỡng Mua từ < 30 thành > 30; giữ yêu cầu RSI Mua tăng và giữ nguyên Bán: trước > 75, hiện tại giảm. Kết quả nào đúng?",
+    "options": [
+      {
+        "id": "7bd09627de",
+        "source_id": "o2",
+        "text": "Chỉ Mua đạt; khi Mua đúng phải loại kết quả Bán.",
+        "explanation": "Hai phía độc lập, không loại trừ nhau."
+      },
+      {
+        "id": "a74328e7b8",
+        "source_id": "o3",
+        "text": "Chỉ Bán đạt; dấu Mua bị hệ thống trả về < 30.",
+        "explanation": "Dấu đã chọn phải được giữ, không bị ép về mẫu."
+      },
+      {
+        "id": "ad344c9254",
+        "source_id": "o1",
+        "text": "Mua và Bán cùng đạt, vì mỗi phía dùng đúng chuỗi và dấu riêng.",
+        "explanation": "Mua: 35 > 30 và 38 > 35. Bán: 78 > 75 và 74 < 78. Cả hai phép kiểm tra đều đúng."
+      },
+      {
+        "id": "c64018fb83",
+        "source_id": "o4",
+        "text": "Không phía nào đạt vì hai chu kỳ khác nhau.",
+        "explanation": "Khác chu kỳ là được phép; mỗi phía tính chuỗi riêng."
+      }
+    ],
+    "correct_option_id": "ad344c9254"
+  },
+  {
+    "id": "ch01-l01-q07",
+    "source_id": "rsi-q7",
+    "lesson_id": "ch01-l01",
+    "topic": "Tín hiệu mua không yêu cầu ở lại dưới ngưỡng",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Ngưỡng quá bán là 30. Bốn tình huống độc lập:\nA: 29 → 33.  B: 27 → 29.\nC: 30 → 34.  D: 26 → 25.\nNhững tình huống nào có tín hiệu mua RSI?",
+    "options": [
+      {
+        "id": "3f6b6a788e",
+        "source_id": "o2",
+        "text": "A và B.",
+        "explanation": "A và B đều xuất phát dưới 30 rồi tăng. C bắt đầu bằng đúng 30, không dưới ngưỡng; D đang giảm."
+      },
+      {
+        "id": "97d69bb796",
+        "source_id": "o3",
+        "text": "B và C.",
+        "explanation": "B đúng, nhưng C có phiên trước bằng 30. A vẫn có tín hiệu dù tăng lên vượt 30."
+      },
+      {
+        "id": "aacdb24dee",
+        "source_id": "o1",
+        "text": "Chỉ A.",
+        "explanation": "A đúng nhưng B cũng đúng: phiên trước 27 < 30 và hiện tại 29 > 27. Không bắt buộc vượt ngưỡng."
+      },
+      {
+        "id": "d0e2b08262",
+        "source_id": "o4",
+        "text": "A, B và D.",
+        "explanation": "D vẫn ở dưới 30 nhưng giảm; chưa đáp ứng chiều tăng bắt buộc."
+      }
+    ],
+    "correct_option_id": "3f6b6a788e"
+  },
+  {
+    "id": "ch01-l01-q08",
+    "source_id": "rsi-q8",
+    "lesson_id": "ch01-l01",
+    "topic": "Xét tín hiệu bán qua từng phiên",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Ngưỡng quá mua là 70. RSI của bốn phiên liên tiếp lần lượt là:\nPhiên 1: 83 · Phiên 2: 77 · Phiên 3: 69 · Phiên 4: 64.\nTrong các phiên 2, 3 và 4, phiên nào có tín hiệu bán RSI?",
+    "options": [
+      {
+        "id": "4de49c4dfe",
+        "source_id": "o3",
+        "text": "Cả phiên 2, 3 và 4.",
+        "explanation": "Không giữ tín hiệu của phiên trước mãi. Phiên 4 xuất phát từ 69 nên không có tín hiệu bán mới."
+      },
+      {
+        "id": "b28cda0896",
+        "source_id": "o2",
+        "text": "Phiên 2 và phiên 4.",
+        "explanation": "Phiên 2 đúng. Phiên 4 không đúng vì phiên trước là 69, không trên 70. Phiên 3 lại thỏa đủ điều kiện."
+      },
+      {
+        "id": "b6b549ffe4",
+        "source_id": "o4",
+        "text": "Phiên 2 và phiên 3.",
+        "explanation": "Phiên 2: 83 > 70 và 77 < 83. Phiên 3: 77 > 70 và 69 < 77. Phiên 4 không đạt vị trí xuất phát vì 69 không trên 70."
+      },
+      {
+        "id": "d9417a8be8",
+        "source_id": "o1",
+        "text": "Chỉ phiên 3.",
+        "explanation": "Phiên 3 đúng, nhưng phiên 2 cũng có tín hiệu: 83 > 70 và 77 < 83. Không cần giảm qua ngưỡng."
+      }
+    ],
+    "correct_option_id": "b6b549ffe4"
+  },
+  {
+    "id": "ch01-l02-q01",
+    "source_id": "macd-q1",
+    "lesson_id": "ch01-l02",
+    "topic": "Công thức MACD và cột chênh lệch",
+    "section": 2,
+    "hint": "MACD = EMA nhanh − EMA chậm. Cột chênh lệch = MACD − Đường tín hiệu.",
+    "prompt": "EMA nhanh bằng 52,4; EMA chậm bằng 51,9; đường tín hiệu bằng 0,3. MACD và cột chênh lệch lần lượt bằng bao nhiêu?",
+    "options": [
+      {
+        "id": "4849dcb4b2",
+        "source_id": "o1",
+        "text": "0,5 và −0,2.",
+        "explanation": "Cột bằng MACD trừ đường tín hiệu, nên 0,5 − 0,3 = 0,2, không phải −0,2."
+      },
+      {
+        "id": "58e594c3de",
+        "source_id": "o2",
+        "text": "0,2 và 0,5.",
+        "explanation": "Đã đổi chỗ hai đại lượng. MACD là hiệu EMA nhanh/chậm, không phải hiệu với đường tín hiệu."
+      },
+      {
+        "id": "94111e5366",
+        "source_id": "o3",
+        "text": "0,5 và 0,2.",
+        "explanation": "MACD = 52,4 − 51,9 = 0,5; cột = 0,5 − 0,3 = 0,2."
+      },
+      {
+        "id": "d246c65666",
+        "source_id": "o4",
+        "text": "104,3 và 104,0.",
+        "explanation": "MACD lấy hiệu, không lấy tổng của hai EMA."
+      }
+    ],
+    "correct_option_id": "94111e5366"
+  },
+  {
+    "id": "ch01-l02-q02",
+    "source_id": "macd-q2",
+    "lesson_id": "ch01-l02",
+    "topic": "Cập nhật đường tín hiệu",
+    "section": 2,
+    "hint": "EMA mới = α × Giá trị mới + (1 − α) × EMA trước; α = 2/(N + 1).",
+    "prompt": "Đường tín hiệu EMA 9 trước bằng 0,2; MACD mới bằng 0,8. Đường tín hiệu mới và cột chênh lệch mới lần lượt là bao nhiêu?",
+    "options": [
+      {
+        "id": "0b09c2e01a",
+        "source_id": "o3",
+        "text": "0,80 và 0.",
+        "explanation": "Đường tín hiệu vẫn giữ phần ảnh hưởng của giá trị trước, không lập tức bằng MACD mới."
+      },
+      {
+        "id": "38ec4dac3b",
+        "source_id": "o4",
+        "text": "0,20 và 0,60.",
+        "explanation": "Đã giữ đường tín hiệu cũ, chưa cập nhật theo MACD mới."
+      },
+      {
+        "id": "5ba8e7ba57",
+        "source_id": "o2",
+        "text": "0,48 và 0,32.",
+        "explanation": "Đã đổi chỗ đường tín hiệu và cột chênh lệch."
+      },
+      {
+        "id": "73a5add837",
+        "source_id": "o1",
+        "text": "0,32 và 0,48.",
+        "explanation": "α = 2/10 = 0,2. Tín hiệu mới = 0,2 × 0,8 + 0,8 × 0,2 = 0,32; cột = 0,8 − 0,32 = 0,48."
+      }
+    ],
+    "correct_option_id": "73a5add837"
+  },
+  {
+    "id": "ch01-l02-q03",
+    "source_id": "macd-q3",
+    "lesson_id": "ch01-l02",
+    "topic": "Đọc mốc 0 và đường tín hiệu",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Tại điểm A, MACD vẫn dương nhưng nằm dưới đường tín hiệu. Theo cơ chế IQX và biểu đồ, kết luận nào đúng?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l02-q03"
+    },
+    "options": [
+      {
+        "id": "00424d74e6",
+        "source_id": "o3",
+        "text": "Chưa bán vì phải chờ MACD xuống dưới 0.",
+        "explanation": "Không có điều kiện MACD phải âm mới bán."
+      },
+      {
+        "id": "5be226899c",
+        "source_id": "o4",
+        "text": "Bán vì MACD dưới đường tín hiệu.",
+        "explanation": "Tại A, MACD khoảng 0,07 thấp hơn đường tín hiệu khoảng 0,88. MACD xác nhận bán dù còn trên 0."
+      },
+      {
+        "id": "dd250b81cc",
+        "source_id": "o2",
+        "text": "Không có vì hai đường cùng dương.",
+        "explanation": "Hai đường cùng dương vẫn có thể ở trên/dưới nhau."
+      },
+      {
+        "id": "ecb6fb7872",
+        "source_id": "o1",
+        "text": "Mua vì MACD vẫn dương.",
+        "explanation": "Dấu dương chỉ so MACD với 0; tín hiệu IQX so MACD với đường tín hiệu."
+      }
+    ],
+    "correct_option_id": "5be226899c"
+  },
+  {
+    "id": "ch01-l02-q04",
+    "source_id": "macd-q4",
+    "lesson_id": "ch01-l02",
+    "topic": "Đọc sự thay đổi quan hệ hai đường",
+    "section": 1,
+    "prompt": "Quan sát điểm A rồi điểm B. Cặp tín hiệu MACD nào đúng theo quan hệ với đường tín hiệu?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l02-q04"
+    },
+    "options": [
+      {
+        "id": "3bfc9d0936",
+        "source_id": "o2",
+        "text": "A mua; B bán.",
+        "explanation": "A: MACD khoảng 1,82 > tín hiệu 1,63. B: MACD khoảng 1,18 < tín hiệu 1,50."
+      },
+      {
+        "id": "8260d15e3c",
+        "source_id": "o3",
+        "text": "A và B đều mua vì MACD dương.",
+        "explanation": "Dương không thay thế điều kiện so với đường tín hiệu."
+      },
+      {
+        "id": "8390182a5e",
+        "source_id": "o1",
+        "text": "A bán; B mua.",
+        "explanation": "Quan hệ bị đọc ngược. A có MACD trên đường tín hiệu; B có MACD dưới đường tín hiệu."
+      },
+      {
+        "id": "d6c209741a",
+        "source_id": "o4",
+        "text": "A và B đều bán vì cột đang nhỏ dần.",
+        "explanation": "Ở A, MACD vẫn trên đường tín hiệu. Cột nhỏ dần chưa đủ để kết luận MACD đã xuống dưới."
+      }
+    ],
+    "correct_option_id": "3bfc9d0936"
+  },
+  {
+    "id": "ch01-l02-q05",
+    "source_id": "macd-q5",
+    "lesson_id": "ch01-l02",
+    "topic": "Chỉ thay một tham số",
+    "section": 3,
+    "prompt": "Giữ nguyên hai chu kỳ EMA nhanh/chậm và lịch sử giá. Chỉ đổi đường tín hiệu từ chu kỳ 9 sang 5. Những phần nào có thể thay đổi?",
+    "options": [
+      {
+        "id": "09c93febae",
+        "source_id": "o3",
+        "text": "Đường tín hiệu và cột chênh lệch; đường MACD giữ nguyên.",
+        "explanation": "Đường tín hiệu được tính lại từ chuỗi MACD; cột là hiệu nên có thể đổi. Hai EMA và MACD giữ nguyên."
+      },
+      {
+        "id": "1acef795a6",
+        "source_id": "o1",
+        "text": "Chỉ EMA nhanh và EMA chậm.",
+        "explanation": "Hai chu kỳ tạo EMA nhanh/chậm không đổi."
+      },
+      {
+        "id": "68fd08cb16",
+        "source_id": "o2",
+        "text": "Chỉ đường MACD, các phần còn lại giữ nguyên.",
+        "explanation": "Đường MACD không phụ thuộc chu kỳ đường tín hiệu."
+      },
+      {
+        "id": "fcc43b2f66",
+        "source_id": "o4",
+        "text": "Không phần nào vì giá không đổi.",
+        "explanation": "Chu kỳ là đầu vào tính toán, dù dữ liệu giá được giữ nguyên."
+      }
+    ],
+    "correct_option_id": "09c93febae"
+  },
+  {
+    "id": "ch01-l02-q06",
+    "source_id": "macd-q6",
+    "lesson_id": "ch01-l02",
+    "topic": "Quan hệ chu kỳ nhanh và chậm",
+    "section": 3,
+    "prompt": "Đang dùng MACD 12/26/9. Nếu đảo chu kỳ nhanh thành 26 và chu kỳ chậm thành 12, vì sao cấu hình không đúng cách nhanh/chậm đã chọn?",
+    "options": [
+      {
+        "id": "87be077485",
+        "source_id": "o2",
+        "text": "Vì chu kỳ dài không thể dùng để tính EMA.",
+        "explanation": "EMA có thể được tính ở các chu kỳ khác nhau."
+      },
+      {
+        "id": "9a3f057d1f",
+        "source_id": "o4",
+        "text": "Vì chu kỳ nhanh phải nhỏ hơn chu kỳ chậm; đảo thứ tự cũng đảo dấu hiệu hai EMA.",
+        "explanation": "Cặp 26/12 đảo vai trò và thứ tự phép trừ của bộ 12/26. Cần đặt chu kỳ nhanh nhỏ hơn chu kỳ chậm."
+      },
+      {
+        "id": "b2b2360fe9",
+        "source_id": "o3",
+        "text": "Vì mọi chu kỳ của MACD bắt buộc phải bằng nhau.",
+        "explanation": "Nếu hai chu kỳ bằng nhau, hiệu hai EMA sẽ mất ý nghĩa chênh lệch nhanh/chậm đang học."
+      },
+      {
+        "id": "d011296d1e",
+        "source_id": "o1",
+        "text": "Vì MACD chỉ được sử dụng với chu kỳ đường tín hiệu là 5.",
+        "explanation": "Đường tín hiệu 9 vẫn là một cấu hình hợp lệ. Vấn đề nằm ở hai chu kỳ đầu."
+      }
+    ],
+    "correct_option_id": "9a3f057d1f"
+  },
+  {
+    "id": "ch01-l02-q07",
+    "source_id": "macd-q7",
+    "lesson_id": "ch01-l02",
+    "topic": "Tín hiệu mua với MACD âm",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. MACD hiện tại bằng −0,2; đường tín hiệu bằng −0,5. Không yêu cầu giao cắt mới. Tín hiệu riêng MACD là gì?",
+    "options": [
+      {
+        "id": "4220df1f1d",
+        "source_id": "o4",
+        "text": "Bán vì lấy −0,5 trừ −0,2 cho số âm.",
+        "explanation": "Cột chênh lệch lấy MACD trừ đường tín hiệu, không đảo thứ tự."
+      },
+      {
+        "id": "4efb8576a9",
+        "source_id": "o3",
+        "text": "Không có vì MACD chưa vượt 0.",
+        "explanation": "Đã thêm điều kiện vượt 0 không có trong quy tắc."
+      },
+      {
+        "id": "5f57342314",
+        "source_id": "o1",
+        "text": "Mua vì −0,2 lớn hơn −0,5.",
+        "explanation": "MACD nằm trên đường tín hiệu. Dấu âm của MACD không ngăn tín hiệu mua theo phương pháp này."
+      },
+      {
+        "id": "fe09fa18cd",
+        "source_id": "o2",
+        "text": "Bán vì cả hai đều âm.",
+        "explanation": "Hai số âm vẫn có quan hệ lớn hơn hoặc nhỏ hơn."
+      }
+    ],
+    "correct_option_id": "5f57342314"
+  },
+  {
+    "id": "ch01-l02-q08",
+    "source_id": "macd-q8",
+    "lesson_id": "ch01-l02",
+    "topic": "Đổi riêng chu kỳ tín hiệu Mua",
+    "section": 3,
+    "prompt": "Mua và Bán đều đang dùng MACD 12/26/9. Bạn chỉ đổi chu kỳ tín hiệu Mua từ 9 sang 5. Phần nào cần tính lại?",
+    "options": [
+      {
+        "id": "2a0d1eaf80",
+        "source_id": "o1",
+        "text": "Hai EMA giá của cả Mua lẫn Bán.",
+        "explanation": "Chu kỳ nhanh và chậm không đổi nên hai EMA giá giữ nguyên."
+      },
+      {
+        "id": "a934fdaa81",
+        "source_id": "o4",
+        "text": "Mọi thành phần cả hai phía vì cùng tên MACD.",
+        "explanation": "Cùng tên chỉ báo không đồng nghĩa dùng chung tham số cho hai phía."
+      },
+      {
+        "id": "e6310cfa1e",
+        "source_id": "o2",
+        "text": "Đường tín hiệu và cột chênh lệch của Mua; MACD và toàn bộ Bán giữ nguyên.",
+        "explanation": "Đúng: tín hiệu Mua đổi phép làm mượt; cột Mua đổi theo. Bộ Bán không bị sửa."
+      },
+      {
+        "id": "f94fcda683",
+        "source_id": "o3",
+        "text": "Chỉ đường MACD Mua, đường tín hiệu Mua giữ nguyên.",
+        "explanation": "MACD phụ thuộc hai EMA giá, không phụ thuộc chu kỳ tín hiệu."
+      }
+    ],
+    "correct_option_id": "e6310cfa1e"
+  },
+  {
+    "id": "ch01-l03-q01",
+    "source_id": "ma-q1",
+    "lesson_id": "ch01-l03",
+    "topic": "Tính và cập nhật SMA",
+    "section": 2,
+    "hint": "SMA = Tổng N giá trong cửa sổ / N.",
+    "prompt": "Năm giá đóng cửa là 20, 22, 21, 24, 23. Phiên mới đóng cửa 25. SMA 5 trước và sau khi có giá mới lần lượt là bao nhiêu?",
+    "options": [
+      {
+        "id": "27dc73c545",
+        "source_id": "o1",
+        "text": "22 và 23.",
+        "explanation": "Tổng cũ là 110, chia 5 được 22. Bỏ 20 và thêm 25: tổng mới 115, chia 5 được 23."
+      },
+      {
+        "id": "ac10c573ee",
+        "source_id": "o2",
+        "text": "22 và 27.",
+        "explanation": "27 là kết quả cộng thêm 25 nhưng không loại giá 20 khỏi tổng cũ. Cửa sổ phải giữ năm giá."
+      },
+      {
+        "id": "b62bc85f7f",
+        "source_id": "o3",
+        "text": "23 và 22.",
+        "explanation": "Đã đảo thứ tự kết quả. Cửa sổ mới có tổng lớn hơn 5 nên trung bình tăng một đơn vị."
+      },
+      {
+        "id": "d45ae521ea",
+        "source_id": "o4",
+        "text": "22 và 22,5.",
+        "explanation": "SMA không lấy trung bình giữa giá mới và SMA trước. Phải dùng đủ năm giá của cửa sổ mới."
+      }
+    ],
+    "correct_option_id": "27dc73c545"
+  },
+  {
+    "id": "ch01-l03-q02",
+    "source_id": "ma-q2",
+    "lesson_id": "ch01-l03",
+    "topic": "Tỷ trọng của giá mới trong EMA",
+    "section": 2,
+    "hint": "EMA mới = α × Giá mới + (1 − α) × EMA trước.",
+    "prompt": "Hai EMA trước cùng bằng 80, giá đóng cửa mới là 85. Dùng α = 2/(N + 1), EMA 9 và EMA 19 mới lần lượt bằng bao nhiêu?",
+    "options": [
+      {
+        "id": "660ed26cac",
+        "source_id": "o1",
+        "text": "80,5 và 81.",
+        "explanation": "Đã đảo trọng số. EMA 9 có α = 0,2, lớn hơn α = 0,1 của EMA 19."
+      },
+      {
+        "id": "99ac2506e0",
+        "source_id": "o3",
+        "text": "81 và 80,5.",
+        "explanation": "EMA 9 = 0,2 × 85 + 0,8 × 80 = 81; EMA 19 = 0,1 × 85 + 0,9 × 80 = 80,5."
+      },
+      {
+        "id": "d08efd360c",
+        "source_id": "o2",
+        "text": "85 và 85.",
+        "explanation": "EMA vẫn dành phần tỷ trọng còn lại cho giá trị trước, không chuyển ngay toàn bộ về giá mới."
+      },
+      {
+        "id": "f89cf1f00b",
+        "source_id": "o4",
+        "text": "80 và 80.",
+        "explanation": "Giá mới có tỷ trọng dương và cao hơn 80, nên hai EMA đều thay đổi."
+      }
+    ],
+    "correct_option_id": "99ac2506e0"
+  },
+  {
+    "id": "ch01-l03-q03",
+    "source_id": "ma-q3",
+    "lesson_id": "ch01-l03",
+    "topic": "Đọc giá so với SMA",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Tại điểm A trên biểu đồ, giá đóng cửa nằm ở đâu so với SMA 20 và có tín hiệu MA nào theo cơ chế IQX?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l03-q03"
+    },
+    "options": [
+      {
+        "id": "73c798f8ed",
+        "source_id": "o3",
+        "text": "Giá bằng SMA 20; không có tín hiệu.",
+        "explanation": "Hai giá trị không bằng nhau; cần đọc cả đường giá lẫn đường SMA."
+      },
+      {
+        "id": "b6c3d1e0d5",
+        "source_id": "o4",
+        "text": "Giá dưới SMA 20; chưa bán vì phải chờ SMA giảm.",
+        "explanation": "Cơ chế hiện tại chỉ so giá với SMA. Không có yêu cầu phụ phải chờ SMA giảm."
+      },
+      {
+        "id": "ba0a90480b",
+        "source_id": "o1",
+        "text": "Giá trên SMA 20; tín hiệu mua.",
+        "explanation": "Giá ở A khoảng 107,47, thấp hơn SMA 20 khoảng 107,95."
+      },
+      {
+        "id": "e95f1a81c4",
+        "source_id": "o2",
+        "text": "Giá dưới SMA 20; tín hiệu bán.",
+        "explanation": "Giá 107,47 thấp hơn SMA 20 khoảng 107,95, nên MA xác nhận bán. Không cần điều kiện độ dốc."
+      }
+    ],
+    "correct_option_id": "e95f1a81c4"
+  },
+  {
+    "id": "ch01-l03-q04",
+    "source_id": "ma-q4",
+    "lesson_id": "ch01-l03",
+    "topic": "Đổi chu kỳ trên cùng giá",
+    "section": 3,
+    "prompt": "Dùng cấu hình mẫu được mô tả trong bài. Tại điểm A, hai đường SMA 20 và SMA 50 được tính từ cùng chuỗi giá. Nếu chỉ dùng một trong hai chu kỳ, kết quả nào đúng?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l03-q04"
+    },
+    "options": [
+      {
+        "id": "0a0ed14be6",
+        "source_id": "o1",
+        "text": "Cả hai chu kỳ đều xác nhận mua.",
+        "explanation": "Giá tại A thấp hơn SMA 20, nên cấu hình SMA 20 không xác nhận mua."
+      },
+      {
+        "id": "1573708def",
+        "source_id": "o2",
+        "text": "SMA 20 mua; SMA 50 bán.",
+        "explanation": "Giá tại A nằm dưới SMA 20 nhưng trên SMA 50; kết luận trong phương án bị đảo ngược."
+      },
+      {
+        "id": "42b2bdd21e",
+        "source_id": "o4",
+        "text": "SMA 20 bán; SMA 50 mua.",
+        "explanation": "Tại A: giá khoảng 107,47; SMA 20 khoảng 107,95; SMA 50 khoảng 105,29. Giá dưới SMA 20 và trên SMA 50."
+      },
+      {
+        "id": "757e9b1a1a",
+        "source_id": "o3",
+        "text": "Cả hai chu kỳ đều xác nhận bán.",
+        "explanation": "Giá tại A vẫn trên SMA 50, nên cấu hình đó xác nhận mua."
+      }
+    ],
+    "correct_option_id": "42b2bdd21e"
+  },
+  {
+    "id": "ch01-l03-q05",
+    "source_id": "ma-q5",
+    "lesson_id": "ch01-l03",
+    "topic": "Chu kỳ và giá trị của đường",
+    "section": 3,
+    "prompt": "Giữ nguyên lịch sử giá, chuyển SMA 20 thành SMA 40. Nhận định nào đúng?",
+    "options": [
+      {
+        "id": "4b82d304d6",
+        "source_id": "o4",
+        "text": "Đường không đổi vì vẫn dùng giá đóng cửa.",
+        "explanation": "Chu kỳ xác định dữ liệu trong phép tính, không chỉ là tên hiển thị."
+      },
+      {
+        "id": "97757298eb",
+        "source_id": "o2",
+        "text": "SMA 40 bằng nửa SMA 20 vì mẫu số tăng gấp đôi.",
+        "explanation": "Không chỉ mẫu số thay đổi; tổng các giá cũng thay đổi."
+      },
+      {
+        "id": "9e92a9dd52",
+        "source_id": "o1",
+        "text": "Phải tính lại từ 40 giá; đường mới không nhất thiết gấp đôi hoặc bằng nửa đường cũ.",
+        "explanation": "Tử số cũng thay đổi vì dùng thêm dữ liệu. Không suy ra SMA 40 từ một giá trị SMA 20 duy nhất."
+      },
+      {
+        "id": "a366106c34",
+        "source_id": "o3",
+        "text": "SMA 40 bằng hai lần SMA 20 vì số giá tăng gấp đôi.",
+        "explanation": "Lấy thêm giá không làm trung bình tăng theo đúng tỷ lệ số phiên."
+      }
+    ],
+    "correct_option_id": "9e92a9dd52"
+  },
+  {
+    "id": "ch01-l03-q06",
+    "source_id": "ma-q6",
+    "lesson_id": "ch01-l03",
+    "topic": "Hai phía cùng đúng",
+    "section": 4,
+    "prompt": "Cùng một phiên, giá đóng cửa = 100, SMA 10 = 99 và SMA 30 = 101. Mua đang bật với giá > SMA 10; Bán đang bật với giá < SMA 30. Kết quả điều kiện nào đúng?",
+    "options": [
+      {
+        "id": "575093e35c",
+        "source_id": "o1",
+        "text": "Mua đạt, Bán không đạt.",
+        "explanation": "100 < 101 làm Bán cũng đạt."
+      },
+      {
+        "id": "b28d8b9e36",
+        "source_id": "o2",
+        "text": "Bán đạt, Mua không đạt.",
+        "explanation": "100 > 99 làm Mua cũng đạt."
+      },
+      {
+        "id": "d6a3add9d1",
+        "source_id": "o3",
+        "text": "Cả hai đều đạt, vì so với hai SMA khác nhau.",
+        "explanation": "Mua: 100 > 99; Bán: 100 < 101. Hai kết quả độc lập."
+      },
+      {
+        "id": "fa7aa4922e",
+        "source_id": "o4",
+        "text": "Cả hai không đạt vì hai phía phải cùng chu kỳ.",
+        "explanation": "Hai phía được dùng chu kỳ riêng."
+      }
+    ],
+    "correct_option_id": "d6a3add9d1"
+  },
+  {
+    "id": "ch01-l03-q07",
+    "source_id": "ma-q7",
+    "lesson_id": "ch01-l03",
+    "topic": "Trạng thái không phải sự kiện một phiên",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Giá đã vượt lên SMA ở phiên trước. Phiên hiện tại giá vẫn trên SMA, nhưng SMA đang thấp hơn giá trị của nó ở phiên trước. Tín hiệu MA hiện tại là gì?",
+    "options": [
+      {
+        "id": "1b7dcb655a",
+        "source_id": "o4",
+        "text": "Không có, vì phải đồng thời có giao cắt mới và SMA tăng.",
+        "explanation": "Cả yêu cầu giao cắt mới và yêu cầu độ dốc đều không có trong cơ chế đã nêu."
+      },
+      {
+        "id": "8e3ef914d6",
+        "source_id": "o3",
+        "text": "Bán, vì SMA đang giảm.",
+        "explanation": "Đã thay phép so giá với SMA bằng phép so độ dốc SMA."
+      },
+      {
+        "id": "abf7dd1b61",
+        "source_id": "o2",
+        "text": "Mua, vì giá hiện tại vẫn trên SMA.",
+        "explanation": "Điều kiện mua MA chỉ là giá đóng cửa trên SMA hiện tại. Độ dốc không phải điều kiện bắt buộc."
+      },
+      {
+        "id": "d0b99ef279",
+        "source_id": "o1",
+        "text": "Không có, vì giao cắt đã xảy ra từ trước.",
+        "explanation": "IQX kiểm tra trạng thái hiện tại, không chỉ đúng phiên giao cắt."
+      }
+    ],
+    "correct_option_id": "abf7dd1b61"
+  },
+  {
+    "id": "ch01-l03-q08",
+    "source_id": "ma-q8",
+    "lesson_id": "ch01-l03",
+    "topic": "Dấu bằng và tín hiệu bán",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Giá đóng cửa bằng 42, SMA hiện tại cũng bằng 42. SMA phiên trước bằng 43. Theo cơ chế IQX, tín hiệu riêng MA là gì?",
+    "options": [
+      {
+        "id": "5801d26ed2",
+        "source_id": "o4",
+        "text": "Không có vì giá bằng SMA.",
+        "explanation": "Cả giá > SMA và giá < SMA đều sai khi hai giá trị bằng 42."
+      },
+      {
+        "id": "9e76e5751f",
+        "source_id": "o1",
+        "text": "Bán vì SMA thấp hơn phiên trước.",
+        "explanation": "Cơ chế bán so giá với SMA hiện tại, không chỉ xét độ dốc."
+      },
+      {
+        "id": "9f87fef3a9",
+        "source_id": "o3",
+        "text": "Bán vì giá không nằm trên SMA.",
+        "explanation": "Không lớn hơn có thể là bằng; điều kiện bán yêu cầu nhỏ hơn."
+      },
+      {
+        "id": "f8d6533f1b",
+        "source_id": "o2",
+        "text": "Mua vì giá đã chạm SMA.",
+        "explanation": "Chạm bằng đường không thỏa dấu lớn hơn."
+      }
+    ],
+    "correct_option_id": "5801d26ed2"
+  },
+  {
+    "id": "ch01-l04-q01",
+    "source_id": "bollinger-q1",
+    "lesson_id": "ch01-l04",
+    "topic": "Tính độ lệch chuẩn và hai dải",
+    "section": 2,
+    "hint": "σ = √[Tổng (giá − M)² / N]. Dải trên/dưới = M ± kσ.",
+    "prompt": "Năm giá là 20, 22, 24, 22, 22. Dùng độ lệch chuẩn chia cho 5 và hệ số dải 2. Kết quả nào đúng?",
+    "options": [
+      {
+        "id": "2a854f75ed",
+        "source_id": "o3",
+        "text": "Đường giữa 22; σ = 0; hai dải đều 22.",
+        "explanation": "Giá cuối bằng trung bình không làm độ lệch chuẩn bằng 0; các giá trong cửa sổ khác nhau."
+      },
+      {
+        "id": "c2be8ec684",
+        "source_id": "o2",
+        "text": "Đường giữa 22; σ ≈ 1,26; dải 19,47–24,53.",
+        "explanation": "M = 22; tổng bình phương sai lệch là 8; σ = √(8/5) ≈ 1,2649. Hai dải bằng 22 ± 2σ."
+      },
+      {
+        "id": "dcebe9179a",
+        "source_id": "o1",
+        "text": "Đường giữa 22; σ = 1,60; dải 18,80–25,20.",
+        "explanation": "1,60 là trung bình bình phương sai lệch, cần lấy căn để có độ lệch chuẩn."
+      },
+      {
+        "id": "e017e974eb",
+        "source_id": "o4",
+        "text": "Đường giữa 22; σ ≈ 1,26; dải 20,74–23,26.",
+        "explanation": "Đã dùng hệ số 1 thay vì 2 khi dựng dải."
+      }
+    ],
+    "correct_option_id": "c2be8ec684"
+  },
+  {
+    "id": "ch01-l04-q02",
+    "source_id": "bollinger-q2",
+    "lesson_id": "ch01-l04",
+    "topic": "Độ rộng tương đối",
+    "section": 2,
+    "hint": "Độ rộng chuẩn hóa = (Dải trên − Dải dưới) / Đường giữa.",
+    "prompt": "Đường giữa bằng 100; độ lệch chuẩn bằng 3; hệ số dải bằng 2. Độ rộng chuẩn hóa của dải là bao nhiêu?",
+    "options": [
+      {
+        "id": "45ca05878b",
+        "source_id": "o4",
+        "text": "24%.",
+        "explanation": "Đã nhân thêm hệ số 2 lần nữa sau khi lấy toàn bộ khoảng cách dải."
+      },
+      {
+        "id": "5d9a2121c3",
+        "source_id": "o1",
+        "text": "3%.",
+        "explanation": "3% chỉ là σ/M; chưa tính hai phía dải và hệ số 2."
+      },
+      {
+        "id": "9aae964e8b",
+        "source_id": "o2",
+        "text": "6%.",
+        "explanation": "6% là khoảng cách một phía chia đường giữa, chưa lấy toàn bộ khoảng cách hai dải."
+      },
+      {
+        "id": "d1ce07a8ed",
+        "source_id": "o3",
+        "text": "12%.",
+        "explanation": "Dải trên 106, dưới 94. Độ rộng (106 − 94)/100 = 0,12 = 12%."
+      }
+    ],
+    "correct_option_id": "d1ce07a8ed"
+  },
+  {
+    "id": "ch01-l04-q03",
+    "source_id": "bollinger-q3",
+    "lesson_id": "ch01-l04",
+    "topic": "Đọc giá quay trở lại dải dưới",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Tại điểm A, giá tăng từ phiên trước và quay vào bên trong dải. Phiên trước giá đóng cửa ở dưới dải dưới. Tín hiệu riêng Bollinger tại A là gì?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l04-q03"
+    },
+    "options": [
+      {
+        "id": "4585daea80",
+        "source_id": "o4",
+        "text": "Không có: giá không còn dưới dải dưới tại A.",
+        "explanation": "Mua yêu cầu giá quay vào trong, không yêu cầu vẫn ở ngoài phía dưới."
+      },
+      {
+        "id": "6a5044da77",
+        "source_id": "o3",
+        "text": "Không có: phải chờ vượt dải trên mới mua.",
+        "explanation": "Vượt dải trên không phải điều kiện mua đã chọn."
+      },
+      {
+        "id": "7a044d2d0d",
+        "source_id": "o1",
+        "text": "Mua: đủ ba điều kiện quay lại dải từ phía dưới.",
+        "explanation": "Giá trước 90 dưới dải dưới của chính phiên đó. Tại A giá 96 tăng và nằm bên trong hai dải hiện tại."
+      },
+      {
+        "id": "ccb9ef4192",
+        "source_id": "o2",
+        "text": "Bán: giá đang dưới đường giữa.",
+        "explanation": "Cơ chế đang xét quay lại dải, không yêu cầu giá trên đường giữa."
+      }
+    ],
+    "correct_option_id": "7a044d2d0d"
+  },
+  {
+    "id": "ch01-l04-q04",
+    "source_id": "bollinger-q4",
+    "lesson_id": "ch01-l04",
+    "topic": "Đọc giá quay trở lại dải trên",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Quan sát giá ở phiên trước điểm A và tại A. Giá trước nằm trên dải trên; tại A giá giảm và nằm trong dải. Kết luận nào đúng?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l04-q04"
+    },
+    "options": [
+      {
+        "id": "6b448d1936",
+        "source_id": "o1",
+        "text": "Mua vì giá vẫn trên đường giữa.",
+        "explanation": "Vị trí trên đường giữa không phải điều kiện mua của phương pháp quay lại dải này."
+      },
+      {
+        "id": "ac46e4d57d",
+        "source_id": "o2",
+        "text": "Không có vì phải giảm xuống dưới dải dưới.",
+        "explanation": "Không cần giảm xuyên qua cả dải. Yêu cầu là đóng cửa bên trong."
+      },
+      {
+        "id": "cab8e4d466",
+        "source_id": "o4",
+        "text": "Bán vì từ ngoài phía trên giảm trở lại bên trong dải.",
+        "explanation": "Giá trước 110 ở ngoài phía trên; tại A giá 104 thấp hơn và nằm trong hai dải mới."
+      },
+      {
+        "id": "ff4a522606",
+        "source_id": "o3",
+        "text": "Không có vì phiên hiện tại đã không còn trên dải trên.",
+        "explanation": "Phiên hiện tại quay lại trong dải chính là một điều kiện của tín hiệu bán."
+      }
+    ],
+    "correct_option_id": "cab8e4d466"
+  },
+  {
+    "id": "ch01-l04-q05",
+    "source_id": "bollinger-q5",
+    "lesson_id": "ch01-l04",
+    "topic": "Chỉ thay hệ số dải",
+    "section": 3,
+    "prompt": "Giữ nguyên giá và chu kỳ. Tăng hệ số dải từ 2 lên 3. Điều gì thay đổi trực tiếp?",
+    "options": [
+      {
+        "id": "07ff2b4e66",
+        "source_id": "o2",
+        "text": "Hai dải xa đường giữa hơn; đường giữa và độ lệch chuẩn giữ nguyên.",
+        "explanation": "Khoảng cách một phía bằng kσ. Khi k tăng, dải ra xa trong khi M và σ không đổi."
+      },
+      {
+        "id": "274360db44",
+        "source_id": "o1",
+        "text": "Đường giữa tăng gấp 1,5; độ lệch chuẩn giữ nguyên.",
+        "explanation": "Hệ số k không có trong công thức tính đường giữa."
+      },
+      {
+        "id": "33a18fa3a7",
+        "source_id": "o3",
+        "text": "Chu kỳ giá tự tăng từ 20 lên 30 phiên.",
+        "explanation": "Đổi k không đổi số phiên N."
+      },
+      {
+        "id": "9485f60d2b",
+        "source_id": "o4",
+        "text": "Đường giá thay đổi để tiếp tục nằm bên trong dải.",
+        "explanation": "Tham số chỉ báo không thay đổi dữ liệu giá."
+      }
+    ],
+    "correct_option_id": "07ff2b4e66"
+  },
+  {
+    "id": "ch01-l04-q06",
+    "source_id": "bollinger-q6",
+    "lesson_id": "ch01-l04",
+    "topic": "Chu kỳ và điều kiện ở hai phiên",
+    "section": 3,
+    "prompt": "Người dùng đổi chu kỳ Bollinger từ 20 thành 10 rồi kiểm tra việc quay trở lại dải. Cách đối chiếu nào đúng?",
+    "options": [
+      {
+        "id": "0a1a289874",
+        "source_id": "o1",
+        "text": "Giữ dải phiên trước của chu kỳ 20, chỉ tính dải hiện tại theo 10.",
+        "explanation": "Đã trộn hai cấu hình giữa hai phiên của một tín hiệu."
+      },
+      {
+        "id": "0e0e83a981",
+        "source_id": "o2",
+        "text": "Chỉ đổi đường giữa hiện tại, giữ nguyên mọi dải trước đó.",
+        "explanation": "Đổi chu kỳ tác động cả đường giữa lẫn độ lệch chuẩn; cần tính lại đầy đủ."
+      },
+      {
+        "id": "be477f6f38",
+        "source_id": "o3",
+        "text": "Tính lại dải ở cả hai phiên theo chu kỳ 10 rồi đánh giá điều kiện.",
+        "explanation": "Mỗi giá so với dải của chính phiên đó, và cả hai dải dùng cùng bộ tham số mới."
+      },
+      {
+        "id": "c14830b940",
+        "source_id": "o4",
+        "text": "Dùng dải hiện tại theo chu kỳ 10 để so cả hai giá đóng cửa.",
+        "explanation": "Giá phiên trước phải so với dải phiên trước, không phải dải hiện tại."
+      }
+    ],
+    "correct_option_id": "be477f6f38"
+  },
+  {
+    "id": "ch01-l04-q07",
+    "source_id": "bollinger-q7",
+    "lesson_id": "ch01-l04",
+    "topic": "Giá hồi nhưng vẫn ngoài dải",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Giá đóng cửa phiên trước nằm dưới dải dưới. Phiên hiện tại giá tăng, nhưng vẫn đóng cửa thấp hơn dải dưới hiện tại. Có tín hiệu mua Bollinger không?",
+    "options": [
+      {
+        "id": "231b6fb8f5",
+        "source_id": "o1",
+        "text": "Có, vì giá đã tăng một phiên.",
+        "explanation": "Chiều tăng là một trong ba yêu cầu, không thay được vị trí trong dải."
+      },
+      {
+        "id": "76894cf3e2",
+        "source_id": "o2",
+        "text": "Có, vì giá vẫn ở vùng thấp.",
+        "explanation": "Vẫn ở ngoài phía dưới chưa hoàn tất cơ chế quay vào."
+      },
+      {
+        "id": "c531a8ecae",
+        "source_id": "o3",
+        "text": "Có, vì chỉ cần phiên trước nằm ngoài dải.",
+        "explanation": "Điều kiện phiên trước chưa đủ, phải kiểm tra cả phiên hiện tại."
+      },
+      {
+        "id": "d6185658a9",
+        "source_id": "o4",
+        "text": "Chưa có, vì giá hiện tại chưa trở lại bên trong dải.",
+        "explanation": "Điều kiện quay vào dải chưa thỏa. Không phát tín hiệu mua chỉ vì giá tăng."
+      }
+    ],
+    "correct_option_id": "d6185658a9"
+  },
+  {
+    "id": "ch01-l04-q08",
+    "source_id": "bollinger-q8",
+    "lesson_id": "ch01-l04",
+    "topic": "Toán tử trong hoặc ngoài dải",
+    "section": 4,
+    "prompt": "Tại phiên hiện tại, dải dưới = 46, dải trên = 54 và giá đóng cửa = 46. Chỉ xét dòng “giá hiện tại ∈ dải” với biên mở của bài. Kết quả của ∈ và ∉ là gì?",
+    "options": [
+      {
+        "id": "04d87cb419",
+        "source_id": "o1",
+        "text": "∈ đúng, ∉ sai.",
+        "explanation": "Biên mở loại giá bằng dải dưới."
+      },
+      {
+        "id": "129d074f32",
+        "source_id": "o3",
+        "text": "Cả hai sai vì phải đợi phiên sau.",
+        "explanation": "Không cần đợi phiên sau để so các giá trị hiện tại đã có."
+      },
+      {
+        "id": "307165e71b",
+        "source_id": "o2",
+        "text": "Cả hai đúng vì giá chạm dải.",
+        "explanation": "Hai toán tử là hai kết quả đối nhau trên dữ liệu hợp lệ, không cùng đúng."
+      },
+      {
+        "id": "4d0a94649c",
+        "source_id": "o4",
+        "text": "∈ sai, ∉ đúng; giá và hai biên đều đã có dữ liệu hợp lệ.",
+        "explanation": "46 không nằm giữa 46 và 54 theo biên mở. Không kết luận cả phía Mua đạt nếu chưa kiểm tra các dòng khác."
+      }
+    ],
+    "correct_option_id": "4d0a94649c"
+  },
+  {
+    "id": "ch01-l05-q01",
+    "source_id": "volume-q1",
+    "lesson_id": "ch01-l05",
+    "topic": "Tính mức tham chiếu",
+    "section": 2,
+    "hint": "Trung bình dùng N phiên trước. Ngưỡng = Hệ số × Trung bình.",
+    "prompt": "Năm phiên trước có khối lượng 3, 4, 6, 5, 7 triệu cổ phiếu. Phiên hiện tại có 8 triệu. Với N = 5 và hệ số 1,5, bộ số nào đúng?",
+    "options": [
+      {
+        "id": "04173be658",
+        "source_id": "o4",
+        "text": "Trung bình 5,5; ngưỡng 8,25; chưa vượt.",
+        "explanation": "Đã lấy trung bình sáu phiên, có cả phiên hiện tại."
+      },
+      {
+        "id": "0651daf2ce",
+        "source_id": "o1",
+        "text": "Trung bình 6; ngưỡng 9; chưa vượt.",
+        "explanation": "Đã dùng các phiên 4,6,5,7,8, đưa hiện tại vào cửa sổ tham chiếu."
+      },
+      {
+        "id": "96c34a6b1b",
+        "source_id": "o3",
+        "text": "Trung bình 5; ngưỡng 7,5; đã vượt.",
+        "explanation": "A = (3+4+6+5+7)/5 = 5; ngưỡng 1,5 × 5 = 7,5. Khối lượng 8 lớn hơn 7,5."
+      },
+      {
+        "id": "98d345955c",
+        "source_id": "o2",
+        "text": "Trung bình 5; ngưỡng 5; đã vượt.",
+        "explanation": "Trung bình đúng nhưng chưa nhân hệ số 1,5."
+      }
+    ],
+    "correct_option_id": "96c34a6b1b"
+  },
+  {
+    "id": "ch01-l05-q02",
+    "source_id": "volume-q2",
+    "lesson_id": "ch01-l05",
+    "topic": "Tỷ lệ và phần trăm",
+    "section": 2,
+    "prompt": "Khối lượng hiện tại 12 triệu, mức trung bình tham chiếu 7,5 triệu. Khối lượng hiện tại bằng bao nhiêu lần và cao hơn trung bình bao nhiêu phần trăm?",
+    "options": [
+      {
+        "id": "1055b88aae",
+        "source_id": "o4",
+        "text": "1,4 lần và 40%.",
+        "explanation": "12 / 7,5 không bằng 1,4."
+      },
+      {
+        "id": "5041eb347a",
+        "source_id": "o3",
+        "text": "0,6 lần và 60%.",
+        "explanation": "0,6 là phần tăng theo tỷ lệ, không phải tổng tỷ lệ hiện tại/trung bình."
+      },
+      {
+        "id": "a215cd19c6",
+        "source_id": "o2",
+        "text": "1,6 lần và 60%.",
+        "explanation": "12 / 7,5 = 1,6; phần cao hơn = (1,6 − 1) × 100 = 60%."
+      },
+      {
+        "id": "ab31a159fd",
+        "source_id": "o1",
+        "text": "1,6 lần và 160%.",
+        "explanation": "1,6 lần là 160% mức trung bình, nhưng phần cao hơn chỉ là 60%."
+      }
+    ],
+    "correct_option_id": "a215cd19c6"
+  },
+  {
+    "id": "ch01-l05-q03",
+    "source_id": "volume-q3",
+    "lesson_id": "ch01-l05",
+    "topic": "Đọc phiên tăng có khối lượng",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Tại điểm A, dùng ngưỡng bằng 1,5 lần trung bình 20 phiên trước. Đọc cả giá đóng cửa và cột khối lượng để chọn tín hiệu.",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l05-q03"
+    },
+    "options": [
+      {
+        "id": "204de8fedd",
+        "source_id": "o2",
+        "text": "Bán vì khối lượng cao.",
+        "explanation": "Khối lượng cao chưa chỉ ra phía bán; chiều giá ở A là tăng."
+      },
+      {
+        "id": "48ac5f99c6",
+        "source_id": "o3",
+        "text": "Không có vì chỉ báo Khối lượng không thể có tín hiệu mua.",
+        "explanation": "Trong cơ chế này, khối lượng được kết hợp với chiều giá để xác nhận hai phía."
+      },
+      {
+        "id": "99c29e7fee",
+        "source_id": "o1",
+        "text": "Không có vì cần khối lượng phiên trước cũng vượt ngưỡng.",
+        "explanation": "Không có yêu cầu khối lượng phiên trước cũng phải cao."
+      },
+      {
+        "id": "a1c5716503",
+        "source_id": "o4",
+        "text": "Mua vì giá tăng và khối lượng hiện tại vượt ngưỡng.",
+        "explanation": "Tại A, giá cao hơn phiên trước và khối lượng 14 triệu lớn hơn 1,5 lần trung bình 20 phiên trước."
+      }
+    ],
+    "correct_option_id": "a1c5716503"
+  },
+  {
+    "id": "ch01-l05-q04",
+    "source_id": "volume-q4",
+    "lesson_id": "ch01-l05",
+    "topic": "Đọc phiên giảm chưa đủ khối lượng",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Tại điểm A, giá đóng cửa giảm nhưng khối lượng chưa vượt đường ngưỡng 1,5 lần trung bình 20 phiên trước. Tín hiệu nào đúng?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "ch01-l05-q04"
+    },
+    "options": [
+      {
+        "id": "094de4d735",
+        "source_id": "o3",
+        "text": "Mua: khối lượng thấp làm giá dễ hồi.",
+        "explanation": "Không có quy tắc mua bằng khối lượng thấp trong cơ chế này."
+      },
+      {
+        "id": "196de36c06",
+        "source_id": "o2",
+        "text": "Bán: chỉ cần giá thấp hơn phiên trước.",
+        "explanation": "Đã bỏ điều kiện về mức khối lượng."
+      },
+      {
+        "id": "356b5d7ab8",
+        "source_id": "o1",
+        "text": "Không có: chiều giảm chưa đủ khi khối lượng chưa vượt ngưỡng.",
+        "explanation": "Cả giá giảm và khối lượng vượt ngưỡng đều bắt buộc. Tại A mới thỏa chiều giá."
+      },
+      {
+        "id": "cf23b4ffc7",
+        "source_id": "o4",
+        "text": "Bán: khối lượng hiện tại luôn được coi là vượt chính trung bình.",
+        "explanation": "Mức tham chiếu tính từ các phiên trước; không mặc nhiên cho hiện tại vượt ngưỡng."
+      }
+    ],
+    "correct_option_id": "356b5d7ab8"
+  },
+  {
+    "id": "ch01-l05-q05",
+    "source_id": "volume-q5",
+    "lesson_id": "ch01-l05",
+    "topic": "Ảnh hưởng hệ số gắn với dấu",
+    "section": 3,
+    "prompt": "Chỉ xét dòng Khối lượng < k × A. A = 6 triệu, khối lượng hiện tại = 8 triệu. Đổi k từ 1,0 lên 1,5 ở phía Mua, giữ nguyên các dòng khác. Dòng khối lượng thay đổi thế nào?",
+    "options": [
+      {
+        "id": "1ab5c36a8f",
+        "source_id": "o2",
+        "text": "Từ đạt thành không đạt vì tăng k luôn làm chặt hơn.",
+        "explanation": "Nhận xét đó chỉ đúng với phép > khi A dương giữ nguyên."
+      },
+      {
+        "id": "3bb88985d9",
+        "source_id": "o4",
+        "text": "Bán cũng tự đổi theo hệ số Mua.",
+        "explanation": "Hệ số Mua và Bán độc lập."
+      },
+      {
+        "id": "9fd024aa61",
+        "source_id": "o1",
+        "text": "Từ không đạt thành đạt: 8 không nhỏ hơn 6 nhưng nhỏ hơn 9.",
+        "explanation": "Dấu đang dùng là <. Tăng ngưỡng từ 6 lên 9 làm dòng này đạt; các dòng Mua khác vẫn cần được kiểm tra."
+      },
+      {
+        "id": "ca2403eb76",
+        "source_id": "o3",
+        "text": "Không đổi vì khối lượng thực tế không đổi.",
+        "explanation": "Ngưỡng đổi nên kết quả so sánh có thể đổi."
+      }
+    ],
+    "correct_option_id": "9fd024aa61"
+  },
+  {
+    "id": "ch01-l05-q06",
+    "source_id": "volume-q6",
+    "lesson_id": "ch01-l05",
+    "topic": "Thay số phiên tham chiếu",
+    "section": 3,
+    "prompt": "Dùng cấu hình mẫu được mô tả trong bài. Giữ hệ số 1,5 và dữ liệu phiên hiện tại. Đổi mức trung bình từ 20 sang 50 phiên trước. Có thể biết chắc mức yêu cầu tăng hay giảm không?",
+    "options": [
+      {
+        "id": "32252d7ba1",
+        "source_id": "o1",
+        "text": "Chắc chắn tăng vì lấy thêm 30 phiên.",
+        "explanation": "Các phiên thêm vào có thể thấp hơn trung bình cũ."
+      },
+      {
+        "id": "c51aec0334",
+        "source_id": "o4",
+        "text": "Chưa biết; phải tính lại trung bình từ những phiên được dùng.",
+        "explanation": "Mức trung bình mới phụ thuộc các giá trị khối lượng trong cửa sổ 50 phiên."
+      },
+      {
+        "id": "e696d959cb",
+        "source_id": "o2",
+        "text": "Chắc chắn giảm vì mẫu số lớn hơn.",
+        "explanation": "Tử số cũng thay đổi khi thêm quan sát."
+      },
+      {
+        "id": "f2bc4cd36c",
+        "source_id": "o3",
+        "text": "Chắc chắn giữ nguyên vì hệ số không đổi.",
+        "explanation": "Ngưỡng còn phụ thuộc mức trung bình, không chỉ hệ số."
+      }
+    ],
+    "correct_option_id": "c51aec0334"
+  },
+  {
+    "id": "ch01-l05-q07",
+    "source_id": "volume-q7",
+    "lesson_id": "ch01-l05",
+    "topic": "Mốc giá đóng cửa trước",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Phiên trước đóng cửa 40. Phiên hiện tại mở cửa 42 và đóng cửa 41. Khối lượng hiện tại vượt ngưỡng cấu hình. Tín hiệu riêng Khối lượng là gì?",
+    "options": [
+      {
+        "id": "522844885a",
+        "source_id": "o3",
+        "text": "Không có vì phiên này có hai hướng so sánh.",
+        "explanation": "Cần chọn đúng mốc đã quy định, không phải thiếu dữ liệu."
+      },
+      {
+        "id": "964efccfe5",
+        "source_id": "o4",
+        "text": "Bán vì mọi nến giảm so với mở cửa đều là tín hiệu bán.",
+        "explanation": "Màu nến không thay phép so sánh hai giá đóng cửa."
+      },
+      {
+        "id": "9fc86204f9",
+        "source_id": "o2",
+        "text": "Bán vì 41 thấp hơn mở cửa là 42.",
+        "explanation": "Đã dùng mở cửa hiện tại thay cho đóng cửa trước."
+      },
+      {
+        "id": "e693e242fe",
+        "source_id": "o1",
+        "text": "Mua vì 41 cao hơn đóng cửa trước là 40.",
+        "explanation": "IQX so đóng cửa hiện tại với đóng cửa trước. Giá tăng theo mốc này và khối lượng đủ nên mua."
+      }
+    ],
+    "correct_option_id": "e693e242fe"
+  },
+  {
+    "id": "ch01-l05-q08",
+    "source_id": "volume-q8",
+    "lesson_id": "ch01-l05",
+    "topic": "Khối lượng bằng đúng ngưỡng",
+    "section": 4,
+    "prompt": "Dùng điều kiện mẫu của bài. Giá đóng cửa giảm. Mức trung bình 8 triệu, hệ số 1,5, khối lượng hiện tại đúng 12 triệu. Theo yêu cầu lớn hơn ngưỡng, kết quả nào đúng?",
+    "options": [
+      {
+        "id": "20e897861a",
+        "source_id": "o4",
+        "text": "Bán vì giá giảm đủ để thay điều kiện khối lượng.",
+        "explanation": "Hai điều kiện phải cùng đúng; không có cơ chế bù."
+      },
+      {
+        "id": "5eaecce159",
+        "source_id": "o2",
+        "text": "Không có tín hiệu vì khối lượng chỉ bằng ngưỡng.",
+        "explanation": "Ngưỡng = 1,5 × 8 = 12 triệu. Bằng đúng ngưỡng chưa thỏa dấu lớn hơn."
+      },
+      {
+        "id": "68f9baf042",
+        "source_id": "o3",
+        "text": "Mua vì khối lượng lớn hơn mức trung bình.",
+        "explanation": "Chiều giá là giảm, không thể tạo tín hiệu mua đã định nghĩa."
+      },
+      {
+        "id": "aec58f849b",
+        "source_id": "o1",
+        "text": "Bán vì đã bằng 1,5 lần trung bình.",
+        "explanation": "Điều kiện là lớn hơn, không phải lớn hơn hoặc bằng."
+      }
+    ],
+    "correct_option_id": "5eaecce159"
+  },
+  {
+    "id": "ch01-l06-q01",
+    "source_id": "hopluu-q1",
+    "lesson_id": "ch01-l06",
+    "topic": "Hai tập điều kiện",
+    "section": 2,
+    "prompt": "Mua gồm RSI, MA, Khối lượng với các kết quả 1, 1, 0. Bán gồm MACD, MA với các kết quả 1, 1. Tất cả dữ liệu hợp lệ trong cùng phiên. Hợp lưu Mua/Bán lần lượt bằng gì?",
+    "options": [
+      {
+        "id": "2876c585aa",
+        "source_id": "o1",
+        "text": "0 và 1.",
+        "explanation": "Mua = 1×1×0 = 0; Bán = 1×1 = 1."
+      },
+      {
+        "id": "d38c23ed55",
+        "source_id": "o3",
+        "text": "0 và 0 vì phải có cùng số chỉ báo.",
+        "explanation": "Hai tập không cần cùng kích thước."
+      },
+      {
+        "id": "f8b6e3efc5",
+        "source_id": "o4",
+        "text": "1 và 0 vì Mua được ưu tiên khi tính.",
+        "explanation": "Tính tín hiệu độc lập với ưu tiên xử lý vị thế."
+      },
+      {
+        "id": "fe18e20c5f",
+        "source_id": "o2",
+        "text": "1 và 1 vì Mua có đa số đúng.",
+        "explanation": "AND không dùng đa số."
+      }
+    ],
+    "correct_option_id": "2876c585aa"
+  },
+  {
+    "id": "ch01-l06-q02",
+    "source_id": "hopluu-q2",
+    "lesson_id": "ch01-l06",
+    "topic": "Thiếu dữ liệu không phải bỏ điều kiện",
+    "section": 2,
+    "prompt": "Mua đang dùng MA, RSI và MACD. MA/MACD đạt nhưng RSI thiếu dữ liệu. Bán chỉ dùng MA và đang đạt. Kết luận nào đúng?",
+    "options": [
+      {
+        "id": "05886fc3f5",
+        "source_id": "o4",
+        "text": "RSI được coi là trung tính và bỏ khỏi Mua.",
+        "explanation": "Thiếu không phải trung tính và không làm thay đổi tập điều kiện đã chọn."
+      },
+      {
+        "id": "d9dffbeb93",
+        "source_id": "o3",
+        "text": "Mua chưa đánh giá đủ; Bán vẫn được đánh giá vì không dùng RSI.",
+        "explanation": "Hai phía dùng tập riêng. Không bỏ RSI khỏi Mua và không kéo lỗi sang Bán không sử dụng RSI."
+      },
+      {
+        "id": "eb829b2572",
+        "source_id": "o1",
+        "text": "Mua đạt vì hai chỉ báo có dữ liệu đều đúng.",
+        "explanation": "RSI vẫn là yêu cầu bắt buộc của Mua."
+      },
+      {
+        "id": "fb5564ef55",
+        "source_id": "o2",
+        "text": "Cả hai phải bị chặn vì một chỉ báo thiếu dữ liệu.",
+        "explanation": "Bán không dùng đầu vào RSI, nên không bị chặn chỉ vì RSI thiếu."
+      }
+    ],
+    "correct_option_id": "d9dffbeb93"
+  },
+  {
+    "id": "ch01-l06-q03",
+    "source_id": "hopluu-q3",
+    "lesson_id": "ch01-l06",
+    "topic": "Đọc hai phía trong một bảng",
+    "section": 4,
+    "prompt": "Mua gồm RSI và MA. Bán chỉ gồm MACD. Bảng ghi kết quả của đúng phía đó. Trường hợp nào Mua không đạt nhưng Bán đạt?",
+    "figure": {
+      "type": "table",
+      "head": ["Trường hợp", "RSI Mua", "MA Mua", "MACD Bán"],
+      "rows": [
+        ["A", "Đạt", "Đạt", "Không"],
+        ["B", "Không", "Đạt", "Đạt"],
+        ["C", "Đạt", "Đạt", "Đạt"],
+        ["D", "Đạt", "Không", "Không"]
+      ]
+    },
+    "options": [
+      {
+        "id": "264004c9cd",
+        "source_id": "o4",
+        "text": "D",
+        "explanation": "D có cả hai phía đều không đạt."
+      },
+      {
+        "id": "6a178211c8",
+        "source_id": "o3",
+        "text": "C",
+        "explanation": "C có cả Mua và Bán đều đạt."
+      },
+      {
+        "id": "7f0dc1a8cf",
+        "source_id": "o1",
+        "text": "A",
+        "explanation": "A có cả RSI Mua và MA Mua đạt, Bán không đạt."
+      },
+      {
+        "id": "99dd21687a",
+        "source_id": "o2",
+        "text": "B",
+        "explanation": "B: một điều kiện Mua sai; MACD Bán đạt."
+      }
+    ],
+    "correct_option_id": "99dd21687a"
+  },
+  {
+    "id": "ch01-l06-q04",
+    "source_id": "hopluu-q4",
+    "lesson_id": "ch01-l06",
+    "topic": "Tắt riêng một phía",
+    "section": 3,
+    "prompt": "Ban đầu Mua gồm RSI và MA; Bán gồm RSI và MACD. Trong bảng, chỉ tắt RSI ở phía Bán, giữ nguyên các thành phần khác. Kết quả nào đúng?",
+    "figure": {
+      "type": "table",
+      "head": ["Chỉ báo", "Mua", "Bán"],
+      "rows": [
+        ["RSI", "Không đạt", "Không đạt"],
+        ["MA", "Đạt", "Không sử dụng"],
+        ["MACD", "Không sử dụng", "Đạt"]
+      ]
+    },
+    "options": [
+      {
+        "id": "2b5a9a9e0a",
+        "source_id": "o4",
+        "text": "Mua vẫn không đạt; Bán trở thành đạt.",
+        "explanation": "Mua vẫn là 0×1=0; Bán chỉ còn MACD=1."
+      },
+      {
+        "id": "43030f8ce8",
+        "source_id": "o2",
+        "text": "Mua đạt, Bán không đạt.",
+        "explanation": "Mua vẫn bị RSI chặn; Bán chỉ còn MACD đạt."
+      },
+      {
+        "id": "632541bde9",
+        "source_id": "o3",
+        "text": "Cả hai không đạt vì tắt RSI làm mất cả hai phía.",
+        "explanation": "Chỉ tắt RSI Bán, không tắt RSI Mua."
+      },
+      {
+        "id": "dc6be0a0f6",
+        "source_id": "o1",
+        "text": "Cả Mua và Bán trở thành đạt.",
+        "explanation": "RSI Mua vẫn đang bật và không đạt."
+      }
+    ],
+    "correct_option_id": "2b5a9a9e0a"
+  },
+  {
+    "id": "ch01-l06-q05",
+    "source_id": "hopluu-q5",
+    "lesson_id": "ch01-l06",
+    "topic": "Tăng ngưỡng Mua và giữ Bán",
+    "section": 3,
+    "prompt": "Mua gồm MA và RSI. MA đạt. RSI Mua từ 31 lên 34, ngưỡng 30. Đổi riêng ngưỡng Mua thành 35, giữ hai dấu mẫu. Các tham số Bán giữ nguyên. Điều gì thay đổi?",
+    "options": [
+      {
+        "id": "6fcd918a17",
+        "source_id": "o1",
+        "text": "RSI Mua và hợp lưu Mua từ không đạt thành đạt; Bán không đổi.",
+        "explanation": "31 < 35 và 34 > 31, nên RSI Mua đạt; MA đã đạt."
+      },
+      {
+        "id": "7593940903",
+        "source_id": "o2",
+        "text": "Cả Mua và Bán đều đạt vì ngưỡng chung thay đổi.",
+        "explanation": "Ngưỡng Mua không phải ngưỡng chung với Bán."
+      },
+      {
+        "id": "c859339b48",
+        "source_id": "o4",
+        "text": "Đường RSI bị tăng thêm 5 điểm.",
+        "explanation": "Ngưỡng không thay công thức RSI."
+      },
+      {
+        "id": "d15fe96ad9",
+        "source_id": "o3",
+        "text": "RSI Mua không đạt vì hiện tại chưa vượt 35.",
+        "explanation": "Không yêu cầu RSI hiện tại vượt ngưỡng."
+      }
+    ],
+    "correct_option_id": "6fcd918a17"
+  },
+  {
+    "id": "ch01-l06-q06",
+    "source_id": "hopluu-q6",
+    "lesson_id": "ch01-l06",
+    "topic": "Tập rỗng không phát tín hiệu",
+    "section": 2,
+    "prompt": "Người dùng tắt điều kiện cuối cùng ở phía Bán. Phía Mua vẫn có điều kiện hoạt động. Đối với tín hiệu của Bot, cách diễn giải nào đúng?",
+    "options": [
+      {
+        "id": "46b6210e3e",
+        "source_id": "o1",
+        "text": "Bán luôn đúng vì không còn yêu cầu nào ngăn cản.",
+        "explanation": "Tập rỗng không được coi là AND đúng."
+      },
+      {
+        "id": "8cb95a5dd3",
+        "source_id": "o4",
+        "text": "Vị thế tự chốt lời ở một mức cố định.",
+        "explanation": "Bot không có mốc chốt lời cố định chạy ngầm; việc tắt Bán không tạo một điều kiện thoát mới."
+      },
+      {
+        "id": "c082beb236",
+        "source_id": "o3",
+        "text": "Bán không phát tín hiệu; Mua được đánh giá riêng. Bot không tự bán chỉ vì tắt điều kiện Bán cuối cùng.",
+        "explanation": "Tập Bán rỗng không phát tín hiệu. Bot không có cắt lỗ, chốt lời hoặc giới hạn thời gian tự động thay thế. Phía Mua vẫn được đánh giá độc lập."
+      },
+      {
+        "id": "d45291e8be",
+        "source_id": "o2",
+        "text": "Mua cũng phải bị tắt.",
+        "explanation": "Hai phía độc lập."
+      }
+    ],
+    "correct_option_id": "c082beb236"
+  },
+  {
+    "id": "ch01-l06-q07",
+    "source_id": "hopluu-q7",
+    "lesson_id": "ch01-l06",
+    "topic": "Tín hiệu phải cùng phiên",
+    "section": 3,
+    "prompt": "Chọn RSI và MA. RSI ba phiên là 28 → 32 → 35, ngưỡng quá bán 30. MA chưa mua ở phiên RSI = 32; đến phiên RSI = 35 mới mua. Tại phiên cuối có đồng thuận mua không?",
+    "options": [
+      {
+        "id": "20d2623892",
+        "source_id": "o1",
+        "text": "Có vì RSI đã từng báo mua ở phiên trước.",
+        "explanation": "Không mang tín hiệu RSI cũ sang phiên mới."
+      },
+      {
+        "id": "36b2851b28",
+        "source_id": "o4",
+        "text": "Không vì phiên cuối không còn tín hiệu mua RSI theo cặp phiên liền trước.",
+        "explanation": "Phiên cuối so 32 với 35. Phiên trước 32 không dưới 30 nên RSI không mua; MA một mình chưa đủ."
+      },
+      {
+        "id": "8d166d7e54",
+        "source_id": "o2",
+        "text": "Có vì RSI vẫn đang tăng.",
+        "explanation": "RSI tăng chưa đủ; phiên trước phải dưới 30."
+      },
+      {
+        "id": "d5cf4ec77c",
+        "source_id": "o3",
+        "text": "Có nếu lấy RSI 28 để so với 35.",
+        "explanation": "Phải dùng hai phiên liên tiếp, không chọn một mốc cũ thuận lợi hơn."
+      }
+    ],
+    "correct_option_id": "36b2851b28"
+  },
+  {
+    "id": "ch01-l06-q08",
+    "source_id": "hopluu-q8",
+    "lesson_id": "ch01-l06",
+    "topic": "Tín hiệu và thực thi",
+    "section": 4,
+    "prompt": "Ở một mã, hợp lưu Mua và hợp lưu Bán đều đạt. Với quy tắc Bot hiện tại, so hai tình huống: (1) chưa có vị thế đầu lượt; (2) đã có vị thế đầu lượt. Nhận định nào đúng?",
+    "options": [
+      {
+        "id": "458fbeee34",
+        "source_id": "o4",
+        "text": "Luôn chỉ giữ kết quả Mua, xóa kết quả Bán.",
+        "explanation": "Không xóa một kết quả tín hiệu để ép loại trừ nhau."
+      },
+      {
+        "id": "b36277a857",
+        "source_id": "o2",
+        "text": "(1) xét Mua theo các kiểm tra nền; (2) xét thoát, không mua thêm.",
+        "explanation": "Trạng thái vị thế quyết định nhánh xét. Mua còn cần mã thuộc danh mục mua mới, đủ tiền và các kiểm tra giao dịch; khi đang giữ thì xét điều kiện Bán, không mua thêm. Không bán rồi mua lại trong cùng phiên."
+      },
+      {
+        "id": "c6a8ec70e6",
+        "source_id": "o1",
+        "text": "Cả hai tình huống đều phải bỏ vì tín hiệu mâu thuẫn.",
+        "explanation": "Hai tín hiệu cùng đúng có thể xảy ra do cấu hình riêng, không tự coi là lỗi."
+      },
+      {
+        "id": "cabd7d9582",
+        "source_id": "o3",
+        "text": "(1) mua rồi bán ngay cùng lượt; (2) mua thêm trước khi bán.",
+        "explanation": "Không bán vị thế vừa mở hoặc mua thêm theo cách đó."
+      }
+    ],
+    "correct_option_id": "b36277a857"
+  }
+]

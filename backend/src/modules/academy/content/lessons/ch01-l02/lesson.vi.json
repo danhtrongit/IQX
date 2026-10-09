@@ -1,0 +1,15 @@
+{
+  "lesson_id": "ch01-l02",
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "MACD",
+    "prompt": "EMA nhanh = 103; EMA chậm = 100; Signal = 2. Histogram bằng bao nhiêu?",
+    "expected": 1,
+    "unit": "",
+    "formula": "MACD = EMA nhanh − EMA chậm\nSignal = EMA(MACD, chu kỳ tín hiệu)\nHistogram = MACD − Signal",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+}

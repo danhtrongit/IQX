@@ -4,8 +4,7 @@
  * `GET /virtual-trading/orders` is READ-ONLY: a pending LO order only fills,
  * a GFD order only expires and a T+ settlement only lands when something calls
  * `POST /virtual-trading/refresh`. Without this driver the UI can poll forever
- * and never see the fill — and a SELL that filled in the background never opens
- * its Kết sổ.
+ * and never see the fill.
  *
  * Policy (deliberately modest, never overlapping):
  * - only for an authenticated account, only while the tab is visible;
@@ -83,11 +82,7 @@ export function useEngineRefresh() {
         // settlement change, so the portfolio query is always refreshed.
         await queryClient.invalidateQueries({ queryKey: ["trading", "portfolio"] })
         if (changed > 0) {
-          await Promise.all([
-            queryClient.invalidateQueries({ queryKey: ["trading"] }),
-            queryClient.invalidateQueries({ queryKey: ["journey"] }),
-            queryClient.invalidateQueries({ queryKey: ["identity"] }),
-          ])
+          await queryClient.invalidateQueries({ queryKey: ["trading"] })
         }
       } catch (error) {
         if (controller.signal.aborted) return

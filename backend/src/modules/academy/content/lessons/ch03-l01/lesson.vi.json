@@ -1,0 +1,25 @@
+{
+  "lesson_id": "ch03-l01",
+  "superseded_by": "ch03-v2.0",
+  "note": "Served from content/packages/ch03. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "Tăng trưởng doanh thu YoY",
+    "inputs": [
+      [
+        "Doanh thu kỳ này",
+        1200
+      ],
+      [
+        "Doanh thu cùng kỳ",
+        1000
+      ]
+    ],
+    "formula": "(Doanh thu kỳ này / Doanh thu cùng kỳ − 1) × 100",
+    "expected": 20,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Doanh thu kỳ này = 1200; Doanh thu cùng kỳ = 1000. Tính Tăng trưởng doanh thu YoY theo công thức của bài."
+  }
+}

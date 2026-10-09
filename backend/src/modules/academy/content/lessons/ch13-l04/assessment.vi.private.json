@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch13-l04",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: Cổ phiếu cuối kỳ = 110; Cổ phiếu cùng kỳ đã điều chỉnh = 100. Share Count Growth bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "20 %",
+          "id": "o1"
+        },
+        {
+          "text": "10 %",
+          "id": "o2"
+        },
+        {
+          "text": "18 %",
+          "id": "o3"
+        },
+        {
+          "text": "4 %",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Áp dụng (Số cổ phiếu hiện tại / Số cùng kỳ − 1) × 100; kết quả 10 %.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch13-l04-q01",
+      "lesson_id": "ch13-l04",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Share Count Growth đang bằng đúng 10 %. Bộ lọc đặt > 10 %. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o1"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o2"
+        },
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o3"
+        },
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch13-l04-q02",
+      "lesson_id": "ch13-l04",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Share Count Growth?",
+      "options": [
+        {
+          "text": "Không xem tách cổ phiếu thuần túy như pha loãng kinh tế 100%. Phát hành quyền mua cần đánh giá cả vốn mới thu về.",
+          "id": "o1"
+        },
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o2"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o3"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Tăng 10% cho biết số cổ phiếu tăng; cần so EPS để đánh giá lợi ích trên mỗi cổ phiếu. Không xem tách cổ phiếu thuần túy như pha loãng kinh tế 100%. Phát hành quyền mua cần đánh giá cả vốn mới thu về.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch13-l04-q03",
+      "lesson_id": "ch13-l04",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Share Count Growth. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o1"
+        },
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o2"
+        },
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o3"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Kỳ gốc phải dương. Kỳ gốc bằng 0 hoặc âm được ghi không đủ cơ sở tính tăng trưởng thông thường. Không lấy trị tuyệt đối mẫu số và không âm thầm biến kết quả thành 0%.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch13-l04-q04",
+      "lesson_id": "ch13-l04",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Nhận định nào đúng với Share Count Growth?",
+      "options": [
+        {
+          "text": "Tăng 10% cho biết số cổ phiếu tăng; cần so EPS để đánh giá lợi ích trên mỗi cổ phiếu.",
+          "id": "o1"
+        },
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o2"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o3"
+        },
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Tăng 10% cho biết số cổ phiếu tăng; cần so EPS để đánh giá lợi ích trên mỗi cổ phiếu. Dùng số cổ phiếu lưu hành tại ngày báo cáo, không dùng bình quân gia quyền của EPS. Mẫu số được điều chỉnh tách/gộp và thưởng cổ phiếu theo hồ sơ sự kiện. Phát hành thu tiền hoặc mua lại ròng không được loại khỏi biến động này như một tách cổ phiếu.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch13-l04-q05",
+      "lesson_id": "ch13-l04",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có Share Count Growth bằng 8 và 12 %. Điều kiện < 10 % giữ lại ai?",
+      "options": [
+        {
+          "text": "Cả A và B.",
+          "id": "o1"
+        },
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o2"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o3"
+        },
+        {
+          "text": "Chỉ B.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "8 < 10 đúng, 12 < 10 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch13-l04-q06",
+      "lesson_id": "ch13-l04",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Báo cáo dùng tính Share Count Growth kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o1"
+        },
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o2"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o3"
+        },
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch13-l04-q07",
+      "lesson_id": "ch13-l04",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện Share Count Growth, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o2"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch13-l04-q08",
+      "lesson_id": "ch13-l04",
+      "correct_option_id": "o1"
+    }
+  ]
+}

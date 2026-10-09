@@ -1,7 +1,7 @@
 import { DEFAULT_RUN_OPTIONS } from '../backtest.js';
 import { validateConfig } from '../config.js';
 import { EngineRunError } from '../errors.js';
-import { calc, isFiniteNumber, validBar } from '../indicators.js';
+import { calcLegacy, isFiniteNumber, validBar } from '../indicators.js';
 import { indicatorSideSignals, sideSignals } from '../signals.js';
 import { loadTechnicalRegistry } from '../technical-registry.js';
 import {
@@ -74,7 +74,11 @@ export const RANKING_KEYS: readonly RankingKey[] = [
   'distance_52w_high',
 ];
 
-/** Registry series behind each ranking key (fixed published parameters). */
+/**
+ * Series behind each ranking key (fixed published parameters). Three of them are retired
+ * indicators (rs_market, relative_volume, distance_52w_high): the advanced portfolio engine keeps
+ * computing them through `calcLegacy` for legacy holders; they are not offered as indicators.
+ */
 const RANKING_SOURCES: Record<RankingKey, { id: string; params: Record<string, number> }> = {
   roc_20: { id: 'roc', params: { period: 20, level: 5 } },
   rs_market: { id: 'rs_market', params: { lookback: 20, level: 0 } },
@@ -681,7 +685,7 @@ export function runSystem(input: SystemInput): SystemResult {
       barAtSession,
       buy,
       sell: sideSignals(config, item.bars, 'sell', registry),
-      score: source ? (calc(source.id, source.params, item.bars).value ?? null) : null,
+      score: source ? (calcLegacy(source.id, source.params, item.bars).value ?? null) : null,
     };
   });
   const stateOf = new Map(states.map((s) => [s.symbol, s]));

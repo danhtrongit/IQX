@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
 import { HEADER_NAV } from "@/config/chrome"
+import { useAuth } from "@/hooks/use-auth"
 import { useResolvedTheme } from "@/hooks/use-resolved-theme"
 import { headerDestination, isHeaderLinkActive } from "@/lib/header-navigation"
+import { cn } from "@/lib/utils"
 
+import { HeaderCoinChip } from "./header-coin-chip"
 import { LoginDialog } from "./login-dialog"
 import { HeaderSearch } from "./header-search"
 
@@ -19,10 +22,7 @@ const mobileNavClass = "flex min-h-11 items-center rounded-sm px-3 py-2.5 text-s
 
 type HeaderNavItem = { readonly to: string; readonly label: string }
 
-/** Học viện (bot-v2 Academy) sits right after the existing learning item. */
-const ACADEMY_NAV_ITEM: HeaderNavItem = { to: "/hoc-vien", label: "Học viện" }
-const NAV_ITEMS: readonly HeaderNavItem[] = HEADER_NAV.flatMap(item =>
-  item.to === "/bai-hoc" ? [item, ACADEMY_NAV_ITEM] : [item])
+const NAV_ITEMS: readonly HeaderNavItem[] = HEADER_NAV
 
 function HeaderLinks({ items, mobile = false, onNavigate }: {
   items: readonly HeaderNavItem[]
@@ -68,7 +68,7 @@ function MobileHeaderMenu({ items, isIntroduction }: {
       <SheetContent side="right" showCloseButton={false} className="gap-0 data-[side=right]:w-[min(20rem,85vw)] motion-reduce:animate-none motion-reduce:transition-none">
         <SheetHeader className="border-b border-border pr-14">
           <SheetTitle>Điều hướng IQX</SheetTitle>
-          <SheetDescription className="sr-only">Truy cập các công cụ và hành trình học đầu tư.</SheetDescription>
+          <SheetDescription className="sr-only">Truy cập các công cụ và bài học đầu tư.</SheetDescription>
         </SheetHeader>
         <ScrollArea className="min-h-0 flex-1">
           <nav aria-label="Điều hướng di động" className="grid gap-1 p-3">
@@ -79,7 +79,7 @@ function MobileHeaderMenu({ items, isIntroduction }: {
           <SheetFooter className="border-t border-border">
             <SheetClose asChild>
               <Button asChild className="min-h-11 w-full">
-                <Link to="/demo-trading?view=journey">Bắt đầu ngay</Link>
+                <Link to="/demo-trading?view=academy">Bắt đầu ngay</Link>
               </Button>
             </SheetClose>
           </SheetFooter>
@@ -97,6 +97,8 @@ function MobileHeaderMenu({ items, isIntroduction }: {
 export function Header() {
   const { setTheme } = useTheme()
   const resolved = useResolvedTheme()
+  // Signed-in accounts also get the coin chip, so the right-hand controls are packed tighter on phones.
+  const { user } = useAuth()
   const { pathname, key: locationKey } = useLocation()
   const isIntroduction = pathname === "/" || pathname === "/gioi-thieu"
 
@@ -123,7 +125,8 @@ export function Header() {
           <HeaderLinks items={NAV_ITEMS} />
         </nav>
       </ScrollArea>
-      <div className="ml-auto flex shrink-0 items-center gap-2">
+      <div className={cn("ml-auto flex shrink-0 items-center gap-2", user && "max-sm:gap-1")}>
+        <HeaderCoinChip />
         <HeaderSearch />
         <Button
           variant="ghost"
@@ -133,12 +136,12 @@ export function Header() {
         >
           {resolved === "dark" ? <Sun /> : <Moon />}
         </Button>
-        <div className="min-w-0 [&>button]:max-w-28 sm:[&>button]:max-w-40">
+        <div className={cn("min-w-0 [&>button]:max-w-28 sm:[&>button]:max-w-40", user && "max-[420px]:[&>button]:max-w-[4.75rem]")}>
           <LoginDialog />
         </div>
         {isIntroduction && (
           <Button asChild className="hidden xl:inline-flex">
-            <Link to="/demo-trading?view=journey">Bắt đầu ngay</Link>
+            <Link to="/demo-trading?view=academy">Bắt đầu ngay</Link>
           </Button>
         )}
         <MobileHeaderMenu key={locationKey} items={NAV_ITEMS} isIntroduction={isIntroduction} />

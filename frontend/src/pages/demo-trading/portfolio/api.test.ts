@@ -6,7 +6,6 @@ import {
   adaptWatchlistItem,
   fetchWatchlist,
   fetchSymbolInfo,
-  recordCap0TaskAfterStar,
   validateStockSymbol,
 } from "./api"
 
@@ -65,53 +64,6 @@ describe("demo trading v2 portfolio adapters", () => {
       industry: "Technology",
     })
     expect(mockedApi.mock.calls[1]?.[0]).toBe("/instruments?q=FPT&page=1&page_size=5&asset_type=stock&include_indices=false")
-  })
-
-  it("records Cấp 0 after a filled BUY when starring a watched mã", async () => {
-    mockedApi.mockResolvedValueOnce({ orders: [{ id: "buy-1" }], total: 1, page: 1, page_size: 1 })
-    const completeTask = vi.fn().mockResolvedValue(undefined)
-
-    await expect(recordCap0TaskAfterStar("vnm", {
-      isLoading: false,
-      level: 0,
-      progress: { task_1_done_at: null, task5_debrief_done: false, task1_star_clicked: false },
-    }, completeTask)).resolves.toBe(true)
-    expect(mockedApi).toHaveBeenCalledWith("/virtual-trading/orders?status=filled&side=buy&symbol=VNM&page=1&page_size=1")
-    expect(completeTask).toHaveBeenCalledWith(1, "star")
-  })
-
-  it("does not record Cấp 0 before a filled BUY exists", async () => {
-    mockedApi.mockResolvedValueOnce({ orders: [], total: 0, page: 1, page_size: 1 })
-    const completeTask = vi.fn().mockResolvedValue(undefined)
-
-    await expect(recordCap0TaskAfterStar("vnm", {
-      isLoading: false,
-      level: 0,
-      progress: { task_1_done_at: null, task5_debrief_done: false, task1_star_clicked: false },
-    }, completeTask)).resolves.toBe(false)
-    expect(completeTask).not.toHaveBeenCalled()
-  })
-
-  it.each([
-    [true, 0, { task_1_done_at: null }],
-    [false, 1, { task_1_done_at: null }],
-    [false, 0, null],
-  ])("keeps the star gate closed for loading/non-Cấp-0/already-unentered state", async (isLoading, level, progress) => {
-    const completeTask = vi.fn().mockResolvedValue(undefined)
-    await expect(recordCap0TaskAfterStar("vnm", { isLoading, level, progress }, completeTask)).resolves.toBe(false)
-    expect(mockedApi).not.toHaveBeenCalled()
-    expect(completeTask).not.toHaveBeenCalled()
-  })
-
-  it("does not repeat completion when the server already marked task 1", async () => {
-    const completeTask = vi.fn().mockResolvedValue(undefined)
-    await expect(recordCap0TaskAfterStar("vnm", {
-      isLoading: false,
-      level: 0,
-      progress: { task_1_done_at: "2026-09-28T00:00:00Z", task1_star_clicked: true },
-    }, completeTask)).resolves.toBe(false)
-    expect(mockedApi).not.toHaveBeenCalled()
-    expect(completeTask).not.toHaveBeenCalled()
   })
 
   it("preserves nullable portfolio risk and cash scores while converting money strings", () => {

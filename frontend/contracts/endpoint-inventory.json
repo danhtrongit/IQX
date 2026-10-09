@@ -378,24 +378,37 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 120,
-      "callee": "api",
-      "raw": "/academy/curriculum?query",
+      "line": 59,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/catalog",
       "method": "GET",
-      "route": "/api/v2/academy/curriculum",
-      "matchedOperation": "GET /api/v2/academy/curriculum",
+      "route": "/api/v2/academy/catalog",
+      "matchedOperation": "GET /api/v2/academy/catalog",
       "matchedOperations": [
-        "GET /api/v2/academy/curriculum"
+        "GET /api/v2/academy/catalog"
       ],
       "classification": "api-call"
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 127,
-      "callee": "api",
-      "raw": "/academy/lessons/{encodeURIComponent(lessonId)}",
+      "line": 63,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/progress",
       "method": "GET",
-      "route": "/api/v2/academy/lessons/{encodeURIComponent(lessonId)}",
+      "route": "/api/v2/academy/progress",
+      "matchedOperation": "GET /api/v2/academy/progress",
+      "matchedOperations": [
+        "GET /api/v2/academy/progress"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 68,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/lessons/{lessonId}",
+      "method": "GET",
+      "route": "/api/v2/academy/lessons/{lessonId}",
       "matchedOperation": "GET /api/v2/academy/lessons/{lessonId}",
       "matchedOperations": [
         "GET /api/v2/academy/lessons/{lessonId}"
@@ -404,9 +417,9 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 131,
-      "callee": "api",
-      "raw": "/academy/attempts",
+      "line": 76,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/academy/attempts",
       "method": "POST",
       "route": "/api/v2/academy/attempts",
       "matchedOperation": "POST /api/v2/academy/attempts",
@@ -417,14 +430,79 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 141,
-      "callee": "api",
-      "raw": "/academy/attempts/{encodeURIComponent(attemptId)}/submit",
+      "line": 81,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/lessons/{lessonId}/attempt",
+      "method": "GET",
+      "route": "/api/v2/academy/lessons/{lessonId}/attempt",
+      "matchedOperation": "GET /api/v2/academy/lessons/{lessonId}/attempt",
+      "matchedOperations": [
+        "GET /api/v2/academy/lessons/{lessonId}/attempt"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 91,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/academy/attempts/{attemptId}/answers",
+      "method": "PUT",
+      "route": "/api/v2/academy/attempts/{attemptId}/answers",
+      "matchedOperation": "PUT /api/v2/academy/attempts/{attemptId}/answers",
+      "matchedOperations": [
+        "PUT /api/v2/academy/attempts/{attemptId}/answers"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 97,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/lessons/{lessonId}/attempts",
+      "method": "GET",
+      "route": "/api/v2/academy/lessons/{lessonId}/attempts",
+      "matchedOperation": "GET /api/v2/academy/lessons/{lessonId}/attempts",
+      "matchedOperations": [
+        "GET /api/v2/academy/lessons/{lessonId}/attempts"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 103,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/attempts/{attemptId}",
+      "method": "GET",
+      "route": "/api/v2/academy/attempts/{attemptId}",
+      "matchedOperation": "GET /api/v2/academy/attempts/{attemptId}",
+      "matchedOperations": [
+        "GET /api/v2/academy/attempts/{attemptId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 115,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/academy/attempts/{attemptId}/submit",
       "method": "POST",
-      "route": "/api/v2/academy/attempts/{encodeURIComponent(attemptId)}/submit",
+      "route": "/api/v2/academy/attempts/{attemptId}/submit",
       "matchedOperation": "POST /api/v2/academy/attempts/{attemptId}/submit",
       "matchedOperations": [
         "POST /api/v2/academy/attempts/{attemptId}/submit"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 125,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/academy/lessons/{lessonId}/complete",
+      "method": "POST",
+      "route": "/api/v2/academy/lessons/{lessonId}/complete",
+      "matchedOperation": "POST /api/v2/academy/lessons/{lessonId}/complete",
+      "matchedOperations": [
+        "POST /api/v2/academy/lessons/{lessonId}/complete"
       ],
       "classification": "api-call"
     },
@@ -1565,177 +1643,353 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 660,
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 53,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/bot",
+      "method": "GET",
+      "route": "/api/v2/bot",
+      "matchedOperation": "GET /api/v2/bot",
+      "matchedOperations": [
+        "GET /api/v2/bot"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 57,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/bot/positions",
+      "method": "GET",
+      "route": "/api/v2/bot/positions",
+      "matchedOperation": "GET /api/v2/bot/positions",
+      "matchedOperations": [
+        "GET /api/v2/bot/positions"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 63,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/bot/trades",
+      "method": "GET",
+      "route": "/api/v2/bot/trades",
+      "matchedOperation": "GET /api/v2/bot/trades",
+      "matchedOperations": [
+        "GET /api/v2/bot/trades"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 69,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/bot/journal/sessions",
+      "method": "GET",
+      "route": "/api/v2/bot/journal/sessions",
+      "matchedOperation": "GET /api/v2/bot/journal/sessions",
+      "matchedOperations": [
+        "GET /api/v2/bot/journal/sessions"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 76,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/bot/journal/sessions/{session}",
+      "method": "GET",
+      "route": "/api/v2/bot/journal/sessions/{session}",
+      "matchedOperation": "GET /api/v2/bot/journal/sessions/{session}",
+      "matchedOperations": [
+        "GET /api/v2/bot/journal/sessions/{session}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 81,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/bot/universe",
+      "method": "GET",
+      "route": "/api/v2/bot/universe",
+      "matchedOperation": "GET /api/v2/bot/universe",
+      "matchedOperations": [
+        "GET /api/v2/bot/universe"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 86,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/lists",
+      "method": "GET",
+      "route": "/api/v2/strategy/lists",
+      "matchedOperation": "GET /api/v2/strategy/lists",
+      "matchedOperations": [
+        "GET /api/v2/strategy/lists"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 97,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/bot/universe/apply-list",
+      "method": "POST",
+      "route": "/api/v2/bot/universe/apply-list",
+      "matchedOperation": "POST /api/v2/bot/universe/apply-list",
+      "matchedOperations": [
+        "POST /api/v2/bot/universe/apply-list"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 106,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/bot/universe/revert-vn30",
+      "method": "POST",
+      "route": "/api/v2/bot/universe/revert-vn30",
+      "matchedOperation": "POST /api/v2/bot/universe/revert-vn30",
+      "matchedOperations": [
+        "POST /api/v2/bot/universe/revert-vn30"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/api.ts",
+      "line": 112,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/bot/universe/pending/cancel",
+      "method": "POST",
+      "route": "/api/v2/bot/universe/pending/cancel",
+      "matchedOperation": "POST /api/v2/bot/universe/pending/cancel",
+      "matchedOperations": [
+        "POST /api/v2/bot/universe/pending/cancel"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/api.ts",
+      "line": 21,
+      "callee": "api",
+      "raw": "/strategy/shared-config",
+      "method": "GET",
+      "route": "/api/v2/strategy/shared-config",
+      "matchedOperation": "GET /api/v2/strategy/shared-config",
+      "matchedOperations": [
+        "GET /api/v2/strategy/shared-config"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/api.ts",
+      "line": 25,
+      "callee": "api",
+      "raw": "/strategy/registry/technical",
+      "method": "GET",
+      "route": "/api/v2/strategy/registry/technical",
+      "matchedOperation": "GET /api/v2/strategy/registry/technical",
+      "matchedOperations": [
+        "GET /api/v2/strategy/registry/technical"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/api.ts",
+      "line": 35,
+      "callee": "api",
+      "raw": "/strategy/shared-config",
+      "method": "PATCH",
+      "route": "/api/v2/strategy/shared-config",
+      "matchedOperation": "PATCH /api/v2/strategy/shared-config",
+      "matchedOperations": [
+        "PATCH /api/v2/strategy/shared-config"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 23,
       "callee": "get",
-      "raw": "/cap1/progress",
+      "raw": "rsi",
       "method": "GET",
-      "route": "/api/v2/cap1/progress",
-      "matchedOperation": "GET /api/v2/cap1/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap1/progress"
-      ],
-      "classification": "api-call"
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
     },
     {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 661,
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 41,
       "callee": "get",
-      "raw": "/cap1/trades",
+      "raw": "bollinger",
       "method": "GET",
-      "route": "/api/v2/cap1/trades",
-      "matchedOperation": "GET /api/v2/cap1/trades",
-      "matchedOperations": [
-        "GET /api/v2/cap1/trades"
-      ],
-      "classification": "api-call"
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
     },
     {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 663,
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 59,
       "callee": "get",
-      "raw": "/cap2/progress",
+      "raw": "macd",
       "method": "GET",
-      "route": "/api/v2/cap2/progress",
-      "matchedOperation": "GET /api/v2/cap2/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap2/progress"
-      ],
-      "classification": "api-call"
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
     },
     {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 665,
-      "callee": "getOrNull",
-      "raw": "/cap2/trades",
-      "method": "GET",
-      "route": "/api/v2/cap2/trades",
-      "matchedOperation": "GET /api/v2/cap2/trades",
-      "matchedOperations": [
-        "GET /api/v2/cap2/trades"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 667,
-      "callee": "getOrNull",
-      "raw": "/cap2/analysis",
-      "method": "GET",
-      "route": "/api/v2/cap2/analysis",
-      "matchedOperation": "GET /api/v2/cap2/analysis",
-      "matchedOperations": [
-        "GET /api/v2/cap2/analysis"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 669,
-      "callee": "getOrNull",
-      "raw": "/cap2/diem-ky-luat/history",
-      "method": "GET",
-      "route": "/api/v2/cap2/diem-ky-luat/history",
-      "matchedOperation": "GET /api/v2/cap2/diem-ky-luat/history",
-      "matchedOperations": [
-        "GET /api/v2/cap2/diem-ky-luat/history"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 671,
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 66,
       "callee": "get",
-      "raw": "/cap3/progress",
+      "raw": "macd",
       "method": "GET",
-      "route": "/api/v2/cap3/progress",
-      "matchedOperation": "GET /api/v2/cap3/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap3/progress"
-      ],
-      "classification": "api-call"
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
     },
     {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 673,
-      "callee": "getOrNull",
-      "raw": "/cap3/trades/analysis",
-      "method": "GET",
-      "route": "/api/v2/cap3/trades/analysis",
-      "matchedOperation": "GET /api/v2/cap3/trades/analysis",
-      "matchedOperations": [
-        "GET /api/v2/cap3/trades/analysis"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 675,
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 80,
       "callee": "get",
-      "raw": "/cap4/progress",
+      "raw": "macd",
       "method": "GET",
-      "route": "/api/v2/cap4/progress",
-      "matchedOperation": "GET /api/v2/cap4/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap4/progress"
-      ],
-      "classification": "api-call"
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
     },
     {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 677,
-      "callee": "getOrNull",
-      "raw": "/cap4/vu-khi-diem-mu",
-      "method": "GET",
-      "route": "/api/v2/cap4/vu-khi-diem-mu",
-      "matchedOperation": "GET /api/v2/cap4/vu-khi-diem-mu",
-      "matchedOperations": [
-        "GET /api/v2/cap4/vu-khi-diem-mu"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 679,
-      "callee": "getOrNull",
-      "raw": "/cap4/phan-tich",
-      "method": "GET",
-      "route": "/api/v2/cap4/phan-tich",
-      "matchedOperation": "GET /api/v2/cap4/phan-tich",
-      "matchedOperations": [
-        "GET /api/v2/cap4/phan-tich"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 681,
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 95,
       "callee": "get",
-      "raw": "/cap5/progress",
+      "raw": "rsi",
       "method": "GET",
-      "route": "/api/v2/cap5/progress",
-      "matchedOperation": "GET /api/v2/cap5/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap5/progress"
-      ],
-      "classification": "api-call"
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 99,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 163,
+      "callee": "get",
+      "raw": "bollinger",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 14,
+      "callee": "get",
+      "raw": "rsi",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 22,
+      "callee": "get",
+      "raw": "ma",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 22,
+      "callee": "get",
+      "raw": "ma",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 23,
+      "callee": "get",
+      "raw": "ema",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 23,
+      "callee": "get",
+      "raw": "ema",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 24,
+      "callee": "get",
+      "raw": "bollinger",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 30,
+      "callee": "get",
+      "raw": "volume",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 35,
+      "callee": "get",
+      "raw": "rsi",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 683,
-      "callee": "getOrNull",
-      "raw": "/cap5/phan-tich",
-      "method": "GET",
-      "route": "/api/v2/cap5/phan-tich",
-      "matchedOperation": "GET /api/v2/cap5/phan-tich",
-      "matchedOperations": [
-        "GET /api/v2/cap5/phan-tich"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 685,
+      "line": 104,
       "callee": "getOrNull",
       "raw": "/cap5/san-ma",
       "method": "GET",
@@ -1748,7 +2002,7 @@
     },
     {
       "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 687,
+      "line": 106,
       "callee": "getOrNull",
       "raw": "/cap5/san-ma/{filter}",
       "method": "GET",
@@ -1756,347 +2010,6 @@
       "matchedOperation": "GET /api/v2/cap5/san-ma/{bo_loc}",
       "matchedOperations": [
         "GET /api/v2/cap5/san-ma/{bo_loc}"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 689,
-      "callee": "getOrNull",
-      "raw": "/cap5/watchlist",
-      "method": "GET",
-      "route": "/api/v2/cap5/watchlist",
-      "matchedOperation": "GET /api/v2/cap5/watchlist",
-      "matchedOperations": [
-        "GET /api/v2/cap5/watchlist"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 695,
-      "callee": "api",
-      "raw": "/cap5/watchlist",
-      "method": "POST",
-      "route": "/api/v2/cap5/watchlist",
-      "matchedOperation": "POST /api/v2/cap5/watchlist",
-      "matchedOperations": [
-        "POST /api/v2/cap5/watchlist"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 700,
-      "callee": "api",
-      "raw": "/cap5/watchlist/{encodeURIComponent(symbol)}",
-      "method": "DELETE",
-      "route": "/api/v2/cap5/watchlist/{encodeURIComponent(symbol)}",
-      "matchedOperation": "DELETE /api/v2/cap5/watchlist/{symbol}",
-      "matchedOperations": [
-        "DELETE /api/v2/cap5/watchlist/{symbol}"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 704,
-      "callee": "getOrNull",
-      "raw": "/cap5/nguon-san/{encodeURIComponent(symbol)}",
-      "method": "GET",
-      "route": "/api/v2/cap5/nguon-san/{encodeURIComponent(symbol)}",
-      "matchedOperation": "GET /api/v2/cap5/nguon-san/{symbol}",
-      "matchedOperations": [
-        "GET /api/v2/cap5/nguon-san/{symbol}"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 709,
-      "callee": "get",
-      "raw": "/cap6/progress",
-      "method": "GET",
-      "route": "/api/v2/cap6/progress",
-      "matchedOperation": "GET /api/v2/cap6/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap6/progress"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 711,
-      "callee": "getOrNull",
-      "raw": "/cap6/phan-tich",
-      "method": "GET",
-      "route": "/api/v2/cap6/phan-tich",
-      "matchedOperation": "GET /api/v2/cap6/phan-tich",
-      "matchedOperations": [
-        "GET /api/v2/cap6/phan-tich"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 712,
-      "callee": "get",
-      "raw": "/bot",
-      "method": "GET",
-      "route": "/api/v2/bot",
-      "matchedOperation": "GET /api/v2/bot",
-      "matchedOperations": [
-        "GET /api/v2/bot"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 714,
-      "callee": "get",
-      "raw": "/bot/positions",
-      "method": "GET",
-      "route": "/api/v2/bot/positions",
-      "matchedOperation": "GET /api/v2/bot/positions",
-      "matchedOperations": [
-        "GET /api/v2/bot/positions"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 716,
-      "callee": "get",
-      "raw": "/bot/journal?limit=30{cursor ? `&cursor=$encodeURIComponent(cursor)` : \"\"}",
-      "method": "GET",
-      "route": "/api/v2/bot/journal",
-      "matchedOperation": "GET /api/v2/bot/journal",
-      "matchedOperations": [
-        "GET /api/v2/bot/journal"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 721,
-      "callee": "get",
-      "raw": "/bot/performance",
-      "method": "GET",
-      "route": "/api/v2/bot/performance",
-      "matchedOperation": "GET /api/v2/bot/performance",
-      "matchedOperations": [
-        "GET /api/v2/bot/performance"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 723,
-      "callee": "api",
-      "raw": "/journey/reading-datasets",
-      "method": "POST",
-      "route": "/api/v2/journey/reading-datasets",
-      "matchedOperation": "POST /api/v2/journey/reading-datasets",
-      "matchedOperations": [
-        "POST /api/v2/journey/reading-datasets"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 728,
-      "callee": "api",
-      "raw": "/journey/assessments",
-      "method": "POST",
-      "route": "/api/v2/journey/assessments",
-      "matchedOperation": "POST /api/v2/journey/assessments",
-      "matchedOperations": [
-        "POST /api/v2/journey/assessments"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/insights/api.ts",
-      "line": 733,
-      "callee": "api",
-      "raw": "/journey/assessments/{encodeURIComponent(assessmentId)}/reveal",
-      "method": "POST",
-      "route": "/api/v2/journey/assessments/{encodeURIComponent(assessmentId)}/reveal",
-      "matchedOperation": "POST /api/v2/journey/assessments/{assessmentId}/reveal",
-      "matchedOperations": [
-        "POST /api/v2/journey/assessments/{assessmentId}/reveal"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-dialogs.tsx",
-      "line": 26,
-      "callee": "api",
-      "raw": "/cap3/progress",
-      "method": "GET",
-      "route": "/api/v2/cap3/progress",
-      "matchedOperation": "GET /api/v2/cap3/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap3/progress"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-dialogs.tsx",
-      "line": 27,
-      "callee": "api",
-      "raw": "/cap3/khau-vi",
-      "method": "POST",
-      "route": "/api/v2/cap3/khau-vi",
-      "matchedOperation": "POST /api/v2/cap3/khau-vi",
-      "matchedOperations": [
-        "POST /api/v2/cap3/khau-vi"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-dialogs.tsx",
-      "line": 29,
-      "callee": "api",
-      "raw": "/cap0/tours/{tour}/complete",
-      "method": "POST",
-      "route": "/api/v2/cap0/tours/{tour}/complete",
-      "matchedOperation": "POST /api/v2/cap0/tours/{tour}/complete",
-      "matchedOperations": [
-        "POST /api/v2/cap0/tours/{tour}/complete"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-provider.tsx",
-      "line": 22,
-      "callee": "api",
-      "raw": "/cap0/progress",
-      "method": "GET",
-      "route": "/api/v2/cap0/progress",
-      "matchedOperation": "GET /api/v2/cap0/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap0/progress"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-provider.tsx",
-      "line": 23,
-      "callee": "api",
-      "raw": "/cap0/placement",
-      "method": "GET",
-      "route": "/api/v2/cap0/placement",
-      "matchedOperation": "GET /api/v2/cap0/placement",
-      "matchedOperations": [
-        "GET /api/v2/cap0/placement"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-provider.tsx",
-      "line": 27,
-      "callee": "api",
-      "raw": "/cap0/enter",
-      "method": "POST",
-      "route": "/api/v2/cap0/enter",
-      "matchedOperation": "POST /api/v2/cap0/enter",
-      "matchedOperations": [
-        "POST /api/v2/cap0/enter"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-provider.tsx",
-      "line": 30,
-      "callee": "api",
-      "raw": "/cap{level}/progress",
-      "method": "GET",
-      "route": "/api/v2/cap{level}/progress",
-      "matchedOperation": "GET /api/v2/cap0/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap0/progress",
-        "GET /api/v2/cap1/progress",
-        "GET /api/v2/cap2/progress",
-        "GET /api/v2/cap3/progress",
-        "GET /api/v2/cap4/progress",
-        "GET /api/v2/cap5/progress",
-        "GET /api/v2/cap6/progress",
-        "GET /api/v2/cap7/progress",
-        "GET /api/v2/cap8/progress"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-provider.tsx",
-      "line": 32,
-      "callee": "api",
-      "raw": "/cap{level}/enter",
-      "method": "POST",
-      "route": "/api/v2/cap{level}/enter",
-      "matchedOperation": "POST /api/v2/cap0/enter",
-      "matchedOperations": [
-        "POST /api/v2/cap0/enter",
-        "POST /api/v2/cap1/enter",
-        "POST /api/v2/cap2/enter",
-        "POST /api/v2/cap3/enter",
-        "POST /api/v2/cap4/enter",
-        "POST /api/v2/cap5/enter",
-        "POST /api/v2/cap6/enter",
-        "POST /api/v2/cap7/enter",
-        "POST /api/v2/cap8/enter"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-provider.tsx",
-      "line": 47,
-      "callee": "api",
-      "raw": "/cap0/placement",
-      "method": "POST",
-      "route": "/api/v2/cap0/placement",
-      "matchedOperation": "POST /api/v2/cap0/placement",
-      "matchedOperations": [
-        "POST /api/v2/cap0/placement"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-provider.tsx",
-      "line": 53,
-      "callee": "api",
-      "raw": "/cap{state.level}/task",
-      "method": "PATCH",
-      "route": "/api/v2/cap{state.level}/task",
-      "matchedOperation": "PATCH /api/v2/cap0/task",
-      "matchedOperations": [
-        "PATCH /api/v2/cap0/task",
-        "PATCH /api/v2/cap1/task",
-        "PATCH /api/v2/cap2/task",
-        "PATCH /api/v2/cap3/task",
-        "PATCH /api/v2/cap4/task",
-        "PATCH /api/v2/cap5/task"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/journey-provider.tsx",
-      "line": 58,
-      "callee": "api",
-      "raw": "/cap{state.level}/graduate",
-      "method": "POST",
-      "route": "/api/v2/cap{state.level}/graduate",
-      "matchedOperation": "POST /api/v2/cap0/graduate",
-      "matchedOperations": [
-        "POST /api/v2/cap0/graduate",
-        "POST /api/v2/cap1/graduate",
-        "POST /api/v2/cap2/graduate",
-        "POST /api/v2/cap3/graduate",
-        "POST /api/v2/cap4/graduate",
-        "POST /api/v2/cap5/graduate",
-        "POST /api/v2/cap6/graduate",
-        "POST /api/v2/cap7/graduate",
-        "POST /api/v2/cap8/graduate"
       ],
       "classification": "api-call"
     },
@@ -2110,32 +2023,6 @@
       "matchedOperation": null,
       "matchedOperations": [],
       "classification": "asset-fetch"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/use-identity.ts",
-      "line": 11,
-      "callee": "api",
-      "raw": "/bot/mascot",
-      "method": "GET",
-      "route": "/api/v2/bot/mascot",
-      "matchedOperation": "GET /api/v2/bot/mascot",
-      "matchedOperations": [
-        "GET /api/v2/bot/mascot"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/journey/use-identity.ts",
-      "line": 22,
-      "callee": "api",
-      "raw": "/bot/mascot/ui-events",
-      "method": "POST",
-      "route": "/api/v2/bot/mascot/ui-events",
-      "matchedOperation": "POST /api/v2/bot/mascot/ui-events",
-      "matchedOperations": [
-        "POST /api/v2/bot/mascot/ui-events"
-      ],
-      "classification": "api-call"
     },
     {
       "file": "src/pages/demo-trading/market/market-api.ts",
@@ -2205,7 +2092,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 134,
+      "line": 131,
       "callee": "api",
       "raw": "/watchlists",
       "method": "GET",
@@ -2218,7 +2105,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 143,
+      "line": 140,
       "callee": "api",
       "raw": "/watchlists",
       "method": "POST",
@@ -2231,7 +2118,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 151,
+      "line": 148,
       "callee": "api",
       "raw": "/watchlists/{encodeURIComponent(symbol.trim().toUpperCase())}",
       "method": "DELETE",
@@ -2244,7 +2131,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 158,
+      "line": 155,
       "callee": "api",
       "raw": "/watchlists/reorder",
       "method": "PUT",
@@ -2257,7 +2144,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 189,
+      "line": 186,
       "callee": "api",
       "raw": "/instruments/{encodeURIComponent(symbol.trim().toUpperCase())}",
       "method": "GET",
@@ -2270,7 +2157,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 208,
+      "line": 205,
       "callee": "api",
       "raw": "/instruments?{params}",
       "method": "GET",
@@ -2283,7 +2170,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 237,
+      "line": 234,
       "callee": "api",
       "raw": "/market-data/quotes/{encodeURIComponent(code)}/ohlcv?{params}",
       "method": "GET",
@@ -2296,20 +2183,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 266,
-      "callee": "api",
-      "raw": "/virtual-trading/orders?{params}",
-      "method": "GET",
-      "route": "/api/v2/virtual-trading/orders",
-      "matchedOperation": "GET /api/v2/virtual-trading/orders",
-      "matchedOperations": [
-        "GET /api/v2/virtual-trading/orders"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 285,
+      "line": 251,
       "callee": "api",
       "raw": "/virtual-trading/orders/{encodeURIComponent(id)}/cancel",
       "method": "POST",
@@ -2322,7 +2196,7 @@
     },
     {
       "file": "src/pages/demo-trading/portfolio/api.ts",
-      "line": 456,
+      "line": 422,
       "callee": "api",
       "raw": "/portfolio-manager/analyze",
       "method": "POST",
@@ -2334,34 +2208,190 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/demo-trading/trading/closeout.tsx",
-      "line": 475,
-      "callee": "api",
-      "raw": "/cap1/ketso",
-      "method": "POST",
-      "route": "/api/v2/cap1/ketso",
-      "matchedOperation": "POST /api/v2/cap1/ketso",
+      "file": "src/pages/demo-trading/practice/practice-api.ts",
+      "line": 54,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/practice/{indicatorId}/state",
+      "method": "GET",
+      "route": "/api/v2/practice/{indicatorId}/state",
+      "matchedOperation": "GET /api/v2/practice/{indicatorId}/state",
       "matchedOperations": [
-        "POST /api/v2/cap1/ketso"
+        "GET /api/v2/practice/{indicatorId}/state"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/demo-trading/trading/closeout.tsx",
-      "line": 487,
-      "callee": "api",
-      "raw": "/cap2/ketso",
-      "method": "POST",
-      "route": "/api/v2/cap2/ketso",
-      "matchedOperation": "POST /api/v2/cap2/ketso",
+      "file": "src/pages/demo-trading/practice/practice-api.ts",
+      "line": 58,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/practice/{indicatorId}/draft",
+      "method": "PUT",
+      "route": "/api/v2/practice/{indicatorId}/draft",
+      "matchedOperation": "PUT /api/v2/practice/{indicatorId}/draft",
       "matchedOperations": [
-        "POST /api/v2/cap2/ketso"
+        "PUT /api/v2/practice/{indicatorId}/draft"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/practice/practice-api.ts",
+      "line": 69,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/practice/{indicatorId}/preview",
+      "method": "POST",
+      "route": "/api/v2/practice/{indicatorId}/preview",
+      "matchedOperation": "POST /api/v2/practice/{indicatorId}/preview",
+      "matchedOperations": [
+        "POST /api/v2/practice/{indicatorId}/preview"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/practice/practice-api.ts",
+      "line": 76,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/practice/{indicatorId}/runs",
+      "method": "POST",
+      "route": "/api/v2/practice/{indicatorId}/runs",
+      "matchedOperation": "POST /api/v2/practice/{indicatorId}/runs",
+      "matchedOperations": [
+        "POST /api/v2/practice/{indicatorId}/runs"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/practice/practice-api.ts",
+      "line": 80,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/practice/runs/{runId}",
+      "method": "GET",
+      "route": "/api/v2/practice/runs/{runId}",
+      "matchedOperation": "GET /api/v2/practice/runs/{runId}",
+      "matchedOperations": [
+        "GET /api/v2/practice/runs/{runId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/practice/practice-api.ts",
+      "line": 84,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/practice/{indicatorId}/next",
+      "method": "POST",
+      "route": "/api/v2/practice/{indicatorId}/next",
+      "matchedOperation": "POST /api/v2/practice/{indicatorId}/next",
+      "matchedOperations": [
+        "POST /api/v2/practice/{indicatorId}/next"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/practice/practice-api.ts",
+      "line": 91,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/practice/{indicatorId}/history",
+      "method": "GET",
+      "route": "/api/v2/practice/{indicatorId}/history",
+      "matchedOperation": "GET /api/v2/practice/{indicatorId}/history",
+      "matchedOperations": [
+        "GET /api/v2/practice/{indicatorId}/history"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 120,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/shop",
+      "method": "GET",
+      "route": "/api/v2/shop",
+      "matchedOperation": "GET /api/v2/shop",
+      "matchedOperations": [
+        "GET /api/v2/shop"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 125,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/shop/coin-ledger",
+      "method": "GET",
+      "route": "/api/v2/shop/coin-ledger",
+      "matchedOperation": "GET /api/v2/shop/coin-ledger",
+      "matchedOperations": [
+        "GET /api/v2/shop/coin-ledger"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 129,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/progress",
+      "method": "GET",
+      "route": "/api/v2/academy/progress",
+      "matchedOperation": "GET /api/v2/academy/progress",
+      "matchedOperations": [
+        "GET /api/v2/academy/progress"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 136,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/catalog",
+      "method": "GET",
+      "route": "/api/v2/academy/catalog",
+      "matchedOperation": "GET /api/v2/academy/catalog",
+      "matchedOperations": [
+        "GET /api/v2/academy/catalog"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 163,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/shop/purchases",
+      "method": "POST",
+      "route": "/api/v2/shop/purchases",
+      "matchedOperation": "POST /api/v2/shop/purchases",
+      "matchedOperations": [
+        "POST /api/v2/shop/purchases"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 170,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/shop/purchases/{idempotencyKey}",
+      "method": "GET",
+      "route": "/api/v2/shop/purchases/{idempotencyKey}",
+      "matchedOperation": "GET /api/v2/shop/purchases/{idempotencyKey}",
+      "matchedOperations": [
+        "GET /api/v2/shop/purchases/{idempotencyKey}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 177,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/shop/active-mascot",
+      "method": "PUT",
+      "route": "/api/v2/shop/active-mascot",
+      "matchedOperation": "PUT /api/v2/shop/active-mascot",
+      "matchedOperations": [
+        "PUT /api/v2/shop/active-mascot"
       ],
       "classification": "api-call"
     },
     {
       "file": "src/pages/demo-trading/trading/use-engine-refresh.ts",
-      "line": 75,
+      "line": 68,
       "callee": "api",
       "raw": "/virtual-trading/refresh",
       "method": "POST",
@@ -2373,164 +2403,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 70,
-      "callee": "nullable",
-      "raw": "/cap0/kehoach?order_id={encodeURIComponent(orderId!)}",
-      "method": "GET",
-      "route": "/api/v2/cap0/kehoach",
-      "matchedOperation": "GET /api/v2/cap0/kehoach",
-      "matchedOperations": [
-        "GET /api/v2/cap0/kehoach"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 94,
-      "callee": "nullable",
-      "raw": "/cap1/progress",
-      "method": "GET",
-      "route": "/api/v2/cap1/progress",
-      "matchedOperation": "GET /api/v2/cap1/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap1/progress"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 126,
-      "callee": "nullable",
-      "raw": "/cap1/trades",
-      "method": "GET",
-      "route": "/api/v2/cap1/trades",
-      "matchedOperation": "GET /api/v2/cap1/trades",
-      "matchedOperations": [
-        "GET /api/v2/cap1/trades"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 150,
-      "callee": "nullable",
-      "raw": "/cap3/progress",
-      "method": "GET",
-      "route": "/api/v2/cap3/progress",
-      "matchedOperation": "GET /api/v2/cap3/progress",
-      "matchedOperations": [
-        "GET /api/v2/cap3/progress"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 159,
-      "callee": "api",
-      "raw": "/cap3/khau-vi",
-      "method": "POST",
-      "route": "/api/v2/cap3/khau-vi",
-      "matchedOperation": "POST /api/v2/cap3/khau-vi",
-      "matchedOperations": [
-        "POST /api/v2/cap3/khau-vi"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 210,
-      "callee": "api",
-      "raw": "/cap2/alerts/pre-buy",
-      "method": "POST",
-      "route": "/api/v2/cap2/alerts/pre-buy",
-      "matchedOperation": "POST /api/v2/cap2/alerts/pre-buy",
-      "matchedOperations": [
-        "POST /api/v2/cap2/alerts/pre-buy"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 237,
-      "callee": "api",
-      "raw": "/cap2/alerts/{input.alertId}/action",
-      "method": "POST",
-      "route": "/api/v2/cap2/alerts/{input.alertId}/action",
-      "matchedOperation": "POST /api/v2/cap2/alerts/{alert_id}/action",
-      "matchedOperations": [
-        "POST /api/v2/cap2/alerts/{alert_id}/action"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 257,
-      "callee": "nullable",
-      "raw": "/cap2/alerts/active",
-      "method": "GET",
-      "route": "/api/v2/cap2/alerts/active",
-      "matchedOperation": "GET /api/v2/cap2/alerts/active",
-      "matchedOperations": [
-        "GET /api/v2/cap2/alerts/active"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 274,
-      "callee": "nullable",
-      "raw": "/cap6/mau-thuan/{encodeURIComponent(code)}",
-      "method": "GET",
-      "route": "/api/v2/cap6/mau-thuan/{encodeURIComponent(code)}",
-      "matchedOperation": "GET /api/v2/cap6/mau-thuan/{symbol}",
-      "matchedOperations": [
-        "GET /api/v2/cap6/mau-thuan/{symbol}"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 299,
-      "callee": "nullable",
-      "raw": "/cap6/kehoach/{encodeURIComponent(orderId!)}",
-      "method": "GET",
-      "route": "/api/v2/cap6/kehoach/{encodeURIComponent(orderId!)}",
-      "matchedOperation": "GET /api/v2/cap6/kehoach/{order_id}",
-      "matchedOperations": [
-        "GET /api/v2/cap6/kehoach/{order_id}"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-plan-data.ts",
-      "line": 307,
-      "callee": "api",
-      "raw": "/cap6/skip",
-      "method": "POST",
-      "route": "/api/v2/cap6/skip",
-      "matchedOperation": "POST /api/v2/cap6/skip",
-      "matchedOperations": [
-        "POST /api/v2/cap6/skip"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/trading/use-stock-insight.ts",
-      "line": 49,
-      "callee": "api",
-      "raw": "/ai/insight/analyze",
-      "method": "POST",
-      "route": "/api/v2/ai/insight/analyze",
-      "matchedOperation": "POST /api/v2/ai/insight/analyze",
-      "matchedOperations": [
-        "POST /api/v2/ai/insight/analyze"
-      ],
-      "classification": "api-call"
-    },
-    {
       "file": "src/pages/demo-trading/trading/use-trading-orders.ts",
-      "line": 67,
+      "line": 50,
       "callee": "api",
       "raw": "/virtual-trading/account/activate",
       "method": "POST",
@@ -2543,7 +2417,7 @@
     },
     {
       "file": "src/pages/demo-trading/trading/use-trading-orders.ts",
-      "line": 77,
+      "line": 59,
       "callee": "api",
       "raw": "/virtual-trading/orders",
       "method": "POST",
@@ -2551,6 +2425,32 @@
       "matchedOperation": "POST /api/v2/virtual-trading/orders",
       "matchedOperations": [
         "POST /api/v2/virtual-trading/orders"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/workspace/workspace-api.ts",
+      "line": 38,
+      "callee": "api",
+      "raw": "/workspace/state",
+      "method": "GET",
+      "route": "/api/v2/workspace/state",
+      "matchedOperation": "GET /api/v2/workspace/state",
+      "matchedOperations": [
+        "GET /api/v2/workspace/state"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/workspace/workspace-api.ts",
+      "line": 61,
+      "callee": "api",
+      "raw": "/workspace/ensure",
+      "method": "POST",
+      "route": "/api/v2/workspace/ensure",
+      "matchedOperation": "POST /api/v2/workspace/ensure",
+      "matchedOperations": [
+        "POST /api/v2/workspace/ensure"
       ],
       "classification": "api-call"
     },
@@ -2844,86 +2744,127 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 371,
-      "callee": "api",
-      "raw": "/backtest/catalog",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 37,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/alerts",
       "method": "GET",
-      "route": "/api/v2/backtest/catalog",
-      "matchedOperation": "GET /api/v2/backtest/catalog",
+      "route": "/api/v2/strategy/alerts",
+      "matchedOperation": "GET /api/v2/strategy/alerts",
       "matchedOperations": [
-        "GET /api/v2/backtest/catalog"
+        "GET /api/v2/strategy/alerts"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 380,
-      "callee": "api",
-      "raw": "/backtest/run",
-      "method": "POST",
-      "route": "/api/v2/backtest/run",
-      "matchedOperation": "POST /api/v2/backtest/run",
-      "matchedOperations": [
-        "POST /api/v2/backtest/run"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/strategy/api.ts",
-      "line": 405,
-      "callee": "api",
-      "raw": "/backtest/strategies",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 41,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/alerts/{alertId}",
       "method": "GET",
-      "route": "/api/v2/backtest/strategies",
-      "matchedOperation": "GET /api/v2/backtest/strategies",
+      "route": "/api/v2/strategy/alerts/{alertId}",
+      "matchedOperation": "GET /api/v2/strategy/alerts/{alertId}",
       "matchedOperations": [
-        "GET /api/v2/backtest/strategies"
+        "GET /api/v2/strategy/alerts/{alertId}",
+        "GET /api/v2/strategy/alerts/events"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 418,
-      "callee": "api",
-      "raw": "/backtest/strategies",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 45,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/alerts",
       "method": "POST",
-      "route": "/api/v2/backtest/strategies",
-      "matchedOperation": "POST /api/v2/backtest/strategies",
+      "route": "/api/v2/strategy/alerts",
+      "matchedOperation": "POST /api/v2/strategy/alerts",
       "matchedOperations": [
-        "POST /api/v2/backtest/strategies"
+        "POST /api/v2/strategy/alerts"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 433,
-      "callee": "api",
-      "raw": "/backtest/strategies/{encodeURIComponent(id)}",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 49,
+      "callee": "requestOperation",
+      "raw": "PATCH /api/v2/strategy/alerts/{alertId}",
+      "method": "PATCH",
+      "route": "/api/v2/strategy/alerts/{alertId}",
+      "matchedOperation": "PATCH /api/v2/strategy/alerts/{alertId}",
+      "matchedOperations": [
+        "PATCH /api/v2/strategy/alerts/{alertId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 53,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/strategy/alerts/{alertId}",
       "method": "DELETE",
-      "route": "/api/v2/backtest/strategies/{encodeURIComponent(id)}",
-      "matchedOperation": "DELETE /api/v2/backtest/strategies/{strategyId}",
+      "route": "/api/v2/strategy/alerts/{alertId}",
+      "matchedOperation": "DELETE /api/v2/strategy/alerts/{alertId}",
       "matchedOperations": [
-        "DELETE /api/v2/backtest/strategies/{strategyId}"
+        "DELETE /api/v2/strategy/alerts/{alertId}"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 491,
-      "callee": "api",
-      "raw": "/alerts/signals",
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 57,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/alerts/source-preview",
+      "method": "POST",
+      "route": "/api/v2/strategy/alerts/source-preview",
+      "matchedOperation": "POST /api/v2/strategy/alerts/source-preview",
+      "matchedOperations": [
+        "POST /api/v2/strategy/alerts/source-preview"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 64,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/alerts/events",
       "method": "GET",
-      "route": "/api/v2/alerts/signals",
-      "matchedOperation": "GET /api/v2/alerts/signals",
+      "route": "/api/v2/strategy/alerts/events",
+      "matchedOperation": "GET /api/v2/strategy/alerts/{alertId}",
       "matchedOperations": [
-        "GET /api/v2/alerts/signals"
+        "GET /api/v2/strategy/alerts/{alertId}",
+        "GET /api/v2/strategy/alerts/events"
       ],
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 500,
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 69,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/shared-config/revisions",
+      "method": "GET",
+      "route": "/api/v2/strategy/shared-config/revisions",
+      "matchedOperation": "GET /api/v2/strategy/shared-config/revisions",
+      "matchedOperations": [
+        "GET /api/v2/strategy/shared-config/revisions"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/alerts/api.ts",
+      "line": 74,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/backtests",
+      "method": "GET",
+      "route": "/api/v2/strategy/backtests",
+      "matchedOperation": "GET /api/v2/strategy/backtests",
+      "matchedOperations": [
+        "GET /api/v2/strategy/backtests"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 91,
       "callee": "api",
       "raw": "/alerts/rules",
       "method": "GET",
@@ -2935,21 +2876,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 509,
-      "callee": "api",
-      "raw": "/alerts/rules",
-      "method": "POST",
-      "route": "/api/v2/alerts/rules",
-      "matchedOperation": "POST /api/v2/alerts/rules",
-      "matchedOperations": [
-        "POST /api/v2/alerts/rules"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/strategy/api.ts",
-      "line": 526,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 100,
       "callee": "api",
       "raw": "/alerts/rules/{encodeURIComponent(id)}",
       "method": "PUT",
@@ -2961,8 +2889,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 541,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 108,
       "callee": "api",
       "raw": "/alerts/rules/{encodeURIComponent(id)}",
       "method": "DELETE",
@@ -2974,8 +2902,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 546,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 112,
       "callee": "api",
       "raw": "/alerts/events",
       "method": "GET",
@@ -2987,8 +2915,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 568,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 123,
       "callee": "api",
       "raw": "/alerts/telegram",
       "method": "GET",
@@ -3000,8 +2928,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 578,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 128,
       "callee": "api",
       "raw": "/alerts/telegram/link",
       "method": "POST",
@@ -3013,8 +2941,8 @@
       "classification": "api-call"
     },
     {
-      "file": "src/pages/strategy/api.ts",
-      "line": 584,
+      "file": "src/pages/strategy/alerts/legacy/api.ts",
+      "line": 133,
       "callee": "api",
       "raw": "/alerts/telegram",
       "method": "DELETE",
@@ -3026,12 +2954,142 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/strategy/backtest/api.ts",
+      "line": 32,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/backtests",
+      "method": "POST",
+      "route": "/api/v2/strategy/backtests",
+      "matchedOperation": "POST /api/v2/strategy/backtests",
+      "matchedOperations": [
+        "POST /api/v2/strategy/backtests"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/backtest/api.ts",
+      "line": 36,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/backtests/{id}",
+      "method": "GET",
+      "route": "/api/v2/strategy/backtests/{id}",
+      "matchedOperation": "GET /api/v2/strategy/backtests/{id}",
+      "matchedOperations": [
+        "GET /api/v2/strategy/backtests/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/backtest/api.ts",
+      "line": 40,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/backtests",
+      "method": "GET",
+      "route": "/api/v2/strategy/backtests",
+      "matchedOperation": "GET /api/v2/strategy/backtests",
+      "matchedOperations": [
+        "GET /api/v2/strategy/backtests"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/backtest/api.ts",
+      "line": 45,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/backtests/{id}/trades",
+      "method": "GET",
+      "route": "/api/v2/strategy/backtests/{id}/trades",
+      "matchedOperation": "GET /api/v2/strategy/backtests/{id}/trades",
+      "matchedOperations": [
+        "GET /api/v2/strategy/backtests/{id}/trades"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 157,
-      "callee": "sharedApi",
-      "raw": "/strategy/filters/{encodeURIComponent(id)}",
+      "line": 28,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/screener/metrics",
+      "method": "GET",
+      "route": "/api/v2/strategy/screener/metrics",
+      "matchedOperation": "GET /api/v2/strategy/screener/metrics",
+      "matchedOperations": [
+        "GET /api/v2/strategy/screener/metrics"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 32,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/screener/run",
+      "method": "POST",
+      "route": "/api/v2/strategy/screener/run",
+      "matchedOperation": "POST /api/v2/strategy/screener/run",
+      "matchedOperations": [
+        "POST /api/v2/strategy/screener/run"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 40,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/screener/results/{resultId}",
+      "method": "GET",
+      "route": "/api/v2/strategy/screener/results/{resultId}",
+      "matchedOperation": "GET /api/v2/strategy/screener/results/{resultId}",
+      "matchedOperations": [
+        "GET /api/v2/strategy/screener/results/{resultId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 50,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/filters",
+      "method": "GET",
+      "route": "/api/v2/strategy/filters",
+      "matchedOperation": "GET /api/v2/strategy/filters",
+      "matchedOperations": [
+        "GET /api/v2/strategy/filters"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 54,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/filters",
+      "method": "POST",
+      "route": "/api/v2/strategy/filters",
+      "matchedOperation": "POST /api/v2/strategy/filters",
+      "matchedOperations": [
+        "POST /api/v2/strategy/filters"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 59,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/strategy/filters/{filterId}",
+      "method": "PUT",
+      "route": "/api/v2/strategy/filters/{filterId}",
+      "matchedOperation": "PUT /api/v2/strategy/filters/{filterId}",
+      "matchedOperations": [
+        "PUT /api/v2/strategy/filters/{filterId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 63,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/strategy/filters/{filterId}",
       "method": "DELETE",
-      "route": "/api/v2/strategy/filters/{encodeURIComponent(id)}",
+      "route": "/api/v2/strategy/filters/{filterId}",
       "matchedOperation": "DELETE /api/v2/strategy/filters/{filterId}",
       "matchedOperations": [
         "DELETE /api/v2/strategy/filters/{filterId}"
@@ -3040,14 +3098,105 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 181,
-      "callee": "sharedApi",
-      "raw": "/strategy/lists/{encodeURIComponent(id)}",
+      "line": 70,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/lists",
+      "method": "GET",
+      "route": "/api/v2/strategy/lists",
+      "matchedOperation": "GET /api/v2/strategy/lists",
+      "matchedOperations": [
+        "GET /api/v2/strategy/lists"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 74,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/lists/{listId}",
+      "method": "GET",
+      "route": "/api/v2/strategy/lists/{listId}",
+      "matchedOperation": "GET /api/v2/strategy/lists/{listId}",
+      "matchedOperations": [
+        "GET /api/v2/strategy/lists/{listId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 79,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/strategy/lists/{listId}",
       "method": "DELETE",
-      "route": "/api/v2/strategy/lists/{encodeURIComponent(id)}",
+      "route": "/api/v2/strategy/lists/{listId}",
       "matchedOperation": "DELETE /api/v2/strategy/lists/{listId}",
       "matchedOperations": [
         "DELETE /api/v2/strategy/lists/{listId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 101,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/lists/from-result",
+      "method": "POST",
+      "route": "/api/v2/strategy/lists/from-result",
+      "matchedOperation": "POST /api/v2/strategy/lists/from-result",
+      "matchedOperations": [
+        "POST /api/v2/strategy/lists/from-result"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 107,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/result-snapshots",
+      "method": "GET",
+      "route": "/api/v2/strategy/result-snapshots",
+      "matchedOperation": "GET /api/v2/strategy/result-snapshots",
+      "matchedOperations": [
+        "GET /api/v2/strategy/result-snapshots"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 111,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/strategy/result-snapshots/{snapshotId}",
+      "method": "GET",
+      "route": "/api/v2/strategy/result-snapshots/{snapshotId}",
+      "matchedOperation": "GET /api/v2/strategy/result-snapshots/{snapshotId}",
+      "matchedOperations": [
+        "GET /api/v2/strategy/result-snapshots/{snapshotId}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 122,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/strategy/result-snapshots",
+      "method": "POST",
+      "route": "/api/v2/strategy/result-snapshots",
+      "matchedOperation": "POST /api/v2/strategy/result-snapshots",
+      "matchedOperations": [
+        "POST /api/v2/strategy/result-snapshots"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/strategy/filter/api.ts",
+      "line": 135,
+      "callee": "requestOperation",
+      "raw": "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
+      "method": "DELETE",
+      "route": "/api/v2/strategy/result-snapshots/{snapshotId}",
+      "matchedOperation": "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
+      "matchedOperations": [
+        "DELETE /api/v2/strategy/result-snapshots/{snapshotId}"
       ],
       "classification": "api-call"
     }
@@ -3208,6 +3357,182 @@
       "classification": "test-only"
     },
     {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 23,
+      "callee": "get",
+      "raw": "rsi",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 41,
+      "callee": "get",
+      "raw": "bollinger",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 59,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 66,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 80,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 95,
+      "callee": "get",
+      "raw": "rsi",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 99,
+      "callee": "get",
+      "raw": "macd",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/draft.test.ts",
+      "line": 163,
+      "callee": "get",
+      "raw": "bollinger",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 14,
+      "callee": "get",
+      "raw": "rsi",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 22,
+      "callee": "get",
+      "raw": "ma",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 22,
+      "callee": "get",
+      "raw": "ma",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 23,
+      "callee": "get",
+      "raw": "ema",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 23,
+      "callee": "get",
+      "raw": "ema",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 24,
+      "callee": "get",
+      "raw": "bollinger",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 30,
+      "callee": "get",
+      "raw": "volume",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 35,
+      "callee": "get",
+      "raw": "rsi",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
       "file": "src/pages/demo-trading/journey/mascot-2d/useSpritePreload.ts",
       "line": 17,
       "callee": "fetch",
@@ -3220,6 +3545,8 @@
     }
   ],
   "unconsumedOperations": [
+    "DELETE /api/v2/backtest/strategies/{strategyId}",
+    "DELETE /api/v2/cap5/watchlist/{symbol}",
     "DELETE /api/v2/chart-drawings/{symbol}",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
@@ -3229,17 +3556,48 @@
     "GET /api/v2/admin/vt/config",
     "GET /api/v2/ai/insight/{symbol}",
     "GET /api/v2/ai/patterns/{kind}/symbols",
+    "GET /api/v2/alerts/signals",
     "GET /api/v2/auth/reset-password",
     "GET /api/v2/auth/verify-email",
+    "GET /api/v2/backtest/catalog",
+    "GET /api/v2/backtest/strategies",
+    "GET /api/v2/bot/journal",
+    "GET /api/v2/bot/mascot",
+    "GET /api/v2/bot/performance",
     "GET /api/v2/bot/status",
+    "GET /api/v2/cap0/kehoach",
+    "GET /api/v2/cap0/placement",
+    "GET /api/v2/cap0/progress",
+    "GET /api/v2/cap1/progress",
+    "GET /api/v2/cap1/trades",
+    "GET /api/v2/cap2/alerts/active",
+    "GET /api/v2/cap2/analysis",
     "GET /api/v2/cap2/diem-ky-luat",
+    "GET /api/v2/cap2/diem-ky-luat/history",
+    "GET /api/v2/cap2/progress",
+    "GET /api/v2/cap2/trades",
     "GET /api/v2/cap3/plans/{order_id}",
+    "GET /api/v2/cap3/progress",
     "GET /api/v2/cap3/trades",
+    "GET /api/v2/cap3/trades/analysis",
+    "GET /api/v2/cap4/phan-tich",
     "GET /api/v2/cap4/plans/{order_id}",
+    "GET /api/v2/cap4/progress",
+    "GET /api/v2/cap4/vu-khi-diem-mu",
+    "GET /api/v2/cap5/nguon-san/{symbol}",
+    "GET /api/v2/cap5/phan-tich",
     "GET /api/v2/cap5/plans/{order_id}",
+    "GET /api/v2/cap5/progress",
+    "GET /api/v2/cap5/watchlist",
+    "GET /api/v2/cap6/kehoach/{order_id}",
+    "GET /api/v2/cap6/mau-thuan/{symbol}",
+    "GET /api/v2/cap6/phan-tich",
     "GET /api/v2/cap6/plans/{order_id}",
+    "GET /api/v2/cap6/progress",
     "GET /api/v2/cap7/portfolio",
+    "GET /api/v2/cap7/progress",
     "GET /api/v2/cap8/positions/{symbol}/exit-context",
+    "GET /api/v2/cap8/progress",
     "GET /api/v2/health",
     "GET /api/v2/market-analysis/{type}",
     "GET /api/v2/market-data/company/{symbol}/bctc",
@@ -3309,23 +3667,21 @@
     "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary",
     "GET /api/v2/media/{token}",
     "GET /api/v2/portfolio-manager/report",
-    "GET /api/v2/strategy/backtests",
-    "GET /api/v2/strategy/backtests/{id}",
-    "GET /api/v2/strategy/filters",
+    "GET /api/v2/practice/indicators",
+    "GET /api/v2/strategy/alerts/events/{eventId}",
     "GET /api/v2/strategy/filters/{filterId}",
-    "GET /api/v2/strategy/lists",
-    "GET /api/v2/strategy/lists/{listId}",
-    "GET /api/v2/strategy/registry/technical",
-    "GET /api/v2/strategy/screener/metrics",
-    "GET /api/v2/strategy/shared-config",
-    "GET /api/v2/strategy/shared-config/revisions",
     "GET /api/v2/virtual-trading/leaderboard",
     "GET /api/v2/virtual-trading/ledger",
     "GET /api/v2/virtual-trading/trades",
     "GET /api/v2/watchlists/{symbol}/status",
     "PATCH /api/v2/admin/vt/config",
+    "PATCH /api/v2/cap0/task",
+    "PATCH /api/v2/cap1/task",
+    "PATCH /api/v2/cap2/task",
+    "PATCH /api/v2/cap3/task",
+    "PATCH /api/v2/cap4/task",
+    "PATCH /api/v2/cap5/task",
     "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop",
-    "PATCH /api/v2/strategy/shared-config",
     "POST /api/v2/admin/alerts/telegram/webhook",
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
@@ -3335,30 +3691,59 @@
     "POST /api/v2/ai/dashboard/analyze",
     "POST /api/v2/ai/industry/analyze",
     "POST /api/v2/ai/industry/analyze-batch",
+    "POST /api/v2/alerts/rules",
     "POST /api/v2/auth/refresh",
+    "POST /api/v2/backtest/run",
+    "POST /api/v2/backtest/strategies",
+    "POST /api/v2/bot/mascot/ui-events",
+    "POST /api/v2/cap0/enter",
+    "POST /api/v2/cap0/graduate",
     "POST /api/v2/cap0/kehoach",
+    "POST /api/v2/cap0/placement",
+    "POST /api/v2/cap1/enter",
+    "POST /api/v2/cap1/graduate",
     "POST /api/v2/cap1/kehoach",
+    "POST /api/v2/cap1/ketso",
+    "POST /api/v2/cap2/alerts/{alert_id}/action",
     "POST /api/v2/cap2/alerts/{alert_id}/check",
     "POST /api/v2/cap2/alerts/{alert_id}/claim",
     "POST /api/v2/cap2/alerts/{alert_id}/dismiss",
     "POST /api/v2/cap2/alerts/{alert_id}/snooze",
+    "POST /api/v2/cap2/alerts/pre-buy",
+    "POST /api/v2/cap2/enter",
+    "POST /api/v2/cap2/graduate",
     "POST /api/v2/cap2/kehoach",
+    "POST /api/v2/cap2/ketso",
+    "POST /api/v2/cap3/enter",
+    "POST /api/v2/cap3/graduate",
     "POST /api/v2/cap3/kehoach",
+    "POST /api/v2/cap3/khau-vi",
+    "POST /api/v2/cap4/enter",
+    "POST /api/v2/cap4/graduate",
     "POST /api/v2/cap4/kehoach",
+    "POST /api/v2/cap5/enter",
+    "POST /api/v2/cap5/graduate",
     "POST /api/v2/cap5/tour-sanma",
+    "POST /api/v2/cap5/watchlist",
+    "POST /api/v2/cap6/enter",
+    "POST /api/v2/cap6/graduate",
     "POST /api/v2/cap6/kehoach",
+    "POST /api/v2/cap6/skip",
     "POST /api/v2/cap6/tour-mauthuan",
+    "POST /api/v2/cap7/enter",
+    "POST /api/v2/cap7/graduate",
+    "POST /api/v2/cap8/enter",
     "POST /api/v2/cap8/exits",
+    "POST /api/v2/cap8/graduate",
     "POST /api/v2/cap8/positions/{symbol}/sync-plan",
+    "POST /api/v2/journey/assessments",
+    "POST /api/v2/journey/assessments/{assessmentId}/reveal",
+    "POST /api/v2/journey/reading-datasets",
     "POST /api/v2/market-analysis/{type}/run",
     "POST /api/v2/market-data/screening/search",
     "POST /api/v2/premium/sepay/ipn",
-    "POST /api/v2/strategy/backtests",
-    "POST /api/v2/strategy/filters",
     "POST /api/v2/strategy/lists",
-    "POST /api/v2/strategy/screener/run",
     "POST /api/v2/telegram/webhook/{secret}",
-    "PUT /api/v2/backtest/strategies/{strategyId}",
-    "PUT /api/v2/strategy/filters/{filterId}"
+    "PUT /api/v2/backtest/strategies/{strategyId}"
   ]
 }

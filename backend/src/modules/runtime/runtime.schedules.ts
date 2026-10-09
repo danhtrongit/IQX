@@ -37,6 +37,17 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       enabled: enabled('alerts.scan', alertScanEnabled()),
     },
     {
+      name: 'alerts.eod-evaluate',
+      description: 'Evaluate Strategy alerts on the completed daily bars (web history only)',
+      // Ticks every 15 minutes on trading days. The handler waits for the 15:45 Asia/Ho_Chi_Minh
+      // readiness gate AND for the benchmark's bar of the session, evaluates each
+      // (alert version, symbol, side) once per session and becomes a cheap no-op afterwards.
+      // It also retries symbols whose data arrived late, without back-filling past sessions.
+      everyMs: 900_000,
+      tradingDay: true,
+      enabled: enabled('alerts.eod-evaluate'),
+    },
+    {
       name: 'journey.identity-recovery',
       description: 'Recover incomplete journey identities',
       everyMs: 900_000,
@@ -107,6 +118,14 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       pattern: '0 30 18 * * 1-5',
       tradingDay: true,
       enabled: enabled('journey.cap5-consensus'),
+    },
+    {
+      name: 'market.index-membership',
+      description: 'Store the VN30 constituents of the session before the Bot run',
+      // Must precede bot.session-eod (19:00): the Bot buys from the stored membership.
+      pattern: '0 40 18 * * 1-5',
+      tradingDay: true,
+      enabled: enabled('market.index-membership'),
     },
     {
       name: 'bot.session-eod',

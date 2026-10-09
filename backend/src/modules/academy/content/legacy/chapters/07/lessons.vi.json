@@ -1,0 +1,134 @@
+[
+  {
+    "id": "ch07-l01",
+    "chapter": 7,
+    "order": 1,
+    "name": "ATR",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>ATR</strong> đo biên độ dao động điển hình theo giá, có xét khoảng trống so với đóng cửa trước.</p><p>ATR có cùng đơn vị với giá. ATR là độ biến động, không phải chỉ báo tự phân biệt tăng/giảm. N ở phía Mua có thể khác N ở phía Bán.</p><p>Cấu hình mẫu so ATR với trung bình ATR của N phiên trước. ATR thấp hơn mốc là biến động thấp hơn mốc, không mặc nhiên là giá rẻ.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">TR = max(High−Low, |High−Close trước|, |Low−Close trước|)<br/>ATR đầu = trung bình N TR<br/>ATR mới = [(N−1) × ATR trước + TR mới]/N</div><p>High = 105; Low = 101; Close trước = 99. TR bằng bao nhiêu?</p><p>Kết quả là <strong>6 đơn vị giá</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>TR đầu tiên cần đóng cửa trước. ATR Wilder cần N TR, baseline SMA của ATR dùng baseline phiên trước không gồm T. Đơn vị giá phải nhất quán.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 14, \"baseline\": 20}</td><td>ATR &lt; TB ATR</td></tr><tr><td>BÁN</td><td>{\"period\": 14, \"baseline\": 20}</td><td>ATR &gt; TB ATR</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Không đưa thêm Stop ATR hay ATR sizing vào khối quản trị vị thế của bản này. ATR chỉ mở ở điều kiện Mua/Bán theo quyết định sản phẩm.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "ATR",
+      "prompt": "High = 105; Low = 101; Close trước = 99. TR bằng bao nhiêu?",
+      "expected": 6,
+      "unit": "đơn vị giá",
+      "formula": "TR = max(High−Low, |High−Close trước|, |Low−Close trước|)\nATR đầu = trung bình N TR\nATR mới = [(N−1) × ATR trước + TR mới]/N",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "atr",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch07-l02",
+    "chapter": 7,
+    "order": 2,
+    "name": "ATR Percent",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>ATR Percent</strong> đo ATR chuẩn hóa theo giá để so mức biến động tương đối.</p><p>ATR cần cùng chu kỳ đã chọn và cùng cơ sở điều chỉnh giá với giá đóng cửa. API lưu tỷ lệ, UI hiển thị phần trăm.</p><p>Hai mã có ATR bằng 2 nhưng giá lần lượt 50 và 100 có ATR% khác nhau. Chỉ số chuẩn hóa thích hợp hơn khi so nhiều mức giá.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">ATR Percent = ATR / Giá đóng cửa × 100</div><p>ATR = 2; Giá đóng cửa = 50. ATR Percent bằng bao nhiêu?</p><p>Kết quả là <strong>4 %</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>ATR hợp lệ và Close&gt;0; thiếu giá hoặc ATR thì missing. N chu kỳ riêng từng phía.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 14, \"level\": 5.0}</td><td>ATR Percent &lt; Ngưỡng %</td></tr><tr><td>BÁN</td><td>{\"period\": 14, \"level\": 8.0}</td><td>ATR Percent &gt; Ngưỡng %</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>ATR% cao không nói hướng giảm. Đơn vị phải là 4% hiển thị tương ứng 0,04 lưu; không nhân/chia 100 hai lần.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "ATR Percent",
+      "prompt": "ATR = 2; Giá đóng cửa = 50. ATR Percent bằng bao nhiêu?",
+      "expected": 4,
+      "unit": "%",
+      "formula": "ATR Percent = ATR / Giá đóng cửa × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "atr_percent",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch07-l03",
+    "chapter": 7,
+    "order": 3,
+    "name": "Relative Volume",
+    "kind": "technical",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương và registry nguồn",
+    "sections": [
+      {
+        "title": "Khái niệm và cách đọc",
+        "html": "<p><strong>Relative Volume</strong> đo khối lượng hiện tại tương ứng bao nhiêu lần mức trung bình trước đó.</p><p>Mẫu số không gồm hôm nay để việc tăng lượng hiện tại không đồng thời nâng chính mốc so. Đây là phiên bản theo ngày, không phải RVOL điều chỉnh theo giờ trong phiên.</p><p>1,5 lần nghĩa là lượng hiện tại lớn hơn 50% trung bình. Không cần giá tăng hay giảm trừ khi có một dòng giá riêng trong chiến lược.</p>"
+      },
+      {
+        "title": "Công thức và ví dụ tính",
+        "html": "<div class=\"formula\">Relative Volume = Volume hiện tại / Trung bình N khối lượng trước</div><p>Khối lượng hiện tại 1,8 triệu; trung bình trước 1,2 triệu. Relative Volume bằng bao nhiêu?</p><p>Kết quả là <strong>1,5 lần</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>N khối lượng trước và lượng hiện tại; mẫu số &gt;0. Lượng hiện tại bằng 0 hợp lệ nếu dữ liệu xác nhận, khác với dữ liệu bị thiếu.</p>"
+      },
+      {
+        "title": "Tham số, Mua và Bán",
+        "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"lookback\": 20, \"level\": 1.5}</td><td>Relative Volume &gt; Ngưỡng</td></tr><tr><td>BÁN</td><td>{\"lookback\": 20, \"level\": 1.5}</td><td>Relative Volume &gt; Ngưỡng</td></tr></tbody></table></div>"
+      },
+      {
+        "title": "Vận dụng và giới hạn",
+        "html": "<p>Không đồng nhất RVOL và bài Khối lượng: bài trước có thêm hướng giá trong cấu hình mẫu; RVOL ở đây chỉ là tỷ lệ lượng.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Relative Volume",
+      "prompt": "Khối lượng hiện tại 1,8 triệu; trung bình trước 1,2 triệu. Relative Volume bằng bao nhiêu?",
+      "expected": 1.5,
+      "unit": "lần",
+      "formula": "Relative Volume = Volume hiện tại / Trung bình N khối lượng trước",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": "relative_volume",
+    "prerequisites": [],
+    "sources": [
+      "source:technical-registry-v1",
+      "author:calculation-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  }
+]

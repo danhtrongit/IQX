@@ -1,0 +1,414 @@
+{
+  "01-overview": {
+    "file": "assets/academy/ch02/01-overview.a6e2ba50.webp",
+    "sha256": "a6e2ba505d5cec700672a3355429f4519577e1184d3c6f76bda500e5f0922588",
+    "bytes": 93608,
+    "width": 2160,
+    "height": 1175,
+    "mime": "image/webp",
+    "alt": "Các khu vực của Backtest.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#tab-backtest"
+      },
+      {
+        "number": 2,
+        "selector": "#techLibrary"
+      },
+      {
+        "number": 3,
+        "selector": "#pane-backtest .setup"
+      },
+      {
+        "number": 4,
+        "selector": "#pane-backtest .builder"
+      },
+      {
+        "number": 5,
+        "selector": "#pane-backtest .assumptions"
+      }
+    ]
+  },
+  "02-inputs": {
+    "file": "assets/academy/ch02/02-inputs.c86ba3ad.webp",
+    "sha256": "c86ba3ad6c2a98dd381231aff0fa45bed396596455188969985878ebd83130a2",
+    "bytes": 14186,
+    "width": 1705,
+    "height": 154,
+    "mime": "image/webp",
+    "alt": "Chọn mã, khoảng kiểm thử và vốn ban đầu.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": ".setup .field:nth-child(1)"
+      },
+      {
+        "number": 2,
+        "selector": ".setup .field:nth-child(2)"
+      },
+      {
+        "number": 3,
+        "selector": ".setup .field:nth-child(3)"
+      },
+      {
+        "number": 4,
+        "selector": ".setup .field:nth-child(4)"
+      }
+    ]
+  },
+  "03-add-buy": {
+    "file": "assets/academy/ch02/03-add-buy.0fdc6443.webp",
+    "sha256": "0fdc64435affedba1a149589c4748117e290a9781b7128968e525d5e405a428b",
+    "bytes": 3986,
+    "width": 378,
+    "height": 140,
+    "mime": "image/webp",
+    "alt": "Thêm MA / SMA vào phía Mua từ thư viện.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-add-tech=\"ma\"][data-side=\"buy\"]"
+      }
+    ]
+  },
+  "04-buy-config": {
+    "file": "assets/academy/ch02/04-buy-config.81555fd3.webp",
+    "sha256": "81555fd3593db36b6e3662201a50d121c7051387997212560052441fa5cba4e9",
+    "bytes": 28526,
+    "width": 992,
+    "height": 824,
+    "mime": "image/webp",
+    "alt": "Cấu hình Mua của MA / SMA: chu kỳ 20, Giá đóng cửa > SMA 20.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-config-side=\"buy\"]"
+      },
+      {
+        "number": 2,
+        "selector": "#configForm .config-card-head .switch"
+      },
+      {
+        "number": 3,
+        "selector": "#param-period"
+      },
+      {
+        "number": 4,
+        "selector": "[data-config-op=\"0\"]"
+      },
+      {
+        "number": 5,
+        "selector": "#configSave"
+      }
+    ]
+  },
+  "05-buy-card": {
+    "file": "assets/academy/ch02/05-buy-card.80d0d9d7.webp",
+    "sha256": "80d0d9d7f6ee058f139db7a000ebc6d245251a77e30012f87565b44d3ee9c845",
+    "bytes": 17594,
+    "width": 1705,
+    "height": 394,
+    "mime": "image/webp",
+    "alt": "MA xuất hiện ở Mua; Chỉnh sửa tham số, dấu × bỏ khỏi đúng phía.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-edit-tech=\"ma\"][data-side=\"buy\"]"
+      },
+      {
+        "number": 2,
+        "selector": "[data-remove-tech=\"ma\"][data-side=\"buy\"]"
+      }
+    ]
+  },
+  "06-buy-and": {
+    "file": "assets/academy/ch02/06-buy-and.ce200117.webp",
+    "sha256": "ce200117b3e0c05eaf25ed182470a804644b28fd4c674f8d02bb0ed586e8738f",
+    "bytes": 29862,
+    "width": 1705,
+    "height": 469,
+    "mime": "image/webp",
+    "alt": "MA và Khối lượng cùng ở Mua: hai chỉ báo kết hợp AND.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#buyPanel .rule-card:nth-child(1)"
+      },
+      {
+        "number": 2,
+        "selector": "#buyPanel .rule-card:nth-child(2)"
+      },
+      {
+        "number": 3,
+        "selector": ".side-panel.buy .and"
+      }
+    ]
+  },
+  "07-sell-config": {
+    "file": "assets/academy/ch02/07-sell-config.805e8fdd.webp",
+    "sha256": "805e8fddc68ccb4e3cd32f2f5e3acbcdd25ad6551a44ebb1a77d2dfff525d322",
+    "bytes": 27612,
+    "width": 992,
+    "height": 824,
+    "mime": "image/webp",
+    "alt": "Cấu hình Bán của MA / SMA: chu kỳ 20, Giá đóng cửa < SMA 20.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-config-side=\"sell\"]"
+      },
+      {
+        "number": 2,
+        "selector": "#param-period"
+      },
+      {
+        "number": 3,
+        "selector": "[data-config-op=\"0\"]"
+      },
+      {
+        "number": 4,
+        "selector": "#configSave"
+      }
+    ]
+  },
+  "08-independent": {
+    "file": "assets/academy/ch02/08-independent.997b2ba6.webp",
+    "sha256": "997b2ba6bd16e8094224bae945aec9d9a0c6b06401d6ac2b82b4e95c22e44d0b",
+    "bytes": 22692,
+    "width": 1705,
+    "height": 391,
+    "mime": "image/webp",
+    "alt": "Mua SMA 20 và Bán SMA 50: thay chu kỳ Bán không đổi Mua.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#buyPanel .rule-meta"
+      },
+      {
+        "number": 2,
+        "selector": "#sellPanel .rule-meta"
+      },
+      {
+        "number": 3,
+        "selector": "[data-remove-tech=\"ma\"][data-side=\"sell\"]"
+      }
+    ]
+  },
+  "09-sell-off": {
+    "file": "assets/academy/ch02/09-sell-off.3ddbb91a.webp",
+    "sha256": "3ddbb91a06366952203e371ce5c3ed194af2453db10c0fc6556d370de682cd0d",
+    "bytes": 17480,
+    "width": 1705,
+    "height": 394,
+    "mime": "image/webp",
+    "alt": "Bỏ MA khỏi Bán: phía Mua vẫn còn; Bán đang rỗng.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#buyPanel .rule-card"
+      },
+      {
+        "number": 2,
+        "selector": "#sellPanel"
+      }
+    ]
+  },
+  "10-assumptions": {
+    "file": "assets/academy/ch02/10-assumptions.7e05eb23.webp",
+    "sha256": "7e05eb23b71693547235bc954160f2320b9ba12462a6a9f27afc062af2b0a645",
+    "bytes": 14976,
+    "width": 1705,
+    "height": 189,
+    "mime": "image/webp",
+    "alt": "Chọn Khớp lệnh và Phí trước khi chạy kiểm thử.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#btExecution"
+      },
+      {
+        "number": 2,
+        "selector": "#btFee"
+      },
+      {
+        "number": 3,
+        "selector": "#runBtn"
+      }
+    ]
+  },
+  "11-results": {
+    "file": "assets/academy/ch02/11-results.a6f779af.webp",
+    "sha256": "a6f779afce99259b3c2aaf63b1732d18ef1bf80a8f593d041b646ffc58608cda",
+    "bytes": 74958,
+    "width": 1705,
+    "height": 901,
+    "mime": "image/webp",
+    "alt": "Kết quả lần A: MA Mua 20, MA Bán 20.",
+    "marks": []
+  },
+  "12-kpis": {
+    "file": "assets/academy/ch02/12-kpis.271d3ed0.webp",
+    "sha256": "271d3ed0f991b0464ef58faadb67eff8a102a05aa9ad089068f467839d3b4eeb",
+    "bytes": 26952,
+    "width": 1703,
+    "height": 193,
+    "mime": "image/webp",
+    "alt": "Sáu chỉ số của cùng một lần chạy, không phải sáu kết quả riêng.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": ".kpis .kpi:nth-child(1)"
+      },
+      {
+        "number": 2,
+        "selector": ".kpis .kpi:nth-child(2)"
+      },
+      {
+        "number": 3,
+        "selector": ".kpis .kpi:nth-child(3)"
+      },
+      {
+        "number": 4,
+        "selector": ".kpis .kpi:nth-child(4)"
+      },
+      {
+        "number": 5,
+        "selector": ".kpis .kpi:nth-child(5)"
+      },
+      {
+        "number": 6,
+        "selector": ".kpis .kpi:nth-child(6)"
+      }
+    ]
+  },
+  "13-chart": {
+    "file": "assets/academy/ch02/13-chart.4adce591.webp",
+    "sha256": "4adce5912ffcde22a265050b68f669c25195aec12dd872a2fe927c5ec829513e",
+    "bytes": 41068,
+    "width": 1703,
+    "height": 518,
+    "mime": "image/webp",
+    "alt": "Trỏ vào chart để đọc ba đường tại cùng một phiên; trục dọc là lợi nhuận %.",
+    "marks": []
+  },
+  "14-history": {
+    "file": "assets/academy/ch02/14-history.0e700eba.webp",
+    "sha256": "0e700eba6d420cafc155b8c91c40f502ccac86d8ba9ca069ee0f84eb5292d122",
+    "bytes": 51274,
+    "width": 1705,
+    "height": 623,
+    "mime": "image/webp",
+    "alt": "Lịch sử giao dịch: có số lượng, điều kiện, ngày khớp và nút chi tiết từng vòng đã đóng.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-trade=\"18\"]"
+      }
+    ]
+  },
+  "15-trade-detail": {
+    "file": "assets/academy/ch02/15-trade-detail.e48344cc.webp",
+    "sha256": "e48344cc5653d9efcee1193b6a047320b8e3cf5ebcb2cff9a9a7aa37a14d3f70",
+    "bytes": 50642,
+    "width": 992,
+    "height": 1034,
+    "mime": "image/webp",
+    "alt": "Chi tiết giao dịch của cùng lần kiểm thử: ngày tín hiệu, ngày khớp, phí và giá trị điều kiện.",
+    "marks": []
+  },
+  "16-save": {
+    "file": "assets/academy/ch02/16-save.31f9b642.webp",
+    "sha256": "31f9b642cb438a104d4a99b97065e144bb61ff4c580aae6e7983cd9169012bd0",
+    "bytes": 15712,
+    "width": 992,
+    "height": 438,
+    "mime": "image/webp",
+    "alt": "Lưu phiên bản kết quả với tên mô tả cấu hình đã chạy.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#saveName"
+      },
+      {
+        "number": 2,
+        "selector": "[data-action=\"confirm-name\"]"
+      }
+    ]
+  },
+  "17-dirty": {
+    "file": "assets/academy/ch02/17-dirty.d41a2e86.webp",
+    "sha256": "d41a2e863ce6846bd5a100df6842d40ea05e5e16fa7abc197ed31b1771a1bcd7",
+    "bytes": 13360,
+    "width": 1703,
+    "height": 158,
+    "mime": "image/webp",
+    "alt": "Sau khi đổi SMA Mua 20 thành 30, kết quả cũ chưa đổi; cần chạy lại.",
+    "marks": []
+  },
+  "18-results-b": {
+    "file": "assets/academy/ch02/18-results-b.ead26e2a.webp",
+    "sha256": "ead26e2a92065953404c55902e0eea15ce4e036b0106e5d6515d6c79ec8406e9",
+    "bytes": 79388,
+    "width": 1705,
+    "height": 901,
+    "mime": "image/webp",
+    "alt": "Lần B dùng SMA Mua 30; phía Bán và các giả định vẫn như lần A.",
+    "marks": []
+  },
+  "19-saved": {
+    "file": "assets/academy/ch02/19-saved.7c773974.webp",
+    "sha256": "7c7739743531a30c0dcdfdf29934cb65f9f981a20f2b1f1c1f6a055a5e90264d",
+    "bytes": 26594,
+    "width": 992,
+    "height": 536,
+    "mime": "image/webp",
+    "alt": "Danh sách các phiên bản: bấm Xem để đọc lại; không tự áp vào cấu hình chung.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-load-saved]"
+      }
+    ]
+  },
+  "20-open-position": {
+    "file": "assets/academy/ch02/20-open-position.d8f0616f.webp",
+    "sha256": "d8f0616fefc4ce4851ffcb64185f1af1eb5816be4ce98a451b95b72194f87d98",
+    "bytes": 23886,
+    "width": 1705,
+    "height": 371,
+    "mime": "image/webp",
+    "alt": "Ví dụ riêng: không có Bán, vị thế còn mở được thể hiện ngoài các giao dịch đã đóng.",
+    "marks": []
+  },
+  "21-mobile": {
+    "file": "assets/academy/ch02/21-mobile.9aa0a64b.webp",
+    "sha256": "9aa0a64b6f4bf1dbeeaeaafc78a21120902129ec70a4b1442c74e6d230cbfd11",
+    "bytes": 9086,
+    "width": 567,
+    "height": 214,
+    "mime": "image/webp",
+    "alt": "Trên màn hình nhỏ, bấm Chỉ báo để mở thư viện.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-action=\"tech-library\"]"
+      }
+    ]
+  },
+  "22-bollinger-config": {
+    "file": "assets/academy/ch02/22-bollinger-config.89f80425.webp",
+    "sha256": "89f80425aa73a25ba4a16eac14c9d02705d15d762d894c17c99284ac5b855fad",
+    "bytes": 36818,
+    "width": 992,
+    "height": 984,
+    "mime": "image/webp",
+    "alt": "Với Bollinger, ô ở dòng vị trí trong dải cho chọn ∈ hoặc ∉; các dòng so sánh còn lại dùng > hoặc <.",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-config-op=\"1\"]"
+      }
+    ]
+  }
+}

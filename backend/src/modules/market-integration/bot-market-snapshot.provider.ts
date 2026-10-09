@@ -2,9 +2,8 @@ import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common'
 
 import { DatabaseService } from '../../platform/database/database.service.js';
 import { canonicalHash } from '../bots/bot.domain.js';
+import { BOT_TRADABLE_SYMBOL_SQL } from '../bots/bot.tradability.js';
 import type { BotIssue, BotMarketSnapshotInput, BotSnapshotProvider } from '../bots/bot.types.js';
-import { FILTER_SPECS, HuntEngine, REQUIRED_CANDLES } from '../journey/cap5/hunt.engine.js';
-import type { HuntDataSource, HuntFilter } from '../journey/cap5/cap5.types.js';
 import { MarketDataService } from '../market-data/market-data.service.js';
 import { HoseRestrictedSecuritiesProvider } from './hose-restricted-securities.provider.js';
 import {
@@ -16,37 +15,26 @@ import {
 } from './integration.utils.js';
 import { MarketHuntDataSource } from './market-hunt-data-source.js';
 
-const FILTER_IDS: Record<HuntFilter, string> = {
-  ngoai: 'khoi_ngoai_gom',
-  tudoanh: 'tu_doanh_gom',
-  kl: 'kl_dot_bien',
-  dinh: 'vuot_dinh_20',
-  tang: 'tang_manh_kl',
-};
+/** 20 sessions feed the average traded value; a few extra tolerate suspended days. */
+const BAR_COUNT = 25;
+const LIQUIDITY_SESSIONS = 20;
 
 function issue(code: string, detail: string, symbol: string | null = null): BotIssue {
   return { code, detail, symbol };
 }
 
-function amplitude(bars: readonly { high: number; low: number; close: number }[]): number | null {
-  if (bars.length < 15) return null;
-  const ranges: number[] = [];
-  for (let index = bars.length - 14; index < bars.length; index += 1) {
-    const current = bars[index];
-    const previous = bars[index - 1];
-    if (!current || !previous) return null;
-    const range = Math.max(
-      current.high - current.low,
-      Math.abs(current.high - previous.close),
-      Math.abs(current.low - previous.close),
-    );
-    if (!Number.isFinite(range) || range <= 0) return null;
-    ranges.push(range);
-  }
-  const result = ranges.reduce((sum, value) => sum + value, 0) / ranges.length;
-  return Number.isFinite(result) && result > 0 ? Math.round(result * 10_000) / 10_000 : null;
+function normalize(symbols: readonly string[] | undefined): string[] {
+  return [
+    ...new Set((symbols ?? []).map((symbol) => symbol.trim().toUpperCase()).filter(Boolean)),
+  ].sort();
 }
 
+/**
+ * Market side of a Bot run snapshot for the symbols that matter to ONE account: the members
+ * of its effective buy universe and every position it holds. The Săn mã / Hunt filters are
+ * not used at all. A symbol with missing data is simply delivered without that field (the
+ * Bot then skips it with a per-symbol reason); it never fails the whole snapshot.
+ */
 @Injectable()
 export class BotMarketSnapshotProvider implements BotSnapshotProvider {
   private readonly logger = new Logger(BotMarketSnapshotProvider.name);
@@ -54,28 +42,27 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
   constructor(
     private readonly database: DatabaseService,
     private readonly market: MarketDataService,
-    private readonly huntSource: MarketHuntDataSource,
+    private readonly bars: MarketHuntDataSource,
     private readonly restrictions: HoseRestrictedSecuritiesProvider,
   ) {}
 
   async buildSnapshot(
     tradingDate: string,
-    options: { openSymbols: readonly string[] },
+    options: { openSymbols: readonly string[]; universeSymbols?: readonly string[] },
   ): Promise<BotMarketSnapshotInput> {
     const observedAt = new Date();
     const issues: BotIssue[] = [];
-    const universeRows = await this.database.query<{ symbol: string }>(
-      `select upper(symbol) symbol from symbols
-       where is_active=true and upper(exchange)='HOSE' and coalesce(is_index,false)=false
-         and lower(asset_type)='stock' order by symbol`,
-    );
-    const universe = universeRows.map((row) => row.symbol);
-    if (!universe.length)
-      issues.push(issue('filter_data_incomplete', 'Rổ cổ phiếu HOSE đang rỗng'));
+    const openSymbols = normalize(options.openSymbols);
+    const universeSymbols = normalize(options.universeSymbols);
+    const requested = [...new Set([...universeSymbols, ...openSymbols])].sort();
 
     const isCurrentSession = tradingDate === vnToday(observedAt);
-    const restricted = isCurrentSession ? await this.restrictions.current() : null;
-    if (restricted === null) {
+    // Restricted-securities status only matters for buying; skip the feed when nothing can be
+    // bought so a HOSE outage never touches an account that has no buy universe.
+    const restricted =
+      universeSymbols.length && isCurrentSession ? await this.restrictions.current() : null;
+    const securityVerified = restricted !== null;
+    if (universeSymbols.length && restricted === null) {
       issues.push(
         issue(
           'missing_security_status',
@@ -85,101 +72,73 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
         ),
       );
     }
-    const filterUniverse = restricted
-      ? universe.filter((symbol) => !restricted.has(symbol))
-      : universe;
-    const pinned: HuntDataSource = {
-      dailyBars: (symbols, count) => this.huntSource.dailyBarsThrough(symbols, count, tradingDate),
-      netFlow: (symbols, side, count) =>
-        this.huntSource.netFlowThrough(symbols, side, count, tradingDate),
-      restrictedSymbols: async () => (restricted === null ? null : new Set(restricted)),
-    };
-    const engine = new HuntEngine(pinned);
-    const filterSymbols = new Map<string, Set<string>>();
-    const filterEvidence: Record<string, unknown> = {};
-    let filtersComplete = universe.length > 0 && restricted !== null;
-    for (const filter of Object.keys(FILTER_SPECS) as HuntFilter[]) {
-      const result = await engine.run(filter, filterUniverse);
-      const id = FILTER_IDS[filter];
-      filterSymbols.set(id, new Set(result.items.map((item) => item.symbol)));
-      filterEvidence[id] = {
-        available: result.available,
-        complete: result.complete,
-        matched_count: result.matchedCount,
-        missing_count: result.missingDataCount,
-      };
-      if (!result.available || result.complete !== true) {
-        filtersComplete = false;
-        issues.push(
-          issue(
-            'filter_data_incomplete',
-            result.unavailableReason ?? result.incompleteWarning ?? `Bộ lọc ${id} chưa đủ dữ liệu`,
-          ),
-        );
-      }
-    }
 
-    const allSymbols = [
-      ...new Set([...universe, ...options.openSymbols.map((value) => value.toUpperCase())]),
-    ].sort();
-    const barsMap = await this.huntSource.dailyBarsThrough(
-      allSymbols,
-      Math.max(REQUIRED_CANDLES, 40),
-      tradingDate,
+    // The same static predicate that validates an applied list: active HOSE stock.
+    const tradable = new Set(
+      universeSymbols.length
+        ? (
+            await this.database.query<{ symbol: string }>(
+              `select upper(symbol) as symbol from symbols
+               where upper(symbol) = any($1::text[]) and ${BOT_TRADABLE_SYMBOL_SQL}`,
+              [universeSymbols],
+            )
+          ).map((row) => row.symbol)
+        : [],
     );
+
+    const barsMap: Awaited<ReturnType<MarketHuntDataSource['dailyBarsThrough']>> = requested.length
+      ? await this.bars.dailyBarsThrough(requested, BAR_COUNT, tradingDate)
+      : new Map();
+    const completedSession = isCompletedVietnamSession(tradingDate, observedAt);
     const symbols: BotMarketSnapshotInput['symbols'] = {};
-    for (const symbol of allSymbols) {
-      const bars = barsMap.get(symbol) ?? [];
-      const latest = bars.at(-1);
-      const exact =
-        latest?.time === tradingDate && isCompletedVietnamSession(tradingDate, observedAt);
-      const recentValues = bars.slice(-20).map((bar) => bar.gtgdVnd);
-      const tradingValueAvg20 =
-        recentValues.length === 20 &&
-        recentValues.every((value) => value !== null && Number.isFinite(value))
-          ? Math.round(recentValues.reduce<number>((sum, value) => sum + (value ?? 0), 0) / 20)
-          : null;
-      const filterIds = [...filterSymbols.entries()]
-        .filter(([, members]) => members.has(symbol))
-        .map(([id]) => id)
-        .sort();
-      const atr = amplitude(bars);
+    const gaps: Record<string, string> = {};
+    for (const symbol of requested) {
+      const symbolBars = barsMap.get(symbol) ?? [];
+      const latest = symbolBars.at(-1);
+      const exact = latest?.time === tradingDate && completedSession;
       const official = Boolean(
         exact && latest && Number.isFinite(latest.close) && latest.close > 0,
       );
-      const securityVerified = restricted !== null;
+      const recentValues = symbolBars.slice(-LIQUIDITY_SESSIONS).map((bar) => bar.gtgdVnd);
+      const tradingValueAvg20 =
+        recentValues.length === LIQUIDITY_SESSIONS &&
+        recentValues.every((value) => value !== null && Number.isFinite(value))
+          ? Math.round(
+              recentValues.reduce<number>((sum, value) => sum + (value ?? 0), 0) /
+                LIQUIDITY_SESSIONS,
+            )
+          : null;
+      if (!symbolBars.length) gaps[symbol] = 'no_bars';
+      else if (!official) gaps[symbol] = 'no_official_close';
+      else if (tradingValueAvg20 === null) gaps[symbol] = 'no_liquidity';
+      const universeMember = universeSymbols.includes(symbol);
       symbols[symbol] = {
         close_vnd: official ? String(Math.round(latest!.close)) : undefined,
         close_is_official: official,
         trading_value_avg20_vnd: tradingValueAvg20 === null ? undefined : String(tradingValueAvg20),
-        filter_ids: filterIds,
-        layers: {},
-        l1_amplitude_vnd: atr,
-        l1_amplitude_source_ref:
-          atr === null ? null : `quant:atr14:true-range:VCI-OHLCV:${symbol}:${tradingDate}:v1`,
-        security_status_verified: securityVerified,
-        tradable_security_status: securityVerified ? !restricted!.has(symbol) : false,
+        security_status_verified: universeMember ? securityVerified : undefined,
+        tradable_security_status: universeMember
+          ? securityVerified && tradable.has(symbol) && !restricted!.has(symbol)
+          : undefined,
         source_refs: {
           close: {
             provider: 'VCI',
             endpoint: 'chart/OHLCChart/gap-chart',
             session: latest?.time ?? null,
             exact_session: exact,
-            completed_session: isCompletedVietnamSession(tradingDate, observedAt),
+            completed_session: completedSession,
             official_close_evidence: official,
           },
-          amplitude: atr === null ? null : 'ATR(14), true range, VCI unadjusted daily OHLCV',
-          l1_amplitude:
-            atr === null
-              ? null
-              : {
-                  source_ref: `quant:atr14:true-range:VCI-OHLCV:${symbol}:${tradingDate}:v1`,
-                  session: tradingDate,
-                  unit: 'VND/share',
-                  basis: 'ATR(14), true range, VCI unadjusted daily OHLCV',
-                },
+          liquidity: {
+            basis: `Trung bình ${LIQUIDITY_SESSIONS} phiên GTGD, VCI accumulatedValue`,
+            sessions: symbolBars.slice(-LIQUIDITY_SESSIONS).length,
+            complete: tradingValueAvg20 !== null,
+          },
         },
       };
+    }
+    for (const [symbol, reason] of Object.entries(gaps)) {
+      this.logger.debug(`Bot data gap ${symbol} (${tradingDate}): ${reason}`);
     }
 
     const feeRows = await this.database.query<{
@@ -240,14 +199,19 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
       this.logger.debug(`VNINDEX unavailable for Bot snapshot: ${String(error)}`);
     }
 
-    const openSymbolsComplete = options.openSymbols.every(
-      (symbol) => symbols[symbol.toUpperCase()]?.close_is_official === true,
+    const openSymbolsComplete = openSymbols.every(
+      (symbol) => symbols[symbol]?.close_is_official === true,
     );
     if (!openSymbolsComplete) {
       issues.push(issue('missing_official_close', 'Thiếu giá đóng cửa đúng phiên cho vị thế mở'));
     }
     const sourceRefs = {
-      filters: { session: tradingDate, hash: stableHash(filterEvidence), data: filterEvidence },
+      universe: {
+        session: tradingDate,
+        requested_symbols: universeSymbols.length,
+        symbols_with_gaps: Object.keys(gaps).length,
+        gaps,
+      },
       security_status: {
         provider: 'HOSE securities/status-list + stock-status',
         session: isCurrentSession ? tradingDate : null,
@@ -260,11 +224,11 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
     const base: BotMarketSnapshotInput = {
       trading_date: tradingDate,
       data_version: '',
-      close_is_official: openSymbolsComplete && isCompletedVietnamSession(tradingDate, observedAt),
-      // Only sources shared by the whole candidate scan belong in this bit. Close, L1,
-      // academy signals, lot sizing and capital are evaluated for each candidate so one bad
-      // symbol never prevents later candidates from being considered.
-      buy_inputs_complete: filtersComplete && restricted !== null,
+      close_is_official: openSymbolsComplete && completedSession,
+      // Only inputs shared by the whole candidate scan belong in this bit. Close, liquidity,
+      // condition signals, lot sizing and capital are judged per symbol so one bad symbol
+      // never prevents the others from being considered.
+      buy_inputs_complete: universeSymbols.length === 0 || securityVerified,
       symbols,
       fee_rules: feeRules,
       vnindex,
@@ -272,7 +236,7 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
       source_refs: sourceRefs,
     };
     const contentHash = canonicalHash(base);
-    base.data_version = `bot-academy-activation-1:${tradingDate}:${contentHash.slice(0, 16)}`;
+    base.data_version = `bot-v1:${tradingDate}:${contentHash.slice(0, 16)}`;
     base.snapshot_hash = canonicalHash(base);
     return base;
   }

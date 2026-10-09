@@ -1,0 +1,1519 @@
+[
+  {
+    "id": "ch01-l01",
+    "chapter": 1,
+    "order": 1,
+    "lesson_key": "technical:rsi",
+    "kind": "technical",
+    "name": "RSI",
+    "title": "Chỉ báo RSI",
+    "lead": "Tính và đọc đà giá; phân biệt chu kỳ với ngưỡng; nhận diện đúng lúc RSI tăng từ vùng thấp hoặc giảm từ vùng cao.",
+    "nav_labels": ["Khái niệm", "Công thức", "Tham số", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch01-v2.0",
+    "source": {
+      "package": "iqx-ch1-lessons",
+      "package_version": "iqx-ch1-lessons-2026-10-07-v2.0",
+      "payload_sha256": "377bd65337dfbbad2e73ae5183b8dddf0a22e32c4cc6b3b1fde7e3e8fb387354",
+      "object_sha256": "150544b0588586e30781273fdade40ca2aea873b234034fcb9dd336a259dfade"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>RSI so sánh mức độ tăng giá với mức độ giảm giá</strong> và biểu diễn kết quả trên thang từ 0 đến 100. Chỉ báo giúp đọc đà giá: các biến động tăng hay giảm đang chiếm ưu thế trong phép tính. RSI không phải giá cổ phiếu hoặc phần trăm lợi nhuận.</p>\n<p>Một đường RSI được tính từ chuỗi giá đóng cửa. Trên biểu đồ dưới đây, giá nằm ở phía trên và RSI ở phía dưới; hai phần dùng cùng các phiên giao dịch.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "concept-chart",
+            "title": "Giá đóng cửa và RSI 14",
+            "caption": "Trục giá dùng đơn vị giả định. Trục RSI chạy từ 0 đến 100. Một vị trí theo chiều ngang là cùng một phiên trên cả hai phần.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "table",
+            "head": ["Giá trị RSI", "Ý nghĩa"],
+            "rows": [
+              ["Trên 50", "Mức tăng trung bình lớn hơn mức giảm trung bình trong phép tính."],
+              ["Bằng 50", "Hai mức trung bình bằng nhau, khi cả hai đều dương. Không có nghĩa giá đứng yên."],
+              ["Dưới 50", "Mức giảm trung bình lớn hơn mức tăng trung bình trong phép tính."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Quá mua và quá bán</h3>\n<p><strong>Trên 70</strong> thường gọi là vùng quá mua; <strong>dưới 30</strong> thường gọi là vùng quá bán. Đây là các mốc tham chiếu, không phải hai mức giá cổ phiếu và không phải lệnh mua hoặc bán tự động.</p>\n<p>RSI có thể duy trì ở vùng cao hoặc thấp nhiều phiên. Do đó, RSI cao không đồng nghĩa giá phải giảm ngay, RSI thấp không đồng nghĩa giá phải tăng ngay. Khoảng giữa hai ngưỡng cũng không phải một “vùng an toàn”.</p>\n<p>Khi đọc, cần tách <strong>vị trí</strong> và <strong>chiều thay đổi</strong>. RSI từ 42 lên 47 đang tăng nhưng vẫn dưới 50. RSI từ 65 xuống 60 đang giảm nhưng vẫn trên 50.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Các giá trong ví dụ dùng cùng một đơn vị giả định. Chỉ làm tròn khi trình bày; phép tính và so sánh sử dụng giá trị chưa làm tròn.</p>\n<p>Công thức gồm hai bước: tính tỷ số giữa mức tăng trung bình và mức giảm trung bình, sau đó chuyển tỷ số này thành RSI.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">RS = <span class=\"frac\"><span>G</span><span>D</span></span></div><div class=\"math-eq\">RSI = 100 − <span class=\"frac\"><span>100</span><span>1 + RS</span></span></div></div>"
+          },
+          {
+            "type": "table",
+            "head": ["Ký hiệu", "Ý nghĩa"],
+            "rows": [
+              ["G", "Mức tăng trung bình dùng để tính RSI."],
+              ["D", "Mức giảm trung bình, ghi bằng số không âm. Giảm 2 đơn vị thì ghi mức giảm là 2."],
+              ["RS", "Tỷ số G chia D."],
+              ["N", "Chu kỳ RSI; thiết lập tham chiếu là 14."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>2.1. Từ giá đóng cửa đến mức tăng, mức giảm</h3>\n<p>Giả sử có sáu giá đóng cửa liên tiếp: <strong>100, 101, 100, 102, 101, 104</strong>, cùng một đơn vị giá. Chọn chu kỳ <strong>N = 5</strong> để minh họa. Sáu giá tạo ra năm lần thay đổi.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Giá đóng cửa", "Mức tăng", "Mức giảm"],
+            "rows": [
+              ["100 → 101", "1", "0"],
+              ["101 → 100", "0", "1"],
+              ["100 → 102", "2", "0"],
+              ["102 → 101", "0", "1"],
+              ["101 → 104", "3", "0"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Mỗi phiên lấy giá đóng cửa trừ giá đóng cửa trước đó. Phiên tăng ghi mức giảm bằng 0; phiên giảm ghi mức tăng bằng 0; giá không đổi thì cả hai bằng 0.</p>\n<h3>2.2. Tính RSI đầu tiên</h3>\n<p>Hai mức trung bình ban đầu được tính bằng tổng mức tăng và tổng mức giảm, cùng chia cho <strong>đủ N lần thay đổi</strong>, kể cả các số 0. Không chia riêng cho số phiên tăng hoặc số phiên giảm.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">G = (1 + 0 + 2 + 0 + 3) / 5 = 1,2</div><div class=\"math-eq\">D = (0 + 1 + 0 + 1 + 0) / 5 = 0,4</div><div class=\"math-eq\">RS = 1,2 / 0,4 = 3</div><div class=\"math-eq\">RSI = 100 − 100 / (1 + 3) = <strong>75</strong></div></div>\n<p>G gấp ba D nên tỷ số RS bằng 3. <strong>RSI 75 không có nghĩa 75% số phiên tăng hoặc xác suất có lời là 75%.</strong> Con số này được tạo ra từ tương quan giữa hai mức trung bình.</p>\n<h3>2.3. Cập nhật khi có phiên mới</h3>\n<p>Sau lần tính đầu, cách tính Wilder cập nhật G và D theo công thức dưới đây. Phần dữ liệu trước vẫn tham gia kết quả; không lấy lại trung bình cộng của riêng N phiên gần nhất ở mỗi bước.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">G mới = <span class=\"frac\"><span>(N − 1) × G trước + Mức tăng mới</span><span>N</span></span></div><div class=\"math-eq\">D mới = <span class=\"frac\"><span>(N − 1) × D trước + Mức giảm mới</span><span>N</span></span></div></div>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ tiếp nối: giá từ 104 giảm xuống 103",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Mức tăng mới là 0, mức giảm mới là 1. Vẫn dùng chu kỳ 5 và hai kết quả G = 1,2; D = 0,4 vừa tính.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">G mới = (4 × 1,2 + 0) / 5 = 0,96</div><div class=\"math-eq\">D mới = (4 × 0,4 + 1) / 5 = 0,52</div><div class=\"math-eq\">RSI mới = 100 − 100 / (1 + 0,96 / 0,52)</div><div class=\"math-eq\">RSI mới ≈ <strong>64,86</strong></div></div>\n<p>Một phiên giảm làm RSI từ 75 xuống khoảng 64,86 trong ví dụ này. Các biến động tăng trước đó vẫn còn ảnh hưởng tới kết quả.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Với D = 0 và G &gt; 0, RSI ở 100; với G = 0 và D &gt; 0, RSI ở 0. Khi cả hai bằng 0, tỷ số không xác định. Bản mẫu không tạo tín hiệu từ trường hợp đó.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Chu kỳ và hai ngưỡng",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>RSI có hai loại thông số cần phân biệt: <strong>chu kỳ</strong> tham gia cách tính chỉ báo; <strong>hai ngưỡng</strong> tham gia cách xác định tín hiệu.</p>\n<h3>3.1. Chu kỳ thay đổi cách RSI phản ứng</h3>\n<p>Trong công thức cập nhật, mức tăng hoặc giảm mới có phần đóng góp bằng 1/N. Với cùng điều kiện xuất phát, chu kỳ 7 dành 1/7 cho biến động mới; chu kỳ 14 dành 1/14. Chu kỳ ngắn vì vậy phản ứng mạnh hơn với dữ liệu mới.</p>\n<p>Đổi chu kỳ phải tính lại RSI từ lịch sử giá. RSI 7 không luôn cao hơn RSI 14, cũng không thể được tính bằng cách lấy RSI 14 chia đôi.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "period-chart",
+            "title": "Cùng giá, hai chu kỳ RSI",
+            "caption": "Hai đường được tính lại từ cùng chuỗi giá. So sánh các đoạn tăng và giảm, không chỉ một giá trị cuối cùng.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<h3>3.2. Hai ngưỡng không làm thay đổi đường RSI</h3>\n<p>Trong phương pháp IQX của bài này, <strong>ngưỡng quá bán</strong> là mốc tìm tín hiệu mua, còn <strong>ngưỡng quá mua</strong> là mốc tìm tín hiệu bán. Vị trí so với ngưỡng được xét ở phiên trước; phiên hiện tại phải đổi theo chiều phù hợp. Công thức cụ thể nằm ở Phần 4.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Điều chỉnh", "Dữ liệu giữ nguyên", "Tác động đến tín hiệu RSI"],
+            "rows": [
+              ["Ngưỡng quá bán: 30 → 35", "32 → 34", "Mua: trước không có, sau có. Giá trị RSI không đổi."],
+              ["Ngưỡng quá bán: 30 → 25", "27 → 29", "Mua: trước có, sau không còn."],
+              ["Ngưỡng quá mua: 70 → 75", "72 → 68", "Bán: trước có, sau không còn."],
+              ["Ngưỡng quá mua: 70 → 65", "68 → 64", "Bán: trước không có, sau có."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Đổi ngưỡng quá bán không trực tiếp đổi điều kiện bán; đổi ngưỡng quá mua không trực tiếp đổi điều kiện mua. <strong>Đổi chu kỳ của phía nào thì tính lại đường RSI dùng cho phía đó.</strong> Chỉ sửa chu kỳ Mua không làm chu kỳ hoặc điều kiện Bán thay đổi.</p>\n<p>Để hiểu một thay đổi, giữ cùng dữ liệu và các thông số còn lại. Số tín hiệu nhiều hơn hoặc ít hơn chưa chứng minh kết quả giao dịch sẽ tốt hơn.</p>\n<h3>Cùng là RSI, hai phía có thể dùng hai chuỗi khác nhau</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Phía đang cấu hình", "Chu kỳ", "Ngưỡng mẫu", "Khi chỉnh"],
+            "rows": [
+              ["Mua", "14", "30", "Chỉ thay tham số và phép so sánh phía Mua."],
+              ["Bán", "10", "75", "Chuỗi RSI 10 được tính riêng; không lấy RSI 14 của Mua dùng thay."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Bảng là một lựa chọn minh họa, không phải cấu hình tối ưu. Các hình RSI 14 và RSI 7 ở trên minh họa ảnh hưởng chu kỳ, không tự ghi các giá trị đó vào cấu hình đang sử dụng.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Tín hiệu và cách vận dụng",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Cấu hình dưới đây là <strong>cách sử dụng RSI mẫu trong IQX</strong>, không phải cách sử dụng duy nhất. Mỗi phía dùng giá trị của hai phiên liên tiếp được tính theo chu kỳ riêng của phía đó. Chỉ khi phía được bật thì điều kiện mới tham gia hợp lưu.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "signal-buy",
+            "title": "Điều kiện Mua mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>RSI phiên trước <strong>&lt; ngưỡng Mua</strong>.</p>\n<p>RSI hiện tại <strong>&gt; RSI phiên trước</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "signal-sell",
+            "title": "Điều kiện Bán mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>RSI phiên trước <strong>&gt; ngưỡng Bán</strong>.</p>\n<p>RSI hiện tại <strong>&lt; RSI phiên trước</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p><strong>Không cần RSI hiện tại vượt 30 mới đạt Mua.</strong> Khi phiên trước dưới ngưỡng, RSI chỉ cần tăng so với phiên trước. Tăng lên nhưng vẫn dưới ngưỡng và tăng vượt ngưỡng đều có thể đạt.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["RSI trước → hiện tại", "Mua: ngưỡng 30", "Bán: ngưỡng 70", "Vì sao?"],
+            "rows": [
+              ["24 → 27", "Đạt", "Không đạt", "Từ dưới 30 tăng lên, dù chưa vượt 30."],
+              ["28 → 32", "Đạt", "Không đạt", "Từ dưới 30 tăng lên, vượt 30 không làm mất tín hiệu."],
+              ["30 → 34", "Không đạt", "Không đạt", "Dấu &lt; không bao gồm bằng 30."],
+              ["26 → 25", "Không đạt", "Không đạt", "Ở vùng thấp nhưng đang giảm."],
+              ["78 → 74", "Không đạt", "Đạt", "Từ trên 70 giảm xuống, dù vẫn trên 70."],
+              ["74 → 68", "Không đạt", "Đạt", "Từ trên 70 giảm xuống, không cần còn trên 70."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Các dòng là tình huống độc lập, giả sử hai phía cùng dùng một chu kỳ để đối chiếu số liệu. Nếu chu kỳ Mua/Bán khác nhau thì phải lấy đúng chuỗi của từng phía.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "rsi-application",
+            "title": "Một tín hiệu phải được xét lại ở từng cặp phiên",
+            "caption": "Hai điểm A và B là hai phiên liền nhau, lấy từ cùng chuỗi giá và cùng RSI 14. Bảng dưới hình kiểm tra từng yêu cầu, không suy lệnh mua từ màu đường.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "table",
+            "head": ["Yêu cầu Mua mẫu tại B", "Đối chiếu số liệu", "Kết quả"],
+            "rows": [
+              ["RSI phiên trước &lt; 30", "27,75 &lt; 30", "<b class=\"good\">Đạt</b>"],
+              ["RSI hiện tại &gt; RSI phiên trước", "31,37 &gt; 27,75", "<b class=\"good\">Đạt</b>"]
+            ],
+            "source": {
+              "kind": "computed",
+              "hook": "application",
+              "chart_id": "rsi-application"
+            }
+          },
+          {
+            "type": "html",
+            "html": "<h3>Đổi dấu nghĩa là đổi điều kiện</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Cấu hình Mua", "RSI 28 → 32", "RSI 35 → 38"],
+            "rows": [
+              ["Phiên trước &lt; 30; hiện tại &gt; phiên trước", "Đạt", "Không đạt"],
+              ["Phiên trước &gt; 30; hiện tại &gt; phiên trước", "Không đạt", "Đạt"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Ở dòng thứ hai, điều kiện không còn tìm RSI đi lên từ dưới 30. Hệ thống phải dùng đúng dấu đã lưu, không tự đổi về dấu mẫu. Sửa Mua cũng không làm điều kiện Bán đổi theo.</p>\n<h3>Tín hiệu không được giữ hộ từ hôm trước</h3>\n<p>Với chuỗi <strong>28 → 32 → 35</strong>, lần lên 32 đạt Mua mẫu; lần lên 35 không đạt vì giá trị trước đã là 32. Với <strong>24 → 27 → 29</strong>, cả hai lần tăng có thể đạt vì mỗi lần đều xuất phát dưới 30. Đây là hai lần kiểm tra điều kiện, không phải hai lệnh mua được bảo đảm.</p>\n<p>Ví dụ tính ở phần 2 cho RSI giảm từ 75 xuống khoảng 64,86. Với ngưỡng Bán 70, điều kiện Bán mẫu đạt. Giá trị RSI có thể duy trì cao hoặc thấp nhiều phiên; điều kiện RSI đạt không bảo đảm giao dịch có lãi.</p>\n<h3>Vận dụng trong Bot</h3>\n<p>Sau khi hoàn thành bài, vào <strong>Bot → RSI</strong>. Chọn <strong>Luyện tập</strong> để đặt điều kiện và xem lời/lỗ từng giao dịch, hoặc chọn <strong>Cấu hình</strong> để thiết lập cho Bot. Luyện tập không bắt buộc; cấu hình của lượt luyện không thay cấu hình Bot đang sử dụng.</p>\n<p>Trong luyện tập, chọn điều kiện Mua/Bán và thời gian giữ tối đa rồi bấm <strong>Bắt đầu</strong>. Mặc định giữ tối đa 60 phiên; lịch sử ghi rõ Bán do điều kiện RSI hay hết thời gian giữ. Kết quả gồm Tổng lợi nhuận và Số giao dịch, đếm số lần Mua đã khớp. Xem xong, bấm Tập luyện tiếp để sang mã khác; không chạy lại mã vừa hoàn tất. Các biểu đồ và ví dụ trong bài này vẫn là dữ liệu giảng dạy cố định.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "rsi",
+    "fixture": {}
+  },
+  {
+    "id": "ch01-l02",
+    "chapter": 1,
+    "order": 2,
+    "lesson_key": "technical:macd",
+    "kind": "technical",
+    "name": "MACD",
+    "title": "Chỉ báo MACD",
+    "lead": "Đọc đúng đường MACD, đường tín hiệu và cột chênh lệch; phân biệt mốc 0 với điều kiện đang nằm trên hoặc dưới đường tín hiệu.",
+    "nav_labels": ["Khái niệm", "Công thức", "Tham số", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch01-v2.0",
+    "source": {
+      "package": "iqx-ch1-lessons",
+      "package_version": "iqx-ch1-lessons-2026-10-07-v2.0",
+      "payload_sha256": "377bd65337dfbbad2e73ae5183b8dddf0a22e32c4cc6b3b1fde7e3e8fb387354",
+      "object_sha256": "deeab26d7d200f344243b77672b84c895c5138184867108c642c7800b75fb1f4"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>MACD là chênh lệch giữa một EMA nhanh và một EMA chậm.</strong> Hai đường trung bình này cùng được tính từ giá đóng cửa, nhưng dùng hai chu kỳ khác nhau. MACD giúp quan sát sự thay đổi của đà giá thông qua khoảng cách giữa chúng.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Thành phần", "Ý nghĩa"],
+            "rows": [
+              ["Đường MACD", "EMA nhanh trừ EMA chậm."],
+              ["Đường tín hiệu", "Một EMA được tính từ chính chuỗi MACD, dùng làm đường đối chiếu."],
+              ["Cột chênh lệch", "MACD trừ đường tín hiệu. Cột có thể dương, âm hoặc bằng 0."],
+              ["Mốc 0", "Đường ngang cố định. Không phải đường tín hiệu."]
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "macd-concept",
+            "title": "Giá, MACD và đường tín hiệu",
+            "caption": "Phần giá và phần MACD dùng chung trục thời gian. Cột biểu diễn hiệu giữa MACD và đường tín hiệu, không phải khối lượng.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>MACD trên 0 cho biết EMA nhanh cao hơn EMA chậm. MACD trên đường tín hiệu lại là một quan hệ khác. Vì vậy, MACD có thể âm nhưng vẫn nằm trên đường tín hiệu, hoặc dương nhưng nằm dưới đường tín hiệu.</p>\n<p>MACD mang cùng đơn vị với dữ liệu giá. MACD bằng 2 không có nghĩa giá sẽ tăng 2% và cũng không phải xác suất tăng. Khi giá đi ngang, quan hệ hai đường có thể thay đổi nhiều lần mà không hình thành một xu hướng kéo dài.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Các giá trong ví dụ dùng cùng một đơn vị giả định. Chỉ làm tròn khi trình bày; phép tính và so sánh sử dụng giá trị chưa làm tròn.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">MACD = EMA nhanh − EMA chậm</div><div class=\"math-eq\">Đường tín hiệu = EMA của chuỗi MACD</div><div class=\"math-eq\">Cột chênh lệch = MACD − Đường tín hiệu</div></div>\n<p>Bộ tham số 12 / 26 / 9 lần lượt chỉ chu kỳ EMA nhanh, EMA chậm và EMA của đường tín hiệu.</p>\n<h3>Công thức EMA sử dụng trong MACD</h3>\n<div class=\"formula-group\"><div class=\"math-eq\">α = <span class=\"frac\"><span>2</span><span>N + 1</span></span></div><div class=\"math-eq\">EMA mới = α × Giá trị mới + (1 − α) × EMA trước</div></div>\n<p>Với hai EMA giá, giá trị mới là giá đóng cửa. Với đường tín hiệu, giá trị mới là MACD vừa tính. α là tỷ trọng dành cho quan sát mới; N là chu kỳ của đường đang được tính.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ: cập nhật bộ tham số 12 / 26 / 9",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giá đóng cửa mới bằng 110; EMA 12 trước và EMA 26 trước đều bằng 100; đường tín hiệu trước bằng 0. Các giá trị ban đầu được cho sẵn.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">EMA 12 mới = (2/13) × 110 + (11/13) × 100 ≈ 101,5385</div><div class=\"math-eq\">EMA 26 mới = (2/27) × 110 + (25/27) × 100 ≈ 100,7407</div><div class=\"math-eq\">MACD mới = 10 × (2/13 − 2/27) ≈ 0,7977</div><div class=\"math-eq\">Đường tín hiệu mới = 0,2 × MACD mới + 0,8 × 0 ≈ 0,1595</div><div class=\"math-eq\">Cột chênh lệch ≈ 0,7977 − 0,1595 ≈ 0,6382</div></div>\n<p>Kết quả dương của cột cho biết MACD đang trên đường tín hiệu. Các phép tính sử dụng giá trị đầy đủ; các số hiển thị được làm tròn.</p>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["MACD", "Đường tín hiệu", "Cột chênh lệch", "Diễn giải"],
+            "rows": [
+              ["−0,4", "−0,7", "+0,3", "MACD dưới 0 nhưng trên đường tín hiệu."],
+              ["+0,6", "+0,8", "−0,2", "MACD trên 0 nhưng dưới đường tín hiệu."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Từ chuỗi giá đến MACD đầu tiên</h3>\n<p>Để đọc được ví dụ cập nhật, cần biết các giá trị trước đó đến từ đâu. Trong các phép tính và biểu đồ của bài, EMA đầu tiên là trung bình của đủ N quan sát đầu; các phiên sau dùng công thức EMA vừa nêu. Với đường tín hiệu, quan sát đầu vào là các giá trị MACD hợp lệ, không phải giá cổ phiếu.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ nối tiếp: 12 / 26 / 9 từ dữ liệu gốc",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giả định giá của phiên 1 đến 26 đều bằng 100; từ phiên 27 đến 34 đều bằng 110. Đây là chuỗi riêng để quan sát từng bước khởi tạo, không phải dữ liệu trên biểu đồ khái niệm.</p>"
+              },
+              {
+                "type": "table",
+                "head": ["Mốc", "Phần tính được", "Phần chưa có"],
+                "rows": [
+                  ["Phiên 12", "EMA 12 đầu tiên = trung bình 12 giá = 100.", "Chưa đủ dữ liệu cho EMA 26 và MACD."],
+                  ["Phiên 26", "EMA 26 đầu tiên = 100; EMA 12 = 100; MACD = 0.", "Mới có một giá trị MACD; chưa đủ 9 giá trị để tính tín hiệu 9."],
+                  ["Phiên 27–33", "Cập nhật hai EMA bằng giá 110; lấy hiệu để tính MACD.", "Chưa có đủ 9 giá trị MACD để khởi tạo tín hiệu 9."],
+                  ["Phiên 34", "Đủ 9 giá trị MACD từ phiên 26–34; lấy trung bình để tạo tín hiệu 9 đầu tiên.", "Cột chênh lệch được tính bằng MACD trừ tín hiệu tại cùng phiên."]
+                ]
+              },
+              {
+                "type": "table",
+                "head": ["Phiên", "Giá", "EMA 12", "EMA 26", "MACD", "Tín hiệu 9", "Cột"],
+                "rows": [
+                  ["26", "100", "100,0000", "100,0000", "0,0000", "—", "—"],
+                  ["27", "110", "101,5385", "100,7407", "0,7977", "—", "—"],
+                  ["28", "110", "102,8402", "101,4266", "1,4136", "—", "—"],
+                  ["29", "110", "103,9417", "102,0617", "1,8801", "—", "—"],
+                  ["30", "110", "104,8738", "102,6497", "2,2241", "—", "—"],
+                  ["31", "110", "105,6624", "103,1942", "2,4683", "—", "—"],
+                  ["32", "110", "106,3297", "103,6983", "2,6314", "—", "—"],
+                  ["33", "110", "106,8944", "104,1651", "2,7293", "—", "—"],
+                  ["34", "110", "107,3722", "104,5973", "2,7749", "1,8799", "0,8949"]
+                ],
+                "source": {
+                  "kind": "computed",
+                  "hook": "macd-seed"
+                }
+              },
+              {
+                "type": "html",
+                "html": "<p>Phiên 34: MACD ≈ <strong>2,7749</strong>; tín hiệu đầu tiên ≈ <strong>1,8799</strong>; cột ≈ <strong>0,8949</strong>. Dấu — ở các phiên trước là chưa đủ dữ liệu, không phải số 0.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Không điền các phiên chưa đủ dữ liệu bằng 0. Số 0 có thể là kết quả MACD hợp lệ, còn chưa tính được là một tình trạng khác. Khi đối chiếu hai nguồn, phải dùng cùng dữ liệu và cách khởi tạo.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Ý nghĩa của ba chu kỳ",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Bộ tham số <strong>12 / 26 / 9</strong> lần lượt xác định chu kỳ EMA nhanh, EMA chậm và EMA của đường tín hiệu. Mỗi số tác động vào một bước khác nhau của công thức.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Tham số", "Tác động khi thay đổi"],
+            "rows": [
+              ["Chu kỳ EMA nhanh", "Chu kỳ nhỏ hơn làm giá mới có tỷ trọng lớn hơn ở đường nhanh. MACD và các thành phần tính từ MACD đều cần tính lại."],
+              ["Chu kỳ EMA chậm", "Chu kỳ lớn hơn làm giá mới có tỷ trọng nhỏ hơn ở đường chậm. MACD và các thành phần phụ thuộc đều có thể thay đổi."],
+              ["Chu kỳ đường tín hiệu", "Chỉ thay cách tính đường tín hiệu và cột chênh lệch. Hai EMA giá và đường MACD giữ nguyên."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Chu kỳ nhanh phải nhỏ hơn chu kỳ chậm trong cách sử dụng đang xét. Tên “nhanh” và “chậm” chỉ khoảng quan sát, không phải số lớn hay nhỏ của hai đường tại mọi thời điểm.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">α = 2 / (N + 1)</div></div>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ: chỉ thay chu kỳ đường tín hiệu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giả sử đường tín hiệu trước bằng 0,4 và MACD mới bằng 0,9. Để chỉ nhìn tác động của chu kỳ, hai phép tính bắt đầu từ cùng một giá trị trước.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">Chu kỳ 9: 0,2 × 0,9 + 0,8 × 0,4 = 0,5</div><div class=\"math-eq\">Chu kỳ 5: (1/3) × 0,9 + (2/3) × 0,4 ≈ 0,5667</div></div>\n<p>Đường tín hiệu chu kỳ 5 tiến gần MACD mới hơn trong ví dụ. MACD mới vẫn bằng 0,9 ở cả hai phép tính.</p>"
+              }
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "macd-compare",
+            "title": "Giữ MACD, đổi chu kỳ đường tín hiệu",
+            "caption": "MACD được giữ ở 12/26. Hai đường tín hiệu dùng chu kỳ 9 và 5, được tính trên cùng chuỗi MACD.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Đổi chu kỳ có thể làm thay đổi thời điểm hai đường nằm trên hoặc dưới nhau. Không thể suy ra số tín hiệu hoặc kết quả giao dịch chỉ từ việc chọn một bộ số nhỏ hơn. Khi so sánh, cần giữ nguyên chuỗi giá và chỉ thay tham số muốn kiểm tra.</p>\n<h3>Chỉnh một phía, giữ nguyên phía còn lại</h3>\n<p>Các thông số ở đây được lưu <strong>riêng cho Mua và Bán</strong>. Khi bạn sửa một phía, chuỗi dữ liệu và ngưỡng của phía kia không đổi. Cần tính lại cả phiên trước và phiên hiện tại theo cùng bộ tham số của chính phía đang xét, không ghép giá trị cũ với giá trị mới.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Tín hiệu và cách vận dụng",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Cấu hình mẫu kiểm tra <strong>đường MACD so với đường tín hiệu tại cùng phiên</strong>. Mốc so sánh không phải 0, và không bắt buộc phải vừa xuất hiện một giao cắt mới.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "signal-buy",
+            "title": "Điều kiện Mua mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Đường MACD <strong>&gt; đường tín hiệu</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "signal-sell",
+            "title": "Điều kiện Bán mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Đường MACD <strong>&lt; đường tín hiệu</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["MACD", "Tín hiệu", "Cột chênh lệch", "Theo hai điều kiện mẫu"],
+            "rows": [
+              ["−0,20", "−0,50", "+0,30", "Mua đạt; MACD âm không ngăn nó ở trên đường tín hiệu."],
+              ["+0,60", "+0,80", "−0,20", "Bán đạt; MACD dương không ngăn nó ở dưới đường tín hiệu."],
+              ["+0,40", "+0,40", "0", "Cả hai không đạt vì bằng nhau."]
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "macd-application",
+            "title": "Mốc 0 và đường tín hiệu là hai mốc khác nhau",
+            "caption": "Đọc vị trí của hai đường tại A, sau đó đối chiếu dấu cột chênh lệch. Các số dưới hình được lấy trực tiếp từ chính phiên được đánh dấu.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "table",
+            "head": ["Đối chiếu tại A", "Kết quả"],
+            "rows": [
+              ["MACD so với 0", "0,07 &gt; 0"],
+              ["MACD &gt; tín hiệu — Mua mẫu", "Không đạt"],
+              ["MACD &lt; tín hiệu — Bán mẫu", "<b class=\"good\">Đạt</b>"]
+            ],
+            "source": {
+              "kind": "computed",
+              "hook": "application",
+              "chart_id": "macd-application"
+            }
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "MACD tăng nhưng cột chênh lệch lại giảm",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Đường tín hiệu EMA 9 trước = 0,60; MACD trước = 1,00 và MACD hiện tại = 1,05. Với α = 0,2:</p>\n<div class=\"formula-group\"><div class=\"math-eq\">Tín hiệu mới = 0,2 × 1,05 + 0,8 × 0,60 = 0,69</div><div class=\"math-eq\">Cột trước = 1,00 − 0,60 = 0,40</div><div class=\"math-eq\">Cột mới = 1,05 − 0,69 = 0,36</div></div>\n<p>Trong ví dụ này Mua mẫu <strong>vẫn đạt</strong>: 1,05 &gt; 0,69, dù cột thu hẹp. Không có yêu cầu cột phải tăng; phép so sánh quyết định vẫn là MACD với đường tín hiệu.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Trạng thái trên/dưới khác sự kiện giao cắt</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Phiên", "MACD", "Tín hiệu", "Mua mẫu"],
+            "rows": [
+              ["A", "0,10", "0,20", "Không đạt"],
+              ["B", "0,30", "0,25", "Đạt; vừa chuyển lên trên"],
+              ["C", "0,35", "0,28", "Vẫn đạt; không cần giao cắt mới"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Các giá trị được cho sẵn để đối chiếu điều kiện. MACD thấp hơn đường tín hiệu nhưng tăng so với chính nó ở phiên trước vẫn có thể đạt Bán mẫu. Không thêm điều kiện hướng dốc hoặc dấu của MACD nếu cấu hình không yêu cầu.</p>\n<h3>Tham số và dấu riêng cho từng phía</h3>\n<p>Mua có thể dùng 12/26/9 và dấu &gt;, trong khi Bán dùng một bộ chu kỳ khác và dấu &lt;. Nếu đổi dấu Mua thành &lt;, đó là một điều kiện Mua khác, không còn là điều kiện mẫu nằm trên. Hai phía có thể cùng đúng khi bạn chọn hai bộ tham số hoặc toán tử tạo vùng trùng nhau.</p>\n<p>Những lần đổi quan hệ liên tục trong vùng giá đi ngang có thể tạo nhiều tín hiệu. Số lần xuất hiện không thay cho kết quả kiểm thử sau phí.</p>\n<h3>Vận dụng trong Bot</h3>\n<p>Sau khi hoàn thành bài, vào <strong>Bot → MACD</strong>. Chọn <strong>Luyện tập</strong> để đặt điều kiện và xem lời/lỗ từng giao dịch, hoặc chọn <strong>Cấu hình</strong> để thiết lập cho Bot. Luyện tập không bắt buộc; cấu hình của lượt luyện không thay cấu hình Bot đang sử dụng.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "macd",
+    "fixture": {}
+  },
+  {
+    "id": "ch01-l03",
+    "chapter": 1,
+    "order": 3,
+    "lesson_key": "technical:ma",
+    "kind": "technical",
+    "name": "MA / SMA",
+    "title": "MA / SMA",
+    "lead": "Từ trung bình cộng của giá đến một mức tham chiếu; đọc vị trí giá, so chu kỳ và sử dụng dấu so sánh có chủ đích.",
+    "nav_labels": ["Khái niệm", "Công thức", "Tham số", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch01-v2.0",
+    "source": {
+      "package": "iqx-ch1-lessons",
+      "package_version": "iqx-ch1-lessons-2026-10-07-v2.0",
+      "payload_sha256": "377bd65337dfbbad2e73ae5183b8dddf0a22e32c4cc6b3b1fde7e3e8fb387354",
+      "object_sha256": "b8f7ce7916dc6fad4ce65ac1c7c7a8d4fef9c86526924849e91675312c51c7c5"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>MA là tên chung của các đường trung bình giá.</strong> Thay vì chỉ nhìn giá của một phiên, đường trung bình tổng hợp nhiều phiên để tạo một mức tham chiếu.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Loại đường", "Cách hiểu"],
+            "rows": [
+              ["SMA", "Trung bình cộng của các giá trong chu kỳ. Mỗi giá có vai trò bằng nhau."],
+              ["EMA", "Kết hợp giá mới với EMA trước theo tỷ trọng xác định. Giá mới thường có ảnh hưởng lớn hơn so với một quan sát cũ riêng lẻ."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Trong bài này, mục MA / SMA sử dụng <strong>SMA</strong>. SMA 20 trên dữ liệu ngày là trung bình 20 giá đóng cửa gần nhất, gồm phiên đang xét. Số 20 chỉ số phiên giao dịch, không phải 20 ngày theo lịch.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "ma-concept",
+            "title": "Giá đóng cửa và SMA 20",
+            "caption": "Đường giá và đường trung bình dùng cùng đơn vị. So sánh vị trí giá với đường SMA ở cùng một phiên.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Giá cao hơn SMA nghĩa là giá hiện tại cao hơn mức trung bình đang xét. Giá thấp hơn SMA nghĩa là giá hiện tại thấp hơn mức trung bình đó. Quan hệ này không cho biết cổ phiếu đắt hay rẻ so với giá trị doanh nghiệp.</p>\n<p>Vị trí giá và hướng của SMA là hai thông tin khác nhau. Giá có thể ở trên một SMA đang giảm, hoặc ở dưới một SMA đang tăng. Cần xác định phép so sánh đang dùng trước khi kết luận.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Các giá trong ví dụ dùng cùng một đơn vị giả định. Chỉ làm tròn khi trình bày; phép tính và so sánh sử dụng giá trị chưa làm tròn.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">SMA<sub>N</sub> = <span class=\"frac\"><span>P₁ + P₂ + … + P<sub>N</sub></span><span>N</span></span></div></div>\n<p>P₁ đến P<sub>N</sub> là N giá đóng cửa trong cửa sổ tính; N là chu kỳ. Khi có phiên mới, SMA loại giá cũ nhất và thêm giá mới, giữ nguyên số quan sát.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ 1: cập nhật SMA 5",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Năm giá đóng cửa lần lượt là 10, 11, 12, 11, 13.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">SMA 5 = (10 + 11 + 12 + 11 + 13) / 5 = 11,4</div></div>\n<p>Phiên tiếp theo đóng cửa 12. Cửa sổ mới gồm 11, 12, 11, 13, 12.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">SMA 5 mới = (11 + 12 + 11 + 13 + 12) / 5 = 11,8</div></div>\n<p>Giá giảm từ 13 xuống 12 nhưng SMA tăng từ 11,4 lên 11,8. Nguyên nhân là giá mới 12 cao hơn giá 10 vừa rời cửa sổ.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Công thức EMA</h3>\n<div class=\"formula-group\"><div class=\"math-eq\">α = <span class=\"frac\"><span>2</span><span>N + 1</span></span></div><div class=\"math-eq\">EMA mới = α × Giá mới + (1 − α) × EMA trước</div></div>\n<p>α là tỷ trọng dành cho giá mới; 1 − α là tỷ trọng dành cho EMA trước. Chu kỳ N xác định α. Một cách khởi tạo được dùng trong các ví dụ là lấy trung bình N giá đầu làm EMA đầu tiên; khi đối chiếu kết quả phải dùng cùng cách khởi tạo.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ 2: hai EMA cùng điểm xuất phát",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giả sử cả hai EMA trước đều bằng 100 và giá đóng cửa mới là 110.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">EMA 9: α = 2 / (9 + 1) = 0,2</div><div class=\"math-eq\">EMA 9 mới = 0,2 × 110 + 0,8 × 100 = 102</div><div class=\"math-eq\">EMA 19: α = 2 / (19 + 1) = 0,1</div><div class=\"math-eq\">EMA 19 mới = 0,1 × 110 + 0,9 × 100 = 101</div></div>\n<p>Trong cùng điều kiện xuất phát, EMA 9 thay đổi nhiều hơn vì giá mới có tỷ trọng lớn hơn. Điều này không có nghĩa EMA ngắn luôn nằm trên EMA dài.</p>"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Chu kỳ và mức tham chiếu",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Với SMA, <strong>chu kỳ N là số giá đóng cửa được đưa vào trung bình</strong>. SMA 10 dùng 10 giá; SMA 30 dùng 30 giá. Khi có phiên mới, mỗi đường thêm giá mới và bỏ giá cũ nhất trong cửa sổ của chính nó.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Thay đổi", "Ý nghĩa"],
+            "rows": [
+              ["Giảm chu kỳ", "Quan sát một khoảng ngắn hơn. Giá mới thay thế một phần lớn hơn của tổng số quan sát."],
+              ["Tăng chu kỳ", "Quan sát một khoảng dài hơn. Đường thường phản ứng chậm hơn với thay đổi gần đây."],
+              ["Đổi SMA 20 thành SMA 50", "Tính lại đường từ 50 giá. Không nhân hoặc chia giá trị SMA 20 để suy ra SMA 50."]
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "ma-compare",
+            "title": "Cùng chuỗi giá, hai chu kỳ SMA",
+            "caption": "SMA 20 và SMA 50 được tính từ cùng dữ liệu. Chu kỳ thay đổi mức tham chiếu và thời điểm giá ở trên hoặc dưới đường.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ: chu kỳ làm thay đổi tín hiệu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Cùng một phiên có giá đóng cửa bằng 50. Giả sử SMA 10 bằng 51, SMA 30 bằng 49. Theo cách sử dụng giá so với SMA:</p>"
+              },
+              {
+                "type": "table",
+                "head": ["Cấu hình", "Phép so sánh", "Tín hiệu"],
+                "rows": [
+                  ["SMA 10", "50 &lt; 51", "Bán"],
+                  ["SMA 30", "50 &gt; 49", "Mua"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<p>Hai kết quả khác nhau vì mức tham chiếu khác nhau. Không thể mặc định chu kỳ dài hơn luôn thấp hơn, cao hơn hoặc an toàn hơn.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Với EMA, chu kỳ nằm trong α = 2/(N + 1): N nhỏ hơn tạo α lớn hơn. Điều này giúp phân biệt tác dụng chu kỳ ở hai loại đường, nhưng không đổi loại SMA mà công tắc MA đang sử dụng.</p>\n<p>Để tính SMA 30 cần đủ 30 giá hợp lệ. Nếu chỉ có 20 giá, chưa thể tính đúng SMA 30. Thiếu dữ liệu không đồng nghĩa giá đang nằm dưới đường trung bình.</p>\n<h3>Chỉnh một phía, giữ nguyên phía còn lại</h3>\n<p>Các thông số ở đây được lưu <strong>riêng cho Mua và Bán</strong>. Khi bạn sửa một phía, chuỗi dữ liệu và ngưỡng của phía kia không đổi. Cần tính lại cả phiên trước và phiên hiện tại theo cùng bộ tham số của chính phía đang xét, không ghép giá trị cũ với giá trị mới.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Tín hiệu và cách vận dụng",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Trong bài này, MA / SMA dùng <strong>giá đóng cửa so với SMA tại cùng phiên</strong>. Điều kiện mẫu không bắt buộc SMA phải đang dốc lên hoặc dốc xuống.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "signal-buy",
+            "title": "Điều kiện Mua mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giá đóng cửa <strong>&gt; SMA theo chu kỳ Mua</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "signal-sell",
+            "title": "Điều kiện Bán mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giá đóng cửa <strong>&lt; SMA theo chu kỳ Bán</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Giá đóng cửa", "SMA", "Theo hai điều kiện mẫu cùng chu kỳ"],
+            "rows": [
+              ["52", "50", "Mua đạt"],
+              ["49", "50", "Bán đạt"],
+              ["50", "50", "Cả hai không đạt"]
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "ma-application",
+            "title": "Giá và hai mức tham chiếu tại cùng một phiên",
+            "caption": "So giá tại A với SMA 20 và SMA 50. Đây là hai kết quả được tính từ cùng lịch sử giá, không phải hai chuỗi giá khác nhau.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "table",
+            "head": ["Cấu hình Mua tại A", "Đối chiếu", "Kết quả"],
+            "rows": [
+              ["Giá &gt; SMA 20", "107,47 &gt; 107,95", "Không đạt"],
+              ["Giá &gt; SMA 50", "107,47 &gt; 105,29", "<b class=\"good\">Đạt</b>"]
+            ],
+            "source": {
+              "kind": "computed",
+              "hook": "application",
+              "chart_id": "ma-application"
+            }
+          },
+          {
+            "type": "html",
+            "html": "<h3>Không cần một giao cắt mới mỗi phiên</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Phiên", "Giá", "SMA", "Mua mẫu"],
+            "rows": [
+              ["1", "99", "100", "Không đạt"],
+              ["2", "101", "100", "Đạt"],
+              ["3", "102", "100,2", "Đạt"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Bảng cho sẵn các giá trị để kiểm tra quan hệ. Ở phiên 3, giá vẫn trên SMA nên Mua mẫu vẫn đạt. Đó là kiểm tra trạng thái hiện tại, không phải yêu cầu giá vừa cắt lên từ phiên trước.</p>\n<h3>Mua và Bán có thể đồng thời đạt</h3>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Giá 100; SMA 10 = 99; SMA 30 = 101",
+            "blocks": [
+              {
+                "type": "table",
+                "head": ["Phía", "Cấu hình", "Kết quả"],
+                "rows": [
+                  ["Mua", "Giá &gt; SMA 10", "100 &gt; 99: đạt"],
+                  ["Bán", "Giá &lt; SMA 30", "100 &lt; 101: đạt"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<p>Không có mâu thuẫn toán học: hai phía đang so với hai mức khác nhau. Không ép kết quả thành chỉ một nhãn Mua hoặc Bán. Bài Hợp lưu sẽ tách kết quả tín hiệu với trạng thái vị thế.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Đổi dấu không bị giới hạn bởi tên Mua/Bán</h3>\n<p>Bạn có thể chọn dấu &lt; cho Mua. Khi đó Mua đòi hỏi giá dưới SMA; hệ thống không tự sửa về &gt;. Điều này không chứng minh giá dưới SMA là rẻ hoặc sắp tăng; đó chỉ là tiêu chí của giả thuyết đang kiểm thử.</p>\n<p>Giá đi ngang quanh SMA có thể đổi tín hiệu nhiều lần. Tăng chu kỳ không mặc định làm chiến lược an toàn hơn. Thiếu số phiên để tính SMA là thiếu dữ liệu, không được hiểu là giá đang dưới SMA.</p>\n<h3>Vận dụng trong Bot</h3>\n<p>Sau khi hoàn thành bài, vào <strong>Bot → MA / SMA</strong>. Chọn <strong>Luyện tập</strong> để đặt điều kiện và xem lời/lỗ từng giao dịch, hoặc chọn <strong>Cấu hình</strong> để thiết lập cho Bot. Luyện tập không bắt buộc; cấu hình của lượt luyện không thay cấu hình Bot đang sử dụng.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "ma",
+    "fixture": {}
+  },
+  {
+    "id": "ch01-l04",
+    "chapter": 1,
+    "order": 4,
+    "lesson_key": "technical:bollinger",
+    "kind": "technical",
+    "name": "Bollinger Bands",
+    "title": "Bollinger Bands",
+    "lead": "Nắm đường giữa, độ lệch chuẩn và hệ số dải; kiểm tra đầy đủ một tình huống giá từ ngoài dải quay vào trong.",
+    "nav_labels": ["Khái niệm", "Công thức", "Tham số", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch01-v2.0",
+    "source": {
+      "package": "iqx-ch1-lessons",
+      "package_version": "iqx-ch1-lessons-2026-10-07-v2.0",
+      "payload_sha256": "377bd65337dfbbad2e73ae5183b8dddf0a22e32c4cc6b3b1fde7e3e8fb387354",
+      "object_sha256": "3e01340cc13a75fc5076f9935efa7699c3a1a302ddff38f45c1541d5becfce5b"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Bollinger Bands gồm một đường giữa và hai dải đặt hai bên đường giữa. Trong cách tính của bài học, đường giữa là SMA; khoảng cách từ đường giữa tới mỗi dải bằng hệ số dải nhân với độ lệch chuẩn của giá.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Thành phần", "Ý nghĩa"],
+            "rows": [
+              ["Đường giữa", "Mức giá đóng cửa trung bình trong chu kỳ."],
+              ["Độ lệch chuẩn", "Mức phân tán của các giá quanh đường giữa."],
+              ["Dải trên và dải dưới", "Hai mức đối xứng quanh đường giữa theo hệ số được chọn."],
+              ["Độ rộng chuẩn hóa", "Khoảng cách giữa hai dải chia cho đường giữa."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Vị trí giá và độ rộng dải là hai thông tin khác nhau. Giá trên đường giữa không đồng nghĩa độ rộng đang tăng. Dải rộng hơn không tự cho biết hướng giá tiếp theo.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "boll-concept",
+            "title": "Giá và Bollinger Bands 20 / 2",
+            "caption": "Giá đóng cửa, đường giữa và hai dải được tính trên cùng chuỗi giá. Khoảng cách từ đường giữa đến mỗi dải là hai lần độ lệch chuẩn.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Giá có thể bám gần dải trên hoặc dải dưới trong nhiều phiên. Việc chạm dải không tự xác định một lệnh mua, lệnh bán hoặc thời điểm đảo chiều.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Các giá trong ví dụ dùng cùng một đơn vị giả định. Chỉ làm tròn khi trình bày; phép tính và so sánh sử dụng giá trị chưa làm tròn.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">M = <span class=\"frac\"><span>P₁ + P₂ + … + P<sub>N</sub></span><span>N</span></span></div><div class=\"math-eq\">σ = √(<span class=\"frac\"><span>(P₁ − M)² + … + (P<sub>N</sub> − M)²</span><span>N</span></span>)</div><div class=\"math-eq\">Dải trên = M + k × σ</div><div class=\"math-eq\">Dải dưới = M − k × σ</div></div>"
+          },
+          {
+            "type": "table",
+            "head": ["Ký hiệu", "Ý nghĩa"],
+            "rows": [
+              ["N", "Số phiên trong chu kỳ."],
+              ["P₁ … P<sub>N</sub>", "Các giá đóng cửa trong cửa sổ, gồm phiên đang tính."],
+              ["M", "Đường giữa, bằng SMA theo chu kỳ N."],
+              ["σ", "Độ lệch chuẩn, cùng đơn vị với giá."],
+              ["k", "Hệ số xác định khoảng cách từ đường giữa tới mỗi dải."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Bài sử dụng độ lệch chuẩn với mẫu số N. Dấu ² là bình phương và dấu √ là căn bậc hai. Bộ tham số 20 phiên và hệ số 2 là thiết lập tham chiếu.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ 1: năm giá đóng cửa",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Năm giá giả định: 10, 12, 14, 12, 12; chọn N = 5 và k = 2.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">M = (10 + 12 + 14 + 12 + 12) / 5 = 12</div><div class=\"math-eq\">σ = √[(4 + 0 + 4 + 0 + 0) / 5] = √1,6 ≈ 1,2649</div><div class=\"math-eq\">Dải trên ≈ 12 + 2 × 1,2649 = 14,5298</div><div class=\"math-eq\">Dải dưới ≈ 12 − 2 × 1,2649 = 9,4702</div></div>\n<p>Giá cuối cùng bằng đường giữa, nhưng độ lệch chuẩn vẫn dương do các giá trong cửa sổ không hoàn toàn giống nhau.</p>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Giá", "Giá − trung bình 12", "Bình phương độ lệch"],
+            "rows": [
+              ["10", "−2", "4"],
+              ["12", "0", "0"],
+              ["14", "+2", "4"],
+              ["12", "0", "0"],
+              ["12", "0", "0"],
+              ["Tổng", "", "8"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Bình phương làm các độ lệch âm và dương không triệt tiêu nhau; chia cho 5 rồi lấy căn giúp kết quả trở lại cùng đơn vị giá. Chu kỳ 5 chỉ dùng để làm phép tính ngắn; form cấu hình Bollinger trong mẫu có miền chu kỳ riêng.</p>\n<h3>Độ rộng chuẩn hóa</h3>\n<div class=\"formula-group\"><div class=\"math-eq\">Độ rộng chuẩn hóa = <span class=\"frac\"><span>Dải trên − Dải dưới</span><span>M</span></span></div><div class=\"math-eq\">Độ rộng (%) = Độ rộng chuẩn hóa × 100</div></div>\n<p>Với ví dụ trên, độ rộng chuẩn hóa xấp xỉ (14,5298 − 9,4702) / 12 = 0,4216, tức 42,16%. Phép đo này yêu cầu đường giữa dương trong các tình huống đang xét.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Hai trường hợp độc lập", "Khoảng cách hai dải", "Đường giữa", "Độ rộng"],
+            "rows": [
+              ["A", "10", "100", "10%"],
+              ["B", "12", "200", "6%"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Trường hợp B có khoảng cách hai dải lớn hơn nhưng độ rộng tương đối nhỏ hơn. So sánh chỉ bằng khoảng cách tuyệt đối sẽ bỏ qua mặt bằng giá.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Chu kỳ và hệ số dải",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Bollinger có hai thông số chính: <strong>chu kỳ N</strong> và <strong>hệ số dải k</strong>. Chu kỳ xác định tập giá; hệ số xác định khoảng cách từ đường giữa đến mỗi dải.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Thông số", "Khi thay đổi"],
+            "rows": [
+              ["Chu kỳ N", "Tính lại cả SMA, độ lệch chuẩn và hai dải từ cửa sổ mới."],
+              ["Hệ số k", "Giữ nguyên SMA và độ lệch chuẩn nếu chu kỳ, dữ liệu không đổi. Tăng k đưa hai dải ra xa đường giữa; giảm k đưa chúng lại gần."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">Dải trên = M + k × σ</div><div class=\"math-eq\">Dải dưới = M − k × σ</div></div>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ: cùng đường giữa và độ lệch chuẩn",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Cho đường giữa M = 50, độ lệch chuẩn σ = 2. Chỉ thay hệ số:</p>"
+              },
+              {
+                "type": "table",
+                "head": ["Hệ số", "Dải dưới", "Dải trên"],
+                "rows": [
+                  ["1,5", "47", "53"],
+                  ["2,0", "46", "54"],
+                  ["2,5", "45", "55"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<p>Giá 46,5 nằm dưới dải dưới khi k = 1,5 nhưng nằm trong dải khi k = 2,0. Chính vị trí tương đối của giá có thể thay đổi mà giá không đổi.</p>"
+              }
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "boll-compare",
+            "title": "Cùng chu kỳ 20, hệ số dải 2 và 3",
+            "caption": "Đường giữa chung không đổi. Hai bộ dải khác nhau về khoảng cách đến đường giữa.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Trong phương pháp quay trở lại dải ở Phần 4, cả vị trí ở phiên trước và vị trí ở phiên hiện tại đều phải được xét lại sau khi đổi tham số. Mỗi phiên dùng dải được tính tại chính phiên đó.</p>\n<p>Hệ số lớn hơn không bảo đảm mọi trường hợp đều mất tín hiệu: nó vừa làm việc ra ngoài dải khó hơn, vừa làm vùng bên trong dải rộng hơn. Chu kỳ ngắn hơn cũng không có nghĩa độ rộng luôn tăng. Muốn so cấu hình, cần tính lại trên cùng chuỗi giá.</p>\n<h3>Chỉnh một phía, giữ nguyên phía còn lại</h3>\n<p>Các thông số ở đây được lưu <strong>riêng cho Mua và Bán</strong>. Khi bạn sửa một phía, chuỗi dữ liệu và ngưỡng của phía kia không đổi. Cần tính lại cả phiên trước và phiên hiện tại theo cùng bộ tham số của chính phía đang xét, không ghép giá trị cũ với giá trị mới.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Tín hiệu và cách vận dụng",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Mẫu IQX tìm tình huống <strong>giá đóng cửa ở ngoài dải rồi trở lại bên trong</strong>, kèm chiều giá phù hợp. Mỗi phía có chu kỳ và hệ số riêng; cả hai phiên được tính theo cùng bộ tham số của phía đang xét.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "signal-buy",
+            "title": "Điều kiện Mua mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giá đóng cửa phiên trước <strong>&lt; dải dưới phiên trước</strong>.</p>\n<p>Giá đóng cửa hiện tại <strong>∈ dải hiện tại</strong>.</p>\n<p>Giá đóng cửa hiện tại <strong>&gt; giá đóng cửa phiên trước</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "signal-sell",
+            "title": "Điều kiện Bán mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giá đóng cửa phiên trước <strong>&gt; dải trên phiên trước</strong>.</p>\n<p>Giá đóng cửa hiện tại <strong>∈ dải hiện tại</strong>.</p>\n<p>Giá đóng cửa hiện tại <strong>&lt; giá đóng cửa phiên trước</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Ba dòng của một phía cùng dùng <strong>AND</strong>. Trong mẫu đã duyệt, <strong>∈</strong> là nằm giữa hai dải, không bao gồm bằng đúng biên. <strong>∉</strong> là không nằm trong khoảng đó khi giá và hai dải đều có dữ liệu hợp lệ. Dữ liệu thiếu không được coi là ngoài dải.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ mua: từ dưới dải quay vào trong",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Chuỗi minh họa gồm 19 giá đóng cửa bằng 50, tiếp theo là 45 rồi 48. Dùng N = 20, k = 2; cả hai phiên cuối đều có đủ 20 giá để tính dải.</p>"
+              },
+              {
+                "type": "table",
+                "head": ["Thời điểm", "Giá", "Dải dưới", "Dải trên"],
+                "rows": [
+                  ["Phiên trước", "45", "47,57", "51,93"],
+                  ["Phiên hiện tại", "48", "47,35", "51,95"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<p>Phiên trước, 45 dưới dải dưới. Phiên hiện tại, 48 nằm trong dải và tăng so với 45: có tín hiệu mua Bollinger.</p>"
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ bán: từ trên dải quay vào trong",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Dùng chuỗi đối xứng: 19 giá bằng 50, tiếp theo là 55 rồi 52. Vẫn dùng N = 20, k = 2.</p>"
+              },
+              {
+                "type": "table",
+                "head": ["Thời điểm", "Giá", "Dải dưới", "Dải trên"],
+                "rows": [
+                  ["Phiên trước", "55", "48,07", "52,43"],
+                  ["Phiên hiện tại", "52", "48,05", "52,65"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<p>Phiên trước, 55 trên dải trên. Phiên hiện tại, 52 nằm trong dải và giảm so với 55: có tín hiệu bán Bollinger.</p>"
+              }
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "boll-application",
+            "title": "Theo dõi đúng hai bộ dải ở hai phiên liên tiếp",
+            "caption": "Chuỗi minh họa Mua gồm 19 giá bằng 50, sau đó 45 rồi 48. Dải ở A và dải ở B được tính lại riêng ở mỗi phiên; không dùng dải hiện tại để so ngược giá trước.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "table",
+            "head": ["Yêu cầu Mua tại B", "Giá trị", "Kết quả"],
+            "rows": [
+              ["Giá trước &lt; dải dưới trước", "45 &lt; 47,57", "<b class=\"good\">Đạt</b>"],
+              ["Giá hiện tại ∈ dải hiện tại", "47,35 &lt; 48 &lt; 51,95", "<b class=\"good\">Đạt</b>"],
+              ["Giá hiện tại &gt; giá trước", "48 &gt; 45", "<b class=\"good\">Đạt</b>"]
+            ],
+            "source": {
+              "kind": "computed",
+              "hook": "application",
+              "chart_id": "boll-application"
+            }
+          },
+          {
+            "type": "html",
+            "html": "<h3>Một yêu cầu chưa thỏa thì chưa có tín hiệu</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Tình huống", "Mua mẫu"],
+            "rows": [
+              ["Phiên trước dưới dải; hiện tại tăng nhưng vẫn dưới dải", "Không đạt vì chưa quay vào trong."],
+              ["Phiên trước đã trong dải; hiện tại tăng trong dải", "Không đạt vì không có xuất phát dưới dải."],
+              ["Phiên trước dưới dải; hiện tại bằng đúng dải dưới", "Không đạt ∈ theo biên mở đang dùng."],
+              ["Thiếu dải hiện tại", "Chưa đánh giá được; không kết luận ∉ đúng."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Khi chuyển ∈ thành ∉</h3>\n<p>Dòng thứ hai lúc này yêu cầu giá hiện tại không ở trong dải. Phương pháp đã thay đổi: không còn bắt buộc “quay lại bên trong”. Không gọi mọi cấu hình tùy chỉnh là cùng một mẫu quay vào dải. Hai dòng còn lại cũng phải được kiểm tra theo đúng dấu người dùng chọn.</p>\n<p>Không dùng “chạm dải” như tín hiệu đảo chiều chắc chắn. Hệ số lớn hơn làm vùng trong dải rộng hơn nhưng cũng thay điều kiện ra ngoài ở phiên trước; phải tính lại cả cặp phiên khi so cấu hình.</p>\n<h3>Vận dụng trong Bot</h3>\n<p>Sau khi hoàn thành bài, vào <strong>Bot → Bollinger Bands</strong>. Chọn <strong>Luyện tập</strong> để đặt điều kiện và xem lời/lỗ từng giao dịch, hoặc chọn <strong>Cấu hình</strong> để thiết lập cho Bot. Luyện tập không bắt buộc; cấu hình của lượt luyện không thay cấu hình Bot đang sử dụng.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "bollinger",
+    "fixture": {}
+  },
+  {
+    "id": "ch01-l05",
+    "chapter": 1,
+    "order": 5,
+    "lesson_key": "technical:volume",
+    "kind": "technical",
+    "name": "Khối lượng",
+    "title": "Khối lượng giao dịch",
+    "lead": "Đọc khối lượng cùng chiều biến động giá; tự tính trung bình tham chiếu, ngưỡng hệ số và điều kiện xác nhận.",
+    "nav_labels": ["Khái niệm", "Công thức", "Tham số", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch01-v2.0",
+    "source": {
+      "package": "iqx-ch1-lessons",
+      "package_version": "iqx-ch1-lessons-2026-10-07-v2.0",
+      "payload_sha256": "377bd65337dfbbad2e73ae5183b8dddf0a22e32c4cc6b3b1fde7e3e8fb387354",
+      "object_sha256": "05a62df48cd15face41db502dd242c9c174ef0fc0d6d9aad356e4c777759e066"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Khối lượng giao dịch là số cổ phiếu được giao dịch trong một phiên theo phạm vi nguồn dữ liệu. Đây là dữ liệu đếm, không phải giá trị được suy ra từ giá cổ phiếu.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Đại lượng", "Đơn vị và ý nghĩa"],
+            "rows": [
+              ["Khối lượng", "Số cổ phiếu được giao dịch."],
+              ["Giá trị giao dịch", "Số tiền giao dịch; phụ thuộc cả giá và số lượng."],
+              ["Số người giao dịch", "Không suy trực tiếp từ tổng khối lượng."],
+              ["Mua ròng của một nhóm", "Lượng mua trừ lượng bán của chính nhóm đó."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Một người có thể giao dịch nhiều lần và mỗi giao dịch khớp có cả bên mua lẫn bên bán. Khối lượng 10 triệu cổ phiếu không có nghĩa có 10 triệu người mua hoặc một nhóm đã mua ròng 10 triệu cổ phiếu.</p>\n<p>Một con số khối lượng cần được đặt cạnh mức tham chiếu để xác định cao hay thấp. Hướng giá được phân tích riêng, không suy ra chỉ từ tổng khối lượng.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "volume-concept",
+            "title": "Giá và khối lượng giao dịch",
+            "caption": "Phần khối lượng dùng đơn vị triệu cổ phiếu. Đường tham chiếu là trung bình 20 phiên trước, không bao gồm phiên đang so sánh.",
+            "illustrative": true,
+            "table_toggle": true
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">A = <span class=\"frac\"><span>V₁ + V₂ + … + V<sub>N</sub></span><span>N</span></span></div><div class=\"math-eq\">R = <span class=\"frac\"><span>Khối lượng hiện tại</span><span>A</span></span></div><div class=\"math-eq\">Ngưỡng lựa chọn = k × A</div></div>"
+          },
+          {
+            "type": "table",
+            "head": ["Ký hiệu", "Ý nghĩa"],
+            "rows": [
+              ["V₁ … V<sub>N</sub>", "Khối lượng của N phiên trước phiên hiện tại."],
+              ["A", "Khối lượng trung bình tham chiếu."],
+              ["R", "Khối lượng hiện tại gấp bao nhiêu lần A."],
+              ["k", "Hệ số đặt ngưỡng lựa chọn."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Trong các ví dụ của bài, cửa sổ tham chiếu chỉ gồm các phiên trước, không gồm phiên đang được so sánh. Đây là quy ước của phép đo được sử dụng, không phải yêu cầu cho mọi đường trung bình khối lượng.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ: N = 5, k = 1,5",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Năm phiên trước có khối lượng lần lượt 2, 3, 4, 5, 6 triệu cổ phiếu. Phiên hiện tại có 7 triệu cổ phiếu.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">A = (2 + 3 + 4 + 5 + 6) / 5 = 4 triệu</div><div class=\"math-eq\">R = 7 / 4 = 1,75</div><div class=\"math-eq\">Ngưỡng = 1,5 × 4 = 6 triệu</div></div>\n<p>Khối lượng hiện tại cao hơn ngưỡng 6 triệu. Nếu lấy 3, 4, 5, 6, 7 để tính trung bình thì đã dùng một cửa sổ khác, bao gồm cả phiên hiện tại.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">Mức cao hơn trung bình (%) = (R − 1) × 100</div></div>\n<p>R = 1,75 tương ứng cao hơn mức trung bình 75%. Tỷ lệ này mô tả khối lượng, không cho biết mức tăng giá hoặc số người mua. Khi A bằng 0, phép chia để xác định R không có giá trị xác định.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "volume-window",
+            "title": "Cửa sổ tham chiếu không chứa phiên hiện tại",
+            "caption": "Năm cột đầu tạo trung bình 4 triệu cổ phiếu; cột hiện tại là 7 triệu, được dùng để so với ngưỡng 6 triệu.",
+            "illustrative": true,
+            "table_toggle": true
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Số phiên tham chiếu và hệ số",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Hai thông số được điều chỉnh là <strong>số phiên tham chiếu N</strong> và <strong>hệ số khối lượng k</strong>. Chúng không có cùng tác dụng.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Thông số", "Phần thay đổi"],
+            "rows": [
+              ["Số phiên tham chiếu N", "Thay các phiên dùng để tính trung bình A. A có thể cao hơn hoặc thấp hơn, tùy lịch sử khối lượng."],
+              ["Hệ số k", "Trên cùng A dương, k lớn hơn tạo ngưỡng cao hơn; k nhỏ hơn tạo ngưỡng thấp hơn."]
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Ví dụ: cùng một mức trung bình",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Khối lượng trung bình tham chiếu bằng 8 triệu cổ phiếu. Phiên hiện tại có 13 triệu cổ phiếu.</p>"
+              },
+              {
+                "type": "table",
+                "head": ["Hệ số", "Ngưỡng cần vượt", "13 triệu có vượt?"],
+                "rows": [
+                  ["1,0", "8 triệu", "Có"],
+                  ["1,5", "12 triệu", "Có"],
+                  ["2,0", "16 triệu", "Không"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<p>Tăng hệ số từ 1,5 lên 2,0 làm mất xác nhận khối lượng ở ví dụ này, dù giá và khối lượng thực tế giữ nguyên. Nếu chỉ sửa hệ số ở Mua, phép so sánh Bán giữ nguyên. Tác động tương tự chỉ xảy ra ở Bán khi chính hệ số Bán cũng được sửa.</p>"
+              }
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "volume-compare",
+            "title": "Trung bình khối lượng 10 và 20 phiên trước",
+            "caption": "Hai đường dùng cùng lịch sử khối lượng. Số phiên tham chiếu khác nhau có thể tạo mức trung bình khác nhau.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Đổi 20 thành 50 phiên không chỉ đổi mẫu số. Tổng khối lượng được đưa vào phép tính cũng đổi. Vì vậy, không thể nói số phiên lớn hơn luôn nâng ngưỡng hoặc luôn hạ ngưỡng.</p>\n<p>Khi giữ nguyên dữ liệu và N, tăng k chỉ có thể giữ nguyên hoặc giảm số trường hợp vượt ngưỡng. Kết quả này nói về điều kiện khối lượng, chưa đánh giá chất lượng giao dịch sau đó.</p>\n<h3>Chỉnh một phía, giữ nguyên phía còn lại</h3>\n<p>Các thông số ở đây được lưu <strong>riêng cho Mua và Bán</strong>. Khi bạn sửa một phía, chuỗi dữ liệu và ngưỡng của phía kia không đổi. Cần tính lại cả phiên trước và phiên hiện tại theo cùng bộ tham số của chính phía đang xét, không ghép giá trị cũ với giá trị mới.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Tín hiệu và cách vận dụng",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Khối lượng không tự chỉ ra phía Mua hay Bán. Mẫu của bài kết hợp <strong>chiều thay đổi giá đóng cửa</strong> với <strong>khối lượng so ngưỡng k × trung bình N phiên trước</strong>.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "signal-buy",
+            "title": "Điều kiện Mua mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giá đóng cửa <strong>&gt; giá đóng cửa phiên trước</strong>.</p>\n<p>Khối lượng hiện tại <strong>&gt; k × trung bình N phiên trước</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "signal-sell",
+            "title": "Điều kiện Bán mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giá đóng cửa <strong>&lt; giá đóng cửa phiên trước</strong>.</p>\n<p>Khối lượng hiện tại <strong>&gt; k × trung bình N phiên trước</strong>.</p>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Giá trước → hiện tại", "Khối lượng", "A = 8 triệu; k = 1,5"],
+            "rows": [
+              ["50 → 51", "13 triệu", "Mua đạt: giá tăng, 13 &gt; 12."],
+              ["50 → 49", "13 triệu", "Bán đạt: giá giảm, 13 &gt; 12."],
+              ["50 → 49", "11 triệu", "Bán không đạt: 11 chưa vượt 12."],
+              ["50 → 51", "12 triệu", "Mua không đạt: bằng ngưỡng không phải lớn hơn."],
+              ["50 → 50", "13 triệu", "Cả hai điều kiện mẫu không đạt vì giá không đổi."]
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "volume-application",
+            "title": "Cùng xem chiều giá và ngưỡng khối lượng",
+            "caption": "Tại A, so đóng cửa với phiên liền trước và so cột khối lượng với 1,5 lần trung bình 20 phiên trước. Màu cột được quy ước theo thay đổi đóng cửa, không phải mua ròng.",
+            "illustrative": true,
+            "table_toggle": true
+          },
+          {
+            "type": "table",
+            "head": ["Yêu cầu Mua mẫu", "Đối chiếu", "Kết quả"],
+            "rows": [
+              ["Giá đóng cửa tăng", "111,88 &gt; 110,66", "<b class=\"good\">Đạt</b>"],
+              ["Khối lượng vượt ngưỡng", "14,00 &gt; 1,5 × 5,31 = 7,97", "<b class=\"good\">Đạt</b>"]
+            ],
+            "source": {
+              "kind": "computed",
+              "hook": "application",
+              "chart_id": "volume-application"
+            }
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Nến giảm trong phiên nhưng vẫn đạt Mua mẫu",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Đóng cửa phiên trước 20.000 đồng. Hôm nay mở cửa 21.000 và đóng cửa 20.500 đồng; khối lượng đã vượt ngưỡng.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">20.500 &lt; 21.000: giảm so với mở cửa</div><div class=\"math-eq\">20.500 &gt; 20.000: tăng so với đóng cửa phiên trước</div></div>\n<p>Điều kiện của bài dùng <strong>đóng cửa trước</strong> làm mốc. Vì vậy Mua mẫu vẫn đạt. Không dùng màu nến theo mở cửa để thay phép so sánh đã chọn.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Thay hệ số, cửa sổ hoặc dấu</h3>\n<p>Với trung bình A dương giữ nguyên, tăng k làm điều kiện <strong>Khối lượng &gt; k × A</strong> khó đạt hơn. Nhưng nếu bạn đổi dấu sang <strong>&lt;</strong>, tăng k lại có thể làm thêm trường hợp đạt. Nhận xét về tác động tham số luôn phải gắn với đúng toán tử.</p>\n<p>Mua và Bán có N, k riêng. Chỉ sửa hệ số Mua không đổi hệ số Bán. Không tự thêm yêu cầu khối lượng hôm nay cao hơn hôm qua: mốc so sánh của dòng khối lượng là trung bình tham chiếu nhân hệ số.</p>\n<p>Khối lượng lớn không cho biết ai đang mua ròng và không bảo đảm giá tiếp tục cùng hướng. Không đủ N phiên tham chiếu hoặc A bằng 0 thì chưa đủ cơ sở sử dụng tỷ số trong bài.</p>\n<h3>Vận dụng trong Bot</h3>\n<p>Sau khi hoàn thành bài, vào <strong>Bot → Khối lượng</strong>. Chọn <strong>Luyện tập</strong> để đặt điều kiện và xem lời/lỗ từng giao dịch, hoặc chọn <strong>Cấu hình</strong> để thiết lập cho Bot. Luyện tập không bắt buộc; cấu hình của lượt luyện không thay cấu hình Bot đang sử dụng.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "volume",
+    "fixture": {}
+  },
+  {
+    "id": "ch01-l06",
+    "chapter": 1,
+    "order": 6,
+    "lesson_key": "concept:hop_luu",
+    "kind": "concept",
+    "name": "Hợp lưu",
+    "title": "Hợp lưu các chỉ báo",
+    "lead": "Ghép những điều kiện đã học thành hai tập Mua/Bán độc lập; kiểm tra đồng thuận trong cùng phiên và đọc đúng tác động khi thêm hoặc bỏ một yêu cầu.",
+    "nav_labels": ["Nguyên tắc", "Công thức", "Lựa chọn", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch01-v2.0",
+    "source": {
+      "package": "iqx-ch1-lessons",
+      "package_version": "iqx-ch1-lessons-2026-10-07-v2.0",
+      "payload_sha256": "377bd65337dfbbad2e73ae5183b8dddf0a22e32c4cc6b3b1fde7e3e8fb387354",
+      "object_sha256": "fd80eb57dafac167516496cece2e729f8e50cddf3b6758b6a62372e8aab14308"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Nguyên tắc kết hợp",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>Hợp lưu là yêu cầu nhiều điều kiện cùng thỏa mãn theo một quy tắc xác định.</strong> Ở Chương 1, IQX dùng AND: mỗi điều kiện đang bật của một phía đều là yêu cầu bắt buộc. Không cộng điểm và không dùng đa số để bù một điều kiện chưa đạt.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Chỉ báo đã học", "Thông tin đưa vào điều kiện mẫu"],
+            "rows": [
+              ["RSI", "Vị trí so ngưỡng ở phiên trước và chiều thay đổi hiện tại."],
+              ["MACD", "Đường MACD so với đường tín hiệu tại cùng phiên."],
+              ["MA / SMA", "Giá đóng cửa so với SMA."],
+              ["Bollinger Bands", "Vị trí giá ở hai phiên so với dải và chiều thay đổi giá."],
+              ["Khối lượng", "Chiều giá cùng mức khối lượng so ngưỡng tham chiếu."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Hai tập riêng, không phải một phiếu bầu chung</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Phía", "Chỉ báo được chọn trong ví dụ", "Khi nào đạt?"],
+            "rows": [
+              ["Mua", "RSI, MA, Khối lượng", "Cả ba điều kiện Mua cùng đúng."],
+              ["Bán", "MACD, MA", "Cả hai điều kiện Bán cùng đúng."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>RSI không tham gia Bán trong ví dụ; MACD không tham gia Mua. Tắt một phía của chỉ báo không bắt buộc tắt phía còn lại. Cùng một mã, Mua và Bán có thể cùng đúng; không lấy Mua sai để kết luận Bán đúng.</p>\n<p>Các chỉ báo không mặc nhiên độc lập: MA, MACD và đường giữa Bollinger đều được tạo từ giá. Nhiều chỉ báo cùng xác nhận không cho phép cộng các xác suất thành một xác suất thắng lớn hơn.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Gọi B₁, B₂… là kết quả những điều kiện <strong>Mua đang tham gia</strong>; S₁, S₂… là kết quả những điều kiện <strong>Bán đang tham gia</strong>. Giá trị 1 nghĩa là đạt, 0 nghĩa là không đạt. Thiếu dữ liệu là tình trạng riêng, không được tự gán 1.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">K<sub>Mua</sub> = B₁ × B₂ × … × B<sub>m</sub>  &nbsp; (m ≥ 1)</div><div class=\"math-eq\">K<sub>Bán</sub> = S₁ × S₂ × … × S<sub>n</sub>  &nbsp; (n ≥ 1)</div></div>\n<p>Số điều kiện Mua m có thể khác số điều kiện Bán n. Phép nhân chỉ biểu diễn AND khi tập không rỗng và đã đủ dữ liệu. <strong>Tập rỗng không phát tín hiệu.</strong></p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Tính hai phía một cách độc lập",
+            "blocks": [
+              {
+                "type": "table",
+                "head": ["Phía", "Các điều kiện trong cùng phiên", "Phép tính", "Kết quả"],
+                "rows": [
+                  ["Mua", "RSI = 1; MA = 1; Khối lượng = 0", "1 × 1 × 0 = 0", "Mua không đạt"],
+                  ["Bán", "MACD = 1; MA = 1", "1 × 1 = 1", "Bán đạt"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<p>Hai trên ba không đủ để Mua đạt. Việc Bán đạt đến từ các điều kiện Bán của chính nó, không phải vì Mua thất bại.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Một chỉ báo có nhiều dòng điều kiện</h3>\n<p>Bollinger Mua có ba dòng AND bên trong. Nếu một dòng sai, Bollinger Mua không đạt; nó không được tính như ba phiếu riêng để bù cho RSI. Tương tự, RSI Mua phải đồng thời thỏa yêu cầu vị trí phiên trước và chiều thay đổi hiện tại.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Tập đang xét", "Kết quả"],
+            "rows": [
+              ["Một chỉ báo đang bật và điều kiện của nó đạt", "Phía đó đạt."],
+              ["Có ba chỉ báo, một chỉ báo thiếu dữ liệu", "Chưa đánh giá đủ; không bỏ chỉ báo thiếu để kết luận đạt."],
+              ["Không có chỉ báo đang bật ở phía đó", "Không phát tín hiệu phía đó."]
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Chọn điều kiện và chỉnh tham số",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>Chỉ báo tham gia phía nào là do lựa chọn của bạn ở phía đó.</strong> Thêm MACD vào Mua không tự thêm MACD vào Bán; bỏ riêng RSI Bán không làm mất RSI Mua.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Thay đổi", "Phần bị ảnh hưởng", "Phần giữ nguyên"],
+            "rows": [
+              ["Bật thêm MACD Mua", "Mua thêm một yêu cầu AND.", "Toàn bộ tập Bán."],
+              ["Tắt RSI Bán", "Bỏ yêu cầu RSI khỏi tập Bán.", "RSI Mua và các chỉ báo khác."],
+              ["Đổi chu kỳ MA Mua", "Tính lại SMA dùng cho Mua.", "SMA Bán theo chu kỳ riêng."],
+              ["Đổi dấu Mua từ &gt; sang &lt;", "Thay ý nghĩa điều kiện Mua.", "Không tự đổi dấu Bán."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Với cùng dữ liệu và cấu hình của các điều kiện cũ giữ nguyên, thêm một yêu cầu AND không làm một phiên vốn không đạt trở thành đạt. Bỏ một yêu cầu có thể làm thêm phiên đạt, nhưng <strong>bỏ yêu cầu cuối cùng tạo tập rỗng và không phát tín hiệu</strong>, không phải cho mọi phiên đều đạt.</p>\n<h3>Đồng thuận phải ở cùng một phiên</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Phiên", "RSI Mua", "MA Mua", "Hợp lưu Mua"],
+            "rows": [
+              ["A: RSI 28 → 32", "Đạt", "Không đạt", "Không đạt"],
+              ["B: RSI 32 → 35", "Không đạt", "Đạt", "Không đạt"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Không lấy RSI của phiên A ghép với MA của phiên B. Ở B phải kiểm tra lại cả hai điều kiện trên dữ liệu và cấu hình của B. Quan hệ ở phiên trước trong một điều kiện RSI không phải quyền giữ tín hiệu cũ sang phiên mới.</p>\n<h3>Phân biệt học xong, bật sử dụng và kiểm tra thực tế</h3>\n<p>Đạt bài kiểm tra chỉ mở quyền cấu hình. Chỉ báo mới không tự ON. Khi công tắc tổng OFF, cả hai phía bị loại khỏi tập đang dùng nhưng các tham số và lựa chọn con được giữ. Bật tổng khi cả hai phía OFF sẽ mở Cấu hình để bạn chọn phía, không tự chọn thay bạn.</p>\n<p>Để đối chiếu một thay đổi, giữ cùng dữ liệu và chỉ đổi một thành phần trước. Xem phiên nào được thêm hoặc bị loại, rồi mới đánh giá kết quả kiểm thử. Không tìm một tổ hợp chỉ vì nó cho con số lợi nhuận đẹp nhất trên một đoạn dữ liệu.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Vận dụng trên một bộ điều kiện",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Xét Mua gồm <strong>RSI, MA, Khối lượng</strong>; Bán gồm <strong>MACD, MA</strong>. Bảng sau cho sẵn kết quả riêng của từng phía trong các tình huống độc lập, để tập trung vào phép hợp lưu.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Trường hợp", "RSI Mua", "MA Mua", "KL Mua", "MACD Bán", "MA Bán", "Kết quả"],
+            "rows": [
+              ["A", "Đạt", "Đạt", "Đạt", "Không", "Không", "Mua đạt; Bán không đạt"],
+              ["B", "Đạt", "Đạt", "Không", "Đạt", "Đạt", "Mua không đạt; Bán đạt"],
+              ["C", "Không", "Đạt", "Đạt", "Đạt", "Không", "Cả hai không đạt"],
+              ["D", "Đạt", "Đạt", "Đạt", "Đạt", "Đạt", "Cả Mua và Bán đạt"]
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Tính từ giá trị chỉ báo",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Dữ liệu giả định ở một phiên: giá trước 51, giá hiện tại 52; SMA Mua = 50; RSI Mua từ 28 lên 32 với ngưỡng 30; khối lượng 13 triệu, trung bình tham chiếu 8 triệu và k = 1,5. Các giá trị chỉ báo được cho sẵn trong ví dụ tổng hợp, còn cách tính đã có ở từng bài.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">RSI Mua: 28 &lt; 30 và 32 &gt; 28 → đạt</div><div class=\"math-eq\">MA Mua: 52 &gt; 50 → đạt</div><div class=\"math-eq\">Khối lượng Mua: 52 &gt; 51 và 13 &gt; 1,5 × 8 → đạt</div><div class=\"math-eq\">Hợp lưu Mua: 1 × 1 × 1 = 1</div></div>\n<p>Nếu chỉ đổi khối lượng hiện tại thành 11 triệu, Khối lượng Mua không đạt và cả tập Mua không đạt. Kết quả Bán vẫn phải tính riêng.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Có tín hiệu chưa phải đã có giao dịch</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Tình huống của Bot", "Cách đọc đúng"],
+            "rows": [
+              ["Chưa giữ mã; Mua và Bán cùng đạt", "Chỉ xét Mua nếu mã thuộc danh mục mua mới, đủ tiền và các kiểm tra giao dịch. Không bán ngay vị thế vừa mở trong cùng lượt."],
+              ["Đang giữ mã; Mua và Bán cùng đạt", "Xét Bán theo điều kiện đang có hiệu lực; không mua thêm và không mua lại cùng phiên sau khi bán."],
+              ["Chưa bật Bán; đang giữ vị thế", "Bot không bán theo tín hiệu. Không có cắt lỗ, chốt lời hoặc giới hạn thời gian tự động thay thế."],
+              ["Tắt toàn bộ Mua", "Không mua mới. Các vị thế đang giữ vẫn được xét theo điều kiện Bán đang sử dụng."],
+              ["Mã đang giữ không còn trong danh mục mua mới", "Vẫn xét Bán theo điều kiện. Không bán chỉ vì đổi danh mục; không xét mua thêm hoặc mua lại mã ngoài nguồn mua hiện tại."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Bot mặc định xét mua mới trong <strong>VN30</strong>. Khi người dùng áp dụng danh mục từ Bộ lọc, Bot chỉ xét mua mới trong danh mục đó; ngừng sử dụng danh mục riêng thì quay về VN30. Điều kiện Bán được xét trên <strong>toàn bộ vị thế Bot đang giữ</strong> và không phụ thuộc vị thế đang lãi hay lỗ. Săn mã và Danh mục theo dõi hoạt động độc lập.</p>\n<p><strong>Luyện tập từng chỉ báo</strong> dùng một chỉ báo mỗi lượt và có thời gian giữ tối đa mặc định 60 phiên, được chỉnh trước khi chạy. Giới hạn này không phải điều kiện Hợp lưu và không áp dụng cho Bot vận hành. Hợp lưu được sử dụng trong Bot và Backtest đầy đủ; không có bộ luyện Hợp lưu riêng.</p>\n<p>Backtest đầy đủ kiểm thử theo mã, khoảng thời gian và giả định đã chọn; một cảnh báo “thỏa Mua” cũng không xác nhận Bot đã mua. Muốn đánh giá phương pháp phải đọc đúng cả điều kiện lẫn cách thực thi; nội dung đó được học tiếp ở chương Backtest.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": null,
+    "fixture": {}
+  }
+]

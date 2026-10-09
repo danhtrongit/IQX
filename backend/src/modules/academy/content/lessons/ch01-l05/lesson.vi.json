@@ -1,0 +1,15 @@
+{
+  "lesson_id": "ch01-l05",
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "Khối lượng",
+    "prompt": "Trung bình 20 phiên trước là 1.000.000 cổ phiếu; k = 1,5. Ngưỡng bằng bao nhiêu?",
+    "expected": 1500000,
+    "unit": "cổ phiếu",
+    "formula": "A = Tổng khối lượng N phiên trước / N\nNgưỡng = k × A",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+}

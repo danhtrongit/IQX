@@ -1,0 +1,15 @@
+{
+  "lesson_id": "ch01-l04",
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "Bollinger Bands",
+    "prompt": "M = 100; σ = 3; k = 2. Dải trên bằng bao nhiêu?",
+    "expected": 106,
+    "unit": "",
+    "formula": "M = SMA(N)\nσ = sqrt[Σ(Giá − M)² / N]\nDải trên = M + kσ; Dải dưới = M − kσ",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+}

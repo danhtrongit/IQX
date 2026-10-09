@@ -1,0 +1,25 @@
+{
+  "lesson_id": "ch03-l03",
+  "superseded_by": "ch03-v2.0",
+  "note": "Served from content/packages/ch03. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "Tăng trưởng EPS YoY",
+    "inputs": [
+      [
+        "EPS kỳ này",
+        2400
+      ],
+      [
+        "EPS cùng kỳ",
+        2000
+      ]
+    ],
+    "formula": "(EPS kỳ này / EPS cùng kỳ − 1) × 100",
+    "expected": 20,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "EPS kỳ này = 2400; EPS cùng kỳ = 2000. Tính Tăng trưởng EPS YoY theo công thức của bài."
+  }
+}

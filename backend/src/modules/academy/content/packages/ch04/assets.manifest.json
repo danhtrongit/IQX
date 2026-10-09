@@ -1,0 +1,517 @@
+{
+  "01-overview": {
+    "file": "assets/academy/ch04/01-overview.d1449851.webp",
+    "sha256": "d144985101c97fc4a40b02915026d384ffb2dea73ef136b675efc5c98cb15123",
+    "bytes": 160222,
+    "width": 2160,
+    "height": 1842,
+    "mime": "image/webp",
+    "alt": "Các khu vực của Bộ lọc",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#tab-filter"
+      },
+      {
+        "number": 2,
+        "selector": "#fundLibrary"
+      },
+      {
+        "number": 3,
+        "selector": ".filter-scope"
+      },
+      {
+        "number": 4,
+        "selector": ".filter-panel"
+      },
+      {
+        "number": 5,
+        "selector": ".filter-results"
+      },
+      {
+        "number": 6,
+        "selector": "#botSourceCard"
+      }
+    ]
+  },
+  "02-mobile-entry": {
+    "file": "assets/academy/ch04/02-mobile-entry.6f4c2457.webp",
+    "sha256": "6f4c2457192172c51d433dadf536e0fc0fcd7b9bba78ece65651d8938e22d7f3",
+    "bytes": 8482,
+    "width": 585,
+    "height": 198,
+    "mime": "image/webp",
+    "alt": "Mở thư viện Chỉ tiêu trên màn hình nhỏ",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-action=\"fund-library\"]"
+      }
+    ]
+  },
+  "03-scope": {
+    "file": "assets/academy/ch04/03-scope.a190aeb4.webp",
+    "sha256": "a190aeb4bbff04585f90535a15f10452d3497576a9239207c8e1447f334b0310",
+    "bytes": 7584,
+    "width": 1742,
+    "height": 192,
+    "mime": "image/webp",
+    "alt": "Thị trường và ngành",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#fMarket"
+      },
+      {
+        "number": 2,
+        "selector": "#fSector"
+      }
+    ]
+  },
+  "04-library-add": {
+    "file": "assets/academy/ch04/04-library-add.a81ef530.webp",
+    "sha256": "a81ef5300711f6954a427fc7aa44830a696045b65b19f10b06a2a3313ffdcd52",
+    "bytes": 21272,
+    "width": 428,
+    "height": 869,
+    "mime": "image/webp",
+    "alt": "Tìm và thêm chỉ tiêu từ thư viện",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#fundSearch"
+      },
+      {
+        "number": 2,
+        "selector": "[data-add-factor=\"profit\"]"
+      },
+      {
+        "number": 3,
+        "selector": "[data-add-factor=\"roe\"]"
+      }
+    ]
+  },
+  "05-profit-rule": {
+    "file": "assets/academy/ch04/05-profit-rule.60b0075a.webp",
+    "sha256": "60b0075a5b1063e5dc9a94605daf622aec81dbb2da5692d195ce031771d6cf52",
+    "bytes": 10658,
+    "width": 870,
+    "height": 228,
+    "mime": "image/webp",
+    "alt": "Thiết lập Tăng trưởng LNST YoY",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#factor-period-0"
+      },
+      {
+        "number": 2,
+        "selector": "#factor-op-0"
+      },
+      {
+        "number": 3,
+        "selector": "#factor-value-0"
+      }
+    ]
+  },
+  "06-and-rules": {
+    "file": "assets/academy/ch04/06-and-rules.61642f17.webp",
+    "sha256": "61642f17b4d300c899401e67d10fde8edd7df7593c8b0f29d56af5d960245da3",
+    "bytes": 19930,
+    "width": 1742,
+    "height": 347,
+    "mime": "image/webp",
+    "alt": "Hai điều kiện kết hợp AND",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-condition-id=\"profit\"]"
+      },
+      {
+        "number": 2,
+        "selector": "[data-condition-id=\"roe\"]"
+      },
+      {
+        "number": 3,
+        "selector": ".filter-panel .and"
+      }
+    ]
+  },
+  "07-edit-rule": {
+    "file": "assets/academy/ch04/07-edit-rule.4cc19809.webp",
+    "sha256": "4cc19809982f3f36ce66adb971198fc2949361349b2b1ade64eb732c01d5fddf",
+    "bytes": 10892,
+    "width": 870,
+    "height": 228,
+    "mime": "image/webp",
+    "alt": "Sửa dấu, ngưỡng hoặc bỏ điều kiện",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#factor-op-0"
+      },
+      {
+        "number": 2,
+        "selector": "#factor-value-0"
+      },
+      {
+        "number": 3,
+        "selector": "[data-remove-factor=\"0\"]"
+      }
+    ]
+  },
+  "08-empty-value": {
+    "file": "assets/academy/ch04/08-empty-value.b6e57a49.webp",
+    "sha256": "b6e57a49fd8df20c85bbbd27ae939c43e7e0bbed5ea3e182b3a708730967a46a",
+    "bytes": 54346,
+    "width": 1742,
+    "height": 912,
+    "mime": "image/webp",
+    "alt": "Nhận biết điều kiện chưa hợp lệ",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#factor-value-0"
+      }
+    ]
+  },
+  "09-period-quarter": {
+    "file": "assets/academy/ch04/09-period-quarter.41f3817c.webp",
+    "sha256": "41f3817c416d1dce7807d5445bb4ff7f95f70a281007fdf16cda080d0184f837",
+    "bytes": 18812,
+    "width": 1742,
+    "height": 347,
+    "mime": "image/webp",
+    "alt": "Trước khi đổi kỳ: LNST theo quý",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#factor-period-0"
+      },
+      {
+        "number": 2,
+        "selector": "#factor-period-1"
+      }
+    ]
+  },
+  "10-period-ttm": {
+    "file": "assets/academy/ch04/10-period-ttm.90af5a76.webp",
+    "sha256": "90af5a76727687fd779e87995b75029160a4fbdd8b9bb24ee93cf3a84336d1c2",
+    "bytes": 100014,
+    "width": 1742,
+    "height": 1121,
+    "mime": "image/webp",
+    "alt": "Sau khi đổi riêng kỳ LNST",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#factor-period-0"
+      },
+      {
+        "number": 2,
+        "selector": "[data-sort=\"profit\"]"
+      }
+    ]
+  },
+  "11-results-A": {
+    "file": "assets/academy/ch04/11-results-A.1980cc31.webp",
+    "sha256": "1980cc31e1f8dab60ed16c7066ee2b1c715341ab5e16e2c8cfb4c9a20847e5a6",
+    "bytes": 93200,
+    "width": 1742,
+    "height": 908,
+    "mime": "image/webp",
+    "alt": "Kết quả của bộ tiêu chí A",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#filterResultCount"
+      },
+      {
+        "number": 2,
+        "selector": "#companyHead"
+      },
+      {
+        "number": 3,
+        "selector": "#filterQuality"
+      }
+    ]
+  },
+  "12-metric-detail": {
+    "file": "assets/academy/ch04/12-metric-detail.056bd7e5.webp",
+    "sha256": "056bd7e53319067a8e9a78e5e44b4c0508298db06e7b2cf5972600449593f73d",
+    "bytes": 52732,
+    "width": 1029,
+    "height": 1062,
+    "mime": "image/webp",
+    "alt": "Đọc kỳ và thành phần của một số liệu",
+    "marks": [
+      {
+        "number": 1,
+        "selector": ".period-detail-summary"
+      },
+      {
+        "number": 2,
+        "selector": ".period-detail-grid"
+      }
+    ]
+  },
+  "13-quality": {
+    "file": "assets/academy/ch04/13-quality.f6213889.webp",
+    "sha256": "f6213889ddb9ce5d22f06897111734bcee1c910f6da21add5aa45523d33f2a2c",
+    "bytes": 26444,
+    "width": 1029,
+    "height": 539,
+    "mime": "image/webp",
+    "alt": "Kiểm tra nguyên nhân thiếu dữ liệu",
+    "marks": []
+  },
+  "14-selection": {
+    "file": "assets/academy/ch04/14-selection.0fb67a96.webp",
+    "sha256": "0fb67a96291f6f428c303b81a05bc7c5ce323a36eb5f917f2d95c1c0617a96d9",
+    "bytes": 93174,
+    "width": 1742,
+    "height": 912,
+    "mime": "image/webp",
+    "alt": "Chọn hai mã trong kết quả",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-select-company=\"CMG\"]"
+      },
+      {
+        "number": 2,
+        "selector": "[data-select-company=\"FPT\"]"
+      },
+      {
+        "number": 3,
+        "selector": "#selectionLine"
+      }
+    ]
+  },
+  "15-save-A": {
+    "file": "assets/academy/ch04/15-save-A.3a9bb66a.webp",
+    "sha256": "3a9bb66a972f96db4dc01e9aaad4645fc81d3410722348663df50f794d6db530",
+    "bytes": 18614,
+    "width": 1029,
+    "height": 477,
+    "mime": "image/webp",
+    "alt": "Đặt tên và lưu bộ tiêu chí A",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#saveName"
+      },
+      {
+        "number": 2,
+        "selector": "[data-action=\"confirm-name\"]"
+      }
+    ]
+  },
+  "16-saved-A": {
+    "file": "assets/academy/ch04/16-saved-A.6ee52d97.webp",
+    "sha256": "6ee52d97cab46419070a97f7f2fa5fc73e1c51e7959350946cb2765b6b0e86c8",
+    "bytes": 20882,
+    "width": 1029,
+    "height": 468,
+    "mime": "image/webp",
+    "alt": "Mở bộ tiêu chí đã lưu",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-saved-kind=\"filters\"]"
+      }
+    ]
+  },
+  "17-filter-B": {
+    "file": "assets/academy/ch04/17-filter-B.b720e1a5.webp",
+    "sha256": "b720e1a54f98a90dd261229ec065183372a720036c8bf136b960e14a84a291a2",
+    "bytes": 19652,
+    "width": 1742,
+    "height": 347,
+    "mime": "image/webp",
+    "alt": "Chỉ nâng ngưỡng LNST từ 15 lên 25",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#factor-value-0"
+      },
+      {
+        "number": 2,
+        "selector": "[data-condition-id=\"roe\"]"
+      }
+    ]
+  },
+  "18-results-B": {
+    "file": "assets/academy/ch04/18-results-B.4bc96569.webp",
+    "sha256": "4bc9656926efb1e8f364b47fdeffa257ebfe2c12759af383d1ef2aa903274c98",
+    "bytes": 69808,
+    "width": 1742,
+    "height": 717,
+    "mime": "image/webp",
+    "alt": "Kết quả của bộ tiêu chí B",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#filterResultCount"
+      }
+    ]
+  },
+  "19-saved-AB": {
+    "file": "assets/academy/ch04/19-saved-AB.7b843839.webp",
+    "sha256": "7b8438393317feddd5c040cc2e9fb31aa9c5492665dc267743398638a880018b",
+    "bytes": 28224,
+    "width": 1029,
+    "height": 575,
+    "mime": "image/webp",
+    "alt": "Hai bộ tiêu chí A và B được lưu riêng",
+    "marks": []
+  },
+  "20-save-list": {
+    "file": "assets/academy/ch04/20-save-list.c6dcf18b.webp",
+    "sha256": "c6dcf18bf5aa16978308ed121c400cb2d6e6cefb81e321a6dc828766eed8c504",
+    "bytes": 16596,
+    "width": 1029,
+    "height": 477,
+    "mime": "image/webp",
+    "alt": "Lưu danh mục của hai mã đã chọn",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#saveName"
+      },
+      {
+        "number": 2,
+        "selector": "[data-action=\"confirm-name\"]"
+      }
+    ]
+  },
+  "21-list-detail": {
+    "file": "assets/academy/ch04/21-list-detail.1e91bcb7.webp",
+    "sha256": "1e91bcb7367005c1e2962ca8ecdc0fe17d05a849da9624b07f16561ce5331056",
+    "bytes": 47134,
+    "width": 1029,
+    "height": 848,
+    "mime": "image/webp",
+    "alt": "Xem tập mã và số liệu đã lưu",
+    "marks": [
+      {
+        "number": 1,
+        "selector": ".symbol-pills"
+      },
+      {
+        "number": 2,
+        "selector": "[data-action=\"close-modal\"]"
+      }
+    ]
+  },
+  "22-apply-direct": {
+    "file": "assets/academy/ch04/22-apply-direct.01e22123.webp",
+    "sha256": "01e22123128e8d16682ce1e0ea52343d976d456f845e37475ffc1660055a1294",
+    "bytes": 42222,
+    "width": 1029,
+    "height": 846,
+    "mime": "image/webp",
+    "alt": "Áp dụng trực tiếp từ kết quả đang chọn",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "#applyName"
+      },
+      {
+        "number": 2,
+        "selector": ".apply-list"
+      },
+      {
+        "number": 3,
+        "selector": "#confirmApplyBtn"
+      }
+    ]
+  },
+  "23-apply-saved": {
+    "file": "assets/academy/ch04/23-apply-saved.8e4b668f.webp",
+    "sha256": "8e4b668f82625a071a0a5f4859534f2cc12d94b901ae27fb112d1b05144eabdd",
+    "bytes": 19010,
+    "width": 1029,
+    "height": 468,
+    "mime": "image/webp",
+    "alt": "Áp dụng từ danh mục đã lưu",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-apply-saved=\"list-muz6c15h-ic9qv\"]"
+      }
+    ]
+  },
+  "24-source-pending": {
+    "file": "assets/academy/ch04/24-source-pending.a479e42f.webp",
+    "sha256": "a479e42f456d1a7e5ee879dea5db6dd0a451f69218bcaead49fb047793131bc5",
+    "bytes": 16740,
+    "width": 1742,
+    "height": 252,
+    "mime": "image/webp",
+    "alt": "Nguồn hiện tại và thay đổi đang chờ",
+    "marks": [
+      {
+        "number": 1,
+        "selector": ".source-summary"
+      },
+      {
+        "number": 2,
+        "selector": ".source-pending"
+      }
+    ]
+  },
+  "25-source-effective": {
+    "file": "assets/academy/ch04/25-source-effective.3fa21871.webp",
+    "sha256": "3fa21871b4ad4fa7d9fac5d5e1c9ed1476ae8e3f86fb24db92a360111468eea4",
+    "bytes": 14132,
+    "width": 1742,
+    "height": 164,
+    "mime": "image/webp",
+    "alt": "Danh mục mới đã có hiệu lực",
+    "marks": [
+      {
+        "number": 1,
+        "selector": ".source-summary"
+      },
+      {
+        "number": 2,
+        "selector": "[data-action=\"view-bot-source\"]"
+      },
+      {
+        "number": 3,
+        "selector": "[data-action=\"return-vn30\"]"
+      }
+    ]
+  },
+  "26-return-vn30": {
+    "file": "assets/academy/ch04/26-return-vn30.71c93c4e.webp",
+    "sha256": "71c93c4e407d76cbf3a12ad7321cd0d17aff719daf4a923ad10a2f610946c70a",
+    "bytes": 22238,
+    "width": 1029,
+    "height": 507,
+    "mime": "image/webp",
+    "alt": "Đọc thông tin trước khi xác nhận về VN30",
+    "marks": [
+      {
+        "number": 1,
+        "selector": "[data-action=\"confirm-vn30\"]"
+      }
+    ]
+  },
+  "27-bot-old-positions": {
+    "file": "assets/academy/ch04/27-bot-old-positions.996ec057.webp",
+    "sha256": "996ec057f0ceb27459ba840aa6f576bdb278ad63a3a73c2aaf35fc884e393b48",
+    "bytes": 51922,
+    "width": 1029,
+    "height": 1098,
+    "mime": "image/webp",
+    "alt": "Vị thế cũ tiếp tục được xét Bán",
+    "marks": [
+      {
+        "number": 1,
+        "selector": ".source-positions"
+      }
+    ]
+  }
+}

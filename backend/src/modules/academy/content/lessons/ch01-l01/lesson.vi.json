@@ -1,0 +1,15 @@
+{
+  "lesson_id": "ch01-l01",
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "RSI",
+    "prompt": "G = 1,2; D = 0,4. RSI bằng bao nhiêu?",
+    "expected": 75,
+    "unit": "",
+    "formula": "G = trung bình Wilder của max(ΔGiá, 0)\nD = trung bình Wilder của max(−ΔGiá, 0)\nRSI = 100 − 100 / (1 + G/D)",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+}

@@ -1,0 +1,1795 @@
+[
+  {
+    "id": "ch03-l01-q01",
+    "source_id": "ch03-rev-q01",
+    "lesson_id": "ch03-l01",
+    "topic": "Nhận diện số liệu",
+    "section": 1,
+    "prompt": "Báo cáo ghi doanh thu bán hàng 2.100 tỷ đồng, giảm trừ doanh thu 100 tỷ và giá vốn 1.300 tỷ. Doanh thu dùng theo cách tính trong bài là bao nhiêu?",
+    "options": [
+      {
+        "id": "c85273ca24",
+        "source_id": "o4",
+        "text": "800 tỷ đồng",
+        "explanation": "800 tỷ lấy doanh thu trước giảm trừ trừ giá vốn, chưa phải doanh thu thuần."
+      },
+      {
+        "id": "ca4ce84ab2",
+        "source_id": "o2",
+        "text": "2.100 tỷ đồng",
+        "explanation": "Đây là doanh thu trước giảm trừ."
+      },
+      {
+        "id": "d1c13ca688",
+        "source_id": "o1",
+        "text": "2.000 tỷ đồng",
+        "explanation": "Doanh thu thuần = 2.100 − 100 = 2.000 tỷ đồng."
+      },
+      {
+        "id": "f83eb383f1",
+        "source_id": "o3",
+        "text": "700 tỷ đồng",
+        "explanation": "700 tỷ là lợi nhuận gộp sau khi trừ giá vốn từ doanh thu thuần."
+      }
+    ],
+    "correct_option_id": "d1c13ca688"
+  },
+  {
+    "id": "ch03-l01-q02",
+    "source_id": "ch03-rev-q02",
+    "lesson_id": "ch03-l01",
+    "topic": "Tính tăng trưởng",
+    "section": 2,
+    "hint": "Tăng trưởng = (doanh thu kỳ này / doanh thu cùng kỳ − 1) × 100%.",
+    "prompt": "Doanh thu quý II năm trước là 1.200 tỷ, quý II năm nay là 1.500 tỷ. Tăng trưởng doanh thu YoY bằng bao nhiêu?",
+    "options": [
+      {
+        "id": "20c62750fe",
+        "source_id": "o3",
+        "text": "125%",
+        "explanation": "125% là doanh thu kỳ này bằng bao nhiêu phần trăm kỳ gốc, chưa trừ 100%."
+      },
+      {
+        "id": "708b700c3c",
+        "source_id": "o4",
+        "text": "300%",
+        "explanation": "Tăng thêm 300 tỷ không có nghĩa tăng 300%."
+      },
+      {
+        "id": "b7f40fb0c3",
+        "source_id": "o2",
+        "text": "20%",
+        "explanation": "20% là lấy phần tăng 300 chia cho doanh thu kỳ này, sai nền so sánh."
+      },
+      {
+        "id": "b89469a687",
+        "source_id": "o1",
+        "text": "25%",
+        "explanation": "(1.500 / 1.200 − 1) × 100% = 25%."
+      }
+    ],
+    "correct_option_id": "b89469a687"
+  },
+  {
+    "id": "ch03-l01-q03",
+    "source_id": "ch03-rev-q03",
+    "lesson_id": "ch03-l01",
+    "topic": "Chọn đúng kỳ",
+    "section": 3,
+    "prompt": "Tính tăng trưởng YoY của quý III/2025. Cặp số nào phải được dùng?",
+    "options": [
+      {
+        "id": "a41eaa18fe",
+        "source_id": "o4",
+        "text": "Doanh thu cả năm 2025 và cả năm 2024",
+        "explanation": "Đó là YoY theo năm, không phải của quý III."
+      },
+      {
+        "id": "c33954667b",
+        "source_id": "o1",
+        "text": "Doanh thu riêng quý III/2025 và riêng quý III/2024",
+        "explanation": "Cùng quý của hai năm tạo phép so sánh YoY theo quý."
+      },
+      {
+        "id": "c372fdf9cb",
+        "source_id": "o3",
+        "text": "Doanh thu lũy kế chín tháng 2025 và riêng quý III/2024",
+        "explanation": "Hai số có độ dài kỳ khác nhau."
+      },
+      {
+        "id": "da6d49ee0f",
+        "source_id": "o2",
+        "text": "Doanh thu riêng quý III/2025 và riêng quý II/2025",
+        "explanation": "Đây là so với quý liền trước, không phải YoY."
+      }
+    ],
+    "correct_option_id": "c33954667b"
+  },
+  {
+    "id": "ch03-l01-q04",
+    "source_id": "ch03-rev-q04",
+    "lesson_id": "ch03-l01",
+    "topic": "Đọc biểu đồ",
+    "section": 3,
+    "prompt": "Theo biểu đồ, từ quý II đến quý IV/2025, nhận xét nào đúng?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "rev-quiz-trend"
+    },
+    "options": [
+      {
+        "id": "27cc61c631",
+        "source_id": "o2",
+        "text": "Doanh thu giảm vì phần trăm YoY giảm.",
+        "explanation": "Đã nhầm giảm tốc độ tăng với giảm doanh thu."
+      },
+      {
+        "id": "3b03496fdd",
+        "source_id": "o1",
+        "text": "Doanh thu tăng nhưng tốc độ tăng YoY giảm.",
+        "explanation": "Doanh thu là 1.250 → 1.380 → 1.650; YoY là 25% → 15% → 10%."
+      },
+      {
+        "id": "8a3b7d7fa3",
+        "source_id": "o3",
+        "text": "Doanh thu không đổi vì YoY vẫn dương.",
+        "explanation": "YoY dương không có nghĩa doanh thu không đổi."
+      },
+      {
+        "id": "a6207df105",
+        "source_id": "o4",
+        "text": "Quý IV có tốc độ tăng YoY cao nhất.",
+        "explanation": "Tốc độ quý IV là 10%, thấp hơn quý II và III."
+      }
+    ],
+    "correct_option_id": "3b03496fdd"
+  },
+  {
+    "id": "ch03-l01-q05",
+    "source_id": "ch03-rev-q05",
+    "lesson_id": "ch03-l01",
+    "topic": "Bốn quý gần nhất",
+    "section": 3,
+    "prompt": "Hai cửa sổ dưới đây được xác định đúng kỳ so sánh. Tăng trưởng doanh thu bốn quý gần nhất xấp xỉ bao nhiêu?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "rev-periods"
+    },
+    "options": [
+      {
+        "id": "1a5528f819",
+        "source_id": "o2",
+        "text": "25%",
+        "explanation": "25% là tăng trưởng riêng quý II trong ví dụ A, không phải cửa sổ bốn quý."
+      },
+      {
+        "id": "73f363b9da",
+        "source_id": "o4",
+        "text": "121,23%",
+        "explanation": "121,23% chưa trừ phần doanh thu của kỳ gốc."
+      },
+      {
+        "id": "ab66d4af3b",
+        "source_id": "o1",
+        "text": "21,23%",
+        "explanation": "(4.910 / 4.050 − 1) × 100% ≈ 21,23%."
+      },
+      {
+        "id": "d075a5ca84",
+        "source_id": "o3",
+        "text": "17,52%",
+        "explanation": "17,52% là lấy phần tăng chia cho tổng kỳ này."
+      }
+    ],
+    "correct_option_id": "ab66d4af3b"
+  },
+  {
+    "id": "ch03-l01-q06",
+    "source_id": "ch03-rev-q06",
+    "lesson_id": "ch03-l01",
+    "topic": "Quý riêng và lũy kế",
+    "section": 3,
+    "prompt": "Hai số cùng cơ sở báo cáo: doanh thu lũy kế sáu tháng là 2.210 tỷ; doanh thu quý I là 960 tỷ. Doanh thu riêng quý II là bao nhiêu?",
+    "options": [
+      {
+        "id": "1076e403fe",
+        "source_id": "o1",
+        "text": "1.250 tỷ",
+        "explanation": "Sáu tháng gồm quý I và quý II: 2.210 − 960 = 1.250."
+      },
+      {
+        "id": "286890dca7",
+        "source_id": "o2",
+        "text": "2.210 tỷ",
+        "explanation": "2.210 là số lũy kế hai quý."
+      },
+      {
+        "id": "6070646210",
+        "source_id": "o3",
+        "text": "3.170 tỷ",
+        "explanation": "Cộng lại sẽ đếm quý I hai lần."
+      },
+      {
+        "id": "c845a81553",
+        "source_id": "o4",
+        "text": "1.105 tỷ",
+        "explanation": "Không chia đều lũy kế cho hai quý khi đã có số quý I."
+      }
+    ],
+    "correct_option_id": "1076e403fe"
+  },
+  {
+    "id": "ch03-l01-q07",
+    "source_id": "ch03-rev-q07",
+    "lesson_id": "ch03-l01",
+    "topic": "Dấu và ngưỡng",
+    "section": 4,
+    "prompt": "Với điều kiện tăng trưởng doanh thu YoY > 15%, những doanh nghiệp nào ở bảng đủ điều kiện?",
+    "figure": {
+      "type": "table",
+      "head": ["Doanh nghiệp", "YoY"],
+      "rows": [
+        ["A", "16%"],
+        ["B", "15%"],
+        ["C", "Chưa đủ dữ liệu"]
+      ]
+    },
+    "options": [
+      {
+        "id": "6cc5374ded",
+        "source_id": "o2",
+        "text": "A và B",
+        "explanation": "Dấu > không bao gồm B bằng 15%."
+      },
+      {
+        "id": "a47992b971",
+        "source_id": "o1",
+        "text": "Chỉ A",
+        "explanation": "A là 16% > 15%. B bằng ngưỡng; C thiếu dữ liệu."
+      },
+      {
+        "id": "c53faa3794",
+        "source_id": "o4",
+        "text": "Chỉ C",
+        "explanation": "Thiếu dữ liệu không đồng nghĩa thỏa tiêu chí."
+      },
+      {
+        "id": "f8336b0ea9",
+        "source_id": "o3",
+        "text": "A, B và C",
+        "explanation": "C không thể được coi là đạt khi chưa tính được YoY."
+      }
+    ],
+    "correct_option_id": "a47992b971"
+  },
+  {
+    "id": "ch03-l01-q08",
+    "source_id": "ch03-rev-q08",
+    "lesson_id": "ch03-l01",
+    "topic": "Kỳ mới nhất",
+    "section": 4,
+    "prompt": "Ngày 10/07 đang lọc. Quý II đã kết thúc ngày 30/06 nhưng báo cáo đến 25/07 mới công bố. Nhận định nào đúng?",
+    "options": [
+      {
+        "id": "7270934a23",
+        "source_id": "o1",
+        "text": "Không được coi số liệu quý II là dữ liệu đã biết ngày 10/07.",
+        "explanation": "Kỳ kết thúc không đồng nghĩa số liệu đã được công bố."
+      },
+      {
+        "id": "742c996dac",
+        "source_id": "o2",
+        "text": "Dùng quý II vì kỳ kế toán đã kết thúc.",
+        "explanation": "Đã nhầm ngày kết thúc kỳ với thời điểm có báo cáo."
+      },
+      {
+        "id": "9da225dea7",
+        "source_id": "o3",
+        "text": "Lấy số quý I nhân đôi để thay báo cáo quý II.",
+        "explanation": "Đó là ước tính không thuộc công thức hay nguồn đang sử dụng."
+      },
+      {
+        "id": "a7caeb242f",
+        "source_id": "o4",
+        "text": "Gán tăng trưởng quý II bằng 0% đến khi công bố.",
+        "explanation": "0% là số liệu có nghĩa, không dùng thay cho chưa có báo cáo."
+      }
+    ],
+    "correct_option_id": "7270934a23"
+  },
+  {
+    "id": "ch03-l02-q01",
+    "source_id": "ch03-profit-q01",
+    "lesson_id": "ch03-l02",
+    "topic": "Ý nghĩa LNST",
+    "section": 1,
+    "prompt": "LNST của kỳ là 88 tỷ đồng. Chỉ từ con số này, phát biểu nào đúng?",
+    "options": [
+      {
+        "id": "15d9d5dd85",
+        "source_id": "o4",
+        "text": "88 tỷ đồng là số cổ tức bắt buộc trả trong kỳ.",
+        "explanation": "Việc phân phối cổ tức không được suy từ riêng con số LNST."
+      },
+      {
+        "id": "44f6a9b0b6",
+        "source_id": "o1",
+        "text": "Kết quả sau thu nhập, chi phí và thuế của kỳ là lãi 88 tỷ đồng.",
+        "explanation": "Đây là ý nghĩa của LNST; chưa xác định số dư tiền mặt hay cổ tức."
+      },
+      {
+        "id": "4b7168ebfd",
+        "source_id": "o3",
+        "text": "Doanh thu của kỳ bằng 88 tỷ đồng.",
+        "explanation": "Doanh thu chưa trừ các khoản chi phí để ra LNST."
+      },
+      {
+        "id": "e756b6e9ca",
+        "source_id": "o2",
+        "text": "Tiền mặt cuối kỳ chắc chắn là 88 tỷ đồng.",
+        "explanation": "LNST và số dư tiền không phải cùng đại lượng."
+      }
+    ],
+    "correct_option_id": "44f6a9b0b6"
+  },
+  {
+    "id": "ch03-l02-q02",
+    "source_id": "ch03-profit-q02",
+    "lesson_id": "ch03-l02",
+    "topic": "Tính tăng trưởng",
+    "section": 2,
+    "prompt": "LNST từ 80 tỷ cùng quý năm trước lên 88 tỷ kỳ này. Tăng trưởng YoY là bao nhiêu?",
+    "options": [
+      {
+        "id": "0d2d93815c",
+        "source_id": "o4",
+        "text": "8%",
+        "explanation": "8 tỷ là số tiền tăng, không phải phần trăm."
+      },
+      {
+        "id": "5236e94c63",
+        "source_id": "o2",
+        "text": "9,09%",
+        "explanation": "Đây là phần tăng chia cho kỳ này, sai kỳ gốc."
+      },
+      {
+        "id": "acf709d391",
+        "source_id": "o3",
+        "text": "110%",
+        "explanation": "110% là tỷ lệ kỳ này/kỳ gốc chưa trừ 100%."
+      },
+      {
+        "id": "caa6fd4de2",
+        "source_id": "o1",
+        "text": "10%",
+        "explanation": "(88 / 80 − 1) × 100% = 10%."
+      }
+    ],
+    "correct_option_id": "caa6fd4de2"
+  },
+  {
+    "id": "ch03-l02-q03",
+    "source_id": "ch03-profit-q03",
+    "lesson_id": "ch03-l02",
+    "topic": "Đọc hai tỷ lệ",
+    "section": 1,
+    "prompt": "Tại quý II trong biểu đồ, điều gì được số liệu trực tiếp hỗ trợ?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "profit-growth"
+    },
+    "options": [
+      {
+        "id": "0295a151a6",
+        "source_id": "o4",
+        "text": "Chi phí lãi vay chắc chắn là nguyên nhân duy nhất.",
+        "explanation": "Chưa có số liệu từng khoản để kết luận nguyên nhân."
+      },
+      {
+        "id": "2302e376f2",
+        "source_id": "o3",
+        "text": "LNST tăng 25% giống doanh thu.",
+        "explanation": "Hai cột không có cùng giá trị."
+      },
+      {
+        "id": "4bd0fe5d0b",
+        "source_id": "o1",
+        "text": "Doanh thu và LNST đều tăng, nhưng LNST tăng chậm hơn doanh thu.",
+        "explanation": "Doanh thu YoY 25%, LNST YoY 10%; cả hai dương, khác tốc độ."
+      },
+      {
+        "id": "f03085327f",
+        "source_id": "o2",
+        "text": "LNST giảm 15%.",
+        "explanation": "Chênh lệch 15 điểm phần trăm giữa hai tốc độ không phải mức giảm LNST."
+      }
+    ],
+    "correct_option_id": "4bd0fe5d0b"
+  },
+  {
+    "id": "ch03-l02-q04",
+    "source_id": "ch03-profit-q04",
+    "lesson_id": "ch03-l02",
+    "topic": "Nền so sánh",
+    "section": 3,
+    "prompt": "B có LNST 10 → 20 tỷ; C có 100 → 130 tỷ. Nhận xét nào đúng?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "profit-base"
+    },
+    "options": [
+      {
+        "id": "211e0623e4",
+        "source_id": "o3",
+        "text": "C có tốc độ tăng cao hơn vì tăng thêm 30 tỷ.",
+        "explanation": "30 tỷ tăng thêm không đồng nghĩa tốc độ cao hơn 100%."
+      },
+      {
+        "id": "3edf7bc4e3",
+        "source_id": "o2",
+        "text": "B tăng thêm nhiều tiền hơn vì đạt 100%.",
+        "explanation": "Đã nhầm tỷ lệ với mức tăng tuyệt đối."
+      },
+      {
+        "id": "ce29b1d035",
+        "source_id": "o4",
+        "text": "Hai doanh nghiệp tăng trưởng bằng nhau.",
+        "explanation": "Cả tỷ lệ lẫn số tăng thêm đều khác."
+      },
+      {
+        "id": "dc54995e68",
+        "source_id": "o1",
+        "text": "B tăng nhanh hơn về %, C tăng thêm nhiều tỷ đồng hơn.",
+        "explanation": "B: +100% và +10 tỷ; C: +30% và +30 tỷ."
+      }
+    ],
+    "correct_option_id": "dc54995e68"
+  },
+  {
+    "id": "ch03-l02-q05",
+    "source_id": "ch03-profit-q05",
+    "lesson_id": "ch03-l02",
+    "topic": "Kỳ gốc bằng 0",
+    "section": 3,
+    "prompt": "LNST kỳ gốc bằng 0, kỳ này là 5 tỷ. Theo cách lọc của bài, nên thể hiện thế nào?",
+    "options": [
+      {
+        "id": "02bc0cd791",
+        "source_id": "o1",
+        "text": "Không tính tỷ lệ YoY; đọc là từ hòa vốn sang lãi 5 tỷ.",
+        "explanation": "Mẫu số bằng 0; không có tỷ lệ YoY theo công thức."
+      },
+      {
+        "id": "316bb651bb",
+        "source_id": "o2",
+        "text": "Tăng trưởng 5%.",
+        "explanation": "5 tỷ không phải 5%."
+      },
+      {
+        "id": "511d016835",
+        "source_id": "o4",
+        "text": "Tăng trưởng 0%.",
+        "explanation": "0% có nghĩa không đổi trên nền hợp lệ, không phải trường hợp này."
+      },
+      {
+        "id": "d91e01ac60",
+        "source_id": "o3",
+        "text": "Tăng trưởng 500%.",
+        "explanation": "Nhân thêm một hệ số không xử lý được mẫu số 0."
+      }
+    ],
+    "correct_option_id": "02bc0cd791"
+  },
+  {
+    "id": "ch03-l02-q06",
+    "source_id": "ch03-profit-q06",
+    "lesson_id": "ch03-l02",
+    "topic": "Từ lỗ sang lãi",
+    "section": 3,
+    "prompt": "LNST kỳ gốc −20 tỷ, kỳ này +10 tỷ. Cách diễn giải phù hợp với bài là gì?",
+    "options": [
+      {
+        "id": "8a209be765",
+        "source_id": "o4",
+        "text": "Doanh nghiệp vẫn đang lỗ vì kỳ gốc âm.",
+        "explanation": "Kỳ hiện tại LNST +10 tỷ là có lãi."
+      },
+      {
+        "id": "b68431b0b7",
+        "source_id": "o1",
+        "text": "Chuyển từ lỗ sang lãi; không dùng tỷ lệ YoY thông thường để lọc trường hợp này.",
+        "explanation": "Số tiền cải thiện 30 tỷ nhưng không sử dụng tỷ lệ với nền âm trong bộ lọc của bài."
+      },
+      {
+        "id": "cf99671c38",
+        "source_id": "o2",
+        "text": "Lợi nhuận giảm 150% theo phép chia nên tình hình xấu đi.",
+        "explanation": "Phép chia với nền âm cho số có thể làm đảo nghĩa diễn giải."
+      },
+      {
+        "id": "dae75f8bfc",
+        "source_id": "o3",
+        "text": "Tự lấy trị tuyệt đối của kỳ gốc để ghi tăng 150%.",
+        "explanation": "Đó là một định nghĩa khác, không được tự thay cho công thức đã chọn."
+      }
+    ],
+    "correct_option_id": "b68431b0b7"
+  },
+  {
+    "id": "ch03-l02-q07",
+    "source_id": "ch03-profit-q07",
+    "lesson_id": "ch03-l02",
+    "topic": "Từ lãi sang lỗ",
+    "section": 2,
+    "prompt": "LNST kỳ gốc +20 tỷ, kỳ này −5 tỷ. Tăng trưởng YoY theo công thức bằng bao nhiêu?",
+    "options": [
+      {
+        "id": "40dfdd38ce",
+        "source_id": "o3",
+        "text": "−100%",
+        "explanation": "Không chặn kết quả ở −100% khi hiện tại đã lỗ."
+      },
+      {
+        "id": "968211efc7",
+        "source_id": "o1",
+        "text": "−125%",
+        "explanation": "(−5 / 20 − 1) × 100% = −125%."
+      },
+      {
+        "id": "b3fcd5e9bd",
+        "source_id": "o4",
+        "text": "+125%",
+        "explanation": "Không được xóa dấu của kết quả giảm."
+      },
+      {
+        "id": "fbc01b44e6",
+        "source_id": "o2",
+        "text": "−25%",
+        "explanation": "−25% mới là tỷ số kỳ này/kỳ gốc, chưa trừ 100%."
+      }
+    ],
+    "correct_option_id": "968211efc7"
+  },
+  {
+    "id": "ch03-l02-q08",
+    "source_id": "ch03-profit-q08",
+    "lesson_id": "ch03-l02",
+    "topic": "Lọc tăng trưởng",
+    "section": 4,
+    "prompt": "Chỉ xét điều kiện LNST YoY > 15% theo bảng dưới. Kết quả nào đúng?",
+    "figure": {
+      "type": "table",
+      "head": ["Doanh nghiệp", "LNST cùng kỳ → kỳ này", "YoY"],
+      "rows": [
+        ["A", "80 → 88 tỷ", "10%"],
+        ["B", "100 → 118 tỷ", "18%"],
+        ["C", "−20 → 10 tỷ", "Không tính tỷ lệ này"]
+      ]
+    },
+    "options": [
+      {
+        "id": "1f98e5853b",
+        "source_id": "o1",
+        "text": "Chỉ B",
+        "explanation": "B tăng 18% > 15%; A là 10%; C không tính tỷ lệ này vì nền âm."
+      },
+      {
+        "id": "26f970f741",
+        "source_id": "o4",
+        "text": "A, B, C",
+        "explanation": "Không phải mọi trường hợp lợi nhuận cải thiện đều đạt điều kiện > 15%."
+      },
+      {
+        "id": "5bbdf927fc",
+        "source_id": "o2",
+        "text": "A và B",
+        "explanation": "A chưa vượt ngưỡng."
+      },
+      {
+        "id": "83689c513e",
+        "source_id": "o3",
+        "text": "B và C",
+        "explanation": "Chuyển lỗ sang lãi không được gán một % tùy ý để cho C qua điều kiện."
+      }
+    ],
+    "correct_option_id": "1f98e5853b"
+  },
+  {
+    "id": "ch03-l03-q01",
+    "source_id": "ch03-eps-q01",
+    "lesson_id": "ch03-l03",
+    "topic": "Đơn vị EPS",
+    "section": 2,
+    "prompt": "Lợi nhuận dùng tính EPS là 88 tỷ đồng, cổ phiếu bình quân 110 triệu. EPS bằng bao nhiêu?",
+    "options": [
+      {
+        "id": "2ccd5d45e1",
+        "source_id": "o2",
+        "text": "0,8 đồng/CP",
+        "explanation": "Đã quên đổi tỷ đồng so với triệu cổ phiếu."
+      },
+      {
+        "id": "4b40114754",
+        "source_id": "o4",
+        "text": "110 đồng/CP",
+        "explanation": "110 triệu là số cổ phiếu, không phải EPS."
+      },
+      {
+        "id": "82ee8d4deb",
+        "source_id": "o3",
+        "text": "8.000 đồng/CP",
+        "explanation": "Đã nhân thừa một bậc 10."
+      },
+      {
+        "id": "d2b2441c41",
+        "source_id": "o1",
+        "text": "800 đồng/CP",
+        "explanation": "88 tỷ / 110 triệu = 0,8 × 1.000 = 800 đồng/CP."
+      }
+    ],
+    "correct_option_id": "d2b2441c41"
+  },
+  {
+    "id": "ch03-l03-q02",
+    "source_id": "ch03-eps-q02",
+    "lesson_id": "ch03-l03",
+    "topic": "Cổ phiếu bình quân",
+    "section": 2,
+    "prompt": "Hai nửa kỳ dài bằng nhau có 100 và 120 triệu cổ phiếu, không có điều chỉnh khác. Số cổ phiếu bình quân là bao nhiêu?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "eps-shares"
+    },
+    "options": [
+      {
+        "id": "021dd8abc6",
+        "source_id": "o1",
+        "text": "110 triệu",
+        "explanation": "100 × 50% + 120 × 50% = 110 triệu."
+      },
+      {
+        "id": "688c7ac036",
+        "source_id": "o3",
+        "text": "100 triệu",
+        "explanation": "100 triệu chỉ là số của nửa đầu kỳ."
+      },
+      {
+        "id": "792aaca01d",
+        "source_id": "o4",
+        "text": "220 triệu",
+        "explanation": "Không cộng hai số lưu hành như cộng một dòng doanh thu."
+      },
+      {
+        "id": "c2ef380b1c",
+        "source_id": "o2",
+        "text": "120 triệu",
+        "explanation": "120 triệu chỉ là số của nửa sau kỳ."
+      }
+    ],
+    "correct_option_id": "021dd8abc6"
+  },
+  {
+    "id": "ch03-l03-q03",
+    "source_id": "ch03-eps-q03",
+    "lesson_id": "ch03-l03",
+    "topic": "Đọc ba thành phần",
+    "section": 1,
+    "prompt": "Theo ba biểu đồ, tại sao EPS của hai kỳ đều bằng 800 đồng?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "eps-components"
+    },
+    "options": [
+      {
+        "id": "6910f253ba",
+        "source_id": "o1",
+        "text": "LNST và cổ phiếu bình quân đều tăng 10%.",
+        "explanation": "Tử số và mẫu số cùng tăng 10%, nên tỷ số không đổi."
+      },
+      {
+        "id": "806369322a",
+        "source_id": "o4",
+        "text": "Doanh nghiệp đã trả toàn bộ lợi nhuận làm cổ tức.",
+        "explanation": "Hình không có thông tin về cổ tức; EPS không phụ thuộc suy luận đó."
+      },
+      {
+        "id": "c8c2cd676d",
+        "source_id": "o2",
+        "text": "LNST không tăng.",
+        "explanation": "LNST tăng từ 80 lên 88 tỷ."
+      },
+      {
+        "id": "d3b65ebac5",
+        "source_id": "o3",
+        "text": "Cổ phiếu bình quân giảm 10%.",
+        "explanation": "Cổ phiếu bình quân tăng từ 100 lên 110 triệu."
+      }
+    ],
+    "correct_option_id": "6910f253ba"
+  },
+  {
+    "id": "ch03-l03-q04",
+    "source_id": "ch03-eps-q04",
+    "lesson_id": "ch03-l03",
+    "topic": "Tính tăng trưởng EPS",
+    "section": 3,
+    "prompt": "Lợi nhuận 100 → 120 tỷ, cổ phiếu bình quân 100 → 150 triệu. Không có điều chỉnh khác. Tăng trưởng EPS là bao nhiêu?",
+    "options": [
+      {
+        "id": "201a130a51",
+        "source_id": "o2",
+        "text": "+20%",
+        "explanation": "20% là tăng trưởng lợi nhuận, không phải EPS."
+      },
+      {
+        "id": "492d3d1f39",
+        "source_id": "o1",
+        "text": "−20%",
+        "explanation": "EPS từ 1.000 xuống 800 đồng: (800 / 1.000 − 1) × 100% = −20%."
+      },
+      {
+        "id": "b4b997dd78",
+        "source_id": "o3",
+        "text": "−50%",
+        "explanation": "Cổ phiếu tăng 50% không có nghĩa EPS giảm 50%."
+      },
+      {
+        "id": "edc575c755",
+        "source_id": "o4",
+        "text": "0%",
+        "explanation": "Tử số và mẫu số tăng khác tỷ lệ, nên EPS không giữ nguyên."
+      }
+    ],
+    "correct_option_id": "492d3d1f39"
+  },
+  {
+    "id": "ch03-l03-q05",
+    "source_id": "ch03-eps-q05",
+    "lesson_id": "ch03-l03",
+    "topic": "Điều chỉnh cổ phiếu",
+    "section": 3,
+    "prompt": "Chia tách 1 thành 2: EPS kỳ trước 1.600 đồng được điều chỉnh còn 800; EPS kỳ này cùng cơ sở là 800. Tăng trưởng đúng là bao nhiêu?",
+    "figure": {
+      "type": "table",
+      "head": ["Số EPS", "Đồng/CP"],
+      "rows": [
+        ["Kỳ trước, chưa điều chỉnh", "1.600"],
+        ["Kỳ trước, cùng cơ sở sau chia tách", "800"],
+        ["Kỳ này", "800"]
+      ]
+    },
+    "options": [
+      {
+        "id": "33380b4076",
+        "source_id": "o2",
+        "text": "−50%",
+        "explanation": "Đã so số trước điều chỉnh với số sau điều chỉnh."
+      },
+      {
+        "id": "3ea017bdf6",
+        "source_id": "o4",
+        "text": "+50%",
+        "explanation": "Không có phép so sánh nào trên cùng cơ sở cho +50%."
+      },
+      {
+        "id": "814463312d",
+        "source_id": "o1",
+        "text": "0%",
+        "explanation": "So 800 với 800 trên cùng cơ sở cổ phiếu, kết quả 0%."
+      },
+      {
+        "id": "bd7e55186f",
+        "source_id": "o3",
+        "text": "+100%",
+        "explanation": "Chia tách số cổ phiếu không tự làm tăng EPS 100%."
+      }
+    ],
+    "correct_option_id": "814463312d"
+  },
+  {
+    "id": "ch03-l03-q06",
+    "source_id": "ch03-eps-q06",
+    "lesson_id": "ch03-l03",
+    "topic": "Ý nghĩa EPS",
+    "section": 1,
+    "prompt": "EPS 1.200 đồng/CP cho biết điều gì?",
+    "options": [
+      {
+        "id": "0847e48aa5",
+        "source_id": "o2",
+        "text": "Cổ tức tiền mặt chắc chắn là 1.200 đồng/CP.",
+        "explanation": "Cổ tức là quyết định phân phối riêng, không suy trực tiếp từ EPS."
+      },
+      {
+        "id": "0d66286f48",
+        "source_id": "o1",
+        "text": "Lợi nhuận tính trên mỗi cổ phiếu bình quân của kỳ là 1.200 đồng.",
+        "explanation": "Đây là lợi nhuận trên một cổ phiếu theo công thức, không phải cổ tức hoặc giá trị tài sản."
+      },
+      {
+        "id": "380a63400b",
+        "source_id": "o4",
+        "text": "Giá trị sổ sách mỗi cổ phiếu là 1.200 đồng.",
+        "explanation": "Giá trị sổ sách liên quan vốn chủ, không phải lợi nhuận EPS."
+      },
+      {
+        "id": "8eaa101bcf",
+        "source_id": "o3",
+        "text": "Giá cổ phiếu chắc chắn tăng thêm 1.200 đồng.",
+        "explanation": "EPS không xác định biến động giá."
+      }
+    ],
+    "correct_option_id": "0d66286f48"
+  },
+  {
+    "id": "ch03-l03-q07",
+    "source_id": "ch03-eps-q07",
+    "lesson_id": "ch03-l03",
+    "topic": "Kỳ tính EPS",
+    "section": 3,
+    "prompt": "Số cổ phiếu thay đổi giữa các quý. Muốn tính EPS bốn quý, cách nào phù hợp?",
+    "options": [
+      {
+        "id": "04e23aa04a",
+        "source_id": "o3",
+        "text": "Nhân EPS quý gần nhất với 4.",
+        "explanation": "Một quý không đại diện mặc định cho bốn quý."
+      },
+      {
+        "id": "4d1f174b00",
+        "source_id": "o2",
+        "text": "Cộng bốn EPS quý trong mọi trường hợp.",
+        "explanation": "Khi mẫu số các quý khác nhau, cộng tỷ số không thay được tỷ số của cả khoảng."
+      },
+      {
+        "id": "cf74c47575",
+        "source_id": "o4",
+        "text": "Chia tổng lợi nhuận bốn quý cho cổ phiếu cuối kỳ trong mọi trường hợp.",
+        "explanation": "Số cuối kỳ không tự thay cho bình quân theo thời gian."
+      },
+      {
+        "id": "d50d201757",
+        "source_id": "o1",
+        "text": "Dùng lợi nhuận bốn quý và cổ phiếu bình quân cùng khoảng, có điều chỉnh phù hợp.",
+        "explanation": "Hai thành phần phải cùng khoảng và cùng cơ sở cổ phiếu."
+      }
+    ],
+    "correct_option_id": "d50d201757"
+  },
+  {
+    "id": "ch03-l03-q08",
+    "source_id": "ch03-eps-q08",
+    "lesson_id": "ch03-l03",
+    "topic": "Dấu và ngưỡng",
+    "section": 4,
+    "prompt": "Lọc tăng trưởng EPS YoY > 15%. Theo bảng dưới, doanh nghiệp nào đạt?",
+    "figure": {
+      "type": "table",
+      "head": ["Doanh nghiệp", "EPS trước", "EPS này"],
+      "rows": [
+        ["B", "1.000 đồng", "1.160 đồng"],
+        ["C", "1.000 đồng", "1.150 đồng"],
+        ["D", "Chưa có", "1.300 đồng"]
+      ]
+    },
+    "options": [
+      {
+        "id": "13b16704bb",
+        "source_id": "o1",
+        "text": "Chỉ B",
+        "explanation": "B tăng 16%, C tăng đúng 15%, D chưa có kỳ gốc."
+      },
+      {
+        "id": "caec08d3cb",
+        "source_id": "o3",
+        "text": "Chỉ C",
+        "explanation": "C không vượt ngưỡng."
+      },
+      {
+        "id": "d19f67a184",
+        "source_id": "o2",
+        "text": "B và C",
+        "explanation": "C bằng ngưỡng nên không đạt dấu >."
+      },
+      {
+        "id": "e5be411756",
+        "source_id": "o4",
+        "text": "B, C và D",
+        "explanation": "Thiếu EPS so sánh không được coi là đạt."
+      }
+    ],
+    "correct_option_id": "13b16704bb"
+  },
+  {
+    "id": "ch03-l04-q01",
+    "source_id": "ch03-gm-q01",
+    "lesson_id": "ch03-l04",
+    "topic": "Ý nghĩa biên gộp",
+    "section": 1,
+    "prompt": "Biên lợi nhuận gộp 30% nghĩa là gì?",
+    "options": [
+      {
+        "id": "64b5a5c43c",
+        "source_id": "o3",
+        "text": "LNST chắc chắn bằng 30% doanh thu.",
+        "explanation": "Còn chi phí, thu nhập và thuế sau lợi nhuận gộp."
+      },
+      {
+        "id": "c09a6c61cc",
+        "source_id": "o1",
+        "text": "Mỗi 100 đồng doanh thu có 30 đồng lợi nhuận gộp.",
+        "explanation": "Đó là tỷ lệ lợi nhuận gộp trên doanh thu trong cùng kỳ."
+      },
+      {
+        "id": "e11c835d99",
+        "source_id": "o2",
+        "text": "Mỗi 100 đồng doanh thu có 30 đồng tiền mặt được chia.",
+        "explanation": "Lợi nhuận gộp không phải khoản tiền được phân phối."
+      },
+      {
+        "id": "e4e6a83041",
+        "source_id": "o4",
+        "text": "Doanh thu tăng 30% so với năm trước.",
+        "explanation": "Biên là tỷ lệ trong một kỳ, không phải tốc độ tăng trưởng YoY."
+      }
+    ],
+    "correct_option_id": "c09a6c61cc"
+  },
+  {
+    "id": "ch03-l04-q02",
+    "source_id": "ch03-gm-q02",
+    "lesson_id": "ch03-l04",
+    "topic": "Tính từ báo cáo",
+    "section": 2,
+    "prompt": "Doanh thu thuần 1.800 tỷ, giá vốn 1.260 tỷ. Biên lợi nhuận gộp là bao nhiêu?",
+    "options": [
+      {
+        "id": "9aa21d29f8",
+        "source_id": "o4",
+        "text": "540%",
+        "explanation": "540 tỷ không phải 540%."
+      },
+      {
+        "id": "bc75995ba4",
+        "source_id": "o2",
+        "text": "70%",
+        "explanation": "70% là tỷ lệ giá vốn trên doanh thu."
+      },
+      {
+        "id": "e037d6829f",
+        "source_id": "o3",
+        "text": "42,86%",
+        "explanation": "42,86% là lợi nhuận gộp chia giá vốn, sai mẫu số."
+      },
+      {
+        "id": "fd07cce50b",
+        "source_id": "o1",
+        "text": "30%",
+        "explanation": "Lợi nhuận gộp 540 tỷ; 540 / 1.800 × 100% = 30%."
+      }
+    ],
+    "correct_option_id": "fd07cce50b"
+  },
+  {
+    "id": "ch03-l04-q03",
+    "source_id": "ch03-gm-q03",
+    "lesson_id": "ch03-l04",
+    "topic": "Điểm phần trăm",
+    "section": 2,
+    "prompt": "Biên tăng từ 30% lên 32%. Cách nói chênh lệch trực tiếp chính xác nhất là gì?",
+    "options": [
+      {
+        "id": "61336fa074",
+        "source_id": "o3",
+        "text": "Tăng 32 điểm phần trăm.",
+        "explanation": "32% là mức mới, không phải chênh lệch."
+      },
+      {
+        "id": "6145f44c07",
+        "source_id": "o2",
+        "text": "Tăng tương đối 2%.",
+        "explanation": "Tăng tương đối phải tính 32 / 30 − 1, khoảng 6,67%."
+      },
+      {
+        "id": "9e8f91f978",
+        "source_id": "o1",
+        "text": "Tăng 2 điểm phần trăm.",
+        "explanation": "32% − 30% = 2 điểm phần trăm."
+      },
+      {
+        "id": "fc0cf582fd",
+        "source_id": "o4",
+        "text": "Tăng tương đối 200%.",
+        "explanation": "Không có cơ sở cho mức 200%."
+      }
+    ],
+    "correct_option_id": "9e8f91f978"
+  },
+  {
+    "id": "ch03-l04-q04",
+    "source_id": "ch03-gm-q04",
+    "lesson_id": "ch03-l04",
+    "topic": "Đọc thành phần",
+    "section": 1,
+    "prompt": "Theo biểu đồ doanh nghiệp A, nhận xét nào đúng?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "gross-composition"
+    },
+    "options": [
+      {
+        "id": "1c56f49408",
+        "source_id": "o2",
+        "text": "Lợi nhuận gộp tăng 700 → 850 tỷ.",
+        "explanation": "700 và 850 là giá vốn."
+      },
+      {
+        "id": "b859142f37",
+        "source_id": "o4",
+        "text": "LNST bằng toàn bộ phần cột lợi nhuận gộp.",
+        "explanation": "Còn các khoản sau lợi nhuận gộp trước khi đến LNST."
+      },
+      {
+        "id": "eeba90e9be",
+        "source_id": "o3",
+        "text": "Biên gộp giữ nguyên vì cả doanh thu và giá vốn đều tăng.",
+        "explanation": "Hai thành phần tăng không nhất thiết cùng tỷ lệ."
+      },
+      {
+        "id": "f765847c7d",
+        "source_id": "o1",
+        "text": "Lợi nhuận gộp tăng 300 → 400 tỷ, biên tăng 30% → 32%.",
+        "explanation": "Lấy lợi nhuận gộp chia doanh thu từng kỳ cho 30% và 32%."
+      }
+    ],
+    "correct_option_id": "f765847c7d"
+  },
+  {
+    "id": "ch03-l04-q05",
+    "source_id": "ch03-gm-q05",
+    "lesson_id": "ch03-l04",
+    "topic": "Biên bốn quý",
+    "section": 3,
+    "prompt": "Theo bảng, biên lợi nhuận gộp bốn quý bằng bao nhiêu?",
+    "figure": {
+      "type": "table",
+      "head": ["Quý", "Doanh thu", "Lãi gộp"],
+      "rows": [
+        ["I", "100", "10"],
+        ["II", "200", "40"],
+        ["III", "300", "90"],
+        ["IV", "400", "160"]
+      ]
+    },
+    "options": [
+      {
+        "id": "61b1af0f33",
+        "source_id": "o3",
+        "text": "100%",
+        "explanation": "Không cộng phần trăm biên của các quý."
+      },
+      {
+        "id": "a653f8e061",
+        "source_id": "o2",
+        "text": "25%",
+        "explanation": "25% là trung bình đơn giản bốn biên; doanh thu từng quý khác nhau."
+      },
+      {
+        "id": "c51c54e7dd",
+        "source_id": "o4",
+        "text": "40%",
+        "explanation": "40% là biên riêng quý IV."
+      },
+      {
+        "id": "e8e40323cc",
+        "source_id": "o1",
+        "text": "30%",
+        "explanation": "Tổng lãi gộp 300 / tổng doanh thu 1.000 = 30%."
+      }
+    ],
+    "correct_option_id": "e8e40323cc"
+  },
+  {
+    "id": "ch03-l04-q06",
+    "source_id": "ch03-gm-q06",
+    "lesson_id": "ch03-l04",
+    "topic": "Quy mô và tỷ lệ",
+    "section": 3,
+    "prompt": "Doanh thu 1.000 → 1.500 tỷ; lãi gộp 300 → 375 tỷ. Nhận xét nào đúng?",
+    "options": [
+      {
+        "id": "3aa2d64af5",
+        "source_id": "o2",
+        "text": "Lãi gộp tăng nên biên chắc chắn tăng.",
+        "explanation": "Đã đánh đồng mức tăng số tiền với mức tăng tỷ lệ."
+      },
+      {
+        "id": "5c55c5f1d5",
+        "source_id": "o4",
+        "text": "Biên không đổi ở 30%.",
+        "explanation": "Mẫu số tăng nhanh hơn tử số nên biên không giữ nguyên."
+      },
+      {
+        "id": "7ba7945386",
+        "source_id": "o3",
+        "text": "Biên tăng từ 25% lên 30%.",
+        "explanation": "Đã đảo thứ tự hai kỳ."
+      },
+      {
+        "id": "d787d26cc6",
+        "source_id": "o1",
+        "text": "Lãi gộp tăng nhưng biên gộp giảm từ 30% xuống 25%.",
+        "explanation": "Hai tỷ lệ là 300/1.000=30% và 375/1.500=25%."
+      }
+    ],
+    "correct_option_id": "d787d26cc6"
+  },
+  {
+    "id": "ch03-l04-q07",
+    "source_id": "ch03-gm-q07",
+    "lesson_id": "ch03-l04",
+    "topic": "Không áp dụng",
+    "section": 4,
+    "prompt": "Một doanh nghiệp không có cơ sở doanh thu–giá vốn phù hợp cho chỉ tiêu này. Khi lọc biên gộp > 25%, cần đọc thế nào?",
+    "options": [
+      {
+        "id": "0016662e8a",
+        "source_id": "o2",
+        "text": "Gán 0% rồi coi đó là biên gộp thật.",
+        "explanation": "Sẽ tạo ra số liệu không có thật."
+      },
+      {
+        "id": "038ce1e9ab",
+        "source_id": "o3",
+        "text": "Lấy biên ròng thay cho biên gộp.",
+        "explanation": "Hai chỉ tiêu khác định nghĩa."
+      },
+      {
+        "id": "56429d645a",
+        "source_id": "o4",
+        "text": "Bỏ qua điều kiện biên gộp để doanh nghiệp được qua.",
+        "explanation": "Không tự bỏ một yêu cầu AND."
+      },
+      {
+        "id": "5ba6fd1911",
+        "source_id": "o1",
+        "text": "Không áp dụng chỉ tiêu, không xem là giá trị 0% hay đã đạt.",
+        "explanation": "Trạng thái không áp dụng khác số đo 0%; điều kiện bắt buộc chưa được đáp ứng."
+      }
+    ],
+    "correct_option_id": "5ba6fd1911"
+  },
+  {
+    "id": "ch03-l04-q08",
+    "source_id": "ch03-gm-q08",
+    "lesson_id": "ch03-l04",
+    "topic": "Lọc tỷ lệ",
+    "section": 4,
+    "prompt": "Doanh nghiệp B có doanh thu 1.000 tỷ, lãi gộp 300 tỷ; C có doanh thu 2.000 tỷ, lãi gộp 500 tỷ. Lọc biên gộp > 25% giữ mã nào?",
+    "options": [
+      {
+        "id": "6d7691b43e",
+        "source_id": "o1",
+        "text": "Chỉ B",
+        "explanation": "B 30% >25%; C đúng 25% nên không đạt."
+      },
+      {
+        "id": "8f65e6834e",
+        "source_id": "o3",
+        "text": "Chỉ C",
+        "explanation": "C có lãi gộp tuyệt đối cao hơn nhưng tỷ lệ không vượt ngưỡng."
+      },
+      {
+        "id": "ae3215e140",
+        "source_id": "o2",
+        "text": "B và C",
+        "explanation": "Đã coi > như ≥."
+      },
+      {
+        "id": "d2f4a2c04d",
+        "source_id": "o4",
+        "text": "Không mã nào",
+        "explanation": "B vẫn đạt 30%."
+      }
+    ],
+    "correct_option_id": "6d7691b43e"
+  },
+  {
+    "id": "ch03-l05-q01",
+    "source_id": "ch03-nm-q01",
+    "lesson_id": "ch03-l05",
+    "topic": "Biên ròng và biên gộp",
+    "section": 1,
+    "prompt": "Điểm khác biệt đúng giữa biên ròng và biên gộp là gì?",
+    "options": [
+      {
+        "id": "477d9509fd",
+        "source_id": "o2",
+        "text": "Biên ròng dùng doanh thu, biên gộp không dùng doanh thu.",
+        "explanation": "Cả hai đều dùng doanh thu cùng kỳ làm mẫu số."
+      },
+      {
+        "id": "6552260636",
+        "source_id": "o3",
+        "text": "Biên ròng luôn bằng biên gộp.",
+        "explanation": "Các khoản thu nhập, chi phí và thuế tiếp theo có thể làm khác biệt."
+      },
+      {
+        "id": "7947b9ae66",
+        "source_id": "o1",
+        "text": "Biên ròng dùng LNST, còn biên gộp dùng lợi nhuận sau khi trừ giá vốn.",
+        "explanation": "Hai tử số thuộc hai tầng của kết quả kinh doanh."
+      },
+      {
+        "id": "e61b3de296",
+        "source_id": "o4",
+        "text": "Biên gộp chính là số tiền mặt còn lại.",
+        "explanation": "Lợi nhuận không đồng nghĩa số dư tiền mặt."
+      }
+    ],
+    "correct_option_id": "7947b9ae66"
+  },
+  {
+    "id": "ch03-l05-q02",
+    "source_id": "ch03-nm-q02",
+    "lesson_id": "ch03-l05",
+    "topic": "Từ doanh thu đến LNST",
+    "section": 2,
+    "prompt": "Theo các thành phần trong hình, biên lợi nhuận ròng kỳ này là bao nhiêu?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "net-bridge"
+    },
+    "options": [
+      {
+        "id": "24a19aac94",
+        "source_id": "o2",
+        "text": "32%",
+        "explanation": "32% là biên gộp 400/1.250."
+      },
+      {
+        "id": "26ccbca7f2",
+        "source_id": "o3",
+        "text": "22%",
+        "explanation": "22% là 88/400, dùng sai mẫu số."
+      },
+      {
+        "id": "7dcfc5a8fb",
+        "source_id": "o4",
+        "text": "8,8%",
+        "explanation": "8,8% dùng lợi nhuận trước thuế 110/1.250, chưa trừ thuế."
+      },
+      {
+        "id": "cf830ac5fa",
+        "source_id": "o1",
+        "text": "7,04%",
+        "explanation": "LNST 88 / doanh thu 1.250 ×100% = 7,04%."
+      }
+    ],
+    "correct_option_id": "cf830ac5fa"
+  },
+  {
+    "id": "ch03-l05-q03",
+    "source_id": "ch03-nm-q03",
+    "lesson_id": "ch03-l05",
+    "topic": "Đọc hai loại biên",
+    "section": 3,
+    "prompt": "Theo hình, kết luận nào được số liệu hỗ trợ?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "net-margins"
+    },
+    "options": [
+      {
+        "id": "6d57b209c2",
+        "source_id": "o3",
+        "text": "Biên ròng tăng vì LNST tăng từ 80 lên 88 tỷ.",
+        "explanation": "LNST tăng không đồng nghĩa tỷ lệ trên doanh thu tăng."
+      },
+      {
+        "id": "8ea4521d51",
+        "source_id": "o2",
+        "text": "Cả hai loại biên đều tăng.",
+        "explanation": "Đường biên ròng đi xuống."
+      },
+      {
+        "id": "a36fd2897f",
+        "source_id": "o4",
+        "text": "Biên gộp giảm 0,96 điểm phần trăm.",
+        "explanation": "0,96 điểm phần trăm là mức giảm biên ròng, không phải biên gộp."
+      },
+      {
+        "id": "d83170e815",
+        "source_id": "o1",
+        "text": "Biên gộp tăng, biên ròng giảm.",
+        "explanation": "Biên gộp 30→32%; biên ròng 8→7,04%."
+      }
+    ],
+    "correct_option_id": "d83170e815"
+  },
+  {
+    "id": "ch03-l05-q04",
+    "source_id": "ch03-nm-q04",
+    "lesson_id": "ch03-l05",
+    "topic": "Khoản không lặp lại",
+    "section": 3,
+    "prompt": "Doanh thu 1.000 tỷ, LNST báo cáo 200 tỷ; đã xác định 120 tỷ LNST đến từ khoản không lặp lại. Nhận xét nào phù hợp?",
+    "options": [
+      {
+        "id": "4a546e2a0b",
+        "source_id": "o1",
+        "text": "Biên báo cáo là 20%, nhưng cần đọc khoản không lặp lại trước khi kỳ vọng duy trì.",
+        "explanation": "200/1.000=20%; tính đúng tỷ lệ không có nghĩa toàn bộ lợi nhuận sẽ lặp lại."
+      },
+      {
+        "id": "79bbba2b63",
+        "source_id": "o2",
+        "text": "Biên báo cáo phải tự đổi thành 8% trong Bộ lọc.",
+        "explanation": "8% là một phép điều chỉnh khác, không tự thay số báo cáo."
+      },
+      {
+        "id": "803f1da302",
+        "source_id": "o3",
+        "text": "LNST 200 tỷ chắc chắn sẽ lặp lại mỗi kỳ.",
+        "explanation": "Chưa có cơ sở cho việc duy trì khoản không lặp lại."
+      },
+      {
+        "id": "af650b2d78",
+        "source_id": "o4",
+        "text": "Không thể tính biên ròng dù có đủ doanh thu và LNST.",
+        "explanation": "Có đủ số và mẫu số dương để tính biên báo cáo."
+      }
+    ],
+    "correct_option_id": "4a546e2a0b"
+  },
+  {
+    "id": "ch03-l05-q05",
+    "source_id": "ch03-nm-q05",
+    "lesson_id": "ch03-l05",
+    "topic": "Dữ liệu đầu vào",
+    "section": 3,
+    "prompt": "LNST có số liệu nhưng doanh thu của kỳ bằng 0. Theo cách tính trong bài, nên làm gì?",
+    "options": [
+      {
+        "id": "2d82deac5c",
+        "source_id": "o3",
+        "text": "Chia cho doanh thu năm trước thay thế.",
+        "explanation": "Mẫu số phải cùng kỳ, không đổi kỳ ngầm."
+      },
+      {
+        "id": "737083adef",
+        "source_id": "o1",
+        "text": "Không tính tỷ lệ biên ròng với mẫu số 0.",
+        "explanation": "Mẫu số 0 không tạo ra tỷ lệ theo công thức."
+      },
+      {
+        "id": "aa1e13e293",
+        "source_id": "o4",
+        "text": "Nhân LNST với 100 để ra phần trăm.",
+        "explanation": "Thiếu phép chia cho doanh thu phù hợp."
+      },
+      {
+        "id": "f819499a09",
+        "source_id": "o2",
+        "text": "Coi biên ròng bằng 0%.",
+        "explanation": "0% không phải ký hiệu dữ liệu không xác định."
+      }
+    ],
+    "correct_option_id": "737083adef"
+  },
+  {
+    "id": "ch03-l05-q06",
+    "source_id": "ch03-nm-q06",
+    "lesson_id": "ch03-l05",
+    "topic": "Biên âm",
+    "section": 3,
+    "prompt": "Doanh thu 500 tỷ đồng, LNST −25 tỷ đồng. Biên lợi nhuận ròng bằng bao nhiêu?",
+    "options": [
+      {
+        "id": "0ecff284cd",
+        "source_id": "o1",
+        "text": "−5%",
+        "explanation": "−25/500 ×100%=−5%. Mẫu số dương, lợi nhuận âm cho biên âm."
+      },
+      {
+        "id": "3e94d41c6c",
+        "source_id": "o3",
+        "text": "−20%",
+        "explanation": "Đã đảo phép chia."
+      },
+      {
+        "id": "567d39e133",
+        "source_id": "o4",
+        "text": "Không tính được chỉ vì LNST âm",
+        "explanation": "LNST âm không tự làm tỷ số này vô nghĩa khi doanh thu dương."
+      },
+      {
+        "id": "6b808715c7",
+        "source_id": "o2",
+        "text": "+5%",
+        "explanation": "Không được bỏ dấu âm."
+      }
+    ],
+    "correct_option_id": "0ecff284cd"
+  },
+  {
+    "id": "ch03-l05-q07",
+    "source_id": "ch03-nm-q07",
+    "lesson_id": "ch03-l05",
+    "topic": "So sánh doanh nghiệp",
+    "section": 4,
+    "prompt": "Đọc bảng cùng kỳ: doanh nghiệp nào có biên ròng cao hơn?",
+    "figure": {
+      "type": "table",
+      "head": ["Doanh nghiệp", "Doanh thu", "LNST"],
+      "rows": [
+        ["B", "1.000 tỷ", "100 tỷ"],
+        ["C", "500 tỷ", "75 tỷ"]
+      ]
+    },
+    "options": [
+      {
+        "id": "63ad8b1844",
+        "source_id": "o2",
+        "text": "B vì có LNST 100 tỷ, lớn hơn 75 tỷ.",
+        "explanation": "Đây là so số tiền tuyệt đối, không phải tỷ lệ."
+      },
+      {
+        "id": "70212d8442",
+        "source_id": "o3",
+        "text": "Hai doanh nghiệp cùng biên vì đều có lãi.",
+        "explanation": "Có lãi không có nghĩa cùng tỷ lệ trên doanh thu."
+      },
+      {
+        "id": "847b313838",
+        "source_id": "o4",
+        "text": "C có biên 75%.",
+        "explanation": "75 tỷ không phải phần trăm biên."
+      },
+      {
+        "id": "d3fdb8bc55",
+        "source_id": "o1",
+        "text": "C: 15%, cao hơn B: 10%.",
+        "explanation": "B=100/1.000=10%; C=75/500=15%."
+      }
+    ],
+    "correct_option_id": "d3fdb8bc55"
+  },
+  {
+    "id": "ch03-l05-q08",
+    "source_id": "ch03-nm-q08",
+    "lesson_id": "ch03-l05",
+    "topic": "Dấu âm và điều kiện",
+    "section": 4,
+    "prompt": "D có doanh thu dương, biên ròng −5%. E thiếu doanh thu. Điều kiện biên ròng < 0% giữ trường hợp nào?",
+    "options": [
+      {
+        "id": "2a7c029a0a",
+        "source_id": "o3",
+        "text": "Chỉ E",
+        "explanation": "D có giá trị âm hợp lệ; E thì không."
+      },
+      {
+        "id": "7944618f42",
+        "source_id": "o2",
+        "text": "D và E",
+        "explanation": "Thiếu doanh thu không thể biến thành một biên âm."
+      },
+      {
+        "id": "8ea4aec6a5",
+        "source_id": "o1",
+        "text": "Chỉ D",
+        "explanation": "−5% <0%; E chưa có số hợp lệ để so sánh."
+      },
+      {
+        "id": "b7da2d2990",
+        "source_id": "o4",
+        "text": "Không mã nào vì không chấp nhận tỷ lệ âm",
+        "explanation": "Biên ròng âm có thể có ý nghĩa khi doanh nghiệp lỗ."
+      }
+    ],
+    "correct_option_id": "8ea4aec6a5"
+  },
+  {
+    "id": "ch03-l06-q01",
+    "source_id": "ch03-roe-q01",
+    "lesson_id": "ch03-l06",
+    "topic": "Vốn chủ sở hữu",
+    "section": 1,
+    "prompt": "Tại một thời điểm, tổng tài sản 3.200 tỷ và nợ phải trả 1.400 tỷ. Vốn chủ sở hữu theo bảng bằng bao nhiêu?",
+    "options": [
+      {
+        "id": "4f6b68029a",
+        "source_id": "o2",
+        "text": "4.600 tỷ",
+        "explanation": "Đã cộng thay vì trừ."
+      },
+      {
+        "id": "b3735c9505",
+        "source_id": "o1",
+        "text": "1.800 tỷ",
+        "explanation": "Vốn chủ = tài sản − nợ = 3.200−1.400=1.800."
+      },
+      {
+        "id": "d5f71bb8c3",
+        "source_id": "o4",
+        "text": "3.200 tỷ",
+        "explanation": "3.200 là tổng tài sản gồm cả phần được tài trợ bởi nợ."
+      },
+      {
+        "id": "e110fe45fd",
+        "source_id": "o3",
+        "text": "1.400 tỷ",
+        "explanation": "1.400 là nợ phải trả."
+      }
+    ],
+    "correct_option_id": "b3735c9505"
+  },
+  {
+    "id": "ch03-l06-q02",
+    "source_id": "ch03-roe-q02",
+    "lesson_id": "ch03-l06",
+    "topic": "Tính ROE",
+    "section": 2,
+    "prompt": "LNST bốn quý là 360 tỷ; vốn đầu kỳ 1.800 tỷ và cuối kỳ 2.200 tỷ. Theo bình quân hai đầu kỳ, ROE là bao nhiêu?",
+    "options": [
+      {
+        "id": "0e3bc83e2c",
+        "source_id": "o4",
+        "text": "9%",
+        "explanation": "9% chia cho tổng hai đầu kỳ mà chưa lấy bình quân."
+      },
+      {
+        "id": "33ea5f5e31",
+        "source_id": "o3",
+        "text": "16,36%",
+        "explanation": "16,36% dùng riêng vốn cuối kỳ."
+      },
+      {
+        "id": "469cb8b552",
+        "source_id": "o2",
+        "text": "20%",
+        "explanation": "20% dùng riêng vốn đầu kỳ."
+      },
+      {
+        "id": "6992db0603",
+        "source_id": "o1",
+        "text": "18%",
+        "explanation": "Vốn bình quân 2.000; 360/2.000=18%."
+      }
+    ],
+    "correct_option_id": "6992db0603"
+  },
+  {
+    "id": "ch03-l06-q03",
+    "source_id": "ch03-roe-q03",
+    "lesson_id": "ch03-l06",
+    "topic": "Đọc biểu đồ vốn",
+    "section": 3,
+    "prompt": "Hai doanh nghiệp B và C cùng tạo 180 tỷ LNST. Theo biểu đồ, vì sao ROE của B cao hơn?",
+    "figure": {
+      "type": "chart",
+      "chart_id": "roe-compare"
+    },
+    "options": [
+      {
+        "id": "0ea6acaee1",
+        "source_id": "o3",
+        "text": "C dùng ít vốn bình quân hơn B.",
+        "explanation": "C có vốn bình quân 2.000, lớn hơn B."
+      },
+      {
+        "id": "787bc4a924",
+        "source_id": "o2",
+        "text": "B có lợi nhuận tuyệt đối gấp đôi C.",
+        "explanation": "Cả hai cùng 180 tỷ lợi nhuận."
+      },
+      {
+        "id": "c530dbffed",
+        "source_id": "o1",
+        "text": "B dùng lượng vốn chủ bình quân nhỏ hơn.",
+        "explanation": "B:180/1.000=18%; C:180/2.000=9%."
+      },
+      {
+        "id": "e8119eddd4",
+        "source_id": "o4",
+        "text": "B trả cổ tức cao hơn C.",
+        "explanation": "Không có thông tin về cổ tức trong dữ liệu này."
+      }
+    ],
+    "correct_option_id": "c530dbffed"
+  },
+  {
+    "id": "ch03-l06-q04",
+    "source_id": "ch03-roe-q04",
+    "lesson_id": "ch03-l06",
+    "topic": "Tử số và mẫu số",
+    "section": 3,
+    "prompt": "LNST giữ nguyên 180 tỷ; vốn bình quân giảm từ 1.200 xuống 900 tỷ. ROE thay đổi thế nào?",
+    "figure": {
+      "type": "table",
+      "head": ["Thành phần", "Kỳ trước", "Kỳ này"],
+      "rows": [
+        ["LNST", "180 tỷ", "180 tỷ"],
+        ["Vốn bình quân", "1.200 tỷ", "900 tỷ"]
+      ]
+    },
+    "options": [
+      {
+        "id": "23f70994fb",
+        "source_id": "o3",
+        "text": "Không đổi vì LNST không đổi.",
+        "explanation": "Tỷ số phụ thuộc cả tử số và mẫu số."
+      },
+      {
+        "id": "5d3ca3623c",
+        "source_id": "o1",
+        "text": "Từ 15% lên 20% do vốn bình quân giảm.",
+        "explanation": "180/1.200=15%;180/900=20%."
+      },
+      {
+        "id": "7f1752ecb9",
+        "source_id": "o2",
+        "text": "Từ 15% lên 20% vì lợi nhuận tăng.",
+        "explanation": "LNST vẫn 180, nguyên nhân trong bảng là mẫu số."
+      },
+      {
+        "id": "d49d1c48d9",
+        "source_id": "o4",
+        "text": "Từ 20% xuống 15%.",
+        "explanation": "Đã đảo thứ tự trước/sau."
+      }
+    ],
+    "correct_option_id": "5d3ca3623c"
+  },
+  {
+    "id": "ch03-l06-q05",
+    "source_id": "ch03-roe-q05",
+    "lesson_id": "ch03-l06",
+    "topic": "Thiếu dữ liệu",
+    "section": 3,
+    "prompt": "Có LNST cả năm và vốn cuối năm nhưng thiếu vốn đầu năm. Muốn dùng công thức bình quân hai đầu kỳ của bài, kết luận nào đúng?",
+    "options": [
+      {
+        "id": "3dc34fdebe",
+        "source_id": "o2",
+        "text": "Dùng vốn cuối năm thay bình quân mà không cần thông báo.",
+        "explanation": "Đó là thay đổi phương pháp âm thầm."
+      },
+      {
+        "id": "57dc470b6f",
+        "source_id": "o4",
+        "text": "Lấy trung bình lợi nhuận các quý làm vốn.",
+        "explanation": "Lợi nhuận là số phát sinh, không phải vốn chủ tại một thời điểm."
+      },
+      {
+        "id": "75c0fac4d3",
+        "source_id": "o1",
+        "text": "Chưa đủ dữ liệu để tính đúng công thức này.",
+        "explanation": "Chưa có đủ hai số đầu/cuối để tạo mẫu số theo phương pháp đã chọn."
+      },
+      {
+        "id": "8ff73da618",
+        "source_id": "o3",
+        "text": "Gán vốn đầu năm bằng 0.",
+        "explanation": "0 là số liệu có nghĩa, không dùng thay dữ liệu thiếu."
+      }
+    ],
+    "correct_option_id": "75c0fac4d3"
+  },
+  {
+    "id": "ch03-l06-q06",
+    "source_id": "ch03-roe-q06",
+    "lesson_id": "ch03-l06",
+    "topic": "Diễn giải ROE",
+    "section": 2,
+    "prompt": "ROE 18% của một kỳ nghĩa là gì?",
+    "options": [
+      {
+        "id": "69bdf5b8a3",
+        "source_id": "o3",
+        "text": "Cổ tức tiền mặt tối thiểu phải là 18%.",
+        "explanation": "Không suy nghĩa vụ cổ tức từ ROE."
+      },
+      {
+        "id": "a03987c8cf",
+        "source_id": "o2",
+        "text": "Giá cổ phiếu tăng 18% trong kỳ.",
+        "explanation": "ROE không đo biến động giá cổ phiếu."
+      },
+      {
+        "id": "f4286d189b",
+        "source_id": "o4",
+        "text": "Mỗi 100 đồng doanh thu còn 18 đồng LNST.",
+        "explanation": "Đó là diễn giải của biên ròng, không phải ROE."
+      },
+      {
+        "id": "f8c358bfa6",
+        "source_id": "o1",
+        "text": "100 đồng vốn chủ bình quân tương ứng 18 đồng LNST trong kỳ theo công thức.",
+        "explanation": "ROE đặt lợi nhuận cạnh vốn chủ bình quân."
+      }
+    ],
+    "correct_option_id": "f8c358bfa6"
+  },
+  {
+    "id": "ch03-l06-q07",
+    "source_id": "ch03-roe-q07",
+    "lesson_id": "ch03-l06",
+    "topic": "Kỳ tính của Bộ lọc",
+    "section": 3,
+    "prompt": "Lựa chọn kỳ ROE nào khớp phạm vi đã học?",
+    "options": [
+      {
+        "id": "174acbe8d1",
+        "source_id": "o3",
+        "text": "Kỳ ROE luôn đổi theo kỳ của tăng trưởng doanh thu.",
+        "explanation": "Mỗi chỉ tiêu có kỳ riêng."
+      },
+      {
+        "id": "3da9ad24dd",
+        "source_id": "o2",
+        "text": "Mặc định chỉ quý gần nhất rồi tự nhân 4.",
+        "explanation": "Bài không sử dụng ROE quý tự nhân bốn."
+      },
+      {
+        "id": "85b8034917",
+        "source_id": "o4",
+        "text": "Cộng bốn tỷ lệ ROE quý để ra ROE năm.",
+        "explanation": "Không cộng tỷ lệ các kỳ thay công thức cả khoảng."
+      },
+      {
+        "id": "c5d8462881",
+        "source_id": "o1",
+        "text": "Mặc định bốn quý gần nhất; có thể chọn năm tài chính gần nhất.",
+        "explanation": "ROE có hai lựa chọn này trong Bộ lọc hiện tại."
+      }
+    ],
+    "correct_option_id": "c5d8462881"
+  },
+  {
+    "id": "ch03-l06-q08",
+    "source_id": "ch03-roe-q08",
+    "lesson_id": "ch03-l06",
+    "topic": "Kiểm tra ngưỡng",
+    "section": 4,
+    "prompt": "Chọn ROE > 15%. Theo dữ liệu đã tính đúng cùng kỳ trong bảng, doanh nghiệp nào đạt?",
+    "figure": {
+      "type": "table",
+      "head": ["Mã", "LNST", "Vốn bình quân", "ROE"],
+      "rows": [
+        ["A", "360", "2.000", "18%"],
+        ["B", "150", "1.000", "15%"],
+        ["C", "180", "2.000", "9%"],
+        ["D", "200", "Thiếu vốn đầu kỳ", "—"]
+      ]
+    },
+    "options": [
+      {
+        "id": "1765287923",
+        "source_id": "o2",
+        "text": "A và B",
+        "explanation": "Dấu > không gồm B=15%."
+      },
+      {
+        "id": "20679d70b0",
+        "source_id": "o1",
+        "text": "Chỉ A",
+        "explanation": "A=18%>15%; B bằng ngưỡng; C thấp hơn; D thiếu dữ liệu."
+      },
+      {
+        "id": "8d9a8ad2fa",
+        "source_id": "o3",
+        "text": "A, B và D",
+        "explanation": "D chưa có mẫu số để được coi là đạt."
+      },
+      {
+        "id": "a21e52e6cc",
+        "source_id": "o4",
+        "text": "Chỉ C",
+        "explanation": "C=9% không vượt ngưỡng."
+      }
+    ],
+    "correct_option_id": "20679d70b0"
+  }
+]

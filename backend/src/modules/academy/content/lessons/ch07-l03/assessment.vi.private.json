@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch07-l03",
+  "questions": [
+    {
+      "question": "High = 110; Low = 100; Close = 108. Multiplier bằng bao nhiêu?",
+      "options": [
+        {
+          "text": "3,9",
+          "id": "o1"
+        },
+        {
+          "text": "-0,7",
+          "id": "o2"
+        },
+        {
+          "text": "10,6",
+          "id": "o3"
+        },
+        {
+          "text": "0,6",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Multiplier = [(Close−Low) − (High−Close)]/(High−Low)\nCMF = Σ(Multiplier × Volume) / Σ Volume → 0,6 ",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch07-l03-q01",
+      "lesson_id": "ch07-l03",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Đọc Chaikin Money Flow, nhận định nào đúng?",
+      "options": [
+        {
+          "text": "CMF dương nói đóng cửa thiên về nửa trên có trọng số lượng trong cửa sổ; không tự chứng minh có tiền ròng mới vào cổ phiếu.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ báo luôn dự báo chính xác giá phiên tiếp theo.",
+          "id": "o2"
+        },
+        {
+          "text": "Một giá trị chỉ báo tốt bảo đảm giao dịch có lãi sau phí.",
+          "id": "o3"
+        },
+        {
+          "text": "Không cần kiểm tra tham số khi so kết quả hai phía.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "CMF dương nói đóng cửa thiên về nửa trên có trọng số lượng trong cửa sổ; không tự chứng minh có tiền ròng mới vào cổ phiếu.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch07-l03-q02",
+      "lesson_id": "ch07-l03",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Đang chỉnh riêng phía Mua của Chaikin Money Flow; thay chu kỳ hoặc một toán tử rồi lưu. Phía Bán phải thế nào?",
+      "options": [
+        {
+          "text": "Tự đổi dấu thành ngược Mua dù người dùng không lưu.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ nguyên tham số và toán tử đã lưu riêng của Bán.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự sao chép toàn bộ thay đổi từ Mua.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự tắt vì tham số khác nhau.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Hai phía là hai cấu hình độc lập. Không tự đồng bộ tham số con.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch07-l03-q03",
+      "lesson_id": "ch07-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Dữ liệu cần để tính điều kiện Chaikin Money Flow bị thiếu. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Lấy số của phiên tiếp theo thế vào phiên hiện tại.",
+          "id": "o1"
+        },
+        {
+          "text": "Phía sử dụng dữ liệu đó chưa thỏa điều kiện; không tạo true từ dữ liệu thiếu.",
+          "id": "o2"
+        },
+        {
+          "text": "Coi giá trị thiếu bằng 0.",
+          "id": "o3"
+        },
+        {
+          "text": "Coi toán tử ∉ luôn đúng khi thiếu.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "CMF N=20 trong gói, khác mặc định 21 của một số nền tảng. High=Low đặt Multiplier=0 nếu OHLC hợp lệ; tổng volume 0 trả missing.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch07-l03-q04",
+      "lesson_id": "ch07-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Điểm cần lưu ý khi dùng Chaikin Money Flow là gì?",
+      "options": [
+        {
+          "text": "Có thể cộng phần trăm lợi nhuận các lệnh để ra lợi nhuận danh mục.",
+          "id": "o1"
+        },
+        {
+          "text": "Cứ thêm nhiều chỉ báo là hiệu quả chắc chắn tốt hơn.",
+          "id": "o2"
+        },
+        {
+          "text": "Không cần ghi phiên bản công thức vì tên chỉ báo đã đủ.",
+          "id": "o3"
+        },
+        {
+          "text": "Cổ phiếu có thể gap giảm nhưng đóng gần đỉnh của phiên đó; CMF vẫn có đóng góp dương. Không bỏ qua khác biệt này khi học.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Cổ phiếu có thể gap giảm nhưng đóng gần đỉnh của phiên đó; CMF vẫn có đóng góp dương. Không bỏ qua khác biệt này khi học.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch07-l03-q05",
+      "lesson_id": "ch07-l03",
+      "correct_option_id": "o4"
+    },
+    {
+      "id": "ch07-l03-q06",
+      "lesson_id": "ch07-l03",
+      "question": "Giá đóng cửa nằm giữa High vàLow. Hệ số vị trí đóng cửa của CMF bằng?",
+      "options": [
+        {
+          "id": "o1",
+          "text": "0."
+        },
+        {
+          "id": "o2",
+          "text": "1."
+        },
+        {
+          "id": "o3",
+          "text": "-1."
+        },
+        {
+          "id": "o4",
+          "text": "0,5."
+        }
+      ],
+      "correct_index": 0,
+      "correct_option_id": "o1",
+      "explanation": "Hai khoảng từ Close đến Low và High đến Close bằng nhau.",
+      "skill": "phân biệt tín hiệu và biên dữ liệu",
+      "fixture": null
+    },
+    {
+      "id": "ch07-l03-q07",
+      "lesson_id": "ch07-l03",
+      "question": "High bằngLow với khối lượng hợp lệ. Đóng góp money-flow volume của phiên trong profile là?",
+      "options": [
+        {
+          "id": "o1",
+          "text": "Vô hạn."
+        },
+        {
+          "id": "o2",
+          "text": "0."
+        },
+        {
+          "id": "o3",
+          "text": "Toàn bộvolume dương."
+        },
+        {
+          "id": "o4",
+          "text": "Toàn bộvolume âm."
+        }
+      ],
+      "correct_index": 1,
+      "correct_option_id": "o2",
+      "explanation": "Profile chọn hệ số 0 cho phiên không có biên độ và nêu rõ quy ước.",
+      "skill": "phân biệt tín hiệu và biên dữ liệu",
+      "fixture": null
+    },
+    {
+      "question": "Sau khi chạy Chaikin Money Flow, đổi tham số nhưng chưa chạy lại. Lịch sử giao dịch trước phải thế nào?",
+      "options": [
+        {
+          "text": "Đổi lý do lệnh theo form mới ngay lập tức.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ giá trị lợi nhuận cũ nhưng đổi tên tham số mà không báo.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự tạo thêm lệnh để phù hợp cấu hình mới.",
+          "id": "o3"
+        },
+        {
+          "text": "Giữ nguyên kết quả và cấu hình của lần chạy cũ, báo cần chạy lại.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Mỗi run có snapshot bất biến. Thay form không phải một lần mô phỏng mới.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch07-l03-q08",
+      "lesson_id": "ch07-l03",
+      "correct_option_id": "o4"
+    }
+  ]
+}

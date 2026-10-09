@@ -1,0 +1,13 @@
+{
+  "lesson_id": "ch01-l06",
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "prompt": "Bốn điều kiện Mua có ba đúng, một sai. Có bao nhiêu nhóm AND Mua đạt (0 hoặc 1)?",
+    "expected": 0,
+    "unit": "nhóm",
+    "tolerance": 0,
+    "synthetic": true
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "lesson_id": "ch05-l02",
+  "content_version": "2.0.0",
+  "origin": "biên soạn mới theo đề cương và registry nguồn",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>MA Cross</strong> đo sự kiện hai SMA đổi vị trí tương đối, khác trạng thái chỉ nằm trên hoặc dưới.</p><p>Có bốn số thuộc hai chuỗi và hai thời điểm. Tham số fast và slow là hai chu kỳ; fast &lt; slow. Toán tử &gt;/&lt; trên dòng giao cắt chọn hướng, điều kiện phiên trước được engine suy đối xứng.</p><p>Chỉ bước −2 → 1 là cắt lên. Bước 1 → 3 vẫn trên nhưng không có sự kiện mới. Phải thấy khác biệt so với bài MA.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula\">Cắt lên: SMA nhanh hôm nay &gt; SMA chậm hôm nay<br/>Và SMA nhanh hôm trước ≤ SMA chậm hôm trước<br/>Cắt xuống: đảo &gt; thành &lt; và ≤ thành ≥</div><p>Chênh SMA nhanh − SMA chậm qua bốn phiên là −2, 1, 3, −1. Có bao nhiêu lần cắt lên?</p><p>Kết quả là <strong>1 lần</strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Cần slow+1 giá cho cặp SMA. Trước bằng nhau rồi hôm nay ở trên được tính cắt lên. Không lấy dữ liệu trước khởi tạo để tạo sự kiện.</p>"
+    },
+    {
+      "title": "Tham số, Mua và Bán",
+      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Hướng</th><th>Xác nhận sự kiện</th></tr></thead><tbody><tr><td>MUA</td><td>&gt;</td><td>Hôm trước nhanh ≤ chậm; hôm nay nhanh &gt; chậm</td></tr><tr><td>BÁN</td><td>&lt;</td><td>Hôm trước nhanh ≥ chậm; hôm nay nhanh &lt; chậm</td></tr></tbody></table></div>"
+    },
+    {
+      "title": "Vận dụng và giới hạn",
+      "html": "<p>Registry cũ của gói gọi MA Cross nhưng chỉ so trạng thái. Phiên bản biên soạn này định nghĩa sự kiện thật, ghi rõ thay đổi ở CHANGELOG; không đổi tín hiệu legacy một cách âm thầm.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "MA Cross",
+    "prompt": "Chênh SMA nhanh − SMA chậm qua bốn phiên là −2, 1, 3, −1. Có bao nhiêu lần cắt lên?",
+    "expected": 1,
+    "unit": "lần",
+    "formula": "Cắt lên: SMA nhanh hôm nay > SMA chậm hôm nay\nVà SMA nhanh hôm trước ≤ SMA chậm hôm trước\nCắt xuống: đảo > thành < và ≤ thành ≥",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  "sources": [
+    "source:technical-registry-v1",
+    "author:calculation-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch05-l02",
+    "chapter": 5
+  }
+}

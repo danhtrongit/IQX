@@ -1,0 +1,43 @@
+{
+  "lesson_id": "ch05-l01",
+  "content_version": "2.0.0",
+  "origin": "biên soạn mới theo đề cương và registry nguồn",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>EMA</strong> đo trung bình giá có trọng số giảm dần theo thời gian.</p><p>EMA phản ứng với dữ liệu mới qua α. N càng ngắn thì α càng lớn, nhưng EMA ngắn không luôn cao hơn EMA dài. EMA không bằng SMA đổi tên.</p><p>Giá trên EMA của phía Mua và giá dưới EMA của phía Bán được xét theo hai bộ chu kỳ độc lập.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula\">α = 2/(N+1)<br/>EMA mới = α × Giá mới + (1−α) × EMA trước</div><p>N = 9 nên α = 0,2; EMA trước = 100; Giá mới = 110. EMA mới bằng bao nhiêu?</p><p>Kết quả là <strong>102 </strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Khởi tạo bằng SMA đầu tiên đủ N giá; sau đó cập nhật liên tục. Không reseed bằng N giá cuối mỗi ngày; thiếu giá thực làm reset chuỗi theo hợp đồng.</p>"
+    },
+    {
+      "title": "Tham số, Mua và Bán",
+      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 20}</td><td>Giá đóng cửa &gt; EMA(N)</td></tr><tr><td>BÁN</td><td>{\"period\": 20}</td><td>Giá đóng cửa &lt; EMA(N)</td></tr></tbody></table></div>"
+    },
+    {
+      "title": "Vận dụng và giới hạn",
+      "html": "<p>Khởi tạo bằng một giá khác thay vì SMA đầu tiên có thể làm chuỗi đầu khác nhau. Phải cùng cách khởi tạo giữa bài học, Backtest và Bot.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "EMA",
+    "prompt": "N = 9 nên α = 0,2; EMA trước = 100; Giá mới = 110. EMA mới bằng bao nhiêu?",
+    "expected": 102,
+    "unit": "",
+    "formula": "α = 2/(N+1)\nEMA mới = α × Giá mới + (1−α) × EMA trước",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  "sources": [
+    "source:technical-registry-v1",
+    "author:calculation-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch05-l01",
+    "chapter": 5
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "lesson_id": "ch03-l06",
+  "superseded_by": "ch03-v2.0",
+  "note": "Served from content/packages/ch03. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "ROE",
+    "inputs": [
+      [
+        "Lợi nhuận thuộc cổ đông phổ thông",
+        120
+      ],
+      [
+        "Vốn chủ sở hữu bình quân",
+        600
+      ]
+    ],
+    "formula": "Lợi nhuận thuộc cổ đông phổ thông / Vốn chủ sở hữu phổ thông bình quân × 100",
+    "expected": 20,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Lợi nhuận thuộc cổ đông phổ thông = 120; Vốn chủ sở hữu bình quân = 600. Tính ROE theo công thức của bài."
+  }
+}

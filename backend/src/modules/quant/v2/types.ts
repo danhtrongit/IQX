@@ -1,6 +1,6 @@
 /**
  * Frozen public types of the bot-v2 indicator/rule/backtest engine
- * (IQX Academy handoff v2.0.0, `calculation_version = iqx-ta-2.0`).
+ * (`calculation_version = iqx-ta-2.0`, `rule_version = iqx-rules-3.0`: exactly 16 indicators).
  *
  * This module is the contract between the engine lane (quant/v2/**), the shared
  * config + backtests lane (modules/strategy-config/**) and the Bot integration.
@@ -13,10 +13,61 @@
 
 export const SCHEMA_VERSION = '2.0' as const;
 export const CALCULATION_VERSION = 'iqx-ta-2.0' as const;
-export const RULE_VERSION = 'iqx-rules-2.0' as const;
+/** Current registry/rule contract: the 16 indicators of the Bot spec (Appendix B). */
+export const RULE_VERSION = 'iqx-rules-3.0' as const;
+/** Previous 35-indicator registry; only used to read/verify historical configs and receipts. */
+export const LEGACY_RULE_VERSION = 'iqx-rules-2.0' as const;
 export const ENGINE_VERSION = 'iqx-engine-2.0' as const;
 /** CAGR uses 252/N sessions, matching the legacy engine convention. */
 export const FORMULA_VERSION = 'iqx-kpi-2.0' as const;
+
+/** The 16 indicators offered by the current registry, in registry order. */
+export const CURRENT_INDICATOR_IDS = Object.freeze([
+  'rsi',
+  'macd',
+  'ma',
+  'bollinger',
+  'volume',
+  'ema',
+  'ma_cross',
+  'dmi',
+  'stochastic',
+  'cci',
+  'obv',
+  'mfi',
+  'cmf',
+  'donchian',
+  'roc',
+  'williams_r',
+] as const);
+export type CurrentIndicatorId = (typeof CURRENT_INDICATOR_IDS)[number];
+
+/**
+ * The 19 indicators removed from the product. They are never offered or validated as
+ * current; the ids are only used to recognise them inside historical (iqx-rules-2.0) configs.
+ */
+export const LEGACY_REMOVED_INDICATOR_IDS = Object.freeze([
+  'adx',
+  'atr',
+  'atr_percent',
+  'relative_volume',
+  'n_day_high',
+  'n_day_low',
+  'distance_52w_high',
+  'gap',
+  'distance_support',
+  'distance_resistance',
+  'keltner',
+  'bb_width',
+  'psar',
+  'rs_market',
+  'rs_sector',
+  'ad_line',
+  'breadth_ma50',
+  'new_high_low',
+  'index_ma',
+] as const);
+export type LegacyRemovedIndicatorId = (typeof LEGACY_REMOVED_INDICATOR_IDS)[number];
 
 /** Three-valued logic: true, false, or unknown (missing data). */
 export type Tri = boolean | null;
@@ -123,7 +174,7 @@ export type RegistryCrossField = { left: string; op: CompareOp; right: string };
 /** Registry `validation` block; `cross_fields` are enforced by `validateConfig`. */
 export type RegistryValidation = { cross_fields: RegistryCrossField[]; [extra: string]: unknown };
 
-export type RegistryEntry = {
+type RegistryEntryOf<RuleVersion extends string> = {
   id: string;
   name: string;
   chapter: number;
@@ -136,10 +187,19 @@ export type RegistryEntry = {
   sell: RegistrySide;
   fields: RegistryField[];
   availability: 'ohlcv' | 'needs_history_context';
-  rule_version: typeof RULE_VERSION;
+  rule_version: RuleVersion;
   validation?: RegistryValidation;
   [extra: string]: unknown;
 };
+
+/** Entry of the current registry (`iqx-rules-3.0`): one of the 16 indicators. */
+export type RegistryEntry = RegistryEntryOf<typeof RULE_VERSION>;
+
+/**
+ * Entry of the legacy-only registry (one of the 19 removed indicators). `chapter` and
+ * `lesson_id` are legacy catalog positions; the entry is never offered or validated as current.
+ */
+export type LegacyRegistryEntry = RegistryEntryOf<typeof LEGACY_RULE_VERSION>;
 
 /**
  * One adjusted daily observation. Context fields are only required by

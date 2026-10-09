@@ -1,0 +1,534 @@
+{
+  "legacy_catalog_version": "iqx-academy-legacy-18ch-125lessons",
+  "note": "Lessons removed from the 13ch/71 catalog; kept for history only, never published or mapped.",
+  "removed_lessons": [
+    {
+      "legacy_lesson_id": "ch02-l01",
+      "name": "Điều kiện Mua",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l02",
+      "name": "Điều kiện Bán",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l03",
+      "name": "Khoảng kiểm thử",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l04",
+      "name": "Khớp lệnh",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l05",
+      "name": "Phí giao dịch",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l06",
+      "name": "Tổng lợi nhuận",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l07",
+      "name": "CAGR",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l08",
+      "name": "Sụt giảm lớn nhất",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l09",
+      "name": "Số giao dịch",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l10",
+      "name": "Tỷ lệ thắng",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l11",
+      "name": "Lợi nhuận mua và giữ",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l12",
+      "name": "VN-Index làm mốc so sánh",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l13",
+      "name": "Lịch sử giao dịch",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l14",
+      "name": "Độ nhạy tham số",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l15",
+      "name": "Out-of-Sample",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l16",
+      "name": "Walk-Forward",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l17",
+      "name": "Look-Ahead Bias",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch02-l18",
+      "name": "Survivorship Bias",
+      "chapter": 2,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/02"
+    },
+    {
+      "legacy_lesson_id": "ch04-l01",
+      "name": "Thêm chỉ tiêu",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch04-l02",
+      "name": "Toán tử lọc",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch04-l03",
+      "name": "Kết hợp điều kiện AND",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch04-l04",
+      "name": "Phạm vi thị trường",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch04-l05",
+      "name": "Lọc theo ngành",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch04-l06",
+      "name": "Chọn kỳ dữ liệu",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch04-l07",
+      "name": "Lưu bộ lọc",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch04-l08",
+      "name": "Lưu danh mục",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch04-l09",
+      "name": "Dùng danh mục trong Học viện",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch04-l10",
+      "name": "Dữ liệu Point-in-Time",
+      "chapter": 4,
+      "kind": "tool",
+      "config_id": null,
+      "folder": "chapters/04"
+    },
+    {
+      "legacy_lesson_id": "ch05-l04",
+      "name": "ADX",
+      "chapter": 5,
+      "kind": "technical",
+      "config_id": "adx",
+      "folder": "chapters/05"
+    },
+    {
+      "legacy_lesson_id": "ch07-l01",
+      "name": "ATR",
+      "chapter": 7,
+      "kind": "technical",
+      "config_id": "atr",
+      "folder": "chapters/07"
+    },
+    {
+      "legacy_lesson_id": "ch07-l02",
+      "name": "ATR Percent",
+      "chapter": 7,
+      "kind": "technical",
+      "config_id": "atr_percent",
+      "folder": "chapters/07"
+    },
+    {
+      "legacy_lesson_id": "ch07-l03",
+      "name": "Relative Volume",
+      "chapter": 7,
+      "kind": "technical",
+      "config_id": "relative_volume",
+      "folder": "chapters/07"
+    },
+    {
+      "legacy_lesson_id": "ch09-l01",
+      "name": "N-day High",
+      "chapter": 9,
+      "kind": "technical",
+      "config_id": "n_day_high",
+      "folder": "chapters/09"
+    },
+    {
+      "legacy_lesson_id": "ch09-l02",
+      "name": "N-day Low",
+      "chapter": 9,
+      "kind": "technical",
+      "config_id": "n_day_low",
+      "folder": "chapters/09"
+    },
+    {
+      "legacy_lesson_id": "ch09-l03",
+      "name": "Khoảng cách tới đỉnh 52 tuần",
+      "chapter": 9,
+      "kind": "technical",
+      "config_id": "distance_52w_high",
+      "folder": "chapters/09"
+    },
+    {
+      "legacy_lesson_id": "ch09-l04",
+      "name": "Gap",
+      "chapter": 9,
+      "kind": "technical",
+      "config_id": "gap",
+      "folder": "chapters/09"
+    },
+    {
+      "legacy_lesson_id": "ch09-l05",
+      "name": "Khoảng cách tới hỗ trợ",
+      "chapter": 9,
+      "kind": "technical",
+      "config_id": "distance_support",
+      "folder": "chapters/09"
+    },
+    {
+      "legacy_lesson_id": "ch09-l06",
+      "name": "Khoảng cách tới kháng cự",
+      "chapter": 9,
+      "kind": "technical",
+      "config_id": "distance_resistance",
+      "folder": "chapters/09"
+    },
+    {
+      "legacy_lesson_id": "ch11-l02",
+      "name": "Keltner Channel",
+      "chapter": 11,
+      "kind": "technical",
+      "config_id": "keltner",
+      "folder": "chapters/11"
+    },
+    {
+      "legacy_lesson_id": "ch11-l03",
+      "name": "Bollinger BandWidth",
+      "chapter": 11,
+      "kind": "technical",
+      "config_id": "bb_width",
+      "folder": "chapters/11"
+    },
+    {
+      "legacy_lesson_id": "ch11-l06",
+      "name": "Parabolic SAR",
+      "chapter": 11,
+      "kind": "technical",
+      "config_id": "psar",
+      "folder": "chapters/11"
+    },
+    {
+      "legacy_lesson_id": "ch13-l01",
+      "name": "Relative Strength vs VN-Index",
+      "chapter": 13,
+      "kind": "technical",
+      "config_id": "rs_market",
+      "folder": "chapters/13"
+    },
+    {
+      "legacy_lesson_id": "ch13-l02",
+      "name": "Relative Strength vs ngành",
+      "chapter": 13,
+      "kind": "technical",
+      "config_id": "rs_sector",
+      "folder": "chapters/13"
+    },
+    {
+      "legacy_lesson_id": "ch13-l03",
+      "name": "Advance / Decline Line",
+      "chapter": 13,
+      "kind": "technical",
+      "config_id": "ad_line",
+      "folder": "chapters/13"
+    },
+    {
+      "legacy_lesson_id": "ch13-l04",
+      "name": "% cổ phiếu trên MA50",
+      "chapter": 13,
+      "kind": "technical",
+      "config_id": "breadth_ma50",
+      "folder": "chapters/13"
+    },
+    {
+      "legacy_lesson_id": "ch13-l05",
+      "name": "New High – New Low",
+      "chapter": 13,
+      "kind": "technical",
+      "config_id": "new_high_low",
+      "folder": "chapters/13"
+    },
+    {
+      "legacy_lesson_id": "ch13-l06",
+      "name": "VN-Index vs MA200",
+      "chapter": 13,
+      "kind": "technical",
+      "config_id": "index_ma",
+      "folder": "chapters/13"
+    },
+    {
+      "legacy_lesson_id": "ch16-l01",
+      "name": "Universe",
+      "chapter": 16,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/16"
+    },
+    {
+      "legacy_lesson_id": "ch16-l02",
+      "name": "Ranking",
+      "chapter": 16,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/16"
+    },
+    {
+      "legacy_lesson_id": "ch16-l03",
+      "name": "Nested AND / OR / NOT",
+      "chapter": 16,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/16"
+    },
+    {
+      "legacy_lesson_id": "ch16-l04",
+      "name": "Multi-timeframe",
+      "chapter": 16,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/16"
+    },
+    {
+      "legacy_lesson_id": "ch16-l05",
+      "name": "Signal Priority",
+      "chapter": 16,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/16"
+    },
+    {
+      "legacy_lesson_id": "ch16-l06",
+      "name": "Re-entry & Cooldown",
+      "chapter": 16,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/16"
+    },
+    {
+      "legacy_lesson_id": "ch17-l01",
+      "name": "Quy mô theo % NAV",
+      "chapter": 17,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/17"
+    },
+    {
+      "legacy_lesson_id": "ch17-l02",
+      "name": "Số tiền cố định",
+      "chapter": 17,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/17"
+    },
+    {
+      "legacy_lesson_id": "ch17-l03",
+      "name": "Số vị thế tối đa",
+      "chapter": 17,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/17"
+    },
+    {
+      "legacy_lesson_id": "ch17-l04",
+      "name": "Cắt lỗ theo %",
+      "chapter": 17,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/17"
+    },
+    {
+      "legacy_lesson_id": "ch17-l05",
+      "name": "Chốt lời theo %",
+      "chapter": 17,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/17"
+    },
+    {
+      "legacy_lesson_id": "ch17-l06",
+      "name": "Trailing Stop theo %",
+      "chapter": 17,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/17"
+    },
+    {
+      "legacy_lesson_id": "ch17-l07",
+      "name": "Thời gian giữ tối đa",
+      "chapter": 17,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/17"
+    },
+    {
+      "legacy_lesson_id": "ch18-l01",
+      "name": "Đa dạng hóa",
+      "chapter": 18,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/18"
+    },
+    {
+      "legacy_lesson_id": "ch18-l02",
+      "name": "Tương quan",
+      "chapter": 18,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/18"
+    },
+    {
+      "legacy_lesson_id": "ch18-l03",
+      "name": "Rủi ro tập trung",
+      "chapter": 18,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/18"
+    },
+    {
+      "legacy_lesson_id": "ch18-l04",
+      "name": "Tỷ trọng ngành",
+      "chapter": 18,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/18"
+    },
+    {
+      "legacy_lesson_id": "ch18-l05",
+      "name": "Tái cân bằng",
+      "chapter": 18,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/18"
+    },
+    {
+      "legacy_lesson_id": "ch18-l06",
+      "name": "Sụt giảm danh mục",
+      "chapter": 18,
+      "kind": "system",
+      "config_id": null,
+      "folder": "chapters/18"
+    }
+  ]
+}

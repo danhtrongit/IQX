@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch05-l02",
+  "questions": [
+    {
+      "question": "Chênh SMA nhanh − SMA chậm qua bốn phiên là −2, 1, 3, −1. Có bao nhiêu lần cắt lên?",
+      "options": [
+        {
+          "text": "-0,5 lần",
+          "id": "o1"
+        },
+        {
+          "text": "11 lần",
+          "id": "o2"
+        },
+        {
+          "text": "1 lần",
+          "id": "o3"
+        },
+        {
+          "text": "4,5 lần",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Cắt lên: SMA nhanh hôm nay > SMA chậm hôm nay\nVà SMA nhanh hôm trước ≤ SMA chậm hôm trước\nCắt xuống: đảo > thành < và ≤ thành ≥ → 1 lần",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch05-l02-q01",
+      "lesson_id": "ch05-l02",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Đọc MA Cross, nhận định nào đúng?",
+      "options": [
+        {
+          "text": "Chỉ bước −2 → 1 là cắt lên. Bước 1 → 3 vẫn trên nhưng không có sự kiện mới. Phải thấy khác biệt so với bài MA.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ báo luôn dự báo chính xác giá phiên tiếp theo.",
+          "id": "o2"
+        },
+        {
+          "text": "Một giá trị chỉ báo tốt bảo đảm giao dịch có lãi sau phí.",
+          "id": "o3"
+        },
+        {
+          "text": "Không cần kiểm tra tham số khi so kết quả hai phía.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Chỉ bước −2 → 1 là cắt lên. Bước 1 → 3 vẫn trên nhưng không có sự kiện mới. Phải thấy khác biệt so với bài MA.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch05-l02-q02",
+      "lesson_id": "ch05-l02",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Đang chỉnh riêng phía Mua của MA Cross; thay chu kỳ hoặc một toán tử rồi lưu. Phía Bán phải thế nào?",
+      "options": [
+        {
+          "text": "Tự đổi dấu thành ngược Mua dù người dùng không lưu.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ nguyên tham số và toán tử đã lưu riêng của Bán.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự sao chép toàn bộ thay đổi từ Mua.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự tắt vì tham số khác nhau.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Hai phía là hai cấu hình độc lập. Không tự đồng bộ tham số con.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch05-l02-q03",
+      "lesson_id": "ch05-l02",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Dữ liệu cần để tính điều kiện MA Cross bị thiếu. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Phía sử dụng dữ liệu đó chưa thỏa điều kiện; không tạo true từ dữ liệu thiếu.",
+          "id": "o1"
+        },
+        {
+          "text": "Coi giá trị thiếu bằng 0.",
+          "id": "o2"
+        },
+        {
+          "text": "Coi toán tử ∉ luôn đúng khi thiếu.",
+          "id": "o3"
+        },
+        {
+          "text": "Lấy số của phiên tiếp theo thế vào phiên hiện tại.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Cần slow+1 giá cho cặp SMA. Trước bằng nhau rồi hôm nay ở trên được tính cắt lên. Không lấy dữ liệu trước khởi tạo để tạo sự kiện.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch05-l02-q04",
+      "lesson_id": "ch05-l02",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Điểm cần lưu ý khi dùng MA Cross là gì?",
+      "options": [
+        {
+          "text": "Cứ thêm nhiều chỉ báo là hiệu quả chắc chắn tốt hơn.",
+          "id": "o1"
+        },
+        {
+          "text": "Không cần ghi phiên bản công thức vì tên chỉ báo đã đủ.",
+          "id": "o2"
+        },
+        {
+          "text": "Registry cũ của gói gọi MA Cross nhưng chỉ so trạng thái. Phiên bản biên soạn này định nghĩa sự kiện thật, ghi rõ thay đổi ở CHANGELOG; không đổi tín hiệu legacy một cách âm thầm.",
+          "id": "o3"
+        },
+        {
+          "text": "Có thể cộng phần trăm lợi nhuận các lệnh để ra lợi nhuận danh mục.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Registry cũ của gói gọi MA Cross nhưng chỉ so trạng thái. Phiên bản biên soạn này định nghĩa sự kiện thật, ghi rõ thay đổi ở CHANGELOG; không đổi tín hiệu legacy một cách âm thầm.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch05-l02-q05",
+      "lesson_id": "ch05-l02",
+      "correct_option_id": "o3"
+    },
+    {
+      "id": "ch05-l02-q06",
+      "lesson_id": "ch05-l02",
+      "question": "SMA nhanh hôm qua=chậm, hôm nay cao hơn chậm. Có giao cắt lên theo <= rồi > không?",
+      "options": [
+        {
+          "id": "o1",
+          "text": "Không vì đã bằng nhau."
+        },
+        {
+          "id": "o2",
+          "text": "Có."
+        },
+        {
+          "id": "o3",
+          "text": "Không vì hôm qua phải thấp hơn nghiêm ngặt."
+        },
+        {
+          "id": "o4",
+          "text": "Chỉ khi giá đóng cửa tăng."
+        }
+      ],
+      "correct_index": 1,
+      "correct_option_id": "o2",
+      "explanation": "Sự kiện lên dùng trước đó <= và hiện tại >.",
+      "skill": "phân biệt tín hiệu và biên dữ liệu",
+      "fixture": null
+    },
+    {
+      "id": "ch05-l02-q07",
+      "lesson_id": "ch05-l02",
+      "question": "SMA nhanh trên SMA chậm hôm qua và hôm nay. Có giao cắt lên mới hôm nay không?",
+      "options": [
+        {
+          "id": "o1",
+          "text": "Không."
+        },
+        {
+          "id": "o2",
+          "text": "Có vì đang ở trên."
+        },
+        {
+          "id": "o3",
+          "text": "Có nếu đường nhanh dốc lên."
+        },
+        {
+          "id": "o4",
+          "text": "Có nếu có vị thế."
+        }
+      ],
+      "correct_index": 0,
+      "correct_option_id": "o1",
+      "explanation": "Giao cắt phải có chuyển quan hệ, không chỉ trạng thái trên.",
+      "skill": "phân biệt tín hiệu và biên dữ liệu",
+      "fixture": null
+    },
+    {
+      "question": "Sau khi chạy MA Cross, đổi tham số nhưng chưa chạy lại. Lịch sử giao dịch trước phải thế nào?",
+      "options": [
+        {
+          "text": "Đổi lý do lệnh theo form mới ngay lập tức.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ giá trị lợi nhuận cũ nhưng đổi tên tham số mà không báo.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự tạo thêm lệnh để phù hợp cấu hình mới.",
+          "id": "o3"
+        },
+        {
+          "text": "Giữ nguyên kết quả và cấu hình của lần chạy cũ, báo cần chạy lại.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Mỗi run có snapshot bất biến. Thay form không phải một lần mô phỏng mới.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch05-l02-q08",
+      "lesson_id": "ch05-l02",
+      "correct_option_id": "o4"
+    }
+  ]
+}

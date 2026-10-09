@@ -1,0 +1,990 @@
+[
+  {
+    "id": "ch03-l01",
+    "chapter": 3,
+    "order": 1,
+    "lesson_key": "fundamental:revenue_yoy",
+    "kind": "fundamental",
+    "name": "Tăng trưởng doanh thu YoY",
+    "title": "Tăng trưởng doanh thu YoY",
+    "lead": "Nhìn đúng quy mô doanh thu, chọn đúng kỳ so sánh và đọc được tốc độ tăng trưởng.",
+    "nav_labels": ["Khái niệm", "Công thức", "Kỳ tính", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch03-v2.0",
+    "source": {
+      "package": "iqx-ch3-fundamental-six",
+      "package_version": "iqx-ch3-fundamental-six-v2.0",
+      "payload_sha256": "11987b6fa2728cd2a015b5fe58d2e5d265ddb6329191e6b34ab5e24d7ca26653",
+      "object_sha256": "c2f08b8a23fa3361fe1c0e892e92b6b4da295effe53ff3d362e77f49d31592c1"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>Tăng trưởng doanh thu YoY</strong> cho biết doanh thu tăng hay giảm bao nhiêu phần trăm so với cùng kỳ năm trước. “YoY” là cách viết ngắn của so sánh cùng kỳ năm trước.</p>\n<p>Doanh thu phản ánh giá trị bán hàng và cung cấp dịch vụ được ghi nhận trong kỳ. Trong các ví dụ của chương, <strong>doanh thu là doanh thu thuần</strong>, sau các khoản giảm trừ như hàng bán bị trả lại hoặc chiết khấu thương mại. Doanh thu không đồng nghĩa với toàn bộ tiền đã thu về.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Dòng số liệu", "Giá trị"],
+            "rows": [
+              ["Doanh thu bán hàng trước giảm trừ", "1.300 tỷ đồng"],
+              ["Các khoản giảm trừ", "50 tỷ đồng"],
+              ["<strong>Doanh thu dùng trong ví dụ</strong>", "<strong>1.250 tỷ đồng</strong>"]
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "rev-quarters",
+            "title": "Doanh thu cùng quý của hai năm",
+            "caption": "Mỗi cặp cột so sánh cùng một quý. Đơn vị: tỷ đồng.",
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Tại quý II, doanh nghiệp A có doanh thu 1.000 tỷ đồng năm 2024 và 1.250 tỷ đồng năm 2025. Quy mô tăng thêm <strong>250 tỷ đồng</strong>; tốc độ tăng được tính bằng cách đặt phần tăng thêm này so với nền 1.000 tỷ đồng.</p>\n<p>Doanh thu lớn nhất không nhất thiết là doanh nghiệp tăng nhanh nhất. Muốn so tốc độ, phải dùng tỷ lệ tăng trưởng chứ không chỉ chiều cao cột doanh thu.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">Tăng trưởng doanh thu YoY = (<span class=\"frac\"><span>Doanh thu kỳ này</span><span>Doanh thu cùng kỳ năm trước</span></span> − 1) × 100%</div></div>\n<p>Tử số và mẫu số phải cùng đơn vị và có cùng độ dài kỳ. Nếu dùng quý II/2025 ở tử số thì mẫu số là quý II/2024, không phải quý I/2025.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Tính tăng trưởng quý II của doanh nghiệp A",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<div class=\"formula-group\"><div class=\"math-eq\">Phần tăng thêm = 1.250 − 1.000 = 250 tỷ đồng</div><div class=\"math-eq\">Tăng trưởng = (1.250 / 1.000 − 1) × 100% = 25%</div></div>\n<p>Kết quả 25% nghĩa là doanh thu kỳ này bằng 125% doanh thu cùng kỳ năm trước. Nó không có nghĩa doanh nghiệp lãi 25% hoặc giá cổ phiếu tăng 25%.</p>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Doanh thu cùng kỳ", "Doanh thu kỳ này", "Tăng trưởng", "Cách đọc"],
+            "rows": [
+              ["1.000", "1.250", "+25%", "Doanh thu tăng."],
+              ["1.000", "1.000", "0%", "Doanh thu không đổi."],
+              ["1.000", "900", "−10%", "Doanh thu giảm."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Trong cách tính của bài, kỳ gốc phải dương. Nếu doanh thu kỳ gốc bằng 0 hoặc không có số liệu, không dùng một con số 0% hay vô cực để thay cho kết quả chưa tính được.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Kỳ tính và cách diễn giải",
+        "blocks": [
+          {
+            "type": "table",
+            "head": ["Lựa chọn", "Kỳ đang xét", "Kỳ dùng so sánh"],
+            "rows": [
+              ["Quý gần nhất", "Một quý riêng", "Cùng quý năm trước"],
+              ["Bốn quý gần nhất", "Bốn quý liên tiếp", "Bốn quý tương ứng lùi một năm"],
+              ["Năm tài chính gần nhất", "Một năm tài chính đầy đủ", "Năm tài chính liền trước"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Bốn quý gần nhất không nhất thiết trùng năm dương lịch. Nếu quý mới nhất là quý II/2025, cửa sổ gồm quý III/2024, quý IV/2024, quý I/2025 và quý II/2025.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "rev-periods",
+            "title": "Chọn đúng hai cửa sổ bốn quý",
+            "table_toggle": true
+          },
+          {
+            "type": "table",
+            "head": ["Kỳ", "Bốn số doanh thu (tỷ đồng)", "Tổng"],
+            "rows": [
+              ["Kỳ đang tính", "1.200 + 1.500 + 960 + 1.250", "4.910"],
+              ["Kỳ so sánh", "1.000 + 1.250 + 800 + 1.000", "4.050"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">Tăng trưởng bốn quý = (4.910 / 4.050 − 1) × 100% ≈ 21,23%</div></div>\n<p>Cùng doanh nghiệp A: quý II tăng 25%, còn bốn quý tăng khoảng 21,23%. Hai kết quả khác nhau vì hai khoảng doanh thu đang được so sánh khác nhau.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "rev-growth",
+            "title": "Doanh thu tăng nhưng tốc độ tăng chậm lại",
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Từ quý II đến quý IV/2025, doanh thu lần lượt là 1.250, 1.380 và 1.650 tỷ đồng; tốc độ tăng so với cùng quý năm trước giảm từ 25% xuống 15% rồi 10%. <strong>Tăng trưởng chậm lại không đồng nghĩa doanh thu giảm.</strong></p>\n<p>Số lũy kế sáu tháng không phải doanh thu riêng quý II. Ví dụ lũy kế sáu tháng là 2.210 tỷ và quý I là 960 tỷ thì quý II riêng là 1.250 tỷ. Chỉ tách như vậy khi các báo cáo dùng cùng cơ sở và kỳ tương ứng.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Vận dụng trong Bộ lọc",
+        "blocks": [
+          {
+            "type": "callout",
+            "variant": "filter-example",
+            "aria_label": "Ví dụ điều kiện lọc",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<span class=\"filter-name\">Tăng trưởng doanh thu YoY</span><span class=\"filter-period\">Quý gần nhất</span><b class=\"filter-expression\">&gt; 15%</b>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Doanh nghiệp", "Doanh thu cùng kỳ → kỳ này", "YoY", "Có đạt &gt; 15%?"],
+            "rows": [
+              ["A", "1.000 → 1.250", "25%", "<b class=\"good\">Đạt</b>"],
+              ["B", "1.000 → 1.150", "15%", "Không đạt"],
+              ["C", "1.000 → 1.100", "10%", "Không đạt"],
+              ["D", "Thiếu kỳ so sánh", "—", "Chưa đủ dữ liệu"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Dấu <strong>&gt;</strong> không bao gồm bằng ngưỡng. B tăng đúng 15% nên không đạt điều kiện &gt; 15%. Khi nâng ngưỡng lên 20%, chỉ giữ các trường hợp thực sự vượt 20%; không thay đổi doanh thu gốc.</p>\n<p>Kỳ mặc định là <strong>Quý gần nhất</strong>. Có thể chọn bốn quý hoặc năm tài chính gần nhất cho nhu cầu tương ứng. Đổi kỳ của tăng trưởng doanh thu không đổi kỳ của những chỉ tiêu khác trong Bộ lọc.</p>\n<p>“Gần nhất” là kỳ báo cáo đã được công bố và có dữ liệu, không phải quý vừa kết thúc trên lịch. So sánh các doanh nghiệp cần đọc cả kỳ báo cáo thực tế bên cạnh số liệu.</p>\n<p>Sau bước sàng lọc doanh thu, bài tiếp theo xem lợi nhuận có cải thiện cùng chiều hay không.</p>\n<p>Hoàn thành bài kiểm tra sẽ mở chỉ tiêu này trong <strong>Chiến lược → Bộ lọc</strong>. Bạn tự chọn kỳ, dấu và ngưỡng; học xong không tự thêm điều kiện lọc hoặc thay danh mục của Bot.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "revenue_yoy",
+    "fixture": {}
+  },
+  {
+    "id": "ch03-l02",
+    "chapter": 3,
+    "order": 2,
+    "lesson_key": "fundamental:profit_yoy",
+    "kind": "fundamental",
+    "name": "Tăng trưởng LNST YoY",
+    "title": "Tăng trưởng LNST YoY",
+    "lead": "Đọc sự thay đổi lợi nhuận sau thuế và đối chiếu với tốc độ tăng doanh thu.",
+    "nav_labels": ["Khái niệm", "Công thức", "Kỳ tính", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch03-v2.0",
+    "source": {
+      "package": "iqx-ch3-fundamental-six",
+      "package_version": "iqx-ch3-fundamental-six-v2.0",
+      "payload_sha256": "11987b6fa2728cd2a015b5fe58d2e5d265ddb6329191e6b34ab5e24d7ca26653",
+      "object_sha256": "c9b90dde69f2cdb2cbca30549615a9b21a537f0fa25376d70c2c7782a829759c"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>Lợi nhuận sau thuế (LNST)</strong> là kết quả còn lại sau khi tính các khoản thu nhập, chi phí và thuế thu nhập của kỳ. LNST dương là có lãi; LNST âm là lỗ.</p>\n<p>LNST không phải số dư tiền mặt trong tài khoản. Việc ghi nhận doanh thu, chi phí và thời điểm thu, chi tiền có thể khác nhau. Ở bài này, ta tập trung vào <strong>sự thay đổi LNST giữa hai kỳ tương ứng</strong>.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Doanh nghiệp A", "Quý II/2024", "Quý II/2025"],
+            "rows": [
+              ["Doanh thu", "1.000 tỷ đồng", "1.250 tỷ đồng"],
+              ["LNST", "80 tỷ đồng", "88 tỷ đồng"]
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "profit-growth",
+            "title": "Doanh thu và LNST không tăng cùng tốc độ",
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Quý II, doanh thu tăng 25% nhưng LNST chỉ tăng 10%. Đến quý IV, doanh thu vẫn tăng 10% trong khi LNST giảm từ 110 xuống 107 tỷ đồng. Tốc độ tăng doanh thu không thay thế được thông tin về lợi nhuận.</p>\n<p>Sự chênh lệch này là điểm cần xem tiếp trong các khoản chi phí và thu nhập. Chỉ hai tỷ lệ tăng trưởng chưa đủ để xác định chính xác nguyên nhân.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">Tăng trưởng LNST YoY = (<span class=\"frac\"><span>LNST kỳ này</span><span>LNST cùng kỳ năm trước</span></span> − 1) × 100%</div></div>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Từ 80 tỷ lên 88 tỷ",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<div class=\"formula-group\"><div class=\"math-eq\">LNST tăng thêm = 88 − 80 = 8 tỷ đồng</div><div class=\"math-eq\">Tăng trưởng LNST = (88 / 80 − 1) × 100% = 10%</div></div>\n<p>Dùng LNST của cùng kỳ năm trước làm nền. Không chia phần tăng thêm cho 88 tỷ rồi gọi đó là tăng trưởng YoY.</p>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["LNST kỳ gốc", "LNST kỳ này", "Kết quả theo công thức", "Ý nghĩa"],
+            "rows": [
+              ["80", "88", "+10%", "Lợi nhuận tăng."],
+              ["80", "64", "−20%", "Vẫn có lãi nhưng lợi nhuận giảm."],
+              ["20", "−5", "−125%", "Từ lãi 20 chuyển sang lỗ 5."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Tỷ lệ giảm có thể thấp hơn −100% khi kỳ gốc có lãi và kỳ hiện tại lỗ. Không xóa dấu âm hoặc giới hạn kết quả ở −100%. Các số LNST phải cùng cơ sở, cùng đơn vị và cùng loại kỳ.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Kỳ tính và nền so sánh",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Quý gần nhất so với cùng quý năm trước; bốn quý gần nhất so với bốn quý tương ứng lùi một năm; năm tài chính so với năm tài chính trước. Không lấy quý liền trước thay cho cùng kỳ.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Tăng 100% chưa có nghĩa tăng thêm nhiều tiền hơn",
+            "blocks": [
+              {
+                "type": "table",
+                "head": ["Doanh nghiệp", "LNST cùng kỳ → kỳ này", "Tăng thêm", "YoY"],
+                "rows": [
+                  ["B", "10 → 20 tỷ", "10 tỷ", "100%"],
+                  ["C", "100 → 130 tỷ", "30 tỷ", "30%"]
+                ]
+              },
+              {
+                "type": "chart",
+                "chart_id": "profit-base",
+                "title": "Đọc cả tỷ lệ và số tiền tăng thêm",
+                "table_toggle": true
+              },
+              {
+                "type": "html",
+                "html": "<p>B có tỷ lệ tăng cao hơn, nhưng C tăng thêm số lợi nhuận lớn hơn. Cần đọc nền so sánh cùng con số phần trăm.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Kỳ gốc bằng 0 hoặc đang lỗ</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Tình huống", "Cách đọc"],
+            "rows": [
+              ["0 → 5 tỷ", "Từ hòa vốn sang lãi; không tính tỷ lệ với mẫu số 0."],
+              ["−20 → 10 tỷ", "Chuyển từ lỗ sang lãi."],
+              ["−20 → −10 tỷ", "Mức lỗ thu hẹp."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Với kỳ gốc âm, phép chia có thể cho ra số nhưng dễ đảo ngược ý nghĩa cải thiện hay xấu đi. <strong>Bộ lọc trong bài không dùng tỷ lệ YoY thông thường khi kỳ gốc không dương.</strong> Thay vào đó đọc mức thay đổi lợi nhuận; không dùng trị tuyệt đối của kỳ gốc để tạo một tỷ lệ khác.</p>\n<p>Một khoản thu nhập không lặp lại cũng có thể làm lợi nhuận một kỳ tăng mạnh. Khi có số liệu thành phần, xem khoản tăng đến từ đâu trước khi coi nó là tốc độ có thể duy trì.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Vận dụng trong Bộ lọc",
+        "blocks": [
+          {
+            "type": "callout",
+            "variant": "filter-example",
+            "aria_label": "Ví dụ điều kiện lọc",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<span class=\"filter-name\">Tăng trưởng LNST YoY</span><span class=\"filter-period\">Quý gần nhất</span><b class=\"filter-expression\">&gt; 15%</b>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Doanh nghiệp", "LNST cùng kỳ → kỳ này", "YoY", "Kết quả"],
+            "rows": [
+              ["A", "80 → 88 tỷ", "10%", "Không đạt"],
+              ["B", "100 → 118 tỷ", "18%", "<b class=\"good\">Đạt</b>"],
+              ["C", "100 → 115 tỷ", "15%", "Không đạt"],
+              ["D", "−20 → 10 tỷ", "—", "Không tính tỷ lệ này"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>B đạt tiêu chí tăng trưởng trên 15%. D đã chuyển sang có lãi, nhưng không được gán một tỷ lệ YoY tùy ý để cho qua điều kiện.</p>\n<p>Điều kiện có thể đi cùng tăng trưởng doanh thu. Khi kết hợp bằng AND, doanh nghiệp phải đạt từng điều kiện đang sử dụng; một tỷ lệ tốt không bù cho điều kiện còn lại chưa đạt.</p>\n<p>Đổi kỳ tính làm thay cả số lợi nhuận kỳ đang xét và kỳ so sánh. Kỳ mặc định của chỉ tiêu này là <strong>Quý gần nhất</strong>.</p>\n<p>Bài tiếp theo đưa lợi nhuận về đơn vị một cổ phiếu để xem phần lợi nhuận đó được phân bổ trên bao nhiêu cổ phiếu.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "profit_yoy",
+    "fixture": {}
+  },
+  {
+    "id": "ch03-l03",
+    "chapter": 3,
+    "order": 3,
+    "lesson_key": "fundamental:eps_yoy",
+    "kind": "fundamental",
+    "name": "Tăng trưởng EPS YoY",
+    "title": "Tăng trưởng EPS YoY",
+    "lead": "Từ lợi nhuận doanh nghiệp đến lợi nhuận trên một cổ phiếu, có tính đến số cổ phiếu bình quân.",
+    "nav_labels": ["Khái niệm", "Công thức", "Kỳ tính", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch03-v2.0",
+    "source": {
+      "package": "iqx-ch3-fundamental-six",
+      "package_version": "iqx-ch3-fundamental-six-v2.0",
+      "payload_sha256": "11987b6fa2728cd2a015b5fe58d2e5d265ddb6329191e6b34ab5e24d7ca26653",
+      "object_sha256": "41b96cdf4e2523540a790dc6b0dffc2ec646116ec3029b27a5901afbb5a6cac8"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>EPS là lợi nhuận trên một cổ phiếu phổ thông.</strong> Tăng trưởng EPS YoY cho biết đại lượng này tăng hay giảm so với cùng kỳ năm trước. Bài sử dụng EPS cơ bản, không trộn với một biến thể EPS khác.</p>\n<p>EPS có đơn vị đồng/cổ phiếu. EPS 800 đồng nghĩa là mỗi cổ phiếu bình quân gắn với 800 đồng lợi nhuận của kỳ theo cách tính. <strong>Đó không phải số cổ tức chắc chắn được chi trả</strong> và không phải mức tăng giá cổ phiếu.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "eps-components",
+            "title": "LNST tăng nhưng EPS không tăng",
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Ở doanh nghiệp A, LNST dùng tính EPS tăng từ 80 lên 88 tỷ đồng. Nhưng cổ phiếu bình quân cũng tăng từ 100 lên 110 triệu, nên EPS của hai kỳ đều bằng 800 đồng. Phải đọc cả lợi nhuận và số cổ phiếu để giải thích EPS.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">EPS cơ bản = <span class=\"frac\"><span>Lợi nhuận dành cho cổ phiếu phổ thông</span><span>Số cổ phiếu phổ thông bình quân</span></span></div><div class=\"math-eq\">Tăng trưởng EPS YoY = (<span class=\"frac\"><span>EPS kỳ này</span><span>EPS cùng kỳ năm trước</span></span> − 1) × 100%</div></div>\n<p>Trong ví dụ của doanh nghiệp A, chỉ có cổ phiếu phổ thông; LNST cũng là lợi nhuận dùng để tính EPS. Số cổ phiếu bình quân phản ánh thời gian từng lượng cổ phiếu thực sự lưu hành, không chỉ lượng cổ phiếu vào ngày cuối kỳ.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Bước 1 — Tính số cổ phiếu bình quân",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Giả sử hai giai đoạn có thời lượng bằng nhau: nửa đầu kỳ có 100 triệu cổ phiếu và nửa sau có 120 triệu. Trong ví dụ này không có sự kiện phải điều chỉnh lại dữ liệu cổ phiếu.</p>"
+              },
+              {
+                "type": "chart",
+                "chart_id": "eps-shares",
+                "title": "Hai lượng cổ phiếu, hai khoảng thời gian bằng nhau",
+                "table_toggle": true
+              },
+              {
+                "type": "html",
+                "html": "<div class=\"formula-group\"><div class=\"math-eq\">Cổ phiếu bình quân = 100 × 50% + 120 × 50%</div><div class=\"math-eq\">Cổ phiếu bình quân = 110 triệu CP</div></div>\n<p>Nếu các khoảng không dài bằng nhau, dùng tỷ trọng thời gian tương ứng. Không lấy 120 triệu cuối kỳ cho cả kỳ.</p>"
+              }
+            ]
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Bước 2 — Tính EPS từng kỳ rồi so sánh",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<div class=\"formula-group\"><div class=\"math-eq\">EPS kỳ trước = 80 tỷ / 100 triệu = 800 đồng/CP</div><div class=\"math-eq\">EPS kỳ này = 88 tỷ / 110 triệu = 800 đồng/CP</div><div class=\"math-eq\">Tăng trưởng EPS = (800 / 800 − 1) × 100% = 0%</div></div>\n<p>Tỷ đồng chia cho triệu cổ phiếu cần nhân hệ số 1.000 để ra đồng/cổ phiếu. Phép tính không phải 88 / 110 = 0,8 đồng/CP.</p>"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Kỳ tính và thay đổi số cổ phiếu",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Mặc định dùng <strong>Quý gần nhất</strong>, so với cùng quý năm trước. Có thể dùng bốn quý hoặc năm tài chính gần nhất. Lợi nhuận và cổ phiếu bình quân phải thuộc cùng khoảng tính; khi số cổ phiếu thay đổi, không tự cộng bốn EPS quý để thay cho EPS bốn quý.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Tình huống độc lập", "Lợi nhuận", "Cổ phiếu bình quân", "EPS", "Tăng EPS"],
+            "rows": [
+              ["Giữ số cổ phiếu", "100 → 120 tỷ", "100 → 100 triệu", "1.000 → 1.200 đồng", "20%"],
+              ["Tăng cùng tỷ lệ", "100 → 120 tỷ", "100 → 120 triệu", "1.000 → 1.000 đồng", "0%"],
+              ["Cổ phiếu tăng nhanh hơn", "100 → 120 tỷ", "100 → 150 triệu", "1.000 → 800 đồng", "−20%"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Ba trường hợp cùng tăng lợi nhuận 20%, nhưng tăng trưởng EPS khác nhau. Đây là lý do tăng trưởng LNST và tăng trưởng EPS không phải hai tiêu chí trùng nhau.</p>\n<h3>Đối chiếu EPS sau điều chỉnh</h3>\n<p>Khi chia tách cổ phiếu hoặc có sự kiện cần điều chỉnh, phải dùng EPS các kỳ trên cùng cơ sở cổ phiếu. Không lấy một số trước điều chỉnh so với một số sau điều chỉnh rồi kết luận lợi nhuận trên mỗi cổ phiếu giảm.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Ví dụ chia tách 1 cổ phiếu thành 2", "EPS"],
+            "rows": [
+              ["EPS kỳ trước trước điều chỉnh", "1.600 đồng"],
+              ["EPS kỳ trước trên cơ sở sau chia tách", "800 đồng"],
+              ["EPS kỳ này cùng cơ sở", "800 đồng"],
+              ["Tăng trưởng khi so đúng cơ sở", "0%"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Bảng trên chỉ thay đơn vị cổ phiếu, không tạo ra khoản lỗ kinh tế 50%. Nếu kỳ gốc EPS không dương, không dùng tỷ lệ tăng trưởng thông thường theo cách lọc của bài.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Vận dụng trong Bộ lọc",
+        "blocks": [
+          {
+            "type": "callout",
+            "variant": "filter-example",
+            "aria_label": "Ví dụ điều kiện lọc",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<span class=\"filter-name\">Tăng trưởng EPS YoY</span><span class=\"filter-period\">Quý gần nhất</span><b class=\"filter-expression\">&gt; 15%</b>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Doanh nghiệp", "EPS cùng kỳ → kỳ này", "Tăng trưởng", "Kết quả"],
+            "rows": [
+              ["B", "1.000 → 1.160 đồng", "16%", "<b class=\"good\">Đạt</b>"],
+              ["C", "1.000 → 1.150 đồng", "15%", "Không đạt"],
+              ["D", "1.000 → 1.000 đồng", "0%", "Không đạt"],
+              ["E", "Thiếu EPS so sánh", "—", "Chưa đủ dữ liệu"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>B đạt vì tăng trên 15%; C chỉ bằng ngưỡng. LNST tăng chưa đủ để suy rằng doanh nghiệp sẽ đạt điều kiện EPS này.</p>\n<p>Khi tăng trưởng EPS khác xa tăng trưởng LNST, đối chiếu lợi nhuận dùng tính EPS và số cổ phiếu bình quân trước. Không tự quy mọi thay đổi số cổ phiếu thành kết quả xấu; phải xem hình thức và cơ sở điều chỉnh.</p>\n<p>Ba bài đầu cùng đo <strong>tốc độ thay đổi</strong>. Hai bài tiếp theo chuyển sang tỷ lệ lợi nhuận trên doanh thu, để đọc hiệu quả tạo lợi nhuận của từng đồng doanh thu.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "eps_yoy",
+    "fixture": {}
+  },
+  {
+    "id": "ch03-l04",
+    "chapter": 3,
+    "order": 4,
+    "lesson_key": "fundamental:gross_margin",
+    "kind": "fundamental",
+    "name": "Biên lợi nhuận gộp",
+    "title": "Biên lợi nhuận gộp",
+    "lead": "Phân biệt số tiền lợi nhuận gộp với tỷ lệ lợi nhuận gộp trên doanh thu.",
+    "nav_labels": ["Khái niệm", "Công thức", "Kỳ tính", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch03-v2.0",
+    "source": {
+      "package": "iqx-ch3-fundamental-six",
+      "package_version": "iqx-ch3-fundamental-six-v2.0",
+      "payload_sha256": "11987b6fa2728cd2a015b5fe58d2e5d265ddb6329191e6b34ab5e24d7ca26653",
+      "object_sha256": "55e3581918c446535cce8765e6a3e1f2e606dc345201cb5d108509c9cae1c84a"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>Biên lợi nhuận gộp</strong> cho biết lợi nhuận gộp chiếm bao nhiêu phần trăm doanh thu. Biên 30% nghĩa là với mỗi 100 đồng doanh thu, phần lợi nhuận gộp bằng 30 đồng.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Thành phần", "Ý nghĩa"],
+            "rows": [
+              ["Doanh thu", "Doanh thu thuần được sử dụng cho cùng kỳ."],
+              ["Giá vốn", "Chi phí của hàng hóa hoặc dịch vụ đã bán tương ứng với doanh thu."],
+              ["Lợi nhuận gộp", "Doanh thu trừ giá vốn."]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Lợi nhuận gộp chưa trừ tất cả những khoản chi phí tiếp theo như bán hàng, quản lý, tài chính và thuế. Vì vậy biên gộp không phải biên lợi nhuận sau thuế.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "gross-composition",
+            "title": "Giá vốn và lợi nhuận gộp trong doanh thu",
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Doanh nghiệp A tăng doanh thu từ 1.000 lên 1.250 tỷ đồng. Giá vốn từ 700 lên 850 tỷ, nên lợi nhuận gộp từ 300 lên 400 tỷ. Biểu đồ thể hiện số tiền; tỷ lệ biên cần được tính riêng.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">Lợi nhuận gộp = Doanh thu − Giá vốn</div><div class=\"math-eq\">Biên lợi nhuận gộp = <span class=\"frac\"><span>Lợi nhuận gộp</span><span>Doanh thu cùng kỳ</span></span> × 100%</div></div>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Tính hai biên từ bảng kết quả kinh doanh",
+            "blocks": [
+              {
+                "type": "table",
+                "head": ["Doanh nghiệp A", "Q2/2024", "Q2/2025"],
+                "rows": [
+                  ["Doanh thu", "1.000", "1.250"],
+                  ["Giá vốn", "700", "850"],
+                  ["Lợi nhuận gộp", "300", "400"],
+                  ["Biên lợi nhuận gộp", "30%", "32%"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<div class=\"formula-group\"><div class=\"math-eq\">Biên kỳ trước = (1.000 − 700) / 1.000 × 100% = 30%</div><div class=\"math-eq\">Biên kỳ này = (1.250 − 850) / 1.250 × 100% = 32%</div></div>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<h3>Phần trăm và điểm phần trăm</h3>\n<div class=\"formula-group\"><div class=\"math-eq\">Chênh lệch biên = 32% − 30% = 2 điểm phần trăm</div><div class=\"math-eq\">Mức tăng tương đối của tỷ lệ biên = (32 / 30 − 1) × 100% ≈ 6,67%</div></div>\n<p>Cách đọc trực tiếp ở đây là <strong>biên tăng 2 điểm phần trăm</strong>. Không viết “tăng 2%” rồi để người đọc tự đoán đang nói chênh lệch hay tốc độ tăng.</p>\n<p>Nếu không có doanh thu dương hoặc thiếu doanh thu/giá vốn phù hợp, chưa có cơ sở tính tỷ lệ theo bài. Không dùng số 0 để thay dữ liệu thiếu.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Kỳ tính và cách diễn giải",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Kỳ mặc định là <strong>Bốn quý gần nhất</strong>; có thể chọn quý riêng hoặc năm tài chính gần nhất. Tính biên của một khoảng bằng tổng lợi nhuận gộp chia tổng doanh thu của chính khoảng đó.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Không lấy trung bình đơn giản của bốn biên",
+            "blocks": [
+              {
+                "type": "table",
+                "head": ["Kỳ", "Doanh thu", "Lợi nhuận gộp", "Biên"],
+                "rows": [
+                  ["Q1", "100", "10", "10%"],
+                  ["Q2", "200", "40", "20%"],
+                  ["Q3", "300", "90", "30%"],
+                  ["Q4", "400", "160", "40%"],
+                  ["<strong>Tổng</strong>", "<strong>1.000</strong>", "<strong>300</strong>", "<strong>30%</strong>"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<div class=\"formula-group\"><div class=\"math-eq\">Biên bốn quý = 300 / 1.000 × 100% = 30%</div></div>"
+              },
+              {
+                "type": "chart",
+                "chart_id": "gross-four-quarters",
+                "title": "Quý có doanh thu khác nhau đóng góp khác nhau",
+                "table_toggle": true
+              },
+              {
+                "type": "html",
+                "html": "<p>Trung bình (10% + 20% + 30% + 40%) / 4 bằng 25%, không phải biên bốn quý. Mỗi tỷ lệ cần được xét với quy mô doanh thu đi kèm.</p>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Tình huống độc lập", "Kỳ trước", "Kỳ này"],
+            "rows": [
+              ["Doanh thu", "1.000 tỷ", "1.500 tỷ"],
+              ["Lợi nhuận gộp", "300 tỷ", "375 tỷ"],
+              ["Biên gộp", "30%", "25%"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Lợi nhuận gộp tăng thêm 75 tỷ nhưng biên giảm 5 điểm phần trăm. <strong>Tăng số tiền lợi nhuận và tăng biên là hai việc khác nhau.</strong> Đối chiếu cùng doanh nghiệp qua thời gian hoặc những doanh nghiệp có hoạt động phù hợp; không dùng một mức biên làm chuẩn tốt/xấu cho mọi ngành.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Vận dụng trong Bộ lọc",
+        "blocks": [
+          {
+            "type": "callout",
+            "variant": "filter-example",
+            "aria_label": "Ví dụ điều kiện lọc",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<span class=\"filter-name\">Biên lợi nhuận gộp</span><span class=\"filter-period\">Bốn quý gần nhất</span><b class=\"filter-expression\">&gt; 25%</b>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Doanh nghiệp", "Doanh thu / lợi nhuận gộp", "Biên bốn quý", "Kết quả"],
+            "rows": [
+              ["B", "1.000 / 300 tỷ", "30%", "<b class=\"good\">Đạt</b>"],
+              ["C", "2.000 / 500 tỷ", "25%", "Không đạt"],
+              ["D", "2.000 / 400 tỷ", "20%", "Không đạt"],
+              ["E", "Chỉ tiêu không áp dụng", "—", "Không áp dụng"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>C có lợi nhuận gộp lớn hơn B về số tiền nhưng không vượt biên 25%. Điều kiện đang chọn tỷ lệ, không chọn quy mô lợi nhuận.</p>\n<p>Một loại hình doanh nghiệp không có cơ sở doanh thu–giá vốn phù hợp cho chỉ tiêu phải được thể hiện <strong>Không áp dụng</strong>. Không biến trạng thái đó thành biên 0%.</p>\n<p>Sau khi đọc phần còn lại sau giá vốn, bài tiếp theo xem lợi nhuận sau tất cả những khoản thu nhập, chi phí và thuế của kỳ.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "gross_margin",
+    "fixture": {}
+  },
+  {
+    "id": "ch03-l05",
+    "chapter": 3,
+    "order": 5,
+    "lesson_key": "fundamental:net_margin",
+    "kind": "fundamental",
+    "name": "Biên lợi nhuận ròng",
+    "title": "Biên lợi nhuận ròng",
+    "lead": "Đọc lợi nhuận sau thuế trên doanh thu và lý giải khác biệt với biên lợi nhuận gộp.",
+    "nav_labels": ["Khái niệm", "Công thức", "Kỳ tính", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch03-v2.0",
+    "source": {
+      "package": "iqx-ch3-fundamental-six",
+      "package_version": "iqx-ch3-fundamental-six-v2.0",
+      "payload_sha256": "11987b6fa2728cd2a015b5fe58d2e5d265ddb6329191e6b34ab5e24d7ca26653",
+      "object_sha256": "73a37be54cf8683ffb45583dbf4a7d8d5ce7a32e33c711afcac97331e96517aa"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>Biên lợi nhuận ròng</strong> là tỷ lệ LNST trên doanh thu cùng kỳ. Biên ròng 8% nghĩa là 100 đồng doanh thu tương ứng 8 đồng LNST, không phải 8 đồng tiền mặt được giữ lại ngay.</p>\n<p>Biên gộp dừng ở lợi nhuận sau giá vốn. Biên ròng đi tiếp qua những khoản chi phí, thu nhập và thuế còn lại. Hai chỉ tiêu đọc hai tầng khác nhau của kết quả kinh doanh.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "net-bridge",
+            "title": "Doanh nghiệp A: từ 1.250 tỷ doanh thu đến 88 tỷ LNST",
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Các dòng trong hình là bảng kết quả rút gọn cho một ví dụ. Dòng tổng như lợi nhuận gộp không được cộng thêm lần nữa vào kết quả; đó là phần còn lại sau bước trừ trước đó.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">Biên lợi nhuận ròng = <span class=\"frac\"><span>LNST</span><span>Doanh thu cùng kỳ</span></span> × 100%</div></div>"
+          },
+          {
+            "type": "table",
+            "head": ["Thành phần (tỷ đồng)", "Q2/2024", "Q2/2025"],
+            "rows": [
+              ["Doanh thu", "1.000", "1.250"],
+              ["Trừ giá vốn", "700", "850"],
+              ["<strong>Lợi nhuận gộp</strong>", "<strong>300</strong>", "<strong>400</strong>"],
+              ["Trừ chi phí bán hàng và quản lý", "150", "220"],
+              ["Trừ chi phí tài chính và khác, sau bù thu nhập", "50", "70"],
+              ["Lợi nhuận trước thuế", "100", "110"],
+              ["Trừ thuế thu nhập", "20", "22"],
+              ["<strong>LNST</strong>", "<strong>80</strong>", "<strong>88</strong>"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">LNST kỳ này = 400 − 220 − 70 − 22 = 88 tỷ đồng</div><div class=\"math-eq\">Biên ròng kỳ trước = 80 / 1.000 × 100% = 8%</div><div class=\"math-eq\">Biên ròng kỳ này = 88 / 1.250 × 100% = 7,04%</div></div>\n<p>LNST tăng 10% nhưng biên ròng giảm <strong>0,96 điểm phần trăm</strong>. Doanh thu tăng nhanh hơn lợi nhuận, nên mỗi đồng doanh thu tạo ít LNST hơn trong ví dụ này.</p>\n<p>Mẫu số là doanh thu, không phải lợi nhuận gộp. Lấy 88 / 400 sẽ đo một quan hệ khác, không ra biên lợi nhuận ròng.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Kỳ tính và cách diễn giải",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Mặc định dùng <strong>Bốn quý gần nhất</strong>. Có thể chọn quý hoặc năm tài chính gần nhất. Với bốn quý, cộng LNST và doanh thu từng quý rồi mới chia; không lấy trung bình đơn giản bốn tỷ lệ.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "net-margins",
+            "title": "Biên gộp cải thiện nhưng biên ròng giảm",
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Ở A, phần chi phí sau lợi nhuận gộp và thuế tăng từ 220 lên 312 tỷ đồng. Bảng thành phần giúp thấy phần lợi nhuận gộp tăng thêm không được giữ lại toàn bộ trong LNST. Không chỉ nhìn hai đường biên rồi tự khẳng định nguyên nhân nếu chưa có dữ liệu chi tiết.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Biên ròng cao do một khoản không lặp lại",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<p>Một trường hợp khác có doanh thu 1.000 tỷ, LNST 200 tỷ; trong đó 120 tỷ LNST đến từ một khoản thu nhập không lặp lại đã được xác định.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">Biên ròng báo cáo = 200 / 1.000 × 100% = 20%</div></div>\n<p>20% vẫn là biên báo cáo. Nhưng không mặc định toàn bộ mức này sẽ xuất hiện ở kỳ tiếp theo. Phần thu nhập không lặp lại là lý do cần đọc thêm, không phải tự ý thay số liệu Bộ lọc.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Nếu doanh thu dương và doanh nghiệp lỗ, biên ròng âm vẫn có ý nghĩa. Ví dụ LNST −25 tỷ trên doanh thu 500 tỷ cho biên −5%. Nếu doanh thu bằng 0 hoặc thiếu thành phần, không dùng một tỷ lệ giả để phân loại.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Vận dụng trong Bộ lọc",
+        "blocks": [
+          {
+            "type": "callout",
+            "variant": "filter-example",
+            "aria_label": "Ví dụ điều kiện lọc",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<span class=\"filter-name\">Biên lợi nhuận ròng</span><span class=\"filter-period\">Bốn quý gần nhất</span><b class=\"filter-expression\">&gt; 10%</b>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Doanh nghiệp", "Doanh thu", "LNST", "Biên ròng", "Kết quả"],
+            "rows": [
+              ["B", "1.000 tỷ", "100 tỷ", "10%", "Không đạt"],
+              ["C", "500 tỷ", "75 tỷ", "15%", "<b class=\"good\">Đạt</b>"],
+              ["D", "500 tỷ", "−25 tỷ", "−5%", "Không đạt"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>C có LNST nhỏ hơn B về số tiền nhưng có biên cao hơn. Bộ lọc này chọn tỷ lệ trên doanh thu, không chọn doanh nghiệp có lợi nhuận tuyệt đối lớn nhất.</p>\n<p>Đổi điều kiện sang <strong>biên ròng &lt; 0%</strong> sẽ tìm các trường hợp lỗ khi doanh thu dương, như D. Số âm hợp lệ không phải dữ liệu thiếu.</p>\n<p>Có thể kết hợp biên ròng với tăng trưởng doanh thu hoặc lợi nhuận để quan sát cả quy mô thay đổi lẫn tỷ lệ sinh lời. Không tự đưa giá trị của kỳ khác vào một cột đang được lọc.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "net_margin",
+    "fixture": {}
+  },
+  {
+    "id": "ch03-l06",
+    "chapter": 3,
+    "order": 6,
+    "lesson_key": "fundamental:roe",
+    "kind": "fundamental",
+    "name": "ROE",
+    "title": "ROE",
+    "lead": "Đặt lợi nhuận cả kỳ cạnh vốn chủ sở hữu bình quân, thay vì chỉ nhìn doanh thu.",
+    "nav_labels": ["Khái niệm", "Công thức", "Kỳ tính", "Vận dụng"],
+    "completion": {
+      "mode": "quiz",
+      "question_count": 8,
+      "required_correct": 8
+    },
+    "content_version": "ch03-v2.0",
+    "source": {
+      "package": "iqx-ch3-fundamental-six",
+      "package_version": "iqx-ch3-fundamental-six-v2.0",
+      "payload_sha256": "11987b6fa2728cd2a015b5fe58d2e5d265ddb6329191e6b34ab5e24d7ca26653",
+      "object_sha256": "1b343f0b1b2c9b2a3ea92cb4cf2b81d06576309db8884e7b6b83b5485d739166"
+    },
+    "sections": [
+      {
+        "id": "s1",
+        "title": "Khái niệm và cách đọc",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p><strong>ROE là tỷ suất lợi nhuận trên vốn chủ sở hữu.</strong> Nếu biên ròng đặt lợi nhuận cạnh doanh thu, ROE đặt lợi nhuận cạnh vốn chủ sở hữu được sử dụng trong kỳ.</p>\n<div class=\"formula-group\"><div class=\"math-eq\">Vốn chủ sở hữu = Tổng tài sản − Nợ phải trả</div></div>\n<p>Vốn chủ sở hữu không phải riêng số tiền mặt doanh nghiệp đang có. Đó là phần còn lại của tài sản sau khi trừ nợ phải trả theo số liệu kế toán; có thể bao gồm vốn góp và lợi nhuận được giữ lại.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Doanh nghiệp A (tỷ đồng)", "Đầu kỳ", "Cuối kỳ"],
+            "rows": [
+              ["Tổng tài sản", "3.200", "3.800"],
+              ["Nợ phải trả", "1.400", "1.600"],
+              ["<strong>Vốn chủ sở hữu</strong>", "<strong>1.800</strong>", "<strong>2.200</strong>"]
+            ]
+          },
+          {
+            "type": "chart",
+            "chart_id": "roe-window",
+            "title": "Lợi nhuận trong bốn quý và vốn tại từng thời điểm",
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>Lợi nhuận cộng dồn qua cả kỳ; vốn chủ là số dư ở từng thời điểm. Vì vậy ví dụ dùng vốn bình quân đầu và cuối kỳ, không cộng bốn số dư vốn như cộng bốn số lợi nhuận.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s2",
+        "title": "Công thức và ví dụ tính",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<div class=\"formula-group\"><div class=\"math-eq\">Vốn chủ bình quân = <span class=\"frac\"><span>Vốn đầu kỳ + Vốn cuối kỳ</span><span>2</span></span></div><div class=\"math-eq\">ROE = <span class=\"frac\"><span>LNST của kỳ</span><span>Vốn chủ sở hữu bình quân cùng kỳ</span></span> × 100%</div></div>\n<p>Trong ví dụ nền tảng này, LNST và vốn chủ được lấy cùng phạm vi. Dùng bình quân hai đầu kỳ; khi đối chiếu một giá trị ROE khác, cần biết nó đang dùng cùng phương pháp và khoảng thời gian hay không.</p>"
+          },
+          {
+            "type": "callout",
+            "variant": "worked",
+            "title": "Tính ROE bốn quý của doanh nghiệp A",
+            "blocks": [
+              {
+                "type": "table",
+                "head": ["Quý năm 2025", "LNST (tỷ đồng)"],
+                "rows": [
+                  ["I", "66"],
+                  ["II", "88"],
+                  ["III", "99"],
+                  ["IV", "107"],
+                  ["<strong>Tổng bốn quý</strong>", "<strong>360</strong>"]
+                ]
+              },
+              {
+                "type": "html",
+                "html": "<div class=\"formula-group\"><div class=\"math-eq\">Vốn bình quân = (1.800 + 2.200) / 2 = 2.000 tỷ đồng</div><div class=\"math-eq\">ROE = 360 / 2.000 × 100% = 18%</div></div>\n<p>LNST 88 tỷ của quý II ở những bài trước là một phần trong tổng 360 tỷ. Không lấy riêng 88 tỷ chia vốn cả năm rồi gọi kết quả là ROE bốn quý.</p>"
+              }
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Kết quả 18% nghĩa là cứ 100 đồng vốn chủ bình quân có 18 đồng LNST trong khoảng đang xét. Nó không có nghĩa cổ phiếu tăng 18% hoặc cổ đông được trả cổ tức 18%.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s3",
+        "title": "Kỳ tính và thay đổi vốn",
+        "blocks": [
+          {
+            "type": "html",
+            "html": "<p>Mặc định là <strong>Bốn quý gần nhất</strong>; lựa chọn còn lại là <strong>Năm tài chính gần nhất</strong>. Bài và Bộ lọc không dùng ROE của riêng một quý trong phạm vi này. Hai mốc vốn phải bao quanh đúng khoảng lợi nhuận được dùng.</p>"
+          },
+          {
+            "type": "chart",
+            "chart_id": "roe-compare",
+            "title": "Cùng 180 tỷ LNST nhưng ROE khác nhau",
+            "table_toggle": true
+          },
+          {
+            "type": "html",
+            "html": "<p>B dùng 1.000 tỷ vốn bình quân nên ROE 18%; C dùng 2.000 tỷ nên ROE 9%. Cùng số tiền lợi nhuận không đồng nghĩa cùng tỷ suất trên vốn.</p>"
+          },
+          {
+            "type": "table",
+            "head": ["Một doanh nghiệp qua hai kỳ", "Kỳ trước", "Kỳ này"],
+            "rows": [
+              ["LNST", "180 tỷ", "180 tỷ"],
+              ["Vốn chủ bình quân", "1.200 tỷ", "900 tỷ"],
+              ["ROE", "15%", "20%"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>ROE tăng ở bảng trên do vốn bình quân giảm, không phải lợi nhuận tăng. Muốn diễn giải một mức ROE cao, xem cả lợi nhuận và phần vốn làm mẫu số. Không kết luận chỉ từ tỷ lệ cuối.</p>\n<p>Bình quân hai đầu kỳ là cách tính minh họa đã xác định. Khi vốn biến động mạnh giữa kỳ, hai số đầu/cuối không phản ánh mọi thời điểm; không tự đổi phương pháp giữa các doanh nghiệp khi so sánh.</p>\n<p>Thiếu vốn đầu kỳ thì chưa tính được bình quân theo ví dụ này. Vốn không dương hoặc mẫu số không hợp lệ không được thay bằng một số nhỏ để tạo ROE rất cao.</p>"
+          }
+        ]
+      },
+      {
+        "id": "s4",
+        "title": "Vận dụng trong Bộ lọc",
+        "blocks": [
+          {
+            "type": "callout",
+            "variant": "filter-example",
+            "aria_label": "Ví dụ điều kiện lọc",
+            "blocks": [
+              {
+                "type": "html",
+                "html": "<span class=\"filter-name\">ROE</span><span class=\"filter-period\">Bốn quý gần nhất</span><b class=\"filter-expression\">&gt; 15%</b>"
+              }
+            ]
+          },
+          {
+            "type": "table",
+            "head": ["Doanh nghiệp", "LNST", "Vốn bình quân", "ROE", "Kết quả"],
+            "rows": [
+              ["A", "360 tỷ", "2.000 tỷ", "18%", "<b class=\"good\">Đạt</b>"],
+              ["B", "150 tỷ", "1.000 tỷ", "15%", "Không đạt"],
+              ["C", "180 tỷ", "2.000 tỷ", "9%", "Không đạt"],
+              ["D", "Có LNST", "Thiếu vốn đầu kỳ", "—", "Chưa đủ dữ liệu"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>A vượt ngưỡng. B bằng đúng 15% nên không đạt dấu &gt;. D chưa đủ dữ liệu để đánh giá, không được coi là ROE 0%.</p>\n<h3>Đọc cùng những chỉ tiêu đã học</h3>"
+          },
+          {
+            "type": "table",
+            "head": ["Điều bạn muốn biết", "Chỉ tiêu phù hợp"],
+            "rows": [
+              ["Quy mô đang tăng thế nào?", "Tăng trưởng doanh thu, LNST và EPS"],
+              ["Lợi nhuận trên doanh thu ra sao?", "Biên lợi nhuận gộp, biên lợi nhuận ròng"],
+              ["Lợi nhuận so với vốn chủ thế nào?", "ROE"]
+            ]
+          },
+          {
+            "type": "html",
+            "html": "<p>Các chỉ tiêu trả lời những câu hỏi khác nhau. Người dùng chọn ngưỡng và kỳ phù hợp mục tiêu nghiên cứu; không cộng các tỷ lệ thành một điểm “doanh nghiệp tốt”. Chương hướng dẫn Bộ lọc sẽ nối các tiêu chí này thành thao tác sàng lọc, lưu danh mục và <strong>chủ động áp dụng danh mục cho Bot</strong>.</p>\n<p><strong>Bộ lọc chọn các mã được xét mua mới; điều kiện kỹ thuật quyết định khi nào giao dịch.</strong> Bot mặc định dùng VN30. Danh mục riêng chỉ thay nguồn mua mới sau khi bạn xác nhận áp dụng và tới phiên hiệu lực; lọc hoặc lưu danh mục chưa làm Bot thay đổi.</p>\n<p>Ngừng sử dụng danh mục riêng thì quay về VN30. Các mã Bot đang giữ vẫn được xét theo điều kiện Bán, dù không còn thuộc nguồn mua mới; đổi danh mục không tự bán vị thế. Lọc lại không tự cập nhật danh sách đã áp dụng.</p>"
+          }
+        ]
+      }
+    ],
+    "config_id": "roe",
+    "fixture": {}
+  }
+]
