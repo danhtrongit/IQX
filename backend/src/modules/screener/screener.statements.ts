@@ -23,15 +23,19 @@ import {
   metricSupport,
   missing,
   notApplicable,
+  notRunnable,
+  reasonCode,
+  type MetricStatus,
   type MetricValue,
 } from './screener.metrics.js';
 import {
   fundamentalMetric,
   type ScreenerApiUnit,
   type ScreenerMetricId,
+  type ScreenerPeriod,
 } from './screener.registry.js';
 
-export type ScreenerPeriod = 'TTM' | 'annual' | 'quarter';
+export type { ScreenerPeriod } from './screener.registry.js';
 
 /**
  * VCI IQ statement field per concept. Outflow lines reported negative (giá vốn, chi phí lãi
@@ -165,15 +169,49 @@ export interface MarketInputs {
   shares: number | null;
 }
 
+/** One report that fed a cell (the exact inputs of the value, for the detail modal). */
+export interface MetricComponent {
+  label: string;
+  /** Publication date (YYYY-MM-DD) of that report; null when the source does not state it. */
+  published_at: string | null;
+  /** Source update date of that report (source revision), null when not stated. */
+  updated_at: string | null;
+}
+
+/**
+ * One metric cell of a result row, with its provenance (Strategy spec §10.3). Period start/end
+ * dates and the report scope are NOT provided by the VCI IQ statements (fiscal year + quarter
+ * index only) and are therefore never guessed.
+ */
 export interface ScreenerMetricResult {
+  metric_id: ScreenerMetricId;
+  /** The period the rule/column asked for: quarter | ttm | year | three_year. */
+  period_mode: ScreenerPeriod;
+  status: MetricStatus;
+  /** API units (ratios as fractions: 0.15 = 15%). Compare and sort on this unrounded value. */
   value: number | null;
-  status: MetricValue['status'];
   unit: ScreenerApiUnit;
-  period: string | null;
+  /** Streak metrics: the whole available history is positive, the value is a lower bound. */
+  lower_bound?: boolean;
+  reason?: string;
+  reason_code?: string;
+  /** Period actually used for THIS company, e.g. "Q3/2026", "TTM Q3/2026", "FY2025". */
+  actual_period_label: string | null;
+  /** YoY comparison period, e.g. "Q3/2025"; null when the metric has no comparison. */
+  comparison_period_label: string | null;
+  /** Latest publication date among the reports used (YYYY-MM-DD). */
+  published_at: string | null;
+  /** Start of the first VN day on which every used report was usable (publication day + 1). */
   available_at: string | null;
   source_revision: string | null;
-  reason?: string;
-  lower_bound?: boolean;
+  components: MetricComponent[];
+}
+
+const VN_DAY_MS = 86_400_000;
+
+function usableFrom(publishedDate: string): string {
+  const next = new Date(Date.parse(`${publishedDate}T00:00:00Z`) + VN_DAY_MS);
+  return `${next.toISOString().slice(0, 10)}T00:00:00+07:00`;
 }
 
 interface FlowWindow {
@@ -191,7 +229,7 @@ const ordinal = (p: StatementPeriod) => p.year * 4 + (p.quarter ?? 1) - 1;
 const quarterLabel = (p: StatementPeriod) => `Q${p.quarter}/${p.year}`;
 
 function periodView(statements: NormalizedStatements, period: ScreenerPeriod): PeriodView {
-  if (period === 'annual') {
+  if (period === 'year' || period === 'three_year') {
     const latest = statements.years[0];
     const year = (y: number) => statements.years.find((p) => p.year === y) ?? null;
     return {
@@ -248,9 +286,15 @@ interface Derived {
   value: MetricValue;
   label: string | null;
   used: (StatementPeriod | null)[];
+  /** YoY comparison period label. */
+  comparison?: string | null;
 }
 
-/** Computes one registry metric for one symbol from normalized statements and market inputs. */
+/**
+ * Computes one registry metric for one symbol from normalized statements and market inputs.
+ * "Latest published" is resolved per company from reports whose publication date precedes the
+ * cutoff already applied in `normalizeVciStatements`; the actual period of each cell is reported.
+ */
 export function evaluateScreenerMetric(
   id: ScreenerMetricId,
   statements: NormalizedStatements,
@@ -260,22 +304,51 @@ export function evaluateScreenerMetric(
   const registry = fundamentalMetric(id);
   const support = metricSupport(id);
   const derived: Derived = !support.supported
-    ? { value: missing(support.unsupported_reason!), label: null, used: [] }
+    ? {
+        value: notRunnable(
+          registry.readiness === 'definition_pending' ? 'definition_pending' : 'data_unavailable',
+          support.unsupported_reason!,
+        ),
+        label: null,
+        used: [],
+      }
     : registry.applicability === 'non_financial' && statements.financial
       ? { value: notApplicable(METRIC_REASONS.financialSector), label: null, used: [] }
       : derive(id, statements, market, period);
   const used = derived.used.filter((p): p is StatementPeriod => p !== null);
+  const seen = new Set<string>();
+  const components: MetricComponent[] = [];
+  for (const p of used) {
+    const key = `${p.year}:${p.quarter ?? 'FY'}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    components.push({
+      label: labelOf(p),
+      published_at: p.published_at,
+      updated_at: p.updated_at,
+    });
+  }
   const published = used.map((p) => p.published_at).filter((x): x is string => x !== null);
   const updated = used.map((p) => p.updated_at).filter((x): x is string => x !== null);
+  const latestPublished = published.length ? [...published].sort().at(-1)! : null;
   const result: ScreenerMetricResult = {
-    value: derived.value.status === 'ok' ? derived.value.value : null,
+    metric_id: id,
+    period_mode: period,
     status: derived.value.status,
+    value: derived.value.status === 'ok' ? derived.value.value : null,
     unit: registry.api_unit,
-    period: derived.label,
-    available_at: published.length ? `${published.sort().at(-1)}T00:00:00+07:00` : null,
-    source_revision: updated.length ? `VCI:${updated.sort().at(-1)}` : null,
+    actual_period_label: derived.label,
+    comparison_period_label: derived.comparison ?? null,
+    published_at: latestPublished,
+    available_at: latestPublished ? usableFrom(latestPublished) : null,
+    source_revision: updated.length ? `VCI:${[...updated].sort().at(-1)}` : null,
+    components,
   };
-  if (derived.value.reason) result.reason = derived.value.reason;
+  if (derived.value.reason) {
+    result.reason = derived.value.reason;
+    const code = reasonCode(derived.value.status, derived.value.reason);
+    if (code) result.reason_code = code;
+  }
   if (derived.value.lower_bound) result.lower_bound = true;
   return result;
 }
@@ -287,7 +360,7 @@ function derive(
   period: ScreenerPeriod,
 ): Derived {
   const view = periodView(s, period);
-  const valuationView = periodView(s, period === 'annual' ? 'annual' : 'TTM');
+  const valuationView = periodView(s, period === 'year' ? 'year' : 'ttm');
   const cur = view.flow(0);
   const end = view.balanceEnd();
   const start = view.balanceStart();
@@ -327,7 +400,10 @@ function derive(
   const growth = (value: (w: FlowWindow | null) => number | null): Derived => {
     const base = view.flow(1);
     return cur && base
-      ? calc([value(cur), value(base)], cur.label, [...cur.periods, ...base.periods])
+      ? {
+          ...calc([value(cur), value(base)], cur.label, [...cur.periods, ...base.periods]),
+          comparison: base.label,
+        }
       : noReport();
   };
   const fcf = (w: FlowWindow | null) => sub(flowSum(w, 'cfo'), flowSum(w, 'capex'));

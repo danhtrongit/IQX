@@ -1,0 +1,35 @@
+[
+  {
+    "lesson_id": "ch11-l02",
+    "type": "scalar",
+    "label": "Keltner Channel",
+    "prompt": "EMA = 100; ATR = 3; k = 2. Upper bằng bao nhiêu?",
+    "expected": 106,
+    "unit": "",
+    "formula": "Middle = EMA(Close, N)\nUpper = Middle + k × ATR(M)\nLower = Middle − k × ATR(M)",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch11-l03",
+    "type": "scalar",
+    "label": "Bollinger BandWidth",
+    "prompt": "Upper = 110; Lower = 90; Middle = 100. Band Width bằng bao nhiêu?",
+    "expected": 20,
+    "unit": "%",
+    "formula": "BandWidth = (Upper − Lower)/Middle × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch11-l06",
+    "type": "scalar",
+    "label": "Parabolic SAR",
+    "prompt": "SAR trước = 95; EP = 110; AF = 0,02. SAR dự kiến trước ràng buộc biên bằng bao nhiêu?",
+    "expected": 95.3,
+    "unit": "",
+    "formula": "SAR dự kiến = SAR trước + AF × (EP − SAR trước)",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

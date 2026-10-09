@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch12-l02",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: Tăng trưởng EPS năm 1 = 5; Tăng trưởng EPS năm 2 = 10; Tăng trưởng EPS năm 3 = 15. EPS Stability bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "14,08 điểm %",
+          "id": "o1"
+        },
+        {
+          "text": "4,08 điểm %",
+          "id": "o2"
+        },
+        {
+          "text": "9,12 điểm %",
+          "id": "o3"
+        },
+        {
+          "text": "1,04 điểm %",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Áp dụng sqrt[Σ(g EPS ᵢ − trung bình g EPS)² / 3]; kết quả 4,08 điểm %.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch12-l02-q01",
+      "lesson_id": "ch12-l02",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "EPS Stability đang bằng đúng 4,08 điểm %. Bộ lọc đặt > 4,08 điểm %. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o1"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o2"
+        },
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o3"
+        },
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch12-l02-q02",
+      "lesson_id": "ch12-l02",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc EPS Stability?",
+      "options": [
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o1"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o2"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o3"
+        },
+        {
+          "text": "Chuỗi EPS chưa điều chỉnh tách cổ phiếu có thể tạo biến động giả.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Chỉ tiêu ở đây là độ ổn định tăng trưởng EPS, không phải độ lệch chuẩn trực tiếp của mức EPS. Chuỗi EPS chưa điều chỉnh tách cổ phiếu có thể tạo biến động giả.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch12-l02-q03",
+      "lesson_id": "ch12-l02",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính EPS Stability. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o1"
+        },
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o2"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o3"
+        },
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Cần đủ ba quan sát hợp lệ và không bỏ năm thiếu. Ba tăng trưởng cần bốn số gốc; ba biên/ROIC cần ba tỷ số năm. Phiên bản này chia cho 3, không chia cho 2.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch12-l02-q04",
+      "lesson_id": "ch12-l02",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Nhận định nào đúng với EPS Stability?",
+      "options": [
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ tiêu ở đây là độ ổn định tăng trưởng EPS, không phải độ lệch chuẩn trực tiếp của mức EPS.",
+          "id": "o2"
+        },
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o3"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Chỉ tiêu ở đây là độ ổn định tăng trưởng EPS, không phải độ lệch chuẩn trực tiếp của mức EPS. Tên bài EPS Stability được giữ từ chương trình. Định nghĩa kỹ thuật cụ thể dùng ba tăng trưởng năm hợp lệ trên bốn EPS năm đã điều chỉnh; chia 3. Tăng trưởng âm hợp lệ vẫn được giữ dấu khi tính.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch12-l02-q05",
+      "lesson_id": "ch12-l02",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có EPS Stability bằng 2,08 và 6,08 điểm %. Điều kiện < 4,08 điểm % giữ lại ai?",
+      "options": [
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o2"
+        },
+        {
+          "text": "Chỉ B.",
+          "id": "o3"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "2,08 < 4,08 đúng, 6,08 < 4,08 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch12-l02-q06",
+      "lesson_id": "ch12-l02",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Báo cáo dùng tính EPS Stability kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o1"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o2"
+        },
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o3"
+        },
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch12-l02-q07",
+      "lesson_id": "ch12-l02",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện EPS Stability, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o2"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch12-l02-q08",
+      "lesson_id": "ch12-l02",
+      "correct_option_id": "o1"
+    }
+  ]
+}

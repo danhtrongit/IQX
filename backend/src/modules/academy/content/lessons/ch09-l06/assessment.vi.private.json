@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch09-l06",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: FCF TTM = 100; Vốn hóa = 2.000. FCF Yield bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "1,5 %",
+          "id": "o1"
+        },
+        {
+          "text": "15 %",
+          "id": "o2"
+        },
+        {
+          "text": "5 %",
+          "id": "o3"
+        },
+        {
+          "text": "10,5 %",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Áp dụng FCF TTM / Vốn hóa × 100; kết quả 5 %.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch09-l06-q01",
+      "lesson_id": "ch09-l06",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "FCF Yield đang bằng đúng 5 %. Bộ lọc đặt > 5 %. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o1"
+        },
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o2"
+        },
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l06-q02",
+      "lesson_id": "ch09-l06",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc FCF Yield?",
+      "options": [
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o1"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o2"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o3"
+        },
+        {
+          "text": "FCF tăng do hoãn đầu tư có thể khiến tỷ suất đẹp tạm thời. So khác ngành phải xem nhu cầu tái đầu tư.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "FCF Yield 5% nghĩa là FCF quá khứ bằng 5% vốn hóa tại ngày quan sát; không phải tiền chắc chắn được trả cho cổ đông. FCF tăng do hoãn đầu tư có thể khiến tỷ suất đẹp tạm thời. So khác ngành phải xem nhu cầu tái đầu tư.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch09-l06-q03",
+      "lesson_id": "ch09-l06",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính FCF Yield. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o2"
+        },
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o3"
+        },
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch09-l06-q04",
+      "lesson_id": "ch09-l06",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Nhận định nào đúng với FCF Yield?",
+      "options": [
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o1"
+        },
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o2"
+        },
+        {
+          "text": "FCF Yield 5% nghĩa là FCF quá khứ bằng 5% vốn hóa tại ngày quan sát; không phải tiền chắc chắn được trả cho cổ đông.",
+          "id": "o3"
+        },
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "FCF Yield 5% nghĩa là FCF quá khứ bằng 5% vốn hóa tại ngày quan sát; không phải tiền chắc chắn được trả cho cổ đông. Dùng cùng biến thể FCF = CFO − Capex của bài trước. Không ghép FCFF với vốn hóa rồi coi tương đương biến thể này. Vốn hóa phải dương; FCF âm vẫn là một tỷ suất âm có ý nghĩa và không bị biến thành thiếu chỉ vì âm.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch09-l06-q05",
+      "lesson_id": "ch09-l06",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có FCF Yield bằng 3 và 7 %. Điều kiện < 5 % giữ lại ai?",
+      "options": [
+        {
+          "text": "Cả A và B.",
+          "id": "o1"
+        },
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o2"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o3"
+        },
+        {
+          "text": "Chỉ B.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "3 < 5 đúng, 7 < 5 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l06-q06",
+      "lesson_id": "ch09-l06",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Báo cáo dùng tính FCF Yield kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o1"
+        },
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o2"
+        },
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o3"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch09-l06-q07",
+      "lesson_id": "ch09-l06",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện FCF Yield, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o2"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o3"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l06-q08",
+      "lesson_id": "ch09-l06",
+      "correct_option_id": "o2"
+    }
+  ]
+}

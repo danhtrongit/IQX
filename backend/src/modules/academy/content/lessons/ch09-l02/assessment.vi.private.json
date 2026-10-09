@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch09-l02",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: Vốn hóa cổ phiếu phổ thông = 900; Vốn chủ phổ thông công ty mẹ = 600. P/B bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "1,5 lần",
+          "id": "o1"
+        },
+        {
+          "text": "5,25 lần",
+          "id": "o2"
+        },
+        {
+          "text": "-0,25 lần",
+          "id": "o3"
+        },
+        {
+          "text": "11,5 lần",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Áp dụng Vốn hóa / Vốn chủ sở hữu phổ thông công ty mẹ; kết quả 1,5 lần.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch09-l02-q01",
+      "lesson_id": "ch09-l02",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "P/B đang bằng đúng 1,5 lần. Bộ lọc đặt > 1,5 lần. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o1"
+        },
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o3"
+        },
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l02-q02",
+      "lesson_id": "ch09-l02",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc P/B?",
+      "options": [
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o1"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o2"
+        },
+        {
+          "text": "Giá trị sổ sách không phải giá bán thanh lý chắc chắn. Chất lượng tài sản và khả năng sinh lời có thể rất khác nhau.",
+          "id": "o3"
+        },
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "P/B 1,5 lần nghĩa là thị trường định giá cổ phần phổ thông cao hơn 50% giá trị sổ sách tương ứng. Giá trị sổ sách không phải giá bán thanh lý chắc chắn. Chất lượng tài sản và khả năng sinh lời có thể rất khác nhau.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch09-l02-q03",
+      "lesson_id": "ch09-l02",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính P/B. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o1"
+        },
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o2"
+        },
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o3"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch09-l02-q04",
+      "lesson_id": "ch09-l02",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Nhận định nào đúng với P/B?",
+      "options": [
+        {
+          "text": "P/B 1,5 lần nghĩa là thị trường định giá cổ phần phổ thông cao hơn 50% giá trị sổ sách tương ứng.",
+          "id": "o1"
+        },
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o2"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o3"
+        },
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "P/B 1,5 lần nghĩa là thị trường định giá cổ phần phổ thông cao hơn 50% giá trị sổ sách tương ứng. Vốn hóa = giá × số cổ phiếu phổ thông lưu hành tại thời điểm quan sát. Mẫu số loại lợi ích cổ đông không kiểm soát và cổ phần ưu đãi nếu có. Không lấy toàn bộ vốn chủ hợp nhất chia cho giá trị riêng phần công ty mẹ.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch09-l02-q05",
+      "lesson_id": "ch09-l02",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có P/B bằng -0,5 và 3,5 lần. Điều kiện < 1,5 lần giữ lại ai?",
+      "options": [
+        {
+          "text": "Chỉ B.",
+          "id": "o1"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o2"
+        },
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o3"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "-0,5 < 1,5 đúng, 3,5 < 1,5 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l02-q06",
+      "lesson_id": "ch09-l02",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Báo cáo dùng tính P/B kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o1"
+        },
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o2"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o3"
+        },
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch09-l02-q07",
+      "lesson_id": "ch09-l02",
+      "correct_option_id": "o3"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện P/B, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o1"
+        },
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o2"
+        },
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o3"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 2,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch09-l02-q08",
+      "lesson_id": "ch09-l02",
+      "correct_option_id": "o3"
+    }
+  ]
+}

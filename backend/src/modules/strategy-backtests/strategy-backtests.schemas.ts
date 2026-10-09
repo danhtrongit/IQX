@@ -153,7 +153,11 @@ const runKindSchema = z.enum([
 const runStatusSchema = z.enum(['succeeded', 'failed']);
 const hashSchema = z.string().regex(/^[a-f0-9]{64}$/);
 
-const kpisSchema = z.object({
+/**
+ * Engine-native KPI record. Only the advanced system (portfolio) result still exposes it; the
+ * single-symbol Strategy backtest returns `strategyKpisSchema` (spec §6.6, exactly six KPIs).
+ */
+const engineKpisSchema = z.object({
   net_return: z.number(),
   cagr: z.number(),
   max_drawdown: z.number(),
@@ -163,6 +167,16 @@ const kpisSchema = z.object({
   buy_hold_return: z.number(),
   market_return: z.number().nullable(),
   profit_factor: z.number().nullable(),
+});
+
+/** Six KPIs of spec §6.6. Every `*_pct` is in percentage points (12.3 = 12.3%, never a ratio). */
+export const strategyKpisSchema = z.object({
+  total_return_pct: z.number(),
+  annualized_return_pct: z.number().nullable(),
+  max_drawdown_pct: z.number(),
+  closed_trade_count: z.number().int(),
+  win_rate_pct: z.number().nullable(),
+  buy_hold_return_pct: z.number(),
 });
 
 const curvePointSchema = z.object({
@@ -200,6 +214,82 @@ const openPositionSchema = z.object({
   last_price: z.number(),
   market_value: z.number(),
   unrealized_pnl: z.number(),
+});
+
+const ruleEvidenceSchema = z.object({
+  id: z.string(),
+  indicator: z.string(),
+  side: z.enum(['buy', 'sell']),
+  op: z.enum(['>', '<', '∈', '∉']),
+  lhs: z.number().nullable(),
+  rhs: z.number().nullable(),
+  rhs_lower: z.number().nullable().optional(),
+  rhs_upper: z.number().nullable().optional(),
+  /** true / false / null (= not evaluable: missing data, never a pass). */
+  result: z.boolean().nullable(),
+  missing: z.boolean(),
+  previous_lhs: z.number().nullable().optional(),
+  previous_rhs: z.number().nullable().optional(),
+});
+
+const conditionEvidenceSchema = z.object({
+  indicator_ids: z.array(z.string()),
+  rules: z.array(ruleEvidenceSchema),
+});
+
+/** Closed trade (§6.8): signal date ≠ fill date, price, fees, quantity, net cash, condition values. */
+export const closedTradeViewSchema = closedTradeSchema.extend({
+  entry_fee: z.number(),
+  entry_total: z.number(),
+  exit_gross: z.number(),
+  exit_fee_tax: z.number(),
+  exit_net: z.number(),
+  outcome: z.enum(['win', 'loss', 'flat']),
+  entry_conditions: conditionEvidenceSchema.nullable(),
+  exit_conditions: conditionEvidenceSchema.nullable(),
+});
+
+const openPositionViewSchema = openPositionSchema.extend({
+  unrealized_pnl_basis: z.literal('market_value_at_last_close_minus_entry_total_before_sell_costs'),
+  entry_conditions: conditionEvidenceSchema.nullable(),
+});
+
+const pendingOrderViewSchema = z.object({
+  action: z.enum(['buy', 'sell']),
+  signal_date: z.string(),
+  reason: z.literal('end_of_range'),
+  note: z.string(),
+  evidence: conditionEvidenceSchema.nullable(),
+});
+
+const chartSeriesSchema = z.object({
+  id: z.enum(['strategy', 'buy_hold', 'market']),
+  label: z.string(),
+  field: z.enum(['return_pct', 'buy_hold_pct', 'market_pct']),
+  available: z.boolean(),
+  end_value_pct: z.number().nullable(),
+  unavailable_reason: z.string().nullable(),
+});
+
+const simulationSchema = z.object({
+  contract: z.literal('iqx-strategy-backtest-1.0'),
+  execution: z.enum(['next_open', 'same_close']),
+  execution_label: z.string(),
+  fill_price: z.string(),
+  caveat: z.string(),
+  signal_after_open_fill: z.boolean(),
+  position_policy: z.literal('single_symbol_long_only_one_position'),
+  sizing: z.literal('all_available_cash_including_buy_fee_rounded_down_to_lot'),
+  exits: z.literal('none: no stop, take-profit, trailing or max holding'),
+  min_held_bars: z.number().int(),
+  min_held_bars_status: z.literal('carried_over_from_reference_engine_pending_product_decision'),
+  fee_model: z.literal('buy_fee_on_value; sell_fee_and_tax_as_one_combined_rate'),
+  settlement: z.literal('not_modelled'),
+  liquidity: z.literal('not_modelled'),
+  slippage: z.literal('not_modelled'),
+  price_adjustment: z.enum(['provider_adjusted', 'not_confirmed']),
+  annualization_sessions: z.literal(252),
+  buy_hold_basis: z.literal('close_ratio_before_fees_and_dividends'),
 });
 
 const runOptionsSchema = z.object({
@@ -268,6 +358,8 @@ const runSnapshotSchema = z.object({
   profile: executionProfileSchema,
   slippage: z.literal('not_modelled'),
   open_position_policy: z.literal('mark_to_market_last_close'),
+  /** Strategy-spec execution profile (§6.1-§6.3) recorded with every run; absent on pre-v1 runs. */
+  simulation: simulationSchema.optional(),
   versions: z.object({
     schema_version: z.string(),
     calculation_version: z.string(),
@@ -300,9 +392,11 @@ const runResultSchema = z.object({
   profile: executionProfileSchema,
   snapshot: runSnapshotSchema,
   initial: curvePointSchema,
+  /** Full curve, never down-sampled; KPIs are computed on it. Prepend `initial` for the 0% origin. */
   curve: z.array(curvePointSchema),
-  trades: z.array(closedTradeSchema),
-  open_position: openPositionSchema.nullable(),
+  /** Full trade history of the run (also paged by GET /:id/trades). */
+  trades: z.array(closedTradeViewSchema),
+  open_position: openPositionViewSchema.nullable(),
   cash: z.number(),
   canceled: z.array(
     z.object({
@@ -311,7 +405,29 @@ const runResultSchema = z.object({
       signalIndex: z.number().int(),
     }),
   ),
-  kpis: kpisSchema,
+  contract: z.literal('iqx-strategy-backtest-1.0'),
+  /** Exactly the six KPIs of spec §6.6 (percentage points). */
+  kpis: strategyKpisSchema,
+  kpi_basis: z.record(z.string(), z.unknown()),
+  counts: z.object({
+    buy_count: z.number().int(),
+    closed_trade_count: z.number().int(),
+    open_position_count: z.number().int(),
+    pending_order_count: z.number().int(),
+  }),
+  /** Engine figures that are not KPIs of the Strategy page. */
+  supplementary: z.object({
+    winning_trade_count: z.number().int(),
+    profit_factor: z.number().nullable(),
+  }),
+  chart: z.object({
+    title: z.literal('Lợi nhuận danh mục (%)'),
+    unit: z.literal('percent_points'),
+    baseline_field: z.literal('initial'),
+    series: z.array(chartSeriesSchema),
+    point_count: z.number().int(),
+  }),
+  pending_orders: z.array(pendingOrderViewSchema),
 });
 
 const researchResultSchema = z
@@ -333,7 +449,7 @@ const systemResultSchema = z.object({
       peak_close: z.number(),
     }),
   ),
-  kpis: kpisSchema,
+  kpis: engineKpisSchema,
   ledger_size: z.number().int(),
   applied: z.array(z.string()),
 });
@@ -372,8 +488,31 @@ export const backtestRunListSchema = z.object({
       end: isoDate,
       created_at: z.string(),
       config_hash: hashSchema,
-      kpis: kpisSchema.nullable(),
+      kpis: strategyKpisSchema.nullable(),
       error_code: z.string().nullable(),
     }),
   ),
+});
+
+export const backtestTradesQuerySchema = z.object({
+  offset: z.coerce.number().int().min(0).default(0),
+  limit: z.coerce.number().int().min(1).max(500).default(100),
+});
+export type BacktestTradesQuery = z.infer<typeof backtestTradesQuerySchema>;
+
+/** One page of the complete trade history; `total` is the whole run, not the page. */
+export const backtestTradesResponseSchema = z.object({
+  run_id: z.uuid(),
+  total: z.number().int(),
+  offset: z.number().int(),
+  limit: z.number().int(),
+  counts: z.object({
+    buy_count: z.number().int(),
+    closed_trade_count: z.number().int(),
+    open_position_count: z.number().int(),
+    pending_order_count: z.number().int(),
+  }),
+  items: z.array(closedTradeViewSchema),
+  open_position: openPositionViewSchema.nullable(),
+  pending_orders: z.array(pendingOrderViewSchema),
 });

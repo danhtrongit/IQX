@@ -3,14 +3,19 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
+  CURRENT_INDICATOR_IDS,
+  LEGACY_REMOVED_INDICATOR_IDS,
   and3,
   calc,
+  calcLegacy,
   canonicalJson,
   defaultConfig,
   evalTree,
   evaluateRule,
   indicatorSideSignals,
+  loadLegacyTechnicalRegistry,
   loadTechnicalRegistry,
+  parseLegacyTechnicalRegistry,
   parseTechnicalRegistry,
   sideSignals,
   type Bar,
@@ -32,6 +37,7 @@ import {
 } from '../fixtures/bot-v2/reference.js';
 
 const registry = loadTechnicalRegistry();
+const legacyRegistry = loadLegacyTechnicalRegistry();
 const bars = deepFreeze(reference.syntheticBars(950));
 const contextless = deepFreeze(withoutContext(bars));
 const defective = deepFreeze(withDefects(bars));
@@ -56,22 +62,43 @@ const bar = (close: number, i: number, extra: Partial<Bar> = {}): Bar => ({
 });
 
 describe('quant v2 technical registry', () => {
-  it('loads 35 validated, frozen entries identical to the raw JSON', () => {
-    expect(registry).toHaveLength(35);
+  it('loads exactly the 16 validated, frozen entries identical to the raw JSON', () => {
+    expect(registry).toHaveLength(16);
+    expect(registry.map((r) => r.id)).toEqual([...CURRENT_INDICATOR_IDS]);
     expect(loadTechnicalRegistry()).toBe(registry);
     expect(Object.isFrozen(registry[0])).toBe(true);
     expect(canonicalJson(registry)).toBe(canonicalJson(rawRegistry));
-    expect(new Set(registry.map((r) => r.id)).size).toBe(35);
+    expect(new Set(registry.map((r) => r.id)).size).toBe(16);
   });
 
-  it('carries the fast<slow and step<max cross-field constraints', () => {
+  it('keeps the legacy-only registry to the 19 removed indicators, never mixed with the current 16', () => {
+    expect(legacyRegistry).toHaveLength(19);
+    expect(legacyRegistry.map((r) => r.id).sort()).toEqual(
+      [...LEGACY_REMOVED_INDICATOR_IDS].sort(),
+    );
+    expect(loadLegacyTechnicalRegistry()).toBe(legacyRegistry);
+    expect(legacyRegistry.every((r) => r.rule_version === 'iqx-rules-2.0')).toBe(true);
+    expect(registry.every((r) => r.rule_version === 'iqx-rules-3.0')).toBe(true);
+    const current = new Set(registry.map((r) => r.id));
+    expect(legacyRegistry.some((r) => current.has(r.id))).toBe(false);
+    // A legacy document is not accepted as the current registry, nor the reverse.
+    expect(() => parseTechnicalRegistry(legacyRegistry)).toThrow();
+    expect(() => parseLegacyTechnicalRegistry(registry)).toThrow();
+    expect(() => parseTechnicalRegistry([...registry, legacyRegistry[0]])).toThrow();
+  });
+
+  it('carries the fast<slow cross-field constraints of the 16', () => {
     const cross = Object.fromEntries(registry.map((r) => [r.id, r.validation?.cross_fields ?? []]));
     expect(cross.macd).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
     expect(cross.ma_cross).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
-    expect(cross.psar).toEqual([{ left: 'step', op: '<', right: 'max' }]);
+    expect(Object.values(cross).flat()).toHaveLength(2);
+    // step<max belonged to the removed PSAR.
+    expect(legacyRegistry.find((r) => r.id === 'psar')?.validation?.cross_fields).toEqual([
+      { left: 'step', op: '<', right: 'max' },
+    ]);
   });
 
-  it('rejects malformed registries (look-ahead offset, duplicate id, unknown op)', () => {
+  it('rejects malformed registries (look-ahead offset, duplicate id, unknown op, wrong id set)', () => {
     const clone = (): unknown[] => JSON.parse(JSON.stringify(rawRegistry)) as unknown[];
     const lookAhead = clone() as Array<{ buy: { rules: Array<{ lhs: { offset?: number } }> } }>;
     const firstRule = lookAhead[0]?.buy.rules[0];
@@ -84,8 +111,27 @@ describe('quant v2 technical registry', () => {
     const sellRule = badOp[1]?.sell.rules[0];
     if (sellRule) sellRule.op = '>=';
     expect(() => parseTechnicalRegistry(badOp)).toThrow();
+    expect(() => parseTechnicalRegistry(clone().slice(1))).toThrow(/exactly 16/);
   });
 });
+
+/**
+ * Reference series for an id of the current registry. The reference DMI also emits `dx` and an
+ * ADX `value`; the 16-indicator contract exposes only +DI/−DI (Bot spec §9.1: no ADX), with
+ * `value` mirroring +DI.
+ */
+function referenceCalc(id: string, params: Record<string, number>, data: readonly Bar[]) {
+  const series = reference.calc(
+    id,
+    { ...params },
+    data.map((x) => ({ ...x })),
+  );
+  if (id !== 'dmi') return series;
+  const copy: SeriesMap = { ...series };
+  delete copy.dx;
+  copy.value = series.plus ?? [];
+  return copy;
+}
 
 describe('quant v2 calc — golden parity with the reference engine', () => {
   const datasets: Array<[string, readonly Bar[]]> = [
@@ -100,13 +146,26 @@ describe('quant v2 calc — golden parity with the reference engine', () => {
       for (const entry of registry) {
         for (const side of SIDES) {
           const params = entry[side].params;
-          const actual = calc(entry.id, params, data);
+          expectDeepClose(
+            calc(entry.id, params, data),
+            referenceCalc(entry.id, params, data),
+            `${entry.id}.${side}`,
+          );
+        }
+      }
+    });
+
+    it(`legacy engine keeps the 19 removed indicators verifiable on ${label} bars`, () => {
+      for (const entry of legacyRegistry) {
+        for (const side of SIDES) {
+          const params = entry[side].params;
+          const actual = calcLegacy(entry.id, params, data);
           const expected = reference.calc(
             entry.id,
             { ...params },
             data.map((x) => ({ ...x })),
           );
-          expectDeepClose(actual, expected, `${entry.id}.${side}`);
+          expectDeepClose(actual, expected, `legacy ${entry.id}.${side}`);
         }
       }
     });
@@ -119,18 +178,36 @@ describe('quant v2 calc — golden parity with the reference engine', () => {
         for (const field of entry.fields) params[field.key] = field[bound];
         expectDeepClose(
           calc(entry.id, params, bars),
-          reference.calc(entry.id, params, [...bars]),
+          referenceCalc(entry.id, params, bars),
           `${entry.id}.${bound}`,
         );
       }
     }
   });
 
-  it('context indicators are null (never 0) when context fields are missing', () => {
+  it('calc serves only the 16 current indicators; removed ones are legacy-only', () => {
+    for (const id of LEGACY_REMOVED_INDICATOR_IDS) {
+      expect(() => calc(id, {}, bars), id).toThrow(/không được hỗ trợ/);
+    }
+    expect(calcLegacy('adx', { period: 14 }, bars).value?.some(Number.isFinite)).toBe(true);
+    expect(calcLegacy('rsi', { period: 14, level: 30 }, bars)).toEqual(
+      calc('rsi', { period: 14, level: 30 }, bars),
+    );
+  });
+
+  it('DMI exposes +DI/−DI only (no ADX/DX series)', () => {
+    const series = calc('dmi', { period: 14 }, bars);
+    expect(Object.keys(series).sort()).toEqual(
+      ['close', 'high', 'index', 'low', 'minus', 'plus', 'value', 'volume'].sort(),
+    );
+    expect(series.value).toEqual(series.plus);
+  });
+
+  it('context indicators are legacy-only and null (never 0) when context fields are missing', () => {
     for (const id of CONTEXT_IDS) {
-      const entry = registry.find((r) => r.id === id);
+      const entry = legacyRegistry.find((r) => r.id === id);
       if (!entry) throw new Error(id);
-      const series = calc(id, entry.buy.params, contextless);
+      const series = calcLegacy(id, entry.buy.params, contextless);
       expect(
         series.value?.every((v) => v === null),
         id,
@@ -154,11 +231,32 @@ describe('quant v2 calc — golden parity with the reference engine', () => {
     }
   });
 
-  it('pivots are confirmed only from the confirmation bar', () => {
+  it('every series a rule reads is produced by calc', () => {
+    for (const entry of registry) {
+      for (const side of SIDES) {
+        const series = calc(entry.id, entry[side].params, bars);
+        for (const rule of entry[side].rules) {
+          const operands =
+            rule.kind === 'membership'
+              ? [rule.lhs, rule.rhs.lower, rule.rhs.upper]
+              : [rule.lhs, rule.rhs];
+          for (const operand of operands) {
+            if (operand.kind === 'series')
+              expect(
+                series[operand.key],
+                `${entry.id}.${side}.${rule.id}.${operand.key}`,
+              ).toBeDefined();
+          }
+        }
+      }
+    }
+  });
+
+  it('pivots are confirmed only from the confirmation bar (legacy distance_support)', () => {
     // Low pivot at j=2 (100) with pivot=2 is known at t=4, not before.
     const lows = [104, 103, 100, 103, 101, 105];
     const data = lows.map((low, i) => ({ ...bar(low + 1, i), low, high: low + 3 }));
-    const series = calc('distance_support', { pivot: 2, level: 0 }, data);
+    const series = calcLegacy('distance_support', { pivot: 2, level: 0 }, data);
     expect(series.support?.slice(0, 4)).toEqual([null, null, null, null]);
     expect(series.support?.[4]).toBe(100);
     expect(series.support?.[5]).toBe(100);
@@ -166,6 +264,7 @@ describe('quant v2 calc — golden parity with the reference engine', () => {
 
   it('throws on an unknown indicator id', () => {
     expect(() => calc('nope', {}, bars)).toThrow(/nope/);
+    expect(() => calcLegacy('nope', {}, bars)).toThrow(/nope/);
   });
 });
 
@@ -230,17 +329,22 @@ const closes = (values: number[]): Bar[] => values.map((c, i) => ohlc(c, c + 1, 
 const lastOf = (series: Array<number | null> | undefined): number | null =>
   series?.[series.length - 1] ?? null;
 
+const calcAny = (id: string, params: Record<string, number>, data: readonly Bar[]) =>
+  (CURRENT_INDICATOR_IDS as readonly string[]).includes(id)
+    ? calc(id, params, data)
+    : calcLegacy(id, params, data);
+
 const WORKED: Record<string, () => number | null> = {
   // G=1.2, D=0.4 → 75 (period 5, changes +3,+3,-1,-1,0).
-  rsi: () => lastOf(calc('rsi', { period: 5 }, closes([100, 103, 106, 105, 104, 104])).value),
+  rsi: () => lastOf(calcAny('rsi', { period: 5 }, closes([100, 103, 106, 105, 104, 104])).value),
   // EMA fast(1)=103, EMA slow(2)=100, signal(2)=2 → histogram 1.
   macd: () =>
-    lastOf(calc('macd', { fast: 1, slow: 2, signal: 2 }, closes([93, 95, 103])).histogram),
-  ma: () => lastOf(calc('ma', { period: 5 }, closes([10, 12, 11, 13, 14])).value),
-  bollinger: () => lastOf(calc('bollinger', { period: 2, k: 2 }, closes([97, 103])).upper),
+    lastOf(calcAny('macd', { fast: 1, slow: 2, signal: 2 }, closes([93, 95, 103])).histogram),
+  ma: () => lastOf(calcAny('ma', { period: 5 }, closes([10, 12, 11, 13, 14])).value),
+  bollinger: () => lastOf(calcAny('bollinger', { period: 2, k: 2 }, closes([97, 103])).upper),
   volume: () =>
     lastOf(
-      calc(
+      calcAny(
         'volume',
         { lookback: 20, mult: 1.5 },
         closes(Array.from({ length: 21 }, () => 50)).map((x) => ({ ...x, volume: 1_000_000 })),
@@ -248,7 +352,7 @@ const WORKED: Record<string, () => number | null> = {
     ),
   ema: () =>
     lastOf(
-      calc('ema', { period: 9 }, closes([...Array.from({ length: 9 }, () => 100), 110])).value,
+      calcAny('ema', { period: 9 }, closes([...Array.from({ length: 9 }, () => 100), 110])).value,
     ),
   ma_cross: () => {
     const template = registry.find((r) => r.id === 'ma_cross')?.buy.rules[0];
@@ -258,11 +362,12 @@ const WORKED: Record<string, () => number | null> = {
   },
   dmi: () =>
     lastOf(
-      calc('dmi', { period: 1 }, [ohlc(97, 100, 94, 97, 0), ohlc(100, 102.4, 96.4, 100, 1)]).plus,
+      calcAny('dmi', { period: 1 }, [ohlc(97, 100, 94, 97, 0), ohlc(100, 102.4, 96.4, 100, 1)])
+        .plus,
     ),
   adx: () =>
     lastOf(
-      calc('adx', { period: 2 }, [
+      calcAny('adx', { period: 2 }, [
         ohlc(105, 110, 100, 105, 0),
         ohlc(108, 113, 103, 108, 1),
         ohlc(107, 112, 102, 107, 2),
@@ -270,15 +375,16 @@ const WORKED: Record<string, () => number | null> = {
     ),
   atr: () =>
     lastOf(
-      calc('atr', { period: 1 }, [ohlc(99, 100, 98, 99, 0), ohlc(103, 105, 101, 103, 1)]).value,
+      calcAny('atr', { period: 1 }, [ohlc(99, 100, 98, 99, 0), ohlc(103, 105, 101, 103, 1)]).value,
     ),
   atr_percent: () =>
     lastOf(
-      calc('atr_percent', { period: 1 }, [ohlc(50, 51, 49, 50, 0), ohlc(50, 51, 49, 50, 1)]).value,
+      calcAny('atr_percent', { period: 1 }, [ohlc(50, 51, 49, 50, 0), ohlc(50, 51, 49, 50, 1)])
+        .value,
     ),
   relative_volume: () =>
     lastOf(
-      calc(
+      calcAny(
         'relative_volume',
         { lookback: 2 },
         [1_200_000, 1_200_000, 1_800_000].map((volume, i) => flat(10, i, { volume })),
@@ -286,7 +392,7 @@ const WORKED: Record<string, () => number | null> = {
     ),
   obv: () =>
     lastOf(
-      calc('obv', { baseline: 2 }, [
+      calcAny('obv', { baseline: 2 }, [
         flat(10, 0, { volume: 5 }),
         flat(11, 1, { volume: 1000 }),
         flat(10, 2, { volume: 200 }),
@@ -294,16 +400,16 @@ const WORKED: Record<string, () => number | null> = {
     ),
   mfi: () =>
     lastOf(
-      calc('mfi', { period: 2 }, [
+      calcAny('mfi', { period: 2 }, [
         flat(10, 0, { volume: 1 }),
         flat(15, 1, { volume: 20 }),
         flat(10, 2, { volume: 10 }),
       ]).value,
     ),
-  cmf: () => lastOf(calc('cmf', { period: 1 }, [ohlc(105, 110, 100, 108, 0)]).value),
+  cmf: () => lastOf(calcAny('cmf', { period: 1 }, [ohlc(105, 110, 100, 108, 0)]).value),
   n_day_high: () =>
     lastOf(
-      calc(
+      calcAny(
         'n_day_high',
         { period: 3 },
         [100, 103, 102, 90].map((h, i) => ohlc(h - 1, h, h - 2, h - 1, i)),
@@ -311,7 +417,7 @@ const WORKED: Record<string, () => number | null> = {
     ),
   n_day_low: () =>
     lastOf(
-      calc(
+      calcAny(
         'n_day_low',
         { period: 3 },
         [95, 92, 94, 99].map((l, i) => ohlc(l + 1, l + 2, l, l + 1, i)),
@@ -321,15 +427,15 @@ const WORKED: Record<string, () => number | null> = {
     const data = Array.from({ length: 252 }, (_, i) =>
       i === 100 ? ohlc(95, 100, 94, 95, i) : ohlc(90, 95, 89, 90, i),
     );
-    return lastOf(calc('distance_52w_high', { level: 0 }, data).value);
+    return lastOf(calcAny('distance_52w_high', { level: 0 }, data).value);
   },
   gap: () =>
     lastOf(
-      calc('gap', { level: 0 }, [ohlc(100, 101, 99, 100, 0), ohlc(103, 104, 102, 103, 1)]).value,
+      calcAny('gap', { level: 0 }, [ohlc(100, 101, 99, 100, 0), ohlc(103, 104, 102, 103, 1)]).value,
     ),
   distance_support: () =>
     lastOf(
-      calc(
+      calcAny(
         'distance_support',
         { pivot: 2, level: 0 },
         [104, 103, 100, 103, 101].map((l, i) => ohlc(l + 1, l + 2, l, i === 4 ? 102 : l + 1, i)),
@@ -337,7 +443,7 @@ const WORKED: Record<string, () => number | null> = {
     ),
   distance_resistance: () =>
     lastOf(
-      calc(
+      calcAny(
         'distance_resistance',
         { pivot: 2, level: 0 },
         [105, 106, 110, 107, 101].map((h, i) => ohlc(h - 1, h, h - 2, i === 4 ? 100 : h - 1, i)),
@@ -345,7 +451,7 @@ const WORKED: Record<string, () => number | null> = {
     ),
   donchian: () =>
     lastOf(
-      calc('donchian', { period: 2 }, [
+      calcAny('donchian', { period: 2 }, [
         ohlc(100, 110, 95, 100, 0),
         ohlc(100, 105, 90, 100, 1),
         ohlc(100, 101, 99, 100, 2),
@@ -353,69 +459,73 @@ const WORKED: Record<string, () => number | null> = {
     ),
   keltner: () =>
     lastOf(
-      calc('keltner', { ema: 1, atr: 1, k: 2 }, [
+      calcAny('keltner', { ema: 1, atr: 1, k: 2 }, [
         ohlc(100, 101, 99, 100, 0),
         ohlc(100, 101.5, 98.5, 100, 1),
       ]).upper,
     ),
-  bb_width: () => lastOf(calc('bb_width', { period: 2, k: 2, level: 0 }, closes([95, 105])).value),
+  bb_width: () =>
+    lastOf(calcAny('bb_width', { period: 2, k: 2, level: 0 }, closes([95, 105])).value),
   roc: () =>
     lastOf(
-      calc('roc', { period: 20 }, closes([100, ...Array.from({ length: 19 }, () => 105), 110]))
+      calcAny('roc', { period: 20 }, closes([100, ...Array.from({ length: 19 }, () => 105), 110]))
         .value,
     ),
   williams_r: () =>
     lastOf(
-      calc('williams_r', { period: 2 }, [ohlc(105, 110, 100, 105, 0), ohlc(94, 100, 90, 94, 1)])
+      calcAny('williams_r', { period: 2 }, [ohlc(105, 110, 100, 105, 0), ohlc(94, 100, 90, 94, 1)])
         .value,
     ),
   rs_market: () =>
     lastOf(
-      calc('rs_market', { lookback: 1 }, [
+      calcAny('rs_market', { lookback: 1 }, [
         flat(100, 0, { market: 100 }),
         flat(112, 1, { market: 105 }),
       ]).value,
     ),
   rs_sector: () =>
     lastOf(
-      calc('rs_sector', { lookback: 1 }, [
+      calcAny('rs_sector', { lookback: 1 }, [
         flat(100, 0, { sector: 100 }),
         flat(98, 1, { sector: 94 }),
       ]).value,
     ),
   ad_line: () =>
     lastOf(
-      calc('ad_line', { baseline: 2 }, [
+      calcAny('ad_line', { baseline: 2 }, [
         flat(10, 0, { advances: 1000, declines: 0, coverage: 1 }),
         flat(10, 1, { advances: 180, declines: 120, coverage: 1 }),
       ]).value,
     ),
   breadth_ma50: () =>
     lastOf(
-      calc('breadth_ma50', {}, [flat(10, 0, { above50: 120, eligible: 200, coverage: 1 })]).value,
+      calcAny('breadth_ma50', {}, [flat(10, 0, { above50: 120, eligible: 200, coverage: 1 })])
+        .value,
     ),
   new_high_low: () =>
-    lastOf(calc('new_high_low', {}, [flat(10, 0, { newHigh: 40, newLow: 15, coverage: 1 })]).value),
+    lastOf(
+      calcAny('new_high_low', {}, [flat(10, 0, { newHigh: 40, newLow: 15, coverage: 1 })]).value,
+    ),
   index_ma: () => {
     const x = (240_000 - 1250) / 199;
     const data = Array.from({ length: 200 }, (_, i) =>
       flat(10, i, { market: i === 199 ? 1250 : x }),
     );
-    const s = calc('index_ma', { period: 200 }, data);
+    const s = calcAny('index_ma', { period: 200 }, data);
     const index = lastOf(s.index);
     const value = lastOf(s.value);
     return index === null || value === null ? null : index - value;
   },
   stochastic: () =>
     lastOf(
-      calc('stochastic', { k: 2, d: 2, smooth: 1 }, [
+      calcAny('stochastic', { k: 2, d: 2, smooth: 1 }, [
         ohlc(105, 110, 100, 105, 0),
         ohlc(94, 100, 90, 94, 1),
       ]).raw,
     ),
   cci: () =>
     lastOf(
-      calc(
+      calcAny(
         'cci',
         { period: 4 },
         [96, 100.5, 100.5, 103].map((tp, i) => flat(tp, i)),
@@ -425,30 +535,45 @@ const WORKED: Record<string, () => number | null> = {
 /** PSAR's fixture is the pre-clamp step `SAR + AF × (EP − SAR)`, which `calc` never exposes un-clamped. */
 const WORKED_NOT_OBSERVABLE = new Set(['psar']);
 
-describe('quant v2 calc — technical worked fixtures (chapters fixtures.json)', () => {
-  const chaptersDir = join(
+describe('quant v2 calc — technical worked fixtures (lesson files)', () => {
+  const contentDir = join(
     dirname(fileURLToPath(import.meta.url)),
-    '../../src/modules/academy/content/chapters',
+    '../../src/modules/academy/content',
   );
-  const chapterFixtures = new Map<string, WorkedFixture>();
-  for (const chapter of readdirSync(chaptersDir)) {
-    const file = join(chaptersDir, chapter, 'fixtures.json');
+  /** Current registry: worked fixtures live in the re-homed lesson files, keyed by the NEW lesson id. */
+  const lessonFixtures = new Map<string, WorkedFixture>();
+  for (const lessonId of readdirSync(join(contentDir, 'lessons'))) {
+    const lesson = JSON.parse(
+      readFileSync(join(contentDir, 'lessons', lessonId, 'lesson.vi.json'), 'utf8'),
+    ) as { lesson_id: string; fixture?: Omit<WorkedFixture, 'lesson_id'> };
+    if (lesson.fixture)
+      lessonFixtures.set(lesson.lesson_id, { ...lesson.fixture, lesson_id: lessonId });
+  }
+  /** Legacy registry: fixtures of the removed lessons, keyed by the OLD lesson id. */
+  const legacyFixtures = new Map<string, WorkedFixture>();
+  const legacyDir = join(contentDir, 'legacy', 'chapters');
+  for (const chapter of readdirSync(legacyDir)) {
+    const file = join(legacyDir, chapter, 'fixtures.json');
     for (const fixture of JSON.parse(readFileSync(file, 'utf8')) as WorkedFixture[]) {
-      chapterFixtures.set(fixture.lesson_id, fixture);
+      legacyFixtures.set(fixture.lesson_id, fixture);
     }
   }
 
   it('covers every indicator except the documented non-observable one', () => {
-    for (const entry of registry) {
+    for (const entry of [...registry, ...legacyRegistry]) {
       expect(entry.id in WORKED || WORKED_NOT_OBSERVABLE.has(entry.id), entry.id).toBe(true);
     }
   });
 
-  for (const entry of registry) {
+  const cases = [
+    ...registry.map((entry) => ({ entry, fixtures: lessonFixtures, legacy: false })),
+    ...legacyRegistry.map((entry) => ({ entry, fixtures: legacyFixtures, legacy: true })),
+  ];
+  for (const { entry, fixtures, legacy } of cases) {
     if (WORKED_NOT_OBSERVABLE.has(entry.id)) continue;
-    it(`${entry.id} (${entry.lesson_id}) reproduces the lesson fixture`, () => {
-      const fixture = chapterFixtures.get(entry.lesson_id);
-      if (!fixture) throw new Error(`missing chapter fixture for ${entry.lesson_id}`);
+    it(`${legacy ? 'legacy ' : ''}${entry.id} (${entry.lesson_id}) reproduces the lesson fixture`, () => {
+      const fixture = fixtures.get(entry.lesson_id);
+      if (!fixture) throw new Error(`missing fixture for ${entry.lesson_id}`);
       const worked = entry.worked_fixture as { expected: number };
       expect(worked.expected).toBe(fixture.expected);
       const compute = WORKED[entry.id];
@@ -654,7 +779,12 @@ describe('quant v2 sideSignals — parity and independence', () => {
     const c = defaultConfig();
     for (const id of ids) {
       const item = c.indicators[id];
-      if (item) item.master_enabled = true;
+      if (item) {
+        // Registry defaults are OFF on both sides; the test turns the whole indicator on.
+        item.master_enabled = true;
+        item.buy.enabled = true;
+        item.sell.enabled = true;
+      }
     }
     mutate?.(c);
     return c;
@@ -664,8 +794,9 @@ describe('quant v2 sideSignals — parity and independence', () => {
     const cases: string[][] = [
       ...registry.map((r) => [r.id]),
       ['ma', 'rsi'],
-      ['macd', 'volume', 'adx'],
-      ['rs_market', 'index_ma', 'obv'],
+      ['macd', 'volume', 'dmi'],
+      ['obv', 'cmf', 'mfi'],
+      [...CURRENT_INDICATOR_IDS],
     ];
     for (const ids of cases) {
       const c = deepFreeze(configWith(ids));
@@ -763,19 +894,19 @@ describe('quant v2 sideSignals — parity and independence', () => {
 
   it('B09 missing data on one Buy indicator makes Buy not-true while an unaffected Sell side is independent', () => {
     const c = defaultConfig();
-    const market = c.indicators.rs_market!;
-    market.master_enabled = true;
-    market.buy.enabled = true;
-    market.sell.enabled = false;
+    // Buy needs a 200-session SMA but only 120 sessions exist; Sell uses its own 20-session SMA.
     const ma = c.indicators.ma!;
     ma.master_enabled = true;
-    ma.buy.enabled = false;
+    ma.buy.enabled = true;
+    ma.buy.params.period = 200;
     ma.sell.enabled = true;
+    ma.sell.params.period = 20;
 
-    const buy = sideSignals(c, contextless, 'buy');
+    const short = bars.slice(0, 120);
+    const buy = sideSignals(c, short, 'buy');
     expect(buy.every((value) => value !== true)).toBe(true);
     expect(buy.every((value) => value === null)).toBe(true);
-    const sell = sideSignals(c, contextless, 'sell');
+    const sell = sideSignals(c, short, 'sell');
     expect(sell.some((value) => value === true || value === false)).toBe(true);
   });
 

@@ -1,0 +1,53 @@
+{
+  "set_version": "mini-set-01",
+  "title": "Bộ luyện tập 30 tình huống",
+  "owner_confirmation": "pending",
+  "observation": { "from": "2024-01-01", "to": "2024-06-30" },
+  "test": { "from": "2024-07-01", "to": "2026-06-30", "months": 24 },
+  "window_bars": 130,
+  "warmup": {
+    "sessions_requested": 520,
+    "sessions_required": 300,
+    "rationale": "Max form period is 252 (Donchian, ROC); MA Cross slow is 250 and needs a prior bar for the crossing test, so at least 253 closes are required for a valid first observation session. 300 sessions are required and 520 (about two years) are requested so Wilder/EMA smoothing of the longest forms (EMA 200, MACD 100+30, DMI 50) is converged before the first observation session. Warmup bars are server-side only and are never sent to a client."
+  },
+  "min_sessions": { "observation": 60, "test": 250 },
+  "versions": {
+    "data": "practice-data-v1",
+    "calculation": "iqx-ta-2.0",
+    "execution": "practice-next-open-v1",
+    "comment": "practice-comments-v1",
+    "profile": "mini-profile-v1"
+  },
+  "symbols": [
+    "ACB",
+    "BCM",
+    "BID",
+    "BVH",
+    "CTG",
+    "FPT",
+    "GAS",
+    "GVR",
+    "HDB",
+    "HPG",
+    "MBB",
+    "MSN",
+    "MWG",
+    "PLX",
+    "POW",
+    "SAB",
+    "SHB",
+    "SSB",
+    "SSI",
+    "STB",
+    "TCB",
+    "TPB",
+    "VCB",
+    "VHM",
+    "VIB",
+    "VIC",
+    "VJC",
+    "VNM",
+    "VPB",
+    "VRE"
+  ]
+}

@@ -1,0 +1,35 @@
+[
+  {
+    "lesson_id": "ch07-l01",
+    "type": "scalar",
+    "label": "ATR",
+    "prompt": "High = 105; Low = 101; Close trước = 99. TR bằng bao nhiêu?",
+    "expected": 6,
+    "unit": "đơn vị giá",
+    "formula": "TR = max(High−Low, |High−Close trước|, |Low−Close trước|)\nATR đầu = trung bình N TR\nATR mới = [(N−1) × ATR trước + TR mới]/N",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch07-l02",
+    "type": "scalar",
+    "label": "ATR Percent",
+    "prompt": "ATR = 2; Giá đóng cửa = 50. ATR Percent bằng bao nhiêu?",
+    "expected": 4,
+    "unit": "%",
+    "formula": "ATR Percent = ATR / Giá đóng cửa × 100",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  {
+    "lesson_id": "ch07-l03",
+    "type": "scalar",
+    "label": "Relative Volume",
+    "prompt": "Khối lượng hiện tại 1,8 triệu; trung bình trước 1,2 triệu. Relative Volume bằng bao nhiêu?",
+    "expected": 1.5,
+    "unit": "lần",
+    "formula": "Relative Volume = Volume hiện tại / Trung bình N khối lượng trước",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+]

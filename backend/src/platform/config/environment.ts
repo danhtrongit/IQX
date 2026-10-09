@@ -186,6 +186,10 @@ export const environmentSchema = z
     // accepts data source + engine version; lesson completion alone never enables them.
     ACADEMY_ENABLED: booleanSetting(true),
     STRATEGY_V2_ENABLED: booleanSetting(false),
+    // Bot SPEC 8.4 / 18.2: real new buys wait until the owner confirms the candidate ordering
+    // (gtgd20_desc_symbol_asc). While false the Bot still sells and journals every would-be buy
+    // as skipped (`candidate_order_unconfirmed`).
+    BOT_NEW_BUYS_ENABLED: booleanSetting(false),
     STRATEGY_ADVANCED_CAPABILITIES: z.preprocess(
       (value) =>
         typeof value === 'string'

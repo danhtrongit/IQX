@@ -289,8 +289,8 @@ export class Cap5Service {
     return this.getProgress(userId);
   }
 
-  async huntIndex(userId: string) {
-    await this.requireProgress(userId);
+  /** Hunt data is independent of the retired level journey: no cap5 progress or cap4 graduation. */
+  async huntIndex() {
     const symbols = await this.database.query<{ symbol: string }>(
       `select upper(symbol) symbol from symbols where is_active = true and upper(exchange) = 'HOSE' and coalesce(is_index,false) = false and lower(asset_type) = 'stock' order by symbol`,
     );
@@ -320,8 +320,7 @@ export class Cap5Service {
       hien_thi_toi_da: TOP_RESULTS,
     };
   }
-  async huntResult(userId: string, filter: string) {
-    await this.requireProgress(userId);
+  async huntResult(filter: string) {
     if (!HUNT_FILTERS.includes(filter as HuntFilter))
       throw new NotFoundException({
         code: 'HUNT_FILTER_NOT_FOUND',
@@ -367,8 +366,11 @@ export class Cap5Service {
     };
   }
 
+  /**
+   * Adding to the watchlist never requires (or creates) journey progress. The legacy
+   * `cap5_hunt_log` counters are only maintained for users who already entered Cap 5.
+   */
   async addWatchlist(userId: string, body: { symbol: string; hunt_filter: HuntFilter }) {
-    await this.requireProgress(userId);
     const symbol = upper(body.symbol);
     if (!HUNT_FILTERS.includes(body.hunt_filter))
       throw new BadRequestException({
@@ -408,22 +410,26 @@ export class Cap5Service {
           `insert into watchlist_items(id,user_id,symbol,sort_order,hunt_filter,hunt_signal,hunt_at,created_at,updated_at) values($1,$2,$3,coalesce((select max(sort_order)+1 from watchlist_items where user_id=$2),0),$4,null,$5,now(),now())`,
           [id, userId, symbol, body.hunt_filter, now],
         );
-      const log = (
-        await tx.query<HuntLogRow>(
-          'select * from cap5_hunt_log where user_id = $1 and upper(symbol) = $2 for update',
-          [userId, symbol],
-        )
-      )[0];
-      if (log)
-        await tx.query(
-          'update cap5_hunt_log set hunt_filter = $1, hunt_signal = null, last_hunted_at = $2, updated_at = now() where id = $3',
-          [body.hunt_filter, now, log.id],
-        );
-      else
-        await tx.query(
-          `insert into cap5_hunt_log(id,user_id,symbol,hunt_filter,hunt_signal,first_hunted_at,last_hunted_at,created_at,updated_at) values($1,$2,$3,$4,null,$5,$5,now(),now())`,
-          [randomUUID(), userId, symbol, body.hunt_filter, now],
-        );
+      const journeyEntered =
+        (await tx.query('select 1 from cap5_progress where user_id = $1', [userId])).length > 0;
+      if (journeyEntered) {
+        const log = (
+          await tx.query<HuntLogRow>(
+            'select * from cap5_hunt_log where user_id = $1 and upper(symbol) = $2 for update',
+            [userId, symbol],
+          )
+        )[0];
+        if (log)
+          await tx.query(
+            'update cap5_hunt_log set hunt_filter = $1, hunt_signal = null, last_hunted_at = $2, updated_at = now() where id = $3',
+            [body.hunt_filter, now, log.id],
+          );
+        else
+          await tx.query(
+            `insert into cap5_hunt_log(id,user_id,symbol,hunt_filter,hunt_signal,first_hunted_at,last_hunted_at,created_at,updated_at) values($1,$2,$3,$4,null,$5,$5,now(),now())`,
+            [randomUUID(), userId, symbol, body.hunt_filter, now],
+          );
+      }
       const row = (
         await tx.query<WatchlistRow>('select * from watchlist_items where id = $1', [id])
       )[0];
@@ -431,7 +437,6 @@ export class Cap5Service {
     });
   }
   async removeWatchlist(userId: string, symbol: string) {
-    await this.requireProgress(userId);
     const result = await this.database.query<{ id: string }>(
       'delete from watchlist_items where user_id = $1 and upper(symbol) = $2 returning id',
       [userId, upper(symbol)],
@@ -443,7 +448,6 @@ export class Cap5Service {
       });
   }
   async watchlist(userId: string) {
-    await this.requireProgress(userId);
     const rows = await this.watchRows(userId);
     const scores = await this.refreshConsensus(rows);
     const logs = await this.huntLog(userId);

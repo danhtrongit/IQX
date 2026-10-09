@@ -1,0 +1,131 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "2.0"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "logic": {
+      "const": "AND"
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "metric_id": {
+            "enum": [
+              "revenue_yoy",
+              "profit_yoy",
+              "eps_yoy",
+              "gross_margin",
+              "net_margin",
+              "roe",
+              "roa",
+              "roic",
+              "debt_equity",
+              "net_debt_ebitda",
+              "current_ratio",
+              "interest_coverage",
+              "cfo_margin",
+              "cfo_profit",
+              "fcf_margin",
+              "fcf_yoy",
+              "capex_revenue",
+              "accrual",
+              "pe",
+              "pb",
+              "ps",
+              "ev_ebitda",
+              "peg",
+              "fcf_yield",
+              "revenue_cagr3",
+              "profit_cagr3",
+              "eps_cagr3",
+              "asset_turnover",
+              "ccc",
+              "working_cap_turnover",
+              "revenue_growth_stability",
+              "eps_growth_stability",
+              "net_margin_stability",
+              "roic_stability",
+              "fcf_positive_streak",
+              "profit_positive_streak",
+              "dividend_yield",
+              "payout_ratio",
+              "dividend_cagr3",
+              "share_count_yoy",
+              "buyback_yield",
+              "shareholder_yield"
+            ]
+          },
+          "operator": {
+            "enum": [
+              ">",
+              "<"
+            ]
+          },
+          "value": {
+            "type": "number"
+          },
+          "api_unit": {
+            "enum": [
+              "ratio",
+              "lần",
+              "ngày",
+              "năm"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "metric_id",
+          "operator",
+          "value",
+          "api_unit"
+        ]
+      }
+    },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "market": {
+          "type": "string"
+        },
+        "sector": {
+          "type": "string"
+        },
+        "period": {
+          "enum": [
+            "TTM",
+            "annual",
+            "quarter"
+          ]
+        }
+      },
+      "required": [
+        "market",
+        "sector",
+        "period"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "name",
+    "logic",
+    "rules",
+    "scope"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

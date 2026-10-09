@@ -31,6 +31,15 @@ describe('environment boundary', () => {
     expect(env.MARKET_INGEST_ENABLED).toBe(false);
     expect(env.API_DOCS_ENABLED).toBe(false);
   });
+  it('keeps real Bot buys off until BOT_NEW_BUYS_ENABLED is set explicitly', () => {
+    expect(parseEnvironment({}).BOT_NEW_BUYS_ENABLED).toBe(false);
+    expect(parseEnvironment({ BOT_NEW_BUYS_ENABLED: '' }).BOT_NEW_BUYS_ENABLED).toBe(false);
+    expect(parseEnvironment({ BOT_NEW_BUYS_ENABLED: 'true' }).BOT_NEW_BUYS_ENABLED).toBe(true);
+    expect(parseEnvironment({ BOT_NEW_BUYS_ENABLED: '1' }).BOT_NEW_BUYS_ENABLED).toBe(true);
+    expect(() => parseEnvironment({ BOT_NEW_BUYS_ENABLED: 'yes' })).toThrow(
+      'Invalid configuration',
+    );
+  });
   it.each(['false', '0', ''])('does not coerce %s to true', (value) => {
     expect(parseEnvironment({ REDIS_ENABLED: value }).REDIS_ENABLED).toBe(false);
   });

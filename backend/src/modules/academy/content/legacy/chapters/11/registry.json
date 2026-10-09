@@ -1,0 +1,362 @@
+[
+  {
+    "id": "keltner",
+    "name": "Keltner Channel",
+    "chapter": 11,
+    "lesson_id": "ch11-l02",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "Middle = EMA(Close, N)\nUpper = Middle + k × ATR(M)\nLower = Middle − k × ATR(M)",
+    "seed_and_missing": "Cả EMA và ATR hợp lệ cùng T; ATR Wilder. Đợi đủchuỗi dài hơn. Keltner không áp ràng buộc k²<N−1 của dải độ lệch chuẩn.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "ema": 20,
+        "atr": 10,
+        "k": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "upper",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "ema": 20,
+        "atr": 10,
+        "k": 2.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "lower",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Keltner Channel",
+      "prompt": "EMA = 100; ATR = 3; k = 2. Upper bằng bao nhiêu?",
+      "expected": 106,
+      "unit": "",
+      "formula": "Middle = EMA(Close, N)\nUpper = Middle + k × ATR(M)\nLower = Middle − k × ATR(M)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "ema",
+        "label": "Chu kỳ EMA",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "atr",
+        "label": "Chu kỳ ATR",
+        "type": "integer",
+        "min": 5,
+        "max": 50,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "k",
+        "label": "Hệ số dải",
+        "type": "number",
+        "min": 0.5,
+        "max": 5,
+        "step": 0.1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "bb_width",
+    "name": "Bollinger BandWidth",
+    "chapter": 11,
+    "lesson_id": "ch11-l03",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "BandWidth = (Upper − Lower)/Middle × 100",
+    "seed_and_missing": "CầnNgiá, Middle>0. Độ lệch0 tạoBandWidth0 hợp lệ; không tự coi là thiếu.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "k": 2.0,
+        "level": 5.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "period": 20,
+        "k": 2.0,
+        "level": 8.0
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Bollinger BandWidth",
+      "prompt": "Upper = 110; Lower = 90; Middle = 100. Band Width bằng bao nhiêu?",
+      "expected": 20,
+      "unit": "%",
+      "formula": "BandWidth = (Upper − Lower)/Middle × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "period",
+        "label": "Chu kỳ Bollinger",
+        "type": "integer",
+        "min": 10,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "k",
+        "label": "Hệ số dải",
+        "type": "number",
+        "min": 1,
+        "max": 3.5,
+        "step": 0.1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng BandWidth",
+        "type": "number",
+        "min": 0,
+        "max": 50,
+        "step": 0.1,
+        "unit": "%",
+        "api_scale": 1,
+        "wire_unit": "%"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  },
+  {
+    "id": "psar",
+    "name": "Parabolic SAR",
+    "chapter": 11,
+    "lesson_id": "ch11-l06",
+    "calculation_version": "iqx-ta-2.0",
+    "family": "state",
+    "formula": "SAR dự kiến = SAR trước + AF × (EP − SAR trước)",
+    "seed_and_missing": "Seed hướng từ hai đóng cửađầu; SAR bằng cực trị đối diện hai bar, EPcực trịcùnghướng, AF=step. ClampSARtheohai low/hightrước; đảo khi biên giáxuyên; chi tiết trong CALCULATION-CONTRACT.",
+    "buy": {
+      "enabled": true,
+      "params": {
+        "step": 0.02,
+        "max": 0.2
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": true,
+      "params": {
+        "step": 0.02,
+        "max": 0.2
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "worked_fixture": {
+      "type": "scalar",
+      "label": "Parabolic SAR",
+      "prompt": "SAR trước = 95; EP = 110; AF = 0,02. SAR dự kiến trước ràng buộc biên bằng bao nhiêu?",
+      "expected": 95.3,
+      "unit": "",
+      "formula": "SAR dự kiến = SAR trước + AF × (EP − SAR trước)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "fields": [
+      {
+        "key": "step",
+        "label": "Bước gia tốc",
+        "type": "number",
+        "min": 0.01,
+        "max": 0.1,
+        "step": 0.01,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      },
+      {
+        "key": "max",
+        "label": "Gia tốc tối đa",
+        "type": "number",
+        "min": 0.1,
+        "max": 1,
+        "step": 0.01,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
+      }
+    ],
+    "availability": "ohlcv",
+    "rule_version": "iqx-rules-2.0",
+    "validation": {
+      "cross_fields": [
+        {
+          "left": "step",
+          "op": "<",
+          "right": "max"
+        }
+      ],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    },
+    "parameter_encoding": "explicit display units per field; no implicit percent scaling"
+  }
+]

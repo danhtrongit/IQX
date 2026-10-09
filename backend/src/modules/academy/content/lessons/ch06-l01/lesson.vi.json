@@ -1,0 +1,53 @@
+{
+  "lesson_id": "ch06-l01",
+  "content_version": "2.0.0",
+  "origin": "biên soạn mới theo đề cương đã chốt",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>ROA</strong> đo lợi nhuận sau thuế toàn doanh nghiệp trên tài sản bình quân.</p><p>Tổng tài sản bao gồm các nguồn lực đã được ghi nhận trên bảng cân đối. Số đầu và cuối kỳ phải nhất quán với kỳ tạo lợi nhuận. Bản định nghĩa dùng lợi nhuận hợp nhất vì tài sản hợp nhất bao gồm cả phần tài trợ bởi nợ và cổ đông không kiểm soát.</p><p>ROA dùng mẫu số là tài sản, khác ROE dùng vốn chủ. Hai công ty cùng lãi có thể dùng lượng tài sản rất khác.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula\">Lợi nhuận sau thuế hợp nhất / Tổng tài sản bình quân × 100</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>Lợi nhuận sau thuế hợp nhất</td><td>90</td></tr><tr><td>Tài sản bình quân</td><td>1.500</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>6 %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+    },
+    {
+      "title": "Kỳ dữ liệu và giới hạn",
+      "html": "<p>Kỳ mặc định trong gói: <strong>TTM</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>ROA của ngành thâm dụng tài sản không nên so trực tiếp với doanh nghiệp dịch vụ ít tài sản.</p>"
+    },
+    {
+      "title": "Vận dụng trong Bộ lọc",
+      "html": "<p>Thêm <strong>ROA</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị %.</p><p>Với kết quả minh họa 6 %, điều kiện “ROA &gt; 5 %” đạt. Điều kiện “ROA &gt; 6 %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "ROA",
+    "inputs": [
+      [
+        "Lợi nhuận sau thuế hợp nhất",
+        90
+      ],
+      [
+        "Tài sản bình quân",
+        1500
+      ]
+    ],
+    "formula": "Lợi nhuận sau thuế hợp nhất / Tổng tài sản bình quân × 100",
+    "expected": 6,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Lợi nhuận sau thuế hợp nhất = 90; Tài sản bình quân = 1500. Tính ROA theo công thức của bài."
+  },
+  "sources": [
+    "source:fundamental-registry-v1",
+    "author:financial-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch06-l01",
+    "chapter": 6
+  }
+}

@@ -4,6 +4,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  Optional,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { DatabaseService } from '../../../platform/database/index.js';
@@ -38,7 +39,11 @@ export class Cap6Service {
   constructor(
     private readonly database: DatabaseService,
     private readonly cap5: Cap5Service,
-    @Inject(CAP6_POST_GRADUATION_HOOKS) private readonly hooks: Cap6PostGraduationHooks,
+    // Graduation is legacy and nothing depends on it: the Bot account and the mascot profile are
+    // created by workspace onboarding, so these hooks are optional best-effort side effects.
+    @Optional()
+    @Inject(CAP6_POST_GRADUATION_HOOKS)
+    private readonly hooks?: Cap6PostGraduationHooks,
   ) {}
   private async one<T extends Record<string, unknown>>(
     sql: string,
@@ -391,12 +396,12 @@ export class Cap6Service {
     });
     const result = await this.getProgress(userId);
     try {
-      await this.hooks.initializeBot(userId);
+      await this.hooks?.initializeBot(userId);
     } catch {
       /* graduation is durable */
     }
     try {
-      await this.hooks.initializeMascot(userId);
+      await this.hooks?.initializeMascot(userId);
     } catch {
       /* graduation is durable */
     }

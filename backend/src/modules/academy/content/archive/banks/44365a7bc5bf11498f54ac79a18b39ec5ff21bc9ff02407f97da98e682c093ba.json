@@ -1,0 +1,237 @@
+{
+  "format": "legacy-v1",
+  "questions_version": "44365a7bc5bf11498f54ac79a18b39ec5ff21bc9ff02407f97da98e682c093ba",
+  "lesson_id": "ch03-l05",
+  "lesson_key": "fundamental:net_margin",
+  "content_version": "2.0.0",
+  "superseded_by": "ch03-v2.0",
+  "assessment": {
+    "lesson_id": "ch03-l05",
+    "questions": [
+      {
+        "question": "Dùng các dữ liệu: Lợi nhuận sau thuế hợp nhất = 120; Doanh thu thuần = 1.000. Biên lợi nhuận ròng bằng bao nhiêu theo công thức bài học?",
+        "options": [
+          {
+            "text": "12 %",
+            "id": "o1"
+          },
+          {
+            "text": "21 %",
+            "id": "o2"
+          },
+          {
+            "text": "5 %",
+            "id": "o3"
+          },
+          {
+            "text": "22 %",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 0,
+        "explanation": "Áp dụng Lợi nhuận sau thuế hợp nhất / Doanh thu thuần × 100; kết quả 12 %.",
+        "skill": "tính toán",
+        "fixture": null,
+        "id": "ch03-l05-q01",
+        "lesson_id": "ch03-l05",
+        "correct_option_id": "o1"
+      },
+      {
+        "question": "Biên lợi nhuận ròng đang bằng đúng 12 %. Bộ lọc đặt > 12 %. Kết quả nào đúng?",
+        "options": [
+          {
+            "text": "Đạt nếu giá cổ phiếu tăng.",
+            "id": "o1"
+          },
+          {
+            "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+            "id": "o2"
+          },
+          {
+            "text": "Không đạt điều kiện.",
+            "id": "o3"
+          },
+          {
+            "text": "Đạt vì bằng ngưỡng cũng được tính.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 2,
+        "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch03-l05-q02",
+        "lesson_id": "ch03-l05",
+        "correct_option_id": "o3"
+      },
+      {
+        "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Biên lợi nhuận ròng?",
+        "options": [
+          {
+            "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+            "id": "o1"
+          },
+          {
+            "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+            "id": "o2"
+          },
+          {
+            "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+            "id": "o3"
+          },
+          {
+            "text": "Khoản lãi bán tài sản có thể nâng biên ròng một kỳ. Biên ròng cao chưa tự chứng minh nguồn lợi nhuận bền.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 3,
+        "explanation": "Biên ròng 12% nghĩa là mỗi 100 đồng doanh thu tạo 12 đồng lợi nhuận sau thuế trong kỳ. Khoản lãi bán tài sản có thể nâng biên ròng một kỳ. Biên ròng cao chưa tự chứng minh nguồn lợi nhuận bền.",
+        "skill": "phản biện",
+        "fixture": null,
+        "id": "ch03-l05-q03",
+        "lesson_id": "ch03-l05",
+        "correct_option_id": "o4"
+      },
+      {
+        "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Biên lợi nhuận ròng. Bộ lọc nên làm gì?",
+        "options": [
+          {
+            "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+            "id": "o1"
+          },
+          {
+            "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+            "id": "o2"
+          },
+          {
+            "text": "Điền 0 rồi kiểm tra như số thật.",
+            "id": "o3"
+          },
+          {
+            "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 1,
+        "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+        "skill": "dữ liệu",
+        "fixture": null,
+        "id": "ch03-l05-q04",
+        "lesson_id": "ch03-l05",
+        "correct_option_id": "o2"
+      },
+      {
+        "question": "Nhận định nào đúng với Biên lợi nhuận ròng?",
+        "options": [
+          {
+            "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+            "id": "o1"
+          },
+          {
+            "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+            "id": "o2"
+          },
+          {
+            "text": "Biên ròng 12% nghĩa là mỗi 100 đồng doanh thu tạo 12 đồng lợi nhuận sau thuế trong kỳ.",
+            "id": "o3"
+          },
+          {
+            "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 2,
+        "explanation": "Biên ròng 12% nghĩa là mỗi 100 đồng doanh thu tạo 12 đồng lợi nhuận sau thuế trong kỳ. Ở bài này tử số là lợi nhuận sau thuế hợp nhất, gồm phần cổ đông không kiểm soát, để cùng phạm vi với doanh thu hợp nhất. Khác với chỉ tiêu tăng trưởng LNST và ROE dùng phần thuộc chủ sở hữu công ty mẹ. Tên trường kỹ thuật phải thể hiện khác biệt này.",
+        "skill": "diễn giải",
+        "fixture": null,
+        "id": "ch03-l05-q05",
+        "lesson_id": "ch03-l05",
+        "correct_option_id": "o3"
+      },
+      {
+        "question": "Hai doanh nghiệp A và B lần lượt có Biên lợi nhuận ròng bằng 10 và 14 %. Điều kiện < 12 % giữ lại ai?",
+        "options": [
+          {
+            "text": "Chỉ B.",
+            "id": "o1"
+          },
+          {
+            "text": "Cả A và B.",
+            "id": "o2"
+          },
+          {
+            "text": "Không doanh nghiệp nào.",
+            "id": "o3"
+          },
+          {
+            "text": "Chỉ A.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 3,
+        "explanation": "10 < 12 đúng, 14 < 12 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch03-l05-q06",
+        "lesson_id": "ch03-l05",
+        "correct_option_id": "o4"
+      },
+      {
+        "question": "Báo cáo dùng tính Biên lợi nhuận ròng kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+        "options": [
+          {
+            "text": "Có, nếu sau này công ty hoạt động tốt.",
+            "id": "o1"
+          },
+          {
+            "text": "Có, nhưng nhân kết quả với 0,5.",
+            "id": "o2"
+          },
+          {
+            "text": "Không; thông tin chưa có tại ngày 10/04.",
+            "id": "o3"
+          },
+          {
+            "text": "Có, vì kỳ kế toán đã kết thúc.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 2,
+        "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+        "skill": "thời điểm dữ liệu",
+        "fixture": null,
+        "id": "ch03-l05-q07",
+        "lesson_id": "ch03-l05",
+        "correct_option_id": "o3"
+      },
+      {
+        "question": "Doanh nghiệp đạt điều kiện Biên lợi nhuận ròng, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+        "options": [
+          {
+            "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+            "id": "o1"
+          },
+          {
+            "text": "Tự bỏ điều kiện chưa đạt.",
+            "id": "o2"
+          },
+          {
+            "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+            "id": "o3"
+          },
+          {
+            "text": "Giữ vì một điều kiện đạt đã đủ.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 2,
+        "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch03-l05-q08",
+        "lesson_id": "ch03-l05",
+        "correct_option_id": "o3"
+      }
+    ]
+  }
+}

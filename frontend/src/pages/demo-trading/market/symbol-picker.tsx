@@ -1,6 +1,6 @@
 /**
  * Symbol picker for the demo shell — a compact combobox that swaps the symbol
- * the whole terminal is looking at (journey, quote, order form, news, …)
+ * the whole terminal is looking at (quote, order form, news, …)
  * WITHOUT leaving `/demo-trading`.
  *
  * Search is server-side (`/instruments?q=...`) and debounced;

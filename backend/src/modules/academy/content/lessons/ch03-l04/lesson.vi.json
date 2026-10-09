@@ -1,0 +1,25 @@
+{
+  "lesson_id": "ch03-l04",
+  "superseded_by": "ch03-v2.0",
+  "note": "Served from content/packages/ch03. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "Biên lợi nhuận gộp",
+    "inputs": [
+      [
+        "Lợi nhuận gộp",
+        300
+      ],
+      [
+        "Doanh thu thuần",
+        1000
+      ]
+    ],
+    "formula": "Lợi nhuận gộp / Doanh thu thuần × 100",
+    "expected": 30,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Lợi nhuận gộp = 300; Doanh thu thuần = 1000. Tính Biên lợi nhuận gộp theo công thức của bài."
+  }
+}

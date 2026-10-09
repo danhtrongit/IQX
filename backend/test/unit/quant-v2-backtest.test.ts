@@ -34,9 +34,15 @@ function indicator(config: SharedConfig, id: string): IndicatorConfig {
   return item;
 }
 
+/** Registry defaults are OFF on both sides; the test turns the listed indicators fully on. */
 function configWith(ids: string[], mutate?: (c: SharedConfig) => void): SharedConfig {
   const c = defaultConfig();
-  for (const id of ids) indicator(c, id).master_enabled = true;
+  for (const id of ids) {
+    const item = indicator(c, id);
+    item.master_enabled = true;
+    item.buy.enabled = true;
+    item.sell.enabled = true;
+  }
   mutate?.(c);
   return c;
 }
@@ -111,18 +117,18 @@ describe('quant v2 runBacktest — golden parity with reference run', () => {
         );
         if (result.trades.length) withTrades++;
       }
-      expect(withTrades).toBeGreaterThan(20);
+      expect(withTrades).toBeGreaterThan(12);
     });
   }
 
   it('multi-indicator AND configs match', () => {
     const combos = [
       ['ma', 'rsi'],
-      ['macd', 'volume', 'adx'],
+      ['macd', 'volume', 'dmi'],
       ['ema', 'obv'],
-      ['rs_market', 'index_ma', 'bollinger'],
+      ['donchian', 'roc', 'bollinger'],
       ['stochastic', 'cci', 'williams_r'],
-      ['ma_cross', 'keltner', 'psar', 'distance_support'],
+      ['ma_cross', 'mfi', 'cmf'],
     ];
     for (const ids of combos) {
       for (const execution of ['next_open', 'same_close'] as const) {

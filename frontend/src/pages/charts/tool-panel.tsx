@@ -3,11 +3,8 @@
  *
  * The panels themselves are the demo shell's real, backend-backed tool panels
  * (watchlist/holdings/history, order ticket, AI news, AI patterns) imported
- * read-only. The order ticket is the one panel that reads journey state
- * (`useJourney`) — it is mounted here with its own `JourneyProvider` so the
- * chart pages do not depend on the demo route being open.
+ * read-only.
  */
-import { JourneyProvider } from "@/pages/demo-trading/journey/journey-provider"
 import { NewsPanel } from "@/pages/demo-trading/market/news-panel"
 import { PatternsPanel } from "@/pages/demo-trading/market/patterns-panel"
 import { PortfolioPanel } from "@/pages/demo-trading/portfolio/portfolio-panel"
@@ -36,13 +33,7 @@ export function ToolPanel({
       />
     )
   }
-  if (tool === "order") {
-    return (
-      <JourneyProvider>
-        <OrderPanel symbol={symbol} onSymbolChange={onSymbolChange} />
-      </JourneyProvider>
-    )
-  }
+  if (tool === "order") return <OrderPanel symbol={symbol} onSymbolChange={onSymbolChange} />
   if (tool === "patterns") return <PatternsPanel symbol={symbol} />
   if (tool === "forecast") return <ForecastPanel symbol={symbol} onSymbolChange={onSymbolChange} />
   return <NewsPanel symbol={symbol} />

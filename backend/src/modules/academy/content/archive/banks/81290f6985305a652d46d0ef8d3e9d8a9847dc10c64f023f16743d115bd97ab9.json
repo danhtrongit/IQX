@@ -1,0 +1,237 @@
+{
+  "format": "legacy-v1",
+  "questions_version": "81290f6985305a652d46d0ef8d3e9d8a9847dc10c64f023f16743d115bd97ab9",
+  "lesson_id": "ch01-l06",
+  "lesson_key": "concept:hop_luu",
+  "content_version": "2.0.0",
+  "superseded_by": "ch01-v2.0",
+  "assessment": {
+    "lesson_id": "ch01-l06",
+    "questions": [
+      {
+        "question": "Mua gồm RSI và MA; Bán chỉ có MACD. RSI thiếu nhưng MACD Bán đúng, đang giữ vị thế đủ điều kiện bán. Điều gì đúng?",
+        "options": [
+          {
+            "text": "RSI không chặn nhóm Bán.",
+            "id": "o1"
+          },
+          {
+            "text": "RSI thiếu chặn cả Mua lẫn Bán dù RSI Bán OFF.",
+            "id": "o2"
+          },
+          {
+            "text": "Tự bật RSI Bán để đủ bộ.",
+            "id": "o3"
+          },
+          {
+            "text": "Chỉ bán khi MA Mua sai.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 0,
+        "explanation": "Chỉ tập điều kiện đang có hiệu lực ở từng phía tham gia AND.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch01-l06-q01",
+        "lesson_id": "ch01-l06",
+        "correct_option_id": "o1"
+      },
+      {
+        "question": "Nhóm Bán không có điều kiện nào. Giá trị nhóm Bán phải là gì?",
+        "options": [
+          {
+            "text": "Không có tín hiệu bán kỹ thuật.",
+            "id": "o1"
+          },
+          {
+            "text": "Luôn đúng vì all([]).",
+            "id": "o2"
+          },
+          {
+            "text": "Tự dùng RSI Bán mặc định.",
+            "id": "o3"
+          },
+          {
+            "text": "Tự dùng điều kiện Mua đảo dấu.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 0,
+        "explanation": "Tập rỗng không tạo lệnh bán.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch01-l06-q02",
+        "lesson_id": "ch01-l06",
+        "correct_option_id": "o1"
+      },
+      {
+        "question": "Tại A: RSI đúng, MA sai. Tại B: RSI sai, MA đúng. Có hợp lưu AND tại B không?",
+        "options": [
+          {
+            "text": "Có nếu RSI được học trước MA.",
+            "id": "o1"
+          },
+          {
+            "text": "Không.",
+            "id": "o2"
+          },
+          {
+            "text": "Có vì mỗi chỉ báo đã đúng một lần.",
+            "id": "o3"
+          },
+          {
+            "text": "Có nếu hai phiên liền nhau.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 1,
+        "explanation": "Không mang tín hiệu cũ qua phiên.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch01-l06-q03",
+        "lesson_id": "ch01-l06",
+        "correct_option_id": "o2"
+      },
+      {
+        "question": "Một chỉ báo Mua ON, Bán ON, master OFF. Điều gì đúng?",
+        "options": [
+          {
+            "text": "Cả hai vẫn hiệu lực.",
+            "id": "o1"
+          },
+          {
+            "text": "Không tham gia cả hai phía.",
+            "id": "o2"
+          },
+          {
+            "text": "Chỉ Mua còn hiệu lực.",
+            "id": "o3"
+          },
+          {
+            "text": "Chỉ Bán còn hiệu lực.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 1,
+        "explanation": "Master là công tắc tổng.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch01-l06-q04",
+        "lesson_id": "ch01-l06",
+        "correct_option_id": "o2"
+      },
+      {
+        "question": "Mua có ba điều kiện đúng, một điều kiện sai. AND cho kết quả nào?",
+        "options": [
+          {
+            "text": "Chưa đạt điều kiện mua.",
+            "id": "o1"
+          },
+          {
+            "text": "Đạt vì đa số đúng.",
+            "id": "o2"
+          },
+          {
+            "text": "Đạt 75% quy mô lệnh.",
+            "id": "o3"
+          },
+          {
+            "text": "Tự bỏ điều kiện sai.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 0,
+        "explanation": "Không dùng đa số thay AND.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch01-l06-q05",
+        "lesson_id": "ch01-l06",
+        "correct_option_id": "o1"
+      },
+      {
+        "question": "Mua dùng MA 20, Bán dùng MA 50. Đổi MA 20 thành MA 10 thì Bán thế nào?",
+        "options": [
+          {
+            "text": "Chuyển MA 20.",
+            "id": "o1"
+          },
+          {
+            "text": "Tắt toàn bộ MA.",
+            "id": "o2"
+          },
+          {
+            "text": "Vẫn dùng MA 50.",
+            "id": "o3"
+          },
+          {
+            "text": "Chuyển MA 10.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 2,
+        "explanation": "Tham số của hai phía độc lập.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch01-l06-q06",
+        "lesson_id": "ch01-l06",
+        "correct_option_id": "o3"
+      },
+      {
+        "question": "Đang có vị thế; Mua và Bán đồng thời đúng và đã đủ điều kiện bán. Profile một vị thế làm gì?",
+        "options": [
+          {
+            "text": "Bỏ qua Bán vì Mua luôn ưu tiên.",
+            "id": "o1"
+          },
+          {
+            "text": "Xét bán vị thế, không mua thêm cùng phiên.",
+            "id": "o2"
+          },
+          {
+            "text": "Mua thêm rồi bán toàn bộ cùng phiên.",
+            "id": "o3"
+          },
+          {
+            "text": "Mở bán khống mới.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 1,
+        "explanation": "Nhánh xử lý theo trạng thái đầu phiên; không mua lại trong phiên vừa bán.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch01-l06-q07",
+        "lesson_id": "ch01-l06",
+        "correct_option_id": "o2"
+      },
+      {
+        "question": "Backtest một mã không có điều kiện Mua. Cách xử lý đúng?",
+        "options": [
+          {
+            "text": "Giả lập cấu hình Bot dù không có dữ liệu tương ứng.",
+            "id": "o1"
+          },
+          {
+            "text": "Báo cấu hình chưa đủ, không tự gọi cấu hình Bot.",
+            "id": "o2"
+          },
+          {
+            "text": "Mua ngay ngày đầu.",
+            "id": "o3"
+          },
+          {
+            "text": "Dùng all([]) rồi mua mọi phiên.",
+            "id": "o4"
+          }
+        ],
+        "correct_index": 1,
+        "explanation": "Backtest chỉ báo và toàn bộ Bot là phạm vi khác nhau.",
+        "skill": "vận dụng",
+        "fixture": null,
+        "id": "ch01-l06-q08",
+        "lesson_id": "ch01-l06",
+        "correct_option_id": "o2"
+      }
+    ]
+  }
+}

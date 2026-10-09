@@ -10,7 +10,8 @@ describe("demo trading content URL state", () => {
     expect(chart.get("tour")).toBe("bantin")
     expect(chart.get("content")).toBe("chart")
     expect(original.has("content")).toBe(false)
-    expect(withDemoContent(chart, "journey").get("view")).toBe("trading")
+    expect(withDemoContent(chart, "overview").get("view")).toBe("trading")
+    expect(withDemoContent(chart, "overview").has("content")).toBe(false)
   })
 
   it("keeps the sidebar view when the AI analysis subview changes", () => {
@@ -23,8 +24,10 @@ describe("demo trading content URL state", () => {
     expect(financial.get("period")).toBe("1Y")
   })
 
-  it("falls back to the journey for unknown content values", () => {
-    expect(parseDemoContent("unknown")).toBe("journey")
-    expect(parseDemoContent(null)).toBe("journey")
+  it("falls back to the overview for unknown or retired content values", () => {
+    expect(parseDemoContent("unknown")).toBe("overview")
+    expect(parseDemoContent("journey")).toBe("overview")
+    expect(parseDemoContent(null)).toBe("overview")
+    expect(parseDemoContent("board")).toBe("board")
   })
 })

@@ -1,0 +1,43 @@
+{
+  "lesson_id": "ch05-l03",
+  "content_version": "2.0.0",
+  "origin": "biên soạn mới theo đề cương và registry nguồn",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>DMI</strong> đo chuyển động đỉnh và đáy theo hai hướng qua +DI và −DI.</p><p>True Range dùng biên cao−thấp và khoảng cách với đóng cửa trước. Khi Up=Down, cả hai DM bằng 0. Không cộng cả hai chuyển động trên cùng một phiên.</p><p>+DI lớn hơn −DI chỉ ra chiều tăng nổi trội trong phép đo. Không thay vai trò ADX: ADX đo độ mạnh chứ không cho hướng.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula\">Up = High hôm nay − High hôm trước<br/>Down = Low hôm trước − Low hôm nay<br/>+DM = Up nếu Up &gt; Down và Up &gt; 0, ngược lại 0<br/>−DM = Down nếu Down &gt; Up và Down &gt; 0, ngược lại 0<br/>+DI = 100 × Wilder(+DM)/ATR; −DI = 100 × Wilder(−DM)/ATR</div><p>Wilder(+DM) = 2,4; ATR = 6. +DI bằng bao nhiêu?</p><p>Kết quả là <strong>40 </strong>. Các giá trị này là giả định để kiểm tra phép tính, không phải dữ liệu thị trường hiện tại.</p><p>Cần N cặp OHLC để khởi tạo Wilder. ATR=0 không chia; +DI/−DI missing. Các chuỗi cùng seed và dữ liệu.</p>"
+    },
+    {
+      "title": "Tham số, Mua và Bán",
+      "html": "<p>MUA và BÁN là hai phía độc lập. Chọn phía đang chỉnh, nhập bộ tham số của phía đó và đổi dấu so sánh theo giả thuyết của mình. Lưu Mua không được ghi đè tham số Bán.</p><p>Công tắc tổng ở sidebar ngừng dùng cả hai phía nhưng giữ các lựa chọn bên trong. Khi một phía tắt, các dòng của phía đó không tham gia hợp lưu. Tắt cả hai rồi lưu làm công tắc tổng tắt.</p><p>Các giá trị mặc định là cấu hình minh họa để bắt đầu, không phải tham số đã chứng minh sinh lời. Đổi dấu làm thay đổi cách sử dụng chỉ báo; bài học không buộc tên Mua luôn gắn với một hướng toán học cố định.</p><div class=\"table-wrap\"><table><thead><tr><th>Phía</th><th>Tham số mẫu</th><th>Điều kiện mẫu</th></tr></thead><tbody><tr><td>MUA</td><td>{\"period\": 14}</td><td>+DI &gt; −DI</td></tr><tr><td>BÁN</td><td>{\"period\": 14}</td><td>+DI &lt; −DI</td></tr></tbody></table></div>"
+    },
+    {
+      "title": "Vận dụng và giới hạn",
+      "html": "<p>DMI không đo lượng tiền mua bán. Giá đi ngang có thể làm hai đường giao nhau nhiều lần mà không có xu hướng kéo dài.</p><p>Để thử một thay đổi, giữ nguyên khoảng thời gian, dữ liệu và phí; chỉ sửa một tham số hoặc toán tử rồi chạy lại. Đối chiếu lợi nhuận danh mục, sụt giảm lớn nhất và toàn bộ lịch sử giao dịch. Một lần đạt điều kiện không đồng nghĩa có một lệnh: còn phụ thuộc đang giữ vị thế, thời điểm khớp và vốn khả dụng.</p><p>Các dòng trong một phía phải đồng thời thỏa AND trong cùng phiên. Điều kiện thiếu dữ liệu không được mặc định thành đúng; không nhớ một tín hiệu cũ để ghép với tín hiệu mới của hôm sau. Kết quả lần chạy đã lưu không thay đổi theo form đang chỉnh.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "DMI",
+    "prompt": "Wilder(+DM) = 2,4; ATR = 6. +DI bằng bao nhiêu?",
+    "expected": 40,
+    "unit": "",
+    "formula": "Up = High hôm nay − High hôm trước\nDown = Low hôm trước − Low hôm nay\n+DM = Up nếu Up > Down và Up > 0, ngược lại 0\n−DM = Down nếu Down > Up và Down > 0, ngược lại 0\n+DI = 100 × Wilder(+DM)/ATR; −DI = 100 × Wilder(−DM)/ATR",
+    "tolerance": 0.015,
+    "synthetic": true
+  },
+  "sources": [
+    "source:technical-registry-v1",
+    "author:calculation-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch05-l03",
+    "chapter": 5
+  }
+}

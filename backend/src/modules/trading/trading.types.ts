@@ -139,12 +139,12 @@ export type JourneyPlanResult = {
 
 export type PlaceOrderInput = {
   userId: string;
-  isPremium: boolean;
   symbol: string;
   side: OrderSide;
   orderType: OrderType;
   quantity: number;
   limitPriceVnd?: number | null;
+  /** Deprecated: the learning plan is no longer required or stored for manual orders. */
   journeyPlan?: JourneyPlan | null;
 };
 

@@ -1,95 +1,20 @@
 /**
- * Static definitions + formatting shared by the four insights panels.
+ * Static definitions + formatting shared by the hunt and Bot panels.
  *
- * Every string here is CLIENT-OWNED copy ported from the legacy Đấu trường
- * screens (labels, thresholds, table headers, honest empty states). Anything
- * that describes real data - disclosure text, reason codes, watchlist notes,
- * consensus numbers, reading evidence lines - stays server-owned and is never
- * re-typed here.
+ * Every string here is CLIENT-OWNED copy (labels, thresholds, table headers,
+ * honest empty states). Anything that describes real data - disclosure text,
+ * reason codes - stays server-owned and is never re-typed here.
  *
  * Icons are Lucide SVGs (the v2 rule: no emoji in our own copy).
  */
 import type { ComponentType } from "react"
-import {
-  ChartColumn,
-  Coins,
-  Newspaper,
-  Target,
-  TrendingUp,
-  UserRound,
-  Wallet,
-} from "lucide-react"
+import { ChartColumn, Coins, Target, TrendingUp, Wallet } from "lucide-react"
 
 export type Icon = ComponentType<{ className?: string }>
 
 export const DASH = "-"
 
-/* ── Four layers (Cấp 4 «Đọc 4 lớp», and Cấp 1's four buy reasons) ───────── */
-
-export type Lop = "ky_thuat" | "dong_tien" | "noi_bo" | "tin_tuc"
-export type NhanDinhLop = "ok" | "neu" | "bad"
-
-/** Canonical layer order - identical to the backend's `LOP_KEYS`. */
-export const LOP_KEYS: readonly Lop[] = ["ky_thuat", "dong_tien", "noi_bo", "tin_tuc"]
-
-export type LopDef = { lop: Lop; Icon: Icon; label: string; source: string }
-
-/** spec §5.1 - the four layers, in the spec's order, with their real sources. */
-export const LOP_DEFS: readonly LopDef[] = [
-  { lop: "ky_thuat", Icon: Target, label: "Kỹ thuật", source: "AI Insight · L1 Xu hướng" },
-  { lop: "dong_tien", Icon: Coins, label: "Dòng tiền", source: "AI Insight · L3 Dòng tiền (khối ngoại + tự doanh)" },
-  { lop: "noi_bo", Icon: UserRound, label: "Nội bộ", source: "AI Insight · L4 Nội bộ (lãnh đạo mua)" },
-  { lop: "tin_tuc", Icon: Newspaper, label: "Tin tức", source: "AI Insight · L5 Tin tức" },
-]
-
-export function lopLabel(value: string | null | undefined): string {
-  if (!value) return DASH
-  return LOP_DEFS.find((def) => def.lop === value)?.label ?? value
-}
-
-/** The four buy reasons of Cấp 1 are the same four layers, in the same order. */
-export const LY_DO_OPTIONS = LOP_DEFS
-
-export const NHAN_DINH_OPTIONS: readonly { value: NhanDinhLop; label: string }[] = [
-  { value: "ok", label: "Ủng hộ" },
-  { value: "neu", label: "Trung tính" },
-  { value: "bad", label: "Ngược chiều" },
-]
-
-export const NHAN_DINH_LABEL: Record<NhanDinhLop, string> = {
-  ok: "Ủng hộ",
-  neu: "Trung tính",
-  bad: "Ngược chiều",
-}
-
-const NHAN_DINH_VALUES: readonly string[] = ["ok", "neu", "bad"]
-
-export type Lop5Partial = Partial<Record<Lop, NhanDinhLop | null>> | null | undefined
-
-/** spec §5.2 cổng cứng - all four layers rated. */
-export function isDoc5LopComplete(answers: Lop5Partial): boolean {
-  if (!answers) return false
-  return LOP_KEYS.every((lop) => NHAN_DINH_VALUES.includes(answers[lop] as string))
-}
-
-export function countRated(answers: Lop5Partial): number {
-  if (!answers) return 0
-  return LOP_KEYS.filter((lop) => answers[lop] != null).length
-}
-
-/** Layers the AI rates Ủng hộ - local display only, the server owns the counters. */
-export function countDongThuan(ai: Lop5Partial): number {
-  if (!ai) return 0
-  return LOP_KEYS.filter((lop) => ai[lop] === "ok").length
-}
-
-/** Layers where both sides exist and agree (a layer missing on either side is neither). */
-export function countCungGocNhin(user: Lop5Partial, ai: Lop5Partial): number {
-  if (!user || !ai) return 0
-  return LOP_KEYS.filter((lop) => user[lop] != null && ai[lop] != null && user[lop] === ai[lop]).length
-}
-
-/* ── Hunt filters (Cấp 5 «Săn mã») ──────────────────────────────────────── */
+/* ── Hunt filters («Săn mã») ──────────────────────────────────────── */
 
 export type HuntFilterKey = "ngoai" | "tudoanh" | "kl" | "dinh" | "tang"
 
@@ -102,7 +27,7 @@ export type HuntFilterDef = {
   ghi_chu_top: string
 }
 
-/** spec §5.3 + mockup - exact order and wording (product definition, not market data). */
+/** Approved order and wording of the five hunt groups (product definition, not market data). */
 export const HUNT_FILTERS: readonly HuntFilterDef[] = [
   {
     ma: "ngoai",
@@ -139,26 +64,16 @@ export const HUNT_FILTERS: readonly HuntFilterDef[] = [
   {
     ma: "tang",
     Icon: TrendingUp,
-    ten: "Tăng mạnh + KL cao",
+    ten: "Tăng mạnh kèm khối lượng",
     mo_ta: "Tăng giá mạnh kèm lực mua thật",
     dieu_kien: "Tăng ≥3% · KL ≥1,5× trung bình 20 phiên",
     ghi_chu_top: "mã tăng mạnh nhất có thanh khoản",
   },
 ]
 
-export const HUNT_FILTER_ORDER: readonly HuntFilterKey[] = ["ngoai", "tudoanh", "kl", "dinh", "tang"]
-
 export function huntFilterDef(ma: string | null | undefined): HuntFilterDef | undefined {
   return HUNT_FILTERS.find((f) => f.ma === ma)
 }
-
-/** Unknown filter codes are never dressed up as a real filter - `null` instead. */
-export function huntFilterLabel(ma: string | null | undefined): string | null {
-  return huntFilterDef(ma)?.ten ?? null
-}
-
-export const NOTABLE_MIN_LOP = 4
-export const TONG_SO_LOP = 5
 
 /* ── Formatting ─────────────────────────────────────────────────────────── */
 
@@ -170,11 +85,6 @@ const RATIO_PERCENT = new Intl.NumberFormat("vi-VN", { style: "percent", maximum
 /** `null`/unknown ⇒ "-". Never 0. */
 export function formatInt(value: number | null | undefined): string {
   return value == null || !Number.isFinite(value) ? DASH : INT_VI.format(Math.round(value))
-}
-
-/** `{n}%` for already-percent numbers; `null` ⇒ "-". */
-export function formatRate(value: number | null | undefined): string {
-  return value == null || !Number.isFinite(value) ? DASH : `${INT_VI.format(Math.round(value))}%`
 }
 
 /** Ratio (`0.03`) ⇒ `3%`. Used by the Bot endpoints, which send ratios. */
@@ -191,7 +101,7 @@ export function formatSignedRate(value: number | null | undefined): string {
   return `${sign}${PERCENT_VALUE.format(Math.abs(value))}%`
 }
 
-/** `+950,000đ` / `−50,000đ` / `0đ` - legacy Cấp 1-6 VND rule (U+2212 minus, glued `đ`). */
+/** `+950,000đ` / `−50,000đ` / `0đ` (U+2212 minus, glued `đ`). */
 export function formatVndSigned(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value)) return DASH
   const rounded = Math.round(value)
@@ -215,14 +125,6 @@ export function formatDateTimeVn(value: string | null | undefined): string {
   return date.toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "short", timeStyle: "short" })
 }
 
-/** `dd/mm` for week labels. */
-export function formatDayMonth(value: string | null | undefined): string {
-  if (!value) return DASH
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return DASH
-  return date.toLocaleDateString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh", day: "2-digit", month: "2-digit" })
-}
-
 /* ── Shared presentation tokens ─────────────────────────────────────────── */
 
 /** Card shell matching the v2 token set (used by every insight block). */
@@ -230,17 +132,3 @@ export const CARD = "min-w-0 space-y-2 rounded-lg border border-border bg-card p
 export const SECTION_HEADER = "text-xs font-bold tracking-wider text-primary uppercase"
 export const NOTE = "text-xs text-muted-foreground"
 export const HINT = "text-xs leading-snug text-muted-foreground"
-
-export const LEVEL_NAMES: readonly string[] = [
-  "Nhập môn",
-  "Học việc",
-  "Kỷ luật",
-  "Bản lĩnh",
-  "Thuần thục",
-  "Lão luyện",
-  "Bậc thầy",
-]
-
-export function levelName(level: number): string {
-  return LEVEL_NAMES[level] ?? `Cấp ${level}`
-}

@@ -1,17 +1,15 @@
 /**
  * Shared presentational primitives for the insight panels: one card shell, one
- * section header, tiles/rows, honest loading/error lines and the four-layer
- * marks. Every panel uses these so the four surfaces stay visually identical.
+ * section header, tiles/rows and honest loading/error lines.
  */
 import type { ReactNode } from "react"
-import { Check, CircleAlert, LoaderCircle, Minus, RefreshCw, TriangleAlert } from "lucide-react"
+import { CircleAlert, LoaderCircle, RefreshCw, TriangleAlert } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { CARD, HINT, NOTE, SECTION_HEADER } from "./copy"
-import type { LopMark } from "./derive"
 
 export function SectionCard({ title, flag, children }: { title: string; flag?: string; children: ReactNode }) {
   return (
@@ -106,23 +104,4 @@ export function NoteLine({ children, tone }: { children: ReactNode; tone?: "warn
 
 export function HintLine({ children }: { children: ReactNode }) {
   return <p className={HINT}>{children}</p>
-}
-
-/**
- * One gate per Cấp group: a failed read is an error, "the Cấp has not been
- * entered yet" is a plain note (never an empty-but-successful screen), and only
- * a loaded payload renders the blocks.
- */
-export function LevelSection({ notEntered, isPending, isError, ready, onRetry, children }: { notEntered: string; isPending: boolean; isError: boolean; ready: boolean; onRetry: () => void; children: ReactNode }) {
-  if (isError) return <ErrorLine text="Không tải được số liệu của cấp này từ máy chủ." onRetry={onRetry} />
-  if (isPending) return <LoadingLine label="Đang tải số liệu của cấp…" />
-  if (!ready) return <NoteLine>{notEntered}</NoteLine>
-  return <>{children}</>
-}
-
-export function LopMarkIcon({ mark, className }: { mark: LopMark; className?: string }) {
-  if (mark === "ok") return <Check className={cn("size-3.5 text-price-up", className)} aria-label="Ủng hộ" />
-  if (mark === "bad") return <TriangleAlert className={cn("size-3.5 text-price-down", className)} aria-label="Ngược chiều" />
-  if (mark === "neu") return <Minus className={cn("size-3.5 text-muted-foreground", className)} aria-label="Trung tính" />
-  return <span className={cn("text-xs text-muted-foreground", className)} aria-label="Chưa rõ">-</span>
 }

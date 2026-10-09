@@ -1,0 +1,25 @@
+{
+  "lesson_id": "ch03-l02",
+  "superseded_by": "ch03-v2.0",
+  "note": "Served from content/packages/ch03. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "Tăng trưởng LNST YoY",
+    "inputs": [
+      [
+        "Lợi nhuận kỳ này",
+        150
+      ],
+      [
+        "Lợi nhuận cùng kỳ",
+        120
+      ]
+    ],
+    "formula": "(Lợi nhuận kỳ này / Lợi nhuận cùng kỳ − 1) × 100",
+    "expected": 25,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Lợi nhuận kỳ này = 150; Lợi nhuận cùng kỳ = 120. Tính Tăng trưởng LNST YoY theo công thức của bài."
+  }
+}

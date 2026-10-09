@@ -57,19 +57,69 @@ export function useDailyCloses(symbol: string) {
   })
 }
 
+/** Optimistic row shown until the server answers; replaced by the refetch. */
+function optimisticWatchlistItem(symbol: string, existing: WatchlistItem[]): WatchlistItem {
+  return {
+    id: `optimistic:${symbol}`,
+    symbol,
+    sortOrder: existing.reduce((max, item) => Math.max(max, item.sortOrder), -1) + 1,
+    createdAt: new Date().toISOString(),
+  }
+}
+
+/**
+ * `POST /watchlists` with an optimistic row. A failure removes only that row
+ * again (never restores a stale snapshot over a concurrent change) and the error
+ * reaches the caller, so nothing reports success the server did not confirm.
+ */
 export function useAddToWatchlist() {
+  const { user } = useAuth()
   const queryClient = useQueryClient()
+  const key = ["watchlist", "list", user?.id] as const
   return useMutation({
     mutationFn: (symbol: string) => addToWatchlist(symbol),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["watchlist"] }),
+    onMutate: async (symbol) => {
+      const code = symbol.trim().toUpperCase()
+      await queryClient.cancelQueries({ queryKey: key })
+      queryClient.setQueryData<WatchlistItem[]>(key, (current) => {
+        if (!current || current.some((item) => item.symbol === code)) return current
+        return [...current, optimisticWatchlistItem(code, current)]
+      })
+      return { code }
+    },
+    onError: (_error, _symbol, context) => {
+      if (!context) return
+      queryClient.setQueryData<WatchlistItem[]>(key, (current) =>
+        current?.filter((item) => !(item.symbol === context.code && item.id.startsWith("optimistic:"))),
+      )
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["watchlist"] }),
   })
 }
 
+/** `DELETE /watchlists/{symbol}` with optimistic removal and a targeted rollback. */
 export function useRemoveFromWatchlist() {
+  const { user } = useAuth()
   const queryClient = useQueryClient()
+  const key = ["watchlist", "list", user?.id] as const
   return useMutation({
     mutationFn: (symbol: string) => removeFromWatchlist(symbol),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["watchlist"] }),
+    onMutate: async (symbol) => {
+      const code = symbol.trim().toUpperCase()
+      await queryClient.cancelQueries({ queryKey: key })
+      const removed = queryClient.getQueryData<WatchlistItem[]>(key)?.find((item) => item.symbol === code) ?? null
+      queryClient.setQueryData<WatchlistItem[]>(key, (current) => current?.filter((item) => item.symbol !== code))
+      return { code, removed }
+    },
+    onError: (_error, _symbol, context) => {
+      if (!context?.removed) return
+      const { removed, code } = context
+      queryClient.setQueryData<WatchlistItem[]>(key, (current) => {
+        if (!current || current.some((item) => item.symbol === code)) return current
+        return [...current, removed].sort((a, b) => a.sortOrder - b.sortOrder)
+      })
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["watchlist"] }),
   })
 }
 

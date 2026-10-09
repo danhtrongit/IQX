@@ -1,0 +1,674 @@
+[
+  {
+    "question": "High = 105; Low = 101; Close trước = 99. TR bằng bao nhiêu?",
+    "options": [
+      {
+        "text": "2 đơn vị giá",
+        "id": "o1"
+      },
+      {
+        "text": "16 đơn vị giá",
+        "id": "o2"
+      },
+      {
+        "text": "6 đơn vị giá",
+        "id": "o3"
+      },
+      {
+        "text": "12 đơn vị giá",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "TR = max(High−Low, |High−Close trước|, |Low−Close trước|)\nATR đầu = trung bình N TR\nATR mới = [(N−1) × ATR trước + TR mới]/N → 6 đơn vị giá",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch07-l01-q01",
+    "lesson_id": "ch07-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Đọc ATR, nhận định nào đúng?",
+    "options": [
+      {
+        "text": "Chỉ báo luôn dự báo chính xác giá phiên tiếp theo.",
+        "id": "o1"
+      },
+      {
+        "text": "Một giá trị chỉ báo tốt bảo đảm giao dịch có lãi sau phí.",
+        "id": "o2"
+      },
+      {
+        "text": "Không cần kiểm tra tham số khi so kết quả hai phía.",
+        "id": "o3"
+      },
+      {
+        "text": "Cấu hình mẫu so ATR với trung bình ATR của N phiên trước. ATR thấp hơn mốc là biến động thấp hơn mốc, không mặc nhiên là giá rẻ.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Cấu hình mẫu so ATR với trung bình ATR của N phiên trước. ATR thấp hơn mốc là biến động thấp hơn mốc, không mặc nhiên là giá rẻ.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch07-l01-q02",
+    "lesson_id": "ch07-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Đang chỉnh riêng phía Mua của ATR; thay chu kỳ hoặc một toán tử rồi lưu. Phía Bán phải thế nào?",
+    "options": [
+      {
+        "text": "Tự sao chép toàn bộ thay đổi từ Mua.",
+        "id": "o1"
+      },
+      {
+        "text": "Tự tắt vì tham số khác nhau.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự đổi dấu thành ngược Mua dù người dùng không lưu.",
+        "id": "o3"
+      },
+      {
+        "text": "Giữ nguyên tham số và toán tử đã lưu riêng của Bán.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Hai phía là hai cấu hình độc lập. Không tự đồng bộ tham số con.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch07-l01-q03",
+    "lesson_id": "ch07-l01",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Dữ liệu cần để tính điều kiện ATR bị thiếu. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Phía sử dụng dữ liệu đó chưa thỏa điều kiện; không tạo true từ dữ liệu thiếu.",
+        "id": "o1"
+      },
+      {
+        "text": "Coi giá trị thiếu bằng 0.",
+        "id": "o2"
+      },
+      {
+        "text": "Coi toán tử ∉ luôn đúng khi thiếu.",
+        "id": "o3"
+      },
+      {
+        "text": "Lấy số của phiên tiếp theo thế vào phiên hiện tại.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "TR đầu tiên cần đóng cửa trước. ATR Wilder cần N TR, baseline SMA của ATR dùng baseline phiên trước không gồm T. Đơn vị giá phải nhất quán.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch07-l01-q04",
+    "lesson_id": "ch07-l01",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Điểm cần lưu ý khi dùng ATR là gì?",
+    "options": [
+      {
+        "text": "Cứ thêm nhiều chỉ báo là hiệu quả chắc chắn tốt hơn.",
+        "id": "o1"
+      },
+      {
+        "text": "Không cần ghi phiên bản công thức vì tên chỉ báo đã đủ.",
+        "id": "o2"
+      },
+      {
+        "text": "Không đưa thêm Stop ATR hay ATR sizing vào khối quản trị vị thế của bản này. ATR chỉ mở ở điều kiện Mua/Bán theo quyết định sản phẩm.",
+        "id": "o3"
+      },
+      {
+        "text": "Có thể cộng phần trăm lợi nhuận các lệnh để ra lợi nhuận danh mục.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Không đưa thêm Stop ATR hay ATR sizing vào khối quản trị vị thế của bản này. ATR chỉ mở ở điều kiện Mua/Bán theo quyết định sản phẩm.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch07-l01-q05",
+    "lesson_id": "ch07-l01",
+    "correct_option_id": "o3"
+  },
+  {
+    "id": "ch07-l01-q06",
+    "lesson_id": "ch07-l01",
+    "question": "High 105, Low 100, Close trước 95. True Range là bao nhiêu?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "10."
+      },
+      {
+        "id": "o2",
+        "text": "5."
+      },
+      {
+        "id": "o3",
+        "text": "100."
+      },
+      {
+        "id": "o4",
+        "text": "0."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "Max(5,10,5)=10; khoảng trống giá được tính.",
+    "skill": "phân biệt tín hiệu và biên dữ liệu",
+    "fixture": null
+  },
+  {
+    "id": "ch07-l01-q07",
+    "lesson_id": "ch07-l01",
+    "question": "ATR tăng gấp đôi. Có đủ kết luận giá sắp tăng không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Không; ATR không mang hướng."
+      },
+      {
+        "id": "o2",
+        "text": "Có, ATR là đường xu hướng tăng."
+      },
+      {
+        "id": "o3",
+        "text": "Có nếu period 14."
+      },
+      {
+        "id": "o4",
+        "text": "Không, nó chắc chắn báo giảm."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "ATR chỉ đo độ rộng biến động.",
+    "skill": "phân biệt tín hiệu và biên dữ liệu",
+    "fixture": null
+  },
+  {
+    "question": "Sau khi chạy ATR, đổi tham số nhưng chưa chạy lại. Lịch sử giao dịch trước phải thế nào?",
+    "options": [
+      {
+        "text": "Tự tạo thêm lệnh để phù hợp cấu hình mới.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nguyên kết quả và cấu hình của lần chạy cũ, báo cần chạy lại.",
+        "id": "o2"
+      },
+      {
+        "text": "Đổi lý do lệnh theo form mới ngay lập tức.",
+        "id": "o3"
+      },
+      {
+        "text": "Giữ giá trị lợi nhuận cũ nhưng đổi tên tham số mà không báo.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Mỗi run có snapshot bất biến. Thay form không phải một lần mô phỏng mới.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch07-l01-q08",
+    "lesson_id": "ch07-l01",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "ATR = 2; Giá đóng cửa = 50. ATR Percent bằng bao nhiêu?",
+    "options": [
+      {
+        "text": "9 %",
+        "id": "o1"
+      },
+      {
+        "text": "1 %",
+        "id": "o2"
+      },
+      {
+        "text": "14 %",
+        "id": "o3"
+      },
+      {
+        "text": "4 %",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "ATR Percent = ATR / Giá đóng cửa × 100 → 4 %",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch07-l02-q01",
+    "lesson_id": "ch07-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Đọc ATR Percent, nhận định nào đúng?",
+    "options": [
+      {
+        "text": "Chỉ báo luôn dự báo chính xác giá phiên tiếp theo.",
+        "id": "o1"
+      },
+      {
+        "text": "Một giá trị chỉ báo tốt bảo đảm giao dịch có lãi sau phí.",
+        "id": "o2"
+      },
+      {
+        "text": "Không cần kiểm tra tham số khi so kết quả hai phía.",
+        "id": "o3"
+      },
+      {
+        "text": "Hai mã có ATR bằng 2 nhưng giá lần lượt 50 và 100 có ATR% khác nhau. Chỉ số chuẩn hóa thích hợp hơn khi so nhiều mức giá.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "Hai mã có ATR bằng 2 nhưng giá lần lượt 50 và 100 có ATR% khác nhau. Chỉ số chuẩn hóa thích hợp hơn khi so nhiều mức giá.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch07-l02-q02",
+    "lesson_id": "ch07-l02",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Đang chỉnh riêng phía Mua của ATR Percent; thay chu kỳ hoặc một toán tử rồi lưu. Phía Bán phải thế nào?",
+    "options": [
+      {
+        "text": "Tự đổi dấu thành ngược Mua dù người dùng không lưu.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nguyên tham số và toán tử đã lưu riêng của Bán.",
+        "id": "o2"
+      },
+      {
+        "text": "Tự sao chép toàn bộ thay đổi từ Mua.",
+        "id": "o3"
+      },
+      {
+        "text": "Tự tắt vì tham số khác nhau.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Hai phía là hai cấu hình độc lập. Không tự đồng bộ tham số con.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch07-l02-q03",
+    "lesson_id": "ch07-l02",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Dữ liệu cần để tính điều kiện ATR Percent bị thiếu. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Phía sử dụng dữ liệu đó chưa thỏa điều kiện; không tạo true từ dữ liệu thiếu.",
+        "id": "o1"
+      },
+      {
+        "text": "Coi giá trị thiếu bằng 0.",
+        "id": "o2"
+      },
+      {
+        "text": "Coi toán tử ∉ luôn đúng khi thiếu.",
+        "id": "o3"
+      },
+      {
+        "text": "Lấy số của phiên tiếp theo thế vào phiên hiện tại.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "ATR hợp lệ và Close>0; thiếu giá hoặc ATR thì missing. N chu kỳ riêng từng phía.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch07-l02-q04",
+    "lesson_id": "ch07-l02",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Điểm cần lưu ý khi dùng ATR Percent là gì?",
+    "options": [
+      {
+        "text": "ATR% cao không nói hướng giảm. Đơn vị phải là 4% hiển thị tương ứng 0,04 lưu; không nhân/chia 100 hai lần.",
+        "id": "o1"
+      },
+      {
+        "text": "Có thể cộng phần trăm lợi nhuận các lệnh để ra lợi nhuận danh mục.",
+        "id": "o2"
+      },
+      {
+        "text": "Cứ thêm nhiều chỉ báo là hiệu quả chắc chắn tốt hơn.",
+        "id": "o3"
+      },
+      {
+        "text": "Không cần ghi phiên bản công thức vì tên chỉ báo đã đủ.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "ATR% cao không nói hướng giảm. Đơn vị phải là 4% hiển thị tương ứng 0,04 lưu; không nhân/chia 100 hai lần.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch07-l02-q05",
+    "lesson_id": "ch07-l02",
+    "correct_option_id": "o1"
+  },
+  {
+    "id": "ch07-l02-q06",
+    "lesson_id": "ch07-l02",
+    "question": "Hai mã ATR cùng 2; giá mãA20, mãB100. ATR% của ai cao hơn?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Cả hai 10%."
+      },
+      {
+        "id": "o2",
+        "text": "A:10%, B:2%."
+      },
+      {
+        "id": "o3",
+        "text": "Cả hai 2%."
+      },
+      {
+        "id": "o4",
+        "text": "A:2%, B:10%."
+      }
+    ],
+    "correct_index": 1,
+    "correct_option_id": "o2",
+    "explanation": "Chuẩn hóa theo giá làm hai mức rủi ro tương đối khác nhau.",
+    "skill": "phân biệt tín hiệu và biên dữ liệu",
+    "fixture": null
+  },
+  {
+    "id": "ch07-l02-q07",
+    "lesson_id": "ch07-l02",
+    "question": "ATR%4 và ngưỡng 5, chọn dấu<. Điều kiện có đạt?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Không."
+      },
+      {
+        "id": "o2",
+        "text": "Chỉ khi RSI>50."
+      },
+      {
+        "id": "o3",
+        "text": "Chỉ khi giá tăng."
+      },
+      {
+        "id": "o4",
+        "text": "Có."
+      }
+    ],
+    "correct_index": 3,
+    "correct_option_id": "o4",
+    "explanation": "Đây là bộ lọc biến động, không cần suy ra hướng.",
+    "skill": "phân biệt tín hiệu và biên dữ liệu",
+    "fixture": null
+  },
+  {
+    "question": "Sau khi chạy ATR Percent, đổi tham số nhưng chưa chạy lại. Lịch sử giao dịch trước phải thế nào?",
+    "options": [
+      {
+        "text": "Giữ nguyên kết quả và cấu hình của lần chạy cũ, báo cần chạy lại.",
+        "id": "o1"
+      },
+      {
+        "text": "Đổi lý do lệnh theo form mới ngay lập tức.",
+        "id": "o2"
+      },
+      {
+        "text": "Giữ giá trị lợi nhuận cũ nhưng đổi tên tham số mà không báo.",
+        "id": "o3"
+      },
+      {
+        "text": "Tự tạo thêm lệnh để phù hợp cấu hình mới.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 0,
+    "explanation": "Mỗi run có snapshot bất biến. Thay form không phải một lần mô phỏng mới.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch07-l02-q08",
+    "lesson_id": "ch07-l02",
+    "correct_option_id": "o1"
+  },
+  {
+    "question": "Khối lượng hiện tại 1,8 triệu; trung bình trước 1,2 triệu. Relative Volume bằng bao nhiêu?",
+    "options": [
+      {
+        "text": "11,5 lần",
+        "id": "o1"
+      },
+      {
+        "text": "1,5 lần",
+        "id": "o2"
+      },
+      {
+        "text": "5,25 lần",
+        "id": "o3"
+      },
+      {
+        "text": "-0,25 lần",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Relative Volume = Volume hiện tại / Trung bình N khối lượng trước → 1,5 lần",
+    "skill": "tính toán",
+    "fixture": null,
+    "id": "ch07-l03-q01",
+    "lesson_id": "ch07-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "question": "Đọc Relative Volume, nhận định nào đúng?",
+    "options": [
+      {
+        "text": "Một giá trị chỉ báo tốt bảo đảm giao dịch có lãi sau phí.",
+        "id": "o1"
+      },
+      {
+        "text": "Không cần kiểm tra tham số khi so kết quả hai phía.",
+        "id": "o2"
+      },
+      {
+        "text": "1,5 lần nghĩa là lượng hiện tại lớn hơn 50% trung bình. Không cần giá tăng hay giảm trừ khi có một dòng giá riêng trong chiến lược.",
+        "id": "o3"
+      },
+      {
+        "text": "Chỉ báo luôn dự báo chính xác giá phiên tiếp theo.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "1,5 lần nghĩa là lượng hiện tại lớn hơn 50% trung bình. Không cần giá tăng hay giảm trừ khi có một dòng giá riêng trong chiến lược.",
+    "skill": "diễn giải",
+    "fixture": null,
+    "id": "ch07-l03-q02",
+    "lesson_id": "ch07-l03",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Đang chỉnh riêng phía Mua của Relative Volume; thay chu kỳ hoặc một toán tử rồi lưu. Phía Bán phải thế nào?",
+    "options": [
+      {
+        "text": "Tự tắt vì tham số khác nhau.",
+        "id": "o1"
+      },
+      {
+        "text": "Tự đổi dấu thành ngược Mua dù người dùng không lưu.",
+        "id": "o2"
+      },
+      {
+        "text": "Giữ nguyên tham số và toán tử đã lưu riêng của Bán.",
+        "id": "o3"
+      },
+      {
+        "text": "Tự sao chép toàn bộ thay đổi từ Mua.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 2,
+    "explanation": "Hai phía là hai cấu hình độc lập. Không tự đồng bộ tham số con.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch07-l03-q03",
+    "lesson_id": "ch07-l03",
+    "correct_option_id": "o3"
+  },
+  {
+    "question": "Dữ liệu cần để tính điều kiện Relative Volume bị thiếu. Kết quả nào đúng?",
+    "options": [
+      {
+        "text": "Coi giá trị thiếu bằng 0.",
+        "id": "o1"
+      },
+      {
+        "text": "Coi toán tử ∉ luôn đúng khi thiếu.",
+        "id": "o2"
+      },
+      {
+        "text": "Lấy số của phiên tiếp theo thế vào phiên hiện tại.",
+        "id": "o3"
+      },
+      {
+        "text": "Phía sử dụng dữ liệu đó chưa thỏa điều kiện; không tạo true từ dữ liệu thiếu.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 3,
+    "explanation": "N khối lượng trước và lượng hiện tại; mẫu số >0. Lượng hiện tại bằng 0 hợp lệ nếu dữ liệu xác nhận, khác với dữ liệu bị thiếu.",
+    "skill": "dữ liệu",
+    "fixture": null,
+    "id": "ch07-l03-q04",
+    "lesson_id": "ch07-l03",
+    "correct_option_id": "o4"
+  },
+  {
+    "question": "Điểm cần lưu ý khi dùng Relative Volume là gì?",
+    "options": [
+      {
+        "text": "Không cần ghi phiên bản công thức vì tên chỉ báo đã đủ.",
+        "id": "o1"
+      },
+      {
+        "text": "Không đồng nhất RVOL và bài Khối lượng: bài trước có thêm hướng giá trong cấu hình mẫu; RVOL ở đây chỉ là tỷ lệ lượng.",
+        "id": "o2"
+      },
+      {
+        "text": "Có thể cộng phần trăm lợi nhuận các lệnh để ra lợi nhuận danh mục.",
+        "id": "o3"
+      },
+      {
+        "text": "Cứ thêm nhiều chỉ báo là hiệu quả chắc chắn tốt hơn.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Không đồng nhất RVOL và bài Khối lượng: bài trước có thêm hướng giá trong cấu hình mẫu; RVOL ở đây chỉ là tỷ lệ lượng.",
+    "skill": "phản biện",
+    "fixture": null,
+    "id": "ch07-l03-q05",
+    "lesson_id": "ch07-l03",
+    "correct_option_id": "o2"
+  },
+  {
+    "id": "ch07-l03-q06",
+    "lesson_id": "ch07-l03",
+    "question": "Khối lượng 300, trung bình trước 100. Relative Volume bằng?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "0,33 lần."
+      },
+      {
+        "id": "o2",
+        "text": "300 lần."
+      },
+      {
+        "id": "o3",
+        "text": "3 lần."
+      },
+      {
+        "id": "o4",
+        "text": "200%."
+      }
+    ],
+    "correct_index": 2,
+    "correct_option_id": "o3",
+    "explanation": "Tỷ số 300/100=3; không nhầm với mức tăng 200%.",
+    "skill": "phân biệt tín hiệu và biên dữ liệu",
+    "fixture": null
+  },
+  {
+    "id": "ch07-l03-q07",
+    "lesson_id": "ch07-l03",
+    "question": "RVOL2, giá giảm. RVOL tự xác nhận dòng tiền mua vào không?",
+    "options": [
+      {
+        "id": "o1",
+        "text": "Không; tỷ số khối lượng không mã hóa hướng."
+      },
+      {
+        "id": "o2",
+        "text": "Có vì lớn hơn 1."
+      },
+      {
+        "id": "o3",
+        "text": "Có nếu chu kỳ 20."
+      },
+      {
+        "id": "o4",
+        "text": "Luôn xác nhận bán khống."
+      }
+    ],
+    "correct_index": 0,
+    "correct_option_id": "o1",
+    "explanation": "Muốn xác nhận hướng cần điều kiện giá riêng.",
+    "skill": "phân biệt tín hiệu và biên dữ liệu",
+    "fixture": null
+  },
+  {
+    "question": "Sau khi chạy Relative Volume, đổi tham số nhưng chưa chạy lại. Lịch sử giao dịch trước phải thế nào?",
+    "options": [
+      {
+        "text": "Tự tạo thêm lệnh để phù hợp cấu hình mới.",
+        "id": "o1"
+      },
+      {
+        "text": "Giữ nguyên kết quả và cấu hình của lần chạy cũ, báo cần chạy lại.",
+        "id": "o2"
+      },
+      {
+        "text": "Đổi lý do lệnh theo form mới ngay lập tức.",
+        "id": "o3"
+      },
+      {
+        "text": "Giữ giá trị lợi nhuận cũ nhưng đổi tên tham số mà không báo.",
+        "id": "o4"
+      }
+    ],
+    "correct_index": 1,
+    "explanation": "Mỗi run có snapshot bất biến. Thay form không phải một lần mô phỏng mới.",
+    "skill": "vận dụng",
+    "fixture": null,
+    "id": "ch07-l03-q08",
+    "lesson_id": "ch07-l03",
+    "correct_option_id": "o2"
+  }
+]

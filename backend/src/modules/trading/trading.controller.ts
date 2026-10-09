@@ -2,7 +2,6 @@ import { Body, Controller, Get, HttpCode, Param, Post, Query } from '@nestjs/com
 import { ApiTags } from '@nestjs/swagger';
 
 import { CurrentUser, Premium, Public, type AuthenticatedUser } from '../auth/index.js';
-import { BillingService } from '../billing/billing.service.js';
 import { TradingService } from './trading.service.js';
 import {
   leaderboardQuerySchema,
@@ -19,10 +18,7 @@ import {
 @ApiTags('Virtual trading')
 @Controller(['api/v1/virtual-trading', 'api/v2/virtual-trading'])
 export class TradingController {
-  constructor(
-    private readonly trading: TradingService,
-    private readonly billing: BillingService,
-  ) {}
+  constructor(private readonly trading: TradingService) {}
 
   @Post('account/activate')
   @Premium()
@@ -45,18 +41,15 @@ export class TradingController {
     @Body({ schema: placeOrderSchema }) body: PlaceOrderBody,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.billing.getEntitlement(user.id, user.role).then((entitlement) =>
-      this.trading.placeOrder({
-        userId: user.id,
-        isPremium: Boolean(entitlement.is_premium),
-        symbol: body.symbol,
-        side: body.side,
-        orderType: body.order_type,
-        quantity: body.quantity,
-        limitPriceVnd: body.limit_price_vnd,
-        journeyPlan: body.journey_plan,
-      }),
-    );
+    return this.trading.placeOrder({
+      userId: user.id,
+      symbol: body.symbol,
+      side: body.side,
+      orderType: body.order_type,
+      quantity: body.quantity,
+      limitPriceVnd: body.limit_price_vnd,
+      journeyPlan: body.journey_plan,
+    });
   }
 
   @Get('orders')

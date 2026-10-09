@@ -15,6 +15,7 @@ import {
   type WalkForwardCriterion,
   type WalkForwardResult,
 } from '../quant/v2/advanced/index.js';
+import type { BacktestEngineSwitches } from '../quant/v2/backtest.js';
 import {
   EngineRunError,
   runBacktest,
@@ -56,6 +57,8 @@ export type BacktestJob = {
   config: SharedConfig;
   bars: Bar[];
   options: RunOptions;
+  /** Engine switches outside `RunOptions` (e.g. `signal_after_open_fill`); applied to the baseline run only. */
+  engine?: BacktestEngineSwitches;
   research: ResearchJob | null;
   system: SystemJob | null;
 };
@@ -84,7 +87,7 @@ export type BacktestJobOutput = {
  * @throws EngineRunError | AdvancedEngineError
  */
 export function executeBacktestJob(job: BacktestJob): BacktestJobOutput {
-  const result = runBacktest(job.config, job.bars, job.options);
+  const result = runBacktest(job.config, job.bars, { ...job.options, ...(job.engine ?? {}) });
   let research: ResearchResult | null = null;
   if (job.research?.kind === 'sensitivity') {
     research = sensitivity(job.config, job.bars, job.options, {

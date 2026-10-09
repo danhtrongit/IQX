@@ -26,15 +26,16 @@ test.describe("introduction landing", () => {
     await expect(header.getByRole("button", { name: "Mở menu điều hướng" })).toBeHidden()
     for (const [name, href] of [
       ["Giới thiệu", "/"],
-      ["Demo Trading", "/demo-trading"],
+      ["Demo Trading", "/demo-trading?view=trading"],
       ["Chiến lược", "/chien-luoc"],
       ["Bài học", "/bai-hoc"],
+      ["Học viện", "/demo-trading?view=academy"],
     ]) {
       await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("href", href)
     }
     await expect(header.getByRole("link", { name: "Bắt đầu ngay" })).toHaveAttribute(
       "href",
-      "/demo-trading?view=journey"
+      "/demo-trading?view=academy"
     )
     const cta = main
       .getByRole("link", { name: "Bắt đầu hành trình", exact: true })
@@ -46,7 +47,7 @@ test.describe("introduction landing", () => {
     expect(box!.y + box!.height).toBeLessThanOrEqual(768)
 
     await cta.click()
-    await expect(page).toHaveURL(/\/demo-trading\?view=journey$/)
+    await expect(page).toHaveURL(/\/demo-trading\?view=academy$/)
 
     await page.goto("/gioi-thieu?utm_source=intro-test")
     await expectReady(page)
@@ -68,16 +69,17 @@ test.describe("introduction landing", () => {
     const nav = menu.getByRole("navigation", { name: "Điều hướng di động" })
     for (const [name, href] of [
       ["Giới thiệu", "/"],
-      ["Demo Trading", "/demo-trading"],
+      ["Demo Trading", "/demo-trading?view=trading"],
       ["Chiến lược", "/chien-luoc"],
       ["Bài học", "/bai-hoc"],
+      ["Học viện", "/demo-trading?view=academy"],
     ]) {
       await expect(nav.getByRole("link", { name, exact: true })).toHaveAttribute("href", href)
     }
-    await expect(menu.getByRole("link", { name: "Bắt đầu ngay" })).toHaveAttribute("href", "/demo-trading?view=journey")
+    await expect(menu.getByRole("link", { name: "Bắt đầu ngay" })).toHaveAttribute("href", "/demo-trading?view=academy")
     await nav.getByRole("link", { name: "Demo Trading", exact: true }).click()
     await expect(menu).not.toBeVisible()
-    await expect(page).toHaveURL(/\/demo-trading$/)
+    await expect(page).toHaveURL(/\/demo-trading\?view=trading$/)
     const overflow = await page.evaluate(() => ({
       width: document.documentElement.scrollWidth,
       client: document.documentElement.clientWidth,

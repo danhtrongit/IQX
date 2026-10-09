@@ -22,7 +22,7 @@ import { LEGAL_LINE_VI } from "../about/about-content"
 import { INTRODUCTION_SEO } from "./introduction-seo"
 import "./landing.css"
 
-const JOURNEY_URL = "/demo-trading?view=journey"
+const JOURNEY_URL = "/demo-trading?view=academy"
 const MASCOT_ROOT = "/assets/mascots-2d/v2/thanh-long"
 const SEO = INTRODUCTION_SEO
 const VALUES = [

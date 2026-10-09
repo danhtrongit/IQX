@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags, type SchemaObject } from '@nestjs/swagger';
 import { z } from 'zod';
 
@@ -11,17 +11,21 @@ import {
 } from '../auth/index.js';
 import { ScreenerEnabledGuard } from './screener-enabled.guard.js';
 import {
-  screenerDefinitionSchema,
   screenerMetricsResponseSchema,
+  screenerResultIdSchema,
+  screenerResultPageSchema,
+  screenerResultQuerySchema,
+  screenerRunInputSchema,
   screenerRunResponseSchema,
-  type ScreenerDefinition,
+  type ScreenerResultQuery,
+  type ScreenerRunInput,
 } from './screener.schemas.js';
 import { ScreenerService } from './screener.service.js';
 
 const openApi = (schema: z.ZodType) =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
 
-/** Bộ lọc (bot-v2) — `.pi/botv2/CONTRACTS.md` §5. Premium; learned metrics only for rules. */
+/** Bộ lọc (bot-v2) — Premium; learned metrics only for rules and reference columns. */
 @ApiTags('Strategy screener')
 @Premium()
 @UseGuards(ScreenerEnabledGuard, ApiAuthGuard, PremiumGuard)
@@ -32,7 +36,7 @@ export class ScreenerController {
   @Get('metrics')
   @ApiOperation({
     operationId: 'screenerMetrics',
-    summary: '42 fundamental registry metrics with learned/supported flags',
+    summary: '42 fundamental registry metrics with learned/readiness flags and period policy',
   })
   @ApiOkResponse({ schema: openApi(screenerMetricsResponseSchema) })
   metrics(@CurrentUser() user: AuthenticatedUser) {
@@ -43,13 +47,28 @@ export class ScreenerController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'screenerRun',
-    summary: 'Run a filter definition (filter.schema.json 2.0) over the market/sector scope',
+    summary:
+      'Run a filter definition 3.0 (a period per rule; 2.0 is mapped) at the latest published reports',
   })
   @ApiOkResponse({ schema: openApi(screenerRunResponseSchema) })
   run(
     @CurrentUser() user: AuthenticatedUser,
-    @Body({ schema: screenerDefinitionSchema }) body: ScreenerDefinition,
+    @Body({ schema: screenerRunInputSchema }) body: ScreenerRunInput,
   ) {
     return this.screener.run(user.id, body);
+  }
+
+  @Get('results/:resultId')
+  @ApiOperation({
+    operationId: 'screenerResultGet',
+    summary: 'One page of a stored run (same as_of on every page; owner only)',
+  })
+  @ApiOkResponse({ schema: openApi(screenerResultPageSchema) })
+  result(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('resultId', { schema: screenerResultIdSchema }) resultId: string,
+    @Query({ schema: screenerResultQuerySchema }) query: ScreenerResultQuery,
+  ) {
+    return this.screener.getResult(user.id, resultId, query);
   }
 }

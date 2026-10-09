@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { RULE_VERSION, SCHEMA_VERSION } from '../quant/v2/types.js';
+
 const compareOpSchema = z.enum(['>', '<']);
 const membershipOpSchema = z.enum(['∈', '∉']);
 
@@ -53,11 +55,33 @@ export const indicatorConfigSchema = z.strictObject({
 
 const indicatorIdSchema = z.string().regex(/^[a-z0-9_]{1,64}$/);
 
+/** The current contract: `iqx-rules-3.0`, exactly the 16 indicators of the Bot registry. */
 export const sharedConfigSchema = z.object({
-  schema_version: z.literal('2.0'),
+  schema_version: z.literal(SCHEMA_VERSION),
   revision: z.number().int().min(1),
-  rule_version: z.literal('iqx-rules-2.0'),
+  rule_version: z.literal(RULE_VERSION),
   indicators: z.record(z.string(), indicatorConfigSchema),
+});
+
+const legacySideReviewSchema = z.object({
+  status: z.enum(['ok', 'legacy_needs_review']),
+  /** Removed indicators that were master ON with this side ON. */
+  indicators: z.array(z.string()),
+});
+
+/**
+ * Present when the stored revision is a historical `iqx-rules-2.0` document (35 indicators).
+ * `config` is then the 16-indicator mapping of it; a side with `legacy_needs_review` must be
+ * blocked by the Bot instead of trading on the remaining rules.
+ */
+export const legacyConfigReviewSchema = z.object({
+  from_rule_version: z.string(),
+  legacy: z.boolean(),
+  removed_indicators: z.array(z.string()),
+  defaulted_indicators: z.array(z.string()),
+  buy: legacySideReviewSchema,
+  sell: legacySideReviewSchema,
+  needs_review: z.boolean(),
 });
 
 /** Only the listed indicators are replaced; every other saved indicator is kept as is. */
@@ -80,16 +104,38 @@ export type RevisionsQuery = z.infer<typeof revisionsQuerySchema>;
 const effectiveStatusSchema = z.enum(['pending', 'effective', 'calendar_unavailable']);
 const sessionDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 
+/**
+ * The revision the Bot (and Backtest) actually use today: the latest saved revision whose
+ * effective session has started. `config` is always the current 16-indicator shape; `legacy`
+ * is the review of a historical (35-indicator) document, exactly like the top-level `legacy`.
+ */
+export const effectiveSharedConfigSchema = z.object({
+  revision: z.number().int().min(1),
+  effective_session: sessionDateSchema,
+  config_hash: z.string(),
+  config: sharedConfigSchema,
+  legacy: legacyConfigReviewSchema.nullable(),
+});
+export type EffectiveSharedConfigView = z.infer<typeof effectiveSharedConfigSchema>;
+
 export const sharedConfigStateSchema = z.object({
   /** 0 = never saved; `config` is then the registry default. */
   saved_revision: z.number().int().min(0),
   effective_revision: z.number().int().min(1).nullable(),
   effective_session: sessionDateSchema.nullable(),
   status: effectiveStatusSchema,
+  /** The latest SAVED config (what the form edits), not necessarily the one in force. */
   config: sharedConfigSchema,
   config_hash: z.string(),
   registry_version: z.string(),
   granted_indicators: z.array(z.string()),
+  /** null/absent unless the latest saved revision is a legacy (35-indicator) document. */
+  legacy: legacyConfigReviewSchema.nullable().optional(),
+  /**
+   * Full config in force today, present whenever `effective_revision` is not null (it equals
+   * `config` when no newer revision is pending); null before any revision became effective.
+   */
+  effective: effectiveSharedConfigSchema.nullable().optional(),
 });
 export type SharedConfigState = z.infer<typeof sharedConfigStateSchema>;
 
@@ -108,6 +154,8 @@ export const sharedConfigRevisionSchema = z.object({
   config_hash: z.string(),
   effective_session: sessionDateSchema.nullable(),
   status: effectiveStatusSchema,
+  /** true for a historical `iqx-rules-2.0` revision (35 indicators); still readable. */
+  legacy: z.boolean(),
 });
 export const sharedConfigRevisionListSchema = z.array(sharedConfigRevisionSchema);
 export type SharedConfigRevisionSummary = z.infer<typeof sharedConfigRevisionSchema>;
@@ -122,6 +170,12 @@ const registryFieldSchema = z.object({
   unit: z.string(),
   api_scale: z.number(),
   wire_unit: z.string(),
+});
+
+const registryCrossFieldSchema = z.object({
+  left: z.string(),
+  op: compareOpSchema,
+  right: z.string(),
 });
 
 const registrySideSchema = z.object({
@@ -144,6 +198,8 @@ export const technicalRegistryResponseSchema = z.object({
       formula: z.string(),
       availability: z.enum(['ohlcv', 'needs_history_context']),
       fields: z.array(registryFieldSchema),
+      /** `cross_fields` are enforced on save, e.g. `fast < slow`; empty when none apply. */
+      validation: z.object({ cross_fields: z.array(registryCrossFieldSchema) }),
       buy: registrySideSchema,
       sell: registrySideSchema,
       learned: z.boolean(),

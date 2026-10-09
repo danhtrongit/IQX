@@ -198,6 +198,24 @@ export class TradingRepository {
     return mapAccount(rows[0]!);
   }
 
+  /** Race-safe create: null when the user already has an account (unique `user_id`). */
+  async createAccountIfAbsent(
+    tx: SqlClient,
+    userId: string,
+    initialCash: bigint,
+  ): Promise<TradingAccount | null> {
+    const rows = await tx.query(
+      `insert into virtual_trading_accounts
+       (id, user_id, status, initial_cash_vnd, cash_available_vnd, cash_reserved_vnd,
+        cash_pending_vnd, activated_at, created_at, updated_at)
+       values ($1, $2, 'active', $3, $3, 0, 0, now(), now(), now())
+       on conflict (user_id) do nothing
+       returning *`,
+      [randomUUID(), userId, initialCash.toString()],
+    );
+    return rows[0] ? mapAccount(rows[0]) : null;
+  }
+
   async updateCash(tx: SqlClient, account: TradingAccount): Promise<TradingAccount> {
     const rows = await tx.query(
       `update virtual_trading_accounts
@@ -488,22 +506,28 @@ export class TradingRepository {
       referenceType?: string;
       referenceId?: string;
       note?: string;
+      /** Durable once-only key (unique); omitted rows keep NULL. */
+      idempotencyKey?: string;
     },
   ): Promise<void> {
+    const values: unknown[] = [
+      randomUUID(),
+      input.accountId,
+      input.amount.toString(),
+      input.balanceAfter.toString(),
+      input.kind,
+      input.referenceType ?? null,
+      input.referenceId ?? null,
+      input.note ?? null,
+    ];
+    // The idempotency column only exists from migration 0015; ordinary trade rows never touch it.
+    if (input.idempotencyKey !== undefined) values.push(input.idempotencyKey);
     await tx.query(
       `insert into virtual_cash_ledger
-       (id, account_id, amount_vnd, balance_after_vnd, kind, reference_type, reference_id, note, created_at)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,now())`,
-      [
-        randomUUID(),
-        input.accountId,
-        input.amount.toString(),
-        input.balanceAfter.toString(),
-        input.kind,
-        input.referenceType ?? null,
-        input.referenceId ?? null,
-        input.note ?? null,
-      ],
+       (id, account_id, amount_vnd, balance_after_vnd, kind, reference_type, reference_id, note,
+        ${input.idempotencyKey !== undefined ? 'idempotency_key, ' : ''}created_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,${input.idempotencyKey !== undefined ? '$9,' : ''}now())`,
+      values,
     );
   }
 

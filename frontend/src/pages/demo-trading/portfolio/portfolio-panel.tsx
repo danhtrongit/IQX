@@ -22,22 +22,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/hooks/use-auth"
 import { HoldingsTab, HoldingsToolbar, useHoldingsFilter } from "./holdings-tab"
 import { HistoryTab, HistoryToolbar, useHistoryQuery } from "./history-tab"
+import { readStoredPortfolioTab, rememberPortfolioTab, type PortfolioTab } from "./tab-state"
 import { WatchlistAddBar, WatchlistTab } from "./watchlist-tab"
-
-export type PortfolioTab = "watchlist" | "holdings" | "history"
-
-const TAB_STORAGE_KEY = "iqx.demo.portfolio.tab"
 
 const TAB_META: Record<PortfolioTab, { label: string; description: string }> = {
   watchlist: { label: "Theo dõi", description: "Mã đang theo dõi" },
   holdings: { label: "Nắm giữ", description: "Vị thế đang nắm giữ" },
   history: { label: "Lịch sử", description: "Toàn bộ lệnh đã đặt" },
-}
-
-function readStoredTab(): PortfolioTab {
-  if (typeof window === "undefined") return "watchlist"
-  const stored = window.localStorage.getItem(TAB_STORAGE_KEY)
-  return stored === "holdings" || stored === "history" ? stored : "watchlist"
 }
 
 export function PortfolioPanel({
@@ -50,14 +41,14 @@ export function PortfolioPanel({
   onNavigate: (panel: string, symbol?: string) => void
 }) {
   const { isAuthenticated, isLoading, openAuth } = useAuth()
-  const [tab, setTab] = useState<PortfolioTab>(readStoredTab)
+  const [tab, setTab] = useState<PortfolioTab>(readStoredPortfolioTab)
   const holdings = useHoldingsFilter()
   const history = useHistoryQuery()
 
   function changeTab(next: string) {
     const value: PortfolioTab = next === "holdings" || next === "history" ? next : "watchlist"
     setTab(value)
-    window.localStorage.setItem(TAB_STORAGE_KEY, value)
+    rememberPortfolioTab(value)
   }
 
   if (isLoading) {
@@ -130,7 +121,11 @@ export function PortfolioPanel({
         }
       >
         <TabsContent value="watchlist" className="space-y-1">
-          <WatchlistTab symbol={symbol} onSymbolChange={onSymbolChange} />
+          <WatchlistTab
+            symbol={symbol}
+            onSymbolChange={onSymbolChange}
+            onOrder={(target) => onNavigate("trading", target)}
+          />
         </TabsContent>
         <TabsContent value="holdings" className="space-y-3">
           <HoldingsTab

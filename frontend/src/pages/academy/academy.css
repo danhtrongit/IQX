@@ -1,0 +1,275 @@
+/*
+ * Typography of the Học viện reader. Only theme tokens (src/index.css) are used, so dark and
+ * light both read well. The class names are the ones the content allowlist keeps
+ * (see sanitize.ts); anything else is stripped before it gets here.
+ */
+
+.academy-prose {
+  font-size: 0.9375rem;
+  line-height: 1.75;
+  color: color-mix(in oklch, var(--foreground) 88%, transparent);
+  overflow-wrap: anywhere;
+}
+.academy-prose > :last-child {
+  margin-bottom: 0;
+}
+.academy-prose p {
+  margin: 0 0 0.75rem;
+}
+.academy-prose strong,
+.academy-prose b {
+  font-weight: 600;
+  color: var(--foreground);
+}
+.academy-prose h3 {
+  margin: 1.25rem 0 0.5rem;
+  font-family: var(--font-heading);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--foreground);
+}
+.academy-prose h4,
+.academy-prose h5 {
+  margin: 1rem 0 0.4rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+.academy-prose ul,
+.academy-prose ol {
+  margin: 0 0 0.75rem;
+  padding-left: 1.4rem;
+}
+.academy-prose ul {
+  list-style: disc;
+}
+.academy-prose ol {
+  list-style: decimal;
+}
+.academy-prose li {
+  margin: 0.2rem 0;
+}
+.academy-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875em;
+  padding: 0.05rem 0.3rem;
+  border-radius: 0.25rem;
+  background: var(--muted);
+}
+.academy-prose sub,
+.academy-prose sup {
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+/* Formulas: boxed, wrapped, scrolling inside instead of widening the page. */
+.academy-prose .formula-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.academy-prose .math-eq,
+.academy-prose .formula {
+  margin: 0.6rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: color-mix(in oklch, var(--muted) 55%, transparent);
+  color: var(--foreground);
+  font-variant-numeric: tabular-nums;
+  line-height: 2;
+  overflow-x: auto;
+  overflow-wrap: anywhere;
+}
+.academy-prose .formula {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.875rem;
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+.academy-prose .formula-group > .math-eq {
+  margin: 0;
+}
+.academy-prose .frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: stretch;
+  vertical-align: middle;
+  text-align: center;
+  line-height: 1.4;
+  margin: 0 0.2rem;
+}
+.academy-prose .frac > span {
+  padding: 0 0.3rem;
+}
+.academy-prose .frac > span:first-child {
+  border-bottom: 1px solid currentColor;
+}
+.academy-prose .good {
+  color: var(--status-success);
+  font-weight: 600;
+}
+
+/* Execution timing example (chapter 2). */
+.academy-prose .execution-example {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+.academy-prose .execution-example > div:not(.time-arrow) {
+  padding: 0.75rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: color-mix(in oklch, var(--muted) 55%, transparent);
+}
+.academy-prose .execution-example span {
+  display: block;
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--muted-foreground);
+}
+.academy-prose .execution-example b {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 1.125rem;
+  font-variant-numeric: tabular-nums;
+}
+.academy-prose .execution-example p {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.academy-prose .time-arrow {
+  align-self: center;
+  font-size: 1.25rem;
+  color: var(--muted-foreground);
+}
+@media (max-width: 560px) {
+  .academy-prose .execution-example {
+    grid-template-columns: 1fr;
+  }
+  .academy-prose .time-arrow {
+    justify-self: center;
+    transform: rotate(90deg);
+  }
+}
+
+/* "Ví dụ điều kiện lọc" chips (chapters 3 and 4). */
+.academy-prose .filter-name,
+.academy-prose .filter-period,
+.academy-prose .filter-expression {
+  display: inline-block;
+  margin: 0.15rem 0.4rem 0.15rem 0;
+  padding: 0.2rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+  background: var(--card);
+  font-size: 0.8125rem;
+  color: var(--foreground);
+}
+.academy-prose .filter-expression {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border-color: color-mix(in oklch, var(--primary) 55%, var(--border));
+}
+
+/* Tables: scroll inside a focusable region, never widen the page. */
+.academy-table-scroll,
+.academy-prose .table-scroll,
+.academy-prose .table-wrap {
+  margin: 0.75rem 0;
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 0.375rem;
+}
+.academy-table-scroll:focus-visible,
+.academy-prose .table-scroll:focus-visible,
+.academy-prose .table-wrap:focus-visible,
+.academy-formula:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.academy-table-scroll table,
+.academy-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+.academy-table-scroll th,
+.academy-table-scroll td,
+.academy-prose th,
+.academy-prose td {
+  min-width: 5rem;
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.academy-table-scroll th,
+.academy-prose th {
+  background: color-mix(in oklch, var(--muted) 70%, transparent);
+  font-weight: 600;
+  color: var(--foreground);
+  white-space: nowrap;
+}
+.academy-table-scroll tr:last-child td,
+.academy-prose tr:last-child td {
+  border-bottom: 0;
+}
+.academy-table-scroll .align-r,
+.academy-table-scroll td.align-r {
+  text-align: right;
+}
+.academy-table-scroll .align-c {
+  text-align: center;
+}
+
+/* Disclosure used by chart data tables, hints and "details" blocks. */
+.academy-details {
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0 0.25rem;
+  margin-top: 0.5rem;
+}
+.academy-details > summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--primary);
+  border-radius: 0.25rem;
+}
+.academy-details > summary::-webkit-details-marker {
+  display: none;
+}
+.academy-details > summary::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s;
+}
+.academy-details[open] > summary::before {
+  transform: rotate(45deg);
+}
+.academy-details > summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .academy-details > summary::before {
+    transition: none;
+  }
+}

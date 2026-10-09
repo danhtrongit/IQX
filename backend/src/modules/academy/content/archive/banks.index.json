@@ -1,0 +1,455 @@
+{
+  "purpose": "Ledger of every released question bank (sha256 questions_version). A bank that is replaced must stay gradable: move it to archive/banks/<questions_version>.json (status superseded) before registering the new one (status current). academy-content.test.ts enforces this.",
+  "banks": [
+    {
+      "lesson_id": "ch01-l01",
+      "questions_version": "69f0598a7390f6a0026630350f61b35e74d9ebe20df3ba479be65eeb785fe04f",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch01-l01",
+      "questions_version": "8a4656c00a35faa2bf4468e44b436b17a4a51014bd632b9711b871e8a260b85e",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch01-v2.0"
+    },
+    {
+      "lesson_id": "ch01-l02",
+      "questions_version": "a46994dd2ddda3472ff7e848ac22069d2a68fcc94a1130a7ecb600f9b4a56cd6",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch01-l02",
+      "questions_version": "6efab6d5960ed5b14303a7ce42e018a768ebe479535b4ce271f915e8d8e07e8c",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch01-v2.0"
+    },
+    {
+      "lesson_id": "ch01-l03",
+      "questions_version": "08e3de628d4ef69a12116bf0937e396c753cca9f6438bd216a71d4bc377fdd46",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch01-l03",
+      "questions_version": "c583ac22725387905954fd02ef2c42f8da49e1c8e112e861150ce22a42471849",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch01-v2.0"
+    },
+    {
+      "lesson_id": "ch01-l04",
+      "questions_version": "f6d155a29993a5bbed868e6f253859af40e671e79897815705747532ce4a9587",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch01-l04",
+      "questions_version": "85110af1b46d51f4ef079a62f194b4f3fc4f11824b379f3ff2a235a8456ced63",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch01-v2.0"
+    },
+    {
+      "lesson_id": "ch01-l05",
+      "questions_version": "2c22b01178c6c3dab6938027e1402f0f335199d1d65dfb4aaa9e64b785a6bff3",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch01-l05",
+      "questions_version": "ab6e6a8ac62ab87c9c6fb92825aee3740f4fba9d12d121d1df3d5a624be4dfaf",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch01-v2.0"
+    },
+    {
+      "lesson_id": "ch01-l06",
+      "questions_version": "b87282dbc8b456afca8fcf036783accde67107a01de6311acbf6a7af9ef13d80",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch01-l06",
+      "questions_version": "81290f6985305a652d46d0ef8d3e9d8a9847dc10c64f023f16743d115bd97ab9",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch01-v2.0"
+    },
+    {
+      "lesson_id": "ch03-l01",
+      "questions_version": "e95a9ee223268bbeda748c4d567a31190a3508c142a0544849d22e7a4d8d38fd",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch03-l01",
+      "questions_version": "737acd92ddce8594fc900d2e23799ba51dc329857ccb8193bdbe9e4a206c6c8d",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch03-v2.0"
+    },
+    {
+      "lesson_id": "ch03-l02",
+      "questions_version": "cfabe05146e230530207d7dcfa8746901933c87ffe3de6f978c3794a8e41eab7",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch03-l02",
+      "questions_version": "e3e0218017b1376817b81edf9644c9d300b020dd0b0d86eb5714a10b6c503a10",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch03-v2.0"
+    },
+    {
+      "lesson_id": "ch03-l03",
+      "questions_version": "63ef7eb2c1c22900b46917d263fef0a0a5bc1c0f07640c99292464665ba53bb3",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch03-l03",
+      "questions_version": "f638bb4b5fcb972e6ef23ae4638a6c79c019c97d1647b31deef504c3fd8103af",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch03-v2.0"
+    },
+    {
+      "lesson_id": "ch03-l04",
+      "questions_version": "2f4cece7705e452385479761a131af81abb6a00a2ed18e224c71f42ae45a34f3",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch03-l04",
+      "questions_version": "3a308e2c577124729e23aeeb7dc757c267038afc3c7c2a8d72e3326eb9842d1e",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch03-v2.0"
+    },
+    {
+      "lesson_id": "ch03-l05",
+      "questions_version": "34718cdd5d8ee9df2457b3d13e0af50001bceca402d379cc0a4c7b57f646f234",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch03-l05",
+      "questions_version": "44365a7bc5bf11498f54ac79a18b39ec5ff21bc9ff02407f97da98e682c093ba",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch03-v2.0"
+    },
+    {
+      "lesson_id": "ch03-l06",
+      "questions_version": "d4c335f3ac4c0defd6af919efb18388df3d8a14765e4c0b648f37f27d695a750",
+      "format": "package-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch03-l06",
+      "questions_version": "19a2c974f1205494c3fa49738f7e93ca78d06f20c588a4fd86fbaf7ea5abaa92",
+      "format": "legacy-v1",
+      "status": "superseded",
+      "content_version": "2.0.0",
+      "superseded_by": "ch03-v2.0"
+    },
+    {
+      "lesson_id": "ch05-l01",
+      "questions_version": "64128a1993c68e5a8047a0208be9cd75e20c9b9de0d69d9e0a4f3502e01e831b",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch05-l02",
+      "questions_version": "80fc32ac958982e51d2f8c76e5176d9d8002f888792b8ad0f2759ccb575d8c9d",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch05-l03",
+      "questions_version": "f2a84d5c89dc981ab999d544504acf6bec843d0f89770aa284c692af0df3d644",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch05-l04",
+      "questions_version": "e8da24e95e716ad3e2ed4407be49fa7c50aa5224889ed956556841e8f337da8c",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch05-l05",
+      "questions_version": "4a3e801aaf707e62493a73709683ab7710505cd2ff59c6569e2c59c1be87f2fe",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch06-l01",
+      "questions_version": "5fe65e25b4c71452c61ff1bbfc274edc78bc8151a11b9550c5da85bef7ed8483",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch06-l02",
+      "questions_version": "96ae15b4b199941f779c7f5acc7a68eeb248d289d2fc2641c2cd3d57d0e97800",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch06-l03",
+      "questions_version": "62d7c1e12e91e5e709bea8c5e04a21137e9948eb1cafc1c34a7b029c92ff9a16",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch06-l04",
+      "questions_version": "08c1c2e37b347c3d2f9debcee3bac842dce2904115d39fbb96d26ed92a271de1",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch06-l05",
+      "questions_version": "468435ec871e6d2ca4350e6ddcda8c2cd134b1dea9634f584799ce3463719b8c",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch06-l06",
+      "questions_version": "b5422240c7fa57a7e9b375679f875687b0efcbdd4e7c20ca12704d4fe1d125f6",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch07-l01",
+      "questions_version": "bfe2c4bc418e94f6bd5d794505264e4928bd9e1a328b9827c26cf36ab9ed4f76",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch07-l02",
+      "questions_version": "611a7ceef3b3c8a714448310f73f0ef07b069bc6212076615eb9bf61eeb67a47",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch07-l03",
+      "questions_version": "885a1d22e5362611dd5810d4f37dff6d97b16aef19c9f30bb9e7d57d4ef11bc9",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch08-l01",
+      "questions_version": "462b45eedb7a133fe31afda7fec7b25480de17188b13fb2dac73e457c765b373",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch08-l02",
+      "questions_version": "679126da856c3d7b310a38c27aa40ed8f0a1d6c58b39fc09eac45fce5b9004d1",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch08-l03",
+      "questions_version": "1ba4cefe2c88d984e54c163e6848604e8348d46b647b3dcc8cf98edec28ce7cb",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch08-l04",
+      "questions_version": "2ccdd9145ac94858234365887c02c66e5b6d49d4072cf8f56480851b63773277",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch08-l05",
+      "questions_version": "09c3e1037e6edb85cb0966fbe94321bc4df079cb4cdad02cb10d28cef9d5c5af",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch08-l06",
+      "questions_version": "00d87f2ef2d29d4dcfee6d7fff4379718ecafc428f6df808cf0353ff2a76ead2",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch09-l01",
+      "questions_version": "671c9726c9fbd79cbdf3c5a0acedd4b50ca8dc49f91b279d0776082bddb78d45",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch09-l02",
+      "questions_version": "0f509b614107ea543d2a5e22c9876d795d414f7edf78991c1d2dc06bec69ac0c",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch09-l03",
+      "questions_version": "d8de994e629b735fb5a660a345a237e7edecf77dfa6118e9c6f35986c9e22c0e",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch09-l04",
+      "questions_version": "30fdaa5bc44f5095133f791f00faf558d3152b77c359ba8678988c8f1b3356de",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch09-l05",
+      "questions_version": "40ea707c413c3ee954f4fac759b8e24b72ad389f3021aa1463727383e2a7a92c",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch09-l06",
+      "questions_version": "aaa298015c8f733f761cf1921eab0ad45ff1bbaa3de9928392ba63f39855c388",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch10-l01",
+      "questions_version": "54291823df6b790ff5410668db793e9f20c72857deb166f58a6dc67df1e42921",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch10-l02",
+      "questions_version": "26406308be7229fa8a91aa6edfce4f8a03c00a277589ce6ade7693ea72310dd8",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch10-l03",
+      "questions_version": "e5f9e0fa3f5fb58ce890413ba0ddd6d531268d9eaa1cc939a8e60410c8be80ad",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch11-l01",
+      "questions_version": "acbef58bbe72a2fcf2a660f0f413b79884dce71ebdc114ff5f92e617c66cb5ee",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch11-l02",
+      "questions_version": "76f674c85ab293cc94d18d12c72d69355938c2dbfddcd638374cf16d6c00990e",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch11-l03",
+      "questions_version": "ca55b76b5ad33ae02d9fd21c130b09b154af680b0ed7ca1ad69547f3f06c6c39",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch11-l04",
+      "questions_version": "3d896f292bf91c9b05a594e32f58fdd3b7b0abfd66494d39964b8735f17ceb7d",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch11-l05",
+      "questions_version": "2ed5cd73c0db786490a71535786ca109b1e53b6bce5aec5766d35c7602d898da",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch11-l06",
+      "questions_version": "1dfe9435b2bd7e2169291dcd58e54257ff9b76cdb445b24feb4a664e0908864f",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch12-l01",
+      "questions_version": "454fcd309c2e1ec85cf80b3314ff5460f238b590a1d3c079581c85133badb04d",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch12-l02",
+      "questions_version": "545b389be72667c84aa8269713ad7ed836afc2c8acfab44309c898a93182e00c",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch12-l03",
+      "questions_version": "005c1a9a6274c9f7c09ffaaa8a6f9423fa9096c80480df84410d6993fb155a0e",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch12-l04",
+      "questions_version": "c1dea1689ea495ee25574f7da2230c2f194d6e62bd3ff48ac640a7a674ef3234",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch12-l05",
+      "questions_version": "53f89a2111c47e2fdc246aa2dde37788b05502312a2e5578e1bbfb20545a9e3f",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch12-l06",
+      "questions_version": "0c6a3effe592a43b24220a399708d14e31c3a83e5ed33be296f0aa4fca73de7b",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch13-l01",
+      "questions_version": "746802fc246b17e5ab412ef96068f4c7cb42285c358f3b746d0b861e9c226e93",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch13-l02",
+      "questions_version": "dcbc8c91d1d6611fee37fbc92f037d638688d6b66ec73646aa9ca7304b84973d",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch13-l03",
+      "questions_version": "75bdd982f6fd250bf63c6066886b6b6120c5806833e297b41ef72047921c0269",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch13-l04",
+      "questions_version": "6bf8a3c550c069304a63a6292bcd919a95a86175e117c56401bd0d69a4c587e3",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch13-l05",
+      "questions_version": "6c1ff88f5410407c46353a5f4d5212c163d5c38f6920ae4041830b416a5b7c11",
+      "format": "legacy-v1",
+      "status": "current"
+    },
+    {
+      "lesson_id": "ch13-l06",
+      "questions_version": "f968c095e527a5cf48a29cdb6c2eecc512b7a3302bede22e418629f84c05719d",
+      "format": "legacy-v1",
+      "status": "current"
+    }
+  ]
+}

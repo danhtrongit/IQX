@@ -1,0 +1,57 @@
+{
+  "lesson_id": "ch11-l05",
+  "content_version": "2.0.0",
+  "origin": "biên soạn mới theo đề cương đã chốt",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>Cash Conversion Cycle</strong> đo số ngày tiền gắn trong tồn kho và phải thu sau khi trừ thời gian được nhà cung cấp tài trợ.</p><p>DIO = tồn kho bình quân / giá vốn × 365. DSO = phải thu thương mại bình quân / doanh thu thuần × 365 theo biến thể dùng tổng doanh thu khi thiếu doanh thu bán chịu. DPO = phải trả thương mại bình quân / giá vốn × 365 theo biến thể xấp xỉ mua hàng. Cả ba dùng cùng kỳ; không áp cho ngân hàng. Ví dụ 60 + 30 − 45 = 45 ngày.</p><p>Chu kỳ 45 ngày là thước đo tổng hợp vốn lưu động; càng ngắn không phải lúc nào cũng tốt nếu do trì hoãn trả nợ quá mức.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula\">DIO + DSO − DPO</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>DIO</td><td>60</td></tr><tr><td>DSO</td><td>30</td></tr><tr><td>DPO</td><td>45</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>45 ngày</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+    },
+    {
+      "title": "Kỳ dữ liệu và giới hạn",
+      "html": "<p>Kỳ mặc định trong gói: <strong>Năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100. Phạm vi mặc định là doanh nghiệp phi tài chính. Ngân hàng, bảo hiểm và công ty chứng khoán cần bộ chỉ tiêu/nguồn riêng; gói không giả dữ liệu để lấp các trường không áp dụng.</p><p>Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.</p><p>DPO kéo dài do mất khả năng thanh toán có thể làm CCC giảm nhưng rủi ro tăng.</p>"
+    },
+    {
+      "title": "Vận dụng trong Bộ lọc",
+      "html": "<p>Thêm <strong>Cash Conversion Cycle</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị ngày.</p><p>Với kết quả minh họa 45 ngày, điều kiện “Cash Conversion Cycle &gt; 44 ngày” đạt. Điều kiện “Cash Conversion Cycle &gt; 45 ngày” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "Cash Conversion Cycle",
+    "inputs": [
+      [
+        "DIO",
+        60
+      ],
+      [
+        "DSO",
+        30
+      ],
+      [
+        "DPO",
+        45
+      ]
+    ],
+    "formula": "DIO + DSO − DPO",
+    "expected": 45,
+    "unit": "ngày",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "DIO = 60; DSO = 30; DPO = 45. Tính Cash Conversion Cycle theo công thức của bài."
+  },
+  "sources": [
+    "source:fundamental-registry-v1",
+    "author:financial-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch12-l05",
+    "chapter": 12
+  }
+}

@@ -5,6 +5,8 @@ import { AdminLayout } from "@/components/layout/admin-layout"
 import { AppShell } from "@/components/layout/app-shell"
 import { demoChrome, emptyChrome } from "@/config/chrome"
 import { demoRouteRedirect } from "@/lib/demo-route-redirect"
+import { AcademyRedirect } from "@/pages/demo-trading/academy-redirect"
+import { demoTradingLoader } from "@/pages/demo-trading/workspace-url"
 import { MaintenancePage, NotFoundPage } from "@/pages/system/route-states"
 
 
@@ -44,7 +46,6 @@ const ForgotPasswordPage = lazyPage(() => import("@/pages/account/forgot-passwor
 const ResetPasswordPage = lazyPage(() => import("@/pages/account/reset-password-page").then(module => ({ default: module.ResetPasswordPage })))
 const CatalogPage = lazyPage(() => import("@/pages/learning/catalog-page").then(module => ({ default: module.CatalogPage })))
 const CourseDetailPage = lazyPage(() => import("@/pages/learning/course-detail-page").then(module => ({ default: module.CourseDetailPage })))
-const AcademyPage = lazyPage(() => import("@/pages/academy/academy-page").then(module => ({ default: module.AcademyPage })))
 const EpisodeViewerPage = lazyPage(() => import("@/pages/learning/episode-viewer-page").then(module => ({ default: module.EpisodeViewerPage })))
 const AdminDashboardPage = lazyPage(() => import("@/pages/admin/core/dashboard-page").then(module => ({ default: module.AdminDashboardPage })))
 const UsersPage = lazyPage(() => import("@/pages/admin/core/users-page").then(module => ({ default: module.UsersPage })))
@@ -100,7 +101,7 @@ export const routes: RouteObject[] = [
       { path: "bang-gia", element: <DemoContentRedirect content="board" />, handle: { chrome: emptyChrome } },
       { path: "bieu-do", element: <DemoContentRedirect content="chart" />, handle: { chrome: emptyChrome } },
       { path: "dashboard", element: <DemoContentRedirect content="chart" />, handle: { chrome: emptyChrome } },
-      { path: "demo-trading", Component: DemoTradingPage, handle: { chrome: demoChrome } },
+      { path: "demo-trading", Component: DemoTradingPage, loader: demoTradingLoader, handle: { chrome: demoChrome } },
       { path: "dau-truong", element: <RedirectWithSearch to="/demo-trading" />, handle: { chrome: emptyChrome } },
       { path: "chien-luoc", Component: StrategyPage, handle: { chrome: emptyChrome } },
       { path: "canh-bao", element: <RedirectWithSearch to="/chien-luoc" tab="canh-bao" />, handle: { chrome: emptyChrome } },
@@ -109,8 +110,8 @@ export const routes: RouteObject[] = [
       { path: "bai-hoc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug", Component: CourseDetailPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug/:episodeId", Component: EpisodeViewerPage, handle: { chrome: emptyChrome } },
-      { path: "hoc-vien", Component: AcademyPage, handle: { chrome: emptyChrome } },
-      { path: "hoc-vien/:lessonId", Component: AcademyPage, handle: { chrome: emptyChrome } },
+      { path: "hoc-vien", Component: AcademyRedirect, handle: { chrome: emptyChrome } },
+      { path: "hoc-vien/:lessonId", Component: AcademyRedirect, handle: { chrome: emptyChrome } },
       { path: "kien-thuc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "cai-dat", Component: SettingsPage, handle: { chrome: emptyChrome } },
       { path: "nang-cap", Component: PremiumPage, handle: { chrome: emptyChrome } },

@@ -3,7 +3,7 @@
  *
  * Container-responsive rows: symbol, last matched price and reference move,
  * then board levels (trần/sàn/cao/thấp/khối lượng) when space is constrained.
- * The panel and journey share the same real market quote and freshness state.
+ * The panels and the workspace share the same real market quote and freshness state.
  *
  * Unknowns are shown as explicit copy ("Chưa có dữ liệu"), never as 0đ.
  */

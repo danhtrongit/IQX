@@ -1,0 +1,25 @@
+{
+  "lesson_id": "ch03-l05",
+  "superseded_by": "ch03-v2.0",
+  "note": "Served from content/packages/ch03. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "Biên lợi nhuận ròng",
+    "inputs": [
+      [
+        "Lợi nhuận sau thuế hợp nhất",
+        120
+      ],
+      [
+        "Doanh thu thuần",
+        1000
+      ]
+    ],
+    "formula": "Lợi nhuận sau thuế hợp nhất / Doanh thu thuần × 100",
+    "expected": 12,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "Lợi nhuận sau thuế hợp nhất = 120; Doanh thu thuần = 1000. Tính Biên lợi nhuận ròng theo công thức của bài."
+  }
+}

@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch08-l05",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: Capex tiền mặt = 150; Doanh thu = 1.000. Capex / Revenue bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "15 %",
+          "id": "o1"
+        },
+        {
+          "text": "25,5 %",
+          "id": "o2"
+        },
+        {
+          "text": "6,5 %",
+          "id": "o3"
+        },
+        {
+          "text": "25 %",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Áp dụng Capex / Doanh thu × 100; kết quả 15 %.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch08-l05-q01",
+      "lesson_id": "ch08-l05",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Capex / Revenue đang bằng đúng 15 %. Bộ lọc đặt > 15 %. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o1"
+        },
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o2"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o3"
+        },
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch08-l05-q02",
+      "lesson_id": "ch08-l05",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc Capex / Revenue?",
+      "options": [
+        {
+          "text": "Capex cao không tự động xấu và Capex thấp không tự động tốt; chi quá ít có thể khiến tài sản xuống cấp.",
+          "id": "o1"
+        },
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o2"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o3"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Cường độ 15% cho biết chi đầu tư bằng 15% doanh thu kỳ này. Capex cao không tự động xấu và Capex thấp không tự động tốt; chi quá ít có thể khiến tài sản xuống cấp.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch08-l05-q03",
+      "lesson_id": "ch08-l05",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính Capex / Revenue. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o2"
+        },
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o3"
+        },
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Một đầu vào thiếu hoặc mẫu số không hợp lệ phải trả trạng thái dữ liệu riêng; không thay bằng 0. Đối chiếu cả nguồn, ngày công bố và đơn vị trước khi so ngưỡng.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch08-l05-q04",
+      "lesson_id": "ch08-l05",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Nhận định nào đúng với Capex / Revenue?",
+      "options": [
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o1"
+        },
+        {
+          "text": "Cường độ 15% cho biết chi đầu tư bằng 15% doanh thu kỳ này.",
+          "id": "o2"
+        },
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o3"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Cường độ 15% cho biết chi đầu tư bằng 15% doanh thu kỳ này. Capex là dòng tiền đầu tư tài sản cố định và vô hình theo định nghĩa của gói. Không thay bằng khấu hao: khấu hao là phân bổ chi phí kế toán, còn Capex là tiền chi. Dòng mua tài sản trên báo cáo thường âm; chuẩn hóa thành số chi dương trước khi tính.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch08-l05-q05",
+      "lesson_id": "ch08-l05",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có Capex / Revenue bằng 13 và 17 %. Điều kiện < 15 % giữ lại ai?",
+      "options": [
+        {
+          "text": "Chỉ B.",
+          "id": "o1"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o2"
+        },
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o3"
+        },
+        {
+          "text": "Chỉ A.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "13 < 15 đúng, 17 < 15 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch08-l05-q06",
+      "lesson_id": "ch08-l05",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Báo cáo dùng tính Capex / Revenue kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o1"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o2"
+        },
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o3"
+        },
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch08-l05-q07",
+      "lesson_id": "ch08-l05",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện Capex / Revenue, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o2"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o3"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch08-l05-q08",
+      "lesson_id": "ch08-l05",
+      "correct_option_id": "o2"
+    }
+  ]
+}

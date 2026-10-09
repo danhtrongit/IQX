@@ -1,0 +1,812 @@
+[
+  {
+    "id": "ch02-l01",
+    "chapter": 2,
+    "order": 1,
+    "name": "Điều kiện Mua",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Điều kiện Mua là tập quy tắc cho phép mở vị thế khi tài khoản đang trống mã đó. Một giá trị RSI hay MA tự nó không phải lệnh; cần toán tử, vế so sánh và trạng thái vị thế.</p><p>AND yêu cầu cả ba cùng đúng ở cùng phiên. Khi ba điều kiện cùng đúng, lệnh vẫn có thể chưa khớp nếu chưa tới thời điểm thực thi hoặc không đủ tiền mua lô tối thiểu.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Entry = Có ít nhất một điều kiện Mua và AND(các điều kiện đang bật)</div><p>Có ba điều kiện Mua: hai đúng, một sai. Có bao nhiêu nhóm AND đạt?</p><p>Kết quả: <strong>0 nhóm</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Thêm MA ở phía Mua. Đặt Giá đóng cửa &gt; SMA 20. Giữ phía Bán riêng. Chạy rồi mở lịch sử để so ngày tín hiệu và ngày mua. Đổi dấu &lt; và chạy lại trên đúng khoảng cũ.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Không có điều kiện Mua trong Backtest một mã phải báo cấu hình chưa đủ. Không tự coi đây là yêu cầu dùng cấu hình Bot.</p><p>Giá trên SMA 20 nhưng tài khoản đang giữ vị thế. Profile một mã, không mua gia tăng, xử lý thế nào?</p><p>Kết luận: <strong>Không mở thêm vị thế chỉ vì điều kiện Mua tiếp tục đúng.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Điều kiện Mua",
+      "prompt": "Có ba điều kiện Mua: hai đúng, một sai. Có bao nhiêu nhóm AND đạt?",
+      "expected": 0,
+      "unit": "nhóm",
+      "formula": "Entry = Có ít nhất một điều kiện Mua và AND(các điều kiện đang bật)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l02",
+    "chapter": 2,
+    "order": 2,
+    "name": "Điều kiện Bán",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Điều kiện Bán chủ động kết thúc một vị thế khi cấu hình phía Bán đạt. Nó độc lập với lý do đã mua và không bắt buộc vị thế đang có lãi.</p><p>Nhóm đạt không đồng nghĩa mở lệnh bán khi chưa có cổ phiếu. Trong profile long-only, Bán chỉ đóng vị thế đang giữ nếu trạng thái cho phép thực thi.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Exit_signal = Có điều kiện Bán và AND(các điều kiện Bán)</div><p>Bán dùng MACD và MA. MACD đúng, MA đúng. Số nhóm AND Bán đạt là bao nhiêu?</p><p>Kết quả: <strong>1 nhóm</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Thêm MACD phía Bán, đặt MACD &lt; Signal. Phía Mua có thể chỉ dùng MA. Xem một giao dịch và đọc cả cấu hình tại ngày mua lẫn ngày bán.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Tập Bán rỗng không phải luôn đúng. Không có thoát kỹ thuật và không có cơ chế thoát khác có thể khiến vị thế còn mở cuối kỳ.</p><p>Đang giữ một vị thế lỗ 2%, các điều kiện Bán đều đúng. Có cần chờ hòa vốn mới bán không?</p><p>Kết luận: <strong>Không; quyết định Bán theo điều kiện đã đặt và quy tắc thực thi.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Điều kiện Bán",
+      "prompt": "Bán dùng MACD và MA. MACD đúng, MA đúng. Số nhóm AND Bán đạt là bao nhiêu?",
+      "expected": 1,
+      "unit": "nhóm",
+      "formula": "Exit_signal = Có điều kiện Bán và AND(các điều kiện Bán)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l03",
+    "chapter": 2,
+    "order": 3,
+    "name": "Khoảng kiểm thử",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Khoảng kiểm thử xác định thời gian ghi nhận giao dịch và kết quả. Dữ liệu trước ngày bắt đầu có thể được dùng để tính chỉ báo nhưng không được ghi lệnh vào kết quả của khoảng test.</p><p>500 phiên dữ liệu không có nghĩa đã kiểm thử 500 phiên. KPI số phiên mô phỏng ở đây chỉ là 300. Các ngày đầu/cuối thực tế phải theo dữ liệu hợp lệ trong phạm vi chọn.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Dữ liệu nạp = dữ liệu khởi tạo trước kỳ + dữ liệu trong kỳ</div><p>Cần 200 phiên khởi tạo trước kỳ và 300 phiên trong kỳ. Tổng cần nạp bao nhiêu phiên?</p><p>Kết quả: <strong>500 phiên</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Chọn ngày bắt đầu và kết thúc; xem khoảng thực tế trong metadata kết quả. Thử tăng chu kỳ MA nhưng giữ ngày đầu: lịch sử nạp trước kỳ phải tăng, không được làm mất âm thầm các phiên đầu có thể giao dịch.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Ngày không giao dịch không phải một bar giá 0. Không gộp dữ liệu tương lai vào phần khởi tạo của một cửa sổ.</p><p>Ngày bắt đầu là ngày nghỉ, phiên đầu có dữ liệu là ngày kế tiếp. Dùng mốc nào cho kết quả thực tế?</p><p>Kết luận: <strong>Phiên hợp lệ đầu tiên trong khoảng đã chọn, ghi rõ ngày thực tế.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Khoảng kiểm thử",
+      "prompt": "Cần 200 phiên khởi tạo trước kỳ và 300 phiên trong kỳ. Tổng cần nạp bao nhiêu phiên?",
+      "expected": 500,
+      "unit": "phiên",
+      "formula": "Dữ liệu nạp = dữ liệu khởi tạo trước kỳ + dữ liệu trong kỳ",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l04",
+    "chapter": 2,
+    "order": 4,
+    "name": "Khớp lệnh",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Thời điểm biết một điều kiện và thời điểm thực hiện lệnh không nhất thiết trùng nhau. Điều kiện dùng đóng cửa và toàn bộ khối lượng ngày chỉ hoàn chỉnh sau khi phiên đó kết thúc.</p><p>Không được giữ giá 100 chỉ vì đó là giá khi tín hiệu hình thành. Cơ chế cùng đóng cửa của IQX Demo là một giả định khác; hai kiểu phải được ghi trong snapshot.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Next-open: tín hiệu đóng cửa T → khớp mở cửa phiên T+1<br/>Same-close demo: tín hiệu đóng cửa T → ghi giá đóng cửa T</div><p>Tín hiệu xuất hiện khi đóng cửa 100; phiên sau mở cửa 105. Giá mua next-open là bao nhiêu?</p><p>Kết quả: <strong>105 đơn vị giá</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Chạy cùng cấu hình với mở cửa phiên kế tiếp rồi với đóng cửa cùng phiên. So ngày/giá trong lịch sử. Phải tách ảnh hưởng thời điểm khớp khỏi thay đổi điều kiện.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Tín hiệu ở phiên cuối không có bar kế tiếp trong khoảng test thì không được bịa lệnh đã khớp. Ghi lệnh chờ bị hủy do hết dữ liệu.</p><p>Tín hiệu cuối phiên cuối cùng đạt; chế độ next-open, không có phiên sau trong khoảng kiểm thử. Kết quả nào đúng?</p><p>Kết luận: <strong>Không ghi một giao dịch mua đã khớp.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Khớp lệnh",
+      "prompt": "Tín hiệu xuất hiện khi đóng cửa 100; phiên sau mở cửa 105. Giá mua next-open là bao nhiêu?",
+      "expected": 105,
+      "unit": "đơn vị giá",
+      "formula": "Next-open: tín hiệu đóng cửa T → khớp mở cửa phiên T+1\nSame-close demo: tín hiệu đóng cửa T → ghi giá đóng cửa T",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l05",
+    "chapter": 2,
+    "order": 5,
+    "name": "Phí giao dịch",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Phí làm giảm tiền sau mua và sau bán; đánh giá chỉ dựa trên giá vào/ra có thể cao hơn lợi nhuận thực của mô phỏng. Preset trong mẫu là giả định, không đại diện mọi công ty chứng khoán.</p><p>Chi phí mua tăng giá vốn thực; chi phí bán giảm tiền thu. Không chỉ lấy 10% trừ một lần phí. Preset kế thừa từ đặc tả cũ: mua 0,15%, bán 0,25%, phải ghi rõ là cấu hình mô phỏng.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Lãi/lỗ lệnh = Giá bán×(1−phí bán) / [Giá mua×(1+phí mua)] − 1</div><p>Mua 100, bán 110; phí mua 0,15%, tổng phí/thuế bán 0,25%. Lợi nhuận thuần khoảng bao nhiêu phần trăm?</p><p>Kết quả: <strong>9,56 %</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>So sánh hai lần chạy cùng dữ liệu và điều kiện với phí chuẩn và không phí. Kiểm tra phần tiền còn lại sau mua lô tối thiểu, không chỉ kiểm tra P/L phần trăm.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Trượt giá, chênh lệch bid/ask và tác động khối lượng chưa tự có chỉ vì đã tính phí. Không tuyên bố backtest đã mô phỏng tất cả chi phí.</p><p>Phí mua đã bị trừ ở điểm đầu. Khi vẽ chart có được đưa điểm sau phí đó thành 0% không?</p><p>Kết luận: <strong>Không; phải giữ ảnh hưởng phí so với vốn ban đầu.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Phí giao dịch",
+      "prompt": "Mua 100, bán 110; phí mua 0,15%, tổng phí/thuế bán 0,25%. Lợi nhuận thuần khoảng bao nhiêu phần trăm?",
+      "expected": 9.560659011482775,
+      "unit": "%",
+      "formula": "Lãi/lỗ lệnh = Giá bán×(1−phí bán) / [Giá mua×(1+phí mua)] − 1",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l06",
+    "chapter": 2,
+    "order": 6,
+    "name": "Tổng lợi nhuận",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Tổng lợi nhuận đo giá trị danh mục cuối kỳ so với vốn ban đầu. Giá trị danh mục gồm tiền mặt và giá trị thị trường của cổ phiếu còn giữ; không phải tổng cộng các tỷ lệ lời từng giao dịch.</p><p>Giá trị cuối là 120 triệu, tăng 20% so với 100 triệu. Vị thế còn mở phải định giá, dù chưa tính nó là một vòng mua−bán hoàn tất.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Return = (Giá trị cuối kỳ / Vốn ban đầu − 1) × 100</div><p>Vốn 100 triệu; cuối kỳ tiền mặt 40 triệu và cổ phiếu trị giá 80 triệu. Tổng lợi nhuận là bao nhiêu?</p><p>Kết quả: <strong>20 %</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Đọc KPI và điểm cuối đường Lợi nhuận danh mục. Hai số phải trùng trong cùng đơn vị. Mở vị thế đang giữ để xem phần lãi chưa thực hiện.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Hai lần giao dịch +10% liên tiếp trên toàn vốn tạo 21% trước phí, không phải 20%. Nạp/rút ngoài mô phỏng cần thước đo khác, không áp công thức này nguyên xi.</p><p>Danh mục đang giữ cổ phiếu lãi chưa thực hiện. Có bỏ phần này khỏi tổng lợi nhuận không?</p><p>Kết luận: <strong>Không; mark-to-market đưa giá trị vị thế vào danh mục.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Tổng lợi nhuận",
+      "prompt": "Vốn 100 triệu; cuối kỳ tiền mặt 40 triệu và cổ phiếu trị giá 80 triệu. Tổng lợi nhuận là bao nhiêu?",
+      "expected": 20,
+      "unit": "%",
+      "formula": "Return = (Giá trị cuối kỳ / Vốn ban đầu − 1) × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l07",
+    "chapter": 2,
+    "order": 7,
+    "name": "CAGR",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>CAGR là tốc độ tăng trưởng kép năm hóa tương đương với tỷ lệ thay đổi giá trị đầu/cuối, theo quy ước thời gian đã ghi. Nó không mô tả lợi nhuận đều đặn mỗi năm.</p><p>504 phiên tương đương 2 năm theo quy ước. Căn bậc hai của 1,21 là 1,10. Mẫu mới giữ quy ước năm hóa 252 phiên của engine cũ để không âm thầm thay ý nghĩa.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">CAGR = [(Giá trị cuối / Vốn đầu)^(252 / số phiên test) − 1] × 100</div><p>Vốn tăng từ 100 lên 121 trong 504 phiên. Theo 252 phiên/năm, CAGR bằng bao nhiêu?</p><p>Kết quả: <strong>10 %</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Đối chiếu CAGR với tổng lợi nhuận và số phiên. Không so CAGR các mẫu quá ngắn như bằng chứng chắc chắn về năng lực chiến lược.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>CAGR của vài tuần được năm hóa có thể rất lớn nhưng không chứng minh lặp lại được cả năm.</p><p>Tổng lợi nhuận 21% trong 2 năm được báo CAGR 21%. Sai ở đâu?</p><p>Kết luận: <strong>Đã dùng tổng lợi nhuận thay cho tốc độ kép năm hóa.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "CAGR",
+      "prompt": "Vốn tăng từ 100 lên 121 trong 504 phiên. Theo 252 phiên/năm, CAGR bằng bao nhiêu?",
+      "expected": 10,
+      "unit": "%",
+      "formula": "CAGR = [(Giá trị cuối / Vốn đầu)^(252 / số phiên test) − 1] × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l08",
+    "chapter": 2,
+    "order": 8,
+    "name": "Sụt giảm lớn nhất",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Sụt giảm tại một thời điểm là mức giá trị danh mục thấp hơn đỉnh đã đạt trước đó. Sụt giảm lớn nhất tìm điểm giảm sâu nhất của cả chuỗi, không chỉ lấy giao dịch lỗ nhất.</p><p>Đỉnh là 120, đáy sau đỉnh là 90, nên 90/120−1=−25%. So với vốn đầu chỉ−10% sẽ bỏ sót mất mát từ đỉnh.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">DD tại T = Giá trị T / đỉnh giá trị từ đầu tới T − 1<br/>Max DD = min(DD tại mọi T)</div><p>Danh mục lần lượt 100,120,90,110. Sụt giảm lớn nhất bằng bao nhiêu phần trăm?</p><p>Kết quả: <strong>-25 %</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Xem đường lợi nhuận danh mục và điểm đỉnh/đáy. Tách thời gian đã phục hồi với trường hợp chưa phục hồi đến cuối kỳ.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Một strategy có lời cuối kỳ vẫn có thể từng chịu sụt giảm rất sâu. Chi phí ngay phiên đầu cũng phải được tính so với vốn ban đầu.</p><p>Danh mục giảm 20% từ đỉnh. Muốn quay lại đúng đỉnh cần tăng bao nhiêu từ đáy?</p><p>Kết luận: <strong>25%.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Sụt giảm lớn nhất",
+      "prompt": "Danh mục lần lượt 100,120,90,110. Sụt giảm lớn nhất bằng bao nhiêu phần trăm?",
+      "expected": -25,
+      "unit": "%",
+      "formula": "DD tại T = Giá trị T / đỉnh giá trị từ đầu tới T − 1\nMax DD = min(DD tại mọi T)",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l09",
+    "chapter": 2,
+    "order": 9,
+    "name": "Số giao dịch",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Số giao dịch trong KPI của IQX ở gói này là số vòng mua rồi bán đã đóng. Số ngày có tín hiệu, số lệnh đặt và số vị thế đã đóng không phải cùng một đại lượng.</p><p>Vị thế còn mở được ghi riêng và vẫn ảnh hưởng giá trị danh mục. Không đếm nó như một giao dịch thắng/thua đã hoàn tất.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">N giao dịch = số vòng mua−bán đã khớp và đóng</div><p>Có 7 lần mua,6 lần bán đóng đủ 6 vị thế,1 vị thế còn mở. KPI số giao dịch đã đóng là bao nhiêu?</p><p>Kết quả: <strong>6 giao dịch</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Mở toàn bộ lịch sử và đối chiếu số hàng với KPI; kiểm tra phần vị thế còn mở. Nếu có phân trang hoặc virtual scroll, tổng dữ liệu vẫn phải đầy đủ.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Lợi nhuận cao từ 3 giao dịch không có độ bao phủ tình huống giống kết quả từ 300 giao dịch. Tuy vậy nhiều giao dịch cũng không đảm bảo độc lập hay có chất lượng.</p><p>Có 20 phiên liên tiếp MA Mua đúng nhưng đang giữ một vị thế. Có 20 giao dịch mua không?</p><p>Kết luận: <strong>Không, tín hiệu lặp không đồng nghĩa giao dịch mới.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Số giao dịch",
+      "prompt": "Có 7 lần mua,6 lần bán đóng đủ 6 vị thế,1 vị thế còn mở. KPI số giao dịch đã đóng là bao nhiêu?",
+      "expected": 6,
+      "unit": "giao dịch",
+      "formula": "N giao dịch = số vòng mua−bán đã khớp và đóng",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l10",
+    "chapter": 2,
+    "order": 10,
+    "name": "Tỷ lệ thắng",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Tỷ lệ thắng là phần giao dịch đã đóng có lợi nhuận thuần dương. Giao dịch hòa vốn không tính thắng; chưa có giao dịch đóng thì tỷ lệ chưa xác định.</p><p>Mẫu số là 8, không bỏ lệnh hòa vốn. Kết quả 3/8=37,5%. Không lấy mức độ đúng của các điều kiện để thay tỷ lệ thắng.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Win rate = Số giao dịch có P/L thuần &gt; 0 / Số giao dịch đã đóng × 100</div><p>Có 8 giao dịch:3 lãi,4 lỗ,1 hòa vốn. Tỷ lệ thắng là bao nhiêu?</p><p>Kết quả: <strong>37,5 %</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Đọc cùng mức lãi trung bình và lỗ trung bình từ lịch sử. Thắng nhiều nhưng mỗi lần thua rất lớn vẫn có thể lỗ chung.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Không có giao dịch đóng phải hiển thị dấu chưa xác định, không phải 0% vì 0% có nghĩa đã quan sát toàn lệnh không thắng.</p><p>Thắng 60%, lãi trung bình 1%, lỗ trung bình 3%. Kỳ vọng theo lệnh trước phí bổ sung bằng bao nhiêu?</p><p>Kết luận: <strong>−0,6%.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Tỷ lệ thắng",
+      "prompt": "Có 8 giao dịch:3 lãi,4 lỗ,1 hòa vốn. Tỷ lệ thắng là bao nhiêu?",
+      "expected": 37.5,
+      "unit": "%",
+      "formula": "Win rate = Số giao dịch có P/L thuần > 0 / Số giao dịch đã đóng × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l11",
+    "chapter": 2,
+    "order": 11,
+    "name": "Lợi nhuận mua và giữ",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Đây là mức thay đổi từ giá đầu kỳ tới giá cuối kỳ khi giả định mua rồi giữ, không phải mức tăng cao nhất trong khoảng. Cuối kỳ là ngày kết thúc thực tế của run, không tự lấy hôm nay.</p><p>Kết quả 30%, không dùng 80% từ đỉnh. Gói giữ benchmark tỷ số giá thuần của engine cũ; phí và lô giao dịch của benchmark phải được ghi rõ khác với danh mục chiến lược.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Mua và giữ = (Giá cuối / Giá đầu − 1) × 100</div><p>Giá đầu 100, giữa kỳ đạt 180, cuối kỳ 130. Lợi nhuận mua và giữ là bao nhiêu?</p><p>Kết quả: <strong>30 %</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Đối chiếu KPI với điểm cuối đường Mua và giữ. Chọn kết thúc ở một ngày quá khứ để chắc chắn engine không lấy giá hiện tại thay thế.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Điều chỉnh cổ tức giá và cộng cổ tức tiền mặt phải tránh tính hai lần. Benchmark giá không tự đồng nghĩa tổng lợi nhuận có cổ tức tái đầu tư.</p><p>Giá cuối thấp hơn đỉnh giữa kỳ. Có được ghi return cao nhất làm KPI Mua và giữ không?</p><p>Kết luận: <strong>Không; KPI luôn dùng đầu kỳ và cuối kỳ được chọn.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Lợi nhuận mua và giữ",
+      "prompt": "Giá đầu 100, giữa kỳ đạt 180, cuối kỳ 130. Lợi nhuận mua và giữ là bao nhiêu?",
+      "expected": 30,
+      "unit": "%",
+      "formula": "Mua và giữ = (Giá cuối / Giá đầu − 1) × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l12",
+    "chapter": 2,
+    "order": 12,
+    "name": "VN-Index làm mốc so sánh",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Mốc so sánh giúp quan sát thị trường trong cùng khoảng, không phải một đường tạo ra lợi nhuận chắc chắn có thể mua trực tiếp với đúng trọng số chỉ số.</p><p>Mỗi chuỗi cùng xuất phát trước giao dịch ở 0%, dùng cùng trục tung tuyến tính. Căn ngày đầu/cuối quan trọng hơn chỉ đặt ba đường lên cùng chart.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Return chỉ số = (Index cuối / Index đầu − 1) × 100</div><p>VN-Index giả định đầu 1200, cuối 1320. Return chỉ số là bao nhiêu?</p><p>Kết quả: <strong>10 %</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Nếu nguồn benchmark thiếu, giữ kết quả chính và ghi rõ không đủ dữ liệu so sánh; không vẽ đường 0% giả.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Không backfill từ một phiên tương lai để làm mốc đầu còn thiếu. Kết quả benchmark cần chính sách giá và lịch đồng nhất.</p><p>Benchmark thiếu dữ liệu đầu kỳ. Có thể lấy điểm bất kỳ đầu tiên được lấy từ nguồn dù trước/sau khoảng để làm mốc không?</p><p>Kết luận: <strong>Không; phải theo hợp đồng ngày chuẩn hoặc báo thiếu.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "VN-Index làm mốc so sánh",
+      "prompt": "VN-Index giả định đầu 1200, cuối 1320. Return chỉ số là bao nhiêu?",
+      "expected": 10,
+      "unit": "%",
+      "formula": "Return chỉ số = (Index cuối / Index đầu − 1) × 100",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l13",
+    "chapter": 2,
+    "order": 13,
+    "name": "Lịch sử giao dịch",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Lịch sử giao dịch giải thích kết quả được tạo ra từ những quyết định nào. Mỗi dòng phải thuộc snapshot của run, không đổi theo cấu hình đang chỉnh.</p><p>30 giao dịch bị che là thiếu sản phẩm, không chỉ thiếu thẩm mỹ. Có thể tối ưu hiển thị bằng virtualscroll nhưng vẫn truy cập đủ mọi row và xuất đủ file.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Lịch sử đầy đủ = mọi giao dịch đã đóng + trạng thái vị thế chưa đóng riêng</div><p>Kết quả có 42 giao dịch đã đóng. UI chỉ hiển thị 12 dòng và không có đường xem phần còn lại. Đang thiếu bao nhiêu giao dịch?</p><p>Kết quả: <strong>30 giao dịch</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Mở lịch sử, xem giá mua/bán, ngày, điều kiện, P/L sau phí, số phiên giữ. Đổi một toán tử trên form mà không chạy: các row cũ phải giữ nguyên.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Không đổi lý do Bán từ MACD sang MA trong lịch sử cũ chỉ vì user vừa xóa MACD.</p><p>Ngày đặt tín hiệu khác ngày khớp lệnh. Cần lưu trường nào?</p><p>Kết luận: <strong>Cả thời điểm tín hiệu và thời điểm/giá khớp tương ứng.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Lịch sử giao dịch",
+      "prompt": "Kết quả có 42 giao dịch đã đóng. UI chỉ hiển thị 12 dòng và không có đường xem phần còn lại. Đang thiếu bao nhiêu giao dịch?",
+      "expected": 30,
+      "unit": "giao dịch",
+      "formula": "Lịch sử đầy đủ = mọi giao dịch đã đóng + trạng thái vị thế chưa đóng riêng",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l14",
+    "chapter": 2,
+    "order": 14,
+    "name": "Độ nhạy tham số",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Độ nhạy kiểm tra kết quả quanh cấu hình đang thử, thay vì chỉ chọn đúng một điểm tốt nhất trong quá khứ. Quét không được tự ghi từng bộ tham số vào Bot.</p><p>3 × 4=12. Lưu cấu hình gốc, toàn bộ kết quả và số lần đã thử; không chỉ chụp lại ô đẹp nhất.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Một thay đổi mỗi lần; giữ cùng dữ liệu, phí và profile</div><p>Quét 3 chu kỳ RSI và 4 ngưỡng, tạo đầy tổ hợp. Có bao nhiêu lần kiểm thử?</p><p>Kết quả: <strong>12 lần</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Tạo một dải nhỏ quanh cấu hình hiện tại. So cả return, drawdown, tradecount và ngoài mẫu. Một vùng ổn định thường đáng nghiên cứu hơn đỉnh đơn lẻ, nhưng không bảo lãnh hiệu suất.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Quét nhiều tổ hợp rồi chọn điểm cao nhất làm tăng nguy cơ khớp quá khứ. Cần một phần dữ liệu chưa dùng để lựa chọn.</p><p>Trong quá trình quét, có được cập nhật 12 cấu hình đó thành cấu hình vận hành chung không?</p><p>Kết luận: <strong>Không; mỗi tổ hợp là snapshot nghiên cứu riêng.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Độ nhạy tham số",
+      "prompt": "Quét 3 chu kỳ RSI và 4 ngưỡng, tạo đầy tổ hợp. Có bao nhiêu lần kiểm thử?",
+      "expected": 12,
+      "unit": "lần",
+      "formula": "Một thay đổi mỗi lần; giữ cùng dữ liệu, phí và profile",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l15",
+    "chapter": 2,
+    "order": 15,
+    "name": "Out-of-Sample",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Kiểm tra ngoài mẫu dùng dữ liệu không tham gia thiết kế hoặc lựa chọn tham số. Việc xem kết quả ngoài mẫu rồi sửa chiến lược biến phần đó thành thông tin đã sử dụng.</p><p>300 phiên cuối không được đưa vào quét tham số. Warmup trước B được phép nếu đều là dữ liệu đã có trước mốc B, nhưng không được ghi lệnh kiểm thử lịch sử.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Xây trên tập A → đóng băng rule/params → đánh giá tập B</div><p>Có 1000 phiên; dành 700 phiên đầu cho xây dựng. Phần ngoài mẫu còn bao nhiêu phiên?</p><p>Kết quả: <strong>300 phiên</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Chọn mốc tách theo thứ tự thời gian, lưu config đóng băng. Chạy ngoài mẫu rồi đọc toàn bộ lệnh thay vì chỉ return.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Chia ngẫu nhiên hàng ngày có thể đưa thông tin tương lai vào khu cần đánh giá quá khứ; không phải quy trình theo thời gian đang học.</p><p>Đã xem kết quả B, rồi sửa tham số và thử B 10 lần. Có còn được gọi là kiểm định ngoài mẫu chưa dùng không?</p><p>Kết luận: <strong>Không; B đã tham gia vào lựa chọn.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Out-of-Sample",
+      "prompt": "Có 1000 phiên; dành 700 phiên đầu cho xây dựng. Phần ngoài mẫu còn bao nhiêu phiên?",
+      "expected": 300,
+      "unit": "phiên",
+      "formula": "Xây trên tập A → đóng băng rule/params → đánh giá tập B",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l16",
+    "chapter": 2,
+    "order": 16,
+    "name": "Walk-Forward",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Walk-Forward lặp lại quá trình xây dựng trên một cửa sổ quá khứ rồi kiểm tra đoạn ngay sau nó. Chỉ ghép các đoạn kiểm tra không trùng nhau để báo hiệu suất đánh giá.</p><p>Không cộng cả cửa sổ train vào test. Các mốc chọn tham số chỉ dùng lịch sử trước đoạn test tương ứng.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Train quá khứ → chọn cấu hình → test đoạn sau → dịch cửa sổ</div><p>Bốn đoạn test không trùng nhau, mỗi đoạn 60 phiên. Tổng số phiên test là bao nhiêu?</p><p>Kết quả: <strong>240 phiên</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Chốt độ dài train/test, cách dịch, tiêu chí chọn tham số, cách xử lý vị thế qua biên. Bản mẫu nghiên cứu dùng các đoạn khởi đầu trống để so độc lập và ghi rõ không phải mô phỏng vận hành liên tục.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Một vòng lặp đi chuyển qua từng bar không tự trở thành Walk-Forward. Phải có tách train/test và chọn lại chỉ từ quá khứ.</p><p>Hai đoạn test trùng 20 phiên, có được cộng tổng lợi nhuận như hai đoạn độc lập không?</p><p>Kết luận: <strong>Không; các phiên trùng bị đếm hai lần.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Walk-Forward",
+      "prompt": "Bốn đoạn test không trùng nhau, mỗi đoạn 60 phiên. Tổng số phiên test là bao nhiêu?",
+      "expected": 240,
+      "unit": "phiên",
+      "formula": "Train quá khứ → chọn cấu hình → test đoạn sau → dịch cửa sổ",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l17",
+    "chapter": 2,
+    "order": 17,
+    "name": "Look-Ahead Bias",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Sai lệch nhìn trước tương lai xảy ra khi quyết định tại một thời điểm dùng dữ liệu chưa thể biết lúc đó. Lỗi có thể xuất hiện trong giá, chỉ số, pivot, báo cáo tài chính hoặc quá trình lựa chọn tham số.</p><p>Không ghi dấu pivot về phiên 10 rồi cho Bot dùng tại 10. Ngày vẽ điểm và ngày thực sự biết điểm là hai khái niệm.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Dữ liệu dùng cho quyết định phải có available_at ≤ decision_time</div><p>Pivot tại phiên 10 cần 3 phiên bên phải để xác nhận. Sớm nhất có thể biết pivot là phiên nào?</p><p>Kết quả: <strong>13 phiên</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Với mỗi điều kiện, truy nguồn bar và timestamp. Kiểm tra cửa sổ cuốn chiếu có trộn T+1 hoặc báo cáo công bố sau quyết định không.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Dữ liệu điều chỉnh hoặc báo cáo điều chỉnh phải có phiên bản theo thời gian; biết bản cuối của báo cáo hiện nay không chứng minh đã biết số tại quá khứ.</p><p>Báo cáo quý kết thúc 31/03 nhưng công bố 25/04. Dùng cho quyết định 01/04 có vấn đề gì?</p><p>Kết luận: <strong>Dùng thông tin chưa công bố ở thời điểm quyết định.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Look-Ahead Bias",
+      "prompt": "Pivot tại phiên 10 cần 3 phiên bên phải để xác nhận. Sớm nhất có thể biết pivot là phiên nào?",
+      "expected": 13,
+      "unit": "phiên",
+      "formula": "Dữ liệu dùng cho quyết định phải có available_at ≤ decision_time",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  },
+  {
+    "id": "ch02-l18",
+    "chapter": 2,
+    "order": 18,
+    "name": "Survivorship Bias",
+    "kind": "tool",
+    "content_version": "2.0.0",
+    "origin": "biên soạn mới theo đề cương đã chốt",
+    "sections": [
+      {
+        "title": "Khái niệm và mục đích",
+        "html": "<p>Sai lệch sống sót xuất hiện khi quá khứ chỉ được kiểm thử trên các công ty còn tồn tại hoặc còn được chọn hôm nay, bỏ các mã đã biến mất hay bị loại khỏi rổ.</p><p>20 mã bị bỏ có thể gồm những trường hợp rủi ro quan trọng. Không được gọi đó là toàn thị trường quá khứ.</p>"
+      },
+      {
+        "title": "Công thức hoặc quy tắc",
+        "html": "<div class=\"formula\">Universe(T) phải theo thành phần hợp lệ tại T</div><p>Quá khứ có 100 mã; hôm nay chỉ 80 mã còn tồn tại. Nếu chỉ kiểm thử 80 mã, đã bỏ bao nhiêu mã?</p><p>Kết quả: <strong>20 mã</strong>. Ví dụ dùng số giả định và quy ước của bài, không phải kết quả đầu tư thực tế.</p>"
+      },
+      {
+        "title": "Thực hành trong IQX",
+        "html": "<p>Lưu thành phần rổ theo ngày, ngày niêm yết/hủy niêm yết và sự kiện hoạt động. Kiểm tra dữ liệu các mã đã bị loại trước khi kết luận chiến lược bền.</p>"
+      },
+      {
+        "title": "Tình huống và giới hạn",
+        "html": "<p>Danh mục lọc hôm nay không tự dùng cho kiểm thử lịch sử từ 2015. Có thể thử danh sách tĩnh theo nghiên cứu riêng nhưng phải gắn nhãn thiên lệch lựa chọn.</p><p>Chỉ backtest các mã đang trong VN 30 hôm nay từ 10 năm trước có thể gây vấn đề gì?</p><p>Kết luận: <strong>Dùng thành phần rổ hiện tại thay cho rổ theo lịch sử.</strong> Không sửa cách diễn giải chỉ để kết quả trông thuận lợi hơn.</p>"
+      }
+    ],
+    "fixture": {
+      "type": "scalar",
+      "label": "Survivorship Bias",
+      "prompt": "Quá khứ có 100 mã; hôm nay chỉ 80 mã còn tồn tại. Nếu chỉ kiểm thử 80 mã, đã bỏ bao nhiêu mã?",
+      "expected": 20,
+      "unit": "mã",
+      "formula": "Universe(T) phải theo thành phần hợp lệ tại T",
+      "tolerance": 0.015,
+      "synthetic": true
+    },
+    "config_id": null,
+    "prerequisites": [],
+    "sources": [
+      "source:curriculum-v1",
+      "source:backtest-spec",
+      "author:execution-contract-v2"
+    ],
+    "review_status": "editorial-v2; subject-matter review and production parity still required"
+  }
+]

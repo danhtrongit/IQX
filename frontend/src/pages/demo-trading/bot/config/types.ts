@@ -1,0 +1,112 @@
+/**
+ * Shared Buy/Sell configuration of the 16 technical indicators (rule version
+ * `iqx-rules-3.0`). One saved configuration per account is shared by the Bot and
+ * the full Backtest; this tool is the only place that edits it.
+ */
+export type CompareOp = ">" | "<"
+export type MembershipOp = "∈" | "∉"
+export type RuleOp = CompareOp | MembershipOp
+export type Side = "buy" | "sell"
+
+export type Operand =
+  | { kind: "series"; key: string; offset?: number }
+  | { kind: "param"; key: string }
+  | { kind: "constant"; value: number }
+
+export type Rule =
+  | { id: string; kind: "compare" | "cross"; lhs: Operand; op: CompareOp; rhs: Operand; allowed_ops: CompareOp[] }
+  | {
+      id: string
+      kind: "membership"
+      lhs: Operand
+      op: MembershipOp
+      rhs: { kind?: "interval"; lower: Operand; upper: Operand; bounds?: "open" }
+      allowed_ops: MembershipOp[]
+    }
+
+export type SideConfig = { enabled: boolean; params: Record<string, number>; rules: Rule[] }
+export type IndicatorConfig = { master_enabled: boolean; buy: SideConfig; sell: SideConfig }
+
+export type SharedConfig = {
+  schema_version: string
+  revision: number
+  rule_version: string
+  indicators: Record<string, IndicatorConfig>
+}
+
+export type EffectiveStatus = "pending" | "effective" | "calendar_unavailable"
+
+/** The revision the Bot uses today: the newest saved one whose effective session has started. */
+export type EffectiveSharedConfig = {
+  revision: number
+  effective_session: string
+  config_hash: string
+  config: SharedConfig
+  legacy?: { needs_review: boolean } | null
+}
+
+export type SharedConfigState = {
+  /** 0 = never saved; `config` is then the registry default. */
+  saved_revision: number
+  effective_revision: number | null
+  /** Session from which the LATEST SAVED revision counts (not the one in force). */
+  effective_session: string | null
+  /** Status of the latest saved revision. */
+  status: EffectiveStatus
+  /** The latest SAVED config: what the form edits, not necessarily the one in force. */
+  config: SharedConfig
+  config_hash: string
+  registry_version: string
+  /** Indicator ids whose lesson quiz is passed (capability `indicator:<id>`). */
+  granted_indicators: string[]
+  legacy?: { needs_review: boolean } | null
+  /** The config in force today; `null` before any revision became effective. */
+  effective?: EffectiveSharedConfig | null
+}
+
+export type SaveSharedConfigResult = {
+  revision: number
+  config: SharedConfig
+  config_hash: string
+  effective_session: string | null
+  status: EffectiveStatus
+}
+
+/** `left op right` must hold between two params of the same side (e.g. `fast < slow`). */
+export type CrossField = { left: string; op: CompareOp; right: string }
+
+export type RegistryField = {
+  key: string
+  label: string
+  type: "integer" | "number"
+  min: number
+  max: number
+  step: number
+  unit: string
+  api_scale: number
+  wire_unit: string
+}
+
+export type RegistrySide = SideConfig & { field_overrides?: Record<string, Partial<RegistryField>> }
+
+export type TechnicalIndicator = {
+  id: string
+  name: string
+  chapter: number
+  lesson_id: string
+  family: "state" | "event"
+  formula: string
+  availability: "ohlcv" | "needs_history_context"
+  fields: RegistryField[]
+  buy: RegistrySide
+  sell: RegistrySide
+  learned: boolean
+  /** `cross_fields` are enforced on save (e.g. `fast < slow`); optional only for a response from before they were published. */
+  validation?: { cross_fields?: CrossField[] }
+}
+
+export type TechnicalRegistry = {
+  calculation_version: string
+  rule_version: string
+  indicators: TechnicalIndicator[]
+}

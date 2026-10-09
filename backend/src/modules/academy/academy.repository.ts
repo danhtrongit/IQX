@@ -7,7 +7,11 @@ export type AttemptRow = {
   id: string;
   user_id: string;
   lesson_id: string;
+  /** NULL for attempts made before the 13ch/71 catalog (they stay in the legacy catalog). */
+  lesson_key: string | null;
+  catalog_version: string;
   content_version: string;
+  /** Pinned per-lesson assessment hash (column kept as `questions_version`). */
   questions_version: string;
   question_ids: string[];
   option_orders: OptionOrders;
@@ -24,6 +28,8 @@ export type NewAttempt = Pick<
   | 'id'
   | 'user_id'
   | 'lesson_id'
+  | 'lesson_key'
+  | 'catalog_version'
   | 'content_version'
   | 'questions_version'
   | 'question_ids'
@@ -38,25 +44,45 @@ export type AnswerRow = {
   correct: boolean;
 };
 
-export type GrantRow = {
-  user_id: string;
-  lesson_id: string;
-  capability_ids: string[];
+/** Server-side draft selections of an open attempt: {question_id: option_id}, never graded. */
+export type DraftRow = {
   attempt_id: string;
-  granted_at: Date;
-  content_version: string;
+  selections: Record<string, string>;
+  /** Number of saves; 1 for the first. An attempt without a draft row has revision 0. */
+  revision: number;
+  updated_at: Date;
 };
 
-export type NewGrant = Pick<
-  GrantRow,
-  'user_id' | 'lesson_id' | 'capability_ids' | 'attempt_id' | 'content_version'
->;
+/** Submitted attempts of one lesson key: the best score only ever grows, whatever a retake scores. */
+export type AttemptStats = { best_score: number | null; attempts_submitted: number };
 
-export type LessonAttemptStats = {
+export type CompletionMethod = 'quiz' | 'guide' | 'legacy_migration';
+
+export type CompletionRow = {
+  user_id: string;
+  lesson_key: string;
+  catalog_version: string;
   lesson_id: string;
-  best_score: number | null;
-  attempts: number;
+  completion_method: CompletionMethod;
+  attempt_id: string | null;
+  request_id: string | null;
+  content_version: string | null;
+  completed_at: Date;
+  source: Record<string, unknown>;
 };
+
+export type NewCompletion = Pick<
+  CompletionRow,
+  | 'user_id'
+  | 'lesson_key'
+  | 'catalog_version'
+  | 'lesson_id'
+  | 'completion_method'
+  | 'attempt_id'
+  | 'request_id'
+  | 'content_version'
+  | 'source'
+>;
 
 /** Persistence operations used by the academy service; one instance per client/transaction. */
 export interface AcademyStore {
@@ -64,24 +90,58 @@ export interface AcademyStore {
   attemptByIdempotencyKey(userId: string, idempotencyKey: string): Promise<AttemptRow | null>;
   /** Locks the owner's attempt row for the rest of the transaction (`for update`). */
   lockAttempt(userId: string, attemptId: string): Promise<AttemptRow | null>;
+  /** The owner's attempt without taking the row lock (read paths). */
+  attemptById(userId: string, attemptId: string): Promise<AttemptRow | null>;
+  /** The owner's most recent OPEN attempt of the lesson key under the given catalog, if any. */
+  latestOpenAttempt(
+    userId: string,
+    lessonKey: string,
+    catalogVersion: string,
+  ): Promise<AttemptRow | null>;
+  /** The owner's submitted attempts of the lesson key, newest first. */
+  submittedAttempts(
+    userId: string,
+    lessonKey: string,
+    limit: number,
+    offset: number,
+  ): Promise<AttemptRow[]>;
   markSubmitted(attemptId: string, score: number, passed: boolean): Promise<AttemptRow | null>;
+  draft(attemptId: string): Promise<DraftRow | null>;
+  /**
+   * Merges `selections` into the attempt's draft (creating it) and bumps the revision. Callers
+   * hold the attempt lock and have validated the ids against the pinned bank.
+   */
+  saveDraft(attemptId: string, selections: Record<string, string>): Promise<DraftRow>;
+  deleteDraft(attemptId: string): Promise<void>;
   answers(attemptId: string): Promise<AnswerRow[]>;
   insertAnswers(answers: readonly AnswerRow[]): Promise<void>;
-  /** Inserts the grant unless one already exists; returns the inserted row or null. */
-  insertGrant(grant: NewGrant): Promise<GrantRow | null>;
-  grant(userId: string, lessonId: string): Promise<GrantRow | null>;
-  grants(userId: string): Promise<GrantRow[]>;
-  attemptStats(userId: string): Promise<LessonAttemptStats[]>;
+  /** Best score and number of submitted attempts of the owner's lesson (current catalog only). */
+  attemptStats(userId: string, lessonKey: string): Promise<AttemptStats>;
+  /** Serializes the owner's completion writes for the rest of the transaction. */
+  lockUser(userId: string): Promise<void>;
+  completion(userId: string, lessonKey: string): Promise<CompletionRow | null>;
+  completionByRequestId(userId: string, requestId: string): Promise<CompletionRow | null>;
+  /** Inserts the completion unless one already exists for (user, lesson key); null if it existed. */
+  insertCompletion(completion: NewCompletion): Promise<CompletionRow | null>;
+  /** Records the reward outcome next to the evidence of the completion that created it. */
+  attachReward(userId: string, lessonKey: string, reward: Record<string, unknown>): Promise<void>;
+  completions(userId: string): Promise<CompletionRow[]>;
+  /** `lesson:<legacy id>` capabilities of the user's legacy academy_grants (read only). */
+  legacyLessonCapabilities(userId: string): Promise<string[]>;
 }
 
 export interface AcademyStoreProvider {
   store(): AcademyStore;
-  transaction<T>(operation: (store: AcademyStore) => Promise<T>): Promise<T>;
+  /** `tx` is the transaction client, handed to cross-module hooks that must join the transaction. */
+  transaction<T>(operation: (store: AcademyStore, tx: SqlClient) => Promise<T>): Promise<T>;
 }
 
-const ATTEMPT_COLUMNS = `id, user_id, lesson_id, content_version, questions_version, question_ids,
-  option_orders, status, idempotency_key, created_at, submitted_at, score, passed`;
-const GRANT_COLUMNS = 'user_id, lesson_id, capability_ids, attempt_id, granted_at, content_version';
+const ATTEMPT_COLUMNS = `id, user_id, lesson_id, lesson_key, catalog_version, content_version,
+  questions_version, question_ids, option_orders, status, idempotency_key, created_at, submitted_at,
+  score, passed`;
+const DRAFT_COLUMNS = 'attempt_id, selections, revision, updated_at';
+const COMPLETION_COLUMNS = `user_id, lesson_key, catalog_version, lesson_id, completion_method,
+  attempt_id, request_id, content_version, completed_at, source`;
 
 export class AcademySqlStore implements AcademyStore {
   constructor(private readonly client: SqlClient) {}
@@ -89,14 +149,17 @@ export class AcademySqlStore implements AcademyStore {
   async insertAttempt(attempt: NewAttempt): Promise<AttemptRow | null> {
     const rows = await this.client.query<AttemptRow>(
       `insert into academy_attempts
-         (id, user_id, lesson_id, content_version, questions_version, question_ids, option_orders, idempotency_key)
-       values ($1, $2, $3, $4, $5, $6::text[], $7::jsonb, $8)
+         (id, user_id, lesson_id, lesson_key, catalog_version, content_version, questions_version,
+          question_ids, option_orders, idempotency_key)
+       values ($1, $2, $3, $4, $5, $6, $7, $8::text[], $9::jsonb, $10)
        on conflict (user_id, idempotency_key) do nothing
        returning ${ATTEMPT_COLUMNS}`,
       [
         attempt.id,
         attempt.user_id,
         attempt.lesson_id,
+        attempt.lesson_key,
+        attempt.catalog_version,
         attempt.content_version,
         attempt.questions_version,
         attempt.question_ids,
@@ -123,6 +186,35 @@ export class AcademySqlStore implements AcademyStore {
     return rows[0] ?? null;
   }
 
+  async attemptById(userId: string, attemptId: string) {
+    const rows = await this.client.query<AttemptRow>(
+      `select ${ATTEMPT_COLUMNS} from academy_attempts where id = $1 and user_id = $2`,
+      [attemptId, userId],
+    );
+    return rows[0] ?? null;
+  }
+
+  async latestOpenAttempt(userId: string, lessonKey: string, catalogVersion: string) {
+    const rows = await this.client.query<AttemptRow>(
+      `select ${ATTEMPT_COLUMNS} from academy_attempts
+       where user_id = $1 and lesson_key = $2 and catalog_version = $3 and status = 'open'
+       order by created_at desc, id desc
+       limit 1`,
+      [userId, lessonKey, catalogVersion],
+    );
+    return rows[0] ?? null;
+  }
+
+  submittedAttempts(userId: string, lessonKey: string, limit: number, offset: number) {
+    return this.client.query<AttemptRow>(
+      `select ${ATTEMPT_COLUMNS} from academy_attempts
+       where user_id = $1 and lesson_key = $2 and status = 'submitted'
+       order by submitted_at desc, id desc
+       limit $3 offset $4`,
+      [userId, lessonKey, limit, offset],
+    );
+  }
+
   async markSubmitted(attemptId: string, score: number, passed: boolean) {
     const rows = await this.client.query<AttemptRow>(
       `update academy_attempts set status = 'submitted', submitted_at = now(), score = $2, passed = $3
@@ -131,6 +223,36 @@ export class AcademySqlStore implements AcademyStore {
       [attemptId, score, passed],
     );
     return rows[0] ?? null;
+  }
+
+  async draft(attemptId: string) {
+    const rows = await this.client.query<DraftRow>(
+      `select ${DRAFT_COLUMNS} from academy_attempt_drafts where attempt_id = $1`,
+      [attemptId],
+    );
+    return rows[0] ?? null;
+  }
+
+  async saveDraft(attemptId: string, selections: Record<string, string>) {
+    const rows = await this.client.query<DraftRow>(
+      `insert into academy_attempt_drafts (attempt_id, selections)
+       values ($1, $2::jsonb)
+       on conflict (attempt_id) do update
+         set selections = academy_attempt_drafts.selections || excluded.selections,
+             revision = academy_attempt_drafts.revision + 1,
+             updated_at = now()
+       returning ${DRAFT_COLUMNS}`,
+      [attemptId, JSON.stringify(selections)],
+    );
+    const row = rows[0];
+    if (!row) throw new Error('Academy draft upsert returned no row');
+    return row;
+  }
+
+  async deleteDraft(attemptId: string) {
+    await this.client.query('delete from academy_attempt_drafts where attempt_id = $1', [
+      attemptId,
+    ]);
   }
 
   answers(attemptId: string) {
@@ -155,54 +277,90 @@ export class AcademySqlStore implements AcademyStore {
     );
   }
 
-  async insertGrant(grant: NewGrant) {
-    const rows = await this.client.query<GrantRow>(
-      `insert into academy_grants (user_id, lesson_id, capability_ids, attempt_id, content_version)
-       values ($1, $2, $3::text[], $4, $5)
-       on conflict (user_id, lesson_id) do nothing
-       returning ${GRANT_COLUMNS}`,
+  async attemptStats(userId: string, lessonKey: string): Promise<AttemptStats> {
+    const rows = await this.client.query<{ best_score: number | null; attempts_submitted: number }>(
+      `select max(score) as best_score, count(*)::int as attempts_submitted
+       from academy_attempts
+       where user_id = $1 and lesson_key = $2 and status = 'submitted'`,
+      [userId, lessonKey],
+    );
+    return {
+      best_score: rows[0]?.best_score ?? null,
+      attempts_submitted: Number(rows[0]?.attempts_submitted ?? 0),
+    };
+  }
+
+  async lockUser(userId: string) {
+    await this.client.query(
+      `select pg_advisory_xact_lock(hashtext('academy_completions:' || $1::text))`,
+      [userId],
+    );
+  }
+
+  async completion(userId: string, lessonKey: string) {
+    const rows = await this.client.query<CompletionRow>(
+      `select ${COMPLETION_COLUMNS} from academy_completions where user_id = $1 and lesson_key = $2`,
+      [userId, lessonKey],
+    );
+    return rows[0] ?? null;
+  }
+
+  async completionByRequestId(userId: string, requestId: string) {
+    const rows = await this.client.query<CompletionRow>(
+      `select ${COMPLETION_COLUMNS} from academy_completions where user_id = $1 and request_id = $2`,
+      [userId, requestId],
+    );
+    return rows[0] ?? null;
+  }
+
+  async insertCompletion(completion: NewCompletion) {
+    const rows = await this.client.query<CompletionRow>(
+      `insert into academy_completions
+         (user_id, lesson_key, catalog_version, lesson_id, completion_method, attempt_id, request_id,
+          content_version, source)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9::jsonb)
+       on conflict (user_id, lesson_key) do nothing
+       returning ${COMPLETION_COLUMNS}`,
       [
-        grant.user_id,
-        grant.lesson_id,
-        grant.capability_ids,
-        grant.attempt_id,
-        grant.content_version,
+        completion.user_id,
+        completion.lesson_key,
+        completion.catalog_version,
+        completion.lesson_id,
+        completion.completion_method,
+        completion.attempt_id,
+        completion.request_id,
+        completion.content_version,
+        JSON.stringify(completion.source),
       ],
     );
     return rows[0] ?? null;
   }
 
-  async grant(userId: string, lessonId: string) {
-    const rows = await this.client.query<GrantRow>(
-      `select ${GRANT_COLUMNS} from academy_grants where user_id = $1 and lesson_id = $2`,
-      [userId, lessonId],
+  async attachReward(userId: string, lessonKey: string, reward: Record<string, unknown>) {
+    await this.client.query(
+      `update academy_completions set source = source || jsonb_build_object('reward', $3::jsonb)
+       where user_id = $1 and lesson_key = $2`,
+      [userId, lessonKey, JSON.stringify(reward)],
     );
-    return rows[0] ?? null;
   }
 
-  grants(userId: string) {
-    return this.client.query<GrantRow>(
-      `select ${GRANT_COLUMNS} from academy_grants where user_id = $1 order by granted_at, lesson_id`,
+  completions(userId: string) {
+    return this.client.query<CompletionRow>(
+      `select ${COMPLETION_COLUMNS} from academy_completions
+       where user_id = $1 order by completed_at, lesson_key`,
       [userId],
     );
   }
 
-  async attemptStats(userId: string) {
-    const rows = await this.client.query<{
-      lesson_id: string;
-      best_score: number | null;
-      attempts: number;
-    }>(
-      `select lesson_id, max(score)::int as best_score, count(*)::int as attempts
-       from academy_attempts where user_id = $1 and status = 'submitted'
-       group by lesson_id`,
+  async legacyLessonCapabilities(userId: string) {
+    const rows = await this.client.query<{ capability: string }>(
+      `select distinct c.capability
+       from academy_grants g cross join lateral unnest(g.capability_ids) as c(capability)
+       where g.user_id = $1 and c.capability like 'lesson:%'
+       order by c.capability`,
       [userId],
     );
-    return rows.map((row) => ({
-      lesson_id: row.lesson_id,
-      best_score: row.best_score === null ? null : Number(row.best_score),
-      attempts: Number(row.attempts),
-    }));
+    return rows.map((row) => row.capability);
   }
 }
 
@@ -214,7 +372,7 @@ export class AcademyRepository implements AcademyStoreProvider {
     return new AcademySqlStore(this.database);
   }
 
-  transaction<T>(operation: (store: AcademyStore) => Promise<T>): Promise<T> {
-    return this.database.transaction((client) => operation(new AcademySqlStore(client)));
+  transaction<T>(operation: (store: AcademyStore, tx: SqlClient) => Promise<T>): Promise<T> {
+    return this.database.transaction((client) => operation(new AcademySqlStore(client), client));
   }
 }

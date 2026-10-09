@@ -69,6 +69,7 @@ function maConfig(sell = false): SharedConfig {
   const c = defaultConfig();
   const ma = indicator(c, 'ma');
   ma.master_enabled = true;
+  ma.buy.enabled = true;
   ma.buy.params.period = 5;
   ma.sell.params.period = 5;
   ma.sell.enabled = sell;
@@ -95,6 +96,8 @@ describe('quant v2 advanced — runSystem parity with the single run', () => {
   const config = (): SharedConfig => {
     const c = defaultConfig();
     indicator(c, 'ma').master_enabled = true;
+    indicator(c, 'ma').buy.enabled = true;
+    indicator(c, 'ma').sell.enabled = true;
     indicator(c, 'ma').sell.params.period = 30;
     return c;
   };
@@ -559,6 +562,7 @@ describe('quant v2 advanced — logic groups in a system run', () => {
     const both = maConfig();
     const roc = indicator(both, 'roc');
     roc.master_enabled = true;
+    roc.buy.enabled = true;
     roc.sell.enabled = false;
     roc.buy.params.period = 2;
     roc.buy.params.level = 50; // never reached → AND blocks every buy

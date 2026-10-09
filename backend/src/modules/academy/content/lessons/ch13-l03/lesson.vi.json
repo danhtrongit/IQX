@@ -1,0 +1,53 @@
+{
+  "lesson_id": "ch13-l03",
+  "content_version": "2.0.0",
+  "origin": "biên soạn mới theo đề cương đã chốt",
+  "sections": [
+    {
+      "title": "Khái niệm và cách đọc",
+      "html": "<p><strong>Dividend Growth</strong> đo tốc độ tăng trưởng kép cổ tức tiền mặt mỗi cổ phiếu qua ba năm.</p><p>Cộng cổ tức tiền mặt theo từng năm của cùng chính sách ghi nhận ngày giao dịch không hưởng quyền và cùng cơ sở cổ phiếu. Gói yêu cầu đủ bốn mốc dương cho CAGR thông thường. Khi cổ tức mới bắt đầu, hiển thị trạng thái bắt đầu chi trả thay vì tốc độ phần trăm vô hạn.</p><p>CAGR cổ tức 10% mô tả lịch sử chi trả tăng, không chứng minh lợi nhuận đủ duy trì nhịp tăng.</p>"
+    },
+    {
+      "title": "Công thức và ví dụ tính",
+      "html": "<div class=\"formula\">[(DPS cuối / DPS gốc)^(1/3) − 1] × 100</div><div class=\"table-wrap\"><table><thead><tr><th>Thành phần</th><th>Giá trị minh họa</th></tr></thead><tbody><tr><td>DPS cuối năm 3</td><td>1.331</td></tr><tr><td>DPS năm gốc</td><td>1.000</td></tr></tbody></table></div><p>Thay các giá trị trên vào công thức cho kết quả <strong>10 %</strong>. Đây là dữ liệu giả định dùng để tính toán, không phải số liệu của một doanh nghiệp niêm yết cụ thể.</p>"
+    },
+    {
+      "title": "Kỳ dữ liệu và giới hạn",
+      "html": "<p>Kỳ mặc định trong gói: <strong>Ba năm</strong>. Bộ lọc chỉ dùng số liệu đã được công bố tại thời điểm đang xét. Giá trị phần trăm lưu bằng tỷ lệ trong API; 15% hiển thị tương ứng 0,15 trong payload. Các chỉ tiêu có đơn vị lần, ngày hoặc năm không chia thêm cho 100.</p><p>Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.</p><p>Năm gốc không chia cổ tức làm phép chia không xác định; không tự thay 0 bằng 1 để tính.</p>"
+    },
+    {
+      "title": "Vận dụng trong Bộ lọc",
+      "html": "<p>Thêm <strong>Dividend Growth</strong> ở Chiến lược → Bộ lọc. Chọn toán tử <strong>&gt;</strong> hoặc <strong>&lt;</strong>, sau đó nhập ngưỡng theo đơn vị %.</p><p>Với kết quả minh họa 10 %, điều kiện “Dividend Growth &gt; 9 %” đạt. Điều kiện “Dividend Growth &gt; 10 %” không đạt vì dấu so sánh là nghiêm ngặt.</p><p>Thử riêng một điều kiện trước, rồi thêm một chỉ tiêu đã học khác bằng AND. Chỉ doanh nghiệp đạt mọi điều kiện mới ở lại. Danh sách đạt là tập cần nghiên cứu, không tự tạo lệnh mua. Lưu bộ lọc giữ tiêu chí; Lưu danh mục giữ danh sách tại ngày quan sát.</p>"
+    }
+  ],
+  "fixture": {
+    "type": "scalar",
+    "label": "Dividend Growth",
+    "inputs": [
+      [
+        "DPS cuối năm 3",
+        1331
+      ],
+      [
+        "DPS năm gốc",
+        1000
+      ]
+    ],
+    "formula": "[(DPS cuối / DPS gốc)^(1/3) − 1] × 100",
+    "expected": 10,
+    "unit": "%",
+    "tolerance": 0.015,
+    "synthetic": true,
+    "prompt": "DPS cuối năm 3 = 1331; DPS năm gốc = 1000. Tính Dividend Growth theo công thức của bài."
+  },
+  "sources": [
+    "source:fundamental-registry-v1",
+    "author:financial-contract-v2"
+  ],
+  "review_status": "editorial-v2; subject-matter review and production parity still required",
+  "rehomed_from": {
+    "catalog_version": "iqx-academy-legacy-18ch-125lessons",
+    "lesson_id": "ch15-l03",
+    "chapter": 15
+  }
+}

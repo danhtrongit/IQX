@@ -1,0 +1,519 @@
+[
+  {
+    "no": 1,
+    "title": "Chỉ báo kỹ thuật nền tảng",
+    "type": "technical",
+    "lessons": [
+      {
+        "id": "ch01-l01",
+        "name": "RSI",
+        "indicator": "rsi",
+        "type": "technical"
+      },
+      {
+        "id": "ch01-l02",
+        "name": "MACD",
+        "indicator": "macd",
+        "type": "technical"
+      },
+      {
+        "id": "ch01-l03",
+        "name": "MA / SMA",
+        "indicator": "ma",
+        "type": "technical"
+      },
+      {
+        "id": "ch01-l04",
+        "name": "Bollinger Bands",
+        "indicator": "bollinger",
+        "type": "technical"
+      },
+      {
+        "id": "ch01-l05",
+        "name": "Khối lượng",
+        "indicator": "volume",
+        "type": "technical"
+      },
+      {
+        "id": "ch01-l06",
+        "name": "Hợp lưu",
+        "indicator": null,
+        "type": "concept"
+      }
+    ]
+  },
+  {
+    "no": 2,
+    "title": "Sử dụng Backtest",
+    "type": "tool",
+    "lessons": [
+      {
+        "id": "ch02-l01",
+        "name": "Bắt đầu với Backtest",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch02-l02",
+        "name": "Thiết lập điều kiện Mua",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch02-l03",
+        "name": "Thiết lập điều kiện Bán",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch02-l04",
+        "name": "Chọn giả định và chạy kiểm thử",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch02-l05",
+        "name": "Đọc kết quả và lịch sử giao dịch",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch02-l06",
+        "name": "Điều chỉnh, so sánh và lưu kết quả",
+        "indicator": null,
+        "type": "guide"
+      }
+    ]
+  },
+  {
+    "no": 3,
+    "title": "Phân tích cơ bản nền tảng",
+    "type": "fundamental",
+    "lessons": [
+      {
+        "id": "ch03-l01",
+        "name": "Tăng trưởng doanh thu YoY",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch03-l02",
+        "name": "Tăng trưởng LNST YoY",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch03-l03",
+        "name": "Tăng trưởng EPS YoY",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch03-l04",
+        "name": "Biên lợi nhuận gộp",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch03-l05",
+        "name": "Biên lợi nhuận ròng",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch03-l06",
+        "name": "ROE",
+        "indicator": null,
+        "type": "fundamental"
+      }
+    ]
+  },
+  {
+    "no": 4,
+    "title": "Sử dụng Bộ lọc",
+    "type": "tool",
+    "lessons": [
+      {
+        "id": "ch04-l01",
+        "name": "Bắt đầu với Bộ lọc",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch04-l02",
+        "name": "Thiết lập điều kiện lọc",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch04-l03",
+        "name": "Chọn kỳ tính cho từng chỉ tiêu",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch04-l04",
+        "name": "Đọc và kiểm tra kết quả",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch04-l05",
+        "name": "Điều chỉnh và lưu bộ lọc",
+        "indicator": null,
+        "type": "guide"
+      },
+      {
+        "id": "ch04-l06",
+        "name": "Lưu và áp dụng danh mục cho Bot",
+        "indicator": null,
+        "type": "guide"
+      }
+    ]
+  },
+  {
+    "no": 5,
+    "title": "Xu hướng và động lượng nâng cao",
+    "type": "technical",
+    "lessons": [
+      {
+        "id": "ch05-l01",
+        "name": "EMA",
+        "indicator": "ema",
+        "type": "technical"
+      },
+      {
+        "id": "ch05-l02",
+        "name": "MA Cross",
+        "indicator": "ma_cross",
+        "type": "technical"
+      },
+      {
+        "id": "ch05-l03",
+        "name": "DMI",
+        "indicator": "dmi",
+        "type": "technical"
+      },
+      {
+        "id": "ch05-l04",
+        "name": "Stochastic",
+        "indicator": "stochastic",
+        "type": "technical"
+      },
+      {
+        "id": "ch05-l05",
+        "name": "CCI",
+        "indicator": "cci",
+        "type": "technical"
+      }
+    ]
+  },
+  {
+    "no": 6,
+    "title": "Sức khỏe tài chính doanh nghiệp",
+    "type": "fundamental",
+    "lessons": [
+      {
+        "id": "ch06-l01",
+        "name": "ROA",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch06-l02",
+        "name": "ROIC",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch06-l03",
+        "name": "D/E — Nợ vay / Vốn chủ sở hữu",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch06-l04",
+        "name": "Net Debt / EBITDA",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch06-l05",
+        "name": "Current Ratio",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch06-l06",
+        "name": "Interest Coverage",
+        "indicator": null,
+        "type": "fundamental"
+      }
+    ]
+  },
+  {
+    "no": 7,
+    "title": "Khối lượng và dòng tiền",
+    "type": "technical",
+    "lessons": [
+      {
+        "id": "ch07-l01",
+        "name": "OBV",
+        "indicator": "obv",
+        "type": "technical"
+      },
+      {
+        "id": "ch07-l02",
+        "name": "MFI",
+        "indicator": "mfi",
+        "type": "technical"
+      },
+      {
+        "id": "ch07-l03",
+        "name": "Chaikin Money Flow — CMF",
+        "indicator": "cmf",
+        "type": "technical"
+      }
+    ]
+  },
+  {
+    "no": 8,
+    "title": "Chất lượng dòng tiền doanh nghiệp",
+    "type": "fundamental",
+    "lessons": [
+      {
+        "id": "ch08-l01",
+        "name": "CFO Margin",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch08-l02",
+        "name": "CFO / LNST",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch08-l03",
+        "name": "FCF Margin",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch08-l04",
+        "name": "FCF Growth YoY",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch08-l05",
+        "name": "Capex / Revenue",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch08-l06",
+        "name": "Accrual Ratio",
+        "indicator": null,
+        "type": "fundamental"
+      }
+    ]
+  },
+  {
+    "no": 9,
+    "title": "Định giá doanh nghiệp",
+    "type": "fundamental",
+    "lessons": [
+      {
+        "id": "ch09-l01",
+        "name": "P/E",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch09-l02",
+        "name": "P/B",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch09-l03",
+        "name": "P/S",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch09-l04",
+        "name": "EV / EBITDA",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch09-l05",
+        "name": "PEG",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch09-l06",
+        "name": "FCF Yield",
+        "indicator": null,
+        "type": "fundamental"
+      }
+    ]
+  },
+  {
+    "no": 10,
+    "title": "Kênh giá và động lượng",
+    "type": "technical",
+    "lessons": [
+      {
+        "id": "ch10-l01",
+        "name": "Donchian Channel",
+        "indicator": "donchian",
+        "type": "technical"
+      },
+      {
+        "id": "ch10-l02",
+        "name": "ROC",
+        "indicator": "roc",
+        "type": "technical"
+      },
+      {
+        "id": "ch10-l03",
+        "name": "Williams %R",
+        "indicator": "williams_r",
+        "type": "technical"
+      }
+    ]
+  },
+  {
+    "no": 11,
+    "title": "Tăng trưởng dài hạn và hiệu quả vận hành",
+    "type": "fundamental",
+    "lessons": [
+      {
+        "id": "ch11-l01",
+        "name": "Revenue CAGR 3Y",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch11-l02",
+        "name": "Net Profit CAGR 3Y",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch11-l03",
+        "name": "EPS CAGR 3Y",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch11-l04",
+        "name": "Asset Turnover",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch11-l05",
+        "name": "Cash Conversion Cycle",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch11-l06",
+        "name": "Working Capital Turnover",
+        "indicator": null,
+        "type": "fundamental"
+      }
+    ]
+  },
+  {
+    "no": 12,
+    "title": "Độ ổn định doanh nghiệp",
+    "type": "fundamental",
+    "lessons": [
+      {
+        "id": "ch12-l01",
+        "name": "Revenue Growth Stability",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch12-l02",
+        "name": "EPS Stability",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch12-l03",
+        "name": "Margin Stability",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch12-l04",
+        "name": "ROIC Stability",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch12-l05",
+        "name": "FCF Positive Streak",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch12-l06",
+        "name": "Profit Positive Streak",
+        "indicator": null,
+        "type": "fundamental"
+      }
+    ]
+  },
+  {
+    "no": 13,
+    "title": "Cổ đông và phân bổ vốn",
+    "type": "fundamental",
+    "lessons": [
+      {
+        "id": "ch13-l01",
+        "name": "Dividend Yield",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch13-l02",
+        "name": "Payout Ratio",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch13-l03",
+        "name": "Dividend Growth",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch13-l04",
+        "name": "Share Count Growth",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch13-l05",
+        "name": "Buyback Yield",
+        "indicator": null,
+        "type": "fundamental"
+      },
+      {
+        "id": "ch13-l06",
+        "name": "Shareholder Yield",
+        "indicator": null,
+        "type": "fundamental"
+      }
+    ]
+  }
+]

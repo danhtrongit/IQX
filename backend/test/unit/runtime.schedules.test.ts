@@ -27,6 +27,20 @@ describe('runtime schedules', () => {
     });
   });
 
+  it('stores the VN30 membership on trading days before the Bot session runs', () => {
+    const schedules = defaultRuntimeSchedules();
+    const membership = schedules.find((schedule) => schedule.name === 'market.index-membership');
+    const bot = schedules.find((schedule) => schedule.name === 'bot.session-eod');
+    expect(membership).toMatchObject({ pattern: '0 40 18 * * 1-5', tradingDay: true });
+    expect(bot).toMatchObject({ pattern: '0 0 19 * * 1-5', tradingDay: true });
+    // second minute hour ... : 18:40 precedes 19:00 on the same trading days.
+    const at = (pattern?: string) => {
+      const [, minute, hour] = (pattern ?? '').split(' ').map(Number);
+      return hour! * 60 + minute!;
+    };
+    expect(at(membership?.pattern)).toBeLessThan(at(bot?.pattern));
+  });
+
   it('does not run scheduled market jobs on weekends', async () => {
     const calendar = new WeekdayCalendar();
     await expect(calendar.isTradingDay('2026-09-20')).resolves.toBe(false);

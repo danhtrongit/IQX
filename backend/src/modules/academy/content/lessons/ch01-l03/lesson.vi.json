@@ -1,0 +1,15 @@
+{
+  "lesson_id": "ch01-l03",
+  "superseded_by": "ch01-v2.0",
+  "note": "Served from content/packages/ch01. Kept only for the worked fixture read by the quant registry tests; the sections and the question bank moved (bank: content/archive/banks).",
+  "fixture": {
+    "type": "scalar",
+    "label": "MA / SMA",
+    "prompt": "Năm giá là 10, 12, 11, 13, 14. SMA 5 bằng bao nhiêu?",
+    "expected": 12,
+    "unit": "",
+    "formula": "SMA(N) = Tổng N giá đóng cửa / N",
+    "tolerance": 0.015,
+    "synthetic": true
+  }
+}

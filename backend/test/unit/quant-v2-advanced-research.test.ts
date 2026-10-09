@@ -95,6 +95,8 @@ function indicator(config: SharedConfig, id: string): IndicatorConfig {
 function maConfig(buyPeriod = 20, sellPeriod = 30): SharedConfig {
   const c = defaultConfig();
   indicator(c, 'ma').master_enabled = true;
+  indicator(c, 'ma').buy.enabled = true;
+  indicator(c, 'ma').sell.enabled = true;
   indicator(c, 'ma').buy.params.period = buyPeriod;
   indicator(c, 'ma').sell.params.period = sellPeriod;
   return c;
@@ -170,6 +172,7 @@ describe('quant v2 advanced — sensitivity', () => {
     // ma_cross requires fast < slow: sweeping fast past slow is rejected per candidate.
     const cross = defaultConfig();
     indicator(cross, 'ma_cross').master_enabled = true;
+    indicator(cross, 'ma_cross').buy.enabled = true;
     const slow = indicator(cross, 'ma_cross').buy.params.slow ?? 0;
     const crossOut = sensitivity(cross, bars, options(), {
       path: { indicator: 'ma_cross', side: 'buy', key: 'fast' },

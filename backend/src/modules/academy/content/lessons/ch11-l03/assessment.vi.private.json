@@ -1,0 +1,229 @@
+{
+  "lesson_id": "ch11-l03",
+  "questions": [
+    {
+      "question": "Dùng các dữ liệu: EPS cuối năm 3 = 2.662; EPS năm gốc = 2.000. EPS CAGR 3 Y bằng bao nhiêu theo công thức bài học?",
+      "options": [
+        {
+          "text": "20 %",
+          "id": "o1"
+        },
+        {
+          "text": "10 %",
+          "id": "o2"
+        },
+        {
+          "text": "18 %",
+          "id": "o3"
+        },
+        {
+          "text": "4 %",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Áp dụng [(EPS cuối / EPS gốc)^(1/3) − 1] × 100; kết quả 10 %.",
+      "skill": "tính toán",
+      "fixture": null,
+      "id": "ch11-l03-q01",
+      "lesson_id": "ch11-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "EPS CAGR 3 Y đang bằng đúng 10 %. Bộ lọc đặt > 10 %. Kết quả nào đúng?",
+      "options": [
+        {
+          "text": "Không đạt điều kiện.",
+          "id": "o1"
+        },
+        {
+          "text": "Đạt vì bằng ngưỡng cũng được tính.",
+          "id": "o2"
+        },
+        {
+          "text": "Đạt nếu giá cổ phiếu tăng.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự giảm ngưỡng để doanh nghiệp đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Dấu > không bao gồm bằng. Không dùng diễn biến giá để thay đổi một điều kiện cơ bản.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch11-l03-q02",
+      "lesson_id": "ch11-l03",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Tình huống nào cần xử lý thận trọng nhất khi đọc EPS CAGR 3 Y?",
+      "options": [
+        {
+          "text": "Một tỷ số đẹp đủ xác nhận chất lượng doanh nghiệp.",
+          "id": "o1"
+        },
+        {
+          "text": "Luôn chọn doanh nghiệp có con số lớn nhất, bất kể định nghĩa.",
+          "id": "o2"
+        },
+        {
+          "text": "Không cần đối chiếu kỳ hoặc phạm vi báo cáo.",
+          "id": "o3"
+        },
+        {
+          "text": "Không ghép EPS trước và sau tách cổ phiếu chưa điều chỉnh. Một thay đổi cơ học số cổ phiếu không phải tăng trưởng kinh doanh.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 3,
+      "explanation": "EPS CAGR đo phần lợi nhuận trên mỗi cổ phiếu, bổ sung cho tăng trưởng tổng lợi nhuận. Không ghép EPS trước và sau tách cổ phiếu chưa điều chỉnh. Một thay đổi cơ học số cổ phiếu không phải tăng trưởng kinh doanh.",
+      "skill": "phản biện",
+      "fixture": null,
+      "id": "ch11-l03-q03",
+      "lesson_id": "ch11-l03",
+      "correct_option_id": "o4"
+    },
+    {
+      "question": "Nguồn dữ liệu chưa có một thành phần cần thiết để tính EPS CAGR 3 Y. Bộ lọc nên làm gì?",
+      "options": [
+        {
+          "text": "Ghi trạng thái thiếu dữ liệu và không coi điều kiện là đã đạt.",
+          "id": "o1"
+        },
+        {
+          "text": "Điền 0 rồi kiểm tra như số thật.",
+          "id": "o2"
+        },
+        {
+          "text": "Dùng giá trị năm sau để bổ sung cho năm trước.",
+          "id": "o3"
+        },
+        {
+          "text": "Lấy trung bình ngành làm số chính thức của công ty.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "Cần đủ bốn mốc năm cho ba khoảng tăng trưởng. Theo quy ước của gói, tất cả mốc dùng trong chuỗi này phải dương; năm thiếu hoặc không dương trả trạng thái riêng, không ép tạo CAGR.",
+      "skill": "dữ liệu",
+      "fixture": null,
+      "id": "ch11-l03-q04",
+      "lesson_id": "ch11-l03",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Nhận định nào đúng với EPS CAGR 3 Y?",
+      "options": [
+        {
+          "text": "Dùng riêng chỉ tiêu này có thể bỏ qua mọi rủi ro khác.",
+          "id": "o1"
+        },
+        {
+          "text": "EPS CAGR đo phần lợi nhuận trên mỗi cổ phiếu, bổ sung cho tăng trưởng tổng lợi nhuận.",
+          "id": "o2"
+        },
+        {
+          "text": "Đây là tỷ lệ sinh lời chắc chắn của người mua cổ phiếu.",
+          "id": "o3"
+        },
+        {
+          "text": "Không phụ thuộc kỳ hoặc nguồn số liệu.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "EPS CAGR đo phần lợi nhuận trên mỗi cổ phiếu, bổ sung cho tăng trưởng tổng lợi nhuận. Bốn mốc EPS năm phải cùng cơ sở điều chỉnh và đã được công bố tại ngày lọc. Gói chỉ tính CAGR thông thường khi cả bốn mốc dương. Không lấy bình quân EPS rồi tính tăng trưởng từ bình quân đó.",
+      "skill": "diễn giải",
+      "fixture": null,
+      "id": "ch11-l03-q05",
+      "lesson_id": "ch11-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Hai doanh nghiệp A và B lần lượt có EPS CAGR 3 Y bằng 8 và 12 %. Điều kiện < 10 % giữ lại ai?",
+      "options": [
+        {
+          "text": "Chỉ A.",
+          "id": "o1"
+        },
+        {
+          "text": "Chỉ B.",
+          "id": "o2"
+        },
+        {
+          "text": "Cả A và B.",
+          "id": "o3"
+        },
+        {
+          "text": "Không doanh nghiệp nào.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "8 < 10 đúng, 12 < 10 sai. Đây chỉ là kết quả lọc, không xếp loại tốt/xấu.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch11-l03-q06",
+      "lesson_id": "ch11-l03",
+      "correct_option_id": "o1"
+    },
+    {
+      "question": "Báo cáo dùng tính EPS CAGR 3 Y kết thúc ngày 31/03 nhưng công bố ngày 25/04 sau phiên. Backtest ngày 10/04 được dùng nó không?",
+      "options": [
+        {
+          "text": "Có, nhưng nhân kết quả với 0,5.",
+          "id": "o1"
+        },
+        {
+          "text": "Không; thông tin chưa có tại ngày 10/04.",
+          "id": "o2"
+        },
+        {
+          "text": "Có, vì kỳ kế toán đã kết thúc.",
+          "id": "o3"
+        },
+        {
+          "text": "Có, nếu sau này công ty hoạt động tốt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 1,
+      "explanation": "Ngày kết thúc kỳ không phải ngày công bố. Thông tin sau phiên chỉ có hiệu lực với quyết định sau thời điểm công bố theo lịch đã chốt.",
+      "skill": "thời điểm dữ liệu",
+      "fixture": null,
+      "id": "ch11-l03-q07",
+      "lesson_id": "ch11-l03",
+      "correct_option_id": "o2"
+    },
+    {
+      "question": "Doanh nghiệp đạt điều kiện EPS CAGR 3 Y, nhưng không đạt điều kiện ROE thứ hai trong nhóm AND. Danh sách kết quả phải thế nào?",
+      "options": [
+        {
+          "text": "Loại doanh nghiệp khỏi kết quả của nhóm AND.",
+          "id": "o1"
+        },
+        {
+          "text": "Giữ vì một điều kiện đạt đã đủ.",
+          "id": "o2"
+        },
+        {
+          "text": "Giữ nếu chỉ tiêu thứ nhất cao gấp đôi ngưỡng.",
+          "id": "o3"
+        },
+        {
+          "text": "Tự bỏ điều kiện chưa đạt.",
+          "id": "o4"
+        }
+      ],
+      "correct_index": 0,
+      "explanation": "AND yêu cầu tất cả điều kiện cùng đạt; không có bù điểm ngầm.",
+      "skill": "vận dụng",
+      "fixture": null,
+      "id": "ch11-l03-q08",
+      "lesson_id": "ch11-l03",
+      "correct_option_id": "o1"
+    }
+  ]
+}

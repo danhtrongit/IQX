@@ -93,9 +93,3 @@ export type MarketQuote = {
   bids: { price: number; volume: number }[]
   asks: { price: number; volume: number }[]
 }
-
-export type JourneyProgress = {
-  graduated_at?: string | null
-  entered_at?: string | null
-  [key: string]: unknown
-}
