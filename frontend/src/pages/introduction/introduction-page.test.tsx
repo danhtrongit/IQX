@@ -82,6 +82,12 @@ describe("IntroductionPage", () => {
         )
       ).not.toBeNull()
     }
+    expect(within(main).getByRole("contentinfo").textContent).toContain(
+      "0319077430"
+    )
+    expect(
+      within(main).getByRole("link", { name: "Về chúng tôi" }).getAttribute("href")
+    ).toBe("/about")
     expect(fetch).not.toHaveBeenCalled()
   })
 })

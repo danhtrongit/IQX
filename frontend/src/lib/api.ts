@@ -194,6 +194,7 @@ function recoverPeerRefresh(previousRefreshToken: string): Promise<void> {
 }
 
 export function getAccessToken(): string | null {
+  if (typeof window === "undefined") return null
   return sessionStorage.getItem(ACCESS_TOKEN_KEY) ?? localStorage.getItem(ACCESS_TOKEN_KEY)
 }
 

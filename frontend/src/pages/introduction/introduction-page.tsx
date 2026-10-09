@@ -18,15 +18,13 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAuth } from "@/hooks/use-auth"
 import { EggArtwork } from "../demo-trading/journey/artwork/EggArtwork"
 import { LEVELS } from "../demo-trading/journey/journey-state"
+import { LEGAL_LINE_VI } from "../about/about-content"
+import { INTRODUCTION_SEO } from "./introduction-seo"
 import "./landing.css"
 
 const JOURNEY_URL = "/demo-trading?view=journey"
 const MASCOT_ROOT = "/assets/mascots-2d/v2/thanh-long"
-const SEO = {
-  title: "IQX · Tập đầu tư có hệ thống, bắt đầu từ tư duy",
-  description:
-    "Học qua thực hành, rèn kỹ năng qua Cấp 0 đến Cấp 6 và khám phá linh thú đồng hành. Xây dựng tư duy đầu tư với vốn mô phỏng.",
-}
+const SEO = INTRODUCTION_SEO
 const VALUES = [
   { icon: BookOpen, title: "Kiến thức", detail: "thực tế" },
   { icon: Gamepad2, title: "Thực hành", detail: "an toàn" },
@@ -422,10 +420,16 @@ export function IntroductionPage() {
               IQX cung cấp công cụ phân tích và giáo dục, không phải khuyến nghị
               đầu tư. Kết quả giao dịch mô phỏng không đảm bảo kết quả thực tế.
             </p>
-            <Link to="/bai-hoc" className="intro-text-link">
-              Bắt đầu học
-              <ArrowRight aria-hidden="true" className="size-4" />
-            </Link>
+            <p className="intro-footer-legal">{LEGAL_LINE_VI}</p>
+            <nav className="intro-footer-links" aria-label="Liên kết chân trang">
+              <Link to="/about" className="intro-text-link">
+                Về chúng tôi
+              </Link>
+              <Link to="/bai-hoc" className="intro-text-link">
+                Bắt đầu học
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
+            </nav>
           </footer>
         </div>
       </ScrollArea>

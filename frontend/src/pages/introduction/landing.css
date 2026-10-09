@@ -531,7 +531,22 @@
   line-height: 1.7;
   color: var(--muted-foreground);
 }
-.intro-footer > a:last-child {
+.intro-footer {
+  flex-wrap: wrap;
+}
+.intro-footer > p {
+  flex: 1 1 320px;
+}
+.intro-footer > .intro-footer-legal {
+  flex-basis: 100%;
+  max-width: none;
+  order: 3;
+}
+.intro-footer-links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 20px;
   margin-left: auto;
   white-space: nowrap;
 }
@@ -824,6 +839,9 @@
   .intro-footer > p {
     order: 3;
     flex-basis: 100%;
+  }
+  .intro-footer-links {
+    margin-left: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {

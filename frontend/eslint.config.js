@@ -24,6 +24,8 @@ export default defineConfig([
     // context hooks or domain helpers. Keep the rule active everywhere else.
     files: [
       'src/components/ui/{badge,button-group,button,navigation-menu,tabs,toggle}.tsx',
+      'src/App.tsx',
+      'src/app-providers.tsx',
       'src/context/rail.tsx',
       'src/components/theme-provider.tsx',
       'src/pages/charts/stock/insight/masthead.tsx',

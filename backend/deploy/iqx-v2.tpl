@@ -52,6 +52,7 @@ server {
     location /media/ { return 404; }
 
     location = /index.html { add_header Cache-Control "no-cache" always; }
+    location = /app.html { add_header Cache-Control "no-cache" always; }
 
     location /assets/ {
         try_files $uri =404;
@@ -62,7 +63,7 @@ server {
     }
 
     location / {
-        try_files $uri $uri/ /index.html;
+        try_files $uri $uri/index.html $uri/ /app.html;
         # SPA shell: index.html must be revalidated on every load so a deploy
         # reaches open tabs on next navigation. Hashed bundles under /assets/
         # stay immutable. add_header in a location drops server-level headers,

@@ -1,47 +1,41 @@
 import { StrictMode } from "react"
-import { createRoot } from "react-dom/client"
-import {
-  hashKey,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query"
+import { createRoot, hydrateRoot } from "react-dom/client"
+import { matchRoutes } from "react-router"
 
 import "./index.css"
-import App from "./App.tsx"
-import { ThemeProvider } from "@/components/theme-provider.tsx"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { Toaster } from "@/components/ui/sonner"
-import { AuthProvider } from "@/context/auth-provider"
+import App, { routes, type PreloadableComponent } from "./App.tsx"
+import { AppProviders, createAppQueryClient } from "./app-providers"
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      queryKeyHashFn: (key) => hashKey(["api-v2", ...key]),
-      staleTime: 30_000,
-      retry: false,
-      refetchOnWindowFocus: false,
-    },
-    mutations: { retry: false },
-  },
-})
+const container = document.getElementById("root")!
+const queryClient = createAppQueryClient()
+const pathname = window.location.pathname
 
-createRoot(document.getElementById("root")!).render(
+const app = (
   <StrictMode>
-    <ThemeProvider
-      defaultTheme={
-        ["/", "/gioi-thieu"].includes(window.location.pathname)
-          ? "light"
-          : "dark"
-      }
-    >
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <TooltipProvider>
-            <App />
-            <Toaster />
-          </TooltipProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <AppProviders pathname={pathname} queryClient={queryClient}>
+      <App />
+    </AppProviders>
   </StrictMode>
 )
+
+/** Load the lazy page modules of the current URL so hydration can complete synchronously. */
+async function preloadMatchedRoutes() {
+  const matches = matchRoutes(routes, window.location) ?? []
+  await Promise.all(
+    matches.map((match) =>
+      (match.route.Component as PreloadableComponent | undefined)?.preload?.()
+    )
+  )
+}
+
+const normalizedPath = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname
+
+// Hydrate only when this document was prerendered for the current path; any
+// other route gets the plain SPA shell (app.html) and a fresh client render.
+if (container.dataset.ssr === normalizedPath) {
+  preloadMatchedRoutes()
+    .catch(() => undefined)
+    .then(() => hydrateRoot(container, app))
+} else {
+  createRoot(container).render(app)
+}

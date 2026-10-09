@@ -11,8 +11,9 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    globalSetup: ["./src/lib/test-harness/prerender-global-setup.ts"],
     setupFiles: ["./src/lib/test-harness/setup.ts"],
-    include: ["src/**/*.test.{ts,tsx}"],
+    include: ["src/**/*.test.{ts,tsx}", "vite-plugins/**/*.test.ts"],
     restoreMocks: true,
   },
 })
