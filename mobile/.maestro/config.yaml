@@ -1,0 +1,4 @@
+# Maestro workspace config. Run all flows: npm run e2e:ios
+# Required env: IQX_EMAIL, IQX_PASSWORD  (e.g. maestro test -e IQX_EMAIL=... -e IQX_PASSWORD=... .maestro)
+flows:
+  - "*.yaml"

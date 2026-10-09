@@ -1,0 +1,7 @@
+appId: vn.iqx.app
+---
+- runFlow: subflows/login.yaml
+- assertVisible: "Giao dịch"
+- assertVisible: "Danh mục"
+- assertVisible: "Chiến lược"
+- assertVisible: "Thêm"

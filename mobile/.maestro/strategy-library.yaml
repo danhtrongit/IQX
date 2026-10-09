@@ -1,0 +1,12 @@
+appId: vn.iqx.app
+---
+# Read-only: never saves shared-config changes.
+- runFlow: subflows/login.yaml
+- runFlow: subflows/open-strategy-hub.yaml
+- tapOn:
+    id: strategy-hub-library
+- extendedWaitUntil:
+    visible:
+      id: strategy-library-row-rsi
+    timeout: 20000
+- assertVisible: "RSI"

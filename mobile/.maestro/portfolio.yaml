@@ -1,0 +1,15 @@
+appId: vn.iqx.app
+---
+- runFlow: subflows/login.yaml
+- tapOn: "Danh mục"
+- extendedWaitUntil:
+    visible:
+      id: portfolio-summary
+    timeout: 15000
+- assertVisible:
+    id: portfolio-nav
+- scrollUntilVisible:
+    element:
+      id: portfolio-holdings
+- assertVisible:
+    id: portfolio-holdings

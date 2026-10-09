@@ -1,0 +1,40 @@
+appId: vn.iqx.app
+---
+- runFlow: subflows/login.yaml
+- runFlow: subflows/open-strategy-hub.yaml
+- tapOn:
+    id: strategy-hub-alerts
+- extendedWaitUntil:
+    visible:
+      id: "strategy-alerts-screen"
+    timeout: 20000
+- tapOn:
+    id: "strategy-alerts-create"
+- tapOn:
+    id: "strategy-alerts-name"
+- inputText: "Maestro test"
+- hideKeyboard
+- tapOn:
+    id: "strategy-alerts-symbols"
+- inputText: "FPT"
+- hideKeyboard
+- assertVisible:
+    id: "strategy-alerts-side-buy"
+# Mua is checked by default when its condition is valid; keep it checked.
+- scrollUntilVisible:
+    element:
+      id: "strategy-alerts-save"
+- tapOn:
+    id: "strategy-alerts-save"
+- extendedWaitUntil:
+    visible: "Maestro test"
+    timeout: 20000
+# clean up: open the new alert and delete it
+- tapOn: "Maestro test"
+- scrollUntilVisible:
+    element:
+      id: "strategy-alerts-delete"
+- tapOn:
+    id: "strategy-alerts-delete"
+- tapOn: "Xóa cảnh báo"
+- assertNotVisible: "Maestro test"

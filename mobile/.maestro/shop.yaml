@@ -1,0 +1,15 @@
+appId: vn.iqx.app
+---
+- runFlow: subflows/login.yaml
+- tapOn: "Thêm"
+- tapOn:
+    id: more-shop
+- assertVisible:
+    id: shop-screen
+- extendedWaitUntil:
+    visible:
+      id: shop-balance
+    timeout: 15000
+- assertVisible:
+    id: shop-catalog
+- assertVisible: "Linh thú"

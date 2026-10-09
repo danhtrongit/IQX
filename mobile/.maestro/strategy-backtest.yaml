@@ -1,0 +1,16 @@
+appId: vn.iqx.app
+---
+- runFlow: subflows/login.yaml
+- runFlow: subflows/open-strategy-hub.yaml
+- tapOn:
+    id: strategy-hub-backtest
+- assertVisible:
+    id: strategy-backtest-screen
+- tapOn:
+    id: strategy-backtest-run
+- extendedWaitUntil:
+    visible:
+      id: strategy-backtest-kpi-grid
+    timeout: 120000
+- assertVisible: "Tổng lợi nhuận"
+- assertVisible: "Tỷ lệ thắng"
