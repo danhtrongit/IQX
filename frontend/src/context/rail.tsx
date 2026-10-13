@@ -33,7 +33,7 @@ export function RailProvider({ children }: { children: ReactNode }) {
   const [params, setParams] = useSearchParams()
   const fromUrl = params.get(chrome.param)
   const activeId =
-    fromUrl && chrome.items.some((item) => item.id === fromUrl && item.affects === "sidebar")
+    fromUrl && chrome.items.some((item) => item.id === fromUrl && item.affects === "sidebar" && !item.hidden)
       ? fromUrl
       : chrome.defaultId
   const activeItem = chrome.items.find((item) => item.id === activeId)

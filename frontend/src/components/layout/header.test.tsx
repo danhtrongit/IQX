@@ -5,6 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ThemeProvider } from "@/components/theme-provider"
 
+import { workspaceMemory } from "@/pages/demo-trading/workspace-sections"
+
 import { Header } from "./header"
 
 const { openAuth } = vi.hoisted(() => ({ openAuth: vi.fn() }))
@@ -21,6 +23,7 @@ vi.mock("@/hooks/use-auth", () => ({
 }))
 
 beforeEach(() => {
+  workspaceMemory.reset()
   openAuth.mockClear()
   localStorage.clear()
   vi.stubGlobal("ResizeObserver", class {
@@ -48,14 +51,13 @@ function renderHeader(pathname: string) {
 
 function LocationProbe() {
   const location = useLocation()
-  return <output data-testid="location">{location.pathname}{location.search}{location.hash}</output>
+  return <output data-testid="location" data-state={JSON.stringify(location.state)}>{location.pathname}{location.search}{location.hash}</output>
 }
 
 const SHARED_NAV = [
   ["Giới thiệu", "/"],
   ["Demo Trading", "/demo-trading?view=trading"],
   ["Chiến lược", "/chien-luoc"],
-  ["Bài học", "/bai-hoc"],
   ["Học viện", "/demo-trading?view=academy"],
 ] as const
 
@@ -79,7 +81,7 @@ describe("Header", () => {
 
   it("keeps workspace navigation and account controls on the trading route", async () => {
     const user = userEvent.setup()
-    renderHeader("/demo-trading?view=trading&symbol=VIC&content=ai-analysis")
+    renderHeader("/demo-trading?view=trading&symbol=VIC&content=market")
 
     const header = screen.getByRole("banner")
     const nav = within(header).getByRole("navigation", { name: "Điều hướng chính" })
@@ -130,7 +132,7 @@ describe("Header", () => {
 
   it("keeps workspace active navigation in the mobile menu and closes after a route change", async () => {
     const user = userEvent.setup()
-    renderHeader("/demo-trading?view=trading&symbol=VIC&content=ai-analysis")
+    renderHeader("/demo-trading?view=trading&symbol=VIC&content=market")
     await user.click(screen.getByRole("button", { name: "Mở menu điều hướng" }))
     const menu = screen.getByRole("dialog", { name: "Điều hướng IQX" })
     const nav = within(menu).getByRole("navigation", { name: "Điều hướng di động" })
@@ -145,9 +147,12 @@ describe("Header", () => {
     ["/demo-trading?view=trading", "Demo Trading"],
     ["/demo-trading?view=portfolio&symbol=FPT", "Demo Trading"],
     ["/demo-trading?view=hunt", "Demo Trading"],
+    ["/demo-trading?view=news&content=board", "Demo Trading"],
     ["/demo-trading?view=academy", "Học viện"],
     ["/demo-trading?view=academy&lesson=ch01-l01", "Học viện"],
-    ["/demo-trading", "Học viện"],
+    ["/demo-trading?view=bot", "Học viện"],
+    ["/demo-trading?view=shop", "Học viện"],
+    ["/demo-trading", "Demo Trading"],
     ["/demo-trading?view=journey", "Học viện"],
   ])("marks only %s as the active workspace entry", (path, label) => {
     renderHeader(path)
@@ -179,6 +184,36 @@ describe("Header", () => {
     nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
     await user.click(within(nav).getByRole("link", { name: "Demo Trading" }))
     expect(screen.getByTestId("location").textContent).toBe("/demo-trading?view=portfolio&symbol=VIC")
+  })
+
+  it("returns to a section as it was left: Học viện remembers its tool, Demo Trading its tab", async () => {
+    const user = userEvent.setup()
+    workspaceMemory.remember("academy", "?view=bot")
+    workspaceMemory.remember("demo", "?view=portfolio&content=board")
+    renderHeader("/demo-trading?view=news&symbol=VIC")
+    const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
+    // Same section: the current URL is kept.
+    await user.click(within(nav).getByRole("link", { name: "Demo Trading" }))
+    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?view=news&symbol=VIC")
+    // Other section: its remembered tool on top of the shared symbol.
+    await user.click(within(nav).getByRole("link", { name: "Học viện" }))
+    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?symbol=VIC&view=bot")
+    await user.click(within(nav).getByRole("link", { name: "Demo Trading" }))
+    expect(screen.getByTestId("location").textContent).toBe("/demo-trading?symbol=VIC&view=portfolio&content=board")
+  })
+
+  it("marks the workspace section switch in the navigation state", async () => {
+    const user = userEvent.setup()
+    renderHeader("/")
+    const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
+    await user.click(within(nav).getByRole("link", { name: "Học viện" }))
+    expect(JSON.parse(screen.getByTestId("location").getAttribute("data-state")!)).toEqual({ workspaceSection: true })
+  })
+
+  it("does not list Bài học in the header", () => {
+    renderHeader("/")
+    const nav = within(screen.getByRole("banner")).getByRole("navigation", { name: "Điều hướng chính" })
+    expect(within(nav).queryByRole("link", { name: "Bài học" })).toBeNull()
   })
 
   it("closes an open mobile menu when the viewport reaches desktop width", async () => {

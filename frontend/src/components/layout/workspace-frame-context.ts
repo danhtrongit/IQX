@@ -1,14 +1,16 @@
 import { createContext, useContext } from "react"
 
 export type WorkspaceFrameState = {
-  /** Slide-over panel (≤900px). Always `false` on wider screens, where the panel is a fixed column. */
+  /** Slide-over panel (≤900px). Always `false` on wider screens, where the panel is a column. */
   open: boolean
   /** `true` while the panel is a layer next to the rail instead of a column. */
   overlay: boolean
+  /** Wide screens: the panel column is collapsed and the main area takes its width. */
+  collapsed: boolean
   panelId: string
   panelLabel: string
   setOpen: (open: boolean) => void
-  /** Opens the panel when it is a layer; a no-op on wide screens. */
+  /** Shows the panel: opens the layer, or expands a collapsed column. */
   revealPanel: () => void
 }
 

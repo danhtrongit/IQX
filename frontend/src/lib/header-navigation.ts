@@ -1,47 +1,32 @@
-import { demoChrome } from "@/config/chrome"
-import { parseDemoContent } from "@/pages/demo-trading/content-tabs-state"
-import { ACADEMY_VIEW, VIEW_PARAM, normalizeWorkspaceSearch } from "@/pages/demo-trading/workspace-url"
+import { sectionOfTool } from "@/config/chrome"
+import { VIEW_PARAM, normalizeWorkspaceSearch } from "@/pages/demo-trading/workspace-url"
+import { sectionOfSearch, sectionSearch, type WorkspaceMemory } from "@/pages/demo-trading/workspace-sections"
 
 type NavigationLocation = { pathname: string; search: string }
 
+const WORKSPACE = "/demo-trading"
+
 /**
- * The workspace tool a /demo-trading URL shows. A missing, unknown or retired
- * view value is the Học viện tool, which is also the default of the workspace.
+ * "Demo Trading" and "Học viện" open their workspace section as it was left in this session
+ * (tool, tab, lesson...); inside the section they keep the current URL, so the mounted tool and
+ * the selected symbol never reset.
  */
-function effectiveWorkspaceView(search: string): string {
-  const view = new URLSearchParams(normalizeWorkspaceSearch(search).search).get(VIEW_PARAM)
-  const known = demoChrome.items.some((item) => item.id === view && item.affects === "sidebar")
-  return view && known ? view : demoChrome.defaultId
-}
-
-/** Content links must not reset the mounted workspace tool or selected symbol. */
-export function headerDestination(to: string, location: NavigationLocation): string {
+export function headerDestination(to: string, location: NavigationLocation, saved: WorkspaceMemory = {}): string {
   const [pathname, search = ""] = to.split("?")
-  if (pathname !== "/demo-trading" || location.pathname !== pathname) return to
-  const target = new URLSearchParams(search)
-  const next = new URLSearchParams(normalizeWorkspaceSearch(location.search).search)
-  const content = target.get("content")
-  if (content) next.set("content", content)
-  else next.delete("content")
-  const view = target.get(VIEW_PARAM)
-  if (view === ACADEMY_VIEW) next.set(VIEW_PARAM, ACADEMY_VIEW)
-  else if (view && effectiveWorkspaceView(location.search) === ACADEMY_VIEW) next.set(VIEW_PARAM, view)
-  const query = next.toString()
-  return `${pathname}${query ? `?${query}` : ""}`
+  if (pathname !== WORKSPACE) return to
+  const section = sectionOfTool(new URLSearchParams(search).get(VIEW_PARAM))
+  const current = location.pathname === WORKSPACE ? normalizeWorkspaceSearch(location.search).search : ""
+  if (location.pathname === WORKSPACE && sectionOfSearch(location.search) === section) return `${WORKSPACE}${current}`
+  return `${WORKSPACE}${sectionSearch(section, current, saved)}`
 }
 
-/** React Router's pathname-only matching cannot distinguish our content tabs or tools. */
+/** React Router's pathname-only matching cannot tell the two workspace sections apart. */
 export function isHeaderLinkActive(to: string, location: NavigationLocation): boolean {
   const pathname = location.pathname === "/gioi-thieu" ? "/"
     : location.pathname === "/kien-thuc" ? "/bai-hoc" : location.pathname
   const [target, search = ""] = to.split("?")
   if (target === "/") return pathname === "/"
   if (pathname !== target && !pathname.startsWith(`${target}/`)) return false
-  if (target !== "/demo-trading") return true
-  const targetParams = new URLSearchParams(search)
-  const expected = parseDemoContent(targetParams.get("content"))
-  if (parseDemoContent(new URLSearchParams(location.search).get("content")) !== expected) return false
-  // "Học viện" owns the academy tool; "Demo Trading" owns every other tool.
-  const academyLink = targetParams.get(VIEW_PARAM) === ACADEMY_VIEW
-  return academyLink === (effectiveWorkspaceView(location.search) === ACADEMY_VIEW)
+  if (target !== WORKSPACE) return true
+  return sectionOfTool(new URLSearchParams(search).get(VIEW_PARAM)) === sectionOfSearch(location.search)
 }

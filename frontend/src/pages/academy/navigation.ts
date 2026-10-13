@@ -1,7 +1,6 @@
 import { useCallback } from "react"
 import { useNavigate, useSearchParams } from "react-router"
 
-import { withDemoContent } from "@/pages/demo-trading/content-tabs-state"
 import { ACADEMY_VIEW, LESSON_PARAM, VIEW_PARAM } from "@/pages/demo-trading/workspace-url"
 
 /** Lesson ids are `chNN-lMM`; anything else in the URL is ignored (no lesson open). */
@@ -23,7 +22,8 @@ export function useAcademyNavigation() {
 
   const openLesson = useCallback(
     (id: string) => {
-      const next = withDemoContent(params, "overview")
+      const next = new URLSearchParams(params)
+      next.delete("content")
       next.set(VIEW_PARAM, ACADEMY_VIEW)
       next.set(LESSON_PARAM, id)
       setParams(next, { replace: true })

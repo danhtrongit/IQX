@@ -4,6 +4,9 @@
  * 1750px, narrower below 1260px and 1030px). They are scoped to this frame and
  * never replace the app-wide --sidebar-width / --rail-width tokens.
  *
+ * Above 900px a collapsed panel gives its whole width to the main area; it stays
+ * mounted at its usual width (input, scroll position) but out of sight, focus and clicks.
+ *
  * At 900px and below the panel becomes a layer that slides in next to the rail;
  * the rail stays on the right and a closed panel is hidden from focus and clicks.
  */
@@ -68,6 +71,27 @@
   .workspace-frame {
     --ws-side: 340px;
     --ws-rail: 64px;
+  }
+}
+
+@media (min-width: 901px) {
+  .workspace-frame[data-panel-collapsed="true"] {
+    grid-template-columns: minmax(0, 1fr) var(--ws-rail);
+  }
+
+  .workspace-frame[data-panel-collapsed="true"] .workspace-rail {
+    grid-column: 2;
+  }
+
+  .workspace-frame[data-panel-collapsed="true"] .workspace-panel {
+    grid-column: 1 / -1;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: var(--ws-rail);
+    width: var(--ws-side);
+    visibility: hidden;
+    pointer-events: none;
   }
 }
 

@@ -6,14 +6,17 @@ import { cn } from "@/lib/utils"
 import { formatXu } from "@/pages/demo-trading/shop/shop-model"
 import { useShopState } from "@/pages/demo-trading/shop/use-shop"
 
-/** Opens the workspace's Shop tool; on the workspace it keeps the selected symbol and shows the Shop main view. */
+/** Opens HỌC VIỆN → Shop; on the workspace it keeps the shared params (selected symbol...). */
 function shopDestination(pathname: string, search: string): string {
   if (pathname !== "/demo-trading") return "/demo-trading?view=shop"
   const params = new URLSearchParams(search)
   params.set("view", "shop")
-  params.delete("content")
+  for (const key of ["content", "analysis", "lesson", "practice"]) params.delete(key)
   return `/demo-trading?${params}`
 }
+
+/** A direct link to a tool always opens its panel, even one the learner collapsed. */
+const OPEN_PANEL_STATE = { openPanel: true }
 
 function CoinChip() {
   const location = useLocation()
@@ -25,6 +28,7 @@ function CoinChip() {
   return (
     <Link
       to={shopDestination(location.pathname, location.search)}
+      state={OPEN_PANEL_STATE}
       aria-label={label}
       data-testid="header-coin-chip"
       className={cn(
