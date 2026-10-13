@@ -1643,6 +1643,32 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/charts/stock/insight/investment-view/api.ts",
+      "line": 8,
+      "callee": "api",
+      "raw": "/ai/investment-view/{encodeURIComponent(symbol)}",
+      "method": "GET",
+      "route": "/api/v2/ai/investment-view/{encodeURIComponent(symbol)}",
+      "matchedOperation": "GET /api/v2/ai/investment-view/{symbol}",
+      "matchedOperations": [
+        "GET /api/v2/ai/investment-view/{symbol}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/charts/stock/insight/investment-view/api.ts",
+      "line": 17,
+      "callee": "api",
+      "raw": "/ai/investment-view/{encodeURIComponent(symbol)}/status?jobId={encodeURIComponent(jobId)}",
+      "method": "GET",
+      "route": "/api/v2/ai/investment-view/{encodeURIComponent(symbol)}/status",
+      "matchedOperation": "GET /api/v2/ai/investment-view/{symbol}/status",
+      "matchedOperations": [
+        "GET /api/v2/ai/investment-view/{symbol}/status"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/demo-trading/bot/api.ts",
       "line": 53,
       "callee": "requestOperation",

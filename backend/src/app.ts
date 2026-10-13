@@ -55,6 +55,7 @@ import { SavedFiltersModule } from './modules/saved-filters/saved-filters.module
 import { ShopModule } from './modules/shop/shop.module.js';
 import { WorkspaceModule } from './modules/workspace/workspace.module.js';
 import { PracticeModule } from './modules/practice/practice.module.js';
+import { ResearchModule } from './modules/research/index.js';
 
 @Module({})
 class ApiModule {}
@@ -100,6 +101,7 @@ export function createApiModule(
       ShopModule,
       WorkspaceModule,
       PracticeModule,
+      ResearchModule,
       NotificationsModule,
       ReferralsModule,
       DomainRuntimeModule.forApi(values.QUEUE_ENABLED),

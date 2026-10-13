@@ -15,6 +15,7 @@ export const RUNTIME_JOB_NAMES = [
   'bot.session-eod',
   'market.index-membership',
   'trading.rights-sync',
+  'research.reports-sync',
   'market.snapshot-wave-1',
   'market.snapshot-wave-2',
   'market.snapshot-wave-3',

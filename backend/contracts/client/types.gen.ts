@@ -30126,6 +30126,170 @@ export type GetInsightV2GetApiV2AiInsightSymbolResponses = {
 export type GetInsightV2GetApiV2AiInsightSymbolResponse =
   GetInsightV2GetApiV2AiInsightSymbolResponses[keyof GetInsightV2GetApiV2AiInsightSymbolResponses];
 
+export type GetInvestmentViewV2Data = {
+  body?: never;
+  path: {
+    symbol: string;
+  };
+  query?: never;
+  url: "/api/v2/ai/investment-view/{symbol}";
+};
+
+export type GetInvestmentViewV2Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetInvestmentViewV2Error =
+  GetInvestmentViewV2Errors[keyof GetInvestmentViewV2Errors];
+
+export type GetInvestmentViewV2Responses = {
+  200: {
+    data:
+      | {
+          jobId: string;
+          status: "processing";
+        }
+      | {
+          status: "empty";
+        }
+      | {
+          status: "ready";
+          theses: Array<{
+            id: string;
+            order: number;
+            summary: string;
+            title: string;
+          }>;
+          valuation:
+            | {
+                currentPrice: number | null;
+                mode: "range";
+                targetMax: number;
+                targetMedian: number;
+                targetMin: number;
+                upsidePercent: number | null;
+              }
+            | {
+                currentPrice: number | null;
+                mode: "single";
+                targetMedian: number;
+                upsidePercent: number | null;
+              }
+            | null;
+          version: number;
+        };
+  };
+};
+
+export type GetInvestmentViewV2Response =
+  GetInvestmentViewV2Responses[keyof GetInvestmentViewV2Responses];
+
+export type GetInvestmentViewStatusV2Data = {
+  body?: never;
+  path: {
+    symbol: string;
+  };
+  query: {
+    jobId: string;
+  };
+  url: "/api/v2/ai/investment-view/{symbol}/status";
+};
+
+export type GetInvestmentViewStatusV2Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type GetInvestmentViewStatusV2Error =
+  GetInvestmentViewStatusV2Errors[keyof GetInvestmentViewStatusV2Errors];
+
+export type GetInvestmentViewStatusV2Responses = {
+  200: {
+    data:
+      | {
+          jobId: string;
+          status: "processing";
+        }
+      | {
+          status: "empty";
+        }
+      | {
+          status: "ready";
+          theses: Array<{
+            id: string;
+            order: number;
+            summary: string;
+            title: string;
+          }>;
+          valuation:
+            | {
+                currentPrice: number | null;
+                mode: "range";
+                targetMax: number;
+                targetMedian: number;
+                targetMin: number;
+                upsidePercent: number | null;
+              }
+            | {
+                currentPrice: number | null;
+                mode: "single";
+                targetMedian: number;
+                upsidePercent: number | null;
+              }
+            | null;
+          version: number;
+        };
+  };
+};
+
+export type GetInvestmentViewStatusV2Response =
+  GetInvestmentViewStatusV2Responses[keyof GetInvestmentViewStatusV2Responses];
+
 export type GetCandlePatternsV2GetApiV2AiPatternsCandlesData = {
   body?: never;
   path?: never;

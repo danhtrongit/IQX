@@ -59,6 +59,8 @@ export interface OperationMap {
   "GET /api/v2/ai/forecast/ranking": { request: T.GetForecastRankingV2GetApiV2AiForecastRankingData; response: T.GetForecastRankingV2GetApiV2AiForecastRankingResponses[keyof T.GetForecastRankingV2GetApiV2AiForecastRankingResponses] }
   "GET /api/v2/ai/forecast/symbols/{symbol}": { request: T.GetForecastForSymbolV2GetApiV2AiForecastSymbolsSymbolData; response: T.GetForecastForSymbolV2GetApiV2AiForecastSymbolsSymbolResponses[keyof T.GetForecastForSymbolV2GetApiV2AiForecastSymbolsSymbolResponses] }
   "GET /api/v2/ai/insight/{symbol}": { request: T.GetInsightV2GetApiV2AiInsightSymbolData; response: T.GetInsightV2GetApiV2AiInsightSymbolResponses[keyof T.GetInsightV2GetApiV2AiInsightSymbolResponses] }
+  "GET /api/v2/ai/investment-view/{symbol}": { request: T.GetInvestmentViewV2Data; response: T.GetInvestmentViewV2Responses[keyof T.GetInvestmentViewV2Responses] }
+  "GET /api/v2/ai/investment-view/{symbol}/status": { request: T.GetInvestmentViewStatusV2Data; response: T.GetInvestmentViewStatusV2Responses[keyof T.GetInvestmentViewStatusV2Responses] }
   "GET /api/v2/ai/patterns/{kind}/symbols": { request: T.ListPatternSymbolsV2GetApiV2AiPatternsKindSymbolsData; response: T.ListPatternSymbolsV2GetApiV2AiPatternsKindSymbolsResponses[keyof T.ListPatternSymbolsV2GetApiV2AiPatternsKindSymbolsResponses] }
   "GET /api/v2/ai/patterns/candles": { request: T.GetCandlePatternsV2GetApiV2AiPatternsCandlesData; response: T.GetCandlePatternsV2GetApiV2AiPatternsCandlesResponses[keyof T.GetCandlePatternsV2GetApiV2AiPatternsCandlesResponses] }
   "GET /api/v2/ai/patterns/charts": { request: T.GetChartPatternsV2GetApiV2AiPatternsChartsData; response: T.GetChartPatternsV2GetApiV2AiPatternsChartsResponses[keyof T.GetChartPatternsV2GetApiV2AiPatternsChartsResponses] }
@@ -457,6 +459,8 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/ai/forecast/ranking": { request: "GetForecastRankingV2GetApiV2AiForecastRankingData", response: "GetForecastRankingV2GetApiV2AiForecastRankingResponses" },
   "GET /api/v2/ai/forecast/symbols/{symbol}": { request: "GetForecastForSymbolV2GetApiV2AiForecastSymbolsSymbolData", response: "GetForecastForSymbolV2GetApiV2AiForecastSymbolsSymbolResponses" },
   "GET /api/v2/ai/insight/{symbol}": { request: "GetInsightV2GetApiV2AiInsightSymbolData", response: "GetInsightV2GetApiV2AiInsightSymbolResponses" },
+  "GET /api/v2/ai/investment-view/{symbol}": { request: "GetInvestmentViewV2Data", response: "GetInvestmentViewV2Responses" },
+  "GET /api/v2/ai/investment-view/{symbol}/status": { request: "GetInvestmentViewStatusV2Data", response: "GetInvestmentViewStatusV2Responses" },
   "GET /api/v2/ai/patterns/{kind}/symbols": { request: "ListPatternSymbolsV2GetApiV2AiPatternsKindSymbolsData", response: "ListPatternSymbolsV2GetApiV2AiPatternsKindSymbolsResponses" },
   "GET /api/v2/ai/patterns/candles": { request: "GetCandlePatternsV2GetApiV2AiPatternsCandlesData", response: "GetCandlePatternsV2GetApiV2AiPatternsCandlesResponses" },
   "GET /api/v2/ai/patterns/charts": { request: "GetChartPatternsV2GetApiV2AiPatternsChartsData", response: "GetChartPatternsV2GetApiV2AiPatternsChartsResponses" },

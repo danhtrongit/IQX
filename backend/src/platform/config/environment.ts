@@ -182,6 +182,13 @@ export const environmentSchema = z
     TELEGRAM_LINK_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(600),
     ALERT_COOLDOWN_SECONDS: z.coerce.number().int().min(0).max(86_400).default(900),
     ALERT_SCAN_ENABLED: booleanSetting(false),
+    // AI Insight v2 "Góc nhìn đầu tư". OFF until the owner signs off the report sources and
+    // the valuation display; while off the daily report download and the API both stay idle.
+    RESEARCH_INSIGHT_ENABLED: booleanSetting(false),
+    // Comma-separated report sources for the daily download (vietstock, vndirect).
+    RESEARCH_SOURCES: z.string().trim().default('vietstock,vndirect'),
+    // Hard cap on research LLM calls per day across all symbols; past it the stored view is served.
+    RESEARCH_AI_DAILY_CALL_LIMIT: z.coerce.number().int().min(0).max(100_000).default(400),
     // bot-v2 (IQX Academy handoff v2.0.0). Advanced capabilities stay OFF until the owner
     // accepts data source + engine version; lesson completion alone never enables them.
     ACADEMY_ENABLED: booleanSetting(true),

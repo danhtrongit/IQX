@@ -25,6 +25,7 @@ import {
 import { ReportsModule, MarketReportsService } from '../modules/reports/index.js';
 import { TradingModule } from '../modules/trading/trading.module.js';
 import { TradingRightsService } from '../modules/trading/rights.service.js';
+import { ResearchDailyJob, ResearchModule } from '../modules/research/index.js';
 import {
   RuntimeModule,
   type JobOutcome,
@@ -89,6 +90,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly marketInput: MarketInputSnapshotService,
     private readonly rights: TradingRightsService,
     private readonly strategyAlerts?: StrategyAlertEvaluator,
+    private readonly research?: ResearchDailyJob,
   ) {}
 
   handlers(): RuntimeJobHandlers {
@@ -133,6 +135,13 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
       'bot.session-eod': async ({ scheduledFor }) =>
         this.complete(await this.bot.runScheduledSession(ictDate(scheduledFor))),
       'trading.rights-sync': async () => this.complete(await this.rights.syncAndApply(new Date())),
+      'research.reports-sync': async ({ scheduledFor }) => {
+        if (!this.research) return { status: 'skipped', reason: 'research-unavailable' };
+        const result = await this.research.run(scheduledFor);
+        return 'skipped' in result && typeof result.skipped === 'string'
+          ? { status: 'skipped', reason: result.skipped }
+          : this.complete(result);
+      },
       'market.snapshot-wave-1': async ({ scheduledFor }) =>
         this.snapshotWave(1, ictDate(scheduledFor)),
       'market.snapshot-wave-2': async ({ scheduledFor }) =>
@@ -519,6 +528,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     MarketExtendedModule,
     MarketIntegrationModule,
     TradingModule,
+    ResearchModule,
   ],
   providers: [DomainRuntimeJobs],
   exports: [DomainRuntimeJobs],
