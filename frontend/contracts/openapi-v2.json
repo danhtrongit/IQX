@@ -25931,7 +25931,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 708 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 710 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -75652,6 +75652,552 @@
         ],
         "x-auth-level": "premium",
         "x-response-schema-status": "v2-declared"
+      }
+    },
+    "/api/v2/ai/investment-view/{symbol}": {
+      "get": {
+        "operationId": "getInvestmentViewV2",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "maxLength": 10,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "jobId": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "enum": [
+                                "processing"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "status",
+                            "jobId"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "status": {
+                              "enum": [
+                                "empty"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "status"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "status": {
+                              "enum": [
+                                "ready"
+                              ],
+                              "type": "string"
+                            },
+                            "theses": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "order": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "summary": {
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "order",
+                                  "title",
+                                  "summary"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "valuation": {
+                              "anyOf": [
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "currentPrice": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "mode": {
+                                      "enum": [
+                                        "range"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "targetMax": {
+                                      "type": "number"
+                                    },
+                                    "targetMedian": {
+                                      "type": "number"
+                                    },
+                                    "targetMin": {
+                                      "type": "number"
+                                    },
+                                    "upsidePercent": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "mode",
+                                    "targetMedian",
+                                    "targetMin",
+                                    "targetMax",
+                                    "currentPrice",
+                                    "upsidePercent"
+                                  ],
+                                  "type": "object"
+                                },
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "currentPrice": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "mode": {
+                                      "enum": [
+                                        "single"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "targetMedian": {
+                                      "type": "number"
+                                    },
+                                    "upsidePercent": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "mode",
+                                    "targetMedian",
+                                    "currentPrice",
+                                    "upsidePercent"
+                                  ],
+                                  "type": "object"
+                                }
+                              ],
+                              "nullable": true
+                            },
+                            "version": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "status",
+                            "version",
+                            "theses",
+                            "valuation"
+                          ],
+                          "type": "object"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "AI Analysis"
+        ],
+        "x-auth-level": "premium",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/ai/investment-view/{symbol}/status": {
+      "get": {
+        "operationId": "getInvestmentViewStatusV2",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "maxLength": 10,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9]+$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "jobId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "data": {
+                      "anyOf": [
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "jobId": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "enum": [
+                                "processing"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "status",
+                            "jobId"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "status": {
+                              "enum": [
+                                "empty"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "status"
+                          ],
+                          "type": "object"
+                        },
+                        {
+                          "additionalProperties": false,
+                          "properties": {
+                            "status": {
+                              "enum": [
+                                "ready"
+                              ],
+                              "type": "string"
+                            },
+                            "theses": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "order": {
+                                    "maximum": 9007199254740991,
+                                    "minimum": -9007199254740991,
+                                    "type": "integer"
+                                  },
+                                  "summary": {
+                                    "type": "string"
+                                  },
+                                  "title": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "order",
+                                  "title",
+                                  "summary"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "valuation": {
+                              "anyOf": [
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "currentPrice": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "mode": {
+                                      "enum": [
+                                        "range"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "targetMax": {
+                                      "type": "number"
+                                    },
+                                    "targetMedian": {
+                                      "type": "number"
+                                    },
+                                    "targetMin": {
+                                      "type": "number"
+                                    },
+                                    "upsidePercent": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "mode",
+                                    "targetMedian",
+                                    "targetMin",
+                                    "targetMax",
+                                    "currentPrice",
+                                    "upsidePercent"
+                                  ],
+                                  "type": "object"
+                                },
+                                {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "currentPrice": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "mode": {
+                                      "enum": [
+                                        "single"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "targetMedian": {
+                                      "type": "number"
+                                    },
+                                    "upsidePercent": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "mode",
+                                    "targetMedian",
+                                    "currentPrice",
+                                    "upsidePercent"
+                                  ],
+                                  "type": "object"
+                                }
+                              ],
+                              "nullable": true
+                            },
+                            "version": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "status",
+                            "version",
+                            "theses",
+                            "valuation"
+                          ],
+                          "type": "object"
+                        }
+                      ]
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "",
+        "tags": [
+          "AI Analysis"
+        ],
+        "x-auth-level": "premium",
+        "x-response-schema-status": "explicit"
       }
     },
     "/api/v2/ai/patterns/candles": {
@@ -135852,11 +136398,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 527,
+    "authenticatedOperations": 529,
     "noContentResponses": 18,
-    "operations": 726,
+    "operations": 728,
     "publicOperations": 199,
-    "responseSchemas": 708,
+    "responseSchemas": 710,
     "untypedResponses": 0
   }
 }

@@ -22,6 +22,7 @@ import { HeaderStrip } from "./header-strip"
 import { LayerCard } from "./layer-card"
 import { LayerCharts } from "./layer-charts"
 import { Masthead } from "./masthead"
+import { InvestmentViewBlock } from "./investment-view/investment-view-block"
 import { NewsList } from "./news-list"
 
 export type StockInsightBriefingProps = {
@@ -143,6 +144,7 @@ export function StockInsightBriefing({
       <Masthead updatedAt={insight.updatedAt} />
       {insight.header ? <HeaderStrip header={insight.header} /> : null}
       {insight.briefing ? <BriefingCard data={insight.briefing} /> : null}
+      {teaser ? null : <InvestmentViewBlock key={symbol} symbol={symbol} />}
 
       <div data-tour-id="tour-phantich-divider" className="my-2 flex items-center gap-3 px-1">
         <span className="h-px flex-1 bg-border" aria-hidden="true" />

@@ -287,6 +287,16 @@
       "requestType": "GetInsightV2GetApiV2AiInsightSymbolData",
       "responseType": "GetInsightV2GetApiV2AiInsightSymbolResponses"
     },
+    "GET /api/v2/ai/investment-view/{symbol}": {
+      "operationId": "getInvestmentViewV2",
+      "requestType": "GetInvestmentViewV2Data",
+      "responseType": "GetInvestmentViewV2Responses"
+    },
+    "GET /api/v2/ai/investment-view/{symbol}/status": {
+      "operationId": "getInvestmentViewStatusV2",
+      "requestType": "GetInvestmentViewStatusV2Data",
+      "responseType": "GetInvestmentViewStatusV2Responses"
+    },
     "GET /api/v2/ai/patterns/{kind}/symbols": {
       "operationId": "listPatternSymbolsV2_get_api_v2_ai_patterns_kind_symbols",
       "requestType": "ListPatternSymbolsV2GetApiV2AiPatternsKindSymbolsData",

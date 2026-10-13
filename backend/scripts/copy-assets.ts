@@ -5,6 +5,7 @@ import { resolve } from 'node:path';
 // (questions.vi.private.json) live here and must never be copied into frontend/.
 const ASSET_DIRECTORIES = [
   'src/modules/analysis/prompts',
+  'src/modules/research/prompts',
   'src/modules/academy/content',
   'src/modules/quant/v2/registry',
   'src/modules/screener/registry',

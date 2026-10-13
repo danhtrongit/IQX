@@ -19,4 +19,8 @@ export const stockKeys = {
     ["charts", "stock", "bctc-ai", userId, symbol, termType] as const,
   aiInsight: (symbol: string, userId: string | undefined) =>
     ["charts", "stock", "ai-insight", userId, symbol] as const,
+  investmentView: (symbol: string, userId: string | undefined) =>
+    ["charts", "stock", "investment-view", userId, symbol] as const,
+  investmentViewStatus: (symbol: string, jobId: string, userId: string | undefined) =>
+    ["charts", "stock", "investment-view", userId, symbol, "status", jobId] as const,
 } as const
