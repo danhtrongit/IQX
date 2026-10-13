@@ -32,5 +32,5 @@ export function renderAcademy(initial: string, options: { panel?: boolean; main?
 }
 
 export function overlayFrame(overrides: Partial<WorkspaceFrameState> = {}): WorkspaceFrameState {
-  return { open: true, overlay: true, panelId: "panel", panelLabel: "Học viện", setOpen: vi.fn(), revealPanel: vi.fn(), ...overrides }
+  return { open: true, overlay: true, collapsed: false, panelId: "panel", panelLabel: "Học viện", setOpen: vi.fn(), revealPanel: vi.fn(), ...overrides }
 }

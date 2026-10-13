@@ -18,13 +18,13 @@ function setOverlay(matches: boolean) {
 
 function Panel() {
   return (
-    <SidebarPanel title="Học viện" description="13 chương · 71 bài học">
+    <SidebarPanel title="Bảng công cụ" description="Mô tả">
       <p>Nội dung panel</p>
     </SidebarPanel>
   )
 }
 
-function renderFrame(initialPanelOpen = false) {
+function renderFrame(initialPanelOpen = false, url = "/demo-trading") {
   const router = createMemoryRouter(
     [
       {
@@ -33,7 +33,7 @@ function renderFrame(initialPanelOpen = false) {
         element: (
           <RailProvider>
             <WorkspaceFrame
-              panelLabel="Học viện"
+              panelLabel="Bảng công cụ"
               defaultPanelOpen={initialPanelOpen}
               main={<div><WorkspacePanelToggle /><p>Nội dung chính</p></div>}
               panel={<Panel />}
@@ -42,14 +42,17 @@ function renderFrame(initialPanelOpen = false) {
         ),
       },
     ],
-    { initialEntries: ["/demo-trading"] },
+    { initialEntries: [url] },
   )
   render(<RouterProvider router={router} />)
   return { router, user: userEvent.setup() }
 }
 
+const rail = () => screen.getByRole("navigation", { name: "Công cụ theo trang" })
+const tool = (name: string) => within(rail()).getByRole("button", { name })
+const panel = () => screen.getByRole("complementary", { name: "Bảng công cụ", hidden: true })
 const frame = () => screen.getByTestId("workspace-frame")
-const toggle = () => screen.queryByRole("button", { name: "Học viện", expanded: false }) ?? screen.queryByRole("button", { name: "Học viện", expanded: true })
+const toggle = () => screen.queryByRole("button", { name: "Bảng công cụ", expanded: false }) ?? screen.queryByRole("button", { name: "Bảng công cụ", expanded: true })
 
 beforeEach(() => {
   media.matches = false
@@ -71,31 +74,152 @@ describe("WorkspaceFrame on wide screens", () => {
   it("shows main, the panel and the rail together with no toggle or close button", async () => {
     renderFrame()
     await screen.findByText("Nội dung chính")
-    expect(screen.getByRole("complementary", { name: "Học viện" })).toBeTruthy()
+    expect(screen.getByRole("complementary", { name: "Bảng công cụ" })).toBeTruthy()
     expect(screen.getByRole("navigation", { name: "Công cụ theo trang" })).toBeTruthy()
     expect(toggle()).toBeNull()
     expect(screen.queryByRole("button", { name: "Đóng công cụ" })).toBeNull()
     expect(frame().getAttribute("data-panel-open")).toBe("false")
   })
 
-  it("lists the rail tools in v4 order", async () => {
+  it("lists the route's visible rail tools without the hidden ones", async () => {
     renderFrame()
     const nav = await screen.findByRole("navigation", { name: "Công cụ theo trang" })
     expect(within(nav).getAllByRole("button").map((button) => button.textContent)).toEqual([
-      "Học viện", "Đặt lệnh", "Danh mục", "Bot", "Shop", "Săn mã", "Tin tức", "Mẫu nến",
+      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Học viện", "Bot", "Shop",
     ])
+  })
+
+  it("shows the panel, so only the active panel tool is pressed and expanded", async () => {
+    renderFrame()
+    await screen.findByText("Nội dung chính")
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
+    expect(panel().hasAttribute("inert")).toBe(false)
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("true")
+    expect(tool("Đặt lệnh").getAttribute("aria-expanded")).toBe("true")
+    expect(tool("Đặt lệnh").getAttribute("aria-controls")).toBe(panel().id)
+    expect(tool("Danh mục").getAttribute("aria-pressed")).toBe("false")
+    expect(tool("Danh mục").getAttribute("aria-expanded")).toBe("false")
+    // Insight is a main-area tool: no aria-controls/aria-expanded, pressed only while it is shown.
+    expect(tool("Insight").getAttribute("aria-pressed")).toBe("false")
+    expect(tool("Insight").hasAttribute("aria-expanded")).toBe(false)
+    expect(tool("Insight").hasAttribute("aria-controls")).toBe(false)
+  })
+
+  it("collapses on a second click of the active tool and leaves no tool pressed", async () => {
+    const { user, router } = renderFrame()
+    await screen.findByText("Nội dung chính")
+    await user.click(tool("Đặt lệnh"))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+    expect(panel().hasAttribute("inert")).toBe(true)
+    // The panel stays mounted so its state survives.
+    expect(screen.getByText("Nội dung panel")).toBeTruthy()
+    expect(within(rail()).getAllByRole("button").filter((button) => button.getAttribute("aria-pressed") === "true")).toEqual([])
+    expect(tool("Đặt lệnh").getAttribute("aria-expanded")).toBe("false")
+    // The tool stays selected in the URL; nothing was navigated.
+    expect(router.state.location.search).toBe("")
+
+    await user.click(tool("Đặt lệnh"))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("true")
+  })
+
+  it("switches to another tool without collapsing, and shows a collapsed panel again", async () => {
+    const { user, router } = renderFrame()
+    await screen.findByText("Nội dung chính")
+    await user.click(tool("Danh mục"))
+    expect(router.state.location.search).toBe("?view=portfolio")
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
+    expect(tool("Danh mục").getAttribute("aria-pressed")).toBe("true")
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("false")
+
+    await user.click(tool("Danh mục"))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+    await user.click(tool("Tin tức"))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
+    expect(router.state.location.search).toBe("?view=news")
+    expect(tool("Tin tức").getAttribute("aria-pressed")).toBe("true")
+  })
+
+  it("Insight takes the main area and collapses the panel; the panel tools then switch it back", async () => {
+    const { user, router } = renderFrame()
+    await screen.findByText("Nội dung chính")
+    await user.click(tool("Insight"))
+    expect(router.state.location.search).toBe("?content=insight")
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+    expect(tool("Insight").getAttribute("aria-pressed")).toBe("true")
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("false")
+    await user.click(tool("Đặt lệnh"))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("true")
+  })
+
+  it("can be controlled: reports collapses and follows `collapsed`", async () => {
+    const onCollapsedChange = vi.fn()
+    const router = createMemoryRouter(
+      [{
+        path: "/demo-trading",
+        handle: { chrome: demoChrome },
+        element: (
+          <RailProvider>
+            <WorkspaceFrame panelLabel="Bảng công cụ" collapsed onCollapsedChange={onCollapsedChange} main={<p>Nội dung chính</p>} panel={<Panel />} />
+          </RailProvider>
+        ),
+      }],
+      { initialEntries: ["/demo-trading"] },
+    )
+    render(<RouterProvider router={router} />)
+    await screen.findByText("Nội dung chính")
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+    await userEvent.setup().click(tool("Đặt lệnh"))
+    expect(onCollapsedChange).toHaveBeenCalledWith(false)
+    // Still controlled: the parent decides.
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+  })
+
+  it("uses the `rail` prop instead of the route chrome when given", async () => {
+    const onSelectTool = vi.fn()
+    const items = demoChrome.items.filter((item) => item.section === "academy")
+    const router = createMemoryRouter(
+      [{
+        path: "/demo-trading",
+        element: (
+          <RailProvider>
+            <WorkspaceFrame
+              panelLabel="Bảng công cụ"
+              rail={{ items, activeTool: "bot", mainToolId: null, onSelectTool, onSelectMainTool: vi.fn() }}
+              main={<p>Nội dung chính</p>}
+              panel={<Panel />}
+            />
+          </RailProvider>
+        ),
+      }],
+      { initialEntries: ["/demo-trading"] },
+    )
+    render(<RouterProvider router={router} />)
+    await screen.findByText("Nội dung chính")
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop"])
+    expect(tool("Bot").getAttribute("aria-pressed")).toBe("true")
+    await userEvent.setup().click(tool("Shop"))
+    expect(onSelectTool).toHaveBeenCalledWith("shop")
   })
 })
 
 describe("WorkspaceFrame as a layer (900px and below)", () => {
-  beforeEach(() => { media.matches = true })
+  // jsdom has no layout: report every attached element as rendered so focus can return to its trigger.
+  beforeEach(() => {
+    media.matches = true
+    Object.defineProperty(HTMLElement.prototype, "offsetParent", { configurable: true, get() { return this.parentNode } })
+  })
+  afterEach(() => {
+    delete (HTMLElement.prototype as { offsetParent?: unknown }).offsetParent
+  })
 
   it("starts closed and opens from the toggle, moving focus into the panel", async () => {
     const { user } = renderFrame()
     await screen.findByText("Nội dung chính")
     const button = toggle()!
     expect(button.getAttribute("aria-expanded")).toBe("false")
-    expect(button.getAttribute("aria-controls")).toBe(screen.getByRole("complementary", { name: "Học viện" }).id)
+    expect(button.getAttribute("aria-controls")).toBe(screen.getByRole("complementary", { name: "Bảng công cụ" }).id)
     expect(frame().getAttribute("data-panel-open")).toBe("false")
 
     await user.click(button)
@@ -139,7 +263,32 @@ describe("WorkspaceFrame as a layer (900px and below)", () => {
     expect(frame().getAttribute("data-panel-open")).toBe("true")
     await user.click(screen.getByRole("button", { name: "Đóng công cụ" }))
     expect(frame().getAttribute("data-panel-open")).toBe("false")
-    expect(document.activeElement).toBe(toggle())
+    // Opened from the rail: focus goes back to the rail button.
+    expect(document.activeElement).toBe(tool("Đặt lệnh"))
+  })
+
+  it("closes with Escape and returns focus to the rail button that opened the layer", async () => {
+    const { user } = renderFrame()
+    await screen.findByText("Nội dung chính")
+    await user.click(tool("Danh mục"))
+    expect(frame().getAttribute("data-panel-open")).toBe("true")
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("button", { name: "Đóng công cụ" })))
+    await user.keyboard("{Escape}")
+    expect(frame().getAttribute("data-panel-open")).toBe("false")
+    expect(document.activeElement).toBe(tool("Danh mục"))
+  })
+
+  it("hides the layer with a second click on the active tool while it shows", async () => {
+    const { user } = renderFrame()
+    await screen.findByText("Nội dung chính")
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("false")
+    await user.click(tool("Đặt lệnh"))
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("true")
+    await user.click(tool("Đặt lệnh"))
+    expect(frame().getAttribute("data-panel-open")).toBe("false")
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("false")
+    // The layer is a layer: it never reports the wide-screen collapse.
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
   })
 
   it("can start open for a direct link to a tool", async () => {

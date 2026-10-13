@@ -1,19 +1,32 @@
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { useRail } from "@/context/rail"
+import type { RailItem } from "@/config/chrome"
 import { cn } from "cn"
 
-import { useWorkspaceFrame } from "./workspace-frame-context"
+/** Tools listed in the rail and how a selection reaches the page. */
+export type WorkspaceRail = {
+  /** Visible tools, top to bottom. */
+  items: RailItem[]
+  /** Panel tool in view (a `sidebar` item). */
+  activeTool: string
+  /** Main-area tool on screen (a `left` item such as Insight), if any. */
+  mainToolId: string | null
+  onSelectTool: (id: string) => void
+  onSelectMainTool: (id: string) => void
+}
 
 /**
- * Vertical tool rail. Every tool in the route's chrome is listed in order and is
- * always available; selecting one switches the context panel (and, below 900px,
- * slides that panel in next to the rail).
+ * Vertical tool rail. A panel tool is highlighted only while its panel is showing; a
+ * main-area tool (Insight) while it fills the main area. Selection logic (show, hide,
+ * switch) belongs to the workspace frame.
  */
-export function RailMenu() {
-  const { chrome, activeId, activeContentId, setActive } = useRail()
-  const frame = useWorkspaceFrame()
-  if (chrome.items.length === 0) return null
+export function RailMenu({ rail, panelId, panelShown, onSelect }: {
+  rail: WorkspaceRail
+  panelId: string
+  panelShown: boolean
+  onSelect: (item: RailItem, button: HTMLElement) => void
+}) {
+  if (rail.items.length === 0) return null
 
   return (
     <nav
@@ -27,20 +40,20 @@ export function RailMenu() {
       </div>
       <ScrollArea className="min-h-0 flex-1">
         <div className="workspace-rail-list flex flex-col gap-1 p-1.5">
-          {chrome.items.filter((item) => !item.hidden).map((item) => {
+          {rail.items.map((item) => {
             const Icon = item.icon
-            const on = item.id === (item.affects === "left" ? activeContentId : activeId)
+            const panelTool = item.affects === "sidebar"
+            const on = panelTool ? panelShown && item.id === rail.activeTool : item.id === rail.mainToolId
             return (
               <Button
                 key={item.id}
                 type="button"
                 variant="ghost"
                 aria-pressed={on}
+                aria-controls={panelTool ? panelId : undefined}
+                aria-expanded={panelTool ? on : undefined}
                 data-tool={item.id}
-                onClick={() => {
-                  setActive(item.id)
-                  frame?.revealPanel()
-                }}
+                onClick={(event) => onSelect(item, event.currentTarget)}
                 className={cn(
                   "workspace-tool relative h-auto min-h-20 w-full flex-col gap-2 px-1 py-3 text-center whitespace-normal",
                   on

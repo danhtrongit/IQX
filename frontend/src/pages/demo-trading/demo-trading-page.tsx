@@ -1,61 +1,45 @@
-import { lazy, Suspense } from "react"
-import { useSearchParams } from "react-router"
+import { lazy, Suspense, useCallback, useLayoutEffect } from "react"
+import { useLocation, useSearchParams } from "react-router"
 
 import { PanelState } from "@/components/layout/panel-state"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { WorkspaceFrame, WorkspacePanelToggle } from "@/components/layout/workspace-frame"
+import { WorkspaceFrame, WorkspacePanelToggle, type WorkspaceRail } from "@/components/layout/workspace-frame"
+import { useWorkspaceFrame } from "@/components/layout/workspace-frame-context"
+import { demoChrome, sectionOfTool, type WorkspaceSection } from "@/config/chrome"
 import { useRail } from "@/context/rail"
 import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 import { AcademyMain } from "@/pages/academy/academy-main"
 import { AcademyPanel } from "@/pages/academy/academy-panel"
-import { parseDemoContent, withDemoContent, type DemoContent } from "./content-tabs-state"
+import { parseDemoContent, withDemoContent, type DemoContent, type DemoTab } from "./content-tabs-state"
 import { BotMain, BotPanel } from "./bot"
-import { HuntMain } from "./insights/hunt-main"
 import { HuntPanel } from "./insights/hunt-panel"
 import type { MascotId } from "./journey/types"
 import { NewsPanel } from "./market/news-panel"
 import { PatternsPanel } from "./market/patterns-panel"
-import { QuoteSummary } from "./market/quote-summary"
 import { PortfolioPanel } from "./portfolio/portfolio-panel"
 import { PracticeMain, PracticePanel, PracticeProvider, parsePracticeParam } from "./practice"
 import { ShopMain, ShopPanel } from "./shop"
 import { TradingRuntime } from "./trading"
 import { OrderPanel } from "./trading/order-panel"
-import { AccountStrip } from "./workspace/account-strip"
-import { MascotStage } from "./workspace/mascot-stage"
+import { useWorkspaceMemory, workspaceMemory } from "./workspace-sections"
 import { useWorkspace } from "./workspace/use-workspace"
 
 const ChartPage = lazy(() => import("@/pages/charts/chart-page").then((module) => ({ default: module.ChartPage })))
 const PriceBoardPage = lazy(() => import("@/pages/securities/price-board/price-board-page").then((module) => ({ default: module.PriceBoardPage })))
 const MarketWorkspacePage = lazy(() => import("@/pages/market-workspace/market-workspace-page").then((module) => ({ default: module.MarketWorkspacePage })))
 
-const CONTENT_TABS: { id: DemoContent; label: string }[] = [
-  { id: "overview", label: "Tổng quan" },
+const CONTENT_TABS: { id: DemoTab; label: string }[] = [
   { id: "chart", label: "Biểu đồ" },
   { id: "board", label: "Bảng giá" },
-  { id: "ai-analysis", label: "AI Phân Tích" },
+  { id: "market", label: "Thị trường" },
 ]
 
-/** Title and one-line subtitle of the overview, per workspace tool. */
-const TOOL_HEADINGS: Record<string, { title: string; subtitle: string }> = {
-  academy: { title: "Học viện", subtitle: "13 chương · 71 bài học" },
-  trading: { title: "Demo Trading", subtitle: "Tự đặt lệnh · Vốn mô phỏng 100.000.000 đồng" },
-  portfolio: { title: "Danh mục", subtitle: "Tài khoản tự giao dịch và danh sách theo dõi" },
-  bot: { title: "Bot", subtitle: "Linh thú và điều kiện giao dịch của bạn." },
-  shop: { title: "Shop", subtitle: "" },
-  hunt: { title: "Săn mã", subtitle: "Tìm cổ phiếu · Lưu vào danh mục theo dõi" },
-  news: { title: "Tin tức", subtitle: "Tin AI theo mã đang xem" },
-  patterns: { title: "Mẫu nến", subtitle: "Mẫu nến và mẫu hình giá của mã đang xem" },
-}
-
-/** Tools whose panel works on the selected symbol, so the overview shows its quote bar. */
-const SYMBOL_TOOLS = new Set(["trading", "portfolio", "news", "patterns"])
-
+/** DEMO TRADING main area: the three tabs, or Insight in place of them (no tab selected). */
 function ContentTabs({ active, onSelect, children }: { active: DemoContent; onSelect: (content: DemoContent) => void; children: React.ReactNode }) {
-  const content = active === "ai-analysis" ? (
+  const content = active === "market" || active === "insight" ? (
     <ScrollArea className="h-full min-h-0" orientation="both" viewportClassName="[&>div]:h-full">
       {children}
     </ScrollArea>
@@ -68,8 +52,8 @@ function ContentTabs({ active, onSelect, children }: { active: DemoContent; onSe
         </TabsList>
         <div className="flex shrink-0 items-center pr-2"><WorkspacePanelToggle /></div>
       </div>
-      {CONTENT_TABS.map((tab) => <TabsContent key={tab.id} value={tab.id} forceMount className={cn("min-h-0 min-w-0 flex-1 data-[state=inactive]:hidden", (tab.id === "board" || tab.id === "overview") && "flex flex-col")}>
-        {active === tab.id && <Suspense fallback={<ContentFallback />}>{content}</Suspense>}
+      {[...CONTENT_TABS.map((tab) => tab.id), "insight" as const].map((id) => <TabsContent key={id} value={id} forceMount className={cn("min-h-0 min-w-0 flex-1 data-[state=inactive]:hidden", id === "board" && "flex flex-col")}>
+        {active === id && <Suspense fallback={<ContentFallback />}>{content}</Suspense>}
       </TabsContent>)}
     </Tabs>
   )
@@ -79,41 +63,37 @@ function ContentFallback() {
   return <div className="space-y-4 p-4 sm:p-6"><Skeleton className="h-8 w-48" /><Skeleton className="h-48 w-full" /><Skeleton className="h-24 w-full" /></div>
 }
 
-function Overview({ toolId, symbol, mascotId, onSymbolChange, onNavigate }: {
+/** HỌC VIỆN has no page heading; on phones the panel button keeps a bar of its own. */
+function PanelToggleBar() {
+  const frame = useWorkspaceFrame()
+  if (!frame?.overlay) return null
+  return <div className="flex shrink-0 justify-end border-b border-border bg-card px-3 py-2"><WorkspacePanelToggle /></div>
+}
+
+/** HỌC VIỆN main area: the tool's view (Học viện, Bot, Shop) or the Bot practice. */
+function AcademySection({ toolId, label, practice, mascotId, onNavigate }: {
   toolId: string
-  symbol: string
+  label: string
+  practice: boolean
   mascotId: MascotId
-  onSymbolChange: (symbol: string) => void
   onNavigate: (panel: string, symbol?: string) => void
 }) {
-  const heading = TOOL_HEADINGS[toolId] ?? TOOL_HEADINGS.academy
   return (
-    <section aria-labelledby="workspace-heading" className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <header className="flex min-h-16 shrink-0 flex-col justify-center gap-0.5 border-b border-border bg-card px-3 py-2 min-[901px]:px-4">
-        <h1 id="workspace-heading" className="truncate font-heading text-base font-bold min-[901px]:text-lg">{heading.title}</h1>
-        {heading.subtitle && <p className="truncate text-xs text-muted-foreground">{heading.subtitle}</p>}
-      </header>
-      <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
-        <div className="min-w-0 space-y-3 p-1.5 min-[901px]:p-3 min-[1750px]:p-5">
-          {toolId === "hunt" ? (
-            <HuntMain symbol={symbol} onSymbolChange={onSymbolChange} onNavigate={onNavigate} />
-          ) : toolId === "bot" ? (
-            <BotMain mascotId={mascotId} />
-          ) : toolId === "academy" ? (
-            <AcademyMain mascotId={mascotId} />
-          ) : toolId === "shop" ? (
-            <ShopMain onNavigate={onNavigate} />
-          ) : (
-            <>
-              {SYMBOL_TOOLS.has(toolId) && (
-                <div className="rounded-lg border border-border bg-card p-2"><QuoteSummary symbol={symbol} onSymbolChange={onSymbolChange} /></div>
-              )}
-              {(toolId === "trading" || toolId === "portfolio") && <AccountStrip />}
-              <MascotStage mascotId={mascotId} />
-            </>
-          )}
-        </div>
-      </ScrollArea>
+    <section aria-label={label} className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <PanelToggleBar />
+      {practice ? <PracticeMain /> : (
+        <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
+          <div className="min-w-0 space-y-3 p-1.5 min-[901px]:p-3 min-[1750px]:p-5">
+            {toolId === "bot" ? (
+              <BotMain mascotId={mascotId} />
+            ) : toolId === "shop" ? (
+              <ShopMain onNavigate={onNavigate} />
+            ) : (
+              <AcademyMain mascotId={mascotId} />
+            )}
+          </div>
+        </ScrollArea>
+      )}
     </section>
   )
 }
@@ -121,13 +101,31 @@ function Overview({ toolId, symbol, mascotId, onSymbolChange, onNavigate }: {
 function DemoWorkspace() {
   const { activeId, activeItem } = useRail()
   const [params, setParams] = useSearchParams()
+  const location = useLocation()
+  const memory = useWorkspaceMemory()
   // Bootstraps the accounts once per session whichever main tab is open first.
   const { mascotId } = useWorkspace()
   const rawSymbol = params.get("symbol")?.toUpperCase()
   const symbol = rawSymbol && /^[A-Z0-9]{1,10}$/.test(rawSymbol) ? rawSymbol : "VNM"
+  const section: WorkspaceSection = sectionOfTool(activeId)
   const content = parseDemoContent(params.get("content"))
   // `view=bot&practice=<indicator_id>` opens the optional mini practice in place of the Bot panel.
   const practiceId = activeId === "bot" ? parsePracticeParam(params.get("practice")) : null
+  const navigationState = location.state as { workspaceSection?: boolean; openPanel?: boolean } | null
+  const lastTab = memory.demo?.lastTab ?? "chart"
+  const collapsed = memory[section]?.collapsedTool === activeId
+
+  // Each section comes back as it was left (tool, tab, lesson, collapsed panel).
+  const search = location.search
+  useLayoutEffect(() => {
+    workspaceMemory.remember(section, search)
+  }, [section, search])
+  // A direct link to a tool always shows its panel; a collapsed panel belongs to its own tool only.
+  const openRequested = navigationState?.openPanel === true
+  const collapsedTool = memory[section]?.collapsedTool ?? null
+  useLayoutEffect(() => {
+    if (collapsedTool !== null && (openRequested || collapsedTool !== activeId)) workspaceMemory.setCollapsedTool(section, null)
+  }, [location.key, openRequested, collapsedTool, activeId, section])
 
   function selectSymbol(nextSymbol: string) {
     const next = new URLSearchParams(params)
@@ -143,6 +141,25 @@ function DemoWorkspace() {
   function selectContent(nextContent: DemoContent) {
     setParams(withDemoContent(params, nextContent), { replace: true })
   }
+  const onCollapsedChange = useCallback((next: boolean) => {
+    workspaceMemory.setCollapsedTool(section, next ? activeId : null)
+  }, [section, activeId])
+
+  const rail: WorkspaceRail = {
+    items: demoChrome.items.filter((item) => !item.hidden && item.section === section),
+    activeTool: activeId,
+    mainToolId: section === "demo" && content === "insight" ? "insight" : null,
+    onSelectTool: (id) => {
+      // A panel tool picked while Insight is on screen brings back the tab it replaced.
+      let next = new URLSearchParams(params)
+      if (section === "demo" && content === "insight") next = withDemoContent(next, lastTab)
+      next.set("view", id)
+      setParams(next, { replace: true })
+    },
+    // Insight replaces the tabs; a second click returns to the tab it replaced.
+    onSelectMainTool: () => selectContent(content === "insight" ? lastTab : "insight"),
+  }
+
   function panel() {
     if (practiceId) return <PracticePanel />
     switch (activeId) {
@@ -157,23 +174,30 @@ function DemoWorkspace() {
     }
   }
 
-  const mainContent = content === "chart"
-    ? <ChartPage embedded />
-    : content === "board"
-      ? <PriceBoardPage embedded />
-      : content === "ai-analysis"
-        ? <MarketWorkspacePage embedded />
-        : practiceId
-          ? <PracticeMain />
-          : <Overview toolId={activeId} symbol={symbol} mascotId={mascotId} onSymbolChange={selectSymbol} onNavigate={navigatePanel} />
+  const main = section === "academy"
+    ? <AcademySection toolId={activeId} label={activeItem?.label ?? "Học viện"} practice={practiceId !== null} mascotId={mascotId} onNavigate={navigatePanel} />
+    : (
+      <ContentTabs active={content} onSelect={selectContent}>
+        {content === "chart" ? <ChartPage embedded />
+          : content === "board" ? <PriceBoardPage embedded />
+            : <MarketWorkspacePage embedded view={content === "insight" ? "stock" : "market"} />}
+      </ContentTabs>
+    )
 
   return <>
     <PracticeProvider indicatorId={practiceId}>
       <WorkspaceFrame
-        panelLabel={activeItem?.label ?? "Học viện"}
-        // A direct link to a lesson shows the lesson, not the list layer on top of it.
-        defaultPanelOpen={params.has("view") && !(activeId === "academy" && params.has("lesson"))}
-        main={<ContentTabs active={content} onSelect={selectContent}>{mainContent}</ContentTabs>}
+        // Switching sections starts each one afresh (on phones its panel layer starts closed).
+        key={section}
+        panelLabel={activeItem?.label ?? "Đặt lệnh"}
+        // A direct link to a tool opens its layer; a direct link to a lesson shows the lesson, and the
+        // header's section links keep the layer closed.
+        defaultPanelOpen={params.has("view") && navigationState?.workspaceSection !== true && !(activeId === "academy" && params.has("lesson"))}
+        revealKey={openRequested ? location.key : null}
+        collapsed={collapsed}
+        onCollapsedChange={onCollapsedChange}
+        rail={rail}
+        main={main}
         panel={panel()}
       />
     </PracticeProvider>

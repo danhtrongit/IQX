@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/use-auth"
 import { useResolvedTheme } from "@/hooks/use-resolved-theme"
 import { headerDestination, isHeaderLinkActive } from "@/lib/header-navigation"
 import { cn } from "@/lib/utils"
+import { useWorkspaceMemory } from "@/pages/demo-trading/workspace-sections"
 
 import { HeaderCoinChip } from "./header-coin-chip"
 import { LoginDialog } from "./login-dialog"
@@ -22,7 +23,10 @@ const mobileNavClass = "flex min-h-11 items-center rounded-sm px-3 py-2.5 text-s
 
 type HeaderNavItem = { readonly to: string; readonly label: string }
 
-const NAV_ITEMS: readonly HeaderNavItem[] = HEADER_NAV
+const NAV_ITEMS: readonly HeaderNavItem[] = HEADER_NAV.filter(item => !item.hidden)
+
+/** Switching workspace sections starts the panel layer closed on phones (layout v1.2 §5.3). */
+const SECTION_SWITCH_STATE = { workspaceSection: true }
 
 function HeaderLinks({ items, mobile = false, onNavigate }: {
   items: readonly HeaderNavItem[]
@@ -30,12 +34,14 @@ function HeaderLinks({ items, mobile = false, onNavigate }: {
   onNavigate?: () => void
 }) {
   const location = useLocation()
+  const memory = useWorkspaceMemory()
   const linkClass = (active: boolean) => mobile
     ? `${mobileNavClass} ${active ? "bg-primary text-primary-foreground hover:bg-primary/90" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`
     : active ? activeNavClass : navClass
 
   return items.map(item => (
-    <Link key={item.to} to={headerDestination(item.to, location)}
+    <Link key={item.to} to={headerDestination(item.to, location, memory)}
+      state={item.to.startsWith("/demo-trading") ? SECTION_SWITCH_STATE : undefined}
       aria-current={isHeaderLinkActive(item.to, location) ? "page" : undefined}
       className={linkClass(isHeaderLinkActive(item.to, location))} onClick={onNavigate}>
       {item.label}
