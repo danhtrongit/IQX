@@ -50,12 +50,12 @@ export function BriefingCard({ data }: { data: BriefingCardData }) {
 
   return (
     <article className="relative flex flex-col gap-5 overflow-hidden rounded-lg border-0 bg-card px-5 py-6">
-      <span className="absolute top-0 left-0 h-[3px] w-20 bg-price-ref" aria-hidden="true" />
+      <span className="absolute top-0 left-0 h-[3px] w-20 bg-brand-gradient" aria-hidden="true" />
 
       {/* Khối 1 */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className={cn(EYEBROW_CLASS, "text-price-ref")}>BẢN BRIEFING HÔM NAY</span>
+          <span className={cn(EYEBROW_CLASS, "text-brand-cyan")}>BẢN BRIEFING HÔM NAY</span>
           <span className="text-xs text-muted-foreground tabular-nums">
             Cập nhật {formatInsightTime(data.updatedAt)}
           </span>

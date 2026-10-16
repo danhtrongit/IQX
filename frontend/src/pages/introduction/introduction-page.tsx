@@ -13,6 +13,7 @@ import {
   UsersRound,
 } from "lucide-react"
 import { Link } from "react-router"
+import { BrainWaveLogo } from "@/components/brand/brain-wave-logo"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { useAuth } from "@/hooks/use-auth"
@@ -165,9 +166,9 @@ export function IntroductionPage() {
             </div>
             <div className="intro-container intro-hero-inner">
               <div className="intro-hero-copy">
-                <p className="intro-eyebrow">IQX DEMO TRADING</p>
+                <p className="intro-eyebrow text-brand-gradient">IQX DEMO TRADING</p>
                 <h1 id="intro-title">
-                  Tập đầu tư có hệ thống,<span> bắt đầu từ tư duy.</span>
+                  Tập đầu tư có hệ thống,<span className="text-brand-gradient"> bắt đầu từ tư duy.</span>
                 </h1>
                 <p className="intro-lead">
                   Học qua trải nghiệm thực hành, rèn kỹ năng từng bước, với
@@ -413,8 +414,11 @@ export function IntroductionPage() {
           </section>
 
           <footer className="intro-footer intro-container">
-            <Link to="/" className="font-heading text-xl font-bold">
-              IQX<span className="text-primary">.</span>
+            <Link to="/" className="flex items-center gap-2 font-heading text-xl font-bold" aria-label="IQX - Trang chủ">
+              <BrainWaveLogo size="sm" aria-hidden="true" />
+              <span>
+                IQX<span className="text-brand-gradient">.</span>
+              </span>
             </Link>
             <p>
               IQX cung cấp công cụ phân tích và giáo dục, không phải khuyến nghị

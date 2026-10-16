@@ -136,12 +136,17 @@ Follow `DESIGN.md`.
 - Body and UI: Be Vietnam Pro.
 - Headings: Space Grotesk Variable.
 - Dark is the default trading theme; light must work.
-- Use semantic token classes. No hardcoded theme hex in JSX.
+- Brain Wave visual identity: Built on the Electric Cyan (`#00D4FF`) → Cobalt/Royal Blue (`#2563EB`) → Vibrant Violet/Magenta (`#7C3AED`–`#D946EF`) spectrum, representing market wave dynamics and multi-layer neural AI intelligence.
+- Dual-zone rules:
+  - Controlled brand gradients (`bg-brand-gradient`, `text-brand-gradient`) and subtle ambient glow (`shadow-brand-glow`, `border-brand-glow`) are strictly permitted on brand marks (Header, Mobile Menu, Auth, Admin), hero/editorial narrative surfaces (`/`), AI intelligence triggers/badges, and primary CTAs.
+  - Dense analytical workspaces, financial tables, order panels, and price boards (`/bang-gia`) remain completely flat, crisp, and distraction-free (zero glassmorphism, background noise, or heavy drop shadows).
+- Vietnamese stock market semantic tokens (`--price-up`, `--price-down`, `--price-ref`, `--price-ceiling`, `--price-floor`) are immutable and strictly decoupled from brand accent colors. In dark mode, `--price-ref` is strictly yellow/amber (`#ffd60a`), never linked to `var(--accent)`.
+- Use semantic token classes backed by `src/index.css`. No hardcoded theme hex in JSX.
 - Use `tabular-nums` for price, volume, quantity, and money.
 - Use market semantic colors only for actual market meaning.
-- Use Lucide React for interface icons and real SVG for brand artwork.
+- Use Lucide React for interface icons; use official Brain Wave emblem (`BrainWaveLogo` or brand SVG) for brand artwork (retiring legacy Lucide `<Triangle />`).
 - No emoji or Unicode glyph used as an icon.
-- No gradient, glow, glassmorphism, continuous decorative motion, or nested card clutter.
+- No arbitrary gradients, neon glows, glassmorphism, continuous decorative motion, or nested card clutter outside authorized Zone A brand/AI focal points.
 - Product pages are dense and functional. The introduction route may use editorial spacing without becoming a generic landing template.
 
 ## 8. shadcn components

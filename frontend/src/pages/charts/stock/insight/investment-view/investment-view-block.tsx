@@ -48,7 +48,7 @@ function Frame({
       data-testid="investment-view"
       className="flex flex-col gap-5 rounded-lg border-0 bg-card px-4 py-4"
     >
-      <h2 id={titleId} className={cn(EYEBROW_CLASS, "text-price-ref")}>
+      <h2 id={titleId} className={cn(EYEBROW_CLASS, "text-brand-gradient")}>
         Góc nhìn đầu tư
       </h2>
       {children}

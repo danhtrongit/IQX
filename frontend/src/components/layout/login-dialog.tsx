@@ -3,6 +3,7 @@ import { Crown, LoaderCircle, LogOut, Settings2, ShieldCheck, UserRound } from "
 import { Link, useLocation } from "react-router"
 import { toast } from "sonner"
 
+import { BrainWaveLogo } from "@/components/brand/brain-wave-logo"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -80,7 +81,10 @@ export function LoginDialog() {
       <Dialog open={auth.authOpen} onOpenChange={open => { if (!pending) { auth.setAuthOpen(open); setError(""); setReferralError("") } }}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{auth.authMode === "login" ? "Đăng nhập IQX" : "Tạo tài khoản IQX"}</DialogTitle>
+            <div className="flex items-center gap-2.5">
+              <BrainWaveLogo size="sm" aria-hidden="true" />
+              <DialogTitle>{auth.authMode === "login" ? "Đăng nhập IQX" : "Tạo tài khoản IQX"}</DialogTitle>
+            </div>
             <DialogDescription>Lưu hành trình học và thực hành giao dịch bằng tiền mô phỏng.</DialogDescription>
           </DialogHeader>
           <Tabs value={auth.authMode} onValueChange={mode => { if (!pending) { auth.openAuth(mode === "register" ? "register" : "login"); setError(""); setReferralError("") } }}>
