@@ -24464,11 +24464,12 @@ export type ReferralsControllerMine0Error =
 
 export type ReferralsControllerMine0Responses = {
   200: {
+    commission_pct: number | null;
+    is_team_lead: boolean;
+    offer_days: number | null;
+    offer_type: "none" | "days" | "lifetime" | null;
     referral_code: string | null;
-    referral_lead_user_id: string | null;
-    referral_partner_kind: "lead_sale" | "ctv";
     referral_url: string | null;
-    referred_by_user_id: string | null;
   };
 };
 
@@ -44352,11 +44353,12 @@ export type ReferralsControllerMine1Error =
 
 export type ReferralsControllerMine1Responses = {
   200: {
+    commission_pct: number | null;
+    is_team_lead: boolean;
+    offer_days: number | null;
+    offer_type: "none" | "days" | "lifetime" | null;
     referral_code: string | null;
-    referral_lead_user_id: string | null;
-    referral_partner_kind: "lead_sale" | "ctv";
     referral_url: string | null;
-    referred_by_user_id: string | null;
   };
 };
 

@@ -59009,39 +59009,45 @@
                 "schema": {
                   "additionalProperties": false,
                   "properties": {
-                    "referral_code": {
+                    "commission_pct": {
+                      "maximum": 100,
+                      "minimum": 0,
                       "nullable": true,
-                      "type": "string"
+                      "type": "integer"
                     },
-                    "referral_lead_user_id": {
-                      "format": "uuid",
+                    "is_team_lead": {
+                      "type": "boolean"
+                    },
+                    "offer_days": {
                       "nullable": true,
-                      "type": "string"
+                      "type": "integer"
                     },
-                    "referral_partner_kind": {
+                    "offer_type": {
                       "enum": [
-                        "lead_sale",
-                        "ctv"
+                        "none",
+                        "days",
+                        "lifetime",
+                        null
                       ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "referral_code": {
                       "nullable": true,
                       "type": "string"
                     },
                     "referral_url": {
                       "nullable": true,
                       "type": "string"
-                    },
-                    "referred_by_user_id": {
-                      "format": "uuid",
-                      "nullable": true,
-                      "type": "string"
                     }
                   },
                   "required": [
+                    "is_team_lead",
                     "referral_code",
-                    "referral_partner_kind",
-                    "referred_by_user_id",
-                    "referral_lead_user_id",
-                    "referral_url"
+                    "referral_url",
+                    "commission_pct",
+                    "offer_type",
+                    "offer_days"
                   ],
                   "type": "object"
                 }
@@ -114952,39 +114958,45 @@
                 "schema": {
                   "additionalProperties": false,
                   "properties": {
-                    "referral_code": {
+                    "commission_pct": {
+                      "maximum": 100,
+                      "minimum": 0,
                       "nullable": true,
-                      "type": "string"
+                      "type": "integer"
                     },
-                    "referral_lead_user_id": {
-                      "format": "uuid",
+                    "is_team_lead": {
+                      "type": "boolean"
+                    },
+                    "offer_days": {
                       "nullable": true,
-                      "type": "string"
+                      "type": "integer"
                     },
-                    "referral_partner_kind": {
+                    "offer_type": {
                       "enum": [
-                        "lead_sale",
-                        "ctv"
+                        "none",
+                        "days",
+                        "lifetime",
+                        null
                       ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "referral_code": {
                       "nullable": true,
                       "type": "string"
                     },
                     "referral_url": {
                       "nullable": true,
                       "type": "string"
-                    },
-                    "referred_by_user_id": {
-                      "format": "uuid",
-                      "nullable": true,
-                      "type": "string"
                     }
                   },
                   "required": [
+                    "is_team_lead",
                     "referral_code",
-                    "referral_partner_kind",
-                    "referred_by_user_id",
-                    "referral_lead_user_id",
-                    "referral_url"
+                    "referral_url",
+                    "commission_pct",
+                    "offer_type",
+                    "offer_days"
                   ],
                   "type": "object"
                 }
