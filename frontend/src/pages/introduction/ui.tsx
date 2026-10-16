@@ -61,7 +61,7 @@ export function Caption({ className, children }: { className?: string; children:
 
 export function TierBadge({ tier }: { tier: "free" | "premium" }) {
   return (
-    <Badge variant={tier === "premium" ? "gold" : "secondary"} className="shrink-0">
+    <Badge variant={tier === "premium" ? "brand" : "secondary"} className="shrink-0">
       {tier === "premium" ? "Premium" : "Miễn phí"}
     </Badge>
   )

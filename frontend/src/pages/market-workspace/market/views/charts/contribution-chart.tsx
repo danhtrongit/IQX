@@ -16,7 +16,7 @@ function TickerBox({ ticker, tone }: { ticker: string; tone: "up" | "down" }) {
   return (
     <div
       className={cn(
-        "flex min-w-[46px] shrink-0 items-center justify-center rounded-md px-2 font-bold tracking-[-0.01em] text-primary-foreground",
+        "flex min-w-[46px] shrink-0 items-center justify-center rounded-md px-2 font-bold tracking-[-0.01em] text-background",
         BAR_H,
         tone === "up" ? "bg-price-up" : "bg-price-down",
       )}

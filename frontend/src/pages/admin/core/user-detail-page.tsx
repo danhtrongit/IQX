@@ -421,7 +421,7 @@ export function UserDetailPage() {
       ) : profile ? (
         <>
           {isSelf && (
-            <p className="rounded-lg bg-accent/15 px-3 py-2 text-sm text-price-ref">
+            <p className="rounded-lg bg-status-warning/15 px-3 py-2 text-sm text-status-warning">
               Đây là tài khoản quản trị đang đăng nhập. Đổi vai trò, đổi trạng thái hoặc xóa mềm chính mình sẽ
               ảnh hưởng ngay tới phiên làm việc hiện tại.
             </p>

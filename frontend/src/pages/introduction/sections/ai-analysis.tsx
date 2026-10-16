@@ -9,7 +9,7 @@ function SamplePanel({ ticker }: { ticker: string }) {
   if (!sample) return null
 
   return (
-    <Panel className="p-0 sm:p-0 border-brand-glow shadow-brand-glow/10">
+    <Panel className="p-0 sm:p-0 border-brand-glow shadow-brand-glow">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
         <div className="flex items-baseline gap-2">
           <span className="font-heading text-base font-bold">{sample.ticker}</span>
@@ -59,7 +59,7 @@ export function AiAnalysis() {
           <ul className="space-y-5">
             {AI_LAYERS.map((layer) => (
               <li key={layer.id} className="flex gap-3">
-                <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-sm bg-muted border border-brand-glow/30">
+                <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-sm bg-muted border border-brand-cyan/30">
                   <layer.Icon className="size-4 text-muted-foreground" aria-hidden="true" />
                 </span>
                 <div className="min-w-0">

@@ -34,7 +34,7 @@ function StatusTags({ lesson }: { lesson: AcademyLesson }) {
         Đã học
       </span>
       {coinsConfirmed && (
-        <span className="rounded-sm border border-accent/60 bg-accent/10 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-accent">
+        <span className="rounded-sm border border-chart-2/60 bg-chart-2/10 px-2 py-0.5 text-xs font-semibold text-amber-700 dark:text-chart-2">
           Đã nhận {LESSON_REWARD_XU} xu
         </span>
       )}

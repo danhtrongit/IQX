@@ -9,7 +9,7 @@ export type Palette = Record<keyof typeof generatedTokens.light, string> & {
 };
 
 function palette(source: Record<string, string>): Palette {
-  return { ...(source as Omit<Palette, 'destructiveForeground'>), destructiveForeground: source.primaryForeground };
+  return { ...(source as Omit<Palette, 'destructiveForeground'>), destructiveForeground: generatedTokens.light.primaryForeground };
 }
 
 export const lightPalette: Palette = palette(generatedTokens.light);

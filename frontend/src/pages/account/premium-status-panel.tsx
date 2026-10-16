@@ -77,7 +77,7 @@ export function PremiumStatusPanel({ action }: { action?: ReactNode }) {
         <CardTitle className="flex flex-wrap items-center gap-2">
           <Trophy className={premium ? "size-4 text-chart-2" : "size-4 text-muted-foreground"} />
           {title}
-          {isAdmin && <Badge variant="gold">Toàn quyền</Badge>}
+          {isAdmin && <Badge variant="outline">Toàn quyền</Badge>}
           {!isAdmin && premium && (
             <Badge variant={data.isTrial ? "secondary" : "default"}>
               {data.isTrial ? "Đang dùng thử" : "Đang hoạt động"}

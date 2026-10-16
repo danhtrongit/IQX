@@ -22,7 +22,7 @@ export default function MoreScreen() {
         <Text variant="heading" testID="more-name">{user?.full_name || 'Tài khoản IQX'}</Text>
         <Text color="mutedForeground" testID="more-email">{user?.email}</Text>
         <View style={{ marginTop: spacing.xs }}>
-          <Badge testID="more-premium-badge" label={isPremium ? 'Premium' : 'Miễn phí'} tone={isPremium ? 'accent' : 'neutral'} />
+          <Badge testID="more-premium-badge" label={isPremium ? 'Premium' : 'Miễn phí'} tone={isPremium ? 'primary' : 'neutral'} />
         </View>
       </Card>
       <Card padded={false} style={{ paddingHorizontal: spacing.lg }}>

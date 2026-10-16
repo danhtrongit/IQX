@@ -145,7 +145,7 @@ function PlanCard({
         <CardTitle className="flex flex-wrap items-center gap-2 font-heading">
           <Sparkles className="size-4 text-chart-2" />
           {plan.name}
-          {cheapest && <Badge variant="gold">Giá mỗi tháng thấp nhất</Badge>}
+          {cheapest && <Badge variant="brand">Giá mỗi tháng thấp nhất</Badge>}
         </CardTitle>
         <CardDescription>{plan.description ?? `Thời hạn ${planDurationLabel(plan)}`}</CardDescription>
       </CardHeader>

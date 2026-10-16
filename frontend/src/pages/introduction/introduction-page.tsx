@@ -108,7 +108,7 @@ function Egg({ level, className = "" }: { level: number; className?: string }) {
     >
       <EggArtwork
         level={level}
-        accent="var(--accent)"
+        accent="var(--chart-2)"
         idPrefix={"intro-" + id}
       />
     </svg>

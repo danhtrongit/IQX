@@ -153,7 +153,7 @@ export function ShopMain({ onNavigate }: { onNavigate: (panel: string) => void }
 
       <div
         data-testid="shop-mobile-wallet"
-        className="flex items-center gap-2.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-2.5 min-[901px]:hidden"
+        className="flex items-center gap-2.5 rounded-lg border border-chart-2/40 bg-chart-2/10 px-3 py-2.5 min-[901px]:hidden"
       >
         <Coins className={cn("size-5 shrink-0", COIN_TEXT)} aria-hidden="true" />
         <strong className={cn("text-base tabular-nums", COIN_TEXT)}>{formatXu(state.wallet.balance)} xu</strong>

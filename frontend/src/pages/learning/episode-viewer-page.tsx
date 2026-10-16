@@ -194,7 +194,7 @@ export function EpisodeViewerPage() {
     return (
       <WorkspacePage title="Bài học" scroll={false} contentClassName="flex-1 items-center justify-center p-6">
         <GateCard
-          icon={<Trophy aria-hidden="true" className="size-5 text-accent" />}
+          icon={<Trophy aria-hidden="true" className="size-5 text-chart-2" />}
           title="Khoá học này yêu cầu Premium"
           description="Nâng cấp tài khoản để truy cập toàn bộ nội dung của khoá học."
         >

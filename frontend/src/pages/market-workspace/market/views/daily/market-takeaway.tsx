@@ -59,14 +59,14 @@ function WatchlistItem({
     <li
       className={cn(
         "flex items-start gap-3 rounded-sm px-2 py-1 text-[13px] leading-relaxed",
-        alert && "bg-accent/10",
+        alert && "bg-status-warning/10",
       )}
     >
       <span
         aria-hidden
         className={cn(
           "mt-[9px] size-1.5 shrink-0 rounded-full",
-          alert ? "bg-accent" : "bg-muted-foreground/60",
+          alert ? "bg-status-warning" : "bg-muted-foreground/60",
         )}
       />
       <div>
@@ -81,7 +81,7 @@ function WatchlistItem({
 
 /**
  * The end-of-day "takeaway" block: tomorrow's scenarios on the left, the
- * watch-list on the right. An alert watch item is marked with the gold accent,
+ * watch-list on the right. An alert watch item is marked with the amber warning tone,
  * and the block always carries the "not a recommendation" footnote.
  */
 export function MarketTakeaway({ data }: { data: DailyAnalysis }) {

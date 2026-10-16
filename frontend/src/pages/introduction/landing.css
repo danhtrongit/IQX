@@ -114,9 +114,6 @@
   background-clip: text;
   color: transparent;
 }
-.dark .intro-hero h1 span {
-  color: var(--primary-foreground);
-}
 .intro-lead {
   max-width: 480px;
   margin-top: 18px;
@@ -172,9 +169,6 @@
   width: 23px;
   height: 23px;
   color: var(--primary);
-}
-.dark .intro-values svg {
-  color: var(--primary-foreground);
 }
 .intro-mascot-scene {
   align-self: stretch;
@@ -403,7 +397,7 @@
   min-height: 350px;
   overflow: hidden;
   border-radius: var(--radius-lg);
-  color: var(--primary-foreground);
+  color: var(--brand-foreground);
 }
 .intro-unlock-scenery {
   position: absolute;
@@ -442,7 +436,7 @@
   letter-spacing: -0.035em;
 }
 .intro-unlock h2 span {
-  color: var(--accent);
+  color: oklch(0.798 0.145 219.2);
 }
 .intro-unlock-copy > p:not(:first-child) {
   max-width: 345px;
@@ -477,7 +471,7 @@
   right: 170px;
   width: 32px;
   height: 32px;
-  color: var(--primary-foreground);
+  color: var(--brand-foreground);
 }
 .intro-capabilities {
   padding-top: 33px;

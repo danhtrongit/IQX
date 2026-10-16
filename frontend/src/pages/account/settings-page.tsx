@@ -395,7 +395,7 @@ function SettingsContent({ profile }: { profile: AccountProfile }) {
             <div className="grid gap-1.5">
               <Label>Loại tài khoản</Label>
               <div className="flex h-9 items-center gap-2">
-                <Badge variant={auth.isPremium ? "gold" : "secondary"}>
+                <Badge variant={auth.isPremium ? "brand" : "secondary"}>
                   {auth.isPremium ? "Premium" : "Miễn phí"}
                 </Badge>
                 <Badge variant="outline">{profile.role}</Badge>

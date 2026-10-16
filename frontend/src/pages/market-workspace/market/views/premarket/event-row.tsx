@@ -27,7 +27,7 @@ const IMPACT_LABEL: Record<string, string> = {
 
 const IMPACT_TONE: Record<string, string> = {
   high: "bg-destructive/15 text-destructive",
-  medium: "bg-accent/15 text-accent",
+  medium: "bg-status-warning/15 text-status-warning",
   low: "bg-muted text-muted-foreground",
 }
 

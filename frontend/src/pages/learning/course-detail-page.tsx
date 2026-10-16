@@ -118,7 +118,7 @@ export function CourseDetailPage() {
                 </div>
               )}
               {course.isPremium && (
-                <Badge variant="gold" className="absolute top-2 right-2">
+                <Badge variant="brand" className="absolute top-2 right-2">
                   <Trophy aria-hidden="true" />
                   Premium
                 </Badge>

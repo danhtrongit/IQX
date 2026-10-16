@@ -40,7 +40,7 @@ function CountdownPill() {
 
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full border border-accent bg-accent/10 px-2.5 py-0.5 text-xs font-semibold tracking-[0.02em] text-accent"
+      className="inline-flex items-center gap-1 rounded-full border border-status-warning/50 bg-status-warning/10 px-2.5 py-0.5 text-xs font-semibold tracking-[0.02em] text-status-warning"
       aria-label={`Còn ${remaining} đến 14:45`}
     >
       <AlarmClock className="size-3.5" aria-hidden />
@@ -92,13 +92,13 @@ function WatchlistItem({
     <li
       className={cn(
         "flex items-start gap-3 rounded-md px-2 py-1 text-[13px] leading-relaxed",
-        alertLevel === "warn" ? "bg-destructive/10" : alertLevel === "alert" ? "bg-accent/10" : null,
+        alertLevel === "warn" ? "bg-destructive/10" : alertLevel === "alert" ? "bg-status-warning/10" : null,
       )}
     >
       <span
         className={cn(
           "mt-[9px] size-1.5 shrink-0 rounded-full",
-          alertLevel === "warn" ? "bg-destructive" : alertLevel === "alert" ? "bg-accent" : "bg-muted-foreground",
+          alertLevel === "warn" ? "bg-destructive" : alertLevel === "alert" ? "bg-status-warning" : "bg-muted-foreground",
         )}
         aria-hidden
       />

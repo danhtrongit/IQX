@@ -55,7 +55,7 @@ const STATUS_LABEL: Record<string, string> = {
 
 const STATUS_TONE: Record<string, string> = {
   filled: "border-price-up/40 text-price-up",
-  pending: "border-accent/60 text-accent-foreground",
+  pending: "border-status-warning/50 text-status-warning",
   cancelled: "border-border text-muted-foreground",
   expired: "border-border text-muted-foreground",
   rejected: "border-destructive/40 text-destructive",

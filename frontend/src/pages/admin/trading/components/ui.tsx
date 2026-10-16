@@ -260,7 +260,7 @@ export function ActionDialog({
   title: string
   description?: ReactNode
   confirmLabel: string
-  confirmVariant?: "default" | "destructive" | "gold"
+  confirmVariant?: "default" | "destructive"
   pending?: boolean
   confirmDisabled?: boolean
   error?: string | null

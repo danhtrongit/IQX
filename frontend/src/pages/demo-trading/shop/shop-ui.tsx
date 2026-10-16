@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils"
 import { SHOP_COPY, formatXu } from "./shop-model"
 
 /** Coin colour: the accent in dark mode, a darker amber in light mode so text stays readable. */
-export const COIN_TEXT = "text-amber-700 dark:text-accent"
+export const COIN_TEXT = "text-amber-700 dark:text-chart-2"
 
 export function CoinAmount({ value, className, iconClassName }: { value: number; className?: string; iconClassName?: string }) {
   return (

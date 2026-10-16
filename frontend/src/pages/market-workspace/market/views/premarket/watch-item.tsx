@@ -1,6 +1,6 @@
 // ─── Watch item ───────────────────────────────────────────────────────────────
 // One line of the pre-session watch list. The level drives the left accent and
-// the row wash: warn = destructive/red, alert = accent/gold, normal = the
+// the row wash: warn = destructive/red, alert = status-warning/amber, normal = the
 // pre-market (primary) accent. The content is AI-written inline HTML.
 
 import { cn } from "@/lib/utils"
@@ -12,13 +12,13 @@ type WatchLevel = PreMarketAnalysis["watchlist"][number]["level"]
 
 const LEVEL_ROW: Record<WatchLevel, string> = {
   warn: "border-l-destructive bg-destructive/8",
-  alert: "border-l-accent bg-accent/8",
+  alert: "border-l-status-warning bg-status-warning/8",
   normal: "border-l-primary",
 }
 
 const LEVEL_DOT: Record<WatchLevel, string> = {
   warn: "bg-destructive",
-  alert: "bg-accent",
+  alert: "bg-status-warning",
   normal: "bg-primary",
 }
 

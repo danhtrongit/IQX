@@ -20,13 +20,13 @@ import type { MidDayAnalysis } from "../../types"
 const TAGLINE_TONE: Record<MidDayAnalysis["tagline"]["color"], string> = {
   up: "text-price-up",
   down: "text-price-down",
-  neutral: "text-accent",
+  neutral: "text-price-ref",
 }
 
 function SectionHeading({ label }: { label: string }) {
   return (
     <h2 className="flex items-center gap-2.5 border-b border-border pb-2 font-heading text-sm font-bold tracking-tight text-foreground">
-      <span className="h-4 w-[3px] shrink-0 rounded-full bg-accent" aria-hidden />
+      <span className="h-4 w-[3px] shrink-0 rounded-full bg-primary" aria-hidden />
       {label}
     </h2>
   )
@@ -64,10 +64,10 @@ function PendingBlock({
   return (
     <section data-tour-id={tourId} className="flex flex-col gap-2">
       <SectionHeading label={label} />
-      <div className="flex items-start gap-2.5 rounded-md border border-dashed border-accent/60 bg-accent/10 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
-        <Clock className="mt-px size-4 shrink-0 text-accent" aria-hidden />
+      <div className="flex items-start gap-2.5 rounded-md border border-dashed border-border bg-muted/50 px-4 py-3 text-xs leading-relaxed text-muted-foreground">
+        <Clock className="mt-px size-4 shrink-0 text-muted-foreground" aria-hidden />
         <div>
-          <span className="mb-0.5 block text-xs font-bold uppercase tracking-[0.05em] text-accent">
+          <span className="mb-0.5 block text-xs font-bold uppercase tracking-[0.05em] text-foreground">
             Đang chờ
           </span>
           <span>{message}</span>
@@ -85,7 +85,7 @@ export function MidDayArticle({ data, tourMode = false }: { data: MidDayAnalysis
     <article className="rounded-lg bg-card p-4">
       <div data-tour-id="tour-bantin-mid-header">
         <div className="flex flex-wrap items-center gap-2.5">
-          <Badge variant="gold" className="text-xs font-bold tracking-[0.05em] uppercase">
+          <Badge variant="accent" className="text-xs font-bold tracking-[0.05em] uppercase">
             IQX AI · PHIÊN SÁNG
           </Badge>
           {session_date && (
@@ -125,9 +125,9 @@ export function MidDayArticle({ data, tourMode = false }: { data: MidDayAnalysis
       {unexplained ? (
         <div
           data-tour-id="tour-bantin-mid-confirm"
-          className="mt-4 rounded-md border-l-[3px] border-l-accent bg-accent/10 px-4 py-3"
+          className="mt-4 rounded-md border-l-[3px] border-l-status-warning bg-status-warning/10 px-4 py-3"
         >
-          <strong className="mb-1 block text-xs font-bold tracking-[0.04em] text-accent uppercase">
+          <strong className="mb-1 block text-xs font-bold tracking-[0.04em] text-status-warning uppercase">
             {unexplained.title}
           </strong>
           <div className="text-xs leading-relaxed text-muted-foreground">

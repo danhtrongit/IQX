@@ -77,7 +77,7 @@ export function StockDetailPage() {
       scroll={false}
       contentClassName="p-0"
       actions={
-        <Button type="button" variant="gold" onClick={() => setInsightOpen(true)}>
+        <Button type="button" variant="accent" onClick={() => setInsightOpen(true)}>
           <Sparkles aria-hidden="true" />
           AI Phân tích
         </Button>

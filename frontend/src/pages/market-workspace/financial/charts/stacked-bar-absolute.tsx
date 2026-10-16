@@ -107,7 +107,7 @@ export function StackedBarAbsolute({
                   <rect x={x} y={y} width={COL_W} height={h} fill={colorVar(p.cls)} />
                   {showPct && h > 16 ? (
                     <text
-                      className="fill-primary-foreground text-xs font-semibold tabular-nums"
+                      className="fill-background text-xs font-semibold tabular-nums"
                       x={cx}
                       y={segCenter + 4}
                       textAnchor="middle"

@@ -23,7 +23,7 @@ function MascotAvatar({ name }: { name: string }) {
 function stateBadge(state: CardState): { label: string; tone: 'accent' | 'success' | 'neutral' | 'warning' } | null {
   switch (state) {
     case 'active':
-      return { label: SHOP_COPY.wearing, tone: 'accent' };
+      return { label: SHOP_COPY.wearing, tone: 'primary' };
     case 'owned':
       return { label: SHOP_COPY.owned, tone: 'success' };
     case 'unavailable':
@@ -153,7 +153,7 @@ export function ShopScreen() {
     <View style={{ gap: spacing.md, paddingBottom: spacing.md }}>
       <Card testID="shop-balance-card" style={{ gap: spacing.xs }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
-          <Icon icon={Coins} color="accent" />
+          <Icon icon={Coins} color="chart2" />
           <Text variant="caption" color="mutedForeground">Số dư xu</Text>
         </View>
         <Text variant="title" testID="shop-balance">{`${formatXu(state.wallet.balance)} xu`}</Text>

@@ -105,7 +105,7 @@ export function MidDayPulseBar({ data, isLunch }: { data: MidDayAnalysis; isLunc
   const vniValue = vni ? vni.value.toLocaleString("en-US", INDEX_DECIMALS) : "—"
   const vniChange = vni ? `${vni.change >= 0 ? "+" : ""}${vni.change.toLocaleString("en-US", INDEX_DECIMALS)}` : null
   const vniPct = vni ? formatSignedPercent(vni.change_pct) : null
-  const sparklineTone = vni ? (vni.change_pct >= 0 ? "text-price-up" : "text-price-down") : "text-accent"
+  const sparklineTone = vni ? (vni.change_pct >= 0 ? "text-price-up" : "text-price-down") : "text-muted-foreground"
 
   // ── Cell 2: Độ rộng ────────────────────────────────────────────────────────
   const breadthUp = pulse?.breadth.up ?? data.charts?.breadth?.up
@@ -142,7 +142,7 @@ export function MidDayPulseBar({ data, isLunch }: { data: MidDayAnalysis; isLunc
     <div>
       {isLunch && (
         <div
-          className="mb-2 flex flex-wrap items-center gap-2 rounded-lg bg-accent/10 px-4 py-2 text-[13px] font-semibold text-accent"
+          className="mb-2 flex flex-wrap items-center gap-2 rounded-lg bg-muted px-4 py-2 text-[13px] font-semibold text-foreground"
           aria-label="Tạm chốt cuối phiên sáng"
         >
           <Pause className="size-4 shrink-0" aria-hidden />
@@ -201,7 +201,7 @@ export function MidDayPulseBar({ data, isLunch }: { data: MidDayAnalysis; isLunc
         </PulseCell>
 
         <PulseCell label="THANH KHOẢN AM">
-          <span className="text-lg font-semibold tabular-nums text-accent">{liqValue}</span>
+          <span className="text-lg font-semibold tabular-nums text-foreground">{liqValue}</span>
           {vsMa20 ? (
             <span className="mt-1 text-xs text-muted-foreground">{vsMa20}</span>
           ) : liq ? (
