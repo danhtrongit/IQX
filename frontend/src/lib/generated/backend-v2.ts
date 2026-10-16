@@ -6573,6 +6573,10 @@ export type LegacyMetricsOverview = {
    */
   active_paid_count: number;
   /**
+   * Active Referral Offer Count
+   */
+  active_referral_offer_count: number;
+  /**
    * Active Subscribers
    */
   active_subscribers: number;
@@ -8655,6 +8659,79 @@ export type LegacyUnfreezeAccountRequest = {
  * User360Response
  */
 export type LegacyUser360Response = {
+  academy: {
+    all_done: boolean;
+    catalog_version: string;
+    chapter_exams: {
+      passed: number;
+      total: number;
+    };
+    chapters: Array<{
+      completed: number;
+      lessons: Array<{
+        attempts: number;
+        completed_at: string | null;
+        completion_mode: "quiz" | "guide";
+        is_current: boolean;
+        kind: "technical" | "fundamental" | "concept" | "guide";
+        latest_score: number | null;
+        lesson_id: string;
+        max_score: number | null;
+        name: string;
+        order: number;
+        status: "completed" | "in_progress" | "failed" | "not_started";
+      }>;
+      no: number;
+      title: string;
+      total: number;
+    }>;
+    completed: number;
+    current_lesson: {
+      chapter: number;
+      label: string;
+      lesson_id: string;
+      name: string;
+      order: number;
+    } | null;
+    last_completion: {
+      chapter: number;
+      completed_at: string;
+      label: string;
+      lesson_id: string;
+      name: string;
+      order: number;
+      reward_coins: number | null;
+    } | null;
+    learning_coins: number;
+    started: boolean;
+    total: number;
+  };
+  bot: {
+    account_id: string | null;
+    activated: boolean;
+    activated_at: string | null;
+    as_of: string | null;
+    last_activity_at: string | null;
+    pnl_pct: number | null;
+    status: string | null;
+  };
+  demo_trading: {
+    account_id: string | null;
+    activated: boolean;
+    activated_at: string | null;
+    last_activity_at: string | null;
+    pnl_pct: number | null;
+    status: string | null;
+  };
+  group: {
+    code: string;
+    join_via: "code" | "admin";
+    joined_at: string;
+    lead_full_name: string;
+    lead_status: "active" | "revoked";
+    lead_user_id: string;
+    lead_username: string;
+  } | null;
   /**
    * Login History
    */
@@ -8663,6 +8740,17 @@ export type LegacyUser360Response = {
    * Payment History
    */
   payment_history: Array<LegacyPaymentOrderBrief>;
+  referral_offer: {
+    active: boolean;
+    ends_at: string;
+    grant_id: string;
+    lead_user_id: string | null;
+    lifetime: boolean;
+    offer_days: number | null;
+    offer_type: "days" | "lifetime";
+    starts_at: string;
+    status: string;
+  } | null;
   subscription: LegacySubscriptionBrief | null;
   /**
    * Subscription History
@@ -24386,6 +24474,489 @@ export type ReferralsControllerMine0Responses = {
 
 export type ReferralsControllerMine0Response =
   ReferralsControllerMine0Responses[keyof ReferralsControllerMine0Responses];
+
+export type TeamControllerMe0Data = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/team/me";
+};
+
+export type TeamControllerMe0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type TeamControllerMe0Error =
+  TeamControllerMe0Errors[keyof TeamControllerMe0Errors];
+
+export type TeamControllerMe0Responses = {
+  200: {
+    appointed_at: string;
+    code: string;
+    commission_pct: number | null;
+    member_count: number;
+    offer_days: 7 | 30 | 90 | 180 | 365;
+    offer_type: "none" | "days" | "lifetime";
+    status: "active";
+    user: {
+      full_name: string;
+      id: string;
+      username: string;
+    };
+  };
+};
+
+export type TeamControllerMe0Response =
+  TeamControllerMe0Responses[keyof TeamControllerMe0Responses];
+
+export type TeamControllerOverview0Data = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/team/metrics/overview";
+};
+
+export type TeamControllerOverview0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type TeamControllerOverview0Error =
+  TeamControllerOverview0Errors[keyof TeamControllerOverview0Errors];
+
+export type TeamControllerOverview0Responses = {
+  200: LegacyMetricsOverview;
+};
+
+export type TeamControllerOverview0Response =
+  TeamControllerOverview0Responses[keyof TeamControllerOverview0Responses];
+
+export type TeamControllerRevenue0Data = {
+  body?: never;
+  path?: never;
+  query?: {
+    days?: number;
+  };
+  url: "/api/v1/team/metrics/revenue";
+};
+
+export type TeamControllerRevenue0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type TeamControllerRevenue0Error =
+  TeamControllerRevenue0Errors[keyof TeamControllerRevenue0Errors];
+
+export type TeamControllerRevenue0Responses = {
+  200: Array<LegacyDailyRevenuePoint>;
+};
+
+export type TeamControllerRevenue0Response =
+  TeamControllerRevenue0Responses[keyof TeamControllerRevenue0Responses];
+
+export type TeamControllerUsers0Data = {
+  body?: never;
+  path?: never;
+  query?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+    role?: "user" | "premium";
+    segment?: "new_7d" | "email_unverified" | "trialing" | "inactive_14d";
+    sort_by?:
+      | "username"
+      | "role"
+      | "demo_pnl_pct"
+      | "bot_pnl_pct"
+      | "academy_progress"
+      | "created_at";
+    sort_order?: "asc" | "desc";
+  };
+  url: "/api/v1/team/users";
+};
+
+export type TeamControllerUsers0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type TeamControllerUsers0Error =
+  TeamControllerUsers0Errors[keyof TeamControllerUsers0Errors];
+
+export type TeamControllerUsers0Responses = {
+  200: {
+    items: Array<{
+      academy: {
+        all_done: boolean;
+        completed: number;
+        current_lesson: {
+          chapter: number;
+          label: string;
+          lesson_id: string;
+          name: string;
+          order: number;
+        } | null;
+        started: boolean;
+        total: number;
+      };
+      bot: {
+        activated: boolean;
+        as_of: string | null;
+        pnl_pct: number | null;
+      };
+      created_at: string;
+      demo_trading: {
+        activated: boolean;
+        pnl_pct: number | null;
+      };
+      email: string;
+      full_name: string;
+      group_join_via: "code" | "admin";
+      group_joined_at: string;
+      id: string;
+      is_email_verified: boolean;
+      last_login_at: string | null;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    }>;
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+  };
+};
+
+export type TeamControllerUsers0Response =
+  TeamControllerUsers0Responses[keyof TeamControllerUsers0Responses];
+
+export type TeamControllerUser0Data = {
+  body?: never;
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v1/team/users/{userId}";
+};
+
+export type TeamControllerUser0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type TeamControllerUser0Error =
+  TeamControllerUser0Errors[keyof TeamControllerUser0Errors];
+
+export type TeamControllerUser0Responses = {
+  200: {
+    academy: {
+      all_done: boolean;
+      catalog_version: string;
+      chapter_exams: {
+        passed: number;
+        total: number;
+      };
+      chapters: Array<{
+        completed: number;
+        lessons: Array<{
+          attempts: number;
+          completed_at: string | null;
+          completion_mode: "quiz" | "guide";
+          is_current: boolean;
+          kind: "technical" | "fundamental" | "concept" | "guide";
+          latest_score: number | null;
+          lesson_id: string;
+          max_score: number | null;
+          name: string;
+          order: number;
+          status: "completed" | "in_progress" | "failed" | "not_started";
+        }>;
+        no: number;
+        title: string;
+        total: number;
+      }>;
+      completed: number;
+      current_lesson: {
+        chapter: number;
+        label: string;
+        lesson_id: string;
+        name: string;
+        order: number;
+      } | null;
+      last_completion: {
+        chapter: number;
+        completed_at: string;
+        label: string;
+        lesson_id: string;
+        name: string;
+        order: number;
+        reward_coins: number | null;
+      } | null;
+      learning_coins: number;
+      started: boolean;
+      total: number;
+    };
+    bot: {
+      account_id: string | null;
+      activated: boolean;
+      activated_at: string | null;
+      as_of: string | null;
+      last_activity_at: string | null;
+      pnl_pct: number | null;
+      status: string | null;
+    };
+    demo_trading: {
+      account_id: string | null;
+      activated: boolean;
+      activated_at: string | null;
+      last_activity_at: string | null;
+      pnl_pct: number | null;
+      status: string | null;
+    };
+    group: {
+      code: string;
+      join_via: "code" | "admin";
+      joined_at: string;
+      lead_full_name: string;
+      lead_status: "active" | "revoked";
+      lead_user_id: string;
+      lead_username: string;
+    } | null;
+    login_history: Array<LegacyLoginHistoryRow>;
+    payment_history: Array<LegacyPaymentOrderBrief>;
+    referral_offer: {
+      active: boolean;
+      ends_at: string;
+      grant_id: string;
+      lead_user_id: string | null;
+      lifetime: boolean;
+      offer_days: number | null;
+      offer_type: "days" | "lifetime";
+      starts_at: string;
+      status: string;
+    } | null;
+    subscription: LegacySubscriptionBrief | null;
+    subscription_history: Array<LegacySubscriptionBrief>;
+    trial_used: boolean;
+    user: LegacyUserBriefForAdmin;
+  };
+};
+
+export type TeamControllerUser0Response =
+  TeamControllerUser0Responses[keyof TeamControllerUser0Responses];
+
+export type TeamControllerLoginHistory0Data = {
+  body?: never;
+  path: {
+    userId: string;
+  };
+  query?: {
+    page?: number;
+    page_size?: number;
+  };
+  url: "/api/v1/team/users/{userId}/login-history";
+};
+
+export type TeamControllerLoginHistory0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type TeamControllerLoginHistory0Error =
+  TeamControllerLoginHistory0Errors[keyof TeamControllerLoginHistory0Errors];
+
+export type TeamControllerLoginHistory0Responses = {
+  200: LegacyPaginatedResponseLoginHistoryRow;
+};
+
+export type TeamControllerLoginHistory0Response =
+  TeamControllerLoginHistory0Responses[keyof TeamControllerLoginHistory0Responses];
+
+export type TeamControllerRemove0Data = {
+  body: {
+    reason: string;
+  };
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v1/team/users/{userId}/remove";
+};
+
+export type TeamControllerRemove0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type TeamControllerRemove0Error =
+  TeamControllerRemove0Errors[keyof TeamControllerRemove0Errors];
+
+export type TeamControllerRemove0Responses = {
+  200: {
+    lead_user_id: string;
+    removed_at: string;
+    user_id: string;
+  };
+};
+
+export type TeamControllerRemove0Response =
+  TeamControllerRemove0Responses[keyof TeamControllerRemove0Responses];
 
 export type TelegramControllerWebhook0Data = {
   body?: never;
@@ -50592,6 +51163,489 @@ export type StrategyConfigListRevisionsResponses = {
 
 export type StrategyConfigListRevisionsResponse =
   StrategyConfigListRevisionsResponses[keyof StrategyConfigListRevisionsResponses];
+
+export type TeamControllerMe1Data = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/team/me";
+};
+
+export type TeamControllerMe1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TeamControllerMe1Error =
+  TeamControllerMe1Errors[keyof TeamControllerMe1Errors];
+
+export type TeamControllerMe1Responses = {
+  200: {
+    appointed_at: string;
+    code: string;
+    commission_pct: number | null;
+    member_count: number;
+    offer_days: 7 | 30 | 90 | 180 | 365;
+    offer_type: "none" | "days" | "lifetime";
+    status: "active";
+    user: {
+      full_name: string;
+      id: string;
+      username: string;
+    };
+  };
+};
+
+export type TeamControllerMe1Response =
+  TeamControllerMe1Responses[keyof TeamControllerMe1Responses];
+
+export type TeamControllerOverview1Data = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/team/metrics/overview";
+};
+
+export type TeamControllerOverview1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TeamControllerOverview1Error =
+  TeamControllerOverview1Errors[keyof TeamControllerOverview1Errors];
+
+export type TeamControllerOverview1Responses = {
+  200: LegacyMetricsOverview;
+};
+
+export type TeamControllerOverview1Response =
+  TeamControllerOverview1Responses[keyof TeamControllerOverview1Responses];
+
+export type TeamControllerRevenue1Data = {
+  body?: never;
+  path?: never;
+  query?: {
+    days?: number;
+  };
+  url: "/api/v2/team/metrics/revenue";
+};
+
+export type TeamControllerRevenue1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TeamControllerRevenue1Error =
+  TeamControllerRevenue1Errors[keyof TeamControllerRevenue1Errors];
+
+export type TeamControllerRevenue1Responses = {
+  200: Array<LegacyDailyRevenuePoint>;
+};
+
+export type TeamControllerRevenue1Response =
+  TeamControllerRevenue1Responses[keyof TeamControllerRevenue1Responses];
+
+export type TeamControllerUsers1Data = {
+  body?: never;
+  path?: never;
+  query?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+    role?: "user" | "premium";
+    segment?: "new_7d" | "email_unverified" | "trialing" | "inactive_14d";
+    sort_by?:
+      | "username"
+      | "role"
+      | "demo_pnl_pct"
+      | "bot_pnl_pct"
+      | "academy_progress"
+      | "created_at";
+    sort_order?: "asc" | "desc";
+  };
+  url: "/api/v2/team/users";
+};
+
+export type TeamControllerUsers1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TeamControllerUsers1Error =
+  TeamControllerUsers1Errors[keyof TeamControllerUsers1Errors];
+
+export type TeamControllerUsers1Responses = {
+  200: {
+    items: Array<{
+      academy: {
+        all_done: boolean;
+        completed: number;
+        current_lesson: {
+          chapter: number;
+          label: string;
+          lesson_id: string;
+          name: string;
+          order: number;
+        } | null;
+        started: boolean;
+        total: number;
+      };
+      bot: {
+        activated: boolean;
+        as_of: string | null;
+        pnl_pct: number | null;
+      };
+      created_at: string;
+      demo_trading: {
+        activated: boolean;
+        pnl_pct: number | null;
+      };
+      email: string;
+      full_name: string;
+      group_join_via: "code" | "admin";
+      group_joined_at: string;
+      id: string;
+      is_email_verified: boolean;
+      last_login_at: string | null;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    }>;
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+  };
+};
+
+export type TeamControllerUsers1Response =
+  TeamControllerUsers1Responses[keyof TeamControllerUsers1Responses];
+
+export type TeamControllerUser1Data = {
+  body?: never;
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v2/team/users/{userId}";
+};
+
+export type TeamControllerUser1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TeamControllerUser1Error =
+  TeamControllerUser1Errors[keyof TeamControllerUser1Errors];
+
+export type TeamControllerUser1Responses = {
+  200: {
+    academy: {
+      all_done: boolean;
+      catalog_version: string;
+      chapter_exams: {
+        passed: number;
+        total: number;
+      };
+      chapters: Array<{
+        completed: number;
+        lessons: Array<{
+          attempts: number;
+          completed_at: string | null;
+          completion_mode: "quiz" | "guide";
+          is_current: boolean;
+          kind: "technical" | "fundamental" | "concept" | "guide";
+          latest_score: number | null;
+          lesson_id: string;
+          max_score: number | null;
+          name: string;
+          order: number;
+          status: "completed" | "in_progress" | "failed" | "not_started";
+        }>;
+        no: number;
+        title: string;
+        total: number;
+      }>;
+      completed: number;
+      current_lesson: {
+        chapter: number;
+        label: string;
+        lesson_id: string;
+        name: string;
+        order: number;
+      } | null;
+      last_completion: {
+        chapter: number;
+        completed_at: string;
+        label: string;
+        lesson_id: string;
+        name: string;
+        order: number;
+        reward_coins: number | null;
+      } | null;
+      learning_coins: number;
+      started: boolean;
+      total: number;
+    };
+    bot: {
+      account_id: string | null;
+      activated: boolean;
+      activated_at: string | null;
+      as_of: string | null;
+      last_activity_at: string | null;
+      pnl_pct: number | null;
+      status: string | null;
+    };
+    demo_trading: {
+      account_id: string | null;
+      activated: boolean;
+      activated_at: string | null;
+      last_activity_at: string | null;
+      pnl_pct: number | null;
+      status: string | null;
+    };
+    group: {
+      code: string;
+      join_via: "code" | "admin";
+      joined_at: string;
+      lead_full_name: string;
+      lead_status: "active" | "revoked";
+      lead_user_id: string;
+      lead_username: string;
+    } | null;
+    login_history: Array<LegacyLoginHistoryRow>;
+    payment_history: Array<LegacyPaymentOrderBrief>;
+    referral_offer: {
+      active: boolean;
+      ends_at: string;
+      grant_id: string;
+      lead_user_id: string | null;
+      lifetime: boolean;
+      offer_days: number | null;
+      offer_type: "days" | "lifetime";
+      starts_at: string;
+      status: string;
+    } | null;
+    subscription: LegacySubscriptionBrief | null;
+    subscription_history: Array<LegacySubscriptionBrief>;
+    trial_used: boolean;
+    user: LegacyUserBriefForAdmin;
+  };
+};
+
+export type TeamControllerUser1Response =
+  TeamControllerUser1Responses[keyof TeamControllerUser1Responses];
+
+export type TeamControllerLoginHistory1Data = {
+  body?: never;
+  path: {
+    userId: string;
+  };
+  query?: {
+    page?: number;
+    page_size?: number;
+  };
+  url: "/api/v2/team/users/{userId}/login-history";
+};
+
+export type TeamControllerLoginHistory1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TeamControllerLoginHistory1Error =
+  TeamControllerLoginHistory1Errors[keyof TeamControllerLoginHistory1Errors];
+
+export type TeamControllerLoginHistory1Responses = {
+  200: LegacyPaginatedResponseLoginHistoryRow;
+};
+
+export type TeamControllerLoginHistory1Response =
+  TeamControllerLoginHistory1Responses[keyof TeamControllerLoginHistory1Responses];
+
+export type TeamControllerRemove1Data = {
+  body: {
+    reason: string;
+  };
+  path: {
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v2/team/users/{userId}/remove";
+};
+
+export type TeamControllerRemove1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TeamControllerRemove1Error =
+  TeamControllerRemove1Errors[keyof TeamControllerRemove1Errors];
+
+export type TeamControllerRemove1Responses = {
+  200: {
+    lead_user_id: string;
+    removed_at: string;
+    user_id: string;
+  };
+};
+
+export type TeamControllerRemove1Response =
+  TeamControllerRemove1Responses[keyof TeamControllerRemove1Responses];
 
 export type TelegramControllerWebhook1Data = {
   body?: never;

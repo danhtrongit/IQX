@@ -243,6 +243,12 @@ export interface OperationMap {
   "GET /api/v2/strategy/screener/results/{resultId}": { request: T.ScreenerResultGetData; response: T.ScreenerResultGetResponses[keyof T.ScreenerResultGetResponses] }
   "GET /api/v2/strategy/shared-config": { request: T.StrategyConfigGetSharedConfigData; response: T.StrategyConfigGetSharedConfigResponses[keyof T.StrategyConfigGetSharedConfigResponses] }
   "GET /api/v2/strategy/shared-config/revisions": { request: T.StrategyConfigListRevisionsData; response: T.StrategyConfigListRevisionsResponses[keyof T.StrategyConfigListRevisionsResponses] }
+  "GET /api/v2/team/me": { request: T.TeamControllerMe1Data; response: T.TeamControllerMe1Responses[keyof T.TeamControllerMe1Responses] }
+  "GET /api/v2/team/metrics/overview": { request: T.TeamControllerOverview1Data; response: T.TeamControllerOverview1Responses[keyof T.TeamControllerOverview1Responses] }
+  "GET /api/v2/team/metrics/revenue": { request: T.TeamControllerRevenue1Data; response: T.TeamControllerRevenue1Responses[keyof T.TeamControllerRevenue1Responses] }
+  "GET /api/v2/team/users": { request: T.TeamControllerUsers1Data; response: T.TeamControllerUsers1Responses[keyof T.TeamControllerUsers1Responses] }
+  "GET /api/v2/team/users/{userId}": { request: T.TeamControllerUser1Data; response: T.TeamControllerUser1Responses[keyof T.TeamControllerUser1Responses] }
+  "GET /api/v2/team/users/{userId}/login-history": { request: T.TeamControllerLoginHistory1Data; response: T.TeamControllerLoginHistory1Responses[keyof T.TeamControllerLoginHistory1Responses] }
   "GET /api/v2/users": { request: T.UsersControllerList1Data; response: T.UsersControllerList1Responses[keyof T.UsersControllerList1Responses] }
   "GET /api/v2/users/{userId}": { request: T.UsersControllerGet1Data; response: T.UsersControllerGet1Responses[keyof T.UsersControllerGet1Responses] }
   "GET /api/v2/users/me": { request: T.UsersControllerMe1Data; response: T.UsersControllerMe1Responses[keyof T.UsersControllerMe1Responses] }
@@ -388,6 +394,7 @@ export interface OperationMap {
   "POST /api/v2/strategy/lists/from-result": { request: T.CreateStrategySavedListFromResultData; response: T.CreateStrategySavedListFromResultResponses[keyof T.CreateStrategySavedListFromResultResponses] }
   "POST /api/v2/strategy/result-snapshots": { request: T.CreateStrategyResultSnapshotData; response: T.CreateStrategyResultSnapshotResponses[keyof T.CreateStrategyResultSnapshotResponses] }
   "POST /api/v2/strategy/screener/run": { request: T.ScreenerRunData; response: T.ScreenerRunResponses[keyof T.ScreenerRunResponses] }
+  "POST /api/v2/team/users/{userId}/remove": { request: T.TeamControllerRemove1Data; response: T.TeamControllerRemove1Responses[keyof T.TeamControllerRemove1Responses] }
   "POST /api/v2/telegram/webhook/{secret}": { request: T.TelegramControllerWebhook1Data; response: T.TelegramControllerWebhook1Responses[keyof T.TelegramControllerWebhook1Responses] }
   "POST /api/v2/users": { request: T.UsersControllerCreate1Data; response: T.UsersControllerCreate1Responses[keyof T.UsersControllerCreate1Responses] }
   "POST /api/v2/users/me/username": { request: T.UsersControllerChangeUsername1Data; response: T.UsersControllerChangeUsername1Responses[keyof T.UsersControllerChangeUsername1Responses] }
@@ -653,6 +660,12 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/strategy/screener/results/{resultId}": { request: "ScreenerResultGetData", response: "ScreenerResultGetResponses" },
   "GET /api/v2/strategy/shared-config": { request: "StrategyConfigGetSharedConfigData", response: "StrategyConfigGetSharedConfigResponses" },
   "GET /api/v2/strategy/shared-config/revisions": { request: "StrategyConfigListRevisionsData", response: "StrategyConfigListRevisionsResponses" },
+  "GET /api/v2/team/me": { request: "TeamControllerMe1Data", response: "TeamControllerMe1Responses" },
+  "GET /api/v2/team/metrics/overview": { request: "TeamControllerOverview1Data", response: "TeamControllerOverview1Responses" },
+  "GET /api/v2/team/metrics/revenue": { request: "TeamControllerRevenue1Data", response: "TeamControllerRevenue1Responses" },
+  "GET /api/v2/team/users": { request: "TeamControllerUsers1Data", response: "TeamControllerUsers1Responses" },
+  "GET /api/v2/team/users/{userId}": { request: "TeamControllerUser1Data", response: "TeamControllerUser1Responses" },
+  "GET /api/v2/team/users/{userId}/login-history": { request: "TeamControllerLoginHistory1Data", response: "TeamControllerLoginHistory1Responses" },
   "GET /api/v2/users": { request: "UsersControllerList1Data", response: "UsersControllerList1Responses" },
   "GET /api/v2/users/{userId}": { request: "UsersControllerGet1Data", response: "UsersControllerGet1Responses" },
   "GET /api/v2/users/me": { request: "UsersControllerMe1Data", response: "UsersControllerMe1Responses" },
@@ -798,6 +811,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/strategy/lists/from-result": { request: "CreateStrategySavedListFromResultData", response: "CreateStrategySavedListFromResultResponses" },
   "POST /api/v2/strategy/result-snapshots": { request: "CreateStrategyResultSnapshotData", response: "CreateStrategyResultSnapshotResponses" },
   "POST /api/v2/strategy/screener/run": { request: "ScreenerRunData", response: "ScreenerRunResponses" },
+  "POST /api/v2/team/users/{userId}/remove": { request: "TeamControllerRemove1Data", response: "TeamControllerRemove1Responses" },
   "POST /api/v2/telegram/webhook/{secret}": { request: "TelegramControllerWebhook1Data", response: "TelegramControllerWebhook1Responses" },
   "POST /api/v2/users": { request: "UsersControllerCreate1Data", response: "UsersControllerCreate1Responses" },
   "POST /api/v2/users/me/username": { request: "UsersControllerChangeUsername1Data", response: "UsersControllerChangeUsername1Responses" },

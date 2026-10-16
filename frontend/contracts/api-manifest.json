@@ -1207,6 +1207,36 @@
       "requestType": "StrategyConfigListRevisionsData",
       "responseType": "StrategyConfigListRevisionsResponses"
     },
+    "GET /api/v2/team/me": {
+      "operationId": "TeamController_me[1]",
+      "requestType": "TeamControllerMe1Data",
+      "responseType": "TeamControllerMe1Responses"
+    },
+    "GET /api/v2/team/metrics/overview": {
+      "operationId": "TeamController_overview[1]",
+      "requestType": "TeamControllerOverview1Data",
+      "responseType": "TeamControllerOverview1Responses"
+    },
+    "GET /api/v2/team/metrics/revenue": {
+      "operationId": "TeamController_revenue[1]",
+      "requestType": "TeamControllerRevenue1Data",
+      "responseType": "TeamControllerRevenue1Responses"
+    },
+    "GET /api/v2/team/users": {
+      "operationId": "TeamController_users[1]",
+      "requestType": "TeamControllerUsers1Data",
+      "responseType": "TeamControllerUsers1Responses"
+    },
+    "GET /api/v2/team/users/{userId}": {
+      "operationId": "TeamController_user[1]",
+      "requestType": "TeamControllerUser1Data",
+      "responseType": "TeamControllerUser1Responses"
+    },
+    "GET /api/v2/team/users/{userId}/login-history": {
+      "operationId": "TeamController_loginHistory[1]",
+      "requestType": "TeamControllerLoginHistory1Data",
+      "responseType": "TeamControllerLoginHistory1Responses"
+    },
     "GET /api/v2/users": {
       "operationId": "UsersController_list[1]",
       "requestType": "UsersControllerList1Data",
@@ -1931,6 +1961,11 @@
       "operationId": "screenerRun",
       "requestType": "ScreenerRunData",
       "responseType": "ScreenerRunResponses"
+    },
+    "POST /api/v2/team/users/{userId}/remove": {
+      "operationId": "TeamController_remove[1]",
+      "requestType": "TeamControllerRemove1Data",
+      "responseType": "TeamControllerRemove1Responses"
     },
     "POST /api/v2/telegram/webhook/{secret}": {
       "operationId": "TelegramController_webhook[1]",

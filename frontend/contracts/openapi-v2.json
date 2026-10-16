@@ -16648,6 +16648,10 @@
             "title": "Active Paid Count",
             "type": "integer"
           },
+          "active_referral_offer_count": {
+            "title": "Active Referral Offer Count",
+            "type": "integer"
+          },
           "active_subscribers": {
             "title": "Active Subscribers",
             "type": "integer"
@@ -16729,7 +16733,8 @@
           "revenue_last_30d_vnd",
           "vt_active_accounts",
           "vt_orders_today",
-          "generated_at"
+          "generated_at",
+          "active_referral_offer_count"
         ],
         "title": "MetricsOverview",
         "type": "object"
@@ -20625,6 +20630,362 @@
       },
       "Legacy_User360Response": {
         "properties": {
+          "academy": {
+            "additionalProperties": false,
+            "properties": {
+              "all_done": {
+                "type": "boolean"
+              },
+              "catalog_version": {
+                "type": "string"
+              },
+              "chapter_exams": {
+                "additionalProperties": false,
+                "properties": {
+                  "passed": {
+                    "type": "integer"
+                  },
+                  "total": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "total",
+                  "passed"
+                ],
+                "type": "object"
+              },
+              "chapters": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "completed": {
+                      "type": "integer"
+                    },
+                    "lessons": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "attempts": {
+                            "type": "integer"
+                          },
+                          "completed_at": {
+                            "format": "date-time",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "completion_mode": {
+                            "enum": [
+                              "quiz",
+                              "guide"
+                            ],
+                            "type": "string"
+                          },
+                          "is_current": {
+                            "type": "boolean"
+                          },
+                          "kind": {
+                            "enum": [
+                              "technical",
+                              "fundamental",
+                              "concept",
+                              "guide"
+                            ],
+                            "type": "string"
+                          },
+                          "latest_score": {
+                            "nullable": true,
+                            "type": "integer"
+                          },
+                          "lesson_id": {
+                            "type": "string"
+                          },
+                          "max_score": {
+                            "nullable": true,
+                            "type": "integer"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "order": {
+                            "type": "integer"
+                          },
+                          "status": {
+                            "enum": [
+                              "completed",
+                              "in_progress",
+                              "failed",
+                              "not_started"
+                            ],
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "lesson_id",
+                          "order",
+                          "name",
+                          "kind",
+                          "completion_mode",
+                          "status",
+                          "attempts",
+                          "latest_score",
+                          "max_score",
+                          "completed_at",
+                          "is_current"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "no": {
+                      "type": "integer"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "total": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "no",
+                    "title",
+                    "total",
+                    "completed",
+                    "lessons"
+                  ],
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              "completed": {
+                "type": "integer"
+              },
+              "current_lesson": {
+                "additionalProperties": false,
+                "nullable": true,
+                "properties": {
+                  "chapter": {
+                    "type": "integer"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "lesson_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "order": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "lesson_id",
+                  "chapter",
+                  "order",
+                  "name",
+                  "label"
+                ],
+                "type": "object"
+              },
+              "last_completion": {
+                "additionalProperties": false,
+                "nullable": true,
+                "properties": {
+                  "chapter": {
+                    "type": "integer"
+                  },
+                  "completed_at": {
+                    "format": "date-time",
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "lesson_id": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "order": {
+                    "type": "integer"
+                  },
+                  "reward_coins": {
+                    "nullable": true,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "lesson_id",
+                  "chapter",
+                  "order",
+                  "name",
+                  "label",
+                  "completed_at",
+                  "reward_coins"
+                ],
+                "type": "object"
+              },
+              "learning_coins": {
+                "type": "integer"
+              },
+              "started": {
+                "type": "boolean"
+              },
+              "total": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "started",
+              "completed",
+              "total",
+              "all_done",
+              "current_lesson",
+              "catalog_version",
+              "chapter_exams",
+              "last_completion",
+              "learning_coins",
+              "chapters"
+            ],
+            "type": "object"
+          },
+          "bot": {
+            "additionalProperties": false,
+            "properties": {
+              "account_id": {
+                "format": "uuid",
+                "nullable": true,
+                "type": "string"
+              },
+              "activated": {
+                "type": "boolean"
+              },
+              "activated_at": {
+                "format": "date-time",
+                "nullable": true,
+                "type": "string"
+              },
+              "as_of": {
+                "format": "date",
+                "nullable": true,
+                "type": "string"
+              },
+              "last_activity_at": {
+                "format": "date-time",
+                "nullable": true,
+                "type": "string"
+              },
+              "pnl_pct": {
+                "nullable": true,
+                "type": "number"
+              },
+              "status": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "activated",
+              "account_id",
+              "status",
+              "activated_at",
+              "pnl_pct",
+              "as_of",
+              "last_activity_at"
+            ],
+            "type": "object"
+          },
+          "demo_trading": {
+            "additionalProperties": false,
+            "properties": {
+              "account_id": {
+                "format": "uuid",
+                "nullable": true,
+                "type": "string"
+              },
+              "activated": {
+                "type": "boolean"
+              },
+              "activated_at": {
+                "format": "date-time",
+                "nullable": true,
+                "type": "string"
+              },
+              "last_activity_at": {
+                "format": "date-time",
+                "nullable": true,
+                "type": "string"
+              },
+              "pnl_pct": {
+                "nullable": true,
+                "type": "number"
+              },
+              "status": {
+                "nullable": true,
+                "type": "string"
+              }
+            },
+            "required": [
+              "activated",
+              "account_id",
+              "status",
+              "activated_at",
+              "pnl_pct",
+              "last_activity_at"
+            ],
+            "type": "object"
+          },
+          "group": {
+            "additionalProperties": false,
+            "nullable": true,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "join_via": {
+                "enum": [
+                  "code",
+                  "admin"
+                ],
+                "type": "string"
+              },
+              "joined_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "lead_full_name": {
+                "type": "string"
+              },
+              "lead_status": {
+                "enum": [
+                  "active",
+                  "revoked"
+                ],
+                "type": "string"
+              },
+              "lead_user_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "lead_username": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "lead_user_id",
+              "lead_username",
+              "lead_full_name",
+              "lead_status",
+              "code",
+              "join_via",
+              "joined_at"
+            ],
+            "type": "object"
+          },
           "login_history": {
             "items": {
               "$ref": "#/components/schemas/Legacy_LoginHistoryRow"
@@ -20638,6 +20999,61 @@
             },
             "title": "Payment History",
             "type": "array"
+          },
+          "referral_offer": {
+            "additionalProperties": false,
+            "nullable": true,
+            "properties": {
+              "active": {
+                "type": "boolean"
+              },
+              "ends_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "grant_id": {
+                "format": "uuid",
+                "type": "string"
+              },
+              "lead_user_id": {
+                "format": "uuid",
+                "nullable": true,
+                "type": "string"
+              },
+              "lifetime": {
+                "type": "boolean"
+              },
+              "offer_days": {
+                "nullable": true,
+                "type": "integer"
+              },
+              "offer_type": {
+                "enum": [
+                  "days",
+                  "lifetime"
+                ],
+                "type": "string"
+              },
+              "starts_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "grant_id",
+              "lead_user_id",
+              "offer_type",
+              "offer_days",
+              "status",
+              "starts_at",
+              "ends_at",
+              "lifetime",
+              "active"
+            ],
+            "type": "object"
           },
           "subscription": {
             "anyOf": [
@@ -20697,7 +21113,12 @@
           "trial_used",
           "vt_account",
           "vt_recent_orders",
-          "login_history"
+          "login_history",
+          "group",
+          "referral_offer",
+          "demo_trading",
+          "bot",
+          "academy"
         ],
         "title": "User360Response",
         "type": "object"
@@ -25955,7 +26376,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 730 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 744 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -58688,6 +59109,1576 @@
           "Referrals"
         ],
         "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v1/team/me": {
+      "get": {
+        "operationId": "TeamController_me[0]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "appointed_at": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "commission_pct": {
+                      "nullable": true,
+                      "type": "integer"
+                    },
+                    "member_count": {
+                      "type": "integer"
+                    },
+                    "offer_days": {
+                      "enum": [
+                        7,
+                        30,
+                        90,
+                        180,
+                        365
+                      ],
+                      "nullable": true,
+                      "type": "integer"
+                    },
+                    "offer_type": {
+                      "enum": [
+                        "none",
+                        "days",
+                        "lifetime"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "active"
+                      ],
+                      "type": "string"
+                    },
+                    "user": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "full_name": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "username",
+                        "full_name"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "user",
+                    "code",
+                    "status",
+                    "appointed_at",
+                    "commission_pct",
+                    "offer_type",
+                    "offer_days",
+                    "member_count"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v1/team/metrics/overview": {
+      "get": {
+        "operationId": "TeamController_overview[0]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Legacy_MetricsOverview"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v1/team/metrics/revenue": {
+      "get": {
+        "operationId": "TeamController_revenue[0]",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 365,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Legacy_DailyRevenuePoint"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v1/team/users": {
+      "get": {
+        "operationId": "TeamController_users[0]",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "maxLength": 320,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "enum": [
+                "user",
+                "premium"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "segment",
+            "required": false,
+            "schema": {
+              "enum": [
+                "new_7d",
+                "email_unverified",
+                "trialing",
+                "inactive_14d"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_by",
+            "required": false,
+            "schema": {
+              "default": "created_at",
+              "enum": [
+                "username",
+                "role",
+                "demo_pnl_pct",
+                "bot_pnl_pct",
+                "academy_progress",
+                "created_at"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_order",
+            "required": false,
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "academy": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "all_done": {
+                                "type": "boolean"
+                              },
+                              "completed": {
+                                "type": "integer"
+                              },
+                              "current_lesson": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "chapter": {
+                                    "type": "integer"
+                                  },
+                                  "label": {
+                                    "type": "string"
+                                  },
+                                  "lesson_id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "order": {
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "lesson_id",
+                                  "chapter",
+                                  "order",
+                                  "name",
+                                  "label"
+                                ],
+                                "type": "object"
+                              },
+                              "started": {
+                                "type": "boolean"
+                              },
+                              "total": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "started",
+                              "completed",
+                              "total",
+                              "all_done",
+                              "current_lesson"
+                            ],
+                            "type": "object"
+                          },
+                          "bot": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "activated": {
+                                "type": "boolean"
+                              },
+                              "as_of": {
+                                "format": "date",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "pnl_pct": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "activated",
+                              "pnl_pct",
+                              "as_of"
+                            ],
+                            "type": "object"
+                          },
+                          "created_at": {
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "demo_trading": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "activated": {
+                                "type": "boolean"
+                              },
+                              "pnl_pct": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "activated",
+                              "pnl_pct"
+                            ],
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "full_name": {
+                            "type": "string"
+                          },
+                          "group_join_via": {
+                            "enum": [
+                              "code",
+                              "admin"
+                            ],
+                            "type": "string"
+                          },
+                          "group_joined_at": {
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "id": {
+                            "format": "uuid",
+                            "type": "string"
+                          },
+                          "is_email_verified": {
+                            "type": "boolean"
+                          },
+                          "last_login_at": {
+                            "format": "date-time",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "role": {
+                            "enum": [
+                              "admin",
+                              "team_lead",
+                              "user",
+                              "premium"
+                            ],
+                            "type": "string"
+                          },
+                          "status": {
+                            "enum": [
+                              "active",
+                              "inactive",
+                              "suspended",
+                              "deleted"
+                            ],
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "username",
+                          "full_name",
+                          "email",
+                          "role",
+                          "status",
+                          "is_email_verified",
+                          "last_login_at",
+                          "created_at",
+                          "group_join_via",
+                          "group_joined_at",
+                          "demo_trading",
+                          "bot",
+                          "academy"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "page_size": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "total_pages": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "page_size",
+                    "total_pages"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v1/team/users/{userId}": {
+      "get": {
+        "operationId": "TeamController_user[0]",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "academy": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "all_done": {
+                          "type": "boolean"
+                        },
+                        "catalog_version": {
+                          "type": "string"
+                        },
+                        "chapter_exams": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "passed": {
+                              "type": "integer"
+                            },
+                            "total": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "passed"
+                          ],
+                          "type": "object"
+                        },
+                        "chapters": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "completed": {
+                                "type": "integer"
+                              },
+                              "lessons": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "attempts": {
+                                      "type": "integer"
+                                    },
+                                    "completed_at": {
+                                      "format": "date-time",
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "completion_mode": {
+                                      "enum": [
+                                        "quiz",
+                                        "guide"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "is_current": {
+                                      "type": "boolean"
+                                    },
+                                    "kind": {
+                                      "enum": [
+                                        "technical",
+                                        "fundamental",
+                                        "concept",
+                                        "guide"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "latest_score": {
+                                      "nullable": true,
+                                      "type": "integer"
+                                    },
+                                    "lesson_id": {
+                                      "type": "string"
+                                    },
+                                    "max_score": {
+                                      "nullable": true,
+                                      "type": "integer"
+                                    },
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "order": {
+                                      "type": "integer"
+                                    },
+                                    "status": {
+                                      "enum": [
+                                        "completed",
+                                        "in_progress",
+                                        "failed",
+                                        "not_started"
+                                      ],
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "lesson_id",
+                                    "order",
+                                    "name",
+                                    "kind",
+                                    "completion_mode",
+                                    "status",
+                                    "attempts",
+                                    "latest_score",
+                                    "max_score",
+                                    "completed_at",
+                                    "is_current"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "no": {
+                                "type": "integer"
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "total": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "no",
+                              "title",
+                              "total",
+                              "completed",
+                              "lessons"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "completed": {
+                          "type": "integer"
+                        },
+                        "current_lesson": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "chapter": {
+                              "type": "integer"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "lesson_id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "order": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "lesson_id",
+                            "chapter",
+                            "order",
+                            "name",
+                            "label"
+                          ],
+                          "type": "object"
+                        },
+                        "last_completion": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "chapter": {
+                              "type": "integer"
+                            },
+                            "completed_at": {
+                              "format": "date-time",
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "lesson_id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "order": {
+                              "type": "integer"
+                            },
+                            "reward_coins": {
+                              "nullable": true,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "lesson_id",
+                            "chapter",
+                            "order",
+                            "name",
+                            "label",
+                            "completed_at",
+                            "reward_coins"
+                          ],
+                          "type": "object"
+                        },
+                        "learning_coins": {
+                          "type": "integer"
+                        },
+                        "started": {
+                          "type": "boolean"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "started",
+                        "completed",
+                        "total",
+                        "all_done",
+                        "current_lesson",
+                        "catalog_version",
+                        "chapter_exams",
+                        "last_completion",
+                        "learning_coins",
+                        "chapters"
+                      ],
+                      "type": "object"
+                    },
+                    "bot": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "account_id": {
+                          "format": "uuid",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "activated": {
+                          "type": "boolean"
+                        },
+                        "activated_at": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "as_of": {
+                          "format": "date",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "last_activity_at": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "pnl_pct": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "status": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "activated",
+                        "account_id",
+                        "status",
+                        "activated_at",
+                        "pnl_pct",
+                        "as_of",
+                        "last_activity_at"
+                      ],
+                      "type": "object"
+                    },
+                    "demo_trading": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "account_id": {
+                          "format": "uuid",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "activated": {
+                          "type": "boolean"
+                        },
+                        "activated_at": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "last_activity_at": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "pnl_pct": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "status": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "activated",
+                        "account_id",
+                        "status",
+                        "activated_at",
+                        "pnl_pct",
+                        "last_activity_at"
+                      ],
+                      "type": "object"
+                    },
+                    "group": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "join_via": {
+                          "enum": [
+                            "code",
+                            "admin"
+                          ],
+                          "type": "string"
+                        },
+                        "joined_at": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "lead_full_name": {
+                          "type": "string"
+                        },
+                        "lead_status": {
+                          "enum": [
+                            "active",
+                            "revoked"
+                          ],
+                          "type": "string"
+                        },
+                        "lead_user_id": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "lead_username": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "lead_user_id",
+                        "lead_username",
+                        "lead_full_name",
+                        "lead_status",
+                        "code",
+                        "join_via",
+                        "joined_at"
+                      ],
+                      "type": "object"
+                    },
+                    "login_history": {
+                      "items": {
+                        "$ref": "#/components/schemas/Legacy_LoginHistoryRow"
+                      },
+                      "type": "array"
+                    },
+                    "payment_history": {
+                      "items": {
+                        "$ref": "#/components/schemas/Legacy_PaymentOrderBrief"
+                      },
+                      "type": "array"
+                    },
+                    "referral_offer": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "active": {
+                          "type": "boolean"
+                        },
+                        "ends_at": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "grant_id": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "lead_user_id": {
+                          "format": "uuid",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "lifetime": {
+                          "type": "boolean"
+                        },
+                        "offer_days": {
+                          "nullable": true,
+                          "type": "integer"
+                        },
+                        "offer_type": {
+                          "enum": [
+                            "days",
+                            "lifetime"
+                          ],
+                          "type": "string"
+                        },
+                        "starts_at": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "grant_id",
+                        "lead_user_id",
+                        "offer_type",
+                        "offer_days",
+                        "status",
+                        "starts_at",
+                        "ends_at",
+                        "lifetime",
+                        "active"
+                      ],
+                      "type": "object"
+                    },
+                    "subscription": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/Legacy_SubscriptionBrief"
+                        },
+                        {
+                          "enum": [
+                            null
+                          ],
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "subscription_history": {
+                      "items": {
+                        "$ref": "#/components/schemas/Legacy_SubscriptionBrief"
+                      },
+                      "type": "array"
+                    },
+                    "trial_used": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/Legacy_UserBriefForAdmin"
+                    }
+                  },
+                  "required": [
+                    "user",
+                    "subscription",
+                    "subscription_history",
+                    "payment_history",
+                    "trial_used",
+                    "login_history",
+                    "group",
+                    "referral_offer",
+                    "demo_trading",
+                    "bot",
+                    "academy"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v1/team/users/{userId}/login-history": {
+      "get": {
+        "operationId": "TeamController_loginHistory[0]",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Legacy_PaginatedResponse_LoginHistoryRow_"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v1/team/users/{userId}/remove": {
+      "post": {
+        "operationId": "TeamController_remove[0]",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "reason": {
+                    "maxLength": 1000,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "lead_user_id": {
+                      "format": "uuid",
+                      "type": "string"
+                    },
+                    "removed_at": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "user_id": {
+                      "format": "uuid",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "lead_user_id",
+                    "user_id",
+                    "removed_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
         "x-response-schema-status": "explicit"
       }
     },
@@ -137930,6 +139921,1576 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/team/me": {
+      "get": {
+        "operationId": "TeamController_me[1]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "appointed_at": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "code": {
+                      "type": "string"
+                    },
+                    "commission_pct": {
+                      "nullable": true,
+                      "type": "integer"
+                    },
+                    "member_count": {
+                      "type": "integer"
+                    },
+                    "offer_days": {
+                      "enum": [
+                        7,
+                        30,
+                        90,
+                        180,
+                        365
+                      ],
+                      "nullable": true,
+                      "type": "integer"
+                    },
+                    "offer_type": {
+                      "enum": [
+                        "none",
+                        "days",
+                        "lifetime"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "active"
+                      ],
+                      "type": "string"
+                    },
+                    "user": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "full_name": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "username",
+                        "full_name"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "user",
+                    "code",
+                    "status",
+                    "appointed_at",
+                    "commission_pct",
+                    "offer_type",
+                    "offer_days",
+                    "member_count"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/team/metrics/overview": {
+      "get": {
+        "operationId": "TeamController_overview[1]",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Legacy_MetricsOverview"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/team/metrics/revenue": {
+      "get": {
+        "operationId": "TeamController_revenue[1]",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": 30,
+              "maximum": 365,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Legacy_DailyRevenuePoint"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/team/users": {
+      "get": {
+        "operationId": "TeamController_users[1]",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search",
+            "required": false,
+            "schema": {
+              "maxLength": 320,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "role",
+            "required": false,
+            "schema": {
+              "enum": [
+                "user",
+                "premium"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "segment",
+            "required": false,
+            "schema": {
+              "enum": [
+                "new_7d",
+                "email_unverified",
+                "trialing",
+                "inactive_14d"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_by",
+            "required": false,
+            "schema": {
+              "default": "created_at",
+              "enum": [
+                "username",
+                "role",
+                "demo_pnl_pct",
+                "bot_pnl_pct",
+                "academy_progress",
+                "created_at"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sort_order",
+            "required": false,
+            "schema": {
+              "default": "desc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "academy": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "all_done": {
+                                "type": "boolean"
+                              },
+                              "completed": {
+                                "type": "integer"
+                              },
+                              "current_lesson": {
+                                "additionalProperties": false,
+                                "nullable": true,
+                                "properties": {
+                                  "chapter": {
+                                    "type": "integer"
+                                  },
+                                  "label": {
+                                    "type": "string"
+                                  },
+                                  "lesson_id": {
+                                    "type": "string"
+                                  },
+                                  "name": {
+                                    "type": "string"
+                                  },
+                                  "order": {
+                                    "type": "integer"
+                                  }
+                                },
+                                "required": [
+                                  "lesson_id",
+                                  "chapter",
+                                  "order",
+                                  "name",
+                                  "label"
+                                ],
+                                "type": "object"
+                              },
+                              "started": {
+                                "type": "boolean"
+                              },
+                              "total": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "started",
+                              "completed",
+                              "total",
+                              "all_done",
+                              "current_lesson"
+                            ],
+                            "type": "object"
+                          },
+                          "bot": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "activated": {
+                                "type": "boolean"
+                              },
+                              "as_of": {
+                                "format": "date",
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "pnl_pct": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "activated",
+                              "pnl_pct",
+                              "as_of"
+                            ],
+                            "type": "object"
+                          },
+                          "created_at": {
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "demo_trading": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "activated": {
+                                "type": "boolean"
+                              },
+                              "pnl_pct": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "activated",
+                              "pnl_pct"
+                            ],
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": "string"
+                          },
+                          "full_name": {
+                            "type": "string"
+                          },
+                          "group_join_via": {
+                            "enum": [
+                              "code",
+                              "admin"
+                            ],
+                            "type": "string"
+                          },
+                          "group_joined_at": {
+                            "format": "date-time",
+                            "type": "string"
+                          },
+                          "id": {
+                            "format": "uuid",
+                            "type": "string"
+                          },
+                          "is_email_verified": {
+                            "type": "boolean"
+                          },
+                          "last_login_at": {
+                            "format": "date-time",
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "role": {
+                            "enum": [
+                              "admin",
+                              "team_lead",
+                              "user",
+                              "premium"
+                            ],
+                            "type": "string"
+                          },
+                          "status": {
+                            "enum": [
+                              "active",
+                              "inactive",
+                              "suspended",
+                              "deleted"
+                            ],
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "username",
+                          "full_name",
+                          "email",
+                          "role",
+                          "status",
+                          "is_email_verified",
+                          "last_login_at",
+                          "created_at",
+                          "group_join_via",
+                          "group_joined_at",
+                          "demo_trading",
+                          "bot",
+                          "academy"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "page": {
+                      "type": "integer"
+                    },
+                    "page_size": {
+                      "type": "integer"
+                    },
+                    "total": {
+                      "type": "integer"
+                    },
+                    "total_pages": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "total",
+                    "page",
+                    "page_size",
+                    "total_pages"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/team/users/{userId}": {
+      "get": {
+        "operationId": "TeamController_user[1]",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "academy": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "all_done": {
+                          "type": "boolean"
+                        },
+                        "catalog_version": {
+                          "type": "string"
+                        },
+                        "chapter_exams": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "passed": {
+                              "type": "integer"
+                            },
+                            "total": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "total",
+                            "passed"
+                          ],
+                          "type": "object"
+                        },
+                        "chapters": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "completed": {
+                                "type": "integer"
+                              },
+                              "lessons": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "attempts": {
+                                      "type": "integer"
+                                    },
+                                    "completed_at": {
+                                      "format": "date-time",
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "completion_mode": {
+                                      "enum": [
+                                        "quiz",
+                                        "guide"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "is_current": {
+                                      "type": "boolean"
+                                    },
+                                    "kind": {
+                                      "enum": [
+                                        "technical",
+                                        "fundamental",
+                                        "concept",
+                                        "guide"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "latest_score": {
+                                      "nullable": true,
+                                      "type": "integer"
+                                    },
+                                    "lesson_id": {
+                                      "type": "string"
+                                    },
+                                    "max_score": {
+                                      "nullable": true,
+                                      "type": "integer"
+                                    },
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "order": {
+                                      "type": "integer"
+                                    },
+                                    "status": {
+                                      "enum": [
+                                        "completed",
+                                        "in_progress",
+                                        "failed",
+                                        "not_started"
+                                      ],
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "lesson_id",
+                                    "order",
+                                    "name",
+                                    "kind",
+                                    "completion_mode",
+                                    "status",
+                                    "attempts",
+                                    "latest_score",
+                                    "max_score",
+                                    "completed_at",
+                                    "is_current"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "no": {
+                                "type": "integer"
+                              },
+                              "title": {
+                                "type": "string"
+                              },
+                              "total": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "no",
+                              "title",
+                              "total",
+                              "completed",
+                              "lessons"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "completed": {
+                          "type": "integer"
+                        },
+                        "current_lesson": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "chapter": {
+                              "type": "integer"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "lesson_id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "order": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "lesson_id",
+                            "chapter",
+                            "order",
+                            "name",
+                            "label"
+                          ],
+                          "type": "object"
+                        },
+                        "last_completion": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "chapter": {
+                              "type": "integer"
+                            },
+                            "completed_at": {
+                              "format": "date-time",
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "lesson_id": {
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            },
+                            "order": {
+                              "type": "integer"
+                            },
+                            "reward_coins": {
+                              "nullable": true,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "lesson_id",
+                            "chapter",
+                            "order",
+                            "name",
+                            "label",
+                            "completed_at",
+                            "reward_coins"
+                          ],
+                          "type": "object"
+                        },
+                        "learning_coins": {
+                          "type": "integer"
+                        },
+                        "started": {
+                          "type": "boolean"
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "started",
+                        "completed",
+                        "total",
+                        "all_done",
+                        "current_lesson",
+                        "catalog_version",
+                        "chapter_exams",
+                        "last_completion",
+                        "learning_coins",
+                        "chapters"
+                      ],
+                      "type": "object"
+                    },
+                    "bot": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "account_id": {
+                          "format": "uuid",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "activated": {
+                          "type": "boolean"
+                        },
+                        "activated_at": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "as_of": {
+                          "format": "date",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "last_activity_at": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "pnl_pct": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "status": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "activated",
+                        "account_id",
+                        "status",
+                        "activated_at",
+                        "pnl_pct",
+                        "as_of",
+                        "last_activity_at"
+                      ],
+                      "type": "object"
+                    },
+                    "demo_trading": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "account_id": {
+                          "format": "uuid",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "activated": {
+                          "type": "boolean"
+                        },
+                        "activated_at": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "last_activity_at": {
+                          "format": "date-time",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "pnl_pct": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "status": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "activated",
+                        "account_id",
+                        "status",
+                        "activated_at",
+                        "pnl_pct",
+                        "last_activity_at"
+                      ],
+                      "type": "object"
+                    },
+                    "group": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "code": {
+                          "type": "string"
+                        },
+                        "join_via": {
+                          "enum": [
+                            "code",
+                            "admin"
+                          ],
+                          "type": "string"
+                        },
+                        "joined_at": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "lead_full_name": {
+                          "type": "string"
+                        },
+                        "lead_status": {
+                          "enum": [
+                            "active",
+                            "revoked"
+                          ],
+                          "type": "string"
+                        },
+                        "lead_user_id": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "lead_username": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "lead_user_id",
+                        "lead_username",
+                        "lead_full_name",
+                        "lead_status",
+                        "code",
+                        "join_via",
+                        "joined_at"
+                      ],
+                      "type": "object"
+                    },
+                    "login_history": {
+                      "items": {
+                        "$ref": "#/components/schemas/Legacy_LoginHistoryRow"
+                      },
+                      "type": "array"
+                    },
+                    "payment_history": {
+                      "items": {
+                        "$ref": "#/components/schemas/Legacy_PaymentOrderBrief"
+                      },
+                      "type": "array"
+                    },
+                    "referral_offer": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "active": {
+                          "type": "boolean"
+                        },
+                        "ends_at": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "grant_id": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "lead_user_id": {
+                          "format": "uuid",
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "lifetime": {
+                          "type": "boolean"
+                        },
+                        "offer_days": {
+                          "nullable": true,
+                          "type": "integer"
+                        },
+                        "offer_type": {
+                          "enum": [
+                            "days",
+                            "lifetime"
+                          ],
+                          "type": "string"
+                        },
+                        "starts_at": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "grant_id",
+                        "lead_user_id",
+                        "offer_type",
+                        "offer_days",
+                        "status",
+                        "starts_at",
+                        "ends_at",
+                        "lifetime",
+                        "active"
+                      ],
+                      "type": "object"
+                    },
+                    "subscription": {
+                      "anyOf": [
+                        {
+                          "$ref": "#/components/schemas/Legacy_SubscriptionBrief"
+                        },
+                        {
+                          "enum": [
+                            null
+                          ],
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      ]
+                    },
+                    "subscription_history": {
+                      "items": {
+                        "$ref": "#/components/schemas/Legacy_SubscriptionBrief"
+                      },
+                      "type": "array"
+                    },
+                    "trial_used": {
+                      "type": "boolean"
+                    },
+                    "user": {
+                      "$ref": "#/components/schemas/Legacy_UserBriefForAdmin"
+                    }
+                  },
+                  "required": [
+                    "user",
+                    "subscription",
+                    "subscription_history",
+                    "payment_history",
+                    "trial_used",
+                    "login_history",
+                    "group",
+                    "referral_offer",
+                    "demo_trading",
+                    "bot",
+                    "academy"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/team/users/{userId}/login-history": {
+      "get": {
+        "operationId": "TeamController_loginHistory[1]",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 9007199254740991,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Legacy_PaginatedResponse_LoginHistoryRow_"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/team/users/{userId}/remove": {
+      "post": {
+        "operationId": "TeamController_remove[1]",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "reason": {
+                    "maxLength": 1000,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "reason"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "lead_user_id": {
+                      "format": "uuid",
+                      "type": "string"
+                    },
+                    "removed_at": {
+                      "format": "date-time",
+                      "type": "string"
+                    },
+                    "user_id": {
+                      "format": "uuid",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "lead_user_id",
+                    "user_id",
+                    "removed_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Trưởng nhóm"
+        ],
+        "x-auth-level": "roles:team_lead",
+        "x-required-roles": [
+          "team_lead"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/telegram/webhook/{secret}": {
       "post": {
         "operationId": "TelegramController_webhook[1]",
@@ -141962,11 +145523,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 545,
+    "authenticatedOperations": 559,
     "noContentResponses": 18,
-    "operations": 748,
+    "operations": 762,
     "publicOperations": 203,
-    "responseSchemas": 730,
+    "responseSchemas": 744,
     "untypedResponses": 0
   }
 }
