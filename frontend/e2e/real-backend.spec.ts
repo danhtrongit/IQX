@@ -4,7 +4,7 @@ import { test, expect } from "./fixtures"
 async function login(page: Page, email: string, remember = true) {
   await page.goto("/")
   await page.getByRole("button", { name: "Đăng nhập" }).click()
-  await page.getByLabel("Email").fill(email)
+  await page.getByLabel("Email hoặc tên đăng nhập").fill(email)
   await page.getByLabel("Mật khẩu").fill(process.env.E2E_TEST_PASSWORD || "System!Passw0rd")
   if (!remember) await page.getByRole("checkbox", { name: "Ghi nhớ đăng nhập" }).uncheck()
   await page.getByRole("dialog").getByRole("button", { name: "Đăng nhập" }).click()
@@ -17,7 +17,7 @@ test.describe("frontend-v2 real APIv2 smoke", () => {
   test("seeded user can establish a v2 session and read learning data", async ({ page }) => {
     await page.goto("/")
     await page.getByRole("button", { name: "Đăng nhập" }).click()
-    await page.getByLabel("Email").fill(process.env.E2E_USER_EMAIL || "")
+    await page.getByLabel("Email hoặc tên đăng nhập").fill(process.env.E2E_USER_EMAIL || "")
     await page.getByLabel("Mật khẩu").fill(process.env.E2E_TEST_PASSWORD || "System!Passw0rd")
     await page.getByRole("dialog").getByRole("button", { name: "Đăng nhập" }).click()
     await expect(page.getByRole("dialog")).not.toBeVisible()
@@ -35,7 +35,7 @@ test.describe("frontend-v2 real APIv2 smoke", () => {
   test("seeded non-admin cannot enter admin routes", async ({ page }) => {
     await page.goto("/")
     await page.getByRole("button", { name: "Đăng nhập" }).click()
-    await page.getByLabel("Email").fill(process.env.E2E_USER_EMAIL || "")
+    await page.getByLabel("Email hoặc tên đăng nhập").fill(process.env.E2E_USER_EMAIL || "")
     await page.getByLabel("Mật khẩu").fill(process.env.E2E_TEST_PASSWORD || "System!Passw0rd")
     await page.getByRole("dialog").getByRole("button", { name: "Đăng nhập" }).click()
     await expect(page.getByRole("dialog")).not.toBeVisible()

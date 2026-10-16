@@ -15,6 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useAuth } from "@/hooks/use-auth"
 import { accountKeys, PREMIUM_KEY_PREFIX } from "./keys"
 import {
+  changeAccountUsername,
   createPremiumCheckout,
   fetchAccountProfile,
   fetchPremiumOrders,
@@ -54,6 +55,21 @@ export function useUpdateAccountProfile() {
     onSuccess: async (profile) => {
       queryClient.setQueryData(accountKeys.profile(user?.id ?? null), profile)
       await queryClient.invalidateQueries({ queryKey: accountKeys.profile(user?.id ?? null) })
+    },
+  })
+}
+
+/**
+ * `POST /users/me/username` — đổi tên đăng nhập một lần (DECISION 1). Cache hồ sơ nhận
+ * ngay bản mới; trang gọi `refreshUser()` riêng để header đổi theo.
+ */
+export function useChangeUsername() {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (username: string) => changeAccountUsername(username),
+    onSuccess: (profile) => {
+      queryClient.setQueryData(accountKeys.profile(user?.id ?? null), profile)
     },
   })
 }

@@ -15,6 +15,8 @@
  * "thành công": mọi kết luận về thanh toán đều đọc từ `my-orders`/`me`.
  */
 import { api } from "@/lib/api"
+import { requestOperation } from "@/lib/contract-client"
+import { isLifetimeEnd } from "@/lib/format"
 import type { LegacyPlanResponse, LegacySubscriptionResponse, LegacyUserResponse } from "@/lib/generated/backend-v2"
 
 /* ── Hồ sơ người dùng ────────────────────────────────────────────────────── */
@@ -22,6 +24,10 @@ import type { LegacyPlanResponse, LegacySubscriptionResponse, LegacyUserResponse
 export type AccountProfile = {
   id: string
   email: string
+  /** Tên đăng nhập, luôn chữ thường. */
+  username: string
+  /** DECISION 1: tên tự sinh cho tài khoản cũ được đổi đúng một lần. */
+  usernameChangeAllowed: boolean
   /** Chuẩn hoá tên còn null của tài khoản cũ thành chuỗi rỗng cho biểu mẫu. */
   fullName: string
   phoneNumber: string | null
@@ -58,6 +64,8 @@ function adaptProfile(raw: BackendUserResponse): AccountProfile {
   return {
     id: raw.id,
     email: raw.email,
+    username: raw.username,
+    usernameChangeAllowed: raw.username_change_allowed === true,
     fullName: raw.full_name ?? "",
     phoneNumber: optionalText(raw.phone_number),
     phoneE164: optionalText(raw.phone_e164),
@@ -114,6 +122,14 @@ export async function saveAccountProfile(patch: ProfilePatch): Promise<AccountPr
   return adaptProfile(raw)
 }
 
+/**
+ * `POST /users/me/username` — đổi tên đăng nhập một lần duy nhất (DECISION 1).
+ * 422 `USERNAME_LOCKED` khi đã đổi hoặc là trưởng nhóm, 409 `USERNAME_TAKEN` khi trùng.
+ */
+export async function changeAccountUsername(username: string): Promise<AccountProfile> {
+  return adaptProfile(await requestOperation("POST /api/v2/users/me/username", { body: { username } }))
+}
+
 /* ── Premium ─────────────────────────────────────────────────────────────── */
 
 export type PremiumPlan = {
@@ -135,6 +151,8 @@ export type PremiumSubscription = {
   plan: PremiumPlan | null
   periodStart: string | null
   periodEnd: string | null
+  /** Hạn năm 9999 của Premium trọn đời: hiển thị "Trọn đời", không cho mua thêm (DECISION 4). */
+  isLifetime: boolean
 }
 
 type BackendSubscription = Omit<LegacySubscriptionResponse, "current_plan"> & { current_plan?: BackendPlan | null }
@@ -207,6 +225,7 @@ export function adaptPremiumSubscription(raw: BackendSubscription | null): Premi
       plan: null,
       periodStart: null,
       periodEnd: null,
+      isLifetime: false,
     }
   }
   return {
@@ -216,6 +235,7 @@ export function adaptPremiumSubscription(raw: BackendSubscription | null): Premi
     plan: raw.current_plan ? adaptPremiumPlan(raw.current_plan) : null,
     periodStart: optionalText(raw.current_period_start),
     periodEnd: optionalText(raw.current_period_end),
+    isLifetime: raw.is_premium === true && isLifetimeEnd(raw.current_period_end),
   }
 }
 
@@ -315,19 +335,22 @@ export async function resetPassword(token: string, newPassword: string): Promise
   return raw.message ?? "Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại."
 }
 
-/* ── Chính sách mật khẩu (khớp src/common/password.ts của backend-v2) ─────── */
+/* ── Chính sách mật khẩu (khớp `strongPassword` trong backend auth.schemas.ts) ── */
 
 export const PASSWORD_MIN_LENGTH = 8
 export const PASSWORD_MAX_LENGTH = 128
+/** Backend chỉ coi đúng các ký tự này là ký tự đặc biệt; `-`, `_`, `+` không được tính. */
+export const PASSWORD_SPECIAL_CHARACTERS = '!@#$%^&*(),.?":{}|<>'
+const PASSWORD_SPECIAL_PATTERN = /[!@#$%^&*(),.?":{}|<>]/
 
 /** Đúng thứ tự và đúng câu chữ của `passwordPolicyViolation`. */
 const PASSWORD_RULES: ReadonlyArray<{ label: string; test: (value: string) => boolean }> = [
   { label: "Mật khẩu phải chứa ít nhất một chữ in hoa", test: (v) => /[A-Z]/.test(v) },
   { label: "Mật khẩu phải chứa ít nhất một chữ thường", test: (v) => /[a-z]/.test(v) },
-  { label: "Mật khẩu phải chứa ít nhất một chữ số", test: (v) => /\p{Nd}/u.test(v) },
+  { label: "Mật khẩu phải chứa ít nhất một chữ số", test: (v) => /\d/.test(v) },
   {
     label: "Mật khẩu phải chứa ít nhất một ký tự đặc biệt",
-    test: (v) => /[!@#$%^&*(),.?":{}|<>]/.test(v),
+    test: (v) => PASSWORD_SPECIAL_PATTERN.test(v),
   },
 ]
 

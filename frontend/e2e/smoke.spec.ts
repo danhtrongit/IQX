@@ -14,7 +14,7 @@ test.describe("frontend-v2 browser smoke", () => {
     await page.goto("/")
     await page.getByRole("button", { name: "Đăng nhập" }).click()
     await expect(page.getByRole("dialog")).toBeVisible()
-    await page.getByLabel("Email").fill("wrong@example.com")
+    await page.getByLabel("Email hoặc tên đăng nhập").fill("wrong@example.com")
     await page.getByLabel("Mật khẩu").fill("wrong-password")
     await page.getByRole("dialog").getByRole("button", { name: "Đăng nhập" }).click()
     await expect(page.getByRole("alert")).toContainText("Email hoặc mật khẩu")

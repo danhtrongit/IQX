@@ -2,8 +2,34 @@
   "schema": "backend/contracts/openapi-v2.json",
   "calls": [
     {
+      "file": "src/components/layout/auth-identity.ts",
+      "line": 56,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/auth/username-available",
+      "method": "GET",
+      "route": "/api/v2/auth/username-available",
+      "matchedOperation": "GET /api/v2/auth/username-available",
+      "matchedOperations": [
+        "GET /api/v2/auth/username-available"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/components/layout/auth-identity.ts",
+      "line": 62,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/auth/referral-codes/{code}",
+      "method": "GET",
+      "route": "/api/v2/auth/referral-codes/{code}",
+      "matchedOperation": "GET /api/v2/auth/referral-codes/{code}",
+      "matchedOperations": [
+        "GET /api/v2/auth/referral-codes/{code}"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/context/auth-provider.tsx",
-      "line": 28,
+      "line": 29,
       "callee": "api",
       "raw": "/auth/me",
       "method": "GET",
@@ -16,7 +42,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 63,
+      "line": 64,
       "callee": "api",
       "raw": "/auth/me",
       "method": "GET",
@@ -29,7 +55,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 89,
+      "line": 90,
       "callee": "api",
       "raw": "/premium/me",
       "method": "GET",
@@ -42,7 +68,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 95,
+      "line": 96,
       "callee": "api",
       "raw": "/auth/login",
       "method": "POST",
@@ -55,7 +81,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 98,
+      "line": 99,
       "callee": "api",
       "raw": "/auth/me",
       "method": "GET",
@@ -68,7 +94,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 113,
+      "line": 114,
       "callee": "api",
       "raw": "/auth/register",
       "method": "POST",
@@ -81,7 +107,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 121,
+      "line": 122,
       "callee": "api",
       "raw": "/auth/logout",
       "method": "POST",
@@ -94,7 +120,7 @@
     },
     {
       "file": "src/context/auth-provider.tsx",
-      "line": 134,
+      "line": 135,
       "callee": "api",
       "raw": "/auth/me",
       "method": "GET",
@@ -508,7 +534,7 @@
     },
     {
       "file": "src/pages/account/api.ts",
-      "line": 106,
+      "line": 114,
       "callee": "api",
       "raw": "/users/me",
       "method": "GET",
@@ -522,7 +548,7 @@
     },
     {
       "file": "src/pages/account/api.ts",
-      "line": 110,
+      "line": 118,
       "callee": "api",
       "raw": "/users/me",
       "method": "PATCH",
@@ -536,7 +562,20 @@
     },
     {
       "file": "src/pages/account/api.ts",
-      "line": 196,
+      "line": 130,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/users/me/username",
+      "method": "POST",
+      "route": "/api/v2/users/me/username",
+      "matchedOperation": "POST /api/v2/users/me/username",
+      "matchedOperations": [
+        "POST /api/v2/users/me/username"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/account/api.ts",
+      "line": 214,
       "callee": "api",
       "raw": "/premium/plans",
       "method": "GET",
@@ -549,7 +588,7 @@
     },
     {
       "file": "src/pages/account/api.ts",
-      "line": 223,
+      "line": 243,
       "callee": "api",
       "raw": "/premium/me",
       "method": "GET",
@@ -562,7 +601,7 @@
     },
     {
       "file": "src/pages/account/api.ts",
-      "line": 229,
+      "line": 249,
       "callee": "api",
       "raw": "/premium/my-orders",
       "method": "GET",
@@ -575,7 +614,7 @@
     },
     {
       "file": "src/pages/account/api.ts",
-      "line": 250,
+      "line": 270,
       "callee": "api",
       "raw": "/premium/checkout",
       "method": "POST",
@@ -588,7 +627,7 @@
     },
     {
       "file": "src/pages/account/api.ts",
-      "line": 298,
+      "line": 318,
       "callee": "api",
       "raw": "/auth/forgot-password",
       "method": "POST",
@@ -601,7 +640,7 @@
     },
     {
       "file": "src/pages/account/api.ts",
-      "line": 311,
+      "line": 331,
       "callee": "api",
       "raw": "/auth/reset-password",
       "method": "POST",
@@ -2667,14 +2706,14 @@
     },
     {
       "file": "src/pages/referral/api.ts",
-      "line": 36,
-      "callee": "api",
-      "raw": "/referrals/me",
+      "line": 24,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/team/me",
       "method": "GET",
-      "route": "/api/v2/referrals/me",
-      "matchedOperation": "GET /api/v2/referrals/me",
+      "route": "/api/v2/team/me",
+      "matchedOperation": "GET /api/v2/team/me",
       "matchedOperations": [
-        "GET /api/v2/referrals/me"
+        "GET /api/v2/team/me"
       ],
       "classification": "api-call"
     },
@@ -3561,9 +3600,7 @@
     "GET /api/v2/ai/insight/{symbol}",
     "GET /api/v2/ai/patterns/{kind}/symbols",
     "GET /api/v2/alerts/signals",
-    "GET /api/v2/auth/referral-codes/{code}",
     "GET /api/v2/auth/reset-password",
-    "GET /api/v2/auth/username-available",
     "GET /api/v2/auth/verify-email",
     "GET /api/v2/backtest/catalog",
     "GET /api/v2/backtest/strategies",
@@ -3674,9 +3711,9 @@
     "GET /api/v2/media/{token}",
     "GET /api/v2/portfolio-manager/report",
     "GET /api/v2/practice/indicators",
+    "GET /api/v2/referrals/me",
     "GET /api/v2/strategy/alerts/events/{eventId}",
     "GET /api/v2/strategy/filters/{filterId}",
-    "GET /api/v2/team/me",
     "GET /api/v2/team/metrics/overview",
     "GET /api/v2/team/metrics/revenue",
     "GET /api/v2/team/users",
@@ -3761,7 +3798,6 @@
     "POST /api/v2/strategy/lists",
     "POST /api/v2/team/users/{userId}/remove",
     "POST /api/v2/telegram/webhook/{secret}",
-    "POST /api/v2/users/me/username",
     "PUT /api/v2/admin/team-leads/{leadId}/policy",
     "PUT /api/v2/backtest/strategies/{strategyId}"
   ]

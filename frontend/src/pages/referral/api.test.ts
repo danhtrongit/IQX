@@ -2,36 +2,54 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { api } from "@/lib/api"
 
-import { absoluteReferralUrl, fetchMyReferral } from "./api"
+import { fetchTeamReferralCode, referralLink, referralOfferLabel } from "./api"
 
-vi.mock("@/lib/api", () => ({ api: vi.fn() }))
+vi.mock("@/lib/api", () => ({ api: vi.fn(), apiResponse: vi.fn() }))
 
-const wire = {
-  referral_code: "CTV-42",
-  referral_partner_kind: "ctv" as const,
-  referral_lead_user_id: "lead-1",
-  referred_by_user_id: null,
-  referral_url: "/?ref=CTV-42",
-}
-
-describe("referral API adapters", () => {
+describe("team lead referral code", () => {
   beforeEach(() => vi.clearAllMocks())
 
-  it("loads and maps the current user's referral record", async () => {
-    vi.mocked(api).mockResolvedValue(wire)
-
-    await expect(fetchMyReferral()).resolves.toEqual({
-      referralCode: "CTV-42",
-      referralPartnerKind: "ctv",
-      referralLeadUserId: "lead-1",
-      referredByUserId: null,
-      referralUrl: "/?ref=CTV-42",
+  it("loads the code (the username), commission and offer from team/me", async () => {
+    vi.mocked(api).mockResolvedValue({
+      appointed_at: "2026-10-01T00:00:00.000Z",
+      code: "lan.nguyen",
+      commission_pct: 40,
+      member_count: 12,
+      offer_days: 30,
+      offer_type: "days",
+      status: "active",
+      user: { id: "lead-1", username: "lan.nguyen", full_name: "Lan" },
     })
-    expect(api).toHaveBeenCalledWith("/referrals/me", { signal: undefined })
+
+    await expect(fetchTeamReferralCode()).resolves.toEqual({
+      code: "lan.nguyen",
+      commissionPct: 40,
+      offerType: "days",
+      offerDays: 30,
+      memberCount: 12,
+      appointedAt: "2026-10-01T00:00:00.000Z",
+    })
+    expect(api).toHaveBeenCalledWith("/team/me", expect.objectContaining({ method: "GET" }))
   })
 
-  it("resolves a backend relative URL against the current origin", () => {
-    expect(absoluteReferralUrl("/?ref=CTV-42")).toBe(`${window.location.origin}/?ref=CTV-42`)
-    expect(absoluteReferralUrl(null)).toBeNull()
+  it("ignores offer_days unless the offer is a days offer", async () => {
+    vi.mocked(api).mockResolvedValue({
+      appointed_at: "2026-10-01T00:00:00.000Z",
+      code: "lan.nguyen",
+      commission_pct: 0,
+      member_count: 0,
+      offer_days: 30,
+      offer_type: "lifetime",
+      status: "active",
+      user: { id: "lead-1", username: "lan.nguyen", full_name: "Lan" },
+    })
+    await expect(fetchTeamReferralCode()).resolves.toMatchObject({ offerType: "lifetime", offerDays: null })
+  })
+
+  it("labels offers and builds a ?ref= link on the current origin", () => {
+    expect(referralOfferLabel("none", null)).toBe("Không có ưu đãi")
+    expect(referralOfferLabel("days", 90)).toBe("Premium miễn phí 90 ngày")
+    expect(referralOfferLabel("lifetime", null)).toBe("Premium miễn phí trọn đời")
+    expect(referralLink("lan.nguyen")).toBe(`${window.location.origin}/?ref=lan.nguyen`)
   })
 })

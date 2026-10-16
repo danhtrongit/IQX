@@ -9,6 +9,7 @@ import {
   saveTokens,
   type TokenPair,
 } from "@/lib/api"
+import { normalizeReferralCode } from "@/components/layout/referral"
 import { AuthContext, type AuthMode, type AuthUser, type RegisterInput } from "./auth-state"
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -89,10 +90,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryFn: ({ signal }) => api<{ is_premium: boolean }>("/premium/me", { signal }),
   })
 
-  async function login(email: string, password: string, remember = true) {
+  async function login(identifier: string, password: string, remember = true) {
     sessionRequest.current?.abort()
     setIsLoading(false)
-    const tokens = await api<TokenPair>("/auth/login", { method: "POST", body: JSON.stringify({ email, password }) })
+    const tokens = await api<TokenPair>("/auth/login", { method: "POST", body: JSON.stringify({ identifier, password }) })
     saveTokens(tokens, remember)
     try {
       const account = await api<AuthUser>("/auth/me")
@@ -143,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authOpen, authMode, setAuthOpen,
       referralCode,
       openAuth: (mode = "login", nextReferralCode) => {
-        if (nextReferralCode?.trim()) setReferralCode(nextReferralCode.trim().toUpperCase())
+        if (nextReferralCode?.trim()) setReferralCode(normalizeReferralCode(nextReferralCode) ?? nextReferralCode.trim())
         setAuthMode(mode)
         setAuthOpen(true)
       },

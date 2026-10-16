@@ -58,7 +58,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { useAuth } from "@/hooks/use-auth"
-import { errorMessage } from "@/lib/api"
+import { ApiError, errorMessage } from "@/lib/api"
 import { formatDateTime, formatMoney } from "@/lib/format"
 import { cn } from "@/lib/utils"
 import { openSepayCheckout, type CheckoutSession, type PremiumOrder, type PremiumPlan } from "./api"
@@ -114,11 +114,15 @@ function planDurationLabel(plan: PremiumPlan) {
       : `${plan.durationDays} ngày`
 }
 
+/** DECISION 4: Premium trọn đời không mua thêm được (409 `LIFETIME_PREMIUM_ACTIVE`). */
+const LIFETIME_PREMIUM_MESSAGE = "Bạn đang có Premium trọn đời, không cần mua thêm."
+
 function PlanCard({
   plan,
   reference,
   cheapestId,
   isPremium,
+  lifetime,
   pending,
   onSelect,
 }: {
@@ -127,6 +131,8 @@ function PlanCard({
   reference: PremiumPlan | null
   cheapestId: string | null
   isPremium: boolean
+  /** Đang có Premium trọn đời: backend từ chối mua thêm (409 LIFETIME_PREMIUM_ACTIVE). */
+  lifetime: boolean
   pending: boolean
   onSelect: (plan: PremiumPlan) => void
 }) {
@@ -175,11 +181,13 @@ function PlanCard({
         </ul>
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-2">
-        <Button disabled={pending} onClick={() => onSelect(plan)}>
+        <Button disabled={pending || lifetime} onClick={() => onSelect(plan)}>
           {pending && <LoaderCircle className="animate-spin" />}
-          {pending ? "Đang tạo đơn…" : isPremium ? "Gia hạn thêm" : "Chọn gói này"}
+          {pending ? "Đang tạo đơn…" : lifetime ? "Đang có Premium trọn đời" : isPremium ? "Gia hạn thêm" : "Chọn gói này"}
         </Button>
-        {isPremium && (
+        {lifetime ? (
+          <p className="text-center text-xs text-muted-foreground">{LIFETIME_PREMIUM_MESSAGE}</p>
+        ) : isPremium && (
           <p className="text-center text-xs text-muted-foreground">
             Cộng thêm {planDurationLabel(plan)} vào hạn hiện tại của bạn
           </p>
@@ -452,6 +460,11 @@ function PremiumBody() {
       setSelectedPlan(plan)
       setSession(next)
     } catch (cause) {
+      if (cause instanceof ApiError && cause.code === "LIFETIME_PREMIUM_ACTIVE") {
+        toast.error(LIFETIME_PREMIUM_MESSAGE)
+        void subscription.refetch()
+        return
+      }
       toast.error(errorMessage(cause))
     }
   }
@@ -536,6 +549,7 @@ function PremiumBody() {
               reference={reference}
               cheapestId={cheapestId}
               isPremium={auth.isPremium}
+              lifetime={subscription.data?.isLifetime === true}
               pending={checkout.isPending && checkout.variables === plan.id}
               onSelect={(next) => void selectPlan(next)}
             />
