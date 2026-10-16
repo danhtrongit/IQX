@@ -612,6 +612,8 @@ describe('practice run results', () => {
 describe('practice data hiding', () => {
   const dateLike = /\d{4}-\d{2}-\d{2}/;
   const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi;
+  /** sha256 hex digests (data_version, config_hash) are opaque; a random digit run like "2031" is not a year. */
+  const SHA256 = /\b[0-9a-f]{64}\b/gi;
 
   function stripTimestamps(payload: unknown): string {
     return JSON.stringify(payload, (key, value: unknown) =>
@@ -619,7 +621,7 @@ describe('practice data hiding', () => {
     );
   }
 
-  /** Every object key and string value of a payload (ids stripped), so a year-like number never trips it. */
+  /** Every object key and string value of a payload (ids and hashes stripped), so a year-like number never trips it. */
   function textOf(payload: unknown): string {
     const parts: string[] = [];
     const walk = (value: unknown): void => {
@@ -633,7 +635,7 @@ describe('practice data hiding', () => {
       }
     };
     walk(JSON.parse(stripTimestamps(payload)));
-    return parts.join('\n').replace(UUID, 'id');
+    return parts.join('\n').replace(UUID, 'id').replace(SHA256, 'hash');
   }
 
   /** No calendar year and no set identity (index name, period, set label) in text of any payload. */
