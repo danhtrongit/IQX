@@ -12158,116 +12158,6 @@ export type AdminRefundPaymentPostApiV1AdminPaymentsOrderIdRefundResponses = {
 export type AdminRefundPaymentPostApiV1AdminPaymentsOrderIdRefundResponse =
   AdminRefundPaymentPostApiV1AdminPaymentsOrderIdRefundResponses[keyof AdminRefundPaymentPostApiV1AdminPaymentsOrderIdRefundResponses];
 
-export type AdminReferralsControllerStatus0Data = {
-  body?: never;
-  path: {
-    userId: string;
-  };
-  query?: never;
-  url: "/api/v1/admin/referrals/{userId}";
-};
-
-export type AdminReferralsControllerStatus0Errors = {
-  /**
-   * Bad request
-   */
-  400: LegacyApiError;
-  /**
-   * Authentication required
-   */
-  401: LegacyApiError;
-  /**
-   * Insufficient role or entitlement
-   */
-  403: LegacyApiError;
-  /**
-   * Request validation failed
-   */
-  422: LegacyApiError;
-  /**
-   * Rate limit exceeded
-   */
-  429: LegacyApiError;
-  /**
-   * Service temporarily unavailable
-   */
-  503: LegacyApiError;
-};
-
-export type AdminReferralsControllerStatus0Error =
-  AdminReferralsControllerStatus0Errors[keyof AdminReferralsControllerStatus0Errors];
-
-export type AdminReferralsControllerStatus0Responses = {
-  200: {
-    referral_code: string | null;
-    referral_lead_user_id: string | null;
-    referral_partner_kind: "lead_sale" | "ctv";
-    referral_url: string | null;
-    referred_by_user_id: string | null;
-  };
-};
-
-export type AdminReferralsControllerStatus0Response =
-  AdminReferralsControllerStatus0Responses[keyof AdminReferralsControllerStatus0Responses];
-
-export type AdminReferralsControllerEnroll0Data = {
-  body: {
-    kind: "lead_sale" | "ctv";
-    /**
-     * Required for CTV; omitted for Lead Sale.
-     */
-    lead_user_id?: string;
-  };
-  path: {
-    userId: string;
-  };
-  query?: never;
-  url: "/api/v1/admin/referrals/{userId}/enroll";
-};
-
-export type AdminReferralsControllerEnroll0Errors = {
-  /**
-   * Bad request
-   */
-  400: LegacyApiError;
-  /**
-   * Authentication required
-   */
-  401: LegacyApiError;
-  /**
-   * Insufficient role or entitlement
-   */
-  403: LegacyApiError;
-  /**
-   * Request validation failed
-   */
-  422: LegacyApiError;
-  /**
-   * Rate limit exceeded
-   */
-  429: LegacyApiError;
-  /**
-   * Service temporarily unavailable
-   */
-  503: LegacyApiError;
-};
-
-export type AdminReferralsControllerEnroll0Error =
-  AdminReferralsControllerEnroll0Errors[keyof AdminReferralsControllerEnroll0Errors];
-
-export type AdminReferralsControllerEnroll0Responses = {
-  201: {
-    referral_code: string | null;
-    referral_lead_user_id: string | null;
-    referral_partner_kind: "lead_sale" | "ctv";
-    referral_url: string | null;
-    referred_by_user_id: string | null;
-  };
-};
-
-export type AdminReferralsControllerEnroll0Response =
-  AdminReferralsControllerEnroll0Responses[keyof AdminReferralsControllerEnroll0Responses];
-
 export type AdminListSubscriptionsGetApiV1AdminSubscriptionsData = {
   body?: never;
   path?: never;
@@ -12557,6 +12447,726 @@ export type AdminSystemControllerStatus0Responses = {
 
 export type AdminSystemControllerStatus0Response =
   AdminSystemControllerStatus0Responses[keyof AdminSystemControllerStatus0Responses];
+
+export type AdminTeamLeadsControllerList0Data = {
+  body?: never;
+  path?: never;
+  query?: {
+    page?: number;
+    page_size?: number;
+    status?: "active" | "revoked";
+    search?: string;
+  };
+  url: "/api/v1/admin/team-leads";
+};
+
+export type AdminTeamLeadsControllerList0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminTeamLeadsControllerList0Error =
+  AdminTeamLeadsControllerList0Errors[keyof AdminTeamLeadsControllerList0Errors];
+
+export type AdminTeamLeadsControllerList0Responses = {
+  200: {
+    items: Array<{
+      appointed_at: string;
+      code: string;
+      commission_30d_vnd: number;
+      commission_pct: number | null;
+      member_count: number;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      revenue_30d_vnd: number;
+      revoked_at: string | null;
+      status: "active" | "revoked";
+      user: {
+        email: string;
+        full_name: string;
+        id: string;
+        role: "admin" | "team_lead" | "user" | "premium";
+        status: "active" | "inactive" | "suspended" | "deleted";
+        username: string;
+      };
+    }>;
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+  };
+};
+
+export type AdminTeamLeadsControllerList0Response =
+  AdminTeamLeadsControllerList0Responses[keyof AdminTeamLeadsControllerList0Responses];
+
+export type AdminTeamLeadsControllerAppoint0Data = {
+  body: {
+    commission_pct: number;
+    offer_days?: 7 | 30 | 90 | 180 | 365 | null;
+    offer_type: "none" | "days" | "lifetime";
+    reason: string;
+    user_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v1/admin/team-leads";
+};
+
+export type AdminTeamLeadsControllerAppoint0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminTeamLeadsControllerAppoint0Error =
+  AdminTeamLeadsControllerAppoint0Errors[keyof AdminTeamLeadsControllerAppoint0Errors];
+
+export type AdminTeamLeadsControllerAppoint0Responses = {
+  201: {
+    accepting_new_users: boolean;
+    appointed_at: string;
+    appointed_by: string | null;
+    code: string;
+    history: Array<{
+      action: string;
+      actor: {
+        full_name: string | null;
+        id: string;
+        username: string | null;
+      } | null;
+      actor_role: "admin" | "team_lead" | "system";
+      after: unknown;
+      before: unknown;
+      created_at: string;
+      id: string;
+      reason: string | null;
+    }>;
+    metrics: {
+      active_free_premium_count: number;
+      commission_30d_vnd: number;
+      member_count: number;
+      revenue_30d_vnd: number;
+    };
+    policy: {
+      commission_pct: number;
+      created_by: string | null;
+      effective_from: string;
+      id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      offer_version_id: string;
+      reason: string;
+    } | null;
+    revoked_at: string | null;
+    revoked_by: string | null;
+    status: "active" | "revoked";
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerAppoint0Response =
+  AdminTeamLeadsControllerAppoint0Responses[keyof AdminTeamLeadsControllerAppoint0Responses];
+
+export type AdminTeamLeadsControllerLookup0Data = {
+  body?: never;
+  path?: never;
+  query: {
+    q: string;
+    lead_id?: string;
+  };
+  url: "/api/v1/admin/team-leads/lookup";
+};
+
+export type AdminTeamLeadsControllerLookup0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminTeamLeadsControllerLookup0Error =
+  AdminTeamLeadsControllerLookup0Errors[keyof AdminTeamLeadsControllerLookup0Errors];
+
+export type AdminTeamLeadsControllerLookup0Responses = {
+  200: {
+    add_member: {
+      action: "add" | "move";
+      eligible: boolean;
+      reason: "TARGET_IS_TEAM_LEAD" | "USER_NOT_ELIGIBLE" | "ALREADY_IN_GROUP";
+    };
+    appoint: {
+      eligible: boolean;
+      reason: "TEAM_LEAD_EXISTS" | "USER_NOT_ELIGIBLE";
+    };
+    group: {
+      join_via: "code" | "admin";
+      joined_at: string;
+      lead_full_name: string;
+      lead_status: "active" | "revoked";
+      lead_user_id: string;
+      lead_username: string;
+    } | null;
+    team_lead: {
+      appointed_at: string;
+      status: "active" | "revoked";
+    } | null;
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerLookup0Response =
+  AdminTeamLeadsControllerLookup0Responses[keyof AdminTeamLeadsControllerLookup0Responses];
+
+export type AdminTeamLeadsControllerDetail0Data = {
+  body?: never;
+  path: {
+    leadId: string;
+  };
+  query?: never;
+  url: "/api/v1/admin/team-leads/{leadId}";
+};
+
+export type AdminTeamLeadsControllerDetail0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminTeamLeadsControllerDetail0Error =
+  AdminTeamLeadsControllerDetail0Errors[keyof AdminTeamLeadsControllerDetail0Errors];
+
+export type AdminTeamLeadsControllerDetail0Responses = {
+  200: {
+    accepting_new_users: boolean;
+    appointed_at: string;
+    appointed_by: string | null;
+    code: string;
+    history: Array<{
+      action: string;
+      actor: {
+        full_name: string | null;
+        id: string;
+        username: string | null;
+      } | null;
+      actor_role: "admin" | "team_lead" | "system";
+      after: unknown;
+      before: unknown;
+      created_at: string;
+      id: string;
+      reason: string | null;
+    }>;
+    metrics: {
+      active_free_premium_count: number;
+      commission_30d_vnd: number;
+      member_count: number;
+      revenue_30d_vnd: number;
+    };
+    policy: {
+      commission_pct: number;
+      created_by: string | null;
+      effective_from: string;
+      id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      offer_version_id: string;
+      reason: string;
+    } | null;
+    revoked_at: string | null;
+    revoked_by: string | null;
+    status: "active" | "revoked";
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerDetail0Response =
+  AdminTeamLeadsControllerDetail0Responses[keyof AdminTeamLeadsControllerDetail0Responses];
+
+export type AdminTeamLeadsControllerMembers0Data = {
+  body?: never;
+  path: {
+    leadId: string;
+  };
+  query?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+  };
+  url: "/api/v1/admin/team-leads/{leadId}/members";
+};
+
+export type AdminTeamLeadsControllerMembers0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminTeamLeadsControllerMembers0Error =
+  AdminTeamLeadsControllerMembers0Errors[keyof AdminTeamLeadsControllerMembers0Errors];
+
+export type AdminTeamLeadsControllerMembers0Responses = {
+  200: {
+    items: Array<{
+      created_at: string;
+      email: string;
+      full_name: string;
+      group_join_via: "code" | "admin";
+      group_joined_at: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    }>;
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+  };
+};
+
+export type AdminTeamLeadsControllerMembers0Response =
+  AdminTeamLeadsControllerMembers0Responses[keyof AdminTeamLeadsControllerMembers0Responses];
+
+export type AdminTeamLeadsControllerAddMember0Data = {
+  body: {
+    reason: string;
+    user_id: string;
+  };
+  path: {
+    leadId: string;
+  };
+  query?: never;
+  url: "/api/v1/admin/team-leads/{leadId}/members";
+};
+
+export type AdminTeamLeadsControllerAddMember0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminTeamLeadsControllerAddMember0Error =
+  AdminTeamLeadsControllerAddMember0Errors[keyof AdminTeamLeadsControllerAddMember0Errors];
+
+export type AdminTeamLeadsControllerAddMember0Responses = {
+  201: {
+    action: "add" | "move";
+    lead_user_id: string;
+    member: {
+      created_at: string;
+      email: string;
+      full_name: string;
+      group_join_via: "code" | "admin";
+      group_joined_at: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+    offer_grant: {
+      ends_at: string;
+      grant_id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "days" | "lifetime";
+      starts_at: string;
+    } | null;
+    previous_lead_user_id: string | null;
+  };
+};
+
+export type AdminTeamLeadsControllerAddMember0Response =
+  AdminTeamLeadsControllerAddMember0Responses[keyof AdminTeamLeadsControllerAddMember0Responses];
+
+export type AdminTeamLeadsControllerRemoveMember0Data = {
+  body: {
+    reason: string;
+  };
+  path: {
+    leadId: string;
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v1/admin/team-leads/{leadId}/members/{userId}/remove";
+};
+
+export type AdminTeamLeadsControllerRemoveMember0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminTeamLeadsControllerRemoveMember0Error =
+  AdminTeamLeadsControllerRemoveMember0Errors[keyof AdminTeamLeadsControllerRemoveMember0Errors];
+
+export type AdminTeamLeadsControllerRemoveMember0Responses = {
+  200: {
+    lead_user_id: string;
+    removed_at: string;
+    user_id: string;
+  };
+};
+
+export type AdminTeamLeadsControllerRemoveMember0Response =
+  AdminTeamLeadsControllerRemoveMember0Responses[keyof AdminTeamLeadsControllerRemoveMember0Responses];
+
+export type AdminTeamLeadsControllerUpdatePolicy0Data = {
+  body: {
+    commission_pct: number;
+    offer_days?: 7 | 30 | 90 | 180 | 365 | null;
+    offer_type: "none" | "days" | "lifetime";
+    reason: string;
+  };
+  path: {
+    leadId: string;
+  };
+  query?: never;
+  url: "/api/v1/admin/team-leads/{leadId}/policy";
+};
+
+export type AdminTeamLeadsControllerUpdatePolicy0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminTeamLeadsControllerUpdatePolicy0Error =
+  AdminTeamLeadsControllerUpdatePolicy0Errors[keyof AdminTeamLeadsControllerUpdatePolicy0Errors];
+
+export type AdminTeamLeadsControllerUpdatePolicy0Responses = {
+  200: {
+    accepting_new_users: boolean;
+    appointed_at: string;
+    appointed_by: string | null;
+    code: string;
+    history: Array<{
+      action: string;
+      actor: {
+        full_name: string | null;
+        id: string;
+        username: string | null;
+      } | null;
+      actor_role: "admin" | "team_lead" | "system";
+      after: unknown;
+      before: unknown;
+      created_at: string;
+      id: string;
+      reason: string | null;
+    }>;
+    metrics: {
+      active_free_premium_count: number;
+      commission_30d_vnd: number;
+      member_count: number;
+      revenue_30d_vnd: number;
+    };
+    policy: {
+      commission_pct: number;
+      created_by: string | null;
+      effective_from: string;
+      id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      offer_version_id: string;
+      reason: string;
+    } | null;
+    revoked_at: string | null;
+    revoked_by: string | null;
+    status: "active" | "revoked";
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerUpdatePolicy0Response =
+  AdminTeamLeadsControllerUpdatePolicy0Responses[keyof AdminTeamLeadsControllerUpdatePolicy0Responses];
+
+export type AdminTeamLeadsControllerRevoke0Data = {
+  body: {
+    reason: string;
+  };
+  path: {
+    leadId: string;
+  };
+  query?: never;
+  url: "/api/v1/admin/team-leads/{leadId}/revoke";
+};
+
+export type AdminTeamLeadsControllerRevoke0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AdminTeamLeadsControllerRevoke0Error =
+  AdminTeamLeadsControllerRevoke0Errors[keyof AdminTeamLeadsControllerRevoke0Errors];
+
+export type AdminTeamLeadsControllerRevoke0Responses = {
+  200: {
+    accepting_new_users: boolean;
+    appointed_at: string;
+    appointed_by: string | null;
+    code: string;
+    history: Array<{
+      action: string;
+      actor: {
+        full_name: string | null;
+        id: string;
+        username: string | null;
+      } | null;
+      actor_role: "admin" | "team_lead" | "system";
+      after: unknown;
+      before: unknown;
+      created_at: string;
+      id: string;
+      reason: string | null;
+    }>;
+    metrics: {
+      active_free_premium_count: number;
+      commission_30d_vnd: number;
+      member_count: number;
+      revenue_30d_vnd: number;
+    };
+    policy: {
+      commission_pct: number;
+      created_by: string | null;
+      effective_from: string;
+      id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      offer_version_id: string;
+      reason: string;
+    } | null;
+    revoked_at: string | null;
+    revoked_by: string | null;
+    status: "active" | "revoked";
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerRevoke0Response =
+  AdminTeamLeadsControllerRevoke0Responses[keyof AdminTeamLeadsControllerRevoke0Responses];
 
 export type AdminUsersControllerBulk0Data = {
   body: {
@@ -28350,116 +28960,6 @@ export type AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses = {
 export type AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponse =
   AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses[keyof AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses];
 
-export type AdminReferralsControllerStatus1Data = {
-  body?: never;
-  path: {
-    userId: string;
-  };
-  query?: never;
-  url: "/api/v2/admin/referrals/{userId}";
-};
-
-export type AdminReferralsControllerStatus1Errors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Insufficient role or entitlement
-   */
-  403: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type AdminReferralsControllerStatus1Error =
-  AdminReferralsControllerStatus1Errors[keyof AdminReferralsControllerStatus1Errors];
-
-export type AdminReferralsControllerStatus1Responses = {
-  200: {
-    referral_code: string | null;
-    referral_lead_user_id: string | null;
-    referral_partner_kind: "lead_sale" | "ctv";
-    referral_url: string | null;
-    referred_by_user_id: string | null;
-  };
-};
-
-export type AdminReferralsControllerStatus1Response =
-  AdminReferralsControllerStatus1Responses[keyof AdminReferralsControllerStatus1Responses];
-
-export type AdminReferralsControllerEnroll1Data = {
-  body: {
-    kind: "lead_sale" | "ctv";
-    /**
-     * Required for CTV; omitted for Lead Sale.
-     */
-    lead_user_id?: string;
-  };
-  path: {
-    userId: string;
-  };
-  query?: never;
-  url: "/api/v2/admin/referrals/{userId}/enroll";
-};
-
-export type AdminReferralsControllerEnroll1Errors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Insufficient role or entitlement
-   */
-  403: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type AdminReferralsControllerEnroll1Error =
-  AdminReferralsControllerEnroll1Errors[keyof AdminReferralsControllerEnroll1Errors];
-
-export type AdminReferralsControllerEnroll1Responses = {
-  201: {
-    referral_code: string | null;
-    referral_lead_user_id: string | null;
-    referral_partner_kind: "lead_sale" | "ctv";
-    referral_url: string | null;
-    referred_by_user_id: string | null;
-  };
-};
-
-export type AdminReferralsControllerEnroll1Response =
-  AdminReferralsControllerEnroll1Responses[keyof AdminReferralsControllerEnroll1Responses];
-
 export type AdminListSubscriptionsGetApiV2AdminSubscriptionsData = {
   body?: never;
   path?: never;
@@ -28749,6 +29249,726 @@ export type AdminSystemControllerStatus1Responses = {
 
 export type AdminSystemControllerStatus1Response =
   AdminSystemControllerStatus1Responses[keyof AdminSystemControllerStatus1Responses];
+
+export type AdminTeamLeadsControllerList1Data = {
+  body?: never;
+  path?: never;
+  query?: {
+    page?: number;
+    page_size?: number;
+    status?: "active" | "revoked";
+    search?: string;
+  };
+  url: "/api/v2/admin/team-leads";
+};
+
+export type AdminTeamLeadsControllerList1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminTeamLeadsControllerList1Error =
+  AdminTeamLeadsControllerList1Errors[keyof AdminTeamLeadsControllerList1Errors];
+
+export type AdminTeamLeadsControllerList1Responses = {
+  200: {
+    items: Array<{
+      appointed_at: string;
+      code: string;
+      commission_30d_vnd: number;
+      commission_pct: number | null;
+      member_count: number;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      revenue_30d_vnd: number;
+      revoked_at: string | null;
+      status: "active" | "revoked";
+      user: {
+        email: string;
+        full_name: string;
+        id: string;
+        role: "admin" | "team_lead" | "user" | "premium";
+        status: "active" | "inactive" | "suspended" | "deleted";
+        username: string;
+      };
+    }>;
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+  };
+};
+
+export type AdminTeamLeadsControllerList1Response =
+  AdminTeamLeadsControllerList1Responses[keyof AdminTeamLeadsControllerList1Responses];
+
+export type AdminTeamLeadsControllerAppoint1Data = {
+  body: {
+    commission_pct: number;
+    offer_days?: 7 | 30 | 90 | 180 | 365 | null;
+    offer_type: "none" | "days" | "lifetime";
+    reason: string;
+    user_id: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/team-leads";
+};
+
+export type AdminTeamLeadsControllerAppoint1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminTeamLeadsControllerAppoint1Error =
+  AdminTeamLeadsControllerAppoint1Errors[keyof AdminTeamLeadsControllerAppoint1Errors];
+
+export type AdminTeamLeadsControllerAppoint1Responses = {
+  201: {
+    accepting_new_users: boolean;
+    appointed_at: string;
+    appointed_by: string | null;
+    code: string;
+    history: Array<{
+      action: string;
+      actor: {
+        full_name: string | null;
+        id: string;
+        username: string | null;
+      } | null;
+      actor_role: "admin" | "team_lead" | "system";
+      after: unknown;
+      before: unknown;
+      created_at: string;
+      id: string;
+      reason: string | null;
+    }>;
+    metrics: {
+      active_free_premium_count: number;
+      commission_30d_vnd: number;
+      member_count: number;
+      revenue_30d_vnd: number;
+    };
+    policy: {
+      commission_pct: number;
+      created_by: string | null;
+      effective_from: string;
+      id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      offer_version_id: string;
+      reason: string;
+    } | null;
+    revoked_at: string | null;
+    revoked_by: string | null;
+    status: "active" | "revoked";
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerAppoint1Response =
+  AdminTeamLeadsControllerAppoint1Responses[keyof AdminTeamLeadsControllerAppoint1Responses];
+
+export type AdminTeamLeadsControllerLookup1Data = {
+  body?: never;
+  path?: never;
+  query: {
+    q: string;
+    lead_id?: string;
+  };
+  url: "/api/v2/admin/team-leads/lookup";
+};
+
+export type AdminTeamLeadsControllerLookup1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminTeamLeadsControllerLookup1Error =
+  AdminTeamLeadsControllerLookup1Errors[keyof AdminTeamLeadsControllerLookup1Errors];
+
+export type AdminTeamLeadsControllerLookup1Responses = {
+  200: {
+    add_member: {
+      action: "add" | "move";
+      eligible: boolean;
+      reason: "TARGET_IS_TEAM_LEAD" | "USER_NOT_ELIGIBLE" | "ALREADY_IN_GROUP";
+    };
+    appoint: {
+      eligible: boolean;
+      reason: "TEAM_LEAD_EXISTS" | "USER_NOT_ELIGIBLE";
+    };
+    group: {
+      join_via: "code" | "admin";
+      joined_at: string;
+      lead_full_name: string;
+      lead_status: "active" | "revoked";
+      lead_user_id: string;
+      lead_username: string;
+    } | null;
+    team_lead: {
+      appointed_at: string;
+      status: "active" | "revoked";
+    } | null;
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerLookup1Response =
+  AdminTeamLeadsControllerLookup1Responses[keyof AdminTeamLeadsControllerLookup1Responses];
+
+export type AdminTeamLeadsControllerDetail1Data = {
+  body?: never;
+  path: {
+    leadId: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/team-leads/{leadId}";
+};
+
+export type AdminTeamLeadsControllerDetail1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminTeamLeadsControllerDetail1Error =
+  AdminTeamLeadsControllerDetail1Errors[keyof AdminTeamLeadsControllerDetail1Errors];
+
+export type AdminTeamLeadsControllerDetail1Responses = {
+  200: {
+    accepting_new_users: boolean;
+    appointed_at: string;
+    appointed_by: string | null;
+    code: string;
+    history: Array<{
+      action: string;
+      actor: {
+        full_name: string | null;
+        id: string;
+        username: string | null;
+      } | null;
+      actor_role: "admin" | "team_lead" | "system";
+      after: unknown;
+      before: unknown;
+      created_at: string;
+      id: string;
+      reason: string | null;
+    }>;
+    metrics: {
+      active_free_premium_count: number;
+      commission_30d_vnd: number;
+      member_count: number;
+      revenue_30d_vnd: number;
+    };
+    policy: {
+      commission_pct: number;
+      created_by: string | null;
+      effective_from: string;
+      id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      offer_version_id: string;
+      reason: string;
+    } | null;
+    revoked_at: string | null;
+    revoked_by: string | null;
+    status: "active" | "revoked";
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerDetail1Response =
+  AdminTeamLeadsControllerDetail1Responses[keyof AdminTeamLeadsControllerDetail1Responses];
+
+export type AdminTeamLeadsControllerMembers1Data = {
+  body?: never;
+  path: {
+    leadId: string;
+  };
+  query?: {
+    page?: number;
+    page_size?: number;
+    search?: string;
+  };
+  url: "/api/v2/admin/team-leads/{leadId}/members";
+};
+
+export type AdminTeamLeadsControllerMembers1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminTeamLeadsControllerMembers1Error =
+  AdminTeamLeadsControllerMembers1Errors[keyof AdminTeamLeadsControllerMembers1Errors];
+
+export type AdminTeamLeadsControllerMembers1Responses = {
+  200: {
+    items: Array<{
+      created_at: string;
+      email: string;
+      full_name: string;
+      group_join_via: "code" | "admin";
+      group_joined_at: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    }>;
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+  };
+};
+
+export type AdminTeamLeadsControllerMembers1Response =
+  AdminTeamLeadsControllerMembers1Responses[keyof AdminTeamLeadsControllerMembers1Responses];
+
+export type AdminTeamLeadsControllerAddMember1Data = {
+  body: {
+    reason: string;
+    user_id: string;
+  };
+  path: {
+    leadId: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/team-leads/{leadId}/members";
+};
+
+export type AdminTeamLeadsControllerAddMember1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminTeamLeadsControllerAddMember1Error =
+  AdminTeamLeadsControllerAddMember1Errors[keyof AdminTeamLeadsControllerAddMember1Errors];
+
+export type AdminTeamLeadsControllerAddMember1Responses = {
+  201: {
+    action: "add" | "move";
+    lead_user_id: string;
+    member: {
+      created_at: string;
+      email: string;
+      full_name: string;
+      group_join_via: "code" | "admin";
+      group_joined_at: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+    offer_grant: {
+      ends_at: string;
+      grant_id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "days" | "lifetime";
+      starts_at: string;
+    } | null;
+    previous_lead_user_id: string | null;
+  };
+};
+
+export type AdminTeamLeadsControllerAddMember1Response =
+  AdminTeamLeadsControllerAddMember1Responses[keyof AdminTeamLeadsControllerAddMember1Responses];
+
+export type AdminTeamLeadsControllerRemoveMember1Data = {
+  body: {
+    reason: string;
+  };
+  path: {
+    leadId: string;
+    userId: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/team-leads/{leadId}/members/{userId}/remove";
+};
+
+export type AdminTeamLeadsControllerRemoveMember1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminTeamLeadsControllerRemoveMember1Error =
+  AdminTeamLeadsControllerRemoveMember1Errors[keyof AdminTeamLeadsControllerRemoveMember1Errors];
+
+export type AdminTeamLeadsControllerRemoveMember1Responses = {
+  200: {
+    lead_user_id: string;
+    removed_at: string;
+    user_id: string;
+  };
+};
+
+export type AdminTeamLeadsControllerRemoveMember1Response =
+  AdminTeamLeadsControllerRemoveMember1Responses[keyof AdminTeamLeadsControllerRemoveMember1Responses];
+
+export type AdminTeamLeadsControllerUpdatePolicy1Data = {
+  body: {
+    commission_pct: number;
+    offer_days?: 7 | 30 | 90 | 180 | 365 | null;
+    offer_type: "none" | "days" | "lifetime";
+    reason: string;
+  };
+  path: {
+    leadId: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/team-leads/{leadId}/policy";
+};
+
+export type AdminTeamLeadsControllerUpdatePolicy1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminTeamLeadsControllerUpdatePolicy1Error =
+  AdminTeamLeadsControllerUpdatePolicy1Errors[keyof AdminTeamLeadsControllerUpdatePolicy1Errors];
+
+export type AdminTeamLeadsControllerUpdatePolicy1Responses = {
+  200: {
+    accepting_new_users: boolean;
+    appointed_at: string;
+    appointed_by: string | null;
+    code: string;
+    history: Array<{
+      action: string;
+      actor: {
+        full_name: string | null;
+        id: string;
+        username: string | null;
+      } | null;
+      actor_role: "admin" | "team_lead" | "system";
+      after: unknown;
+      before: unknown;
+      created_at: string;
+      id: string;
+      reason: string | null;
+    }>;
+    metrics: {
+      active_free_premium_count: number;
+      commission_30d_vnd: number;
+      member_count: number;
+      revenue_30d_vnd: number;
+    };
+    policy: {
+      commission_pct: number;
+      created_by: string | null;
+      effective_from: string;
+      id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      offer_version_id: string;
+      reason: string;
+    } | null;
+    revoked_at: string | null;
+    revoked_by: string | null;
+    status: "active" | "revoked";
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerUpdatePolicy1Response =
+  AdminTeamLeadsControllerUpdatePolicy1Responses[keyof AdminTeamLeadsControllerUpdatePolicy1Responses];
+
+export type AdminTeamLeadsControllerRevoke1Data = {
+  body: {
+    reason: string;
+  };
+  path: {
+    leadId: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/team-leads/{leadId}/revoke";
+};
+
+export type AdminTeamLeadsControllerRevoke1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminTeamLeadsControllerRevoke1Error =
+  AdminTeamLeadsControllerRevoke1Errors[keyof AdminTeamLeadsControllerRevoke1Errors];
+
+export type AdminTeamLeadsControllerRevoke1Responses = {
+  200: {
+    accepting_new_users: boolean;
+    appointed_at: string;
+    appointed_by: string | null;
+    code: string;
+    history: Array<{
+      action: string;
+      actor: {
+        full_name: string | null;
+        id: string;
+        username: string | null;
+      } | null;
+      actor_role: "admin" | "team_lead" | "system";
+      after: unknown;
+      before: unknown;
+      created_at: string;
+      id: string;
+      reason: string | null;
+    }>;
+    metrics: {
+      active_free_premium_count: number;
+      commission_30d_vnd: number;
+      member_count: number;
+      revenue_30d_vnd: number;
+    };
+    policy: {
+      commission_pct: number;
+      created_by: string | null;
+      effective_from: string;
+      id: string;
+      offer_days: 7 | 30 | 90 | 180 | 365;
+      offer_type: "none" | "days" | "lifetime";
+      offer_version_id: string;
+      reason: string;
+    } | null;
+    revoked_at: string | null;
+    revoked_by: string | null;
+    status: "active" | "revoked";
+    user: {
+      email: string;
+      full_name: string;
+      id: string;
+      role: "admin" | "team_lead" | "user" | "premium";
+      status: "active" | "inactive" | "suspended" | "deleted";
+      username: string;
+    };
+  };
+};
+
+export type AdminTeamLeadsControllerRevoke1Response =
+  AdminTeamLeadsControllerRevoke1Responses[keyof AdminTeamLeadsControllerRevoke1Responses];
 
 export type AdminUsersControllerBulk1Data = {
   body: {

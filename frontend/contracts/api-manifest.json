@@ -177,11 +177,6 @@
       "requestType": "AdminGetPaymentGetApiV2AdminPaymentsOrderIdData",
       "responseType": "AdminGetPaymentGetApiV2AdminPaymentsOrderIdResponses"
     },
-    "GET /api/v2/admin/referrals/{userId}": {
-      "operationId": "AdminReferralsController_status[1]",
-      "requestType": "AdminReferralsControllerStatus1Data",
-      "responseType": "AdminReferralsControllerStatus1Responses"
-    },
     "GET /api/v2/admin/subscriptions": {
       "operationId": "adminListSubscriptions_get_api_v2_admin_subscriptions",
       "requestType": "AdminListSubscriptionsGetApiV2AdminSubscriptionsData",
@@ -196,6 +191,26 @@
       "operationId": "AdminSystemController_status[1]",
       "requestType": "AdminSystemControllerStatus1Data",
       "responseType": "AdminSystemControllerStatus1Responses"
+    },
+    "GET /api/v2/admin/team-leads": {
+      "operationId": "AdminTeamLeadsController_list[1]",
+      "requestType": "AdminTeamLeadsControllerList1Data",
+      "responseType": "AdminTeamLeadsControllerList1Responses"
+    },
+    "GET /api/v2/admin/team-leads/{leadId}": {
+      "operationId": "AdminTeamLeadsController_detail[1]",
+      "requestType": "AdminTeamLeadsControllerDetail1Data",
+      "responseType": "AdminTeamLeadsControllerDetail1Responses"
+    },
+    "GET /api/v2/admin/team-leads/{leadId}/members": {
+      "operationId": "AdminTeamLeadsController_members[1]",
+      "requestType": "AdminTeamLeadsControllerMembers1Data",
+      "responseType": "AdminTeamLeadsControllerMembers1Responses"
+    },
+    "GET /api/v2/admin/team-leads/lookup": {
+      "operationId": "AdminTeamLeadsController_lookup[1]",
+      "requestType": "AdminTeamLeadsControllerLookup1Data",
+      "responseType": "AdminTeamLeadsControllerLookup1Responses"
     },
     "GET /api/v2/admin/users/{user_id}/subscriptions/history": {
       "operationId": "adminGetSubscriptionHistory_get_api_v2_admin_users_user_id_subscriptions_history",
@@ -1422,11 +1437,6 @@
       "requestType": "AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundData",
       "responseType": "AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses"
     },
-    "POST /api/v2/admin/referrals/{userId}/enroll": {
-      "operationId": "AdminReferralsController_enroll[1]",
-      "requestType": "AdminReferralsControllerEnroll1Data",
-      "responseType": "AdminReferralsControllerEnroll1Responses"
-    },
     "POST /api/v2/admin/subscriptions/{sub_id}/cancel": {
       "operationId": "adminCancelSubscription_post_api_v2_admin_subscriptions_sub_id_cancel",
       "requestType": "AdminCancelSubscriptionPostApiV2AdminSubscriptionsSubIdCancelData",
@@ -1441,6 +1451,26 @@
       "operationId": "AdminSystemController_run[1]",
       "requestType": "AdminSystemControllerRun1Data",
       "responseType": "AdminSystemControllerRun1Responses"
+    },
+    "POST /api/v2/admin/team-leads": {
+      "operationId": "AdminTeamLeadsController_appoint[1]",
+      "requestType": "AdminTeamLeadsControllerAppoint1Data",
+      "responseType": "AdminTeamLeadsControllerAppoint1Responses"
+    },
+    "POST /api/v2/admin/team-leads/{leadId}/members": {
+      "operationId": "AdminTeamLeadsController_addMember[1]",
+      "requestType": "AdminTeamLeadsControllerAddMember1Data",
+      "responseType": "AdminTeamLeadsControllerAddMember1Responses"
+    },
+    "POST /api/v2/admin/team-leads/{leadId}/members/{userId}/remove": {
+      "operationId": "AdminTeamLeadsController_removeMember[1]",
+      "requestType": "AdminTeamLeadsControllerRemoveMember1Data",
+      "responseType": "AdminTeamLeadsControllerRemoveMember1Responses"
+    },
+    "POST /api/v2/admin/team-leads/{leadId}/revoke": {
+      "operationId": "AdminTeamLeadsController_revoke[1]",
+      "requestType": "AdminTeamLeadsControllerRevoke1Data",
+      "responseType": "AdminTeamLeadsControllerRevoke1Responses"
     },
     "POST /api/v2/admin/users/{userId}/resend-verification": {
       "operationId": "AdminUsersController_resendVerification[1]",
@@ -1966,6 +1996,11 @@
       "operationId": "AdminAlertsController_update[1]",
       "requestType": "AdminAlertsControllerUpdate1Data",
       "responseType": "AdminAlertsControllerUpdate1Responses"
+    },
+    "PUT /api/v2/admin/team-leads/{leadId}/policy": {
+      "operationId": "AdminTeamLeadsController_updatePolicy[1]",
+      "requestType": "AdminTeamLeadsControllerUpdatePolicy1Data",
+      "responseType": "AdminTeamLeadsControllerUpdatePolicy1Responses"
     },
     "PUT /api/v2/alerts/rules/{ruleId}": {
       "operationId": "AlertsController_updateRule[1]",

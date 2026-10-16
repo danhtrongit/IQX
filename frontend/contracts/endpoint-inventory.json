@@ -2667,7 +2667,7 @@
     },
     {
       "file": "src/pages/referral/api.ts",
-      "line": 38,
+      "line": 36,
       "callee": "api",
       "raw": "/referrals/me",
       "method": "GET",
@@ -2675,32 +2675,6 @@
       "matchedOperation": "GET /api/v2/referrals/me",
       "matchedOperations": [
         "GET /api/v2/referrals/me"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/referral/api.ts",
-      "line": 42,
-      "callee": "api",
-      "raw": "/admin/referrals/{userId}",
-      "method": "GET",
-      "route": "/api/v2/admin/referrals/{userId}",
-      "matchedOperation": "GET /api/v2/admin/referrals/{userId}",
-      "matchedOperations": [
-        "GET /api/v2/admin/referrals/{userId}"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/referral/api.ts",
-      "line": 50,
-      "callee": "api",
-      "raw": "/admin/referrals/{userId}/enroll",
-      "method": "POST",
-      "route": "/api/v2/admin/referrals/{userId}/enroll",
-      "matchedOperation": "POST /api/v2/admin/referrals/{userId}/enroll",
-      "matchedOperations": [
-        "POST /api/v2/admin/referrals/{userId}/enroll"
       ],
       "classification": "api-call"
     },
@@ -3577,6 +3551,10 @@
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
     "GET /api/v2/admin/metrics/plan-distribution",
+    "GET /api/v2/admin/team-leads",
+    "GET /api/v2/admin/team-leads/{leadId}",
+    "GET /api/v2/admin/team-leads/{leadId}/members",
+    "GET /api/v2/admin/team-leads/lookup",
     "GET /api/v2/admin/users/{user_id}/subscriptions/history",
     "GET /api/v2/admin/vt/accounts",
     "GET /api/v2/admin/vt/config",
@@ -3714,6 +3692,10 @@
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
     "POST /api/v2/admin/lessons/episodes/{episodeId}/file",
+    "POST /api/v2/admin/team-leads",
+    "POST /api/v2/admin/team-leads/{leadId}/members",
+    "POST /api/v2/admin/team-leads/{leadId}/members/{userId}/remove",
+    "POST /api/v2/admin/team-leads/{leadId}/revoke",
     "POST /api/v2/admin/vt/accounts/{accountId}/reset",
     "POST /api/v2/admin/vt/reset-all",
     "POST /api/v2/ai/dashboard/analyze",
@@ -3773,6 +3755,7 @@
     "POST /api/v2/strategy/lists",
     "POST /api/v2/telegram/webhook/{secret}",
     "POST /api/v2/users/me/username",
+    "PUT /api/v2/admin/team-leads/{leadId}/policy",
     "PUT /api/v2/backtest/strategies/{strategyId}"
   ]
 }
