@@ -55,9 +55,15 @@ export function HeaderSearch() {
   return (
     <Popover open={open} onOpenChange={(next) => { setOpen(next); if (!next) setTerm("") }}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-9 gap-2 px-2.5 text-xs" aria-label="Tìm mã cổ phiếu">
+        <Button
+          variant="outline"
+          size="sm"
+          className="h-9 gap-2 px-2.5 text-xs lg:w-[min(24rem,calc(100vw-2rem))] lg:justify-start lg:font-normal lg:text-muted-foreground"
+          aria-label="Tìm mã cổ phiếu"
+        >
           <Search aria-hidden="true" className="size-3.5" />
-          <span className="hidden sm:inline">Tìm mã</span>
+          <span className="hidden sm:inline lg:hidden">Tìm mã</span>
+          <span className="hidden truncate lg:inline">Tìm mã hoặc tên công ty…</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[min(24rem,calc(100vw-2rem))] p-0">
