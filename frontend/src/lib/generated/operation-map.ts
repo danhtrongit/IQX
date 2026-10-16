@@ -70,6 +70,7 @@ export interface OperationMap {
   "GET /api/v2/alerts/telegram": { request: T.AlertsControllerTelegramStatus1Data; response: T.AlertsControllerTelegramStatus1Responses[keyof T.AlertsControllerTelegramStatus1Responses] }
   "GET /api/v2/auth/me": { request: T.AuthControllerMe1Data; response: T.AuthControllerMe1Responses[keyof T.AuthControllerMe1Responses] }
   "GET /api/v2/auth/reset-password": { request: T.AuthControllerResetPasswordForm1Data; response: T.AuthControllerResetPasswordForm1Responses[keyof T.AuthControllerResetPasswordForm1Responses] }
+  "GET /api/v2/auth/username-available": { request: T.AuthControllerUsernameAvailable1Data; response: T.AuthControllerUsernameAvailable1Responses[keyof T.AuthControllerUsernameAvailable1Responses] }
   "GET /api/v2/auth/verify-email": { request: T.AuthControllerVerifyEmail1Data; response: T.AuthControllerVerifyEmail1Responses[keyof T.AuthControllerVerifyEmail1Responses] }
   "GET /api/v2/backtest/catalog": { request: T.QuantControllerCatalog0Data; response: T.QuantControllerCatalog0Responses[keyof T.QuantControllerCatalog0Responses] }
   "GET /api/v2/backtest/strategies": { request: T.QuantControllerList0Data; response: T.QuantControllerList0Responses[keyof T.QuantControllerList0Responses] }
@@ -382,6 +383,7 @@ export interface OperationMap {
   "POST /api/v2/strategy/screener/run": { request: T.ScreenerRunData; response: T.ScreenerRunResponses[keyof T.ScreenerRunResponses] }
   "POST /api/v2/telegram/webhook/{secret}": { request: T.TelegramControllerWebhook1Data; response: T.TelegramControllerWebhook1Responses[keyof T.TelegramControllerWebhook1Responses] }
   "POST /api/v2/users": { request: T.UsersControllerCreate1Data; response: T.UsersControllerCreate1Responses[keyof T.UsersControllerCreate1Responses] }
+  "POST /api/v2/users/me/username": { request: T.UsersControllerChangeUsername1Data; response: T.UsersControllerChangeUsername1Responses[keyof T.UsersControllerChangeUsername1Responses] }
   "POST /api/v2/virtual-trading/account/activate": { request: T.TradingControllerActivate1Data; response: T.TradingControllerActivate1Responses[keyof T.TradingControllerActivate1Responses] }
   "POST /api/v2/virtual-trading/admin/reset-all": { request: T.LegacyVirtualTradingAdminControllerResetAll1Data; response: T.LegacyVirtualTradingAdminControllerResetAll1Responses[keyof T.LegacyVirtualTradingAdminControllerResetAll1Responses] }
   "POST /api/v2/virtual-trading/admin/users/{userId}/reset": { request: T.LegacyVirtualTradingAdminControllerReset1Data; response: T.LegacyVirtualTradingAdminControllerReset1Responses[keyof T.LegacyVirtualTradingAdminControllerReset1Responses] }
@@ -470,6 +472,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/alerts/telegram": { request: "AlertsControllerTelegramStatus1Data", response: "AlertsControllerTelegramStatus1Responses" },
   "GET /api/v2/auth/me": { request: "AuthControllerMe1Data", response: "AuthControllerMe1Responses" },
   "GET /api/v2/auth/reset-password": { request: "AuthControllerResetPasswordForm1Data", response: "AuthControllerResetPasswordForm1Responses" },
+  "GET /api/v2/auth/username-available": { request: "AuthControllerUsernameAvailable1Data", response: "AuthControllerUsernameAvailable1Responses" },
   "GET /api/v2/auth/verify-email": { request: "AuthControllerVerifyEmail1Data", response: "AuthControllerVerifyEmail1Responses" },
   "GET /api/v2/backtest/catalog": { request: "QuantControllerCatalog0Data", response: "QuantControllerCatalog0Responses" },
   "GET /api/v2/backtest/strategies": { request: "QuantControllerList0Data", response: "QuantControllerList0Responses" },
@@ -782,6 +785,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/strategy/screener/run": { request: "ScreenerRunData", response: "ScreenerRunResponses" },
   "POST /api/v2/telegram/webhook/{secret}": { request: "TelegramControllerWebhook1Data", response: "TelegramControllerWebhook1Responses" },
   "POST /api/v2/users": { request: "UsersControllerCreate1Data", response: "UsersControllerCreate1Responses" },
+  "POST /api/v2/users/me/username": { request: "UsersControllerChangeUsername1Data", response: "UsersControllerChangeUsername1Responses" },
   "POST /api/v2/virtual-trading/account/activate": { request: "TradingControllerActivate1Data", response: "TradingControllerActivate1Responses" },
   "POST /api/v2/virtual-trading/admin/reset-all": { request: "LegacyVirtualTradingAdminControllerResetAll1Data", response: "LegacyVirtualTradingAdminControllerResetAll1Responses" },
   "POST /api/v2/virtual-trading/admin/users/{userId}/reset": { request: "LegacyVirtualTradingAdminControllerReset1Data", response: "LegacyVirtualTradingAdminControllerReset1Responses" },

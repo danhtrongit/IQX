@@ -8800,6 +8800,10 @@ export type LegacyUserBriefForAdmin = {
    * Status
    */
   status: string;
+  /**
+   * Username
+   */
+  username: string;
 };
 
 /**
@@ -8826,6 +8830,10 @@ export type LegacyUserBriefResponse = {
   id: string;
   role: LegacyUserRole;
   status: LegacyUserStatus;
+  /**
+   * Username
+   */
+  username: string;
 };
 
 /**
@@ -8949,6 +8957,14 @@ export type LegacyUserResponse = {
    */
   updated_at: string;
   /**
+   * Username
+   */
+  username: string;
+  /**
+   * Username Change Allowed
+   */
+  username_change_allowed: boolean;
+  /**
    * Ward
    */
   ward?: string | null;
@@ -8959,7 +8975,7 @@ export type LegacyUserResponse = {
  *
  * User role enumeration.
  */
-export type LegacyUserRole = "admin" | "user" | "premium";
+export type LegacyUserRole = "admin" | "team_lead" | "user" | "premium";
 
 /**
  * UserStatus
@@ -10917,6 +10933,7 @@ export type AdminAuditControllerList0Data = {
     page?: number;
     page_size?: number;
     admin_user_id?: string;
+    actor_role?: "admin" | "team_lead" | "system";
     action_prefix?: string;
     target_entity?: string;
     target_id?: string;
@@ -10968,6 +10985,7 @@ export type AdminAuditControllerExport0Data = {
   path?: never;
   query?: {
     admin_user_id?: string;
+    actor_role?: "admin" | "team_lead" | "system";
     action_prefix?: string;
     target_entity?: string;
     target_id?: string;
@@ -12592,7 +12610,7 @@ export type AdminUsersControllerExport0Data = {
   body?: never;
   path?: never;
   query?: {
-    role?: "admin" | "user" | "premium";
+    role?: "admin" | "team_lead" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
     search?: string;
     last_login_from?: string;
@@ -14676,7 +14694,8 @@ export type AuthControllerForgotPassword0Response =
 
 export type AuthControllerLogin0Data = {
   body: {
-    email: string;
+    email?: string;
+    identifier?: string;
     password: string;
   };
   path?: never;
@@ -14836,8 +14855,9 @@ export type AuthControllerRegister0Data = {
     email: string;
     full_name: string;
     password: string;
-    phone_number?: string | null;
+    phone_number: string;
     referral_code?: string | null;
+    username: string;
   };
   path?: never;
   query?: never;
@@ -14949,6 +14969,46 @@ export type AuthControllerResetPassword0Responses = {
 
 export type AuthControllerResetPassword0Response =
   AuthControllerResetPassword0Responses[keyof AuthControllerResetPassword0Responses];
+
+export type AuthControllerUsernameAvailable0Data = {
+  body?: never;
+  path?: never;
+  query: {
+    u: string;
+  };
+  url: "/api/v1/auth/username-available";
+};
+
+export type AuthControllerUsernameAvailable0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AuthControllerUsernameAvailable0Error =
+  AuthControllerUsernameAvailable0Errors[keyof AuthControllerUsernameAvailable0Errors];
+
+export type AuthControllerUsernameAvailable0Responses = {
+  200: {
+    available: boolean;
+  };
+};
+
+export type AuthControllerUsernameAvailable0Response =
+  AuthControllerUsernameAvailable0Responses[keyof AuthControllerUsernameAvailable0Responses];
 
 export type AuthControllerVerifyEmail0Data = {
   body?: never;
@@ -23725,12 +23785,13 @@ export type UsersControllerList0Data = {
     page?: number;
     page_size?: number;
     search?: string;
-    role?: "admin" | "user" | "premium";
+    role?: "admin" | "team_lead" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
     sort_by?:
       | "created_at"
       | "updated_at"
       | "email"
+      | "username"
       | "full_name"
       | "role"
       | "status"
@@ -23783,9 +23844,9 @@ export type UsersControllerCreate0Data = {
     full_name: string;
     password: string;
     phone_number?: string | null;
-    referral_code?: string | null;
-    role?: "admin" | "user" | "premium";
+    role?: "admin" | "team_lead" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
+    username: string;
   };
   path?: never;
   query?: never;
@@ -23922,6 +23983,48 @@ export type UsersControllerUpdateMe0Responses = {
 export type UsersControllerUpdateMe0Response =
   UsersControllerUpdateMe0Responses[keyof UsersControllerUpdateMe0Responses];
 
+export type UsersControllerChangeUsername0Data = {
+  body: {
+    username: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v1/users/me/username";
+};
+
+export type UsersControllerChangeUsername0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type UsersControllerChangeUsername0Error =
+  UsersControllerChangeUsername0Errors[keyof UsersControllerChangeUsername0Errors];
+
+export type UsersControllerChangeUsername0Responses = {
+  200: LegacyUserResponse;
+};
+
+export type UsersControllerChangeUsername0Response =
+  UsersControllerChangeUsername0Responses[keyof UsersControllerChangeUsername0Responses];
+
 export type UsersControllerRemove0Data = {
   body?: never;
   path: {
@@ -24027,7 +24130,7 @@ export type UsersControllerUpdate0Data = {
     phone_number?: string | null;
     postal_code?: string | null;
     province_state?: string | null;
-    role?: "admin" | "user" | "premium";
+    role?: "admin" | "team_lead" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
     street_address?: string | null;
     ward?: string | null;
@@ -26976,6 +27079,7 @@ export type AdminAuditControllerList1Data = {
     page?: number;
     page_size?: number;
     admin_user_id?: string;
+    actor_role?: "admin" | "team_lead" | "system";
     action_prefix?: string;
     target_entity?: string;
     target_id?: string;
@@ -27027,6 +27131,7 @@ export type AdminAuditControllerExport1Data = {
   path?: never;
   query?: {
     admin_user_id?: string;
+    actor_role?: "admin" | "team_lead" | "system";
     action_prefix?: string;
     target_entity?: string;
     target_id?: string;
@@ -28655,7 +28760,7 @@ export type AdminUsersControllerExport1Data = {
   body?: never;
   path?: never;
   query?: {
-    role?: "admin" | "user" | "premium";
+    role?: "admin" | "team_lead" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
     search?: string;
     last_login_from?: string;
@@ -30903,7 +31008,8 @@ export type AuthControllerForgotPassword1Response =
 
 export type AuthControllerLogin1Data = {
   body: {
-    email: string;
+    email?: string;
+    identifier?: string;
     password: string;
   };
   path?: never;
@@ -31063,8 +31169,9 @@ export type AuthControllerRegister1Data = {
     email: string;
     full_name: string;
     password: string;
-    phone_number?: string | null;
+    phone_number: string;
     referral_code?: string | null;
+    username: string;
   };
   path?: never;
   query?: never;
@@ -31176,6 +31283,46 @@ export type AuthControllerResetPassword1Responses = {
 
 export type AuthControllerResetPassword1Response =
   AuthControllerResetPassword1Responses[keyof AuthControllerResetPassword1Responses];
+
+export type AuthControllerUsernameAvailable1Data = {
+  body?: never;
+  path?: never;
+  query: {
+    u: string;
+  };
+  url: "/api/v2/auth/username-available";
+};
+
+export type AuthControllerUsernameAvailable1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AuthControllerUsernameAvailable1Error =
+  AuthControllerUsernameAvailable1Errors[keyof AuthControllerUsernameAvailable1Errors];
+
+export type AuthControllerUsernameAvailable1Responses = {
+  200: {
+    available: boolean;
+  };
+};
+
+export type AuthControllerUsernameAvailable1Response =
+  AuthControllerUsernameAvailable1Responses[keyof AuthControllerUsernameAvailable1Responses];
 
 export type AuthControllerVerifyEmail1Data = {
   body?: never;
@@ -49192,12 +49339,13 @@ export type UsersControllerList1Data = {
     page?: number;
     page_size?: number;
     search?: string;
-    role?: "admin" | "user" | "premium";
+    role?: "admin" | "team_lead" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
     sort_by?:
       | "created_at"
       | "updated_at"
       | "email"
+      | "username"
       | "full_name"
       | "role"
       | "status"
@@ -49250,9 +49398,9 @@ export type UsersControllerCreate1Data = {
     full_name: string;
     password: string;
     phone_number?: string | null;
-    referral_code?: string | null;
-    role?: "admin" | "user" | "premium";
+    role?: "admin" | "team_lead" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
+    username: string;
   };
   path?: never;
   query?: never;
@@ -49389,6 +49537,48 @@ export type UsersControllerUpdateMe1Responses = {
 export type UsersControllerUpdateMe1Response =
   UsersControllerUpdateMe1Responses[keyof UsersControllerUpdateMe1Responses];
 
+export type UsersControllerChangeUsername1Data = {
+  body: {
+    username: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/users/me/username";
+};
+
+export type UsersControllerChangeUsername1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type UsersControllerChangeUsername1Error =
+  UsersControllerChangeUsername1Errors[keyof UsersControllerChangeUsername1Errors];
+
+export type UsersControllerChangeUsername1Responses = {
+  200: LegacyUserResponse;
+};
+
+export type UsersControllerChangeUsername1Response =
+  UsersControllerChangeUsername1Responses[keyof UsersControllerChangeUsername1Responses];
+
 export type UsersControllerRemove1Data = {
   body?: never;
   path: {
@@ -49494,7 +49684,7 @@ export type UsersControllerUpdate1Data = {
     phone_number?: string | null;
     postal_code?: string | null;
     province_state?: string | null;
-    role?: "admin" | "user" | "premium";
+    role?: "admin" | "team_lead" | "user" | "premium";
     status?: "active" | "inactive" | "suspended" | "deleted";
     street_address?: string | null;
     ward?: string | null;

@@ -25,6 +25,7 @@ describe("admin core response adapters", () => {
       adaptUserRow({
         id: 42 as unknown as string,
         email: "admin@example.test",
+        username: "admin.example",
         full_name: "",
         phone_number: null,
         role: "admin",

@@ -20954,6 +20954,11 @@
           "status": {
             "title": "Status",
             "type": "string"
+          },
+          "username": {
+            "pattern": "^[a-z0-9._]{4,30}$",
+            "title": "Username",
+            "type": "string"
           }
         },
         "required": [
@@ -20965,7 +20970,8 @@
           "status",
           "is_email_verified",
           "last_login_at",
-          "created_at"
+          "created_at",
+          "username"
         ],
         "title": "UserBriefForAdmin",
         "type": "object"
@@ -20996,6 +21002,11 @@
           },
           "status": {
             "$ref": "#/components/schemas/Legacy_UserStatus"
+          },
+          "username": {
+            "pattern": "^[a-z0-9._]{4,30}$",
+            "title": "Username",
+            "type": "string"
           }
         },
         "required": [
@@ -21004,7 +21015,8 @@
           "full_name",
           "role",
           "status",
-          "created_at"
+          "created_at",
+          "username"
         ],
         "title": "UserBriefResponse",
         "type": "object"
@@ -21334,6 +21346,15 @@
             "title": "Updated At",
             "type": "string"
           },
+          "username": {
+            "pattern": "^[a-z0-9._]{4,30}$",
+            "title": "Username",
+            "type": "string"
+          },
+          "username_change_allowed": {
+            "title": "Username Change Allowed",
+            "type": "boolean"
+          },
           "ward": {
             "anyOf": [
               {
@@ -21358,7 +21379,9 @@
           "status",
           "is_email_verified",
           "created_at",
-          "updated_at"
+          "updated_at",
+          "username",
+          "username_change_allowed"
         ],
         "title": "UserResponse",
         "type": "object"
@@ -21367,6 +21390,7 @@
         "description": "User role enumeration.",
         "enum": [
           "admin",
+          "team_lead",
           "user",
           "premium"
         ],
@@ -25931,7 +25955,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 710 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 714 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -26974,6 +26998,19 @@
           },
           {
             "in": "query",
+            "name": "actor_role",
+            "required": false,
+            "schema": {
+              "enum": [
+                "admin",
+                "team_lead",
+                "system"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
             "name": "action_prefix",
             "required": false,
             "schema": {
@@ -27121,6 +27158,19 @@
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actor_role",
+            "required": false,
+            "schema": {
+              "enum": [
+                "admin",
+                "team_lead",
+                "system"
+              ],
               "type": "string"
             }
           },
@@ -31212,6 +31262,7 @@
             "schema": {
               "enum": [
                 "admin",
+                "team_lead",
                 "user",
                 "premium"
               ],
@@ -36233,9 +36284,13 @@
               "schema": {
                 "properties": {
                   "email": {
-                    "format": "email",
                     "maxLength": 320,
-                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "identifier": {
+                    "maxLength": 320,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "password": {
@@ -36245,7 +36300,6 @@
                   }
                 },
                 "required": [
-                  "email",
                   "password"
                 ],
                 "type": "object"
@@ -36580,7 +36634,7 @@
                   },
                   "phone_number": {
                     "maxLength": 30,
-                    "nullable": true,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "referral_code": {
@@ -36589,12 +36643,18 @@
                     "nullable": true,
                     "pattern": "^[A-Z0-9_-]+$",
                     "type": "string"
+                  },
+                  "username": {
+                    "pattern": "^[a-z0-9._]{4,30}$",
+                    "type": "string"
                   }
                 },
                 "required": [
                   "email",
                   "password",
-                  "full_name"
+                  "full_name",
+                  "username",
+                  "phone_number"
                 ],
                 "type": "object"
               }
@@ -36821,6 +36881,89 @@
         ],
         "x-auth-level": "public",
         "x-response-schema-status": "legacy-mapped"
+      }
+    },
+    "/api/v1/auth/username-available": {
+      "get": {
+        "operationId": "AuthController_usernameAvailable[0]",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "u",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9._]{4,30}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "available"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "tags": [
+          "Authentication"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
       }
     },
     "/api/v1/auth/verify-email": {
@@ -56114,6 +56257,7 @@
             "schema": {
               "enum": [
                 "admin",
+                "team_lead",
                 "user",
                 "premium"
               ],
@@ -56144,6 +56288,7 @@
                 "created_at",
                 "updated_at",
                 "email",
+                "username",
                 "full_name",
                 "role",
                 "status",
@@ -56281,17 +56426,11 @@
                     "nullable": true,
                     "type": "string"
                   },
-                  "referral_code": {
-                    "maxLength": 32,
-                    "minLength": 3,
-                    "nullable": true,
-                    "pattern": "^[A-Z0-9_-]+$",
-                    "type": "string"
-                  },
                   "role": {
                     "default": "user",
                     "enum": [
                       "admin",
+                      "team_lead",
                       "user",
                       "premium"
                     ],
@@ -56306,12 +56445,17 @@
                       "deleted"
                     ],
                     "type": "string"
+                  },
+                  "username": {
+                    "pattern": "^[a-z0-9._]{4,30}$",
+                    "type": "string"
                   }
                 },
                 "required": [
                   "email",
                   "password",
-                  "full_name"
+                  "full_name",
+                  "username"
                 ],
                 "type": "object"
               }
@@ -56644,6 +56788,104 @@
         "x-response-schema-status": "legacy-mapped"
       }
     },
+    "/api/v1/users/me/username": {
+      "post": {
+        "operationId": "UsersController_changeUsername[0]",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "username": {
+                    "pattern": "^[a-z0-9._]{4,30}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Legacy_UserResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v1/users/{userId}": {
       "delete": {
         "operationId": "UsersController_remove[0]",
@@ -56930,6 +57172,7 @@
                   "role": {
                     "enum": [
                       "admin",
+                      "team_lead",
                       "user",
                       "premium"
                     ],
@@ -67748,6 +67991,19 @@
           },
           {
             "in": "query",
+            "name": "actor_role",
+            "required": false,
+            "schema": {
+              "enum": [
+                "admin",
+                "team_lead",
+                "system"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
             "name": "action_prefix",
             "required": false,
             "schema": {
@@ -67895,6 +68151,19 @@
             "schema": {
               "format": "uuid",
               "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "actor_role",
+            "required": false,
+            "schema": {
+              "enum": [
+                "admin",
+                "team_lead",
+                "system"
+              ],
               "type": "string"
             }
           },
@@ -72026,6 +72295,7 @@
             "schema": {
               "enum": [
                 "admin",
+                "team_lead",
                 "user",
                 "premium"
               ],
@@ -77593,9 +77863,13 @@
               "schema": {
                 "properties": {
                   "email": {
-                    "format": "email",
                     "maxLength": 320,
-                    "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$",
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "identifier": {
+                    "maxLength": 320,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "password": {
@@ -77605,7 +77879,6 @@
                   }
                 },
                 "required": [
-                  "email",
                   "password"
                 ],
                 "type": "object"
@@ -77940,7 +78213,7 @@
                   },
                   "phone_number": {
                     "maxLength": 30,
-                    "nullable": true,
+                    "minLength": 1,
                     "type": "string"
                   },
                   "referral_code": {
@@ -77949,12 +78222,18 @@
                     "nullable": true,
                     "pattern": "^[A-Z0-9_-]+$",
                     "type": "string"
+                  },
+                  "username": {
+                    "pattern": "^[a-z0-9._]{4,30}$",
+                    "type": "string"
                   }
                 },
                 "required": [
                   "email",
                   "password",
-                  "full_name"
+                  "full_name",
+                  "username",
+                  "phone_number"
                 ],
                 "type": "object"
               }
@@ -78181,6 +78460,89 @@
         ],
         "x-auth-level": "public",
         "x-response-schema-status": "legacy-mapped"
+      }
+    },
+    "/api/v2/auth/username-available": {
+      "get": {
+        "operationId": "AuthController_usernameAvailable[1]",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "u",
+            "required": true,
+            "schema": {
+              "pattern": "^[a-z0-9._]{4,30}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "available": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "available"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "tags": [
+          "Authentication"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
       }
     },
     "/api/v2/auth/verify-email": {
@@ -132583,6 +132945,7 @@
             "schema": {
               "enum": [
                 "admin",
+                "team_lead",
                 "user",
                 "premium"
               ],
@@ -132613,6 +132976,7 @@
                 "created_at",
                 "updated_at",
                 "email",
+                "username",
                 "full_name",
                 "role",
                 "status",
@@ -132750,17 +133114,11 @@
                     "nullable": true,
                     "type": "string"
                   },
-                  "referral_code": {
-                    "maxLength": 32,
-                    "minLength": 3,
-                    "nullable": true,
-                    "pattern": "^[A-Z0-9_-]+$",
-                    "type": "string"
-                  },
                   "role": {
                     "default": "user",
                     "enum": [
                       "admin",
+                      "team_lead",
                       "user",
                       "premium"
                     ],
@@ -132775,12 +133133,17 @@
                       "deleted"
                     ],
                     "type": "string"
+                  },
+                  "username": {
+                    "pattern": "^[a-z0-9._]{4,30}$",
+                    "type": "string"
                   }
                 },
                 "required": [
                   "email",
                   "password",
-                  "full_name"
+                  "full_name",
+                  "username"
                 ],
                 "type": "object"
               }
@@ -133113,6 +133476,104 @@
         "x-response-schema-status": "legacy-mapped"
       }
     },
+    "/api/v2/users/me/username": {
+      "post": {
+        "operationId": "UsersController_changeUsername[1]",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "username": {
+                    "pattern": "^[a-z0-9._]{4,30}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "username"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Legacy_UserResponse"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Users"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/users/{userId}": {
       "delete": {
         "operationId": "UsersController_remove[1]",
@@ -133399,6 +133860,7 @@
                   "role": {
                     "enum": [
                       "admin",
+                      "team_lead",
                       "user",
                       "premium"
                     ],
@@ -136398,11 +136860,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 529,
+    "authenticatedOperations": 531,
     "noContentResponses": 18,
-    "operations": 728,
-    "publicOperations": 199,
-    "responseSchemas": 710,
+    "operations": 732,
+    "publicOperations": 201,
+    "responseSchemas": 714,
     "untypedResponses": 0
   }
 }

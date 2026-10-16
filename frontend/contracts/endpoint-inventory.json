@@ -3584,6 +3584,7 @@
     "GET /api/v2/ai/patterns/{kind}/symbols",
     "GET /api/v2/alerts/signals",
     "GET /api/v2/auth/reset-password",
+    "GET /api/v2/auth/username-available",
     "GET /api/v2/auth/verify-email",
     "GET /api/v2/backtest/catalog",
     "GET /api/v2/backtest/strategies",
@@ -3770,6 +3771,7 @@
     "POST /api/v2/premium/sepay/ipn",
     "POST /api/v2/strategy/lists",
     "POST /api/v2/telegram/webhook/{secret}",
+    "POST /api/v2/users/me/username",
     "PUT /api/v2/backtest/strategies/{strategyId}"
   ]
 }

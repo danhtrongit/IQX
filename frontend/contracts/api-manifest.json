@@ -342,6 +342,11 @@
       "requestType": "AuthControllerResetPasswordForm1Data",
       "responseType": "AuthControllerResetPasswordForm1Responses"
     },
+    "GET /api/v2/auth/username-available": {
+      "operationId": "AuthController_usernameAvailable[1]",
+      "requestType": "AuthControllerUsernameAvailable1Data",
+      "responseType": "AuthControllerUsernameAvailable1Responses"
+    },
     "GET /api/v2/auth/verify-email": {
       "operationId": "AuthController_verifyEmail[1]",
       "requestType": "AuthControllerVerifyEmail1Data",
@@ -1901,6 +1906,11 @@
       "operationId": "UsersController_create[1]",
       "requestType": "UsersControllerCreate1Data",
       "responseType": "UsersControllerCreate1Responses"
+    },
+    "POST /api/v2/users/me/username": {
+      "operationId": "UsersController_changeUsername[1]",
+      "requestType": "UsersControllerChangeUsername1Data",
+      "responseType": "UsersControllerChangeUsername1Responses"
     },
     "POST /api/v2/virtual-trading/account/activate": {
       "operationId": "TradingController_activate[1]",

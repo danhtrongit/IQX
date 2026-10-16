@@ -3652,6 +3652,7 @@
   "quality": {
     "operationsWithoutDeclaredAuth": [
       "GET /api/v1/auth/reset-password",
+      "GET /api/v1/auth/username-available",
       "GET /api/v1/auth/verify-email",
       "GET /api/v1/health",
       "GET /api/v1/lessons/courses",
@@ -3741,6 +3742,7 @@
       "GET /api/v1/premium/plans",
       "GET /api/v1/virtual-trading/leaderboard",
       "GET /api/v2/auth/reset-password",
+      "GET /api/v2/auth/username-available",
       "GET /api/v2/auth/verify-email",
       "GET /api/v2/health",
       "GET /api/v2/instruments",
@@ -3872,8 +3874,8 @@
     "semanticVerification": "manual-review-required"
   },
   "runtime": {
-    "documentedHttp": 728,
-    "registeredHttp": 1161,
+    "documentedHttp": 732,
+    "registeredHttp": 1167,
     "websocketAdapter": "WsAdapter",
     "websocketGateways": 2
   },
