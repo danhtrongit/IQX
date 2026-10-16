@@ -106,6 +106,14 @@
   display: block;
   color: var(--primary);
 }
+.intro-eyebrow.text-brand-gradient,
+.intro-hero h1 span.text-brand-gradient,
+.dark .intro-hero h1 span.text-brand-gradient {
+  background-image: var(--brand-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
 .dark .intro-hero h1 span {
   color: var(--primary-foreground);
 }

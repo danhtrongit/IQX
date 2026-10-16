@@ -41,7 +41,7 @@ export function Masthead({ updatedAt }: { updatedAt: string }) {
   return (
     <header className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1 border-b border-border pb-3">
       <div className="flex items-baseline gap-3">
-        <span className="font-heading text-lg font-bold tracking-tight text-price-ref">
+        <span className="font-heading text-lg font-bold tracking-tight text-brand-gradient">
           AI Insight
         </span>
         <span className="text-xs font-medium tracking-widest text-muted-foreground uppercase">

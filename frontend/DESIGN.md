@@ -6,10 +6,13 @@ This file defines the visual and interaction contract for the integrated IQX pro
 
 IQX is a Vietnamese market intelligence and investing education product. The interface must feel precise, calm, data-dense, and trustworthy.
 
-- Deep sky blue is the product color.
-- Deep gold is reserved for high-emphasis actions and reference prices.
-- Financial state colors are semantic, not decorative.
-- No gradients, glow effects, glass panels, decorative noise, or stock imagery.
+- **Brain Wave Brand Spectrum**: The brand visual identity is anchored by the IQX Brain Wave spectrum (Electric Cyan `#00D4FF` → Cobalt/Royal Blue `#2563EB` → Vibrant Violet/Magenta `#7C3AED`–`#D946EF`), representing real-time market wave dynamics and multi-layer neural AI intelligence.
+- **Cobalt/Royal Blue** (`--primary`) is the core platform anchor for primary actions, active navigation, and brand chrome.
+- **Vibrant Violet/Magenta** (`--accent`) and **Electric Cyan** (`--brand-cyan`) designate high-emphasis actions, AI intelligence highlights, and interactive focal points.
+- **Financial state colors are strictly semantic, never decorative**: Vietnamese stock exchange tokens (`--price-up`, `--price-down`, `--price-ref`, `--price-ceiling`, `--price-floor`) are immutable legal standards and strictly decoupled from brand accent colors. Reference prices are represented strictly by `--price-ref` (yellow/amber), never conflated with brand colors.
+- **Dual-Zone Aesthetic Contract**:
+  - **Zone A (Brand & AI Focal Points)**: Controlled brand gradients (Electric Cyan → Cobalt Blue → Violet/Magenta) and subtle ambient glow (`shadow-brand-glow`) are permitted on brand marks (Header, Favicon, Auth), hero/editorial narrative surfaces (`/`), AI intelligence triggers/badges, and primary CTAs.
+  - **Zone B (High-Density Analytical Workspaces)**: Stock tables, order entry panels, financial reports, price boards (`/bang-gia`), and dense charts remain completely flat, crisp, and distraction-free (zero glassmorphism, background noise, or heavy drop shadows).
 - No fabricated metrics, recommendations, testimonials, payment state, or market data.
 - Product pages prioritize comprehension and speed. The introduction page may use more editorial spacing, but it must use the same type, color, and component language.
 
@@ -24,25 +27,29 @@ Use semantic Tailwind classes backed by `src/index.css`. Never hardcode theme co
 | Secondary surface | `bg-secondary` | Controls, secondary sections |
 | Quiet surface | `bg-muted` | Hover, selected rows, low-emphasis groups |
 | Main action | `bg-primary` | Primary CTA, active navigation, focus |
-| High-emphasis action | `bg-accent` | Order CTA and selective financial emphasis |
+| High-emphasis action / AI highlight | `bg-accent` | AI triggers, order CTA, and selective financial emphasis |
+| Brand gradient (Zone A) | `bg-brand-gradient` / `text-brand-gradient` | Brand marks, hero badges, primary brand CTAs |
+| Brand glow (Zone A) | `shadow-brand-glow` / `border-brand-glow` | Subtle ambient luminescence on brand mark and active AI triggers |
 | Main text | `text-foreground` | Titles, values, body |
 | Secondary text | `text-muted-foreground` | Labels, descriptions, metadata |
 | Dividers | `border-border` | Hairlines and table separators |
 | Gain | `text-price-up` | Positive market movement only |
 | Loss | `text-price-down` | Negative market movement and sell state |
-| Reference | `text-price-ref` | Reference price |
+| Reference | `text-price-ref` | Reference price (Vietnamese exchange yellow/amber, decoupled from brand accent) |
 | Ceiling | `text-price-ceiling` | Exchange ceiling price |
 | Floor | `text-price-floor` | Exchange floor price |
 
 Both light and dark themes are required. Dark is the default trading experience. A page is incomplete if content, borders, charts, focus states, or semantic market colors fail in either theme.
 
+Vietnamese stock market tokens (`--price-up`, `--price-down`, `--price-ref`, `--price-ceiling`, `--price-floor`) are immutable and strictly decoupled from brand accent colors. Specifically, in dark mode `--price-ref` is an explicit amber/yellow token (`#ffd60a`), never bound to `var(--accent)`.
+
 Chart mapping:
 
-- `chart-1`: IQX blue
-- `chart-2`: IQX gold
-- `chart-3`: positive
-- `chart-4`: negative
-- `chart-5`: neutral comparison
+- `chart-1`: IQX Cobalt Blue (primary series / main benchmark)
+- `chart-2`: IQX Electric Cyan (secondary series / market signals)
+- `chart-3`: Positive market movement (`--price-up`)
+- `chart-4`: Negative market movement (`--price-down`)
+- `chart-5`: IQX Vibrant Violet (AI neural overlay and comparison)
 
 ## 3. Typography
 
@@ -127,6 +134,7 @@ Use the components in `src/components/ui`. They are customized shadcn components
 
 | Need | Component and IQX rule |
 |---|---|
+| Brand emblem | `BrainWaveLogo` component or brand SVG; retires legacy Lucide `<Triangle />` |
 | Primary action | `Button`; one primary action per local surface |
 | Destructive action | Destructive `Button` plus confirmation dialog |
 | Text entry | `Input` or `Textarea`; visible label and error |
@@ -140,9 +148,9 @@ Use the components in `src/components/ui`. They are customized shadcn components
 | Feedback | `sonner`; concise success or error message |
 | Loading | `Skeleton` shaped like eventual content |
 | Empty/error | `PanelState` or an equivalent domain-specific state |
-| Icons | Lucide React only; SVG brand artwork is allowed |
+| Icons | Lucide React only for interface icons; do not use interface icons as brand marks |
 
-Do not use emoji, Unicode arrows, check marks, or punctuation as interface icons. Icons need an accessible name when they act alone. Decorative icons use `aria-hidden`.
+The legacy Lucide `<Triangle />` logo mark is retired. Brand representation across header, mobile menu, auth dialogs, and admin layout uses the official Brain Wave emblem (`BrainWaveLogo`) with optional subtle ambient glow. Do not use emoji, Unicode arrows, check marks, or punctuation as interface icons. Icons need an accessible name when they act alone. Decorative icons use `aria-hidden`.
 
 ## 7. shadcn customization contract
 
@@ -182,12 +190,13 @@ Required asynchronous states:
 - Motion is functional: 150 to 250ms color, opacity, or small transform.
 - Respect `prefers-reduced-motion`.
 - Journey mascot motion represents progression, reveal, or bot status. Pause it when hidden and record completion only after the visible presentation.
-- No continuous decorative animation, glow, card lift, or scroll hijacking.
+- Permissible subtle ambient glow (`shadow-brand-glow`) is strictly restricted to brand marks and AI intelligence highlights under Zone A. Dense workspaces, financial tables, and analytical cards remain free of glow.
+- Continuous decorative animation, heavy pulsating glows, card lift, or scroll hijacking are strictly forbidden.
 - Every interactive element is keyboard reachable.
 - Visible focus is mandatory.
 - Icon-only controls require a tooltip or accessible label.
 - Dialogs, menus, and sheets use Radix focus management.
-- Text and state colors must meet readable contrast in both themes.
+- Text and state colors must meet readable contrast (WCAG AA) in both light and dark themes.
 
 ## 10. Responsive behavior
 

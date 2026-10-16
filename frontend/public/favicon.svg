@@ -1,5 +1,117 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="IQX">
-  <rect width="64" height="64" rx="12" fill="#0a1018"/>
-  <path d="M32 10 54 50H10Z" fill="#32d74b"/>
-  <path d="M32 22 43 43H21Z" fill="#1a73c7"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="IQX Brain Wave">
+  <defs>
+    <!-- Dark squircle subtle border glow -->
+    <linearGradient id="sq-border" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.35"/>
+      <stop offset="50%" stop-color="#2563EB" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#D946EF" stop-opacity="0.4"/>
+    </linearGradient>
+
+    <!-- Ribbon Gradient: Crest (Electric Cyan -> Royal Blue -> Violet) -->
+    <linearGradient id="grad-crest" x1="5%" y1="15%" x2="90%" y2="85%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="35%" stop-color="#00A3FF"/>
+      <stop offset="68%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <!-- Ribbon Gradient: Mid-Body (Electric Cyan -> Cobalt -> Purple) -->
+    <linearGradient id="grad-mid" x1="5%" y1="25%" x2="85%" y2="75%">
+      <stop offset="0%" stop-color="#00E5FF"/>
+      <stop offset="42%" stop-color="#1D4ED8"/>
+      <stop offset="78%" stop-color="#6D28D9"/>
+      <stop offset="100%" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <!-- Ribbon Gradient: Inferior Wave (Cyan -> Blue -> Violet -> Neon Magenta) -->
+    <linearGradient id="grad-low" x1="10%" y1="10%" x2="85%" y2="90%">
+      <stop offset="0%" stop-color="#00F0FF"/>
+      <stop offset="30%" stop-color="#2563EB"/>
+      <stop offset="65%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#D946EF"/>
+    </linearGradient>
+
+    <!-- Occipital Filament Gradient: Violet -> Fuchsia -> Bright Neon Magenta -->
+    <linearGradient id="grad-filament" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8B5CF6"/>
+      <stop offset="45%" stop-color="#D946EF"/>
+      <stop offset="100%" stop-color="#F472B6"/>
+    </linearGradient>
+
+    <!-- Node Bezel Gradient -->
+    <radialGradient id="node-bezel" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="50%" stop-color="#1E1B4B"/>
+      <stop offset="100%" stop-color="#080C14"/>
+    </radialGradient>
+
+    <!-- Bezel Accent Ring: Violet to Bright Neon Magenta -->
+    <linearGradient id="bezel-ring" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="40%" stop-color="#C026D3"/>
+      <stop offset="100%" stop-color="#D946EF"/>
+    </linearGradient>
+
+    <!-- Radiant Node Core: Pure White -> Brilliant Pink/Magenta Core -->
+    <radialGradient id="node-core" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="35%" stop-color="#FFFFFF"/>
+      <stop offset="60%" stop-color="#F5D0FE"/>
+      <stop offset="85%" stop-color="#E879F9"/>
+      <stop offset="100%" stop-color="#D946EF"/>
+    </radialGradient>
+
+    <!-- Focal Ambient Glow -->
+    <radialGradient id="node-glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#E879F9" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#A855F7" stop-opacity="0.4"/>
+      <stop offset="75%" stop-color="#3B82F6" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#080C14" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Dark Squircle Container (#080c14, rx=14 on 64x64) -->
+  <rect width="64" height="64" rx="14" fill="#080c14"/>
+  <rect width="62" height="62" x="1" y="1" rx="13" fill="none" stroke="url(#sq-border)" stroke-width="1"/>
+
+  <!-- Occipital / Cerebellar Filament Loops (radiating from behind the focal node) -->
+  <g fill="none" stroke="url(#grad-filament)" stroke-linecap="round">
+    <path d="M45 32 C50 25 54 28 54 34 C54 41 49 43 44 38" stroke-width="1.6" opacity="0.95"/>
+    <path d="M46 30 C53 21 58 25 57 35 C56 44 49 46 43 40" stroke-width="1.5" opacity="0.85"/>
+    <path d="M47 28 C55 17 61 22 60 36 C58 47 49 49 42 42" stroke-width="1.3" opacity="0.75"/>
+  </g>
+
+  <!-- Neural Wave Ribbons (Brain Hemisphere Anatomy) -->
+  <!-- Inferior Temporal Loop & Brainstem Undulation -->
+  <path d="M15 39 C18 45 24 43 28 37 C31 31 34 46 38 49 C42 52 45 44 45 37"
+        fill="none" stroke="url(#grad-low)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Lower Central Wave Ribbon -->
+  <path d="M12 36 C13 41 19 40 24 34 C28 28 35 39 40 40 C43 41 45 38 45 36"
+        fill="none" stroke="url(#grad-mid)" stroke-width="2.7" stroke-linecap="round"/>
+
+  <!-- Middle Wave Ribbon looping around frontal pole -->
+  <path d="M16 23 C11 25 9 32 12 36 C16 33 22 29 27 27 C32 25 39 31 44 33 C45 33 45 35 45 35"
+        fill="none" stroke="url(#grad-crest)" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Upper Frontal Wave Ribbon -->
+  <path d="M17 22 C21 27 27 23 32 19 C37 15 42 22 44 28 C45 31 45 34 45 35"
+        fill="none" stroke="url(#grad-crest)" stroke-width="2.7" stroke-linecap="round"/>
+
+  <!-- Top Frontal / Parietal Crest Ribbon (Triple-lobed cerebral ridge) -->
+  <path d="M14 27 C12 21 17 17 22 19 C26 15 32 14 36 16 C41 18 44 24 45 34"
+        fill="none" stroke="url(#grad-crest)" stroke-width="2.9" stroke-linecap="round"/>
+
+  <!-- Luminous Focal Node (Orb / Eye) -->
+  <!-- Ambient Glow Halo -->
+  <circle cx="45" cy="35" r="9.5" fill="url(#node-glow)"/>
+
+  <!-- Outer Bezel Ring with Neon Magenta Accent -->
+  <circle cx="45" cy="35" r="5.6" fill="url(#node-bezel)" stroke="url(#bezel-ring)" stroke-width="1.4"/>
+
+  <!-- Inner Radiant Core -->
+  <circle cx="45" cy="35" r="3.2" fill="url(#node-core)"/>
+
+  <!-- Pure White Specular Core Center -->
+  <circle cx="45" cy="35" r="1.6" fill="#FFFFFF"/>
 </svg>

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { NavLink, Outlet } from "react-router"
-import { BellRing, BookOpen, CreditCard, History, LayoutDashboard, Menu, Package, ReceiptText, ServerCog, ShieldCheck, SlidersHorizontal, Users, WalletCards, Webhook } from "lucide-react"
+import { BellRing, BookOpen, CreditCard, History, LayoutDashboard, Menu, Package, ReceiptText, ServerCog, SlidersHorizontal, Users, WalletCards, Webhook } from "lucide-react"
+import { BrainWaveLogo } from "@/components/brand/brain-wave-logo"
 import { PanelState } from "@/components/layout/panel-state"
 import { WorkspacePage } from "@/components/layout/workspace-page"
 import { Button } from "@/components/ui/button"
@@ -61,7 +62,10 @@ export function AdminLayout() {
 
   return <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden">
     <aside className="hidden w-56 shrink-0 flex-col border-r border-border bg-card md:flex">
-      <div className="flex min-h-16 items-center gap-2 border-b border-border px-6 font-heading font-semibold"><ShieldCheck className="size-4 text-primary" />Quản trị IQX</div>
+      <div className="flex min-h-16 items-center gap-2.5 border-b border-border px-6 font-heading font-semibold">
+        <BrainWaveLogo size="xs" aria-hidden="true" />
+        <span>Quản trị IQX</span>
+      </div>
       <ScrollArea className="min-h-0 flex-1"><AdminNavigation /></ScrollArea>
     </aside>
     <div className="flex min-h-0 min-w-0 flex-1 flex-col">
@@ -69,7 +73,13 @@ export function AdminLayout() {
         <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
           <SheetTrigger asChild><Button variant="ghost" size="sm"><Menu />Điều hướng quản trị</Button></SheetTrigger>
           <SheetContent side="left" className="flex w-72 flex-col p-0">
-            <SheetHeader><SheetTitle>Quản trị IQX</SheetTitle><SheetDescription>Người dùng, nội dung, doanh thu và vận hành.</SheetDescription></SheetHeader>
+            <SheetHeader>
+              <div className="flex items-center gap-2">
+                <BrainWaveLogo size="xs" aria-hidden="true" />
+                <SheetTitle>Quản trị IQX</SheetTitle>
+              </div>
+              <SheetDescription>Người dùng, nội dung, doanh thu và vận hành.</SheetDescription>
+            </SheetHeader>
             <ScrollArea className="min-h-0 flex-1"><AdminNavigation onNavigate={() => setMenuOpen(false)} /></ScrollArea>
           </SheetContent>
         </Sheet>

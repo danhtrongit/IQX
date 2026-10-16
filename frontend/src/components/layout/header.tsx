@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react"
-import { Menu, Moon, Sun, Triangle, X } from "lucide-react"
+import { Menu, Moon, Sun, X } from "lucide-react"
 import { Link, NavLink, useLocation } from "react-router"
 
+import { BrainWaveLogo } from "@/components/brand/brain-wave-logo"
 import { useTheme } from "@/components/theme-provider"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -67,7 +68,10 @@ function MobileHeaderMenu({ items, isIntroduction }: {
       </SheetTrigger>
       <SheetContent side="right" showCloseButton={false} className="gap-0 data-[side=right]:w-[min(20rem,85vw)] motion-reduce:animate-none motion-reduce:transition-none">
         <SheetHeader className="border-b border-border pr-14">
-          <SheetTitle>Điều hướng IQX</SheetTitle>
+          <div className="flex items-center gap-2">
+            <BrainWaveLogo size="xs" aria-hidden="true" />
+            <SheetTitle>Điều hướng IQX</SheetTitle>
+          </div>
           <SheetDescription className="sr-only">Truy cập các công cụ và bài học đầu tư.</SheetDescription>
         </SheetHeader>
         <ScrollArea className="min-h-0 flex-1">
@@ -107,15 +111,12 @@ export function Header() {
       <NavLink
         to="/"
         aria-label="IQX - Trang chủ"
-        className="flex shrink-0 items-center gap-1.5 border-r border-border pr-4"
+        className="flex shrink-0 items-center gap-2 border-r border-border pr-4"
       >
+        <BrainWaveLogo size="xs" aria-hidden="true" />
         <span className="font-heading text-lg font-bold tracking-tight">
           IQX
         </span>
-        <Triangle
-          aria-hidden="true"
-          className="size-3 fill-price-up text-price-up"
-        />
       </NavLink>
       <ScrollArea className="hidden h-full min-w-0 flex-1 xl:block" orientation="horizontal">
         <nav

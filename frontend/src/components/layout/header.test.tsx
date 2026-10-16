@@ -66,7 +66,9 @@ describe("Header", () => {
 
     const header = screen.getByRole("banner")
     expect(header.className).toContain("h-(--header-top)")
-    expect(within(header).getByRole("link", { name: "IQX - Trang chủ" }).getAttribute("href")).toBe("/")
+    const homeLink = within(header).getByRole("link", { name: "IQX - Trang chủ" })
+    expect(homeLink.getAttribute("href")).toBe("/")
+    expect(within(homeLink).getByTestId("brain-wave-logo")).toBeTruthy()
     const nav = within(header).getByRole("navigation", { name: "Điều hướng chính" })
     expect(within(nav).getAllByRole("link").map((link) => [link.textContent, link.getAttribute("href")])).toEqual(SHARED_NAV)
     expect(within(header).getByRole("link", { name: "Bắt đầu ngay" }).getAttribute("href")).toBe("/demo-trading?view=academy")
@@ -199,5 +201,15 @@ describe("Header", () => {
 
     act(() => listeners.forEach((listener) => listener({ matches: true } as MediaQueryListEvent)))
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Điều hướng IQX" })).toBeNull())
+  })
+
+  it("renders the Brain Wave brand logo mark in the home navigation link", () => {
+    renderHeader("/")
+    const header = screen.getByRole("banner")
+    const homeLink = within(header).getByRole("link", { name: "IQX - Trang chủ" })
+    const logoMark = within(homeLink).getByTestId("brain-wave-logo")
+    expect(logoMark).toBeTruthy()
+    const logoImg = logoMark.querySelector("img")
+    expect(logoImg?.getAttribute("src")).toContain("logo-mark")
   })
 })
