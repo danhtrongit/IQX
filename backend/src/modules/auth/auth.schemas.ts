@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import { USER_ROLES, USER_STATUSES } from './auth.types.js';
+import { usernameSchema } from './user-identity.js';
 
 const strongPassword = z
   .string()
@@ -25,7 +26,9 @@ export const registerSchema = z.object({
   email,
   password: strongPassword,
   full_name: z.string().trim().min(1).max(200),
-  phone_number: z.string().trim().max(30).nullable().optional(),
+  username: usernameSchema,
+  // Admin spec v1.1 §2.1: required at registration; normalized to a Vietnamese mobile.
+  phone_number: z.string().trim().min(1).max(30),
   referral_code: z
     .string()
     .trim()
@@ -37,7 +40,22 @@ export const registerSchema = z.object({
     .optional(),
 });
 
-export const loginSchema = z.object({ email, password: z.string().min(1).max(128) });
+/**
+ * Admin spec v1.1 §4.1: `identifier` is an email (contains '@') or a username. The former
+ * `email` field stays accepted as an alias for clients released before v1.1.
+ */
+export const loginSchema = z
+  .object({
+    identifier: z.string().trim().min(1).max(320).optional(),
+    email: z.string().trim().min(1).max(320).optional(),
+    password: z.string().min(1).max(128),
+  })
+  .refine((value) => Boolean(value.identifier ?? value.email), {
+    message: 'Nhập email hoặc tên đăng nhập',
+    path: ['identifier'],
+  });
+export const usernameAvailabilityQuerySchema = z.object({ u: usernameSchema });
+export const usernameChangeSchema = z.object({ username: usernameSchema }).strict();
 export const refreshSchema = z.object({ refresh_token: z.string().min(1) });
 export const forgotPasswordSchema = z.object({ email });
 export const resetPasswordSchema = z.object({
@@ -63,7 +81,14 @@ export const userUpdateSchema = z
   })
   .strict();
 
-export const adminUserCreateSchema = registerSchema.extend({
+// Admin-created accounts need a username but the phone stays optional (§2.1 rule 5). The role
+// enum lists every role so a team_lead request reaches the service and gets ROLE_NOT_ASSIGNABLE.
+export const adminUserCreateSchema = z.object({
+  email,
+  password: strongPassword,
+  full_name: z.string().trim().min(1).max(200),
+  username: usernameSchema,
+  phone_number: z.string().trim().max(30).nullable().optional(),
   role: z.enum(USER_ROLES).default('user'),
   status: z.enum(USER_STATUSES).default('active'),
 });
@@ -76,6 +101,8 @@ export const adminUserUpdateSchema = userUpdateSchema.extend({
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type UsernameAvailabilityQuery = z.infer<typeof usernameAvailabilityQuerySchema>;
+export type UsernameChangeInput = z.infer<typeof usernameChangeSchema>;
 export type RefreshInput = z.infer<typeof refreshSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;

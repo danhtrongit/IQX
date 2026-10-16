@@ -13,6 +13,7 @@ export const metricsRevenueQuerySchema = z.object({
 
 const auditFilterSchema = z.object({
   admin_user_id: z.uuid().optional(),
+  actor_role: z.enum(['admin', 'team_lead', 'system']).optional(),
   action_prefix: z.string().trim().min(1).max(80).optional(),
   target_entity: z.string().trim().min(1).max(60).optional(),
   target_id: z.string().trim().min(1).max(100).optional(),

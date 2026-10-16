@@ -14,6 +14,8 @@ function user(status: UserDatabaseRow['status'] = 'active'): UserDatabaseRow {
   return {
     id: 'd9d790c8-1395-4c61-8774-20e45cc3fd36',
     email: 'user@example.com',
+    username: 'user.example',
+    username_change_allowed: false,
     hashed_password: '$2b$12$not-used',
     phone_number: null,
     phone_country_code: null,
@@ -87,7 +89,8 @@ describe('AuthService', () => {
       email: 'user@example.com',
       password: 'Password1!',
       full_name: 'User',
-      phone_number: null,
+      username: 'user.example',
+      phone_number: '0912 345 678',
     });
 
     expect(result.role).toBe('premium');
@@ -100,6 +103,44 @@ describe('AuthService', () => {
     expect(
       statements.some((sql) => sql.startsWith('insert into billing_subscription_history')),
     ).toBe(true);
+  });
+
+  it.each([
+    ['User.Example', 'lower(username) = $1', 'user.example'],
+    ['User@Example.com', 'lower(email) = $1', 'user@example.com'],
+  ])(
+    'looks %s up by the matching column and records the account email',
+    async (identifier, clause, normalized) => {
+      const query = vi.fn(async (sql: string, _params?: readonly unknown[]) =>
+        sql.includes('from users where') ? [] : [],
+      );
+      const auth = service({ query: query as never });
+      await expect(
+        auth.login({ identifier, password: 'Password1!' }, { ip: null, userAgent: null }),
+      ).rejects.toMatchObject({
+        response: expect.objectContaining({ code: 'INVALID_CREDENTIALS' }),
+      });
+      expect(query.mock.calls[0]?.[0]).toContain(clause);
+      expect(query.mock.calls[0]?.[1]).toEqual([normalized]);
+      const history = query.mock.calls.find(([sql]) => sql.includes('user_login_history'));
+      expect(history?.[1]?.[2]).toBe(normalized);
+    },
+  );
+
+  it('keeps accepting the legacy email field and logs the stored email on failure', async () => {
+    const row = user();
+    const query = vi.fn(async (sql: string, _params?: readonly unknown[]) =>
+      sql.includes('from users where') ? [row] : [],
+    );
+    await expect(
+      service({ query: query as never }).login(
+        { email: 'USER.EXAMPLE', password: 'wrong' },
+        { ip: null, userAgent: null },
+      ),
+    ).rejects.toMatchObject({ response: expect.objectContaining({ code: 'INVALID_CREDENTIALS' }) });
+    expect(query.mock.calls[0]?.[0]).toContain('lower(username) = $1');
+    const history = query.mock.calls.find(([sql]) => sql.includes('user_login_history'));
+    expect(history?.[1]?.[2]).toBe(row.email);
   });
 
   it('verifies access claims and reloads authoritative role/status from the database', async () => {

@@ -10,10 +10,11 @@ import {
   Req,
   Res,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest, FastifyReply } from 'fastify';
 import { randomBytes } from 'node:crypto';
 
+import { LookupThrottle } from '../../platform/rate-limit/lookup-throttle.decorator.js';
 import { CurrentUser, Public } from './auth.decorators.js';
 import {
   forgotPasswordSchema,
@@ -22,11 +23,13 @@ import {
   registerSchema,
   resetPasswordSchema,
   tokenQuerySchema,
+  usernameAvailabilityQuerySchema,
   type ForgotPasswordInput,
   type LoginInput,
   type RefreshInput,
   type RegisterInput,
   type ResetPasswordInput,
+  type UsernameAvailabilityQuery,
 } from './auth.schemas.js';
 import { AuthService } from './auth.service.js';
 import type { AuthenticatedUser, PublicUser } from './auth.types.js';
@@ -43,6 +46,27 @@ export class AuthController {
   @Post('register')
   async register(@Body({ schema: registerSchema }) body: RegisterInput): Promise<PublicUser> {
     return this.auth.register(body);
+  }
+
+  /**
+   * Admin spec v1.1 §4.1: live check for the registration form. A malformed username is a
+   * 422 VALIDATION_ERROR; a well-formed one answers whether it is free (case-insensitive).
+   */
+  @Public()
+  @LookupThrottle()
+  @Get('username-available')
+  @ApiOkResponse({
+    schema: {
+      type: 'object',
+      additionalProperties: false,
+      required: ['available'],
+      properties: { available: { type: 'boolean' } },
+    },
+  })
+  async usernameAvailable(
+    @Query({ schema: usernameAvailabilityQuerySchema }) query: UsernameAvailabilityQuery,
+  ): Promise<{ available: boolean }> {
+    return { available: await this.auth.isUsernameAvailable(query.u) };
   }
 
   @Public()

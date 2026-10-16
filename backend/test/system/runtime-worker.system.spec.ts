@@ -36,8 +36,8 @@ describe('system acceptance: BullMQ runtime worker', () => {
     userId = randomUUID();
     const planId = '30000000-0000-4000-8000-000000000001';
     await stack.query(
-      `insert into users(id,email,hashed_password,full_name,role,status)
-       values($1,$2,'system-test-hash','Runtime Worker','premium','active')`,
+      `insert into users(id,email,username,hashed_password,full_name,role,status)
+       values($1,$2,left('u' || replace($1::uuid::text,'-',''),30),'system-test-hash','Runtime Worker','premium','active')`,
       [userId, `runtime-${Date.now()}@example.test`],
     );
     await stack.query(

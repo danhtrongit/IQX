@@ -85,6 +85,10 @@ export const environmentSchema = z
     MARKET_INGEST_ENABLED: booleanSetting(false),
     RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(100_000).default(60),
     RATE_LIMIT_TTL_MS: z.coerce.number().int().min(1_000).max(3_600_000).default(60_000),
+    // Tighter per-IP budget for public lookups that reveal account data (username availability,
+    // referral code validity), on top of the general public limit.
+    LOOKUP_RATE_LIMIT_MAX: z.coerce.number().int().min(1).max(100_000).default(30),
+    LOOKUP_RATE_LIMIT_TTL_MS: z.coerce.number().int().min(1_000).max(3_600_000).default(60_000),
     CORS_ORIGINS: z.preprocess(
       (value) =>
         typeof value === 'string'

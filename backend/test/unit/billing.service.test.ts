@@ -341,6 +341,61 @@ describe('BillingService entitlement lifecycle', () => {
   });
 });
 
+describe('BillingService role projection (admin spec v1.1 §1.1 rule 1)', () => {
+  // refreshSubscription only flips user <-> premium. A team_lead (like an admin) keeps its role
+  // whether a grant starts or ends; Premium access comes from the grants themselves.
+  const roleUpdates = (db: FakeDatabase) =>
+    db.calls.filter(({ sql }) => sql.includes('update users set role'));
+  const expectOnlyUserPremiumTransitions = (db: FakeDatabase) => {
+    const updates = roleUpdates(db);
+    expect(updates.length).toBeGreaterThan(0);
+    for (const { sql } of updates) {
+      expect(sql).toMatch(/and role = '(user|premium)'/);
+      expect(sql).not.toContain('team_lead');
+    }
+  };
+
+  it.each([true, false])(
+    'never rewrites a team_lead role when a grant is applied (entitled=%s)',
+    async (entitled) => {
+      const plan = { id: order.plan_id, code: 'MONTHLY', name: 'Monthly', duration_days: 30 };
+      const db = new FakeDatabase((sql) => {
+        if (sql.includes('from users where id = $1 for update')) return [{ id: order.user_id }];
+        if (sql.includes('from premium_plans where id = $1')) return [plan];
+        if (sql.includes('insert into premium_payment_orders'))
+          return [{ ...order, status: 'paid' }];
+        if (sql.includes('bool_or')) {
+          return [
+            {
+              starts_at: new Date('2026-01-01T00:00:00Z'),
+              ends_at: new Date('2027-01-01T00:00:00Z'),
+              current_plan_id: order.plan_id,
+              entitled,
+            },
+          ];
+        }
+        if (sql.includes('returning id')) return [{ id: 'sub-id' }];
+        return [];
+      });
+      await service(db).adminGrant(order.user_id, order.plan_id, { id: 'admin-id' });
+      expectOnlyUserPremiumTransitions(db);
+    },
+  );
+
+  it('never rewrites a team_lead role when no grant remains', async () => {
+    const db = new FakeDatabase((sql) => {
+      if (sql.includes('from users where id = $1 for update')) return [{ id: order.user_id }];
+      if (sql.includes('from premium_plans where id = $1')) return [{ id: order.plan_id }];
+      if (sql.includes('insert into premium_payment_orders')) return [{ ...order, status: 'paid' }];
+      if (sql.includes('bool_or'))
+        return [{ starts_at: null, ends_at: null, current_plan_id: null, entitled: false }];
+      return [];
+    });
+    await service(db).adminGrant(order.user_id, order.plan_id, { id: 'admin-id' });
+    expectOnlyUserPremiumTransitions(db);
+  });
+});
+
 describe('BillingService checkout configuration', () => {
   it('returns 503 before creating an order when provider config is absent', async () => {
     const db = new FakeDatabase(() => []);

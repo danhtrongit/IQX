@@ -4,6 +4,7 @@ import {
   authHeader,
   registerAndLogin,
   startSystemStack,
+  testIdentity,
   type SystemStack,
 } from './system-stack.js';
 
@@ -21,12 +22,13 @@ describe('system acceptance: identity, roles and billing', () => {
   });
 
   it('registers, logs in, rotates refresh tokens and logs out', async () => {
-    const email = `auth-${Date.now()}@example.test`;
+    const identity = testIdentity('auth');
+    const { email } = identity;
     const password = 'System!Passw0rd';
     const register = await app.inject({
       method: 'POST',
       url: '/api/v2/auth/register',
-      payload: { email, password, full_name: 'Auth User' },
+      payload: { ...identity, password, full_name: 'Auth User' },
     });
     expect([200, 201]).toContain(register.statusCode);
     const login = await app.inject({

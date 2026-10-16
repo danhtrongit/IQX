@@ -21,7 +21,7 @@ export class AdminUsersService {
 
   async get360(userId: string): Promise<Record<string, unknown>> {
     const users = await this.database.query<AdminUserRow>(
-      `select id, email, full_name, phone_number, role, status, is_email_verified,
+      `select id, email, username, full_name, phone_number, role, status, is_email_verified,
               last_login_at, created_at from users where id = $1 limit 1`,
       [userId],
     );
@@ -145,7 +145,7 @@ export class AdminUsersService {
       });
     }
     const rows = await this.database.query<ExportRow>(
-      `select id, email, full_name, phone_e164, role, status, is_email_verified,
+      `select id, email, username, full_name, phone_e164, role, status, is_email_verified,
               last_login_at, created_at from users ${where} order by created_at desc`,
       params,
     );
@@ -159,6 +159,7 @@ export class AdminUsersService {
     const header = [
       'id',
       'email',
+      'username',
       'full_name',
       'phone_e164',
       'role',
@@ -178,6 +179,7 @@ export class AdminUsersService {
 type AdminUserRow = {
   id: string;
   email: string;
+  username: string;
   full_name: string;
   phone_number: string | null;
   role: string;
@@ -243,6 +245,7 @@ type LoginRow = {
 type ExportRow = {
   id: string;
   email: string;
+  username: string;
   full_name: string;
   phone_e164: string | null;
   role: string;
@@ -297,7 +300,8 @@ function exportFilter(query: UserExportQuery): { where: string; params: unknown[
   };
   if (query.role) add('role = ?', query.role);
   if (query.status) add('status = ?', query.status);
-  if (query.search) add('(email ilike ? or full_name ilike ?)', `%${query.search}%`);
+  if (query.search)
+    add('(email ilike ? or username ilike ? or full_name ilike ?)', `%${query.search}%`);
   if (query.last_login_from) add('last_login_at >= ?', query.last_login_from);
   if (query.last_login_to) add('last_login_at < ?', query.last_login_to);
   return { where: conditions.length ? `where ${conditions.join(' and ')}` : '', params };

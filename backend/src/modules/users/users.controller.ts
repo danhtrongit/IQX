@@ -10,7 +10,7 @@ import {
   Query,
   Req,
 } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 
 import { CurrentUser, Roles, type AuthenticatedUser, type PublicUser } from '../auth/index.js';
@@ -24,10 +24,12 @@ import {
   type UserListQuery,
 } from './users.schemas.js';
 import { UsersService } from './users.service.js';
-import type {
-  AdminUserCreateInput,
-  AdminUserUpdateInput,
-  UserUpdateInput,
+import {
+  usernameChangeSchema,
+  type AdminUserCreateInput,
+  type AdminUserUpdateInput,
+  type UsernameChangeInput,
+  type UserUpdateInput,
 } from '../auth/auth.schemas.js';
 
 @ApiTags('Users')
@@ -46,6 +48,20 @@ export class UsersController {
     @Body({ schema: userUpdateSchema }) body: UserUpdateInput,
   ): Promise<PublicUser> {
     return this.users.updateSelf(current.id, body);
+  }
+
+  /**
+   * DECISION 1: one-time replacement of a backfilled username. 422 USERNAME_LOCKED once used
+   * (or for team leads), 409 USERNAME_TAKEN when another account has it.
+   */
+  @HttpCode(200)
+  @Post('me/username')
+  @ApiOkResponse({ schema: { $ref: '#/components/schemas/Legacy_UserResponse' } })
+  changeUsername(
+    @CurrentUser() current: AuthenticatedUser,
+    @Body({ schema: usernameChangeSchema }) body: UsernameChangeInput,
+  ): Promise<PublicUser> {
+    return this.users.changeOwnUsername(current.id, body.username);
   }
 
   @Roles('admin')

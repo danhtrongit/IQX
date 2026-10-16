@@ -75,7 +75,8 @@ describe.skipIf(!URL)('Strategy SQL against PostgreSQL', () => {
 
   async function insertUser(id: string, role: 'admin' | 'user') {
     await pool.query(
-      `INSERT INTO users (id, email, hashed_password, full_name, role) VALUES ($1, $2, 'x', $3, $4)`,
+      `INSERT INTO users (id, email, username, hashed_password, full_name, role)
+       VALUES ($1, $2, left('u' || replace($1::uuid::text, '-', ''), 30), 'x', $3, $4)`,
       [id, `${NAME_PREFIX}-${id}@example.test`, `${NAME_PREFIX} ${role}`, role],
     );
     created.push(id);

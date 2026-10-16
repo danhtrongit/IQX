@@ -22,11 +22,11 @@ describe('system acceptance: alert scan entitlement', () => {
     const adminId = randomUUID();
     const planId = '30000000-0000-4000-8000-000000000001';
     await stack.query(
-      `insert into users(id,email,hashed_password,full_name,role,status,telegram_chat_id)
+      `insert into users(id,email,username,hashed_password,full_name,role,status,telegram_chat_id)
        values
-         ($1,$2,'hash','Active grant','user','active','alert-active-chat'),
-         ($3,$4,'hash','Expired grant','premium','active','alert-expired-chat'),
-         ($5,$6,'hash','Admin','admin','active','alert-admin-chat')`,
+         ($1,$2,left('u' || replace($1::uuid::text,'-',''),30),'hash','Active grant','user','active','alert-active-chat'),
+         ($3,$4,left('u' || replace($3::uuid::text,'-',''),30),'hash','Expired grant','premium','active','alert-expired-chat'),
+         ($5,$6,left('u' || replace($5::uuid::text,'-',''),30),'hash','Admin','admin','active','alert-admin-chat')`,
       [
         activeUserId,
         `alert-active-${activeUserId}@example.test`,

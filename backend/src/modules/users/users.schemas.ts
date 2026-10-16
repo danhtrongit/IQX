@@ -17,7 +17,16 @@ export const userListQuerySchema = z.object({
   role: z.enum(USER_ROLES).optional(),
   status: z.enum(USER_STATUSES).optional(),
   sort_by: z
-    .enum(['created_at', 'updated_at', 'email', 'full_name', 'role', 'status', 'last_login_at'])
+    .enum([
+      'created_at',
+      'updated_at',
+      'email',
+      'username',
+      'full_name',
+      'role',
+      'status',
+      'last_login_at',
+    ])
     .default('created_at'),
   sort_order: z.enum(['asc', 'desc']).default('desc'),
 });

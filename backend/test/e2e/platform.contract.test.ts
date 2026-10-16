@@ -36,6 +36,22 @@ describe('HTTP platform boundary', () => {
     expect((await app.inject('/health/live')).statusCode).toBe(200);
     expect((await app.inject('/health/live')).statusCode).toBe(200);
   });
+  it('applies the tight lookup budget only to @LookupThrottle() routes', async () => {
+    app = await createMockApiApp(emptyRepository(), {
+      RATE_LIMIT_MAX: '1000',
+      LOOKUP_RATE_LIMIT_MAX: '2',
+      LOOKUP_RATE_LIMIT_TTL_MS: '60000',
+    });
+    const lookup = () => app!.inject('/api/v2/auth/username-available?u=some.name');
+    expect((await lookup()).statusCode).not.toBe(429);
+    expect((await lookup()).statusCode).not.toBe(429);
+    const limited = await lookup();
+    expect(limited.statusCode).toBe(429);
+    expect(limited.json().error.code).toBe('RATE_LIMITED');
+    expect(limited.headers['retry-after']).toBeDefined();
+    for (let attempt = 0; attempt < 3; attempt += 1)
+      expect((await app.inject('/api/v2/instruments')).statusCode).toBe(200);
+  });
   it('retains request ID across body and headers and does not trust spoofed forwarded IPs', async () => {
     app = await createMockApiApp(emptyRepository(), { RATE_LIMIT_MAX: '1' });
     const first = await app.inject({

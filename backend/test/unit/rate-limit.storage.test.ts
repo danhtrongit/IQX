@@ -1,8 +1,9 @@
-import { ServiceUnavailableException } from '@nestjs/common';
+import { ServiceUnavailableException, type ExecutionContext } from '@nestjs/common';
 import type { ConfigService } from '@nestjs/config';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { Environment } from '../../src/platform/config/environment.js';
+import { LookupThrottle } from '../../src/platform/rate-limit/lookup-throttle.decorator.js';
 import { createRateLimitOptions } from '../../src/platform/rate-limit/rate-limit.options.js';
 import {
   RedisThrottlerStorage,
@@ -17,6 +18,8 @@ const config = (overrides: Partial<Environment> = {}): ConfigService<Environment
     REDIS_ENABLED: false,
     RATE_LIMIT_MAX: 60,
     RATE_LIMIT_TTL_MS: 60_000,
+    LOOKUP_RATE_LIMIT_MAX: 30,
+    LOOKUP_RATE_LIMIT_TTL_MS: 60_000,
     ...overrides,
   } as Environment;
 
@@ -172,7 +175,25 @@ describe('createRateLimitOptions', () => {
     expect(Array.isArray(options)).toBe(false);
     if (Array.isArray(options)) throw new Error('Expected object options');
     expect(options.storage).toBeUndefined();
-    expect(options.throttlers).toEqual([{ name: 'public', limit: 60, ttl: 60_000 }]);
+    expect(options.throttlers).toEqual([
+      { name: 'public', limit: 60, ttl: 60_000 },
+      { name: 'lookup', limit: 30, ttl: 60_000, skipIf: expect.any(Function) },
+    ]);
+  });
+
+  it('applies the lookup throttler only to routes marked with @LookupThrottle()', () => {
+    const options = createRateLimitOptions(config(), redisService([1, 60_000, 0, 0]));
+    if (Array.isArray(options)) throw new Error('Expected object options');
+    const lookup = options.throttlers.find((throttler) => throttler.name === 'lookup');
+    class Routes {
+      @LookupThrottle()
+      marked(): void {}
+      plain(): void {}
+    }
+    const context = (handler: () => void) =>
+      ({ getHandler: () => handler, getClass: () => Routes }) as unknown as ExecutionContext;
+    expect(lookup?.skipIf?.(context(Routes.prototype.marked))).toBe(false);
+    expect(lookup?.skipIf?.(context(Routes.prototype.plain))).toBe(true);
   });
 
   it('selects Redis storage whenever Redis is enabled', () => {
@@ -184,6 +205,6 @@ describe('createRateLimitOptions', () => {
     expect(Array.isArray(options)).toBe(false);
     if (Array.isArray(options)) throw new Error('Expected object options');
     expect(options.storage).toBeInstanceOf(RedisThrottlerStorage);
-    expect(options.throttlers).toEqual([{ name: 'public', limit: 42, ttl: 15_000 }]);
+    expect(options.throttlers[0]).toEqual({ name: 'public', limit: 42, ttl: 15_000 });
   });
 });

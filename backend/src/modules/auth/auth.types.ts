@@ -1,7 +1,14 @@
-export const USER_ROLES = ['admin', 'user', 'premium'] as const;
+/** Every role a user can hold (admin spec v1.1 §1.1). Used for listing and filtering. */
+export const USER_ROLES = ['admin', 'team_lead', 'user', 'premium'] as const;
+/**
+ * Roles an admin may set through user create/update/bulk. `team_lead` is excluded: it is only
+ * granted by the team-lead appointment and only removed by revocation (§1.1 rule 2).
+ */
+export const ASSIGNABLE_ROLES = ['admin', 'user', 'premium'] as const;
 export const USER_STATUSES = ['active', 'inactive', 'suspended', 'deleted'] as const;
 
 export type UserRole = (typeof USER_ROLES)[number];
+export type AssignableRole = (typeof ASSIGNABLE_ROLES)[number];
 export type UserStatus = (typeof USER_STATUSES)[number];
 
 export type AuthenticatedUser = {
@@ -14,6 +21,8 @@ export type AuthenticatedUser = {
 };
 
 export type UserDatabaseRow = AuthenticatedUser & {
+  username: string;
+  username_change_allowed: boolean;
   hashed_password: string;
   phone_number: string | null;
   phone_country_code: string | null;

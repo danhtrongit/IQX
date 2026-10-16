@@ -4,6 +4,7 @@ import {
   authHeader,
   registerAndLogin,
   startSystemStack,
+  testIdentity,
   type SystemStack,
 } from './system-stack.js';
 
@@ -136,7 +137,7 @@ describe('system acceptance: referrals', () => {
         method: 'POST',
         url: '/api/v2/auth/register',
         payload: {
-          email: `ref-${suffix}@example.test`,
+          ...testIdentity(`ref-${suffix}`),
           password: 'System!Passw0rd',
           full_name: 'Referral customer',
           referral_code: code,
@@ -153,12 +154,12 @@ describe('system acceptance: referrals', () => {
     ]);
     expect(attribution[0]?.referred_by_user_id).toBe(ctv.id);
     expect(attribution[0]?.referral_attributed_at).not.toBeNull();
-    expect((await signup('unknown', 'CTV_UNKNOWN')).statusCode).toBe(400);
+    expect((await signup('unknown', 'CTV_UNKNOWN')).statusCode).toBe(422);
     expect((await signup('malformed', 'bad code!')).statusCode).toBe(422);
     await stack.query("update users set status='inactive' where id=$1", [ctv.id]);
-    expect((await signup('inactive', profile.referral_code)).statusCode).toBe(400);
+    expect((await signup('inactive', profile.referral_code)).statusCode).toBe(422);
     await stack.query("update users set status='active',deleted_at=now() where id=$1", [ctv.id]);
-    expect((await signup('deleted', profile.referral_code)).statusCode).toBe(400);
+    expect((await signup('deleted', profile.referral_code)).statusCode).toBe(422);
 
     const invalid = await app.inject({
       method: 'GET',

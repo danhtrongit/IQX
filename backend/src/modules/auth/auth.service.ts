@@ -7,6 +7,7 @@ import {
   InternalServerErrorException,
   ServiceUnavailableException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -22,6 +23,7 @@ import {
   type PublicUser,
   type UserDatabaseRow,
 } from './auth.types.js';
+import { normalizePhone, uniqueViolationConstraint, userConflict } from './user-identity.js';
 
 type TokenPair = { access_token: string; refresh_token: string; token_type: 'bearer' };
 type RefreshRow = {
@@ -34,7 +36,7 @@ type RefreshRow = {
 };
 
 const USER_COLUMNS = `
-  id, email, hashed_password, phone_number, phone_country_code,
+  id, email, username, username_change_allowed, hashed_password, phone_number, phone_country_code,
   phone_national_number, phone_e164, phone_verified_at, full_name,
   avatar_url, date_of_birth, gender, country, province_state, city,
   district, ward, street_address, postal_code, role, status,
@@ -52,7 +54,7 @@ export class AuthService {
   async register(input: RegisterInput): Promise<PublicUser> {
     this.accessSecret();
     this.refreshSecret();
-    const phone = normalizePhone(input.phone_number);
+    const phone = normalizePhone(input.phone_number, BadRequestException);
     const passwordHash = await bcrypt.hash(input.password, 12);
     let row: UserDatabaseRow;
     try {
@@ -65,6 +67,16 @@ export class AuthService {
           throw new ConflictException({
             code: 'EMAIL_EXISTS',
             message: 'Đã tồn tại người dùng với email này',
+          });
+        }
+        const sameUsername = await tx.query<{ id: string }>(
+          'select id from users where lower(username) = lower($1) limit 1',
+          [input.username],
+        );
+        if (sameUsername.length) {
+          throw new ConflictException({
+            code: 'USERNAME_TAKEN',
+            message: 'Tên đăng nhập đã được sử dụng.',
           });
         }
         if (phone.e164) {
@@ -88,7 +100,7 @@ export class AuthService {
             [input.referral_code],
           );
           if (!partners[0]) {
-            throw new BadRequestException({
+            throw new UnprocessableEntityException({
               code: 'REFERRAL_CODE_INVALID',
               message: 'Mã giới thiệu không hợp lệ hoặc đã ngừng hoạt động',
             });
@@ -97,10 +109,10 @@ export class AuthService {
         }
         const users = await tx.query<UserDatabaseRow>(
           `insert into users
-            (id, email, hashed_password, full_name, phone_number, phone_country_code,
+            (id, email, username, hashed_password, full_name, phone_number, phone_country_code,
              phone_national_number, phone_e164, role, status, is_email_verified,
              referred_by_user_id, referral_attributed_at, created_at, updated_at)
-           values ($1, $2, $3, $4, $5, $6, $7, $8, 'user', 'active', false, $9::uuid,
+           values ($1, $2, $10, $3, $4, $5, $6, $7, $8, 'user', 'active', false, $9::uuid,
                    case when $9::uuid is null then null else now() end, now(), now())
            returning ${USER_COLUMNS}`,
           [
@@ -113,6 +125,7 @@ export class AuthService {
             phone.nationalNumber,
             phone.e164,
             referredBy,
+            input.username,
           ],
         );
         const created = users[0];
@@ -126,12 +139,8 @@ export class AuthService {
         return refreshed[0] ?? created;
       });
     } catch (error) {
-      if (isUniqueViolation(error)) {
-        throw new ConflictException({
-          code: 'USER_EXISTS',
-          message: 'Email hoặc số điện thoại đã tồn tại',
-        });
-      }
+      const constraint = uniqueViolationConstraint(error);
+      if (constraint !== null) throw userConflict(constraint);
       throw error;
     }
 
@@ -144,23 +153,27 @@ export class AuthService {
     input: LoginInput,
     context: { ip: string | null; userAgent: string | null },
   ): Promise<TokenPair> {
+    // '@' never appears in a username, so it selects the email lookup unambiguously.
+    const identifier = (input.identifier ?? input.email ?? '').trim().toLowerCase();
     const rows = await this.database.query<UserDatabaseRow>(
-      `select ${USER_COLUMNS} from users where lower(email) = lower($1) limit 1`,
-      [input.email],
+      identifier.includes('@')
+        ? `select ${USER_COLUMNS} from users where lower(email) = $1 limit 1`
+        : `select ${USER_COLUMNS} from users where lower(username) = $1 limit 1`,
+      [identifier],
     );
     const user = rows[0];
     const valid = user ? await bcrypt.compare(input.password, user.hashed_password) : false;
     if (!user || !valid || user.status !== 'active') {
       await this.recordLogin(
         user?.id ?? null,
-        input.email,
+        user?.email ?? identifier,
         false,
         user && valid ? `status:${user.status}` : 'invalid_credentials',
         context,
       );
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
-        message: 'Email hoặc mật khẩu không đúng',
+        message: 'Email, tên đăng nhập hoặc mật khẩu không đúng',
       });
     }
 
@@ -179,6 +192,15 @@ export class AuthService {
       await this.recordLogin(user.id, user.email, true, null, context, tx);
     });
     return pair;
+  }
+
+  /** Case-insensitive; deleted accounts keep their username, so they count as taken. */
+  async isUsernameAvailable(username: string): Promise<boolean> {
+    const rows = await this.database.query<{ id: string }>(
+      'select id from users where lower(username) = lower($1) limit 1',
+      [username],
+    );
+    return rows.length === 0;
   }
 
   async refresh(refreshToken: string): Promise<TokenPair> {
@@ -595,31 +617,4 @@ export class AuthService {
 
 function passwordFingerprint(hash: string): string {
   return createHash('sha256').update(hash).digest('base64url');
-}
-
-function normalizePhone(value: string | null | undefined): {
-  original: string | null;
-  countryCode: string | null;
-  nationalNumber: string | null;
-  e164: string | null;
-} {
-  if (!value?.trim())
-    return { original: null, countryCode: null, nationalNumber: null, e164: null };
-  const original = value.trim();
-  const compact = original.replace(/[\s().-]/g, '');
-  const e164 = compact.startsWith('+84')
-    ? compact
-    : compact.startsWith('0')
-      ? `+84${compact.slice(1)}`
-      : null;
-  if (!e164 || !/^\+84\d{9,10}$/.test(e164)) {
-    throw new BadRequestException({ code: 'PHONE_INVALID', message: 'Số điện thoại không hợp lệ' });
-  }
-  return { original, countryCode: '+84', nationalNumber: e164.slice(3), e164 };
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false;
-  const direct = error as { code?: unknown; cause?: { code?: unknown } };
-  return direct.code === '23505' || direct.cause?.code === '23505';
 }
