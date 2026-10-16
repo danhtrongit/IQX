@@ -8,7 +8,7 @@
  * user or an empty page never crashes a render).
  */
 import { api, apiResponse } from "@/lib/api"
-import type { AdminJobQueuedV2, AdminSystemStatusV2, LegacyPaymentOrderBrief, LegacySubscriptionBrief, LegacyUserBriefForAdmin } from "@/lib/generated/backend-v2"
+import type { AdminJobQueuedV2, AdminSystemStatusV2, LegacyPaymentOrderBrief, LegacySubscriptionBrief, LegacyUser360Response, LegacyUserBriefForAdmin } from "@/lib/generated/backend-v2"
 
 
 /* ── Pagination ─────────────────────────────────────────────────────────── */
@@ -81,6 +81,8 @@ export type MetricsOverview = {
   revenueLast30dVnd: number
   vtActiveAccounts: number
   vtOrdersToday: number
+  /** Người dùng đang có Premium miễn phí theo mã giới thiệu (không tính vào MRR). */
+  activeReferralOfferCount: number
   generatedAt: string
 }
 
@@ -122,6 +124,7 @@ type WireMetricsOverview = {
   revenue_last_30d_vnd: number
   vt_active_accounts: number
   vt_orders_today: number
+  active_referral_offer_count?: number
   generated_at: string
 }
 
@@ -146,6 +149,7 @@ export const metricsApi = {
       revenueLast30dVnd: raw.revenue_last_30d_vnd,
       vtActiveAccounts: raw.vt_active_accounts,
       vtOrdersToday: raw.vt_orders_today,
+      activeReferralOfferCount: raw.active_referral_offer_count ?? 0,
       generatedAt: raw.generated_at,
     }
   },
@@ -161,13 +165,21 @@ export const metricsApi = {
 
 /* ── Users ──────────────────────────────────────────────────────────────── */
 
-export const ADMIN_ROLES = ["user", "premium", "admin"] as const
+/** Vai trò có thể lọc trong danh sách (admin spec v1.1 §1.1). */
+export const LISTABLE_ROLES = ["user", "premium", "team_lead", "admin"] as const
+/**
+ * Vai trò quản trị viên được gán qua Đổi vai trò và bulk `set_role`. `team_lead` chỉ đặt
+ * được bằng Bổ nhiệm và gỡ bằng Thôi bổ nhiệm (§1.1 quy tắc 2, máy chủ trả 422
+ * `ROLE_NOT_ASSIGNABLE`).
+ */
+export const ASSIGNABLE_ROLES = ["user", "premium", "admin"] as const
 export const ADMIN_STATUSES = ["active", "inactive", "suspended", "deleted"] as const
 /** Statuses an admin may assign with `set_status` (soft delete is its own op). */
 export const ASSIGNABLE_STATUSES = ["active", "inactive", "suspended"] as const
 export const USER_SORT_FIELDS = [
   "created_at",
   "updated_at",
+  "username",
   "email",
   "full_name",
   "role",
@@ -180,6 +192,7 @@ export type BulkOp = (typeof BULK_OPS)[number]
 
 export type AdminUserRow = {
   id: string
+  username: string
   email: string
   fullName: string | null
   phoneNumber: string | null
@@ -195,6 +208,7 @@ type WireUserRow = LegacyUserBriefForAdmin
 export function adaptUserRow(raw: WireUserRow): AdminUserRow {
   return {
     id: String(raw.id),
+    username: raw.username ?? "",
     email: raw.email,
     fullName: typeof raw.full_name === "string" && raw.full_name.length > 0 ? raw.full_name : null,
     phoneNumber: typeof raw.phone_number === "string" && raw.phone_number.length > 0 ? raw.phone_number : null,
@@ -270,15 +284,102 @@ export type LoginHistoryRow = {
   loginAt: string
 }
 
+/** Nhóm hiện tại của người dùng (admin spec v1.1 §4.2, `360.group`). */
+export type UserGroupInfo = {
+  leadUserId: string
+  leadUsername: string
+  leadFullName: string | null
+  leadStatus: "active" | "revoked"
+  code: string
+  joinVia: "code" | "admin"
+  joinedAt: string
+}
+
+/** Grant `referral_offer` gần nhất; `lifetime` thì hạn năm 9999 hiển thị "Trọn đời". */
+export type ReferralOfferInfo = {
+  grantId: string
+  leadUserId: string | null
+  offerType: "days" | "lifetime"
+  offerDays: number | null
+  status: string
+  startsAt: string
+  endsAt: string
+  lifetime: boolean
+  active: boolean
+}
+
+/** Demo Trading hoặc Bot: chỉ có % lợi nhuận, không có số tiền (§5.1.3). */
+export type TradingInsight = {
+  activated: boolean
+  accountId: string | null
+  status: string | null
+  activatedAt: string | null
+  /** Phần trăm (đã nhân 100, 2 chữ số thập phân), không phải tỉ lệ. */
+  pnlPct: number | null
+  lastActivityAt: string | null
+  /** Chỉ Bot: ngày của NAV dùng để tính. */
+  asOf: string | null
+}
+
+export type AcademyLessonStatus = "completed" | "in_progress" | "failed" | "not_started"
+
+export type AcademyLesson = {
+  lessonId: string
+  order: number
+  name: string
+  completionMode: "quiz" | "guide"
+  status: AcademyLessonStatus
+  attempts: number
+  latestScore: number | null
+  maxScore: number | null
+  completedAt: string | null
+  isCurrent: boolean
+}
+
+export type AcademyChapter = {
+  no: number
+  title: string
+  completed: number
+  total: number
+  lessons: AcademyLesson[]
+}
+
+export type AcademyLessonRef = {
+  lessonId: string
+  chapter: number
+  order: number
+  name: string
+  label: string
+}
+
+/** Tab Học viện (§5.1.4): chỉ các chương đã phát hành của catalog hiện tại. */
+export type AcademyProgress = {
+  started: boolean
+  allDone: boolean
+  completed: number
+  total: number
+  chapterExams: { passed: number; total: number }
+  currentLesson: AcademyLessonRef | null
+  lastCompletion: (AcademyLessonRef & { completedAt: string; rewardCoins: number | null }) | null
+  learningCoins: number
+  chapters: AcademyChapter[]
+}
+
 export type User360 = {
   user: AdminUserRow
   subscription: SubscriptionBrief | null
   subscriptionHistory: SubscriptionBrief[]
   paymentHistory: PaymentOrderBrief[]
   trialUsed: boolean
+  /** Chỉ có trong 360 của quản trị viên; bản của trưởng nhóm không trả số tiền VT. */
   vtAccount: VTAccountBrief | null
   vtRecentOrders: VTOrderBrief[]
   loginHistory: LoginHistoryRow[]
+  group: UserGroupInfo | null
+  referralOffer: ReferralOfferInfo | null
+  demoTrading: TradingInsight | null
+  bot: TradingInsight | null
+  academy: AcademyProgress | null
 }
 
 type WireSubscriptionBrief = Required<LegacySubscriptionBrief>
@@ -318,16 +419,18 @@ type WireLoginHistoryRow = {
   login_at: string
 }
 
-type WireUser360 = {
+type WireUser360Insights = Pick<LegacyUser360Response, "group" | "referral_offer" | "demo_trading" | "bot" | "academy">
+
+export type WireUser360 = {
   user: WireUserRow
   subscription: WireSubscriptionBrief | null
   subscription_history: WireSubscriptionBrief[]
   payment_history: WirePaymentOrderBrief[]
   trial_used: boolean
-  vt_account: WireVTAccountBrief | null
-  vt_recent_orders: WireVTOrderBrief[]
+  vt_account?: WireVTAccountBrief | null
+  vt_recent_orders?: WireVTOrderBrief[]
   login_history: WireLoginHistoryRow[]
-}
+} & Partial<WireUser360Insights>
 
 function adaptSubscription(raw: WireSubscriptionBrief): SubscriptionBrief {
   return {
@@ -403,7 +506,68 @@ export function adaptLoginHistoryRow(raw: WireLoginHistoryRow): LoginHistoryRow 
   }
 }
 
-function adaptUser360(raw: WireUser360): User360 {
+type WireTradingInsight = LegacyUser360Response["demo_trading"] & { as_of?: string | null }
+type WireAcademy = LegacyUser360Response["academy"]
+type WireAcademyLessonRef = NonNullable<WireAcademy["current_lesson"]>
+
+function adaptTradingInsight(raw: WireTradingInsight | null | undefined): TradingInsight | null {
+  if (!raw) return null
+  return {
+    activated: raw.activated,
+    accountId: raw.account_id ?? null,
+    status: raw.status ?? null,
+    activatedAt: raw.activated_at ?? null,
+    pnlPct: typeof raw.pnl_pct === "number" && Number.isFinite(raw.pnl_pct) ? raw.pnl_pct : null,
+    lastActivityAt: raw.last_activity_at ?? null,
+    asOf: raw.as_of ?? null,
+  }
+}
+
+function adaptLessonRef(raw: WireAcademyLessonRef): AcademyLessonRef {
+  return { lessonId: raw.lesson_id, chapter: raw.chapter, order: raw.order, name: raw.name, label: raw.label }
+}
+
+export function adaptAcademyProgress(raw: WireAcademy | null | undefined): AcademyProgress | null {
+  if (!raw) return null
+  return {
+    started: raw.started,
+    allDone: raw.all_done,
+    completed: raw.completed,
+    total: raw.total,
+    chapterExams: { passed: raw.chapter_exams?.passed ?? 0, total: raw.chapter_exams?.total ?? 0 },
+    currentLesson: raw.current_lesson ? adaptLessonRef(raw.current_lesson) : null,
+    lastCompletion: raw.last_completion
+      ? {
+          ...adaptLessonRef(raw.last_completion),
+          completedAt: raw.last_completion.completed_at,
+          rewardCoins: raw.last_completion.reward_coins ?? null,
+        }
+      : null,
+    learningCoins: raw.learning_coins ?? 0,
+    chapters: (raw.chapters ?? []).map((chapter) => ({
+      no: chapter.no,
+      title: chapter.title,
+      completed: chapter.completed,
+      total: chapter.total,
+      lessons: chapter.lessons.map((lesson) => ({
+        lessonId: lesson.lesson_id,
+        order: lesson.order,
+        name: lesson.name,
+        completionMode: lesson.completion_mode,
+        status: lesson.status,
+        attempts: lesson.attempts,
+        latestScore: lesson.latest_score ?? null,
+        maxScore: lesson.max_score ?? null,
+        completedAt: lesson.completed_at ?? null,
+        isCurrent: lesson.is_current,
+      })),
+    })),
+  }
+}
+
+export function adaptUser360(raw: WireUser360): User360 {
+  const group = raw.group ?? null
+  const offer = raw.referral_offer ?? null
   return {
     user: adaptUserRow(raw.user),
     subscription: raw.subscription ? adaptSubscription(raw.subscription) : null,
@@ -413,6 +577,33 @@ function adaptUser360(raw: WireUser360): User360 {
     vtAccount: raw.vt_account ? adaptVTAccount(raw.vt_account) : null,
     vtRecentOrders: (raw.vt_recent_orders ?? []).map(adaptVTOrder),
     loginHistory: (raw.login_history ?? []).map(adaptLoginHistoryRow),
+    group: group
+      ? {
+          leadUserId: group.lead_user_id,
+          leadUsername: group.lead_username,
+          leadFullName: group.lead_full_name || null,
+          leadStatus: group.lead_status,
+          code: group.code,
+          joinVia: group.join_via,
+          joinedAt: group.joined_at,
+        }
+      : null,
+    referralOffer: offer
+      ? {
+          grantId: offer.grant_id,
+          leadUserId: offer.lead_user_id ?? null,
+          offerType: offer.offer_type,
+          offerDays: offer.offer_days ?? null,
+          status: offer.status,
+          startsAt: offer.starts_at,
+          endsAt: offer.ends_at,
+          lifetime: offer.lifetime,
+          active: offer.active,
+        }
+      : null,
+    demoTrading: adaptTradingInsight(raw.demo_trading),
+    bot: adaptTradingInsight(raw.bot),
+    academy: adaptAcademyProgress(raw.academy),
   }
 }
 
@@ -694,10 +885,15 @@ export const systemApi = {
 
 /* ── Audit ──────────────────────────────────────────────────────────────── */
 
+export type AuditActorRole = "admin" | "team_lead" | "system"
+export const AUDIT_ACTOR_ROLES = ["admin", "team_lead", "system"] as const
+
 export type AuditLogRow = {
   id: string
   adminUserId: string | null
   adminEmail: string | null
+  /** Ai thực hiện (admin spec v1.1 §3.5): quản trị viên, trưởng nhóm hoặc hệ thống. */
+  actorRole: string
   action: string
   targetEntity: string | null
   targetId: string | null
@@ -714,6 +910,7 @@ export type AuditLogParams = {
   page: number
   pageSize: number
   adminUserId?: string
+  actorRole?: AuditActorRole
   actionPrefix?: string
   targetEntity?: string
   targetId?: string
@@ -725,6 +922,7 @@ type WireAuditLogRow = {
   id: string
   admin_user_id: string | null
   admin_email: string | null
+  actor_role?: string | null
   action: string
   target_entity: string | null
   target_id: string | null
@@ -742,6 +940,7 @@ export function adaptAuditLogRow(raw: WireAuditLogRow): AuditLogRow {
     id: String(raw.id),
     adminUserId: raw.admin_user_id ? String(raw.admin_user_id) : null,
     adminEmail: raw.admin_email,
+    actorRole: raw.actor_role ?? (raw.admin_user_id ? "admin" : "system"),
     action: raw.action,
     targetEntity: raw.target_entity,
     targetId: raw.target_id,
@@ -762,6 +961,7 @@ export const auditApi = {
       page: params.page,
       page_size: params.pageSize,
       admin_user_id: params.adminUserId,
+      actor_role: params.actorRole,
       action_prefix: params.actionPrefix,
       target_entity: params.targetEntity,
       target_id: params.targetId,

@@ -222,6 +222,8 @@ All `/admin/**` routes live under `AdminLayout`.
 - List pages expose filters, pagination, real loading state, and explicit empty state.
 - Detail pages expose safe mutations with confirmation and server response.
 - The client role gate is navigation safety only. Every admin API remains server-authorized.
+- Team leads (`team_lead`) see a reduced layout: the Quản lý group with Tổng quan and Người dùng, a referral code card at the bottom of the navigation, and their name with a secondary "Trưởng nhóm" badge in the top bar. The badge is a plain role label, so it never uses the violet `accent`.
+- Reason-required confirmations (appoint, policy change, revoke, add, move, or remove a group member) use the shared `ReasonDialog`; the confirm button stays disabled until the reason is filled and, for edits, until something changed.
 
 ## 6. Components
 

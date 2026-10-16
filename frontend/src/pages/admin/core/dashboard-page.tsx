@@ -122,7 +122,7 @@ export function AdminDashboardPage() {
         <KpiTile
           label="Premium đang hoạt động"
           value={displayNumber(metrics?.activePaidCount)}
-          hint={error ? undefined : `Dùng thử: ${displayNumber(metrics?.activeTrialCount)} · Thuê bao: ${displayNumber(metrics?.activeSubscribers)}`}
+          hint={error ? undefined : `Dùng thử: ${displayNumber(metrics?.activeTrialCount)} · Ưu đãi mã: ${displayNumber(metrics?.activeReferralOfferCount)} · Thuê bao: ${displayNumber(metrics?.activeSubscribers)}`}
           icon={BadgeDollarSign}
           loading={loading}
         />

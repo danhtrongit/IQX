@@ -5,10 +5,13 @@ import {
   BadgeCheck,
   KeyRound,
   Mail,
+  Network,
   PencilLine,
   ShieldCheck,
   Trash2,
   UserCog,
+  UserMinus,
+  UserPlus,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -34,7 +37,10 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { errorMessage } from "@/lib/api"
-import { formatDateTime, formatMoney, formatNumber } from "@/lib/format"
+import { formatDateTime, formatMoney, formatNumber, formatPremiumEnd } from "@/lib/format"
+import { AssignGroupDialog } from "@/pages/admin/team-leads/assign-group-dialog"
+import { useAddTeamLeadMember, useRemoveTeamLeadMember } from "@/pages/admin/team-leads/hooks"
+import { RemoveMemberDialog } from "@/pages/admin/team-leads/team-lead-dialogs"
 
 import {
   type AdminUserPatch,
@@ -48,8 +54,11 @@ import { DetailList } from "./components/detail-list"
 import { useConfirmDialog } from "./components/use-confirm-dialog"
 import { SoftDeleteUserDialog } from "./components/soft-delete-user-dialog"
 import { StatusBadge } from "./components/status-badge"
+import { UserAcademyTab } from "./components/user-academy-tab"
 import { UserAccessDialog, type AccessMode } from "./components/user-access-dialog"
 import { UserProfileDialog } from "./components/user-profile-dialog"
+import { UserReferralCard } from "./components/user-referral-card"
+import { UserTradingInsights } from "./components/user-trading-insights"
 import { useAuth } from "@/hooks/use-auth"
 import {
   useAdminUser360,
@@ -90,12 +99,26 @@ export function UserDetailPage() {
   const [temporaryPassword, setTemporaryPassword] = useState<{ password: string; warning: string } | null>(null)
   const [historyPage, setHistoryPage] = useState(1)
   const [historyPageSize, setHistoryPageSize] = useState(50)
+  const [groupDialog, setGroupDialog] = useState<"assign" | "remove" | null>(null)
+  const [groupError, setGroupError] = useState<string | null>(null)
+  const addToGroup = useAddTeamLeadMember()
+  const removeFromGroup = useRemoveTeamLeadMember()
 
   const profile = user360.data ?? null
   const fullRecord = detail.data
   const loginHistory = useUserLoginHistory(userId, historyPage, historyPageSize)
   const historyRows = loginHistory.data?.items ?? []
   const isSelf = !!profile && profile.user.id === currentAdmin?.id
+  // Trưởng nhóm chỉ đổi vai trò qua Bổ nhiệm/Thôi bổ nhiệm; trạng thái và xoá bị máy chủ chặn
+  // (422 TEAM_LEAD_ACTIVE) cho tới khi thôi bổ nhiệm (admin spec v1.1 §1.1).
+  const isTeamLead = profile?.user.role === "team_lead"
+  // Quản trị viên và trưởng nhóm không thể là thành viên của nhóm (§3.1, §3.4).
+  const canJoinGroup = !!profile && profile.user.role !== "admin" && !isTeamLead
+
+  function openGroupDialog(kind: "assign" | "remove") {
+    setGroupError(null)
+    setGroupDialog(kind)
+  }
 
   async function submitAccess(patch: AdminUserPatch) {
     setAccessError(null)
@@ -208,7 +231,7 @@ export function UserDetailPage() {
       header: "Chu kỳ",
       cell: (row) => (
         <span className="tabular-nums">
-          {formatDateTime(row.currentPeriodStart)} → {formatDateTime(row.currentPeriodEnd)}
+          {formatDateTime(row.currentPeriodStart)} → {formatPremiumEnd(row.currentPeriodEnd)}
         </span>
       ),
     },
@@ -350,7 +373,19 @@ export function UserDetailPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
+              {isTeamLead && profile && (
+                <>
+                  <DropdownMenuItem asChild>
+                    <Link to={`/admin/team-leads/${profile.user.id}`}>
+                      <Network />
+                      Mở trang trưởng nhóm
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                </>
+              )}
               <DropdownMenuItem
+                disabled={isTeamLead}
                 onSelect={() => {
                   setAccessError(null)
                   setAccessMode("role")
@@ -360,6 +395,7 @@ export function UserDetailPage() {
                 Đổi vai trò
               </DropdownMenuItem>
               <DropdownMenuItem
+                disabled={isTeamLead}
                 onSelect={() => {
                   setAccessError(null)
                   setAccessMode("status")
@@ -384,6 +420,7 @@ export function UserDetailPage() {
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 variant="destructive"
+                disabled={isTeamLead}
                 onSelect={() => {
                   setDeleteError(null)
                   setDeleteOpen(true)
@@ -426,6 +463,16 @@ export function UserDetailPage() {
             </p>
           )}
 
+          {isTeamLead && (
+            <p className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
+              Người dùng đang là trưởng nhóm. Vai trò, trạng thái và xoá mềm chỉ đổi được sau khi thôi bổ nhiệm ở{" "}
+              <Link to={`/admin/team-leads/${profile.user.id}`} className="text-primary underline-offset-4 hover:underline">
+                trang trưởng nhóm
+              </Link>
+              .
+            </p>
+          )}
+
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
             <Card>
               <CardHeader>
@@ -436,6 +483,10 @@ export function UserDetailPage() {
                 <DetailList
                   items={[
                     { label: "Email", value: profile.user.email },
+                    {
+                      label: "Tên đăng nhập",
+                      value: profile.user.username ? <span className="font-mono">{profile.user.username}</span> : dash(null),
+                    },
                     { label: "Họ tên", value: dash(profile.user.fullName) },
                     { label: "Điện thoại", value: dash(fullRecord?.phoneE164 ?? profile.user.phoneNumber) },
                     {
@@ -501,7 +552,7 @@ export function UserDetailPage() {
                       { label: "Giá gói", value: profile.subscription.plan ? formatMoney(profile.subscription.plan.priceVnd) : dash(null) },
                       { label: "Trạng thái", value: <StatusBadge status={profile.subscription.status} /> },
                       { label: "Bắt đầu", value: <span className="tabular-nums">{formatDateTime(profile.subscription.currentPeriodStart)}</span> },
-                      { label: "Kết thúc", value: <span className="tabular-nums">{formatDateTime(profile.subscription.currentPeriodEnd)}</span> },
+                      { label: "Kết thúc", value: <span className="tabular-nums">{formatPremiumEnd(profile.subscription.currentPeriodEnd)}</span> },
                       { label: "Dùng thử", value: profile.subscription.isTrial ? "Có" : "Không" },
                       { label: "Hủy lúc", value: profile.subscription.cancelledAt ? <span className="tabular-nums">{formatDateTime(profile.subscription.cancelledAt)}</span> : dash(null) },
                     ]}
@@ -514,6 +565,33 @@ export function UserDetailPage() {
               </CardContent>
             </Card>
           </div>
+
+          <UserReferralCard
+            group={profile.group}
+            referralOffer={profile.referralOffer}
+            leadHref={(leadUserId) => `/admin/team-leads/${leadUserId}`}
+            actions={
+              canJoinGroup ? (
+                <>
+                  <Button variant="outline" size="sm" onClick={() => openGroupDialog("assign")}>
+                    <UserPlus />
+                    {profile.group ? "Chuyển nhóm" : "Thêm vào nhóm"}
+                  </Button>
+                  {profile.group && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => openGroupDialog("remove")}
+                    >
+                      <UserMinus />
+                      Loại khỏi nhóm
+                    </Button>
+                  )}
+                </>
+              ) : undefined
+            }
+          />
 
           {fullRecord && (
             <Card>
@@ -570,10 +648,11 @@ export function UserDetailPage() {
                 Thuê bao ({profile.subscriptionHistory.length})
               </TabsTrigger>
               <TabsTrigger value="payments">Thanh toán ({profile.paymentHistory.length})</TabsTrigger>
-              <TabsTrigger value="vt">Giao dịch ảo ({profile.vtRecentOrders.length})</TabsTrigger>
+              <TabsTrigger value="vt">Demo Trading và Bot</TabsTrigger>
               <TabsTrigger value="logins">
-                Đăng nhập ({loginHistory.data?.total ?? profile.loginHistory.length})
+                Lịch sử đăng nhập ({loginHistory.data?.total ?? profile.loginHistory.length})
               </TabsTrigger>
+              <TabsTrigger value="academy">Học viện</TabsTrigger>
             </TabsList>
 
             <TabsContent value="subscriptions" className="mt-4">
@@ -600,10 +679,11 @@ export function UserDetailPage() {
             </TabsContent>
 
             <TabsContent value="vt" className="mt-4 space-y-4">
+              <UserTradingInsights demoTrading={profile.demoTrading} bot={profile.bot} />
               {profile.vtAccount ? (
                 <Card size="sm">
                   <CardHeader>
-                    <CardTitle>Tài khoản giao dịch ảo</CardTitle>
+                    <CardTitle>Tài khoản Demo Trading</CardTitle>
                     <CardDescription className="flex flex-wrap items-center gap-2">
                       <span className="font-mono text-xs">{profile.vtAccount.id}</span>
                       <Link
@@ -646,7 +726,7 @@ export function UserDetailPage() {
                 </Card>
               ) : (
                 <p className="rounded-lg bg-card px-3 py-2 text-sm text-muted-foreground ring-1 ring-border/60 ring-inset dark:ring-0">
-                  Người dùng chưa có tài khoản giao dịch ảo.
+                  Người dùng chưa có tài khoản Demo Trading.
                 </p>
               )}
 
@@ -654,13 +734,17 @@ export function UserDetailPage() {
                 columns={vtOrderColumns}
                 rows={profile.vtRecentOrders}
                 rowKey={(row) => row.id}
-                emptyLabel="Chưa có lệnh nào."
+                emptyLabel="Chưa có lệnh Demo Trading nào."
                 footer={
                   <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
                     Hiển thị 10 lệnh gần nhất theo máy chủ. Giá là giá đặt của lệnh giới hạn.
                   </p>
                 }
               />
+            </TabsContent>
+
+            <TabsContent value="academy" className="mt-4">
+              <UserAcademyTab academy={profile.academy} />
             </TabsContent>
 
             <TabsContent value="logins" className="mt-4">
@@ -718,6 +802,58 @@ export function UserDetailPage() {
           error={deleteError}
           onClose={() => setDeleteOpen(false)}
           onConfirm={() => void confirmSoftDelete()}
+        />
+      )}
+
+      {groupDialog === "assign" && profile && (
+        <AssignGroupDialog
+          user={{ username: profile.user.username, fullName: profile.user.fullName }}
+          currentGroup={profile.group}
+          pending={addToGroup.isPending}
+          error={groupError}
+          onClose={() => setGroupDialog(null)}
+          onSubmit={({ leadId, reason }) => {
+            setGroupError(null)
+            addToGroup.mutate(
+              { leadId, userId: profile.user.id, reason },
+              {
+                onSuccess: (result) => {
+                  toast.success(
+                    `${result.action === "move" ? "Đã chuyển" : "Đã thêm"} ${result.member.username} vào nhóm${
+                      result.offerGrant ? ", kèm Premium miễn phí theo ưu đãi của nhóm" : ""
+                    }`,
+                  )
+                  setGroupDialog(null)
+                },
+                onError: (error) => setGroupError(errorMessage(error)),
+              },
+            )
+          }}
+        />
+      )}
+
+      {groupDialog === "remove" && profile?.group && (
+        <RemoveMemberDialog
+          member={{ username: profile.user.username, fullName: profile.user.fullName }}
+          leadName={profile.group.leadFullName ?? profile.group.leadUsername}
+          pending={removeFromGroup.isPending}
+          error={groupError}
+          onClose={() => setGroupDialog(null)}
+          onSubmit={(reason) => {
+            const group = profile.group
+            if (!group) return
+            setGroupError(null)
+            removeFromGroup.mutate(
+              { leadId: group.leadUserId, userId: profile.user.id, reason },
+              {
+                onSuccess: () => {
+                  toast.success(`Đã loại ${profile.user.username} khỏi nhóm`)
+                  setGroupDialog(null)
+                },
+                onError: (error) => setGroupError(errorMessage(error)),
+              },
+            )
+          }}
         />
       )}
 

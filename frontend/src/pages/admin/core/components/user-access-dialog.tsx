@@ -19,13 +19,13 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { ADMIN_ROLES, ASSIGNABLE_STATUSES, type AdminUserPatch } from "../api"
+import { ASSIGNABLE_ROLES, ASSIGNABLE_STATUSES, type AdminUserPatch } from "../api"
 import { labelForRole, labelForStatus } from "../labels"
 
 export type AccessMode = "role" | "status"
 
 const OPTIONS: Record<AccessMode, { value: string; label: string }[]> = {
-  role: ADMIN_ROLES.map((role) => ({ value: role, label: labelForRole(role) })),
+  role: ASSIGNABLE_ROLES.map((role) => ({ value: role, label: labelForRole(role) })),
   status: ASSIGNABLE_STATUSES.map((status) => ({ value: status, label: labelForStatus(status) })),
 }
 

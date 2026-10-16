@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { errorMessage } from "@/lib/api"
-import { formatDateTime } from "@/lib/format"
+import { formatDateTime, formatPremiumEnd } from "@/lib/format"
 import { formatDay, subscriptionStatusLabel, subscriptionTone } from "./display"
 import { useCancelSubscription, useExtendSubscription, useSubscription } from "./queries"
 import { ActionDialog, DetailList, DetailRow, FormField, StatusBadge } from "./ui"
@@ -101,7 +101,7 @@ export function SubscriptionDetailPage() {
                   <span className="tabular-nums">{formatDateTime(subscription.current_period_start)}</span>
                 </DetailRow>
                 <DetailRow label="Kết thúc kỳ">
-                  <span className="tabular-nums">{formatDateTime(subscription.current_period_end)}</span>
+                  <span className="tabular-nums">{formatPremiumEnd(subscription.current_period_end)}</span>
                 </DetailRow>
                 <DetailRow label="Ngày tạo">
                   <span className="tabular-nums">{formatDateTime(subscription.created_at)}</span>
@@ -272,7 +272,7 @@ function ExtendSubscriptionDialog({
         days: parsedDays,
         reason: reason.trim() || undefined,
       })
-      toast.success(`Đã gia hạn ${parsedDays} ngày, kỳ mới kết thúc ${formatDay(updated.current_period_end)}`)
+      toast.success(`Đã gia hạn ${parsedDays} ngày, kỳ mới kết thúc ${formatPremiumEnd(updated.current_period_end, formatDay)}`)
       setReason("")
       onOpenChange(false)
     } catch (error) {
@@ -293,7 +293,7 @@ function ExtendSubscriptionDialog({
       title="Gia hạn thuê bao"
       description={
         currentEnd
-          ? `Cộng thêm ngày vào kỳ hạn hiện tại (đang kết thúc ${formatDay(currentEnd)}).`
+          ? `Cộng thêm ngày vào kỳ hạn hiện tại (đang kết thúc ${formatPremiumEnd(currentEnd, formatDay)}).`
           : "Cộng thêm ngày vào kỳ hạn hiện tại."
       }
       confirmLabel="Gia hạn"

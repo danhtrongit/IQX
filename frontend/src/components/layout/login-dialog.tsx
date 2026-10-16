@@ -27,6 +27,7 @@ import {
   USERNAME_TAKEN_MESSAGE,
   usernameFormatProblem,
 } from "./auth-identity"
+import { adminScopeForRole } from "./admin-access"
 import { FieldNote, type FieldNoteValue } from "./field-note"
 import { normalizeReferralCode } from "./referral"
 import { useLiveCheck } from "./use-live-check"
@@ -66,7 +67,7 @@ export function LoginDialog() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild><Link to="/cai-dat"><Settings2 />Cài đặt tài khoản</Link></DropdownMenuItem>
             <DropdownMenuItem asChild><Link to="/nang-cap"><Crown />Gói Premium</Link></DropdownMenuItem>
-            {auth.user.role === "admin" && <DropdownMenuItem asChild><Link to="/admin"><ShieldCheck />Quản trị</Link></DropdownMenuItem>}
+            {adminScopeForRole(auth.user.role) && <DropdownMenuItem asChild><Link to="/admin"><ShieldCheck />{auth.user.role === "team_lead" ? "Quản trị nhóm" : "Quản trị"}</Link></DropdownMenuItem>}
             <DropdownMenuSeparator />
             <DropdownMenuItem onSelect={() => { void auth.logout().catch(cause => toast.error(errorMessage(cause))) }}><LogOut />Đăng xuất</DropdownMenuItem>
           </DropdownMenuContent>

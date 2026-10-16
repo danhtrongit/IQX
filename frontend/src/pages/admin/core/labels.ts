@@ -43,7 +43,15 @@ export const STATUS_LABELS: Record<string, string> = {
 export const ROLE_LABELS: Record<string, string> = {
   user: "Người dùng",
   premium: "Premium",
+  team_lead: "Trưởng nhóm",
   admin: "Quản trị viên",
+}
+
+/** `admin_audit_log.actor_role` (admin spec v1.1 §3.5). */
+export const ACTOR_ROLE_LABELS: Record<string, string> = {
+  admin: "Quản trị viên",
+  team_lead: "Trưởng nhóm",
+  system: "Hệ thống",
 }
 
 export const GRANT_TYPE_LABELS: Record<string, string> = {
@@ -108,6 +116,15 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "vt.account.reset_all": "Đặt lại toàn bộ tài khoản giao dịch ảo",
   "vt.cash.adjust": "Điều chỉnh số dư ảo",
   "vt.config.update": "Cập nhật cấu hình giao dịch ảo",
+  "team_lead.appoint": "Bổ nhiệm trưởng nhóm",
+  "team_lead.policy_update": "Sửa chính sách trưởng nhóm",
+  "team_lead.revoke": "Thôi bổ nhiệm trưởng nhóm",
+  "group.member_add": "Thêm người dùng vào nhóm",
+  "group.member_move": "Chuyển người dùng sang nhóm khác",
+  "group.member_remove": "Loại người dùng khỏi nhóm",
+  "system.referral_offer_grant": "Cấp Premium ưu đãi giới thiệu",
+  // Lead sale và CTV đã bỏ ở v1.1 (§3.6); nhãn giữ lại để đọc bản ghi cũ.
+  "referral.enroll": "Đăng ký đối tác giới thiệu (cũ)",
 }
 
 const SUCCESS_STATUSES = ["active", "paid", "success", "reconciled", "filled", "settled", "published", "running", "processed"]
@@ -139,6 +156,11 @@ export function labelForRole(role: string | null | undefined): string {
   return ROLE_LABELS[role] ?? role
 }
 
+export function labelForActorRole(role: string | null | undefined): string {
+  if (!role) return "—"
+  return ACTOR_ROLE_LABELS[role] ?? role
+}
+
 export function labelForGrantType(grantType: string | null | undefined): string {
   if (!grantType) return "Thanh toán"
   return GRANT_TYPE_LABELS[grantType] ?? grantType
@@ -163,6 +185,7 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   market_analysis: "Phân tích thị trường",
   vt_account: "Tài khoản giao dịch ảo",
   vt_config: "Cấu hình giao dịch ảo",
+  team_lead: "Trưởng nhóm",
 }
 
 /** Falls back to the raw action so an unmapped action is still readable. */

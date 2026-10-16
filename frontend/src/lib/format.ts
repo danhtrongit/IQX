@@ -33,3 +33,11 @@ export function isLifetimeEnd(value: string | null | undefined): boolean {
   const date = new Date(value)
   return !Number.isNaN(date.getTime()) && date.getUTCFullYear() >= 9999
 }
+
+/** Hạn Premium để hiển thị: "Trọn đời" cho mốc năm 9999, còn lại theo `format`. */
+export function formatPremiumEnd(
+  value: string | null | undefined,
+  format: (value: string | null | undefined) => string = formatDateTime,
+): string {
+  return isLifetimeEnd(value) ? LIFETIME_LABEL : format(value)
+}
