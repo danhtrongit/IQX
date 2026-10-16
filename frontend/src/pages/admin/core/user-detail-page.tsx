@@ -61,7 +61,6 @@ import {
   useUserLoginHistory,
 } from "./hooks"
 import { labelForGrantType, labelForRole, labelForStatus, labelForVtSide } from "./labels"
-import { AdminReferralPanel } from "../../referral/admin-referral-panel"
 
 function dash(value: string | number | null | undefined) {
   return value === null || value === undefined || value === "" ? (
@@ -515,8 +514,6 @@ export function UserDetailPage() {
               </CardContent>
             </Card>
           </div>
-
-          <AdminReferralPanel userId={profile.user.id} />
 
           {fullRecord && (
             <Card>

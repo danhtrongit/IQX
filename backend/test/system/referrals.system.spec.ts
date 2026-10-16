@@ -8,7 +8,9 @@ import {
   type SystemStack,
 } from './system-stack.js';
 
-describe('system acceptance: referrals', () => {
+// Admin spec v1.1 §3.6: Lead Sale / CTV enrollment is gone (team leads replace it, see
+// team-lead-admin.system.spec.ts). Existing partners keep their legacy profile for reading.
+describe('system acceptance: legacy referrals', () => {
   let stack: SystemStack;
   let app: NestFastifyApplication;
   beforeAll(async () => {
@@ -19,120 +21,52 @@ describe('system acceptance: referrals', () => {
     await stack?.close();
   });
 
-  it('enrolls Lead Sale and CTV, validates hierarchy and idempotency', async () => {
+  it('removes the admin enrollment routes', async () => {
     const admin = await registerAndLogin(app, 'ref-admin');
-    await stack.query("update users set role='admin', is_email_verified=true where id=$1", [
-      admin.id,
-    ]);
-    const lead = await registerAndLogin(app, 'ref-lead');
-    const ctv = await registerAndLogin(app, 'ref-ctv');
-    const headers = authHeader(
-      (
-        await app.inject({
-          method: 'POST',
-          url: '/api/v2/auth/login',
-          payload: { email: admin.email, password: 'System!Passw0rd' },
-        })
-      ).json().access_token,
-    );
+    await stack.query("update users set role='admin' where id=$1", [admin.id]);
+    const headers = authHeader(admin.accessToken);
+    const target = await registerAndLogin(app, 'ref-target');
+    expect(
+      (await app.inject({ method: 'GET', url: `/api/v2/admin/referrals/${target.id}`, headers }))
+        .statusCode,
+    ).toBe(404);
     expect(
       (
         await app.inject({
           method: 'POST',
-          url: `/api/v2/admin/referrals/${ctv.id}/enroll`,
-          headers,
-          payload: { kind: 'ctv' },
-        })
-      ).statusCode,
-    ).toBe(400);
-    expect(
-      (
-        await app.inject({
-          method: 'POST',
-          url: `/api/v2/admin/referrals/${lead.id}/enroll`,
+          url: `/api/v2/admin/referrals/${target.id}/enroll`,
           headers,
           payload: { kind: 'lead_sale' },
         })
       ).statusCode,
-    ).toBe(201);
-    const enrolled = await app.inject({
-      method: 'POST',
-      url: `/api/v2/admin/referrals/${ctv.id}/enroll`,
-      headers,
-      payload: { kind: 'ctv', lead_user_id: lead.id },
-    });
-    expect(enrolled.statusCode).toBe(201);
-    expect(
-      (
-        await app.inject({
-          method: 'POST',
-          url: `/api/v2/admin/referrals/${ctv.id}/enroll`,
-          headers,
-          payload: { kind: 'ctv', lead_user_id: lead.id },
-        })
-      ).statusCode,
-    ).toBe(201);
+    ).toBe(404);
   });
 
-  it('rejects non-admin access to referral targets', async () => {
-    const user = await registerAndLogin(app, 'ref-user');
-    const bad = await app.inject({
+  it('reads the legacy profile of an existing partner and rejects legacy codes', async () => {
+    const partner = await registerAndLogin(app, 'ref-partner');
+    const code = `CTV_${Date.now().toString(16).slice(-10).toUpperCase().padStart(10, '0')}`;
+    await stack.query(
+      `update users set referral_partner_kind = 'ctv', referral_code = $2 where id = $1`,
+      [partner.id, code],
+    );
+    const mine = await app.inject({
       method: 'GET',
-      url: '/api/v2/admin/referrals/not-a-uuid',
-      headers: authHeader(user.accessToken),
+      url: '/api/v2/referrals/me',
+      headers: authHeader(partner.accessToken),
     });
-    expect(bad.statusCode).toBe(403);
-    const missing = await app.inject({
-      method: 'GET',
-      url: '/api/v2/admin/referrals/00000000-0000-4000-8000-000000000000',
-      headers: authHeader(user.accessToken),
-    });
-    expect(missing.statusCode).toBe(403);
-  });
-
-  it('attributes signup, audits enrollment, and rejects invalid or disabled referrals', async () => {
-    const admin = await registerAndLogin(app, 'ref-attribution-admin');
-    await stack.query("update users set role='admin' where id=$1", [admin.id]);
-    const login = await app.inject({
-      method: 'POST',
-      url: '/api/v2/auth/login',
-      payload: { email: admin.email, password: 'System!Passw0rd' },
-    });
-    const headers = authHeader(login.json().access_token as string);
-    const ctv = await registerAndLogin(app, 'ref-attribution-ctv');
-    const enroll = (userId: string, payload: Record<string, unknown>) =>
-      app.inject({
-        method: 'POST',
-        url: `/api/v2/admin/referrals/${userId}/enroll`,
-        headers,
-        payload,
-      });
-    expect((await enroll(admin.id, { kind: 'lead_sale' })).statusCode).toBe(201);
-    const enrollment = await enroll(ctv.id, { kind: 'ctv', lead_user_id: admin.id });
-    expect(enrollment.statusCode, enrollment.body).toBe(201);
-    const profile = enrollment.json() as { referral_code: string; referral_url: string };
-    expect(profile).toMatchObject({
-      referral_code: expect.stringMatching(/^CTV_[A-F0-9]{10}$/),
-      referral_url: `/?ref=${profile.referral_code}`,
+    expect(mine.statusCode).toBe(200);
+    expect(mine.json()).toEqual({
+      referral_code: code,
       referral_partner_kind: 'ctv',
-      referral_lead_user_id: admin.id,
       referred_by_user_id: null,
+      referral_lead_user_id: null,
+      referral_url: `/?ref=${code}`,
     });
-    const repeat = await enroll(ctv.id, { kind: 'ctv', lead_user_id: admin.id });
-    expect(repeat.statusCode).toBe(201);
-    expect(repeat.json()).toEqual(profile);
-    const audit = await stack.query<{ total: number }>(
-      "select count(*)::int as total from admin_audit_log where target_id=$1 and action='referral.enroll'",
-      [ctv.id],
-    );
-    expect(audit[0]?.total).toBe(1);
-    const timestamps = await stack.query<{ referral_attributed_at: unknown }>(
-      'select referral_attributed_at from users where id=$1',
-      [ctv.id],
-    );
-    expect(timestamps[0]?.referral_attributed_at).toBeNull();
 
-    const signup = (suffix: string, code: string) =>
+    // Admin spec v1.1 §3.1: a referral code is an active team lead's username. Legacy
+    // LS_/CTV_ codes stop resolving until the conversion stage maps them to the converted
+    // team lead for the LEGACY_REFERRAL_CODE_UNTIL window (DECISION 5).
+    const signup = (suffix: string, referralCode: string) =>
       app.inject({
         method: 'POST',
         url: '/api/v2/auth/register',
@@ -140,43 +74,13 @@ describe('system acceptance: referrals', () => {
           ...testIdentity(`ref-${suffix}`),
           password: 'System!Passw0rd',
           full_name: 'Referral customer',
-          referral_code: code,
+          referral_code: referralCode,
         },
       });
-    // Admin spec v1.1 §3.1: a referral code is now an active team lead's username. Legacy
-    // LS_/CTV_ codes stop resolving until the conversion stage maps them to the converted
-    // team lead for the LEGACY_REFERRAL_CODE_UNTIL window (DECISION 5).
-    const legacy = await signup('valid', ` ${profile.referral_code.toLowerCase()} `);
+    const legacy = await signup('legacy', ` ${code.toLowerCase()} `);
     expect(legacy.statusCode, legacy.body).toBe(422);
     expect((legacy.json() as { error: { code: string } }).error.code).toBe('REFERRAL_CODE_INVALID');
     expect((await signup('unknown', 'CTV_UNKNOWN')).statusCode).toBe(422);
     expect((await signup('malformed', 'bad code!')).statusCode).toBe(422);
-    await stack.query("update users set status='inactive' where id=$1", [ctv.id]);
-    expect((await signup('inactive', profile.referral_code)).statusCode).toBe(422);
-    await stack.query("update users set status='active',deleted_at=now() where id=$1", [ctv.id]);
-    expect((await signup('deleted', profile.referral_code)).statusCode).toBe(422);
-
-    const invalid = await app.inject({
-      method: 'GET',
-      url: '/api/v2/admin/referrals/not-a-uuid',
-      headers,
-    });
-    expect(invalid.statusCode).toBe(400);
-    const missing = await app.inject({
-      method: 'GET',
-      url: '/api/v2/admin/referrals/00000000-0000-4000-8000-000000000000',
-      headers,
-    });
-    expect(missing.statusCode).toBe(404);
-    const candidate = await registerAndLogin(app, 'ref-invalid-lead');
-    expect(
-      (await enroll(candidate.id, { kind: 'ctv', lead_user_id: candidate.id })).statusCode,
-    ).toBe(400);
-    expect((await enroll(candidate.id, { kind: 'ctv', lead_user_id: ctv.id })).statusCode).toBe(
-      400,
-    );
-    expect((await enroll(admin.id, { kind: 'ctv', lead_user_id: candidate.id })).statusCode).toBe(
-      400,
-    );
   });
 });

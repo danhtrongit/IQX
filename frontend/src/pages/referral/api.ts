@@ -12,8 +12,6 @@ export type ReferralInfo = {
 
 export const referralKeys = {
   me: (userId: string | null | undefined) => ["referral", "me", userId ?? "guest"] as const,
-  admin: (userId: string | null | undefined, targetUserId: string) =>
-    ["referral", "admin", userId ?? "guest", targetUserId] as const,
 }
 
 type ReferralWire = {
@@ -36,22 +34,6 @@ function adaptReferral(raw: ReferralWire): ReferralInfo {
 
 export async function fetchMyReferral(signal?: AbortSignal): Promise<ReferralInfo> {
   return adaptReferral(await api<ReferralWire>("/referrals/me", { signal }))
-}
-
-export async function fetchAdminReferral(userId: string, signal?: AbortSignal): Promise<ReferralInfo> {
-  return adaptReferral(await api<ReferralWire>(`/admin/referrals/${userId}`, { signal }))
-}
-
-export async function enrollReferral(
-  userId: string,
-  input: { kind: ReferralPartnerKind; leadUserId?: string },
-): Promise<ReferralInfo> {
-  return adaptReferral(
-    await api<ReferralWire>(`/admin/referrals/${userId}/enroll`, {
-      method: "POST",
-      body: JSON.stringify({ kind: input.kind, lead_user_id: input.leadUserId ?? undefined }),
-    }),
-  )
 }
 
 export function absoluteReferralUrl(referralUrl: string | null): string | null {
