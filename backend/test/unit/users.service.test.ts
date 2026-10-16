@@ -229,7 +229,7 @@ describe('AdminUsersService', () => {
       }),
       sendPasswordResetEmail: vi.fn().mockResolvedValue(false),
     };
-    const service = new AdminUsersService({ transaction } as never, auth as never);
+    const service = new AdminUsersService({ transaction } as never, auth as never, {} as never);
 
     await expect(
       service.resetPassword('031c714e-4145-4895-869b-d54c1c5bc86b', {

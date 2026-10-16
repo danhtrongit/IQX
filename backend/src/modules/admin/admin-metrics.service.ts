@@ -14,20 +14,40 @@ function integer(value: string | number | null | undefined): number {
  * active right now, excluding free referral offers. A member who pays while a stacked offer
  * is pending (or the reverse) is counted by whichever grant currently covers them, and a
  * lifetime offer never hides a paid grant. When grants overlap, the latest started wins.
+ * `order_lead_id` is the team lead snapshotted on the grant's order when it became paid.
  */
 const CURRENT_GRANTS_CTE = `current_grants as (
-         select distinct on (g.user_id) g.user_id, g.plan_id
+         select distinct on (g.user_id) g.user_id, g.plan_id, o.team_lead_id as order_lead_id
            from billing_entitlement_grants g
+           left join premium_payment_orders o on o.id = g.order_id
           where g.status = 'active' and g.kind <> 'referral_offer'
             and g.starts_at <= now() and now() < g.ends_at
           order by g.user_id, g.starts_at desc, g.ends_at desc, g.id
        )`;
 
+/**
+ * Admin spec v1.1 §6: the same metrics restricted to one team lead.
+ * - User metrics (users, subscribers, trial / paid counts, VT accounts and today's simulated
+ *   orders) cover the users whose `group_lead_id` is the lead at query time, deleted excluded.
+ * - Revenue, MRR and the plan distribution cover orders snapshotted to the lead
+ *   (`premium_payment_orders.team_lead_id`) when they became paid, so a removed member keeps
+ *   counting for the revenue and paid grant they brought in.
+ */
+export type MetricsScope = { leadId: string };
+
+/** Members of the scoped group; `$n` is the lead id parameter. */
+function membersSql(parameter: string): string {
+  return `select id from users
+           where group_lead_id = ${parameter} and deleted_at is null and status <> 'deleted'`;
+}
+
 @Injectable()
 export class AdminMetricsService {
   constructor(private readonly database: DatabaseService) {}
 
-  async overview(): Promise<Record<string, unknown>> {
+  async overview(scope?: MetricsScope): Promise<Record<string, unknown>> {
+    const params = scope ? [scope.leadId] : [];
+    const member = (column: string) => (scope ? `${column} in (${membersSql('$1')})` : 'true');
     const [users, subscriptions, revenue, virtualTrading, distribution] = await Promise.all([
       this.database.query<Record<string, string>>(
         `select
@@ -36,7 +56,9 @@ export class AdminMetricsService {
            count(*) filter (where created_at >= date_trunc('day', now()))::text as new_users_today,
            count(*) filter (where created_at >= now() - interval '7 days')::text as new_users_last_7d,
            count(*) filter (where created_at >= now() - interval '30 days')::text as new_users_last_30d
-         from users`,
+         from users
+         where ${member('id')}`,
+        params,
       ),
       this.database.query<Record<string, string>>(
         `with ${CURRENT_GRANTS_CTE},
@@ -44,17 +66,22 @@ export class AdminMetricsService {
            select user_id, bool_or(kind = 'referral_offer') as has_referral_offer
              from billing_entitlement_grants
             where status = 'active' and starts_at <= now() and now() < ends_at
+              and ${member('user_id')}
             group by user_id
          )
          select
            (select count(*) from entitled)::text as active_subscribers,
            (select count(*) from entitled where has_referral_offer)::text as active_referral_offer_count,
-           count(c.user_id) filter (where p.code = 'TRIAL_7D')::text as active_trial_count,
-           count(c.user_id) filter (where p.code <> 'TRIAL_7D')::text as active_paid_count,
+           count(c.user_id) filter (where p.code = 'TRIAL_7D' and ${member('c.user_id')})::text
+             as active_trial_count,
+           count(c.user_id) filter (where p.code <> 'TRIAL_7D' and ${member('c.user_id')})::text
+             as active_paid_count,
            coalesce(sum((p.price_vnd::numeric * 30) / nullif(p.duration_days, 0))
-             filter (where p.code <> 'TRIAL_7D'), 0)::bigint::text as mrr_vnd
+             filter (where p.code <> 'TRIAL_7D' ${scope ? 'and c.order_lead_id = $1' : ''}), 0)::bigint::text
+             as mrr_vnd
          from current_grants c
          left join premium_plans p on p.id = c.plan_id`,
+        params,
       ),
       this.database.query<Record<string, string>>(
         `select
@@ -62,14 +89,20 @@ export class AdminMetricsService {
            coalesce(sum(amount_vnd) filter (where paid_at >= now() - interval '7 days'), 0)::text as revenue_last_7d_vnd,
            coalesce(sum(amount_vnd) filter (where paid_at >= now() - interval '30 days'), 0)::text as revenue_last_30d_vnd
          from premium_payment_orders
-         where status = 'paid' and coalesce(grant_type, '') <> 'admin_grant'`,
+         where status = 'paid' and coalesce(grant_type, '') <> 'admin_grant'
+           ${scope ? 'and team_lead_id = $1' : ''}`,
+        params,
       ),
       this.database.query<Record<string, string>>(
         `select
-           (select count(*) from virtual_trading_accounts where status = 'active')::text as vt_active_accounts,
-           (select count(*) from virtual_orders where created_at >= date_trunc('day', now()))::text as vt_orders_today`,
+           (select count(*) from virtual_trading_accounts
+             where status = 'active' and ${member('user_id')})::text as vt_active_accounts,
+           (select count(*) from virtual_orders
+             where created_at >= date_trunc('day', now()) and ${member('user_id')})::text
+             as vt_orders_today`,
+        params,
       ),
-      this.planDistribution(false),
+      this.planDistribution(false, scope),
     ]);
 
     const u = users[0] ?? {};
@@ -97,7 +130,7 @@ export class AdminMetricsService {
     };
   }
 
-  async dailyRevenue(days: number): Promise<Record<string, unknown>[]> {
+  async dailyRevenue(days: number, scope?: MetricsScope): Promise<Record<string, unknown>[]> {
     const rows = await this.database.query<{
       date: string;
       paid_orders: string;
@@ -114,13 +147,14 @@ export class AdminMetricsService {
           where status = 'paid'
             and coalesce(grant_type, '') <> 'admin_grant'
             and paid_at >= current_date - ($1::integer - 1)
+            ${scope ? 'and team_lead_id = $2' : ''}
           group by paid_at::date
        )
        select d.date::text as date, coalesce(t.paid_orders, '0') as paid_orders,
               coalesce(t.revenue_vnd, '0') as revenue_vnd
          from dates d left join totals t using (date)
         order by d.date`,
-      [days],
+      scope ? [days, scope.leadId] : [days],
     );
     return rows.map((row) => ({
       date: row.date,
@@ -129,7 +163,10 @@ export class AdminMetricsService {
     }));
   }
 
-  async planDistribution(includeTrial = true): Promise<Record<string, unknown>[]> {
+  async planDistribution(
+    includeTrial = true,
+    scope?: MetricsScope,
+  ): Promise<Record<string, unknown>[]> {
     const rows = await this.database.query<{
       plan_code: string;
       plan_name: string;
@@ -141,10 +178,11 @@ export class AdminMetricsService {
               count(c.user_id)::text as active_subscriptions
          from premium_plans p
          left join current_grants c on c.plan_id = p.id
+           ${scope ? 'and c.order_lead_id = $2' : ''}
         where p.is_active = true and ($1::boolean or p.code <> 'TRIAL_7D')
         group by p.id, p.code, p.name, p.price_vnd, p.sort_order
         order by p.sort_order, p.price_vnd, p.code`,
-      [includeTrial],
+      scope ? [includeTrial, scope.leadId] : [includeTrial],
     );
     return rows.map((row) => ({
       ...row,

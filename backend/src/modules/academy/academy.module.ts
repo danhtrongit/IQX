@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { AuthModule } from '../auth/index.js';
 import { AcademyEnabledGuard } from './academy-enabled.guard.js';
 import { AcademyGrantsService } from './academy-grants.service.js';
+import { AcademyProgressReader } from './academy-progress-reader.service.js';
 import { AcademyController } from './academy.controller.js';
 import { ACADEMY_GRANTS } from './academy.ports.js';
 import { AcademyRepository } from './academy.repository.js';
@@ -21,8 +22,10 @@ import { AcademyService } from './academy.service.js';
     AcademyService,
     AcademyGrantsService,
     AcademyEnabledGuard,
+    AcademyProgressReader,
     { provide: ACADEMY_GRANTS, useExisting: AcademyGrantsService },
   ],
-  exports: [ACADEMY_GRANTS, AcademyGrantsService],
+  // AcademyProgressReader: read-only progress of other users for the admin / team-lead views.
+  exports: [ACADEMY_GRANTS, AcademyGrantsService, AcademyProgressReader],
 })
 export class AcademyModule {}

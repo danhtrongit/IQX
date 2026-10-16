@@ -17,6 +17,7 @@ import {
   AUTH_ROLES_KEY,
 } from '../../modules/auth/auth.decorators.js';
 import type { UserRole } from '../../modules/auth/auth.types.js';
+import { USER_INSIGHT_PROPERTIES } from '../../modules/users/member-insights.openapi.js';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'] as const;
 type HttpMethod = (typeof HTTP_METHODS)[number];
@@ -863,6 +864,7 @@ function installComponents(document: OpenAPIObject): void {
     document.components.schemas[`Legacy_${name}`] ??= rewriteLegacyRefs(schema) as SchemaObject;
   }
   extendLegacyUserSchemas(document.components.schemas);
+  extendLegacyAdminSchemas(document.components.schemas);
   document.components.schemas.LegacyApiError ??= legacyErrorSchema();
   document.components.schemas.ApiErrorV2 ??= v2ErrorSchema();
   document.components.schemas.MarketReportV2 ??= marketReportV2Schema();
@@ -901,6 +903,27 @@ function extendLegacyUserSchemas(schemas: Record<string, SchemaObject | Referenc
     type: 'boolean',
     title: 'Username Change Allowed',
   });
+}
+
+/**
+ * Admin spec v1.1 additions to frozen legacy admin schemas: the referral-offer count of the
+ * metrics overview (§3.3-3) and the group, referral offer, Demo / Bot results and Academy
+ * progress of the user 360 (§5.1.3 / §5.1.4).
+ */
+function extendLegacyAdminSchemas(schemas: Record<string, SchemaObject | ReferenceObject>): void {
+  const addFields = (name: string, fields: Record<string, SchemaObject>): void => {
+    const target = schemas[name] as SchemaObject | undefined;
+    if (!target?.properties) return;
+    for (const [field, schema] of Object.entries(fields)) {
+      if (target.properties[field]) continue;
+      target.properties[field] = structuredClone(schema);
+      target.required = [...(target.required ?? []), field];
+    }
+  };
+  addFields('Legacy_MetricsOverview', {
+    active_referral_offer_count: { type: 'integer', title: 'Active Referral Offer Count' },
+  });
+  addFields('Legacy_User360Response', USER_INSIGHT_PROPERTIES);
 }
 
 function rewriteLegacyRefs(value: unknown): unknown {
