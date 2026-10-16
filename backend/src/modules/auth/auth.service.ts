@@ -31,6 +31,8 @@ import {
   type TeamLeadOfferType,
 } from '../team-leads/team-lead-policy.js';
 
+const DEFAULT_LEGACY_REFERRAL_CODE_UNTIL = '2027-01-14T00:00:00+07:00';
+
 type TokenPair = { access_token: string; refresh_token: string; token_type: 'bearer' };
 type RefreshRow = {
   id: string;
@@ -101,7 +103,10 @@ export class AuthService {
         // aborts the whole registration (§7.1), so no account is created.
         let referral: ResolvedReferralCode | null = null;
         if (input.referral_code) {
-          referral = await resolveReferralCode(tx, input.referral_code, { lock: true });
+          referral = await resolveReferralCode(tx, input.referral_code, {
+            lock: true,
+            legacyUntil: this.legacyReferralCodeUntil(),
+          });
           if (!referral) {
             throw new UnprocessableEntityException({
               code: 'REFERRAL_CODE_INVALID',
@@ -235,7 +240,10 @@ export class AuthService {
     offer_days: number | null;
   }> {
     const referral = REFERRAL_CODE_PATTERN.test(code.trim())
-      ? await resolveReferralCode(this.database, code, { lock: false })
+      ? await resolveReferralCode(this.database, code, {
+          lock: false,
+          legacyUntil: this.legacyReferralCodeUntil(),
+        })
       : null;
     if (!referral) return { valid: false, offer_type: null, offer_days: null };
     return {
@@ -243,6 +251,19 @@ export class AuthService {
       offer_type: referral.policy.offer_type,
       offer_days: referral.policy.offer_type === 'days' ? referral.policy.offer_days : null,
     };
+  }
+
+  /**
+   * §3.6 DECISION 5: legacy LS_/CTV_ codes resolve to their converted team lead until
+   * LEGACY_REFERRAL_CODE_UNTIL (validated by the environment schema, default 2027-01-14 +07).
+   * An unparsable value closes the window rather than leaving it open forever.
+   */
+  private legacyReferralCodeUntil(): Date | null {
+    const value: unknown = this.config.get('LEGACY_REFERRAL_CODE_UNTIL');
+    const raw =
+      typeof value === 'string' && value.trim() ? value : DEFAULT_LEGACY_REFERRAL_CODE_UNTIL;
+    const until = new Date(raw);
+    return Number.isNaN(until.getTime()) ? null : until;
   }
 
   async refresh(refreshToken: string): Promise<TokenPair> {

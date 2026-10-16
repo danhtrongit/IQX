@@ -63,6 +63,37 @@ export type ResolvedReferralCode = {
   legacy: boolean;
 };
 
+export type ResolveReferralCodeOptions = {
+  /** Hold the lead profile FOR SHARE until the caller's transaction ends. */
+  lock: boolean;
+  /**
+   * DECISION 5: end of the window in which legacy LS_/CTV_ codes still resolve
+   * (LEGACY_REFERRAL_CODE_UNTIL). Absent or null: legacy codes never resolve.
+   */
+  legacyUntil?: Date | null;
+  /** Clock override for tests. */
+  now?: Date;
+};
+
+/** Shape of a v1.0 Lead sale / CTV code (`LS_` or `CTV_` + 10 hex), any case. */
+export const LEGACY_REFERRAL_CODE_PATTERN = /^(LS|CTV)_[0-9A-F]{10}$/i;
+
+/** Lead lookup shared by both code kinds: the lead must be an active, non-deleted team lead. */
+const ACTIVE_LEAD_JOIN = `from users u
+         join team_lead_profiles p on p.user_id = u.id
+        where p.status = 'active'
+          and u.role = 'team_lead' and u.status = 'active' and u.deleted_at is null`;
+
+async function resolvedLead(
+  client: SqlClient,
+  leadUserId: string | undefined,
+  legacy: boolean,
+): Promise<ResolvedReferralCode | null> {
+  if (!leadUserId) return null;
+  const policy = await currentTeamLeadPolicy(client, leadUserId);
+  return policy ? { leadUserId, policy, legacy } : null;
+}
+
 /**
  * §3.1: a referral code is the username of an active team lead. Matching is
  * case-insensitive. With `lock`, the lead profile is held FOR SHARE until the caller's
@@ -71,37 +102,46 @@ export type ResolvedReferralCode = {
 export async function resolveReferralCode(
   client: SqlClient,
   rawCode: string,
-  options: { lock: boolean },
+  options: ResolveReferralCodeOptions,
 ): Promise<ResolvedReferralCode | null> {
   const code = rawCode.trim();
   const username = code.toLowerCase();
   if (isValidUsername(username)) {
     const [lead] = await client.query<{ user_id: string }>(
       `select p.user_id
-         from users u
-         join team_lead_profiles p on p.user_id = u.id
-        where lower(u.username) = $1 and p.status = 'active'
-          and u.role = 'team_lead' and u.status = 'active' and u.deleted_at is null
+         ${ACTIVE_LEAD_JOIN}
+          and lower(u.username) = $1
         limit 1${options.lock ? ' for share of p' : ''}`,
       [username],
     );
-    if (lead) {
-      const policy = await currentTeamLeadPolicy(client, lead.user_id);
-      if (policy) return { leadUserId: lead.user_id, policy, legacy: false };
-    }
+    const resolved = await resolvedLead(client, lead?.user_id, false);
+    if (resolved) return resolved;
   }
   return resolveLegacyReferralCode(client, code, options);
 }
 
 /**
- * DECISION 5 hook: legacy LS_/CTV_ codes are mapped to the team lead they were converted to
- * until LEGACY_REFERRAL_CODE_UNTIL. The conversion migration and that window ship in a later
- * stage; until then no legacy code resolves.
+ * §3.6 DECISION 5: a legacy LS_/CTV_ code (matched case-insensitively) maps to the partner it
+ * was issued to, once migration 0025 converted that partner into an active team lead, and only
+ * before `legacyUntil`. Afterwards, or for a partner that was not converted or was revoked,
+ * the code is invalid. Codes were issued in upper case (ix_users_referral_code).
  */
 export async function resolveLegacyReferralCode(
-  _client: SqlClient,
-  _code: string,
-  _options: { lock: boolean },
+  client: SqlClient,
+  rawCode: string,
+  options: ResolveReferralCodeOptions,
 ): Promise<ResolvedReferralCode | null> {
-  return null;
+  const code = rawCode.trim();
+  if (!LEGACY_REFERRAL_CODE_PATTERN.test(code)) return null;
+  const until = options.legacyUntil;
+  if (!until || Number.isNaN(until.getTime())) return null;
+  if ((options.now ?? new Date()).getTime() >= until.getTime()) return null;
+  const [lead] = await client.query<{ user_id: string }>(
+    `select p.user_id
+       ${ACTIVE_LEAD_JOIN}
+        and u.referral_code = $1
+      limit 1${options.lock ? ' for share of p' : ''}`,
+    [code.toUpperCase()],
+  );
+  return resolvedLead(client, lead?.user_id, true);
 }

@@ -124,6 +124,12 @@ export const environmentSchema = z
     SEPAY_CHECKOUT_URL: optionalUrl(['http:', 'https:']),
     // Admin spec v1.0 §3.5.5-2 [DECISION]: whether an admin mark-paid earns team-lead commission.
     REFERRAL_COMMISSION_ON_MARK_PAID: booleanSetting(true),
+    // Admin spec v1.1 §3.6 [DECISION 5]: legacy LS_/CTV_ codes keep registering into the
+    // converted team lead's group until this instant (ISO 8601 with offset), then stop.
+    LEGACY_REFERRAL_CODE_UNTIL: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z.iso.datetime({ offset: true }).default('2027-01-14T00:00:00+07:00'),
+    ),
     APP_PUBLIC_URL: optionalUrl(['http:', 'https:']),
     API_PUBLIC_URL: optionalUrl(['http:', 'https:']),
     JWT_SECRET_KEY: z.preprocess(

@@ -9,7 +9,7 @@ import {
 } from './system-stack.js';
 
 // Admin spec v1.1 §3.6: Lead Sale / CTV enrollment is gone (team leads replace it, see
-// team-lead-admin.system.spec.ts). Existing partners keep their legacy profile for reading.
+// team-lead-admin.system.spec.ts); 0025 converts active partners into team leads.
 describe('system acceptance: legacy referrals', () => {
   let stack: SystemStack;
   let app: NestFastifyApplication;
@@ -42,13 +42,16 @@ describe('system acceptance: legacy referrals', () => {
     ).toBe(404);
   });
 
-  it('reads the legacy profile of an existing partner and rejects legacy codes', async () => {
+  it('shows no code card to a non-converted partner and rejects its legacy code', async () => {
     const partner = await registerAndLogin(app, 'ref-partner');
     const code = `CTV_${Date.now().toString(16).slice(-10).toUpperCase().padStart(10, '0')}`;
     await stack.query(
       `update users set referral_partner_kind = 'ctv', referral_code = $2 where id = $1`,
       [partner.id, code],
     );
+    // Admin spec v1.1 §3.1: only an active team lead has a code (its username). A partner the
+    // 0025 conversion did not turn into a team lead has none (team-lead-conversion spec covers
+    // the converted case).
     const mine = await app.inject({
       method: 'GET',
       url: '/api/v2/referrals/me',
@@ -56,16 +59,15 @@ describe('system acceptance: legacy referrals', () => {
     });
     expect(mine.statusCode).toBe(200);
     expect(mine.json()).toEqual({
-      referral_code: code,
-      referral_partner_kind: 'ctv',
-      referred_by_user_id: null,
-      referral_lead_user_id: null,
-      referral_url: `/?ref=${code}`,
+      is_team_lead: false,
+      referral_code: null,
+      referral_url: null,
+      commission_pct: null,
+      offer_type: null,
+      offer_days: null,
     });
 
-    // Admin spec v1.1 §3.1: a referral code is an active team lead's username. Legacy
-    // LS_/CTV_ codes stop resolving until the conversion stage maps them to the converted
-    // team lead for the LEGACY_REFERRAL_CODE_UNTIL window (DECISION 5).
+    // DECISION 5: a legacy LS_/CTV_ code resolves only to a converted, active team lead.
     const signup = (suffix: string, referralCode: string) =>
       app.inject({
         method: 'POST',

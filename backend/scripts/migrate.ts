@@ -114,6 +114,9 @@ async function main(): Promise<void> {
 
   try {
     client = await pool.connect();
+    // Migrations report data that needs a manual check (e.g. 0025's skipped partners) with
+    // RAISE NOTICE; surface it in the deploy log.
+    client.on('notice', (notice) => process.stdout.write(`notice ${notice.message ?? ''}\n`));
     await assertConnectedDatabase(client);
     await client.query('select pg_advisory_lock(hashtext($1))', [MIGRATION_LOCK]);
     await ensureMigrationsTable(client);
