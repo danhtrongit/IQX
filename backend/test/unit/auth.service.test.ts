@@ -105,6 +105,107 @@ describe('AuthService', () => {
     ).toBe(true);
   });
 
+  describe('registration by referral code (admin spec v1.1 §3.3, §7.1)', () => {
+    const leadId = '0f7e0b8e-1d6b-4d0e-9a52-1f7c6a8d4a10';
+    const input = {
+      email: 'user@example.com',
+      password: 'Password1!',
+      full_name: 'User',
+      username: 'user.example',
+      phone_number: '0912 345 678',
+    };
+
+    function referralDatabase(policy: Record<string, unknown> | null) {
+      const calls: Array<{ sql: string; params: readonly unknown[] }> = [];
+      let offerGranted = false;
+      const query = vi.fn(async (sql: string, params: readonly unknown[] = []) => {
+        calls.push({ sql, params });
+        if (sql.startsWith('select id from users where')) return [];
+        if (sql.includes('join team_lead_profiles p')) return policy ? [{ user_id: leadId }] : [];
+        if (sql.includes('from team_lead_policies')) return policy ? [policy] : [];
+        if (sql.startsWith('insert into users')) return [user()];
+        if (sql.includes("where code = 'REFERRAL_OFFER'")) return [{ id: 'offer-plan' }];
+        if (
+          sql.includes("'referral_offer'") &&
+          sql.includes('insert into billing_entitlement_grants')
+        ) {
+          offerGranted = true;
+          return [{ id: 'offer-grant', starts_at: new Date(), ends_at: new Date() }];
+        }
+        if (sql.includes('from billing_entitlement_grants where user_id = $1 limit 1'))
+          return offerGranted ? [{ id: 'offer-grant' }] : [];
+        if (sql.includes("where code = 'TRIAL_7D'"))
+          return [{ id: 'trial-plan', duration_days: 7 }];
+        if (sql.startsWith('insert into billing_entitlement_grants'))
+          return [{ id: 'trial', starts_at: new Date(), ends_at: new Date() }];
+        if (sql.includes('from users where id = $1 limit 1')) return [user()];
+        return [];
+      });
+      const database = {
+        transaction: <T>(operation: (client: SqlClient) => Promise<T>) =>
+          operation({ query: query as SqlClient['query'] }),
+      };
+      return { calls, auth: service(database) };
+    }
+
+    it('rejects an unknown code with 422 before creating the account', async () => {
+      const { calls, auth } = referralDatabase(null);
+      await expect(auth.register({ ...input, referral_code: 'NoSuch.Lead' })).rejects.toMatchObject(
+        {
+          status: 422,
+          response: expect.objectContaining({ code: 'REFERRAL_CODE_INVALID' }),
+        },
+      );
+      const lookup = calls.find(({ sql }) => sql.includes('join team_lead_profiles p'));
+      expect(lookup?.sql).toContain("p.status = 'active'");
+      expect(lookup?.sql).toContain('for share of p');
+      expect(lookup?.params).toEqual(['nosuch.lead']);
+      expect(calls.some(({ sql }) => sql.startsWith('insert into users'))).toBe(false);
+    });
+
+    it('joins the group and grants the offer instead of the trial', async () => {
+      const { calls, auth } = referralDatabase({
+        id: 'policy-id',
+        lead_user_id: leadId,
+        commission_pct: 20,
+        offer_type: 'days',
+        offer_days: 30,
+        offer_version_id: 'version-id',
+      });
+      await auth.register({ ...input, referral_code: 'Lead.One' });
+      const insert = calls.find(({ sql }) => sql.startsWith('insert into users'));
+      expect(insert?.sql).toContain('group_lead_id, group_joined_at, group_join_via');
+      expect(insert?.params[8]).toBe(leadId);
+      const history = calls.find(({ sql }) => sql.includes('insert into group_membership_history'));
+      expect(history?.sql).toContain("'join_code'");
+      expect(history?.sql).toContain("'user'");
+      const offer = calls.findIndex(
+        ({ sql }) =>
+          sql.includes("'referral_offer'") &&
+          sql.includes('insert into billing_entitlement_grants'),
+      );
+      expect(offer).toBeGreaterThan(-1);
+      expect(calls[offer]?.params.slice(6)).toEqual(['policy-id', 'version-id']);
+      expect(calls.some(({ sql }) => sql.includes("where code = 'TRIAL_7D'"))).toBe(false);
+      const audit = calls.find(({ sql }) => sql.includes('system.referral_offer_grant'));
+      expect(audit?.sql).toContain("'system'");
+    });
+
+    it('still grants the trial when the policy has no offer', async () => {
+      const { calls, auth } = referralDatabase({
+        id: 'policy-id',
+        lead_user_id: leadId,
+        commission_pct: 20,
+        offer_type: 'none',
+        offer_days: null,
+        offer_version_id: 'version-id',
+      });
+      await auth.register({ ...input, referral_code: 'lead.one' });
+      expect(calls.some(({ sql }) => sql.includes("'referral_offer'"))).toBe(false);
+      expect(calls.some(({ sql }) => sql.includes("where code = 'TRIAL_7D'"))).toBe(true);
+    });
+  });
+
   it.each([
     ['User.Example', 'lower(username) = $1', 'user.example'],
     ['User@Example.com', 'lower(email) = $1', 'user@example.com'],

@@ -122,6 +122,8 @@ export const environmentSchema = z
     SEPAY_MERCHANT_ID: z.string().trim().optional(),
     SEPAY_SECRET_KEY: z.string().trim().optional(),
     SEPAY_CHECKOUT_URL: optionalUrl(['http:', 'https:']),
+    // Admin spec v1.0 §3.5.5-2 [DECISION]: whether an admin mark-paid earns team-lead commission.
+    REFERRAL_COMMISSION_ON_MARK_PAID: booleanSetting(true),
     APP_PUBLIC_URL: optionalUrl(['http:', 'https:']),
     API_PUBLIC_URL: optionalUrl(['http:', 'https:']),
     JWT_SECRET_KEY: z.preprocess(

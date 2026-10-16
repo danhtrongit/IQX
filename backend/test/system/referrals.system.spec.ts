@@ -143,17 +143,12 @@ describe('system acceptance: referrals', () => {
           referral_code: code,
         },
       });
-    const buyer = await signup('valid', ` ${profile.referral_code.toLowerCase()} `);
-    expect(buyer.statusCode, buyer.body).toBe(201);
-    expect(buyer.json()).not.toHaveProperty('referred_by_user_id');
-    const attribution = await stack.query<{
-      referred_by_user_id: string;
-      referral_attributed_at: unknown;
-    }>('select referred_by_user_id,referral_attributed_at from users where id=$1', [
-      (buyer.json() as { id: string }).id,
-    ]);
-    expect(attribution[0]?.referred_by_user_id).toBe(ctv.id);
-    expect(attribution[0]?.referral_attributed_at).not.toBeNull();
+    // Admin spec v1.1 §3.1: a referral code is now an active team lead's username. Legacy
+    // LS_/CTV_ codes stop resolving until the conversion stage maps them to the converted
+    // team lead for the LEGACY_REFERRAL_CODE_UNTIL window (DECISION 5).
+    const legacy = await signup('valid', ` ${profile.referral_code.toLowerCase()} `);
+    expect(legacy.statusCode, legacy.body).toBe(422);
+    expect((legacy.json() as { error: { code: string } }).error.code).toBe('REFERRAL_CODE_INVALID');
     expect((await signup('unknown', 'CTV_UNKNOWN')).statusCode).toBe(422);
     expect((await signup('malformed', 'bad code!')).statusCode).toBe(422);
     await stack.query("update users set status='inactive' where id=$1", [ctv.id]);

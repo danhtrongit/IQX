@@ -15,7 +15,7 @@ import { SignJWT, errors as joseErrors, jwtVerify, type JWTPayload } from 'jose'
 
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
 import { EmailService } from './email.service.js';
-import type { LoginInput, RegisterInput } from './auth.schemas.js';
+import { REFERRAL_CODE_PATTERN, type LoginInput, type RegisterInput } from './auth.schemas.js';
 import {
   toAuthenticatedUser,
   toPublicUser,
@@ -24,6 +24,12 @@ import {
   type UserDatabaseRow,
 } from './auth.types.js';
 import { normalizePhone, uniqueViolationConstraint, userConflict } from './user-identity.js';
+import { createReferralOfferGrant } from '../team-leads/referral-offer.js';
+import {
+  resolveReferralCode,
+  type ResolvedReferralCode,
+  type TeamLeadOfferType,
+} from '../team-leads/team-lead-policy.js';
 
 type TokenPair = { access_token: string; refresh_token: string; token_type: 'bearer' };
 type RefreshRow = {
@@ -91,29 +97,26 @@ export class AuthService {
             });
           }
         }
-        let referredBy: string | null = null;
+        // Admin spec v1.1 §3.1/§3.4: the code is an active team lead's username. A bad code
+        // aborts the whole registration (§7.1), so no account is created.
+        let referral: ResolvedReferralCode | null = null;
         if (input.referral_code) {
-          const partners = await tx.query<{ id: string; referral_partner_kind: string }>(
-            `select id, referral_partner_kind from users
-             where referral_code = $1 and status = 'active' and deleted_at is null
-               and referral_partner_kind in ('lead_sale','ctv') limit 1 for share`,
-            [input.referral_code],
-          );
-          if (!partners[0]) {
+          referral = await resolveReferralCode(tx, input.referral_code, { lock: true });
+          if (!referral) {
             throw new UnprocessableEntityException({
               code: 'REFERRAL_CODE_INVALID',
               message: 'Mã giới thiệu không hợp lệ hoặc đã ngừng hoạt động',
             });
           }
-          referredBy = partners[0].id;
         }
         const users = await tx.query<UserDatabaseRow>(
           `insert into users
             (id, email, username, hashed_password, full_name, phone_number, phone_country_code,
              phone_national_number, phone_e164, role, status, is_email_verified,
-             referred_by_user_id, referral_attributed_at, created_at, updated_at)
+             group_lead_id, group_joined_at, group_join_via, created_at, updated_at)
            values ($1, $2, $10, $3, $4, $5, $6, $7, $8, 'user', 'active', false, $9::uuid,
-                   case when $9::uuid is null then null else now() end, now(), now())
+                   case when $9::uuid is null then null else now() end,
+                   case when $9::uuid is null then null else 'code' end, now(), now())
            returning ${USER_COLUMNS}`,
           [
             randomUUID(),
@@ -124,14 +127,33 @@ export class AuthService {
             phone.countryCode,
             phone.nationalNumber,
             phone.e164,
-            referredBy,
+            referral?.leadUserId ?? null,
             input.username,
           ],
         );
         const created = users[0];
         if (!created) throw new InternalServerErrorException('Không thể tạo người dùng');
+        let offerGranted = false;
+        if (referral) {
+          await tx.query(
+            `insert into group_membership_history
+               (user_id, lead_user_id, action, actor_user_id, actor_role, reason)
+             values ($1, $2, 'join_code', $1, 'user', null)`,
+            [created.id, referral.leadUserId],
+          );
+          // §3.3-3: the offer replaces the trial. It is granted first, and the trial below
+          // only applies to an account without any grant.
+          offerGranted = Boolean(
+            await createReferralOfferGrant(tx, {
+              userId: created.id,
+              leadUserId: referral.leadUserId,
+              policy: referral.policy,
+              source: 'register',
+            }),
+          );
+        }
         const trialGranted = await this.grantTrialIfAvailable(tx, created.id);
-        if (!trialGranted) return created;
+        if (!trialGranted && !offerGranted) return created;
         const refreshed = await tx.query<UserDatabaseRow>(
           `select ${USER_COLUMNS} from users where id = $1 limit 1`,
           [created.id],
@@ -201,6 +223,26 @@ export class AuthService {
       [username],
     );
     return rows.length === 0;
+  }
+
+  /**
+   * Admin spec v1.1 §4.1: public check of a referral code for the registration form. Reveals
+   * only whether it is usable and its offer, never who the team lead is.
+   */
+  async checkReferralCode(code: string): Promise<{
+    valid: boolean;
+    offer_type: TeamLeadOfferType | null;
+    offer_days: number | null;
+  }> {
+    const referral = REFERRAL_CODE_PATTERN.test(code.trim())
+      ? await resolveReferralCode(this.database, code, { lock: false })
+      : null;
+    if (!referral) return { valid: false, offer_type: null, offer_days: null };
+    return {
+      valid: true,
+      offer_type: referral.policy.offer_type,
+      offer_days: referral.policy.offer_type === 'days' ? referral.policy.offer_days : null,
+    };
   }
 
   async refresh(refreshToken: string): Promise<TokenPair> {

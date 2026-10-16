@@ -9,6 +9,20 @@ function integer(value: string | number | null | undefined): number {
   return parsed;
 }
 
+/**
+ * Admin spec v1.1 §3.3-3: MRR and the plan distribution count each user's grant that is
+ * active right now, excluding free referral offers. A member who pays while a stacked offer
+ * is pending (or the reverse) is counted by whichever grant currently covers them, and a
+ * lifetime offer never hides a paid grant. When grants overlap, the latest started wins.
+ */
+const CURRENT_GRANTS_CTE = `current_grants as (
+         select distinct on (g.user_id) g.user_id, g.plan_id
+           from billing_entitlement_grants g
+          where g.status = 'active' and g.kind <> 'referral_offer'
+            and g.starts_at <= now() and now() < g.ends_at
+          order by g.user_id, g.starts_at desc, g.ends_at desc, g.id
+       )`;
+
 @Injectable()
 export class AdminMetricsService {
   constructor(private readonly database: DatabaseService) {}
@@ -25,15 +39,22 @@ export class AdminMetricsService {
          from users`,
       ),
       this.database.query<Record<string, string>>(
-        `select
-           count(*)::text as active_subscribers,
-           count(*) filter (where p.code = 'TRIAL_7D')::text as active_trial_count,
-           count(*) filter (where p.code <> 'TRIAL_7D')::text as active_paid_count,
+        `with ${CURRENT_GRANTS_CTE},
+         entitled as (
+           select user_id, bool_or(kind = 'referral_offer') as has_referral_offer
+             from billing_entitlement_grants
+            where status = 'active' and starts_at <= now() and now() < ends_at
+            group by user_id
+         )
+         select
+           (select count(*) from entitled)::text as active_subscribers,
+           (select count(*) from entitled where has_referral_offer)::text as active_referral_offer_count,
+           count(c.user_id) filter (where p.code = 'TRIAL_7D')::text as active_trial_count,
+           count(c.user_id) filter (where p.code <> 'TRIAL_7D')::text as active_paid_count,
            coalesce(sum((p.price_vnd::numeric * 30) / nullif(p.duration_days, 0))
              filter (where p.code <> 'TRIAL_7D'), 0)::bigint::text as mrr_vnd
-         from premium_subscriptions s
-         left join premium_plans p on p.id = s.current_plan_id
-         where s.status = 'active' and s.current_period_end > now()`,
+         from current_grants c
+         left join premium_plans p on p.id = c.plan_id`,
       ),
       this.database.query<Record<string, string>>(
         `select
@@ -64,6 +85,7 @@ export class AdminMetricsService {
       active_subscribers: integer(s.active_subscribers),
       active_trial_count: integer(s.active_trial_count),
       active_paid_count: integer(s.active_paid_count),
+      active_referral_offer_count: integer(s.active_referral_offer_count),
       plan_distribution: distribution,
       mrr_vnd: integer(s.mrr_vnd),
       revenue_today_vnd: integer(r.revenue_today_vnd),
@@ -114,13 +136,11 @@ export class AdminMetricsService {
       price_vnd: number;
       active_subscriptions: string;
     }>(
-      `select p.code as plan_code, p.name as plan_name, p.price_vnd,
-              count(s.id)::text as active_subscriptions
+      `with ${CURRENT_GRANTS_CTE}
+       select p.code as plan_code, p.name as plan_name, p.price_vnd,
+              count(c.user_id)::text as active_subscriptions
          from premium_plans p
-         left join premium_subscriptions s
-           on s.current_plan_id = p.id
-          and s.status = 'active'
-          and s.current_period_end > now()
+         left join current_grants c on c.plan_id = p.id
         where p.is_active = true and ($1::boolean or p.code <> 'TRIAL_7D')
         group by p.id, p.code, p.name, p.price_vnd, p.sort_order
         order by p.sort_order, p.price_vnd, p.code`,

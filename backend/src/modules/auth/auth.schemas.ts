@@ -15,6 +15,9 @@ const strongPassword = z
     'Mật khẩu phải chứa ít nhất một ký tự đặc biệt',
   );
 
+/** Accepted shape of a referral code: a username or a legacy LS_/CTV_ code. */
+export const REFERRAL_CODE_PATTERN = /^[A-Za-z0-9._-]{3,32}$/;
+
 const email = z
   .string()
   .email()
@@ -29,15 +32,9 @@ export const registerSchema = z.object({
   username: usernameSchema,
   // Admin spec v1.1 §2.1: required at registration; normalized to a Vietnamese mobile.
   phone_number: z.string().trim().min(1).max(30),
-  referral_code: z
-    .string()
-    .trim()
-    .min(3)
-    .max(32)
-    .toUpperCase()
-    .regex(/^[A-Z0-9_-]+$/)
-    .nullable()
-    .optional(),
+  // Admin spec v1.1 §3.1: a team lead's username, matched case-insensitively. Legacy LS_/CTV_
+  // codes keep their own shape, so the case is preserved here and resolved by the service.
+  referral_code: z.string().trim().regex(REFERRAL_CODE_PATTERN).nullable().optional(),
 });
 
 /**
@@ -54,6 +51,8 @@ export const loginSchema = z
     message: 'Nhập email hoặc tên đăng nhập',
     path: ['identifier'],
   });
+// Lenient on purpose: a malformed code answers `valid: false` rather than an error.
+export const referralCodeParamSchema = z.string().max(64);
 export const usernameAvailabilityQuerySchema = z.object({ u: usernameSchema });
 export const usernameChangeSchema = z.object({ username: usernameSchema }).strict();
 export const refreshSchema = z.object({ refresh_token: z.string().min(1) });
