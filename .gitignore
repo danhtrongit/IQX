@@ -13,6 +13,8 @@
 !/backend/**
 !/frontend/
 !/frontend/**
+!/mobile/
+!/mobile/**
 # Safety guard: frontend was previously a standalone repo.
 /frontend/.git
 

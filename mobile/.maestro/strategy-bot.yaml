@@ -1,0 +1,11 @@
+appId: vn.iqx.app
+---
+- runFlow: subflows/login.yaml
+- runFlow: subflows/open-strategy-hub.yaml
+- tapOn:
+    id: strategy-hub-bot
+- extendedWaitUntil:
+    visible:
+      id: strategy-bot-screen
+    timeout: 20000
+- assertVisible: "Vốn Bot ban đầu"

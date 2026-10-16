@@ -1,0 +1,8 @@
+# Switch to the Chiến lược tab and wait for the hub (tab transitions can be slow on a loaded simulator).
+appId: vn.iqx.app
+---
+- tapOn: "Chiến lược"
+- extendedWaitUntil:
+    visible:
+      id: strategy-hub-alerts
+    timeout: 20000

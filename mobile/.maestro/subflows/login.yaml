@@ -1,0 +1,38 @@
+# Reusable login. Usage in another flow:
+#   - runFlow: subflows/login.yaml
+# Dev-client builds have no embedded JS: the deep link points the app at the local Metro server
+# (override with -e METRO_URL=...). Release builds ignore the link and use the embedded bundle.
+appId: vn.iqx.app
+env:
+  METRO_URL: http%3A%2F%2F127.0.0.1%3A8081
+---
+- launchApp:
+    clearState: true
+- openLink: vn.iqx.app://expo-development-client/?url=${METRO_URL}
+# Expo dev menu onboarding sheet shows on the first load of a dev build.
+- runFlow:
+    when:
+      visible: "Continue"
+    commands:
+      - tapOn: "Continue"
+- extendedWaitUntil:
+    visible: "Đăng nhập IQX|Giao dịch"
+    timeout: 120000
+# SecureStore (Keychain) survives clearState on iOS, so the session may still be signed in.
+- runFlow:
+    when:
+      visible:
+        id: login-email
+    commands:
+      - tapOn:
+          id: login-email
+      - inputText: ${IQX_EMAIL}
+      - tapOn:
+          id: login-password
+      - inputText: ${IQX_PASSWORD}
+      - hideKeyboard
+      - tapOn:
+          id: login-submit
+- extendedWaitUntil:
+    visible: "Giao dịch"
+    timeout: 30000

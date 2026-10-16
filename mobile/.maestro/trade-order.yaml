@@ -1,0 +1,39 @@
+appId: vn.iqx.app
+---
+- runFlow: subflows/login.yaml
+- tapOn: "Giao dịch"
+- tapOn:
+    id: trade-symbol-picker
+- extendedWaitUntil:
+    visible:
+      id: trade-symbol-picker-sheet-input
+    timeout: 15000
+- inputText: FPT
+- extendedWaitUntil:
+    visible:
+      id: trade-symbol-picker-sheet-item-FPT
+    timeout: 20000
+- tapOn:
+    id: trade-symbol-picker-sheet-item-FPT
+- extendedWaitUntil:
+    visible:
+      id: trade-quote-card
+    timeout: 15000
+- tapOn:
+    id: trade-buy
+- tapOn:
+    id: order-quantity
+- inputText: "100"
+- tapOn:
+    id: order-quantity-done
+- tapOn:
+    id: order-type-market
+- tapOn:
+    id: order-review-button
+- assertVisible:
+    id: order-review
+- tapOn:
+    id: order-confirm
+- extendedWaitUntil:
+    visible: "Đã đặt lệnh.*"
+    timeout: 15000

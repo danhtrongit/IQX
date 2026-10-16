@@ -1,0 +1,30 @@
+appId: vn.iqx.app
+---
+- runFlow: subflows/login.yaml
+- tapOn: "Giao dịch"
+- tapOn: "Săn mã"
+# "Khối ngoại gom"/"Tự doanh gom" can be disabled (no upstream data); volume spike is always computed.
+- extendedWaitUntil:
+    visible: "Khối lượng đột biến"
+    timeout: 20000
+- tapOn: "Khối lượng đột biến"
+- extendedWaitUntil:
+    visible:
+      id: hunt-results-screen
+    timeout: 15000
+- extendedWaitUntil:
+    notVisible:
+      id: hunt-results-loading
+    timeout: 20000
+- assertNotVisible:
+    id: hunt-results-error
+# Upstream data per filter can be missing (local dev, off-hours): the screen then shows the
+# "Bộ lọc chưa khả dụng" / "Chưa có dữ liệu" state instead of a list.
+- runFlow:
+    when:
+      notVisible: "Bộ lọc chưa khả dụng|Chưa có dữ liệu"
+    commands:
+      - extendedWaitUntil:
+          visible:
+            id: hunt-results-list
+          timeout: 20000
