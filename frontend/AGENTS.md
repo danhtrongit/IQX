@@ -84,7 +84,7 @@ Admin routes are nested under `/admin` and must use `AdminLayout`:
 
 Do not register an admin page outside this nested layout.
 
-`team_lead` (Trưởng nhóm) uses the same layout with a reduced scope. It may open only `/admin`, `/admin/users`, and `/admin/users/:userId`, and on the `team` scope those three pages must render their team variant backed by the `team/*` API, never the `admin/*` one. `isTeamAdminPath` in `components/layout/admin-access.ts` is the single allow-list: every other `/admin/**` route redirects a team lead to `/admin`. A new admin route is admin-only unless it is added to that allow-list on purpose.
+`team_lead` (Trưởng nhóm) uses the same layout with a reduced scope. It may open only `/admin`, `/admin/users`, and `/admin/users/:userId`, and on the `team` scope those three pages must render their team variant backed by the `team/*` API, never the `admin/*` one. `AdminScopeRoute` (`components/layout/admin-scope-route.tsx`) picks the variant in `App.tsx`; the team pages live in `pages/admin/team/` with their own `["team", leadId, …]` query keys. `isTeamAdminPath` in `components/layout/admin-access.ts` is the single allow-list: every other `/admin/**` route redirects a team lead to `/admin`. A new admin route is admin-only unless it is added to that allow-list on purpose.
 
 ## 4. Routing and code splitting
 

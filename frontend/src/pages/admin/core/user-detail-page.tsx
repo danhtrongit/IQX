@@ -35,30 +35,22 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { errorMessage } from "@/lib/api"
-import { formatDateTime, formatMoney, formatNumber, formatPremiumEnd } from "@/lib/format"
+import { formatDateTime, formatMoney, formatNumber } from "@/lib/format"
 import { AssignGroupDialog } from "@/pages/admin/team-leads/assign-group-dialog"
 import { useAddTeamLeadMember, useRemoveTeamLeadMember } from "@/pages/admin/team-leads/hooks"
 import { RemoveMemberDialog } from "@/pages/admin/team-leads/team-lead-dialogs"
 
-import {
-  type AdminUserPatch,
-  type LoginHistoryRow,
-  type PaymentOrderBrief,
-  type SubscriptionBrief,
-  type VTOrderBrief,
-} from "./api"
+import { type AdminUserPatch, type VTOrderBrief } from "./api"
 import { AdminDataTable, type AdminColumn } from "./components/admin-data-table"
 import { DetailList } from "./components/detail-list"
 import { useConfirmDialog } from "./components/use-confirm-dialog"
 import { SoftDeleteUserDialog } from "./components/soft-delete-user-dialog"
 import { StatusBadge } from "./components/status-badge"
-import { UserAcademyTab } from "./components/user-academy-tab"
 import { UserAccessDialog, type AccessMode } from "./components/user-access-dialog"
 import { UserProfileDialog } from "./components/user-profile-dialog"
 import { UserReferralCard } from "./components/user-referral-card"
-import { UserTradingInsights } from "./components/user-trading-insights"
+import { UserAccountCards, UserDetailTabs } from "./components/user-360-body"
 import { useAuth } from "@/hooks/use-auth"
 import {
   useAdminUser360,
@@ -69,7 +61,7 @@ import {
   useUpdateAdminUser,
   useUserLoginHistory,
 } from "./hooks"
-import { labelForGrantType, labelForRole, labelForStatus, labelForVtSide } from "./labels"
+import { labelForRole, labelForStatus, labelForVtSide } from "./labels"
 
 function dash(value: string | number | null | undefined) {
   return value === null || value === undefined || value === "" ? (
@@ -217,78 +209,6 @@ export function UserDetailPage() {
     }
   }
 
-  const subscriptionColumns: AdminColumn<SubscriptionBrief>[] = [
-    {
-      id: "plan",
-      header: "Gói",
-      cell: (row) => row.plan?.name ?? <span className="text-muted-foreground">—</span>,
-    },
-    { id: "code", header: "Mã gói", cell: (row) => <span className="font-mono text-xs">{row.plan?.code ?? "—"}</span> },
-    { id: "status", header: "Trạng thái", cell: (row) => <StatusBadge status={row.status} /> },
-    { id: "trial", header: "Dùng thử", cell: (row) => (row.isTrial ? "Có" : "Không") },
-    {
-      id: "period",
-      header: "Chu kỳ",
-      cell: (row) => (
-        <span className="tabular-nums">
-          {formatDateTime(row.currentPeriodStart)} → {formatPremiumEnd(row.currentPeriodEnd)}
-        </span>
-      ),
-    },
-    {
-      id: "cancelled",
-      header: "Hủy",
-      cell: (row) =>
-        row.cancelledAt ? (
-          <span className="text-xs">
-            <span className="tabular-nums">{formatDateTime(row.cancelledAt)}</span>
-            {row.cancelReason && <span className="block text-muted-foreground">{row.cancelReason}</span>}
-            {row.cancelledByUserId && (
-              <span className="block font-mono text-[11px] text-muted-foreground">
-                bởi {row.cancelledByUserId}
-              </span>
-            )}
-          </span>
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        ),
-    },
-  ]
-
-  const paymentColumns: AdminColumn<PaymentOrderBrief>[] = [
-    {
-      id: "invoice",
-      header: "Mã hóa đơn",
-      cell: (row) => (
-        <Link
-          to={`/admin/payments/${row.id}`}
-          className="font-mono text-xs font-medium text-primary underline-offset-4 hover:underline"
-        >
-          {row.invoiceNumber}
-        </Link>
-      ),
-    },
-    { id: "amount", header: "Số tiền", align: "right", cell: (row) => formatMoney(row.amountVnd) },
-    {
-      id: "plan",
-      header: "Gói",
-      cell: (row) => dash(row.planCode ?? null),
-    },
-    { id: "grant", header: "Hình thức", cell: (row) => labelForGrantType(row.grantType) },
-    { id: "status", header: "Trạng thái", cell: (row) => <StatusBadge status={row.status} /> },
-    {
-      id: "paidAt",
-      header: "Đã thanh toán",
-      cell: (row) =>
-        row.paidAt ? <span className="tabular-nums">{formatDateTime(row.paidAt)}</span> : dash(null),
-    },
-    {
-      id: "createdAt",
-      header: "Tạo lúc",
-      cell: (row) => <span className="tabular-nums">{formatDateTime(row.createdAt)}</span>,
-    },
-  ]
-
   const vtOrderColumns: AdminColumn<VTOrderBrief>[] = [
     { id: "symbol", header: "Mã", cell: (row) => <span className="font-medium">{row.symbol}</span> },
     { id: "side", header: "Chiều", cell: (row) => labelForVtSide(row.side) },
@@ -304,36 +224,6 @@ export function UserDetailPage() {
       id: "createdAt",
       header: "Tạo lúc",
       cell: (row) => <span className="tabular-nums">{formatDateTime(row.createdAt)}</span>,
-    },
-  ]
-
-  const loginColumns: AdminColumn<LoginHistoryRow>[] = [
-    {
-      id: "loginAt",
-      header: "Thời gian",
-      cell: (row) => <span className="tabular-nums">{formatDateTime(row.loginAt)}</span>,
-    },
-    {
-      id: "result",
-      header: "Kết quả",
-      cell: (row) => (
-        <StatusBadge status={row.success} label={row.success ? "Thành công" : "Thất bại"} />
-      ),
-    },
-    { id: "ip", header: "IP", cell: (row) => <span className="font-mono text-xs">{row.ip ?? "—"}</span> },
-    {
-      id: "agent",
-      header: "Thiết bị",
-      cell: (row) => (
-        <span className="block max-w-[22rem] truncate text-xs text-muted-foreground" title={row.userAgent ?? ""}>
-          {row.userAgent ?? "—"}
-        </span>
-      ),
-    },
-    {
-      id: "reason",
-      header: "Lý do",
-      cell: (row) => (row.failureReason ? row.failureReason : <span className="text-muted-foreground">—</span>),
     },
   ]
 
@@ -473,98 +363,7 @@ export function UserDetailPage() {
             </p>
           )}
 
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tài khoản</CardTitle>
-                <CardDescription>Thông tin định danh và trạng thái truy cập</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DetailList
-                  items={[
-                    { label: "Email", value: profile.user.email },
-                    {
-                      label: "Tên đăng nhập",
-                      value: profile.user.username ? <span className="font-mono">{profile.user.username}</span> : dash(null),
-                    },
-                    { label: "Họ tên", value: dash(profile.user.fullName) },
-                    { label: "Điện thoại", value: dash(fullRecord?.phoneE164 ?? profile.user.phoneNumber) },
-                    {
-                      label: "Vai trò",
-                      value: <StatusBadge status={profile.user.role} label={labelForRole(profile.user.role)} tone="info" />,
-                    },
-                    { label: "Trạng thái", value: <StatusBadge status={profile.user.status} /> },
-                    {
-                      label: "Xác thực email",
-                      value: (
-                        <span className="flex items-center gap-2">
-                          <StatusBadge
-                            status={profile.user.isEmailVerified}
-                            label={profile.user.isEmailVerified ? "Đã xác thực" : "Chưa xác thực"}
-                          />
-                          {fullRecord?.emailVerifiedAt && (
-                            <span className="text-xs text-muted-foreground tabular-nums">
-                              {formatDateTime(fullRecord.emailVerifiedAt)}
-                            </span>
-                          )}
-                        </span>
-                      ),
-                    },
-                    { label: "Đã dùng thử", value: profile.trialUsed ? "Có" : "Không" },
-                    { label: "Tạo lúc", value: <span className="tabular-nums">{formatDateTime(profile.user.createdAt)}</span> },
-                    {
-                      label: "Cập nhật lúc",
-                      value: fullRecord ? (
-                        <span className="tabular-nums">{formatDateTime(fullRecord.updatedAt)}</span>
-                      ) : (
-                        dash(null)
-                      ),
-                    },
-                    {
-                      label: "Đăng nhập gần nhất",
-                      value: profile.user.lastLoginAt ? (
-                        <span className="tabular-nums">{formatDateTime(profile.user.lastLoginAt)}</span>
-                      ) : (
-                        dash(null)
-                      ),
-                    },
-                  ]}
-                />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Thuê bao hiện tại</CardTitle>
-                <CardDescription>
-                  {profile.subscription
-                    ? "Thuê bao đang hoạt động và còn hạn"
-                    : "Không có thuê bao nào đang hoạt động"}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {profile.subscription ? (
-                  <DetailList
-                    columns={2}
-                    items={[
-                      { label: "Gói", value: profile.subscription.plan?.name ?? dash(null) },
-                      { label: "Mã gói", value: <span className="font-mono text-xs">{profile.subscription.plan?.code ?? "—"}</span> },
-                      { label: "Giá gói", value: profile.subscription.plan ? formatMoney(profile.subscription.plan.priceVnd) : dash(null) },
-                      { label: "Trạng thái", value: <StatusBadge status={profile.subscription.status} /> },
-                      { label: "Bắt đầu", value: <span className="tabular-nums">{formatDateTime(profile.subscription.currentPeriodStart)}</span> },
-                      { label: "Kết thúc", value: <span className="tabular-nums">{formatPremiumEnd(profile.subscription.currentPeriodEnd)}</span> },
-                      { label: "Dùng thử", value: profile.subscription.isTrial ? "Có" : "Không" },
-                      { label: "Hủy lúc", value: profile.subscription.cancelledAt ? <span className="tabular-nums">{formatDateTime(profile.subscription.cancelledAt)}</span> : dash(null) },
-                    ]}
-                  />
-                ) : (
-                  <p className="py-6 text-sm text-muted-foreground">
-                    Người dùng chưa có thuê bao đang hoạt động.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          </div>
+          <UserAccountCards profile={profile} fullRecord={fullRecord} scope="admin" />
 
           <UserReferralCard
             group={profile.group}
@@ -642,135 +441,94 @@ export function UserDetailPage() {
             </Card>
           )}
 
-          <Tabs defaultValue="subscriptions">
-            <TabsList variant="line">
-              <TabsTrigger value="subscriptions">
-                Thuê bao ({profile.subscriptionHistory.length})
-              </TabsTrigger>
-              <TabsTrigger value="payments">Thanh toán ({profile.paymentHistory.length})</TabsTrigger>
-              <TabsTrigger value="vt">Demo Trading và Bot</TabsTrigger>
-              <TabsTrigger value="logins">
-                Lịch sử đăng nhập ({loginHistory.data?.total ?? profile.loginHistory.length})
-              </TabsTrigger>
-              <TabsTrigger value="academy">Học viện</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="subscriptions" className="mt-4">
-              <AdminDataTable
-                columns={subscriptionColumns}
-                rows={profile.subscriptionHistory}
-                rowKey={(row) => row.id}
-                emptyLabel="Chưa có thuê bao nào."
-              />
-            </TabsContent>
-
-            <TabsContent value="payments" className="mt-4">
-              <AdminDataTable
-                columns={paymentColumns}
-                rows={profile.paymentHistory}
-                rowKey={(row) => row.id}
-                emptyLabel="Chưa có đơn thanh toán nào."
-                footer={
-                  <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-                    Hiển thị 20 đơn gần nhất theo máy chủ.
+          <UserDetailTabs
+            profile={profile}
+            scope="admin"
+            paymentHref={(paymentId) => `/admin/payments/${paymentId}`}
+            loginHistory={{
+              rows: historyRows,
+              loading: loginHistory.isLoading || loginHistory.isFetching,
+              error: loginHistory.error ? errorMessage(loginHistory.error) : null,
+              onRetry: () => void loginHistory.refetch(),
+              pagination: {
+                page: historyPage,
+                pageSize: historyPageSize,
+                total: loginHistory.data?.total ?? 0,
+                totalPages: loginHistory.data?.totalPages ?? 1,
+                onPageChange: setHistoryPage,
+                pageSizeOptions: [20, 50, 100, 200],
+                onPageSizeChange: (size) => {
+                  setHistoryPageSize(size)
+                  setHistoryPage(1)
+                },
+              },
+            }}
+            vtExtra={
+              <>
+                {profile.vtAccount ? (
+                  <Card size="sm">
+                    <CardHeader>
+                      <CardTitle>Tài khoản Demo Trading</CardTitle>
+                      <CardDescription className="flex flex-wrap items-center gap-2">
+                        <span className="font-mono text-xs">{profile.vtAccount.id}</span>
+                        <Link
+                          to={`/admin/vt/accounts/${profile.vtAccount.id}`}
+                          className="text-primary underline-offset-4 hover:underline"
+                        >
+                          Mở trang quản trị tài khoản
+                        </Link>
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <DetailList
+                        columns={3}
+                        items={[
+                          { label: "Trạng thái", value: <StatusBadge status={profile.vtAccount.status} /> },
+                          { label: "Tiền ban đầu", value: formatMoney(profile.vtAccount.initialCashVnd) },
+                          { label: "Khả dụng", value: formatMoney(profile.vtAccount.cashAvailableVnd) },
+                          { label: "Đang giữ", value: formatMoney(profile.vtAccount.cashReservedVnd) },
+                          { label: "Chờ khớp", value: formatMoney(profile.vtAccount.cashPendingVnd) },
+                          {
+                            label: "Kích hoạt lúc",
+                            value: profile.vtAccount.activatedAt ? (
+                              <span className="tabular-nums">{formatDateTime(profile.vtAccount.activatedAt)}</span>
+                            ) : (
+                              dash(null)
+                            ),
+                          },
+                          {
+                            label: "Khóa lúc",
+                            value: profile.vtAccount.frozenAt ? (
+                              <span className="tabular-nums">{formatDateTime(profile.vtAccount.frozenAt)}</span>
+                            ) : (
+                              dash(null)
+                            ),
+                          },
+                          { label: "Lý do khóa", value: dash(profile.vtAccount.freezeReason) },
+                        ]}
+                      />
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <p className="rounded-lg bg-card px-3 py-2 text-sm text-muted-foreground ring-1 ring-border/60 ring-inset dark:ring-0">
+                    Người dùng chưa có tài khoản Demo Trading.
                   </p>
-                }
-              />
-            </TabsContent>
+                )}
 
-            <TabsContent value="vt" className="mt-4 space-y-4">
-              <UserTradingInsights demoTrading={profile.demoTrading} bot={profile.bot} />
-              {profile.vtAccount ? (
-                <Card size="sm">
-                  <CardHeader>
-                    <CardTitle>Tài khoản Demo Trading</CardTitle>
-                    <CardDescription className="flex flex-wrap items-center gap-2">
-                      <span className="font-mono text-xs">{profile.vtAccount.id}</span>
-                      <Link
-                        to={`/admin/vt/accounts/${profile.vtAccount.id}`}
-                        className="text-primary underline-offset-4 hover:underline"
-                      >
-                        Mở trang quản trị tài khoản
-                      </Link>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <DetailList
-                      columns={3}
-                      items={[
-                        { label: "Trạng thái", value: <StatusBadge status={profile.vtAccount.status} /> },
-                        { label: "Tiền ban đầu", value: formatMoney(profile.vtAccount.initialCashVnd) },
-                        { label: "Khả dụng", value: formatMoney(profile.vtAccount.cashAvailableVnd) },
-                        { label: "Đang giữ", value: formatMoney(profile.vtAccount.cashReservedVnd) },
-                        { label: "Chờ khớp", value: formatMoney(profile.vtAccount.cashPendingVnd) },
-                        {
-                          label: "Kích hoạt lúc",
-                          value: profile.vtAccount.activatedAt ? (
-                            <span className="tabular-nums">{formatDateTime(profile.vtAccount.activatedAt)}</span>
-                          ) : (
-                            dash(null)
-                          ),
-                        },
-                        {
-                          label: "Khóa lúc",
-                          value: profile.vtAccount.frozenAt ? (
-                            <span className="tabular-nums">{formatDateTime(profile.vtAccount.frozenAt)}</span>
-                          ) : (
-                            dash(null)
-                          ),
-                        },
-                        { label: "Lý do khóa", value: dash(profile.vtAccount.freezeReason) },
-                      ]}
-                    />
-                  </CardContent>
-                </Card>
-              ) : (
-                <p className="rounded-lg bg-card px-3 py-2 text-sm text-muted-foreground ring-1 ring-border/60 ring-inset dark:ring-0">
-                  Người dùng chưa có tài khoản Demo Trading.
-                </p>
-              )}
-
-              <AdminDataTable
-                columns={vtOrderColumns}
-                rows={profile.vtRecentOrders}
-                rowKey={(row) => row.id}
-                emptyLabel="Chưa có lệnh Demo Trading nào."
-                footer={
-                  <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
-                    Hiển thị 10 lệnh gần nhất theo máy chủ. Giá là giá đặt của lệnh giới hạn.
-                  </p>
-                }
-              />
-            </TabsContent>
-
-            <TabsContent value="academy" className="mt-4">
-              <UserAcademyTab academy={profile.academy} />
-            </TabsContent>
-
-            <TabsContent value="logins" className="mt-4">
-              <AdminDataTable
-                columns={loginColumns}
-                rows={historyRows}
-                rowKey={(row) => row.id}
-                loading={loginHistory.isLoading || loginHistory.isFetching}
-                error={loginHistory.error ? errorMessage(loginHistory.error) : null}
-                onRetry={() => void loginHistory.refetch()}
-                emptyLabel="Chưa có lần đăng nhập nào được ghi lại."
-                pagination={{
-                  page: historyPage,
-                  pageSize: historyPageSize,
-                  total: loginHistory.data?.total ?? 0,
-                  totalPages: loginHistory.data?.totalPages ?? 1,
-                  onPageChange: setHistoryPage,
-                  pageSizeOptions: [20, 50, 100, 200],
-                  onPageSizeChange: (size) => {
-                    setHistoryPageSize(size)
-                    setHistoryPage(1)
-                  },
-                }}
-              />
-            </TabsContent>
-          </Tabs>
+                <AdminDataTable
+                  columns={vtOrderColumns}
+                  rows={profile.vtRecentOrders}
+                  rowKey={(row) => row.id}
+                  emptyLabel="Chưa có lệnh Demo Trading nào."
+                  footer={
+                    <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+                      Hiển thị 10 lệnh gần nhất theo máy chủ. Giá là giá đặt của lệnh giới hạn.
+                    </p>
+                  }
+                />
+              </>
+            }
+          />
         </>
       ) : null}
 

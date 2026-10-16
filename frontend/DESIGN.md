@@ -223,6 +223,7 @@ All `/admin/**` routes live under `AdminLayout`.
 - Detail pages expose safe mutations with confirmation and server response.
 - The client role gate is navigation safety only. Every admin API remains server-authorized.
 - Team leads (`team_lead`) see a reduced layout: the Quản lý group with Tổng quan and Người dùng, a referral code card at the bottom of the navigation, and their name with a secondary "Trưởng nhóm" badge in the top bar. The badge is a plain role label, so it never uses the violet `accent`.
+- The team variants of Tổng quan, Người dùng and user detail reuse the admin building blocks (`overview-panels.tsx`, `user-360-body.tsx`, `UserAcademyTab`) so both scopes look the same. Profit columns show a percentage only, coloured with `text-price-up`/`text-price-down` and uncoloured at zero; a missing account reads "Chưa kích hoạt". The team user detail is read-only apart from "Loại khỏi nhóm" and never links to an admin-only page.
 - Reason-required confirmations (appoint, policy change, revoke, add, move, or remove a group member) use the shared `ReasonDialog`; the confirm button stays disabled until the reason is filled and, for edits, until something changed.
 
 ## 6. Components

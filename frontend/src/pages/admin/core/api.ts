@@ -130,36 +130,39 @@ type WireMetricsOverview = {
 
 type WireDailyRevenuePoint = { date: string; paid_orders: number; revenue_vnd: number }
 
+/** Shared by `admin/metrics/overview` and the group-scoped `team/metrics/overview` (same shape). */
+export function adaptMetricsOverview(raw: WireMetricsOverview): MetricsOverview {
+  return {
+    totalUsers: raw.total_users,
+    activeUsers: raw.active_users,
+    newUsersToday: raw.new_users_today,
+    newUsersLast7d: raw.new_users_last_7d,
+    newUsersLast30d: raw.new_users_last_30d,
+    activeSubscribers: raw.active_subscribers,
+    activeTrialCount: raw.active_trial_count,
+    activePaidCount: raw.active_paid_count,
+    planDistribution: (raw.plan_distribution ?? []).map(adaptPlanDistributionPoint),
+    mrrVnd: raw.mrr_vnd,
+    revenueTodayVnd: raw.revenue_today_vnd,
+    revenueLast7dVnd: raw.revenue_last_7d_vnd,
+    revenueLast30dVnd: raw.revenue_last_30d_vnd,
+    vtActiveAccounts: raw.vt_active_accounts,
+    vtOrdersToday: raw.vt_orders_today,
+    activeReferralOfferCount: raw.active_referral_offer_count ?? 0,
+    generatedAt: raw.generated_at,
+  }
+}
+
+export function adaptDailyRevenuePoint(point: WireDailyRevenuePoint): DailyRevenuePoint {
+  return { date: point.date, paidOrders: point.paid_orders, revenueVnd: point.revenue_vnd }
+}
+
 export const metricsApi = {
-  overview: async (): Promise<MetricsOverview> => {
-    const raw = await api<WireMetricsOverview>("/admin/metrics/overview")
-    return {
-      totalUsers: raw.total_users,
-      activeUsers: raw.active_users,
-      newUsersToday: raw.new_users_today,
-      newUsersLast7d: raw.new_users_last_7d,
-      newUsersLast30d: raw.new_users_last_30d,
-      activeSubscribers: raw.active_subscribers,
-      activeTrialCount: raw.active_trial_count,
-      activePaidCount: raw.active_paid_count,
-      planDistribution: (raw.plan_distribution ?? []).map(adaptPlanDistributionPoint),
-      mrrVnd: raw.mrr_vnd,
-      revenueTodayVnd: raw.revenue_today_vnd,
-      revenueLast7dVnd: raw.revenue_last_7d_vnd,
-      revenueLast30dVnd: raw.revenue_last_30d_vnd,
-      vtActiveAccounts: raw.vt_active_accounts,
-      vtOrdersToday: raw.vt_orders_today,
-      activeReferralOfferCount: raw.active_referral_offer_count ?? 0,
-      generatedAt: raw.generated_at,
-    }
-  },
+  overview: async (): Promise<MetricsOverview> =>
+    adaptMetricsOverview(await api<WireMetricsOverview>("/admin/metrics/overview")),
   revenue: async (days = 30): Promise<DailyRevenuePoint[]> => {
     const raw = await api<WireDailyRevenuePoint[]>(`/admin/metrics/revenue?days=${days}`)
-    return raw.map((point) => ({
-      date: point.date,
-      paidOrders: point.paid_orders,
-      revenueVnd: point.revenue_vnd,
-    }))
+    return raw.map(adaptDailyRevenuePoint)
   },
 }
 
@@ -382,7 +385,7 @@ export type User360 = {
   academy: AcademyProgress | null
 }
 
-type WireSubscriptionBrief = Required<LegacySubscriptionBrief>
+type WireSubscriptionBrief = LegacySubscriptionBrief
 
 type WirePaymentOrderBrief = LegacyPaymentOrderBrief
 
@@ -448,9 +451,9 @@ function adaptSubscription(raw: WireSubscriptionBrief): SubscriptionBrief {
     currentPeriodStart: raw.current_period_start,
     currentPeriodEnd: raw.current_period_end,
     isTrial: raw.is_trial,
-    cancelledAt: raw.cancelled_at,
-    cancelledByUserId: raw.cancelled_by_user_id,
-    cancelReason: raw.cancel_reason,
+    cancelledAt: raw.cancelled_at ?? null,
+    cancelledByUserId: raw.cancelled_by_user_id ?? null,
+    cancelReason: raw.cancel_reason ?? null,
   }
 }
 
