@@ -25955,7 +25955,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 714 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 716 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -36524,6 +36524,111 @@
         "x-response-schema-status": "legacy-mapped"
       }
     },
+    "/api/v1/auth/referral-codes/{code}": {
+      "get": {
+        "operationId": "AuthController_referralCode[0]",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "offer_days": {
+                      "enum": [
+                        7,
+                        30,
+                        90,
+                        180,
+                        365
+                      ],
+                      "nullable": true,
+                      "type": "integer"
+                    },
+                    "offer_type": {
+                      "enum": [
+                        "none",
+                        "days",
+                        "lifetime"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "valid": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "valid",
+                    "offer_type",
+                    "offer_days"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LegacyApiError"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "tags": [
+          "Authentication"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v1/auth/refresh": {
       "post": {
         "operationId": "AuthController_refresh[0]",
@@ -36638,10 +36743,8 @@
                     "type": "string"
                   },
                   "referral_code": {
-                    "maxLength": 32,
-                    "minLength": 3,
                     "nullable": true,
-                    "pattern": "^[A-Z0-9_-]+$",
+                    "pattern": "^[A-Za-z0-9._-]{3,32}$",
                     "type": "string"
                   },
                   "username": {
@@ -78103,6 +78206,111 @@
         "x-response-schema-status": "legacy-mapped"
       }
     },
+    "/api/v2/auth/referral-codes/{code}": {
+      "get": {
+        "operationId": "AuthController_referralCode[1]",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "offer_days": {
+                      "enum": [
+                        7,
+                        30,
+                        90,
+                        180,
+                        365
+                      ],
+                      "nullable": true,
+                      "type": "integer"
+                    },
+                    "offer_type": {
+                      "enum": [
+                        "none",
+                        "days",
+                        "lifetime"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "valid": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "valid",
+                    "offer_type",
+                    "offer_days"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "tags": [
+          "Authentication"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/auth/refresh": {
       "post": {
         "operationId": "AuthController_refresh[1]",
@@ -78217,10 +78425,8 @@
                     "type": "string"
                   },
                   "referral_code": {
-                    "maxLength": 32,
-                    "minLength": 3,
                     "nullable": true,
-                    "pattern": "^[A-Z0-9_-]+$",
+                    "pattern": "^[A-Za-z0-9._-]{3,32}$",
                     "type": "string"
                   },
                   "username": {
@@ -136862,9 +137068,9 @@
   "x-metadata-quality": {
     "authenticatedOperations": 531,
     "noContentResponses": 18,
-    "operations": 732,
-    "publicOperations": 201,
-    "responseSchemas": 714,
+    "operations": 734,
+    "publicOperations": 203,
+    "responseSchemas": 716,
     "untypedResponses": 0
   }
 }

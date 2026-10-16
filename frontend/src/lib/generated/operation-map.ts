@@ -69,6 +69,7 @@ export interface OperationMap {
   "GET /api/v2/alerts/signals": { request: T.AlertsControllerListSignals1Data; response: T.AlertsControllerListSignals1Responses[keyof T.AlertsControllerListSignals1Responses] }
   "GET /api/v2/alerts/telegram": { request: T.AlertsControllerTelegramStatus1Data; response: T.AlertsControllerTelegramStatus1Responses[keyof T.AlertsControllerTelegramStatus1Responses] }
   "GET /api/v2/auth/me": { request: T.AuthControllerMe1Data; response: T.AuthControllerMe1Responses[keyof T.AuthControllerMe1Responses] }
+  "GET /api/v2/auth/referral-codes/{code}": { request: T.AuthControllerReferralCode1Data; response: T.AuthControllerReferralCode1Responses[keyof T.AuthControllerReferralCode1Responses] }
   "GET /api/v2/auth/reset-password": { request: T.AuthControllerResetPasswordForm1Data; response: T.AuthControllerResetPasswordForm1Responses[keyof T.AuthControllerResetPasswordForm1Responses] }
   "GET /api/v2/auth/username-available": { request: T.AuthControllerUsernameAvailable1Data; response: T.AuthControllerUsernameAvailable1Responses[keyof T.AuthControllerUsernameAvailable1Responses] }
   "GET /api/v2/auth/verify-email": { request: T.AuthControllerVerifyEmail1Data; response: T.AuthControllerVerifyEmail1Responses[keyof T.AuthControllerVerifyEmail1Responses] }
@@ -471,6 +472,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/alerts/signals": { request: "AlertsControllerListSignals1Data", response: "AlertsControllerListSignals1Responses" },
   "GET /api/v2/alerts/telegram": { request: "AlertsControllerTelegramStatus1Data", response: "AlertsControllerTelegramStatus1Responses" },
   "GET /api/v2/auth/me": { request: "AuthControllerMe1Data", response: "AuthControllerMe1Responses" },
+  "GET /api/v2/auth/referral-codes/{code}": { request: "AuthControllerReferralCode1Data", response: "AuthControllerReferralCode1Responses" },
   "GET /api/v2/auth/reset-password": { request: "AuthControllerResetPasswordForm1Data", response: "AuthControllerResetPasswordForm1Responses" },
   "GET /api/v2/auth/username-available": { request: "AuthControllerUsernameAvailable1Data", response: "AuthControllerUsernameAvailable1Responses" },
   "GET /api/v2/auth/verify-email": { request: "AuthControllerVerifyEmail1Data", response: "AuthControllerVerifyEmail1Responses" },

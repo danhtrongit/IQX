@@ -14812,6 +14812,48 @@ export type AuthControllerMe0Responses = {
 export type AuthControllerMe0Response =
   AuthControllerMe0Responses[keyof AuthControllerMe0Responses];
 
+export type AuthControllerReferralCode0Data = {
+  body?: never;
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v1/auth/referral-codes/{code}";
+};
+
+export type AuthControllerReferralCode0Errors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type AuthControllerReferralCode0Error =
+  AuthControllerReferralCode0Errors[keyof AuthControllerReferralCode0Errors];
+
+export type AuthControllerReferralCode0Responses = {
+  200: {
+    offer_days: 7 | 30 | 90 | 180 | 365;
+    offer_type: "none" | "days" | "lifetime";
+    valid: boolean;
+  };
+};
+
+export type AuthControllerReferralCode0Response =
+  AuthControllerReferralCode0Responses[keyof AuthControllerReferralCode0Responses];
+
 export type AuthControllerRefresh0Data = {
   body: {
     refresh_token: string;
@@ -31125,6 +31167,48 @@ export type AuthControllerMe1Responses = {
 
 export type AuthControllerMe1Response =
   AuthControllerMe1Responses[keyof AuthControllerMe1Responses];
+
+export type AuthControllerReferralCode1Data = {
+  body?: never;
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/auth/referral-codes/{code}";
+};
+
+export type AuthControllerReferralCode1Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AuthControllerReferralCode1Error =
+  AuthControllerReferralCode1Errors[keyof AuthControllerReferralCode1Errors];
+
+export type AuthControllerReferralCode1Responses = {
+  200: {
+    offer_days: 7 | 30 | 90 | 180 | 365;
+    offer_type: "none" | "days" | "lifetime";
+    valid: boolean;
+  };
+};
+
+export type AuthControllerReferralCode1Response =
+  AuthControllerReferralCode1Responses[keyof AuthControllerReferralCode1Responses];
 
 export type AuthControllerRefresh1Data = {
   body: {

@@ -3583,6 +3583,7 @@
     "GET /api/v2/ai/insight/{symbol}",
     "GET /api/v2/ai/patterns/{kind}/symbols",
     "GET /api/v2/alerts/signals",
+    "GET /api/v2/auth/referral-codes/{code}",
     "GET /api/v2/auth/reset-password",
     "GET /api/v2/auth/username-available",
     "GET /api/v2/auth/verify-email",

@@ -337,6 +337,11 @@
       "requestType": "AuthControllerMe1Data",
       "responseType": "AuthControllerMe1Responses"
     },
+    "GET /api/v2/auth/referral-codes/{code}": {
+      "operationId": "AuthController_referralCode[1]",
+      "requestType": "AuthControllerReferralCode1Data",
+      "responseType": "AuthControllerReferralCode1Responses"
+    },
     "GET /api/v2/auth/reset-password": {
       "operationId": "AuthController_resetPasswordForm[1]",
       "requestType": "AuthControllerResetPasswordForm1Data",

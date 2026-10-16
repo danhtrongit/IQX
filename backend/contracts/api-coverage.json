@@ -3651,6 +3651,7 @@
   ],
   "quality": {
     "operationsWithoutDeclaredAuth": [
+      "GET /api/v1/auth/referral-codes/{code}",
       "GET /api/v1/auth/reset-password",
       "GET /api/v1/auth/username-available",
       "GET /api/v1/auth/verify-email",
@@ -3741,6 +3742,7 @@
       "GET /api/v1/market-data/trading/{symbol}/supply-demand/summary",
       "GET /api/v1/premium/plans",
       "GET /api/v1/virtual-trading/leaderboard",
+      "GET /api/v2/auth/referral-codes/{code}",
       "GET /api/v2/auth/reset-password",
       "GET /api/v2/auth/username-available",
       "GET /api/v2/auth/verify-email",
@@ -3874,8 +3876,8 @@
     "semanticVerification": "manual-review-required"
   },
   "runtime": {
-    "documentedHttp": 732,
-    "registeredHttp": 1167,
+    "documentedHttp": 734,
+    "registeredHttp": 1171,
     "websocketAdapter": "WsAdapter",
     "websocketGateways": 2
   },
