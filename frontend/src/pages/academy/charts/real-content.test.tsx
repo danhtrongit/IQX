@@ -349,3 +349,54 @@ describe("real content: review regressions", () => {
     }
   })
 })
+
+type TextBox = { text: string; x0: number; x1: number; y0: number; y1: number }
+
+/** Boxes of every text line of an SVG at 0.6em per glyph, a semibold estimate wider than the 0.56em renderers use. */
+function svgTextBoxes(svg: SVGSVGElement): TextBox[] {
+  const boxes: TextBox[] = []
+  svg.querySelectorAll("text").forEach((node) => {
+    const size = Number(/text-\[(\d+(?:\.\d+)?)px\]/.exec(node.getAttribute("class") ?? "")?.[1] ?? 11)
+    const anchor = node.getAttribute("text-anchor") ?? "start"
+    const x = Number(node.getAttribute("x"))
+    let y = Number(node.getAttribute("y"))
+    const spans = [...node.querySelectorAll("tspan")]
+    const lines = spans.length ? spans.map((span) => [span.textContent ?? "", Number(span.getAttribute("dy") ?? 0)] as const) : [[node.textContent ?? "", 0] as const]
+    for (const [text, dy] of lines) {
+      y += dy
+      const w = text.length * size * 0.6
+      const x0 = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x
+      boxes.push({ text, x0, x1: x0 + w, y0: y - size * 0.72, y1: y + size * 0.2 })
+    }
+  })
+  return boxes
+}
+
+/** Text lines that leave the drawing or overlap another text line. */
+function textCollisions(svg: SVGSVGElement): string[] {
+  const boxes = svgTextBoxes(svg)
+  const width = Number((svg.getAttribute("viewBox") ?? "").split(/\s+/)[2])
+  const found: string[] = []
+  boxes.forEach((a, index) => {
+    if (a.x0 < 0 || a.x1 > width) found.push(`outside: ${a.text}`)
+    for (const b of boxes.slice(index + 1)) {
+      if (Math.min(a.x1, b.x1) > Math.max(a.x0, b.x0) && Math.min(a.y1, b.y1) > Math.max(a.y0, b.y0)) found.push(`${a.text} | ${b.text}`)
+    }
+  })
+  return found
+}
+
+const schematics = lessons.flatMap((lesson) =>
+  Object.entries(lesson.charts)
+    .filter(([, chart]) => (chart as { kind?: string }).kind === "schematic")
+    .map(([id]) => [lesson.id, id] as const),
+)
+
+describe("real content: schematic labels", () => {
+  for (const width of [317, 768]) {
+    it.each(schematics)(`%s %s keeps every label apart and inside at ${width}px`, (lessonId, chartId) => {
+      const { container } = renderLesson(lessonById(lessonId), width)
+      expect(textCollisions(chartSvg(container, chartId))).toEqual([])
+    })
+  }
+})
