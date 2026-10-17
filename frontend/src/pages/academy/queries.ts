@@ -15,13 +15,16 @@ import {
   fetchAttemptHistory,
   fetchCatalog,
   fetchItem,
+  fetchNotes,
   fetchProgress,
   resumeAttempt,
   type CatalogResponse,
   type HistoryResponse,
   type ItemResponse,
+  type NotesResponse,
   type ProgressResponse,
   type ResumeResponse,
+  type SubmitResult,
 } from "./api"
 
 export const academyKeys = {
@@ -52,19 +55,24 @@ export const COMPLETION_DEPENDENT_ROOTS: readonly QueryKey[] = [
   ["strategy"],
 ]
 
-/** Refresh everything that depends on a lesson completion. Safe to call after a committed response only. */
-export function invalidateAfterCompletion(queryClient: QueryClient): void {
-  void queryClient.invalidateQueries({ queryKey: ["academy", "progress"] })
-  void queryClient.invalidateQueries({ queryKey: ["academy", "item"] })
+/**
+ * After a graded submit (passed or not): resume and history of the item change. A pass also moves
+ * progress, the item itself (state, reward), the next item (it may just have opened) and every query
+ * root that depends on completions, coins or grants. Safe to call after a committed response only.
+ */
+export function invalidateAfterSubmit(
+  queryClient: QueryClient,
+  userId: string | undefined,
+  itemId: string,
+  result: Pick<SubmitResult, "passed" | "completion" | "next_item_id">,
+): void {
+  void queryClient.invalidateQueries({ queryKey: academyKeys.resume(userId, itemId) })
+  void queryClient.invalidateQueries({ queryKey: academyKeys.history(userId, itemId) })
+  void queryClient.invalidateQueries({ queryKey: academyKeys.item(userId, itemId) })
+  if (!result.passed && !result.completion.completed) return
+  void queryClient.invalidateQueries({ queryKey: academyKeys.progress(userId) })
+  if (result.next_item_id) void queryClient.invalidateQueries({ queryKey: academyKeys.item(userId, result.next_item_id) })
   for (const queryKey of COMPLETION_DEPENDENT_ROOTS) void queryClient.invalidateQueries({ queryKey })
-}
-
-/** After a graded submit (passed or not): lesson stats, resume and history change; a pass also moves progress, coins and grants. */
-export function invalidateAfterSubmit(queryClient: QueryClient, completed: boolean): void {
-  void queryClient.invalidateQueries({ queryKey: ["academy", "resume"] })
-  void queryClient.invalidateQueries({ queryKey: ["academy", "history"] })
-  if (completed) invalidateAfterCompletion(queryClient)
-  else void queryClient.invalidateQueries({ queryKey: ["academy", "item"] })
 }
 
 export function useAcademyCatalog() {
@@ -97,6 +105,19 @@ export function useAcademyItem(lessonId: string | null) {
     enabled: isAuthenticated && !!lessonId,
     staleTime: 60_000,
     retry: false,
+  })
+}
+
+/** Workpads, checklists and roleplay scores of the account for one item (only items with interactive blocks). */
+export function useAcademyNotes(itemId: string, enabled: boolean) {
+  const { user, isAuthenticated } = useAuth()
+  return useQuery<NotesResponse>({
+    queryKey: academyKeys.notes(user?.id, itemId),
+    queryFn: ({ signal }) => fetchNotes(itemId, signal),
+    enabled: isAuthenticated && enabled,
+    staleTime: Infinity,
+    retry: false,
+    refetchOnWindowFocus: false,
   })
 }
 

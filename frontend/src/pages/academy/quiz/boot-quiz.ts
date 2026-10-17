@@ -1,5 +1,5 @@
 /**
- * Starting the quiz of a lesson. Pure async logic, kept apart from the screens so the rules are
+ * Starting the quiz of a lesson, the practice room or a chapter exam. Pure async logic, kept apart from the screens so the rules are
  * easy to read and to test:
  *
  * - `start`  resume the latest open attempt (with its saved draft) if the server has one, otherwise
@@ -33,9 +33,9 @@ export type BootResult =
   | { kind: "result"; result: SubmitResult }
 
 /** Key of this run: a start reuses the pending key of the lesson, a retake or a first start gets a fresh one. */
-export function pickAttemptKey(userId: string | undefined, lessonId: string, intent: QuizIntent): string {
+export function pickAttemptKey(userId: string | undefined, catalogVersion: string, lessonId: string, intent: QuizIntent): string {
   if (intent.kind === "start") {
-    const stored = loadAttemptKey(userId, lessonId)
+    const stored = loadAttemptKey(userId, catalogVersion, lessonId)
     if (stored && !stored.done) return stored.key
   }
   return newRequestId()
@@ -66,13 +66,13 @@ export async function bootQuiz({
     })
     if (resume.attempt) return { kind: "taking", attempt: resume.attempt, draft: resume.attempt.draft, resumed: true }
   }
-  saveAttemptKey(userId, lessonId, { key, done: false })
+  saveAttemptKey(userId, catalogVersion, lessonId, { key, done: false })
   const created = await createAttempt({ lesson_id: lessonId, catalog_version: catalogVersion, idempotency_key: key }, signal)
   if (created.status === "submitted") {
     // The key replays an attempt that was already graded (a lost response): a submit replay returns its stored result.
     const result = await submitAttempt(created.attempt_id, [], key, signal)
-    markAttemptDone(userId, lessonId)
-    invalidateAfterSubmit(queryClient, result.completion.completed)
+    markAttemptDone(userId, catalogVersion, lessonId)
+    invalidateAfterSubmit(queryClient, userId, lessonId, result)
     return { kind: "result", result }
   }
   return { kind: "taking", attempt: created, draft: null, resumed: false }

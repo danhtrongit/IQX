@@ -72,8 +72,8 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
     if (mocks.workspaceStatus === 404) throw new ApiError("Not found", 404)
     return { data: { active_mascot: mocks.mascot ? { mascot_id: mocks.mascot } : null } }
   }
-  if (path === "/shop" || path.startsWith("/shop/") || path === "/academy/progress") return shopBackend.handle(path, init)
-  // The catalog and the lessons of the Học viện tool (progress above is the Shop test double's).
+  if (path === "/shop" || path.startsWith("/shop/")) return shopBackend.handle(path, init)
+  // The catalog, progress and items of the Học viện tool (the Shop reads the same progress route).
   if (path.startsWith("/academy") && academy.handler) return academy.handler(path, init)
   if (path === "/virtual-trading/account") return account
   if (path === "/virtual-trading/portfolio") {
@@ -176,11 +176,11 @@ describe("DemoTradingPage for a brand-new user", () => {
 
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
-    expect(within(panel()).getByText("13 chương · 71 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("43 bài học")).toBeTruthy()
     // The panel lists the real catalog and the learner's progress.
-    expect(await within(panel()).findByText("CHƯƠNG 1")).toBeTruthy()
+    expect(await within(panel()).findByText("Chương 1 · Nền tảng")).toBeTruthy()
     expect(within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })).toBeTruthy()
-    expect(within(panel()).getAllByRole("button", { name: /^Xem bài/ }).length).toBeGreaterThan(0)
+    expect(await within(panel()).findByRole("button", { name: /^Học bài/ })).toBeTruthy()
     expect(screen.queryByTestId("academy-empty")).toBeNull()
     // The main area is the tool's own view: no tablist, no page heading block.
     expect(screen.queryByRole("tablist", { name: "Nội dung demo trading" })).toBeNull()
@@ -241,7 +241,7 @@ describe("DemoTradingPage for a brand-new user", () => {
     const { router } = await renderPage("/demo-trading?view=journey&content=journey&symbol=FPT")
     await waitFor(() => expect(router.state.location.search).toBe("?view=academy&symbol=FPT"))
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
-    expect(within(panel()).getByText("13 chương · 71 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("43 bài học")).toBeTruthy()
     expect(paths().filter((call) => /\/cap\d|\/journey|\/bot\/mascot/.test(call))).toEqual([])
   })
 

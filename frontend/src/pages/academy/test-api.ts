@@ -29,6 +29,10 @@ export type FakeOptions = {
   lessons?: Record<string, Partial<LessonContent>>
   /** An open attempt of ch01-l01 the server can resume, with its saved draft. */
   openAttempt?: { draft: Record<string, string>; revision?: number }
+  /** Stored scenario choices by item id. */
+  scenarios?: Record<string, number>
+  /** Stored notes by item id. */
+  notes?: Record<string, Partial<NotesResponse>>
 }
 
 const notFound = () => new ApiError("Không tìm thấy bài học.", 404, "LESSON_NOT_FOUND")
@@ -44,8 +48,13 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
   const holds = new Map<string, Promise<void>>()
   const attempts = new Map<string, AttemptRecord>()
   const drafts = new Map<string, Draft>()
-  const scenarios = new Map<string, number>()
-  const notes = new Map<string, NotesResponse>()
+  const scenarios = new Map<string, number>(Object.entries(options.scenarios ?? {}))
+  const notes = new Map<string, NotesResponse>(
+    Object.entries(options.notes ?? {}).map(([id, stored]) => [
+      id,
+      { lesson_id: id, revision: 1, texts: {}, checks: {}, scores: {}, updated_at: "2026-10-08T01:00:00.000Z", ...stored },
+    ]),
+  )
   let sequence = 0
   let open: string | null = null
   const state = { rewardStatus: "credited" as "credited" | "unavailable" | "already_rewarded" }
@@ -242,5 +251,27 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
       return release
     },
     count: (prefix: string) => calls.filter((call) => call.startsWith(prefix)).length,
+    notes,
+    drafts,
+    /** Another tab or device saves notes: the stored revision moves on. */
+    saveNotesElsewhere(itemId: string, patch: Partial<Pick<NotesResponse, "texts" | "checks" | "scores">>) {
+      const stored = notes.get(itemId) ?? { lesson_id: itemId, revision: 0, texts: {}, checks: {}, scores: {}, updated_at: null }
+      notes.set(itemId, {
+        ...stored,
+        revision: stored.revision + 1,
+        texts: { ...stored.texts, ...patch.texts },
+        checks: { ...stored.checks, ...patch.checks },
+        scores: { ...stored.scores, ...patch.scores },
+      })
+    },
+    /** Another tab or device saves a draft answer of an open attempt. */
+    saveDraftElsewhere(attemptId: string, questionId: string, optionId: string) {
+      const draft = drafts.get(attemptId) ?? { revision: 0, selections: {} }
+      draft.selections[questionId] = optionId
+      draft.revision += 1
+      drafts.set(attemptId, draft)
+    },
+    /** Catalog item by id (fixture names, kinds, question counts). */
+    item: (id: string) => byId.get(id)!,
   }
 }

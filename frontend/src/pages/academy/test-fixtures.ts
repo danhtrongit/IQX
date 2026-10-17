@@ -227,3 +227,17 @@ export function buildSubmitResult(item: CatalogItem, score: number, overrides: P
     ...overrides,
   }
 }
+
+/** Lesson keys of every required item before `itemId` in the chain: completing them opens `itemId`. */
+export function keysBefore(itemId: string, catalog: CatalogResponse = buildCatalog()): string[] {
+  const items = catalogItemsOf(catalog)
+  const at = items.findIndex((item) => item.id === itemId)
+  return items.slice(0, Math.max(0, at)).filter((item) => !item.optional).map((item) => item.lesson_key)
+}
+
+/** Lesson key of an item id in the fixture catalog. */
+export function keyOf(itemId: string, catalog: CatalogResponse = buildCatalog()): string {
+  const item = catalogItemsOf(catalog).find((candidate) => candidate.id === itemId)
+  if (!item) throw new Error(`unknown item ${itemId}`)
+  return item.lesson_key
+}
