@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { textWidth, wrapText, type GanttModel } from "./chart-math"
+import { textWidth, thinAxisLabels, wrapText, type AxisLabel, type GanttModel } from "./chart-math"
 import { ChartLegendList } from "./chart-legend"
 import { GRID_STROKE, LABEL_FILL, TONE_FILL, TONE_STROKE, textFill } from "./chart-theme"
 import { useChartWidth } from "./use-chart-width"
@@ -27,6 +27,14 @@ export function GanttChart({ model, label }: { model: GanttModel; label: string 
   const plotBottom = cursor
   const height = plotBottom + 20
   const columnWidth = model.columns ? (right - left) / model.columns.length : 0
+  const tickLabels = thinAxisLabels(
+    model.ticks.flatMap((tick, index): AxisLabel[] => {
+      if (!tick.label) return []
+      const at = x(tick.v)
+      const anchor = index === 0 && at - left < 16 ? "start" : index === model.ticks.length - 1 && right - at < 16 ? "end" : "middle"
+      return [{ index, text: tick.label, anchor, at }]
+    }),
+  )
 
   return (
     <div ref={measure} className="w-full min-w-0 space-y-2">
@@ -61,19 +69,12 @@ export function GanttChart({ model, label }: { model: GanttModel; label: string 
           </g>
         )}
         {model.ticks.map((tick, index) => (
-          <g key={index}>
-            <line x1={x(tick.v)} x2={x(tick.v)} y1={headerRow} y2={plotBottom} strokeWidth="0.6" strokeDasharray="2 4" className={GRID_STROKE} />
-            {tick.label && (
-              <text
-                x={x(tick.v)}
-                y={height - 6}
-                textAnchor={index === 0 && x(tick.v) - left < 16 ? "start" : index === model.ticks.length - 1 && right - x(tick.v) < 16 ? "end" : "middle"}
-                className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}
-              >
-                {tick.label}
-              </text>
-            )}
-          </g>
+          <line key={index} x1={x(tick.v)} x2={x(tick.v)} y1={headerRow} y2={plotBottom} strokeWidth="0.6" strokeDasharray="2 4" className={GRID_STROKE} />
+        ))}
+        {tickLabels.map((tick) => (
+          <text key={tick.index} x={tick.at} y={height - 6} textAnchor={tick.anchor} className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}>
+            {tick.text}
+          </text>
         ))}
         {model.rows.map((row, rowIndex) => {
           const top = tops[rowIndex]

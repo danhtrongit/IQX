@@ -503,6 +503,7 @@ export const CH1_BUILDERS: Record<string, Builder> = {
       { name: 'Dùng margin: mua 200 triệu', values: [40, -40], tone: 'p1' },
     ],
     value_labels: 'all',
+    value_format: { sign: true, suffix: '%' },
     bounds: [-45, 45],
     ticks: [-40, -20, 0, 20, 40],
   }),
@@ -546,6 +547,7 @@ export const CH1_BUILDERS: Record<string, Builder> = {
       { name: 'Hoàn trả mệnh giá', values: [null, null, null, 100000], tone: 'pos' },
     ],
     value_labels: 'all',
+    value_format: { sign: true },
   }),
   'c1l5-g3': () => {
     const X0 = 70;
@@ -1141,10 +1143,11 @@ export const CH1_BUILDERS: Record<string, Builder> = {
     labels: ['Lỗ 10%', 'Lỗ 20%', 'Lỗ 30%', 'Lỗ 40%', 'Lỗ 50%'],
     unit: '%',
     series: [
-      { name: 'Mức lỗ', values: [10, 20, 30, 40, 50], tone: 'neg' },
+      { name: 'Mức lỗ', values: [-10, -20, -30, -40, -50], tone: 'neg' },
       { name: 'Mức lãi cần để hòa vốn', values: [11, 25, 43, 67, 100], tone: 'pos' },
     ],
     value_labels: 'all',
+    value_format: { sign: true, suffix: '%' },
   }),
   'c1l10-g3': () => ({
     kind: 'segment_bar',

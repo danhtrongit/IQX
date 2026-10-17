@@ -15,6 +15,14 @@ export type FlowModel = Extract<LeafChartModel, { kind: "flow" }>
 export type DiagramModel = Extract<LeafChartModel, { kind: "diagram" }>
 export type CompareModel = Extract<ChartModel, { kind: "compare" }>
 
+/**
+ * A drawing that still reads at about 150px: candle glyphs and axis-less series sparklines (`.pat`, C4L4-s1..s4).
+ * Anything with axes, ticks or value labels lays out at MIN_CHART_WIDTH or more, so it never shares a phone row.
+ */
+export function isThumbnailChart(model: ChartModel | undefined): boolean {
+  return model?.kind === "candle_glyphs" || (model?.kind === "series_panels" && model.axes === false)
+}
+
 export type DataTable = { caption?: string; head: string[]; rows: string[][] }
 
 export const isNumber = (value: number | null | undefined): value is number =>
@@ -39,6 +47,66 @@ const compact = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 })
 export function formatCompact(value: number | null | undefined): string {
   if (!isNumber(value)) return "Không có"
   return compact.format(Math.abs(value) < 5e-3 ? 0 : value)
+}
+
+/**
+ * A category chart's value label or tick: formatCompact plus the model's `value_format` (an explicit "+" or "−"
+ * and a suffix such as "%"), so "−10%" and "+11%" read apart without relying on colour.
+ */
+export function formatCategoryValue(value: number, format: CategoryModel["value_format"]): string {
+  if (!format) return formatCompact(value)
+  const rounded = Math.abs(value) < 5e-3 ? 0 : value
+  const sign = format.sign && rounded !== 0 ? (rounded > 0 ? "+" : "−") : rounded < 0 ? "-" : ""
+  return `${sign}${formatCompact(Math.abs(rounded))}${format.suffix ?? ""}`
+}
+
+/**
+ * Stack totals of one category: positives grow up from 0, negatives grow down from 0 (C1L5-g2: the purchase
+ * outflow sits below the axis while interest and principal stack above it).
+ */
+export function stackTotals(model: CategoryModel, index: number): { pos: number; neg: number; net: number } {
+  let pos = 0
+  let neg = 0
+  for (const series of model.series) {
+    const value = series.values[index]
+    if (!isNumber(value)) continue
+    if (value >= 0) pos += value
+    else neg += value
+  }
+  return { pos, neg, net: pos + neg }
+}
+
+/** The series index whose segment carries a stacked category's value label: the last one with a value. */
+export function stackLabelSeries(model: CategoryModel, index: number): number {
+  for (let s = model.series.length - 1; s >= 0; s--) if (isNumber(model.series[s].values[index])) return s
+  return -1
+}
+
+export type AxisLabel = { index: number; text: string; anchor: "start" | "middle" | "end"; at: number }
+
+/**
+ * Drops axis labels that would print on top of each other (spec §5: no overlapping text at 390px). Greedy
+ * left to right with a 6px gap; the last label always stays, so a collision there drops the one before it.
+ * Grid lines are the caller's business: only the labels thin out.
+ */
+export function thinAxisLabels(labels: AxisLabel[], size = 10.5, gap = 6): AxisLabel[] {
+  const span = (label: AxisLabel): [number, number] => {
+    const w = textWidth(label.text, size)
+    const l = label.anchor === "start" ? label.at : label.anchor === "end" ? label.at - w : label.at - w / 2
+    return [l, l + w]
+  }
+  const kept: AxisLabel[] = []
+  for (const label of labels) {
+    const previous = kept[kept.length - 1]
+    if (previous && span(label)[0] < span(previous)[1] + gap) continue
+    kept.push(label)
+  }
+  const last = labels[labels.length - 1]
+  if (last && kept[kept.length - 1] !== last) {
+    while (kept.length > 0 && span(last)[0] < span(kept[kept.length - 1])[1] + gap) kept.pop()
+    kept.push(last)
+  }
+  return kept
 }
 
 /** Evenly spaced "nice" ticks covering [lo, hi]. */
@@ -205,12 +273,15 @@ export function categoryTable(model: CategoryModel): DataTable {
   return { caption: model.title, head, rows }
 }
 
-/** Value domain of a category chart: bounds, else 0..max (stacked sums), with negatives kept. */
+/** Value domain of a category chart: bounds, else 0..max (stacked: positive and negative stack sums), with negatives kept. */
 export function categoryRange(model: CategoryModel): [number, number] {
   if (model.bounds) return model.bounds
   const values =
     model.mode === "stacked"
-      ? model.labels.map((_, index) => model.series.reduce((sum, series) => sum + Math.max(0, series.values[index] ?? 0), 0))
+      ? model.labels.flatMap((_, index) => {
+          const { pos, neg } = stackTotals(model, index)
+          return [pos, neg]
+        })
       : model.series.flatMap((series) => series.values.filter(isNumber))
   const thresholds = model.threshold ? [model.threshold.value] : []
   if (values.length === 0) return [0, 1]
@@ -223,7 +294,9 @@ export function categoryRange(model: CategoryModel): [number, number] {
   const lo = Math.min(0, ...values, ...thresholds)
   const hi = Math.max(0, ...values, ...thresholds)
   if (lo === hi) return [0, 1]
-  return [lo, hi + (hi - lo) * 0.06]
+  // A label under a negative bar needs room above the category labels.
+  const labelled = model.value_labels !== undefined && model.value_labels !== "none"
+  return [lo < 0 && labelled ? lo - (hi - lo) * 0.1 : lo, hi + (hi - lo) * 0.06]
 }
 
 /* ------------------------------------------------------------------ segment_bar */

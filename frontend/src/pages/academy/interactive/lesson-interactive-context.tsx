@@ -1,7 +1,7 @@
-import type { ReactNode } from "react"
+import { useMemo, type ReactNode } from "react"
 
 import type { LessonContent } from "../content-types"
-import { hasNotes, LessonInteractiveContext, useLessonNotes } from "./use-lesson-notes"
+import { hasNotes, LessonInteractiveContext, notesKeysOf, useLessonNotes } from "./use-lesson-notes"
 
 /**
  * Gives the interactive blocks of one lesson (scenario, checklist, workpad, calculator, practice
@@ -9,6 +9,7 @@ import { hasNotes, LessonInteractiveContext, useLessonNotes } from "./use-lesson
  * have a notes block; the other lessons never call the notes endpoint.
  */
 export function LessonInteractiveProvider({ lesson, children }: { lesson: LessonContent; children: ReactNode }) {
-  const notes = useLessonNotes(lesson.id, hasNotes(lesson))
+  const keys = useMemo(() => notesKeysOf(lesson), [lesson])
+  const notes = useLessonNotes(lesson.id, hasNotes(lesson), keys)
   return <LessonInteractiveContext.Provider value={{ lesson, notes }}>{children}</LessonInteractiveContext.Provider>
 }

@@ -436,6 +436,35 @@ function goldens(lessons: Map<string, LessonFile>): string[] {
     ['RSI ≈ 81', 'RSI ≈ 50', 'RSI ≈ 19'],
     'C4L6-g0',
   );
+  eq(
+    rsi.items.map((i) => (i.model.kind === 'category' ? i.model.caption_tone : '')),
+    ['neg', 'price', 'pos'],
+    'C4L6-g0 caption tone',
+  );
+  // C1L5-g2: pay 100.000, receive 8.000 + 8.000 + 108.000; signed labels so the purchase bar reads as an outflow.
+  const bond = chartOf(lessons, 'c1l5-g2', 'category');
+  eq(
+    [
+      bond.labels.map((_, i) => bond.series.reduce((sum, s) => sum + (s.values[i] ?? 0), 0)),
+      bond.value_format?.sign,
+    ],
+    [[-100000, 8000, 8000, 108000], true],
+    'C1L5-g2',
+  );
+  // C1L10-g2: losses are negative and labelled "−10%", the break-even gains "+11%".
+  const loss = chartOf(lessons, 'c1l10-g2', 'category');
+  eq(
+    [loss.series.map((s) => s.values), loss.value_format],
+    [
+      [
+        [-10, -20, -30, -40, -50],
+        [11, 25, 43, 67, 100],
+      ],
+      { sign: true, suffix: '%' },
+    ],
+    'C1L10-g2',
+  );
+  eq(chartOf(lessons, 'c1l4-g4', 'category').value_format, { sign: true, suffix: '%' }, 'C1L4-g4');
   const sc = chartOf(lessons, 'c2l1-g1', 'category');
   eq(
     sc.series.map((s) => Math.round(s.values[s.values.length - 1] ?? 0)),

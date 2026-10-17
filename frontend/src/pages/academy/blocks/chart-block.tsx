@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils"
 import { ChartLegendList } from "../charts/chart-legend"
-import { chartLabel, hasDataTable } from "../charts/chart-math"
+import { chartLabel, hasDataTable, isThumbnailChart } from "../charts/chart-math"
 import { ChartDataTable, LessonChart } from "../charts/lesson-chart"
 import type { ChartModel } from "../content-types"
 import type { BlockOf } from "./block-types"
@@ -8,9 +8,9 @@ import { InlineText } from "./inline-text"
 
 type Charts = Readonly<Record<string, ChartModel>>
 
-/** Thumbnail grids keep two columns on a phone and reach their own column count from 560px. */
+/** Grids reach their own column count from 560px; below it thumbnails keep two columns, axis charts one. */
 const GRID_COLUMNS = {
-  2: "",
+  2: "@min-[560px]:grid-cols-2",
   3: "@min-[560px]:grid-cols-3",
   4: "@min-[560px]:grid-cols-4",
   5: "@min-[560px]:grid-cols-3 @min-[720px]:grid-cols-5",
@@ -47,8 +47,9 @@ export function ChartBlock({ block, charts }: { block: BlockOf<"chart">; charts:
 }
 
 /**
- * `.st4`/`.pat` thumbnails (`grid`, at least two columns on a phone) and `.adv` icon rows (`rows`,
- * text beside the chart, stacked under it below 560px).
+ * `grid`: `.pat`/`.st4` figures, two columns on a phone only when every item is a thumbnail (the mockup's `.st4`
+ * of C5L2 axis charts drops to one column). `rows`: `.adv` icon rows, text beside the chart, stacked under it
+ * below 560px.
  */
 export function ChartGridBlock({ block, charts }: { block: BlockOf<"chart_grid">; charts: Charts }) {
   if (block.layout === "rows") {
@@ -71,13 +72,14 @@ export function ChartGridBlock({ block, charts }: { block: BlockOf<"chart_grid">
       </div>
     )
   }
+  const thumbnails = block.items.every((item) => isThumbnailChart(charts[item.chart_id]))
   return (
-    <div className={cn("grid grid-cols-2 gap-3", GRID_COLUMNS[block.columns])}>
+    <div className={cn("grid gap-3", thumbnails ? "grid-cols-2" : "grid-cols-1", GRID_COLUMNS[block.columns])}>
       {block.items.map((item) => {
         const model = charts[item.chart_id]
         return (
           <figure key={item.chart_id} data-chart-id={item.chart_id} className="m-0 flex min-w-0 flex-col gap-1.5 rounded-md border border-border p-2">
-            <div className="mx-auto w-full max-w-[180px] min-w-0 @min-[560px]:max-w-none">
+            <div className={cn("mx-auto w-full min-w-0", thumbnails && "max-w-[180px] @min-[560px]:max-w-none")}>
               {model ? <LessonChart model={model} label={chartLabel(model, item.title)} /> : <MissingChart />}
             </div>
             <figcaption className="space-y-0.5">

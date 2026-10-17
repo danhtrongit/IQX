@@ -27,7 +27,7 @@ export function ClientCaseBlock({ block }: { block: PracticeCaseData }) {
       </h4>
       <div className="mt-3 grid gap-3 min-[560px]:grid-cols-3">
         <div className="rounded-md border border-border p-3">
-          <p className="text-xs font-semibold text-academy-subtle">Thông tin</p>
+          <p className="text-xs font-semibold text-academy-subtle">Thông tin khách</p>
           <ul className="m-0 mt-1.5 list-disc space-y-1 pl-4 text-sm leading-6 text-foreground">
             {block.profile.info.map((line, index) => (
               <li key={index}>{line}</li>
@@ -43,7 +43,7 @@ export function ClientCaseBlock({ block }: { block: PracticeCaseData }) {
           </ul>
         </div>
         <div className="rounded-md border border-border p-3">
-          <p className="text-xs font-semibold text-academy-subtle">Khách hay nói</p>
+          <p className="text-xs font-semibold text-academy-subtle">Câu thường nói</p>
           <p className="mt-1.5 text-sm leading-6 text-foreground italic">{block.profile.quote}</p>
         </div>
       </div>

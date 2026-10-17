@@ -127,6 +127,15 @@ describe('content/v3 schema rejections', () => {
       false,
     );
   });
+
+  it('refuses notes text that Postgres jsonb cannot store (NUL, lone surrogates)', () => {
+    expect(notesSaveRequestSchema.safeParse({ texts: { a: 'a\u0000b' } }).success).toBe(false);
+    expect(notesSaveRequestSchema.safeParse({ texts: { a: 'a\ud800' } }).success).toBe(false);
+    expect(notesSaveRequestSchema.safeParse({ texts: { a: '\udc00b' } }).success).toBe(false);
+    expect(notesSaveRequestSchema.safeParse({ texts: { a: 'Cổ phiếu 📈 tăng' } }).success).toBe(
+      true,
+    );
+  });
 });
 
 describe('buildAcademyContent cross-checks', () => {

@@ -320,6 +320,13 @@ const categorySchema = z
       .min(1),
     orientation: z.enum(['v', 'h']).optional(),
     value_labels: z.enum(['all', 'last', 'none']).optional(),
+    /**
+     * How value labels and axis ticks print. `sign`: "+" before positive and "−" before negative values
+     * (C1L5-g2 cash flows, C1L4-g4 / C1L10-g2 gains and losses). `suffix` follows the number ("%").
+     */
+    value_format: z
+      .strictObject({ sign: z.literal(true).optional(), suffix: chartString(8).optional() })
+      .optional(),
     threshold: z
       .strictObject({
         value: num,
@@ -333,7 +340,7 @@ const categorySchema = z
     ticks: z.array(num).optional(),
     /** One computed caption under the chart, e.g. "RSI ≈ 81" (C4L6-g0). */
     caption_value: label.optional(),
-    /** Tone of `caption_value`, computed from the value (RSI >= 70 neg, <= 30 pos, else warn). */
+    /** Tone of `caption_value`, computed from the value (RSI >= 70 neg, <= 30 pos, else neutral price grey). */
     caption_tone: chartTextToneSchema.optional(),
     /** Stroke draw-in (C1L1-g1); renderer honours prefers-reduced-motion. */
     animate: z.literal('draw').optional(),
@@ -1072,7 +1079,8 @@ const practiceCaseBlock = z.strictObject({
 const roleplayScoreBlock = z.strictObject({
   type: z.literal('roleplay_score'),
   id: keyId,
-  title: plainText,
+  /** Optional card heading. The mockup's #sc6 box has none: the section title already names it. */
+  title: plainText.optional(),
   max: z.literal(10),
   /** Starting slider value before anything is stored (mockup: 5, i.e. 30/60). */
   default: z.number().int().min(0).max(10),
@@ -1568,8 +1576,19 @@ export const notesResponseSchema = z.object({
   updated_at: isoDate.nullable(),
 });
 export type NotesResponse = z.infer<typeof notesResponseSchema>;
+/**
+ * NUL and unpaired UTF-16 surrogates pass JSON.parse but Postgres jsonb rejects them (22P05 / 22P02), which
+ * would surface as a 500. Refuse them at the edge so the client gets a 422.
+ */
+const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+const notesTextSchema = z
+  .string()
+  .max(NOTES_TEXT_MAX)
+  .refine((text) => !text.includes('\u0000') && !LONE_SURROGATE.test(text), {
+    message: 'Text must not contain NUL or unpaired surrogate characters',
+  });
 export const notesSaveRequestSchema = z.strictObject({
-  texts: z.record(z.string().max(NOTES_KEY_MAX), z.string().max(NOTES_TEXT_MAX)).optional(),
+  texts: z.record(z.string().max(NOTES_KEY_MAX), notesTextSchema).optional(),
   checks: z.record(z.string().max(NOTES_KEY_MAX), z.boolean()).optional(),
   scores: z.record(z.string().max(NOTES_KEY_MAX), z.array(z.number().int().min(0).max(10)).length(6)).optional(),
   /**

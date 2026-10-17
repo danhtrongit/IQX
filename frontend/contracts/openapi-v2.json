@@ -1740,7 +1740,6 @@
             "required": [
               "type",
               "id",
-              "title",
               "max",
               "default",
               "criteria",
@@ -2738,6 +2737,23 @@
                 "maxLength": 24,
                 "minLength": 0,
                 "type": "string"
+              },
+              "value_format": {
+                "additionalProperties": false,
+                "properties": {
+                  "sign": {
+                    "enum": [
+                      true
+                    ],
+                    "type": "boolean"
+                  },
+                  "suffix": {
+                    "maxLength": 8,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
               },
               "value_labels": {
                 "enum": [
@@ -6129,6 +6145,23 @@
                 "maxLength": 24,
                 "minLength": 0,
                 "type": "string"
+              },
+              "value_format": {
+                "additionalProperties": false,
+                "properties": {
+                  "sign": {
+                    "enum": [
+                      true
+                    ],
+                    "type": "boolean"
+                  },
+                  "suffix": {
+                    "maxLength": 8,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
               },
               "value_labels": {
                 "enum": [

@@ -396,11 +396,11 @@
           "name": "Mức lỗ",
           "tone": "neg",
           "values": [
-            10,
-            20,
-            30,
-            40,
-            50
+            -10,
+            -20,
+            -30,
+            -40,
+            -50
           ]
         },
         {
@@ -416,6 +416,10 @@
         }
       ],
       "unit": "%",
+      "value_format": {
+        "sign": true,
+        "suffix": "%"
+      },
       "value_labels": "all"
     },
     "c1l10-g3": {

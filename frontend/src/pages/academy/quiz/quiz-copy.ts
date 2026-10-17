@@ -9,11 +9,12 @@ export const EXAM_RULE = "Cần trả lời đúng tất cả câu hỏi để h
 export const NEXT_QUESTION_LABEL = "Câu tiếp theo"
 export const SUBMIT_LABEL = "Nộp bài"
 
-/** The label above every question: "Bài kiểm tra", "Bài thi Chương c" or "Phòng tập thực chiến". */
-export function quizLabel(item: Pick<CatalogItem, "kind" | "chapter" | "name">): string {
-  if (item.kind === "chapter_exam") return `Bài thi Chương ${item.chapter}`
-  if (item.kind === "practice") return item.name
-  return "Bài kiểm tra"
+/**
+ * The label above every question (spec §3.2-1): "Bài thi Chương c" for an exam, otherwise "Bài kiểm tra", the
+ * practice room included (its name belongs in the locator, §2.4).
+ */
+export function quizLabel(item: Pick<CatalogItem, "kind" | "chapter">): string {
+  return item.kind === "chapter_exam" ? `Bài thi Chương ${item.chapter}` : "Bài kiểm tra"
 }
 
 /** "Xem lại bài", or "Xem lại Chương c" for an exam (it leads to the first item of the chapter). */

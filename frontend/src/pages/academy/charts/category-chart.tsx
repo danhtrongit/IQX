@@ -1,6 +1,17 @@
 import { cn } from "@/lib/utils"
 import type { ChartTone } from "../content-types"
-import { categoryRange, formatCompact, isNumber, linePath, niceTicks, textWidth, wrapText, type CategoryModel } from "./chart-math"
+import {
+  categoryRange,
+  formatCategoryValue,
+  isNumber,
+  linePath,
+  niceTicks,
+  stackLabelSeries,
+  stackTotals,
+  textWidth,
+  wrapText,
+  type CategoryModel,
+} from "./chart-math"
 import { ChartLegendList } from "./chart-legend"
 import { DASH, GRID_STROKE, LABEL_FILL, TONE_FILL, TONE_STROKE, textColor, textFill } from "./chart-theme"
 import { useChartWidth } from "./use-chart-width"
@@ -60,7 +71,7 @@ function VerticalChart({ model, label, width }: { model: CategoryModel; label: s
   const compact = width < 300
   const [lo, hi] = categoryRange(model)
   const ticks = (model.ticks ?? niceTicks(lo, hi, compact ? 3 : 4)).filter((tick) => tick >= lo && tick <= hi)
-  const tickLabels = ticks.map((tick) => formatCompact(tick))
+  const tickLabels = ticks.map((tick) => formatCategoryValue(tick, model.value_format))
   const showAxis = !compact || model.ticks !== undefined
   const left = showAxis ? Math.max(24, Math.max(...tickLabels.map((text) => textWidth(text, 10.5)), 0) + 10) : 4
   const endLabelWidth =
@@ -101,6 +112,9 @@ function VerticalChart({ model, label, width }: { model: CategoryModel; label: s
       {model.mode !== "line" &&
         model.labels.map((_, index) => {
           let stackTop = 0
+          let stackBottom = 0
+          const totals = stackTotals(model, index)
+          const labelSeries = stackLabelSeries(model, index)
           return model.series.map((series, s) => {
             const value = series.values[index]
             if (!isNumber(value)) return null
@@ -110,17 +124,33 @@ function VerticalChart({ model, label, width }: { model: CategoryModel; label: s
             let y1: number
             if (model.mode === "stacked") {
               x = cx(index) - barWidth / 2
-              y0 = y(stackTop)
-              stackTop += Math.max(0, value)
-              y1 = y(stackTop)
+              if (value >= 0) {
+                y0 = y(stackTop)
+                stackTop += value
+                y1 = y(stackTop)
+              } else {
+                y0 = y(stackBottom)
+                stackBottom += value
+                y1 = y(stackBottom)
+              }
             } else {
               x = cx(index) - groupWidth / 2 + s * barWidth
               y0 = zeroY
               y1 = y(value)
             }
+            // Stacked: one label per category, on its last segment, showing the net total above the
+            // positive stack (or below the negative one).
+            const stacked = model.mode === "stacked"
             const showValue =
-              model.value_labels === "all" ? model.mode !== "stacked" || s === seriesCount - 1 : model.value_labels === "last" && index === count - 1
-            const shownValue = model.mode === "stacked" ? stackTop : value
+              model.value_labels === "all" ? !stacked || s === labelSeries : model.value_labels === "last" && index === count - 1 && (!stacked || s === labelSeries)
+            const shownValue = stacked ? totals.net : value
+            const labelY = stacked
+              ? totals.net < 0
+                ? y(totals.neg) + 12
+                : y(totals.pos) - 4
+              : value < 0
+                ? y1 + 12
+                : Math.min(y0, y1) - 4
             return (
               <g key={`${index}-${s}`}>
                 <rect
@@ -134,11 +164,11 @@ function VerticalChart({ model, label, width }: { model: CategoryModel; label: s
                 {showValue && (
                   <text
                     x={x + barWidth / 2}
-                    y={value < 0 && model.mode !== "stacked" ? y1 + 12 : Math.min(y0, y1) - 4}
+                    y={labelY}
                     textAnchor="middle"
                     className="fill-foreground text-[10.5px] font-semibold tabular-nums"
                   >
-                    {formatCompact(shownValue)}
+                    {formatCategoryValue(shownValue, model.value_format)}
                   </text>
                 )}
               </g>
@@ -166,7 +196,7 @@ function VerticalChart({ model, label, width }: { model: CategoryModel; label: s
                   <g key={index}>
                     <circle cx={cx(index)} cy={y(value)} r="2.6" className={TONE_FILL[tone]} />
                     <text x={cx(index)} y={y(value) - 6} textAnchor="middle" className="fill-foreground text-[10.5px] font-semibold tabular-nums">
-                      {formatCompact(value)}
+                      {formatCategoryValue(value, model.value_format)}
                     </text>
                   </g>
                 ) : null,
@@ -251,7 +281,10 @@ function HorizontalBars({ model, label, width }: { model: CategoryModel; label: 
       {model.labels.map((_, index) => {
         const rowTop = tops[index]
         const mid = rowTop + rowHeights[index] / 2
+        let stackRight = 0
         let stackLeft = 0
+        const totals = stackTotals(model, index)
+        const labelSeries = stackLabelSeries(model, index)
         return (
           <g key={index}>
             <text x={0} y={mid - ((lines[index].length - 1) * 14) / 2 + 4} className="fill-foreground text-[11px]">
@@ -269,15 +302,27 @@ function HorizontalBars({ model, label, width }: { model: CategoryModel; label: 
               let x0: number
               let x1: number
               if (model.mode === "stacked") {
-                x0 = x(stackLeft)
-                stackLeft += Math.max(0, value)
-                x1 = x(stackLeft)
+                if (value >= 0) {
+                  x0 = x(stackRight)
+                  stackRight += value
+                  x1 = x(stackRight)
+                } else {
+                  x0 = x(stackLeft)
+                  stackLeft += value
+                  x1 = x(stackLeft)
+                }
               } else {
                 x0 = zeroX
                 x1 = x(value)
               }
+              const stacked = model.mode === "stacked"
               const showValue =
-                model.value_labels === "all" ? model.mode !== "stacked" || s === seriesCount - 1 : model.value_labels === "last" && index === model.labels.length - 1
+                model.value_labels === "all"
+                  ? !stacked || s === labelSeries
+                  : model.value_labels === "last" && index === model.labels.length - 1 && (!stacked || s === labelSeries)
+              // Stacked rows carry the net total, right of the positive stack (or of the zero line).
+              const shownValue = stacked ? totals.net : value
+              const labelX = stacked ? x(totals.pos) + 5 : Math.max(x0, x1) + 5
               return (
                 <g key={s}>
                   <rect
@@ -289,8 +334,8 @@ function HorizontalBars({ model, label, width }: { model: CategoryModel; label: 
                     className={TONE_FILL[tone]}
                   />
                   {showValue && (
-                    <text x={Math.max(x0, x1) + 5} y={barTop + barHeight / 2 + 4} className="fill-foreground text-[10.5px] font-semibold tabular-nums">
-                      {formatCompact(model.mode === "stacked" ? stackLeft : value)}
+                    <text x={labelX} y={barTop + barHeight / 2 + 4} className="fill-foreground text-[10.5px] font-semibold tabular-nums">
+                      {formatCategoryValue(shownValue, model.value_format)}
                     </text>
                   )}
                 </g>
