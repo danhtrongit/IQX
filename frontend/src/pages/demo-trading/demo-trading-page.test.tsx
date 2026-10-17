@@ -373,7 +373,7 @@ describe("DemoTradingPage layout v1.2 behaviour", () => {
     expect(workspaceMemory.get().academy).toBeUndefined()
   })
 
-  it("shows the phone panel button only on narrow screens in HỌC VIỆN", async () => {
+  it("puts HỌC VIỆN's tools in a bar above the lesson on narrow screens; the bar opens the layer", async () => {
     vi.stubGlobal("matchMedia", (query: string) => ({
       matches: query === "(max-width: 900px)",
       media: query,
@@ -382,7 +382,13 @@ describe("DemoTradingPage layout v1.2 behaviour", () => {
     }))
     const user = userEvent.setup()
     const { unmount } = await renderPage("/demo-trading?view=academy")
-    const toggle = within(screen.getByRole("main")).getByRole("button", { name: "Học viện" })
+    // The article keeps the full phone width: no rail column, the tools sit at the top of main.
+    expect(frame().getAttribute("data-rail")).toBe("bar")
+    expect(frame().querySelector(".workspace-rail")).toBeNull()
+    expect(screen.getByRole("main").firstElementChild).toBe(rail())
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop"])
+    expect(within(screen.getByRole("main")).getAllByRole("button", { name: "Học viện" })).toHaveLength(1)
+    const toggle = within(rail()).getByRole("button", { name: "Học viện" })
     expect(toggle.getAttribute("aria-controls")).toBe(panel().id)
     expect(screen.queryByRole("tablist", { name: "Nội dung demo trading" })).toBeNull()
     // A direct link to a tool shows its layer.
@@ -394,5 +400,17 @@ describe("DemoTradingPage layout v1.2 behaviour", () => {
     await user.click(toggle)
     expect(frame().getAttribute("data-panel-open")).toBe("true")
     unmount()
+  })
+
+  it("keeps the rail column of DEMO TRADING on narrow screens", async () => {
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query === "(max-width: 900px)",
+      media: query,
+      addEventListener() {},
+      removeEventListener() {},
+    }))
+    await renderPage("/demo-trading?view=trading")
+    expect(frame().getAttribute("data-rail")).toBe("column")
+    expect(rail().classList.contains("workspace-rail")).toBe(true)
   })
 })

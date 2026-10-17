@@ -24,7 +24,7 @@ function Panel() {
   )
 }
 
-function renderFrame(initialPanelOpen = false, url = "/demo-trading") {
+function renderFrame(initialPanelOpen = false, url = "/demo-trading", phoneRail?: "column" | "bar") {
   const router = createMemoryRouter(
     [
       {
@@ -35,6 +35,7 @@ function renderFrame(initialPanelOpen = false, url = "/demo-trading") {
             <WorkspaceFrame
               panelLabel="Bảng công cụ"
               defaultPanelOpen={initialPanelOpen}
+              phoneRail={phoneRail}
               main={<div><WorkspacePanelToggle /><p>Nội dung chính</p></div>}
               panel={<Panel />}
             />
@@ -315,5 +316,56 @@ describe("WorkspaceFrame as a layer (900px and below)", () => {
     await screen.findByText("Nội dung chính")
     fireEvent.keyDown(document, { key: "Escape" })
     expect(frame().getAttribute("data-panel-open")).toBe("false")
+  })
+})
+
+describe("WorkspaceFrame with the phone tool bar", () => {
+  beforeEach(() => {
+    Object.defineProperty(HTMLElement.prototype, "offsetParent", { configurable: true, get() { return this.parentNode } })
+  })
+  afterEach(() => {
+    delete (HTMLElement.prototype as { offsetParent?: unknown }).offsetParent
+  })
+
+  it("keeps the rail column on wide screens", async () => {
+    renderFrame(false, "/demo-trading", "bar")
+    await screen.findByText("Nội dung chính")
+    expect(frame().getAttribute("data-rail")).toBe("column")
+    expect(rail().classList.contains("workspace-rail")).toBe(true)
+    expect(within(screen.getByRole("main")).queryByRole("navigation")).toBeNull()
+  })
+
+  it("turns the rail into a bar above main at 900px and below, so main takes the whole width", async () => {
+    media.matches = true
+    const { user, router } = renderFrame(false, "/demo-trading", "bar")
+    await screen.findByText("Nội dung chính")
+    expect(frame().getAttribute("data-rail")).toBe("bar")
+    // One tool list only, inside main and before the content; no rail column and no separate toggle.
+    expect(screen.getAllByRole("navigation", { name: "Công cụ theo trang" })).toHaveLength(1)
+    const main = screen.getByRole("main")
+    expect(main.firstElementChild).toBe(rail())
+    expect(frame().querySelector(".workspace-rail")).toBeNull()
+    expect(toggle()).toBeNull()
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual([
+      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Học viện", "Bot", "Shop",
+    ])
+
+    // The bar's tools work as the rail's: open the layer, a second click closes it, focus comes back.
+    await user.click(tool("Danh mục"))
+    expect(router.state.location.search).toBe("?view=portfolio")
+    expect(frame().getAttribute("data-panel-open")).toBe("true")
+    expect(tool("Danh mục").getAttribute("aria-expanded")).toBe("true")
+    expect(tool("Danh mục").getAttribute("aria-controls")).toBe(panel().id)
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole("button", { name: "Đóng công cụ" })))
+    await user.keyboard("{Escape}")
+    expect(frame().getAttribute("data-panel-open")).toBe("false")
+    expect(document.activeElement).toBe(tool("Danh mục"))
+    // The tool whose view is on screen stays marked while its layer is closed.
+    expect(tool("Danh mục").getAttribute("data-current")).toBe("true")
+    expect(tool("Đặt lệnh").hasAttribute("data-current")).toBe(false)
+
+    setOverlay(false)
+    await waitFor(() => expect(frame().getAttribute("data-rail")).toBe("column"))
+    expect(rail().classList.contains("workspace-rail")).toBe(true)
   })
 })

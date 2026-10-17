@@ -8,6 +8,16 @@ import { useLessonInteractive } from "./use-lesson-notes"
 
 type RoleplayScoreData = Extract<InteractiveBlock, { type: "roleplay_score" }>
 
+/**
+ * The shared Slider draws a 12px white thumb on a 4px track, which reads as a disabled control on a
+ * card. The score sliders are the block's main input: a thicker track and a filled azure thumb.
+ */
+const SCORE_SLIDER = cn(
+  "py-2",
+  "[&_[data-slot=slider-track]]:h-1.5!",
+  "[&_[data-slot=slider-thumb]]:size-5 [&_[data-slot=slider-thumb]]:border-2 [&_[data-slot=slider-thumb]]:border-card [&_[data-slot=slider-thumb]]:bg-primary [&_[data-slot=slider-thumb]]:shadow-sm",
+)
+
 const BAND_TONE = { good: "text-(--status-success)", warn: "text-status-warning", bad: "text-destructive" } as const
 
 /** The band of a total: the highest `min` the total reaches (48 good, 36 warn, 0 bad in the content). */
@@ -53,13 +63,17 @@ export function RoleplayScore({ block }: { block: RoleplayScoreData }) {
               <span id={`${baseId}-c${index}`} className="text-sm font-medium text-foreground">
                 {criterion.title}
               </span>
-              <output htmlFor={`${baseId}-s${index}`} className="text-sm font-semibold text-foreground tabular-nums">
+              <output
+                htmlFor={`${baseId}-s${index}`}
+                className="inline-flex min-w-12 shrink-0 items-baseline justify-center rounded-sm bg-primary/15 px-2 py-0.5 text-sm font-semibold text-primary tabular-nums"
+              >
                 {values[index]}
+                <span className="text-xs font-medium text-academy-subtle">/{block.max}</span>
               </output>
             </div>
             <p className="mt-0.5 text-xs leading-5 text-academy-subtle">{criterion.hint}</p>
             {/* The shared Slider names its root, not its thumb: the group carries the criterion name. */}
-            <div role="group" aria-labelledby={`${baseId}-c${index}`} className="mt-2.5">
+            <div role="group" aria-labelledby={`${baseId}-c${index}`} className="mt-1.5">
               <Slider
                 id={`${baseId}-s${index}`}
                 min={0}
@@ -67,7 +81,12 @@ export function RoleplayScore({ block }: { block: RoleplayScoreData }) {
                 step={1}
                 value={[values[index]]}
                 onValueChange={([value]) => setValue(index, value)}
+                className={SCORE_SLIDER}
               />
+              <div aria-hidden="true" className="flex justify-between text-[11px] text-academy-subtle tabular-nums">
+                <span>0</span>
+                <span>{block.max}</span>
+              </div>
             </div>
           </li>
         ))}
