@@ -7,6 +7,7 @@ import { DASH, GRID_STROKE, LABEL_FILL, TONE_FILL, TONE_STROKE, textFill } from 
 import { NARROW_CHART_WIDTH, useChartWidth } from "./use-chart-width"
 
 type Range = [number, number]
+type Anchor = "start" | "middle" | "end"
 
 function layerPoints(layer: SchematicLayer): [number, number][] {
   switch (layer.t) {
@@ -47,18 +48,361 @@ function extent(values: number[], fallback: Range): Range {
 }
 
 const POINT_RADIUS = { s: 3, m: 4.5, l: 6 } as const
+const TICK_SIZE = 10.5
+const ZONE_SIZE = 10.5
+const NOTE_SIZE = 11
+/** Below this share of the panel height a y band reads as a level range: hatched, with dashed edges. */
+const THIN_BAND = 0.1
 
 /** Moves an anchored label of width `w` so it stays within [lo, hi], keeping its anchor. */
-function fitX(x: number, w: number, anchor: "start" | "middle" | "end", lo: number, hi: number): number {
+function fitX(x: number, w: number, anchor: Anchor, lo: number, hi: number): number {
   const start = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x
   const shifted = Math.min(Math.max(start, lo), Math.max(lo, hi - w))
   return anchor === "middle" ? shifted + w / 2 : anchor === "end" ? shifted + w : shifted
 }
 
+/* ---------- label layout ---------- */
+
+/**
+ * Layout estimate of a semibold label: wider than `textWidth` (0.56em, the overflow check) so a
+ * label placed clear of its neighbours stays clear in a real font with Vietnamese diacritics.
+ */
+const layoutWidth = (text: string, size: number) => textWidth(text, size) * 1.1
+
+type Box = { x0: number; y0: number; x1: number; y1: number }
+type Seg = [number, number, number, number]
+type Placement = { lines: string[]; x: number; y: number; anchor: Anchor; size: number; gap: number; className: string }
+type Scene = { boxes: Box[]; segs: Seg[]; bounds: Box }
+
+function placementBox(p: Placement): Box {
+  const w = Math.max(...p.lines.map((line) => layoutWidth(line, p.size)))
+  const x0 = p.anchor === "middle" ? p.x - w / 2 : p.anchor === "end" ? p.x - w : p.x
+  return { x0, x1: x0 + w, y0: p.y - p.size * 0.8, y1: p.y + (p.lines.length - 1) * p.gap + p.size * 0.25 }
+}
+
+function overlapArea(a: Box, b: Box, pad = 1): number {
+  const w = Math.min(a.x1, b.x1) - Math.max(a.x0, b.x0) + pad
+  const h = Math.min(a.y1, b.y1) - Math.max(a.y0, b.y0) + pad
+  return w > 0 && h > 0 ? w * h : 0
+}
+
+/** Length of segment `s` inside box `b` (Liang-Barsky clipping). */
+function clippedLength([x0, y0, x1, y1]: Seg, b: Box): number {
+  const dx = x1 - x0
+  const dy = y1 - y0
+  let t0 = 0
+  let t1 = 1
+  const edges: [number, number][] = [
+    [-dx, x0 - b.x0],
+    [dx, b.x1 - x0],
+    [-dy, y0 - b.y0],
+    [dy, b.y1 - y0],
+  ]
+  for (const [p, q] of edges) {
+    if (p === 0) {
+      if (q < 0) return 0
+      continue
+    }
+    const r = q / p
+    if (p < 0) t0 = Math.max(t0, r)
+    else t1 = Math.min(t1, r)
+    if (t0 > t1) return 0
+  }
+  return (t1 - t0) * Math.hypot(dx, dy)
+}
+
+/** Collision cost of a label box: leaving the drawing, covering a mark or a label, crossing a line. */
+function boxCost(box: Box, scene: Scene): number {
+  const { bounds } = scene
+  const out = Math.max(0, bounds.x0 - box.x0) + Math.max(0, box.x1 - bounds.x1) + Math.max(0, bounds.y0 - box.y0) + Math.max(0, box.y1 - bounds.y1)
+  let cost = out * 2000
+  for (const other of scene.boxes) cost += overlapArea(box, other) * 40
+  const padded = { x0: box.x0 - 1.5, y0: box.y0 - 1.5, x1: box.x1 + 1.5, y1: box.y1 + 1.5 }
+  for (const seg of scene.segs) cost += clippedLength(seg, padded) * 60
+  return cost
+}
+
+/** The cheapest candidate; earlier candidates win ties, so a clear authored position is kept. */
+function choose(candidates: Placement[], scene: Scene): Placement {
+  let best = candidates[0]
+  let bestCost = Infinity
+  candidates.forEach((candidate, index) => {
+    const cost = boxCost(placementBox(candidate), scene) + index * 4
+    if (cost < bestCost) {
+      best = candidate
+      bestCost = cost
+    }
+  })
+  return best
+}
+
+const POINT_ORDER = {
+  above: ["above", "below", "right", "left"],
+  below: ["below", "above", "right", "left"],
+  left: ["left", "right", "above", "below"],
+  right: ["right", "left", "above", "below"],
+} as const
+
+function pointCandidates(text: string, cx: number, cy: number, r: number, pos: keyof typeof POINT_ORDER, className: string, lo: number, hi: number): Placement[] {
+  const w = layoutWidth(text, NOTE_SIZE)
+  const make = (x: number, y: number, anchor: Anchor): Placement => ({
+    lines: [text],
+    x: fitX(x, w, anchor, lo, hi),
+    y,
+    anchor,
+    size: NOTE_SIZE,
+    gap: 13,
+    className,
+  })
+  return POINT_ORDER[pos].flatMap((dir) => {
+    switch (dir) {
+      case "above":
+        return [0, 14, 28].map((d) => make(cx, cy - r - 5 - d, "middle"))
+      case "below":
+        return [0, 14, 28].map((d) => make(cx, cy + r + 13 + d, "middle"))
+      case "left":
+        return [0, -12, 12, -24, 24].map((d) => make(cx - r - 5, cy + 4 + d, "end"))
+      case "right":
+        return [0, -12, 12, -24, 24].map((d) => make(cx + r + 5, cy + 4 + d, "start"))
+    }
+  })
+}
+
+type Geometry = {
+  x: (v: number) => number
+  yFor: (panel: number) => (v: number) => number
+  tops: number[]
+  panelHeight: number
+  left: number
+  right: number
+}
+
+function tagBox(layer: Extract<SchematicLayer, { t: "tag" }>, g: Geometry): Box {
+  const cx = g.x(layer.at[0])
+  const cy = g.yFor(layer.panel ?? 0)(layer.at[1])
+  const w = textWidth(layer.text, 10.5) + 10
+  const y0 = layer.pos === "above" ? cy - 26 : cy + 8
+  const x0 = Math.min(Math.max(cx - w / 2, g.left), g.right - w)
+  return { x0, y0, x1: x0 + w, y1: y0 + 18 }
+}
+
+function zoneRect(layer: Extract<SchematicLayer, { t: "zone" }>, g: Geometry): Box & { thin: boolean } {
+  const panel = layer.panel ?? 0
+  const top = g.tops[panel] ?? g.tops[0]
+  const y = g.yFor(panel)
+  const xa = layer.x ? g.x(layer.x[0]) : g.left
+  const xb = layer.x ? g.x(layer.x[1]) : g.right
+  const ya = layer.y ? y(layer.y[1]) : top
+  const yb = layer.y ? y(layer.y[0]) : top + g.panelHeight
+  const box = { x0: Math.min(xa, xb), x1: Math.max(xa, xb), y0: Math.min(ya, yb), y1: Math.max(ya, yb) }
+  return { ...box, thin: Boolean(layer.y) && box.y1 - box.y0 < g.panelHeight * THIN_BAND }
+}
+
+/** Marks every label must keep clear of: lines, points, tags, bars, brackets and thin bands. */
+function sceneMarks(layers: SchematicLayer[], g: Geometry): Pick<Scene, "boxes" | "segs"> {
+  const boxes: Box[] = []
+  const segs: Seg[] = []
+  for (const layer of layers) {
+    const y = g.yFor(layer.panel ?? 0)
+    switch (layer.t) {
+      case "line":
+        layer.pts.slice(1).forEach((point, index) => segs.push([g.x(layer.pts[index][0]), y(layer.pts[index][1]), g.x(point[0]), y(point[1])]))
+        break
+      case "segment":
+        segs.push([g.x(layer.from[0]), y(layer.from[1]), g.x(layer.to[0]), y(layer.to[1])])
+        break
+      case "point": {
+        const r = POINT_RADIUS[layer.size ?? "m"] + 1
+        const cx = g.x(layer.at[0])
+        const cy = y(layer.at[1])
+        boxes.push({ x0: cx - r, x1: cx + r, y0: cy - r, y1: cy + r })
+        break
+      }
+      case "tag":
+        boxes.push(tagBox(layer, g))
+        break
+      case "bracket": {
+        const x0 = g.x(layer.x[0])
+        const x1 = g.x(layer.x[1])
+        const by = y(layer.y)
+        segs.push([x0, by, x1, by], [x0, by - 5, x0, by], [x1, by - 5, x1, by])
+        boxes.push(placementBox({ lines: [layer.label], x: (x0 + x1) / 2, y: by + 14, anchor: "middle", size: 10.5, gap: 13, className: "" }))
+        break
+      }
+      case "bars":
+        layer.x.forEach((value, index) => {
+          const y0 = y(layer.base)
+          const y1 = y(layer.base + (layer.h[index] ?? 0))
+          boxes.push({ x0: g.x(value) - 1, x1: g.x(value) + 1, y0: Math.min(y0, y1), y1: Math.max(y0, y1) })
+        })
+        break
+      case "zone": {
+        const rect = zoneRect(layer, g)
+        if (rect.thin) boxes.push(rect)
+        break
+      }
+      case "text":
+        break
+    }
+  }
+  return { boxes, segs }
+}
+
+/**
+ * Places every free label (text notes, point labels, zone labels) after the marks are known, each
+ * at the cheapest of its candidate positions given the marks and the labels already placed.
+ * Text notes go first since their position is authored, then point labels, then zone labels.
+ */
+function layoutLabels(layers: SchematicLayer[], g: Geometry, scene: Scene): Map<number, Placement> {
+  const placed = new Map<number, Placement>()
+  const commit = (index: number, placement: Placement) => {
+    placed.set(index, placement)
+    scene.boxes.push(placementBox(placement))
+  }
+  const plotWidth = g.right - g.left
+
+  layers.forEach((layer, index) => {
+    if (layer.t !== "text") return
+    const anchor = layer.anchor ?? "middle"
+    const tx = g.x(layer.at[0])
+    const ty = g.yFor(layer.panel ?? 0)(layer.at[1])
+    const className = cn(textFill(layer.tone), "text-[11px] font-semibold")
+    const wraps = [wrapText(layer.text, plotWidth)]
+    const narrower = wrapText(layer.text, Math.max(80, plotWidth * 0.55))
+    if (narrower.length !== wraps[0].length) wraps.push(narrower)
+    const make = (lines: string[], dy: number): Placement => {
+      const w = Math.max(...lines.map((line) => layoutWidth(line, NOTE_SIZE)))
+      return { lines, x: fitX(tx, w, anchor, g.left, g.right), y: ty + dy, anchor, size: NOTE_SIZE, gap: 13, className }
+    }
+    const steps = [[0, -13, 13], [-26, 26]]
+    commit(index, choose(steps.flatMap((dys) => wraps.flatMap((lines) => dys.map((dy) => make(lines, dy)))), scene))
+  })
+
+  layers.forEach((layer, index) => {
+    if (layer.t !== "point" || !layer.label) return
+    const cx = g.x(layer.at[0])
+    const cy = g.yFor(layer.panel ?? 0)(layer.at[1])
+    const r = POINT_RADIUS[layer.size ?? "m"]
+    const className = cn(textFill(layer.tone), "text-[11px] font-semibold")
+    commit(index, choose(pointCandidates(layer.label, cx, cy, r, layer.pos ?? "above", className, g.left, g.right), scene))
+  })
+
+  // Full-height zones (phases of a cycle) share one row of labels, at the top or at the bottom.
+  const phaseRows = new Map<number, number[]>()
+  layers.forEach((layer, index) => {
+    if (layer.t !== "zone" || !layer.label || layer.y) return
+    const panel = layer.panel ?? 0
+    phaseRows.set(panel, [...(phaseRows.get(panel) ?? []), index])
+  })
+  for (const [panel, indices] of phaseRows) {
+    const top = g.tops[panel] ?? g.tops[0]
+    const rows = { top: top + 13, bottom: top + g.panelHeight - 4 }
+    const variants = (index: number, row: keyof typeof rows) => {
+      const layer = layers[index] as Extract<SchematicLayer, { t: "zone" }>
+      const rect = zoneRect(layer, g)
+      const room = rect.x1 - rect.x0 - 8
+      const label = layer.label as string
+      const lines = layoutWidth(label, ZONE_SIZE) > room ? wrapText(label, room / 1.1, ZONE_SIZE, 2) : [label]
+      const y = row === "top" ? rows.top : rows.bottom - (lines.length - 1) * 12
+      const className = cn(textFill(layer.tone), "text-[10.5px] font-semibold")
+      const at = { start: rect.x0 + 4, middle: (rect.x0 + rect.x1) / 2, end: rect.x1 - 4 }
+      return (["start", "middle", "end"] as const).map((anchor): Placement => {
+        const w = Math.max(...lines.map((line) => layoutWidth(line, ZONE_SIZE)))
+        return { lines, x: fitX(at[anchor], w, anchor, g.left, g.right), y, anchor, size: ZONE_SIZE, gap: 12, className }
+      })
+    }
+    const ALIGN = { start: 0, middle: 1, end: 2 } as const
+    const configs: [keyof typeof rows, keyof typeof ALIGN | "mixed"][] = [
+      ["top", "start"],
+      ["top", "middle"],
+      ["bottom", "middle"],
+      ["top", "end"],
+      ["bottom", "start"],
+      ["bottom", "end"],
+      ["top", "mixed"],
+      ["bottom", "mixed"],
+    ]
+    let best: Placement[] = []
+    let bestCost = Infinity
+    configs.forEach(([row, align], rank) => {
+      const trial: Scene = { ...scene, boxes: [...scene.boxes] }
+      let cost = rank * 4
+      const chosen = indices.map((index) => {
+        const options = variants(index, row)
+        const pick = align === "mixed" ? choose([options[1], options[0], options[2]], trial) : options[ALIGN[align]]
+        cost += boxCost(placementBox(pick), trial)
+        trial.boxes.push(placementBox(pick))
+        return pick
+      })
+      if (cost < bestCost) {
+        bestCost = cost
+        best = chosen
+      }
+    })
+    indices.forEach((index, k) => commit(index, best[k]))
+  }
+
+  // Bounded zones: inside when there is room, else beside the band, clear of the line through it.
+  layers.forEach((layer, index) => {
+    if (layer.t !== "zone" || !layer.label || !layer.y) return
+    const rect = zoneRect(layer, g)
+    const className = cn(textFill(layer.tone), "text-[10.5px] font-semibold")
+    const w = layoutWidth(layer.label, ZONE_SIZE)
+    const make = (x: number, y: number, anchor: Anchor): Placement => ({
+      lines: [layer.label as string],
+      x: fitX(x, w, anchor, g.left, g.right),
+      y,
+      anchor,
+      size: ZONE_SIZE,
+      gap: 12,
+      className,
+    })
+    const mid = (rect.x0 + rect.x1) / 2
+    const candidates: Placement[] = []
+    if (rect.y1 - rect.y0 >= 18) candidates.push(make(rect.x0 + 4, rect.y0 + 13, "start"))
+    for (const d of [0, 13, 26]) {
+      for (const y of [rect.y1 + 12 + d, rect.y0 - 4 - d]) {
+        candidates.push(make(mid, y, "start"), make(rect.x0, y, "start"), make(mid, y, "middle"), make(rect.x1, y, "end"))
+      }
+    }
+    candidates.push(make(rect.x1 + 6, (rect.y0 + rect.y1) / 2 + 3.5, "start"), make(rect.x0 - 6, (rect.y0 + rect.y1) / 2 + 3.5, "end"))
+    commit(index, choose(candidates, scene))
+  })
+
+  return placed
+}
+
+type Tick = { label: string; v: number }
+
+/**
+ * x tick labels that fit side by side: a label that would touch the previous one is skipped, and
+ * the last tick is always kept (its neighbours give way instead).
+ */
+function thinXTicks(ticks: Tick[], x: (v: number) => number, width: number): (Tick & { cx: number })[] {
+  const placed = ticks
+    .map((tick) => {
+      const w = layoutWidth(tick.label, TICK_SIZE)
+      const cx = fitX(x(tick.v), w, "middle", 1, width - 1)
+      return { ...tick, cx, x0: cx - w / 2, x1: cx + w / 2 }
+    })
+    .sort((a, b) => a.cx - b.cx)
+  const kept: typeof placed = []
+  for (const tick of placed) {
+    const previous = kept[kept.length - 1]
+    if (!previous || tick.x0 >= previous.x1 + 6) kept.push(tick)
+  }
+  const last = placed[placed.length - 1]
+  if (last && kept[kept.length - 1] !== last) {
+    while (kept.length && kept[kept.length - 1].x1 + 6 > last.x0) kept.pop()
+    kept.push(last)
+  }
+  return kept.map(({ label, v, cx }) => ({ label, v, cx }))
+}
+
 /**
  * K5: a value-domain sketch (trend lines, support and resistance, divergence, cycles, payoff,
  * scatter). y grows upward. Optional stacked panels share the x domain. Axis arrows are drawn,
- * never typed.
+ * never typed. Free labels are laid out after the marks so none covers a mark or another label.
  */
 export function SchematicChart({ model, label }: { model: SchematicModel; label: string }) {
   const [measure, width] = useChartWidth()
@@ -75,23 +419,37 @@ export function SchematicChart({ model, label }: { model: SchematicModel; label:
   })
   const axes = model.axes
   const yTicks = axes?.y?.ticks ?? []
-  const xTicks = axes?.x?.ticks ?? []
-  const left = yTicks.length ? Math.max(...yTicks.map((tick) => textWidth(tick.label, 10.5))) + 12 : axes?.y ? 12 : 6
+  const left = yTicks.length ? Math.max(...yTicks.map((tick) => textWidth(tick.label, TICK_SIZE))) + 12 : axes?.y ? 12 : 6
   const right = width - 8
   const titleTop = axes?.y?.title ? 18 : 6
   const panelHeight = panels.length > 1 ? (narrow ? 112 : 136) : narrow ? 190 : 224
   const panelGap = 22
   const tops = panels.map((_, index) => titleTop + index * (panelHeight + panelGap) + (panels[index].title ? 14 : 0))
   const plotBottom = tops[tops.length - 1] + panelHeight
+  const x = (v: number) => left + ((v - xDomain[0]) / (xDomain[1] - xDomain[0] || 1)) * (right - left)
+  const xTicks = thinXTicks(axes?.x?.ticks ?? [], x, width)
   const bottomPad = (xTicks.length ? 16 : 0) + (axes?.x?.title ? 18 : 0) + 6
   const height = plotBottom + bottomPad
-  const x = (v: number) => left + ((v - xDomain[0]) / (xDomain[1] - xDomain[0] || 1)) * (right - left)
   const yFor = (panel: number) => {
     const [lo, hi] = panelY[panel] ?? panelY[0]
     const top = tops[panel] ?? tops[0]
     return (v: number) => top + panelHeight - ((v - lo) / (hi - lo || 1)) * panelHeight
   }
   const arrowId = `${uid}-arrow`
+  const geometry: Geometry = { x, yFor, tops, panelHeight, left, right }
+
+  const marks = sceneMarks(model.layers, geometry)
+  const fixedLabels: Placement[] = [
+    ...xTicks.map((tick): Placement => ({ lines: [tick.label], x: tick.cx, y: plotBottom + 13, anchor: "middle", size: TICK_SIZE, gap: 13, className: "" })),
+    ...yTicks.map((tick): Placement => ({ lines: [tick.label], x: left - 5, y: yFor(0)(tick.v) + 3.5, anchor: "end", size: TICK_SIZE, gap: 13, className: "" })),
+    ...(axes?.y?.title ? [{ lines: [axes.y.title], x: left, y: 11, anchor: "start" as const, size: 11, gap: 13, className: "" }] : []),
+    ...(axes?.x?.title ? [{ lines: [axes.x.title], x: right, y: height - 6, anchor: "end" as const, size: 11, gap: 13, className: "" }] : []),
+    ...panels.flatMap((panel, index) => (panel.title ? [{ lines: [panel.title], x: left, y: tops[index] - 5, anchor: "start" as const, size: 11, gap: 13, className: "" }] : [])),
+  ]
+  if (axes?.x) marks.segs.push([left, plotBottom, right, plotBottom])
+  if (axes?.y) marks.segs.push([left, plotBottom, left, titleTop])
+  const scene: Scene = { boxes: [...marks.boxes, ...fixedLabels.map(placementBox)], segs: marks.segs, bounds: { x0: 1, y0: 1, x1: width - 1, y1: height - 1 } }
+  const labels = layoutLabels(model.layers, geometry, scene)
 
   return (
     <div ref={measure} className="w-full min-w-0">
@@ -158,14 +516,8 @@ export function SchematicChart({ model, label }: { model: SchematicModel; label:
             markerEnd={axes.x.arrow ? `url(#${arrowId})` : undefined}
           />
         )}
-        {xTicks.map((tick, index) => (
-          <text
-            key={index}
-            x={fitX(x(tick.v), textWidth(tick.label, 10.5), "middle", 0, width)}
-            y={plotBottom + 13}
-            textAnchor="middle"
-            className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}
-          >
+        {xTicks.map((tick) => (
+          <text key={tick.v} x={tick.cx} y={plotBottom + 13} textAnchor="middle" className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}>
             {tick.label}
           </text>
         ))}
@@ -175,55 +527,53 @@ export function SchematicChart({ model, label }: { model: SchematicModel; label:
           </text>
         )}
         {model.layers.map((layer, index) => (
-          <Layer
-            key={index}
-            layer={layer}
-            x={x}
-            y={yFor(layer.panel ?? 0)}
-            top={tops[layer.panel ?? 0] ?? tops[0]}
-            height={panelHeight}
-            left={left}
-            right={right}
-            arrowId={arrowId}
-          />
+          <Layer key={index} layer={layer} geometry={geometry} arrowId={arrowId} hatchId={`${uid}-hatch-${index}`} />
+        ))}
+        {[...labels.entries()].map(([index, placement]) => (
+          <PlacedText key={`label-${index}`} placement={placement} />
         ))}
       </svg>
     </div>
   )
 }
 
-type LayerProps = {
-  layer: SchematicLayer
-  x: (v: number) => number
-  y: (v: number) => number
-  top: number
-  height: number
-  left: number
-  right: number
-  arrowId: string
+function PlacedText({ placement }: { placement: Placement }) {
+  const { lines, x, y, anchor, className, gap } = placement
+  return (
+    <text x={x} y={y} textAnchor={anchor} className={className}>
+      {lines.length === 1
+        ? lines[0]
+        : lines.map((line, index) => (
+            <tspan key={index} x={x} dy={index === 0 ? 0 : gap}>
+              {line}
+            </tspan>
+          ))}
+    </text>
+  )
 }
 
-function Layer({ layer, x, y, top, height, left, right, arrowId }: LayerProps) {
+/** Shapes only: every text label of a layer is placed by `layoutLabels`. */
+function Layer({ layer, geometry, arrowId, hatchId }: { layer: SchematicLayer; geometry: Geometry; arrowId: string; hatchId: string }) {
+  const { x } = geometry
+  const y = geometry.yFor(layer.panel ?? 0)
   switch (layer.t) {
     case "zone": {
-      const x0 = layer.x ? x(layer.x[0]) : left
-      const x1 = layer.x ? x(layer.x[1]) : right
-      const y0 = layer.y ? y(layer.y[1]) : top
-      const y1 = layer.y ? y(layer.y[0]) : top + height
+      const rect = zoneRect(layer, geometry)
+      const w = rect.x1 - rect.x0
+      const h = rect.y1 - rect.y0
+      if (!rect.thin) return <rect x={rect.x0} y={rect.y0} width={w} height={h} className={cn(TONE_FILL[layer.tone], "opacity-[0.12]")} />
       return (
-        <g>
-          <rect
-            x={Math.min(x0, x1)}
-            y={Math.min(y0, y1)}
-            width={Math.abs(x1 - x0)}
-            height={Math.abs(y1 - y0)}
-            className={cn(TONE_FILL[layer.tone], "opacity-[0.12]")}
-          />
-          {layer.label && (
-            <text x={Math.min(x0, x1) + 4} y={Math.min(y0, y1) + 13} className={cn(textFill(layer.tone), "text-[10.5px] font-semibold")}>
-              {layer.label}
-            </text>
-          )}
+        <g data-band="">
+          <defs>
+            <pattern id={hatchId} width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <line x1="0" y1="0" x2="0" y2="6" strokeWidth="1.6" className={TONE_STROKE[layer.tone]} />
+            </pattern>
+          </defs>
+          <rect x={rect.x0} y={rect.y0} width={w} height={h} className={cn(TONE_FILL[layer.tone], "opacity-[0.16]")} />
+          <rect x={rect.x0} y={rect.y0} width={w} height={h} fill={`url(#${hatchId})`} className="opacity-[0.55]" />
+          {[rect.y0, rect.y1].map((edge) => (
+            <line key={edge} x1={rect.x0} x2={rect.x1} y1={edge} y2={edge} strokeWidth="1" strokeDasharray={DASH} className={TONE_STROKE[layer.tone]} />
+          ))}
         </g>
       )
     }
@@ -280,29 +630,23 @@ function Layer({ layer, x, y, top, height, left, right, arrowId }: LayerProps) {
       const r = POINT_RADIUS[layer.size ?? "m"]
       const ring = layer.shape === "ring"
       return (
-        <g>
-          <circle
-            cx={cx}
-            cy={cy}
-            r={r}
-            strokeWidth={ring ? 1.8 : 1}
-            className={ring ? cn(TONE_STROKE[layer.tone], "fill-card") : cn(TONE_FILL[layer.tone], "stroke-card")}
-          />
-          {layer.label && <PlacedLabel text={layer.label} cx={cx} cy={cy} r={r} pos={layer.pos} tone={layer.tone} left={left} right={right} />}
-        </g>
+        <circle
+          cx={cx}
+          cy={cy}
+          r={r}
+          strokeWidth={ring ? 1.8 : 1}
+          className={ring ? cn(TONE_STROKE[layer.tone], "fill-card") : cn(TONE_FILL[layer.tone], "stroke-card")}
+        />
       )
     }
     case "tag": {
-      const cx = x(layer.at[0])
-      const cy = y(layer.at[1])
-      const w = textWidth(layer.text, 10.5) + 10
-      const boxY = layer.pos === "above" ? cy - 26 : cy + 8
-      const boxX = Math.min(Math.max(cx - w / 2, left), right - w)
+      const box = tagBox(layer, geometry)
+      const w = box.x1 - box.x0
       return (
         <g>
-          <rect x={boxX} y={boxY} width={w} height={18} rx="3" className={cn(TONE_FILL[layer.tone], "opacity-[0.16]")} />
-          <rect x={boxX} y={boxY} width={w} height={18} rx="3" fill="none" strokeWidth="1" className={TONE_STROKE[layer.tone]} />
-          <text x={boxX + w / 2} y={boxY + 12.5} textAnchor="middle" className={cn(textFill(layer.tone), "text-[10.5px] font-semibold")}>
+          <rect x={box.x0} y={box.y0} width={w} height={18} rx="3" className={cn(TONE_FILL[layer.tone], "opacity-[0.16]")} />
+          <rect x={box.x0} y={box.y0} width={w} height={18} rx="3" fill="none" strokeWidth="1" className={TONE_STROKE[layer.tone]} />
+          <text x={box.x0 + w / 2} y={box.y0 + 12.5} textAnchor="middle" className={cn(textFill(layer.tone), "text-[10.5px] font-semibold")}>
             {layer.text}
           </text>
         </g>
@@ -345,69 +689,7 @@ function Layer({ layer, x, y, top, height, left, right, arrowId }: LayerProps) {
         </g>
       )
     }
-    case "text": {
-      const anchor = layer.anchor ?? "middle"
-      const lines = wrapText(layer.text, right - left)
-      const w = Math.max(...lines.map((line) => textWidth(line)))
-      const tx = fitX(x(layer.at[0]), w, anchor, left, right)
-      return (
-        <text x={tx} y={y(layer.at[1])} textAnchor={anchor} className={cn(textFill(layer.tone), "text-[11px] font-semibold")}>
-          {lines.map((line, index) => (
-            <tspan key={index} x={tx} dy={index === 0 ? 0 : 13}>
-              {line}
-            </tspan>
-          ))}
-        </text>
-      )
-    }
+    case "text":
+      return null
   }
-}
-
-function PlacedLabel({
-  text,
-  cx,
-  cy,
-  r,
-  pos = "above",
-  tone,
-  left,
-  right,
-}: {
-  text: string
-  cx: number
-  cy: number
-  r: number
-  pos?: "above" | "below" | "left" | "right"
-  tone: ChartTone
-  left: number
-  right: number
-}) {
-  const w = textWidth(text)
-  let tx = cx
-  let ty = cy - r - 5
-  let anchor: "start" | "middle" | "end" = "middle"
-  if (pos === "below") ty = cy + r + 13
-  if (pos === "left") {
-    tx = cx - r - 5
-    ty = cy + 4
-    anchor = "end"
-  }
-  if (pos === "right") {
-    tx = cx + r + 5
-    ty = cy + 4
-    anchor = "start"
-  }
-  if (anchor === "start" && tx + w > right) {
-    anchor = "end"
-    tx = cx - r - 5
-  } else if (anchor === "end" && tx - w < left) {
-    anchor = "start"
-    tx = cx + r + 5
-  }
-  tx = fitX(tx, w, anchor, left, right)
-  return (
-    <text x={tx} y={ty} textAnchor={anchor} className={cn(textFill(tone), "text-[11px] font-semibold")}>
-      {text}
-    </text>
-  )
 }
