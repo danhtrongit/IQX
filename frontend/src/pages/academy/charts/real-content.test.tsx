@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it } from "vitest"
 
 import { BlockRenderer } from "../blocks/block-renderer"
 import { mockReaderWidth, svgOverflows } from "../blocks/test-blocks"
-import { textWidth } from "./chart-math"
 import { annotationsOnLine, textBoxes, textOverlaps } from "./test-geometry"
 import type { CatalogResponse, LessonContent } from "../content-types"
 
@@ -373,7 +372,7 @@ function svgTextBoxes(svg: SVGSVGElement): TextBox[] {
 }
 
 /** Text lines that leave the drawing or overlap another text line. */
-function textCollisions(svg: SVGSVGElement): string[] {
+function schematicTextIssues(svg: SVGSVGElement): string[] {
   const boxes = svgTextBoxes(svg)
   const width = Number((svg.getAttribute("viewBox") ?? "").split(/\s+/)[2])
   const found: string[] = []
@@ -396,7 +395,7 @@ describe("real content: schematic labels", () => {
   for (const width of [317, 768]) {
     it.each(schematics)(`%s %s keeps every label apart and inside at ${width}px`, (lessonId, chartId) => {
       const { container } = renderLesson(lessonById(lessonId), width)
-      expect(textCollisions(chartSvg(container, chartId))).toEqual([])
+      expect(schematicTextIssues(chartSvg(container, chartId))).toEqual([])
     })
   }
 })
