@@ -1,0 +1,8 @@
+{
+  "indicator_id": "psar",
+  "legacy": true,
+  "source_lesson_id": "ch11-l06",
+  "label": "Parabolic SAR",
+  "expected": 95.3,
+  "tolerance": 0.015
+}

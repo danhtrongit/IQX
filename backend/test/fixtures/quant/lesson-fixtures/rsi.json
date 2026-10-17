@@ -1,0 +1,8 @@
+{
+  "indicator_id": "rsi",
+  "legacy": false,
+  "source_lesson_id": "ch01-l01",
+  "label": "RSI",
+  "expected": 75,
+  "tolerance": 0.015
+}

@@ -1,0 +1,8 @@
+{
+  "indicator_id": "distance_52w_high",
+  "legacy": true,
+  "source_lesson_id": "ch09-l03",
+  "label": "Khoảng cách tới đỉnh 52 tuần",
+  "expected": -10,
+  "tolerance": 0.015
+}

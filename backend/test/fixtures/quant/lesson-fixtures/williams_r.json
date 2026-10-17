@@ -1,0 +1,8 @@
+{
+  "indicator_id": "williams_r",
+  "legacy": false,
+  "source_lesson_id": "ch10-l03",
+  "label": "Williams %R",
+  "expected": -80,
+  "tolerance": 0.015
+}

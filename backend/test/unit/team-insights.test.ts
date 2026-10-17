@@ -2,42 +2,24 @@ import { NotFoundException, UnprocessableEntityException } from '@nestjs/common'
 import { describe, expect, it, vi } from 'vitest';
 
 import { buildAcademyProgress } from '../../src/modules/academy/academy-progress-reader.service.js';
-import {
-  loadAcademyContent,
-  type AcademyContent,
-} from '../../src/modules/academy/academy.content.js';
 import { AdminMetricsService } from '../../src/modules/admin/admin-metrics.service.js';
 import { TeamService } from '../../src/modules/team-leads/team.service.js';
 import { teamUserListQuerySchema } from '../../src/modules/team-leads/team.schemas.js';
+import { academyV3Fixture } from './academy-v3-fixture.js';
 
-/** The real catalog with chapter 13 and lesson ch01-l06 marked not published. */
-function partlyPublished(): AcademyContent {
-  const content = loadAcademyContent();
-  return {
-    ...content,
-    chapters: content.chapters.map((chapter) => ({
-      ...chapter,
-      lessons: chapter.lessons.map((lesson) =>
-        chapter.no === 13 || lesson.id === 'ch01-l06'
-          ? { ...lesson, content_status: 'not_published' as const }
-          : lesson,
-      ),
-    })),
-  };
-}
-
+/* Interim cases on the v3.2 stopgap reader (P1); P3 rewrites them per design §8. */
 describe('academy progress for staff views (admin spec v1.1 §5.1.4)', () => {
-  it('lists only published chapters and lessons, and has not started without any activity', () => {
-    const content = partlyPublished();
+  const content = academyV3Fixture();
+  const item = (id: string) => {
+    const found = content.items.get(id);
+    if (!found) throw new Error(id);
+    return found;
+  };
+
+  it('lists the published chapters and their required lessons, not started without activity', () => {
     const view = buildAcademyProgress(content);
-    expect(view.chapters.map((chapter) => chapter.no)).toEqual([
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-    ]);
-    expect(view.chapters[0]?.lessons.map((lesson) => lesson.lesson_id)).not.toContain('ch01-l06');
-    const published = content.chapters
-      .flatMap((chapter) => chapter.lessons)
-      .filter((lesson) => lesson.content_status === 'published').length;
-    expect(view.total).toBe(published);
+    expect(view.chapters.map((chapter) => chapter.no)).toEqual([1, 2, 3, 4, 5]);
+    expect(view.total).toBe(43);
     expect(view).toMatchObject({
       started: false,
       completed: 0,
@@ -45,78 +27,51 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4)', () => {
       current_lesson: null,
       last_completion: null,
       learning_coins: 0,
-      chapter_exams: { total: 0, passed: 0 },
+      chapter_exams: { total: 5, passed: 0 },
     });
   });
 
-  it('ignores completions outside the published catalog and derives the current lesson', () => {
-    const content = partlyPublished();
-    const lesson = (id: string) => {
-      const found = content.lessons.get(id);
-      if (!found) throw new Error(id);
-      return found;
-    };
+  it('ignores completions outside the catalog and derives the current lesson', () => {
     const facts = {
       completions: [
         {
-          lesson_key: lesson('ch01-l01').lesson_key,
+          lesson_key: item('ch01-l01').lesson_key,
           completed_at: '2026-10-01T00:00:00.000Z',
           reward: { status: 'credited', delta: 5 },
         },
         {
-          lesson_key: lesson('ch01-l06').lesson_key, // not published here
+          lesson_key: 'concept:hop_luu', // retired key
           completed_at: '2026-10-05T00:00:00.000Z',
           reward: { status: 'credited', delta: 7 },
         },
         { lesson_key: 'guide:unknown', completed_at: '2026-10-02T00:00:00.000Z', reward: null },
       ],
       attempts: [
-        { lesson_key: lesson('ch01-l02').lesson_key, attempts: 2, latest_score: 7, open_at: null },
+        { lesson_key: item('ch01-l02').lesson_key, attempts: 2, latest_score: 2, open_at: null },
       ],
     };
     const view = buildAcademyProgress(content, facts);
     expect(view.completed).toBe(1);
-    // No open attempt: the first incomplete published lesson.
     expect(view.current_lesson).toMatchObject({
       lesson_id: 'ch01-l02',
-      label: `Chương 1 · Bài 2: ${lesson('ch01-l02').name}`,
+      label: `Chương 1 · Bài 2: ${item('ch01-l02').name}`,
     });
     expect(view.last_completion).toMatchObject({ lesson_id: 'ch01-l01', reward_coins: 5 });
     expect(view.learning_coins).toBe(12);
-    const second = view.chapters[0]?.lessons[1];
-    expect(second).toMatchObject({
+    expect(view.chapters[0]?.lessons[1]).toMatchObject({
       status: 'failed',
       attempts: 2,
-      latest_score: 7,
-      max_score: 8,
+      latest_score: 2,
+      max_score: 3,
       is_current: true,
     });
-
-    // An open attempt on a later lesson wins over the first incomplete one.
-    const open = buildAcademyProgress(content, {
-      ...facts,
-      attempts: [
-        ...facts.attempts,
-        {
-          lesson_key: lesson('ch03-l02').lesson_key,
-          attempts: 0,
-          latest_score: null,
-          open_at: '2026-10-06T00:00:00.000Z',
-        },
-      ],
-    });
-    expect(open.current_lesson?.lesson_id).toBe('ch03-l02');
-    const guide = open.chapters[1]?.lessons[0];
-    expect(guide).toMatchObject({ completion_mode: 'guide', max_score: null, latest_score: null });
   });
 
-  it('reports all done once every published lesson is complete', () => {
-    const content = partlyPublished();
-    const completions = content.chapters
-      .flatMap((chapter) => chapter.lessons)
-      .filter((lesson) => lesson.content_status === 'published')
-      .map((lesson) => ({
-        lesson_key: lesson.lesson_key,
+  it('reports all done once every required lesson is complete', () => {
+    const completions = [...content.items.values()]
+      .filter((entry) => entry.kind === 'lesson')
+      .map((entry) => ({
+        lesson_key: entry.lesson_key,
         completed_at: '2026-10-01T00:00:00.000Z',
         reward: null,
       }));

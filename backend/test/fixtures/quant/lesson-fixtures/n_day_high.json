@@ -1,0 +1,8 @@
+{
+  "indicator_id": "n_day_high",
+  "legacy": true,
+  "source_lesson_id": "ch09-l01",
+  "label": "N-day High",
+  "expected": 103,
+  "tolerance": 0.015
+}

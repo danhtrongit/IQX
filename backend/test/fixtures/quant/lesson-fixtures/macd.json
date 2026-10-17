@@ -1,0 +1,8 @@
+{
+  "indicator_id": "macd",
+  "legacy": false,
+  "source_lesson_id": "ch01-l02",
+  "label": "MACD",
+  "expected": 1,
+  "tolerance": 0.015
+}

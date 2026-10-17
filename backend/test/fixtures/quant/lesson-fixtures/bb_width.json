@@ -1,0 +1,8 @@
+{
+  "indicator_id": "bb_width",
+  "legacy": true,
+  "source_lesson_id": "ch11-l03",
+  "label": "Bollinger BandWidth",
+  "expected": 20,
+  "tolerance": 0.015
+}

@@ -3861,42 +3861,6 @@
     ],
     "semanticSignals": [
       {
-        "file": "src/modules/academy/academy.module.ts",
-        "kind": "not-implemented",
-        "line": 1,
-        "sample": "import { Module, NotImplementedException } from '@nestjs/common';"
-      },
-      {
-        "file": "src/modules/academy/academy.module.ts",
-        "kind": "not-implemented",
-        "line": 15,
-        "sample": "throw new NotImplementedException('academy v3.2 content loader');"
-      },
-      {
-        "file": "src/modules/academy/academy.service.ts",
-        "kind": "not-implemented",
-        "line": 411,
-        "sample": "return Promise.reject(new NotImplementedException('academy v3.2 scenario choice'));"
-      },
-      {
-        "file": "src/modules/academy/academy.service.ts",
-        "kind": "not-implemented",
-        "line": 415,
-        "sample": "return Promise.reject(new NotImplementedException('academy v3.2 notes'));"
-      },
-      {
-        "file": "src/modules/academy/academy.service.ts",
-        "kind": "not-implemented",
-        "line": 423,
-        "sample": "return Promise.reject(new NotImplementedException('academy v3.2 notes'));"
-      },
-      {
-        "file": "src/modules/academy/academy.service.ts",
-        "kind": "not-implemented",
-        "line": 8,
-        "sample": "NotImplementedException,"
-      },
-      {
         "file": "src/modules/learning/learning.controller.ts",
         "kind": "constant-placeholder",
         "line": 87,

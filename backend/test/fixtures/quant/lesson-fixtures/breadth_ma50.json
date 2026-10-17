@@ -1,0 +1,8 @@
+{
+  "indicator_id": "breadth_ma50",
+  "legacy": true,
+  "source_lesson_id": "ch13-l04",
+  "label": "% cổ phiếu trên MA50",
+  "expected": 60,
+  "tolerance": 0.015
+}

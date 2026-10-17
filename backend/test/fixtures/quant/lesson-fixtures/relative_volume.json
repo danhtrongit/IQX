@@ -1,0 +1,8 @@
+{
+  "indicator_id": "relative_volume",
+  "legacy": true,
+  "source_lesson_id": "ch07-l03",
+  "label": "Relative Volume",
+  "expected": 1.5,
+  "tolerance": 0.015
+}

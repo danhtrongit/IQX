@@ -1,0 +1,8 @@
+{
+  "indicator_id": "obv",
+  "legacy": false,
+  "source_lesson_id": "ch07-l01",
+  "label": "OBV",
+  "expected": 800,
+  "tolerance": 0.015
+}

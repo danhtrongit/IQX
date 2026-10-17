@@ -1,0 +1,8 @@
+{
+  "indicator_id": "keltner",
+  "legacy": true,
+  "source_lesson_id": "ch11-l02",
+  "label": "Keltner Channel",
+  "expected": 106,
+  "tolerance": 0.015
+}
