@@ -16,7 +16,7 @@ import {
   attemptResumeResponseSchema,
   draftSaveSchema,
   historyQuerySchema,
-} from '../../src/modules/academy/academy.schemas.js';
+} from '../../src/modules/academy/academy.schemas.v1.js';
 import {
   OTHER_USER,
   USER,

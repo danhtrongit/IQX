@@ -5,6 +5,7 @@ import {
   Inject,
   Injectable,
   NotFoundException,
+  NotImplementedException,
   Optional,
   UnprocessableEntityException,
   type OnModuleInit,
@@ -62,6 +63,12 @@ import type {
   ProgressResponse,
   RewardResult,
   SubmitResponse,
+} from './academy.schemas.v1.js';
+import type {
+  NotesResponse,
+  NotesSaveRequest,
+  ScenarioChoiceRequest,
+  ScenarioChoiceResponse,
 } from './academy.schemas.js';
 
 type CompletionView = SubmitResponse['completion'];
@@ -393,6 +400,27 @@ export class AcademyService implements OnModuleInit {
       // The committed state is the response, so a replay returns exactly this.
       return this.storedResult(content, store, submitted);
     });
+  }
+
+  /* v3.2 routes frozen by M1; P1 implements them with the v3 loader (design §2 endpoints 4-6). */
+  chooseScenario(
+    _userId: string,
+    _lessonId: string,
+    _input: ScenarioChoiceRequest,
+  ): Promise<ScenarioChoiceResponse> {
+    return Promise.reject(new NotImplementedException('academy v3.2 scenario choice'));
+  }
+
+  lessonNotes(_userId: string, _lessonId: string): Promise<NotesResponse> {
+    return Promise.reject(new NotImplementedException('academy v3.2 notes'));
+  }
+
+  saveLessonNotes(
+    _userId: string,
+    _lessonId: string,
+    _input: NotesSaveRequest,
+  ): Promise<NotesResponse> {
+    return Promise.reject(new NotImplementedException('academy v3.2 notes'));
   }
 
   /** Guide lessons only: records the acknowledgment; no quiz, score or capability involved. */

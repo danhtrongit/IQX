@@ -22,7 +22,7 @@ import {
   attemptResponseSchema,
   lessonResponseSchema,
   submitResponseSchema,
-} from '../../src/modules/academy/academy.schemas.js';
+} from '../../src/modules/academy/academy.schemas.v1.js';
 import {
   chartModelSchema,
   type PackageLesson,

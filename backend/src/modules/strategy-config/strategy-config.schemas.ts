@@ -193,7 +193,7 @@ export const technicalRegistryResponseSchema = z.object({
       id: z.string(),
       name: z.string(),
       chapter: z.number().int(),
-      lesson_id: z.string(),
+      lesson_id: z.string().nullable(),
       family: z.enum(['state', 'event']),
       formula: z.string(),
       availability: z.enum(['ohlcv', 'needs_history_context']),

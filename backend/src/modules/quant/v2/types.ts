@@ -178,7 +178,7 @@ type RegistryEntryOf<RuleVersion extends string> = {
   id: string;
   name: string;
   chapter: number;
-  lesson_id: string;
+  lesson_id: string | null;
   calculation_version: typeof CALCULATION_VERSION;
   family: 'state' | 'event';
   formula: string;

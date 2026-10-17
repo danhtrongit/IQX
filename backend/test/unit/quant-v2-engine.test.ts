@@ -572,7 +572,7 @@ describe('quant v2 calc — technical worked fixtures (lesson files)', () => {
   for (const { entry, fixtures, legacy } of cases) {
     if (WORKED_NOT_OBSERVABLE.has(entry.id)) continue;
     it(`${legacy ? 'legacy ' : ''}${entry.id} (${entry.lesson_id}) reproduces the lesson fixture`, () => {
-      const fixture = fixtures.get(entry.lesson_id);
+      const fixture = entry.lesson_id === null ? undefined : fixtures.get(entry.lesson_id);
       if (!fixture) throw new Error(`missing fixture for ${entry.lesson_id}`);
       const worked = entry.worked_fixture as { expected: number };
       expect(worked.expected).toBe(fixture.expected);

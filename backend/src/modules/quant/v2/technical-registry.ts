@@ -83,7 +83,10 @@ function entrySchema<V extends string>(ruleVersion: V) {
       id: z.string().min(1),
       name: z.string().min(1),
       chapter: z.number().int(),
-      lesson_id: z.string().min(1),
+      lesson_id: z
+        .string()
+        .regex(/^ch\d{2}-l\d{2}$/)
+        .nullable(),
       calculation_version: z.literal(CALCULATION_VERSION),
       family: z.enum(['state', 'event']),
       formula: z.string(),

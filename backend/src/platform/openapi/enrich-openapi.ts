@@ -157,6 +157,51 @@ function normalizeAnonymousRuntimeSchemas(document: OpenAPIObject): void {
     }
   }
   normalizeInlineJsonDefinitions(document);
+  hoistNamedInlineDefinitions(document);
+}
+
+/**
+ * zod's `toJSONSchema` keeps schemas named with `.meta({ id })` (e.g. AcademyBlock) in an inline
+ * `definitions` map with `#/definitions/<id>` refs, which are not resolvable inside an OpenAPI
+ * document. Move every named definition to `components.schemas` under the same name (one shared
+ * component per id; two different shapes under one id fail the build) and point the refs there.
+ */
+function hoistNamedInlineDefinitions(document: OpenAPIObject): void {
+  const hoisted = new Map<string, unknown>();
+  const collect = (value: unknown): void => {
+    if (Array.isArray(value)) {
+      value.forEach(collect);
+      return;
+    }
+    if (!value || typeof value !== 'object') return;
+    const record = value as JsonRecord;
+    const definitions = record.definitions;
+    if (definitions && typeof definitions === 'object' && !Array.isArray(definitions)) {
+      const definitionRecord = definitions as JsonRecord;
+      for (const [name, schema] of Object.entries(definitionRecord)) {
+        if (/^__schema\d+$/.test(name)) continue;
+        const previous = hoisted.get(name);
+        if (previous !== undefined && JSON.stringify(previous) !== JSON.stringify(schema))
+          throw new Error(`OpenAPI: two different schemas are named ${name}`);
+        hoisted.set(name, schema);
+        delete definitionRecord[name];
+      }
+      if (Object.keys(definitionRecord).length === 0) delete record.definitions;
+    }
+    Object.values(record).forEach(collect);
+  };
+  collect(document);
+  if (hoisted.size === 0) return;
+  document.components ??= {};
+  document.components.schemas ??= {};
+  for (const [name, schema] of hoisted) {
+    const existing = document.components.schemas[name];
+    if (existing !== undefined && JSON.stringify(existing) !== JSON.stringify(schema))
+      throw new Error(`OpenAPI: component ${name} already exists with another shape`);
+    document.components.schemas[name] = schema as SchemaObject;
+  }
+  for (const name of hoisted.keys())
+    rewriteReferenceInPlace(document, `#/definitions/${name}`, `#/components/schemas/${name}`);
 }
 
 function isRecursiveJsonSchema(name: string, value: unknown): boolean {

@@ -21,27 +21,30 @@ import { z } from 'zod';
 import { ApiAuthGuard, CurrentUser, type AuthenticatedUser } from '../auth/index.js';
 import { AcademyEnabledGuard } from './academy-enabled.guard.js';
 import {
-  attemptCreateSchema,
-  attemptHistoryResponseSchema,
+  attemptCreateRequestSchema,
   attemptIdParamSchema,
   attemptResponseSchema,
-  attemptResumeResponseSchema,
-  attemptSubmitSchema,
   catalogResponseSchema,
+  draftSaveRequestSchema,
   draftSaveResponseSchema,
-  draftSaveSchema,
-  guideCompleteResponseSchema,
-  guideCompleteSchema,
   historyQuerySchema,
+  historyResponseSchema,
+  itemResponseSchema,
   lessonIdParamSchema,
-  lessonResponseSchema,
+  notesResponseSchema,
+  notesSaveRequestSchema,
   progressResponseSchema,
+  resumeResponseSchema,
+  scenarioChoiceRequestSchema,
+  scenarioChoiceResponseSchema,
+  submitRequestSchema,
   submitResponseSchema,
-  type AttemptCreateInput,
-  type AttemptSubmitInput,
-  type DraftSaveInput,
-  type GuideCompleteInput,
+  type AttemptCreateRequest,
+  type DraftSaveRequest,
   type HistoryQuery,
+  type NotesSaveRequest,
+  type ScenarioChoiceRequest,
+  type SubmitRequest,
 } from './academy.schemas.js';
 import { AcademyService } from './academy.service.js';
 
@@ -49,8 +52,10 @@ const openApi = (schema: z.ZodType) =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
 
 /**
- * Learning is free for every authenticated user; strategy usage is gated elsewhere. The owner
- * always comes from the session: no endpoint accepts a user id, score, pass flag or capability.
+ * Học viện v3.2: 14 chapters (1-5 published), lessons, chapter exams and the optional ch3 practice
+ * in one prefix-unlocked chain. Learning is free for every authenticated user; strategy usage is
+ * gated elsewhere. The owner always comes from the session: no endpoint accepts a user id, score,
+ * pass flag or capability, and no response carries an answer key or explanation.
  */
 @ApiTags('Academy')
 @UseGuards(AcademyEnabledGuard, ApiAuthGuard)
@@ -61,7 +66,8 @@ export class AcademyController {
   @Get('catalog')
   @ApiOperation({
     operationId: 'academyCatalog',
-    summary: 'The 13-chapter / 71-lesson catalog with completion mode, binding and content status',
+    summary:
+      'The published chapters with their lessons, chapter exam and optional practice, plus retired lesson names',
   })
   @ApiOkResponse({ schema: openApi(catalogResponseSchema) })
   catalog() {
@@ -71,7 +77,8 @@ export class AcademyController {
   @Get('progress')
   @ApiOperation({
     operationId: 'academyProgress',
-    summary: 'Completed lessons, per-chapter and course progress and opened capabilities',
+    summary:
+      'Server-computed state (passed/open/locked) of every item, course and chapter progress, current item and opened capabilities',
   })
   @ApiOkResponse({ schema: openApi(progressResponseSchema) })
   progress(@CurrentUser() user: AuthenticatedUser) {
@@ -82,9 +89,9 @@ export class AcademyController {
   @ApiOperation({
     operationId: 'academyLesson',
     summary:
-      'Typed lesson sections, chart models and nav labels (never questions or answers), plus completion info',
+      'A lesson or practice (typed blocks, chart models, summary, scenario choice) or a chapter exam intro; 403 ACADEMY_ITEM_LOCKED when locked',
   })
-  @ApiOkResponse({ schema: openApi(lessonResponseSchema) })
+  @ApiOkResponse({ schema: openApi(itemResponseSchema) })
   lesson(
     @CurrentUser() user: AuthenticatedUser,
     @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
@@ -92,13 +99,58 @@ export class AcademyController {
     return this.academy.lesson(user.id, lessonId);
   }
 
+  @Post('lessons/:lessonId/scenario')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'academyChooseScenario',
+    summary:
+      'Store the learner’s scenario choice once (a replay returns the first choice; a stale row is replaced once); 422 NO_SCENARIO',
+  })
+  @ApiOkResponse({ schema: openApi(scenarioChoiceResponseSchema) })
+  chooseScenario(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
+    @Body({ schema: scenarioChoiceRequestSchema }) body: ScenarioChoiceRequest,
+  ) {
+    return this.academy.chooseScenario(user.id, lessonId, body);
+  }
+
+  @Get('lessons/:lessonId/notes')
+  @ApiOperation({
+    operationId: 'academyLessonNotes',
+    summary:
+      'The learner’s saved workpads, checklists and roleplay scores of a lesson (revision 0 when none); 404 NOTES_NOT_AVAILABLE',
+  })
+  @ApiOkResponse({ schema: openApi(notesResponseSchema) })
+  lessonNotes(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
+  ) {
+    return this.academy.lessonNotes(user.id, lessonId);
+  }
+
+  @Put('lessons/:lessonId/notes')
+  @ApiOperation({
+    operationId: 'academySaveLessonNotes',
+    summary:
+      'Merge partial notes by key with an optional revision guard; 409 NOTES_REVISION_CONFLICT, 422 INVALID_NOTES / NOTES_TOO_LARGE',
+  })
+  @ApiOkResponse({ schema: openApi(notesResponseSchema) })
+  saveLessonNotes(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
+    @Body({ schema: notesSaveRequestSchema }) body: NotesSaveRequest,
+  ) {
+    return this.academy.saveLessonNotes(user.id, lessonId, body);
+  }
+
   @Get('lessons/:lessonId/attempt')
   @ApiOperation({
     operationId: 'academyResumeAttempt',
     summary:
-      'Resume the latest open attempt of a lesson: questions and options in the stored order (no answer key) plus the saved draft selections; attempt is null when there is none',
+      'Resume the latest open attempt of an item in the current catalog: questions and options in the stored order (no answer key) plus the saved draft; attempt is null when there is none',
   })
-  @ApiOkResponse({ schema: openApi(attemptResumeResponseSchema) })
+  @ApiOkResponse({ schema: openApi(resumeResponseSchema) })
   resumeAttempt(
     @CurrentUser() user: AuthenticatedUser,
     @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
@@ -109,9 +161,10 @@ export class AcademyController {
   @Get('lessons/:lessonId/attempts')
   @ApiOperation({
     operationId: 'academyLessonAttempts',
-    summary: 'The learner’s submitted attempts of a lesson, newest first, paginated (limit/offset)',
+    summary:
+      'The learner’s submitted attempts of an item (score only, current catalog), newest first, paginated (limit/offset)',
   })
-  @ApiOkResponse({ schema: openApi(attemptHistoryResponseSchema) })
+  @ApiOkResponse({ schema: openApi(historyResponseSchema) })
   lessonAttempts(
     @CurrentUser() user: AuthenticatedUser,
     @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
@@ -124,28 +177,14 @@ export class AcademyController {
   @ApiOperation({
     operationId: 'academyCreateAttempt',
     summary:
-      'Start (or replay by idempotency key) a quiz attempt: the 8 questions in a per-attempt order, no answer key',
+      'Start (or replay by idempotency key) a quiz or chapter exam attempt: every question of the bank in a server-shuffled order, no answer key',
   })
   @ApiCreatedResponse({ schema: openApi(attemptResponseSchema) })
   createAttempt(
     @CurrentUser() user: AuthenticatedUser,
-    @Body({ schema: attemptCreateSchema }) body: AttemptCreateInput,
+    @Body({ schema: attemptCreateRequestSchema }) body: AttemptCreateRequest,
   ) {
     return this.academy.createAttempt(user.id, body);
-  }
-
-  @Get('attempts/:attemptId')
-  @ApiOperation({
-    operationId: 'academyAttemptReview',
-    summary:
-      'The committed result and review of a submitted attempt of the learner (same body as a submit replay); 409 ATTEMPT_NOT_SUBMITTED while the attempt is open',
-  })
-  @ApiOkResponse({ schema: openApi(submitResponseSchema) })
-  attemptReview(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('attemptId', { schema: attemptIdParamSchema }) attemptId: string,
-  ) {
-    return this.academy.attemptReview(user.id, attemptId);
   }
 
   @Put('attempts/:attemptId/answers')
@@ -158,7 +197,7 @@ export class AcademyController {
   saveDraft(
     @CurrentUser() user: AuthenticatedUser,
     @Param('attemptId', { schema: attemptIdParamSchema }) attemptId: string,
-    @Body({ schema: draftSaveSchema }) body: DraftSaveInput,
+    @Body({ schema: draftSaveRequestSchema }) body: DraftSaveRequest,
   ) {
     return this.academy.saveDraft(user.id, attemptId, body);
   }
@@ -168,29 +207,14 @@ export class AcademyController {
   @ApiOperation({
     operationId: 'academySubmitAttempt',
     summary:
-      'Grade an attempt server-side against its pinned bank; returns the review. 8/8 records the lesson completion once',
+      'Grade an attempt server-side against its pinned bank; returns the score only. All correct records the completion once',
   })
   @ApiOkResponse({ schema: openApi(submitResponseSchema) })
   submit(
     @CurrentUser() user: AuthenticatedUser,
     @Param('attemptId', { schema: attemptIdParamSchema }) attemptId: string,
-    @Body({ schema: attemptSubmitSchema }) body: AttemptSubmitInput,
+    @Body({ schema: submitRequestSchema }) body: SubmitRequest,
   ) {
     return this.academy.submit(user.id, attemptId, body);
-  }
-
-  @Post('lessons/:lessonId/complete')
-  @HttpCode(200)
-  @ApiOperation({
-    operationId: 'academyCompleteGuide',
-    summary: 'Complete a published guide lesson (Hoàn thành bài học); idempotent per request id',
-  })
-  @ApiOkResponse({ schema: openApi(guideCompleteResponseSchema) })
-  completeGuide(
-    @CurrentUser() user: AuthenticatedUser,
-    @Param('lessonId', { schema: lessonIdParamSchema }) lessonId: string,
-    @Body({ schema: guideCompleteSchema }) body: GuideCompleteInput,
-  ) {
-    return this.academy.completeGuide(user.id, lessonId, body);
   }
 }

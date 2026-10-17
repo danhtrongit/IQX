@@ -83,7 +83,13 @@ const academySummaryProperties: Record<string, SchemaObject> = {
   completed: integer,
   total: integer,
   all_done: boolean,
-  current_lesson: nullable(closedObject(lessonRefProperties)),
+  /** Current required item: a lesson or a chapter exam ("Bài thi Chương c"). */
+  current_lesson: nullable(
+    closedObject({
+      ...lessonRefProperties,
+      kind: { type: 'string', enum: ['lesson', 'chapter_exam'] },
+    }),
+  ),
 };
 
 export const ACADEMY_SUMMARY_SCHEMA = closedObject(academySummaryProperties);
@@ -107,21 +113,24 @@ export const ACADEMY_DETAIL_SCHEMA = closedObject({
       title: string,
       total: integer,
       completed: integer,
+      exam_passed: boolean,
       lessons: {
         type: 'array',
         items: closedObject({
           lesson_id: string,
           order: integer,
           name: string,
-          kind: { type: 'string', enum: ['technical', 'fundamental', 'concept', 'guide'] },
-          completion_mode: { type: 'string', enum: ['quiz', 'guide'] },
+          kind: { type: 'string', enum: ['lesson', 'practice', 'chapter_exam'] },
+          /** Practice (Phòng tập thực chiến): never counted in totals. */
+          optional: boolean,
           status: {
             type: 'string',
-            enum: ['completed', 'in_progress', 'failed', 'not_started'],
+            enum: ['completed', 'in_progress', 'failed', 'not_started', 'locked'],
           },
           attempts: integer,
           latest_score: nullable(integer),
-          max_score: nullable(integer),
+          /** Question count of the item (3, 5, 20 or 30). */
+          max_score: integer,
           completed_at: nullable(dateTime),
           is_current: boolean,
         }),
