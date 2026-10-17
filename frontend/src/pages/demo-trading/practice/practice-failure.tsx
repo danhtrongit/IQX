@@ -38,7 +38,7 @@ export function PracticeFailureNotice({
             <>
               <p className="font-medium">Bạn chưa mở khóa chỉ báo {name}.</p>
               <p className="text-muted-foreground">
-                Hoàn thành bài học {name} (đúng 8/8 câu) để được luyện tập chỉ báo này.
+                Đạt bài kiểm tra của bài học {name} để được luyện tập chỉ báo này.
               </p>
             </>
           ) : failure.kind === "not_found" ? (
@@ -68,6 +68,7 @@ export function PracticeFailureNotice({
             <Link to={lesson}>Học bài {name}</Link>
           </Button>
         )}
+        {failure.kind === "not_granted" && !lesson && <span className="text-xs text-muted-foreground">Chưa phát hành</span>}
         {retryable && onRetry && (
           <Button type="button" size="sm" variant="outline" onClick={onRetry}>
             {retryLabel}

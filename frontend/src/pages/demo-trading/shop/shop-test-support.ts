@@ -163,13 +163,13 @@ export function createShopBackend(options: BackendOptions = {}) {
       return { changed: true, active: activeView() }
     }
     if (path === "/academy/progress") {
-      return { catalog_version: "v", chapters: [], completed: [], completed_lesson_ids: [], course_done: state.lessons, course_total: 71, granted_capabilities: [], progress_revision: 1 }
+      return { catalog_version: "v", chapters: [], completed: [], completed_lesson_ids: [], course_done: state.lessons, course_total: 43, granted_capabilities: [], progress_revision: 1 }
     }
     if (path === "/academy/catalog") {
-      const lessons = ["RSI", "MACD", "MA / SMA", "Bollinger Bands", "Khối lượng"].map((name, index) => ({
-        id: `ch01-l0${index + 1}`, lesson_key: `technical:l${index + 1}`, name, order: index + 1, chapter: 1, kind: "technical",
+      const items = ["RSI", "MACD", "MA / SMA", "Bollinger Bands", "Khối lượng"].map((name, index) => ({
+        id: `ch01-l0${index + 1}`, lesson_key: `technical:l${index + 1}`, name, order: index + 1, chapter: 1, kind: "lesson",
       }))
-      return { catalog_version: "v", chapter_count: 1, lesson_count: 5, chapters: [{ no: 1, title: "Chỉ báo", type: "technical", lessons }] }
+      return { catalog_version: "v", required_total: 5, chapters: [{ no: 1, title: "Chỉ báo", audience: "all", lesson_count: 5, items }], retired_lessons: [] }
     }
     if (path === "/workspace/state") {
       return { mascot: { active_mascot_id: state.active, revision: state.revision, provisioned: true }, wallet: { balance: state.balance, provisioned: true } }

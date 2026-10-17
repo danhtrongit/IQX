@@ -7,7 +7,7 @@ export function isFeatureDisabled(error: unknown): boolean {
   return error instanceof ApiError && error.status === 404 && error.code === "FEATURE_DISABLED"
 }
 
-/** A tool the account has not unlocked (lesson quiz 8/8) or whose plan is missing. */
+/** A tool the account has not unlocked (lesson quiz not passed) or whose plan is missing. */
 export function isForbidden(error: unknown): boolean {
   return error instanceof ApiError && error.status === 403
 }

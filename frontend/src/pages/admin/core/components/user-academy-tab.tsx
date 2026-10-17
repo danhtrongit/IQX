@@ -1,4 +1,5 @@
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -35,8 +36,8 @@ function SummaryTile({ label, value, hint, progress }: { label: string; value: s
 
 /**
  * Tab Học viện (admin spec v1.1 §5.1.4), dùng chung cho quản trị viên và trưởng nhóm. Chỉ
- * hiện các chương đã phát hành mà máy chủ trả về. Catalog hiện tại không có bài thi cuối
- * chương nên ô và dòng bài thi chỉ hiện khi `chapterExams.total > 0`.
+ * hiện các chương đã phát hành mà máy chủ trả về. Mỗi chương có một dòng "Bài thi Chương c"
+ * (n/20 hoặc n/30) và một dòng Phòng tập thực chiến tự chọn, không tính vào tổng bài học.
  */
 export function UserAcademyTab({ academy }: { academy: AcademyProgress | null }) {
   if (!academy) {
@@ -53,7 +54,7 @@ export function UserAcademyTab({ academy }: { academy: AcademyProgress | null })
       <div className={hasExams ? "grid gap-3 sm:grid-cols-2 xl:grid-cols-4" : "grid gap-3 sm:grid-cols-3"}>
         <SummaryTile
           label="Bài đã hoàn thành"
-          value={`${formatNumber(academy.completed)}/${formatNumber(academy.total)}`}
+          value={`${formatNumber(academy.completed)} / ${formatNumber(academy.total)}`}
           progress={percent(academy.completed, academy.total)}
         />
         {hasExams && (
@@ -108,14 +109,20 @@ export function UserAcademyTab({ academy }: { academy: AcademyProgress | null })
                     {chapter.lessons.map((lesson) => (
                       <TableRow key={lesson.lessonId} aria-current={lesson.isCurrent ? "step" : undefined}>
                         <TableCell className="whitespace-normal">
-                          <span className="text-muted-foreground tabular-nums">Bài {lesson.order}:</span> {lesson.name}
+                          {lesson.kind === "lesson" && <span className="text-muted-foreground tabular-nums">Bài {lesson.order}:</span>}{" "}
+                          {lesson.name}
+                          {lesson.optional && (
+                            <Badge variant="outline" className="ml-2">
+                              Tự chọn
+                            </Badge>
+                          )}
                           {lesson.isCurrent && <span className="ml-2 text-xs font-medium text-primary">Bài đang học</span>}
                         </TableCell>
                         <TableCell>
                           <StatusBadge status={lesson.status} label={LESSON_STATUS[lesson.status].label} tone={LESSON_STATUS[lesson.status].tone} />
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
-                          {lesson.completionMode === "quiz" ? formatNumber(lesson.attempts) : <span className="text-muted-foreground">—</span>}
+                          {formatNumber(lesson.attempts)}
                         </TableCell>
                         <TableCell className="text-right tabular-nums">
                           {lesson.latestScore !== null && lesson.maxScore !== null ? `${lesson.latestScore}/${lesson.maxScore}` : <span className="text-muted-foreground">—</span>}

@@ -117,12 +117,12 @@ export function sideOfError(error: ConfigFieldError): "buy" | "sell" | null {
   return match ? (match[1] as "buy" | "sell") : null
 }
 
-const LOCKED_FALLBACK = "Hoàn thành bài kiểm tra 8/8 của chỉ báo này để bật."
+const LOCKED_FALLBACK = "Đạt bài kiểm tra của bài học chỉ báo này để bật."
 
 function lockedMessage(locked: LockedCapability[], nameOf: ((id: string) => string | undefined) | undefined): string {
   const names = [...new Set(locked.filter((item) => item.reason === "not_learned" && item.indicator).map((item) => nameOf?.(item.indicator as string) ?? (item.indicator as string)))]
   if (names.length === 0) return LOCKED_FALLBACK
-  return `Hoàn thành bài kiểm tra 8/8 của chỉ báo ${names.join(", ")} để bật.`
+  return `Đạt bài kiểm tra của bài học chỉ báo ${names.join(", ")} để bật.`
 }
 
 /**

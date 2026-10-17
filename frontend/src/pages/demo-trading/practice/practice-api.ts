@@ -102,24 +102,24 @@ export function newIdempotencyKey(): string {
   return `practice-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
 }
 
-/** Academy lesson (`view=academy&lesson=<id>`) that grants each practice indicator. */
-export const PRACTICE_INDICATORS: Readonly<Record<string, { name: string; lessonId: string }>> = {
-  rsi: { name: "RSI", lessonId: "ch01-l01" },
-  macd: { name: "MACD", lessonId: "ch01-l02" },
-  ma: { name: "MA / SMA", lessonId: "ch01-l03" },
-  bollinger: { name: "Bollinger Bands", lessonId: "ch01-l04" },
-  volume: { name: "Khối lượng", lessonId: "ch01-l05" },
-  ema: { name: "EMA", lessonId: "ch05-l01" },
-  ma_cross: { name: "MA Cross", lessonId: "ch05-l02" },
-  dmi: { name: "DMI", lessonId: "ch05-l03" },
-  stochastic: { name: "Stochastic", lessonId: "ch05-l04" },
-  cci: { name: "CCI", lessonId: "ch05-l05" },
-  obv: { name: "OBV", lessonId: "ch07-l01" },
-  mfi: { name: "MFI", lessonId: "ch07-l02" },
-  cmf: { name: "Chaikin Money Flow", lessonId: "ch07-l03" },
-  donchian: { name: "Donchian Channel", lessonId: "ch10-l01" },
-  roc: { name: "ROC", lessonId: "ch10-l02" },
-  williams_r: { name: "Williams %R", lessonId: "ch10-l03" },
+/** Academy lesson (`view=academy&lesson=<id>`) that grants each practice indicator; null = lesson not published yet. */
+export const PRACTICE_INDICATORS: Readonly<Record<string, { name: string; lessonId: string | null }>> = {
+  rsi: { name: "RSI", lessonId: "ch04-l06" },
+  macd: { name: "MACD", lessonId: "ch04-l07" },
+  ma: { name: "MA / SMA", lessonId: "ch04-l05" },
+  bollinger: { name: "Bollinger Bands", lessonId: "ch04-l08" },
+  volume: { name: "Khối lượng", lessonId: "ch04-l04" },
+  ema: { name: "EMA", lessonId: null },
+  ma_cross: { name: "MA Cross", lessonId: null },
+  dmi: { name: "DMI", lessonId: null },
+  stochastic: { name: "Stochastic", lessonId: null },
+  cci: { name: "CCI", lessonId: null },
+  obv: { name: "OBV", lessonId: null },
+  mfi: { name: "MFI", lessonId: null },
+  cmf: { name: "Chaikin Money Flow", lessonId: null },
+  donchian: { name: "Donchian Channel", lessonId: null },
+  roc: { name: "ROC", lessonId: null },
+  williams_r: { name: "Williams %R", lessonId: null },
 }
 
 export function lessonLink(indicatorId: string): string | null {
