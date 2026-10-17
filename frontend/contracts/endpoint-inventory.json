@@ -692,7 +692,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 753,
+      "line": 757,
       "callee": "apiResponse",
       "raw": "/admin/users/export?query",
       "method": "GET",
@@ -705,7 +705,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 778,
+      "line": 782,
       "callee": "api",
       "raw": "/users?{search}",
       "method": "GET",
@@ -718,7 +718,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 781,
+      "line": 785,
       "callee": "api",
       "raw": "/admin/users/{userId}/360",
       "method": "GET",
@@ -731,7 +731,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 784,
+      "line": 788,
       "callee": "api",
       "raw": "/users/{userId}",
       "method": "GET",
@@ -745,7 +745,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 787,
+      "line": 791,
       "callee": "api",
       "raw": "/users/{userId}",
       "method": "PATCH",
@@ -759,7 +759,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 792,
+      "line": 796,
       "callee": "api",
       "raw": "/users/{userId}",
       "method": "DELETE",
@@ -772,7 +772,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 794,
+      "line": 798,
       "callee": "api",
       "raw": "/admin/users/bulk",
       "method": "POST",
@@ -785,7 +785,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 806,
+      "line": 810,
       "callee": "api",
       "raw": "/admin/users/{userId}/reset-password",
       "method": "POST",
@@ -798,7 +798,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 813,
+      "line": 817,
       "callee": "api",
       "raw": "/admin/users/{userId}/resend-verification",
       "method": "POST",
@@ -811,7 +811,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 823,
+      "line": 827,
       "callee": "api",
       "raw": "/admin/users/{userId}/login-history?{query( page: params.page, page_size: params.pageSize )}",
       "method": "GET",
@@ -824,7 +824,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 864,
+      "line": 868,
       "callee": "api",
       "raw": "/admin/system/status",
       "method": "GET",
@@ -837,7 +837,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 882,
+      "line": 886,
       "callee": "api",
       "raw": "/admin/system/jobs/{jobId}/run",
       "method": "POST",
@@ -850,7 +850,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 975,
+      "line": 979,
       "callee": "api",
       "raw": "/admin/audit?{search}",
       "method": "GET",
@@ -863,7 +863,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1097,
+      "line": 1101,
       "callee": "api",
       "raw": "/admin/alerts/signals",
       "method": "GET",
@@ -876,7 +876,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1102,
+      "line": 1106,
       "callee": "api",
       "raw": "/admin/alerts/signals",
       "method": "POST",
@@ -889,7 +889,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1109,
+      "line": 1113,
       "callee": "api",
       "raw": "/admin/alerts/signals/{key}",
       "method": "PUT",
@@ -902,7 +902,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1114,
+      "line": 1118,
       "callee": "api",
       "raw": "/admin/alerts/signals/{key}",
       "method": "DELETE",
@@ -915,7 +915,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1116,
+      "line": 1120,
       "callee": "api",
       "raw": "/admin/alerts/seed?overwrite={String(overwrite)}",
       "method": "POST",
@@ -928,7 +928,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1120,
+      "line": 1124,
       "callee": "api",
       "raw": "/admin/alerts/indicators",
       "method": "GET",
@@ -2640,7 +2640,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 163,
+      "line": 168,
       "callee": "requestOperation",
       "raw": "POST /api/v2/shop/purchases",
       "method": "POST",
@@ -2653,7 +2653,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 170,
+      "line": 175,
       "callee": "requestOperation",
       "raw": "GET /api/v2/shop/purchases/{idempotencyKey}",
       "method": "GET",
@@ -2666,7 +2666,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 177,
+      "line": 182,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/shop/active-mascot",
       "method": "PUT",
