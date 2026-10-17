@@ -23,7 +23,10 @@ export function NotesStatusLine({ blockId }: { blockId: string }) {
     <div role="status" className="mt-2 flex min-h-5 flex-wrap items-center gap-2 text-xs text-academy-subtle">
       {mine && notes.status === "saving" && <span>Đang lưu</span>}
       {mine && notes.status === "saved" && <span>Đã lưu vào tài khoản</span>}
-      {mine && notes.status === "error" && (
+      {mine && notes.status === "error" && notes.tooLarge && (
+        <span className="text-destructive">Ghi chú quá dài nên chưa lưu được. Hãy rút gọn bớt rồi lưu lại.</span>
+      )}
+      {mine && notes.status === "error" && !notes.tooLarge && (
         <>
           <span className="text-destructive">Chưa lưu được.</span>
           <Button type="button" variant="ghost" size="xs" onClick={notes.retry}>

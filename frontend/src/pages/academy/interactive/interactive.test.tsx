@@ -7,7 +7,7 @@ import type { LessonContent } from "../content-types"
 import { createFakeAcademyApi } from "../test-api"
 import { keysBefore } from "../test-fixtures"
 import { renderAcademy, stubBrowser } from "../test-support"
-import { resetAcademyViewState } from "../view-state"
+import { loadNotesDraft, resetAcademyViewState, saveNotesDraft } from "../view-state"
 
 const mocks = vi.hoisted(() => ({ api: vi.fn() }))
 
@@ -98,7 +98,6 @@ const PRACTICE_SECTIONS = [
       {
         type: "roleplay_score",
         id: "sc6",
-        title: "Đóng vai và chấm điểm",
         max: 10,
         default: 5,
         criteria: [
@@ -249,6 +248,43 @@ describe("notes: checklists and workpads saved to the account", () => {
     await waitFor(() => expect(fake.notes.get("ch02-l01")?.texts).toEqual({ l2: "Chưa gửi" }), { timeout: 3000 })
   })
 
+  it("drops a restored draft key the lesson no longer has before sending the rest", async () => {
+    saveNotesDraft("learner-1", "ch02-l01", { texts: { renamed: "Bản cũ", l2: "Còn giữ" }, checks: {}, scores: {} })
+    await openItem("ch02-l01", "Bài học 2.1")
+    await waitFor(() => expect(fake.notes.get("ch02-l01")?.texts).toEqual({ l2: "Còn giữ" }), { timeout: 3000 })
+    expect(notesPuts()).toEqual([{ texts: { l2: "Còn giữ" }, expected_revision: 0 }])
+    expect(loadNotesDraft("learner-1", "ch02-l01")).toBeNull()
+  })
+
+  it("a 422 INVALID_NOTES drops the refused key and saves the other blocks instead of failing forever", async () => {
+    const user = userEvent.setup()
+    await openItem("ch02-l01", "Bài học 2.1")
+    await waitFor(() => expect(fake.calls).toContain("GET /academy/lessons/ch02-l01/notes"))
+    fake.fail(
+      "notes",
+      new ApiError("Ghi chú chỉ được lưu cho các ô của bài học này.", 422, {
+        code: "INVALID_NOTES",
+        details: [{ field: "checks", key: "l1:0", reason: "unknown_key" }],
+      }),
+      1,
+    )
+    await user.click(screen.getByRole("checkbox", { name: "Viết mục tiêu ba tháng" }))
+    await user.type(screen.getByRole("textbox", { name: "Bài tự làm: chân dung khách hàng" }), "Vẫn lưu")
+    await waitFor(() => expect(fake.notes.get("ch02-l01")?.texts).toEqual({ l2: "Vẫn lưu" }), { timeout: 3000 })
+    expect(fake.notes.get("ch02-l01")?.checks).toEqual({})
+    expect(await screen.findByText("Đã lưu vào tài khoản")).toBeTruthy()
+  })
+
+  it("says the notes are too long on a 422 NOTES_TOO_LARGE instead of offering a useless retry", async () => {
+    const user = userEvent.setup()
+    await openItem("ch02-l01", "Bài học 2.1")
+    await waitFor(() => expect(fake.calls).toContain("GET /academy/lessons/ch02-l01/notes"))
+    fake.fail("notes", new ApiError("Ghi chú quá lớn.", 422, "NOTES_TOO_LARGE"), 1)
+    await user.type(screen.getByRole("textbox", { name: "Bài tự làm: chân dung khách hàng" }), "Rất dài")
+    expect(await screen.findByText(/Ghi chú quá dài nên chưa lưu được/, {}, { timeout: 3000 })).toBeTruthy()
+    expect(screen.queryByRole("button", { name: "Thử lại" })).toBeNull()
+  })
+
   it("never reads notes for a lesson without notes blocks", async () => {
     await openItem("ch01-l01", "Bài học 1.1")
     expect(fake.calls.some((call) => call.endsWith("/notes"))).toBe(false)
@@ -278,6 +314,8 @@ describe("practice room: client case and roleplay score", () => {
     const user = userEvent.setup()
     await openItem("ch03-practice", "Phòng tập thực chiến")
     expect(screen.getByRole("heading", { level: 5, name: "Bạn tự phân tích trước" })).toBeTruthy()
+    // Profile column labels follow the mockup (.cp: Thông tin khách / Tâm lý / Câu thường nói).
+    for (const label of ["Thông tin khách", "Tâm lý", "Câu thường nói"]) expect(screen.getByText(label)).toBeTruthy()
     for (const prompt of ["Khách sợ điều gì?", "Bạn trả lời câu khách hay nói thế nào?", "Gợi ý hướng nào?", "Câu chốt là gì?"]) {
       expect(screen.getByText(prompt).className).toContain("text-[15px]")
     }
@@ -295,6 +333,9 @@ describe("practice room: client case and roleplay score", () => {
   it("starts at 30/60 and shows the bands 48 and 36 from stored scores", async () => {
     const first = await openItem("ch03-practice", "Phòng tập thực chiến")
     expect(await screen.findByText("30/60")).toBeTruthy()
+    // The section title names the card; the untitled card adds no second heading.
+    expect(screen.getAllByRole("heading", { name: "Đóng vai và chấm điểm" })).toHaveLength(1)
+    expect(screen.getByRole("region", { name: "Chấm điểm đóng vai" })).toBeTruthy()
     expect(screen.getByText("Cần học lại")).toBeTruthy()
     first.unmount()
 

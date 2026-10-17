@@ -97,6 +97,7 @@ export function QuizFlow({
         <PanelState
           title="Chưa chọn cách xử lý tình huống"
           description="Chọn một phương án ở phần Tình huống rồi làm bài kiểm tra."
+          descriptionClassName="text-academy-subtle"
           action={{ label: "Đến phần Tình huống", onClick: onScenarioRequired }}
         />
       )
@@ -106,6 +107,7 @@ export function QuizFlow({
       <PanelState
         title={stale ? "Học viện vừa được cập nhật" : "Chưa bắt đầu được bài kiểm tra"}
         description={stale ? "Hãy tải lại bài rồi làm bài kiểm tra mới." : errorMessage(boot.error)}
+        descriptionClassName="text-academy-subtle"
         action={stale ? { label: "Tải lại bài", onClick: onReload } : { label: "Thử lại", onClick: () => void boot.refetch() }}
       />
     )

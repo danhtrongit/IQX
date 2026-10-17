@@ -36,11 +36,17 @@ export function RoleplayScore({ block }: { block: RoleplayScoreData }) {
   }
 
   return (
-    <section aria-labelledby={`${baseId}-title`} className="my-4 rounded-lg border border-border bg-card p-4 sm:p-5">
-      <h4 id={`${baseId}-title`} className="font-heading text-base font-semibold text-foreground">
-        {block.title}
-      </h4>
-      <ul className="m-0 mt-3 list-none space-y-4 p-0">
+    <section
+      aria-labelledby={block.title ? `${baseId}-title` : undefined}
+      aria-label={block.title ? undefined : "Chấm điểm đóng vai"}
+      className="my-4 rounded-lg border border-border bg-card p-4 sm:p-5"
+    >
+      {block.title && (
+        <h4 id={`${baseId}-title`} className="mb-3 font-heading text-base font-semibold text-foreground">
+          {block.title}
+        </h4>
+      )}
+      <ul className="m-0 list-none space-y-4 p-0">
         {block.criteria.map((criterion, index) => (
           <li key={index}>
             <div className="flex items-baseline justify-between gap-3">

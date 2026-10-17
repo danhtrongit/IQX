@@ -180,6 +180,22 @@ export function conflictDraft(error: unknown): DraftState | null {
   return valid ? (draft as DraftState) : null
 }
 
+export const isNotesTooLarge = (error: unknown) => hasCode(error, 422, "NOTES_TOO_LARGE")
+
+/**
+ * The keys a 422 INVALID_NOTES refused (`details[].{field,key}`, e.g. a block renamed by a content update while
+ * its edit waited in the session draft). Null when the error is something else; [] when it names no key.
+ */
+export function invalidNotesKeys(error: unknown): { field: "texts" | "checks" | "scores"; key: string }[] | null {
+  if (!hasCode(error, 422, "INVALID_NOTES")) return null
+  const details = (error as ApiError).details
+  if (!Array.isArray(details)) return []
+  return details.flatMap((detail: unknown) => {
+    const { field, key } = (detail ?? {}) as { field?: unknown; key?: unknown }
+    return (field === "texts" || field === "checks" || field === "scores") && typeof key === "string" ? [{ field, key }] : []
+  })
+}
+
 /** The stored notes a 409 NOTES_REVISION_CONFLICT carries in `details[0].notes`; null when absent or malformed. */
 export function conflictNotes(error: unknown): NotesResponse | null {
   if (!isNotesConflict(error)) return null

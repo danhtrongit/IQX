@@ -5,14 +5,15 @@
  * mirrored in `sessionStorage` until the server accepts them (a reload keeps unsent work).
  *
  * A 409 NOTES_REVISION_CONFLICT (another tab or device saved first) adopts the stored notes from
- * `details[0].notes` and re-applies only the keys edited here, then saves again. Notes never touch
- * progress, completion or coins.
+ * `details[0].notes` and re-applies only the keys edited here, then saves again. A 422 INVALID_NOTES drops the
+ * refused keys (and any key the lesson no longer has) and saves the rest, so one stale key never blocks the
+ * other blocks; a restored draft is filtered the same way. Notes never touch progress, completion or coins.
  */
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 
 import { useAuth } from "@/hooks/use-auth"
-import { conflictNotes, saveNotes, type LessonContent, type NotesResponse, type NotesSaveBody } from "../api"
+import { conflictNotes, invalidNotesKeys, isNotesTooLarge, saveNotes, type LessonContent, type NotesResponse, type NotesSaveBody } from "../api"
 import { academyKeys, useAcademyNotes } from "../queries"
 import { clearNotesDraft, loadNotesDraft, saveNotesDraft, type NotesDraft } from "../view-state"
 
@@ -38,15 +39,48 @@ function settle(dirty: NotesDraft, sent: NotesDraft): NotesDraft {
   return next
 }
 
+/** Notes keys a lesson accepts, mirroring the server's interactiveKeysOf. */
+export type NotesKeys = Record<NotesMap, ReadonlySet<string>>
+
+export function notesKeysOf(lesson: Pick<LessonContent, "sections">): NotesKeys {
+  const texts = new Set<string>()
+  const checks = new Set<string>()
+  const scores = new Set<string>()
+  for (const block of lesson.sections.flatMap((section) => section.blocks)) {
+    if (block.type === "workpad" || block.type === "practice_case") texts.add(block.id)
+    else if (block.type === "checklist") for (const item of block.items) checks.add(`${block.id}:${item.id}`)
+    else if (block.type === "roleplay_score") scores.add(block.id)
+  }
+  return { texts, checks, scores }
+}
+
+/** `draft` without the keys `keep` rejects. */
+function pruneDraft(draft: NotesDraft, keep: (map: NotesMap, key: string) => boolean): NotesDraft {
+  const next = emptyDraft()
+  for (const map of ["texts", "checks", "scores"] as const) {
+    for (const [key, value] of Object.entries(draft[map])) if (keep(map, key)) (next[map] as Record<string, unknown>)[key] = value
+  }
+  return next
+}
+
+const draftSize = (draft: NotesDraft) => Object.keys(draft.texts).length + Object.keys(draft.checks).length + Object.keys(draft.scores).length
+
 export type LessonNotes = ReturnType<typeof useLessonNotes>
 
-export function useLessonNotes(itemId: string, enabled: boolean) {
+/** `keys`: what the lesson accepts; a restored draft and a 422 INVALID_NOTES are pruned against it. */
+export function useLessonNotes(itemId: string, enabled: boolean, keys?: NotesKeys) {
   const { user } = useAuth()
   const userId = user?.id
   const queryClient = useQueryClient()
   const query = useAcademyNotes(itemId, enabled)
-  const [dirty, setDirty] = useState<NotesDraft>(() => (enabled ? loadNotesDraft(userId, itemId) : null) ?? emptyDraft())
+  const [dirty, setDirty] = useState<NotesDraft>(() => {
+    const restored = enabled ? loadNotesDraft(userId, itemId) : null
+    if (!restored) return emptyDraft()
+    return keys ? pruneDraft(restored, (map, key) => keys[map].has(key)) : restored
+  })
   const [status, setStatus] = useState<NotesStatus>("idle")
+  /** Why the last save failed when retrying the same body cannot help (NOTES_TOO_LARGE). */
+  const [tooLarge, setTooLarge] = useState(false)
   const [lastKey, setLastKey] = useState<string | null>(null)
   const dirtyRef = useRef(dirty)
   const inFlight = useRef(false)
@@ -77,6 +111,7 @@ export function useLessonNotes(itemId: string, enabled: boolean) {
     }
     inFlight.current = true
     setStatus("saving")
+    setTooLarge(false)
     let conflictRetried = false
     try {
       for (;;) {
@@ -98,6 +133,24 @@ export function useLessonNotes(itemId: string, enabled: boolean) {
             queryClient.setQueryData(notesKey, stored)
             continue
           }
+          const refused = invalidNotesKeys(error)
+          if (refused) {
+            // Keys the server refused, or the lesson no longer has, can never be saved: drop them and send the rest.
+            const before = dirtyRef.current
+            const pruned = pruneDraft(
+              before,
+              (map, key) => !refused.some((entry) => entry.field === map && entry.key === key) && (!keys || keys[map].has(key)),
+            )
+            if (draftSize(pruned) < draftSize(before)) {
+              writeDirty(pruned)
+              if (isEmpty(pruned)) {
+                setStatus("idle")
+                return
+              }
+              continue
+            }
+          }
+          if (isNotesTooLarge(error)) setTooLarge(true)
           setStatus("error")
           return
         }
@@ -111,7 +164,7 @@ export function useLessonNotes(itemId: string, enabled: boolean) {
     } finally {
       inFlight.current = false
     }
-  }, [itemId, queryClient, userId, writeDirty])
+  }, [itemId, keys, queryClient, userId, writeDirty])
 
   const schedule = useCallback(() => {
     if (timer.current) clearTimeout(timer.current)
@@ -162,6 +215,8 @@ export function useLessonNotes(itemId: string, enabled: boolean) {
     loadError: query.isError ? query.error : null,
     reload: () => void query.refetch(),
     status,
+    /** The last save failed because the notes are too long: shortening them is the fix, not a retry. */
+    tooLarge,
     /** The block that was edited last shows the save status (one live line, not one per block). */
     lastKey,
     setText: (id: string, value: string) => edit("texts", id, value),

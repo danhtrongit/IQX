@@ -117,6 +117,7 @@ export function LessonReader({ lessonId }: { lessonId: string }) {
                 ? "Bài học này không có trong danh mục Học viện."
                 : `${errorMessage(itemQuery.error)} Tiến độ đã xác nhận của bạn được giữ nguyên.`
             }
+            descriptionClassName="text-academy-subtle"
             action={isNotFound(itemQuery.error) ? undefined : { label: "Thử lại", onClick: () => void itemQuery.refetch() }}
           />
         )

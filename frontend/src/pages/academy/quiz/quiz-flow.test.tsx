@@ -233,6 +233,16 @@ describe("quiz: score-only result", () => {
     expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l01")
   }, 20_000)
 
+  it("the practice room quiz is labelled Bài kiểm tra, not the room name (spec §3.2-1)", async () => {
+    install({ completed: keysBefore("ch04-l01"), lessons: { "ch03-practice": { has_scenario: false } } })
+    const user = userEvent.setup()
+    await openItem("ch03-practice", "Phòng tập thực chiến")
+    await start(user)
+    const question = screen.getByRole("region", { name: /^Câu hỏi 1 / })
+    expect(within(question).getByText("Bài kiểm tra")).toBeTruthy()
+    expect(within(question).queryByText("Phòng tập thực chiến")).toBeNull()
+  })
+
   it("an exam at 19/20 is Chưa đạt and offers Làm lại and Xem lại Chương c", async () => {
     install({ completed: keysBefore("ch01-exam") })
     const user = userEvent.setup()
@@ -272,6 +282,10 @@ describe("quiz: server refusals", () => {
     await openItem("ch01-l01", "Bài học 1.1")
     await user.click(screen.getByRole("button", { name: "Làm bài kiểm tra" }))
     expect(await screen.findByText("Học viện vừa được cập nhật")).toBeTruthy()
+    // Inside the quiz the description uses the academy text colour, never the grey muted-foreground.
+    const description = screen.getByText("Hãy tải lại bài rồi làm bài kiểm tra mới.")
+    expect(description.className).toContain("text-academy-subtle")
+    expect(description.className).not.toContain("text-muted-foreground")
     await user.click(screen.getByRole("button", { name: "Tải lại bài" }))
     expect(await screen.findByRole("heading", { level: 3, name: "Nội dung chính" })).toBeTruthy()
   })
