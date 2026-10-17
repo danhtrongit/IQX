@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
-import {
-  loadAcademyContent,
-  QUESTIONS_PER_LESSON,
-  type AcademyContent,
-  type AcademyLesson,
-} from './academy.content.js';
+import { loadAcademyContent } from './academy.content.js';
+import type { AcademyContent, AcademyItem } from './academy.content.types.js';
+import type { ItemKind } from './content/v3/schema.js';
+
+/*
+ * Stopgap on the v3.2 loader (P1): required lessons of the published chapters only, exams
+ * counted in `chapter_exams`. P3 rewrites this reader per design §8 (exam and practice rows,
+ * locked status, ACADEMY_CONTENT provider).
+ */
 
 /**
  * Read-only Academy progress of other users, for the admin and team-lead user views (admin
@@ -44,7 +47,7 @@ export type AcademyLessonProgress = {
   lesson_id: string;
   order: number;
   name: string;
-  kind: AcademyLesson['kind'];
+  kind: ItemKind;
   completion_mode: 'quiz' | 'guide';
   status: AcademyLessonStatus;
   /** Submitted quiz attempts in this catalog. */
@@ -140,7 +143,7 @@ export class AcademyProgressReader {
            from academy_attempts
           where user_id = any($1::uuid[]) and lesson_key is not null and catalog_version = $2
           group by user_id, lesson_key`,
-        [userIds, content.catalog_version],
+        [userIds, content.catalog.catalog_version],
       ),
     ]);
     const entry = (userId: string): AcademyUserFacts => {
@@ -163,7 +166,7 @@ export class AcademyProgressReader {
   }
 }
 
-function lessonRef(lesson: AcademyLesson): AcademyLessonRef {
+function lessonRef(lesson: AcademyItem): AcademyLessonRef {
   return {
     lesson_id: lesson.id,
     chapter: lesson.chapter,
@@ -200,12 +203,24 @@ export function buildAcademyProgress(
   content: AcademyContent,
   facts: AcademyUserFacts = EMPTY_FACTS,
 ): AcademyProgressDetail {
-  const chapters = content.chapters
-    .map((chapter) => ({
-      chapter,
-      lessons: chapter.lessons.filter((lesson) => lesson.content_status === 'published'),
-    }))
-    .filter((entry) => entry.lessons.length > 0);
+  const chapters = content.catalog.chapters.flatMap((chapter) =>
+    chapter.published
+      ? [
+          {
+            chapter,
+            lessons: chapter.items
+              .filter((entry) => entry.kind === 'lesson')
+              .map((entry) => content.items.get(entry.id))
+              .filter((lesson): lesson is AcademyItem => lesson !== undefined),
+          },
+        ]
+      : [],
+  );
+  const examKeys = new Set(
+    [...content.items.values()]
+      .filter((item) => item.kind === 'chapter_exam')
+      .map((item) => item.lesson_key),
+  );
   const published = chapters.flatMap((entry) => entry.lessons);
   const publishedKeys = new Set(published.map((lesson) => lesson.lesson_key));
 
@@ -229,7 +244,7 @@ export function buildAcademyProgress(
       ? (openLesson ?? published.find((lesson) => !completions.has(lesson.lesson_key)) ?? null)
       : null;
 
-  let last: { lesson: AcademyLesson; completion: AcademyCompletionFact } | null = null;
+  let last: { lesson: AcademyItem; completion: AcademyCompletionFact } | null = null;
   for (const lesson of published) {
     const completion = completions.get(lesson.lesson_key);
     if (
@@ -246,13 +261,16 @@ export function buildAcademyProgress(
   );
 
   return {
-    catalog_version: content.catalog_version,
+    catalog_version: content.catalog.catalog_version,
     started,
     completed: completions.size,
     total: published.length,
     all_done: published.length > 0 && completions.size === published.length,
     current_lesson: current ? lessonRef(current) : null,
-    chapter_exams: { total: 0, passed: 0 },
+    chapter_exams: {
+      total: examKeys.size,
+      passed: facts.completions.filter((row) => examKeys.has(row.lesson_key)).length,
+    },
     last_completion: last
       ? {
           ...lessonRef(last.lesson),
@@ -269,7 +287,6 @@ export function buildAcademyProgress(
       lessons: lessons.map((lesson): AcademyLessonProgress => {
         const completion = completions.get(lesson.lesson_key);
         const attempt = attempts.get(lesson.lesson_key);
-        const quiz = lesson.completion.mode === 'quiz';
         const status: AcademyLessonStatus = completion
           ? 'completed'
           : attempt?.open_at
@@ -282,11 +299,11 @@ export function buildAcademyProgress(
           order: lesson.order,
           name: lesson.name,
           kind: lesson.kind,
-          completion_mode: lesson.completion.mode,
+          completion_mode: 'quiz',
           status,
           attempts: attempt?.attempts ?? 0,
-          latest_score: quiz ? (attempt?.latest_score ?? null) : null,
-          max_score: quiz ? QUESTIONS_PER_LESSON : null,
+          latest_score: attempt?.latest_score ?? null,
+          max_score: lesson.question_count,
           completed_at: completion ? iso(completion.completed_at) : null,
           is_current: current?.id === lesson.id,
         };

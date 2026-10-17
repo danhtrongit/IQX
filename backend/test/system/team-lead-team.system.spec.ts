@@ -191,27 +191,35 @@ describe('system acceptance: team lead area (team/*)', () => {
               ($1, current_date - 1, 50000000, null, null, false, now())`,
       [bot?.id],
     );
-    // Academy: ch01-l01 done, ch01-l02 failed once (6/8), ch01-l03 has an open attempt.
+    // Academy: ch01-l01 done, ch01-l02 failed once (2/3), ch01-l03 has an open attempt.
     const content = loadAcademyContent();
-    const lessons = content.chapters[0]?.lessons ?? [];
+    const chapter1 = content.catalog.chapters[0];
+    const lessons = chapter1?.published ? chapter1.items : [];
     const [l1, l2, l3] = lessons;
     const attempt = async (lessonId: string, lessonKey: string, status: 'open' | 'submitted') =>
       stack.query(
         `insert into academy_attempts
            (user_id, lesson_id, lesson_key, catalog_version, content_version, questions_version,
             question_ids, option_orders, status, idempotency_key, submitted_at, score, passed)
-         values ($1, $2, $3, $4, 'v1', repeat('a', 64), '{}', '{}'::jsonb, $5, $6,
+         values ($1, $2, $3, $4, 'v1', repeat('a', 64), '{q1,q2,q3}', '{}'::jsonb, $5, $6,
                  ${status === 'submitted' ? 'now()' : 'null'},
-                 ${status === 'submitted' ? '6' : 'null'},
+                 ${status === 'submitted' ? '2' : 'null'},
                  ${status === 'submitted' ? 'false' : 'null'})`,
-        [active.id, lessonId, lessonKey, content.catalog_version, status, `${lessonId}-${status}`],
+        [
+          active.id,
+          lessonId,
+          lessonKey,
+          content.catalog.catalog_version,
+          status,
+          `${lessonId}-${status}`,
+        ],
       );
     await stack.query(
       `insert into academy_completions
          (user_id, lesson_key, catalog_version, lesson_id, completion_method, completed_at, source)
        values ($1, $2, $3, $4, 'legacy_migration', now() - interval '1 day',
                '{"reward": {"status": "credited", "delta": 5, "balance_after": 5}}'::jsonb)`,
-      [active.id, l1?.lesson_key, content.catalog_version, l1?.id],
+      [active.id, l1?.lesson_key, content.catalog.catalog_version, l1?.id],
     );
     await attempt(l2?.id ?? '', l2?.lesson_key ?? '', 'submitted');
     await attempt(l3?.id ?? '', l3?.lesson_key ?? '', 'open');
@@ -502,23 +510,17 @@ describe('system acceptance: team lead area (team/*)', () => {
     );
 
     const content = loadAcademyContent();
-    const published = content.chapters.filter((chapter) =>
-      chapter.lessons.some((lesson) => lesson.content_status === 'published'),
-    );
+    const published = content.catalog.chapters.filter((chapter) => chapter.published);
     expect(view.academy.chapters.map((chapter) => chapter.no)).toEqual(
       published.map((chapter) => chapter.no),
     );
-    expect(view.academy.total).toBe(
-      published.flatMap((chapter) =>
-        chapter.lessons.filter((lesson) => lesson.content_status === 'published'),
-      ).length,
-    );
-    expect(view.academy.chapter_exams).toEqual({ total: 0, passed: 0 });
+    expect(view.academy.total).toBe(content.requiredTotal);
+    expect(view.academy.chapter_exams).toEqual({ total: 5, passed: 0 });
     expect(view.academy.current_lesson?.lesson_id).toBe('ch01-l03');
     const [l1, l2, l3, l4] = view.academy.chapters[0]?.lessons ?? [];
     expect(l1).toMatchObject({ status: 'completed', is_current: false });
     expect(l1?.completed_at).toBeTruthy();
-    expect(l2).toMatchObject({ status: 'failed', attempts: 1, latest_score: 6, max_score: 8 });
+    expect(l2).toMatchObject({ status: 'failed', attempts: 1, latest_score: 2, max_score: 3 });
     expect(l3).toMatchObject({ status: 'in_progress', attempts: 0, is_current: true });
     expect(l4).toMatchObject({ status: 'not_started', attempts: 0, latest_score: null });
 
