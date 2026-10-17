@@ -65,6 +65,7 @@ export function WorkspaceFrame({
   collapsed: controlledCollapsed,
   onCollapsedChange,
   rail: railProp,
+  phoneRail = "column",
 }: {
   main: ReactNode
   panel: ReactNode
@@ -79,6 +80,11 @@ export function WorkspaceFrame({
   onCollapsedChange?: (collapsed: boolean) => void
   /** Rail tools and their selection; defaults to the route's chrome. */
   rail?: WorkspaceRail
+  /**
+   * At 900px and below: `column` keeps the rail at the right edge; `bar` turns it into a tool bar
+   * above the main area so long-form content (a lesson) keeps the full width of the phone.
+   */
+  phoneRail?: "column" | "bar"
 }) {
   const panelId = useId()
   const routeRail = useRouteRail()
@@ -106,6 +112,7 @@ export function WorkspaceFrame({
   const open = overlay && openState
   const collapsed = !overlay && collapsedValue
   const panelShown = overlay ? open : !collapsed
+  const railBar = overlay && phoneRail === "bar"
 
   const setCollapsed = useCallback((next: boolean) => {
     if (controlledCollapsed === undefined) setUncontrolledCollapsed(next)
@@ -139,6 +146,7 @@ export function WorkspaceFrame({
   const state = useMemo<WorkspaceFrameState>(() => ({
     open,
     overlay,
+    railBar,
     collapsed,
     panelId,
     panelLabel,
@@ -159,7 +167,7 @@ export function WorkspaceFrame({
       setOpenState(true)
       focusClose()
     },
-  }), [open, overlay, collapsed, panelId, panelLabel, setCollapsed, focusTrigger, focusClose])
+  }), [open, overlay, railBar, collapsed, panelId, panelLabel, setCollapsed, focusTrigger, focusClose])
 
   function selectRailItem(item: RailItem, button: HTMLElement) {
     if (item.affects === "left") {
@@ -191,8 +199,11 @@ export function WorkspaceFrame({
   return (
     <WorkspaceFrameContext.Provider value={state}>
       <WorkspaceToggleRegistryContext.Provider value={setToggleElement}>
-        <div className="workspace-frame" data-panel-open={open} data-panel-collapsed={collapsed} data-testid="workspace-frame">
-          <main className="workspace-main flex min-h-0 min-w-0 flex-col overflow-hidden">{main}</main>
+        <div className="workspace-frame" data-panel-open={open} data-panel-collapsed={collapsed} data-rail={railBar ? "bar" : "column"} data-testid="workspace-frame">
+          <main className="workspace-main flex min-h-0 min-w-0 flex-col overflow-hidden">
+            {railBar && <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} onSelect={selectRailItem} orientation="horizontal" />}
+            {main}
+          </main>
           <RightSidebar
             ref={setPanelElement}
             id={panelId}
@@ -202,7 +213,7 @@ export function WorkspaceFrame({
           >
             {panel}
           </RightSidebar>
-          <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} onSelect={selectRailItem} />
+          {!railBar && <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} onSelect={selectRailItem} />}
         </div>
       </WorkspaceToggleRegistryContext.Provider>
     </WorkspaceFrameContext.Provider>
@@ -213,8 +224,9 @@ export function WorkspaceFrame({
 export function WorkspacePanelToggle({ label, className }: { label?: string; className?: string }) {
   const frame = useWorkspaceFrame()
   const register = useWorkspaceToggleRegistry()
-  // Only a layer needs a button; on wide screens the rail shows and hides the panel.
-  if (!frame?.overlay) return null
+  // Only a layer needs a button; on wide screens the rail shows and hides the panel, and a
+  // phone tool bar opens the layer from its own buttons.
+  if (!frame?.overlay || frame.railBar) return null
   return (
     <Button
       ref={register}

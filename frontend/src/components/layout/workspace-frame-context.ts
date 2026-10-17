@@ -5,6 +5,8 @@ export type WorkspaceFrameState = {
   open: boolean
   /** `true` while the panel is a layer next to the rail instead of a column. */
   overlay: boolean
+  /** Phones only: the rail is a tool bar above the main area instead of a column at the right. */
+  railBar: boolean
   /** Wide screens: the panel column is collapsed and the main area takes its width. */
   collapsed: boolean
   panelId: string
