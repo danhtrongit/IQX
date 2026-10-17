@@ -3,7 +3,6 @@ import { afterEach, describe, expect, it } from "vitest"
 
 import { BlockRenderer } from "../blocks/block-renderer"
 import { mockReaderWidth, svgOverflows } from "../blocks/test-blocks"
-import { textWidth } from "./chart-math"
 import type { CatalogResponse, LessonContent } from "../content-types"
 
 /**
@@ -98,15 +97,18 @@ describe("real content: review regressions", () => {
     ["ch01-l03", "c1l3-g3"],
     ["ch02-l10", "c2l10-g1"],
   ] as const) {
-    it(`${chartId} keeps its time axis labels apart at phone width`, () => {
-      const { container } = renderLesson(lessonById(lessonId), 298)
+    it.each([262, 298, 317, 358])(`${chartId} keeps its time axis labels apart at %ipx and keeps the last tick`, (width) => {
+      const { container } = renderLesson(lessonById(lessonId), width)
       const svg = chartSvg(container, chartId)
+      const lastTick = lessonById(lessonId).charts?.[chartId] as { ticks: { label: string }[] }
       const height = Number((svg.getAttribute("viewBox") ?? "").split(/\s+/)[3])
       const axis = [...svg.querySelectorAll("text")].filter((node) => Number(node.getAttribute("y")) === height - 6)
       expect(axis.length).toBeGreaterThan(1)
+      expect(axis.map((node) => node.textContent)).toContain(lastTick.ticks[lastTick.ticks.length - 1].label)
+      // Digits and colons render a little wider than the 0.56em estimate: check with 0.62em.
       const spans = axis
         .map((node) => {
-          const w = textWidth(node.textContent ?? "", 10.5)
+          const w = (node.textContent ?? "").length * 10.5 * 0.62
           const x = Number(node.getAttribute("x"))
           const anchor = node.getAttribute("text-anchor")
           const left = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2
@@ -116,6 +118,38 @@ describe("real content: review regressions", () => {
       for (let index = 1; index < spans.length; index += 1) expect(spans[index][0]).toBeGreaterThanOrEqual(spans[index - 1][1])
     })
   }
+
+  it.each([262, 317, 768])("c1l4-g1 draws T / T+2 pills joined by a dashed line, fitted headers and notes beside the marker at %ipx", (width) => {
+    const { container } = renderLesson(lessonById("ch01-l04"), width)
+    const svg = chartSvg(container, "c1l4-g1")
+    const viewWidth = Number((svg.getAttribute("viewBox") ?? "").split(/\s+/)[2])
+    expect(svg.querySelectorAll(`line[stroke-dasharray="4 4"]`)).toHaveLength(3)
+    const pill = (text: string) => [...svg.querySelectorAll("text")].filter((node) => node.textContent === text)
+    expect(pill("T")).toHaveLength(3)
+    expect(pill("T+2.5")).toHaveLength(2)
+    expect(pill("T+2")).toHaveLength(1)
+    // Headers: every line fits its own column at the bold-safe 0.66em, so neighbours never touch.
+    const headers = [...svg.querySelectorAll("text[font-size]")]
+    expect(headers).toHaveLength(8)
+    const columnWidth = Number(headers[1].getAttribute("x")) - Number(headers[0].getAttribute("x"))
+    for (const header of headers) {
+      const size = Number(header.getAttribute("font-size"))
+      for (const line of header.querySelectorAll("tspan")) expect((line.textContent ?? "").length * size * 0.66).toBeLessThanOrEqual(columnWidth)
+    }
+    // Notes start right of the row's last pill, on the same row, and stay inside the drawing.
+    for (const [note, marker] of [
+      ["Cổ phiếu về", "T+2.5"],
+      ["Tiền về tài khoản", "T+2"],
+    ]) {
+      const noteNode = [...svg.querySelectorAll("text")].find((node) => node.textContent?.startsWith(note)) as SVGTextElement
+      const markerNode = pill(marker)[0]
+      const markerRight = Number(markerNode.getAttribute("x")) + (marker.length * 11 * 0.66) / 2
+      const noteX = Number(noteNode.getAttribute("x"))
+      expect(noteX).toBeGreaterThanOrEqual(markerRight)
+      expect(Math.abs(Number(noteNode.getAttribute("y")) - Number(markerNode.getAttribute("y")))).toBeLessThan(20)
+      for (const line of noteNode.querySelectorAll("tspan")) expect(noteX + (line.textContent ?? "").length * 11 * 0.56).toBeLessThanOrEqual(viewWidth)
+    }
+  })
 
   it("a chart_grid of axis charts takes one column on a phone; thumbnail grids keep two", () => {
     const axisGrid = renderLesson(lessonById("ch05-l02"), 358)
