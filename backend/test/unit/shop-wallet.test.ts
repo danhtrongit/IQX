@@ -129,6 +129,19 @@ describe.each(harnessFactories)('learning coins: wallet and ledger ($name)', ({ 
     expect(await allLedger(h, userId)).toHaveLength(0);
   });
 
+  it('never pays a chapter exam key, from either source (Học viện v3.2)', async () => {
+    const userId = await h.newUser();
+    for (const source of ['realtime', 'backfill'] as const) {
+      await expect(
+        h.database.transaction((tx) =>
+          h.rewards.creditFirstCompletion(tx, lesson(userId, 'exam:ch01'), { source }),
+        ),
+      ).rejects.toThrow('Chapter exams never earn xu');
+    }
+    expect(await allLedger(h, userId)).toHaveLength(0);
+    expect((await snapshotOf(h, userId)).lessonsRewarded).toBe(0);
+  });
+
   it('pays a legacy_migration completion only through the backfill (Shop spec 10.2)', async () => {
     const userId = await h.newUser();
     const legacy = lesson(userId, 'technical:macd', { completionMethod: 'legacy_migration' });
