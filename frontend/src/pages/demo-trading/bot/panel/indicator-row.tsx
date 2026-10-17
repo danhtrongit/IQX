@@ -26,7 +26,7 @@ export function IndicatorRow({
   granted: boolean
   masterOn: boolean
   busy: boolean
-  lessonSearch: string
+  lessonSearch: string | null
   onPractice: () => void
   onConfigure: () => void
   onToggleMaster: () => void
@@ -62,6 +62,8 @@ export function IndicatorRow({
             onCheckedChange={onToggleMaster}
           />
         </div>
+      ) : lessonSearch === null ? (
+        <span className="text-[11px] text-muted-foreground">Chưa phát hành</span>
       ) : (
         <Button asChild variant="outline" size="sm" className="h-8 px-2.5 text-[11px]">
           <Link to={{ search: lessonSearch }} aria-label={`Xem bài ${indicator.name}`}>Xem bài</Link>

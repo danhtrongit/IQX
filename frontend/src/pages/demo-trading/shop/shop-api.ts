@@ -137,11 +137,16 @@ export async function fetchLessonNames(signal?: AbortSignal): Promise<ReadonlyMa
   const names = new Map<string, string>()
   if (!isRecord(raw) || !Array.isArray(raw.chapters)) invalid("danh mục Học viện")
   for (const chapter of raw.chapters) {
-    if (!isRecord(chapter) || !Array.isArray(chapter.lessons)) continue
-    for (const lesson of chapter.lessons) {
-      if (!isRecord(lesson) || !isText(lesson.name)) continue
-      if (isText(lesson.lesson_key)) names.set(lesson.lesson_key, lesson.name)
-      if (isText(lesson.id)) names.set(lesson.id, lesson.name)
+    if (!isRecord(chapter) || !Array.isArray(chapter.items)) continue
+    for (const item of chapter.items) {
+      if (!isRecord(item) || !isText(item.name)) continue
+      if (isText(item.lesson_key)) names.set(item.lesson_key, item.name)
+      if (isText(item.id)) names.set(item.id, item.name)
+    }
+  }
+  if (Array.isArray(raw.retired_lessons)) {
+    for (const retired of raw.retired_lessons) {
+      if (isRecord(retired) && isText(retired.lesson_key) && isText(retired.name)) names.set(retired.lesson_key, retired.name)
     }
   }
   return names

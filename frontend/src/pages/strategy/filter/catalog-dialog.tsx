@@ -5,7 +5,7 @@ import { isMetricUsable, metricChapter } from "./definition"
 import type { ScreenerMetric } from "./types"
 
 function stateOf(metric: ScreenerMetric): { text: string; tone: string; reason: string | null } {
-  if (!metric.learned) return { text: `Chưa mở · học bài ${metric.lesson_id}`, tone: "text-muted-foreground", reason: null }
+  if (!metric.learned) return { text: metric.lesson_id ? `Chưa mở · học bài ${metric.lesson_id}` : "Chưa phát hành", tone: "text-muted-foreground", reason: null }
   if (!isMetricUsable(metric)) {
     return {
       text: metric.readiness === "data_unavailable" ? "Chưa có nguồn dữ liệu" : "Chờ định nghĩa",
@@ -36,7 +36,7 @@ export function CatalogDialog({ metrics, onClose }: { metrics: readonly Screener
             <li key={metric.id} className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 px-3 py-2.5" data-testid={`catalog-${metric.id}`}>
               <div className="min-w-0">
                 <div className="text-sm font-medium break-words">{metric.name}</div>
-                <div className="text-[11px] text-muted-foreground">Chương {metricChapter(metric)} · {metric.lesson_id}</div>
+                <div className="text-[11px] text-muted-foreground">{metric.lesson_id ? `Chương ${metricChapter(metric)} · ${metric.lesson_id}` : "Chưa phát hành"}</div>
                 {state.reason && <div className="mt-0.5 text-[11px] leading-4 text-muted-foreground">{state.reason}</div>}
               </div>
               <span className={`text-xs font-medium ${state.tone}`}>{state.text}</span>

@@ -25,7 +25,7 @@ export type BotConfigController = {
   registry: TechnicalRegistry | undefined
   /** Indicators in registry order. */
   indicators: TechnicalIndicator[]
-  /** Indicator ids the user has learned (quiz 8/8). */
+  /** Indicator ids the user has learned (passed the lesson quiz). */
   granted: ReadonlySet<string>
   saving: boolean
   /**

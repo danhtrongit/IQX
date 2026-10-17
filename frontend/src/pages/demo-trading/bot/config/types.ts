@@ -93,7 +93,8 @@ export type TechnicalIndicator = {
   id: string
   name: string
   chapter: number
-  lesson_id: string
+  /** null while the lesson is not published (Học viện v3.2 ships chapters gradually). */
+  lesson_id: string | null
   family: "state" | "event"
   formula: string
   availability: "ohlcv" | "needs_history_context"

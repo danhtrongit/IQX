@@ -38,11 +38,14 @@ function academy(overrides: Partial<AcademyProgress> = {}): AcademyProgress {
         title: "Nền tảng",
         completed: 2,
         total: 4,
+        examPassed: false,
         lessons: [
-          { lessonId: "c1-l1", order: 1, name: "Giá", completionMode: "guide", status: "completed", attempts: 0, latestScore: null, maxScore: null, completedAt: "2026-10-09T03:00:00Z", isCurrent: false },
-          { lessonId: "c1-l2", order: 2, name: "Khối lượng", completionMode: "quiz", status: "completed", attempts: 2, latestScore: 7, maxScore: 8, completedAt: "2026-10-10T03:00:00Z", isCurrent: false },
-          { lessonId: "c1-l3", order: 3, name: "Nến Nhật", completionMode: "quiz", status: "in_progress", attempts: 1, latestScore: null, maxScore: 8, completedAt: null, isCurrent: true },
-          { lessonId: "c1-l4", order: 4, name: "Xu hướng", completionMode: "quiz", status: "failed", attempts: 1, latestScore: 3, maxScore: 8, completedAt: null, isCurrent: false },
+          { lessonId: "c1-l1", order: 1, name: "Giá", kind: "lesson", optional: false, status: "completed", attempts: 0, latestScore: null, maxScore: null, completedAt: "2026-10-09T03:00:00Z", isCurrent: false },
+          { lessonId: "c1-l2", order: 2, name: "Khối lượng", kind: "lesson", optional: false, status: "completed", attempts: 2, latestScore: 4, maxScore: 5, completedAt: "2026-10-10T03:00:00Z", isCurrent: false },
+          { lessonId: "c1-l3", order: 3, name: "Nến Nhật", kind: "lesson", optional: false, status: "in_progress", attempts: 1, latestScore: null, maxScore: 5, completedAt: null, isCurrent: true },
+          { lessonId: "c1-l4", order: 4, name: "Xu hướng", kind: "lesson", optional: false, status: "failed", attempts: 1, latestScore: 3, maxScore: 5, completedAt: null, isCurrent: false },
+          { lessonId: "c1-exam", order: 5, name: "Bài thi Chương 1", kind: "chapter_exam", optional: false, status: "locked", attempts: 0, latestScore: null, maxScore: 20, completedAt: null, isCurrent: false },
+          { lessonId: "c1-practice", order: 6, name: "Phòng tập thực chiến", kind: "practice", optional: true, status: "locked", attempts: 0, latestScore: null, maxScore: 5, completedAt: null, isCurrent: false },
         ],
       },
     ],
@@ -53,17 +56,17 @@ function academy(overrides: Partial<AcademyProgress> = {}): AcademyProgress {
 describe("Học viện tab", () => {
   it("shows the summary tiles, the current lesson and per-lesson status, attempts and score", () => {
     render(<UserAcademyTab academy={academy()} />)
-    expect(screen.getByText("2/4")).toBeTruthy()
+    expect(screen.getByText("2 / 4")).toBeTruthy()
     expect(screen.getByText("Chương 1 · Bài 3: Nến Nhật")).toBeTruthy()
     expect(screen.getByText(/Xu từ học tập: 15/)).toBeTruthy()
     // No chapter exams in the catalog: the exam tile is hidden.
     expect(screen.queryByText("Bài thi cuối chương đã đạt")).toBeNull()
     const quiz = screen.getByText("Khối lượng", { selector: "td" }).closest("tr") as HTMLElement
     expect(within(quiz).getByText("Hoàn thành")).toBeTruthy()
-    expect(within(quiz).getByText("7/8")).toBeTruthy()
+    expect(within(quiz).getByText("4/5")).toBeTruthy()
     const failed = screen.getByText("Xu hướng", { selector: "td" }).closest("tr") as HTMLElement
     expect(within(failed).getByText("Chưa đạt")).toBeTruthy()
-    expect(within(failed).getByText("3/8")).toBeTruthy()
+    expect(within(failed).getByText("3/5")).toBeTruthy()
     const current = screen.getByText("Bài đang học", { selector: "span" }).closest("tr") as HTMLElement
     expect(within(current).getByText("Đang học")).toBeTruthy()
   })
