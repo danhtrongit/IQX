@@ -113,7 +113,6 @@ export function extractLesson(norm: TextNormalizer, art: SourceArticle): LessonD
     itemId: row.id,
     chapter,
     charts: {},
-    sectionTitle: '',
     path: describe(el),
   };
   norm.context = row.id;
@@ -142,7 +141,6 @@ export function extractLesson(norm: TextNormalizer, art: SourceArticle): LessonD
     const h2 = kids.findIndex((k) => k.tagName === 'h2');
     if (h2 !== 0) fail(ctx, blk, 'section must start with h2');
     const sTitle = norm.plain(kids[0] as Element);
-    ctx.sectionTitle = sTitle;
     ctx.path = `${describe(el)} > "${sTitle}"`;
     if (summary) fail(ctx, blk, 'section after the summary');
     if (sTitle === 'Tóm tắt') {
@@ -218,7 +216,6 @@ export function checkExam(norm: TextNormalizer, art: SourceArticle): void {
     itemId: row.id,
     chapter,
     charts: {},
-    sectionTitle: '',
     path: describe(el),
   };
   norm.context = row.id;

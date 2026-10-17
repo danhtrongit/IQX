@@ -494,7 +494,7 @@ is checked against the catalog intro (only the intro text is used). Inline `styl
 | `.cz` "CASE n" | 4 | `practice_case` | `.prof` columns -> info / mindset / quote; pad `b` -> `pad_title`; pad `small` split on `<br>` -> 4 prompts; `id` = textarea `data-k`; `.cz-x .roles` -> hints |
 | `.todo` / `.todo.audit` | 11 / 2 | `checklist{mode:'todo'|'self_check'}` | `id` = data-k prefix before `-`, item id = suffix (`l1-0` -> `l1` / `0`); audit counter label -> `result_label` ("Số mục đã đạt") |
 | `.pad` (standalone) | 18 | `workpad` | `b`->title, `small` split on `<br>` -> prompts, `data-k`->id, placeholder; drop the "lưu trên trình duyệt" `em` |
-| `.sc6` + `.verdict` | 1 | `roleplay_score` | 6 criteria (`span` + `small`), max 10, `default: 5`, bands 48 good / 36 warn / 0 bad, id `sc6` |
+| `.sc6` + `.verdict` | 1 | `roleplay_score` | 6 criteria (`span` + `small`), max 10, `default: 5`, bands 48 good / 36 warn / 0 bad, id `sc6`, no `title` (the section h2 names it) |
 
 Every pattern in the mockup maps to exactly one of the 24 block types; the walker fails on anything else.
 Counts in this table are indicative: the gate counts in `verify` are derived from the DOM at extract time and frozen in
@@ -525,7 +525,10 @@ Counts in this table are indicative: the gate counts in `verify` are derived fro
   (`chartTextToneSchema`); the mockup's #c9d6e4 / #95a9be label colours map to "no tone" = `--academy-label`.
 - Index convention: every index in a series_panels model is absolute (see schema.ts K1 comment); C1L9-g3 fills the months
   between points by linear interpolation instead of nulls.
-- `category` extras: C4L6-g0 uses `series[].tone_by_sign` + `caption_value`/`caption_tone`; C5L1-g2 uses `sublabels`.
+- `category` extras: C4L6-g0 uses `series[].tone_by_sign` + `caption_value`/`caption_tone` (RSI >= 70 `neg`, <= 30
+  `pos`, else `price`, the mockup's neutral grey); C5L1-g2 uses `sublabels`. `value_format {sign?, suffix?}` prints
+  value labels and ticks as "+8.000" / "−10%" (C1L5-g2, C1L4-g4, C1L10-g2: losses stored negative). Stacked bars stack
+  negatives below zero and label each category once with its net total (C1L5-g2: −100.000, +8.000, +8.000, +108.000).
 - Indicators computed over the full generated history, exported for the window only, numbers rounded to 4 decimals.
   Mockup EMA is first-value seeded (not `ch1-math.ts`). Schematic analytic curves sampled to 50-140 points.
 - Fix in the port: C1L1-g2 pictogram shows 7 full notes + 0.4 (mockup draws 8).
@@ -603,7 +606,7 @@ interactive/ (rendered through renderInteractive, context from LessonInteractive
   else "Làm bài kiểm tra" (+ "{N} câu" sub-line). 403 ACADEMY_SCENARIO_REQUIRED from the API -> refetch item, scroll to scenario.
 - **ExamIntro**: h2 "Bài thi Chương c", `intro` + bold "Cần trả lời đúng tất cả câu hỏi để hoàn thành.", button
   "Bắt đầu làm bài"; passed -> Check "Đã hoàn thành" + "Xem lại Chương c" (first item of chapter).
-- **QuizQuestion**: label ("Bài kiểm tra" / "Bài thi Chương c" / "Phòng tập thực chiến") + "Câu i/N"; dots `<ol aria-hidden>`
+- **QuizQuestion**: label ("Bài kiểm tra", the practice room included, or "Bài thi Chương c"; spec §3.2-1) + "Câu i/N"; dots `<ol aria-hidden>`
   (wrap at 30, sr-only "Câu i trên N"); prompt h3 (focus on change); options as radio cards in server order; single button
   "Câu tiếp theo" enabled after a choice, "Nộp bài" on the last; no previous control; resume at first unanswered;
   ghost "Thoát" back to content (draft kept). Draft autosave via `use-draft-sync.ts` (unchanged pattern).
@@ -627,8 +630,10 @@ interactive/ (rendered through renderInteractive, context from LessonInteractive
   band label by `bands`; persisted in `notes.scores[id]`.
 - **ScenarioBlock** reads `best_option` / `debrief` (renamed from answer/explanation).
 - **ClientCaseBlock**: pad heading from `pad_title`. **Checklist self_check**: "{result_label}: x/N".
-- 390px: card grids collapse to one column below 560px; thumbnail grids (`chart_grid` layout grid: `.pat`, `.st4`) keep
-  at least 2 columns with items capped near 180px; `flow` row with 4+ nodes switches to column below 560px; `milestones`
+- 390px: card grids collapse to one column below 560px; `chart_grid` layout grid keeps 2 columns with items capped near
+  180px only when every item is a thumbnail (candle glyphs, `series_panels` with `axes:false`: `.pat`, C4L4 `.st4`);
+  a grid of axis charts (C5L2 `.st4`, which the mockup also drops to one column) is one column below 560px; gantt tick
+  labels thin out on collision (the last one stays); `flow` row with 4+ nodes switches to column below 560px; `milestones`
   go vertical below 560px; charts lay out at measured width (`useChartWidth`, min 230); labels wrap; no horizontal page scroll.
 
 ### 7.4 Data layer

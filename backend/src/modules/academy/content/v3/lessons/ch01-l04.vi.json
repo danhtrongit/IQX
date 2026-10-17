@@ -220,6 +220,10 @@
       ],
       "title": "Lãi/lỗ trên vốn",
       "unit": "%",
+      "value_format": {
+        "sign": true,
+        "suffix": "%"
+      },
       "value_labels": "all"
     }
   },

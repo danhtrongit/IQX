@@ -311,7 +311,6 @@
           "default": 5,
           "id": "sc6",
           "max": 10,
-          "title": "Đóng vai và chấm điểm",
           "type": "roleplay_score"
         },
         {

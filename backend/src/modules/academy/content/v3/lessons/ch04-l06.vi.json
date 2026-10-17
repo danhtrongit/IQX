@@ -57,7 +57,7 @@
         },
         {
           "model": {
-            "caption_tone": "warn",
+            "caption_tone": "price",
             "caption_value": "RSI ≈ 50",
             "kind": "category",
             "labels": [

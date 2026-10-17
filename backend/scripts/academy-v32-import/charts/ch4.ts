@@ -1256,7 +1256,7 @@ export const CH4_BUILDERS: Record<string, Builder> = {
           value_labels: 'none' as const,
           caption_value: `RSI ≈ ${val}`,
           caption_tone:
-            val >= 70 ? ('neg' as const) : val <= 30 ? ('pos' as const) : ('warn' as const),
+            val >= 70 ? ('neg' as const) : val <= 30 ? ('pos' as const) : ('price' as const),
         },
       };
     };

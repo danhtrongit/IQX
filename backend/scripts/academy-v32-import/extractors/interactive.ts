@@ -183,7 +183,10 @@ export function workpad(ctx: Ctx, el: Element): Block[] {
   ];
 }
 
-/** `.sc6` -> roleplay_score (6 sliders 0..10, default 5; bands from the page script). */
+/**
+ * `.sc6` -> roleplay_score (6 sliders 0..10, default 5; bands from the page script). No title: the mockup box
+ * has no heading of its own, the section h2 names it.
+ */
 export function roleplay(ctx: Ctx, el: Element): Block[] {
   const rows = children(el).filter((c) => !hasClass(c, 'verdict'));
   if (rows.length !== 6) fail(ctx, el, 'roleplay needs 6 criteria');
@@ -204,7 +207,6 @@ export function roleplay(ctx: Ctx, el: Element): Block[] {
     {
       type: 'roleplay_score',
       id: attr(el, 'id') ?? fail(ctx, el, 'sc6 without id'),
-      title: ctx.sectionTitle,
       max: 10,
       default: 5,
       criteria,

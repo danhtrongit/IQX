@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it } from "vitest"
 
 import { BlockRenderer } from "../blocks/block-renderer"
 import { mockReaderWidth, svgOverflows } from "../blocks/test-blocks"
+import { textWidth } from "./chart-math"
 import type { CatalogResponse, LessonContent } from "../content-types"
 
 /**
@@ -65,4 +66,74 @@ describe("real Học viện content", () => {
       expect(svgOverflows(container, width)).toEqual([])
     })
   }
+})
+
+const lessonById = (id: string) => lessons.find((lesson) => lesson.id === id) as LessonFile
+const chartSvg = (container: HTMLElement, id: string) => container.querySelector(`[data-chart-id="${id}"] svg[viewBox]`) as SVGSVGElement
+const texts = (svg: SVGSVGElement) => [...svg.querySelectorAll("text")].map((node) => node.textContent ?? "")
+
+describe("real content: review regressions", () => {
+  it("C1L5-g2 draws the purchase below zero and labels −100.000, +8.000, +8.000, +108.000", () => {
+    const { container } = renderLesson(lessonById("ch01-l05"), 760)
+    const svg = chartSvg(container, "c1l5-g2")
+    expect(texts(svg).filter((text) => /^[+\u2212]\d/.test(text))).toEqual(expect.arrayContaining(["\u2212100.000", "+8.000", "+8.000", "+108.000"]))
+    const heights = [...svg.querySelectorAll("rect")].map((rect) => Number(rect.getAttribute("height")))
+    // The purchase bar is as tall as the principal repayment, never a 0.8px sliver.
+    expect(Math.max(...heights)).toBeGreaterThan(40)
+    expect(heights.filter((height) => height > 40)).toHaveLength(2)
+  })
+
+  it("C1L10-g2 and C1L4-g4 print signed percentages", () => {
+    const loss = renderLesson(lessonById("ch01-l10"), 760)
+    const lossTexts = texts(chartSvg(loss.container, "c1l10-g2"))
+    for (const label of ["\u221210%", "+11%", "\u221250%", "+100%"]) expect(lossTexts).toContain(label)
+    loss.unmount()
+    restore?.()
+    const margin = renderLesson(lessonById("ch01-l04"), 760)
+    const marginTexts = texts(chartSvg(margin.container, "c1l4-g4"))
+    for (const label of ["+20%", "\u221220%", "+40%", "\u221240%"]) expect(marginTexts).toContain(label)
+  })
+
+  for (const [lessonId, chartId] of [
+    ["ch01-l03", "c1l3-g3"],
+    ["ch02-l10", "c2l10-g1"],
+  ] as const) {
+    it(`${chartId} keeps its time axis labels apart at phone width`, () => {
+      const { container } = renderLesson(lessonById(lessonId), 298)
+      const svg = chartSvg(container, chartId)
+      const height = Number((svg.getAttribute("viewBox") ?? "").split(/\s+/)[3])
+      const axis = [...svg.querySelectorAll("text")].filter((node) => Number(node.getAttribute("y")) === height - 6)
+      expect(axis.length).toBeGreaterThan(1)
+      const spans = axis
+        .map((node) => {
+          const w = textWidth(node.textContent ?? "", 10.5)
+          const x = Number(node.getAttribute("x"))
+          const anchor = node.getAttribute("text-anchor")
+          const left = anchor === "start" ? x : anchor === "end" ? x - w : x - w / 2
+          return [left, left + w] as const
+        })
+        .sort((a, b) => a[0] - b[0])
+      for (let index = 1; index < spans.length; index += 1) expect(spans[index][0]).toBeGreaterThanOrEqual(spans[index - 1][1])
+    })
+  }
+
+  it("a chart_grid of axis charts takes one column on a phone; thumbnail grids keep two", () => {
+    const axisGrid = renderLesson(lessonById("ch05-l02"), 358)
+    const axisFigure = axisGrid.container.querySelector('[data-chart-id="c5l2-m1"]') as HTMLElement
+    expect(axisFigure.parentElement?.className).toContain("grid-cols-1")
+    expect(axisFigure.innerHTML).not.toContain("max-w-[180px]")
+    axisGrid.unmount()
+    restore?.()
+    for (const [lessonId, chartId] of [
+      ["ch04-l01", "c4l1-p1"],
+      ["ch04-l04", "c4l4-s1"],
+    ] as const) {
+      const view = renderLesson(lessonById(lessonId), 358)
+      const figure = view.container.querySelector(`[data-chart-id="${chartId}"]`) as HTMLElement
+      expect(figure.parentElement?.className).toContain("grid-cols-2")
+      expect(figure.innerHTML).toContain("max-w-[180px]")
+      view.unmount()
+      restore?.()
+    }
+  })
 })

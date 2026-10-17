@@ -92,6 +92,9 @@
         }
       ],
       "unit": "đ",
+      "value_format": {
+        "sign": true
+      },
       "value_labels": "all"
     },
     "c1l5-g3": {

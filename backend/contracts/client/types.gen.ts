@@ -390,7 +390,7 @@ export type AcademyBlock =
       default: number;
       id: string;
       max: 10;
-      title: string;
+      title?: string;
       type: "roleplay_score";
     };
 
@@ -681,6 +681,10 @@ export type AcademyChartModel =
       ticks?: Array<number>;
       title?: string;
       unit: string;
+      value_format?: {
+        sign?: true;
+        suffix?: string;
+      };
       value_labels?: "all" | "last" | "none";
     }
   | {
@@ -1668,6 +1672,10 @@ export type AcademyLeafChartModel =
       ticks?: Array<number>;
       title?: string;
       unit: string;
+      value_format?: {
+        sign?: true;
+        suffix?: string;
+      };
       value_labels?: "all" | "last" | "none";
     }
   | {

@@ -10,8 +10,6 @@ export interface Ctx {
   chapter: number;
   /** Charts referenced so far (chart id -> model). */
   charts: Record<string, ChartModel>;
-  /** Title of the section being walked (roleplay_score uses it). */
-  sectionTitle: string;
   /** Path prefix for error messages. */
   path: string;
 }
