@@ -160,7 +160,8 @@ async function seed(databaseUrl: string): Promise<void> {
     INSERT INTO premium_plans (id, code, name, description, price_vnd, duration_days, is_active, sort_order)
     VALUES
       ('30000000-0000-4000-8000-000000000001', 'TRIAL_7D', 'Trial', 'System trial', 0, 7, true, 0),
-      ('30000000-0000-4000-8000-000000000002', 'MONTHLY', 'Monthly', 'System monthly', 99000, 30, true, 1)
+      ('30000000-0000-4000-8000-000000000002', 'MONTHLY', 'Monthly', 'System monthly', 99000, 30, true, 1),
+      ('30000000-0000-4000-8000-000000000003', 'REFERRAL_OFFER', 'Referral offer', 'Migration 0024 anchor plan', 0, 1, false, 999)
     ON CONFLICT (code) DO NOTHING;
   `,
   );
@@ -325,16 +326,45 @@ export function authHeader(accessToken: string): { authorization: string } {
   return { authorization: `Bearer ${accessToken}` };
 }
 
+let registrationSequence = 0;
+const phoneBase = Math.floor(Math.random() * 90_000_000);
+
+/** Unique registration identity for one system-test account (admin spec v1.1 §2.1). */
+export function testIdentity(suffix: string): {
+  email: string;
+  username: string;
+  phone_number: string;
+} {
+  registrationSequence += 1;
+  const stamp = `${Date.now().toString(36)}${registrationSequence}`;
+  const slug =
+    suffix
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 14) || 'user';
+  return {
+    email: `system-${suffix}-${Date.now()}-${registrationSequence}@example.test`,
+    username: `${slug}.${stamp}`.slice(0, 30),
+    phone_number: `09${String((phoneBase + registrationSequence) % 100_000_000).padStart(8, '0')}`,
+  };
+}
+
 export async function registerAndLogin(
   app: NestFastifyApplication,
   suffix: string,
-): Promise<{ id: string; accessToken: string; refreshToken: string; email: string }> {
-  const email = `system-${suffix}-${Date.now()}@example.test`;
+): Promise<{
+  id: string;
+  accessToken: string;
+  refreshToken: string;
+  email: string;
+  username: string;
+}> {
+  const { email, username, phone_number } = testIdentity(suffix);
   const password = 'System!Passw0rd';
   const registered = await app.inject({
     method: 'POST',
     url: '/api/v2/auth/register',
-    payload: { email, password, full_name: `System ${suffix}` },
+    payload: { email, username, phone_number, password, full_name: `System ${suffix}` },
   });
   if (![200, 201].includes(registered.statusCode))
     throw new Error(`register failed: ${registered.statusCode} ${registered.body}`);
@@ -342,7 +372,7 @@ export async function registerAndLogin(
   const loggedIn = await app.inject({
     method: 'POST',
     url: '/api/v2/auth/login',
-    payload: { email, password },
+    payload: { identifier: email, password },
   });
   if (loggedIn.statusCode !== 200)
     throw new Error(`login failed: ${loggedIn.statusCode} ${loggedIn.body}`);
@@ -352,5 +382,6 @@ export async function registerAndLogin(
     accessToken: tokens.access_token,
     refreshToken: tokens.refresh_token,
     email,
+    username,
   };
 }

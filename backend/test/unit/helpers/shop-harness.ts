@@ -83,8 +83,9 @@ export async function postgresHarness(connectionString: string): Promise<ShopHar
     rewards: new LessonRewardService(repository),
     async newUser(options = {}) {
       const rows = await database.query<{ id: string }>(
-        `insert into users (email, hashed_password, full_name)
-         values ($1, 'x', 'Shop Test') returning id`,
+        `insert into users (email, username, hashed_password, full_name)
+         values ($1, left('shop' || replace(gen_random_uuid()::text, '-', ''), 30), 'x', 'Shop Test')
+         returning id`,
         [`shop-${randomUUID()}@test.invalid`],
       );
       const userId = rows[0]!.id;

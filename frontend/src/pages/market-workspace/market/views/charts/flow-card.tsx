@@ -64,7 +64,7 @@ function TopList({ items, isPositive }: { items: FlowTopItem[]; isPositive: bool
             key={item.ticker}
             className={cn(
               "relative grid grid-cols-[40px_1fr_56px] items-center gap-1.5 text-xs",
-              item.anomaly && "-mx-1.5 my-0.5 rounded-sm bg-accent/12 px-1.5 py-1",
+              item.anomaly && "-mx-1.5 my-0.5 rounded-sm bg-status-warning/12 px-1.5 py-1",
             )}
           >
             <span className="font-bold text-foreground">{item.ticker}</span>
@@ -82,7 +82,7 @@ function TopList({ items, isPositive }: { items: FlowTopItem[]; isPositive: bool
             </div>
 
             {item.anomaly && (
-              <span className="pointer-events-none absolute top-1/2 right-[52px] -translate-y-1/2 rounded-[3px] bg-card px-1 text-xs font-bold tracking-[0.04em] whitespace-nowrap text-accent">
+              <span className="pointer-events-none absolute top-1/2 right-[52px] -translate-y-1/2 rounded-[3px] bg-card px-1 text-xs font-bold tracking-[0.04em] whitespace-nowrap text-status-warning">
                 BẤT THƯỜNG
               </span>
             )}

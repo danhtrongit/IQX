@@ -2,6 +2,7 @@ import { lazy, useMemo, useState, type ComponentType } from "react"
 import { createBrowserRouter, Navigate, RouterProvider, useLocation, useParams, type RouteObject } from "react-router"
 
 import { AdminLayout } from "@/components/layout/admin-layout"
+import { AdminScopeRoute } from "@/components/layout/admin-scope-route"
 import { AppShell } from "@/components/layout/app-shell"
 import { demoChrome, emptyChrome } from "@/config/chrome"
 import { demoRouteRedirect } from "@/lib/demo-route-redirect"
@@ -50,6 +51,11 @@ const EpisodeViewerPage = lazyPage(() => import("@/pages/learning/episode-viewer
 const AdminDashboardPage = lazyPage(() => import("@/pages/admin/core/dashboard-page").then(module => ({ default: module.AdminDashboardPage })))
 const UsersPage = lazyPage(() => import("@/pages/admin/core/users-page").then(module => ({ default: module.UsersPage })))
 const UserDetailPage = lazyPage(() => import("@/pages/admin/core/user-detail-page").then(module => ({ default: module.UserDetailPage })))
+const TeamDashboardPage = lazyPage(() => import("@/pages/admin/team/team-dashboard-page").then(module => ({ default: module.TeamDashboardPage })))
+const TeamUsersPage = lazyPage(() => import("@/pages/admin/team/team-users-page").then(module => ({ default: module.TeamUsersPage })))
+const TeamUserDetailPage = lazyPage(() => import("@/pages/admin/team/team-user-detail-page").then(module => ({ default: module.TeamUserDetailPage })))
+const TeamLeadsPage = lazyPage(() => import("@/pages/admin/team-leads/team-leads-page").then(module => ({ default: module.TeamLeadsPage })))
+const TeamLeadDetailPage = lazyPage(() => import("@/pages/admin/team-leads/team-lead-detail-page").then(module => ({ default: module.TeamLeadDetailPage })))
 const SystemPage = lazyPage(() => import("@/pages/admin/core/system-page").then(module => ({ default: module.SystemPage })))
 const AuditPage = lazyPage(() => import("@/pages/admin/core/audit-page").then(module => ({ default: module.AuditPage })))
 const AlertSignalsPage = lazyPage(() => import("@/pages/admin/core/alerts-page").then(module => ({ default: module.AlertSignalsPage })))
@@ -128,9 +134,12 @@ export const routes: RouteObject[] = [
         Component: AdminLayout,
         handle: { chrome: emptyChrome },
         children: [
-          { index: true, Component: AdminDashboardPage },
-          { path: "users", Component: UsersPage },
-          { path: "users/:userId", Component: UserDetailPage },
+          // Trưởng nhóm dùng chung 3 URL này với bản `team/*` (admin spec v1.1 §5.1).
+          { index: true, element: <AdminScopeRoute admin={AdminDashboardPage} team={TeamDashboardPage} /> },
+          { path: "users", element: <AdminScopeRoute admin={UsersPage} team={TeamUsersPage} /> },
+          { path: "users/:userId", element: <AdminScopeRoute admin={UserDetailPage} team={TeamUserDetailPage} /> },
+          { path: "team-leads", Component: TeamLeadsPage },
+          { path: "team-leads/:leadId", Component: TeamLeadDetailPage },
           { path: "plans", Component: PlansPage },
           { path: "subscriptions", Component: SubscriptionsPage },
           { path: "subscriptions/:subId", Component: SubscriptionDetailPage },

@@ -7,6 +7,7 @@ import {
   InternalServerErrorException,
   ServiceUnavailableException,
   UnauthorizedException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
@@ -14,7 +15,7 @@ import { SignJWT, errors as joseErrors, jwtVerify, type JWTPayload } from 'jose'
 
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
 import { EmailService } from './email.service.js';
-import type { LoginInput, RegisterInput } from './auth.schemas.js';
+import { REFERRAL_CODE_PATTERN, type LoginInput, type RegisterInput } from './auth.schemas.js';
 import {
   toAuthenticatedUser,
   toPublicUser,
@@ -22,6 +23,15 @@ import {
   type PublicUser,
   type UserDatabaseRow,
 } from './auth.types.js';
+import { normalizePhone, uniqueViolationConstraint, userConflict } from './user-identity.js';
+import { createReferralOfferGrant } from '../team-leads/referral-offer.js';
+import {
+  resolveReferralCode,
+  type ResolvedReferralCode,
+  type TeamLeadOfferType,
+} from '../team-leads/team-lead-policy.js';
+
+const DEFAULT_LEGACY_REFERRAL_CODE_UNTIL = '2027-01-14T00:00:00+07:00';
 
 type TokenPair = { access_token: string; refresh_token: string; token_type: 'bearer' };
 type RefreshRow = {
@@ -34,7 +44,7 @@ type RefreshRow = {
 };
 
 const USER_COLUMNS = `
-  id, email, hashed_password, phone_number, phone_country_code,
+  id, email, username, username_change_allowed, hashed_password, phone_number, phone_country_code,
   phone_national_number, phone_e164, phone_verified_at, full_name,
   avatar_url, date_of_birth, gender, country, province_state, city,
   district, ward, street_address, postal_code, role, status,
@@ -52,7 +62,7 @@ export class AuthService {
   async register(input: RegisterInput): Promise<PublicUser> {
     this.accessSecret();
     this.refreshSecret();
-    const phone = normalizePhone(input.phone_number);
+    const phone = normalizePhone(input.phone_number, BadRequestException);
     const passwordHash = await bcrypt.hash(input.password, 12);
     let row: UserDatabaseRow;
     try {
@@ -67,6 +77,16 @@ export class AuthService {
             message: 'Đã tồn tại người dùng với email này',
           });
         }
+        const sameUsername = await tx.query<{ id: string }>(
+          'select id from users where lower(username) = lower($1) limit 1',
+          [input.username],
+        );
+        if (sameUsername.length) {
+          throw new ConflictException({
+            code: 'USERNAME_TAKEN',
+            message: 'Tên đăng nhập đã được sử dụng.',
+          });
+        }
         if (phone.e164) {
           const samePhone = await tx.query<{ id: string }>(
             'select id from users where phone_e164 = $1 limit 1',
@@ -79,29 +99,29 @@ export class AuthService {
             });
           }
         }
-        let referredBy: string | null = null;
+        // Admin spec v1.1 §3.1/§3.4: the code is an active team lead's username. A bad code
+        // aborts the whole registration (§7.1), so no account is created.
+        let referral: ResolvedReferralCode | null = null;
         if (input.referral_code) {
-          const partners = await tx.query<{ id: string; referral_partner_kind: string }>(
-            `select id, referral_partner_kind from users
-             where referral_code = $1 and status = 'active' and deleted_at is null
-               and referral_partner_kind in ('lead_sale','ctv') limit 1 for share`,
-            [input.referral_code],
-          );
-          if (!partners[0]) {
-            throw new BadRequestException({
+          referral = await resolveReferralCode(tx, input.referral_code, {
+            lock: true,
+            legacyUntil: this.legacyReferralCodeUntil(),
+          });
+          if (!referral) {
+            throw new UnprocessableEntityException({
               code: 'REFERRAL_CODE_INVALID',
               message: 'Mã giới thiệu không hợp lệ hoặc đã ngừng hoạt động',
             });
           }
-          referredBy = partners[0].id;
         }
         const users = await tx.query<UserDatabaseRow>(
           `insert into users
-            (id, email, hashed_password, full_name, phone_number, phone_country_code,
+            (id, email, username, hashed_password, full_name, phone_number, phone_country_code,
              phone_national_number, phone_e164, role, status, is_email_verified,
-             referred_by_user_id, referral_attributed_at, created_at, updated_at)
-           values ($1, $2, $3, $4, $5, $6, $7, $8, 'user', 'active', false, $9::uuid,
-                   case when $9::uuid is null then null else now() end, now(), now())
+             group_lead_id, group_joined_at, group_join_via, created_at, updated_at)
+           values ($1, $2, $10, $3, $4, $5, $6, $7, $8, 'user', 'active', false, $9::uuid,
+                   case when $9::uuid is null then null else now() end,
+                   case when $9::uuid is null then null else 'code' end, now(), now())
            returning ${USER_COLUMNS}`,
           [
             randomUUID(),
@@ -112,13 +132,33 @@ export class AuthService {
             phone.countryCode,
             phone.nationalNumber,
             phone.e164,
-            referredBy,
+            referral?.leadUserId ?? null,
+            input.username,
           ],
         );
         const created = users[0];
         if (!created) throw new InternalServerErrorException('Không thể tạo người dùng');
+        let offerGranted = false;
+        if (referral) {
+          await tx.query(
+            `insert into group_membership_history
+               (user_id, lead_user_id, action, actor_user_id, actor_role, reason)
+             values ($1, $2, 'join_code', $1, 'user', null)`,
+            [created.id, referral.leadUserId],
+          );
+          // §3.3-3: the offer replaces the trial. It is granted first, and the trial below
+          // only applies to an account without any grant.
+          offerGranted = Boolean(
+            await createReferralOfferGrant(tx, {
+              userId: created.id,
+              leadUserId: referral.leadUserId,
+              policy: referral.policy,
+              source: 'register',
+            }),
+          );
+        }
         const trialGranted = await this.grantTrialIfAvailable(tx, created.id);
-        if (!trialGranted) return created;
+        if (!trialGranted && !offerGranted) return created;
         const refreshed = await tx.query<UserDatabaseRow>(
           `select ${USER_COLUMNS} from users where id = $1 limit 1`,
           [created.id],
@@ -126,12 +166,8 @@ export class AuthService {
         return refreshed[0] ?? created;
       });
     } catch (error) {
-      if (isUniqueViolation(error)) {
-        throw new ConflictException({
-          code: 'USER_EXISTS',
-          message: 'Email hoặc số điện thoại đã tồn tại',
-        });
-      }
+      const constraint = uniqueViolationConstraint(error);
+      if (constraint !== null) throw userConflict(constraint);
       throw error;
     }
 
@@ -144,23 +180,27 @@ export class AuthService {
     input: LoginInput,
     context: { ip: string | null; userAgent: string | null },
   ): Promise<TokenPair> {
+    // '@' never appears in a username, so it selects the email lookup unambiguously.
+    const identifier = (input.identifier ?? input.email ?? '').trim().toLowerCase();
     const rows = await this.database.query<UserDatabaseRow>(
-      `select ${USER_COLUMNS} from users where lower(email) = lower($1) limit 1`,
-      [input.email],
+      identifier.includes('@')
+        ? `select ${USER_COLUMNS} from users where lower(email) = $1 limit 1`
+        : `select ${USER_COLUMNS} from users where lower(username) = $1 limit 1`,
+      [identifier],
     );
     const user = rows[0];
     const valid = user ? await bcrypt.compare(input.password, user.hashed_password) : false;
     if (!user || !valid || user.status !== 'active') {
       await this.recordLogin(
         user?.id ?? null,
-        input.email,
+        user?.email ?? identifier,
         false,
         user && valid ? `status:${user.status}` : 'invalid_credentials',
         context,
       );
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
-        message: 'Email hoặc mật khẩu không đúng',
+        message: 'Email, tên đăng nhập hoặc mật khẩu không đúng',
       });
     }
 
@@ -179,6 +219,51 @@ export class AuthService {
       await this.recordLogin(user.id, user.email, true, null, context, tx);
     });
     return pair;
+  }
+
+  /** Case-insensitive; deleted accounts keep their username, so they count as taken. */
+  async isUsernameAvailable(username: string): Promise<boolean> {
+    const rows = await this.database.query<{ id: string }>(
+      'select id from users where lower(username) = lower($1) limit 1',
+      [username],
+    );
+    return rows.length === 0;
+  }
+
+  /**
+   * Admin spec v1.1 §4.1: public check of a referral code for the registration form. Reveals
+   * only whether it is usable and its offer, never who the team lead is.
+   */
+  async checkReferralCode(code: string): Promise<{
+    valid: boolean;
+    offer_type: TeamLeadOfferType | null;
+    offer_days: number | null;
+  }> {
+    const referral = REFERRAL_CODE_PATTERN.test(code.trim())
+      ? await resolveReferralCode(this.database, code, {
+          lock: false,
+          legacyUntil: this.legacyReferralCodeUntil(),
+        })
+      : null;
+    if (!referral) return { valid: false, offer_type: null, offer_days: null };
+    return {
+      valid: true,
+      offer_type: referral.policy.offer_type,
+      offer_days: referral.policy.offer_type === 'days' ? referral.policy.offer_days : null,
+    };
+  }
+
+  /**
+   * §3.6 DECISION 5: legacy LS_/CTV_ codes resolve to their converted team lead until
+   * LEGACY_REFERRAL_CODE_UNTIL (validated by the environment schema, default 2027-01-14 +07).
+   * An unparsable value closes the window rather than leaving it open forever.
+   */
+  private legacyReferralCodeUntil(): Date | null {
+    const value: unknown = this.config.get('LEGACY_REFERRAL_CODE_UNTIL');
+    const raw =
+      typeof value === 'string' && value.trim() ? value : DEFAULT_LEGACY_REFERRAL_CODE_UNTIL;
+    const until = new Date(raw);
+    return Number.isNaN(until.getTime()) ? null : until;
   }
 
   async refresh(refreshToken: string): Promise<TokenPair> {
@@ -595,31 +680,4 @@ export class AuthService {
 
 function passwordFingerprint(hash: string): string {
   return createHash('sha256').update(hash).digest('base64url');
-}
-
-function normalizePhone(value: string | null | undefined): {
-  original: string | null;
-  countryCode: string | null;
-  nationalNumber: string | null;
-  e164: string | null;
-} {
-  if (!value?.trim())
-    return { original: null, countryCode: null, nationalNumber: null, e164: null };
-  const original = value.trim();
-  const compact = original.replace(/[\s().-]/g, '');
-  const e164 = compact.startsWith('+84')
-    ? compact
-    : compact.startsWith('0')
-      ? `+84${compact.slice(1)}`
-      : null;
-  if (!e164 || !/^\+84\d{9,10}$/.test(e164)) {
-    throw new BadRequestException({ code: 'PHONE_INVALID', message: 'Số điện thoại không hợp lệ' });
-  }
-  return { original, countryCode: '+84', nationalNumber: e164.slice(3), e164 };
-}
-
-function isUniqueViolation(error: unknown): boolean {
-  if (!error || typeof error !== 'object') return false;
-  const direct = error as { code?: unknown; cause?: { code?: unknown } };
-  return direct.code === '23505' || direct.cause?.code === '23505';
 }

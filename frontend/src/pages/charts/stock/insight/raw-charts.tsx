@@ -29,8 +29,8 @@ type RawRow = Record<string, unknown>
 
 const NO_ROWS: readonly RawRow[] = []
 
-const COLOR_PRICE = "var(--chart-2)"
-const COLOR_MA10 = "var(--chart-1)"
+const COLOR_PRICE = "var(--chart-1)"
+const COLOR_MA10 = "var(--chart-6)"
 const COLOR_MA20 = "var(--chart-5)"
 const COLOR_VOLUME = "var(--chart-1)"
 const COLOR_AVERAGE = "var(--chart-2)"

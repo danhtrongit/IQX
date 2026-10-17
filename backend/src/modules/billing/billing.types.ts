@@ -46,6 +46,9 @@ export interface PaymentOrderRow extends Record<string, unknown> {
   grant_type: string | null;
   granted_by_user_id: string | null;
   grant_note: string | null;
+  /** Admin spec v1.1 §3.3-4: snapshot taken when the order became paid; both or neither. */
+  team_lead_id: string | null;
+  commission_pct: number | null;
   created_at: Date | string;
   updated_at: Date | string;
 }

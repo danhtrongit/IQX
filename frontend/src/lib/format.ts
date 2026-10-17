@@ -20,3 +20,24 @@ export function formatDateTime(value: string | null | undefined) {
   const date = new Date(value)
   return Number.isNaN(date.getTime()) ? "—" : dateTime.format(date)
 }
+
+/** Nhãn thay cho mốc hết hạn năm 9999 của Premium trọn đời (DECISION 4). */
+export const LIFETIME_LABEL = "Trọn đời"
+
+/**
+ * Grant trọn đời được lưu với `ends_at` năm 9999 (`LIFETIME_THRESHOLD` của backend là
+ * `>= 9999-01-01`). Mọi nơi hiển thị hạn Premium phải hiện "Trọn đời" thay cho ngày đó.
+ */
+export function isLifetimeEnd(value: string | null | undefined): boolean {
+  if (!value) return false
+  const date = new Date(value)
+  return !Number.isNaN(date.getTime()) && date.getUTCFullYear() >= 9999
+}
+
+/** Hạn Premium để hiển thị: "Trọn đời" cho mốc năm 9999, còn lại theo `format`. */
+export function formatPremiumEnd(
+  value: string | null | undefined,
+  format: (value: string | null | undefined) => string = formatDateTime,
+): string {
+  return isLifetimeEnd(value) ? LIFETIME_LABEL : format(value)
+}

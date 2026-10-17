@@ -5,7 +5,7 @@ import { labelForStatus, statusTone, type StatusTone } from "../labels"
 
 const TONE_CLASSES: Record<StatusTone, string> = {
   success: "border-price-up/35 bg-price-up/10 text-price-up",
-  warning: "border-accent/45 bg-accent/15 text-price-ref",
+  warning: "border-status-warning/45 bg-status-warning/15 text-status-warning",
   danger: "border-destructive/35 bg-destructive/12 text-destructive",
   info: "border-primary/35 bg-primary/10 text-primary",
   neutral: "border-border bg-muted text-muted-foreground",

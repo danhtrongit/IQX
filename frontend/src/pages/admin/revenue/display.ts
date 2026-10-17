@@ -13,7 +13,7 @@ export type Tone = "success" | "warning" | "danger" | "neutral"
 
 const TONE_CLASS: Record<Tone, string> = {
   success: "border-price-up/40 text-price-up",
-  warning: "border-accent/60 text-accent-foreground",
+  warning: "border-status-warning/50 text-status-warning",
   danger: "border-destructive/40 text-destructive",
   neutral: "border-border text-muted-foreground",
 }

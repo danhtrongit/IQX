@@ -13,7 +13,7 @@ function Chip({ label, value, className }: { label: string; value: string; class
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 rounded-sm px-2 py-1 text-[11px] font-bold text-primary-foreground",
+        "inline-flex items-center gap-1 rounded-sm px-2 py-1 text-[11px] font-bold text-background",
         className,
       )}
     >
@@ -32,11 +32,11 @@ export function WccView({ data }: { data: WccSeries }) {
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-2">
-        <Chip label="DSO" value={days(latest.dso)} className="bg-primary" />
+        <Chip label="DSO" value={days(latest.dso)} className="bg-chart-1" />
         <span className="text-sm font-bold text-muted-foreground">+</span>
-        <Chip label="DIO" value={days(latest.dio)} className="bg-chart-1" />
+        <Chip label="DIO" value={days(latest.dio)} className="bg-chart-6" />
         <span className="text-sm font-bold text-muted-foreground">−</span>
-        <Chip label="DPO" value={days(latest.dpo)} className="bg-accent" />
+        <Chip label="DPO" value={days(latest.dpo)} className="bg-chart-8" />
         <span className="text-sm font-bold text-muted-foreground">=</span>
         <Chip label="CCC" value={days(latest.ccc)} className="bg-chart-5" />
       </div>

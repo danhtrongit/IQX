@@ -485,7 +485,7 @@ function TickerCard({
               disabled={watchPending}
               onClick={onToggleWatch}
             >
-              <Star className={watched ? "fill-accent text-accent" : undefined} />
+              <Star className={watched ? "fill-chart-2 text-chart-2" : undefined} />
             </Button>
             {symbol}
           </span>

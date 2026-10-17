@@ -29,6 +29,7 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 
+import { normalizeVietnamMobile, PHONE_INVALID_MESSAGE } from "@/components/layout/auth-identity"
 import { PanelState } from "@/components/layout/panel-state"
 import { WorkspacePage } from "@/components/layout/workspace-page"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -46,8 +47,9 @@ import { formatDateTime } from "@/lib/format"
 import { formatISODate } from "@/lib/date-only"
 import type { AccountProfile, ProfilePatch } from "./api"
 import { formatDateOnly } from "./format"
-import { useAccountProfile, useRequestPasswordReset, useUpdateAccountProfile } from "./hooks"
+import { useAccountProfile, usePremiumSubscription, useRequestPasswordReset, useUpdateAccountProfile } from "./hooks"
 import { PremiumStatusPanel, UpgradeButton } from "./premium-status-panel"
+import { UsernameChangeDialog } from "./username-change-dialog"
 import { ReferralPanel } from "../referral/referral-panel"
 
 /* ── Form hồ sơ ─────────────────────────────────────────────────────────── */
@@ -101,6 +103,13 @@ const EXTRA_FIELDS: ReadonlyArray<{
 
 const LIMITS = { fullName: 200, phoneNumber: 30 } as const
 
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Quản trị viên",
+  team_lead: "Trưởng nhóm",
+  premium: "Premium",
+  user: "Người dùng",
+}
+
 function draftFrom(profile: AccountProfile): ProfileDraft {
   return {
     fullName: profile.fullName,
@@ -148,16 +157,14 @@ function buildPatch(draft: ProfileDraft, profile: AccountProfile): ProfilePatch 
 }
 
 /**
- * Kiểm tra nhẹ phía client. Backend dùng libphonenumber (VN) và là nơi chốt kết
- * quả, nên ở đây chỉ chặn các lỗi rõ ràng; thông điệp 422/409 từ server được
- * hiển thị nguyên văn.
+ * Kiểm tra nhẹ phía client. Số điện thoại theo đúng quy tắc `normalizePhone` của
+ * backend (chỉ di động Việt Nam); backend vẫn là nơi chốt kết quả và thông điệp
+ * 422/409 từ server được hiển thị nguyên văn.
  */
 function validateDraft(draft: ProfileDraft): string | null {
   if (draft.fullName.trim() === "") return "Họ và tên không được để trống."
   const phone = draft.phoneNumber.trim()
-  if (phone !== "" && !/^\+?[0-9\s.()-]{8,29}$/.test(phone)) {
-    return "Số điện thoại không hợp lệ. Ví dụ: 0912345678 hoặc +84912345678"
-  }
+  if (phone !== "" && normalizeVietnamMobile(phone) === null) return PHONE_INVALID_MESSAGE
   const birth = draft.dateOfBirth.trim()
   if (birth !== "" && new Date(birth).getTime() > Date.now()) {
     return "Ngày sinh không thể ở tương lai."
@@ -288,6 +295,10 @@ function SettingsContent({ profile }: { profile: AccountProfile }) {
   const [draft, setDraft] = useState<ProfileDraft>(() => draftFrom(profile))
   const [formError, setFormError] = useState("")
 
+  const subscription = usePremiumSubscription()
+  // DECISION 1: chỉ tên tự sinh mới đổi được, và trưởng nhóm không đổi (tên là mã giới thiệu).
+  const canChangeUsername = profile.usernameChangeAllowed && profile.role !== "team_lead"
+
   const patch = useMemo(() => buildPatch(draft, profile), [draft, profile])
   const dirty = Object.keys(patch).length > 0
 
@@ -345,7 +356,7 @@ function SettingsContent({ profile }: { profile: AccountProfile }) {
     <div className="mx-auto max-w-3xl space-y-6">
       <PremiumStatusPanel
         action={
-          auth.isPremium ? (
+          subscription.data?.isLifetime ? undefined : auth.isPremium ? (
             <Button variant="outline" asChild>
               <Link to="/nang-cap">Gia hạn thêm</Link>
             </Button>
@@ -364,9 +375,25 @@ function SettingsContent({ profile }: { profile: AccountProfile }) {
               <UserRound className="size-4 text-primary" />
               Thông tin cá nhân
             </CardTitle>
-            <CardDescription>Email dùng để đăng nhập nên không thể thay đổi tại đây.</CardDescription>
+            <CardDescription>Email và tên đăng nhập dùng để đăng nhập nên không sửa trực tiếp tại đây.</CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="settings-username">Tên đăng nhập</Label>
+              <Input id="settings-username" value={profile.username} disabled autoComplete="username" />
+              {canChangeUsername ? (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-xs text-muted-foreground">Bạn được đổi tên đăng nhập một lần.</p>
+                  <UsernameChangeDialog current={profile.username} />
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {profile.role === "team_lead"
+                    ? "Tên đăng nhập cũng là mã giới thiệu của bạn nên không thể thay đổi."
+                    : "Tên đăng nhập không thể thay đổi."}
+                </p>
+              )}
+            </div>
             <div className="grid gap-1.5">
               <Label htmlFor="settings-email">Email</Label>
               <Input id="settings-email" value={profile.email} disabled autoComplete="email" />
@@ -385,7 +412,7 @@ function SettingsContent({ profile }: { profile: AccountProfile }) {
             <ProfileField
               id="settings-phone"
               label="Số điện thoại"
-              hint="Định dạng E.164 hoặc số nội địa, ví dụ: +84901234567 hoặc 0912345678"
+              hint="Số di động Việt Nam, ví dụ: 0912 345 678 hoặc +84912345678"
               value={draft.phoneNumber}
               maxLength={LIMITS.phoneNumber}
               type="tel"
@@ -395,10 +422,10 @@ function SettingsContent({ profile }: { profile: AccountProfile }) {
             <div className="grid gap-1.5">
               <Label>Loại tài khoản</Label>
               <div className="flex h-9 items-center gap-2">
-                <Badge variant={auth.isPremium ? "gold" : "secondary"}>
+                <Badge variant={auth.isPremium ? "brand" : "secondary"}>
                   {auth.isPremium ? "Premium" : "Miễn phí"}
                 </Badge>
-                <Badge variant="outline">{profile.role}</Badge>
+                <Badge variant="outline">{ROLE_LABELS[profile.role] ?? profile.role}</Badge>
               </div>
             </div>
           </CardContent>

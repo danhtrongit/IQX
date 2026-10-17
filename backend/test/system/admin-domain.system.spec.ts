@@ -157,6 +157,7 @@ describe('system acceptance: admin domain', () => {
       headers,
       payload: {
         email,
+        username: `Admin.Created.${Date.now().toString(36)}`,
         password: 'Created!Passw0rd',
         full_name: 'Created by admin',
         role: 'user',
@@ -164,8 +165,9 @@ describe('system acceptance: admin domain', () => {
       },
     });
     expect(createdResponse.statusCode, createdResponse.body).toBe(201);
-    const created = createdResponse.json() as JsonObject & { id: string };
+    const created = createdResponse.json() as JsonObject & { id: string; username: string };
     expect(created).toMatchObject({ email, role: 'user', status: 'active' });
+    expect(created.username).toMatch(/^admin\.created\.[a-z0-9]+$/);
 
     const updatedResponse = await stack.app.inject({
       method: 'PATCH',
@@ -203,7 +205,7 @@ describe('system acceptance: admin domain', () => {
     });
     expect(view360.statusCode, view360.body).toBe(200);
     expect(view360.json()).toMatchObject({
-      user: expect.objectContaining({ id: created.id, email }),
+      user: expect.objectContaining({ id: created.id, email, username: created.username }),
     });
 
     const history = await stack.app.inject({

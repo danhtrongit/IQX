@@ -34,7 +34,7 @@ export function ShopPanel({ onNavigate }: { onNavigate: (panel: string) => void 
 
   return (
     <SidebarPanel title="Shop" description="Linh thú và xu học tập">
-      <section aria-labelledby="shop-wallet-title" className="rounded-xl border border-accent/40 bg-gradient-to-br from-accent/10 to-card p-4.5" data-testid="shop-wallet">
+      <section aria-labelledby="shop-wallet-title" className="rounded-xl border border-chart-2/40 bg-gradient-to-br from-chart-2/10 to-card p-4.5" data-testid="shop-wallet">
         <div id="shop-wallet-title" className="flex items-center gap-2 text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">
           <Coins className={cn("size-4", COIN_TEXT)} aria-hidden="true" />
           Xu của bạn
@@ -49,7 +49,7 @@ export function ShopPanel({ onNavigate }: { onNavigate: (panel: string) => void 
         ) : (
           <Skeleton className="mt-3 h-9 w-28" data-testid="shop-balance-loading" />
         )}
-        <div className="mt-4 flex items-center justify-between gap-3 border-t border-accent/20 pt-3 text-xs text-muted-foreground">
+        <div className="mt-4 flex items-center justify-between gap-3 border-t border-chart-2/20 pt-3 text-xs text-muted-foreground">
           <span data-testid="shop-lessons-done">
             {progress.data ? (
               `${progress.data.courseDone} bài đã hoàn thành`

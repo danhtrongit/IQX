@@ -25,8 +25,9 @@ import { errorMessage } from "@/lib/api"
 import { formatDateTime } from "@/lib/format"
 
 import {
-  ADMIN_ROLES,
   ADMIN_STATUSES,
+  ASSIGNABLE_ROLES,
+  LISTABLE_ROLES,
   ASSIGNABLE_STATUSES,
   type AdminUserRow,
   type BulkOp,
@@ -48,7 +49,7 @@ import { labelForRole, labelForStatus } from "./labels"
 const ALL = "all"
 
 const ROLE_LABELS_BY_VALUE: Record<string, string> = Object.fromEntries(
-  ADMIN_ROLES.map((role) => [role, labelForRole(role)]),
+  LISTABLE_ROLES.map((role) => [role, labelForRole(role)]),
 )
 
 const BULK_OP_LABELS: Record<BulkOp, string> = {
@@ -232,6 +233,17 @@ export function UsersPage() {
 
   const columns: AdminColumn<AdminUserRow>[] = [
     {
+      id: "username",
+      header: "Tên đăng nhập",
+      sortKey: "username",
+      cell: (user) =>
+        user.username ? (
+          <span className="font-mono text-xs">{user.username}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
+    },
+    {
       id: "email",
       header: "Email",
       sortKey: "email",
@@ -354,8 +366,8 @@ export function UsersPage() {
           <Input
             value={searchInput}
             onChange={(event) => setSearchInput(event.target.value)}
-            placeholder="Tìm theo email hoặc tên"
-            aria-label="Tìm theo email hoặc tên"
+            placeholder="Tìm theo tên đăng nhập, email hoặc tên"
+            aria-label="Tìm theo tên đăng nhập, email hoặc tên"
             className="pl-8"
           />
         </div>
@@ -365,7 +377,7 @@ export function UsersPage() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL}>Mọi vai trò</SelectItem>
-            {ADMIN_ROLES.map((role) => (
+            {LISTABLE_ROLES.map((role) => (
               <SelectItem key={role} value={role}>
                 {labelForRole(role)}
               </SelectItem>
@@ -425,7 +437,7 @@ export function UsersPage() {
                 <SelectValue placeholder="Vai trò" />
               </SelectTrigger>
               <SelectContent>
-                {ADMIN_ROLES.map((role) => (
+                {ASSIGNABLE_ROLES.map((role) => (
                   <SelectItem key={role} value={role}>
                     {labelForRole(role)}
                   </SelectItem>

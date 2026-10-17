@@ -5,8 +5,12 @@ import { DatabaseService, type SqlClient } from '../../platform/database/index.j
 import type { AuthenticatedUser } from '../auth/index.js';
 import type { AuditExportQuery, AuditQuery } from './admin.schemas.js';
 
+/** admin_audit_log.actor_role (admin spec v1.1 §3.5). */
+export type AuditActorRole = 'admin' | 'team_lead';
+
 export type AuditContext = {
   adminId: string;
+  actorRole: AuditActorRole;
   ip: string | null;
   userAgent: string | null;
   requestId: string | null;
@@ -45,6 +49,7 @@ function csvCell(value: unknown): string {
 export function auditContext(user: AuthenticatedUser, request: FastifyRequest): AuditContext {
   return {
     adminId: user.id,
+    actorRole: user.role === 'team_lead' ? 'team_lead' : 'admin',
     ip: (request.ip || '').slice(0, 45) || null,
     userAgent: (request.headers['user-agent'] || '').slice(0, 500) || null,
     requestId: String(request.id || '').slice(0, 40) || null,
@@ -58,11 +63,12 @@ export class AdminAuditService {
   async record(client: SqlClient, context: AuditContext, entry: AuditEntry): Promise<void> {
     await client.query(
       `insert into admin_audit_log
-         (admin_user_id, action, target_entity, target_id, payload_before, payload_after,
-          note, ip, user_agent, request_id)
-       values ($1::uuid, $2, $3, $4, $5::jsonb, $6::jsonb, $7, $8, $9, $10)`,
+         (admin_user_id, actor_role, action, target_entity, target_id, payload_before,
+          payload_after, note, ip, user_agent, request_id)
+       values ($1::uuid, $2, $3, $4, $5, $6::jsonb, $7::jsonb, $8, $9, $10, $11)`,
       [
         context.adminId,
+        context.actorRole,
         entry.action,
         entry.targetEntity ?? null,
         entry.targetId ?? null,
@@ -84,7 +90,7 @@ export class AdminAuditService {
     );
     const total = Number(countRows[0]?.total ?? 0);
     const items = await this.database.query<Record<string, unknown>>(
-      `select a.id, a.admin_user_id, u.email as admin_email, a.action, a.target_entity,
+      `select a.id, a.admin_user_id, u.email as admin_email, a.actor_role, a.action, a.target_entity,
               a.target_id, a.payload_before, a.payload_after, a.note, a.ip,
               a.user_agent, a.request_id, a.created_at
          from admin_audit_log a
@@ -106,7 +112,7 @@ export class AdminAuditService {
   async exportCsv(query: AuditExportQuery): Promise<string> {
     const { where, values } = this.filters(query);
     const rows = await this.database.query<Record<string, unknown>>(
-      `select a.id, a.created_at, a.admin_user_id, u.email as admin_email, a.action,
+      `select a.id, a.created_at, a.admin_user_id, u.email as admin_email, a.actor_role, a.action,
               a.target_entity, a.target_id, a.note, a.ip, a.request_id,
               a.payload_before, a.payload_after
          from admin_audit_log a
@@ -121,6 +127,7 @@ export class AdminAuditService {
       'created_at',
       'admin_user_id',
       'admin_email',
+      'actor_role',
       'action',
       'target_entity',
       'target_id',
@@ -147,6 +154,7 @@ export class AdminAuditService {
       clauses.push(clause.replace('?', `$${values.length}`));
     };
     if (query.admin_user_id) add('a.admin_user_id = ?::uuid', query.admin_user_id);
+    if (query.actor_role) add('a.actor_role = ?', query.actor_role);
     if (query.action_prefix) add("a.action like (? || '%')", query.action_prefix);
     if (query.target_entity) add('a.target_entity = ?', query.target_entity);
     if (query.target_id) add('a.target_id = ?', query.target_id);

@@ -32,14 +32,14 @@ async function mockApi(route: Route) {
   const token = route.request().headers().authorization
 
   if (path === "/auth/login") {
-    const body = route.request().postDataJSON() as { email?: string }
-    if (body.email === "wrong@example.com") return json(route, { error: { message: "Email hoặc mật khẩu không đúng" } }, 401)
+    const body = route.request().postDataJSON() as { identifier?: string }
+    if (body.identifier === "wrong@example.com") return json(route, { error: { message: "Email hoặc mật khẩu không đúng" } }, 401)
     return json(route, { access_token: "e2e-member-token", refresh_token: "e2e-refresh-token", token_type: "bearer" })
   }
   if (path === "/auth/refresh") return json(route, { access_token: "e2e-member-token", refresh_token: "e2e-refresh-token", token_type: "bearer" })
   if (path === "/auth/me") {
     if (!token) return json(route, { error: { message: "Chưa đăng nhập" } }, 401)
-    return json(route, { id: "member-1", email: "member@example.com", full_name: "Nhà đầu tư thử nghiệm", role: "user" })
+    return json(route, { id: "member-1", email: "member@example.com", username: "member", full_name: "Nhà đầu tư thử nghiệm", role: "user" })
   }
   if (path === "/premium/me") return json(route, { is_premium: false })
   if (path === "/premium/plans") return json(route, [{ id: "plan-month", name: "Premium tháng", duration_days: 30, price_vnd: 199000, is_active: true }])

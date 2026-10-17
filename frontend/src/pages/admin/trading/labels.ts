@@ -18,7 +18,7 @@ import type {
 /* ── Tông màu dùng chung với bảng lệnh của /demo-trading ─────────────────── */
 
 export const TONE_ACTIVE = "border-price-up/40 text-price-up"
-export const TONE_PENDING = "border-accent/60 text-accent-foreground"
+export const TONE_PENDING = "border-status-warning/50 text-status-warning"
 export const TONE_NEUTRAL = "border-border text-muted-foreground"
 export const TONE_DANGER = "border-destructive/40 text-destructive"
 

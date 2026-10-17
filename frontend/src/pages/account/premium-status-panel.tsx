@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/use-auth"
+import { LIFETIME_LABEL } from "@/lib/format"
 import { daysUntil, formatDateOnly } from "./format"
 import { usePremiumSubscription } from "./hooks"
 
@@ -57,6 +58,8 @@ export function PremiumStatusPanel({ action }: { action?: ReactNode }) {
   const premium = isAdmin || data.isPremium
   const periodEnd = data.periodEnd
   const remaining = daysUntil(periodEnd)
+  // DECISION 4: grant trọn đời có hạn năm 9999 — hiện "Trọn đời", không hiện ngày hay số ngày.
+  const lifetime = !isAdmin && data.isLifetime
   // Server đã trả `is_premium: false` cho thuê bao hết hạn nhưng vẫn giữ
   // `current_period_end` — dùng mốc đó để nói rõ "hết hạn ngày nào".
   const expired = !premium && !!periodEnd && new Date(periodEnd).getTime() < renderedAt
@@ -77,10 +80,10 @@ export function PremiumStatusPanel({ action }: { action?: ReactNode }) {
         <CardTitle className="flex flex-wrap items-center gap-2">
           <Trophy className={premium ? "size-4 text-chart-2" : "size-4 text-muted-foreground"} />
           {title}
-          {isAdmin && <Badge variant="gold">Toàn quyền</Badge>}
+          {isAdmin && <Badge variant="outline">Toàn quyền</Badge>}
           {!isAdmin && premium && (
             <Badge variant={data.isTrial ? "secondary" : "default"}>
-              {data.isTrial ? "Đang dùng thử" : "Đang hoạt động"}
+              {data.isTrial ? "Đang dùng thử" : lifetime ? LIFETIME_LABEL : "Đang hoạt động"}
             </Badge>
           )}
           {!isAdmin && expired && <Badge variant="destructive">Hết hạn</Badge>}
@@ -95,7 +98,12 @@ export function PremiumStatusPanel({ action }: { action?: ReactNode }) {
       </CardHeader>
       <CardContent className="flex flex-wrap items-end justify-between gap-4">
         <div className="space-y-1 text-sm">
-          {periodEnd ? (
+          {lifetime ? (
+            <p className="flex items-center gap-2">
+              <CalendarClock className="size-4 text-muted-foreground" />
+              Thời hạn: <span className="font-medium">{LIFETIME_LABEL}</span>
+            </p>
+          ) : periodEnd ? (
             <p className="flex items-center gap-2">
               <CalendarClock className="size-4 text-muted-foreground" />
               {premium ? "Hết hạn" : "Đã hết hạn"}: <span className="font-medium">{formatDateOnly(periodEnd)}</span>
@@ -107,7 +115,7 @@ export function PremiumStatusPanel({ action }: { action?: ReactNode }) {
               {isAdmin ? "Không áp dụng thời hạn." : "Chưa từng có gói Premium."}
             </p>
           )}
-          {premium && !isAdmin && (
+          {premium && !isAdmin && !lifetime && (
             <p className="flex items-center gap-2 text-muted-foreground">
               <ShieldCheck className="size-4" />
               Mua thêm sẽ cộng dồn vào hạn hiện tại, không mất thời gian còn lại.

@@ -31,7 +31,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { useAuth } from "@/hooks/use-auth"
-import { formatDateTime, formatMoney } from "@/lib/format"
+import { formatDateTime, formatMoney, LIFETIME_LABEL } from "@/lib/format"
 import type { PremiumOrder } from "./api"
 import { daysUntil, formatDateOnly } from "./format"
 import { usePaymentCheck, usePremiumRefreshOnPaid, usePremiumSubscription } from "./hooks"
@@ -237,8 +237,8 @@ function PaymentResultBody({ type }: { type: PaymentResultType }) {
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-muted-foreground">Thời hạn Premium hiện tại</span>
                   <span className="flex items-center gap-2 font-medium">
-                    {formatDateOnly(periodEnd)}
-                    <Badge variant="secondary">{subscription.data?.isPremium ? `còn ${daysUntil(periodEnd)} ngày` : "Không còn hiệu lực"}</Badge>
+                    {subscription.data?.isLifetime ? LIFETIME_LABEL : formatDateOnly(periodEnd)}
+                    {!subscription.data?.isLifetime && <Badge variant="secondary">{subscription.data?.isPremium ? `còn ${daysUntil(periodEnd)} ngày` : "Không còn hiệu lực"}</Badge>}
                   </span>
                 </div>
               </>

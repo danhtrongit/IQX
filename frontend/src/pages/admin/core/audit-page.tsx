@@ -16,16 +16,18 @@ import {
 import { errorMessage } from "@/lib/api"
 import { formatDateTime } from "@/lib/format"
 
-import { type AuditLogParams, type AuditLogRow } from "./api"
+import { AUDIT_ACTOR_ROLES, type AuditActorRole, type AuditLogParams, type AuditLogRow } from "./api"
 import { AdminDataTable, type AdminColumn } from "./components/admin-data-table"
 import { JsonView } from "./components/json-view"
 import { useAuditLogs } from "./hooks"
-import { labelForAction, labelForEntity } from "./labels"
+import { labelForAction, labelForActorRole, labelForEntity } from "./labels"
 
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const PAGE_SIZES = [25, 50, 100, 200]
+const ALL_ACTORS = "all"
 
 type AuditDraft = {
+  actorRole: AuditActorRole | typeof ALL_ACTORS
   actionPrefix: string
   targetEntity: string
   targetId: string
@@ -35,6 +37,7 @@ type AuditDraft = {
 }
 
 const EMPTY_DRAFT: AuditDraft = {
+  actorRole: ALL_ACTORS,
   actionPrefix: "",
   targetEntity: "",
   targetId: "",
@@ -65,17 +68,20 @@ export function AuditPage() {
     targetEntity: applied.targetEntity || undefined,
     targetId: applied.targetId || undefined,
     adminUserId: applied.adminUserId || undefined,
+    actorRole: applied.actorRole === ALL_ACTORS ? undefined : applied.actorRole,
     dateFrom: toInstant(applied.dateFrom),
     dateTo: toInstant(applied.dateTo),
   }
   const logs = useAuditLogs(params)
   const rows = logs.data?.items ?? []
-  const hasFilters = Object.values(applied).some((value) => value !== "")
+  const hasFilters = Object.entries(applied).some(([key, value]) =>
+    key === "actorRole" ? value !== ALL_ACTORS : value !== "",
+  )
 
   function submit(event: FormEvent) {
     event.preventDefault()
     if (draft.adminUserId && !UUID_PATTERN.test(draft.adminUserId.trim())) {
-      setFilterError("ID quản trị viên phải là UUID hợp lệ")
+      setFilterError("ID người thực hiện phải là UUID hợp lệ")
       return
     }
     setFilterError(null)
@@ -99,14 +105,20 @@ export function AuditPage() {
       cell: (row) => <span className="tabular-nums">{formatDateTime(row.createdAt)}</span>,
     },
     {
-      id: "admin",
-      header: "Quản trị viên",
-      cell: (row) =>
-        row.adminEmail ? (
-          <span title={row.adminUserId ?? undefined}>{row.adminEmail}</span>
-        ) : (
-          <span className="text-muted-foreground">Hệ thống</span>
-        ),
+      id: "actor",
+      header: "Người thực hiện",
+      cell: (row) => (
+        <span>
+          {row.adminEmail ? (
+            <span title={row.adminUserId ?? undefined}>{row.adminEmail}</span>
+          ) : (
+            <span className="text-muted-foreground">Hệ thống</span>
+          )}
+          {row.adminEmail && (
+            <span className="block text-[11px] text-muted-foreground">{labelForActorRole(row.actorRole)}</span>
+          )}
+        </span>
+      ),
     },
     {
       id: "action",
@@ -199,7 +211,7 @@ export function AuditPage() {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="audit-admin">ID quản trị viên</Label>
+          <Label htmlFor="audit-admin">ID người thực hiện</Label>
           <Input
             id="audit-admin"
             value={draft.adminUserId}
@@ -207,6 +219,27 @@ export function AuditPage() {
             aria-invalid={!!filterError}
             onChange={(event) => setDraft((previous) => ({ ...previous, adminUserId: event.target.value }))}
           />
+        </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="audit-actor-role">Vai trò người thực hiện</Label>
+          <Select
+            value={draft.actorRole}
+            onValueChange={(value) =>
+              setDraft((previous) => ({ ...previous, actorRole: value as AuditDraft["actorRole"] }))
+            }
+          >
+            <SelectTrigger id="audit-actor-role" className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={ALL_ACTORS}>Mọi vai trò</SelectItem>
+              {AUDIT_ACTOR_ROLES.map((role) => (
+                <SelectItem key={role} value={role}>
+                  {labelForActorRole(role)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-1.5">
           <Label htmlFor="audit-from">Từ thời điểm</Label>
@@ -226,7 +259,7 @@ export function AuditPage() {
             onChange={(event) => setDraft((previous) => ({ ...previous, dateTo: event.target.value }))}
           />
         </div>
-        <div className="flex items-end gap-2 sm:col-span-2">
+        <div className="flex items-end gap-2 sm:col-span-2 lg:col-span-1">
           <Button type="submit" size="sm">
             <Search />
             Lọc
@@ -274,12 +307,18 @@ export function AuditPage() {
         onToggleExpand={(key) => setExpanded((previous) => (previous === key ? null : key))}
         renderExpanded={(row) => (
           <div className="space-y-3">
-            <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-3">
+            <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2 lg:grid-cols-4">
               <div>
                 <dt className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
-                  ID quản trị viên
+                  ID người thực hiện
                 </dt>
                 <dd className="font-mono text-xs break-all">{row.adminUserId ?? "—"}</dd>
+              </div>
+              <div>
+                <dt className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
+                  Vai trò người thực hiện
+                </dt>
+                <dd className="text-xs">{labelForActorRole(row.actorRole)}</dd>
               </div>
               <div>
                 <dt className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">
@@ -320,6 +359,11 @@ export function AuditPage() {
             {row.targetEntity === "user" && row.targetId && (
               <Button variant="outline" size="sm" asChild>
                 <Link to={`/admin/users/${row.targetId}`}>Mở hồ sơ người dùng</Link>
+              </Button>
+            )}
+            {row.targetEntity === "team_lead" && row.targetId && (
+              <Button variant="outline" size="sm" asChild>
+                <Link to={`/admin/team-leads/${row.targetId}`}>Mở trang trưởng nhóm</Link>
               </Button>
             )}
           </div>

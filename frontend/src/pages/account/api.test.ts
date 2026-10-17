@@ -12,7 +12,28 @@ describe("premium v2 adapters", () => {
       plan: null,
       periodStart: null,
       periodEnd: null,
+      isLifetime: false,
     })
+  })
+
+  it("flags an active year-9999 entitlement as lifetime", () => {
+    const value = adaptPremiumSubscription({
+      is_premium: true,
+      is_trial: false,
+      status: "active",
+      current_plan: null,
+      current_period_start: "2026-10-01T00:00:00.000Z",
+      current_period_end: "9999-12-31T16:59:59.000Z",
+    })
+    expect(value.isLifetime).toBe(true)
+    expect(adaptPremiumSubscription({
+      is_premium: true,
+      is_trial: false,
+      status: "active",
+      current_plan: null,
+      current_period_start: "2026-10-01T00:00:00.000Z",
+      current_period_end: "2026-11-01T00:00:00.000Z",
+    }).isLifetime).toBe(false)
   })
 
   it("preserves an expired entitlement and its nullable plan", () => {
@@ -28,6 +49,7 @@ describe("premium v2 adapters", () => {
     expect(value.status).toBe("expired")
     expect(value.plan).toBeNull()
     expect(value.periodEnd).toBe("2026-02-01T00:00:00.000Z")
+    expect(value.isLifetime).toBe(false)
   })
 
   it("maps server plan money and duration without changing the wire meaning", () => {

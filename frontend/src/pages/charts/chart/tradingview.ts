@@ -184,7 +184,7 @@ export function resolveChartColors(
   return {
     positive: token(host, theme, "--price-up", { dark: "#32d74b", light: "#15803d" }),
     negative: token(host, theme, "--price-down", { dark: "#ff453a", light: "#c62828" }),
-    neutral: token(host, theme, "--price-ref", { dark: "#d4af37", light: "#8a6b0f" }),
+    neutral: token(host, theme, "--price-ref", { dark: "#ffd60a", light: "#8a6b0f" }),
   }
 }
 

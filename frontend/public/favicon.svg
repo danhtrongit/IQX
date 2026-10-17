@@ -2,70 +2,70 @@
   <defs>
     <!-- Dark squircle subtle border glow -->
     <linearGradient id="sq-border" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#00F0FF" stop-opacity="0.35"/>
-      <stop offset="50%" stop-color="#2563EB" stop-opacity="0.2"/>
-      <stop offset="100%" stop-color="#D946EF" stop-opacity="0.4"/>
+      <stop offset="0%" stop-color="#00D2FC" stop-opacity="0.35"/>
+      <stop offset="50%" stop-color="#0090F6" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#E319FB" stop-opacity="0.4"/>
     </linearGradient>
 
     <!-- Ribbon Gradient: Crest (Electric Cyan -> Royal Blue -> Violet) -->
     <linearGradient id="grad-crest" x1="5%" y1="15%" x2="90%" y2="85%">
-      <stop offset="0%" stop-color="#00F0FF"/>
-      <stop offset="35%" stop-color="#00A3FF"/>
-      <stop offset="68%" stop-color="#2563EB"/>
-      <stop offset="100%" stop-color="#7C3AED"/>
+      <stop offset="0%" stop-color="#00D2FC"/>
+      <stop offset="35%" stop-color="#0090F6"/>
+      <stop offset="68%" stop-color="#0090F6"/>
+      <stop offset="100%" stop-color="#7800FC"/>
     </linearGradient>
 
     <!-- Ribbon Gradient: Mid-Body (Electric Cyan -> Cobalt -> Purple) -->
     <linearGradient id="grad-mid" x1="5%" y1="25%" x2="85%" y2="75%">
-      <stop offset="0%" stop-color="#00E5FF"/>
-      <stop offset="42%" stop-color="#1D4ED8"/>
-      <stop offset="78%" stop-color="#6D28D9"/>
-      <stop offset="100%" stop-color="#7C3AED"/>
+      <stop offset="0%" stop-color="#00D2FC"/>
+      <stop offset="42%" stop-color="#0072F6"/>
+      <stop offset="78%" stop-color="#452BFC"/>
+      <stop offset="100%" stop-color="#7800FC"/>
     </linearGradient>
 
     <!-- Ribbon Gradient: Inferior Wave (Cyan -> Blue -> Violet -> Neon Magenta) -->
     <linearGradient id="grad-low" x1="10%" y1="10%" x2="85%" y2="90%">
-      <stop offset="0%" stop-color="#00F0FF"/>
-      <stop offset="30%" stop-color="#2563EB"/>
-      <stop offset="65%" stop-color="#7C3AED"/>
-      <stop offset="100%" stop-color="#D946EF"/>
+      <stop offset="0%" stop-color="#00D2FC"/>
+      <stop offset="30%" stop-color="#0090F6"/>
+      <stop offset="65%" stop-color="#7800FC"/>
+      <stop offset="100%" stop-color="#E319FB"/>
     </linearGradient>
 
     <!-- Occipital Filament Gradient: Violet -> Fuchsia -> Bright Neon Magenta -->
     <linearGradient id="grad-filament" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#8B5CF6"/>
-      <stop offset="45%" stop-color="#D946EF"/>
-      <stop offset="100%" stop-color="#F472B6"/>
+      <stop offset="0%" stop-color="#8A00FC"/>
+      <stop offset="45%" stop-color="#E319FB"/>
+      <stop offset="100%" stop-color="#F66CFC"/>
     </linearGradient>
 
     <!-- Node Bezel Gradient -->
     <radialGradient id="node-bezel" cx="35%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="0%" stop-color="#0090F6"/>
       <stop offset="50%" stop-color="#1E1B4B"/>
       <stop offset="100%" stop-color="#080C14"/>
     </radialGradient>
 
     <!-- Bezel Accent Ring: Violet to Bright Neon Magenta -->
     <linearGradient id="bezel-ring" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#7C3AED"/>
-      <stop offset="40%" stop-color="#C026D3"/>
-      <stop offset="100%" stop-color="#D946EF"/>
+      <stop offset="0%" stop-color="#7800FC"/>
+      <stop offset="40%" stop-color="#B903F8"/>
+      <stop offset="100%" stop-color="#E319FB"/>
     </linearGradient>
 
     <!-- Radiant Node Core: Pure White -> Brilliant Pink/Magenta Core -->
     <radialGradient id="node-core" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#FFFFFF"/>
       <stop offset="35%" stop-color="#FFFFFF"/>
-      <stop offset="60%" stop-color="#F5D0FE"/>
-      <stop offset="85%" stop-color="#E879F9"/>
-      <stop offset="100%" stop-color="#D946EF"/>
+      <stop offset="60%" stop-color="#F8D6FE"/>
+      <stop offset="85%" stop-color="#F66CFC"/>
+      <stop offset="100%" stop-color="#E319FB"/>
     </radialGradient>
 
     <!-- Focal Ambient Glow -->
     <radialGradient id="node-glow" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#E879F9" stop-opacity="0.8"/>
-      <stop offset="40%" stop-color="#A855F7" stop-opacity="0.4"/>
-      <stop offset="75%" stop-color="#3B82F6" stop-opacity="0.15"/>
+      <stop offset="0%" stop-color="#F66CFC" stop-opacity="0.8"/>
+      <stop offset="40%" stop-color="#B903F8" stop-opacity="0.4"/>
+      <stop offset="75%" stop-color="#0090F6" stop-opacity="0.15"/>
       <stop offset="100%" stop-color="#080C14" stop-opacity="0"/>
     </radialGradient>
   </defs>

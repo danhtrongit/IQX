@@ -52,7 +52,8 @@ describe.skipIf(!url)('practice schema on PostgreSQL', () => {
     database = new DatabaseService({ get: (key: string) => values[key] } as never);
     for (const id of [userId, otherUserId]) {
       await database.query(
-        `insert into users (id, email, hashed_password, full_name) values ($1, $2, 'x', 'Practice Test')`,
+        `insert into users (id, email, username, hashed_password, full_name)
+         values ($1, $2, left('u' || replace($1::uuid::text, '-', ''), 30), 'x', 'Practice Test')`,
         [id, `practice-${id}@example.test`],
       );
     }

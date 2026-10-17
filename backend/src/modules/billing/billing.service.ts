@@ -10,6 +10,16 @@ import { ConfigService } from '@nestjs/config';
 import { createHmac, randomUUID } from 'node:crypto';
 
 import { DatabaseService } from '../../platform/database/database.service.js';
+import {
+  ORDER_TEAM_LEAD_SNAPSHOT_ASSIGNMENTS,
+  ORDER_TEAM_LEAD_SNAPSHOT_CTE,
+} from '../team-leads/team-lead-policy.js';
+import {
+  addSubscriptionHistory,
+  hasActiveLifetimeGrant,
+  lockEntitlementUser,
+  refreshSubscriptionState,
+} from './entitlement-state.js';
 import type {
   IpnListQuery,
   PaymentListQuery,
@@ -30,8 +40,9 @@ import type {
 const PAYMENT = 'payment';
 const ADMIN_CONFIRMED = 'admin_confirmed';
 const ADMIN_GRANT = 'admin_grant';
-const TRIAL = 'trial';
 const EXTENSION = 'admin_extension';
+/** Anchor plan of team-lead referral-offer grants (migration 0024): never sold or hand-granted. */
+const REFERRAL_OFFER_PLAN = 'REFERRAL_OFFER';
 
 type DatabaseWithWrites = DatabaseService &
   BillingSqlClient & {
@@ -88,22 +99,23 @@ export function exactVndNumber(value: unknown, field: string): number {
 }
 
 /**
- * Calculate the referral shares using integer VND arithmetic only.
- *
- * The direct CTV share is 40% and the assigned Lead management share is 10%.
- * The remaining 50% is IQX revenue and is intentionally not a referral-ledger
- * row. Integer division floors each share; a zero share is omitted by the
+ * Admin spec v1.1 §3.3-4: the team lead's direct commission on one paid order,
+ * floor(amount_vnd × commission_pct / 100) in integer VND. A zero share is omitted by the
  * caller because referral_commission_ledger rejects zero amounts.
  */
-export function referralCommissionAmounts(amount: number | string | bigint): {
-  ctv_direct: number;
-  lead_management: number;
-} {
+export function teamLeadCommissionAmount(
+  amount: number | string | bigint,
+  commissionPct: number | string,
+): number {
   const paid = BigInt(exactVndNumber(amount, 'amount_vnd'));
-  return {
-    ctv_direct: Number((paid * 40n) / 100n),
-    lead_management: Number((paid * 10n) / 100n),
-  };
+  const pct = Number(commissionPct);
+  if (!Number.isInteger(pct) || pct < 0 || pct > 100) {
+    throw new InternalServerErrorException({
+      code: 'BILLING_COMMISSION_PCT_INVALID',
+      message: 'Invalid commission_pct',
+    });
+  }
+  return Number((paid * BigInt(pct)) / 100n);
 }
 
 /** V1/V2 billing contracts expose VND as exact integer JSON numbers. */
@@ -277,6 +289,9 @@ export class BillingService {
   async updatePlan(planId: string, patch: PlanUpdateInput, actor: AdminActor): Promise<PlanRow> {
     return this.db().transaction(async (tx) => {
       const before = await this.getPlan(planId, tx);
+      if (before.code === REFERRAL_OFFER_PLAN && patch.is_active === true) {
+        throw badRequest('REFERRAL_OFFER_PLAN_PROTECTED', 'Không thể mở bán gói ưu đãi giới thiệu');
+      }
       const keys = Object.keys(patch) as (keyof PlanUpdateInput)[];
       const values = keys.map((key) => patch[key] ?? null);
       const assignments = keys.map((key, index) => `${key} = $${index + 2}`).join(', ');
@@ -380,6 +395,14 @@ export class BillingService {
     return this.db().transaction(async (tx) => {
       const plan = await this.getPlan(planId, tx);
       if (!plan.is_active) throw badRequest('PREMIUM_PLAN_INACTIVE', 'Gói này không còn khả dụng');
+      // DECISION 4: a lifetime grant would push any purchase to year 9999, so it is refused.
+      await lockEntitlementUser(tx, userId);
+      if (await hasActiveLifetimeGrant(tx, userId)) {
+        throw conflict(
+          'LIFETIME_PREMIUM_ACTIVE',
+          'Bạn đang có Premium trọn đời, không cần mua thêm',
+        );
+      }
       const invoice = `IQX_${randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
       const [order] = await tx.query<PaymentOrderRow>(
         `insert into premium_payment_orders
@@ -533,13 +556,16 @@ export class BillingService {
     );
     if (duplicate) return { message: 'transaction_conflict', orderId: order.id };
     const claimed = await tx.query<PaymentOrderRow>(
-      `update premium_payment_orders
+      `${ORDER_TEAM_LEAD_SNAPSHOT_CTE}
+       update premium_payment_orders
           set status = 'paid', sepay_transaction_id = $2, raw_ipn = $3,
-              paid_at = now(), grant_type = 'payment', updated_at = now()
+              paid_at = now(), grant_type = 'payment', updated_at = now(),
+              ${ORDER_TEAM_LEAD_SNAPSHOT_ASSIGNMENTS}
         where id = $1 and status = 'pending' returning *`,
       [order.id, transactionId, JSON.stringify(safePayload)],
     );
-    if (!claimed[0]) return { message: 'already_processed', orderId: order.id };
+    const paidOrder = claimed[0];
+    if (!paidOrder) return { message: 'already_processed', orderId: order.id };
     await this.createGrant(
       tx,
       order.user_id,
@@ -551,80 +577,44 @@ export class BillingService {
       null,
     );
     await this.refreshSubscription(tx, order.user_id, order.plan_id);
-    await this.allocateReferralCommission(tx, order.id, order.user_id, storedOrderAmount);
+    await this.allocateReferralCommission(tx, paidOrder, storedOrderAmount);
     return { message: 'processed', orderId: order.id };
   }
 
+  /**
+   * Admin spec v1.1 §3.3-4: one `team_lead_direct` row per paid order, computed from the
+   * team_lead_id/commission_pct snapshot taken when the order became paid. Orders without a
+   * snapshot (no group, or a revoked lead per DECISION 2) earn nothing. Legacy ctv_direct and
+   * lead_management rows are no longer created; old rows are still reversed on refund.
+   */
   private async allocateReferralCommission(
     tx: BillingSqlClient,
-    orderId: string,
-    customerId: string,
+    paidOrder: PaymentOrderRow,
     amount: number | string,
   ): Promise<void> {
-    const [customer] = await tx.query<
-      { referred_by_user_id: string | null } & Record<string, unknown>
-    >(`select referred_by_user_id from users where id = $1`, [customerId]);
-    if (!customer?.referred_by_user_id) return;
-    const [sponsor] = await tx.query<
-      { id: string; referral_partner_kind: string; eligible_lead_user_id: string | null } & Record<
-        string,
-        unknown
-      >
-    >(
-      `select u.id, u.referral_partner_kind, lead.id as eligible_lead_user_id
-         from users u
-         left join users lead
-           on lead.id = u.referral_lead_user_id
-          and lead.status = 'active'
-          and lead.deleted_at is null
-          and lead.referral_partner_kind = 'lead_sale'
-        where u.id = $1 and u.status = 'active' and u.deleted_at is null`,
-      [customer.referred_by_user_id],
-    );
-    if (!sponsor) return;
-    // A Lead Sale's direct-sale rate is not specified yet, so it earns no
-    // ledger row here. The immutable order/customer attribution remains
-    // available for a later, explicitly configured backfill.
-    if (sponsor.referral_partner_kind !== 'ctv') return;
-
+    if (!paidOrder.team_lead_id || paidOrder.commission_pct === null) return;
     const paid = exactVndNumber(amount, 'amount_vnd');
-    const shares = referralCommissionAmounts(paid);
-    const insert = async (
-      beneficiaryUserId: string,
-      commissionType: 'ctv_direct' | 'lead_management',
-      share: number,
-    ): Promise<void> => {
-      if (share <= 0) return;
-      await tx.query(
-        `insert into referral_commission_ledger
-           (order_id, beneficiary_user_id, commission_type, amount_vnd, source_amount_vnd)
-         values ($1, $2, $3, $4, $5)
-         on conflict (order_id, commission_type) where refund_id is null do nothing`,
-        [orderId, beneficiaryUserId, commissionType, share, paid],
-      );
-    };
-    await insert(sponsor.id, 'ctv_direct', shares.ctv_direct);
-    if (sponsor.eligible_lead_user_id) {
-      await insert(sponsor.eligible_lead_user_id, 'lead_management', shares.lead_management);
-    }
+    const share = teamLeadCommissionAmount(paid, paidOrder.commission_pct);
+    if (share <= 0) return;
+    await tx.query(
+      `insert into referral_commission_ledger
+         (order_id, beneficiary_user_id, commission_type, amount_vnd, source_amount_vnd)
+       values ($1, $2, 'team_lead_direct', $3, $4)
+       on conflict (order_id, commission_type) where refund_id is null do nothing`,
+      [paidOrder.id, paidOrder.team_lead_id, share, paid],
+    );
   }
 
-  async grantTrialIfEligible(userId: string): Promise<boolean> {
-    return this.db().transaction(async (tx) => {
-      await this.lockEntitlementUser(tx, userId);
-      const [existing] = await tx.query<{ id: string } & Record<string, unknown>>(
-        `select id from billing_entitlement_grants where user_id = $1 limit 1 for update`,
-        [userId],
-      );
-      if (existing) return false;
-      const [plan] = await tx.query<PlanRow>(
-        `select * from premium_plans where code = 'TRIAL_7D' and is_active = true`,
-      );
-      if (!plan) return false;
-      await this.createGrant(tx, userId, plan.id, null, TRIAL, plan.duration_days, null, null);
-      await this.refreshSubscription(tx, userId, plan.id);
-      return true;
-    });
+  /**
+   * v1.0 §3.5.5-2 [DECISION]: whether an admin mark-paid earns commission. Defaults to the
+   * existing behaviour (it does); REFERRAL_COMMISSION_ON_MARK_PAID=false turns it off. The
+   * order still records its team-lead snapshot either way.
+   */
+  private markPaidEarnsCommission(): boolean {
+    const value: unknown = this.config.get('REFERRAL_COMMISSION_ON_MARK_PAID');
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'string') return !['false', '0', 'no', 'off'].includes(value.trim());
+    return true;
   }
 
   async adminGrant(
@@ -641,6 +631,14 @@ export class BillingService {
       );
       if (!user) throw notFound('USER_NOT_FOUND', 'Không tìm thấy người dùng');
       const plan = await this.getPlan(planId, tx);
+      if (plan.code === REFERRAL_OFFER_PLAN) {
+        throw badRequest(
+          'REFERRAL_OFFER_PLAN_PROTECTED',
+          'Gói ưu đãi giới thiệu chỉ được cấp qua chính sách trưởng nhóm',
+        );
+      }
+      // A free admin grant is neither revenue nor commissionable: team_lead_id and
+      // commission_pct stay NULL on this order (admin spec v1.1 §3.3-4).
       const invoice = `GRANT_${randomUUID().replaceAll('-', '').slice(0, 12).toUpperCase()}`;
       const [order] = await tx.query<PaymentOrderRow>(
         `insert into premium_payment_orders
@@ -757,9 +755,11 @@ export class BillingService {
         );
       }
       const [claimed] = await tx.query<PaymentOrderRow>(
-        `update premium_payment_orders
+        `${ORDER_TEAM_LEAD_SNAPSHOT_CTE}
+         update premium_payment_orders
             set status = 'paid', paid_at = now(), grant_type = 'admin_confirmed',
-                granted_by_user_id = $2, grant_note = $3, updated_at = now()
+                granted_by_user_id = $2, grant_note = $3, updated_at = now(),
+                ${ORDER_TEAM_LEAD_SNAPSHOT_ASSIGNMENTS}
           where id = $1 and status = 'pending' returning *`,
         [orderId, actor.id, note],
       );
@@ -776,7 +776,9 @@ export class BillingService {
         note,
       );
       await this.refreshSubscription(tx, order.user_id, order.plan_id);
-      await this.allocateReferralCommission(tx, order.id, order.user_id, order.amount_vnd);
+      if (this.markPaidEarnsCommission()) {
+        await this.allocateReferralCommission(tx, claimed, order.amount_vnd);
+      }
       await this.audit(
         tx,
         actor,
@@ -854,14 +856,19 @@ export class BillingService {
                     amount_vnd::numeric as original_amount
                from referral_commission_ledger
               where order_id = $1 and refund_id is null
-                and commission_type in ('ctv_direct', 'lead_management')
+                and commission_type in ('ctv_direct', 'lead_management', 'team_lead_direct')
            ), prior as (
-             select case when commission_type = 'ctv_direct_reversal'
-                         then 'ctv_direct' else 'lead_management' end as original_type,
+             select case commission_type
+                      when 'ctv_direct_reversal' then 'ctv_direct'
+                      when 'lead_management_reversal' then 'lead_management'
+                      when 'team_lead_direct_reversal' then 'team_lead_direct'
+                    end as original_type,
                     coalesce(sum(-amount_vnd), 0)::numeric as reversed_amount
                from referral_commission_ledger
               where order_id = $1 and refund_id is not null
-                and commission_type in ('ctv_direct_reversal', 'lead_management_reversal')
+                and commission_type in (
+                  'ctv_direct_reversal', 'lead_management_reversal', 'team_lead_direct_reversal'
+                )
               group by 1
            ), delta as (
              select o.order_id, o.beneficiary_user_id,
@@ -873,8 +880,11 @@ export class BillingService {
                left join prior p on p.original_type = o.original_type
            )
            select order_id, $2, beneficiary_user_id,
-                  case when original_type = 'ctv_direct' then 'ctv_direct_reversal'
-                       else 'lead_management_reversal' end,
+                  case original_type
+                    when 'ctv_direct' then 'ctv_direct_reversal'
+                    when 'lead_management' then 'lead_management_reversal'
+                    when 'team_lead_direct' then 'team_lead_direct_reversal'
+                  end,
                   -reversal_amount::bigint, $5
              from delta
             where reversal_amount > 0
@@ -1253,9 +1263,7 @@ export class BillingService {
   }
 
   private async lockEntitlementUser(tx: BillingSqlClient, userId: string): Promise<void> {
-    await tx.query(`select pg_advisory_xact_lock(hashtextextended($1, 0))`, [
-      `billing-entitlement:${userId}`,
-    ]);
+    await lockEntitlementUser(tx, userId);
   }
 
   private async lockSubscriptionForEntitlement(
@@ -1312,75 +1320,7 @@ export class BillingService {
     userId: string,
     fallbackPlanId: string,
   ): Promise<void> {
-    const [aggregate] = await tx.query<
-      Record<string, unknown> & {
-        starts_at: Date | string | null;
-        ends_at: Date | string | null;
-        current_plan_id: string | null;
-        entitled: boolean;
-      }
-    >(
-      `select min(starts_at) filter (where ends_at > now()) as starts_at,
-              max(ends_at) filter (where ends_at > now()) as ends_at,
-              (array_agg(plan_id order by ends_at desc) filter (where ends_at > now()))[1] as current_plan_id,
-              coalesce(bool_or(starts_at <= now() and now() < ends_at), false) as entitled
-         from billing_entitlement_grants
-        where user_id = $1 and status = 'active'`,
-      [userId],
-    );
-    if (aggregate?.ends_at && aggregate.starts_at) {
-      const [sub] = await tx.query<{ id: string } & Record<string, unknown>>(
-        `insert into premium_subscriptions
-           (user_id, current_plan_id, current_period_start, current_period_end, status)
-         values ($1, $2, $3, $4, $5)
-         on conflict (user_id) do update set
-           current_plan_id = excluded.current_plan_id,
-           current_period_start = excluded.current_period_start,
-           current_period_end = excluded.current_period_end,
-           status = excluded.status,
-           cancelled_at = null, cancelled_by_user_id = null, cancel_reason = null,
-           updated_at = now()
-         returning id`,
-        [
-          userId,
-          aggregate.current_plan_id ?? fallbackPlanId,
-          aggregate.starts_at,
-          aggregate.ends_at,
-          aggregate.entitled ? 'active' : 'expired',
-        ],
-      );
-      if (aggregate.entitled) {
-        await tx.query(
-          `update users set role = 'premium', updated_at = now() where id = $1 and role = 'user'`,
-          [userId],
-        );
-      } else {
-        await tx.query(
-          `update users set role = 'user', updated_at = now() where id = $1 and role = 'premium'`,
-          [userId],
-        );
-      }
-      if (sub)
-        await this.addHistory(
-          tx,
-          userId,
-          aggregate.current_plan_id ?? fallbackPlanId,
-          'grant_applied',
-          null,
-          null,
-        );
-      return;
-    }
-    await tx.query(
-      `update premium_subscriptions
-          set status = 'expired', current_period_end = least(current_period_end, now()), updated_at = now()
-        where user_id = $1 and status <> 'cancelled'`,
-      [userId],
-    );
-    await tx.query(
-      `update users set role = 'user', updated_at = now() where id = $1 and role = 'premium'`,
-      [userId],
-    );
+    await refreshSubscriptionState(tx, userId, fallbackPlanId);
   }
 
   private async addHistory(
@@ -1392,12 +1332,7 @@ export class BillingService {
     reason: string | null,
     days?: number,
   ): Promise<void> {
-    await tx.query(
-      `insert into billing_subscription_history
-         (user_id, plan_id, event_type, actor_user_id, reason, days_delta)
-       values ($1, $2, $3, $4, $5, $6)`,
-      [userId, planId, eventType, actorId, reason, days ?? null],
-    );
+    await addSubscriptionHistory(tx, userId, planId, eventType, actorId, reason, days);
   }
 
   private async audit(

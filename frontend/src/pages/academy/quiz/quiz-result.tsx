@@ -148,7 +148,7 @@ export function QuizResult({
           <p role="status" className="mt-3 inline-flex items-center justify-center gap-2 text-sm font-medium">
             {reward.kind === "credited" && (
               <>
-                <Coins className="size-4 text-accent" aria-hidden="true" />
+                <Coins className="size-4 text-amber-700 dark:text-chart-2" aria-hidden="true" />
                 <strong>{creditedText(reward.delta)}</strong>
               </>
             )}

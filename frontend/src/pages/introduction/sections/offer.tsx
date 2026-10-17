@@ -20,7 +20,7 @@ export function Premium({ isAuthenticated, onSignUp }: { isAuthenticated: boolea
           {TIERS.map((tier) => (
             <Panel
               key={tier.name}
-              className={cn("flex flex-col", tier.highlight && "border-accent/50 bg-accent/5")}
+              className={cn("flex flex-col", tier.highlight && "border-primary/50 bg-primary/5")}
             >
               <div className="flex items-baseline justify-between gap-3">
                 <h3 className="font-heading text-lg font-bold">{tier.name}</h3>
@@ -42,7 +42,7 @@ export function Premium({ isAuthenticated, onSignUp }: { isAuthenticated: boolea
 
               <div className="mt-6">
                 {tier.highlight ? (
-                  <Button asChild variant="gold" size="lg" className="h-10 w-full px-4">
+                  <Button asChild variant="brand" size="lg" className="h-10 w-full px-4">
                     <Link to={LINKS.premium}>
                       Xem các gói Premium
                       <ArrowRight aria-hidden="true" />

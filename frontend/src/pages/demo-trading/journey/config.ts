@@ -3,8 +3,8 @@ import type { MascotId } from "./types"
 export const MASCOT_MANIFEST: Record<MascotId, { name: string; accent: string }> = {
   bach_ho: { name: "Bạch Hổ", accent: "var(--primary)" },
   thanh_long: { name: "Thanh Long", accent: "var(--primary)" },
-  loc_huou: { name: "Lộc Hươu", accent: "var(--accent)" },
-  phung_hoang: { name: "Phụng Hoàng", accent: "var(--accent)" },
+  loc_huou: { name: "Lộc Hươu", accent: "var(--chart-2)" },
+  phung_hoang: { name: "Phụng Hoàng", accent: "var(--chart-2)" },
   kim_quy: { name: "Kim Quy", accent: "var(--price-up)" },
 }
 

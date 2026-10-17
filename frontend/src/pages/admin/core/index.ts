@@ -32,10 +32,22 @@ export { useConfirmDialog } from "./components/use-confirm-dialog"
 export { DetailList } from "./components/detail-list"
 export { JsonView } from "./components/json-view"
 export { KpiTile } from "./components/kpi-tile"
+export {
+  OverviewKpiGrid,
+  OverviewShortcuts,
+  PlanDistributionCard,
+  RevenueChartCard,
+  type OverviewShortcut,
+} from "./components/overview-panels"
+export { ReasonDialog } from "./components/reason-dialog"
 export { SoftDeleteUserDialog } from "./components/soft-delete-user-dialog"
 export { StatusBadge } from "./components/status-badge"
+export { UserAcademyTab } from "./components/user-academy-tab"
 export { UserAccessDialog, type AccessMode } from "./components/user-access-dialog"
+export { UserAccountCards, UserDetailTabs, type LoginHistoryView } from "./components/user-360-body"
 export { UserProfileDialog } from "./components/user-profile-dialog"
+export { UserReferralCard } from "./components/user-referral-card"
+export { PnlPct, UserTradingInsights } from "./components/user-trading-insights"
 
 export * from "./api"
 export * from "./format"

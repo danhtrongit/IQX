@@ -56,7 +56,7 @@ export function SessionTabs({
               · {SESSION_TIME[period]}
             </span>
             {newPeriod === period && (
-              <span className="rounded-sm bg-accent/15 px-1.5 py-px text-[10px] font-semibold text-accent">
+              <span className="rounded-sm bg-primary/15 px-1.5 py-px text-[10px] font-semibold text-primary">
                 MỚI
               </span>
             )}

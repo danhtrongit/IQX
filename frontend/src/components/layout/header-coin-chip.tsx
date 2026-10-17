@@ -32,8 +32,8 @@ function CoinChip() {
       aria-label={label}
       data-testid="header-coin-chip"
       className={cn(
-        "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-sm border border-accent/50 bg-accent/10 px-2.5 text-xs font-bold whitespace-nowrap tabular-nums transition-colors",
-        "text-amber-700 hover:bg-accent/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-accent max-[420px]:px-2",
+        "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-sm border border-chart-2/50 bg-chart-2/10 px-2.5 text-xs font-bold whitespace-nowrap tabular-nums transition-colors",
+        "text-amber-700 hover:bg-chart-2/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring dark:text-chart-2 max-[420px]:px-2",
       )}
     >
       <Coins className="size-4" aria-hidden="true" />

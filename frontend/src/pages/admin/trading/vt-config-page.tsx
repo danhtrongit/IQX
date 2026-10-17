@@ -188,7 +188,7 @@ export function VTConfigPage() {
               />
               <StatusBadge
                 label={`Tất toán ${form.settlementMode}`}
-                tone="border-accent/60 text-accent-foreground"
+                tone="border-border text-muted-foreground"
               />
               {changed > 0 && <StatusBadge label={`${changed} thay đổi chưa lưu`} tone="border-border text-muted-foreground" />}
               <span className="text-xs text-muted-foreground">

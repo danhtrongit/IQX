@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { errorMessage } from "@/lib/api"
+import { formatPremiumEnd } from "@/lib/format"
 import type { SubscriptionStatus } from "./api"
 import { formatDay, subscriptionStatusLabel, subscriptionTone } from "./display"
 import { usePlans, useSubscriptions } from "./queries"
@@ -206,7 +207,7 @@ export function SubscriptionsPage() {
                       {formatDay(row.current_period_start)}
                     </TableCell>
                     <TableCell className="text-muted-foreground tabular-nums">
-                      {formatDay(row.current_period_end)}
+                      {formatPremiumEnd(row.current_period_end, formatDay)}
                     </TableCell>
                     <TableCell className="pr-3 text-right">
                       <Button type="button" variant="outline" size="xs" asChild>

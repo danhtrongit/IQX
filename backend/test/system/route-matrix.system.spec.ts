@@ -31,9 +31,15 @@ function concretePath(path: string): string {
 function payloadFor(path: string, method: string): Record<string, unknown> | undefined {
   if (method === 'get' || method === 'head' || method === 'delete') return undefined;
   if (path.includes('/auth/register'))
-    return { email: 'matrix@example.test', password: 'System!Passw0rd', full_name: 'Matrix' };
+    return {
+      email: 'matrix@example.test',
+      username: 'matrix.user',
+      phone_number: '0900000001',
+      password: 'System!Passw0rd',
+      full_name: 'Matrix',
+    };
   if (path.includes('/auth/login'))
-    return { email: 'matrix@example.test', password: 'System!Passw0rd' };
+    return { identifier: 'matrix@example.test', password: 'System!Passw0rd' };
   if (path.includes('/auth/refresh')) return { refresh_token: 'invalid' };
   if (path.includes('/watchlists')) return { symbol: 'VCB' };
   if (path.includes('chart-drawings')) return { state: {} };

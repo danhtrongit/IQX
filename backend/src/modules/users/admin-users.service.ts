@@ -6,29 +6,96 @@ import {
 } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
+import {
+  AcademyProgressReader,
+  type AcademyProgressDetail,
+} from '../academy/academy-progress-reader.service.js';
 import { AuthService } from '../auth/index.js';
+import { LIFETIME_THRESHOLD } from '../billing/entitlement-state.js';
 import { recordAudit, type AuditContext } from './audit.js';
+import {
+  memberPerformance,
+  type BotPerformance,
+  type DemoTradingPerformance,
+} from './member-performance.js';
 import type { LoginHistoryQuery, UserExportQuery } from './users.schemas.js';
 
 const EXPORT_LIMIT = 50_000;
+
+/** Restricts a user view to one team lead's group (admin spec v1.1 §1.3, `team/*`). */
+export type GroupScope = { leadId: string };
+
+export type UserGroupView = {
+  lead_user_id: string;
+  lead_username: string;
+  lead_full_name: string;
+  lead_status: 'active' | 'revoked';
+  /** The referral code the user joined with is the lead's username. */
+  code: string;
+  join_via: 'code' | 'admin';
+  joined_at: Date | string;
+};
+
+export type ReferralOfferView = {
+  grant_id: string;
+  lead_user_id: string | null;
+  offer_type: 'days' | 'lifetime';
+  offer_days: number | null;
+  status: string;
+  starts_at: Date | string;
+  ends_at: Date | string;
+  lifetime: boolean;
+  active: boolean;
+};
+
+/** Admin spec v1.1 §5.1.3 / §5.1.4 additions to the user 360. */
+export type UserInsights = {
+  group: UserGroupView | null;
+  referral_offer: ReferralOfferView | null;
+  demo_trading: DemoTradingPerformance;
+  bot: BotPerformance;
+  academy: AcademyProgressDetail;
+};
 
 @Injectable()
 export class AdminUsersService {
   constructor(
     private readonly database: DatabaseService,
     private readonly auth: AuthService,
+    private readonly academy: AcademyProgressReader,
   ) {}
 
-  async get360(userId: string): Promise<Record<string, unknown>> {
+  /**
+   * True when the user is a live (not deleted) member of the lead's group. Team views answer
+   * 404 USER_NOT_FOUND otherwise, so a lead cannot tell whether an outside user exists.
+   */
+  async isGroupMember(userId: string, scope: GroupScope): Promise<boolean> {
+    const rows = await this.database.query<{ id: string }>(
+      `select id from users
+        where id = $1 and group_lead_id = $2 and deleted_at is null and status <> 'deleted'`,
+      [userId, scope.leadId],
+    );
+    return rows.length > 0;
+  }
+
+  /**
+   * The admin user 360. With a group scope (team lead) the user must be a live member of that
+   * group, and the admin-only money views are left out: the VT account (capital, cash) and its
+   * recent orders (prices). Demo Trading and Bot results are percentages only (§5.1.3).
+   */
+  async get360(userId: string, scope?: GroupScope): Promise<Record<string, unknown>> {
     const users = await this.database.query<AdminUserRow>(
-      `select id, email, full_name, phone_number, role, status, is_email_verified,
-              last_login_at, created_at from users where id = $1 limit 1`,
-      [userId],
+      `select id, email, username, full_name, phone_number, role, status, is_email_verified,
+              last_login_at, created_at from users
+        where id = $1
+          ${scope ? "and group_lead_id = $2 and deleted_at is null and status <> 'deleted'" : ''}
+        limit 1`,
+      scope ? [userId, scope.leadId] : [userId],
     );
     const user = users[0];
     if (!user)
       throw new NotFoundException({ code: 'USER_NOT_FOUND', message: 'Không tìm thấy người dùng' });
-    const [subscriptions, payments, accounts, loginHistory] = await Promise.all([
+    const [subscriptions, payments, accounts, loginHistory, insights] = await Promise.all([
       this.database.query<SubscriptionRow>(
         `select s.id, s.status, s.current_period_start, s.current_period_end,
                 s.cancelled_at, s.cancelled_by_user_id, s.cancel_reason,
@@ -56,15 +123,17 @@ export class AdminUsersService {
          from user_login_history where user_id = $1 order by login_at desc limit 20`,
         [userId],
       ),
+      this.insights(userId),
     ]);
     const account = accounts[0];
-    const recentOrders = account
-      ? await this.database.query<OrderRow>(
-          `select id, symbol, side, status, quantity, limit_price_vnd as price_vnd, created_at
+    const recentOrders =
+      account && !scope
+        ? await this.database.query<OrderRow>(
+            `select id, symbol, side, status, quantity, limit_price_vnd as price_vnd, created_at
            from virtual_orders where account_id = $1 order by created_at desc limit 10`,
-          [account.id],
-        )
-      : [];
+            [account.id],
+          )
+        : [];
     const history = subscriptions.map(subscriptionResponse);
     const now = Date.now();
     const currentIndex = subscriptions.findIndex(
@@ -73,18 +142,63 @@ export class AdminUsersService {
         new Date(subscription.current_period_end).getTime() > now,
     );
     const current = currentIndex >= 0 ? history[currentIndex] : undefined;
-    return {
+    const base = {
       user,
       subscription: current ?? null,
       subscription_history: history,
       payment_history: payments.map((row) => ({ ...row, amount_vnd: Number(row.amount_vnd) })),
       trial_used: subscriptions.some((row) => row.plan_code === 'TRIAL_7D'),
+    };
+    if (scope) return { ...base, login_history: loginHistory, ...insights };
+    return {
+      ...base,
       vt_account: account ? moneyAccount(account) : null,
       vt_recent_orders: recentOrders.map((row) => ({
         ...row,
         price_vnd: nullableNumber(row.price_vnd),
       })),
       login_history: loginHistory,
+      ...insights,
+    };
+  }
+
+  /** Group, referral offer, Demo Trading / Bot results (percent only) and Academy progress. */
+  async insights(userId: string): Promise<UserInsights> {
+    const [groups, offers, performance, academy] = await Promise.all([
+      this.database.query<UserGroupView>(
+        `select u.group_lead_id as lead_user_id, l.username as lead_username,
+                l.full_name as lead_full_name, coalesce(p.status, 'revoked') as lead_status,
+                l.username as code, u.group_join_via as join_via, u.group_joined_at as joined_at
+           from users u
+           join users l on l.id = u.group_lead_id
+           left join team_lead_profiles p on p.user_id = u.group_lead_id
+          where u.id = $1`,
+        [userId],
+      ),
+      this.database.query<ReferralOfferView>(
+        `select g.id as grant_id, pol.lead_user_id,
+                case when g.ends_at >= $2::timestamptz then 'lifetime' else 'days' end as offer_type,
+                case when g.ends_at >= $2::timestamptz then null else g.duration_days end as offer_days,
+                g.status, g.starts_at, g.ends_at, g.ends_at >= $2::timestamptz as lifetime,
+                (g.status = 'active' and g.starts_at <= now() and now() < g.ends_at) as active
+           from billing_entitlement_grants g
+           left join team_lead_policies pol on pol.id = g.team_lead_policy_id
+          where g.user_id = $1 and g.kind = 'referral_offer'
+          order by g.created_at desc, g.id desc
+          limit 1`,
+        [userId, LIFETIME_THRESHOLD],
+      ),
+      memberPerformance(this.database, [userId]),
+      this.academy.detail(userId),
+    ]);
+    const result = performance.get(userId);
+    if (!result) throw new Error('member performance lookup returned no entry');
+    return {
+      group: groups[0] ?? null,
+      referral_offer: offers[0] ?? null,
+      demo_trading: result.demo_trading,
+      bot: result.bot,
+      academy,
     };
   }
 
@@ -145,7 +259,7 @@ export class AdminUsersService {
       });
     }
     const rows = await this.database.query<ExportRow>(
-      `select id, email, full_name, phone_e164, role, status, is_email_verified,
+      `select id, email, username, full_name, phone_e164, role, status, is_email_verified,
               last_login_at, created_at from users ${where} order by created_at desc`,
       params,
     );
@@ -159,6 +273,7 @@ export class AdminUsersService {
     const header = [
       'id',
       'email',
+      'username',
       'full_name',
       'phone_e164',
       'role',
@@ -178,6 +293,7 @@ export class AdminUsersService {
 type AdminUserRow = {
   id: string;
   email: string;
+  username: string;
   full_name: string;
   phone_number: string | null;
   role: string;
@@ -243,6 +359,7 @@ type LoginRow = {
 type ExportRow = {
   id: string;
   email: string;
+  username: string;
   full_name: string;
   phone_e164: string | null;
   role: string;
@@ -297,7 +414,8 @@ function exportFilter(query: UserExportQuery): { where: string; params: unknown[
   };
   if (query.role) add('role = ?', query.role);
   if (query.status) add('status = ?', query.status);
-  if (query.search) add('(email ilike ? or full_name ilike ?)', `%${query.search}%`);
+  if (query.search)
+    add('(email ilike ? or username ilike ? or full_name ilike ?)', `%${query.search}%`);
   if (query.last_login_from) add('last_login_at >= ?', query.last_login_from);
   if (query.last_login_to) add('last_login_at < ?', query.last_login_to);
   return { where: conditions.length ? `where ${conditions.join(' and ')}` : '', params };

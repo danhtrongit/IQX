@@ -37,10 +37,13 @@ export interface OperationMap {
   "GET /api/v2/admin/metrics/revenue": { request: T.AdminMetricsControllerRevenue1Data; response: T.AdminMetricsControllerRevenue1Responses[keyof T.AdminMetricsControllerRevenue1Responses] }
   "GET /api/v2/admin/payments": { request: T.AdminListPaymentsGetApiV2AdminPaymentsData; response: T.AdminListPaymentsGetApiV2AdminPaymentsResponses[keyof T.AdminListPaymentsGetApiV2AdminPaymentsResponses] }
   "GET /api/v2/admin/payments/{order_id}": { request: T.AdminGetPaymentGetApiV2AdminPaymentsOrderIdData; response: T.AdminGetPaymentGetApiV2AdminPaymentsOrderIdResponses[keyof T.AdminGetPaymentGetApiV2AdminPaymentsOrderIdResponses] }
-  "GET /api/v2/admin/referrals/{userId}": { request: T.AdminReferralsControllerStatus1Data; response: T.AdminReferralsControllerStatus1Responses[keyof T.AdminReferralsControllerStatus1Responses] }
   "GET /api/v2/admin/subscriptions": { request: T.AdminListSubscriptionsGetApiV2AdminSubscriptionsData; response: T.AdminListSubscriptionsGetApiV2AdminSubscriptionsResponses[keyof T.AdminListSubscriptionsGetApiV2AdminSubscriptionsResponses] }
   "GET /api/v2/admin/subscriptions/{sub_id}": { request: T.AdminGetSubscriptionGetApiV2AdminSubscriptionsSubIdData; response: T.AdminGetSubscriptionGetApiV2AdminSubscriptionsSubIdResponses[keyof T.AdminGetSubscriptionGetApiV2AdminSubscriptionsSubIdResponses] }
   "GET /api/v2/admin/system/status": { request: T.AdminSystemControllerStatus1Data; response: T.AdminSystemControllerStatus1Responses[keyof T.AdminSystemControllerStatus1Responses] }
+  "GET /api/v2/admin/team-leads": { request: T.AdminTeamLeadsControllerList1Data; response: T.AdminTeamLeadsControllerList1Responses[keyof T.AdminTeamLeadsControllerList1Responses] }
+  "GET /api/v2/admin/team-leads/{leadId}": { request: T.AdminTeamLeadsControllerDetail1Data; response: T.AdminTeamLeadsControllerDetail1Responses[keyof T.AdminTeamLeadsControllerDetail1Responses] }
+  "GET /api/v2/admin/team-leads/{leadId}/members": { request: T.AdminTeamLeadsControllerMembers1Data; response: T.AdminTeamLeadsControllerMembers1Responses[keyof T.AdminTeamLeadsControllerMembers1Responses] }
+  "GET /api/v2/admin/team-leads/lookup": { request: T.AdminTeamLeadsControllerLookup1Data; response: T.AdminTeamLeadsControllerLookup1Responses[keyof T.AdminTeamLeadsControllerLookup1Responses] }
   "GET /api/v2/admin/users/{user_id}/subscriptions/history": { request: T.AdminGetSubscriptionHistoryGetApiV2AdminUsersUserIdSubscriptionsHistoryData; response: T.AdminGetSubscriptionHistoryGetApiV2AdminUsersUserIdSubscriptionsHistoryResponses[keyof T.AdminGetSubscriptionHistoryGetApiV2AdminUsersUserIdSubscriptionsHistoryResponses] }
   "GET /api/v2/admin/users/{userId}/360": { request: T.AdminUsersControllerGet3601Data; response: T.AdminUsersControllerGet3601Responses[keyof T.AdminUsersControllerGet3601Responses] }
   "GET /api/v2/admin/users/{userId}/login-history": { request: T.AdminUsersControllerLoginHistory1Data; response: T.AdminUsersControllerLoginHistory1Responses[keyof T.AdminUsersControllerLoginHistory1Responses] }
@@ -69,7 +72,9 @@ export interface OperationMap {
   "GET /api/v2/alerts/signals": { request: T.AlertsControllerListSignals1Data; response: T.AlertsControllerListSignals1Responses[keyof T.AlertsControllerListSignals1Responses] }
   "GET /api/v2/alerts/telegram": { request: T.AlertsControllerTelegramStatus1Data; response: T.AlertsControllerTelegramStatus1Responses[keyof T.AlertsControllerTelegramStatus1Responses] }
   "GET /api/v2/auth/me": { request: T.AuthControllerMe1Data; response: T.AuthControllerMe1Responses[keyof T.AuthControllerMe1Responses] }
+  "GET /api/v2/auth/referral-codes/{code}": { request: T.AuthControllerReferralCode1Data; response: T.AuthControllerReferralCode1Responses[keyof T.AuthControllerReferralCode1Responses] }
   "GET /api/v2/auth/reset-password": { request: T.AuthControllerResetPasswordForm1Data; response: T.AuthControllerResetPasswordForm1Responses[keyof T.AuthControllerResetPasswordForm1Responses] }
+  "GET /api/v2/auth/username-available": { request: T.AuthControllerUsernameAvailable1Data; response: T.AuthControllerUsernameAvailable1Responses[keyof T.AuthControllerUsernameAvailable1Responses] }
   "GET /api/v2/auth/verify-email": { request: T.AuthControllerVerifyEmail1Data; response: T.AuthControllerVerifyEmail1Responses[keyof T.AuthControllerVerifyEmail1Responses] }
   "GET /api/v2/backtest/catalog": { request: T.QuantControllerCatalog0Data; response: T.QuantControllerCatalog0Responses[keyof T.QuantControllerCatalog0Responses] }
   "GET /api/v2/backtest/strategies": { request: T.QuantControllerList0Data; response: T.QuantControllerList0Responses[keyof T.QuantControllerList0Responses] }
@@ -238,6 +243,12 @@ export interface OperationMap {
   "GET /api/v2/strategy/screener/results/{resultId}": { request: T.ScreenerResultGetData; response: T.ScreenerResultGetResponses[keyof T.ScreenerResultGetResponses] }
   "GET /api/v2/strategy/shared-config": { request: T.StrategyConfigGetSharedConfigData; response: T.StrategyConfigGetSharedConfigResponses[keyof T.StrategyConfigGetSharedConfigResponses] }
   "GET /api/v2/strategy/shared-config/revisions": { request: T.StrategyConfigListRevisionsData; response: T.StrategyConfigListRevisionsResponses[keyof T.StrategyConfigListRevisionsResponses] }
+  "GET /api/v2/team/me": { request: T.TeamControllerMe1Data; response: T.TeamControllerMe1Responses[keyof T.TeamControllerMe1Responses] }
+  "GET /api/v2/team/metrics/overview": { request: T.TeamControllerOverview1Data; response: T.TeamControllerOverview1Responses[keyof T.TeamControllerOverview1Responses] }
+  "GET /api/v2/team/metrics/revenue": { request: T.TeamControllerRevenue1Data; response: T.TeamControllerRevenue1Responses[keyof T.TeamControllerRevenue1Responses] }
+  "GET /api/v2/team/users": { request: T.TeamControllerUsers1Data; response: T.TeamControllerUsers1Responses[keyof T.TeamControllerUsers1Responses] }
+  "GET /api/v2/team/users/{userId}": { request: T.TeamControllerUser1Data; response: T.TeamControllerUser1Responses[keyof T.TeamControllerUser1Responses] }
+  "GET /api/v2/team/users/{userId}/login-history": { request: T.TeamControllerLoginHistory1Data; response: T.TeamControllerLoginHistory1Responses[keyof T.TeamControllerLoginHistory1Responses] }
   "GET /api/v2/users": { request: T.UsersControllerList1Data; response: T.UsersControllerList1Responses[keyof T.UsersControllerList1Responses] }
   "GET /api/v2/users/{userId}": { request: T.UsersControllerGet1Data; response: T.UsersControllerGet1Responses[keyof T.UsersControllerGet1Responses] }
   "GET /api/v2/users/me": { request: T.UsersControllerMe1Data; response: T.UsersControllerMe1Responses[keyof T.UsersControllerMe1Responses] }
@@ -284,10 +295,13 @@ export interface OperationMap {
   "POST /api/v2/admin/payments/{order_id}/mark-paid": { request: T.AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidData; response: T.AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidResponses[keyof T.AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidResponses] }
   "POST /api/v2/admin/payments/{order_id}/reconcile": { request: T.AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileData; response: T.AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileResponses[keyof T.AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileResponses] }
   "POST /api/v2/admin/payments/{order_id}/refund": { request: T.AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundData; response: T.AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses[keyof T.AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses] }
-  "POST /api/v2/admin/referrals/{userId}/enroll": { request: T.AdminReferralsControllerEnroll1Data; response: T.AdminReferralsControllerEnroll1Responses[keyof T.AdminReferralsControllerEnroll1Responses] }
   "POST /api/v2/admin/subscriptions/{sub_id}/cancel": { request: T.AdminCancelSubscriptionPostApiV2AdminSubscriptionsSubIdCancelData; response: T.AdminCancelSubscriptionPostApiV2AdminSubscriptionsSubIdCancelResponses[keyof T.AdminCancelSubscriptionPostApiV2AdminSubscriptionsSubIdCancelResponses] }
   "POST /api/v2/admin/subscriptions/{sub_id}/extend": { request: T.AdminExtendSubscriptionPostApiV2AdminSubscriptionsSubIdExtendData; response: T.AdminExtendSubscriptionPostApiV2AdminSubscriptionsSubIdExtendResponses[keyof T.AdminExtendSubscriptionPostApiV2AdminSubscriptionsSubIdExtendResponses] }
   "POST /api/v2/admin/system/jobs/{jobId}/run": { request: T.AdminSystemControllerRun1Data; response: T.AdminSystemControllerRun1Responses[keyof T.AdminSystemControllerRun1Responses] }
+  "POST /api/v2/admin/team-leads": { request: T.AdminTeamLeadsControllerAppoint1Data; response: T.AdminTeamLeadsControllerAppoint1Responses[keyof T.AdminTeamLeadsControllerAppoint1Responses] }
+  "POST /api/v2/admin/team-leads/{leadId}/members": { request: T.AdminTeamLeadsControllerAddMember1Data; response: T.AdminTeamLeadsControllerAddMember1Responses[keyof T.AdminTeamLeadsControllerAddMember1Responses] }
+  "POST /api/v2/admin/team-leads/{leadId}/members/{userId}/remove": { request: T.AdminTeamLeadsControllerRemoveMember1Data; response: T.AdminTeamLeadsControllerRemoveMember1Responses[keyof T.AdminTeamLeadsControllerRemoveMember1Responses] }
+  "POST /api/v2/admin/team-leads/{leadId}/revoke": { request: T.AdminTeamLeadsControllerRevoke1Data; response: T.AdminTeamLeadsControllerRevoke1Responses[keyof T.AdminTeamLeadsControllerRevoke1Responses] }
   "POST /api/v2/admin/users/{userId}/resend-verification": { request: T.AdminUsersControllerResendVerification1Data; response: T.AdminUsersControllerResendVerification1Responses[keyof T.AdminUsersControllerResendVerification1Responses] }
   "POST /api/v2/admin/users/{userId}/reset-password": { request: T.AdminUsersControllerResetPassword1Data; response: T.AdminUsersControllerResetPassword1Responses[keyof T.AdminUsersControllerResetPassword1Responses] }
   "POST /api/v2/admin/users/bulk": { request: T.AdminUsersControllerBulk1Data; response: T.AdminUsersControllerBulk1Responses[keyof T.AdminUsersControllerBulk1Responses] }
@@ -380,8 +394,10 @@ export interface OperationMap {
   "POST /api/v2/strategy/lists/from-result": { request: T.CreateStrategySavedListFromResultData; response: T.CreateStrategySavedListFromResultResponses[keyof T.CreateStrategySavedListFromResultResponses] }
   "POST /api/v2/strategy/result-snapshots": { request: T.CreateStrategyResultSnapshotData; response: T.CreateStrategyResultSnapshotResponses[keyof T.CreateStrategyResultSnapshotResponses] }
   "POST /api/v2/strategy/screener/run": { request: T.ScreenerRunData; response: T.ScreenerRunResponses[keyof T.ScreenerRunResponses] }
+  "POST /api/v2/team/users/{userId}/remove": { request: T.TeamControllerRemove1Data; response: T.TeamControllerRemove1Responses[keyof T.TeamControllerRemove1Responses] }
   "POST /api/v2/telegram/webhook/{secret}": { request: T.TelegramControllerWebhook1Data; response: T.TelegramControllerWebhook1Responses[keyof T.TelegramControllerWebhook1Responses] }
   "POST /api/v2/users": { request: T.UsersControllerCreate1Data; response: T.UsersControllerCreate1Responses[keyof T.UsersControllerCreate1Responses] }
+  "POST /api/v2/users/me/username": { request: T.UsersControllerChangeUsername1Data; response: T.UsersControllerChangeUsername1Responses[keyof T.UsersControllerChangeUsername1Responses] }
   "POST /api/v2/virtual-trading/account/activate": { request: T.TradingControllerActivate1Data; response: T.TradingControllerActivate1Responses[keyof T.TradingControllerActivate1Responses] }
   "POST /api/v2/virtual-trading/admin/reset-all": { request: T.LegacyVirtualTradingAdminControllerResetAll1Data; response: T.LegacyVirtualTradingAdminControllerResetAll1Responses[keyof T.LegacyVirtualTradingAdminControllerResetAll1Responses] }
   "POST /api/v2/virtual-trading/admin/users/{userId}/reset": { request: T.LegacyVirtualTradingAdminControllerReset1Data; response: T.LegacyVirtualTradingAdminControllerReset1Responses[keyof T.LegacyVirtualTradingAdminControllerReset1Responses] }
@@ -392,6 +408,7 @@ export interface OperationMap {
   "POST /api/v2/workspace/ensure": { request: T.EnsureWorkspaceData; response: T.EnsureWorkspaceResponses[keyof T.EnsureWorkspaceResponses] }
   "PUT /api/v2/academy/attempts/{attemptId}/answers": { request: T.AcademySaveDraftAnswersData; response: T.AcademySaveDraftAnswersResponses[keyof T.AcademySaveDraftAnswersResponses] }
   "PUT /api/v2/admin/alerts/signals/{key}": { request: T.AdminAlertsControllerUpdate1Data; response: T.AdminAlertsControllerUpdate1Responses[keyof T.AdminAlertsControllerUpdate1Responses] }
+  "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: T.AdminTeamLeadsControllerUpdatePolicy1Data; response: T.AdminTeamLeadsControllerUpdatePolicy1Responses[keyof T.AdminTeamLeadsControllerUpdatePolicy1Responses] }
   "PUT /api/v2/alerts/rules/{ruleId}": { request: T.AlertsControllerUpdateRule1Data; response: T.AlertsControllerUpdateRule1Responses[keyof T.AlertsControllerUpdateRule1Responses] }
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: T.QuantControllerUpdate0Data; response: T.QuantControllerUpdate0Responses[keyof T.QuantControllerUpdate0Responses] }
   "PUT /api/v2/chart-drawings/{symbol}": { request: T.SaveChartDrawingV2Data; response: T.SaveChartDrawingV2Responses[keyof T.SaveChartDrawingV2Responses] }
@@ -437,10 +454,13 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/admin/metrics/revenue": { request: "AdminMetricsControllerRevenue1Data", response: "AdminMetricsControllerRevenue1Responses" },
   "GET /api/v2/admin/payments": { request: "AdminListPaymentsGetApiV2AdminPaymentsData", response: "AdminListPaymentsGetApiV2AdminPaymentsResponses" },
   "GET /api/v2/admin/payments/{order_id}": { request: "AdminGetPaymentGetApiV2AdminPaymentsOrderIdData", response: "AdminGetPaymentGetApiV2AdminPaymentsOrderIdResponses" },
-  "GET /api/v2/admin/referrals/{userId}": { request: "AdminReferralsControllerStatus1Data", response: "AdminReferralsControllerStatus1Responses" },
   "GET /api/v2/admin/subscriptions": { request: "AdminListSubscriptionsGetApiV2AdminSubscriptionsData", response: "AdminListSubscriptionsGetApiV2AdminSubscriptionsResponses" },
   "GET /api/v2/admin/subscriptions/{sub_id}": { request: "AdminGetSubscriptionGetApiV2AdminSubscriptionsSubIdData", response: "AdminGetSubscriptionGetApiV2AdminSubscriptionsSubIdResponses" },
   "GET /api/v2/admin/system/status": { request: "AdminSystemControllerStatus1Data", response: "AdminSystemControllerStatus1Responses" },
+  "GET /api/v2/admin/team-leads": { request: "AdminTeamLeadsControllerList1Data", response: "AdminTeamLeadsControllerList1Responses" },
+  "GET /api/v2/admin/team-leads/{leadId}": { request: "AdminTeamLeadsControllerDetail1Data", response: "AdminTeamLeadsControllerDetail1Responses" },
+  "GET /api/v2/admin/team-leads/{leadId}/members": { request: "AdminTeamLeadsControllerMembers1Data", response: "AdminTeamLeadsControllerMembers1Responses" },
+  "GET /api/v2/admin/team-leads/lookup": { request: "AdminTeamLeadsControllerLookup1Data", response: "AdminTeamLeadsControllerLookup1Responses" },
   "GET /api/v2/admin/users/{user_id}/subscriptions/history": { request: "AdminGetSubscriptionHistoryGetApiV2AdminUsersUserIdSubscriptionsHistoryData", response: "AdminGetSubscriptionHistoryGetApiV2AdminUsersUserIdSubscriptionsHistoryResponses" },
   "GET /api/v2/admin/users/{userId}/360": { request: "AdminUsersControllerGet3601Data", response: "AdminUsersControllerGet3601Responses" },
   "GET /api/v2/admin/users/{userId}/login-history": { request: "AdminUsersControllerLoginHistory1Data", response: "AdminUsersControllerLoginHistory1Responses" },
@@ -469,7 +489,9 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/alerts/signals": { request: "AlertsControllerListSignals1Data", response: "AlertsControllerListSignals1Responses" },
   "GET /api/v2/alerts/telegram": { request: "AlertsControllerTelegramStatus1Data", response: "AlertsControllerTelegramStatus1Responses" },
   "GET /api/v2/auth/me": { request: "AuthControllerMe1Data", response: "AuthControllerMe1Responses" },
+  "GET /api/v2/auth/referral-codes/{code}": { request: "AuthControllerReferralCode1Data", response: "AuthControllerReferralCode1Responses" },
   "GET /api/v2/auth/reset-password": { request: "AuthControllerResetPasswordForm1Data", response: "AuthControllerResetPasswordForm1Responses" },
+  "GET /api/v2/auth/username-available": { request: "AuthControllerUsernameAvailable1Data", response: "AuthControllerUsernameAvailable1Responses" },
   "GET /api/v2/auth/verify-email": { request: "AuthControllerVerifyEmail1Data", response: "AuthControllerVerifyEmail1Responses" },
   "GET /api/v2/backtest/catalog": { request: "QuantControllerCatalog0Data", response: "QuantControllerCatalog0Responses" },
   "GET /api/v2/backtest/strategies": { request: "QuantControllerList0Data", response: "QuantControllerList0Responses" },
@@ -638,6 +660,12 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/strategy/screener/results/{resultId}": { request: "ScreenerResultGetData", response: "ScreenerResultGetResponses" },
   "GET /api/v2/strategy/shared-config": { request: "StrategyConfigGetSharedConfigData", response: "StrategyConfigGetSharedConfigResponses" },
   "GET /api/v2/strategy/shared-config/revisions": { request: "StrategyConfigListRevisionsData", response: "StrategyConfigListRevisionsResponses" },
+  "GET /api/v2/team/me": { request: "TeamControllerMe1Data", response: "TeamControllerMe1Responses" },
+  "GET /api/v2/team/metrics/overview": { request: "TeamControllerOverview1Data", response: "TeamControllerOverview1Responses" },
+  "GET /api/v2/team/metrics/revenue": { request: "TeamControllerRevenue1Data", response: "TeamControllerRevenue1Responses" },
+  "GET /api/v2/team/users": { request: "TeamControllerUsers1Data", response: "TeamControllerUsers1Responses" },
+  "GET /api/v2/team/users/{userId}": { request: "TeamControllerUser1Data", response: "TeamControllerUser1Responses" },
+  "GET /api/v2/team/users/{userId}/login-history": { request: "TeamControllerLoginHistory1Data", response: "TeamControllerLoginHistory1Responses" },
   "GET /api/v2/users": { request: "UsersControllerList1Data", response: "UsersControllerList1Responses" },
   "GET /api/v2/users/{userId}": { request: "UsersControllerGet1Data", response: "UsersControllerGet1Responses" },
   "GET /api/v2/users/me": { request: "UsersControllerMe1Data", response: "UsersControllerMe1Responses" },
@@ -684,10 +712,13 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/admin/payments/{order_id}/mark-paid": { request: "AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidData", response: "AdminMarkPaymentPaidPostApiV2AdminPaymentsOrderIdMarkPaidResponses" },
   "POST /api/v2/admin/payments/{order_id}/reconcile": { request: "AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileData", response: "AdminReconcilePaymentPostApiV2AdminPaymentsOrderIdReconcileResponses" },
   "POST /api/v2/admin/payments/{order_id}/refund": { request: "AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundData", response: "AdminRefundPaymentPostApiV2AdminPaymentsOrderIdRefundResponses" },
-  "POST /api/v2/admin/referrals/{userId}/enroll": { request: "AdminReferralsControllerEnroll1Data", response: "AdminReferralsControllerEnroll1Responses" },
   "POST /api/v2/admin/subscriptions/{sub_id}/cancel": { request: "AdminCancelSubscriptionPostApiV2AdminSubscriptionsSubIdCancelData", response: "AdminCancelSubscriptionPostApiV2AdminSubscriptionsSubIdCancelResponses" },
   "POST /api/v2/admin/subscriptions/{sub_id}/extend": { request: "AdminExtendSubscriptionPostApiV2AdminSubscriptionsSubIdExtendData", response: "AdminExtendSubscriptionPostApiV2AdminSubscriptionsSubIdExtendResponses" },
   "POST /api/v2/admin/system/jobs/{jobId}/run": { request: "AdminSystemControllerRun1Data", response: "AdminSystemControllerRun1Responses" },
+  "POST /api/v2/admin/team-leads": { request: "AdminTeamLeadsControllerAppoint1Data", response: "AdminTeamLeadsControllerAppoint1Responses" },
+  "POST /api/v2/admin/team-leads/{leadId}/members": { request: "AdminTeamLeadsControllerAddMember1Data", response: "AdminTeamLeadsControllerAddMember1Responses" },
+  "POST /api/v2/admin/team-leads/{leadId}/members/{userId}/remove": { request: "AdminTeamLeadsControllerRemoveMember1Data", response: "AdminTeamLeadsControllerRemoveMember1Responses" },
+  "POST /api/v2/admin/team-leads/{leadId}/revoke": { request: "AdminTeamLeadsControllerRevoke1Data", response: "AdminTeamLeadsControllerRevoke1Responses" },
   "POST /api/v2/admin/users/{userId}/resend-verification": { request: "AdminUsersControllerResendVerification1Data", response: "AdminUsersControllerResendVerification1Responses" },
   "POST /api/v2/admin/users/{userId}/reset-password": { request: "AdminUsersControllerResetPassword1Data", response: "AdminUsersControllerResetPassword1Responses" },
   "POST /api/v2/admin/users/bulk": { request: "AdminUsersControllerBulk1Data", response: "AdminUsersControllerBulk1Responses" },
@@ -780,8 +811,10 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/strategy/lists/from-result": { request: "CreateStrategySavedListFromResultData", response: "CreateStrategySavedListFromResultResponses" },
   "POST /api/v2/strategy/result-snapshots": { request: "CreateStrategyResultSnapshotData", response: "CreateStrategyResultSnapshotResponses" },
   "POST /api/v2/strategy/screener/run": { request: "ScreenerRunData", response: "ScreenerRunResponses" },
+  "POST /api/v2/team/users/{userId}/remove": { request: "TeamControllerRemove1Data", response: "TeamControllerRemove1Responses" },
   "POST /api/v2/telegram/webhook/{secret}": { request: "TelegramControllerWebhook1Data", response: "TelegramControllerWebhook1Responses" },
   "POST /api/v2/users": { request: "UsersControllerCreate1Data", response: "UsersControllerCreate1Responses" },
+  "POST /api/v2/users/me/username": { request: "UsersControllerChangeUsername1Data", response: "UsersControllerChangeUsername1Responses" },
   "POST /api/v2/virtual-trading/account/activate": { request: "TradingControllerActivate1Data", response: "TradingControllerActivate1Responses" },
   "POST /api/v2/virtual-trading/admin/reset-all": { request: "LegacyVirtualTradingAdminControllerResetAll1Data", response: "LegacyVirtualTradingAdminControllerResetAll1Responses" },
   "POST /api/v2/virtual-trading/admin/users/{userId}/reset": { request: "LegacyVirtualTradingAdminControllerReset1Data", response: "LegacyVirtualTradingAdminControllerReset1Responses" },
@@ -792,6 +825,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/workspace/ensure": { request: "EnsureWorkspaceData", response: "EnsureWorkspaceResponses" },
   "PUT /api/v2/academy/attempts/{attemptId}/answers": { request: "AcademySaveDraftAnswersData", response: "AcademySaveDraftAnswersResponses" },
   "PUT /api/v2/admin/alerts/signals/{key}": { request: "AdminAlertsControllerUpdate1Data", response: "AdminAlertsControllerUpdate1Responses" },
+  "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: "AdminTeamLeadsControllerUpdatePolicy1Data", response: "AdminTeamLeadsControllerUpdatePolicy1Responses" },
   "PUT /api/v2/alerts/rules/{ruleId}": { request: "AlertsControllerUpdateRule1Data", response: "AlertsControllerUpdateRule1Responses" },
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: "QuantControllerUpdate0Data", response: "QuantControllerUpdate0Responses" },
   "PUT /api/v2/chart-drawings/{symbol}": { request: "SaveChartDrawingV2Data", response: "SaveChartDrawingV2Responses" },

@@ -17,6 +17,7 @@ import {
   AUTH_ROLES_KEY,
 } from '../../modules/auth/auth.decorators.js';
 import type { UserRole } from '../../modules/auth/auth.types.js';
+import { USER_INSIGHT_PROPERTIES } from '../../modules/users/member-insights.openapi.js';
 
 const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'] as const;
 type HttpMethod = (typeof HTTP_METHODS)[number];
@@ -862,12 +863,67 @@ function installComponents(document: OpenAPIObject): void {
   for (const [name, schema] of Object.entries(legacyDocument.components?.schemas ?? {})) {
     document.components.schemas[`Legacy_${name}`] ??= rewriteLegacyRefs(schema) as SchemaObject;
   }
+  extendLegacyUserSchemas(document.components.schemas);
+  extendLegacyAdminSchemas(document.components.schemas);
   document.components.schemas.LegacyApiError ??= legacyErrorSchema();
   document.components.schemas.ApiErrorV2 ??= v2ErrorSchema();
   document.components.schemas.MarketReportV2 ??= marketReportV2Schema();
   for (const [name, schema] of Object.entries(localResponseSchemas())) {
     document.components.schemas[name] ??= schema;
   }
+}
+
+/**
+ * Admin spec v1.1 fields on the frozen legacy user schemas: the `team_lead` role and the
+ * username returned by every user payload (plus the one-time change flag on the full user).
+ */
+function extendLegacyUserSchemas(schemas: Record<string, SchemaObject | ReferenceObject>): void {
+  const role = schemas.Legacy_UserRole as SchemaObject | undefined;
+  if (role?.enum && !role.enum.includes('team_lead')) {
+    role.enum = ['admin', 'team_lead', ...role.enum.filter((value) => value !== 'admin')];
+  }
+  const username: SchemaObject = {
+    type: 'string',
+    pattern: '^[a-z0-9._]{4,30}$',
+    title: 'Username',
+  };
+  const addField = (name: string, field: string, schema: SchemaObject): void => {
+    const target = schemas[name] as SchemaObject | undefined;
+    if (!target?.properties || target.properties[field]) return;
+    target.properties[field] = schema;
+    target.required = [...(target.required ?? []), field];
+  };
+  for (const name of [
+    'Legacy_UserResponse',
+    'Legacy_UserBriefResponse',
+    'Legacy_UserBriefForAdmin',
+  ])
+    addField(name, 'username', username);
+  addField('Legacy_UserResponse', 'username_change_allowed', {
+    type: 'boolean',
+    title: 'Username Change Allowed',
+  });
+}
+
+/**
+ * Admin spec v1.1 additions to frozen legacy admin schemas: the referral-offer count of the
+ * metrics overview (§3.3-3) and the group, referral offer, Demo / Bot results and Academy
+ * progress of the user 360 (§5.1.3 / §5.1.4).
+ */
+function extendLegacyAdminSchemas(schemas: Record<string, SchemaObject | ReferenceObject>): void {
+  const addFields = (name: string, fields: Record<string, SchemaObject>): void => {
+    const target = schemas[name] as SchemaObject | undefined;
+    if (!target?.properties) return;
+    for (const [field, schema] of Object.entries(fields)) {
+      if (target.properties[field]) continue;
+      target.properties[field] = structuredClone(schema);
+      target.required = [...(target.required ?? []), field];
+    }
+  };
+  addFields('Legacy_MetricsOverview', {
+    active_referral_offer_count: { type: 'integer', title: 'Active Referral Offer Count' },
+  });
+  addFields('Legacy_User360Response', USER_INSIGHT_PROPERTIES);
 }
 
 function rewriteLegacyRefs(value: unknown): unknown {

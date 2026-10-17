@@ -36,8 +36,8 @@ describe('system acceptance: BullMQ runtime worker', () => {
     userId = randomUUID();
     const planId = '30000000-0000-4000-8000-000000000001';
     await stack.query(
-      `insert into users(id,email,hashed_password,full_name,role,status)
-       values($1,$2,'system-test-hash','Runtime Worker','premium','active')`,
+      `insert into users(id,email,username,hashed_password,full_name,role,status)
+       values($1,$2,left('u' || replace($1::uuid::text,'-',''),30),'system-test-hash','Runtime Worker','premium','active')`,
       [userId, `runtime-${Date.now()}@example.test`],
     );
     await stack.query(
@@ -54,7 +54,11 @@ describe('system acceptance: BullMQ runtime worker', () => {
       QUEUE_ENABLED: 'true',
       LOG_LEVEL: 'silent',
     };
-    const expiryHandler = async (): Promise<JobOutcome> => {
+    const expiryHandler = async ({ jobId }: { jobId: string }): Promise<JobOutcome> => {
+      // The schedule below may fire once at startup. Only the manual run under test touches the
+      // fixture; otherwise both jobs race on the same row (concurrency > 1) and the manual run
+      // can find it already expired.
+      if (!jobId.startsWith('manual-')) return { status: 'skipped', reason: 'scheduled-run' };
       attempts += 1;
       // Exercise BullMQ retry without making the job a fake no-op: the handler
       // queries the fixture and only the first delivery fails before the same

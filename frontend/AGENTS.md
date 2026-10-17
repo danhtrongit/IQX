@@ -75,6 +75,7 @@ Legacy aliases redirect to the canonical route and preserve meaningful search pa
 Admin routes are nested under `/admin` and must use `AdminLayout`:
 
 - Dashboard, users, and user detail
+- Team leads and team lead detail
 - Plans, subscriptions, subscription detail
 - Payments, payment detail, and IPN logs
 - Virtual trading accounts, account detail, and configuration
@@ -82,6 +83,8 @@ Admin routes are nested under `/admin` and must use `AdminLayout`:
 - Courses and course editor
 
 Do not register an admin page outside this nested layout.
+
+`team_lead` (Trưởng nhóm) uses the same layout with a reduced scope. It may open only `/admin`, `/admin/users`, and `/admin/users/:userId`, and on the `team` scope those three pages must render their team variant backed by the `team/*` API, never the `admin/*` one. `AdminScopeRoute` (`components/layout/admin-scope-route.tsx`) picks the variant in `App.tsx`; the team pages live in `pages/admin/team/` with their own `["team", leadId, …]` query keys. `isTeamAdminPath` in `components/layout/admin-access.ts` is the single allow-list: every other `/admin/**` route redirects a team lead to `/admin`. A new admin route is admin-only unless it is added to that allow-list on purpose.
 
 ## 4. Routing and code splitting
 
@@ -126,8 +129,9 @@ Use optimistic updates only when the domain can safely reconcile them. Do not us
 - Registration receives the backend trial behavior. Do not fake trial entitlement on the client.
 - Client premium checks control presentation only. Backend guards remain authoritative.
 - Free journey levels remain usable when their legacy contract is free. Premium gates apply only to the premium analysis feature itself.
-- `AdminLayout` checks `user.role === "admin"` for navigation safety.
-- Every admin endpoint must still reject non-admin callers. Never treat the layout gate as security.
+- `AdminLayout` uses `getAdminAccess` for navigation safety: `admin` gets the `admin` scope, `team_lead` gets the `team` scope (Tổng quan and Người dùng of the own group plus the referral code card), every other role is forbidden.
+- Every `admin/*` endpoint must still reject non-admin callers, and every `team/*` endpoint scopes to the caller's own group on the server. Never treat the layout gate or the team route guard as security.
+- `team_lead` is listable but never assignable through role edits or bulk `set_role`; it is set only by Bổ nhiệm and removed only by Thôi bổ nhiệm on `/admin/team-leads`.
 
 ## 7. Design system
 
@@ -136,17 +140,26 @@ Follow `DESIGN.md`.
 - Body and UI: Be Vietnam Pro.
 - Headings: Space Grotesk Variable.
 - Dark is the default trading theme; light must work.
-- Brain Wave visual identity: Built on the Electric Cyan (`#00D4FF`) → Cobalt/Royal Blue (`#2563EB`) → Vibrant Violet/Magenta (`#7C3AED`–`#D946EF`) spectrum, representing market wave dynamics and multi-layer neural AI intelligence.
+- Brain Wave visual identity: every brand color is sampled from `public/brand/logo-mark.png`. Spectrum left to right: Electric Cyan `#00D2FC` → Azure `#0090F6` → Electric Violet `#7800FC` → Magenta `#E319FB` (highlight `#F66CFC`), white neural node with violet ring and orchid highlight `#D85AFC`. Token values per theme are in `DESIGN.md` section 2.1. Do not reintroduce cobalt `#2563EB`, Tailwind violet/fuchsia defaults, or gold as brand colors.
+- Color roles:
+  - `primary` = Azure: main action, active navigation, links, focus, main chart series.
+  - `accent` = Electric Violet: AI actions, AI badges, AI chart overlays only.
+  - Warnings, pending, alerts, anomalies: amber `status-warning` (`text-status-warning`, `bg-status-warning/10`). Coins, stars, rewards: `text-amber-700 dark:text-chart-2`. Never violet.
+  - `brand-cyan`, `brand-magenta`: inside the brand gradient, brand marks, and categorical chart series only.
+  - In dark mode `primary-foreground` and `accent-foreground` are navy. A `*-foreground` token is valid only on its own fill; on a bordered or transparent chip use `text-accent` or `text-primary`.
 - Dual-zone rules:
-  - Controlled brand gradients (`bg-brand-gradient`, `text-brand-gradient`) and subtle ambient glow (`shadow-brand-glow`, `border-brand-glow`) are strictly permitted on brand marks (Header, Mobile Menu, Auth, Admin), hero/editorial narrative surfaces (`/`), AI intelligence triggers/badges, and primary CTAs.
-  - Dense analytical workspaces, financial tables, order panels, and price boards (`/bang-gia`) remain completely flat, crisp, and distraction-free (zero glassmorphism, background noise, or heavy drop shadows).
-- Vietnamese stock market semantic tokens (`--price-up`, `--price-down`, `--price-ref`, `--price-ceiling`, `--price-floor`) are immutable and strictly decoupled from brand accent colors. In dark mode, `--price-ref` is strictly yellow/amber (`#ffd60a`), never linked to `var(--accent)`.
+  - Zone A: brand gradients (`bg-brand-gradient`, `text-brand-gradient`, `bg-brand-gradient-strong`) and subtle ambient glow (`shadow-brand-glow`, `border-brand-glow`) are permitted on brand marks (Header, Mobile Menu, Favicon, Auth, Admin), hero/editorial narrative surfaces (`/`), AI section mastheads and eyebrows (gradient text or 2 to 3px rule only; AI buttons and badges use solid `accent`), and the single premium or upgrade CTA of a surface. Buttons never glow.
+  - Zone B: dense analytical workspaces, financial tables, order panels, charts, and price boards (`/bang-gia`) remain completely flat, crisp, and distraction-free (zero glassmorphism, glow, background noise, or heavy drop shadows). Brand color enters only as solid `primary`, `accent`, or `chart-*` tokens.
+- Buttons and badges (`DESIGN.md` section 2.3): `default` azure for the main action, `accent` violet for AI actions, `brand` strong gradient for premium/upgrade/hero CTA (max one per screen, never in Zone B toolbars), `outline`/`secondary`/`ghost` for the rest, `destructive` with confirmation. Buy and sell use `price-up`/`price-down` fills, never brand colors. The `gold` variant is retired.
+- Menus, dropdowns, menubars, and selects highlight with `bg-muted text-foreground`. Never keep shadcn's `focus:bg-accent`.
+- Charts (`DESIGN.md` section 2.5): `chart-1` azure main, `chart-2` amber threshold/warning, `chart-3`/`chart-4` up/down, `chart-5` neutral slate for median and grid lines, `chart-6`/`chart-7`/`chart-8` cyan/violet/magenta categorical. `chart-2` stays amber and `chart-5` stays neutral because `chart-tokens.ts`, peer bars, and scorecards depend on those meanings. Chart titles use `font-heading text-sm font-bold text-foreground` with a 3 × 16px `bg-primary` marker (`bg-accent` for AI charts); axes `muted-foreground`, grid `border`. Follow `ChartCard`.
+- Vietnamese stock market semantic tokens (`--price-up`, `--price-down`, `--price-ref`, `--price-ceiling`, `--price-floor`) are immutable and strictly decoupled from brand accent colors. In dark mode, `--price-ref` is strictly yellow/amber (`#ffd60a`), never linked to `var(--accent)`. Because brand cyan is close to floor and violet/magenta are close to ceiling, never color a price, change, volume, percentage, or ticker with `accent`, `brand-*`, or `chart-6` to `chart-8`. Directionless figures use `foreground`; `text-primary` is reserved for links and selected state, not numbers.
 - Use semantic token classes backed by `src/index.css`. No hardcoded theme hex in JSX.
 - Use `tabular-nums` for price, volume, quantity, and money.
 - Use market semantic colors only for actual market meaning.
 - Use Lucide React for interface icons; use official Brain Wave emblem (`BrainWaveLogo` or brand SVG) for brand artwork (retiring legacy Lucide `<Triangle />`).
 - No emoji or Unicode glyph used as an icon.
-- No arbitrary gradients, neon glows, glassmorphism, continuous decorative motion, or nested card clutter outside authorized Zone A brand/AI focal points.
+- No arbitrary gradients, neon glows, glassmorphism, continuous decorative motion, or nested card clutter outside authorized Zone A brand/AI focal points. Gradients come only from the `--brand-gradient*` tokens.
 - Product pages are dense and functional. The introduction route may use editorial spacing without becoming a generic landing template.
 
 ## 8. shadcn components

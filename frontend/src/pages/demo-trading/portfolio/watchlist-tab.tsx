@@ -242,7 +242,7 @@ function WatchlistRow({
         disabled={remove.isPending}
         onClick={() => void handleRemove()}
       >
-        <Star className="fill-accent text-accent" />
+        <Star className="fill-chart-2 text-chart-2" />
       </Button>
 
       <button
