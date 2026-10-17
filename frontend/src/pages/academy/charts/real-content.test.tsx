@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { BlockRenderer } from "../blocks/block-renderer"
 import { mockReaderWidth, svgOverflows } from "../blocks/test-blocks"
 import { textWidth } from "./chart-math"
+import { annotationsOnLine, textBoxes, textOverlaps } from "./test-geometry"
 import type { CatalogResponse, LessonContent } from "../content-types"
 
 /**
@@ -116,6 +117,68 @@ describe("real content: review regressions", () => {
       for (let index = 1; index < spans.length; index += 1) expect(spans[index][0]).toBeGreaterThanOrEqual(spans[index - 1][1])
     })
   }
+
+  // Annotated price panels: no label may print over another one, over the price line or outside the drawing, at
+  // phone and desktop reader widths.
+  const annotated = [
+    ["ch01-l09", "c1l9-g3"],
+    ["ch04-l08", "c4l8-g2"],
+    ["ch04-l08", "c4l8-g4"],
+    ["ch04-l09", "c4l9-g2"],
+    ["ch04-l09", "c4l9-g3"],
+    ["ch04-l09", "c4l9-g4"],
+    ["ch05-l02", "c5l2-m2"],
+    ["ch05-l02", "c5l2-m3"],
+    ["ch05-l04", "c5l4-g3"],
+    ["ch05-l04", "c5l4-g5"],
+  ] as const
+  for (const width of [298, 358, 760]) {
+    it.each(annotated)(`%s %s keeps its labels apart and off the price line at ${width}px`, (lessonId, chartId) => {
+      const { container } = renderLesson(lessonById(lessonId), width)
+      const svgs = [...container.querySelectorAll(`[data-chart-id="${chartId}"] svg[viewBox]`)] as SVGSVGElement[]
+      expect(svgs.length).toBeGreaterThan(0)
+      for (const svg of svgs) {
+        expect(textOverlaps(svg)).toEqual([])
+        expect(annotationsOnLine(svg, "stroke-foreground")).toEqual([])
+        const viewWidth = Number((svg.getAttribute("viewBox") ?? "").split(/\s+/)[2])
+        for (const { text, box } of textBoxes(svg)) {
+          expect(box.l, text).toBeGreaterThanOrEqual(-0.5)
+          expect(box.r, text).toBeLessThanOrEqual(viewWidth + 0.5)
+        }
+      }
+    })
+  }
+
+  it("C4L8 Bollinger panels draw the upper and lower band as lines", () => {
+    const { container } = renderLesson(lessonById("ch04-l08"), 760)
+    for (const id of ["c4l8-g1", "c4l8-g2", "c4l8-g4"]) {
+      const svg = chartSvg(container, id)
+      for (const edge of ["upper", "lower"]) {
+        const path = svg.querySelector(`path[data-band-edge="${edge}"]`)
+        expect(path, `${id} ${edge}`).not.toBeNull()
+        expect(path?.getAttribute("d")?.length ?? 0).toBeGreaterThan(100)
+      }
+    }
+  })
+
+  it("C5L2 ratio panels close the plot just above the year axis", () => {
+    const { container } = renderLesson(lessonById("ch05-l02"), 760)
+    for (const id of ["c5l2-m2", "c5l2-m3"]) {
+      const svg = chartSvg(container, id)
+      const height = Number((svg.getAttribute("viewBox") ?? "").split(/\s+/)[3])
+      const lines = [...svg.querySelectorAll("line")].filter((line) => line.getAttribute("y1") === line.getAttribute("y2"))
+      const lowest = Math.max(...lines.map((line) => Number(line.getAttribute("y1"))))
+      // The year labels sit at height - 5: the plot's bottom edge is drawn no more than 22px above them.
+      expect(height - 5 - lowest).toBeLessThanOrEqual(22)
+    }
+  })
+
+  it("C4L1 full candle chart grows with the reader width instead of staying a 96px strip", () => {
+    const { container } = renderLesson(lessonById("ch04-l01"), 760)
+    const svg = chartSvg(container, "c4l1-g4")
+    const [, , w, h] = (svg.getAttribute("viewBox") ?? "").split(/\s+/).map(Number)
+    expect(h / w).toBeGreaterThan(0.3)
+  })
 
   it("a chart_grid of axis charts takes one column on a phone; thumbnail grids keep two", () => {
     const axisGrid = renderLesson(lessonById("ch05-l02"), 358)
