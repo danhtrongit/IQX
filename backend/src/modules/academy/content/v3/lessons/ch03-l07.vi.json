@@ -1,0 +1,426 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-l07",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Video ngắn là cách nhanh nhất để người lạ biết đến bạn. Bạn không cần đẹp, không cần thiết bị đắt tiền. Bạn cần một chủ đề rõ ràng, một câu mở hay và sự kiên trì đăng đều.",
+  "lesson_key": "concept:thuong_hieu_tiktok_reels",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Đừng làm “chứng khoán cho tất cả mọi người”. Hãy chọn một ngách nhỏ mà bạn hiểu rõ:",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Ngách"
+            },
+            {
+              "label": "Người xem chính"
+            },
+            {
+              "label": "Tên kênh gợi ý"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Chứng khoán cho người mới",
+                "Người chưa biết gì",
+                "“Lan · Học đầu tư từ số 0”"
+              ]
+            },
+            {
+              "cells": [
+                "Đầu tư cho dân văn phòng",
+                "Nhân viên văn phòng bận rộn",
+                "“Lan · Đầu tư 5 phút mỗi ngày”"
+              ]
+            },
+            {
+              "cells": [
+                "Tài chính cho mẹ bỉm",
+                "Phụ nữ quản lý tiền gia đình",
+                "“Lan · Mẹ bỉm học đầu tư”"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "items": [
+            {
+              "term": "Ảnh đại diện",
+              "text": "Giống Facebook và Zalo để người xem nhận ra bạn ở mọi nơi."
+            },
+            {
+              "term": "Phần giới thiệu ngắn",
+              "text": "Ví dụ: “Học đầu tư từ con số 0 · SACO tại DNSE · Thông tin tham khảo”."
+            },
+            {
+              "term": "Liên kết",
+              "text": "Nếu được, dẫn về nhóm Zalo cộng đồng để người xem nhận bản tin."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s1",
+      "title": "Chọn ngách và dựng hồ sơ"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Định dạng"
+            },
+            {
+              "label": "Cách làm"
+            },
+            {
+              "label": "Hợp với"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Nói trước camera",
+                "Cầm điện thoại, nói như giải thích cho một người bạn",
+                "Kiến thức, trả lời câu hỏi"
+              ]
+            },
+            {
+              "cells": [
+                "Chữ trên màn hình",
+                "Quay cảnh tay viết, uống cà phê, kèm chữ lớn và giọng đọc",
+                "Người ngại lộ mặt lúc đầu"
+              ]
+            },
+            {
+              "cells": [
+                "Phông xanh tin tức",
+                "Đứng trước ảnh chụp một bài báo, giải thích tin đó nghĩa là gì",
+                "Bản tin, sự kiện"
+              ]
+            },
+            {
+              "cells": [
+                "Series theo ngày",
+                "“Ngày 15 học chứng khoán”, mỗi ngày một bài học",
+                "Xây thói quen xem cho người theo dõi"
+              ]
+            },
+            {
+              "cells": [
+                "Trả lời bình luận",
+                "Chọn một bình luận hay, quay video trả lời",
+                "Kéo tương tác, ý tưởng không bao giờ hết"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s2",
+      "title": "Năm định dạng video dễ làm"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Người xem quyết định lướt qua hay ở lại chỉ trong vài giây đầu. Sáu mẫu câu mở dễ dùng:",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Mẫu câu mở"
+            },
+            {
+              "label": "Ví dụ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Sai lầm số 1…",
+                "“Sai lầm số 1 khiến người mới mất tiền chứng khoán”"
+              ]
+            },
+            {
+              "cells": [
+                "Có X tiền thì…",
+                "“Có 10 triệu thì nên bắt đầu đầu tư thế nào?”"
+              ]
+            },
+            {
+              "cells": [
+                "Đừng… khi chưa biết…",
+                "“Đừng mua cổ phiếu khi chưa biết 3 điều này”"
+              ]
+            },
+            {
+              "cells": [
+                "Giải thích trong X giây",
+                "“Cổ tức là gì? Giải thích trong 30 giây”"
+              ]
+            },
+            {
+              "cells": [
+                "Bạn hỏi, mình trả lời",
+                "“Bạn hỏi: chứng khoán có phải cờ bạc không?”"
+              ]
+            },
+            {
+              "cells": [
+                "Một ngày của…",
+                "“Một ngày làm SACO bắt đầu từ 7 giờ sáng”"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s3",
+      "title": "Ba giây đầu quyết định tất cả"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Giây"
+            },
+            {
+              "label": "Hình ảnh"
+            },
+            {
+              "label": "Lời nói"
+            },
+            {
+              "label": "Chữ trên màn hình"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Cận mặt",
+                "“3 sai lầm này làm người mới mất tiền nhanh nhất.”",
+                "3 SAI LẦM CỦA NGƯỜI MỚI"
+              ],
+              "group": {
+                "label": "0-3",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Nói trước camera",
+                "“Số 1: mua theo tin đồn trong nhóm chat. Tin càng hấp dẫn, càng cần cẩn thận.”",
+                "1. Mua theo tin đồn"
+              ],
+              "group": {
+                "label": "3-15",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Đổi góc quay",
+                "“Số 2: dồn hết tiền vào một mã. Mã đó giảm là cả tài khoản giảm theo.”",
+                "2. Dồn hết vào 1 mã"
+              ],
+              "group": {
+                "label": "15-27",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Cận mặt",
+                "“Số 3: mua mà chưa biết mình sẽ bán ở đâu nếu giá giảm.”",
+                "3. Không có điểm cắt lỗ"
+              ],
+              "group": {
+                "label": "27-39",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Cười, chỉ tay xuống",
+                "“Bạn từng mắc lỗi số mấy? Comment nhé. Theo dõi để xem phần 2.”",
+                "Bạn mắc lỗi số mấy? · Thông tin tham khảo"
+              ],
+              "group": {
+                "label": "39-45",
+                "span": 1
+              }
+            }
+          ],
+          "type": "table",
+          "variant": "grouped"
+        }
+      ],
+      "id": "s4",
+      "title": "Kịch bản mẫu một video 45 giây"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "bullets": [
+                "Cổ phiếu là gì",
+                "T+2 là gì",
+                "Giá trần, giá sàn",
+                "Vì sao mua tối thiểu 100 cổ phiếu",
+                "Cổ tức là gì"
+              ],
+              "title": "Chứng khoán cho người mới",
+              "tone": "highlight"
+            },
+            {
+              "bullets": [
+                "Mua theo tin đồn",
+                "FOMO, mua đuổi",
+                "Vay margin quá tay",
+                "Gồng lỗ",
+                "Mua không có kế hoạch"
+              ],
+              "title": "Sai lầm và bài học"
+            },
+            {
+              "bullets": [
+                "Một ngày làm SACO",
+                "Chuẩn bị bản tin lúc 7 giờ",
+                "Buổi cà phê chia sẻ",
+                "Trả lời câu hỏi bình luận",
+                "Điều mình học được tuần này"
+              ],
+              "title": "Hậu trường SACO"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "15 ý tưởng video cho tháng đầu"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Quay theo lô",
+              "text": "Chủ nhật dành 2 giờ quay 7 video cho cả tuần. Thay áo giữa các video để trông như quay nhiều ngày."
+            },
+            {
+              "term": "Kỹ thuật tối thiểu",
+              "text": "Quay dọc, đứng gần cửa sổ để có ánh sáng tự nhiên, dùng mic cài áo giá rẻ cho tiếng rõ, luôn có phụ đề."
+            },
+            {
+              "term": "Độ dài",
+              "text": "30-60 giây là đủ cho một ý. Một video, một ý."
+            },
+            {
+              "term": "Đăng lại",
+              "text": "Cùng một video có thể đăng lên Facebook Reels và nhật ký Zalo để tiếp cận thêm người quen."
+            },
+            {
+              "term": "Đọc số liệu mỗi tuần",
+              "text": "Xem video nào được xem hết nhiều, được bình luận, chia sẻ nhiều. Làm tiếp chủ đề đó. Bỏ chủ đề không ai xem."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Quay, đăng, đọc số liệu"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 1,
+          "debrief": "<b>Cách tốt nhất: biến câu hỏi thành video mới.</b> Cho mã công khai biến bạn thành người “phím hàng”, và chỉ cần một mã giảm là mất uy tín với tất cả người xem. Xóa bình luận làm mất tương tác. Một video giải thích vì sao không cho mã, kèm cách tự kiểm tra, vừa đúng nguyên tắc, vừa thu hút được người xem nghiêm túc.",
+          "options": [
+            "Trả lời từng bình luận một mã đang tăng",
+            "Làm một video trả lời: “Vì sao mình không cho mã trên mạng, và cách bạn tự kiểm tra một cổ phiếu”, mời vào nhóm Zalo để nhận bản tin",
+            "Xóa hết các bình luận đó"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Video về cổ tức của bạn có 30 bình luận, trong đó 10 bình luận là: “Mã nào ngon cho em xin”."
+          ],
+          "title": "“Mã nào ngon cho em xin”",
+          "type": "scenario"
+        },
+        {
+          "id": "tt1",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Dùng 6 mẫu câu mở ở trên, viết 5 câu mở cho ngách bạn đã chọn."
+          ],
+          "title": "Bài tự làm: viết 5 câu mở",
+          "type": "workpad"
+        },
+        {
+          "id": "tt2",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Viết kịch bản 30-45 giây theo bảng: giây, hình ảnh, lời nói, chữ trên màn hình. Câu kết luôn có “Thông tin tham khảo”."
+          ],
+          "title": "Bài tự làm: kịch bản video đầu tiên",
+          "type": "workpad"
+        },
+        {
+          "id": "tt1a",
+          "items": [
+            {
+              "id": "0",
+              "text": "Chọn ngách và đổi tên kênh"
+            },
+            {
+              "id": "1",
+              "text": "Viết phần giới thiệu ngắn, gắn liên kết nhóm Zalo nếu được"
+            },
+            {
+              "id": "2",
+              "text": "Quay 7 video vào Chủ nhật này"
+            },
+            {
+              "id": "3",
+              "text": "Đăng 1 video mỗi ngày trong 7 ngày"
+            },
+            {
+              "id": "4",
+              "text": "Cuối tuần xem số liệu, chọn 1 chủ đề làm tiếp"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s7",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Chọn <b>một ngách nhỏ</b> bạn hiểu rõ, hồ sơ giống các kênh khác.",
+    "Dùng <b>5 định dạng dễ làm</b>, nhất là trả lời bình luận và series theo ngày.",
+    "<b>3 giây đầu</b> quyết định người xem có ở lại không.",
+    "<b>Quay theo lô</b>, đăng đều, đọc số liệu mỗi tuần, không cho mã công khai."
+  ],
+  "title": "Thương hiệu trên TikTok và Reels"
+}

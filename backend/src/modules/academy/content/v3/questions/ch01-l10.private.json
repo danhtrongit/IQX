@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-l10",
+  "questions": [
+    {
+      "correct_option_id": "d3f5ba1895",
+      "id": "ch01-l10-q01",
+      "options": [
+        {
+          "id": "d3f5ba1895",
+          "text": "Rủi ro riêng doanh nghiệp"
+        },
+        {
+          "id": "0786611c22",
+          "text": "Rủi ro thị trường"
+        },
+        {
+          "id": "a89e46b179",
+          "text": "Mọi loại rủi ro"
+        }
+      ],
+      "prompt": "Đa dạng hóa danh mục giúp giảm loại rủi ro nào?"
+    },
+    {
+      "correct_option_id": "de25e2f810",
+      "id": "ch01-l10-q02",
+      "options": [
+        {
+          "id": "de25e2f810",
+          "text": "100%"
+        },
+        {
+          "id": "58c7c82275",
+          "text": "50%"
+        },
+        {
+          "id": "bf8bb73a67",
+          "text": "25%"
+        }
+      ],
+      "prompt": "Lỗ 50% cần lãi bao nhiêu để hòa vốn?"
+    },
+    {
+      "correct_option_id": "9bf58f41c4",
+      "id": "ch01-l10-q03",
+      "options": [
+        {
+          "id": "9bf58f41c4",
+          "text": "Trước khi mua"
+        },
+        {
+          "id": "cee46e65c4",
+          "text": "Sau khi giá đã giảm"
+        },
+        {
+          "id": "6365c24154",
+          "text": "Khi bị bán giải chấp"
+        }
+      ],
+      "prompt": "Mức cắt lỗ nên được xác định khi nào?"
+    }
+  ],
+  "salt": "5640c4fc434eef8989dc33dbf4ae288a370db02b44184902445546555d24cf1e"
+}

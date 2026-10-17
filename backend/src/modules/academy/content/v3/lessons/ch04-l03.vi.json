@@ -1,0 +1,705 @@
+{
+  "chapter": 4,
+  "charts": {
+    "c4l3-g1": {
+      "alt": "Giá dao động giữa vùng kháng cự phía trên và vùng hỗ trợ phía dưới",
+      "domain": {
+        "x": [
+          0,
+          760
+        ],
+        "y": [
+          0,
+          236
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "label": "Kháng cự",
+          "t": "zone",
+          "tone": "neg",
+          "y": [
+            164,
+            188
+          ]
+        },
+        {
+          "label": "Hỗ trợ",
+          "t": "zone",
+          "tone": "pos",
+          "y": [
+            16,
+            40
+          ]
+        },
+        {
+          "pts": [
+            [
+              30,
+              56
+            ],
+            [
+              100,
+              174
+            ],
+            [
+              180,
+              31
+            ],
+            [
+              260,
+              178
+            ],
+            [
+              340,
+              26
+            ],
+            [
+              420,
+              172
+            ],
+            [
+              500,
+              36
+            ],
+            [
+              580,
+              176
+            ],
+            [
+              660,
+              29
+            ],
+            [
+              730,
+              116
+            ]
+          ],
+          "t": "line",
+          "tone": "price",
+          "width": 3
+        },
+        {
+          "at": [
+            100,
+            174
+          ],
+          "t": "point",
+          "tone": "neg"
+        },
+        {
+          "at": [
+            260,
+            178
+          ],
+          "t": "point",
+          "tone": "neg"
+        },
+        {
+          "at": [
+            420,
+            172
+          ],
+          "t": "point",
+          "tone": "neg"
+        },
+        {
+          "at": [
+            580,
+            176
+          ],
+          "t": "point",
+          "tone": "neg"
+        },
+        {
+          "at": [
+            180,
+            31
+          ],
+          "t": "point",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            340,
+            26
+          ],
+          "t": "point",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            500,
+            36
+          ],
+          "t": "point",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            660,
+            29
+          ],
+          "t": "point",
+          "tone": "pos"
+        }
+      ]
+    },
+    "c4l3-g2": {
+      "alt": "Giá nhiều lần chạm vùng hỗ trợ rồi bật lên",
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "candles": {
+            "close": [
+              58,
+              44,
+              40,
+              50,
+              60,
+              48,
+              34,
+              46,
+              56,
+              68,
+              55,
+              36,
+              48,
+              62,
+              76
+            ],
+            "high": [
+              72,
+              60,
+              46,
+              52,
+              62,
+              64,
+              50,
+              48,
+              58,
+              70,
+              72,
+              57,
+              50,
+              64,
+              78
+            ],
+            "low": [
+              55,
+              40,
+              26,
+              38,
+              48,
+              46,
+              30,
+              22,
+              44,
+              54,
+              52,
+              33,
+              25,
+              46,
+              60
+            ],
+            "open": [
+              70,
+              58,
+              44,
+              40,
+              50,
+              60,
+              48,
+              34,
+              46,
+              56,
+              68,
+              55,
+              36,
+              48,
+              62
+            ]
+          },
+          "series": [],
+          "title": "",
+          "zones": [
+            {
+              "from": 24,
+              "label": "Vùng hỗ trợ",
+              "to": 32,
+              "tone": "pos"
+            }
+          ]
+        }
+      ],
+      "x": {
+        "end": 14,
+        "start": 0
+      }
+    },
+    "c4l3-g3": {
+      "alt": "Kháng cự bị phá vỡ trở thành hỗ trợ khi giá quay lại kiểm tra",
+      "domain": {
+        "x": [
+          0,
+          760
+        ],
+        "y": [
+          0,
+          250
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "t": "zone",
+          "tone": "warn",
+          "y": [
+            110,
+            132
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            150,
+            140
+          ],
+          "t": "text",
+          "text": "Kháng cự",
+          "tone": "neg"
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            560,
+            84
+          ],
+          "t": "text",
+          "text": "Trở thành hỗ trợ",
+          "tone": "pos"
+        },
+        {
+          "pts": [
+            [
+              30,
+              30
+            ],
+            [
+              90,
+              122
+            ],
+            [
+              150,
+              60
+            ],
+            [
+              220,
+              124
+            ],
+            [
+              280,
+              70
+            ],
+            [
+              360,
+              190
+            ],
+            [
+              430,
+              140
+            ],
+            [
+              480,
+              122
+            ],
+            [
+              540,
+              180
+            ],
+            [
+              620,
+              210
+            ],
+            [
+              680,
+              126
+            ],
+            [
+              740,
+              220
+            ]
+          ],
+          "t": "line",
+          "tone": "price",
+          "width": 3
+        },
+        {
+          "at": [
+            315,
+            121
+          ],
+          "label": "Phá vỡ",
+          "pos": "above",
+          "shape": "ring",
+          "t": "point",
+          "tone": "p1"
+        },
+        {
+          "at": [
+            480,
+            122
+          ],
+          "t": "point",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            680,
+            126
+          ],
+          "t": "point",
+          "tone": "pos"
+        }
+      ]
+    },
+    "c4l3-g4": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "candles": {
+                  "close": [
+                    44,
+                    48,
+                    46,
+                    51,
+                    68,
+                    74,
+                    78
+                  ],
+                  "high": [
+                    46,
+                    50,
+                    54,
+                    52,
+                    70,
+                    76,
+                    80
+                  ],
+                  "low": [
+                    38,
+                    42,
+                    44,
+                    44,
+                    50,
+                    64,
+                    70
+                  ],
+                  "open": [
+                    40,
+                    44,
+                    48,
+                    46,
+                    51,
+                    68,
+                    74
+                  ]
+                },
+                "series": [],
+                "title": "",
+                "zones": [
+                  {
+                    "from": 48,
+                    "to": 56,
+                    "tone": "neg"
+                  }
+                ]
+              },
+              {
+                "bars": {
+                  "colors": [
+                    "pos",
+                    "pos",
+                    "neg",
+                    "pos",
+                    "pos",
+                    "pos",
+                    "pos"
+                  ],
+                  "name": "Khối lượng",
+                  "values": [
+                    20,
+                    22,
+                    18,
+                    24,
+                    70,
+                    55,
+                    48
+                  ]
+                },
+                "nonnegative": true,
+                "series": [],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 6,
+              "start": 0
+            }
+          },
+          "title": "Phá vỡ thật",
+          "tone": "pos"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "candles": {
+                  "close": [
+                    44,
+                    48,
+                    46,
+                    51,
+                    49,
+                    42,
+                    36
+                  ],
+                  "high": [
+                    46,
+                    50,
+                    54,
+                    52,
+                    64,
+                    50,
+                    44
+                  ],
+                  "low": [
+                    38,
+                    42,
+                    44,
+                    44,
+                    47,
+                    40,
+                    34
+                  ],
+                  "open": [
+                    40,
+                    44,
+                    48,
+                    46,
+                    51,
+                    49,
+                    42
+                  ]
+                },
+                "series": [],
+                "title": "",
+                "zones": [
+                  {
+                    "from": 48,
+                    "to": 56,
+                    "tone": "neg"
+                  }
+                ]
+              },
+              {
+                "bars": {
+                  "colors": [
+                    "pos",
+                    "pos",
+                    "neg",
+                    "pos",
+                    "neg",
+                    "neg",
+                    "neg"
+                  ],
+                  "name": "Khối lượng",
+                  "values": [
+                    20,
+                    22,
+                    18,
+                    24,
+                    26,
+                    30,
+                    28
+                  ]
+                },
+                "nonnegative": true,
+                "series": [],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 6,
+              "start": 0
+            }
+          },
+          "title": "Phá vỡ giả",
+          "tone": "neg"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch04-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Trên biểu đồ, giá thường bật lên ở một số vùng thấp và bị chặn lại ở một số vùng cao. Những vùng giá này gọi là hỗ trợ và kháng cự, giúp nhà đầu tư xác định nơi nên mua, nên bán và nơi đặt mức cắt lỗ.",
+  "lesson_key": "concept:ho_tro_khang_cu",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Hỗ trợ</b> là vùng giá mà lực mua đủ mạnh để ngăn giá giảm tiếp, giống như sàn nhà. <b>Kháng cự</b> là vùng giá mà lực bán đủ mạnh để ngăn giá tăng tiếp, giống như trần nhà.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l3-g1",
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "Hỗ trợ và kháng cự là gì"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Người đã bỏ lỡ cơ hội mua ở giá thấp trước đó chờ mua lại. Người thấy giá rẻ bắt đầu giải ngân.",
+              "title": "Tại vùng hỗ trợ",
+              "tone": "pos"
+            },
+            {
+              "text": "Người đã mua ở đỉnh cũ chờ giá quay về để bán hòa vốn. Người có lãi chốt lời.",
+              "title": "Tại vùng kháng cự",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao hỗ trợ và kháng cự hình thành"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Giá hiếm khi dừng đúng tại một mức cố định. Hỗ trợ và kháng cự nên được xem là <b>một vùng giá</b>, nơi giá có thể xuyên qua đôi chút bằng bóng nến rồi quay lại.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l3-g2",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s3",
+      "title": "Là vùng giá, không phải một đường"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khi giá vượt lên trên vùng kháng cự, vùng này thường <b>trở thành hỗ trợ</b> cho những lần giảm sau. Ngược lại, khi giá phá xuống dưới vùng hỗ trợ, vùng này thường <b>trở thành kháng cự</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l3-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đảo vai trò"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Đỉnh và đáy cũ",
+              "text": "Những nơi giá từng quay đầu là ứng viên hỗ trợ, kháng cự đầu tiên."
+            },
+            {
+              "term": "Vùng giao dịch nhiều",
+              "text": "Vùng giá có khối lượng giao dịch lớn, nhiều nhà đầu tư cùng có vị thế."
+            },
+            {
+              "term": "Mức giá tròn",
+              "text": "Các mốc như 50.000 đồng của cổ phiếu hay 1.200 điểm của VN-Index thu hút sự chú ý."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách xác định"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Một vùng hỗ trợ hoặc kháng cự càng mạnh khi:",
+          "type": "paragraph"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giá đã nhiều lần quay đầu tại vùng này.",
+              "title": "Chạm nhiều lần"
+            },
+            {
+              "text": "Xuất hiện trên biểu đồ tuần, tháng đáng tin hơn biểu đồ ngày.",
+              "title": "Khung thời gian lớn"
+            },
+            {
+              "text": "Giá quay đầu kèm khối lượng giao dịch cao.",
+              "title": "Khối lượng lớn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s6",
+      "title": "Độ mạnh của hỗ trợ và kháng cự"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Phá vỡ thật</b> xảy ra khi giá đóng cửa vượt rõ ràng qua vùng kháng cự, kèm khối lượng tăng mạnh. <b>Phá vỡ giả</b> là khi giá vượt lên trong phiên rồi nhanh chóng quay lại dưới vùng kháng cự.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l3-g4",
+          "type": "chart"
+        },
+        {
+          "text": "Chờ giá đóng cửa và quan sát khối lượng giúp hạn chế mua phải phá vỡ giả.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s7",
+      "title": "Phá vỡ thật và phá vỡ giả"
+    }
+  ],
+  "summary": [
+    "<b>Hỗ trợ</b> ngăn giá giảm tiếp, <b>kháng cự</b> ngăn giá tăng tiếp.",
+    "Hỗ trợ và kháng cự là <b>vùng giá</b>, không phải một mức chính xác.",
+    "Kháng cự bị phá vỡ thường <b>trở thành hỗ trợ</b> và ngược lại.",
+    "Phá vỡ thật cần <b>giá đóng cửa vượt rõ và khối lượng lớn</b>."
+  ],
+  "title": "Hỗ trợ và kháng cự"
+}

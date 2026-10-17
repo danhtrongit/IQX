@@ -1,0 +1,784 @@
+{
+  "chapter": 4,
+  "charts": {
+    "c4l9-g2": {
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "fib": {
+            "dir": "up",
+            "hi": {
+              "i": 38,
+              "v": 69.8764
+            },
+            "levels": [
+              0,
+              0.236,
+              0.382,
+              0.5,
+              0.618,
+              1
+            ],
+            "lo": {
+              "i": 0,
+              "v": 40
+            },
+            "zone": [
+              0.5,
+              0.618
+            ]
+          },
+          "series": [
+            {
+              "name": "Giá",
+              "role": "price",
+              "values": [
+                40,
+                40.35,
+                40.965,
+                42.4907,
+                43.3981,
+                44.0868,
+                44.7215,
+                45.4883,
+                46.0627,
+                47.0267,
+                48.0623,
+                48.55,
+                49.0969,
+                50.3125,
+                51.0938,
+                51.5901,
+                52.3868,
+                53.1126,
+                54.0875,
+                54.7552,
+                56.0972,
+                56.5056,
+                57.6718,
+                58.0313,
+                58.5633,
+                59.234,
+                60.0868,
+                61.1391,
+                62.2526,
+                62.5855,
+                63.9012,
+                64.6305,
+                65.451,
+                66.3087,
+                67.3895,
+                68.0172,
+                68.993,
+                69.7913,
+                69.8764,
+                68.6081,
+                67.6191,
+                66.6673,
+                65.3081,
+                64.1708,
+                63.6954,
+                62.5798,
+                61.5552,
+                60.5619,
+                59.9763,
+                58.9461,
+                57.8988,
+                56.5345,
+                55.3567,
+                54.0533,
+                52.8778,
+                54.1773,
+                54.6288,
+                55.0691,
+                56.0202,
+                56.5632,
+                56.9042,
+                57.9846,
+                59.0715,
+                59.6122,
+                60.4667,
+                61.0731,
+                61.9478,
+                61.9959,
+                62.7249,
+                63.53,
+                64.4836,
+                65.3563,
+                66.0156,
+                66.4593,
+                67.3471,
+                68.1277,
+                68.4742,
+                69.2238,
+                69.2003,
+                69.9813,
+                70.5359,
+                71.5031,
+                72.1628,
+                73.0113,
+                73.9682,
+                74.4026,
+                75.1921,
+                75.5664,
+                76.278,
+                77.0537,
+                77.6067
+              ],
+              "width": 2
+            }
+          ],
+          "title": ""
+        }
+      ],
+      "points": [
+        {
+          "i": 0,
+          "label": "Đáy",
+          "panel": 0,
+          "pos": "below",
+          "tone": "price",
+          "value": 40
+        },
+        {
+          "i": 38,
+          "label": "Đỉnh",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 69.8764
+        }
+      ],
+      "x": {
+        "end": 90,
+        "start": 0
+      }
+    },
+    "c4l9-g3": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "fib": {
+                  "dir": "up",
+                  "hi": {
+                    "i": 30,
+                    "v": 66.1096
+                  },
+                  "levels": [
+                    0,
+                    0.236,
+                    0.382,
+                    0.5,
+                    0.618,
+                    1
+                  ],
+                  "lo": {
+                    "i": 0,
+                    "v": 40
+                  },
+                  "zone": [
+                    0.5,
+                    0.618
+                  ]
+                },
+                "series": [
+                  {
+                    "name": "Giá",
+                    "role": "price",
+                    "values": [
+                      40,
+                      40.8748,
+                      41.7584,
+                      42.6882,
+                      43.5739,
+                      44.6325,
+                      45.3762,
+                      45.8608,
+                      46.8517,
+                      47.8346,
+                      48.6492,
+                      49.5106,
+                      50.6291,
+                      51.3252,
+                      52.2817,
+                      53.2013,
+                      53.7299,
+                      54.4399,
+                      55.2966,
+                      56.2421,
+                      57.1349,
+                      58.1585,
+                      58.7852,
+                      59.8605,
+                      60.8172,
+                      61.6182,
+                      62.7501,
+                      63.7221,
+                      64.6159,
+                      65.1803,
+                      66.1096,
+                      64.8453,
+                      63.5584,
+                      62.8764,
+                      62.1833,
+                      60.8423,
+                      59.5487,
+                      58.802,
+                      57.6333,
+                      56.6755,
+                      55.695,
+                      54.8751,
+                      53.4556,
+                      52.7226,
+                      51.8177,
+                      52.3963,
+                      52.8432,
+                      53.5117,
+                      54.7902,
+                      55.5977,
+                      56.4308,
+                      57.0774,
+                      57.9719,
+                      58.9908,
+                      59.4576,
+                      60.4888,
+                      60.9941,
+                      61.9355,
+                      62.9485,
+                      64.1088,
+                      64.7087,
+                      65.4443,
+                      66.1419,
+                      66.6866,
+                      67.8476,
+                      68.6174,
+                      69.6494
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": "Kéo từ đáy lên đỉnh"
+              }
+            ],
+            "x": {
+              "end": 66,
+              "start": 0
+            }
+          },
+          "title": "Xu hướng tăng",
+          "tone": "pos"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "fib": {
+                  "dir": "down",
+                  "hi": {
+                    "i": 0,
+                    "v": 70
+                  },
+                  "levels": [
+                    0,
+                    0.236,
+                    0.382,
+                    0.5,
+                    0.618,
+                    1
+                  ],
+                  "lo": {
+                    "i": 30,
+                    "v": 43.6691
+                  },
+                  "zone": [
+                    0.5,
+                    0.618
+                  ]
+                },
+                "series": [
+                  {
+                    "name": "Giá",
+                    "role": "price",
+                    "values": [
+                      70,
+                      68.985,
+                      67.8955,
+                      67.2705,
+                      66.7775,
+                      65.5457,
+                      64.3991,
+                      63.8701,
+                      63.1331,
+                      62.2716,
+                      61.5347,
+                      60.2386,
+                      59.7856,
+                      58.7047,
+                      57.863,
+                      57.173,
+                      56.3265,
+                      55.3852,
+                      54.6679,
+                      54.0155,
+                      52.7264,
+                      51.6933,
+                      51.1542,
+                      50.0985,
+                      49.1661,
+                      48.1311,
+                      47.1079,
+                      46.3506,
+                      45.2966,
+                      44.4888,
+                      43.6691,
+                      44.7471,
+                      45.6962,
+                      46.9943,
+                      48.1695,
+                      49.0387,
+                      50.1661,
+                      51.118,
+                      52.0415,
+                      53.129,
+                      54.4382,
+                      55.203,
+                      55.9949,
+                      57.2992,
+                      58.425,
+                      57.399,
+                      56.4433,
+                      55.98,
+                      55.1062,
+                      54.1021,
+                      53.352,
+                      52.5918,
+                      52.1117,
+                      50.9141,
+                      50.3756,
+                      49.4502,
+                      48.4638,
+                      47.6959,
+                      46.653,
+                      46.2109,
+                      45.0524,
+                      44.0835,
+                      43.5858,
+                      42.8748,
+                      42.0632,
+                      41.2253,
+                      40.2345
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": "Kéo từ đỉnh xuống đáy"
+              }
+            ],
+            "x": {
+              "end": 66,
+              "start": 0
+            }
+          },
+          "title": "Xu hướng giảm",
+          "tone": "neg"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c4l9-g4": {
+      "alt": "Ví dụ: giá điều chỉnh về vùng 50% đến 61,8% rồi bật lên thì mua, cắt lỗ dưới đáy điều chỉnh",
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "fib": {
+            "dir": "up",
+            "hi": {
+              "i": 44,
+              "v": 69.6571
+            },
+            "levels": [
+              0,
+              0.236,
+              0.382,
+              0.5,
+              0.618,
+              1
+            ],
+            "lo": {
+              "i": 9,
+              "v": 41.2979
+            },
+            "zone": [
+              0.5,
+              0.618
+            ]
+          },
+          "notes": [
+            {
+              "i": 60,
+              "text": "Cắt lỗ",
+              "tone": "neg",
+              "value": 49.6404
+            }
+          ],
+          "segments": [
+            {
+              "dash": true,
+              "from": [
+                60,
+                49.6404
+              ],
+              "to": [
+                93,
+                49.6404
+              ],
+              "tone": "neg"
+            }
+          ],
+          "series": [
+            {
+              "name": "Giá",
+              "role": "price",
+              "values": [
+                44,
+                43.6255,
+                43.3045,
+                42.8139,
+                42.5276,
+                42.3382,
+                42.5503,
+                42.4822,
+                41.7215,
+                41.2979,
+                41.3029,
+                41.6327,
+                42.3759,
+                43.4596,
+                44.1127,
+                44.5836,
+                46.1318,
+                46.5371,
+                47.5342,
+                48.7404,
+                48.9063,
+                49.8819,
+                50.498,
+                51.5683,
+                52.4229,
+                52.8573,
+                54.1143,
+                55.3039,
+                56.4137,
+                57.1059,
+                57.798,
+                58.1097,
+                58.8413,
+                59.6729,
+                60.4232,
+                61.5666,
+                62.3188,
+                63.0663,
+                64.4443,
+                65.1652,
+                66.126,
+                66.5353,
+                67.7571,
+                68.8422,
+                69.6571,
+                68.4431,
+                66.7521,
+                65.7646,
+                64.2979,
+                63.0906,
+                62.6519,
+                61.5472,
+                60.9076,
+                59.5116,
+                58.2217,
+                57.5456,
+                56.8888,
+                55.1531,
+                53.7537,
+                52.6404,
+                53.0019,
+                53.7631,
+                54.4586,
+                54.4296,
+                55.7659,
+                55.9688,
+                57.1924,
+                58.2477,
+                58.3549,
+                58.7639,
+                59.0761,
+                59.6831,
+                61.0928,
+                62.2333,
+                63.0607,
+                63.4989,
+                63.9807,
+                64.4871,
+                65.377,
+                66.5367,
+                66.893,
+                67.58,
+                68.0514,
+                69.0893,
+                69.7974,
+                70.1403,
+                71.2329,
+                72.5333,
+                72.9458,
+                73.5797,
+                74.613,
+                75.0599,
+                75.4966,
+                76.6318
+              ],
+              "width": 2
+            }
+          ],
+          "title": ""
+        }
+      ],
+      "points": [
+        {
+          "i": 59,
+          "panel": 0,
+          "tone": "warn",
+          "value": 52.6404
+        },
+        {
+          "i": 60,
+          "label": "Mua",
+          "panel": 0,
+          "pos": "left",
+          "tone": "pos",
+          "value": 53.0019
+        }
+      ],
+      "x": {
+        "end": 93,
+        "start": 0
+      }
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch04-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Sau mỗi đợt tăng, giá thường điều chỉnh giảm một phần trước khi tăng tiếp. Công cụ Fibonacci giúp ước lượng giá có thể điều chỉnh về đâu, từ đó xác định những vùng mua tiềm năng.",
+  "lesson_key": "concept:fibonacci",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Dãy Fibonacci</b> là dãy số trong đó mỗi số bằng tổng của hai số đứng trước. Khi chia các số trong dãy cho nhau, ta thu được những tỷ lệ gần như cố định. Đây là các tỷ lệ được dùng trên biểu đồ giá.",
+          "type": "paragraph"
+        },
+        {
+          "facts": [
+            {
+              "label": "34 ÷ 55 ≈ 0,618",
+              "value": "61,8%"
+            },
+            {
+              "label": "34 ÷ 89 ≈ 0,382",
+              "value": "38,2%"
+            },
+            {
+              "label": "13 ÷ 55 ≈ 0,236",
+              "value": "23,6%"
+            }
+          ],
+          "items": [
+            {
+              "glyph": "1"
+            },
+            {
+              "glyph": "1"
+            },
+            {
+              "glyph": "2"
+            },
+            {
+              "glyph": "3"
+            },
+            {
+              "glyph": "5"
+            },
+            {
+              "glyph": "8"
+            },
+            {
+              "glyph": "13",
+              "highlight": true
+            },
+            {
+              "glyph": "21"
+            },
+            {
+              "glyph": "34",
+              "highlight": true
+            },
+            {
+              "glyph": "55",
+              "highlight": true
+            },
+            {
+              "glyph": "89",
+              "highlight": true
+            }
+          ],
+          "type": "tiles"
+        },
+        {
+          "text": "Ngoài 23,6%, 38,2% và 61,8%, mức <b>50%</b> cũng được dùng phổ biến. Mức này không thuộc dãy Fibonacci nhưng là mức tâm lý quan trọng, tương ứng với việc giá điều chỉnh một nửa đợt tăng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Dãy số và các tỷ lệ Fibonacci"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khi kéo công cụ <b>Fibonacci thoái lui</b> từ đáy lên đỉnh của một đợt tăng, phần mềm tự vẽ các đường ngang ở những mức 23,6%, 38,2%, 50% và 61,8% của đợt tăng đó. Các mức này là những vùng hỗ trợ tiềm năng khi giá điều chỉnh.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l9-g2",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s2",
+      "title": "Fibonacci thoái lui"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "23,6% và 38,2%",
+              "text": "Điều chỉnh nông, thường gặp khi xu hướng tăng rất mạnh."
+            },
+            {
+              "term": "50%",
+              "text": "Giá điều chỉnh một nửa đợt tăng, mức tâm lý được nhiều nhà đầu tư theo dõi."
+            },
+            {
+              "term": "61,8%",
+              "text": "Mức quan trọng nhất. Vùng từ 50% đến 61,8% là nơi các nhịp điều chỉnh hay dừng lại."
+            },
+            {
+              "term": "Sâu hơn 61,8%",
+              "text": "Xu hướng tăng đang suy yếu, khả năng giá quay lại đỉnh cũ giảm đi."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s3",
+      "title": "Ý nghĩa các mức"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Trong xu hướng tăng, kéo công cụ <b>từ đáy lên đỉnh</b>, các mức Fibonacci đóng vai trò hỗ trợ. Trong xu hướng giảm, kéo <b>từ đỉnh xuống đáy</b>, các mức Fibonacci đóng vai trò kháng cự cho những nhịp hồi.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l9-g3",
+          "type": "chart"
+        },
+        {
+          "text": "Đáy và đỉnh được chọn phải là điểm bắt đầu và kết thúc của một đợt tăng hoặc giảm rõ ràng, dễ nhận thấy trên biểu đồ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Cách vẽ Fibonacci"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Cách dùng phù hợp cho người mới là <b>chờ giá điều chỉnh về vùng 50% đến 61,8%</b> rồi mua khi có tín hiệu bật lên:",
+          "type": "paragraph"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chọn một đợt tăng rõ ràng, kéo Fibonacci từ đáy lên đỉnh.",
+              "title": "Xác định đợt tăng"
+            },
+            {
+              "text": "Không mua đuổi ở vùng đỉnh, kiên nhẫn chờ giá điều chỉnh.",
+              "title": "Chờ giá về vùng 50% đến 61,8%"
+            },
+            {
+              "text": "Mua khi xuất hiện phiên tăng rõ từ vùng này. Đặt cắt lỗ dưới đáy của nhịp điều chỉnh.",
+              "title": "Mua khi giá bật lên"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        },
+        {
+          "chart_id": "c4l9-g4",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Mức Fibonacci đáng tin hơn khi <b>trùng với vùng hỗ trợ cũ hoặc đường MA</b>. Nhiều công cụ cùng chỉ về một vùng giá thì khả năng giá dừng lại ở đó càng cao.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng Fibonacci"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Kéo Fibonacci trên những biến động nhỏ, không rõ ràng khiến các mức mất ý nghĩa.",
+              "title": "Chọn sai đáy và đỉnh"
+            },
+            {
+              "text": "Giá có thể xuyên qua mức Fibonacci. Cần chờ phiên tăng xác nhận.",
+              "title": "Mua ngay khi chạm mức"
+            },
+            {
+              "text": "Giống hỗ trợ và kháng cự, các mức Fibonacci là vùng giá tham khảo.",
+              "title": "Coi mức là điểm chính xác"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s6",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Các mức Fibonacci phổ biến là <b>23,6%, 38,2%, 50% và 61,8%</b>.",
+    "Trong xu hướng tăng, kéo Fibonacci <b>từ đáy lên đỉnh</b>, các mức là hỗ trợ tiềm năng.",
+    "Vùng <b>50% đến 61,8%</b> là nơi các nhịp điều chỉnh hay dừng lại.",
+    "Mua khi giá <b>bật lên từ vùng Fibonacci</b>, đáng tin hơn khi trùng hỗ trợ cũ hoặc đường MA."
+  ],
+  "title": "Fibonacci"
+}

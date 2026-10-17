@@ -1,0 +1,444 @@
+{
+  "chapter": 1,
+  "charts": {
+    "c1l4-g1": {
+      "alt": "Lịch thanh toán T+2: mua thứ Năm thì cổ phiếu về chiều thứ Hai tuần sau, bỏ qua cuối tuần",
+      "columns": [
+        {
+          "label": "Thứ Hai"
+        },
+        {
+          "label": "Thứ Ba"
+        },
+        {
+          "label": "Thứ Tư"
+        },
+        {
+          "label": "Thứ Năm"
+        },
+        {
+          "label": "Thứ Sáu"
+        },
+        {
+          "dim": true,
+          "label": "Thứ Bảy"
+        },
+        {
+          "dim": true,
+          "label": "Chủ nhật"
+        },
+        {
+          "label": "Thứ Hai"
+        }
+      ],
+      "domain": [
+        0,
+        8
+      ],
+      "kind": "gantt",
+      "rows": [
+        {
+          "markers": [
+            {
+              "at": 0.5,
+              "text": "T",
+              "tone": "pos"
+            },
+            {
+              "at": 2.5,
+              "text": "T+2.5",
+              "tone": "p1"
+            }
+          ],
+          "name": "Mua thứ Hai",
+          "note": "Cổ phiếu về, bán được từ phiên chiều",
+          "segments": [
+            {
+              "from": 0.5,
+              "muted": true,
+              "to": 2.5,
+              "tone": "neutral"
+            }
+          ]
+        },
+        {
+          "markers": [
+            {
+              "at": 0.5,
+              "text": "T",
+              "tone": "pos"
+            },
+            {
+              "at": 2.5,
+              "text": "T+2",
+              "tone": "warn"
+            }
+          ],
+          "name": "Bán thứ Hai",
+          "note": "Tiền về tài khoản",
+          "segments": [
+            {
+              "from": 0.5,
+              "muted": true,
+              "to": 2.5,
+              "tone": "neutral"
+            }
+          ]
+        },
+        {
+          "markers": [
+            {
+              "at": 3.5,
+              "text": "T",
+              "tone": "pos"
+            },
+            {
+              "at": 7.5,
+              "text": "T+2.5",
+              "tone": "p1"
+            }
+          ],
+          "name": "Mua thứ Năm",
+          "segments": [
+            {
+              "from": 3.5,
+              "muted": true,
+              "to": 7.5,
+              "tone": "neutral"
+            }
+          ]
+        }
+      ],
+      "tick_format": "day",
+      "ticks": [
+        {
+          "label": "",
+          "v": 0
+        },
+        {
+          "label": "",
+          "v": 1
+        },
+        {
+          "label": "",
+          "v": 2
+        },
+        {
+          "label": "",
+          "v": 3
+        },
+        {
+          "label": "",
+          "v": 4
+        },
+        {
+          "label": "",
+          "v": 5
+        },
+        {
+          "label": "",
+          "v": 6
+        },
+        {
+          "label": "",
+          "v": 7
+        }
+      ]
+    },
+    "c1l4-g3": {
+      "alt": "Dùng margin vay thêm 100 triệu, sức mua tăng lên 200 triệu",
+      "kind": "segment_bar",
+      "max": 200,
+      "rows": [
+        {
+          "label": "Không vay",
+          "segments": [
+            {
+              "label": "Vốn 100 triệu",
+              "tone": "p3",
+              "value": 100
+            }
+          ]
+        },
+        {
+          "label": "Dùng margin",
+          "segments": [
+            {
+              "label": "Vốn 100 triệu",
+              "tone": "p3",
+              "value": 100
+            },
+            {
+              "label": "Vay 100 triệu",
+              "tone": "p1",
+              "value": 100
+            }
+          ],
+          "total": {
+            "text": "Sức mua 200 triệu",
+            "tone": "p1"
+          }
+        }
+      ],
+      "unit": "triệu"
+    },
+    "c1l4-g4": {
+      "bounds": [
+        -45,
+        45
+      ],
+      "kind": "category",
+      "labels": [
+        "Giá tăng 20%",
+        "Giá giảm 20%"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Không vay: mua 100 triệu",
+          "tone": "p3",
+          "values": [
+            20,
+            -20
+          ]
+        },
+        {
+          "name": "Dùng margin: mua 200 triệu",
+          "tone": "p1",
+          "values": [
+            40,
+            -40
+          ]
+        }
+      ],
+      "ticks": [
+        -40,
+        -20,
+        0,
+        20,
+        40
+      ],
+      "title": "Lãi/lỗ trên vốn",
+      "unit": "%",
+      "value_labels": "all"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch01-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Sau khi lệnh khớp, nhà đầu tư cần nắm thêm hai điều: khi nào nhận được cổ phiếu hoặc tiền, và giao dịch phát sinh những chi phí nào. Ngoài ra, nhiều nhà đầu tư còn vay thêm tiền để mua cổ phiếu, gọi là giao dịch ký quỹ (margin).",
+  "lesson_key": "concept:t2_phi_thue_margin",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Ngày lệnh được khớp gọi là ngày T. Sau khi khớp lệnh, cổ phiếu và tiền không về tài khoản ngay mà cần thời gian thanh toán, và thời điểm nhận cổ phiếu khác với thời điểm nhận tiền.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "subtitle": "Cổ phiếu về T+2.5",
+              "text": "Cổ phiếu về tài khoản vào trưa ngày T+2, nên thường được gọi là T+2.5. Nhà đầu tư có thể bán số cổ phiếu này từ phiên chiều ngày T+2.",
+              "title": "Khi mua"
+            },
+            {
+              "subtitle": "Tiền về T+2",
+              "text": "Tiền bán cổ phiếu, sau khi trừ phí và thuế, về tài khoản vào ngày T+2.",
+              "title": "Khi bán"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "chart_id": "c1l4-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Chu kỳ thanh toán chỉ tính ngày làm việc, không tính thứ Bảy, Chủ nhật và ngày nghỉ lễ. Ví dụ, cổ phiếu mua vào thứ Năm sẽ về tài khoản vào chiều thứ Hai tuần sau. Nếu cần tiền sớm hơn, nhà đầu tư có thể dùng dịch vụ <b>ứng trước tiền bán</b> của công ty chứng khoán và trả một khoản phí.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Chu kỳ thanh toán"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "subtitle": "Thu cả khi mua và khi bán",
+              "text": "Tính theo tỷ lệ phần trăm trên giá trị giao dịch. Mỗi công ty chứng khoán áp dụng biểu phí riêng.",
+              "title": "Phí giao dịch"
+            },
+            {
+              "subtitle": "Chỉ thu khi bán",
+              "text": "<b>0,1% giá trị bán</b>, được khấu trừ ngay khi bán, dù giao dịch lãi hay lỗ.",
+              "title": "Thuế thu nhập cá nhân"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Ví dụ: mua 1.000 cổ phiếu giá 20.000 đồng, sau đó bán ra ở giá 22.000 đồng, phí giao dịch 0,15%:",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "rows": [
+                {
+                  "label": "1.000 × 20.000",
+                  "value": "20.000.000"
+                },
+                {
+                  "label": "Phí 0,15%",
+                  "value": "+ 30.000"
+                },
+                {
+                  "label": "Thuế",
+                  "value": "0"
+                }
+              ],
+              "title": "MUA",
+              "tone": "pos",
+              "total": {
+                "label": "Tổng tiền trả",
+                "value": "20.030.000"
+              }
+            },
+            {
+              "rows": [
+                {
+                  "label": "1.000 × 22.000",
+                  "value": "22.000.000"
+                },
+                {
+                  "label": "Phí 0,15%",
+                  "value": "− 33.000"
+                },
+                {
+                  "label": "Thuế 0,1%",
+                  "value": "− 22.000"
+                }
+              ],
+              "title": "BÁN",
+              "tone": "neg",
+              "total": {
+                "label": "Thực nhận",
+                "value": "21.945.000"
+              }
+            }
+          ],
+          "type": "kv_cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Phí giao dịch và thuế"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Giao dịch ký quỹ (margin)</b> là việc vay tiền công ty chứng khoán để mua thêm cổ phiếu, với chính số cổ phiếu đó làm tài sản bảo đảm. Nhà đầu tư trả lãi vay theo số ngày sử dụng khoản vay.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Theo quy định, <b>tỷ lệ ký quỹ ban đầu tối thiểu là 50%</b>. Nghĩa là với 100 triệu đồng vốn, nhà đầu tư được vay thêm tối đa 100 triệu đồng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l4-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s3",
+      "title": "Margin: vay để mua thêm"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khi dùng margin, cùng một mức biến động giá sẽ khiến lãi hoặc lỗ trên vốn tự có tăng gấp đôi, chưa kể lãi vay.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l4-g4",
+          "legend": [
+            {
+              "label": "Không vay: mua 100 triệu",
+              "tone": "p3"
+            },
+            {
+              "label": "Dùng margin: mua 200 triệu",
+              "tone": "p1"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đòn bẩy nhân cả lãi và lỗ"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Tỷ lệ ký quỹ</b> được tính bằng giá trị tài sản trừ nợ vay, chia cho giá trị tài sản. Giá cổ phiếu càng giảm, tỷ lệ này càng thấp.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Khi tỷ lệ ký quỹ xuống dưới <b>ngưỡng duy trì</b> (do công ty chứng khoán quy định, tối thiểu 30%), nhà đầu tư sẽ nhận <b>yêu cầu bổ sung ký quỹ</b>, tức phải nộp thêm tiền hoặc bán bớt cổ phiếu. Nếu không bổ sung kịp và tỷ lệ tiếp tục giảm xuống dưới <b>ngưỡng xử lý</b>, công ty chứng khoán sẽ <b>bán giải chấp</b> cổ phiếu để thu hồi nợ.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Ví dụ: vốn 100 triệu, vay thêm 100 triệu, công ty quy định ngưỡng duy trì 40% và ngưỡng xử lý 30%:",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "badge": "An toàn",
+              "caption": "Tài sản 200 · Nợ 100",
+              "label": "Khi mua",
+              "pct": 50,
+              "tone": "ok",
+              "value": "50%"
+            },
+            {
+              "badge": "Dưới 40%: bổ sung ký quỹ",
+              "caption": "Tài sản 160 · Nợ 100",
+              "label": "Giá giảm 20%",
+              "pct": 37.5,
+              "tone": "warn",
+              "value": "37,5%"
+            },
+            {
+              "badge": "Dưới 30%: bán giải chấp",
+              "caption": "Tài sản 140 · Nợ 100",
+              "label": "Giá giảm 30%",
+              "pct": 28.6,
+              "tone": "bad",
+              "value": "28,6%"
+            }
+          ],
+          "type": "gauges"
+        }
+      ],
+      "id": "s5",
+      "title": "Tỷ lệ ký quỹ và bán giải chấp"
+    }
+  ],
+  "summary": [
+    "Cổ phiếu mua về tài khoản vào <b>chiều T+2 (T+2.5)</b>, tiền bán về tài khoản vào <b>ngày T+2</b>.",
+    "Mỗi giao dịch chịu <b>phí</b> khi mua và bán, <b>thuế 0,1%</b> giá trị khi bán.",
+    "<b>Margin</b> cho phép vay tối đa bằng vốn tự có, <b>nhân cả lãi và lỗ</b>.",
+    "Tỷ lệ ký quỹ dưới ngưỡng duy trì sẽ bị <b>yêu cầu bổ sung</b> hoặc <b>bán giải chấp</b>."
+  ],
+  "title": "T+2, phí, thuế và margin"
+}

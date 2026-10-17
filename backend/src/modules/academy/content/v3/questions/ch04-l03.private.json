@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-l03",
+  "questions": [
+    {
+      "correct_option_id": "caf2f657b3",
+      "id": "ch04-l03-q01",
+      "options": [
+        {
+          "id": "caf2f657b3",
+          "text": "Vùng giá mà lực mua đủ mạnh để ngăn giá giảm tiếp"
+        },
+        {
+          "id": "5c7df4a232",
+          "text": "Vùng giá mà lực bán đủ mạnh để ngăn giá tăng tiếp"
+        },
+        {
+          "id": "deea0f03fb",
+          "text": "Mức giá thấp nhất được phép đặt lệnh trong phiên"
+        }
+      ],
+      "prompt": "Hỗ trợ là gì?"
+    },
+    {
+      "correct_option_id": "24e8603221",
+      "id": "ch04-l03-q02",
+      "options": [
+        {
+          "id": "b9e864f0ad",
+          "text": "Mức giá cao nhất được phép đặt lệnh trong phiên"
+        },
+        {
+          "id": "24e8603221",
+          "text": "Vùng giá mà lực bán đủ mạnh để ngăn giá tăng tiếp"
+        },
+        {
+          "id": "aaf9b955b6",
+          "text": "Vùng giá mà lực mua đủ mạnh để ngăn giá giảm tiếp"
+        }
+      ],
+      "prompt": "Kháng cự là gì?"
+    },
+    {
+      "correct_option_id": "f6620b56e5",
+      "id": "ch04-l03-q03",
+      "options": [
+        {
+          "id": "e537af6def",
+          "text": "Kháng cự mạnh hơn"
+        },
+        {
+          "id": "d6bf46a59e",
+          "text": "Không còn ý nghĩa"
+        },
+        {
+          "id": "f6620b56e5",
+          "text": "Hỗ trợ"
+        }
+      ],
+      "prompt": "Khi giá vượt lên trên vùng kháng cự, vùng này thường trở thành gì?"
+    },
+    {
+      "correct_option_id": "c84f4f6c27",
+      "id": "ch04-l03-q04",
+      "options": [
+        {
+          "id": "c84f4f6c27",
+          "text": "Một vùng giá"
+        },
+        {
+          "id": "71961bec03",
+          "text": "Một mức giá chính xác"
+        },
+        {
+          "id": "1f99ba9ed4",
+          "text": "Giá tham chiếu của phiên"
+        }
+      ],
+      "prompt": "Hỗ trợ và kháng cự nên được xem là gì?"
+    },
+    {
+      "correct_option_id": "3460b84891",
+      "id": "ch04-l03-q05",
+      "options": [
+        {
+          "id": "adee45a035",
+          "text": "Giá vượt lên trong phiên rồi quay lại ngay"
+        },
+        {
+          "id": "3460b84891",
+          "text": "Giá đóng cửa vượt rõ ràng kèm khối lượng tăng mạnh"
+        },
+        {
+          "id": "54a1b780f0",
+          "text": "Khối lượng giao dịch rất thấp"
+        }
+      ],
+      "prompt": "Dấu hiệu của phá vỡ thật là gì?"
+    }
+  ],
+  "salt": "a423001ee4f837aa0ae6f4950ba4bcf79db3a5f1544be1b26cf3c6015c3d20c1"
+}

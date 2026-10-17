@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-l06",
+  "questions": [
+    {
+      "correct_option_id": "e5c855d290",
+      "id": "ch03-l06-q01",
+      "options": [
+        {
+          "id": "e5c855d290",
+          "text": "Hồ sơ và nhật ký, nhóm cộng đồng, tin nhắn riêng"
+        },
+        {
+          "id": "f031547a39",
+          "text": "Quảng cáo, khuyến mãi, tặng quà"
+        },
+        {
+          "id": "addce71915",
+          "text": "Chỉ có tin nhắn riêng"
+        }
+      ],
+      "prompt": "Zalo có ba lớp nào?"
+    },
+    {
+      "correct_option_id": "475b8b01d2",
+      "id": "ch03-l06-q02",
+      "options": [
+        {
+          "id": "475b8b01d2",
+          "text": "Nhóm có gì, giờ nào, nội quy, cách liên hệ riêng"
+        },
+        {
+          "id": "4211703af4",
+          "text": "Danh sách mã sẽ tăng"
+        },
+        {
+          "id": "cda1534e99",
+          "text": "Số tài khoản của SACO"
+        }
+      ],
+      "prompt": "Tin nhắn ghim của nhóm cộng đồng nên có gì?"
+    },
+    {
+      "correct_option_id": "67d4eca186",
+      "id": "ch03-l06-q03",
+      "options": [
+        {
+          "id": "67d4eca186",
+          "text": "Xóa tin, nhắc riêng nội quy, nhắn chung cảnh báo lời hứa lợi nhuận"
+        },
+        {
+          "id": "6adcafe75f",
+          "text": "Để yên cho nhóm sôi nổi"
+        },
+        {
+          "id": "7179d76b77",
+          "text": "Tranh luận công khai"
+        }
+      ],
+      "prompt": "Khi có người đăng link “room VIP x3 tài khoản” vào nhóm, nên làm gì?"
+    }
+  ],
+  "salt": "01aa9625cba5b76bf948588468fae0160a7c4f647f47eb1adbcf02aca4df41ba"
+}

@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-practice",
+  "questions": [
+    {
+      "correct_option_id": "01f8cb22f2",
+      "id": "ch03-practice-q01",
+      "options": [
+        {
+          "id": "01f8cb22f2",
+          "text": "Hô mua một mã để chứng minh mình giỏi"
+        },
+        {
+          "id": "140642eff6",
+          "text": "Lắng nghe và thừa nhận"
+        },
+        {
+          "id": "0642a39ac4",
+          "text": "Mời khách tự kiểm chứng qua bản tin"
+        }
+      ],
+      "prompt": "Với khách mất niềm tin sau thua lỗ, điều nên tránh nhất là gì?"
+    },
+    {
+      "correct_option_id": "9ca7512c06",
+      "id": "ch03-practice-q02",
+      "options": [
+        {
+          "id": "9ca7512c06",
+          "text": "Bắt đầu nhỏ, chia giải ngân nhiều đợt"
+        },
+        {
+          "id": "eab61228c2",
+          "text": "Dồn toàn bộ tiền tiết kiệm một lần"
+        },
+        {
+          "id": "7a880a7a7d",
+          "text": "Dùng margin để lãi nhanh"
+        }
+      ],
+      "prompt": "Với khách mới sợ “đu đỉnh”, cách bắt đầu phù hợp là gì?"
+    },
+    {
+      "correct_option_id": "5c6d2320fd",
+      "id": "ch03-practice-q03",
+      "options": [
+        {
+          "id": "5c6d2320fd",
+          "text": "Tạo thiện cảm, khai thác nhu cầu, xử lý từ chối, kiến thức, EQ, chốt hành động"
+        },
+        {
+          "id": "be546c5932",
+          "text": "Số mã cổ phiếu thuộc tên"
+        },
+        {
+          "id": "61dda5b371",
+          "text": "Số lần khen khách"
+        }
+      ],
+      "prompt": "Bảng chấm điểm đóng vai gồm những tiêu chí nào?"
+    }
+  ],
+  "salt": "76d85ac8b107363b8effc396ca83ea70c94eaf7ece6f6f29ad61b7550501d619"
+}

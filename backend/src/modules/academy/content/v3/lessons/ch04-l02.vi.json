@@ -1,0 +1,944 @@
+{
+  "chapter": 4,
+  "charts": {
+    "c4l2-g1": {
+      "items": [
+        {
+          "model": {
+            "alt": "Xu hướng tăng",
+            "domain": {
+              "x": [
+                0,
+                200
+              ],
+              "y": [
+                0,
+                180
+              ]
+            },
+            "kind": "schematic",
+            "layers": [
+              {
+                "pts": [
+                  [
+                    0,
+                    30
+                  ],
+                  [
+                    40,
+                    70
+                  ],
+                  [
+                    70,
+                    50
+                  ],
+                  [
+                    110,
+                    100
+                  ],
+                  [
+                    140,
+                    80
+                  ],
+                  [
+                    180,
+                    135
+                  ],
+                  [
+                    200,
+                    120
+                  ]
+                ],
+                "t": "line",
+                "tone": "pos",
+                "width": 3
+              }
+            ]
+          },
+          "title": "Xu hướng tăng",
+          "tone": "pos"
+        },
+        {
+          "model": {
+            "alt": "Xu hướng giảm",
+            "domain": {
+              "x": [
+                0,
+                200
+              ],
+              "y": [
+                0,
+                180
+              ]
+            },
+            "kind": "schematic",
+            "layers": [
+              {
+                "pts": [
+                  [
+                    0,
+                    135
+                  ],
+                  [
+                    40,
+                    95
+                  ],
+                  [
+                    70,
+                    115
+                  ],
+                  [
+                    110,
+                    65
+                  ],
+                  [
+                    140,
+                    85
+                  ],
+                  [
+                    180,
+                    30
+                  ],
+                  [
+                    200,
+                    42
+                  ]
+                ],
+                "t": "line",
+                "tone": "neg",
+                "width": 3
+              }
+            ]
+          },
+          "title": "Xu hướng giảm",
+          "tone": "neg"
+        },
+        {
+          "model": {
+            "alt": "Đi ngang",
+            "domain": {
+              "x": [
+                0,
+                200
+              ],
+              "y": [
+                0,
+                180
+              ]
+            },
+            "kind": "schematic",
+            "layers": [
+              {
+                "pts": [
+                  [
+                    0,
+                    80
+                  ],
+                  [
+                    35,
+                    110
+                  ],
+                  [
+                    70,
+                    55
+                  ],
+                  [
+                    105,
+                    110
+                  ],
+                  [
+                    140,
+                    55
+                  ],
+                  [
+                    175,
+                    108
+                  ],
+                  [
+                    200,
+                    80
+                  ]
+                ],
+                "t": "line",
+                "tone": "price",
+                "width": 3
+              }
+            ]
+          },
+          "title": "Đi ngang"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c4l2-g2": {
+      "alt": "Xu hướng tăng: các đỉnh và đáy sau cao hơn đỉnh và đáy trước",
+      "domain": {
+        "x": [
+          0,
+          760
+        ],
+        "y": [
+          0,
+          260
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "pts": [
+            [
+              40,
+              50
+            ],
+            [
+              150,
+              130
+            ],
+            [
+              230,
+              90
+            ],
+            [
+              350,
+              170
+            ],
+            [
+              430,
+              130
+            ],
+            [
+              560,
+              210
+            ],
+            [
+              640,
+              175
+            ],
+            [
+              720,
+              200
+            ]
+          ],
+          "t": "line",
+          "tone": "price",
+          "width": 3
+        },
+        {
+          "dash": true,
+          "from": [
+            150,
+            130
+          ],
+          "t": "segment",
+          "to": [
+            560,
+            210
+          ],
+          "tone": "warn"
+        },
+        {
+          "dash": true,
+          "from": [
+            230,
+            90
+          ],
+          "t": "segment",
+          "to": [
+            430,
+            130
+          ],
+          "tone": "p1"
+        },
+        {
+          "at": [
+            150,
+            130
+          ],
+          "label": "Đỉnh 1",
+          "pos": "above",
+          "t": "point",
+          "tone": "warn"
+        },
+        {
+          "at": [
+            350,
+            170
+          ],
+          "label": "Đỉnh 2",
+          "pos": "above",
+          "t": "point",
+          "tone": "warn"
+        },
+        {
+          "at": [
+            560,
+            210
+          ],
+          "label": "Đỉnh 3",
+          "pos": "above",
+          "t": "point",
+          "tone": "warn"
+        },
+        {
+          "at": [
+            230,
+            90
+          ],
+          "label": "Đáy 1",
+          "pos": "below",
+          "t": "point",
+          "tone": "p1"
+        },
+        {
+          "at": [
+            430,
+            130
+          ],
+          "label": "Đáy 2",
+          "pos": "below",
+          "t": "point",
+          "tone": "p1"
+        },
+        {
+          "anchor": "end",
+          "at": [
+            740,
+            10
+          ],
+          "t": "text",
+          "text": "Đỉnh và đáy cao dần: xu hướng tăng",
+          "tone": "pos"
+        }
+      ]
+    },
+    "c4l2-g3": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "candles": {
+                  "close": [
+                    47,
+                    45,
+                    49,
+                    52,
+                    50,
+                    48,
+                    52,
+                    56,
+                    53,
+                    52,
+                    56,
+                    60,
+                    58,
+                    56,
+                    60,
+                    64
+                  ],
+                  "high": [
+                    52,
+                    49,
+                    50,
+                    53,
+                    54,
+                    51,
+                    53,
+                    57,
+                    58,
+                    54,
+                    57,
+                    61,
+                    62,
+                    59,
+                    61,
+                    65
+                  ],
+                  "low": [
+                    46,
+                    44,
+                    44,
+                    48,
+                    49,
+                    47,
+                    47,
+                    51,
+                    52,
+                    51,
+                    51,
+                    55,
+                    57,
+                    55,
+                    55,
+                    59
+                  ],
+                  "open": [
+                    50,
+                    47,
+                    45,
+                    49,
+                    52,
+                    50,
+                    48,
+                    52,
+                    56,
+                    53,
+                    52,
+                    56,
+                    60,
+                    58,
+                    56,
+                    60
+                  ]
+                },
+                "segments": [
+                  {
+                    "extend": 2,
+                    "from": [
+                      1,
+                      44
+                    ],
+                    "to": [
+                      13,
+                      55
+                    ],
+                    "tone": "pos"
+                  }
+                ],
+                "series": [],
+                "title": ""
+              }
+            ],
+            "points": [
+              {
+                "i": 1,
+                "panel": 0,
+                "shape": "ring",
+                "tone": "pos",
+                "value": 44
+              },
+              {
+                "i": 5,
+                "panel": 0,
+                "shape": "ring",
+                "tone": "pos",
+                "value": 47
+              },
+              {
+                "i": 9,
+                "panel": 0,
+                "shape": "ring",
+                "tone": "pos",
+                "value": 51
+              },
+              {
+                "i": 13,
+                "panel": 0,
+                "shape": "ring",
+                "tone": "pos",
+                "value": 55
+              }
+            ],
+            "x": {
+              "end": 15,
+              "start": 0
+            }
+          },
+          "title": "Nối các đáy",
+          "tone": "pos"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "candles": {
+                  "close": [
+                    63,
+                    65,
+                    61,
+                    58,
+                    60,
+                    62,
+                    58,
+                    54,
+                    57,
+                    58,
+                    54,
+                    50,
+                    52,
+                    54,
+                    50,
+                    46
+                  ],
+                  "high": [
+                    64,
+                    66,
+                    66,
+                    62,
+                    61,
+                    63,
+                    63,
+                    59,
+                    58,
+                    59,
+                    59,
+                    55,
+                    53,
+                    55,
+                    55,
+                    51
+                  ],
+                  "low": [
+                    58,
+                    61,
+                    60,
+                    57,
+                    56,
+                    59,
+                    57,
+                    53,
+                    52,
+                    56,
+                    53,
+                    49,
+                    48,
+                    51,
+                    49,
+                    45
+                  ],
+                  "open": [
+                    60,
+                    63,
+                    65,
+                    61,
+                    58,
+                    60,
+                    62,
+                    58,
+                    54,
+                    57,
+                    58,
+                    54,
+                    50,
+                    52,
+                    54,
+                    50
+                  ]
+                },
+                "segments": [
+                  {
+                    "extend": 2,
+                    "from": [
+                      1,
+                      66
+                    ],
+                    "to": [
+                      13,
+                      55
+                    ],
+                    "tone": "neg"
+                  }
+                ],
+                "series": [],
+                "title": ""
+              }
+            ],
+            "points": [
+              {
+                "i": 1,
+                "panel": 0,
+                "shape": "ring",
+                "tone": "neg",
+                "value": 66
+              },
+              {
+                "i": 5,
+                "panel": 0,
+                "shape": "ring",
+                "tone": "neg",
+                "value": 63
+              },
+              {
+                "i": 9,
+                "panel": 0,
+                "shape": "ring",
+                "tone": "neg",
+                "value": 59
+              },
+              {
+                "i": 13,
+                "panel": 0,
+                "shape": "ring",
+                "tone": "neg",
+                "value": 55
+              }
+            ],
+            "x": {
+              "end": 15,
+              "start": 0
+            }
+          },
+          "title": "Nối các đỉnh",
+          "tone": "neg"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c4l2-g4": {
+      "alt": "Một nhịp giảm ngắn hạn nằm trong xu hướng tăng dài hạn",
+      "domain": {
+        "x": [
+          0,
+          760
+        ],
+        "y": [
+          0,
+          250
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "label": "Giảm ngắn hạn",
+          "t": "zone",
+          "tone": "neg",
+          "x": [
+            290,
+            475
+          ],
+          "y": [
+            40,
+            140
+          ]
+        },
+        {
+          "dash": true,
+          "from": [
+            20,
+            24
+          ],
+          "t": "segment",
+          "to": [
+            740,
+            66
+          ],
+          "tone": "pos"
+        },
+        {
+          "pts": [
+            [
+              30,
+              30
+            ],
+            [
+              110,
+              80
+            ],
+            [
+              160,
+              60
+            ],
+            [
+              250,
+              130
+            ],
+            [
+              300,
+              100
+            ],
+            [
+              340,
+              115
+            ],
+            [
+              380,
+              75
+            ],
+            [
+              420,
+              90
+            ],
+            [
+              460,
+              55
+            ],
+            [
+              520,
+              130
+            ],
+            [
+              600,
+              170
+            ],
+            [
+              650,
+              155
+            ],
+            [
+              730,
+              210
+            ]
+          ],
+          "t": "line",
+          "tone": "price",
+          "width": 2
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            600,
+            28
+          ],
+          "t": "text",
+          "text": "Đường xu hướng tăng dài hạn",
+          "tone": "pos"
+        }
+      ]
+    },
+    "c4l2-g5": {
+      "alt": "Xu hướng tăng kết thúc: đỉnh thấp hơn rồi giá phá đường xu hướng",
+      "domain": {
+        "x": [
+          0,
+          760
+        ],
+        "y": [
+          0,
+          250
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "dash": true,
+          "from": [
+            30,
+            25
+          ],
+          "t": "segment",
+          "to": [
+            640,
+            157
+          ],
+          "tone": "pos"
+        },
+        {
+          "pts": [
+            [
+              30,
+              30
+            ],
+            [
+              110,
+              90
+            ],
+            [
+              160,
+              65
+            ],
+            [
+              260,
+              150
+            ],
+            [
+              320,
+              110
+            ],
+            [
+              420,
+              190
+            ],
+            [
+              480,
+              140
+            ],
+            [
+              540,
+              175
+            ],
+            [
+              600,
+              100
+            ],
+            [
+              650,
+              125
+            ],
+            [
+              720,
+              50
+            ]
+          ],
+          "t": "line",
+          "tone": "price",
+          "width": 2
+        },
+        {
+          "at": [
+            420,
+            190
+          ],
+          "t": "point",
+          "tone": "p3"
+        },
+        {
+          "at": [
+            540,
+            175
+          ],
+          "label": "Đỉnh thấp hơn",
+          "pos": "above",
+          "t": "point",
+          "tone": "warn"
+        },
+        {
+          "at": [
+            567,
+            141
+          ],
+          "label": "Phá đường xu hướng",
+          "pos": "below",
+          "shape": "ring",
+          "t": "point",
+          "tone": "neg"
+        }
+      ]
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch04-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Giá cổ phiếu hiếm khi đi thẳng một chiều mà luôn dao động lên xuống. Xu hướng là hướng đi chung của giá khi bỏ qua những dao động nhỏ. Nhận diện đúng xu hướng giúp nhà đầu tư giao dịch thuận theo dòng chảy của thị trường thay vì đi ngược lại.",
+  "lesson_key": "concept:xu_huong",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c4l2-g1",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đỉnh sau cao hơn đỉnh trước, đáy sau cao hơn đáy trước.",
+              "title": "Xu hướng tăng",
+              "tone": "pos"
+            },
+            {
+              "text": "Đỉnh sau thấp hơn đỉnh trước, đáy sau thấp hơn đáy trước.",
+              "title": "Xu hướng giảm",
+              "tone": "neg"
+            },
+            {
+              "text": "Các đỉnh và đáy dao động quanh cùng một vùng giá.",
+              "title": "Đi ngang"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "Ba loại xu hướng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Đỉnh</b> là điểm giá lên cao rồi quay đầu giảm. <b>Đáy</b> là điểm giá xuống thấp rồi quay đầu tăng. So sánh các đỉnh và đáy liên tiếp là cách đơn giản nhất để xác định xu hướng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l2-g2",
+          "type": "chart"
+        }
+      ],
+      "id": "s2",
+      "title": "Đỉnh và đáy"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Trong xu hướng tăng, <b>đường xu hướng</b> được kẻ bằng cách nối ít nhất hai đáy. Trong xu hướng giảm, đường xu hướng nối ít nhất hai đỉnh. Giá chạm vào đường xu hướng càng nhiều lần mà không phá vỡ, đường đó càng đáng tin cậy.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l2-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s3",
+      "title": "Kẻ đường xu hướng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Xu hướng được chia theo độ dài: <b>dài hạn</b> kéo dài nhiều tháng đến nhiều năm, <b>trung hạn</b> vài tuần đến vài tháng, <b>ngắn hạn</b> vài ngày đến vài tuần. Một nhịp giảm ngắn hạn có thể chỉ là một đoạn điều chỉnh nằm trong xu hướng tăng dài hạn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l2-g4",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Xu hướng theo khung thời gian"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Xu hướng tăng có dấu hiệu suy yếu khi giá <b>không còn tạo được đỉnh cao hơn</b>, sau đó <b>phá xuống dưới đường xu hướng</b>. Tương tự, xu hướng giảm suy yếu khi giá không còn tạo đáy thấp hơn và vượt lên trên đường xu hướng giảm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l2-g5",
+          "type": "chart"
+        },
+        {
+          "text": "Một lần phá vỡ chưa chắc xu hướng đã đảo chiều. Nên chờ thêm xác nhận từ giá và khối lượng ở các phiên tiếp theo.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Dấu hiệu xu hướng kết thúc"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Xu hướng tăng",
+              "text": "Ưu tiên mua khi giá điều chỉnh về gần đường xu hướng."
+            },
+            {
+              "term": "Xu hướng giảm",
+              "text": "Hạn chế mua mới, tránh bắt đáy khi chưa có dấu hiệu đảo chiều."
+            },
+            {
+              "term": "Đi ngang",
+              "text": "Kiên nhẫn chờ giá thoát khỏi vùng đi ngang để xác định hướng mới."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Giao dịch thuận xu hướng"
+    }
+  ],
+  "summary": [
+    "Có ba loại xu hướng: <b>tăng, giảm và đi ngang</b>.",
+    "Xu hướng tăng có <b>đỉnh và đáy sau cao hơn trước</b>, xu hướng giảm thì ngược lại.",
+    "<b>Đường xu hướng tăng nối các đáy</b>, đường xu hướng giảm nối các đỉnh.",
+    "Giá phá vỡ đường xu hướng là <b>dấu hiệu sớm</b> xu hướng có thể kết thúc."
+  ],
+  "title": "Xu hướng"
+}

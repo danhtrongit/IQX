@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-l08",
+  "questions": [
+    {
+      "correct_option_id": "0da4459937",
+      "id": "ch01-l08-q01",
+      "options": [
+        {
+          "id": "0da4459937",
+          "text": "Phục hồi, tăng trưởng, suy giảm, suy thoái"
+        },
+        {
+          "id": "fc52ca47f4",
+          "text": "Tích lũy, tăng giá, phân phối, giảm giá"
+        },
+        {
+          "id": "ef9243917a",
+          "text": "Mở cửa, khớp lệnh, đóng cửa, thanh toán"
+        }
+      ],
+      "prompt": "Chu kỳ kinh tế gồm những giai đoạn nào?"
+    },
+    {
+      "correct_option_id": "2f323545b8",
+      "id": "ch01-l08-q02",
+      "options": [
+        {
+          "id": "2f323545b8",
+          "text": "Được hỗ trợ"
+        },
+        {
+          "id": "815d37efe3",
+          "text": "Chịu áp lực"
+        },
+        {
+          "id": "44ba74a642",
+          "text": "Không bị ảnh hưởng"
+        }
+      ],
+      "prompt": "Khi lãi suất giảm, thị trường chứng khoán thường thế nào?"
+    },
+    {
+      "correct_option_id": "82789c8870",
+      "id": "ch01-l08-q03",
+      "options": [
+        {
+          "id": "82789c8870",
+          "text": "Điện, nước, thực phẩm, dược phẩm"
+        },
+        {
+          "id": "7b017b997b",
+          "text": "Ngân hàng, chứng khoán, thép"
+        },
+        {
+          "id": "15befeb67f",
+          "text": "Bất động sản, vật liệu xây dựng"
+        }
+      ],
+      "prompt": "Cổ phiếu phòng thủ thuộc nhóm ngành nào?"
+    }
+  ],
+  "salt": "f381cf0123392a382e8e3a9788446ab6c13c3ed8d5b40c753566801cdb0674eb"
+}

@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-l01",
+  "questions": [
+    {
+      "correct_option_id": "37090e5f49",
+      "id": "ch03-l01-q01",
+      "options": [
+        {
+          "id": "37090e5f49",
+          "text": "Khi khách cần, họ nhớ tới bạn đầu tiên"
+        },
+        {
+          "id": "e9d1d24968",
+          "text": "Có thật nhiều lượt theo dõi"
+        },
+        {
+          "id": "5bb2318878",
+          "text": "Trở thành người nổi tiếng"
+        }
+      ],
+      "prompt": "Mục tiêu của thương hiệu cá nhân với SACO là gì?"
+    },
+    {
+      "correct_option_id": "a5767a1070",
+      "id": "ch03-l01-q02",
+      "options": [
+        {
+          "id": "a5767a1070",
+          "text": "Xuất hiện, giá trị, nhất quán, thật"
+        },
+        {
+          "id": "2e9762cbe6",
+          "text": "Khoe lãi, khoe xe, khoe lệnh, khoe khách"
+        },
+        {
+          "id": "05bef94914",
+          "text": "Đăng nhiều, đăng nhanh, đăng rẻ, đăng sốc"
+        }
+      ],
+      "prompt": "Công thức thương hiệu bền gồm những yếu tố nào?"
+    },
+    {
+      "correct_option_id": "3b63ed76df",
+      "id": "ch03-l01-q03",
+      "options": [
+        {
+          "id": "3b63ed76df",
+          "text": "Chia sẻ hành trình học hỏi thật của mình"
+        },
+        {
+          "id": "ac7080b4f1",
+          "text": "Đợi có nhiều khách rồi mới bắt đầu"
+        },
+        {
+          "id": "d8684434c9",
+          "text": "Dựng hình ảnh giàu có để giống người thành công"
+        }
+      ],
+      "prompt": "Người mới chưa có thành tích nên bắt đầu xây thương hiệu thế nào?"
+    }
+  ],
+  "salt": "2cc20198227228c457d22e2772aa40db6794acd964286683457a35c351392f0e"
+}

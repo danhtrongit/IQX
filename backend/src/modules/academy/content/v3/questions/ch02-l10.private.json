@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch02-l10",
+  "questions": [
+    {
+      "correct_option_id": "fcf18bf59e",
+      "id": "ch02-l10-q01",
+      "options": [
+        {
+          "id": "fcf18bf59e",
+          "text": "Giữ mật khẩu, OTP và giao dịch thay khách"
+        },
+        {
+          "id": "4f1904848f",
+          "text": "Gửi bản tin sáng"
+        },
+        {
+          "id": "678e6b95b9",
+          "text": "Nhắc khách sự kiện cổ tức"
+        }
+      ],
+      "prompt": "Hành động nào SACO tuyệt đối không được làm?"
+    },
+    {
+      "correct_option_id": "bbb0ae2eb9",
+      "id": "ch02-l10-q02",
+      "options": [
+        {
+          "id": "bbb0ae2eb9",
+          "text": "5 người tiếp cận, 2 cuộc tư vấn, 1 bài chia sẻ"
+        },
+        {
+          "id": "b52405aa4a",
+          "text": "5 tài khoản, 2 triệu tiền nạp, 1 mã cổ phiếu"
+        },
+        {
+          "id": "fb396a1c46",
+          "text": "5 cuộc gọi, 2 tin nhắn, 1 bữa ăn"
+        }
+      ],
+      "prompt": "Công thức 5 - 2 - 1 mỗi ngày gồm những gì?"
+    },
+    {
+      "correct_option_id": "c516dfba5a",
+      "id": "ch02-l10-q03",
+      "options": [
+        {
+          "id": "c516dfba5a",
+          "text": "Tiếp cận người mới"
+        },
+        {
+          "id": "23bfdff779",
+          "text": "Đặt lệnh giao dịch"
+        },
+        {
+          "id": "f745395c5c",
+          "text": "Gửi bản tin sáng"
+        }
+      ],
+      "prompt": "Buổi tối là thời gian phù hợp nhất cho việc gì?"
+    }
+  ],
+  "salt": "5f172b13f2c19f04f2b42a769a3378638addc2c1927f1a320b214e16e3d59301"
+}

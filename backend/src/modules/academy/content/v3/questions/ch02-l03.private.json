@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch02-l03",
+  "questions": [
+    {
+      "correct_option_id": "e9bf5323ff",
+      "id": "ch02-l03-q01",
+      "options": [
+        {
+          "id": "e9bf5323ff",
+          "text": "Viết hết, không tự loại ai"
+        },
+        {
+          "id": "90b3242d79",
+          "text": "Chỉ viết người giàu"
+        },
+        {
+          "id": "dc78e7f6b0",
+          "text": "Chỉ viết người đã biết chứng khoán"
+        }
+      ],
+      "prompt": "Khi viết danh sách 100 người, nên làm thế nào?"
+    },
+    {
+      "correct_option_id": "d92453922b",
+      "id": "ch02-l03-q02",
+      "options": [
+        {
+          "id": "d92453922b",
+          "text": "Khách hài lòng giới thiệu"
+        },
+        {
+          "id": "c09b38cbe7",
+          "text": "Danh sách số điện thoại mua ngoài"
+        },
+        {
+          "id": "98f9e9b3d9",
+          "text": "Bình luận dạo trên mạng"
+        }
+      ],
+      "prompt": "Nguồn khách hàng chất lượng nhất là nguồn nào?"
+    },
+    {
+      "correct_option_id": "135195a902",
+      "id": "ch02-l03-q03",
+      "options": [
+        {
+          "id": "135195a902",
+          "text": "Hình chụp tài khoản lãi và lời hứa lợi nhuận"
+        },
+        {
+          "id": "17f13222f4",
+          "text": "Kiến thức đơn giản, dễ hiểu"
+        },
+        {
+          "id": "3fe2503172",
+          "text": "Hình ảnh hội thảo"
+        }
+      ],
+      "prompt": "Nội dung nào KHÔNG nên đăng trên mạng xã hội?"
+    }
+  ],
+  "salt": "4bc425881b17e54dc9ed39bead6c00286c02e89f0f944e2f09e3be4136d94f0d"
+}

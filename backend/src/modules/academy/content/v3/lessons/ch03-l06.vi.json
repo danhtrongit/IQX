@@ -1,0 +1,234 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Facebook và TikTok giúp người ta biết đến bạn, còn Zalo là nơi khách hàng thật sự ở lại. Đây là kênh để tư vấn, chăm sóc và giữ khách lâu dài, nên cần được làm cẩn thận nhất.",
+  "lesson_key": "concept:thuong_hieu_zalo",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "subtitle": "Ai cũng thấy",
+              "text": "Ảnh, tên giống Facebook. Đăng nhật ký mỗi ngày: bản tin ngắn, ảnh buổi chia sẻ, một câu kiến thức.",
+              "title": "Hồ sơ và nhật ký",
+              "tone": "highlight"
+            },
+            {
+              "subtitle": "Chăm sóc nhiều người",
+              "text": "Nơi gửi bản tin, trả lời câu hỏi chung, thông báo hội thảo.",
+              "title": "Nhóm cộng đồng"
+            },
+            {
+              "subtitle": "Chuyển đổi và chăm sóc sâu",
+              "text": "Tư vấn, hướng dẫn mở tài khoản, hỗ trợ khi thị trường biến động.",
+              "title": "Tin nhắn riêng"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "Ba lớp của Zalo"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Đặt tên gợi nhớ",
+              "text": "Lưu tên kèm nơi gặp và mức độ. Ví dụ: “Minh · ĐH Kinh tế · Ấm”, “Chị Hà · CLB chạy · Nóng”."
+            },
+            {
+              "term": "Gắn thẻ phân loại",
+              "text": "Dùng tính năng phân loại hội thoại của Zalo để chia nhóm: Khách hàng, Đang tư vấn, Người quen, Đối tác."
+            },
+            {
+              "term": "Đồng bộ với bảng quản lý",
+              "text": "Mỗi người trong danh bạ Zalo nên có một dòng trong bảng quản lý khách hàng (Chương 2 · Bài 9)."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s2",
+      "title": "Sắp xếp danh bạ"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Nên có hai tầng nhóm: <b>nhóm cộng đồng</b> cho tất cả người quan tâm và <b>nhóm chăm sóc khách hàng</b> cho người đã mở tài khoản với bạn. Đây là nhóm chăm sóc, không phải “room phím hàng”.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Thời gian"
+            },
+            {
+              "label": "Nội dung cố định"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "8:00",
+                "Bản tin sáng"
+              ]
+            },
+            {
+              "cells": [
+                "11:45",
+                "Cập nhật phiên sáng"
+              ]
+            },
+            {
+              "cells": [
+                "15:15",
+                "Tổng kết cuối ngày"
+              ]
+            },
+            {
+              "cells": [
+                "Thứ Sáu 20:00",
+                "Hỏi đáp kiến thức, dùng bình chọn để mọi người chọn chủ đề tuần sau"
+              ]
+            },
+            {
+              "cells": [
+                "Khi có sự kiện",
+                "Nhắc ngày chốt quyền, cổ tức, lịch hội thảo, ghim tin quan trọng"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "audience": "Tin nhắn ghim đầu nhóm",
+          "author": "Lan Nguyễn · SACO tại DNSE",
+          "body": "Chào mừng anh chị đến với nhóm “Đầu tư cho người mới · Lan DNSE”!\n\nNhóm có gì:\n• 8:00 bản tin sáng · 11:45 cập nhật trưa · 15:15 tổng kết ngày\n• Thứ Sáu 20:00 hỏi đáp kiến thức\n\nNội quy:\n1. Thông tin trong nhóm chỉ mang tính tham khảo, quyết định đầu tư là của mỗi người\n2. Không quảng cáo, không gửi link room hay nhóm khác\n3. Không chia sẻ tin đồn chưa được xác thực\n4. Tôn trọng nhau, không tranh cãi gay gắt\n\nCần hỗ trợ riêng, anh chị nhắn trực tiếp cho Lan nhé.",
+          "kicker": "Mẫu · Tin nhắn ghim nội quy nhóm",
+          "type": "sample_post",
+          "why": "<b>Vì sao hiệu quả:</b> thành viên biết ngay nhóm mang lại gì và lúc nào. Nội quy rõ ràng giúp bạn có căn cứ xử lý người spam. Dòng “thông tin tham khảo” bảo vệ cả bạn và khách."
+        },
+        {
+          "audience": "8:00 · Nhóm cộng đồng",
+          "author": "Lan Nguyễn · SACO tại DNSE",
+          "body": "☀ BẢN TIN SÁNG [ngày]\n\n🌏 Thế giới\n• Chứng khoán Mỹ: [tăng/giảm, mức %]\n• Giá dầu, giá vàng: [diễn biến]\n\n🇻🇳 Trong nước\n• [Tin vĩ mô hoặc chính sách đáng chú ý]\n• [Tin doanh nghiệp đáng chú ý]\n• Khối ngoại phiên trước: [mua/bán ròng]\n\n📈 VN-Index: [nhận định ngắn về xu hướng]\n🏭 Ngành đáng chú ý: [ngành, lý do]\n✅ Gợi ý hành động: [ví dụ: giữ tỷ trọng tiền mặt, không mua đuổi]\n\nThông tin chỉ mang tính tham khảo.",
+          "kicker": "Mẫu · Bản tin sáng",
+          "type": "sample_post",
+          "why": "<b>Vì sao hiệu quả:</b> cùng một khung mỗi ngày, khách quen đọc trong 1 phút. Phần trong ngoặc vuông là chỗ điền số liệu thật của ngày hôm đó, lấy từ bản tin của đội nhóm. Không gửi mã cụ thể như một lời khuyên chắc chắn."
+        }
+      ],
+      "id": "s3",
+      "title": "Dựng nhóm cộng đồng"
+    },
+    {
+      "blocks": [
+        {
+          "label": "Chào buổi sáng, gọi đúng tên",
+          "text": "“Chào anh Minh, bản tin sáng nay em gửi anh. Hôm nay có tin về lãi suất, liên quan đến nhóm ngân hàng anh đang quan tâm đó ạ.”",
+          "tone": "neutral",
+          "type": "quote"
+        },
+        {
+          "label": "Sau phiên giảm mạnh",
+          "text": "“Chị Hà ơi, hôm nay thị trường giảm khá mạnh. Mức cắt lỗ chị đặt cho mã đang giữ vẫn còn cách khoảng 4%. Chị cần em xem lại kế hoạch cùng chị không ạ?”",
+          "tone": "neutral",
+          "type": "quote"
+        },
+        {
+          "label": "Nhắc sự kiện quyền",
+          "text": "“Anh Tuấn ơi, mã anh đang giữ có ngày giao dịch không hưởng quyền cổ tức vào thứ Năm này. Anh không cần làm gì, cổ tức sẽ về tài khoản theo lịch, em báo để anh nắm nhé.”",
+          "tone": "neutral",
+          "type": "quote"
+        },
+        {
+          "label": "Ngày đặc biệt",
+          "text": "“Chúc mừng sinh nhật chị Lan! Chúc chị một năm khỏe mạnh, công việc thuận lợi.” Không kèm bất kỳ lời mời nào.",
+          "tone": "neutral",
+          "type": "quote"
+        },
+        {
+          "text": "Không gửi cùng một tin nhắn y hệt cho hàng trăm người cùng lúc. Khách nhận ra ngay tin nhắn hàng loạt, và gửi hàng loạt dễ bị Zalo hạn chế tài khoản.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Tin nhắn riêng chăm sóc khách"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 1,
+          "debrief": "<b>Cách tốt nhất: xóa, nhắc riêng, rồi bảo vệ cả nhóm.</b> Để lời hứa “x3 tài khoản” tồn tại trong nhóm của bạn là gián tiếp đồng ý với nó, và thành viên có thể mất tiền. Tranh luận công khai làm nhóm căng thẳng. Một tin nhắn chung, bình tĩnh, nhắc rằng không ai cam kết được lợi nhuận, cho thấy bạn là người giữ an toàn cho cộng đồng.",
+          "options": [
+            "Mặc kệ, vì nhóm càng sôi nổi càng tốt",
+            "Xóa tin, nhắn riêng nhắc người đó về nội quy, rồi nhắn chung trong nhóm rằng không nên tin lời hứa x3 tài khoản",
+            "Tranh luận công khai với người đó trong nhóm để mọi người thấy ai đúng"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Một thành viên đăng vào nhóm cộng đồng của bạn: “Vào room VIP của anh, x3 tài khoản trong tháng”, kèm một đường link. Đã có vài người hỏi thêm."
+          ],
+          "title": "Link “room VIP” trong nhóm",
+          "type": "scenario"
+        },
+        {
+          "id": "zl1",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Viết tin nhắn ghim cho nhóm cộng đồng của bạn: tên nhóm, nhóm có gì và vào giờ nào, 4 điều nội quy, cách liên hệ riêng."
+          ],
+          "title": "Bài tự làm: nội quy nhóm của bạn",
+          "type": "workpad"
+        },
+        {
+          "id": "zl1a",
+          "items": [
+            {
+              "id": "0",
+              "text": "Đổi ảnh, tên Zalo giống Facebook"
+            },
+            {
+              "id": "1",
+              "text": "Đặt lại tên danh bạ theo mẫu tên, nơi gặp, mức độ"
+            },
+            {
+              "id": "2",
+              "text": "Gắn thẻ phân loại cho hội thoại"
+            },
+            {
+              "id": "3",
+              "text": "Tạo nhóm cộng đồng, ghim nội quy"
+            },
+            {
+              "id": "4",
+              "text": "Gửi bản tin sáng đúng giờ 5 ngày liên tiếp"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s5",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Zalo có <b>3 lớp</b>: hồ sơ và nhật ký, nhóm cộng đồng, tin nhắn riêng.",
+    "Sắp xếp danh bạ: <b>tên gợi nhớ, thẻ phân loại</b>, đồng bộ bảng quản lý.",
+    "Nhóm có <b>nội quy ghim</b> và <b>lịch nội dung cố định</b> 8:00, 11:45, 15:15.",
+    "Tin nhắn riêng <b>gọi đúng tên, đúng chuyện</b>, không gửi hàng loạt."
+  ],
+  "title": "Thương hiệu trên Zalo"
+}

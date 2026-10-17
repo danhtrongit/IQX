@@ -1,0 +1,491 @@
+{
+  "chapter": 1,
+  "charts": {
+    "c1l3-g2": {
+      "alt": "Biên độ giá HOSE: tham chiếu 25.000, trần 26.750, sàn 23.250",
+      "domain": [
+        23250,
+        26750
+      ],
+      "gradient": [
+        "p4",
+        "pos",
+        "warn",
+        "neg",
+        "info"
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Giá trần",
+          "sub": "26.750 · +7%",
+          "tone": "p4",
+          "v": 26750
+        },
+        {
+          "label": "Giá tham chiếu",
+          "sub": "25.000 · 0%",
+          "tone": "warn",
+          "v": 25000
+        },
+        {
+          "label": "Giá sàn",
+          "sub": "23.250 · −7%",
+          "tone": "info",
+          "v": 23250
+        }
+      ],
+      "orientation": "v",
+      "zones": [
+        {
+          "from": 25000,
+          "label": "Tăng: màu xanh lá",
+          "to": 26750,
+          "tone": "pos"
+        },
+        {
+          "from": 23250,
+          "label": "Giảm: màu đỏ",
+          "to": 25000,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c1l3-g3": {
+      "alt": "Các phiên giao dịch trong ngày của HOSE, HNX và UPCoM",
+      "domain": [
+        540,
+        900
+      ],
+      "kind": "gantt",
+      "legend": [
+        {
+          "label": "Mở cửa 9:00-9:15",
+          "tone": "p4"
+        },
+        {
+          "label": "Đóng cửa 14:30-14:45",
+          "tone": "p5"
+        },
+        {
+          "label": "Thỏa thuận",
+          "tone": "p3"
+        },
+        {
+          "label": "Sau giờ (HNX)",
+          "tone": "warn"
+        }
+      ],
+      "rows": [
+        {
+          "name": "HOSE",
+          "segments": [
+            {
+              "from": 540,
+              "label": "ATO",
+              "to": 555,
+              "tone": "p4"
+            },
+            {
+              "from": 555,
+              "label": "Liên tục",
+              "to": 690,
+              "tone": "p1"
+            },
+            {
+              "from": 690,
+              "label": "Nghỉ trưa",
+              "muted": true,
+              "to": 780,
+              "tone": "neutral"
+            },
+            {
+              "from": 780,
+              "label": "Liên tục",
+              "to": 870,
+              "tone": "p1"
+            },
+            {
+              "from": 870,
+              "label": "ATC",
+              "to": 885,
+              "tone": "p5"
+            },
+            {
+              "from": 885,
+              "label": "Thỏa thuận",
+              "to": 900,
+              "tone": "p3"
+            }
+          ]
+        },
+        {
+          "name": "HNX",
+          "segments": [
+            {
+              "from": 540,
+              "label": "Liên tục",
+              "to": 690,
+              "tone": "p1"
+            },
+            {
+              "from": 690,
+              "label": "Nghỉ trưa",
+              "muted": true,
+              "to": 780,
+              "tone": "neutral"
+            },
+            {
+              "from": 780,
+              "label": "Liên tục",
+              "to": 870,
+              "tone": "p1"
+            },
+            {
+              "from": 870,
+              "label": "ATC",
+              "to": 885,
+              "tone": "p5"
+            },
+            {
+              "from": 885,
+              "label": "PLO",
+              "to": 900,
+              "tone": "warn"
+            }
+          ]
+        },
+        {
+          "name": "UPCoM",
+          "segments": [
+            {
+              "from": 540,
+              "label": "Liên tục",
+              "to": 690,
+              "tone": "p1"
+            },
+            {
+              "from": 690,
+              "label": "Nghỉ trưa",
+              "muted": true,
+              "to": 780,
+              "tone": "neutral"
+            },
+            {
+              "from": 780,
+              "label": "Liên tục",
+              "to": 900,
+              "tone": "p1"
+            }
+          ]
+        }
+      ],
+      "tick_format": "hhmm",
+      "ticks": [
+        {
+          "label": "9:00",
+          "v": 540
+        },
+        {
+          "label": "11:30",
+          "v": 690
+        },
+        {
+          "label": "13:00",
+          "v": 780
+        },
+        {
+          "label": "14:30",
+          "v": 870
+        },
+        {
+          "label": "15:00",
+          "v": 900
+        }
+      ]
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch01-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Mỗi lệnh mua bán chứng khoán gồm bốn thông tin: mã cổ phiếu, mua hay bán, khối lượng và giá. Để được sàn chấp nhận và khớp, các thông tin này phải tuân theo những quy định chung.",
+  "lesson_key": "concept:co_che_giao_dich",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "rows": [
+                {
+                  "label": "Mã cổ phiếu",
+                  "value": "ABC"
+                },
+                {
+                  "label": "Khối lượng",
+                  "value": "500"
+                },
+                {
+                  "label": "Giá",
+                  "value": "25.150"
+                },
+                {
+                  "label": "Loại lệnh",
+                  "value": "LO"
+                }
+              ],
+              "title": "MUA",
+              "tone": "pos",
+              "total": {
+                "label": "Giá trị lệnh",
+                "tone": "info",
+                "value": "12.575.000 đ"
+              }
+            }
+          ],
+          "type": "kv_cards"
+        },
+        {
+          "text": "Giá trị lệnh bằng khối lượng nhân với giá, chưa bao gồm phí giao dịch. Lệnh chỉ được sàn chấp nhận khi khối lượng và giá đặt đúng quy định.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Cấu trúc một lệnh"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Giá tham chiếu</b> là mốc để tính biên độ dao động trong ngày, thường là giá đóng cửa của phiên liền trước. <b>Giá trần</b> và <b>giá sàn</b> là mức giá cao nhất và thấp nhất được phép đặt trong phiên. Ví dụ, với cổ phiếu trên HOSE có giá tham chiếu 25.000 đồng:",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l3-g2",
+          "type": "chart"
+        },
+        {
+          "items": [
+            {
+              "label": "HOSE",
+              "value": "±7%"
+            },
+            {
+              "label": "HNX",
+              "value": "±10%"
+            },
+            {
+              "label": "UPCoM",
+              "value": "±15%"
+            }
+          ],
+          "type": "stats",
+          "variant": "chip"
+        }
+      ],
+      "id": "s2",
+      "title": "Giá tham chiếu, giá trần, giá sàn"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Lô chẵn</b> là số lượng cổ phiếu theo bội số của 100, được giao dịch trong tất cả các phiên. <b>Lô lẻ</b> từ 1 đến 99 cổ phiếu, được giao dịch riêng trong phiên khớp lệnh liên tục.",
+          "type": "paragraph"
+        },
+        {
+          "text": "<b>Bước giá</b> là khoảng cách nhỏ nhất giữa hai mức giá đặt lệnh liền kề.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Sàn"
+            },
+            {
+              "label": "Mức giá cổ phiếu"
+            },
+            {
+              "label": "Bước giá"
+            },
+            {
+              "label": "Ví dụ giá hợp lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Dưới 10.000 đ",
+                "<b>10 đ</b>",
+                "9.850 · 9.860 · 9.870"
+              ],
+              "group": {
+                "label": "HOSE",
+                "span": 3
+              }
+            },
+            {
+              "cells": [
+                "10.000-49.950 đ",
+                "<b>50 đ</b>",
+                "25.100 · 25.150 · 25.200"
+              ]
+            },
+            {
+              "cells": [
+                "Từ 50.000 đ",
+                "<b>100 đ</b>",
+                "82.300 · 82.400 · 82.500"
+              ]
+            },
+            {
+              "cells": [
+                "Mọi mức giá",
+                "<b>100 đ</b>",
+                "14.200 · 14.300 · 14.400"
+              ],
+              "group": {
+                "label": "HNX, UPCoM",
+                "span": 1
+              }
+            }
+          ],
+          "type": "table",
+          "variant": "grouped"
+        }
+      ],
+      "id": "s3",
+      "title": "Lô giao dịch và bước giá"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Thị trường mở cửa từ thứ Hai đến thứ Sáu, trừ các ngày nghỉ lễ. Mỗi ngày giao dịch chia thành nhiều phiên, mỗi phiên có cách khớp lệnh riêng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l3-g3",
+          "type": "chart"
+        },
+        {
+          "items": [
+            {
+              "term": "Khớp lệnh định kỳ",
+              "text": "Tập hợp toàn bộ lệnh đặt trong phiên rồi khớp tại một mức giá duy nhất, là mức giá đạt khối lượng giao dịch lớn nhất. Áp dụng cho phiên mở cửa (ATO) và đóng cửa (ATC)."
+            },
+            {
+              "term": "Khớp lệnh liên tục",
+              "text": "Lệnh được khớp ngay khi có lệnh đối ứng phù hợp về giá."
+            },
+            {
+              "term": "Thỏa thuận",
+              "text": "Bên mua và bên bán tự thỏa thuận giá, khối lượng, thường dùng cho giao dịch lớn."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s4",
+      "title": "Các phiên giao dịch trong ngày"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "subtitle": "Lệnh giới hạn",
+              "text": "Mua hoặc bán tại mức giá chỉ định hoặc tốt hơn. Đây là loại lệnh phổ biến nhất, dùng được trong mọi phiên.",
+              "title": "LO",
+              "tone": "highlight"
+            },
+            {
+              "subtitle": "Lệnh thị trường",
+              "text": "Mua hoặc bán ngay tại mức giá tốt nhất đang có trên thị trường. Chỉ dùng trong phiên khớp lệnh liên tục trên HOSE.",
+              "title": "MP"
+            },
+            {
+              "subtitle": "Lệnh tại giá mở cửa",
+              "text": "Đặt trong phiên mở cửa trên HOSE, được ưu tiên khớp trước lệnh LO tại mức giá mở cửa.",
+              "title": "ATO"
+            },
+            {
+              "subtitle": "Lệnh tại giá đóng cửa",
+              "text": "Đặt trong phiên đóng cửa, được ưu tiên khớp trước lệnh LO tại mức giá đóng cửa.",
+              "title": "ATC"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Các loại lệnh cơ bản"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lệnh được khớp theo hai thứ tự ưu tiên: <b>giá trước, thời gian sau</b>. Lệnh mua giá cao hơn và lệnh bán giá thấp hơn được khớp trước. Nếu cùng mức giá, lệnh nào đặt trước sẽ được khớp trước.",
+          "type": "paragraph"
+        },
+        {
+          "aria_label": "Sổ lệnh: giá, thời gian đặt và khối lượng của bên mua và bên bán",
+          "columns": [
+            {
+              "align": "c",
+              "label": "Thứ tự"
+            },
+            {
+              "label": "Bên mua",
+              "tone": "pos"
+            },
+            {
+              "label": "Bên bán",
+              "tone": "neg"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "1",
+                {
+                  "highlight": true,
+                  "text": "<b>25.100</b> · 09:20 · 1.000 cp"
+                },
+                {
+                  "highlight": true,
+                  "text": "<b>25.150</b> · 09:25 · 800 cp"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "2",
+                "<b>25.100</b> · 09:31 · 500 cp",
+                "<b>25.200</b> · 09:16 · 1.500 cp"
+              ]
+            },
+            {
+              "cells": [
+                "3",
+                "<b>25.050</b> · 09:18 · 2.000 cp",
+                "<b>25.250</b> · 09:40 · 600 cp"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        }
+      ],
+      "id": "s6",
+      "title": "Nguyên tắc khớp lệnh"
+    }
+  ],
+  "summary": [
+    "Một lệnh gồm <b>mã, chiều mua bán, khối lượng và giá</b>.",
+    "Giá đặt nằm trong khoảng <b>giá sàn đến giá trần</b>, theo đúng <b>bước giá</b> của sàn.",
+    "Lô chẵn là <b>bội số 100 cổ phiếu</b>. Lô lẻ từ 1 đến 99 cổ phiếu.",
+    "<b>LO</b> là lệnh phổ biến nhất. Lệnh khớp theo <b>ưu tiên giá, rồi đến thời gian</b>."
+  ],
+  "title": "Cơ chế giao dịch"
+}

@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch02-l02",
+  "questions": [
+    {
+      "correct_option_id": "d466079a64",
+      "id": "ch02-l02-q01",
+      "options": [
+        {
+          "id": "d466079a64",
+          "text": "Mất vốn"
+        },
+        {
+          "id": "bdbcd8c6fc",
+          "text": "Thiếu công cụ phân tích"
+        },
+        {
+          "id": "7955861380",
+          "text": "Ứng dụng chạy chậm"
+        }
+      ],
+      "prompt": "Nỗi lo lớn nhất của người có tiền tiết kiệm thường là gì?"
+    },
+    {
+      "correct_option_id": "7b83afd206",
+      "id": "ch02-l02-q02",
+      "options": [
+        {
+          "id": "7b83afd206",
+          "text": "Thông tin nhanh và hỗ trợ kịp thời"
+        },
+        {
+          "id": "3699836e7c",
+          "text": "Giải thích chứng khoán là gì"
+        },
+        {
+          "id": "d3b154d431",
+          "text": "Hướng dẫn mở tài khoản"
+        }
+      ],
+      "prompt": "Người giao dịch thường xuyên cần gì nhất từ SACO?"
+    },
+    {
+      "correct_option_id": "06c36e3224",
+      "id": "ch02-l02-q03",
+      "options": [
+        {
+          "id": "06c36e3224",
+          "text": "Bạn là ai, bạn có hiểu tôi, bạn có ở lại không"
+        },
+        {
+          "id": "75235ad89b",
+          "text": "Mã nào sẽ tăng mạnh nhất"
+        },
+        {
+          "id": "9fd938eba4",
+          "text": "Có được miễn phí trọn đời không"
+        }
+      ],
+      "prompt": "Trước khi mở tài khoản, khách thường tự hỏi điều gì?"
+    }
+  ],
+  "salt": "1d1c158b4f977c3089cd9be30cc99b7ad4ac2aab98c88b34ac2162e7b64cce42"
+}

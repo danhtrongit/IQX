@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-l05",
+  "questions": [
+    {
+      "correct_option_id": "8fb1e0a5b4",
+      "id": "ch03-l05-q01",
+      "options": [
+        {
+          "id": "8fb1e0a5b4",
+          "text": "Bài giới thiệu bản thân, bài hướng dẫn người mới, ảnh buổi chia sẻ"
+        },
+        {
+          "id": "9f06744c6e",
+          "text": "Ảnh chụp lệnh lãi"
+        },
+        {
+          "id": "877b7626c2",
+          "text": "Link mở tài khoản kèm cam kết lợi nhuận"
+        }
+      ],
+      "prompt": "Mục “Đáng chú ý” trên Facebook nên ghim những gì?"
+    },
+    {
+      "correct_option_id": "0e98628cf2",
+      "id": "ch03-l05-q02",
+      "options": [
+        {
+          "id": "0e98628cf2",
+          "text": "Facebook chỉ hiện vài dòng đầu, nó quyết định người đọc có bấm Xem thêm không"
+        },
+        {
+          "id": "229239e8fb",
+          "text": "Vì phải ghi biểu phí ở đó"
+        },
+        {
+          "id": "3317bafdb4",
+          "text": "Không quan trọng"
+        }
+      ],
+      "prompt": "Dòng đầu của bài Facebook quan trọng vì sao?"
+    },
+    {
+      "correct_option_id": "517f39b914",
+      "id": "ch03-l05-q03",
+      "options": [
+        {
+          "id": "517f39b914",
+          "text": "Tiếp tục bài kiến thức, thêm ảnh thật của mình"
+        },
+        {
+          "id": "85644cbeed",
+          "text": "Chỉ đăng ảnh selfie"
+        },
+        {
+          "id": "5614b2d8d6",
+          "text": "Bỏ Facebook"
+        }
+      ],
+      "prompt": "Bài kiến thức ít like nhưng có người lưu bài và nhắn hỏi, nên làm gì?"
+    }
+  ],
+  "salt": "e49c35837963091481042f31354e4d07ded82f132a6c78d3e3c6f52c0383c242"
+}

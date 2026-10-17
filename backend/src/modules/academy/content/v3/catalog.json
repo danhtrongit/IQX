@@ -1,0 +1,713 @@
+{
+  "catalog_version": "iqx-academy-v3.2-14ch-94lessons",
+  "chapters": [
+    {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch01-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:dau_tu_chung_khoan",
+          "name": "Đầu tư chứng khoán",
+          "optional": false,
+          "order": 1,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:thi_truong_va_san",
+          "name": "Thị trường và các sàn",
+          "optional": false,
+          "order": 2,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:co_che_giao_dich",
+          "name": "Cơ chế giao dịch",
+          "optional": false,
+          "order": 3,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:t2_phi_thue_margin",
+          "name": "T+2, phí, thuế và margin",
+          "optional": false,
+          "order": 4,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:co_phieu_trai_phieu",
+          "name": "Cổ phiếu và trái phiếu",
+          "optional": false,
+          "order": 5,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-l06",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:quy_etf_cw_phai_sinh",
+          "name": "Quỹ, ETF, chứng quyền và phái sinh",
+          "optional": false,
+          "order": 6,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-l07",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:quyen_co_dong",
+          "name": "Quyền cổ đông và sự kiện doanh nghiệp",
+          "optional": false,
+          "order": 7,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-l08",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:chu_ky_kinh_te_lai_suat",
+          "name": "Chu kỳ kinh tế và lãi suất",
+          "optional": false,
+          "order": 8,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-l09",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:bon_pha_thi_truong",
+          "name": "Bốn pha của thị trường",
+          "optional": false,
+          "order": 9,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-l10",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:quan_tri_rui_ro_tam_ly",
+          "name": "Quản trị rủi ro và tâm lý đầu tư",
+          "optional": false,
+          "order": 10,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch01-exam",
+          "intro": "Bài thi gồm 20 câu hỏi về toàn bộ kiến thức Chương 1.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch01",
+          "name": "Bài thi Chương 1",
+          "optional": false,
+          "order": 11,
+          "question_count": 20,
+          "unlock": null
+        }
+      ],
+      "lesson_count": 10,
+      "no": 1,
+      "published": true,
+      "title": "Nền tảng"
+    },
+    {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": true,
+          "id": "ch02-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:saco_la_ai",
+          "name": "SACO là ai và làm gì",
+          "optional": false,
+          "order": 1,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch02-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:hieu_khach_hang",
+          "name": "Hiểu khách hàng",
+          "optional": false,
+          "order": 2,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch02-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:tim_khach_hang",
+          "name": "Tìm khách hàng",
+          "optional": false,
+          "order": 3,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch02-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:mo_loi_tiep_can",
+          "name": "Mở lời tiếp cận",
+          "optional": false,
+          "order": 4,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch02-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:tu_van_hoi_nghe",
+          "name": "Tư vấn: hỏi đúng, nghe nhiều",
+          "optional": false,
+          "order": 5,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch02-l06",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:ban_gia_tri_dong_hanh",
+          "name": "Bán giá trị bạn đồng hành",
+          "optional": false,
+          "order": 6,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch02-l07",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:xu_ly_tu_choi",
+          "name": "Xử lý từ chối",
+          "optional": false,
+          "order": 7,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch02-l08",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:chot_kich_hoat_khach",
+          "name": "Chốt và kích hoạt khách",
+          "optional": false,
+          "order": 8,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch02-l09",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:cham_soc_gioi_thieu",
+          "name": "Chăm sóc và giới thiệu",
+          "optional": false,
+          "order": 9,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch02-l10",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:nguyen_tac_lich_lam_viec",
+          "name": "Nguyên tắc nghề và lịch làm việc mỗi ngày",
+          "optional": false,
+          "order": 10,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch02-exam",
+          "intro": "Bài thi gồm 20 câu hỏi về toàn bộ kỹ năng sale của SACO trong Chương 2.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch02",
+          "name": "Bài thi Chương 2",
+          "optional": false,
+          "order": 11,
+          "question_count": 20,
+          "unlock": null
+        }
+      ],
+      "lesson_count": 10,
+      "no": 2,
+      "published": true,
+      "title": "Kỹ năng Sale SACO"
+    },
+    {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": true,
+          "id": "ch03-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:vi_sao_thuong_hieu",
+          "name": "Vì sao SACO cần thương hiệu cá nhân",
+          "optional": false,
+          "order": 1,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch03-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:dinh_vi_hinh_anh",
+          "name": "Định vị và hình ảnh",
+          "optional": false,
+          "order": 2,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch03-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:thuong_hieu_offline",
+          "name": "Thương hiệu offline",
+          "optional": false,
+          "order": 3,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch03-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:he_sinh_thai_online",
+          "name": "Hệ sinh thái online",
+          "optional": false,
+          "order": 4,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch03-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:thuong_hieu_facebook",
+          "name": "Thương hiệu trên Facebook cá nhân",
+          "optional": false,
+          "order": 5,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch03-l06",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:thuong_hieu_zalo",
+          "name": "Thương hiệu trên Zalo",
+          "optional": false,
+          "order": 6,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch03-l07",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:thuong_hieu_tiktok_reels",
+          "name": "Thương hiệu trên TikTok và Reels",
+          "optional": false,
+          "order": 7,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch03-l08",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:livestream_hoi_nhom",
+          "name": "Livestream và hội nhóm",
+          "optional": false,
+          "order": 8,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": true,
+          "id": "ch03-l09",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:tam_sai_lam_100_ngay",
+          "name": "Tám sai lầm và kế hoạch 100 ngày",
+          "optional": false,
+          "order": 9,
+          "question_count": 3,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch03-exam",
+          "intro": "Bài thi gồm 20 câu hỏi về toàn bộ kiến thức thương hiệu cá nhân trong Chương 3.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch03",
+          "name": "Bài thi Chương 3",
+          "optional": false,
+          "order": 10,
+          "question_count": 20,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch03-practice",
+          "intro": null,
+          "kind": "practice",
+          "lesson_key": "concept:phong_tap_thuc_chien",
+          "name": "Phòng tập thực chiến",
+          "optional": true,
+          "order": 11,
+          "question_count": 3,
+          "unlock": null
+        }
+      ],
+      "lesson_count": 9,
+      "no": 3,
+      "published": true,
+      "title": "Thương hiệu cá nhân"
+    },
+    {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch04-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:bieu_do_nen",
+          "name": "Biểu đồ nến",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:xu_huong",
+          "name": "Xu hướng",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:ho_tro_khang_cu",
+          "name": "Hỗ trợ và kháng cự",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:volume",
+          "name": "Khối lượng",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": {
+            "id": "volume",
+            "kind": "technical",
+            "label": "Khối lượng"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:ma",
+          "name": "MA · đường trung bình",
+          "optional": false,
+          "order": 5,
+          "question_count": 5,
+          "unlock": {
+            "id": "ma",
+            "kind": "technical",
+            "label": "MA"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-l06",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:rsi",
+          "name": "RSI",
+          "optional": false,
+          "order": 6,
+          "question_count": 5,
+          "unlock": {
+            "id": "rsi",
+            "kind": "technical",
+            "label": "RSI"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-l07",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:macd",
+          "name": "MACD",
+          "optional": false,
+          "order": 7,
+          "question_count": 5,
+          "unlock": {
+            "id": "macd",
+            "kind": "technical",
+            "label": "MACD"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-l08",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:bollinger",
+          "name": "Bollinger Bands",
+          "optional": false,
+          "order": 8,
+          "question_count": 5,
+          "unlock": {
+            "id": "bollinger",
+            "kind": "technical",
+            "label": "Bollinger Bands"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-l09",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:fibonacci",
+          "name": "Fibonacci",
+          "optional": false,
+          "order": 9,
+          "question_count": 5,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-l10",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:song_elliott",
+          "name": "Sóng Elliott",
+          "optional": false,
+          "order": 10,
+          "question_count": 5,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch04-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 4.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch04",
+          "name": "Bài thi Chương 4",
+          "optional": false,
+          "order": 11,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
+      "lesson_count": 10,
+      "no": 4,
+      "published": true,
+      "title": "Phương pháp kỹ thuật"
+    },
+    {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch05-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:dca",
+          "name": "Đầu tư định kỳ (DCA)",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch05-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:dau_tu_gia_tri",
+          "name": "Đầu tư giá trị",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch05-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:phuong_phap_4m",
+          "name": "Phương pháp 4M",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch05-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "concept:canslim",
+          "name": "CANSLIM",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": null
+        },
+        {
+          "has_scenario": false,
+          "id": "ch05-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 5.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch05",
+          "name": "Bài thi Chương 5",
+          "optional": false,
+          "order": 5,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
+      "lesson_count": 4,
+      "no": 5,
+      "published": true,
+      "title": "Phương pháp cơ bản"
+    },
+    {
+      "lesson_count": 7,
+      "no": 6,
+      "published": false,
+      "title": "Backtest và Bộ lọc"
+    },
+    {
+      "lesson_count": 4,
+      "no": 7,
+      "published": false,
+      "title": "Chỉ báo xu hướng"
+    },
+    {
+      "lesson_count": 7,
+      "no": 8,
+      "published": false,
+      "title": "Chỉ báo động lượng và dòng tiền"
+    },
+    {
+      "lesson_count": 6,
+      "no": 9,
+      "published": false,
+      "title": "Tốc độ tăng trưởng"
+    },
+    {
+      "lesson_count": 5,
+      "no": 10,
+      "published": false,
+      "title": "Độ ổn định"
+    },
+    {
+      "lesson_count": 7,
+      "no": 11,
+      "published": false,
+      "title": "Hiệu quả và biên lợi nhuận"
+    },
+    {
+      "lesson_count": 4,
+      "no": 12,
+      "published": false,
+      "title": "Nợ và khả năng thanh toán"
+    },
+    {
+      "lesson_count": 5,
+      "no": 13,
+      "published": false,
+      "title": "Dòng tiền"
+    },
+    {
+      "lesson_count": 6,
+      "no": 14,
+      "published": false,
+      "title": "Định giá"
+    }
+  ],
+  "format": "iqx-academy-catalog-v3"
+}

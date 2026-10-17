@@ -1,0 +1,317 @@
+{
+  "chapter": 2,
+  "charts": {
+    "c2l3-g1": {
+      "alt": "Các vòng quan hệ từ trong ra ngoài: gia đình, bạn bè thân, đồng nghiệp và người quen, mạng xã hội",
+      "kind": "segment_bar",
+      "max": 40,
+      "rows": [
+        {
+          "label": "Gia đình",
+          "segments": [
+            {
+              "tone": "pos",
+              "value": 10
+            }
+          ],
+          "total": {
+            "text": "≈ 10 người"
+          }
+        },
+        {
+          "label": "Bạn bè thân",
+          "segments": [
+            {
+              "tone": "pos",
+              "value": 20
+            }
+          ],
+          "total": {
+            "text": "≈ 20 người"
+          }
+        },
+        {
+          "label": "Đồng nghiệp, người quen",
+          "segments": [
+            {
+              "tone": "p1",
+              "value": 30
+            }
+          ],
+          "total": {
+            "text": "≈ 30 người"
+          }
+        },
+        {
+          "label": "Mạng xã hội, cộng đồng",
+          "segments": [
+            {
+              "tone": "p1",
+              "value": 40
+            }
+          ],
+          "total": {
+            "text": "≈ 40 người"
+          }
+        }
+      ],
+      "unit": "người"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Bước đầu tiên của phễu là Traffic: có người để nói chuyện. Tin vui là bạn không cần bắt đầu từ con số không, vì xung quanh bạn đã có sẵn rất nhiều người.",
+  "lesson_key": "concept:tim_khach_hang",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Hãy lấy giấy bút hoặc mở điện thoại, viết ra tên 100 người bạn quen. Đừng tự loại ai vì nghĩ “người này chắc không có tiền” hay “người này không quan tâm”. Bạn chưa hỏi thì chưa biết.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c2l3-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Bắt đầu từ vòng trong cùng, nơi mọi người đã tin bạn. Khi có kinh nghiệm và câu chuyện thật để kể, bạn mở rộng ra các vòng ngoài.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Danh sách 100 người"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Người quen",
+              "text": "Gia đình, bạn bè, đồng nghiệp cũ, hàng xóm. Dễ bắt đầu nhất vì đã có sẵn niềm tin."
+            },
+            {
+              "term": "Giới thiệu",
+              "text": "Khách hài lòng giới thiệu người thân, bạn bè. Đây là nguồn khách chất lượng nhất."
+            },
+            {
+              "term": "Mạng xã hội",
+              "text": "Facebook, Zalo, TikTok. Chia sẻ kiến thức dễ hiểu để người khác tự tìm đến bạn."
+            },
+            {
+              "term": "Hội thảo, workshop",
+              "text": "Mời người quan tâm đến các buổi chia sẻ của đội nhóm và công ty."
+            },
+            {
+              "term": "Cộng đồng",
+              "text": "Câu lạc bộ, nhóm sở thích, hội nhóm nơi làm việc, nơi bạn đã là thành viên."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s2",
+      "title": "Năm nguồn khách hàng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Mục tiêu của việc đăng bài là để mọi người biết bạn đang làm gì và thấy bạn đáng tin, không phải để bán hàng mỗi ngày.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "bullets": [
+                "Kiến thức đơn giản, ví dụ dễ hiểu",
+                "Bản tin thị trường ngắn gọn",
+                "Hình ảnh hội thảo, buổi học",
+                "Câu chuyện thật về hành trình của bạn"
+              ],
+              "title": "Nên đăng",
+              "tone": "good"
+            },
+            {
+              "bullets": [
+                "Khoe lãi, khoe tài khoản",
+                "Hứa hẹn lợi nhuận",
+                "Mã cổ phiếu “chắc chắn tăng”",
+                "Thông tin, hình ảnh tài khoản của khách"
+              ],
+              "title": "Không đăng",
+              "tone": "bad"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Đăng gì trên mạng xã hội"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Mỗi người trong danh sách nên có một dòng ghi chép. Nhờ vậy bạn biết ai cần liên hệ lại, khi nào, và nói chuyện gì.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Tên"
+            },
+            {
+              "label": "Quan hệ"
+            },
+            {
+              "label": "Mối quan tâm"
+            },
+            {
+              "label": "Liên hệ lại"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Chị Lan",
+                "Đồng nghiệp cũ",
+                "Có tiền gửi tiết kiệm, muốn sinh lời hơn",
+                "Thứ Bảy"
+              ]
+            },
+            {
+              "cells": [
+                "Anh Minh",
+                "Bạn đại học",
+                "Đã có tài khoản, từng lỗ",
+                "Tuần sau"
+              ]
+            },
+            {
+              "cells": [
+                "Cô Hoa",
+                "Hàng xóm",
+                "Chưa biết gì, tò mò",
+                "Mời hội thảo"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s4",
+      "title": "Ghi chép lại mọi người"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ngoài con số 5 người mỗi ngày, hãy duy trì thói quen <b>2 - 3 - 100</b> để người khác tự tìm đến bạn:",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "label": "ngày đăng 1 bài lên Facebook và Zalo",
+              "value": "2"
+            },
+            {
+              "label": "ngày gặp 1 khách hoặc tham gia 1 câu lạc bộ",
+              "value": "3"
+            },
+            {
+              "label": "ngày làm 100 video TikTok hoặc Reels",
+              "value": "100"
+            }
+          ],
+          "type": "stats",
+          "variant": "big"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "bullets": [
+                "Gặp mối quan hệ xung quanh",
+                "Câu lạc bộ, thể thao",
+                "Sự kiện, hội thảo",
+                "Thông điệp: giới thiệu bạn là ai, đang làm gì, ở đâu"
+              ],
+              "subtitle": "Gặp trực tiếp",
+              "title": "Offline"
+            },
+            {
+              "bullets": [
+                "Facebook cá nhân",
+                "TikTok, Reels",
+                "Hội nhóm Zalo, Facebook",
+                "Nội dung: kiến thức, câu chuyện thật, bản tin ngắn"
+              ],
+              "subtitle": "Mạng xã hội",
+              "title": "Online"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "best_option": 0,
+          "debrief": "<b>Cách tốt nhất: đổi nội dung sang chia sẻ giá trị.</b> Bài chỉ chào hàng khiến bạn bè lướt qua, đăng nhiều hơn chỉ làm họ khó chịu hơn. Khoe lãi vừa vi phạm nguyên tắc nghề, vừa thu hút sai người. Khi Lan chia sẻ điều có ích, người đọc thấy Lan hiểu chuyện và tự hỏi thêm.",
+          "options": [
+            "Đổi sang chia sẻ kiến thức đơn giản, câu chuyện thật và bản tin ngắn, đăng 2 ngày 1 bài",
+            "Tăng lên 3 bài mỗi ngày cho nhiều người thấy hơn",
+            "Đăng hình tài khoản lãi để thu hút sự chú ý"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Lan đăng 7 bài trong một tuần, bài nào cũng có nội dung “Mở tài khoản ngay, ưu đãi hấp dẫn, inbox em”. Không ai thả tim, không ai nhắn tin."
+          ],
+          "title": "Đăng bài cả tuần không ai tương tác",
+          "type": "scenario"
+        },
+        {
+          "id": "l3",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Viết bài đăng đầu tiên trả lời 3 câu: Bạn là ai? Bạn đang làm gì, ở công ty nào? Bạn có thể giúp được ai? Không chào mời mở tài khoản trong bài này."
+          ],
+          "title": "Bài tự làm: bài giới thiệu bản thân",
+          "type": "workpad"
+        },
+        {
+          "id": "l3",
+          "items": [
+            {
+              "id": "0",
+              "text": "Viết 30 tên đầu tiên trong danh sách 100 người"
+            },
+            {
+              "id": "1",
+              "text": "Đăng bài giới thiệu bản thân"
+            },
+            {
+              "id": "2",
+              "text": "Tham gia 1 câu lạc bộ hoặc hội nhóm trong tuần này"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s5",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Bắt đầu bằng <b>danh sách 100 người</b>, không tự loại ai.",
+    "Có năm nguồn khách, trong đó <b>giới thiệu</b> là nguồn chất lượng nhất.",
+    "Mạng xã hội dùng để <b>chia sẻ giá trị</b>, không khoe lãi, không hứa lợi nhuận.",
+    "<b>Ghi chép</b> từng người để biết khi nào liên hệ lại."
+  ],
+  "title": "Tìm khách hàng"
+}

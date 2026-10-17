@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-l05",
+  "questions": [
+    {
+      "correct_option_id": "cb08f08cae",
+      "id": "ch04-l05-q01",
+      "options": [
+        {
+          "id": "cb08f08cae",
+          "text": "Đường giá đóng cửa trung bình của một số phiên gần nhất"
+        },
+        {
+          "id": "6705012b9c",
+          "text": "Đường nối các mức giá cao nhất"
+        },
+        {
+          "id": "7bda660c07",
+          "text": "Đường thể hiện khối lượng giao dịch"
+        }
+      ],
+      "prompt": "MA là gì?"
+    },
+    {
+      "correct_option_id": "bfeaea1a91",
+      "id": "ch04-l05-q02",
+      "options": [
+        {
+          "id": "bfeaea1a91",
+          "text": "Mượt hơn, phản ánh xu hướng dài hạn"
+        },
+        {
+          "id": "08a38d78c4",
+          "text": "Bám sát giá hơn"
+        },
+        {
+          "id": "4edd873da2",
+          "text": "Phản ứng nhanh hơn khi giá đổi hướng"
+        }
+      ],
+      "prompt": "So với MA20, đường MA200 có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "33beff9bab",
+      "id": "ch04-l05-q03",
+      "options": [
+        {
+          "id": "33beff9bab",
+          "text": "Xu hướng tăng"
+        },
+        {
+          "id": "d8736238f8",
+          "text": "Xu hướng giảm"
+        },
+        {
+          "id": "bf9e8dc5dc",
+          "text": "Thị trường đi ngang"
+        }
+      ],
+      "prompt": "Giá nằm trên đường MA và MA dốc lên cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "880bb1630e",
+      "id": "ch04-l05-q04",
+      "options": [
+        {
+          "id": "880bb1630e",
+          "text": "MA ngắn hạn cắt lên trên MA dài hạn"
+        },
+        {
+          "id": "666923cafd",
+          "text": "MA ngắn hạn cắt xuống dưới MA dài hạn"
+        },
+        {
+          "id": "9dc5bf16be",
+          "text": "Giá chạm vào đường MA"
+        }
+      ],
+      "prompt": "Giao cắt vàng là gì?"
+    },
+    {
+      "correct_option_id": "5eda429553",
+      "id": "ch04-l05-q05",
+      "options": [
+        {
+          "id": "5eda429553",
+          "text": "Đi sau giá và dễ nhiễu khi thị trường đi ngang"
+        },
+        {
+          "id": "04398aaa38",
+          "text": "Không dùng được cho cổ phiếu"
+        },
+        {
+          "id": "c75ca189c6",
+          "text": "Chỉ hoạt động khi thị trường giảm"
+        }
+      ],
+      "prompt": "Hạn chế của MA là gì?"
+    }
+  ],
+  "salt": "723c3b058fdf5b6dd2edc39b5ca18000ab2ffc45fda48da032c97e3f9d5f84e0"
+}

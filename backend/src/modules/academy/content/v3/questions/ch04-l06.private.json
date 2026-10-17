@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-l06",
+  "questions": [
+    {
+      "correct_option_id": "ac97560701",
+      "id": "ch04-l06-q01",
+      "options": [
+        {
+          "id": "ac97560701",
+          "text": "Mức tăng trung bình và mức giảm trung bình của các phiên gần đây"
+        },
+        {
+          "id": "aef1b338d3",
+          "text": "Giá cổ phiếu với VN-Index"
+        },
+        {
+          "id": "66666aa096",
+          "text": "Khối lượng mua với khối lượng bán"
+        }
+      ],
+      "prompt": "RSI so sánh điều gì?"
+    },
+    {
+      "correct_option_id": "e4f6e9563b",
+      "id": "ch04-l06-q02",
+      "options": [
+        {
+          "id": "e4f6e9563b",
+          "text": "Quá mua"
+        },
+        {
+          "id": "79c56e78a8",
+          "text": "Quá bán"
+        },
+        {
+          "id": "2a5ca9ccb2",
+          "text": "Trung tính"
+        }
+      ],
+      "prompt": "RSI trên 70 thường được gọi là vùng gì?"
+    },
+    {
+      "correct_option_id": "aa903ba644",
+      "id": "ch04-l06-q03",
+      "options": [
+        {
+          "id": "aa903ba644",
+          "text": "Giá vẫn có thể tiếp tục tăng"
+        },
+        {
+          "id": "6b1521b307",
+          "text": "Giá chắc chắn sẽ giảm ngay"
+        },
+        {
+          "id": "9479e5a6d5",
+          "text": "Cần bán toàn bộ cổ phiếu"
+        }
+      ],
+      "prompt": "Khi RSI vượt trên 70 trong xu hướng tăng mạnh, điều nào đúng?"
+    },
+    {
+      "correct_option_id": "a8fa11289f",
+      "id": "ch04-l06-q04",
+      "options": [
+        {
+          "id": "a8fa11289f",
+          "text": "Mua khi giá điều chỉnh trong xu hướng tăng và RSI quay lên"
+        },
+        {
+          "id": "87455261d6",
+          "text": "Mua ngay khi RSI chạm 30 trong xu hướng giảm"
+        },
+        {
+          "id": "b130470f29",
+          "text": "Mua khi RSI vượt lên trên 70"
+        }
+      ],
+      "prompt": "Theo bài học, cách dùng RSI phù hợp cho người mới là gì?"
+    },
+    {
+      "correct_option_id": "66dbdc620a",
+      "id": "ch04-l06-q05",
+      "options": [
+        {
+          "id": "66dbdc620a",
+          "text": "Giá tạo đỉnh cao hơn nhưng RSI tạo đỉnh thấp hơn"
+        },
+        {
+          "id": "db750184a0",
+          "text": "Giá và RSI cùng tạo đỉnh cao hơn"
+        },
+        {
+          "id": "0e42fcc82f",
+          "text": "RSI vượt lên trên 70"
+        }
+      ],
+      "prompt": "Phân kỳ giảm là gì?"
+    }
+  ],
+  "salt": "ad38a0d6112f2971be1a863be5dbd3c88ec140a2539e39836b2202883d168e70"
+}

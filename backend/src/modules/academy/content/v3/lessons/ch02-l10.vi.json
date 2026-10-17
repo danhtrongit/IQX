@@ -1,0 +1,357 @@
+{
+  "chapter": 2,
+  "charts": {
+    "c2l10-g1": {
+      "alt": "Lịch một ngày làm việc của chuyên viên tư vấn",
+      "domain": [
+        450,
+        1290
+      ],
+      "highlight": {
+        "from": 540,
+        "to": 900
+      },
+      "kind": "gantt",
+      "legend": [
+        {
+          "label": "8:00 Gửi bản tin sáng",
+          "tone": "p4"
+        },
+        {
+          "label": "11:30 Cập nhật trưa",
+          "tone": "warn"
+        },
+        {
+          "label": "15:00 Tổng kết cuối ngày",
+          "tone": "p5"
+        },
+        {
+          "label": "19:00-21:00 Nhắn tin, gọi điện, hẹn tư vấn",
+          "tone": "pos"
+        }
+      ],
+      "rows": [
+        {
+          "name": "Lịch làm việc",
+          "segments": [
+            {
+              "from": 480,
+              "label": "Bản tin sáng",
+              "to": 525,
+              "tone": "p4"
+            },
+            {
+              "from": 540,
+              "label": "Theo dõi, hỗ trợ khách",
+              "to": 690,
+              "tone": "p1"
+            },
+            {
+              "from": 690,
+              "label": "Trưa",
+              "to": 720,
+              "tone": "warn"
+            },
+            {
+              "from": 780,
+              "label": "Hỗ trợ khách",
+              "to": 900,
+              "tone": "p1"
+            },
+            {
+              "from": 900,
+              "label": "Tổng kết",
+              "to": 945,
+              "tone": "p5"
+            },
+            {
+              "from": 1140,
+              "label": "Tiếp cận người mới",
+              "to": 1260,
+              "tone": "pos"
+            }
+          ]
+        }
+      ],
+      "tick_format": "hhmm",
+      "ticks": [
+        {
+          "label": "8:00",
+          "v": 480
+        },
+        {
+          "label": "9:00",
+          "v": 540
+        },
+        {
+          "label": "11:30",
+          "v": 690
+        },
+        {
+          "label": "13:00",
+          "v": 780
+        },
+        {
+          "label": "15:00",
+          "v": 900
+        },
+        {
+          "label": "19:00",
+          "v": 1140
+        },
+        {
+          "label": "21:00",
+          "v": 1260
+        }
+      ]
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Uy tín là tài sản lớn nhất của SACO. Mất một khách có thể tìm lại, nhưng mất uy tín thì rất khó lấy lại. Bài này gồm những điều tuyệt đối không làm và một lịch làm việc đơn giản để bạn làm theo mỗi ngày.",
+  "lesson_key": "concept:nguyen_tac_lich_lam_viec",
+  "order": 10,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Không hứa lãi bao nhiêu phần trăm, không hứa “chắc chắn không lỗ”.",
+              "title": "Cam kết lợi nhuận"
+            },
+            {
+              "text": "Tài khoản là của khách, khách tự quyết định và tự thao tác.",
+              "title": "Giữ mật khẩu, OTP, giao dịch thay khách"
+            },
+            {
+              "text": "Khách luôn tự nạp tiền vào tài khoản chứng khoán đứng tên mình.",
+              "title": "Nhận tiền của khách"
+            },
+            {
+              "text": "Không gửi mã “chắc chắn tăng” hay tin chưa được xác thực.",
+              "title": "“Phím hàng”, lan truyền tin đồn"
+            },
+            {
+              "text": "Luôn nói rõ chứng khoán có rủi ro, phí theo biểu phí công bố.",
+              "title": "Che giấu rủi ro và phí"
+            },
+            {
+              "text": "Không chia sẻ tên, số tài khoản, hình ảnh tài khoản của khách.",
+              "title": "Làm lộ thông tin khách"
+            }
+          ],
+          "style": "mistake",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "Sáu điều SACO không bao giờ làm"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": ""
+            },
+            {
+              "label": "Không nói",
+              "tone": "bad"
+            },
+            {
+              "highlight": true,
+              "label": "Nên nói"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Khi gửi thông tin",
+                "“Mã này chắc chắn tăng.”",
+                "“Đây là thông tin tham khảo, quyết định là của anh/chị.”"
+              ]
+            },
+            {
+              "cells": [
+                "Khi nói về lợi nhuận",
+                "“Cam kết lãi 3% mỗi tháng.”",
+                "“Chứng khoán có thể lãi, cũng có thể lỗ.”"
+              ]
+            },
+            {
+              "cells": [
+                "Khi khách nhờ làm hộ",
+                "“Đưa em mật khẩu, em đặt giúp.”",
+                "“Em hướng dẫn, anh/chị tự bấm nhé.”"
+              ]
+            },
+            {
+              "cells": [
+                "Khi nói về phí",
+                "“Phí 0 đồng.”",
+                "“Phí theo biểu phí công bố, đổi lại anh/chị có người đồng hành.”"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s2",
+      "title": "Đổi câu nói rủi ro thành câu nói an toàn"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Thị trường giao dịch từ 9:00 đến 15:00. Ban ngày dành cho chăm sóc khách hiện có, buổi tối là thời gian tốt nhất để tiếp cận người mới, vì đó là lúc mọi người rảnh trả lời tin nhắn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c2l10-g1",
+          "type": "chart"
+        }
+      ],
+      "id": "s3",
+      "title": "Một ngày làm việc của SACO"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Chỉ cần làm đủ ba con số này mỗi ngày làm việc, bạn sẽ có khoảng 100 người được tiếp cận mỗi tháng, đúng như mục tiêu ở Bài 1.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "label": "người mới được tiếp cận",
+              "value": "5"
+            },
+            {
+              "label": "cuộc tư vấn hoặc hẹn gặp",
+              "value": "2"
+            },
+            {
+              "label": "bài chia sẻ giá trị trên mạng xã hội",
+              "value": "1"
+            }
+          ],
+          "type": "stats",
+          "variant": "big"
+        }
+      ],
+      "id": "s4",
+      "title": "Công thức 5 - 2 - 1 mỗi ngày"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Chỉ số"
+            },
+            {
+              "label": "Mục tiêu tuần"
+            },
+            {
+              "label": "Ý nghĩa"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Người được tiếp cận",
+                "25",
+                "Bước Traffic"
+              ]
+            },
+            {
+              "cells": [
+                "Cuộc tư vấn",
+                "8",
+                "Bước Tư vấn"
+              ]
+            },
+            {
+              "cells": [
+                "Tài khoản mở và đăng ký SACO",
+                "2-3",
+                "Bước Chuyển đổi"
+              ]
+            },
+            {
+              "cells": [
+                "Khách được liên hệ chăm sóc",
+                "Tất cả khách hiện có",
+                "Bước Chăm sóc"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "text": "Mục tiêu tham khảo, điều chỉnh theo trưởng nhóm",
+          "type": "note"
+        },
+        {
+          "text": "Nếu con số nào thấp, hãy xem lại bước tương ứng trong phễu. Ví dụ, tiếp cận nhiều nhưng ít cuộc tư vấn thì cần xem lại cách mở lời ở Bài 4.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Tự chấm điểm cuối tuần"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 0,
+          "debrief": "<b>Cách tốt nhất: không lan truyền, nhắc nguyên tắc.</b> Tin “nội bộ” trên mạng gần như luôn là tin đồn, có thể là chiêu kéo giá. Chuyển tiếp hay khuyên mua thử đều biến bạn thành người “phím hàng”. Bảo vệ khách khỏi tin đồn là một trong những giá trị lớn nhất của SACO.",
+          "options": [
+            "Nói rõ đây là tin chưa được xác thực, không nên mua bán theo tin đồn, nhắc lại kế hoạch của khách, rồi báo trưởng nhóm",
+            "Chuyển tiếp tin này cho tất cả khách để không ai bị lỡ",
+            "Bảo khách mua ít thôi để thử"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Trong một nhóm Zalo, có người gửi: “Mã X sẽ lên 50% tuần sau, nguồn tin nội bộ.” Một khách nhắn hỏi bạn có nên mua không."
+          ],
+          "title": "Tin “nội bộ” trong nhóm Zalo",
+          "type": "scenario"
+        },
+        {
+          "id": "l10",
+          "items": [
+            {
+              "id": "0",
+              "text": "Tạo lịch làm việc theo khung ngày ở trên trên điện thoại hoặc Google Calendar"
+            },
+            {
+              "id": "1",
+              "text": "Làm đủ 5 - 2 - 1 trong 5 ngày liên tiếp"
+            },
+            {
+              "id": "2",
+              "text": "Cuối tuần điền bảng tự chấm điểm và gửi trưởng nhóm"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s6",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Uy tín là tài sản lớn nhất. Nhớ <b>sáu điều không bao giờ làm</b>.",
+    "Luôn nói <b>câu an toàn</b>: thông tin tham khảo, có lãi có lỗ, khách tự bấm.",
+    "Ban ngày <b>chăm sóc khách</b>, buổi tối <b>tiếp cận người mới</b>.",
+    "Làm đủ <b>5 - 2 - 1</b> mỗi ngày và tự chấm điểm cuối tuần."
+  ],
+  "title": "Nguyên tắc nghề và lịch làm việc mỗi ngày"
+}

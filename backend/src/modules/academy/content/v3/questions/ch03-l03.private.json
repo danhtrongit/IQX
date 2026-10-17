@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-l03",
+  "questions": [
+    {
+      "correct_option_id": "e30076eb28",
+      "id": "ch03-l03-q01",
+      "options": [
+        {
+          "id": "e30076eb28",
+          "text": "Bạn là ai, bạn giúp ai, giúp gì, câu mở"
+        },
+        {
+          "id": "96720e6259",
+          "text": "Tên, số tài khoản, biểu phí"
+        },
+        {
+          "id": "32b1c3f8bc",
+          "text": "Mã cổ phiếu, giá mục tiêu, lời hứa"
+        }
+      ],
+      "prompt": "Câu giới thiệu 30 giây gồm những phần nào?"
+    },
+    {
+      "correct_option_id": "7a08aa4d48",
+      "id": "ch03-l03-q02",
+      "options": [
+        {
+          "id": "7a08aa4d48",
+          "text": "Trong 24 giờ sau khi gặp, nhắn cảm ơn và gửi một thứ có ích"
+        },
+        {
+          "id": "d7c824fdd0",
+          "text": "Phải chốt mở tài khoản trong 24 giờ"
+        },
+        {
+          "id": "9fa4339def",
+          "text": "Đăng 24 bài mỗi ngày"
+        }
+      ],
+      "prompt": "Quy tắc 24 giờ là gì?"
+    },
+    {
+      "correct_option_id": "4ed40f9aff",
+      "id": "ch03-l03-q03",
+      "options": [
+        {
+          "id": "4ed40f9aff",
+          "text": "Giới thiệu ngắn, quan tâm lại người đối diện, kết nối sau"
+        },
+        {
+          "id": "57259407cd",
+          "text": "Mời mở tài khoản ngay tại bàn"
+        },
+        {
+          "id": "1ab932b219",
+          "text": "Giấu nghề vì sợ bị nghĩ là đi bán hàng"
+        }
+      ],
+      "prompt": "Ở đám cưới, khi có người hỏi bạn làm gì, nên làm gì?"
+    }
+  ],
+  "salt": "bfff9aec6b722d82a98d581399112c1d25499f597906c8ce6168eb35cdafe31f"
+}

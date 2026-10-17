@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-l10",
+  "questions": [
+    {
+      "correct_option_id": "9197c7e04e",
+      "id": "ch04-l10-q01",
+      "options": [
+        {
+          "id": "9197c7e04e",
+          "text": "5 sóng đẩy và 3 sóng điều chỉnh"
+        },
+        {
+          "id": "476b9906b6",
+          "text": "3 sóng đẩy và 5 sóng điều chỉnh"
+        },
+        {
+          "id": "eb90fe8d1d",
+          "text": "10 sóng tăng liên tiếp"
+        }
+      ],
+      "prompt": "Một chu kỳ sóng Elliott hoàn chỉnh gồm những sóng nào?"
+    },
+    {
+      "correct_option_id": "39d947a27f",
+      "id": "ch04-l10-q02",
+      "options": [
+        {
+          "id": "39d947a27f",
+          "text": "Sóng 3"
+        },
+        {
+          "id": "161443ec6d",
+          "text": "Sóng 1"
+        },
+        {
+          "id": "17f772d247",
+          "text": "Sóng 5"
+        }
+      ],
+      "prompt": "Sóng nào thường dài và mạnh nhất?"
+    },
+    {
+      "correct_option_id": "5cf41c03d7",
+      "id": "ch04-l10-q03",
+      "options": [
+        {
+          "id": "5cf41c03d7",
+          "text": "Không giảm thấp hơn điểm bắt đầu của sóng 1"
+        },
+        {
+          "id": "28e7dbf61f",
+          "text": "Luôn dài hơn sóng 3"
+        },
+        {
+          "id": "815f760c1b",
+          "text": "Luôn đi lên theo xu hướng chính"
+        }
+      ],
+      "prompt": "Quy tắc nào đúng với sóng 2?"
+    },
+    {
+      "correct_option_id": "c90f729f07",
+      "id": "ch04-l10-q04",
+      "options": [
+        {
+          "id": "c90f729f07",
+          "text": "Tâm lý hưng phấn, hay đi kèm phân kỳ giảm"
+        },
+        {
+          "id": "523a613b71",
+          "text": "Ít người tin xu hướng tăng đã bắt đầu"
+        },
+        {
+          "id": "3c710bdc88",
+          "text": "Khối lượng giao dịch lớn nhất chu kỳ"
+        }
+      ],
+      "prompt": "Sóng 5 thường có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "73dd3585f0",
+      "id": "ch04-l10-q05",
+      "options": [
+        {
+          "id": "73dd3585f0",
+          "text": "Việc đếm sóng mang tính chủ quan"
+        },
+        {
+          "id": "eff8794b32",
+          "text": "Không áp dụng được cho cổ phiếu"
+        },
+        {
+          "id": "0c1feb9f05",
+          "text": "Luôn dự đoán chính xác đỉnh và đáy"
+        }
+      ],
+      "prompt": "Hạn chế lớn nhất của sóng Elliott là gì?"
+    }
+  ],
+  "salt": "708cdd972f51be328ca153774fe0779f48ff3aa2bb4bfc17635a82bf98a5d276"
+}

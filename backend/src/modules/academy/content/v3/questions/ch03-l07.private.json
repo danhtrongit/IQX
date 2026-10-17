@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-l07",
+  "questions": [
+    {
+      "correct_option_id": "5a14c86008",
+      "id": "ch03-l07-q01",
+      "options": [
+        {
+          "id": "5a14c86008",
+          "text": "Người xem biết rõ kênh dành cho ai và nhớ bạn hơn"
+        },
+        {
+          "id": "735bed06db",
+          "text": "Vì TikTok cấm nói chung chung"
+        },
+        {
+          "id": "5eaac06c55",
+          "text": "Để được quảng cáo miễn phí"
+        }
+      ],
+      "prompt": "Vì sao nên chọn một ngách nhỏ trên TikTok?"
+    },
+    {
+      "correct_option_id": "1f0a57f7c2",
+      "id": "ch03-l07-q02",
+      "options": [
+        {
+          "id": "1f0a57f7c2",
+          "text": "Dành một buổi quay nhiều video cho cả tuần"
+        },
+        {
+          "id": "f6c54e1b18",
+          "text": "Quay một video rồi đăng nhiều lần một ngày"
+        },
+        {
+          "id": "109d7b5036",
+          "text": "Thuê người khác quay"
+        }
+      ],
+      "prompt": "“Quay theo lô” nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "ac5b670489",
+      "id": "ch03-l07-q03",
+      "options": [
+        {
+          "id": "ac5b670489",
+          "text": "Làm video giải thích vì sao không cho mã và cách tự kiểm tra cổ phiếu"
+        },
+        {
+          "id": "a407d5468f",
+          "text": "Trả lời từng người một mã"
+        },
+        {
+          "id": "63030f1d7c",
+          "text": "Xóa hết bình luận"
+        }
+      ],
+      "prompt": "Khi nhiều bình luận xin mã, cách tốt nhất là gì?"
+    }
+  ],
+  "salt": "810b9faae732d39b486282d49857c853dfaaf928d7bcc18183bb531e7f2d6e9a"
+}

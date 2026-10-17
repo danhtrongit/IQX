@@ -1,0 +1,924 @@
+{
+  "chapter": 1,
+  "charts": {
+    "c1l1-a1": {
+      "alt": "Một căn nhà cần hàng tỷ đồng, trong khi 100 cổ phiếu chỉ cần khoảng 2 triệu đồng",
+      "kind": "diagram",
+      "shapes": [
+        {
+          "d": "M14 58 L52 26 L90 58",
+          "stroke": "p5",
+          "t": "path",
+          "width": 3
+        },
+        {
+          "fill": "p5",
+          "h": 40,
+          "opacity": 0.2,
+          "stroke": "p5",
+          "t": "rect",
+          "w": 60,
+          "x": 22,
+          "y": 56
+        },
+        {
+          "fill": "p5",
+          "h": 24,
+          "t": "rect",
+          "w": 12,
+          "x": 46,
+          "y": 72
+        },
+        {
+          "anchor": "middle",
+          "size": "s",
+          "t": "text",
+          "text": "hàng tỷ đồng",
+          "x": 52,
+          "y": 114
+        },
+        {
+          "fill": "p1",
+          "h": 46,
+          "opacity": 0.2,
+          "r": 8,
+          "stroke": "p1",
+          "t": "rect",
+          "w": 80,
+          "x": 112,
+          "y": 46
+        },
+        {
+          "anchor": "middle",
+          "size": "s",
+          "t": "text",
+          "text": "100 cổ phiếu",
+          "x": 152,
+          "y": 66
+        },
+        {
+          "anchor": "middle",
+          "size": "m",
+          "t": "text",
+          "text": "2 triệu",
+          "weight": "bold",
+          "x": 152,
+          "y": 84
+        },
+        {
+          "anchor": "middle",
+          "size": "s",
+          "t": "text",
+          "text": "vài triệu đồng",
+          "tone": "p1",
+          "weight": "bold",
+          "x": 152,
+          "y": 114
+        }
+      ],
+      "view_box": [
+        200,
+        120
+      ]
+    },
+    "c1l1-a2": {
+      "alt": "Bán chứng khoán nhận tiền sau 2 ngày, bất động sản mất vài tuần đến vài tháng",
+      "kind": "segment_bar",
+      "max": 20,
+      "rows": [
+        {
+          "label": "Chứng khoán",
+          "segments": [
+            {
+              "tone": "p1",
+              "value": 2
+            }
+          ],
+          "total": {
+            "text": "2 ngày",
+            "tone": "p1"
+          }
+        },
+        {
+          "label": "Bất động sản",
+          "segments": [
+            {
+              "label": "vài tuần đến vài tháng",
+              "tone": "p5",
+              "value": 18
+            }
+          ]
+        }
+      ]
+    },
+    "c1l1-a3": {
+      "alt": "Sở hữu một phần doanh nghiệp: hưởng giá tăng và cổ tức",
+      "kind": "diagram",
+      "shapes": [
+        {
+          "fill": "p3",
+          "h": 96,
+          "opacity": 0.15,
+          "r": 5,
+          "stroke": "p3",
+          "t": "rect",
+          "w": 96,
+          "x": 10,
+          "y": 12
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 18,
+          "y": 20
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 40,
+          "y": 20
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 62,
+          "y": 20
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 84,
+          "y": 20
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 18,
+          "y": 42
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 40,
+          "y": 42
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 62,
+          "y": 42
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 84,
+          "y": 42
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 18,
+          "y": 64
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 40,
+          "y": 64
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 62,
+          "y": 64
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 84,
+          "y": 64
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 18,
+          "y": 86
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 40,
+          "y": 86
+        },
+        {
+          "fill": "p3",
+          "h": 17,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 62,
+          "y": 86
+        },
+        {
+          "fill": "p1",
+          "h": 17,
+          "r": 2,
+          "t": "rect",
+          "w": 17,
+          "x": 84,
+          "y": 86
+        },
+        {
+          "d": "M124 58 L140 46 L152 52 L172 30",
+          "stroke": "p1",
+          "t": "path",
+          "width": 3
+        },
+        {
+          "anchor": "middle",
+          "size": "s",
+          "t": "text",
+          "text": "Giá tăng",
+          "tone": "p1",
+          "weight": "bold",
+          "x": 150,
+          "y": 76
+        },
+        {
+          "cx": 150,
+          "cy": 94,
+          "r": 9,
+          "stroke": "pos",
+          "t": "circle"
+        },
+        {
+          "anchor": "middle",
+          "size": "s",
+          "t": "text",
+          "text": "đ",
+          "tone": "pos",
+          "weight": "bold",
+          "x": 150,
+          "y": 98
+        },
+        {
+          "anchor": "middle",
+          "size": "s",
+          "t": "text",
+          "text": "Cổ tức",
+          "tone": "pos",
+          "weight": "bold",
+          "x": 150,
+          "y": 118
+        }
+      ],
+      "view_box": [
+        200,
+        120
+      ]
+    },
+    "c1l1-a4": {
+      "alt": "Bảng giá công khai và báo cáo tài chính của doanh nghiệp",
+      "kind": "diagram",
+      "shapes": [
+        {
+          "fill": "p1",
+          "h": 88,
+          "opacity": 0.2,
+          "r": 6,
+          "stroke": "p1",
+          "t": "rect",
+          "w": 100,
+          "x": 10,
+          "y": 16
+        },
+        {
+          "fill": "p3",
+          "h": 8,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 44,
+          "x": 20,
+          "y": 30
+        },
+        {
+          "fill": "p4",
+          "h": 8,
+          "r": 2,
+          "t": "rect",
+          "w": 30,
+          "x": 70,
+          "y": 30
+        },
+        {
+          "fill": "p3",
+          "h": 8,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 44,
+          "x": 20,
+          "y": 46
+        },
+        {
+          "fill": "pos",
+          "h": 8,
+          "r": 2,
+          "t": "rect",
+          "w": 30,
+          "x": 70,
+          "y": 46
+        },
+        {
+          "fill": "p3",
+          "h": 8,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 44,
+          "x": 20,
+          "y": 62
+        },
+        {
+          "fill": "warn",
+          "h": 8,
+          "r": 2,
+          "t": "rect",
+          "w": 30,
+          "x": 70,
+          "y": 62
+        },
+        {
+          "fill": "p3",
+          "h": 8,
+          "opacity": 0.35,
+          "r": 2,
+          "t": "rect",
+          "w": 44,
+          "x": 20,
+          "y": 78
+        },
+        {
+          "fill": "neg",
+          "h": 8,
+          "r": 2,
+          "t": "rect",
+          "w": 30,
+          "x": 70,
+          "y": 78
+        },
+        {
+          "d": "M132 16 h40 l14 14 v74 h-54 z",
+          "fill": "p3",
+          "opacity": 0.2,
+          "stroke": "p1",
+          "t": "path",
+          "width": 2
+        },
+        {
+          "stroke": "p1",
+          "t": "line",
+          "width": 2,
+          "x1": 142,
+          "x2": 176,
+          "y1": 44,
+          "y2": 44
+        },
+        {
+          "stroke": "p1",
+          "t": "line",
+          "width": 2,
+          "x1": 142,
+          "x2": 176,
+          "y1": 58,
+          "y2": 58
+        },
+        {
+          "stroke": "p1",
+          "t": "line",
+          "width": 2,
+          "x1": 142,
+          "x2": 176,
+          "y1": 72,
+          "y2": 72
+        },
+        {
+          "stroke": "p1",
+          "t": "line",
+          "width": 2,
+          "x1": 142,
+          "x2": 176,
+          "y1": 86,
+          "y2": 86
+        }
+      ],
+      "view_box": [
+        200,
+        120
+      ]
+    },
+    "c1l1-a5": {
+      "alt": "Thuế khi bán chỉ 0,1% giá trị giao dịch",
+      "kind": "diagram",
+      "shapes": [
+        {
+          "d": "M50 10 h100 v100 l-10 -7 l-10 7 l-10 -7 l-10 7 l-10 -7 l-10 7 l-10 -7 l-10 7 l-10 -7 l-10 7 z",
+          "fill": "pos",
+          "opacity": 0.15,
+          "stroke": "pos",
+          "t": "path",
+          "width": 2
+        },
+        {
+          "anchor": "middle",
+          "size": "s",
+          "t": "text",
+          "text": "Thuế khi bán",
+          "x": 100,
+          "y": 42
+        },
+        {
+          "anchor": "middle",
+          "size": "l",
+          "t": "text",
+          "text": "0,1%",
+          "tone": "pos",
+          "weight": "bold",
+          "x": 100,
+          "y": 76
+        }
+      ],
+      "view_box": [
+        200,
+        120
+      ]
+    },
+    "c1l1-g1": {
+      "animate": "draw",
+      "bounds": [
+        0,
+        350
+      ],
+      "end_labels": [
+        "308 triệu",
+        "179 triệu",
+        "74 triệu"
+      ],
+      "kind": "category",
+      "labels": [
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Đầu tư theo VN-Index",
+          "tone": "p1",
+          "values": [
+            100,
+            114.8248,
+            169.9808,
+            154.144,
+            165.9655,
+            190.6412,
+            258.7569,
+            173.9271,
+            195.1419,
+            218.7762,
+            308.1861
+          ]
+        },
+        {
+          "name": "Gửi tiết kiệm 6%/năm",
+          "tone": "p2",
+          "values": [
+            100,
+            106,
+            112.36,
+            119.1016,
+            126.2477,
+            133.8226,
+            141.8519,
+            150.363,
+            159.3848,
+            168.9479,
+            179.0848
+          ]
+        },
+        {
+          "name": "Giữ tiền mặt (sức mua)",
+          "tone": "p3",
+          "values": [
+            100,
+            97.4089,
+            94.0876,
+            90.8708,
+            88.4043,
+            85.6382,
+            84.0909,
+            81.523,
+            78.9569,
+            76.1911,
+            73.75
+          ]
+        }
+      ],
+      "ticks": [
+        0,
+        50,
+        100,
+        150,
+        200,
+        250,
+        300,
+        350
+      ],
+      "unit": "triệu",
+      "value_labels": "none"
+    },
+    "c1l1-g2": {
+      "alt": "Năm 2015 có 10 tờ tiền 10 triệu, năm 2025 sức mua chỉ còn khoảng 7,4 tờ",
+      "kind": "segment_bar",
+      "max": 10,
+      "pictogram": {
+        "icon": "banknote",
+        "per_unit": 1
+      },
+      "rows": [
+        {
+          "label": "Năm 2015",
+          "segments": [
+            {
+              "tone": "pos",
+              "value": 10
+            }
+          ],
+          "total": {
+            "text": "100 triệu"
+          }
+        },
+        {
+          "label": "Năm 2025",
+          "segments": [
+            {
+              "tone": "pos",
+              "value": 7.4
+            },
+            {
+              "ghost": true,
+              "tone": "neutral",
+              "value": 2.6
+            }
+          ],
+          "total": {
+            "text": "≈ 74 triệu",
+            "tone": "neg"
+          }
+        }
+      ]
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch01-l01",
+  "intro_blocks": [
+    {
+      "items": [
+        {
+          "icon": "vault",
+          "label": "Giữ tiền mặt",
+          "note": "sức mua còn lại",
+          "value": "74 triệu"
+        },
+        {
+          "icon": "landmark",
+          "label": "Gửi tiết kiệm",
+          "note": "lãi suất 6%/năm",
+          "tone": "pos",
+          "value": "179 triệu"
+        },
+        {
+          "highlight": true,
+          "icon": "chart-line",
+          "label": "Đầu tư chứng khoán",
+          "note": "theo VN-Index",
+          "value": "308 triệu"
+        }
+      ],
+      "type": "stats",
+      "variant": "hero"
+    },
+    {
+      "chart_id": "c1l1-g1",
+      "legend": [
+        {
+          "label": "Đầu tư theo VN-Index",
+          "tone": "p1"
+        },
+        {
+          "label": "Gửi tiết kiệm 6%/năm",
+          "tone": "p2"
+        },
+        {
+          "label": "Giữ tiền mặt (sức mua)",
+          "tone": "p3"
+        }
+      ],
+      "table_toggle": true,
+      "title": "Giá trị 100 triệu đồng sau 10 năm (2015-2025)",
+      "type": "chart"
+    }
+  ],
+  "kind": "lesson",
+  "lead": "Cuối năm 2015, ba nhà đầu tư cùng có 100 triệu đồng nhưng chọn ba cách khác nhau: giữ tiền mặt, gửi tiết kiệm và đầu tư chứng khoán. Mười năm sau, kết quả của họ chênh lệch rất xa.",
+  "lesson_key": "concept:dau_tu_chung_khoan",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Lạm phát ở Việt Nam bình quân khoảng 3% mỗi năm. Vì vậy, nếu chỉ cất giữ, 100 triệu đồng sau 10 năm chỉ còn <b>sức mua tương đương khoảng 74 triệu đồng</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l1-g2",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "Lạm phát làm giảm sức mua của tiền"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Trong bốn kênh đầu tư phổ biến, chứng khoán là kênh hội tụ nhiều ưu điểm nhất.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": ""
+            },
+            {
+              "label": "Tiết kiệm"
+            },
+            {
+              "label": "Vàng"
+            },
+            {
+              "label": "Bất động sản"
+            },
+            {
+              "highlight": true,
+              "label": "Chứng khoán"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Vốn để bắt đầu",
+                {
+                  "rating": "good",
+                  "text": "Ít"
+                },
+                {
+                  "rating": "good",
+                  "text": "Ít"
+                },
+                {
+                  "rating": "bad",
+                  "text": "Rất lớn"
+                },
+                {
+                  "rating": "good",
+                  "text": "Ít"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Cần tiền, bán ra",
+                {
+                  "rating": "mid",
+                  "text": "Mất lãi"
+                },
+                {
+                  "rating": "good",
+                  "text": "Nhanh"
+                },
+                {
+                  "rating": "bad",
+                  "text": "Chậm"
+                },
+                {
+                  "rating": "good",
+                  "text": "Nhanh"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Chi phí mua bán",
+                {
+                  "rating": "good",
+                  "text": "Không"
+                },
+                {
+                  "rating": "mid",
+                  "text": "Chênh giá"
+                },
+                {
+                  "rating": "bad",
+                  "text": "Cao"
+                },
+                {
+                  "rating": "good",
+                  "text": "Thấp"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Thu nhập đều",
+                {
+                  "rating": "good",
+                  "text": "Lãi"
+                },
+                {
+                  "rating": "bad",
+                  "text": "Không"
+                },
+                {
+                  "rating": "good",
+                  "text": "Cho thuê"
+                },
+                {
+                  "rating": "good",
+                  "text": "Cổ tức"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Tăng trưởng dài hạn",
+                {
+                  "rating": "bad",
+                  "text": "Thấp"
+                },
+                {
+                  "rating": "mid",
+                  "text": "Vừa"
+                },
+                {
+                  "rating": "good",
+                  "text": "Cao"
+                },
+                {
+                  "rating": "good",
+                  "text": "Cao"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Biến động giá",
+                {
+                  "rating": "good",
+                  "text": "Thấp"
+                },
+                {
+                  "rating": "mid",
+                  "text": "Vừa"
+                },
+                {
+                  "rating": "mid",
+                  "text": "Vừa"
+                },
+                {
+                  "rating": "bad",
+                  "text": "Cao"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        }
+      ],
+      "id": "s2",
+      "title": "So sánh các kênh đầu tư phổ biến"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "chart_id": "c1l1-a1",
+              "text": "Đầu tư bất động sản cần nguồn vốn hàng tỷ đồng, trong khi với chứng khoán, nhà đầu tư có thể bắt đầu <b>chỉ từ vài triệu đồng</b>.",
+              "title": "Vốn đầu tư linh hoạt"
+            },
+            {
+              "chart_id": "c1l1-a2",
+              "text": "Lệnh bán có thể khớp ngay trong phiên và <b>tiền về tài khoản sau 2 ngày làm việc</b>. Trong khi đó, một giao dịch bất động sản thường kéo dài nhiều tuần, thậm chí nhiều tháng.",
+              "title": "Thanh khoản cao"
+            },
+            {
+              "chart_id": "c1l1-a3",
+              "text": "Khi doanh nghiệp kinh doanh tốt, cổ đông được hưởng thành quả thông qua <b>giá cổ phiếu tăng và cổ tức</b>.",
+              "title": "Đồng sở hữu doanh nghiệp"
+            },
+            {
+              "chart_id": "c1l1-a4",
+              "text": "Giá giao dịch được công khai theo thời gian thực. Doanh nghiệp niêm yết có nghĩa vụ <b>công bố báo cáo tài chính hằng quý</b>, giúp nhà đầu tư theo dõi tình hình kinh doanh.",
+              "title": "Minh bạch thông tin"
+            },
+            {
+              "chart_id": "c1l1-a5",
+              "text": "Phí giao dịch chứng khoán thấp, <b>thuế khi bán chỉ 0,1%</b> giá trị giao dịch. Ngược lại, mua bán bất động sản phát sinh thuế, phí công chứng và sang tên, còn vàng chịu chênh lệch giữa giá mua và giá bán.",
+              "title": "Chi phí giao dịch thấp"
+            }
+          ],
+          "layout": "rows",
+          "type": "chart_grid"
+        }
+      ],
+      "id": "s3",
+      "title": "Năm lợi thế của đầu tư chứng khoán"
+    }
+  ],
+  "summary": [
+    "Lạm phát làm <b>giảm sức mua</b> của tiền nhàn rỗi.",
+    "Chứng khoán có ưu thế về <b>vốn, thanh khoản, chi phí và tính minh bạch</b>.",
+    "Nhà đầu tư cổ phiếu là <b>đồng sở hữu doanh nghiệp</b>, hưởng lợi từ tăng giá và cổ tức.",
+    "Giai đoạn 2015-2025, chứng khoán <b>tăng trưởng vượt trội</b> so với tiết kiệm và tiền mặt."
+  ],
+  "title": "Đầu tư chứng khoán"
+}

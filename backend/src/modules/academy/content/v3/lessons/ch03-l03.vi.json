@@ -1,0 +1,260 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Gặp mặt trực tiếp là cách nhanh nhất để xây niềm tin. Một buổi cà phê 30 phút đôi khi có giá trị hơn cả trăm bài đăng. Bài này giúp bạn biết đi đâu, nói gì và làm gì sau mỗi lần gặp.",
+  "lesson_key": "concept:thuong_hieu_offline",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "subtitle": "Gia đình, bạn bè, đồng nghiệp",
+              "text": "Những người đã biết bạn. Việc của bạn là để họ biết bạn đang làm nghề gì.",
+              "title": "Vòng tròn quanh bạn",
+              "tone": "highlight"
+            },
+            {
+              "subtitle": "Thể thao, sở thích, cộng đồng",
+              "text": "Chạy bộ, cầu lông, golf, đọc sách. Gặp đều đặn mỗi tuần nên niềm tin đến tự nhiên.",
+              "title": "Câu lạc bộ"
+            },
+            {
+              "subtitle": "Của đội nhóm và công ty",
+              "text": "Nơi bạn được giới thiệu cùng diễn giả, khách thấy bạn chuyên nghiệp.",
+              "title": "Sự kiện, hội thảo"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Ở cả ba nơi, thông điệp chỉ có một: <b>giới thiệu bạn là ai, đang làm gì, ở đâu</b>. Không chào hàng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Ba nơi xây thương hiệu offline"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ai cũng sẽ hỏi “Dạo này làm gì?”. Hãy chuẩn bị sẵn câu trả lời ngắn, dễ nhớ, kết thúc bằng một câu mở.",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Phần"
+            },
+            {
+              "label": "Nội dung"
+            },
+            {
+              "label": "Ví dụ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Tên và nơi làm",
+                "“Em làm bên Chứng khoán DNSE.”"
+              ],
+              "group": {
+                "label": "Bạn là ai",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Nhóm khách chính",
+                "“Chủ yếu hướng dẫn người mới, nhất là dân văn phòng.”"
+              ],
+              "group": {
+                "label": "Bạn giúp ai",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Kết quả khách nhận được",
+                "“Giúp mọi người bắt đầu đầu tư an toàn từ số vốn nhỏ.”"
+              ],
+              "group": {
+                "label": "Giúp gì",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Không ép, để người nghe chọn",
+                "“Anh có hay để ý chuyện cho tiền sinh lời không?”"
+              ],
+              "group": {
+                "label": "Câu mở",
+                "span": 1
+              }
+            }
+          ],
+          "type": "table",
+          "variant": "grouped"
+        }
+      ],
+      "id": "s2",
+      "title": "Câu giới thiệu 30 giây"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Mã QR Zalo",
+              "text": "Lưu sẵn trên điện thoại hoặc in lên danh thiếp để kết nối nhanh."
+            },
+            {
+              "term": "Danh thiếp",
+              "text": "Tên, “SACO tại DNSE”, số điện thoại, mã QR Zalo."
+            },
+            {
+              "term": "Trang phục",
+              "text": "Gọn gàng, phù hợp nơi đến. Đi câu lạc bộ thể thao thì mặc đồ thể thao, nhưng luôn sạch sẽ."
+            },
+            {
+              "term": "Đúng giờ",
+              "text": "Đến sớm 5-10 phút. Đến trễ là cách nhanh nhất làm mất thương hiệu."
+            },
+            {
+              "term": "Tài liệu ngắn",
+              "text": "Một trang hướng dẫn người mới hoặc bản tin in sẵn để tặng khi được hỏi."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s3",
+      "title": "Bộ nhận diện mang theo"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Trong vòng 24 giờ sau khi gặp ai đó, hãy nhắn một tin cảm ơn, nhắc lại điều hai bên đã nói, và gửi một thứ có ích.",
+          "type": "paragraph"
+        },
+        {
+          "label": "Tin nhắn mẫu",
+          "text": "“Rất vui được nói chuyện với anh ở buổi chạy sáng nay. Em gửi anh bài viết ngắn về cách bắt đầu đầu tư với số vốn nhỏ như mình vừa nói nhé. Có gì anh cứ nhắn em.”",
+          "tone": "good",
+          "type": "quote"
+        },
+        {
+          "text": "Sau đó ghi người này vào bảng quản lý khách hàng (Chương 2 · Bài 9) và hẹn ngày liên hệ lại.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Quy tắc 24 giờ sau khi gặp"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khi đã quen, hãy tự tổ chức một buổi chia sẻ nhỏ <b>5-10 người</b>, khoảng 60 phút. Đây là cách xây thương hiệu offline mạnh nhất.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "label": "15 phút",
+              "text": "Mỗi người giới thiệu và nói điều họ muốn biết.",
+              "title": "Làm quen"
+            },
+            {
+              "label": "20 phút",
+              "text": "Một chủ đề dễ hiểu, như “bắt đầu đầu tư từ 5 triệu”.",
+              "title": "Chia sẻ"
+            },
+            {
+              "label": "20 phút",
+              "text": "Trả lời thật, không hứa hẹn, không gửi mã.",
+              "title": "Hỏi đáp"
+            },
+            {
+              "label": "5 phút",
+              "text": "Mời vào nhóm Zalo nhận bản tin, hẹn buổi sau.",
+              "title": "Bước tiếp"
+            }
+          ],
+          "type": "steps"
+        }
+      ],
+      "id": "s5",
+      "title": "Tổ chức buổi cà phê chia sẻ"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 0,
+          "debrief": "<b>Cách tốt nhất: giới thiệu ngắn, quan tâm đến người đối diện, kết nối sau.</b> Đám cưới không phải nơi chào hàng. Mời mở tài khoản tại bàn tiệc khiến người nghe khó chịu. Giấu nghề thì bỏ lỡ một mối quan hệ tốt. Câu giới thiệu 30 giây cộng quy tắc 24 giờ biến một cuộc gặp tình cờ thành một mối quan hệ.",
+          "options": [
+            "Giới thiệu 30 giây, hỏi lại về công việc của anh, cuối buổi xin kết bạn Zalo và hôm sau nhắn cảm ơn",
+            "Giới thiệu chi tiết các sản phẩm, xin anh mở tài khoản ngay tại bàn tiệc",
+            "Nói qua loa “làm văn phòng thôi anh” vì ngại bị nghĩ là đi bán hàng"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Ở đám cưới một người bạn, bạn ngồi cùng bàn với anh Phong, chủ một xưởng in. Anh hỏi: “Em đang làm gì?”"
+          ],
+          "title": "Gặp người lạ ở đám cưới",
+          "type": "scenario"
+        },
+        {
+          "id": "br3",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Viết câu giới thiệu theo 4 phần: bạn là ai, bạn giúp ai, giúp gì, câu mở. Đọc to và bấm giờ, không quá 30 giây. Luyện cho đến khi nói tự nhiên như kể chuyện."
+          ],
+          "title": "Bài tự làm: câu giới thiệu 30 giây của bạn",
+          "type": "workpad"
+        },
+        {
+          "id": "br3a",
+          "items": [
+            {
+              "id": "0",
+              "text": "Chuẩn bị mã QR Zalo và danh thiếp"
+            },
+            {
+              "id": "1",
+              "text": "Tham gia 1 câu lạc bộ, đi đều ít nhất 4 tuần"
+            },
+            {
+              "id": "2",
+              "text": "Áp dụng quy tắc 24 giờ với mọi người mới gặp"
+            },
+            {
+              "id": "3",
+              "text": "Tổ chức 1 buổi cà phê chia sẻ 5-10 người trong tháng này"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s6",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Ba nơi xây thương hiệu offline: <b>vòng tròn quanh bạn, câu lạc bộ, sự kiện</b>.",
+    "Luôn sẵn <b>câu giới thiệu 30 giây</b>: là ai, giúp ai, giúp gì, câu mở.",
+    "Áp dụng <b>quy tắc 24 giờ</b>: nhắn cảm ơn và gửi một thứ có ích.",
+    "Tự tổ chức <b>buổi cà phê chia sẻ</b> nhỏ để xây niềm tin sâu."
+  ],
+  "title": "Thương hiệu offline"
+}

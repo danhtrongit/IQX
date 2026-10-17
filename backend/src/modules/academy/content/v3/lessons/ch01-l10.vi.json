@@ -1,0 +1,679 @@
+{
+  "chapter": 1,
+  "charts": {
+    "c1l10-g1": {
+      "alt": "Đa dạng hóa làm giảm rủi ro riêng của doanh nghiệp, rủi ro thị trường vẫn còn",
+      "axes": {
+        "x": {
+          "ticks": [
+            {
+              "label": "1",
+              "v": 1
+            },
+            {
+              "label": "5",
+              "v": 5
+            },
+            {
+              "label": "10",
+              "v": 10
+            },
+            {
+              "label": "15",
+              "v": 15
+            },
+            {
+              "label": "20",
+              "v": 20
+            }
+          ],
+          "title": "Số cổ phiếu trong danh mục"
+        },
+        "y": {
+          "title": "Rủi ro"
+        }
+      },
+      "domain": {
+        "x": [
+          1,
+          20
+        ],
+        "y": [
+          0,
+          1
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "label": "Rủi ro thị trường: luôn tồn tại",
+          "t": "zone",
+          "tone": "neg",
+          "y": [
+            0,
+            0.35
+          ]
+        },
+        {
+          "pts": [
+            [
+              1,
+              1
+            ],
+            [
+              1.25,
+              0.87
+            ],
+            [
+              1.5,
+              0.7833
+            ],
+            [
+              1.75,
+              0.7214
+            ],
+            [
+              2,
+              0.675
+            ],
+            [
+              2.25,
+              0.6389
+            ],
+            [
+              2.5,
+              0.61
+            ],
+            [
+              2.75,
+              0.5864
+            ],
+            [
+              3,
+              0.5667
+            ],
+            [
+              3.25,
+              0.55
+            ],
+            [
+              3.5,
+              0.5357
+            ],
+            [
+              3.75,
+              0.5233
+            ],
+            [
+              4,
+              0.5125
+            ],
+            [
+              4.25,
+              0.5029
+            ],
+            [
+              4.5,
+              0.4944
+            ],
+            [
+              4.75,
+              0.4868
+            ],
+            [
+              5,
+              0.48
+            ],
+            [
+              5.25,
+              0.4738
+            ],
+            [
+              5.5,
+              0.4682
+            ],
+            [
+              5.75,
+              0.463
+            ],
+            [
+              6,
+              0.4583
+            ],
+            [
+              6.25,
+              0.454
+            ],
+            [
+              6.5,
+              0.45
+            ],
+            [
+              6.75,
+              0.4463
+            ],
+            [
+              7,
+              0.4429
+            ],
+            [
+              7.25,
+              0.4397
+            ],
+            [
+              7.5,
+              0.4367
+            ],
+            [
+              7.75,
+              0.4339
+            ],
+            [
+              8,
+              0.4313
+            ],
+            [
+              8.25,
+              0.4288
+            ],
+            [
+              8.5,
+              0.4265
+            ],
+            [
+              8.75,
+              0.4243
+            ],
+            [
+              9,
+              0.4222
+            ],
+            [
+              9.25,
+              0.4203
+            ],
+            [
+              9.5,
+              0.4184
+            ],
+            [
+              9.75,
+              0.4167
+            ],
+            [
+              10,
+              0.415
+            ],
+            [
+              10.25,
+              0.4134
+            ],
+            [
+              10.5,
+              0.4119
+            ],
+            [
+              10.75,
+              0.4105
+            ],
+            [
+              11,
+              0.4091
+            ],
+            [
+              11.25,
+              0.4078
+            ],
+            [
+              11.5,
+              0.4065
+            ],
+            [
+              11.75,
+              0.4053
+            ],
+            [
+              12,
+              0.4042
+            ],
+            [
+              12.25,
+              0.4031
+            ],
+            [
+              12.5,
+              0.402
+            ],
+            [
+              12.75,
+              0.401
+            ],
+            [
+              13,
+              0.4
+            ],
+            [
+              13.25,
+              0.3991
+            ],
+            [
+              13.5,
+              0.3981
+            ],
+            [
+              13.75,
+              0.3973
+            ],
+            [
+              14,
+              0.3964
+            ],
+            [
+              14.25,
+              0.3956
+            ],
+            [
+              14.5,
+              0.3948
+            ],
+            [
+              14.75,
+              0.3941
+            ],
+            [
+              15,
+              0.3933
+            ],
+            [
+              15.25,
+              0.3926
+            ],
+            [
+              15.5,
+              0.3919
+            ],
+            [
+              15.75,
+              0.3913
+            ],
+            [
+              16,
+              0.3906
+            ],
+            [
+              16.25,
+              0.39
+            ],
+            [
+              16.5,
+              0.3894
+            ],
+            [
+              16.75,
+              0.3888
+            ],
+            [
+              17,
+              0.3882
+            ],
+            [
+              17.25,
+              0.3877
+            ],
+            [
+              17.5,
+              0.3871
+            ],
+            [
+              17.75,
+              0.3866
+            ],
+            [
+              18,
+              0.3861
+            ],
+            [
+              18.25,
+              0.3856
+            ],
+            [
+              18.5,
+              0.3851
+            ],
+            [
+              18.75,
+              0.3847
+            ],
+            [
+              19,
+              0.3842
+            ],
+            [
+              19.25,
+              0.3838
+            ],
+            [
+              19.5,
+              0.3833
+            ],
+            [
+              19.75,
+              0.3829
+            ],
+            [
+              20,
+              0.3825
+            ]
+          ],
+          "t": "line",
+          "tone": "p1",
+          "width": 3
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            7,
+            0.62
+          ],
+          "t": "text",
+          "text": "Rủi ro riêng doanh nghiệp: giảm dần",
+          "tone": "p1"
+        }
+      ]
+    },
+    "c1l10-g2": {
+      "kind": "category",
+      "labels": [
+        "Lỗ 10%",
+        "Lỗ 20%",
+        "Lỗ 30%",
+        "Lỗ 40%",
+        "Lỗ 50%"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Mức lỗ",
+          "tone": "neg",
+          "values": [
+            10,
+            20,
+            30,
+            40,
+            50
+          ]
+        },
+        {
+          "name": "Mức lãi cần để hòa vốn",
+          "tone": "pos",
+          "values": [
+            11,
+            25,
+            43,
+            67,
+            100
+          ]
+        }
+      ],
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c1l10-g3": {
+      "alt": "Phân bổ danh mục: 5 cổ phiếu ở 5 ngành, mỗi mã 15%, giữ 25% tiền mặt dự phòng",
+      "kind": "segment_bar",
+      "max": 100,
+      "rows": [
+        {
+          "label": "Danh mục",
+          "segments": [
+            {
+              "label": "Cổ phiếu A",
+              "sub": "Ngân hàng",
+              "tone": "p1",
+              "value": 15
+            },
+            {
+              "label": "Cổ phiếu B",
+              "sub": "Bán lẻ",
+              "tone": "p1",
+              "value": 15
+            },
+            {
+              "label": "Cổ phiếu C",
+              "sub": "Thép",
+              "tone": "p1",
+              "value": 15
+            },
+            {
+              "label": "Cổ phiếu D",
+              "sub": "Công nghệ",
+              "tone": "p1",
+              "value": 15
+            },
+            {
+              "label": "Cổ phiếu E",
+              "sub": "Điện",
+              "tone": "p1",
+              "value": 15
+            },
+            {
+              "label": "Tiền mặt",
+              "sub": "Dự phòng",
+              "tone": "pos",
+              "value": 25
+            }
+          ]
+        }
+      ],
+      "unit": "%"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch01-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Lợi nhuận trong đầu tư chứng khoán luôn đi kèm rủi ro. Nhà đầu tư thành công không phải người không bao giờ lỗ, mà là người kiểm soát được mức lỗ và giữ được kỷ luật trước biến động của thị trường.",
+  "lesson_key": "concept:quan_tri_rui_ro_tam_ly",
+  "order": 10,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "subtitle": "Rủi ro hệ thống",
+              "text": "Tác động đến hầu hết cổ phiếu, như suy thoái kinh tế, lãi suất tăng, biến động chính sách. Không thể loại bỏ bằng đa dạng hóa.",
+              "title": "Rủi ro thị trường"
+            },
+            {
+              "subtitle": "Rủi ro phi hệ thống",
+              "text": "Chỉ ảnh hưởng một doanh nghiệp hoặc một ngành, như kết quả kinh doanh kém, sự cố quản trị. Giảm được nhờ đa dạng hóa.",
+              "title": "Rủi ro riêng doanh nghiệp",
+              "tone": "highlight"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "chart_id": "c1l10-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Nắm giữ nhiều cổ phiếu thuộc các ngành khác nhau giúp giảm đáng kể rủi ro riêng của từng doanh nghiệp. Tuy nhiên, rủi ro thị trường vẫn luôn tồn tại.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Hai loại rủi ro"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lỗ càng sâu, mức lãi cần có để quay về hòa vốn càng lớn. Lỗ 50% đòi hỏi lãi 100% mới lấy lại được số vốn ban đầu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l10-g2",
+          "legend": [
+            {
+              "label": "Mức lỗ",
+              "tone": "neg"
+            },
+            {
+              "label": "Mức lãi cần để hòa vốn",
+              "tone": "pos"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Vì vậy, nguyên tắc đầu tiên của quản trị rủi ro là <b>không để khoản lỗ nhỏ trở thành khoản lỗ lớn</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Toán học của thua lỗ"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Không dồn toàn bộ vốn vào một cổ phiếu hay một ngành. Một danh mục hợp lý thường chia vốn cho nhiều cổ phiếu, mỗi cổ phiếu chiếm tỷ trọng giới hạn, và giữ lại một phần tiền mặt để chủ động khi thị trường biến động. Ví dụ, danh mục 100 triệu đồng gồm 5 cổ phiếu thuộc 5 ngành khác nhau và 25% tiền mặt:",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c1l10-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s3",
+      "title": "Phân bổ vốn"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Cắt lỗ</b> là bán cổ phiếu khi giá giảm đến mức đã định trước, để giới hạn thiệt hại. Mức cắt lỗ cần được xác định <b>trước khi mua</b>, không phải sau khi giá đã giảm.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Từ mức cắt lỗ, có thể tính khối lượng mua sao cho mỗi lệnh chỉ rủi ro một phần nhỏ tổng vốn. Ví dụ: vốn 100 triệu đồng, chấp nhận rủi ro tối đa 2% vốn cho mỗi lệnh, mua ở giá 20.000 đồng, cắt lỗ ở 18.600 đồng:",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "text": "100 triệu × 2%",
+              "title": "Rủi ro tối đa",
+              "value": "2.000.000 đ"
+            },
+            {
+              "text": "20.000 − 18.600",
+              "title": "Rủi ro mỗi cổ phiếu",
+              "value": "1.400 đ"
+            },
+            {
+              "text": "2.000.000 ÷ 1.400",
+              "title": "Khối lượng mua",
+              "value": "≈ 1.400 cổ phiếu"
+            }
+          ],
+          "type": "steps"
+        },
+        {
+          "text": "Giá trị mua khoảng 28 triệu đồng. Nếu giá chạm mức cắt lỗ, nhà đầu tư chỉ mất khoảng 2 triệu đồng, tức 2% tổng vốn. Lưu ý: khi cổ phiếu giảm sàn liên tiếp và không có người mua, lệnh cắt lỗ có thể không khớp đúng giá dự kiến, khiến khoản lỗ thực tế lớn hơn.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Cắt lỗ và khối lượng mua"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Mua khi giá đã tăng nóng vì sợ bỏ lỡ cơ hội (FOMO).",
+              "title": "Mua đuổi theo đám đông"
+            },
+            {
+              "text": "Không chịu cắt lỗ, hy vọng giá sẽ quay lại, để khoản lỗ ngày càng lớn.",
+              "title": "Gồng lỗ"
+            },
+            {
+              "text": "Bán ngay khi có lãi nhỏ, bỏ lỡ xu hướng tăng dài.",
+              "title": "Chốt lời quá sớm"
+            },
+            {
+              "text": "Liên tục mua thêm cổ phiếu đang giảm mà không xem lại lý do đầu tư.",
+              "title": "Bình quân giá xuống tràn lan"
+            },
+            {
+              "text": "Vay quá nhiều, dễ bị bán giải chấp khi thị trường giảm mạnh.",
+              "title": "Lạm dụng margin"
+            },
+            {
+              "text": "Mua bán theo “phím hàng”, lời hứa lợi nhuận mà không tự tìm hiểu.",
+              "title": "Nghe theo tin đồn"
+            }
+          ],
+          "style": "mistake",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Sai lầm tâm lý thường gặp"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Cách hiệu quả nhất để tránh sai lầm tâm lý là lập kế hoạch trước khi giao dịch và ghi chép lại sau mỗi lệnh.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Lý do mua",
+              "text": "Điểm mạnh của doanh nghiệp"
+            },
+            {
+              "term": "Điểm mua",
+              "text": "Vùng giá dự kiến mua"
+            },
+            {
+              "term": "Điểm cắt lỗ",
+              "text": "Mức giá bán nếu nhận định sai"
+            },
+            {
+              "term": "Mục tiêu",
+              "text": "Mức giá chốt lời nếu nhận định đúng"
+            },
+            {
+              "term": "Khối lượng",
+              "text": "Số cổ phiếu theo mức rủi ro chấp nhận"
+            }
+          ],
+          "marker": "check",
+          "title": "Kế hoạch trước khi mua",
+          "type": "definitions"
+        },
+        {
+          "text": "Ghi lại từng giao dịch vào <b>nhật ký giao dịch</b>: lý do mua, kết quả và bài học rút ra. Sau một thời gian, nhà đầu tư sẽ nhận ra điểm mạnh, điểm yếu của chính mình.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Kỷ luật bằng kế hoạch giao dịch"
+    }
+  ],
+  "summary": [
+    "<b>Đa dạng hóa</b> giảm rủi ro riêng doanh nghiệp, nhưng không loại bỏ được rủi ro thị trường.",
+    "Lỗ càng sâu càng khó gỡ. <b>Không để lỗ nhỏ thành lỗ lớn</b>.",
+    "Xác định <b>mức cắt lỗ trước khi mua</b> và tính khối lượng theo mức rủi ro chấp nhận.",
+    "Tránh sai lầm tâm lý bằng <b>kế hoạch giao dịch và nhật ký</b>."
+  ],
+  "title": "Quản trị rủi ro và tâm lý đầu tư"
+}

@@ -1,0 +1,860 @@
+{
+  "chapter": 4,
+  "charts": {
+    "c4l10-g1": {
+      "alt": "Chu kỳ sóng Elliott: 5 sóng đẩy 1 đến 5, sau đó 3 sóng điều chỉnh A, B, C",
+      "domain": {
+        "x": [
+          0,
+          760
+        ],
+        "y": [
+          0,
+          314
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "colors": [
+            "pos",
+            "pos",
+            "pos",
+            "pos",
+            "pos",
+            "neg",
+            "neg",
+            "neg"
+          ],
+          "pts": [
+            [
+              40,
+              64
+            ],
+            [
+              130,
+              144
+            ],
+            [
+              180,
+              99
+            ],
+            [
+              330,
+              244
+            ],
+            [
+              390,
+              189
+            ],
+            [
+              480,
+              274
+            ],
+            [
+              560,
+              174
+            ],
+            [
+              610,
+              214
+            ],
+            [
+              710,
+              114
+            ]
+          ],
+          "t": "line",
+          "tone": "pos",
+          "width": 3
+        },
+        {
+          "at": [
+            130,
+            144
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "1",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            180,
+            99
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "2",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            330,
+            244
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "3",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            390,
+            189
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "4",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            480,
+            274
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "5",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            560,
+            174
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "A",
+          "tone": "neg"
+        },
+        {
+          "at": [
+            610,
+            214
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "B",
+          "tone": "neg"
+        },
+        {
+          "at": [
+            710,
+            114
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "C",
+          "tone": "neg"
+        },
+        {
+          "label": "5 sóng đẩy",
+          "t": "bracket",
+          "tone": "pos",
+          "x": [
+            40,
+            476
+          ],
+          "y": 38
+        },
+        {
+          "label": "3 sóng điều chỉnh",
+          "t": "bracket",
+          "tone": "neg",
+          "x": [
+            484,
+            710
+          ],
+          "y": 38
+        }
+      ]
+    },
+    "c4l10-g2": {
+      "alt": "Ba quy tắc của sóng đẩy Elliott",
+      "domain": {
+        "x": [
+          0,
+          760
+        ],
+        "y": [
+          0,
+          300
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "dash": true,
+          "from": [
+            40,
+            20
+          ],
+          "t": "segment",
+          "to": [
+            330,
+            20
+          ],
+          "tone": "warn"
+        },
+        {
+          "anchor": "start",
+          "at": [
+            270,
+            28
+          ],
+          "t": "text",
+          "text": "Sóng 2 không thủng điểm bắt đầu sóng 1",
+          "tone": "warn"
+        },
+        {
+          "dash": true,
+          "from": [
+            180,
+            110
+          ],
+          "t": "segment",
+          "to": [
+            700,
+            110
+          ],
+          "tone": "p1"
+        },
+        {
+          "anchor": "end",
+          "at": [
+            700,
+            90
+          ],
+          "t": "text",
+          "text": "Sóng 4 không đi vào vùng giá sóng 1",
+          "tone": "info"
+        },
+        {
+          "colors": [
+            "pos",
+            "pos",
+            "pos",
+            "pos",
+            "pos"
+          ],
+          "pts": [
+            [
+              40,
+              20
+            ],
+            [
+              180,
+              110
+            ],
+            [
+              250,
+              55
+            ],
+            [
+              450,
+              230
+            ],
+            [
+              530,
+              163
+            ],
+            [
+              680,
+              260
+            ]
+          ],
+          "t": "line",
+          "tone": "pos",
+          "width": 3
+        },
+        {
+          "at": [
+            180,
+            110
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "1",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            250,
+            55
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "2",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            450,
+            230
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "3",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            530,
+            163
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "4",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            680,
+            260
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "5",
+          "tone": "pos"
+        },
+        {
+          "anchor": "end",
+          "at": [
+            368,
+            172
+          ],
+          "t": "text",
+          "text": "Sóng 3 không phải sóng ngắn nhất",
+          "tone": "pos"
+        }
+      ]
+    },
+    "c4l10-g3": {
+      "alt": "Sóng 2 thường điều chỉnh 50% đến 61,8% sóng 1, sóng 4 khoảng 38,2% sóng 3",
+      "domain": {
+        "x": [
+          0,
+          760
+        ],
+        "y": [
+          0,
+          300
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "label": "50% đến 61,8% của sóng 1",
+          "t": "zone",
+          "tone": "warn",
+          "x": [
+            170,
+            310
+          ],
+          "y": [
+            54,
+            65
+          ]
+        },
+        {
+          "label": "Khoảng 38,2% của sóng 3",
+          "t": "zone",
+          "tone": "warn",
+          "x": [
+            440,
+            580
+          ],
+          "y": [
+            156,
+            170
+          ]
+        },
+        {
+          "colors": [
+            "pos",
+            "pos",
+            "pos",
+            "pos",
+            "pos"
+          ],
+          "pts": [
+            [
+              40,
+              20
+            ],
+            [
+              180,
+              110
+            ],
+            [
+              250,
+              59
+            ],
+            [
+              450,
+              230
+            ],
+            [
+              530,
+              163
+            ],
+            [
+              680,
+              260
+            ]
+          ],
+          "t": "line",
+          "tone": "pos",
+          "width": 3
+        },
+        {
+          "at": [
+            180,
+            110
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "1",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            250,
+            59
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "2",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            450,
+            230
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "3",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            530,
+            163
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "4",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            680,
+            260
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "5",
+          "tone": "pos"
+        }
+      ]
+    },
+    "c4l10-g4": {
+      "alt": "Ứng dụng sóng Elliott: mua ở cuối sóng 2 và sóng 4, nắm giữ trong sóng 3, thận trọng ở sóng 5",
+      "domain": {
+        "x": [
+          0,
+          760
+        ],
+        "y": [
+          0,
+          280
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "colors": [
+            "pos",
+            "pos",
+            "pos",
+            "pos",
+            "pos",
+            "neg",
+            "neg",
+            "neg"
+          ],
+          "pts": [
+            [
+              40,
+              30
+            ],
+            [
+              130,
+              110
+            ],
+            [
+              180,
+              65
+            ],
+            [
+              330,
+              210
+            ],
+            [
+              390,
+              155
+            ],
+            [
+              480,
+              240
+            ],
+            [
+              560,
+              140
+            ],
+            [
+              610,
+              180
+            ],
+            [
+              710,
+              80
+            ]
+          ],
+          "t": "line",
+          "tone": "pos",
+          "width": 3
+        },
+        {
+          "at": [
+            130,
+            110
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "1",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            180,
+            65
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "2",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            330,
+            210
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "3",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            390,
+            155
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "4",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            480,
+            240
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "5",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            560,
+            140
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "A",
+          "tone": "neg"
+        },
+        {
+          "at": [
+            610,
+            180
+          ],
+          "pos": "above",
+          "t": "tag",
+          "text": "B",
+          "tone": "neg"
+        },
+        {
+          "at": [
+            710,
+            80
+          ],
+          "pos": "below",
+          "t": "tag",
+          "text": "C",
+          "tone": "neg"
+        },
+        {
+          "pts": [
+            [
+              180,
+              65
+            ],
+            [
+              330,
+              210
+            ]
+          ],
+          "t": "line",
+          "tone": "pos",
+          "width": 4
+        },
+        {
+          "at": [
+            180,
+            65
+          ],
+          "label": "Vùng mua",
+          "pos": "below",
+          "shape": "ring",
+          "t": "point",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            390,
+            155
+          ],
+          "label": "Vùng mua",
+          "pos": "below",
+          "shape": "ring",
+          "t": "point",
+          "tone": "pos"
+        },
+        {
+          "anchor": "end",
+          "at": [
+            250,
+            160
+          ],
+          "t": "text",
+          "text": "Nắm giữ",
+          "tone": "pos"
+        },
+        {
+          "at": [
+            480,
+            240
+          ],
+          "label": "Thận trọng",
+          "pos": "right",
+          "shape": "ring",
+          "t": "point",
+          "tone": "warn"
+        },
+        {
+          "anchor": "end",
+          "at": [
+            720,
+            12
+          ],
+          "t": "text",
+          "text": "Hạn chế mua mới",
+          "tone": "neg"
+        }
+      ]
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch04-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Giá không đi lên hay đi xuống theo một đường thẳng mà vận động thành từng nhịp sóng, phản ánh tâm lý đám đông luân phiên giữa lạc quan và bi quan. Lý thuyết sóng Elliott giúp nhà đầu tư nhận biết thị trường đang ở giai đoạn nào của một chu kỳ.",
+  "lesson_key": "concept:song_elliott",
+  "order": 10,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Lý thuyết do Ralph Nelson Elliott đưa ra vào những năm 1930. Theo đó, một chu kỳ hoàn chỉnh gồm <b>8 sóng</b>: <b>5 sóng đẩy</b> đi theo xu hướng chính, đánh số 1 đến 5, và <b>3 sóng điều chỉnh</b> đi ngược xu hướng, ký hiệu A, B, C.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l10-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Trong 5 sóng đẩy, các sóng 1, 3, 5 đi theo xu hướng, còn sóng 2 và sóng 4 là những nhịp điều chỉnh xen giữa.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Sóng Elliott là gì"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Sóng 1",
+              "text": "Giá bắt đầu tăng từ đáy. Ít người tin một xu hướng mới đã bắt đầu."
+            },
+            {
+              "term": "Sóng 2",
+              "text": "Điều chỉnh khá mạnh, nhiều người nghĩ giá sẽ giảm tiếp, nhưng giá không thủng đáy cũ."
+            },
+            {
+              "term": "Sóng 3",
+              "text": "Thường dài và mạnh nhất. Khối lượng lớn, tin tốt xuất hiện, số đông bắt đầu tham gia."
+            },
+            {
+              "term": "Sóng 4",
+              "text": "Điều chỉnh nhẹ hoặc đi ngang khi nhà đầu tư chốt lời một phần."
+            },
+            {
+              "term": "Sóng 5",
+              "text": "Đợt tăng cuối cùng, tâm lý hưng phấn. Khối lượng thường thấp hơn sóng 3, hay đi kèm phân kỳ giảm."
+            },
+            {
+              "term": "Sóng A, B, C",
+              "text": "Giai đoạn điều chỉnh. Sóng B hồi lên khiến nhiều người tưởng xu hướng tăng quay lại, trước khi sóng C giảm tiếp."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s2",
+      "title": "Đặc điểm từng sóng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Một chuỗi 5 sóng đẩy chỉ được xem là hợp lệ khi thỏa mãn cả ba quy tắc sau. Nếu một quy tắc bị vi phạm, cách đếm sóng đó là sai.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l10-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Sóng 2 không giảm thấp hơn điểm bắt đầu của sóng 1.",
+              "title": "Quy tắc sóng 2"
+            },
+            {
+              "text": "Sóng 3 không bao giờ là sóng ngắn nhất trong ba sóng 1, 3 và 5.",
+              "title": "Quy tắc sóng 3"
+            },
+            {
+              "text": "Đáy sóng 4 không thấp hơn đỉnh sóng 1.",
+              "title": "Quy tắc sóng 4"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Ba quy tắc của sóng đẩy"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Các nhịp điều chỉnh trong sóng Elliott thường dừng ở những mức Fibonacci đã học ở bài trước. <b>Sóng 2</b> thường điều chỉnh sâu, về vùng 50% đến 61,8% của sóng 1. <b>Sóng 4</b> thường điều chỉnh nông hơn, khoảng 38,2% của sóng 3.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l10-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Sóng Elliott và Fibonacci"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Người mới không cần đếm chính xác mọi con sóng. Điều quan trọng là nhận biết thị trường đang ở giai đoạn nào để có hành động phù hợp:",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l10-g4",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chờ giá điều chỉnh về vùng Fibonacci rồi mua khi giá bật lên, đặt cắt lỗ dưới đáy nhịp điều chỉnh.",
+              "title": "Mua ở sóng 2 và sóng 4"
+            },
+            {
+              "text": "Đây là đoạn tăng mạnh nhất. Tránh bán quá sớm vì những nhịp rung lắc nhỏ.",
+              "title": "Nắm giữ trong sóng 3"
+            },
+            {
+              "text": "Không mua đuổi. Cân nhắc chốt lời từng phần khi xuất hiện phân kỳ giảm.",
+              "title": "Thận trọng ở sóng 5"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng sóng Elliott"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đếm sóng mang tính chủ quan, cùng một biểu đồ có thể có nhiều cách đếm khác nhau.",
+              "title": "Mỗi người đếm một kiểu"
+            },
+            {
+              "text": "Sóng dễ nhận ra trên dữ liệu quá khứ, nhưng khó xác định khi đang diễn ra.",
+              "title": "Chỉ rõ ràng khi nhìn lại"
+            },
+            {
+              "text": "Chỉ nên áp dụng cho những xu hướng rõ ràng, có nhiều phiên giao dịch.",
+              "title": "Đếm sóng trên biến động nhỏ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        },
+        {
+          "text": "Vì vậy, sóng Elliott nên được dùng như một bản đồ về tâm lý thị trường, kết hợp với xu hướng, khối lượng, Fibonacci và các chỉ báo đã học, thay vì dùng để dự đoán chính xác đỉnh và đáy.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Hạn chế và sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Một chu kỳ sóng Elliott gồm <b>5 sóng đẩy</b> và <b>3 sóng điều chỉnh</b>.",
+    "<b>Sóng 3</b> thường dài và mạnh nhất, <b>sóng 5</b> là đợt tăng cuối với tâm lý hưng phấn.",
+    "Ba quy tắc: sóng 2 không thủng điểm đầu sóng 1, sóng 3 không ngắn nhất, sóng 4 không đi vào vùng giá sóng 1.",
+    "Tìm điểm mua ở <b>sóng 2 và sóng 4</b>, thận trọng ở sóng 5.",
+    "Đếm sóng mang tính <b>chủ quan</b>, cần kết hợp với các công cụ khác."
+  ],
+  "title": "Sóng Elliott"
+}

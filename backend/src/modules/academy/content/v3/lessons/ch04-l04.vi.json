@@ -1,0 +1,1067 @@
+{
+  "chapter": 4,
+  "charts": {
+    "c4l4-g1": {
+      "alt": "Giá tăng kèm khối lượng lớn ở các phiên tăng",
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "candles": {
+            "close": [
+              46,
+              48,
+              46,
+              49,
+              53,
+              52,
+              50,
+              54,
+              58,
+              57,
+              55,
+              59,
+              63,
+              61,
+              65,
+              69
+            ],
+            "high": [
+              47,
+              49,
+              49,
+              50,
+              54,
+              55,
+              53,
+              55,
+              59,
+              60,
+              58,
+              60,
+              64,
+              65,
+              66,
+              70
+            ],
+            "low": [
+              43,
+              45,
+              45,
+              45,
+              48,
+              51,
+              49,
+              49,
+              53,
+              56,
+              54,
+              54,
+              58,
+              60,
+              60,
+              64
+            ],
+            "open": [
+              44,
+              46,
+              48,
+              46,
+              49,
+              53,
+              52,
+              50,
+              54,
+              58,
+              57,
+              55,
+              59,
+              63,
+              61,
+              65
+            ]
+          },
+          "series": [],
+          "title": "Giá"
+        },
+        {
+          "bars": {
+            "colors": [
+              "pos",
+              "pos",
+              "neg",
+              "pos",
+              "pos",
+              "neg",
+              "neg",
+              "pos",
+              "pos",
+              "neg",
+              "neg",
+              "pos",
+              "pos",
+              "neg",
+              "pos",
+              "pos"
+            ],
+            "name": "Khối lượng",
+            "values": [
+              30,
+              36,
+              20,
+              34,
+              52,
+              26,
+              22,
+              44,
+              60,
+              28,
+              24,
+              46,
+              62,
+              30,
+              48,
+              66
+            ]
+          },
+          "nonnegative": true,
+          "series": [],
+          "title": "Khối lượng"
+        }
+      ],
+      "x": {
+        "end": 15,
+        "start": 0
+      }
+    },
+    "c4l4-g2": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "candles": {
+                  "close": [
+                    43,
+                    47,
+                    45,
+                    49,
+                    53,
+                    51,
+                    55,
+                    59
+                  ],
+                  "high": [
+                    44,
+                    48,
+                    48,
+                    50,
+                    54,
+                    54,
+                    56,
+                    60
+                  ],
+                  "low": [
+                    39,
+                    42,
+                    44,
+                    44,
+                    48,
+                    50,
+                    50,
+                    54
+                  ],
+                  "open": [
+                    40,
+                    43,
+                    47,
+                    45,
+                    49,
+                    53,
+                    51,
+                    55
+                  ]
+                },
+                "series": [],
+                "title": ""
+              },
+              {
+                "bars": {
+                  "colors": [
+                    "pos",
+                    "pos",
+                    "neg",
+                    "pos",
+                    "pos",
+                    "neg",
+                    "pos",
+                    "pos"
+                  ],
+                  "name": "Khối lượng",
+                  "values": [
+                    40,
+                    52,
+                    18,
+                    46,
+                    58,
+                    20,
+                    50,
+                    62
+                  ]
+                },
+                "nonnegative": true,
+                "series": [],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 7,
+              "start": 0
+            }
+          },
+          "title": "Xu hướng khỏe",
+          "tone": "pos"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "candles": {
+                  "close": [
+                    43,
+                    47,
+                    45,
+                    49,
+                    53,
+                    51,
+                    55,
+                    57
+                  ],
+                  "high": [
+                    44,
+                    48,
+                    48,
+                    50,
+                    54,
+                    54,
+                    56,
+                    58
+                  ],
+                  "low": [
+                    39,
+                    42,
+                    44,
+                    44,
+                    48,
+                    50,
+                    50,
+                    54
+                  ],
+                  "open": [
+                    40,
+                    43,
+                    47,
+                    45,
+                    49,
+                    53,
+                    51,
+                    55
+                  ]
+                },
+                "series": [],
+                "title": ""
+              },
+              {
+                "bars": {
+                  "colors": [
+                    "pos",
+                    "pos",
+                    "neg",
+                    "pos",
+                    "pos",
+                    "neg",
+                    "pos",
+                    "pos"
+                  ],
+                  "name": "Khối lượng",
+                  "values": [
+                    60,
+                    54,
+                    30,
+                    44,
+                    36,
+                    24,
+                    26,
+                    16
+                  ]
+                },
+                "nonnegative": true,
+                "segments": [
+                  {
+                    "dash": true,
+                    "from": [
+                      0,
+                      60
+                    ],
+                    "to": [
+                      1,
+                      54
+                    ],
+                    "tone": "neg"
+                  },
+                  {
+                    "dash": true,
+                    "from": [
+                      1,
+                      54
+                    ],
+                    "to": [
+                      3,
+                      44
+                    ],
+                    "tone": "neg"
+                  },
+                  {
+                    "dash": true,
+                    "from": [
+                      3,
+                      44
+                    ],
+                    "to": [
+                      4,
+                      36
+                    ],
+                    "tone": "neg"
+                  },
+                  {
+                    "dash": true,
+                    "from": [
+                      4,
+                      36
+                    ],
+                    "to": [
+                      6,
+                      26
+                    ],
+                    "tone": "neg"
+                  },
+                  {
+                    "dash": true,
+                    "from": [
+                      6,
+                      26
+                    ],
+                    "to": [
+                      7,
+                      16
+                    ],
+                    "tone": "neg"
+                  }
+                ],
+                "series": [],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 7,
+              "start": 0
+            }
+          },
+          "title": "Lực mua suy yếu",
+          "tone": "neg"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c4l4-g3": {
+      "alt": "Giá vượt kháng cự với khối lượng đột biến, cao gấp nhiều lần trung bình 20 phiên",
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "candles": {
+            "close": [
+              52,
+              54,
+              50,
+              48,
+              50,
+              54,
+              53,
+              50,
+              52,
+              54,
+              55,
+              65,
+              68,
+              71
+            ],
+            "high": [
+              53,
+              56,
+              55,
+              52,
+              51,
+              55,
+              57,
+              54,
+              53,
+              55,
+              56,
+              66,
+              69,
+              72
+            ],
+            "low": [
+              48,
+              51,
+              49,
+              47,
+              46,
+              49,
+              52,
+              49,
+              48,
+              50,
+              52,
+              54,
+              63,
+              66
+            ],
+            "open": [
+              50,
+              52,
+              54,
+              50,
+              48,
+              50,
+              54,
+              53,
+              50,
+              52,
+              54,
+              55,
+              65,
+              68
+            ]
+          },
+          "series": [],
+          "title": "",
+          "zones": [
+            {
+              "from": 56,
+              "label": "Kháng cự",
+              "to": 58.5,
+              "tone": "neg"
+            }
+          ]
+        },
+        {
+          "bars": {
+            "colors": [
+              "pos",
+              "pos",
+              "neg",
+              "neg",
+              "pos",
+              "pos",
+              "neg",
+              "neg",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos"
+            ],
+            "name": "Khối lượng",
+            "values": [
+              24,
+              28,
+              22,
+              20,
+              18,
+              24,
+              26,
+              20,
+              18,
+              22,
+              24,
+              80,
+              46,
+              40
+            ]
+          },
+          "levels": [
+            {
+              "label": "Trung bình 20 phiên",
+              "role": "avg",
+              "value": 23
+            }
+          ],
+          "nonnegative": true,
+          "notes": [
+            {
+              "i": 11,
+              "text": "Đột biến",
+              "tone": "info",
+              "value": 80
+            }
+          ],
+          "series": [],
+          "title": ""
+        }
+      ],
+      "x": {
+        "end": 13,
+        "start": 0
+      }
+    },
+    "c4l4-s1": {
+      "alt": "Giá tăng, khối lượng tăng",
+      "axes": false,
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "candles": {
+            "close": [
+              33,
+              37,
+              41,
+              45,
+              49,
+              53
+            ],
+            "high": [
+              34,
+              38,
+              42,
+              46,
+              50,
+              54
+            ],
+            "low": [
+              29,
+              32,
+              36,
+              40,
+              44,
+              48
+            ],
+            "open": [
+              30,
+              33,
+              37,
+              41,
+              45,
+              49
+            ]
+          },
+          "segments": [
+            {
+              "dash": true,
+              "from": [
+                0,
+                29
+              ],
+              "to": [
+                5,
+                48
+              ],
+              "tone": "pos"
+            }
+          ],
+          "series": [],
+          "title": ""
+        },
+        {
+          "bars": {
+            "colors": [
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos"
+            ],
+            "name": "Khối lượng",
+            "values": [
+              14,
+              20,
+              26,
+              32,
+              38,
+              44
+            ]
+          },
+          "nonnegative": true,
+          "segments": [
+            {
+              "dash": true,
+              "from": [
+                0,
+                14
+              ],
+              "to": [
+                5,
+                44
+              ],
+              "tone": "pos"
+            }
+          ],
+          "series": [],
+          "title": ""
+        }
+      ],
+      "x": {
+        "end": 5,
+        "start": 0
+      }
+    },
+    "c4l4-s2": {
+      "alt": "Giá tăng, khối lượng giảm",
+      "axes": false,
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "candles": {
+            "close": [
+              33,
+              37,
+              41,
+              45,
+              49,
+              53
+            ],
+            "high": [
+              34,
+              38,
+              42,
+              46,
+              50,
+              54
+            ],
+            "low": [
+              29,
+              32,
+              36,
+              40,
+              44,
+              48
+            ],
+            "open": [
+              30,
+              33,
+              37,
+              41,
+              45,
+              49
+            ]
+          },
+          "segments": [
+            {
+              "dash": true,
+              "from": [
+                0,
+                29
+              ],
+              "to": [
+                5,
+                48
+              ],
+              "tone": "pos"
+            }
+          ],
+          "series": [],
+          "title": ""
+        },
+        {
+          "bars": {
+            "colors": [
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos"
+            ],
+            "name": "Khối lượng",
+            "values": [
+              44,
+              38,
+              32,
+              26,
+              20,
+              14
+            ]
+          },
+          "nonnegative": true,
+          "segments": [
+            {
+              "dash": true,
+              "from": [
+                0,
+                44
+              ],
+              "to": [
+                5,
+                14
+              ],
+              "tone": "neg"
+            }
+          ],
+          "series": [],
+          "title": ""
+        }
+      ],
+      "x": {
+        "end": 5,
+        "start": 0
+      }
+    },
+    "c4l4-s3": {
+      "alt": "Giá giảm, khối lượng tăng",
+      "axes": false,
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "candles": {
+            "close": [
+              50,
+              46,
+              42,
+              38,
+              34,
+              30
+            ],
+            "high": [
+              54,
+              51,
+              47,
+              43,
+              39,
+              35
+            ],
+            "low": [
+              49,
+              45,
+              41,
+              37,
+              33,
+              29
+            ],
+            "open": [
+              53,
+              50,
+              46,
+              42,
+              38,
+              34
+            ]
+          },
+          "segments": [
+            {
+              "dash": true,
+              "from": [
+                0,
+                54
+              ],
+              "to": [
+                5,
+                35
+              ],
+              "tone": "neg"
+            }
+          ],
+          "series": [],
+          "title": ""
+        },
+        {
+          "bars": {
+            "colors": [
+              "neg",
+              "neg",
+              "neg",
+              "neg",
+              "neg",
+              "neg"
+            ],
+            "name": "Khối lượng",
+            "values": [
+              14,
+              20,
+              26,
+              32,
+              38,
+              44
+            ]
+          },
+          "nonnegative": true,
+          "segments": [
+            {
+              "dash": true,
+              "from": [
+                0,
+                14
+              ],
+              "to": [
+                5,
+                44
+              ],
+              "tone": "pos"
+            }
+          ],
+          "series": [],
+          "title": ""
+        }
+      ],
+      "x": {
+        "end": 5,
+        "start": 0
+      }
+    },
+    "c4l4-s4": {
+      "alt": "Giá giảm, khối lượng giảm",
+      "axes": false,
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "candles": {
+            "close": [
+              50,
+              46,
+              42,
+              38,
+              34,
+              30
+            ],
+            "high": [
+              54,
+              51,
+              47,
+              43,
+              39,
+              35
+            ],
+            "low": [
+              49,
+              45,
+              41,
+              37,
+              33,
+              29
+            ],
+            "open": [
+              53,
+              50,
+              46,
+              42,
+              38,
+              34
+            ]
+          },
+          "segments": [
+            {
+              "dash": true,
+              "from": [
+                0,
+                54
+              ],
+              "to": [
+                5,
+                35
+              ],
+              "tone": "neg"
+            }
+          ],
+          "series": [],
+          "title": ""
+        },
+        {
+          "bars": {
+            "colors": [
+              "neg",
+              "neg",
+              "neg",
+              "neg",
+              "neg",
+              "neg"
+            ],
+            "name": "Khối lượng",
+            "values": [
+              44,
+              38,
+              32,
+              26,
+              20,
+              14
+            ]
+          },
+          "nonnegative": true,
+          "segments": [
+            {
+              "dash": true,
+              "from": [
+                0,
+                44
+              ],
+              "to": [
+                5,
+                14
+              ],
+              "tone": "neg"
+            }
+          ],
+          "series": [],
+          "title": ""
+        }
+      ],
+      "x": {
+        "end": 5,
+        "start": 0
+      }
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch04-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Giá cho biết thị trường đang đi về đâu, còn khối lượng cho biết sức mạnh đằng sau chuyển động đó. Một xu hướng có dòng tiền tham gia mạnh thường bền vững hơn một xu hướng diễn ra trong lặng lẽ.",
+  "lesson_key": "technical:volume",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Khối lượng</b> là số cổ phiếu được khớp lệnh trong một phiên. Trên biểu đồ, khối lượng hiển thị bằng các cột bên dưới nến: cột xanh ứng với phiên tăng, cột đỏ ứng với phiên giảm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l4-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Khối lượng nhân với giá cho ra <b>giá trị giao dịch</b>, thường dùng để so sánh mức độ sôi động giữa các cổ phiếu.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Khối lượng là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Trong một xu hướng tăng khỏe, khối lượng tăng ở những phiên giá đi lên và giảm ở những phiên điều chỉnh. Khi giá vẫn lên đỉnh mới nhưng khối lượng giảm dần, lực mua đang yếu đi.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l4-g2",
+          "type": "chart"
+        }
+      ],
+      "id": "s2",
+      "title": "Khối lượng xác nhận xu hướng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "chart_id": "c4l4-s1",
+              "text": "Lực mua mạnh, xu hướng tăng được xác nhận.",
+              "title": "Giá tăng, khối lượng tăng"
+            },
+            {
+              "chart_id": "c4l4-s2",
+              "text": "Lực mua yếu dần, xu hướng tăng có thể sắp chững lại.",
+              "title": "Giá tăng, khối lượng giảm"
+            },
+            {
+              "chart_id": "c4l4-s3",
+              "text": "Áp lực bán mạnh, nhiều nhà đầu tư đang thoát hàng.",
+              "title": "Giá giảm, khối lượng tăng"
+            },
+            {
+              "chart_id": "c4l4-s4",
+              "text": "Lực bán yếu dần, đà giảm có thể sắp chậm lại.",
+              "title": "Giá giảm, khối lượng giảm"
+            }
+          ],
+          "layout": "grid",
+          "type": "chart_grid"
+        }
+      ],
+      "id": "s3",
+      "title": "Bốn trạng thái giá và khối lượng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Để biết khối lượng một phiên cao hay thấp, nhà đầu tư so sánh với <b>khối lượng trung bình 20 phiên</b> gần nhất. Phiên có khối lượng gấp nhiều lần mức trung bình gọi là <b>khối lượng đột biến</b>, thường xuất hiện khi giá phá vỡ một vùng quan trọng hoặc khi có tin tức lớn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c4l4-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Phá vỡ vùng kháng cự kèm khối lượng đột biến là tín hiệu đáng tin cậy hơn nhiều so với phá vỡ khi khối lượng thấp.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Khối lượng đột biến"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khối lượng giao dịch cũng phản ánh <b>thanh khoản</b>, tức mức độ dễ dàng khi mua bán một cổ phiếu.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dễ mua bán với số lượng lớn, giá khớp sát với giá mong muốn.",
+              "title": "Thanh khoản cao",
+              "tone": "pos"
+            },
+            {
+              "text": "Khó bán khi cần, giá dễ bị đẩy lên hoặc đạp xuống mạnh chỉ với vài lệnh lớn.",
+              "title": "Thanh khoản thấp",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Người mới nên ưu tiên các cổ phiếu có thanh khoản tốt để hạn chế rủi ro không thoát được vị thế.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Thanh khoản"
+    }
+  ],
+  "summary": [
+    "<b>Khối lượng</b> là số cổ phiếu được khớp lệnh trong một phiên.",
+    "Giá tăng kèm <b>khối lượng tăng</b> xác nhận xu hướng tăng.",
+    "Giá tăng nhưng <b>khối lượng giảm dần</b> cho thấy lực mua đang yếu đi.",
+    "<b>Khối lượng đột biến</b> giúp xác nhận phá vỡ thật.",
+    "Ưu tiên cổ phiếu có <b>thanh khoản cao</b>."
+  ],
+  "title": "Khối lượng"
+}

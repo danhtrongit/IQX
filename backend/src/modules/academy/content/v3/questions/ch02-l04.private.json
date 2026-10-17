@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch02-l04",
+  "questions": [
+    {
+      "correct_option_id": "d650944902",
+      "id": "ch02-l04-q01",
+      "options": [
+        {
+          "id": "d650944902",
+          "text": "Hỏi thăm trước, giới thiệu sau"
+        },
+        {
+          "id": "c790546781",
+          "text": "Giới thiệu sản phẩm ngay câu đầu"
+        },
+        {
+          "id": "8f142ab7ad",
+          "text": "Gửi mã cổ phiếu để gây chú ý"
+        }
+      ],
+      "prompt": "Nguyên tắc vàng khi mở lời là gì?"
+    },
+    {
+      "correct_option_id": "5ab1e8c073",
+      "id": "ch02-l04-q02",
+      "options": [
+        {
+          "id": "5ab1e8c073",
+          "text": "Nhắc lại tối đa 2 lần với nội dung có ích"
+        },
+        {
+          "id": "e7596ee025",
+          "text": "Nhắn liên tục mỗi giờ"
+        },
+        {
+          "id": "d294b60fd8",
+          "text": "Xóa khỏi danh sách ngay"
+        }
+      ],
+      "prompt": "Khi người kia chưa trả lời tin nhắn, nên làm gì?"
+    },
+    {
+      "correct_option_id": "32c17e417c",
+      "id": "ch02-l04-q03",
+      "options": [
+        {
+          "id": "32c17e417c",
+          "text": "Hỏi khách có tiện nói chuyện không"
+        },
+        {
+          "id": "9ab4657ae1",
+          "text": "Đọc ngay biểu phí"
+        },
+        {
+          "id": "ff2e048eab",
+          "text": "Yêu cầu khách mở tài khoản"
+        }
+      ],
+      "prompt": "Khi gọi điện, sau khi chào và nêu lý do, bước tiếp theo là gì?"
+    }
+  ],
+  "salt": "d7addb2b33c554a43e38d3f45e7a690e155f3a12bf677680c334dfe179cacf32"
+}

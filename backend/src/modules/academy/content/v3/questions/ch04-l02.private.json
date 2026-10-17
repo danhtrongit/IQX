@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-l02",
+  "questions": [
+    {
+      "correct_option_id": "c8b6a92ef7",
+      "id": "ch04-l02-q01",
+      "options": [
+        {
+          "id": "c8b6a92ef7",
+          "text": "Đỉnh và đáy sau cao hơn đỉnh và đáy trước"
+        },
+        {
+          "id": "ea0ba6b0e9",
+          "text": "Đỉnh và đáy sau thấp hơn đỉnh và đáy trước"
+        },
+        {
+          "id": "d22a65d77d",
+          "text": "Giá không thay đổi qua các phiên"
+        }
+      ],
+      "prompt": "Xu hướng tăng có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "39f6cb91e8",
+      "id": "ch04-l02-q02",
+      "options": [
+        {
+          "id": "b6ecfd431c",
+          "text": "Giá dao động quanh một vùng"
+        },
+        {
+          "id": "39f6cb91e8",
+          "text": "Đỉnh và đáy sau thấp hơn đỉnh và đáy trước"
+        },
+        {
+          "id": "6f521a7f52",
+          "text": "Đỉnh và đáy sau cao hơn đỉnh và đáy trước"
+        }
+      ],
+      "prompt": "Xu hướng giảm có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "6f85fc4f2e",
+      "id": "ch04-l02-q03",
+      "options": [
+        {
+          "id": "119a8df7d4",
+          "text": "Nối các đỉnh"
+        },
+        {
+          "id": "d4bda37645",
+          "text": "Nối giá mở cửa các phiên"
+        },
+        {
+          "id": "6f85fc4f2e",
+          "text": "Nối ít nhất hai đáy"
+        }
+      ],
+      "prompt": "Đường xu hướng tăng được kẻ bằng cách nào?"
+    },
+    {
+      "correct_option_id": "e568ffdcd7",
+      "id": "ch04-l02-q04",
+      "options": [
+        {
+          "id": "e568ffdcd7",
+          "text": "Giá chạm vào nhiều lần mà không phá vỡ"
+        },
+        {
+          "id": "0ac9fe4a45",
+          "text": "Chỉ đi qua một điểm"
+        },
+        {
+          "id": "a456c34767",
+          "text": "Đường càng dốc càng tốt"
+        }
+      ],
+      "prompt": "Đường xu hướng đáng tin cậy hơn khi nào?"
+    },
+    {
+      "correct_option_id": "9d22a0ecd1",
+      "id": "ch04-l02-q05",
+      "options": [
+        {
+          "id": "2f2e278b12",
+          "text": "Giá tạo đỉnh mới cao hơn"
+        },
+        {
+          "id": "9d22a0ecd1",
+          "text": "Giá phá xuống dưới đường xu hướng tăng"
+        },
+        {
+          "id": "5324a19284",
+          "text": "Giá tăng ba phiên liên tiếp"
+        }
+      ],
+      "prompt": "Dấu hiệu sớm cho thấy xu hướng tăng có thể kết thúc là gì?"
+    }
+  ],
+  "salt": "37e92370b5651634d49d3a025cb9fc36635919a9ab98ef21f2f73d216ecf792b"
+}
