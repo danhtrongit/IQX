@@ -2,65 +2,43 @@ import { describe, expect, it } from "vitest"
 
 import { sanitizeLessonHtml } from "./sanitize"
 
-function dom(html: string, mode?: "flow" | "inline") {
+function dom(html: string) {
   const container = document.createElement("div")
-  container.innerHTML = sanitizeLessonHtml(html, mode)
+  container.innerHTML = sanitizeLessonHtml(html)
   return container
 }
 
 describe("sanitizeLessonHtml", () => {
-  it("keeps prose, emphasis, sub/sup and the formula classes", () => {
+  it("keeps the inline allowlist: b, strong, em, br and tone spans", () => {
+    const html =
+      'Giá <b>tăng</b>, <strong>mạnh</strong>, <em>nhẹ</em><br>dòng mới <span class="tone-pos">lãi</span> <span class="tone-neg">lỗ</span> <span class="tone-warn">chờ</span> <span class="tone-info">xanh</span> <span class="tone-violet">tím</span> <span class="tone-accent">nhấn</span> <span class="tone-strong">đậm</span>'
+    expect(sanitizeLessonHtml(html)).toBe(html)
+    expect(dom(html).querySelectorAll("span[class^='tone-']")).toHaveLength(7)
+  })
+
+  it("keeps < > ∈ & as literal text, never as markup", () => {
+    const out = dom("RSI &lt; 30 và RSI &gt; 70; giá ∈ dải; A &amp; B; 5 < 6 và 7 > 2")
+    expect(out.textContent).toBe("RSI < 30 và RSI > 70; giá ∈ dải; A & B; 5 < 6 và 7 > 2")
+    expect(out.children).toHaveLength(0)
+    expect(sanitizeLessonHtml("a &lt;b&gt; c")).toContain("&lt;b&gt;")
+  })
+
+  it("drops every class except one tone class on a span, and every attribute", () => {
     const out = dom(
-      '<p>Giá trị <strong>G</strong><sub>t</sub> và x<sup>2</sup></p><div class="formula-group"><div class="math-eq">RS = <span class="frac"><span>G</span><span>D</span></span></div></div><div class="formula">α = 2/(N+1)<br/>EMA</div>',
+      '<span class="evil tone-pos" style="color:red" onclick="steal()">a</span><b class="tone-neg">b</b><span class="tone-other">c</span>',
     )
-    expect(out.querySelector("strong")?.textContent).toBe("G")
-    expect(out.querySelector("sub")?.textContent).toBe("t")
-    expect(out.querySelector("sup")?.textContent).toBe("2")
-    expect(out.querySelector(".formula-group .math-eq .frac > span:first-child")?.textContent).toBe("G")
-    expect(out.querySelector(".formula br")).not.toBeNull()
+    expect(out.innerHTML).toBe('<span class="tone-pos">a</span><b>b</b><span>c</span>')
+    expect(out.querySelector("[style],[onclick]")).toBeNull()
   })
 
-  it("keeps < > ∈ ∉ & as literal text, never as markup", () => {
-    const out = dom("<p>RSI &lt; 30 và RSI &gt; 70; giá ∈ dải, giá ∉ dải; A &amp; B; 5 < 6 và 7 > 2</p>")
-    expect(out.textContent).toBe("RSI < 30 và RSI > 70; giá ∈ dải, giá ∉ dải; A & B; 5 < 6 và 7 > 2")
-    expect(out.querySelector("p")?.children).toHaveLength(0)
-    // The serialised form escapes them, so they cannot open a tag when injected.
-    expect(sanitizeLessonHtml("<p>a &lt;b&gt; c</p>")).toContain("&lt;b&gt;")
-  })
-
-  it("drops scripts, styles, frames, forms, images, event handlers and inline styles", () => {
+  it("drops scripts, frames, forms, images and links but keeps the link text", () => {
     const out = dom(
-      '<p onclick="steal()" style="color:red" class="evil formula">ok</p><script>alert(1)</script><style>p{display:none}</style><iframe src="x"></iframe><img src=x onerror=alert(1)><form><input value="a"><button>b</button></form><a href="javascript:alert(1)">link</a><svg><circle/></svg>',
+      '<script>alert(1)</script><style>p{}</style><iframe src="x"></iframe><img src=x onerror=alert(1)><form><input value="a"><button>b</button></form><a href="javascript:alert(1)">link</a><svg><circle/></svg>',
     )
-    expect(out.innerHTML).toBe('<p class="formula">ok</p>link')
-    expect(out.querySelector("script,style,iframe,img,form,input,button,svg,a")).toBeNull()
-    expect(out.querySelector("[onclick],[style],[href]")).toBeNull()
+    expect(out.innerHTML).toBe("link")
   })
 
-  it("removes the old chart-mount placeholders and unknown classes", () => {
-    const out = dom('<div class="chart-mount" id="x">chart</div><p class="mystery good">Đạt</p>')
-    expect(out.querySelector(".chart-mount")).toBeNull()
-    expect(out.querySelector("p")?.className).toBe("good")
-  })
-
-  it("unwraps unknown elements and keeps their text", () => {
-    expect(dom("<custom-tag>giữ <b>chữ</b></custom-tag>").innerHTML).toBe("giữ <b>chữ</b>")
-  })
-
-  it("puts every table in a focusable scroll region, once", () => {
-    const bare = dom("<table><thead><tr><th scope='col'>Cột</th></tr></thead><tbody><tr><td colspan='2'>a</td></tr></tbody></table>")
-    const region = bare.querySelector('[role="region"]')
-    expect(region?.getAttribute("tabindex")).toBe("0")
-    expect(region?.querySelector("table")).not.toBeNull()
-    expect(bare.querySelector("td")?.getAttribute("colspan")).toBe("2")
-
-    const wrapped = dom('<div class="table-wrap"><table><tr><td>x</td></tr></table></div>')
-    expect(wrapped.querySelectorAll('[role="region"]')).toHaveLength(1)
-    expect(wrapped.querySelector(".table-wrap")?.getAttribute("tabindex")).toBe("0")
-  })
-
-  it("inline mode keeps only inline formatting for table cells", () => {
-    const out = dom('<p>a <b>b</b><sub>1</sub> &lt; c</p><div class="math-eq">x</div><script>1</script>', "inline")
-    expect(out.innerHTML).toBe("a <b>b</b><sub>1</sub> &lt; cx")
+  it("unwraps block and unknown elements, keeping their text", () => {
+    expect(sanitizeLessonHtml("<p>a <b>b</b><sub>1</sub></p><div>x</div><custom-tag>y</custom-tag>")).toBe("a <b>b</b>1xy")
   })
 })

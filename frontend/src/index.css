@@ -74,6 +74,8 @@
     --shadow-brand-glow: var(--brand-glow);
     --shadow-brand-glow-lg: var(--brand-glow-lg);
     --color-status-warning: var(--status-warning);
+    --color-academy-subtle: var(--academy-subtle);
+    --color-academy-label: var(--academy-label);
     --radius-sm: calc(var(--radius) * 0.5);
     --radius-md: calc(var(--radius) * 0.75);
     --radius-lg: var(--radius);
@@ -146,6 +148,9 @@
     --status-error: var(--destructive);
     --status-info: var(--primary);
     --status-warning: oklch(0.52 0.12 70);
+    /* Học viện reader: sub-text and chart labels (never muted-foreground there). */
+    --academy-subtle: oklch(0.330 0.020 256);
+    --academy-label: oklch(0.380 0.020 256);
 }
 
 .dark {
@@ -203,6 +208,8 @@
     --status-error: oklch(0.76 0.16 25);
     --status-info: oklch(0.76 0.12 250);
     --status-warning: oklch(0.79 0.14 80);
+    --academy-subtle: oklch(0.925 0.018 245);
+    --academy-label: oklch(0.870 0.022 248);
 }
 
 @layer base {

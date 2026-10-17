@@ -65,6 +65,10 @@ Gradients (`110deg`, left to right like the logo, four stops at 0 / 42 / 70 / 10
 | Coins and rewards | `text-amber-700 dark:text-chart-2`, `bg-chart-2/10` | Xu balance, stars, trophies, gold mascots. Amber is the reward color, not a brand color |
 | Ceiling | `text-price-ceiling` | Exchange ceiling price |
 | Floor | `text-price-floor` | Exchange floor price |
+| Học viện sub-text | `text-academy-subtle` | Lesson reader, quiz, lesson blocks: secondary lines, captions, card subtitles |
+| Học viện chart label | `fill-academy-label` / `text-academy-label` | Lesson chart labels and ticks, locked-button text |
+
+Học viện exception: inside the lesson reader, quiz, lesson blocks and lesson charts (`src/pages/academy`), text never uses `muted-foreground`. Long-form reading on a phone needs more contrast than workspace metadata, so sub-text uses `academy-subtle` (#dbe7f3 dark) and chart labels use `academy-label` (#c9d6e4 dark). Lines, grids and bars may stay grey. Source-scan tests enforce it.
 
 Foreground pairs and measured contrast:
 

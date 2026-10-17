@@ -1,5 +1,6 @@
-import type { ElementType } from "react"
+import { useMemo, type ElementType } from "react"
 
+import { cn } from "@/lib/utils"
 import { sanitizeLessonHtml } from "../sanitize"
 
 export type InlineTextProps = {
@@ -9,7 +10,11 @@ export type InlineTextProps = {
   className?: string
 }
 
-/** One Inline string of lesson content, sanitized. F0 stub with the final signature (P5 fills it). */
+/**
+ * One Inline string of lesson content. It is rebuilt by the allowlist sanitizer before it is
+ * injected; tone spans are styled by `academy.css` (`.academy-inline`).
+ */
 export function InlineText({ html, as: Tag = "span", className }: InlineTextProps) {
-  return <Tag className={className} dangerouslySetInnerHTML={{ __html: sanitizeLessonHtml(html, "inline") }} />
+  const clean = useMemo(() => sanitizeLessonHtml(html), [html])
+  return <Tag className={cn("academy-inline", className)} dangerouslySetInnerHTML={{ __html: clean }} />
 }
