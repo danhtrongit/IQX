@@ -72,6 +72,42 @@ const lessonById = (id: string) => lessons.find((lesson) => lesson.id === id) as
 const chartSvg = (container: HTMLElement, id: string) => container.querySelector(`[data-chart-id="${id}"] svg[viewBox]`) as SVGSVGElement
 const texts = (svg: SVGSVGElement) => [...svg.querySelectorAll("text")].map((node) => node.textContent ?? "")
 
+type Box = { x0: number; x1: number; y0: number; y1: number }
+const boxesOverlap = (a: Box, b: Box) => a.x0 < b.x1 && b.x0 < a.x1 && a.y0 < b.y1 && b.y0 < a.y1
+
+/** Box of one printed line (0.56em per glyph, as the renderers estimate) with its baseline at `y`. */
+function textBoxOf(owner: Element, text: string, x: number, y: number): Box {
+  const size = Number(/text-\[(\d+(?:\.\d+)?)px\]/.exec(owner.getAttribute("class") ?? "")?.[1] ?? 11)
+  const w = text.length * size * 0.56
+  const anchor = owner.getAttribute("text-anchor") ?? "start"
+  const x0 = anchor === "middle" ? x - w / 2 : anchor === "end" ? x - w : x
+  return { x0, x1: x0 + w, y0: y - size * 0.8, y1: y + size * 0.2 }
+}
+
+/** Every pair of printed lines of an SVG whose boxes overlap (lines of one label never count against each other). */
+function textCollisions(svg: SVGSVGElement): string[] {
+  const lines: { owner: Element; text: string; box: Box }[] = []
+  svg.querySelectorAll("text").forEach((node) => {
+    const spans = [...node.querySelectorAll("tspan")]
+    let y = Number(node.getAttribute("y"))
+    if (spans.length === 0) {
+      lines.push({ owner: node, text: node.textContent ?? "", box: textBoxOf(node, node.textContent ?? "", Number(node.getAttribute("x")), y) })
+      return
+    }
+    for (const span of spans) {
+      y += Number(span.getAttribute("dy") ?? 0)
+      const x = Number(span.getAttribute("x") ?? node.getAttribute("x"))
+      lines.push({ owner: node, text: span.textContent ?? "", box: textBoxOf(node, span.textContent ?? "", x, y) })
+    }
+  })
+  const problems: string[] = []
+  for (let a = 0; a < lines.length; a += 1)
+    for (let b = a + 1; b < lines.length; b += 1)
+      if (lines[a].owner !== lines[b].owner && lines[a].text && lines[b].text && boxesOverlap(lines[a].box, lines[b].box))
+        problems.push(`${lines[a].text}|${lines[b].text}`)
+  return problems
+}
+
 describe("real content: review regressions", () => {
   it("C1L5-g2 draws the purchase below zero and labels −100.000, +8.000, +8.000, +108.000", () => {
     const { container } = renderLesson(lessonById("ch01-l05"), 760)
@@ -116,6 +152,84 @@ describe("real content: review regressions", () => {
       for (let index = 1; index < spans.length; index += 1) expect(spans[index][0]).toBeGreaterThanOrEqual(spans[index - 1][1])
     })
   }
+
+  for (const width of [358, 760]) {
+    for (const [lessonId, chartId] of [
+      ["ch05-l01", "c5l1-g3"],
+      ["ch05-l02", "c5l2-m4"],
+      ["ch02-l01", "c2l1-g1"],
+      ["ch05-l03", "c5l3-g2"],
+      ["ch05-l03", "c5l3-g4"],
+      ["ch02-l09", "c2l9-g1"],
+    ] as const) {
+      it(`${chartId} prints no text on top of other text at ${width}px`, () => {
+        const { container } = renderLesson(lessonById(lessonId), width)
+        const svgs = [...container.querySelectorAll<SVGSVGElement>(`[data-chart-id="${chartId}"] svg[viewBox]`)]
+        // Milestones are an HTML list on a phone; every other chart here draws an SVG.
+        if (!(chartId === "c2l9-g1" && width < 560)) expect(svgs.length).toBeGreaterThan(0)
+        for (const svg of svgs) expect(textCollisions(svg)).toEqual([])
+      })
+    }
+  }
+
+  it("C5L1-g3 keeps the last month on the axis and spreads its end labels", () => {
+    for (const width of [358, 760]) {
+      const view = renderLesson(lessonById("ch05-l01"), width)
+      const svg = chartSvg(view.container, "c5l1-g3")
+      const shown = texts(svg)
+        .filter((text) => text.startsWith("Tháng"))
+        .map((text) => text.replace(/\s+/g, ""))
+      expect(shown).toContain("Tháng24")
+      expect(shown).toContain("Tháng1")
+      expect(shown).not.toContain("Tháng23")
+      const ends = ["+5%", "+36%", "72 triệu"].map((label) => Number([...svg.querySelectorAll("text")].find((node) => node.textContent === label)?.getAttribute("y")))
+      const sorted = [...ends].sort((a, b) => a - b)
+      for (let k = 1; k < sorted.length; k += 1) expect(sorted[k] - sorted[k - 1]).toBeGreaterThanOrEqual(13)
+      view.unmount()
+      restore?.()
+    }
+  })
+
+  it("C5L2-g4 puts the 15% threshold label clear of every bar", () => {
+    for (const width of [358, 760]) {
+      const view = renderLesson(lessonById("ch05-l02"), width)
+      const svg = chartSvg(view.container, "c5l2-m4")
+      const label = [...svg.querySelectorAll("text")].find((node) => node.textContent === "15%") as SVGTextElement
+      const box = textBoxOf(label, label.textContent ?? "", Number(label.getAttribute("x")), Number(label.getAttribute("y")))
+      for (const rect of svg.querySelectorAll("rect")) {
+        const bar = {
+          x0: Number(rect.getAttribute("x")),
+          x1: Number(rect.getAttribute("x")) + Number(rect.getAttribute("width")),
+          y0: Number(rect.getAttribute("y")),
+          y1: Number(rect.getAttribute("y")) + Number(rect.getAttribute("height")),
+        }
+        expect(boxesOverlap(box, bar), `15% vs bar at ${bar.x0.toFixed(0)}`).toBe(false)
+      }
+      view.unmount()
+      restore?.()
+    }
+  })
+
+  it("C2L1-g1 rounds computed values to whole customers", () => {
+    const { container } = renderLesson(lessonById("ch02-l01"), 358)
+    const labels = texts(chartSvg(container, "c2l1-g1"))
+    expect(labels).toEqual(expect.arrayContaining(["51", "23"]))
+    expect(labels.some((text) => text.includes(","))).toBe(false)
+  })
+
+  it("C5L3-g4 keeps the price with its unit and leaves out the tick label under the fair-value stem", () => {
+    for (const width of [358, 760]) {
+      const view = renderLesson(lessonById("ch05-l03"), width)
+      const svg = chartSvg(view.container, "c5l3-g4")
+      const lines = [...svg.querySelectorAll("tspan")].map((node) => node.textContent ?? "")
+      expect(lines).not.toContain("đ")
+      expect(lines.some((line) => line.endsWith("15.350 đ"))).toBe(true)
+      expect(texts(svg)).not.toContain("30k")
+      expect(texts(svg)).toContain("20k")
+      view.unmount()
+      restore?.()
+    }
+  })
 
   it("a chart_grid of axis charts takes one column on a phone; thumbnail grids keep two", () => {
     const axisGrid = renderLesson(lessonById("ch05-l02"), 358)

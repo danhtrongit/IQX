@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils"
-import { wrapText, type MilestonesModel } from "./chart-math"
+import { textWidth, wrapText, type MilestonesModel } from "./chart-math"
 import { TONE_BG, TONE_FILL, TONE_STROKE, textColor, textFill, titleColor, titleFill } from "./chart-theme"
 import { useChartWidth } from "./use-chart-width"
 
@@ -7,12 +7,52 @@ import { useChartWidth } from "./use-chart-width"
 const VERTICAL_BELOW = 560
 const percent = (value: number) => `${Math.round(value * 100)}%`
 
-/** K6b: milestones on a 0..1 line with spans and a brace; a vertical list on a phone. */
+/** Horizontal gap kept between two point captions. */
+const CAPTION_GAP = 12
+const LINE_LEFT = 40
+
+/**
+ * Centre of each point caption on the horizontal line: under its point when there is room, otherwise
+ * pushed apart (at least CAPTION_GAP between captions) and kept inside [0, width]. Null when the
+ * captions cannot fit side by side at all, so the caller draws the vertical list instead.
+ * Widths use 0.6em per glyph, a little over the 0.56em estimate, since captions are semibold.
+ */
+function captionCenters(model: MilestonesModel, width: number): number[] | null {
+  const x = (at: number) => LINE_LEFT + at * (width - 2 * LINE_LEFT)
+  const items = model.points
+    .map((point, index) => ({
+      index,
+      want: x(point.at),
+      w: Math.max(...[point.title, ...(point.detail ?? [])].map((line) => textWidth(line, 11) * (0.6 / 0.56))),
+    }))
+    .sort((a, b) => a.want - b.want)
+  const total = items.reduce((sum, item) => sum + item.w, 0) + CAPTION_GAP * Math.max(0, items.length - 1)
+  if (total > width) return null
+  const centers = items.map((item) => Math.min(Math.max(item.want, item.w / 2), width - item.w / 2))
+  for (let k = 1; k < items.length; k += 1) {
+    centers[k] = Math.max(centers[k], centers[k - 1] + items[k - 1].w / 2 + CAPTION_GAP + items[k].w / 2)
+  }
+  const last = items.length - 1
+  if (last >= 0 && centers[last] > width - items[last].w / 2) {
+    centers[last] = width - items[last].w / 2
+    for (let k = last - 1; k >= 0; k -= 1) {
+      centers[k] = Math.min(centers[k], centers[k + 1] - items[k + 1].w / 2 - CAPTION_GAP - items[k].w / 2)
+    }
+  }
+  const result = new Array<number>(items.length)
+  items.forEach((item, k) => {
+    result[item.index] = centers[k]
+  })
+  return result
+}
+
+/** K6b: milestones on a 0..1 line with spans and a brace; a vertical list on a phone or when captions cannot sit side by side. */
 export function MilestonesChart({ model, label }: { model: MilestonesModel; label: string }) {
   const [measure, width] = useChartWidth()
+  const centers = width < VERTICAL_BELOW ? null : captionCenters(model, width)
   return (
     <div ref={measure} className="w-full min-w-0">
-      {width < VERTICAL_BELOW ? <VerticalMilestones model={model} label={label} /> : <HorizontalMilestones model={model} label={label} width={width} />}
+      {centers ? <HorizontalMilestones model={model} label={label} width={width} centers={centers} /> : <VerticalMilestones model={model} label={label} />}
     </div>
   )
 }
@@ -55,9 +95,9 @@ function VerticalMilestones({ model, label }: { model: MilestonesModel; label: s
   )
 }
 
-function HorizontalMilestones({ model, label, width }: { model: MilestonesModel; label: string; width: number }) {
-  const left = 40
-  const right = width - 40
+function HorizontalMilestones({ model, label, width, centers }: { model: MilestonesModel; label: string; width: number; centers: number[] }) {
+  const left = LINE_LEFT
+  const right = width - LINE_LEFT
   const x = (at: number) => left + at * (right - left)
   const spansAbove = (model.spans ?? []).filter((span) => span.side === "above")
   const spansBelow = (model.spans ?? []).filter((span) => span.side === "below")
@@ -89,12 +129,11 @@ function HorizontalMilestones({ model, label, width }: { model: MilestonesModel;
       <line x1={left} x2={right} y1={lineY} y2={lineY} strokeWidth="2" className="stroke-chart-5" />
       {model.points.map((point, index) => {
         const px = x(point.at)
-        const anchor = point.at <= 0.02 ? "start" : point.at >= 0.98 ? "end" : "middle"
-        const tx = anchor === "start" ? px - 12 : anchor === "end" ? px + 12 : px
+        const tx = centers[index]
         return (
           <g key={index}>
             <circle cx={px} cy={lineY} r="6" strokeWidth="2" className={cn(TONE_FILL[point.tone], "stroke-card")} />
-            <text x={tx} y={lineY + 22} textAnchor={anchor} className="text-[11px]">
+            <text x={tx} y={lineY + 22} textAnchor="middle" className="text-[11px]">
               <tspan x={tx} className={cn(titleFill(point.tone), "font-semibold")}>
                 {point.title}
               </tspan>
