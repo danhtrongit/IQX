@@ -1,0 +1,8 @@
+{
+  "indicator_id": "new_high_low",
+  "legacy": true,
+  "source_lesson_id": "ch13-l05",
+  "label": "New High – New Low",
+  "expected": 25,
+  "tolerance": 0.015
+}

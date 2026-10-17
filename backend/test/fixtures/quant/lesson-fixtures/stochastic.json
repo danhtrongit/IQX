@@ -1,0 +1,8 @@
+{
+  "indicator_id": "stochastic",
+  "legacy": false,
+  "source_lesson_id": "ch05-l04",
+  "label": "Stochastic",
+  "expected": 20,
+  "tolerance": 0.015
+}

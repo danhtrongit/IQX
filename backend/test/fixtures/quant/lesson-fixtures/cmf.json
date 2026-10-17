@@ -1,0 +1,8 @@
+{
+  "indicator_id": "cmf",
+  "legacy": false,
+  "source_lesson_id": "ch07-l03",
+  "label": "Chaikin Money Flow",
+  "expected": 0.6,
+  "tolerance": 0.015
+}

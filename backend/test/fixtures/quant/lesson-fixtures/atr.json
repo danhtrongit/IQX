@@ -1,0 +1,8 @@
+{
+  "indicator_id": "atr",
+  "legacy": true,
+  "source_lesson_id": "ch07-l01",
+  "label": "ATR",
+  "expected": 6,
+  "tolerance": 0.015
+}

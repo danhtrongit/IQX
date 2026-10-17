@@ -1,0 +1,8 @@
+{
+  "indicator_id": "distance_resistance",
+  "legacy": true,
+  "source_lesson_id": "ch09-l06",
+  "label": "Khoảng cách tới kháng cự",
+  "expected": 10,
+  "tolerance": 0.015
+}

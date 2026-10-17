@@ -1,0 +1,8 @@
+{
+  "indicator_id": "ma_cross",
+  "legacy": false,
+  "source_lesson_id": "ch05-l02",
+  "label": "MA Cross",
+  "expected": 1,
+  "tolerance": 0.015
+}

@@ -1,0 +1,8 @@
+{
+  "indicator_id": "ma",
+  "legacy": false,
+  "source_lesson_id": "ch01-l03",
+  "label": "MA / SMA",
+  "expected": 12,
+  "tolerance": 0.015
+}

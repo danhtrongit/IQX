@@ -1,0 +1,8 @@
+{
+  "indicator_id": "dmi",
+  "legacy": false,
+  "source_lesson_id": "ch05-l03",
+  "label": "DMI",
+  "expected": 40,
+  "tolerance": 0.015
+}

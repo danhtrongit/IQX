@@ -1,0 +1,8 @@
+{
+  "indicator_id": "roc",
+  "legacy": false,
+  "source_lesson_id": "ch10-l02",
+  "label": "ROC",
+  "expected": 10,
+  "tolerance": 0.015
+}

@@ -1,0 +1,8 @@
+{
+  "indicator_id": "bollinger",
+  "legacy": false,
+  "source_lesson_id": "ch01-l04",
+  "label": "Bollinger Bands",
+  "expected": 106,
+  "tolerance": 0.015
+}

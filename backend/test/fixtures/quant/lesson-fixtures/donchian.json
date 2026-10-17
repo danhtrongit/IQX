@@ -1,0 +1,8 @@
+{
+  "indicator_id": "donchian",
+  "legacy": false,
+  "source_lesson_id": "ch10-l01",
+  "label": "Donchian Channel",
+  "expected": 100,
+  "tolerance": 0.015
+}
