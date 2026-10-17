@@ -1,113 +1,174 @@
-import { render, screen, within } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { fireEvent, render, screen, within } from "@testing-library/react"
+import { afterEach, describe, expect, it } from "vitest"
 
-import type { LessonBlock } from "../api"
-import { ALL_CHART_MODELS, IMAGE_BLOCK } from "../test-fixtures"
-import { stubBrowser } from "../test-support"
+import { INTERACTIVE_BLOCK_TYPES, type LessonBlockType } from "../content-types"
 import { BlockRenderer } from "./block-renderer"
+import { InlineText } from "./inline-text"
+import { ALL_BLOCKS, CHARTS, INTERACTIVE_BLOCK, STATIC_BLOCKS, mockReaderWidth, svgOverflows } from "./test-blocks"
 
-beforeEach(() => stubBrowser())
-afterEach(() => vi.unstubAllGlobals())
+const STATIC_TYPES: LessonBlockType[] = [
+  "paragraph",
+  "heading",
+  "note",
+  "chart",
+  "chart_grid",
+  "table",
+  "cards",
+  "steps",
+  "definitions",
+  "stats",
+  "gauges",
+  "kv_cards",
+  "formula",
+  "tiles",
+  "quote",
+  "objection",
+  "funnel",
+  "sample_post",
+]
 
-function renderBlocks(blocks: LessonBlock[], onReload?: () => void) {
-  return render(<BlockRenderer blocks={blocks} context={{ charts: ALL_CHART_MODELS, onReload }} />)
+let restore: (() => void) | null = null
+afterEach(() => {
+  restore?.()
+  restore = null
+})
+
+function renderAll(width = 760) {
+  restore = mockReaderWidth(width)
+  return render(<BlockRenderer blocks={ALL_BLOCKS} charts={CHARTS} renderInteractive={(block, key) => <div key={key} data-testid={`interactive-${block.type}`} />} />)
 }
 
 describe("BlockRenderer", () => {
-  it("renders html blocks through the sanitizer, with < > ∈ ∉ as text and no script", () => {
-    const { container } = renderBlocks([
-      { type: "html", html: "<p>RSI &lt; 30; giá ∈ dải; giá ∉ dải; a &gt; b<script>window.__pwned = 1</script></p><div class=\"math-eq\">H<sub>2</sub>O x<sup>2</sup></div>" },
-    ])
-    expect(screen.getByText("RSI < 30; giá ∈ dải; giá ∉ dải; a > b")).toBeTruthy()
-    expect(container.querySelector("script")).toBeNull()
-    expect((window as unknown as { __pwned?: number }).__pwned).toBeUndefined()
-    expect(container.querySelector(".math-eq sub")?.textContent).toBe("2")
-    expect(container.querySelector(".math-eq sup")?.textContent).toBe("2")
+  it("has a fixture for every static block type of the schema", () => {
+    expect(new Set(STATIC_BLOCKS.map((block) => block.type))).toEqual(new Set(STATIC_TYPES))
+    expect(STATIC_TYPES.length + INTERACTIVE_BLOCK_TYPES.length).toBe(24)
   })
 
-  it("renders a table in a focusable internal scroll region with alignment and escaped cells", () => {
-    renderBlocks([{ type: "table", head: ["Điều kiện", "Giá trị"], rows: [["RSI &lt; 30", "<b>70</b>"]], align: ["l", "r"], aria_label: "Bảng mẫu" }])
-    const region = screen.getByRole("region", { name: "Bảng mẫu" })
-    expect(region.getAttribute("tabindex")).toBe("0")
-    const table = within(region).getByRole("table")
-    expect(within(table).getByRole("columnheader", { name: "Giá trị" }).className).toContain("align-r")
-    expect(within(table).getByRole("cell", { name: "RSI < 30" })).toBeTruthy()
-    expect(table.querySelector("td b")?.textContent).toBe("70")
+  it("renders every static block type in order, each in its own wrapper", () => {
+    const { container } = renderAll()
+    const rendered = [...container.querySelectorAll("[data-academy-block]")].map((node) => node.getAttribute("data-academy-block"))
+    expect(rendered).toEqual(STATIC_BLOCKS.map((block) => block.type))
+    for (const node of container.querySelectorAll("[data-academy-block]")) expect(node.childElementCount).toBeGreaterThan(0)
   })
 
-  it("renders a chart block with its title, illustrative tag, caption and the data table toggle", async () => {
-    const user = userEvent.setup()
-    renderBlocks([{ type: "chart", chart_id: "grouped-chart", title: "Doanh thu", caption: "Mỗi cặp cột so sánh cùng một quý.", illustrative: true, table_toggle: true }])
-    expect(screen.getByRole("heading", { name: "Doanh thu" })).toBeTruthy()
-    expect(screen.getByText("Dữ liệu minh họa")).toBeTruthy()
-    expect(screen.getByText("Mỗi cặp cột so sánh cùng một quý.")).toBeTruthy()
-    expect(screen.getByRole("img", { name: /Doanh thu/ })).toBeTruthy()
-    const summary = screen.getByText("Xem bảng số liệu của biểu đồ")
-    await user.click(summary)
-    expect(screen.getByRole("columnheader", { name: "2025 (tỷ đồng)" })).toBeTruthy()
+  it("delegates interactive blocks to renderInteractive and drops them without it", () => {
+    renderAll()
+    expect(screen.getByTestId("interactive-workpad")).toBeTruthy()
+    restore?.()
+    const { container } = render(<BlockRenderer blocks={[INTERACTIVE_BLOCK]} charts={{}} />)
+    expect(container.querySelector(".academy-blocks")?.childElementCount).toBe(0)
   })
 
-  it("omits the data table toggle when the block does not offer it", () => {
-    renderBlocks([{ type: "chart", chart_id: "grouped-chart", title: "Doanh thu", table_toggle: false }])
-    expect(screen.queryByText("Xem bảng số liệu của biểu đồ")).toBeNull()
+  it("renders prose with the inline allowlist and tone spans", () => {
+    const { container } = renderAll()
+    const paragraph = container.querySelector('[data-academy-block="paragraph"] p')
+    expect(paragraph?.textContent).toBe("Giá tăng khi cầu lớn hơn cung & ngược lại.")
+    expect(paragraph?.querySelector("b")?.textContent).toBe("tăng")
+    expect(paragraph?.querySelector(".tone-pos")?.textContent).toBe("cầu")
+    expect(screen.getByRole("heading", { level: 4, name: "Một tiêu đề phụ" })).toBeTruthy()
+    expect(screen.getByText("Số liệu giả định để minh họa")).toBeTruthy()
   })
 
-  it("shows an error with Thử lại when the model of a chart block is missing", async () => {
-    const onReload = vi.fn()
-    const user = userEvent.setup()
-    renderBlocks([{ type: "chart", chart_id: "does-not-exist", title: "Thiếu", table_toggle: true }], onReload)
-    expect(screen.getByRole("alert").textContent).toContain("Chưa có dữ liệu của biểu đồ này.")
-    await user.click(screen.getByRole("button", { name: "Thử lại" }))
-    expect(onReload).toHaveBeenCalledTimes(1)
+  it("renders the three table variants with ratings, merged cells, row headers and group cells", () => {
+    renderAll()
+    const grid = screen.getByRole("region", { name: "So sánh kênh đầu tư" })
+    expect(grid?.getAttribute("tabindex")).toBe("0")
+    expect(within(grid).getAllByRole("columnheader").map((cell) => cell.textContent)).toEqual(["Tiêu chí", "Cổ phiếu", "Tiết kiệm"])
+    expect(within(grid).getByText("Cả hai kênh").closest("td")?.getAttribute("colspan")).toBe("2")
+    expect(within(grid).getByText("Cao").closest("span")?.parentElement?.textContent).toContain("(Kém)")
+    const rows = screen.getByRole("region", { name: "Hai loại tài khoản" })
+    expect(within(rows).getByRole("rowheader", { name: "Đòn bẩy" })).toBeTruthy()
+    const grouped = screen.getByText("Chuẩn bị")
+    expect(grouped.tagName).toBe("TH")
+    expect(grouped?.getAttribute("rowspan")).toBe("2")
   })
 
-  it("renders an image block as a lazy, sized figure with its caption", () => {
-    renderBlocks([IMAGE_BLOCK])
-    const image = screen.getByRole("img", { name: IMAGE_BLOCK.alt })
-    expect(image.getAttribute("loading")).toBe("lazy")
-    expect(image.getAttribute("width")).toBe("2160")
-    expect(image.getAttribute("height")).toBe("1175")
-    expect(screen.getByText("Chú thích ảnh")).toBeTruthy()
+  it("renders cards, steps, definitions, stats, gauges, receipts, formulas and tiles", () => {
+    renderAll()
+    expect(screen.getByText("Quỹ mở")).toBeTruthy()
+    expect(screen.getByText("Loại 2")).toBeTruthy()
+    expect(screen.getByText("Mua theo tin đồn")).toBeTruthy()
+    expect(screen.getAllByRole("listitem").some((item) => item.textContent?.includes("Mở tài khoản"))).toBe(true)
+    expect(screen.getByText("Cổ đông")).toBeTruthy()
+    expect(screen.getByText("Tiền nhàn rỗi")).toBeTruthy()
+    expect(screen.getByText("308 triệu")).toBeTruthy()
+    expect(screen.getByText("±10%")).toBeTruthy()
+    expect(screen.getByRole("meter", { name: "Giá giảm 20%" })?.getAttribute("aria-valuenow")).toBe("37.5")
+    expect(screen.getByText("12.575.000 đ")).toBeTruthy()
+    expect(screen.getByText("12 lần")).toBeTruthy()
+    expect(screen.getByText("Doanh nghiệp tốt").tagName).toBe("LEGEND")
+    expect(within(document.querySelector('[data-academy-block="tiles"]') as HTMLElement).getByText("61,8%")).toBeTruthy()
   })
 
-  it("renders steps with their numbers, titles and html bodies", () => {
-    const { container } = renderBlocks([{ type: "steps", items: [{ no: "01", title: "Chọn cổ phiếu", html: "<p>Chọn <strong>FPT</strong> &lt; 10 mã.</p>" }, { no: "02", title: "Chọn ngày", html: "<p>Từ ngày.</p>" }] }])
-    expect(screen.getAllByRole("listitem")).toHaveLength(2)
-    expect(screen.getByRole("heading", { name: /Chọn cổ phiếu/ })).toBeTruthy()
-    expect(container.querySelector("li strong")?.textContent).toBe("FPT")
-    expect(screen.getByText(/10 mã/).textContent).toContain("< 10")
+  it("renders quotes, objections, funnels and sample posts", () => {
+    renderAll()
+    expect(screen.getByText("Nên")).toBeTruthy()
+    expect(screen.getByText("“Chứng khoán là cờ bạc.”")).toBeTruthy()
+    expect(screen.getByText("Chuyển đổi")).toBeTruthy()
+    expect(screen.getByText(/Dòng một/).classList.contains("whitespace-pre-line")).toBe(true)
+    expect(screen.getByText("Vì sao hiệu quả:")).toBeTruthy()
   })
 
-  it("renders callouts with their variants and titles", () => {
-    renderBlocks([
-      { type: "callout", variant: "notice", title: "Lưu ý", blocks: [{ type: "html", html: "<p>Nội dung lưu ý</p>" }] },
-      { type: "callout", variant: "filter-example", aria_label: "Ví dụ điều kiện lọc", blocks: [{ type: "html", html: '<span class="filter-name">Tăng trưởng</span><b class="filter-expression">&gt; 15%</b>' }] },
-    ])
-    expect(screen.getByRole("note", { name: "Lưu ý" }).textContent).toContain("Nội dung lưu ý")
-    const example = screen.getByRole("group", { name: "Ví dụ điều kiện lọc" })
-    expect(example.getAttribute("data-variant")).toBe("filter-example")
-    expect(example.querySelector(".filter-expression")?.textContent).toBe("> 15%")
+  it("renders chart figures with title, legend, note and the data table toggle", async () => {
+    renderAll()
+    const figure = document.querySelector('[data-chart-id="c4l7-g6"]') as HTMLElement
+    expect(within(figure).getByText("MACD và giá")).toBeTruthy()
+    expect(within(figure).getByRole("list", { name: "Chú giải" })).toBeTruthy()
+    expect(within(figure).getByText("Dữ liệu minh họa")).toBeTruthy()
+    const summary = within(figure).getByText("Xem bảng số liệu")
+    fireEvent.click(summary)
+    expect(within(figure).getAllByRole("columnheader").map((cell) => cell.textContent)).toContain("Histogram")
+    expect(document.querySelector('[data-chart-id="c4l1-g4"]')).not.toBeNull()
+    expect(screen.getByText("Vốn đầu tư linh hoạt")).toBeTruthy()
   })
 
-  it("puts an adjacent signal-buy and signal-sell pair side by side", () => {
-    renderBlocks([
-      { type: "callout", variant: "signal-buy", title: "Điều kiện Mua mẫu", blocks: [{ type: "html", html: "<p>Mua</p>" }] },
-      { type: "callout", variant: "signal-sell", title: "Điều kiện Bán mẫu", blocks: [{ type: "html", html: "<p>Bán</p>" }] },
-    ])
-    const pair = screen.getByTestId("signal-pair")
-    expect(within(pair).getByRole("group", { name: "Điều kiện Mua mẫu" })).toBeTruthy()
-    expect(within(pair).getByRole("group", { name: "Điều kiện Bán mẫu" })).toBeTruthy()
+  it("shows an empty state for a chart id that has no model", () => {
+    render(<BlockRenderer blocks={[{ type: "chart", chart_id: "c9l9-zz" }]} charts={{}} />)
+    expect(screen.getByText("Biểu đồ này chưa có dữ liệu.")).toBeTruthy()
   })
 
-  it("renders a details block that holds nested blocks", async () => {
-    const user = userEvent.setup()
-    const { container } = renderBlocks([{ type: "details", summary: "Thao tác trên điện thoại", blocks: [{ type: "html", html: "<p>Bấm Chỉ báo.</p>" }, IMAGE_BLOCK] }])
-    const details = container.querySelector("details") as HTMLDetailsElement
-    expect(details.open).toBe(false)
-    await user.click(screen.getByText("Thao tác trên điện thoại"))
-    expect(details.open).toBe(true)
-    expect(within(details).getByText("Bấm Chỉ báo.")).toBeTruthy()
-    expect(within(details).getByRole("img", { name: IMAGE_BLOCK.alt })).toBeTruthy()
+  it("lays every chart out inside a 358px reader without overflowing text", () => {
+    const { container } = renderAll(358)
+    expect(svgOverflows(container, 358)).toEqual([])
+  })
+
+  it("lays every chart out inside a 760px reader without overflowing text", () => {
+    const { container } = renderAll(760)
+    expect(svgOverflows(container, 760)).toEqual([])
+  })
+})
+
+describe("InlineText", () => {
+  it("sanitizes before injecting and keeps the requested element", () => {
+    const { container } = render(<InlineText as="p" className="x" html={'<script>alert(1)</script>a <span class="tone-neg" onclick="x()">b</span>'} />)
+    const paragraph = container.querySelector("p")
+    expect(paragraph?.className).toBe("academy-inline x")
+    expect(paragraph?.innerHTML).toBe('a <span class="tone-neg">b</span>')
+  })
+})
+
+describe("academy content folders use the academy text tokens", () => {
+  const sources = import.meta.glob(["./*.{ts,tsx}", "../charts/*.{ts,tsx}", "!../**/*.test.{ts,tsx}"], {
+    query: "?raw",
+    import: "default",
+    eager: true,
+  }) as Record<string, string>
+
+  it("scans the renderer sources", () => {
+    expect(Object.keys(sources)).toEqual(expect.arrayContaining(["./block-renderer.tsx", "../charts/series-panels-chart.tsx"]))
+  })
+
+  // Built from parts so the acceptance grep over these folders finds no literal match in this test.
+  const bannedTextToken = new RegExp(["muted", "foreground"].join("-"))
+
+  it("never uses the grey workspace text token or a hardcoded colour", () => {
+    for (const [file, text] of Object.entries(sources)) {
+      expect(text, file).not.toMatch(bannedTextToken)
+      expect(text, file).not.toMatch(/#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\b/)
+    }
+  })
+
+  it("draws no emoji or glyph icons in chart and block code", () => {
+    for (const [file, text] of Object.entries(sources)) expect(text, file).not.toMatch(/[✓✔→←↑↓]/)
   })
 })

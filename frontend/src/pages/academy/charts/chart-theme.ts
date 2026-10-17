@@ -1,49 +1,125 @@
-import type { SeriesRole } from "./chart-math"
+import type { ChartTone } from "../content-types"
 
 /**
- * Series colour roles of the chart models, mapped to theme tokens (never to the hex values of the
- * handoff HTML). Colour is never the only signal: dashed series, the legend and the data table carry
- * the same information. Class names are written out in full so Tailwind can see them.
+ * Colour roles of the v3.2 chart models, mapped to theme tokens (schema.ts §2), never to the hex
+ * values of the mockup. Class names are written out in full so Tailwind can see them.
+ *
+ *   price -> foreground, p1 -> chart-1, p2 -> chart-2, p3 -> chart-5 (lines only), p4 -> chart-7,
+ *   p5 -> chart-8, pos -> price-up, neg -> price-down, warn -> chart-2, info -> chart-6,
+ *   neutral -> border.
+ *
+ * Chart text never takes the grey tones: an omitted (or grey) text tone renders with
+ * `academy-label`.
  */
-export const ROLE_STROKE: Record<SeriesRole, string> = {
+export type TextTone = Exclude<ChartTone, "p3" | "neutral">
+
+export const TONE_STROKE: Record<ChartTone, string> = {
   price: "stroke-foreground",
   p1: "stroke-chart-1",
   p2: "stroke-chart-2",
-  p3: "stroke-muted-foreground",
+  p3: "stroke-chart-5",
+  p4: "stroke-chart-7",
+  p5: "stroke-chart-8",
   pos: "stroke-price-up",
   neg: "stroke-price-down",
+  warn: "stroke-chart-2",
+  info: "stroke-chart-6",
+  neutral: "stroke-border",
 }
 
-export const ROLE_FILL: Record<SeriesRole, string> = {
+export const TONE_FILL: Record<ChartTone, string> = {
   price: "fill-foreground",
   p1: "fill-chart-1",
   p2: "fill-chart-2",
-  p3: "fill-muted-foreground",
+  p3: "fill-chart-5",
+  p4: "fill-chart-7",
+  p5: "fill-chart-8",
   pos: "fill-price-up",
   neg: "fill-price-down",
+  warn: "fill-chart-2",
+  info: "fill-chart-6",
+  neutral: "fill-border",
 }
 
-/** Tone of a bar of a `series_panels` panel. */
-export const BAR_FILL = {
+/** Background of HTML swatches (legend dots, funnel bars, segment bars drawn in HTML). */
+export const TONE_BG: Record<ChartTone, string> = {
+  price: "bg-foreground",
+  p1: "bg-chart-1",
+  p2: "bg-chart-2",
+  p3: "bg-chart-5",
+  p4: "bg-chart-7",
+  p5: "bg-chart-8",
+  pos: "bg-price-up",
+  neg: "bg-price-down",
+  warn: "bg-chart-2",
+  info: "bg-chart-6",
+  neutral: "bg-border",
+}
+
+export const TONE_BORDER: Record<ChartTone, string> = {
+  price: "border-foreground",
+  p1: "border-chart-1",
+  p2: "border-chart-2",
+  p3: "border-chart-5",
+  p4: "border-chart-7",
+  p5: "border-chart-8",
+  pos: "border-price-up",
+  neg: "border-price-down",
+  warn: "border-chart-2",
+  info: "border-chart-6",
+  neutral: "border-border",
+}
+
+const TEXT_FILL: Record<TextTone, string> = {
+  price: "fill-foreground",
+  p1: "fill-chart-1",
+  p2: "fill-chart-2",
+  p4: "fill-chart-7",
+  p5: "fill-chart-8",
   pos: "fill-price-up",
   neg: "fill-price-down",
-  neutral: "fill-muted-foreground",
-} as const
+  warn: "fill-chart-2",
+  info: "fill-chart-6",
+}
 
-/** Categorical colours of the series of a category chart, in order. */
-export const CATEGORY_FILL = ["fill-chart-1", "fill-chart-2", "fill-muted-foreground", "fill-price-up", "fill-price-down"] as const
-export const CATEGORY_STROKE = [
-  "stroke-chart-1",
-  "stroke-chart-2",
-  "stroke-muted-foreground",
-  "stroke-price-up",
-  "stroke-price-down",
-] as const
-/** Dash patterns that differentiate series without relying on colour. */
-export const CATEGORY_DASH = [undefined, "6 4", "2 3", "8 3 2 3", "1 4"] as const
+const TEXT_COLOR: Record<TextTone, string> = {
+  price: "text-foreground",
+  p1: "text-chart-1",
+  p2: "text-chart-2",
+  p4: "text-chart-7",
+  p5: "text-chart-8",
+  pos: "text-price-up",
+  neg: "text-price-down",
+  warn: "text-chart-2",
+  info: "text-chart-6",
+}
 
-export const WATERFALL_FILL = {
-  total: "fill-chart-1",
-  up: "fill-price-up",
-  down: "fill-price-down",
-} as const
+function isTextTone(tone: ChartTone | undefined): tone is TextTone {
+  return tone !== undefined && tone !== "p3" && tone !== "neutral"
+}
+
+/** SVG text fill for a tone; grey or missing tones use the academy label colour. */
+export function textFill(tone?: ChartTone): string {
+  return isTextTone(tone) ? TEXT_FILL[tone] : "fill-academy-label"
+}
+
+/** HTML text colour for a tone; grey or missing tones use the academy label colour. */
+export function textColor(tone?: ChartTone): string {
+  return isTextTone(tone) ? TEXT_COLOR[tone] : "text-academy-label"
+}
+
+/** Title text (node, milestone, caption): a grey or missing tone falls back to foreground. */
+export function titleColor(tone?: ChartTone): string {
+  return isTextTone(tone) ? TEXT_COLOR[tone] : "text-foreground"
+}
+
+export function titleFill(tone?: ChartTone): string {
+  return isTextTone(tone) ? TEXT_FILL[tone] : "fill-foreground"
+}
+
+/** Neutral chart text (ticks, axis titles, labels without a tone). */
+export const LABEL_FILL = "fill-academy-label"
+export const LABEL_TEXT = "text-academy-label"
+/** Grid lines and baselines. */
+export const GRID_STROKE = "stroke-border"
+export const DASH = "5 4"

@@ -1,7 +1,12 @@
 // Broker Current View + per-thesis evidence (spec §9, §10): one live view per (symbol, broker),
 // newer reports win, older claims are inherited while still inside the window.
 import type { BrokerCurrentViewRow } from '../research.ports.js';
-import type { CanonicalThesis, ResearchReport, StoredClaim, ThesisEvidenceLink } from '../research.types.js';
+import type {
+  CanonicalThesis,
+  ResearchReport,
+  StoredClaim,
+  ThesisEvidenceLink,
+} from '../research.types.js';
 import { isWithinWindow } from './window.js';
 
 export interface ThesisEvidenceEntry {
@@ -30,7 +35,10 @@ export function thesisEvidence(
   for (const thesis of theses) {
     if (thesis.status !== 'active' && thesis.status !== 'updated') continue;
 
-    const linked = new Map<string, { claim: StoredClaim; index: number; relationship: ThesisEvidenceLink['relationship'] }>();
+    const linked = new Map<
+      string,
+      { claim: StoredClaim; index: number; relationship: ThesisEvidenceLink['relationship'] }
+    >();
     for (const link of links) {
       if (link.thesisId !== thesis.id) continue;
       const hit = claimIndex.get(link.claimId);
@@ -43,7 +51,8 @@ export function thesisEvidence(
       if (relationship !== 'replace' && relationship !== 'contradict') continue;
       if (claim.status === 'invalidated' || !isWithinWindow(claim.evidenceDate, today)) continue;
       const cur = retiredBefore.get(claim.broker);
-      if (cur === undefined || claim.evidenceDate > cur) retiredBefore.set(claim.broker, claim.evidenceDate);
+      if (cur === undefined || claim.evidenceDate > cur)
+        retiredBefore.set(claim.broker, claim.evidenceDate);
     }
 
     const newest = new Map<string, { claim: StoredClaim; index: number }>();
@@ -96,10 +105,14 @@ export function buildBrokerCurrentViews(
   for (const [broker, list] of [...byBroker.entries()].sort(([a], [b]) => cmp(a, b))) {
     // Newest first; same date → later in input order first.
     list.sort((a, b) =>
-      a.report.reportDate === b.report.reportDate ? b.index - a.index : cmp(b.report.reportDate, a.report.reportDate),
+      a.report.reportDate === b.report.reportDate
+        ? b.index - a.index
+        : cmp(b.report.reportDate, a.report.reportDate),
     );
     const latest = list[0]!.report;
-    const withTarget = list.find((x) => x.report.targetPriceVnd !== null && x.report.targetPriceVnd > 0)?.report ?? null;
+    const withTarget =
+      list.find((x) => x.report.targetPriceVnd !== null && x.report.targetPriceVnd > 0)?.report ??
+      null;
 
     const olderReportIds = new Set(list.slice(1).map((x) => x.report.id));
     const brokerClaims = claims.filter(

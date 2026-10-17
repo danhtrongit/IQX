@@ -87,12 +87,14 @@ export function savePanelState(userId: string | undefined, patch: Partial<PanelV
   write(panelKey(userId), JSON.stringify({ ...loadPanelState(userId), ...patch }))
 }
 
-/* ── Quiz: idempotency key per lesson attempt (ticked answers live on the server as a draft) ── */
+/* ── Quiz: idempotency key per item attempt (ticked answers live on the server as a draft) ── */
 
 export type AttemptKeyRecord = { key: string; done: boolean }
 
-const attemptKeyKey = (userId: string | undefined, lessonId: string) => `${PREFIX}attempt-key.${userId ?? "anonymous"}.${lessonId}`
-const guideRequestKey = (userId: string | undefined, lessonId: string) => `${PREFIX}guide-request.${userId ?? "anonymous"}.${lessonId}`
+const ATTEMPT_KEY_PREFIX = `${PREFIX}attempt-key.`
+/** Namespaced by catalog version: a key of an older catalog never replays into a new item with the same id. */
+const attemptKeyKey = (userId: string | undefined, catalogVersion: string, itemId: string) =>
+  `${ATTEMPT_KEY_PREFIX}${catalogVersion}.${userId ?? "anonymous"}.${itemId}`
 
 function isAttemptKeyRecord(value: unknown): value is AttemptKeyRecord {
   if (!value || typeof value !== "object") return false
@@ -100,30 +102,62 @@ function isAttemptKeyRecord(value: unknown): value is AttemptKeyRecord {
   return typeof candidate.key === "string" && candidate.key.length >= 8 && typeof candidate.done === "boolean"
 }
 
-export function loadAttemptKey(userId: string | undefined, lessonId: string): AttemptKeyRecord | null {
-  return readJson(attemptKeyKey(userId, lessonId), isAttemptKeyRecord)
+export function loadAttemptKey(userId: string | undefined, catalogVersion: string, itemId: string): AttemptKeyRecord | null {
+  return readJson(attemptKeyKey(userId, catalogVersion, itemId), isAttemptKeyRecord)
 }
 
-export function saveAttemptKey(userId: string | undefined, lessonId: string, record: AttemptKeyRecord): void {
-  write(attemptKeyKey(userId, lessonId), JSON.stringify(record))
+export function saveAttemptKey(userId: string | undefined, catalogVersion: string, itemId: string, record: AttemptKeyRecord): void {
+  write(attemptKeyKey(userId, catalogVersion, itemId), JSON.stringify(record))
 }
 
 /** The attempt behind the stored key has been graded: the next start must open a new one, not replay it. */
-export function markAttemptDone(userId: string | undefined, lessonId: string): void {
-  const record = loadAttemptKey(userId, lessonId)
-  if (record && !record.done) saveAttemptKey(userId, lessonId, { ...record, done: true })
+export function markAttemptDone(userId: string | undefined, catalogVersion: string, itemId: string): void {
+  const record = loadAttemptKey(userId, catalogVersion, itemId)
+  if (record && !record.done) saveAttemptKey(userId, catalogVersion, itemId, { ...record, done: true })
 }
 
-/** Request id of the pending completion of one guide lesson; reused by a retry so the replay is idempotent. */
-export function loadGuideRequestId(userId: string | undefined, lessonId: string): string | null {
-  const stored = read(guideRequestKey(userId, lessonId))
-  return stored && stored.length >= 8 ? stored : null
+/** Drops the attempt keys of every other catalog version (they can only ever get 409 now). */
+export function pruneAttemptKeys(catalogVersion: string): void {
+  const keep = `${ATTEMPT_KEY_PREFIX}${catalogVersion}.`
+  for (const key of [...memory.keys()]) if (key.startsWith(ATTEMPT_KEY_PREFIX) && !key.startsWith(keep)) memory.delete(key)
+  try {
+    for (const key of Object.keys(sessionStorage))
+      if (key.startsWith(ATTEMPT_KEY_PREFIX) && !key.startsWith(keep)) sessionStorage.removeItem(key)
+  } catch {
+    /* nothing to clear */
+  }
 }
 
-export function saveGuideRequestId(userId: string | undefined, lessonId: string, requestId: string): void {
-  write(guideRequestKey(userId, lessonId), requestId)
+/* ── Notes: edits not yet accepted by the server (the account copy stays the source of truth) ── */
+
+export type NotesDraft = {
+  texts: Record<string, string>
+  checks: Record<string, boolean>
+  scores: Record<string, number[]>
 }
 
-export function clearGuideRequestId(userId: string | undefined, lessonId: string): void {
-  remove(guideRequestKey(userId, lessonId))
+const notesDraftKey = (userId: string | undefined, itemId: string) => `${PREFIX}notes-draft.${userId ?? "anonymous"}.${itemId}`
+
+function isNotesDraft(value: unknown): value is NotesDraft {
+  if (!value || typeof value !== "object") return false
+  const candidate = value as Partial<Record<keyof NotesDraft, unknown>>
+  const isRecord = (entry: unknown, check: (item: unknown) => boolean) =>
+    !!entry && typeof entry === "object" && !Array.isArray(entry) && Object.values(entry).every(check)
+  return (
+    isRecord(candidate.texts, (item) => typeof item === "string") &&
+    isRecord(candidate.checks, (item) => typeof item === "boolean") &&
+    isRecord(candidate.scores, (item) => Array.isArray(item) && item.every((n) => Number.isInteger(n)))
+  )
+}
+
+export function loadNotesDraft(userId: string | undefined, itemId: string): NotesDraft | null {
+  return readJson(notesDraftKey(userId, itemId), isNotesDraft)
+}
+
+export function saveNotesDraft(userId: string | undefined, itemId: string, draft: NotesDraft): void {
+  write(notesDraftKey(userId, itemId), JSON.stringify(draft))
+}
+
+export function clearNotesDraft(userId: string | undefined, itemId: string): void {
+  remove(notesDraftKey(userId, itemId))
 }

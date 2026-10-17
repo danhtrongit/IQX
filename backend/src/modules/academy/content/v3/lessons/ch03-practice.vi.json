@@ -1,0 +1,332 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-practice",
+  "intro_blocks": [],
+  "kind": "practice",
+  "lead": "Bốn khách hàng dưới đây là những kiểu khách bạn sẽ gặp gần như mỗi tuần. Hãy tự phân tích trước, viết ra cách xử lý của mình, rồi mới mở gợi ý để so sánh. Cuối bài, luyện đóng vai theo cặp và chấm điểm.",
+  "lesson_key": "concept:phong_tap_thuc_chien",
+  "order": 11,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "label": "Bước 1",
+              "text": "Thông tin, tâm lý và câu khách hay nói.",
+              "title": "Đọc hồ sơ"
+            },
+            {
+              "label": "Bước 2",
+              "text": "Viết câu trả lời của bạn vào ô bên dưới.",
+              "title": "Tự phân tích"
+            },
+            {
+              "label": "Bước 3",
+              "text": "Mở gợi ý, xem mình thiếu điều gì.",
+              "title": "So sánh gợi ý"
+            },
+            {
+              "label": "Bước 4",
+              "text": "Luyện theo cặp, nhờ người thứ ba chấm điểm.",
+              "title": "Đóng vai"
+            }
+          ],
+          "type": "steps"
+        }
+      ],
+      "id": "s1",
+      "title": "Cách luyện tập"
+    },
+    {
+      "blocks": [
+        {
+          "hints": [
+            {
+              "term": "Mấu chốt",
+              "text": "Khách không sợ chứng khoán, khách sợ mua đúng đỉnh. Giải pháp là không mua một lần."
+            },
+            {
+              "term": "Trả lời câu khách hay nói",
+              "text": "“Không ai mua được đúng đáy anh ạ. Thay vì bỏ hết một lần, mình chia ra nhiều đợt, mỗi tháng một phần. Giá cao giá thấp đều có, mình không sợ đu đỉnh.”"
+            },
+            {
+              "term": "Hướng gợi ý",
+              "text": "Giữ phần lớn ở ngân hàng, thử một phần nhỏ. Đầu tư định kỳ hằng tháng, có thể tìm hiểu quỹ hoặc ETF. Học thêm Chương 1 của Học viện."
+            },
+            {
+              "term": "Câu chốt",
+              "text": "“Tối nay em hướng dẫn anh mở tài khoản 10 phút. Tháng này mình thử 10-20 triệu trước, anh thấy được không?”"
+            },
+            {
+              "term": "Tránh",
+              "text": "Hứa lãi cao hơn ngân hàng. Khuyên dồn cả 300 triệu. Dùng thuật ngữ khó."
+            }
+          ],
+          "id": "case1",
+          "pad_title": "Bạn tự phân tích trước",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "profile": {
+            "info": [
+              "Nam, 28 tuổi, làm IT",
+              "Thu nhập 25 triệu/tháng",
+              "Có 300 triệu tiết kiệm, đang gửi ngân hàng",
+              "Chưa từng đầu tư chứng khoán"
+            ],
+            "mindset": [
+              "Muốn tiền sinh lời hơn tiết kiệm",
+              "Rất sợ mất tiền, sợ “đu đỉnh”"
+            ],
+            "quote": "“Giờ vào có muộn không em?”"
+          },
+          "prompts": [
+            "1) Nỗi lo thật sự của khách là gì?",
+            "2) Bạn trả lời câu khách hay nói thế nào?",
+            "3) Bạn đề xuất bước nhỏ nào, chốt bằng câu gì?",
+            "4) Điều gì tuyệt đối không nên nói?"
+          ],
+          "title": "Khách mới, sợ rủi ro",
+          "type": "practice_case"
+        }
+      ],
+      "id": "s2",
+      "title": "Case 1 · Khách mới, sợ rủi ro"
+    },
+    {
+      "blocks": [
+        {
+          "hints": [
+            {
+              "term": "Mấu chốt",
+              "text": "Niềm tin bị tổn thương. Bạn không thể nói để chị tin, chỉ có thể để chị tự kiểm chứng qua thời gian."
+            },
+            {
+              "term": "Trả lời câu khách hay nói",
+              "text": "“Chị nói đúng, có những người làm vậy và chị đã phải chịu thiệt. Em không hứa mã nào cả. Chị nhận bản tin của em mỗi ngày trong 2 tuần, rồi tự đánh giá cách em làm.”"
+            },
+            {
+              "term": "Hướng gợi ý",
+              "text": "Kế hoạch rủi ro rõ ràng: vốn nhỏ, chia nhiều mã, đặt cắt lỗ trước khi mua, không dùng margin. Nhấn mạnh chị là người quyết định."
+            },
+            {
+              "term": "Câu chốt",
+              "text": "“Em hẹn chị cuối tuần sau gọi lại 10 phút, chị cho em biết cảm nhận nhé.”"
+            },
+            {
+              "term": "Tránh",
+              "text": "Bào chữa cho ngành. Phân tích vì sao chị lỗ, vì chạm vào nỗi đau. Hô một mã để chứng minh mình giỏi."
+            }
+          ],
+          "id": "case2",
+          "pad_title": "Bạn tự phân tích trước",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "profile": {
+            "info": [
+              "Nữ, 35 tuổi",
+              "Từng lỗ 500 triệu năm 2022",
+              "Mất niềm tin vào môi giới, ghét bị “hô hào”",
+              "Nhưng vẫn muốn quay lại thị trường"
+            ],
+            "mindset": [
+              "Phòng thủ, hay phản biện",
+              "Không tin khuyến nghị"
+            ],
+            "quote": "“Môi giới toàn hô mua để ăn phí.”"
+          },
+          "prompts": [
+            "1) Nỗi lo thật sự của khách là gì?",
+            "2) Bạn trả lời câu khách hay nói thế nào?",
+            "3) Bạn đề xuất bước nhỏ nào, chốt bằng câu gì?",
+            "4) Điều gì tuyệt đối không nên nói?"
+          ],
+          "title": "Khách thua lỗ nặng",
+          "type": "practice_case"
+        }
+      ],
+      "id": "s3",
+      "title": "Case 2 · Khách thua lỗ nặng"
+    },
+    {
+      "blocks": [
+        {
+          "hints": [
+            {
+              "term": "Mấu chốt",
+              "text": "Khách mua sự gọn gàng và chuyên nghiệp. Mỗi phút của khách đều quý, càng ngắn gọn càng tạo niềm tin."
+            },
+            {
+              "term": "Trả lời câu khách hay nói",
+              "text": "“Dạ anh không cần xem bảng điện. Mỗi tuần em gửi anh một bản tóm tắt một trang, và chỉ gọi khi có việc cần anh quyết định.”"
+            },
+            {
+              "term": "Hướng gợi ý",
+              "text": "Phân bổ tài sản: cân nhắc quỹ, trái phiếu và cổ phiếu doanh nghiệp tốt. Báo cáo định kỳ ngắn gọn. Khách vẫn tự quyết định và tự đặt lệnh, SACO không nhận ủy thác giao dịch."
+            },
+            {
+              "term": "Câu chốt",
+              "text": "“Em xin anh 20 phút sáng thứ Ba, em chuẩn bị sẵn mọi giấy tờ, anh chỉ cần xác nhận.”"
+            },
+            {
+              "term": "Tránh",
+              "text": "Nhắn tin nhiều, gửi tin vụn vặt. Đến trễ hẹn. Nói dài, nhiều thuật ngữ."
+            }
+          ],
+          "id": "case3",
+          "pad_title": "Bạn tự phân tích trước",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "profile": {
+            "info": [
+              "Chủ doanh nghiệp, tài sản lớn",
+              "Có dòng tiền nhàn rỗi 3 tỷ",
+              "Không thích xem bảng điện",
+              "Ưu tiên sự an toàn và chuyên nghiệp"
+            ],
+            "mindset": [
+              "Không thích bị làm phiền nhiều",
+              "Muốn người hỗ trợ nhanh",
+              "Cần người hiểu tài chính"
+            ],
+            "quote": "“Anh không có thời gian xem đâu.”"
+          },
+          "prompts": [
+            "1) Nỗi lo thật sự của khách là gì?",
+            "2) Bạn trả lời câu khách hay nói thế nào?",
+            "3) Bạn đề xuất bước nhỏ nào, chốt bằng câu gì?",
+            "4) Điều gì tuyệt đối không nên nói?"
+          ],
+          "title": "Khách giàu nhưng không có thời gian",
+          "type": "practice_case"
+        }
+      ],
+      "id": "s4",
+      "title": "Case 3 · Khách giàu nhưng không có thời gian"
+    },
+    {
+      "blocks": [
+        {
+          "hints": [
+            {
+              "term": "Mấu chốt",
+              "text": "Khách không thiếu mã, khách thiếu kỷ luật. Đừng cạnh tranh với room VIP bằng mã nóng, hãy cho khách thứ room không cho: một bộ quy tắc."
+            },
+            {
+              "term": "Trả lời câu khách hay nói",
+              "text": "“Nếu em biết chắc mã nào lên trần thì em đã nghỉ làm rồi anh ạ. Cái em giúp anh được là quy tắc: mỗi lệnh chỉ rủi ro tối đa 2% vốn và đặt cắt lỗ trước khi mua.”"
+            },
+            {
+              "term": "Hướng gợi ý",
+              "text": "Kế hoạch giao dịch, quản trị rủi ro, nhật ký giao dịch. Hạn chế margin. Giải thích toán học thua lỗ: lỗ 50% cần lãi 100% để hòa vốn."
+            },
+            {
+              "term": "Câu chốt",
+              "text": "“Mình thử một tháng theo quy tắc này, cuối tháng ngồi xem nhật ký cùng nhau nhé anh.”"
+            },
+            {
+              "term": "Tránh",
+              "text": "Gửi mã có tin đồn. Khuyến khích dùng margin. Chê bai room của khách."
+            }
+          ],
+          "id": "case4",
+          "pad_title": "Bạn tự phân tích trước",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "profile": {
+            "info": [
+              "Nam, 24 tuổi",
+              "Thích lướt sóng",
+              "Theo Telegram, room VIP",
+              "Hay mua đuổi, thích “cổ phiếu nhân 2”"
+            ],
+            "mindset": [
+              "Ham lợi nhuận nhanh",
+              "Thiếu kỷ luật",
+              "Dễ bị cảm xúc chi phối"
+            ],
+            "quote": "“Mã nào sắp trần anh vào luôn.”"
+          },
+          "prompts": [
+            "1) Nỗi lo thật sự của khách là gì?",
+            "2) Bạn trả lời câu khách hay nói thế nào?",
+            "3) Bạn đề xuất bước nhỏ nào, chốt bằng câu gì?",
+            "4) Điều gì tuyệt đối không nên nói?"
+          ],
+          "title": "Khách FOMO theo room",
+          "type": "practice_case"
+        }
+      ],
+      "id": "s5",
+      "title": "Case 4 · Khách FOMO theo room"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Chia nhóm ba người: một người đóng vai khách theo một case, một người đóng vai SACO, người còn lại chấm điểm. Mỗi lượt 10 phút, sau đó đổi vai.",
+          "type": "paragraph"
+        },
+        {
+          "bands": [
+            {
+              "label": "Sẵn sàng gặp khách thật",
+              "min": 48,
+              "tone": "good"
+            },
+            {
+              "label": "Cần luyện thêm",
+              "min": 36,
+              "tone": "warn"
+            },
+            {
+              "label": "Cần học lại",
+              "min": 0,
+              "tone": "bad"
+            }
+          ],
+          "criteria": [
+            {
+              "hint": "Mở lời tự nhiên, khách thấy thoải mái",
+              "title": "Tạo thiện cảm"
+            },
+            {
+              "hint": "Hỏi đúng, nghe nhiều",
+              "title": "Khai thác nhu cầu"
+            },
+            {
+              "hint": "Đồng cảm, hỏi rõ, trả lời đúng điều khách lo",
+              "title": "Xử lý từ chối"
+            },
+            {
+              "hint": "Giải thích đúng, dễ hiểu",
+              "title": "Kiến thức"
+            },
+            {
+              "hint": "Bình tĩnh, tôn trọng, không ép",
+              "title": "EQ và thái độ"
+            },
+            {
+              "hint": "Có bước tiếp theo cụ thể",
+              "title": "Chốt hành động"
+            }
+          ],
+          "default": 5,
+          "id": "sc6",
+          "max": 10,
+          "type": "roleplay_score"
+        },
+        {
+          "text": "Từ <b>48/60</b>: sẵn sàng gặp khách thật. Từ <b>36 đến 47</b>: luyện thêm các tiêu chí dưới 7 điểm. Dưới <b>36</b>: xem lại các bài liên quan rồi đóng vai lại.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Đóng vai và chấm điểm"
+    }
+  ],
+  "summary": [
+    "Mỗi khách có <b>một nỗi lo thật</b> nằm sau câu họ hay nói. Tìm ra nó trước khi trả lời.",
+    "Khách sợ rủi ro: <b>bắt đầu nhỏ</b>. Khách mất niềm tin: <b>để họ tự kiểm chứng</b>.",
+    "Khách bận: <b>gọn và chuyên nghiệp</b>. Khách FOMO: <b>cho họ quy tắc</b>, không cho mã nóng.",
+    "Luyện đóng vai và chấm theo <b>6 tiêu chí</b> cho đến khi đạt từ 48/60."
+  ],
+  "title": "Phòng tập thực chiến"
+}

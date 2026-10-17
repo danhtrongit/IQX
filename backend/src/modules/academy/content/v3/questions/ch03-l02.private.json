@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-l02",
+  "questions": [
+    {
+      "correct_option_id": "ea3389516d",
+      "id": "ch03-l02-q01",
+      "options": [
+        {
+          "id": "ea3389516d",
+          "text": "Bạn là ai, bạn giúp ai, cách liên hệ, ghi rõ SACO tại DNSE"
+        },
+        {
+          "id": "e9cfe8e6c1",
+          "text": "Cam kết lợi nhuận hằng tháng"
+        },
+        {
+          "id": "8ee8877d66",
+          "text": "Để trống cho bí ẩn"
+        }
+      ],
+      "prompt": "Phần giới thiệu trên hồ sơ mạng xã hội nên có gì?"
+    },
+    {
+      "correct_option_id": "5cc6d7590d",
+      "id": "ch03-l02-q02",
+      "options": [
+        {
+          "id": "5cc6d7590d",
+          "text": "Kiến thức, thị trường, con người"
+        },
+        {
+          "id": "ac39387727",
+          "text": "Khoe lãi, tin đồn, quảng cáo"
+        },
+        {
+          "id": "6bc0377cfd",
+          "text": "Giải trí, bói toán, than thở"
+        }
+      ],
+      "prompt": "Ba trụ cột nội dung được gợi ý là gì?"
+    },
+    {
+      "correct_option_id": "298806e42c",
+      "id": "ch03-l02-q03",
+      "options": [
+        {
+          "id": "298806e42c",
+          "text": "Tự xưng chức danh không có thật như “chuyên gia”"
+        },
+        {
+          "id": "74e6bd5b9d",
+          "text": "Dùng ảnh rõ mặt, tên thật"
+        },
+        {
+          "id": "6a31fa66b3",
+          "text": "Dùng cùng một ảnh đại diện ở mọi kênh"
+        }
+      ],
+      "prompt": "Điều nào KHÔNG nên làm khi xây hình ảnh?"
+    }
+  ],
+  "salt": "9a564d2977cf792ad3e76aca86db13c66249e4f2cc0fbe8ae2ed803176435afb"
+}

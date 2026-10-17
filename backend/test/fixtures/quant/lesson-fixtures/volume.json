@@ -1,0 +1,8 @@
+{
+  "indicator_id": "volume",
+  "legacy": false,
+  "source_lesson_id": "ch01-l05",
+  "label": "Khối lượng",
+  "expected": 1500000,
+  "tolerance": 0.015
+}

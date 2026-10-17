@@ -10,7 +10,11 @@ import {
   untraceableNumbers,
   validateBuiltTheses,
 } from '../../src/modules/research/engine/validators.js';
-import type { BuiltThesis, ExtractedClaim, ThesisBuildInput } from '../../src/modules/research/research.types.js';
+import type {
+  BuiltThesis,
+  ExtractedClaim,
+  ThesisBuildInput,
+} from '../../src/modules/research/research.types.js';
 import { ec, input } from './research-engine-helpers.js';
 
 const BROKERS = ['Vietcap', 'SSI', 'Rồng Việt', 'VNDIRECT'];
@@ -28,7 +32,12 @@ function check(
 }
 const codes = (r: ReturnType<typeof check>) => r.failures.map((f) => f.code);
 
-const num = (value: number, unit: string, period?: string) => ({ metric: 'm', value, unit, ...(period ? { period } : {}) });
+const num = (value: number, unit: string, period?: string) => ({
+  metric: 'm',
+  value,
+  unit,
+  ...(period ? { period } : {}),
+});
 
 describe('countWords', () => {
   it('counts words and ignores bare punctuation', () => {
@@ -39,8 +48,17 @@ describe('countWords', () => {
 
 describe('constants', () => {
   it('exports the lists', () => {
-    expect(FORBIDDEN_RECOMMENDATION_TERMS).toEqual(expect.arrayContaining(['mua', 'bán', 'khả quan', 'outperform', 'buy', 'sell']));
-    expect(GENERIC_TITLES).toEqual(expect.arrayContaining(['Triển vọng tích cực', 'Nhiều cơ hội tăng trưởng', 'Rủi ro cần theo dõi', 'Tình hình khả quan']));
+    expect(FORBIDDEN_RECOMMENDATION_TERMS).toEqual(
+      expect.arrayContaining(['mua', 'bán', 'khả quan', 'outperform', 'buy', 'sell']),
+    );
+    expect(GENERIC_TITLES).toEqual(
+      expect.arrayContaining([
+        'Triển vọng tích cực',
+        'Nhiều cơ hội tăng trưởng',
+        'Rủi ro cần theo dõi',
+        'Tình hình khả quan',
+      ]),
+    );
     expect(TECHNICAL_TERMS).toEqual(expect.arrayContaining(['DATA CACHE', 'embedding', 'token']));
   });
 });
@@ -48,7 +66,9 @@ describe('constants', () => {
 describe('forbidden recommendation words (spec 21.2, test 25)', () => {
   it('flags recommendation wording', () => {
     expect(codes(check('Khuyến nghị mua cổ phiếu này.'))).toContain('forbidden_term');
-    expect(findForbiddenTerms('Nên nắm giữ và tích lũy')).toEqual(expect.arrayContaining(['nắm giữ', 'tích lũy']));
+    expect(findForbiddenTerms('Nên nắm giữ và tích lũy')).toEqual(
+      expect.arrayContaining(['nắm giữ', 'tích lũy']),
+    );
     expect(findForbiddenTerms('Triển vọng kém khả quan')).toContain('kém khả quan');
     expect(findForbiddenTerms('We rate it Outperform, not a SELL or Hold')).toEqual(
       expect.arrayContaining(['outperform', 'sell', 'hold']),
@@ -73,7 +93,9 @@ describe('forbidden recommendation words (spec 21.2, test 25)', () => {
   });
 
   it('does not reject ordinary business vocabulary (bán lẻ, giá bán, mở bán, mua bán điện)', () => {
-    expect(findForbiddenTerms('Doanh thu bán lẻ tăng nhờ giá bán cao hơn; dự án mở bán đợt mới')).toEqual([]);
+    expect(
+      findForbiddenTerms('Doanh thu bán lẻ tăng nhờ giá bán cao hơn; dự án mở bán đợt mới'),
+    ).toEqual([]);
     expect(findForbiddenTerms('Hợp đồng mua bán điện dài hạn')).toEqual([]);
     expect(findForbiddenTerms('Công ty mua lại trái phiếu')).toEqual([]);
     // but the bare verb is still caught
@@ -86,7 +108,9 @@ describe('broker names, generic and technical text', () => {
     expect(codes(check('Theo vietcap, công suất tăng.'))).toContain('broker_name');
     expect(codes(check('Rồng Việt dự báo biên lợi nhuận mở rộng.'))).toContain('broker_name');
     expect(codes(check('Chuỗi bán lẻ dẫn đầu thị trường.'))).not.toContain('broker_name');
-    expect(codes(check('Công ty hưởng lợi từ lãi suất giảm xuống mức SSIA.'))).not.toContain('broker_name');
+    expect(codes(check('Công ty hưởng lợi từ lãi suất giảm xuống mức SSIA.'))).not.toContain(
+      'broker_name',
+    );
   });
 
   it('flags anonymised refs leaking into the text', () => {
@@ -94,11 +118,18 @@ describe('broker names, generic and technical text', () => {
   });
 
   it('flags generic titles', () => {
-    for (const t of ['Triển vọng tích cực', 'Nhiều cơ hội tăng trưởng.', 'rủi ro cần theo dõi', 'Tình hình khả quan']) {
+    for (const t of [
+      'Triển vọng tích cực',
+      'Nhiều cơ hội tăng trưởng.',
+      'rủi ro cần theo dõi',
+      'Tình hình khả quan',
+    ]) {
       expect(isGenericTitle(t)).toBe(true);
     }
     expect(isGenericTitle('Công suất HRC mới đóng góp từ 2026')).toBe(false);
-    expect(codes(check('Biên lợi nhuận mở rộng.', [ec()], {}, 'Triển vọng tích cực'))).toContain('generic_title');
+    expect(codes(check('Biên lợi nhuận mở rộng.', [ec()], {}, 'Triển vọng tích cực'))).toContain(
+      'generic_title',
+    );
   });
 
   it('flags technical terms', () => {
@@ -111,9 +142,15 @@ describe('broker names, generic and technical text', () => {
 describe('schema, word count, unknown thesis', () => {
   it('rejects empty title/summary and out-of-range materiality', () => {
     expect(codes(check('', [ec()], {}, ''))).toEqual(['schema', 'schema']);
-    expect(codes(check('Biên lợi nhuận mở rộng.', [ec()], {}, 'Tiêu đề hợp lệ về biên', 0))).toEqual(['schema']);
-    expect(codes(check('Biên lợi nhuận mở rộng.', [ec()], {}, 'Tiêu đề hợp lệ về biên', 6))).toEqual(['schema']);
-    expect(codes(check('Biên lợi nhuận mở rộng.', [ec()], {}, 'Tiêu đề hợp lệ về biên', 2.5))).toEqual(['schema']);
+    expect(
+      codes(check('Biên lợi nhuận mở rộng.', [ec()], {}, 'Tiêu đề hợp lệ về biên', 0)),
+    ).toEqual(['schema']);
+    expect(
+      codes(check('Biên lợi nhuận mở rộng.', [ec()], {}, 'Tiêu đề hợp lệ về biên', 6)),
+    ).toEqual(['schema']);
+    expect(
+      codes(check('Biên lợi nhuận mở rộng.', [ec()], {}, 'Tiêu đề hợp lệ về biên', 2.5)),
+    ).toEqual(['schema']);
   });
 
   it('summary > 60 words and title > 14 words fail; 60 passes', () => {
@@ -126,11 +163,16 @@ describe('schema, word count, unknown thesis', () => {
 
   it('unknown thesisId and duplicates', () => {
     const inp = input({ thesisId: 't1' });
-    const ok: BuiltThesis = { thesisId: 't1', title: 'Công suất mới', summary: 'Biên mở rộng.', materiality: 3 };
-    const r = validateBuiltTheses(
-      [ok, { ...ok, thesisId: 'ghost' }, ok],
-      { inputs: [inp], brokerNames: [] },
-    );
+    const ok: BuiltThesis = {
+      thesisId: 't1',
+      title: 'Công suất mới',
+      summary: 'Biên mở rộng.',
+      materiality: 3,
+    };
+    const r = validateBuiltTheses([ok, { ...ok, thesisId: 'ghost' }, ok], {
+      inputs: [inp],
+      brokerNames: [],
+    });
     expect(r.passed).toEqual([ok]);
     expect(r.failures.map((f) => [f.thesisId, f.code])).toEqual([
       ['ghost', 'unknown_thesis'],
@@ -200,8 +242,12 @@ describe('number traceability (spec 21.3, test 24)', () => {
 
   it('percentages must come from percentage claim numbers; amounts not from percentages', () => {
     expect(trace('45%')).toEqual(['45%']);
-    expect(untraceableNumbers('lợi nhuận 12,5 tỷ đồng', [ec({ numbers: [num(12.5, '%')] })])).toEqual(['12,5']);
-    expect(untraceableNumbers('tăng 12,5%', [ec({ numbers: [num(12.5, 'tỷ đồng')] })])).toEqual(['12,5%']);
+    expect(
+      untraceableNumbers('lợi nhuận 12,5 tỷ đồng', [ec({ numbers: [num(12.5, '%')] })]),
+    ).toEqual(['12,5']);
+    expect(untraceableNumbers('tăng 12,5%', [ec({ numbers: [num(12.5, 'tỷ đồng')] })])).toEqual([
+      '12,5%',
+    ]);
   });
 
   it('handles negatives (giảm 5% vs -5)', () => {
@@ -227,7 +273,9 @@ describe('number traceability (spec 21.3, test 24)', () => {
   });
 
   it('years are not confused with amounts: "2.030 tỷ" is an amount', () => {
-    expect(untraceableNumbers('doanh thu 2030 tỷ đồng', [ec({ numbers: [num(2030, 'tỷ đồng')] })])).toEqual([]);
+    expect(
+      untraceableNumbers('doanh thu 2030 tỷ đồng', [ec({ numbers: [num(2030, 'tỷ đồng')] })]),
+    ).toEqual([]);
     expect(untraceableNumbers('doanh thu 2030 tỷ đồng', claims)).toEqual(['2030']);
   });
 
@@ -262,37 +310,76 @@ describe('disagreement (spec 21.4, test 21)', () => {
   const tl = [ec({ timeHorizon: 'Q4/2026 – H2/2027' })];
 
   it('summary picks a single date as fact → fails', () => {
-    const r = check('Dự án dự kiến vận hành từ Q4/2026 và đóng góp doanh thu.', tl, { disagreement: dis });
+    const r = check('Dự án dự kiến vận hành từ Q4/2026 và đóng góp doanh thu.', tl, {
+      disagreement: dis,
+    });
     expect(codes(r)).toEqual(['disagreement']);
   });
 
   it('summary that hedges or cites several values passes', () => {
-    expect(check('Thời điểm vận hành chưa thống nhất, dự kiến từ Q4/2026 đến H2/2027.', tl, { disagreement: dis }).failures).toEqual([]);
-    expect(check('Mốc vận hành dự kiến khác nhau giữa các báo cáo.', tl, { disagreement: dis }).failures).toEqual([]);
-    expect(check('Dự án dự kiến vận hành Q4/2026 hoặc muộn hơn.', tl, { disagreement: dis }).failures).toEqual([]);
-    expect(check('Dự án dự kiến vận hành từ Q4/2026, có báo cáo cho rằng H2/2027.', tl, { disagreement: dis }).failures).toEqual([]);
+    expect(
+      check('Thời điểm vận hành chưa thống nhất, dự kiến từ Q4/2026 đến H2/2027.', tl, {
+        disagreement: dis,
+      }).failures,
+    ).toEqual([]);
+    expect(
+      check('Mốc vận hành dự kiến khác nhau giữa các báo cáo.', tl, { disagreement: dis }).failures,
+    ).toEqual([]);
+    expect(
+      check('Dự án dự kiến vận hành Q4/2026 hoặc muộn hơn.', tl, { disagreement: dis }).failures,
+    ).toEqual([]);
+    expect(
+      check('Dự án dự kiến vận hành từ Q4/2026, có báo cáo cho rằng H2/2027.', tl, {
+        disagreement: dis,
+      }).failures,
+    ).toEqual([]);
   });
 
   it('summary mentioning none of the values (no date) passes', () => {
-    expect(check('Dự án mới sẽ đóng góp doanh thu khi đi vào vận hành.', tl, { disagreement: dis }).failures).toEqual([]);
+    expect(
+      check('Dự án mới sẽ đóng góp doanh thu khi đi vào vận hành.', tl, { disagreement: dis })
+        .failures,
+    ).toEqual([]);
   });
 
   it('summary signalling disagreement without ≥2 distinct values fails', () => {
     expect(codes(check('Các báo cáo khác nhau về mốc vận hành.', tl))).toEqual(['disagreement']);
-    const one = { ...dis, values: [{ broker: 'B1', value: 'Q4/2026' }, { broker: 'B2', value: 'q4/2026' }] };
-    expect(codes(check('Mốc vận hành chưa thống nhất giữa các báo cáo.', tl, { disagreement: one }))).toEqual(['disagreement']);
-    expect(codes(check('Giá trị dao động từ 10 đến 12 tùy theo báo cáo.', [ec({ numbers: [num(10, ''), num(12, '')] })]))).toEqual(['disagreement']);
+    const one = {
+      ...dis,
+      values: [
+        { broker: 'B1', value: 'Q4/2026' },
+        { broker: 'B2', value: 'q4/2026' },
+      ],
+    };
+    expect(
+      codes(check('Mốc vận hành chưa thống nhất giữa các báo cáo.', tl, { disagreement: one })),
+    ).toEqual(['disagreement']);
+    expect(
+      codes(
+        check('Giá trị dao động từ 10 đến 12 tùy theo báo cáo.', [
+          ec({ numbers: [num(10, ''), num(12, '')] }),
+        ]),
+      ),
+    ).toEqual(['disagreement']);
   });
 
   it('numeric disagreement values are matched by number', () => {
     const d = {
       dimension: 'size' as const,
       note: 'n',
-      values: [{ broker: 'B1', value: '12,5%' }, { broker: 'B2', value: '15%' }],
+      values: [
+        { broker: 'B1', value: '12,5%' },
+        { broker: 'B2', value: '15%' },
+      ],
     };
     const cl = [ec({ numbers: [num(12.5, '%'), num(15, '%')] })];
-    expect(codes(check('Biên lợi nhuận gộp đạt 12,5% nhờ chi phí giảm.', cl, { disagreement: d }))).toEqual(['disagreement']);
-    expect(check('Biên lợi nhuận gộp dao động từ 12,5% đến 15% tùy báo cáo.', cl, { disagreement: d }).failures).toEqual([]);
+    expect(
+      codes(check('Biên lợi nhuận gộp đạt 12,5% nhờ chi phí giảm.', cl, { disagreement: d })),
+    ).toEqual(['disagreement']);
+    expect(
+      check('Biên lợi nhuận gộp dao động từ 12,5% đến 15% tùy báo cáo.', cl, { disagreement: d })
+        .failures,
+    ).toEqual([]);
   });
 });
 
@@ -302,7 +389,9 @@ describe('certainty', () => {
     expect(codes(check('Lợi nhuận chắc chắn tăng mạnh.', fc))).toEqual(['certainty']);
     expect(codes(check('Dự án sẽ chắc ghi nhận doanh thu.', fc))).toEqual(['certainty']);
     expect(codes(check('Biên lợi nhuận được đảm bảo mở rộng.', fc))).toEqual(['certainty']);
-    expect(check('Lợi nhuận dự kiến tăng nếu dự án vận hành đúng tiến độ.', fc).failures).toEqual([]);
+    expect(check('Lợi nhuận dự kiến tăng nếu dự án vận hành đúng tiến độ.', fc).failures).toEqual(
+      [],
+    );
     expect(check('Lợi nhuận chưa chắc chắn tăng.', fc).failures).toEqual([]);
   });
 
@@ -314,6 +403,10 @@ describe('certainty', () => {
   });
 
   it('a pure fact claim may be stated firmly', () => {
-    expect(check('Nhà máy chắc chắn đã vận hành.', [ec({ claimType: 'growth_driver', summary: 'Nhà máy đã vận hành' })]).failures).toEqual([]);
+    expect(
+      check('Nhà máy chắc chắn đã vận hành.', [
+        ec({ claimType: 'growth_driver', summary: 'Nhà máy đã vận hành' }),
+      ]).failures,
+    ).toEqual([]);
   });
 });

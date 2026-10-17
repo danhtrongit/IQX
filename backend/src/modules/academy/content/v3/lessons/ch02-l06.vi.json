@@ -1,0 +1,228 @@
+{
+  "chapter": 2,
+  "charts": {
+    "c2l6-g1": {
+      "alt": "Chênh lệch phí 0,1% chỉ 100.000 đồng, một lần bán hoảng loạn mất 5.000.000 đồng",
+      "kind": "segment_bar",
+      "max": 5000000,
+      "rows": [
+        {
+          "label": "Chênh lệch phí 0,1%",
+          "segments": [
+            {
+              "tone": "warn",
+              "value": 100000
+            }
+          ],
+          "sub": "khi giao dịch 100 triệu",
+          "total": {
+            "text": "100.000 đ",
+            "tone": "warn"
+          }
+        },
+        {
+          "label": "Một lần bán hoảng loạn",
+          "segments": [
+            {
+              "tone": "neg",
+              "value": 5000000
+            }
+          ],
+          "sub": "sai 5% trên 100 triệu",
+          "total": {
+            "text": "5.000.000 đ",
+            "tone": "neg"
+          }
+        }
+      ],
+      "unit": "đ"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Khách đăng ký SACO sẽ trả phí giao dịch theo biểu phí. Vì vậy, đừng cạnh tranh bằng câu “phí 0 đồng”. Hãy cho khách thấy rõ họ nhận được gì khi có một người đồng hành bên cạnh.",
+  "lesson_key": "concept:ban_gia_tri_dong_hanh",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Tình huống"
+            },
+            {
+              "label": "Tự đi một mình"
+            },
+            {
+              "highlight": true,
+              "label": "Có SACO đồng hành"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Mới mở tài khoản",
+                "Tự mày mò ứng dụng",
+                "Được hướng dẫn từng bước"
+              ]
+            },
+            {
+              "cells": [
+                "Tìm thông tin",
+                "Tự đọc, dễ nghe tin đồn",
+                "Nhận bản tin sáng, trưa, chiều đã chọn lọc"
+              ]
+            },
+            {
+              "cells": [
+                "Thị trường giảm mạnh",
+                "Hoảng sợ, quyết định theo cảm xúc",
+                "Có người nhắc kế hoạch và nguyên tắc"
+              ]
+            },
+            {
+              "cells": [
+                "Sự kiện quyền, cổ tức",
+                "Dễ bỏ lỡ",
+                "Được nhắc trước"
+              ]
+            },
+            {
+              "cells": [
+                "Gặp lỗi khi nạp tiền, đặt lệnh",
+                "Tự gọi tổng đài, chờ đợi",
+                "Có người hỗ trợ ngay"
+              ]
+            },
+            {
+              "cells": [
+                "Học thêm kiến thức",
+                "Tự tìm tài liệu",
+                "Học viện, hội thảo, cộng đồng"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        }
+      ],
+      "id": "s1",
+      "title": "Đi một mình và có người đồng hành"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "subtitle": "Bắt đầu đúng cách",
+              "text": "Giúp khách tránh những sai lầm phổ biến của người mới ngay từ đầu.",
+              "title": "Dẫn đường",
+              "tone": "highlight"
+            },
+            {
+              "subtitle": "Bình tĩnh khi biến động",
+              "text": "Nhắc khách làm đúng kế hoạch, không mua bán theo cảm xúc hay tin đồn.",
+              "title": "Giữ kỷ luật"
+            },
+            {
+              "subtitle": "Hỗ trợ khi cần",
+              "text": "Khách có một người cụ thể để hỏi, thay vì tự xoay xở một mình.",
+              "title": "Luôn có mặt"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "label": "Câu tóm gọn",
+          "text": "“Phí anh/chị trả là cho một người đồng hành, không chỉ cho một nút mua bán.”",
+          "tone": "neutral",
+          "type": "quote"
+        }
+      ],
+      "id": "s2",
+      "title": "Ba giá trị cần nói rõ"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Hãy trả lời <b>thật và rõ ràng</b>. Không né tránh, không nói giảm, không hứa “phí 0 đồng”.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "1. Thừa nhận thẳng",
+              "text": "“Dạ, khi đăng ký em làm SACO thì anh/chị trả phí theo biểu phí công bố của DNSE.”"
+            },
+            {
+              "term": "2. Nói rõ con số",
+              "text": "Mở biểu phí chính thức cho khách xem, không nói con số theo trí nhớ."
+            },
+            {
+              "term": "3. Nói về giá trị",
+              "text": "“Đổi lại, anh/chị có em hướng dẫn, gửi bản tin và hỗ trợ mỗi khi cần.”"
+            },
+            {
+              "term": "4. Để khách chọn",
+              "text": "“Anh/chị cứ cân nhắc, em vẫn gửi thông tin đều cho anh/chị tham khảo.”"
+            }
+          ],
+          "type": "definitions"
+        },
+        {
+          "text": "Một ví dụ giúp khách dễ so sánh: phần chênh lệch phí thường nhỏ hơn rất nhiều so với thiệt hại từ một quyết định sai vì hoảng loạn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c2l6-g1",
+          "note": "Số liệu giả định để minh họa",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s3",
+      "title": "Khi khách hỏi về phí"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 1,
+          "debrief": "<b>Cách tốt nhất: thừa nhận, nói giá trị, để khách tự trải nghiệm.</b> Nói xấu nơi khác làm bạn mất uy tín. Tự ý chia lại hoa hồng ngoài chính sách công ty là cách làm không minh bạch, đồng thời biến bạn thành người bán rẻ chứ không phải người đồng hành. Cho khách dùng thử bản tin là cách chứng minh giá trị thay vì chỉ nói.",
+          "options": [
+            "“Bên đó phí 0 đồng nhưng không đáng tin đâu chị.”",
+            "“Dạ đúng ạ, có SACO thì chị trả phí theo biểu phí. Đổi lại, chị có em hướng dẫn, gửi bản tin mỗi ngày và hỗ trợ khi thị trường biến động. Chị nhận bản tin của em một tuần, rồi tự quyết định nhé.”",
+            "“Thôi em chia lại một phần hoa hồng cho chị là được.”"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Chị Hà nói: “Bên kia phí 0 đồng, sao chị phải trả phí khi để em làm SACO?”"
+          ],
+          "title": "“Chỗ khác 0 đồng”",
+          "type": "scenario"
+        },
+        {
+          "id": "l6",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Viết 3 lý do khách nên chọn bạn làm người đồng hành. Chỉ viết những điều bạn thật sự làm được mỗi ngày, ví dụ: gửi bản tin trước 8 giờ, trả lời trong 15 phút, nhắc lịch cổ tức."
+          ],
+          "title": "Bài tự làm: câu giới thiệu giá trị 30 giây",
+          "type": "workpad"
+        }
+      ],
+      "id": "s4",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Không bán bằng <b>“phí 0 đồng”</b>, hãy bán <b>giá trị người đồng hành</b>.",
+    "Ba giá trị: <b>dẫn đường, giữ kỷ luật, luôn có mặt</b>.",
+    "Khi hỏi về phí: <b>thừa nhận thẳng, nói đúng biểu phí</b>, rồi nói về giá trị."
+  ],
+  "title": "Bán giá trị bạn đồng hành"
+}

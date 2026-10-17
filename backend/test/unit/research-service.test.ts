@@ -3,7 +3,11 @@
 // ordering are the real implementations; store/AI/price/files are fakes.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { JOB_STALE_AFTER_MS, RETRY_COOLDOWN_MS, ResearchService } from '../../src/modules/research/research.service.js';
+import {
+  JOB_STALE_AFTER_MS,
+  RETRY_COOLDOWN_MS,
+  ResearchService,
+} from '../../src/modules/research/research.service.js';
 import type { InvestmentViewResponse } from '../../src/modules/research/research.types.js';
 import { TODAY } from './research-engine-helpers.js';
 import {
@@ -69,10 +73,17 @@ function ready(res: InvestmentViewResponse) {
 
 /** Two brokers with targets; alpha is backed by both, beta by B only. */
 function seedReports(aAge = 5, bAge = 2) {
-  h.store.addReport(pendingReport('ra', A, day(aAge), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
-  h.store.addReport(pendingReport('rb', B, day(bAge), { targetPriceVnd: 120_000, targetSource: 'metadata' }));
+  h.store.addReport(
+    pendingReport('ra', A, day(aAge), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+  );
+  h.store.addReport(
+    pendingReport('rb', B, day(bAge), { targetPriceVnd: 120_000, targetSource: 'metadata' }),
+  );
   h.ai.extractions.set('ra', { claims: [ec({ driver: 'alpha' })], target: null });
-  h.ai.extractions.set('rb', { claims: [ec({ driver: 'alpha' }), ec({ driver: 'beta' })], target: null });
+  h.ai.extractions.set('rb', {
+    claims: [ec({ driver: 'alpha' }), ec({ driver: 'beta' })],
+    target: null,
+  });
 }
 
 /** First search, settled: leaves published v1 in the store. */
@@ -127,7 +138,9 @@ describe('first search (acceptance 8, 9, 10)', () => {
   });
 
   it('15: one unreadable PDF is marked failed, the others are processed and the view published', async () => {
-    h.store.addReport(pendingReport('ra', A, day(5), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('ra', A, day(5), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+    );
     h.store.addReport(pendingReport('bad', B, day(4), { filePath: 'research/corrupt.pdf' }));
     const jobId = processing(await svc.view(SYMBOL));
     await settle(jobId);
@@ -202,7 +215,10 @@ describe('one lease per symbol (acceptance 11, 12, 13, 26)', () => {
 
     const newId = processing(res);
     expect(newId).not.toBe(dead.id);
-    expect(h.store.jobs.find((j) => j.id === dead.id)).toMatchObject({ status: 'failed', errorMessage: 'lease expired' });
+    expect(h.store.jobs.find((j) => j.id === dead.id)).toMatchObject({
+      status: 'failed',
+      errorMessage: 'lease expired',
+    });
     expect((await settle(newId)).status).toBe('done');
     expect(ready(await svc.status(SYMBOL, newId)).version).toBe(1);
     expect(h.ai.matchCalls).toBe(1);
@@ -346,7 +362,11 @@ describe('failures (acceptance 14) and AI budget', () => {
     const jobId = processing(await svc.view(SYMBOL));
     const job = await settle(jobId);
 
-    expect(job).toMatchObject({ status: 'failed', errorMessage: 'RESEARCH_AI_BUDGET_EXCEEDED', llmCalls: 0 });
+    expect(job).toMatchObject({
+      status: 'failed',
+      errorMessage: 'RESEARCH_AI_BUDGET_EXCEEDED',
+      llmCalls: 0,
+    });
     expect(h.ai.totalCalls).toBe(calls);
     expect(ready(await svc.status(SYMBOL, jobId)).version).toBe(1);
 
@@ -364,8 +384,12 @@ describe('failures (acceptance 14) and AI budget', () => {
 
 describe('expiry-driven runs (acceptance 6, 7)', () => {
   it('6: a thesis whose only evidence turned 31 days old is removed with 0 AI calls and a new version', async () => {
-    h.store.addReport(pendingReport('ra', A, day(20), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
-    h.store.addReport(pendingReport('rb', B, day(3), { targetPriceVnd: 110_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('ra', A, day(20), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+    );
+    h.store.addReport(
+      pendingReport('rb', B, day(3), { targetPriceVnd: 110_000, targetSource: 'metadata' }),
+    );
     h.ai.extractions.set('ra', { claims: [ec({ driver: 'alpha' })], target: null });
     h.ai.extractions.set('rb', { claims: [ec({ driver: 'beta' })], target: null });
     await settle(processing(await svc.view(SYMBOL)));
@@ -385,7 +409,11 @@ describe('expiry-driven runs (acceptance 6, 7)', () => {
 
   it('7: a thesis losing 1 of 2 brokers is rewritten alone, other theses keep their text', async () => {
     await publishV1(20, 3); // alpha: A+B, beta: B only
-    const calls = { extract: h.ai.extractCalls.length, match: h.ai.matchCalls, build: h.ai.buildCalls.length };
+    const calls = {
+      extract: h.ai.extractCalls.length,
+      match: h.ai.matchCalls,
+      build: h.ai.buildCalls.length,
+    };
 
     vi.setSystemTime(new Date('2026-10-27T05:00:00Z'));
     const jobId = processing(await svc.view(SYMBOL));
@@ -399,12 +427,19 @@ describe('expiry-driven runs (acceptance 6, 7)', () => {
   });
 
   it('a target ageing out of the window is recomputed with 0 AI calls', async () => {
-    h.store.addReport(pendingReport('ra', A, day(20), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
-    h.store.addReport(pendingReport('rb', B, day(3), { targetPriceVnd: 120_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('ra', A, day(20), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+    );
+    h.store.addReport(
+      pendingReport('rb', B, day(3), { targetPriceVnd: 120_000, targetSource: 'metadata' }),
+    );
     h.ai.extractions.set('ra', { claims: [], target: null }); // A contributes a target only
     h.ai.extractions.set('rb', { claims: [ec({ driver: 'alpha' })], target: null });
     await settle(processing(await svc.view(SYMBOL)));
-    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({ mode: 'range', targetMedian: 110_000 });
+    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({
+      mode: 'range',
+      targetMedian: 110_000,
+    });
     const calls = h.ai.totalCalls;
 
     vi.setSystemTime(new Date('2026-10-27T05:00:00Z'));
@@ -420,9 +455,13 @@ describe('expiry-driven runs (acceptance 6, 7)', () => {
 
 describe('circuit breaker (acceptance 27)', () => {
   async function blockedScenario() {
-    h.store.addReport(pendingReport('ra', A, day(10), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('ra', A, day(10), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+    );
     await settle(processing(await svc.view(SYMBOL)));
-    h.store.addReport(pendingReport('rb', B, day(1), { targetPriceVnd: 200_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('rb', B, day(1), { targetPriceVnd: 200_000, targetSource: 'metadata' }),
+    );
     const jobId = processing(await svc.view(SYMBOL));
     return { jobId, job: await settle(jobId) };
   }
@@ -466,7 +505,10 @@ describe('price changes (acceptance 28, 33)', () => {
     const jobs = h.store.jobs.length;
 
     h.price.value = 100_000;
-    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({ currentPrice: 100_000, upsidePercent: 10 });
+    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({
+      currentPrice: 100_000,
+      upsidePercent: 10,
+    });
     h.price.value = 137_500;
     const lower = ready(await svc.view(SYMBOL));
     expect(lower.valuation).toMatchObject({ currentPrice: 137_500, upsidePercent: -20 });
@@ -478,10 +520,15 @@ describe('price changes (acceptance 28, 33)', () => {
   });
 
   it('28: spec example, target median 180k: price 150k -> 20%, price 160k -> 12.5%', async () => {
-    h.store.addReport(pendingReport('ra', A, day(5), { targetPriceVnd: 180_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('ra', A, day(5), { targetPriceVnd: 180_000, targetSource: 'metadata' }),
+    );
     h.price.value = 150_000;
     await settle(processing(await svc.view(SYMBOL)));
-    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({ mode: 'single', upsidePercent: 20 });
+    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({
+      mode: 'single',
+      upsidePercent: 20,
+    });
     h.price.value = 160_000;
     expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({ upsidePercent: 12.5 });
   });
@@ -489,9 +536,15 @@ describe('price changes (acceptance 28, 33)', () => {
   it('an unavailable quote serves the view without a percentage', async () => {
     await publishV1();
     h.price.value = null;
-    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({ currentPrice: null, upsidePercent: null });
+    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({
+      currentPrice: null,
+      upsidePercent: null,
+    });
     h.price.currentPrice.mockRejectedValueOnce(new Error('down'));
-    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({ currentPrice: null, upsidePercent: null });
+    expect(ready(await svc.view(SYMBOL)).valuation).toMatchObject({
+      currentPrice: null,
+      upsidePercent: null,
+    });
   });
 
   it('32: theses without any target are served with valuation null', async () => {

@@ -4,7 +4,11 @@ import { thesisEvidence } from './engine/current-view.js';
 import { buildShortlist } from './engine/ordering.js';
 import { servedValuation } from './engine/valuation.js';
 import { isWithinWindow, vnToday, windowStart } from './engine/window.js';
-import { RESEARCH_PRICE, ResearchEngineService, type ResearchPricePort } from './research-engine.service.js';
+import {
+  RESEARCH_PRICE,
+  ResearchEngineService,
+  type ResearchPricePort,
+} from './research-engine.service.js';
 import { RESEARCH_STORE, type ResearchJob, type ResearchStore } from './research.ports.js';
 import type { InvestmentViewResponse, PublishedView } from './research.types.js';
 
@@ -63,7 +67,11 @@ export class ResearchService implements OnApplicationShutdown {
    */
   private async needsRun(symbol: string, today: string): Promise<boolean> {
     const last = await this.store.lastJob(symbol);
-    if (last?.status === 'failed' && last.finishedAt && Date.now() - Date.parse(last.finishedAt) < RETRY_COOLDOWN_MS)
+    if (
+      last?.status === 'failed' &&
+      last.finishedAt &&
+      Date.now() - Date.parse(last.finishedAt) < RETRY_COOLDOWN_MS
+    )
       return false;
     const from = windowStart(today);
     const reports = await this.store.activeReports(symbol, from);
@@ -84,7 +92,10 @@ export class ResearchService implements OnApplicationShutdown {
     for (const thesis of theses) {
       if (!shown.has(thesis.id)) continue;
       const brokers = evidence.get(thesis.id)?.brokers ?? [];
-      if (brokers.length === 0 || thesis.summaryBrokers.some((broker) => !brokers.includes(broker))) {
+      if (
+        brokers.length === 0 ||
+        thesis.summaryBrokers.some((broker) => !brokers.includes(broker))
+      ) {
         if (!(await this.blockedSinceLastRun(symbol))) return true;
       }
     }
@@ -117,13 +128,26 @@ export class ResearchService implements OnApplicationShutdown {
     try {
       const outcome = await this.engine.run(symbol, today, () => this.store.heartbeat(job.id));
       if (outcome.status === 'blocked')
-        await this.store.finishJob(job.id, 'blocked', { inputFingerprint: outcome.fingerprint, llmCalls: outcome.llmCalls, error: outcome.reason });
+        await this.store.finishJob(job.id, 'blocked', {
+          inputFingerprint: outcome.fingerprint,
+          llmCalls: outcome.llmCalls,
+          error: outcome.reason,
+        });
       else if (outcome.status === 'failed')
-        await this.store.finishJob(job.id, 'failed', { llmCalls: outcome.llmCalls, error: outcome.error });
+        await this.store.finishJob(job.id, 'failed', {
+          llmCalls: outcome.llmCalls,
+          error: outcome.error,
+        });
       else await this.store.finishJob(job.id, 'done', { llmCalls: outcome.llmCalls });
     } catch (error) {
-      this.logger.error(`research job ${job.id} for ${symbol} crashed: ${error instanceof Error ? error.message : String(error)}`);
-      await this.store.finishJob(job.id, 'failed', { error: error instanceof Error ? error.message : String(error) }).catch(() => undefined);
+      this.logger.error(
+        `research job ${job.id} for ${symbol} crashed: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      await this.store
+        .finishJob(job.id, 'failed', {
+          error: error instanceof Error ? error.message : String(error),
+        })
+        .catch(() => undefined);
     } finally {
       clearInterval(timer);
     }
@@ -133,7 +157,11 @@ export class ResearchService implements OnApplicationShutdown {
   private async served(symbol: string): Promise<InvestmentViewResponse> {
     const published = await this.store.published(symbol);
     if (!published) return { status: 'empty' };
-    const live = new Set((await this.store.theses(symbol)).filter((t) => t.status === 'active' || t.status === 'updated').map((t) => t.id));
+    const live = new Set(
+      (await this.store.theses(symbol))
+        .filter((t) => t.status === 'active' || t.status === 'updated')
+        .map((t) => t.id),
+    );
     const theses = published.theses
       .filter((item) => live.has(item.id))
       .map((item, index) => ({ ...item, order: index + 1 }));

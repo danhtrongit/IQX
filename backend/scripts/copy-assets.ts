@@ -13,9 +13,12 @@ const ASSET_DIRECTORIES = [
 
 for (const relative of ASSET_DIRECTORIES) {
   const source = resolve(relative);
-  if (!(await stat(source)).isDirectory()) throw new Error(`Versioned assets are missing: ${relative}`);
+  if (!(await stat(source)).isDirectory())
+    throw new Error(`Versioned assets are missing: ${relative}`);
   const destination = resolve('dist', relative);
   await mkdir(destination, { recursive: true });
   await cp(source, destination, { recursive: true, force: true });
 }
-console.log(`Copied ${ASSET_DIRECTORIES.length} versioned asset directories into the production build.`);
+console.log(
+  `Copied ${ASSET_DIRECTORIES.length} versioned asset directories into the production build.`,
+);

@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-l05",
+  "questions": [
+    {
+      "correct_option_id": "9bb51e40cc",
+      "id": "ch01-l05-q01",
+      "options": [
+        {
+          "id": "9bb51e40cc",
+          "text": "Chủ nợ"
+        },
+        {
+          "id": "c256ccab85",
+          "text": "Đồng sở hữu"
+        },
+        {
+          "id": "f8a9b5bc18",
+          "text": "Cổ đông"
+        }
+      ],
+      "prompt": "Người mua trái phiếu là ai đối với doanh nghiệp?"
+    },
+    {
+      "correct_option_id": "56789a9042",
+      "id": "ch01-l05-q02",
+      "options": [
+        {
+          "id": "56789a9042",
+          "text": "Không có kỳ hạn"
+        },
+        {
+          "id": "1915b48dc1",
+          "text": "Kỳ hạn một năm"
+        },
+        {
+          "id": "04ac8746fc",
+          "text": "Đáo hạn trả gốc như trái phiếu"
+        }
+      ],
+      "prompt": "Đặc điểm kỳ hạn của cổ phiếu là gì?"
+    },
+    {
+      "correct_option_id": "1db2be63f0",
+      "id": "ch01-l05-q03",
+      "options": [
+        {
+          "id": "1db2be63f0",
+          "text": "Trái chủ"
+        },
+        {
+          "id": "1e42f01888",
+          "text": "Cổ đông"
+        },
+        {
+          "id": "1dd780d38a",
+          "text": "Hai bên như nhau"
+        }
+      ],
+      "prompt": "Khi doanh nghiệp phá sản, ai được thanh toán trước?"
+    }
+  ],
+  "salt": "f2bd6b8d63198f6badbd3254e4e4366522b40a44e1d01aab11eb857d57d4b6a2"
+}

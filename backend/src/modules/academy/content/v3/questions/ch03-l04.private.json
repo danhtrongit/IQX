@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch03-l04",
+  "questions": [
+    {
+      "correct_option_id": "c4eec27d7b",
+      "id": "ch03-l04-q01",
+      "options": [
+        {
+          "id": "c4eec27d7b",
+          "text": "80% giá trị, 20% giới thiệu dịch vụ"
+        },
+        {
+          "id": "bb5a519c7b",
+          "text": "100% giới thiệu dịch vụ"
+        },
+        {
+          "id": "1fd9838431",
+          "text": "20% giá trị, 80% quảng cáo"
+        }
+      ],
+      "prompt": "Tỷ lệ nội dung được khuyên là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "4bf5d22a96",
+      "id": "ch03-l04-q02",
+      "options": [
+        {
+          "id": "4bf5d22a96",
+          "text": "TikTok, Facebook, nhóm Zalo, tin nhắn riêng"
+        },
+        {
+          "id": "c92394d277",
+          "text": "Tin nhắn riêng, TikTok, Facebook, nhóm Zalo"
+        },
+        {
+          "id": "98af804605",
+          "text": "Chỉ cần một video TikTok là khách mở tài khoản"
+        }
+      ],
+      "prompt": "Hành trình khách qua các kênh online thường đi theo thứ tự nào?"
+    },
+    {
+      "correct_option_id": "10fe8f8c32",
+      "id": "ch03-l04-q03",
+      "options": [
+        {
+          "id": "10fe8f8c32",
+          "text": "Zalo: nhóm bản tin và tin nhắn riêng"
+        },
+        {
+          "id": "1bf94bfacb",
+          "text": "Video TikTok gây tranh cãi"
+        },
+        {
+          "id": "d0feb566fd",
+          "text": "Bình luận dạo trong hội nhóm lạ"
+        }
+      ],
+      "prompt": "Kênh nào phù hợp nhất để chăm sóc khách hằng ngày?"
+    }
+  ],
+  "salt": "4a461c89c4a5e1f22b3813481a1f112d7af0ac9653f95b454b10a0e51a94a535"
+}

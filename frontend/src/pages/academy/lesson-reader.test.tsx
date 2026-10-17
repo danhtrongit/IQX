@@ -1,9 +1,10 @@
-import { act, screen, waitFor, within } from "@testing-library/react"
+import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ApiError } from "@/lib/api"
 import { createFakeAcademyApi } from "./test-api"
+import { keysBefore, keyOf } from "./test-fixtures"
 import { overlayFrame, renderAcademy, stubBrowser } from "./test-support"
 import { resetAcademyViewState } from "./view-state"
 
@@ -14,7 +15,6 @@ vi.mock("@/hooks/use-auth", () => ({ useAuth: () => ({ user: { id: "learner-1" }
 vi.mock("@/pages/demo-trading/workspace/mascot-stage", () => ({ MascotStage: () => <div data-testid="mascot-stage" /> }))
 
 let fake: ReturnType<typeof createFakeAcademyApi>
-const scrollIntoView = vi.fn()
 
 function install(options: Parameters<typeof createFakeAcademyApi>[0] = {}) {
   fake = createFakeAcademyApi(options)
@@ -24,164 +24,170 @@ function install(options: Parameters<typeof createFakeAcademyApi>[0] = {}) {
 beforeEach(() => {
   stubBrowser()
   resetAcademyViewState()
-  scrollIntoView.mockReset()
-  Element.prototype.scrollIntoView = scrollIntoView
+  Element.prototype.scrollIntoView = vi.fn()
   install()
 })
 afterEach(() => vi.unstubAllGlobals())
 
 const reader = () => screen.getByRole("article")
-const heading = (name: string) => screen.findByRole("heading", { level: 2, name })
+const locator = () => reader().querySelector("[data-academy-locator]")?.textContent
+const open = (id: string, options: Parameters<typeof renderAcademy>[1] = { panel: false }) =>
+  renderAcademy(`/demo-trading?view=academy&lesson=${id}`, options)
 
-describe("LessonReader header and sections", () => {
-  it("shows Về linh thú, Bài x / n, Chương n · title, the lesson title, the lead and ✓ Đã học", async () => {
-    install({ completed: ["ch01-l02"] })
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l02", { panel: false })
-    await heading("Tiêu đề MACD")
+describe("LessonReader header and locator", () => {
+  it("shows Về linh thú, the locator Chương c · Bài n / m, the title, the lead, the summary and Đã hoàn thành", async () => {
+    install({ completed: ["concept:ch01_l01", "concept:ch01_l02"] })
+    open("ch01-l02")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
     expect(screen.getByRole("button", { name: "Về linh thú" })).toBeTruthy()
-    await waitFor(() => expect(within(reader()).getByText("Bài 2 / 6")).toBeTruthy())
-    expect(within(reader()).getByText("Chương 1 · Chỉ báo kỹ thuật nền tảng")).toBeTruthy()
-    expect(within(reader()).getByText("Đoạn dẫn của bài MACD.")).toBeTruthy()
-    expect(within(reader()).getByText("Đã học")).toBeTruthy()
+    await waitFor(() => expect(locator()).toBe("Chương 1 · Bài 2 / 10"))
+    expect(within(reader()).getByText("Bài học 1.2", { selector: "b" })).toBeTruthy()
+    expect(within(reader()).getByRole("heading", { level: 3, name: "Tóm tắt" })).toBeTruthy()
+    expect(within(reader()).getByText("Ý chính của bài học.")).toBeTruthy()
+    expect(within(reader()).getByRole("heading", { level: 3, name: "Nội dung chính" })).toBeTruthy()
+    const header = within(reader()).getByRole("banner")
+    expect(within(header).getByText("Đã hoàn thành")).toBeTruthy()
+    expect(within(header).getByText("Đã nhận 100 xu")).toBeTruthy()
   })
 
-  it("shows no Đã học and no coin line for a lesson that is not completed", async () => {
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l02", { panel: false })
-    await heading("Tiêu đề MACD")
-    expect(within(reader()).queryByText("Đã học")).toBeNull()
+  it("names an exam Bài thi Chương c and the practice room Chương 3 · Phòng tập thực chiến", async () => {
+    install({ completed: keysBefore("ch04-l01") })
+    const first = open("ch03-exam")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 3" })).toBeTruthy()
+    await waitFor(() => expect(locator()).toBe("Bài thi Chương 3"))
+    first.unmount()
+
+    open("ch03-practice")
+    expect(await screen.findByRole("heading", { level: 2, name: "Phòng tập thực chiến" })).toBeTruthy()
+    await waitFor(() => expect(locator()).toBe("Chương 3 · Phòng tập thực chiến"))
+  })
+
+  it("shows no Đã hoàn thành and no coin tag for an item that is not passed", async () => {
+    open("ch01-l01")
+    await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
+    expect(within(reader()).queryByText("Đã hoàn thành")).toBeNull()
     expect(within(reader()).queryByText(/Đã nhận/)).toBeNull()
   })
 
-  it("lists the four parts from nav_labels and scrolls only to the chosen section", async () => {
-    const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l01", { panel: false })
-    await heading("Tiêu đề RSI")
-    const nav = screen.getByRole("navigation", { name: "Các phần của bài" })
-    expect(within(nav).getAllByRole("button").map((button) => button.textContent)).toEqual(["01 · Khái niệm", "02 · Công thức", "03 · Tham số", "04 · Vận dụng"])
-    await user.click(within(nav).getByRole("button", { name: "03 · Tham số" }))
-    expect(scrollIntoView).toHaveBeenCalledTimes(1)
-    expect((scrollIntoView.mock.contexts[0] as HTMLElement).id).toBe("academy-section-3")
-    expect(document.getElementById("academy-section-title-3")?.textContent).toContain("Chu kỳ và hai ngưỡng")
-  })
-
-  it("falls back to the section titles when a lesson has no nav labels (legacy chapters)", async () => {
-    install({ lessons: { "ch05-l01": { nav_labels: null, lead: null } } })
-    renderAcademy("/demo-trading?view=academy&lesson=ch05-l01", { panel: false })
-    await heading("Tiêu đề Bài 5.1")
-    const nav = screen.getByRole("navigation", { name: "Các phần của bài" })
-    expect(within(nav).getAllByRole("button").map((button) => button.textContent)).toEqual([
-      "01 · Khái niệm và cách đọc",
-      "02 · Công thức và ví dụ tính",
-      "03 · Chu kỳ và hai ngưỡng",
-      "04 · Tín hiệu và cách vận dụng",
-    ])
-  })
-
-  it("renders every section with its blocks, in order", async () => {
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l01", { panel: false })
-    await heading("Tiêu đề RSI")
-    const sections = reader().querySelectorAll("section[id^=academy-section-]")
-    expect(sections).toHaveLength(4)
-    expect(within(sections[0] as HTMLElement).getByRole("img", { name: /Giá đóng cửa và RSI 14/ })).toBeTruthy()
-    expect(within(sections[1] as HTMLElement).getByRole("table")).toBeTruthy()
-    expect(within(sections[2] as HTMLElement).getByText("Chọn cổ phiếu")).toBeTruthy()
-    expect(within(sections[3] as HTMLElement).getByTestId("signal-pair")).toBeTruthy()
-    expect(reader().textContent).toContain("RS =")
-  })
-})
-
-describe("LessonReader states", () => {
-  it("shows the name and a short note, and no actions, for a lesson that is not published", async () => {
-    install({ lessons: { "ch06-l02": { content_status: "not_published", content_version: null, sections: [], charts: {}, nav_labels: null, lead: null, title: "Bài 6.2", completion: { mode: "quiz", question_count: 8, required_correct: 8, assessment_ready: false, assessment_version: null, button_label: null } } } })
-    renderAcademy("/demo-trading?view=academy&lesson=ch06-l02", { panel: false })
-    await heading("Bài 6.2")
-    expect(screen.getByText("Nội dung chưa được xuất bản")).toBeTruthy()
-    expect(within(reader()).queryByRole("button", { name: /Làm bài kiểm tra|Hoàn thành bài học|Tiếp tục/ })).toBeNull()
-    expect(within(reader()).queryByRole("navigation", { name: "Các phần của bài" })).toBeNull()
-    expect(within(reader()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Về linh thú"])
-  })
-
-  it("explains a lesson that is unknown to the catalog and offers the way back", async () => {
-    renderAcademy("/demo-trading?view=academy&lesson=ch99-l99", { panel: false })
-    expect(await screen.findByText("Không tìm thấy bài học")).toBeTruthy()
-    expect(screen.getByRole("button", { name: "Về linh thú" })).toBeTruthy()
-  })
-
-  it("keeps a failed lesson read separate from progress: error + Thử lại, and the learned mark stays in the panel (C10)", async () => {
-    install({ completed: ["ch01-l01"] })
-    fake.fail("lesson", new ApiError("Dịch vụ tạm thời không khả dụng", 503, "SERVICE_UNAVAILABLE"))
-    const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l01")
-    expect(await screen.findByText("Chưa tải được nội dung bài học")).toBeTruthy()
-    const panel = screen.getByRole("complementary", { name: "Học viện" })
-    await waitFor(() => expect(within(panel).getByText("Đã học")).toBeTruthy())
-    await waitFor(() => expect(within(panel).getByText("1 / 71")).toBeTruthy())
-    await user.click(screen.getByRole("button", { name: "Thử lại" }))
-    await heading("Tiêu đề RSI")
-    expect(within(panel).getByText("1 / 71")).toBeTruthy()
-  })
-
-  it("never paints a slow response of lesson A over lesson B (R08)", async () => {
-    const release = fake.hold("/academy/lessons/ch01-l01")
-    const { router } = renderAcademy("/demo-trading?view=academy&lesson=ch01-l01", { panel: false })
-    await waitFor(() => expect(fake.calls).toContain("GET /academy/lessons/ch01-l01"))
-    await act(async () => {
-      await router.navigate("/demo-trading?view=academy&lesson=ch01-l02")
-    })
-    await heading("Tiêu đề MACD")
-    await act(async () => release())
-    await waitFor(() => expect(fake.count("GET /academy/lessons/ch01-l01")).toBe(1))
-    expect(screen.getByRole("heading", { level: 2, name: "Tiêu đề MACD" })).toBeTruthy()
-    expect(screen.queryByRole("heading", { level: 2, name: "Tiêu đề RSI" })).toBeNull()
-  })
-})
-
-describe("LessonReader navigation", () => {
-  it("links to the previous and next lesson of the chapter and opens them", async () => {
-    const user = userEvent.setup()
-    const { router } = renderAcademy("/demo-trading?view=academy&lesson=ch01-l02", { panel: false })
-    await heading("Tiêu đề MACD")
-    const nav = await screen.findByRole("navigation", { name: "Bài trước và bài sau" })
-    expect(within(nav).getByRole("button", { name: "RSI" })).toBeTruthy()
-    await user.click(within(nav).getByRole("button", { name: "MA / SMA" }))
-    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l03")
-    await heading("Tiêu đề MA / SMA")
-  })
-
-  it("ends a chapter with Hết nội dung Chương n, or Đã hoàn thành Chương n once every lesson is done", async () => {
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l06", { panel: false })
-    await heading("Tiêu đề Hợp lưu")
-    expect(await screen.findByText("Hết nội dung Chương 1")).toBeTruthy()
-  })
-
-  it("shows Đã hoàn thành Chương n when the whole chapter is completed", async () => {
-    install({ completed: ["ch01-l01", "ch01-l02", "ch01-l03", "ch01-l04", "ch01-l05", "ch01-l06"] })
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l06", { panel: false })
-    await heading("Tiêu đề Hợp lưu")
-    expect(await screen.findByText("Đã hoàn thành Chương 1")).toBeTruthy()
-    expect(screen.queryByText("Hết nội dung Chương 1")).toBeNull()
-  })
-
-  it("on a phone offers Danh sách bài to bring the list back; on a wide screen it does not", async () => {
+  it("offers Danh sách bài on a phone to bring the list back", async () => {
     const user = userEvent.setup()
     const frame = overlayFrame({ open: false })
-    const first = renderAcademy("/demo-trading?view=academy&lesson=ch01-l01", { panel: false, frame })
-    await heading("Tiêu đề RSI")
+    open("ch01-l01", { panel: false, frame })
+    await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
     await user.click(screen.getByRole("button", { name: "Danh sách bài" }))
     expect(frame.setOpen).toHaveBeenCalledWith(true)
-    first.unmount()
+  })
+})
 
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l01", { panel: false, frame: overlayFrame({ overlay: false }) })
-    await heading("Tiêu đề RSI")
-    expect(screen.queryByRole("button", { name: "Danh sách bài" })).toBeNull()
+describe("LessonReader locked and missing items", () => {
+  it("shows LockedState for a 403 and leads to the item being learned", async () => {
+    install({ completed: ["concept:ch01_l01"] })
+    const user = userEvent.setup()
+    const { router } = open("ch01-l05")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài này chưa mở" })).toBeTruthy()
+    await user.click(await screen.findByRole("button", { name: "Đến bài đang học" }))
+    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
   })
 
-  it("Về linh thú shows the mascot stage again", async () => {
+  it("explains an item that does not exist, and offers Thử lại for other failures", async () => {
     const user = userEvent.setup()
-    renderAcademy("/demo-trading?view=academy&lesson=ch01-l01", { panel: false })
-    await heading("Tiêu đề RSI")
-    await user.click(screen.getByRole("button", { name: "Về linh thú" }))
-    expect(screen.getByTestId("mascot-stage")).toBeTruthy()
-    expect(screen.queryByRole("article")).toBeNull()
+    const first = open("ch09-l01")
+    expect(await screen.findByText("Không tìm thấy bài học")).toBeTruthy()
+    first.unmount()
+
+    fake.fail("lesson", new ApiError("Dịch vụ tạm thời không khả dụng", 503, "SERVICE_UNAVAILABLE"))
+    open("ch01-l01")
+    expect(await screen.findByText("Chưa tải được nội dung bài học")).toBeTruthy()
+    await user.click(screen.getByRole("button", { name: "Thử lại" }))
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })).toBeTruthy()
+  })
+})
+
+describe("LessonQuizGate", () => {
+  it("shows Làm bài kiểm tra with 3 câu in chapters 1-3 and 5 câu from chapter 4", async () => {
+    const first = open("ch01-l01")
+    expect(await screen.findByRole("button", { name: "Làm bài kiểm tra" })).toBeTruthy()
+    expect(screen.getByText("3 câu")).toBeTruthy()
+    first.unmount()
+
+    install({ completed: keysBefore("ch04-l02") })
+    open("ch04-l02")
+    expect(await screen.findByRole("button", { name: "Làm bài kiểm tra" })).toBeTruthy()
+    expect(screen.getByText("5 câu")).toBeTruthy()
+  })
+
+  it("turns into a disabled Đã hoàn thành once passed (no retake from the gate)", async () => {
+    install({ completed: ["concept:ch01_l01"] })
+    open("ch01-l01")
+    await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
+    const gate = screen.getByRole("region", { name: "Bài kiểm tra" })
+    const done = within(gate).getByRole("button", { name: "Đã hoàn thành" })
+    expect(done.hasAttribute("disabled")).toBe(true)
+    expect(within(gate).queryByRole("button", { name: "Làm bài kiểm tra" })).toBeNull()
+  })
+
+  it("keeps the quiz closed in chapters 2-3 until a scenario option is chosen", async () => {
+    install({ completed: keysBefore("ch02-l01") })
+    open("ch02-l01")
+    await screen.findByRole("heading", { level: 2, name: "Bài học 2.1" })
+    const gated = screen.getByRole("button", { name: "Chọn cách xử lý ở phần Tình huống để làm bài kiểm tra" })
+    expect(gated.hasAttribute("disabled")).toBe(true)
+    expect(screen.queryByRole("button", { name: "Làm bài kiểm tra" })).toBeNull()
+  })
+
+  it("opens the gate on reload when the account already holds a choice", async () => {
+    install({ completed: keysBefore("ch02-l01"), scenarios: { "ch02-l01": 2 } })
+    open("ch02-l01")
+    expect(await screen.findByRole("button", { name: "Làm bài kiểm tra" })).toBeTruthy()
+  })
+})
+
+describe("ItemPager", () => {
+  it("disables a locked next item; the exam intro leads back to the start of its chapter", async () => {
+    const user = userEvent.setup()
+    const first = open("ch01-l01")
+    await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
+    const pager = await screen.findByRole("navigation", { name: "Bài trước và bài sau" })
+    await waitFor(() => expect(within(pager).getByRole("button", { name: /Bài sau: Bài học 1.2/ }).hasAttribute("disabled")).toBe(true))
+    first.unmount()
+
+    install({ completed: keysBefore("ch02-l02") })
+    const { router } = open("ch01-exam")
+    await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 1" })
+    await user.click(screen.getByRole("button", { name: "Xem lại Chương 1" }))
+    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l01")
+    await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
+  })
+
+  it("goes from the last lesson of a chapter to its exam and on to the next chapter", async () => {
+    install({ completed: keysBefore("ch02-l02") })
+    const user = userEvent.setup()
+    const { router } = open("ch01-l10")
+    await screen.findByRole("heading", { level: 2, name: "Bài học 1.10" })
+    const pager = screen.getByRole("navigation", { name: "Bài trước và bài sau" })
+    await waitFor(() => expect(within(pager).getByRole("button", { name: /Bài sau: Bài thi Chương 1/ }).hasAttribute("disabled")).toBe(false))
+    await user.click(within(pager).getByRole("button", { name: /Bài sau: Bài thi Chương 1/ }))
+    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-exam")
+  })
+})
+
+describe("ExamIntro", () => {
+  it("shows the intro, the bold all-correct rule and Bắt đầu làm bài", async () => {
+    install({ completed: keysBefore("ch01-exam") })
+    open("ch01-exam")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 1" })).toBeTruthy()
+    expect(screen.getByText("Bài thi gồm 20 câu hỏi về toàn bộ kiến thức Chương 1.", { exact: false })).toBeTruthy()
+    expect(screen.getByText("Cần trả lời đúng tất cả câu hỏi để hoàn thành.").tagName).toBe("B")
+    expect(screen.getByRole("button", { name: "Bắt đầu làm bài" })).toBeTruthy()
+  })
+
+  it("once passed shows Đã hoàn thành and Xem lại Chương c", async () => {
+    install({ completed: [...keysBefore("ch01-exam"), keyOf("ch01-exam")] })
+    open("ch01-exam")
+    await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 1" })
+    expect(screen.getByRole("button", { name: "Đã hoàn thành" }).hasAttribute("disabled")).toBe(true)
+    expect(screen.queryByRole("button", { name: "Bắt đầu làm bài" })).toBeNull()
+    expect(await screen.findByRole("button", { name: "Xem lại Chương 1" })).toBeTruthy()
   })
 })

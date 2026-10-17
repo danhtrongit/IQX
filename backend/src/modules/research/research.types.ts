@@ -44,7 +44,10 @@ export const CLAIM_TYPES: readonly ClaimType[] = [
   'assumption',
   'other',
 ];
-export const RISK_CLAIM_TYPES: ReadonlySet<ClaimType> = new Set(['financial_risk', 'execution_risk']);
+export const RISK_CLAIM_TYPES: ReadonlySet<ClaimType> = new Set([
+  'financial_risk',
+  'execution_risk',
+]);
 
 /** A report listed by a source, before download. Metadata comes from the source, never from AI. */
 export interface SourceReportListing {
@@ -143,7 +146,8 @@ export interface StoredClaim extends ExtractedClaim {
   status: 'active' | 'superseded' | 'invalidated';
 }
 
-export type ClaimRelationship = 'SUPPORT' | 'UPDATE' | 'CONTRADICT' | 'REPLACE' | 'NEW_THESIS' | 'IRRELEVANT';
+export type ClaimRelationship =
+  'SUPPORT' | 'UPDATE' | 'CONTRADICT' | 'REPLACE' | 'NEW_THESIS' | 'IRRELEVANT';
 
 /** Per-dimension match verdict the AI must return for every claim (spec §16). */
 export interface MatchReason {

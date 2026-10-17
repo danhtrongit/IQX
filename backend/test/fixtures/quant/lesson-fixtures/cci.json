@@ -1,0 +1,8 @@
+{
+  "indicator_id": "cci",
+  "legacy": false,
+  "source_lesson_id": "ch05-l05",
+  "label": "CCI",
+  "expected": 100,
+  "tolerance": 0.015
+}

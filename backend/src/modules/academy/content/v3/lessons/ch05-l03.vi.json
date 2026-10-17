@@ -1,0 +1,616 @@
+{
+  "chapter": 5,
+  "charts": {
+    "c5l3-g2": {
+      "items": [
+        {
+          "model": {
+            "caption_tone": "info",
+            "caption_value": "Trên mốc 10%",
+            "kind": "category",
+            "labels": [
+              "2016",
+              "2017",
+              "2018",
+              "2019",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "ROIC",
+                "tone": "p1",
+                "values": [
+                  15,
+                  16,
+                  14,
+                  17,
+                  16,
+                  18,
+                  17,
+                  16,
+                  18,
+                  19
+                ]
+              }
+            ],
+            "threshold": {
+              "label": "10%",
+              "value": 10
+            },
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "ROIC"
+        },
+        {
+          "model": {
+            "caption_tone": "pos",
+            "caption_value": "+12%/năm",
+            "kind": "category",
+            "labels": [
+              "2016",
+              "2017",
+              "2018",
+              "2019",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Vốn chủ sở hữu",
+                "tone": "pos",
+                "values": [
+                  101.5182,
+                  114.4438,
+                  122.6278,
+                  141.8773,
+                  152.1296,
+                  177.5336,
+                  200.8578,
+                  220.3272,
+                  255.6307,
+                  271.3054
+                ]
+              }
+            ],
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "Vốn chủ sở hữu"
+        },
+        {
+          "model": {
+            "caption_tone": "pos",
+            "caption_value": "+13%/năm",
+            "kind": "category",
+            "labels": [
+              "2016",
+              "2017",
+              "2018",
+              "2019",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "EPS",
+                "tone": "pos",
+                "values": [
+                  102.2389,
+                  115.1751,
+                  129.3302,
+                  138.6777,
+                  162.5961,
+                  181.3023,
+                  214.8,
+                  231.2727,
+                  271.274,
+                  305.775
+                ]
+              }
+            ],
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "EPS"
+        },
+        {
+          "model": {
+            "caption_tone": "pos",
+            "caption_value": "+11%/năm",
+            "kind": "category",
+            "labels": [
+              "2016",
+              "2017",
+              "2018",
+              "2019",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Doanh thu",
+                "tone": "pos",
+                "values": [
+                  98.0286,
+                  106.7289,
+                  126.1031,
+                  133.5715,
+                  149.0456,
+                  163.4272,
+                  186.5937,
+                  215.7819,
+                  225.7612,
+                  247.228
+                ]
+              }
+            ],
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "Doanh thu"
+        },
+        {
+          "model": {
+            "caption_tone": "pos",
+            "caption_value": "+12%/năm",
+            "kind": "category",
+            "labels": [
+              "2016",
+              "2017",
+              "2018",
+              "2019",
+              "2020",
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Dòng tiền tự do",
+                "tone": "pos",
+                "values": [
+                  102.7887,
+                  110.3605,
+                  124.5124,
+                  145.9522,
+                  154.4815,
+                  174.6284,
+                  192.9176,
+                  227.598,
+                  252.0008,
+                  285.7117
+                ]
+              }
+            ],
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "Dòng tiền tự do"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c5l3-g4": {
+      "alt": "Giá dưới 15.350 đồng là vùng mua, từ 15.350 đến 30.700 đồng chờ thêm, trên 30.700 đồng là đắt",
+      "domain": [
+        0,
+        44000
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Giá mua · 15.350 đ",
+          "tone": "pos",
+          "v": 15350
+        },
+        {
+          "label": "Giá trị hợp lý · 30.700 đ",
+          "tone": "warn",
+          "v": 30700
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0",
+          "v": 0
+        },
+        {
+          "label": "10k",
+          "v": 10000
+        },
+        {
+          "label": "20k",
+          "v": 20000
+        },
+        {
+          "label": "30k",
+          "v": 30000
+        },
+        {
+          "label": "40k",
+          "v": 40000
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Vùng mua",
+          "to": 15350,
+          "tone": "pos"
+        },
+        {
+          "from": 15350,
+          "label": "Chờ thêm",
+          "to": 30700,
+          "tone": "warn"
+        },
+        {
+          "from": 30700,
+          "label": "Đắt",
+          "to": 44000,
+          "tone": "neg"
+        }
+      ]
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch05-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "4M là bộ bốn tiêu chí giúp chọn doanh nghiệp tốt và mua ở mức giá hợp lý, được phổ biến bởi nhà đầu tư Phil Town trong cuốn sách Rule #1. Phương pháp phát triển từ triết lý đầu tư giá trị ở bài trước, nhưng được sắp xếp thành các bước rõ ràng, có con số cụ thể để kiểm tra.",
+  "lesson_key": "concept:phuong_phap_4m",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Ba chữ M đầu giúp xác định một doanh nghiệp có tốt hay không. Chữ M cuối cùng giúp xác định giá hiện tại đã đủ hấp dẫn để mua hay chưa.",
+          "type": "paragraph"
+        },
+        {
+          "groups": [
+            {
+              "from": 0,
+              "label": "Doanh nghiệp tốt",
+              "to": 2
+            },
+            {
+              "from": 3,
+              "label": "Giá hợp lý",
+              "to": 3
+            }
+          ],
+          "items": [
+            {
+              "glyph": "M1",
+              "sub": "Meaning · Hiểu doanh nghiệp",
+              "title": "Ý nghĩa"
+            },
+            {
+              "glyph": "M2",
+              "sub": "Moat · Có “con hào” bảo vệ",
+              "title": "Lợi thế cạnh tranh"
+            },
+            {
+              "glyph": "M3",
+              "sub": "Management · Minh bạch, vì cổ đông",
+              "title": "Ban lãnh đạo"
+            },
+            {
+              "glyph": "M4",
+              "highlight": true,
+              "sub": "Margin of Safety · Mua với giá rẻ",
+              "title": "Biên an toàn"
+            }
+          ],
+          "type": "tiles"
+        }
+      ],
+      "id": "s1",
+      "title": "4M là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Chỉ đầu tư vào doanh nghiệp mà mình <b>hiểu rõ</b> và sẵn sàng sở hữu <b>cả doanh nghiệp đó trong 10 năm</b>. Cách dễ nhất là bắt đầu từ những sản phẩm, dịch vụ quen thuộc trong cuộc sống hằng ngày, hoặc từ ngành nghề mình đang làm. Trước khi mua, cần giải thích được ba điều sau trong vài câu ngắn:",
+          "type": "paragraph"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp bán sản phẩm hoặc dịch vụ gì.",
+              "title": "Sản phẩm"
+            },
+            {
+              "text": "Ai là người mua và vì sao họ chọn doanh nghiệp này.",
+              "title": "Khách hàng"
+            },
+            {
+              "text": "Doanh nghiệp kiếm tiền chủ yếu từ hoạt động nào.",
+              "title": "Nguồn lợi nhuận"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        },
+        {
+          "text": "Nếu không giải thích được, nên bỏ qua doanh nghiệp đó, dù cổ phiếu đang được nhiều người nhắc đến.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "M1 · Ý nghĩa"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Lợi thế cạnh tranh</b>, còn gọi là “con hào kinh tế”, là điều giúp doanh nghiệp bảo vệ lợi nhuận trước đối thủ trong nhiều năm. Phil Town chia thành năm loại:",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Thương hiệu",
+              "text": "Khách hàng sẵn sàng trả giá cao hơn vì tin tưởng thương hiệu."
+            },
+            {
+              "term": "Bí quyết, bằng sáng chế",
+              "text": "Công thức, công nghệ hoặc bằng sáng chế mà đối thủ không thể sao chép."
+            },
+            {
+              "term": "Độc quyền",
+              "text": "Doanh nghiệp kiểm soát một thị trường, như cảng biển, sân bay, hạ tầng thiết yếu, nhờ giấy phép hoặc vị trí đặc biệt."
+            },
+            {
+              "term": "Chi phí chuyển đổi",
+              "text": "Khách hàng khó hoặc tốn kém khi chuyển sang nhà cung cấp khác."
+            },
+            {
+              "term": "Giá thấp",
+              "text": "Quy mô lớn giúp doanh nghiệp bán rẻ hơn đối thủ mà vẫn có lãi."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s3",
+      "title": "M2 · Lợi thế cạnh tranh"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lợi thế cạnh tranh thật sự sẽ thể hiện qua các con số. Phil Town kiểm tra <b>năm con số lớn</b>, mỗi con số cần đạt <b>từ 10% mỗi năm trở lên</b>, duy trì ổn định trong khoảng <b>10 năm</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c5l3-g2",
+          "type": "chart"
+        },
+        {
+          "items": [
+            {
+              "term": "ROIC",
+              "text": "Lợi nhuận trên tổng vốn đầu tư, gồm cả vốn chủ sở hữu và vốn vay. Giống ROE nhưng không bị làm đẹp ở doanh nghiệp vay nhiều."
+            },
+            {
+              "term": "Vốn chủ sở hữu, EPS, doanh thu",
+              "text": "Tăng trưởng đều qua các năm cho thấy doanh nghiệp lớn lên bền vững."
+            },
+            {
+              "term": "Dòng tiền tự do",
+              "text": "Tiền mặt doanh nghiệp còn lại sau khi chi cho hoạt động kinh doanh và đầu tư duy trì."
+            }
+          ],
+          "type": "definitions"
+        },
+        {
+          "text": "Bên cạnh đó, <b>nợ vay dài hạn</b> không nên vượt quá 3 năm dòng tiền tự do, để doanh nghiệp có thể trả hết nợ trong thời gian ngắn nếu cần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Năm con số chứng minh lợi thế cạnh tranh"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp tốt cần được điều hành bởi những người có năng lực, đáng tin và hành động như chủ sở hữu.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Công bố thông tin đầy đủ, thẳng thắn nói về khó khăn. Hoàn thành kế hoạch kinh doanh qua nhiều năm. Lợi nhuận đến chủ yếu từ hoạt động kinh doanh chính.",
+              "title": "Dấu hiệu tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Nhiều lãnh đạo cùng bán ra lượng lớn cổ phiếu. Liên tục điều chỉnh giảm kế hoạch. Lợi nhuận phụ thuộc vào các khoản thu nhập bất thường.",
+              "title": "Dấu hiệu cảnh báo",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "M3 · Ban lãnh đạo"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Phil Town ước tính <b>giá trị hợp lý</b> của doanh nghiệp dựa trên lợi nhuận trong tương lai, rồi chỉ mua khi giá thị trường bằng khoảng <b>một nửa</b> giá trị đó. Các nền tảng phân tích thường tính sẵn, nhưng cần hiểu cách giá trị được tạo ra:",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "title": "EPS hiện tại",
+              "value": "2.000 đ"
+            },
+            {
+              "text": "tăng 12%/năm",
+              "title": "EPS sau 10 năm",
+              "value": "≈ 6.200 đ"
+            },
+            {
+              "text": "× P/E 20",
+              "title": "Giá sau 10 năm",
+              "value": "≈ 124.000 đ"
+            },
+            {
+              "text": "quy về hiện tại",
+              "title": "Giá trị hợp lý",
+              "value": "≈ 30.700 đ"
+            },
+            {
+              "text": "÷ 2",
+              "title": "Giá mua",
+              "value": "≈ 15.350 đ"
+            }
+          ],
+          "type": "steps"
+        },
+        {
+          "items": [
+            {
+              "term": "Tốc độ tăng trưởng",
+              "text": "Chọn mức thấp hơn giữa tăng trưởng trong quá khứ và mức dự báo, để ước tính thận trọng."
+            },
+            {
+              "term": "P/E tương lai",
+              "text": "Chọn mức thấp hơn giữa 2 lần tốc độ tăng trưởng và P/E trung bình nhiều năm của doanh nghiệp."
+            },
+            {
+              "term": "Lợi nhuận mong muốn",
+              "text": "Tối thiểu 15% mỗi năm, dùng để quy giá tương lai về giá trị hiện tại."
+            }
+          ],
+          "type": "definitions"
+        },
+        {
+          "chart_id": "c5l3-g4",
+          "type": "chart"
+        },
+        {
+          "text": "Những mức giá hấp dẫn như vậy thường chỉ xuất hiện khi thị trường bi quan chung hoặc doanh nghiệp gặp khó khăn tạm thời.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "M4 · Biên an toàn"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh nghiệp đạt đủ bốn tiêu chí và giá chỉ bằng khoảng 50% giá trị hợp lý trở xuống. Có thể dùng các chỉ báo như MA, MACD ở Chương 4 để chọn thời điểm.",
+              "title": "Mua",
+              "tone": "pos"
+            },
+            {
+              "text": "Giá đã vượt giá trị hợp lý, hoặc doanh nghiệp không còn đạt 4M, như mất lợi thế cạnh tranh hay ban lãnh đạo thay đổi theo hướng xấu.",
+              "title": "Bán",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Khi nào mua, khi nào bán"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "M1 · Ý nghĩa",
+              "text": "Giải thích được doanh nghiệp bán gì, cho ai, kiếm tiền thế nào, và sẵn sàng sở hữu trong 10 năm."
+            },
+            {
+              "term": "M2 · Lợi thế cạnh tranh",
+              "text": "Có ít nhất một loại “con hào”. Năm con số lớn đạt từ 10% mỗi năm, nợ dài hạn không quá 3 năm dòng tiền tự do."
+            },
+            {
+              "term": "M3 · Ban lãnh đạo",
+              "text": "Minh bạch, hoàn thành kế hoạch, không có dấu hiệu cảnh báo."
+            },
+            {
+              "term": "M4 · Biên an toàn",
+              "text": "Giá hiện tại khoảng 50% giá trị hợp lý trở xuống."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s8",
+      "title": "Danh sách kiểm tra 4M"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp đạt đủ 4M không nhiều, và hiếm khi giảm về mức giá bằng một nửa giá trị.",
+              "title": "Ít cơ hội"
+            },
+            {
+              "text": "Giá trị hợp lý thay đổi nhiều theo giả định về tốc độ tăng trưởng và P/E.",
+              "title": "Đánh giá chủ quan"
+            },
+            {
+              "text": "Tăng trưởng trong quá khứ không đảm bảo doanh nghiệp sẽ tiếp tục tăng trưởng.",
+              "title": "Dựa vào quá khứ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s9",
+      "title": "Hạn chế của 4M"
+    }
+  ],
+  "summary": [
+    "<b>4M</b> gồm Ý nghĩa, Lợi thế cạnh tranh, Ban lãnh đạo và Biên an toàn.",
+    "Lợi thế cạnh tranh được kiểm chứng bằng <b>năm con số lớn</b>, mỗi con số từ 10% mỗi năm trong khoảng 10 năm.",
+    "Chỉ mua khi giá bằng khoảng <b>50% giá trị hợp lý</b>.",
+    "Bán khi giá <b>vượt giá trị hợp lý</b> hoặc doanh nghiệp không còn đạt 4M."
+  ],
+  "title": "Phương pháp 4M"
+}

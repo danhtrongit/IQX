@@ -1,5 +1,5 @@
 /**
- * The 16 technical indicators of the catalog `iqx-academy-outline-13ch-71lessons-v1`. The server
+ * The 16 technical indicators of the Học viện v3.2 catalog. The server
  * only grants these; the page never lists anything else (no ADX, ATR, price structure, market
  * group). "Hợp lưu" is an AND rule, not a 17th indicator.
  */
@@ -32,10 +32,9 @@ export function isCatalogIndicator(id: string): boolean {
 
 /** Chapter heading of the technical lessons in the library. */
 export const CHAPTER_TITLES: Readonly<Record<number, string>> = {
-  1: "Chỉ báo kỹ thuật nền tảng",
-  5: "Xu hướng và động lượng nâng cao",
-  7: "Khối lượng và dòng tiền",
-  10: "Kênh giá và động lượng",
+  4: "Phương pháp kỹ thuật",
+  7: "Chỉ báo xu hướng",
+  8: "Chỉ báo động lượng và dòng tiền",
 }
 
 export function chapterTitle(chapter: number): string {

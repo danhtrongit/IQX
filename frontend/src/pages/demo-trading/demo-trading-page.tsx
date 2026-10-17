@@ -6,7 +6,6 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { WorkspaceFrame, WorkspacePanelToggle, type WorkspaceRail } from "@/components/layout/workspace-frame"
-import { useWorkspaceFrame } from "@/components/layout/workspace-frame-context"
 import { demoChrome, sectionOfTool, type WorkspaceSection } from "@/config/chrome"
 import { useRail } from "@/context/rail"
 import { useAuth } from "@/hooks/use-auth"
@@ -63,13 +62,6 @@ function ContentFallback() {
   return <div className="space-y-4 p-4 sm:p-6"><Skeleton className="h-8 w-48" /><Skeleton className="h-48 w-full" /><Skeleton className="h-24 w-full" /></div>
 }
 
-/** HỌC VIỆN has no page heading; on phones the panel button keeps a bar of its own. */
-function PanelToggleBar() {
-  const frame = useWorkspaceFrame()
-  if (!frame?.overlay) return null
-  return <div className="flex shrink-0 justify-end border-b border-border bg-card px-3 py-2"><WorkspacePanelToggle /></div>
-}
-
 /** HỌC VIỆN main area: the tool's view (Học viện, Bot, Shop) or the Bot practice. */
 function AcademySection({ toolId, label, practice, mascotId, onNavigate }: {
   toolId: string
@@ -80,7 +72,6 @@ function AcademySection({ toolId, label, practice, mascotId, onNavigate }: {
 }) {
   return (
     <section aria-label={label} className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <PanelToggleBar />
       {practice ? <PracticeMain /> : (
         <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:!block">
           <div className="min-w-0 space-y-3 p-1.5 min-[901px]:p-3 min-[1750px]:p-5">
@@ -197,6 +188,9 @@ function DemoWorkspace() {
         collapsed={collapsed}
         onCollapsedChange={onCollapsedChange}
         rail={rail}
+        // HỌC VIỆN is long-form reading: on phones its tools sit in a bar above the lesson so the
+        // article keeps the full width, and the bar's tool buttons open the panel layer.
+        phoneRail={section === "academy" ? "bar" : "column"}
         main={main}
         panel={panel()}
       />

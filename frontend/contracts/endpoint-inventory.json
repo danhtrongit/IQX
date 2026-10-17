@@ -404,7 +404,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 59,
+      "line": 53,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/catalog",
       "method": "GET",
@@ -417,7 +417,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 63,
+      "line": 57,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/progress",
       "method": "GET",
@@ -430,7 +430,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 68,
+      "line": 62,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}",
       "method": "GET",
@@ -443,20 +443,46 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 76,
+      "line": 72,
       "callee": "requestOperation",
-      "raw": "POST /api/v2/academy/attempts",
+      "raw": "POST /api/v2/academy/lessons/{lessonId}/scenario",
       "method": "POST",
-      "route": "/api/v2/academy/attempts",
-      "matchedOperation": "POST /api/v2/academy/attempts",
+      "route": "/api/v2/academy/lessons/{lessonId}/scenario",
+      "matchedOperation": "POST /api/v2/academy/lessons/{lessonId}/scenario",
       "matchedOperations": [
-        "POST /api/v2/academy/attempts"
+        "POST /api/v2/academy/lessons/{lessonId}/scenario"
       ],
       "classification": "api-call"
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 81,
+      "line": 82,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/lessons/{lessonId}/notes",
+      "method": "GET",
+      "route": "/api/v2/academy/lessons/{lessonId}/notes",
+      "matchedOperation": "GET /api/v2/academy/lessons/{lessonId}/notes",
+      "matchedOperations": [
+        "GET /api/v2/academy/lessons/{lessonId}/notes"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 88,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/academy/lessons/{lessonId}/notes",
+      "method": "PUT",
+      "route": "/api/v2/academy/lessons/{lessonId}/notes",
+      "matchedOperation": "PUT /api/v2/academy/lessons/{lessonId}/notes",
+      "matchedOperations": [
+        "PUT /api/v2/academy/lessons/{lessonId}/notes"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 94,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}/attempt",
       "method": "GET",
@@ -469,20 +495,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 91,
-      "callee": "requestOperation",
-      "raw": "PUT /api/v2/academy/attempts/{attemptId}/answers",
-      "method": "PUT",
-      "route": "/api/v2/academy/attempts/{attemptId}/answers",
-      "matchedOperation": "PUT /api/v2/academy/attempts/{attemptId}/answers",
-      "matchedOperations": [
-        "PUT /api/v2/academy/attempts/{attemptId}/answers"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/academy/api.ts",
-      "line": 97,
+      "line": 100,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}/attempts",
       "method": "GET",
@@ -495,20 +508,33 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 103,
+      "line": 112,
       "callee": "requestOperation",
-      "raw": "GET /api/v2/academy/attempts/{attemptId}",
-      "method": "GET",
-      "route": "/api/v2/academy/attempts/{attemptId}",
-      "matchedOperation": "GET /api/v2/academy/attempts/{attemptId}",
+      "raw": "POST /api/v2/academy/attempts",
+      "method": "POST",
+      "route": "/api/v2/academy/attempts",
+      "matchedOperation": "POST /api/v2/academy/attempts",
       "matchedOperations": [
-        "GET /api/v2/academy/attempts/{attemptId}"
+        "POST /api/v2/academy/attempts"
       ],
       "classification": "api-call"
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 115,
+      "line": 121,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/academy/attempts/{attemptId}/answers",
+      "method": "PUT",
+      "route": "/api/v2/academy/attempts/{attemptId}/answers",
+      "matchedOperation": "PUT /api/v2/academy/attempts/{attemptId}/answers",
+      "matchedOperations": [
+        "PUT /api/v2/academy/attempts/{attemptId}/answers"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 137,
       "callee": "requestOperation",
       "raw": "POST /api/v2/academy/attempts/{attemptId}/submit",
       "method": "POST",
@@ -516,19 +542,6 @@
       "matchedOperation": "POST /api/v2/academy/attempts/{attemptId}/submit",
       "matchedOperations": [
         "POST /api/v2/academy/attempts/{attemptId}/submit"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/academy/api.ts",
-      "line": 125,
-      "callee": "requestOperation",
-      "raw": "POST /api/v2/academy/lessons/{lessonId}/complete",
-      "method": "POST",
-      "route": "/api/v2/academy/lessons/{lessonId}/complete",
-      "matchedOperation": "POST /api/v2/academy/lessons/{lessonId}/complete",
-      "matchedOperations": [
-        "POST /api/v2/academy/lessons/{lessonId}/complete"
       ],
       "classification": "api-call"
     },
@@ -679,7 +692,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 752,
+      "line": 757,
       "callee": "apiResponse",
       "raw": "/admin/users/export?query",
       "method": "GET",
@@ -692,7 +705,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 777,
+      "line": 782,
       "callee": "api",
       "raw": "/users?{search}",
       "method": "GET",
@@ -705,7 +718,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 780,
+      "line": 785,
       "callee": "api",
       "raw": "/admin/users/{userId}/360",
       "method": "GET",
@@ -718,7 +731,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 783,
+      "line": 788,
       "callee": "api",
       "raw": "/users/{userId}",
       "method": "GET",
@@ -732,7 +745,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 786,
+      "line": 791,
       "callee": "api",
       "raw": "/users/{userId}",
       "method": "PATCH",
@@ -746,7 +759,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 791,
+      "line": 796,
       "callee": "api",
       "raw": "/users/{userId}",
       "method": "DELETE",
@@ -759,7 +772,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 793,
+      "line": 798,
       "callee": "api",
       "raw": "/admin/users/bulk",
       "method": "POST",
@@ -772,7 +785,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 805,
+      "line": 810,
       "callee": "api",
       "raw": "/admin/users/{userId}/reset-password",
       "method": "POST",
@@ -785,7 +798,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 812,
+      "line": 817,
       "callee": "api",
       "raw": "/admin/users/{userId}/resend-verification",
       "method": "POST",
@@ -798,7 +811,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 822,
+      "line": 827,
       "callee": "api",
       "raw": "/admin/users/{userId}/login-history?{query( page: params.page, page_size: params.pageSize )}",
       "method": "GET",
@@ -811,7 +824,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 863,
+      "line": 868,
       "callee": "api",
       "raw": "/admin/system/status",
       "method": "GET",
@@ -824,7 +837,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 881,
+      "line": 886,
       "callee": "api",
       "raw": "/admin/system/jobs/{jobId}/run",
       "method": "POST",
@@ -837,7 +850,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 974,
+      "line": 979,
       "callee": "api",
       "raw": "/admin/audit?{search}",
       "method": "GET",
@@ -850,7 +863,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1096,
+      "line": 1101,
       "callee": "api",
       "raw": "/admin/alerts/signals",
       "method": "GET",
@@ -863,7 +876,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1101,
+      "line": 1106,
       "callee": "api",
       "raw": "/admin/alerts/signals",
       "method": "POST",
@@ -876,7 +889,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1108,
+      "line": 1113,
       "callee": "api",
       "raw": "/admin/alerts/signals/{key}",
       "method": "PUT",
@@ -889,7 +902,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1113,
+      "line": 1118,
       "callee": "api",
       "raw": "/admin/alerts/signals/{key}",
       "method": "DELETE",
@@ -902,7 +915,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1115,
+      "line": 1120,
       "callee": "api",
       "raw": "/admin/alerts/seed?overwrite={String(overwrite)}",
       "method": "POST",
@@ -915,7 +928,7 @@
     },
     {
       "file": "src/pages/admin/core/api.ts",
-      "line": 1119,
+      "line": 1124,
       "callee": "api",
       "raw": "/admin/alerts/indicators",
       "method": "GET",
@@ -2627,7 +2640,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 163,
+      "line": 168,
       "callee": "requestOperation",
       "raw": "POST /api/v2/shop/purchases",
       "method": "POST",
@@ -2640,7 +2653,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 170,
+      "line": 175,
       "callee": "requestOperation",
       "raw": "GET /api/v2/shop/purchases/{idempotencyKey}",
       "method": "GET",
@@ -2653,7 +2666,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 177,
+      "line": 182,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/shop/active-mascot",
       "method": "PUT",

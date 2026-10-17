@@ -49,13 +49,13 @@ type IndicatorOptions = {
 }
 
 function indicator(
-  id: string, name: string, chapter: number, lessonNumber: number,
+  id: string, name: string, chapter: number, lessonNumber: number | null,
   fields: RegistryField[], params: Record<string, number>,
   buyRules: Rule[], sellRules: Rule[],
   options: IndicatorOptions = {},
 ): TechnicalIndicator {
   return {
-    id, name, chapter, lesson_id: `ch${String(chapter).padStart(2, "0")}-l${String(lessonNumber).padStart(2, "0")}`,
+    id, name, chapter, lesson_id: lessonNumber === null ? null : `ch${String(chapter).padStart(2, "0")}-l${String(lessonNumber).padStart(2, "0")}`,
     family: options.family ?? "state", formula: "", availability: "ohlcv", fields, learned: false,
     validation: { cross_fields: options.crossFields ?? [] },
     buy: { enabled: false, params: { ...params }, rules: buyRules, ...(options.buyOverrides ? { field_overrides: options.buyOverrides } : {}) },
@@ -63,7 +63,7 @@ function indicator(
   }
 }
 
-const simple = (id: string, name: string, chapter: number, lessonNumber: number) =>
+const simple = (id: string, name: string, chapter: number, lessonNumber: number | null) =>
   indicator(id, name, chapter, lessonNumber, [field("period", "Chu kỳ", 5, 100)], { period: 20 },
     [compare("r1", series("close"), ">", series("value"))], [compare("r1", series("close"), "<", series("value"))])
 
@@ -79,33 +79,33 @@ export function buildRegistry(): TechnicalIndicator[] {
     compare("r3", series("close"), "<", series("close", -1)),
   ]
   return [
-    indicator("rsi", "RSI", 1, 1, [field("period", "Chu kỳ RSI", 5, 50), field("level", "Ngưỡng RSI", 10, 90, 1, "")], { period: 14, level: 30 },
+    indicator("rsi", "RSI", 4, 6, [field("period", "Chu kỳ RSI", 5, 50), field("level", "Ngưỡng RSI", 10, 90, 1, "")], { period: 14, level: 30 },
       [compare("r1", series("value", -1), "<", { kind: "param", key: "level" }), compare("r2", series("value"), ">", series("value", -1))],
       [compare("r1", series("value", -1), ">", { kind: "param", key: "level" }), compare("r2", series("value"), "<", series("value", -1))],
       { sellParams: { period: 14, level: 70 }, buyOverrides: { level: { label: "Ngưỡng quá bán", min: 10, max: 49 } }, sellOverrides: { level: { label: "Ngưỡng quá mua", min: 51, max: 90 } } }),
-    indicator("macd", "MACD", 1, 2, [field("fast", "Chu kỳ EMA nhanh", 2, 50), field("slow", "Chu kỳ EMA chậm", 5, 100), field("signal", "Chu kỳ đường tín hiệu", 2, 30)], { fast: 12, slow: 26, signal: 9 },
+    indicator("macd", "MACD", 4, 7, [field("fast", "Chu kỳ EMA nhanh", 2, 50), field("slow", "Chu kỳ EMA chậm", 5, 100), field("signal", "Chu kỳ đường tín hiệu", 2, 30)], { fast: 12, slow: 26, signal: 9 },
       [compare("r1", series("value"), ">", series("signal"))], [compare("r1", series("value"), "<", series("signal"))],
       { crossFields: [{ left: "fast", op: "<", right: "slow" }] }),
-    indicator("ma", "MA / SMA", 1, 3, [field("period", "Chu kỳ SMA", 5, 200)], { period: 20 },
+    indicator("ma", "MA / SMA", 4, 5, [field("period", "Chu kỳ SMA", 5, 200)], { period: 20 },
       [compare("r1", series("close"), ">", series("value"))], [compare("r1", series("close"), "<", series("value"))]),
-    indicator("bollinger", "Bollinger Bands", 1, 4, [field("period", "Chu kỳ Bollinger", 10, 100), field("k", "Hệ số dải", 1, 3.5, 0.1, "", "number")], { period: 20, k: 2 }, bollingerBuy, bollingerSell),
-    indicator("volume", "Khối lượng", 1, 5, [field("lookback", "Số phiên tham chiếu", 5, 100), field("mult", "Hệ số khối lượng", 0.5, 3, 0.1, "lần", "number")], { lookback: 20, mult: 1 },
+    indicator("bollinger", "Bollinger Bands", 4, 8, [field("period", "Chu kỳ Bollinger", 10, 100), field("k", "Hệ số dải", 1, 3.5, 0.1, "", "number")], { period: 20, k: 2 }, bollingerBuy, bollingerSell),
+    indicator("volume", "Khối lượng", 4, 4, [field("lookback", "Số phiên tham chiếu", 5, 100), field("mult", "Hệ số khối lượng", 0.5, 3, 0.1, "lần", "number")], { lookback: 20, mult: 1 },
       [compare("r1", series("close"), ">", series("close", -1)), compare("r2", series("volume"), ">", series("threshold"))],
       [compare("r1", series("close"), "<", series("close", -1)), compare("r2", series("volume"), ">", series("threshold"))]),
-    simple("ema", "EMA", 5, 1),
-    indicator("ma_cross", "MA Cross", 5, 2, [field("fast", "Chu kỳ SMA nhanh", 5, 100), field("slow", "Chu kỳ SMA chậm", 10, 250)], { fast: 20, slow: 50 },
+    simple("ema", "EMA", 7, null),
+    indicator("ma_cross", "MA Cross", 7, null, [field("fast", "Chu kỳ SMA nhanh", 5, 100), field("slow", "Chu kỳ SMA chậm", 10, 250)], { fast: 20, slow: 50 },
       [{ id: "r1", kind: "cross", lhs: series("fast"), op: ">", rhs: series("slow"), allowed_ops: [">", "<"] }],
       [{ id: "r1", kind: "cross", lhs: series("fast"), op: "<", rhs: series("slow"), allowed_ops: [">", "<"] }],
       { family: "event", crossFields: [{ left: "fast", op: "<", right: "slow" }] }),
-    simple("dmi", "DMI", 5, 3),
-    simple("stochastic", "Stochastic", 5, 4),
-    simple("cci", "CCI", 5, 5),
-    simple("obv", "OBV", 7, 1),
-    simple("mfi", "MFI", 7, 2),
-    simple("cmf", "Chaikin Money Flow", 7, 3),
-    simple("donchian", "Donchian Channel", 10, 1),
-    simple("roc", "ROC", 10, 2),
-    simple("williams_r", "Williams %R", 10, 3),
+    simple("dmi", "DMI", 7, null),
+    simple("stochastic", "Stochastic", 8, null),
+    simple("cci", "CCI", 8, null),
+    simple("obv", "OBV", 8, null),
+    simple("mfi", "MFI", 8, null),
+    simple("cmf", "Chaikin Money Flow", 8, null),
+    simple("donchian", "Donchian Channel", 7, null),
+    simple("roc", "ROC", 8, null),
+    simple("williams_r", "Williams %R", 8, null),
   ]
 }
 

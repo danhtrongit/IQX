@@ -11,7 +11,12 @@ export const researchSymbolSchema = z
 export const researchStatusQuerySchema = z.object({ jobId: z.string().uuid() });
 export type ResearchStatusQuery = z.infer<typeof researchStatusQuerySchema>;
 
-const thesisSchema = z.object({ id: z.string(), order: z.number().int(), title: z.string(), summary: z.string() });
+const thesisSchema = z.object({
+  id: z.string(),
+  order: z.number().int(),
+  title: z.string(),
+  summary: z.string(),
+});
 const valuationSchema = z.union([
   z.object({
     mode: z.literal('range'),

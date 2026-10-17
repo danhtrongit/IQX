@@ -4,6 +4,8 @@
 
 export const generatedTokens = {
   "light": {
+    "academyLabel": "#3c434d",
+    "academySubtle": "#2f3640",
     "accent": "#7020e6",
     "accentForeground": "#fdfdfd",
     "background": "#f2f4f7",
@@ -55,6 +57,8 @@ export const generatedTokens = {
     "statusWarning": "#915b00"
   },
   "dark": {
+    "academyLabel": "#c9d6e2",
+    "academySubtle": "#dde8f2",
     "accent": "#9269ff",
     "accentForeground": "#0b1320",
     "background": "#0a1018",

@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-l03",
+  "questions": [
+    {
+      "correct_option_id": "e9b205c4fa",
+      "id": "ch01-l03-q01",
+      "options": [
+        {
+          "id": "e9b205c4fa",
+          "text": "Số lượng cổ phiếu theo bội số của 100"
+        },
+        {
+          "id": "76654128a2",
+          "text": "Số lượng từ 1 đến 99 cổ phiếu"
+        },
+        {
+          "id": "4cd60212ae",
+          "text": "Số lượng cổ phiếu bất kỳ"
+        }
+      ],
+      "prompt": "Lô chẵn là gì?"
+    },
+    {
+      "correct_option_id": "1771d11998",
+      "id": "ch01-l03-q02",
+      "options": [
+        {
+          "id": "1771d11998",
+          "text": "Lệnh giới hạn, mua bán tại giá chỉ định hoặc tốt hơn"
+        },
+        {
+          "id": "f9e57c06bc",
+          "text": "Lệnh mua bán ngay tại giá tốt nhất trên thị trường"
+        },
+        {
+          "id": "e07fdf11b7",
+          "text": "Lệnh tại giá đóng cửa"
+        }
+      ],
+      "prompt": "Lệnh LO là loại lệnh nào?"
+    },
+    {
+      "correct_option_id": "8805bd2ab8",
+      "id": "ch01-l03-q03",
+      "options": [
+        {
+          "id": "8805bd2ab8",
+          "text": "Giá trước, thời gian sau"
+        },
+        {
+          "id": "4645ea103d",
+          "text": "Thời gian trước, giá sau"
+        },
+        {
+          "id": "676ec3a798",
+          "text": "Khối lượng lớn trước"
+        }
+      ],
+      "prompt": "Lệnh được khớp theo thứ tự ưu tiên nào?"
+    }
+  ],
+  "salt": "bae48c0cb1ab3416f5a0a986b8745384f378e62c78ee4da9cd12e23a9939ae5b"
+}

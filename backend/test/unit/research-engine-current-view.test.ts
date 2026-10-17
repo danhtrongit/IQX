@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildBrokerCurrentViews, thesisEvidence } from '../../src/modules/research/engine/current-view.js';
+import {
+  buildBrokerCurrentViews,
+  thesisEvidence,
+} from '../../src/modules/research/engine/current-view.js';
 import { TODAY, claim, report, thesis } from './research-engine-helpers.js';
 
 describe('thesisEvidence', () => {
@@ -11,7 +14,13 @@ describe('thesisEvidence', () => {
       claim({ id: 'a2', reportId: 'r2', broker: 'VIETCAP', evidenceDate: '2026-10-14' }),
       claim({ id: 'b1', reportId: 'r3', broker: 'SSI', evidenceDate: '2026-10-05' }),
       claim({ id: 'old', reportId: 'r4', broker: 'MBS', evidenceDate: '2026-09-10' }), // 36 days
-      claim({ id: 'sup', reportId: 'r5', broker: 'HSC', evidenceDate: '2026-10-10', status: 'superseded' }),
+      claim({
+        id: 'sup',
+        reportId: 'r5',
+        broker: 'HSC',
+        evidenceDate: '2026-10-10',
+        status: 'superseded',
+      }),
     ];
     const links = ['a1', 'a2', 'b1', 'old', 'sup'].map((claimId) => ({
       thesisId: 't1',
@@ -38,7 +47,13 @@ describe('thesisEvidence', () => {
   it('a newer replace/contradict from the same broker retires its older claims', () => {
     const claims = [
       claim({ id: 'old', reportId: 'r1', broker: 'VIETCAP', evidenceDate: '2026-10-01' }),
-      claim({ id: 'new', reportId: 'r2', broker: 'VIETCAP', evidenceDate: '2026-10-14', status: 'superseded' }),
+      claim({
+        id: 'new',
+        reportId: 'r2',
+        broker: 'VIETCAP',
+        evidenceDate: '2026-10-14',
+        status: 'superseded',
+      }),
     ];
     const links = [
       { thesisId: 't1', claimId: 'old', relationship: 'support' as const },
@@ -47,7 +62,10 @@ describe('thesisEvidence', () => {
     const e = thesisEvidence([t1], links, claims, TODAY).get('t1')!;
     expect(e.perBroker).toEqual([]);
     // A replace from ANOTHER broker does not retire it.
-    const other = [claim({ id: 'new', reportId: 'r2', broker: 'SSI', evidenceDate: '2026-10-14' }), claims[0]!];
+    const other = [
+      claim({ id: 'new', reportId: 'r2', broker: 'SSI', evidenceDate: '2026-10-14' }),
+      claims[0]!,
+    ];
     const e2 = thesisEvidence([t1], links, other, TODAY).get('t1')!;
     expect(e2.brokers).toEqual(['SSI', 'VIETCAP']);
   });
@@ -66,8 +84,18 @@ describe('thesisEvidence', () => {
 });
 
 describe('buildBrokerCurrentViews (tests 16, 17)', () => {
-  const r1 = report({ id: 'r1', broker: 'VIETCAP', reportDate: '2026-10-01', targetPriceVnd: 170_000 });
-  const r2 = report({ id: 'r2', broker: 'VIETCAP', reportDate: '2026-10-16', targetPriceVnd: 185_000 });
+  const r1 = report({
+    id: 'r1',
+    broker: 'VIETCAP',
+    reportDate: '2026-10-01',
+    targetPriceVnd: 170_000,
+  });
+  const r2 = report({
+    id: 'r2',
+    broker: 'VIETCAP',
+    reportDate: '2026-10-16',
+    targetPriceVnd: 185_000,
+  });
   const claims = [
     claim({ id: 'A1', reportId: 'r1', broker: 'VIETCAP', evidenceDate: '2026-10-01' }),
     claim({ id: 'B1', reportId: 'r1', broker: 'VIETCAP', evidenceDate: '2026-10-01' }),
@@ -93,7 +121,12 @@ describe('buildBrokerCurrentViews (tests 16, 17)', () => {
   });
 
   it('test 17: newest report without target falls back to the nearest one with a target', () => {
-    const flash = report({ id: 'r3', broker: 'VIETCAP', reportDate: '2026-10-16', targetPriceVnd: null });
+    const flash = report({
+      id: 'r3',
+      broker: 'VIETCAP',
+      reportDate: '2026-10-16',
+      targetPriceVnd: null,
+    });
     const row = buildBrokerCurrentViews([r1, flash], [], [], TODAY)[0]!;
     expect(row.latestReportId).toBe('r3');
     expect(row.latestTargetPrice).toBe(170_000);
@@ -102,7 +135,12 @@ describe('buildBrokerCurrentViews (tests 16, 17)', () => {
   });
 
   it('ignores out-of-window reports and expired claims; one row per broker, sorted', () => {
-    const expired = report({ id: 'r9', broker: 'MBS', reportDate: '2026-09-10', targetPriceVnd: 1 });
+    const expired = report({
+      id: 'r9',
+      broker: 'MBS',
+      reportDate: '2026-09-10',
+      targetPriceVnd: 1,
+    });
     const ssi = report({ id: 's1', broker: 'SSI', reportDate: '2026-09-16' }); // exactly 30 days
     const rows = buildBrokerCurrentViews([expired, r1, ssi], [], [], TODAY);
     expect(rows.map((r) => r.broker)).toEqual(['SSI', 'VIETCAP']);

@@ -121,7 +121,7 @@ export function BotPanel() {
                       granted={granted}
                       masterOn={granted && saved.master_enabled}
                       busy={config.saving}
-                      lessonSearch={navigation.lessonSearch(indicator.lesson_id)}
+                      lessonSearch={indicator.lesson_id ? navigation.lessonSearch(indicator.lesson_id) : null}
                       onPractice={() => navigation.openPractice(indicator.id)}
                       onConfigure={() => setModal({ id: indicator.id, activate: false })}
                       onToggleMaster={() => void toggleMaster(indicator)}

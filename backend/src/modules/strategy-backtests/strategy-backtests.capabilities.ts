@@ -1,10 +1,10 @@
 import { ForbiddenException } from '@nestjs/common';
 
 /**
- * Advanced capability → LEGACY lesson (18-chapter / 125-lesson catalog) whose 8/8 pass unlocks it.
+ * Advanced capability → LEGACY lesson (18-chapter / 125-lesson catalog) whose quiz pass unlocks it.
  *
- * These lessons (old ch02-l14..16 and ch16-18) are not part of the current 13-chapter / 71-lesson
- * Academy catalog and the current catalog grants no `lesson:<id>` capability. The unlock is kept
+ * These lessons (old ch02-l14..16 and ch16-18) are not part of the current Học viện catalog
+ * (v3.2, 14 chapters) and the current catalog grants no `lesson:<id>` capability. The unlock is kept
  * only for legacy holders: `ACADEMY_GRANTS` still returns the `lesson:<legacy id>` capabilities
  * stored in the legacy `academy_grants` table, so existing users keep these backtest features
  * behind the same `STRATEGY_ADVANCED_CAPABILITIES` allowlist. A user without a legacy grant
@@ -72,7 +72,7 @@ export function capabilityLockedException(lock: CapabilityLock): ForbiddenExcept
     message:
       lock.reason === 'flag_off'
         ? `Tính năng nâng cao ${lock.capability} chưa được bật.`
-        : `Tính năng nâng cao ${lock.capability} chỉ dành cho tài khoản đã hoàn thành bài học ${lock.lesson_id ?? ''} (8/8) của danh mục Học viện cũ; danh mục hiện tại không còn bài học này.`,
+        : `Tính năng nâng cao ${lock.capability} chỉ dành cho tài khoản đã hoàn thành bài học ${lock.lesson_id ?? ''} của danh mục Học viện cũ; danh mục hiện tại không còn bài học này.`,
     capability: lock.capability,
     reason: lock.reason,
     lesson_id: lock.lesson_id,

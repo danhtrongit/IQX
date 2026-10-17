@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch02-l06",
+  "questions": [
+    {
+      "correct_option_id": "3a58d28c75",
+      "id": "ch02-l06-q01",
+      "options": [
+        {
+          "id": "3a58d28c75",
+          "text": "Khách đăng ký SACO trả phí theo biểu phí, nên cần bán giá trị đồng hành"
+        },
+        {
+          "id": "f08fb9be27",
+          "text": "Vì phí 0 đồng là bất hợp pháp"
+        },
+        {
+          "id": "b4bf429855",
+          "text": "Vì khách không quan tâm đến phí"
+        }
+      ],
+      "prompt": "Vì sao SACO không nên bán bằng câu “phí 0 đồng”?"
+    },
+    {
+      "correct_option_id": "500263624e",
+      "id": "ch02-l06-q02",
+      "options": [
+        {
+          "id": "500263624e",
+          "text": "Dẫn đường, giữ kỷ luật, luôn có mặt"
+        },
+        {
+          "id": "59feec8f93",
+          "text": "Phím mã, cam kết lãi, giao dịch hộ"
+        },
+        {
+          "id": "a5e61b3af1",
+          "text": "Giảm phí, tặng quà, khuyến mãi"
+        }
+      ],
+      "prompt": "Ba giá trị của người đồng hành là gì?"
+    },
+    {
+      "correct_option_id": "de8d289aa6",
+      "id": "ch02-l06-q03",
+      "options": [
+        {
+          "id": "de8d289aa6",
+          "text": "Thừa nhận thẳng và nói đúng theo biểu phí công bố"
+        },
+        {
+          "id": "2d74152a0a",
+          "text": "Lảng sang chuyện khác"
+        },
+        {
+          "id": "60e8f46dd4",
+          "text": "Nói phí rất thấp theo trí nhớ"
+        }
+      ],
+      "prompt": "Khi khách hỏi về phí, việc đầu tiên nên làm là gì?"
+    }
+  ],
+  "salt": "79009c48c9275c6dbb55aef365eb7563d502fc24a03d944b5a7226a264aca228"
+}

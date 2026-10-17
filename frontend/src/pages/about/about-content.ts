@@ -40,7 +40,7 @@ export const TEAM_COPY =
 
 export const PRODUCTS = [
   "Market analytics for HOSE, HNX and UPCOM with 38 technical indicators and stock detail pages.",
-  "Investment academy with lessons and a 7-step learning journey (Level 0 to Level 6).",
+  "Investment academy with a 14-chapter curriculum, 43 published lessons and chapter exams.",
   "Demo trading with 100 million VND of virtual capital by default. No real money is involved.",
   "Strategy tools: alerts and backtests.",
   "AI-assisted analysis: daily market briefs, stock insights and plain-language financial statement analysis.",

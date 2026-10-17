@@ -3,15 +3,20 @@ import { Injectable } from '@nestjs/common';
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
 import type { OptionOrders } from './academy.grading.js';
 
+export type AttemptKind = 'lesson' | 'chapter_exam';
+
 export type AttemptRow = {
   id: string;
   user_id: string;
   lesson_id: string;
   /** NULL for attempts made before the 13ch/71 catalog (they stay in the legacy catalog). */
   lesson_key: string | null;
+  /** `lesson` for lessons and practice (and every pre-v3.2 attempt), `chapter_exam` for exams. */
+  kind: AttemptKind;
   catalog_version: string;
-  content_version: string;
-  /** Pinned per-lesson assessment hash (column kept as `questions_version`). */
+  /** NULL for chapter exams (no lesson content). */
+  content_version: string | null;
+  /** Pinned bank hash (column kept as `questions_version`). Never served. */
   questions_version: string;
   question_ids: string[];
   option_orders: OptionOrders;
@@ -29,6 +34,7 @@ export type NewAttempt = Pick<
   | 'user_id'
   | 'lesson_id'
   | 'lesson_key'
+  | 'kind'
   | 'catalog_version'
   | 'content_version'
   | 'questions_version'
@@ -84,6 +90,46 @@ export type NewCompletion = Pick<
   | 'source'
 >;
 
+/** The learner's scenario choice of a ch2/ch3 lesson (one row per account and lesson key). */
+export type ScenarioChoiceRow = {
+  user_id: string;
+  lesson_key: string;
+  lesson_id: string;
+  choice: number;
+  /** `canonicalHash(scenario block)` at the time of the choice. */
+  scenario_hash: string;
+  catalog_version: string;
+  created_at: Date;
+};
+
+export type NewScenarioChoice = Omit<ScenarioChoiceRow, 'created_at'>;
+
+export type NotesMaps = {
+  texts: Record<string, string>;
+  checks: Record<string, boolean>;
+  scores: Record<string, number[]>;
+};
+
+export type PracticeNotesRow = NotesMaps & {
+  user_id: string;
+  lesson_key: string;
+  lesson_id: string;
+  revision: number;
+  created_at: Date;
+  updated_at: Date;
+};
+
+export type NotesPatch = Partial<NotesMaps>;
+
+export type SaveNotesResult =
+  | { status: 'saved'; row: PracticeNotesRow }
+  /** `current` is the stored row, or null when none existed before this call. */
+  | { status: 'conflict'; current: PracticeNotesRow | null }
+  | { status: 'too_large' };
+
+/** Same measure as ck_academy_practice_notes_size (jsonb text, larger than compact JSON). */
+export const NOTES_SIZE_LIMIT = 65536;
+
 /** Persistence operations used by the academy service; one instance per client/transaction. */
 export interface AcademyStore {
   insertAttempt(attempt: NewAttempt): Promise<AttemptRow | null>;
@@ -98,10 +144,11 @@ export interface AcademyStore {
     lessonKey: string,
     catalogVersion: string,
   ): Promise<AttemptRow | null>;
-  /** The owner's submitted attempts of the lesson key, newest first. */
+  /** The owner's submitted attempts of the lesson key in one catalog, newest first. */
   submittedAttempts(
     userId: string,
     lessonKey: string,
+    catalogVersion: string,
     limit: number,
     offset: number,
   ): Promise<AttemptRow[]>;
@@ -115,12 +162,13 @@ export interface AcademyStore {
   deleteDraft(attemptId: string): Promise<void>;
   answers(attemptId: string): Promise<AnswerRow[]>;
   insertAnswers(answers: readonly AnswerRow[]): Promise<void>;
-  /** Best score and number of submitted attempts of the owner's lesson (current catalog only). */
-  attemptStats(userId: string, lessonKey: string): Promise<AttemptStats>;
+  /** Best score and number of submitted attempts of the owner's lesson key in one catalog. */
+  attemptStats(userId: string, lessonKey: string, catalogVersion: string): Promise<AttemptStats>;
+  /** `attemptStats` of every lesson key of the owner in one catalog, in one query. */
+  attemptStatsAll(userId: string, catalogVersion: string): Promise<Map<string, AttemptStats>>;
   /** Serializes the owner's completion writes for the rest of the transaction. */
   lockUser(userId: string): Promise<void>;
   completion(userId: string, lessonKey: string): Promise<CompletionRow | null>;
-  completionByRequestId(userId: string, requestId: string): Promise<CompletionRow | null>;
   /** Inserts the completion unless one already exists for (user, lesson key); null if it existed. */
   insertCompletion(completion: NewCompletion): Promise<CompletionRow | null>;
   /** Records the reward outcome next to the evidence of the completion that created it. */
@@ -128,6 +176,29 @@ export interface AcademyStore {
   completions(userId: string): Promise<CompletionRow[]>;
   /** `lesson:<legacy id>` capabilities of the user's legacy academy_grants (read only). */
   legacyLessonCapabilities(userId: string): Promise<string[]>;
+  scenarioChoice(userId: string, lessonKey: string): Promise<ScenarioChoiceRow | null>;
+  scenarioChoices(userId: string): Promise<ScenarioChoiceRow[]>;
+  /**
+   * Inserts the choice once. A stored row is kept (created=false) unless its scenario_hash differs
+   * from the given one (the scenario changed): then it is replaced once (created=true).
+   */
+  insertScenarioChoice(
+    row: NewScenarioChoice,
+  ): Promise<{ row: ScenarioChoiceRow; created: boolean }>;
+  practiceNotes(userId: string, lessonKey: string): Promise<PracticeNotesRow | null>;
+  /**
+   * Merges `patch` into the stored notes (per map, by key). Must run inside a transaction: a
+   * conflict or a too-large result is turned into an error by the caller, which rolls back the
+   * placeholder row inserted by the first save. `expectedRevision` 0 means "no row yet"; n > 0
+   * must equal the stored revision; undefined means last write wins.
+   */
+  savePracticeNotes(
+    userId: string,
+    lessonKey: string,
+    lessonId: string,
+    patch: NotesPatch,
+    expectedRevision?: number,
+  ): Promise<SaveNotesResult>;
 }
 
 export interface AcademyStoreProvider {
@@ -136,12 +207,24 @@ export interface AcademyStoreProvider {
   transaction<T>(operation: (store: AcademyStore, tx: SqlClient) => Promise<T>): Promise<T>;
 }
 
-const ATTEMPT_COLUMNS = `id, user_id, lesson_id, lesson_key, catalog_version, content_version,
+/** True when merging `patch` into `stored` changes nothing. */
+export function notesPatchIsNoop(stored: NotesMaps, patch: NotesPatch): boolean {
+  const same = (left: unknown, right: unknown) => JSON.stringify(left) === JSON.stringify(right);
+  return (['texts', 'checks', 'scores'] as const).every((map) =>
+    Object.entries(patch[map] ?? {}).every(([key, value]) => same(stored[map][key], value)),
+  );
+}
+
+const ATTEMPT_COLUMNS = `id, user_id, lesson_id, lesson_key, kind, catalog_version, content_version,
   questions_version, question_ids, option_orders, status, idempotency_key, created_at, submitted_at,
   score, passed`;
 const DRAFT_COLUMNS = 'attempt_id, selections, revision, updated_at';
 const COMPLETION_COLUMNS = `user_id, lesson_key, catalog_version, lesson_id, completion_method,
   attempt_id, request_id, content_version, completed_at, source`;
+const SCENARIO_COLUMNS =
+  'user_id, lesson_key, lesson_id, choice, scenario_hash, catalog_version, created_at';
+const NOTES_COLUMNS =
+  'user_id, lesson_key, lesson_id, texts, checks, scores, revision, created_at, updated_at';
 
 export class AcademySqlStore implements AcademyStore {
   constructor(private readonly client: SqlClient) {}
@@ -149,9 +232,9 @@ export class AcademySqlStore implements AcademyStore {
   async insertAttempt(attempt: NewAttempt): Promise<AttemptRow | null> {
     const rows = await this.client.query<AttemptRow>(
       `insert into academy_attempts
-         (id, user_id, lesson_id, lesson_key, catalog_version, content_version, questions_version,
-          question_ids, option_orders, idempotency_key)
-       values ($1, $2, $3, $4, $5, $6, $7, $8::text[], $9::jsonb, $10)
+         (id, user_id, lesson_id, lesson_key, kind, catalog_version, content_version,
+          questions_version, question_ids, option_orders, idempotency_key)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9::text[], $10::jsonb, $11)
        on conflict (user_id, idempotency_key) do nothing
        returning ${ATTEMPT_COLUMNS}`,
       [
@@ -159,6 +242,7 @@ export class AcademySqlStore implements AcademyStore {
         attempt.user_id,
         attempt.lesson_id,
         attempt.lesson_key,
+        attempt.kind,
         attempt.catalog_version,
         attempt.content_version,
         attempt.questions_version,
@@ -205,13 +289,19 @@ export class AcademySqlStore implements AcademyStore {
     return rows[0] ?? null;
   }
 
-  submittedAttempts(userId: string, lessonKey: string, limit: number, offset: number) {
+  submittedAttempts(
+    userId: string,
+    lessonKey: string,
+    catalogVersion: string,
+    limit: number,
+    offset: number,
+  ) {
     return this.client.query<AttemptRow>(
       `select ${ATTEMPT_COLUMNS} from academy_attempts
-       where user_id = $1 and lesson_key = $2 and status = 'submitted'
+       where user_id = $1 and lesson_key = $2 and catalog_version = $3 and status = 'submitted'
        order by submitted_at desc, id desc
-       limit $3 offset $4`,
-      [userId, lessonKey, limit, offset],
+       limit $4 offset $5`,
+      [userId, lessonKey, catalogVersion, limit, offset],
     );
   }
 
@@ -277,17 +367,41 @@ export class AcademySqlStore implements AcademyStore {
     );
   }
 
-  async attemptStats(userId: string, lessonKey: string): Promise<AttemptStats> {
+  async attemptStats(userId: string, lessonKey: string, catalogVersion: string) {
     const rows = await this.client.query<{ best_score: number | null; attempts_submitted: number }>(
       `select max(score) as best_score, count(*)::int as attempts_submitted
        from academy_attempts
-       where user_id = $1 and lesson_key = $2 and status = 'submitted'`,
-      [userId, lessonKey],
+       where user_id = $1 and lesson_key = $2 and catalog_version = $3 and status = 'submitted'`,
+      [userId, lessonKey, catalogVersion],
     );
     return {
       best_score: rows[0]?.best_score ?? null,
       attempts_submitted: Number(rows[0]?.attempts_submitted ?? 0),
     };
+  }
+
+  async attemptStatsAll(userId: string, catalogVersion: string) {
+    const rows = await this.client.query<{
+      lesson_key: string;
+      best_score: number | null;
+      attempts_submitted: number;
+    }>(
+      `select lesson_key, max(score) as best_score, count(*)::int as attempts_submitted
+       from academy_attempts
+       where user_id = $1 and catalog_version = $2 and status = 'submitted'
+         and lesson_key is not null
+       group by lesson_key`,
+      [userId, catalogVersion],
+    );
+    return new Map(
+      rows.map((row) => [
+        row.lesson_key,
+        {
+          best_score: row.best_score === null ? null : Number(row.best_score),
+          attempts_submitted: Number(row.attempts_submitted),
+        },
+      ]),
+    );
   }
 
   async lockUser(userId: string) {
@@ -301,14 +415,6 @@ export class AcademySqlStore implements AcademyStore {
     const rows = await this.client.query<CompletionRow>(
       `select ${COMPLETION_COLUMNS} from academy_completions where user_id = $1 and lesson_key = $2`,
       [userId, lessonKey],
-    );
-    return rows[0] ?? null;
-  }
-
-  async completionByRequestId(userId: string, requestId: string) {
-    const rows = await this.client.query<CompletionRow>(
-      `select ${COMPLETION_COLUMNS} from academy_completions where user_id = $1 and request_id = $2`,
-      [userId, requestId],
     );
     return rows[0] ?? null;
   }
@@ -361,6 +467,120 @@ export class AcademySqlStore implements AcademyStore {
       [userId],
     );
     return rows.map((row) => row.capability);
+  }
+
+  async scenarioChoice(userId: string, lessonKey: string) {
+    const rows = await this.client.query<ScenarioChoiceRow>(
+      `select ${SCENARIO_COLUMNS} from academy_scenario_choices
+       where user_id = $1 and lesson_key = $2`,
+      [userId, lessonKey],
+    );
+    return rows[0] ?? null;
+  }
+
+  scenarioChoices(userId: string) {
+    return this.client.query<ScenarioChoiceRow>(
+      `select ${SCENARIO_COLUMNS} from academy_scenario_choices
+       where user_id = $1 order by lesson_key`,
+      [userId],
+    );
+  }
+
+  async insertScenarioChoice(row: NewScenarioChoice) {
+    const inserted = await this.client.query<ScenarioChoiceRow>(
+      `insert into academy_scenario_choices
+         (user_id, lesson_key, lesson_id, choice, scenario_hash, catalog_version)
+       values ($1, $2, $3, $4, $5, $6)
+       on conflict (user_id, lesson_key) do update
+         set choice = excluded.choice, scenario_hash = excluded.scenario_hash,
+             lesson_id = excluded.lesson_id, catalog_version = excluded.catalog_version,
+             created_at = now()
+         where academy_scenario_choices.scenario_hash <> excluded.scenario_hash
+       returning ${SCENARIO_COLUMNS}`,
+      [
+        row.user_id,
+        row.lesson_key,
+        row.lesson_id,
+        row.choice,
+        row.scenario_hash,
+        row.catalog_version,
+      ],
+    );
+    if (inserted[0]) return { row: inserted[0], created: true };
+    const stored = await this.scenarioChoice(row.user_id, row.lesson_key);
+    if (!stored) throw new Error('Academy scenario choice disappeared after a conflict');
+    return { row: stored, created: false };
+  }
+
+  async practiceNotes(userId: string, lessonKey: string) {
+    const rows = await this.client.query<PracticeNotesRow>(
+      `select ${NOTES_COLUMNS} from academy_practice_notes where user_id = $1 and lesson_key = $2`,
+      [userId, lessonKey],
+    );
+    return rows[0] ?? null;
+  }
+
+  async savePracticeNotes(
+    userId: string,
+    lessonKey: string,
+    lessonId: string,
+    patch: NotesPatch,
+    expectedRevision?: number,
+  ): Promise<SaveNotesResult> {
+    // 1. Placeholder row so concurrent first saves serialize on the row lock (no PK violation).
+    const placeholder = await this.client.query<{ inserted: number }>(
+      `insert into academy_practice_notes (user_id, lesson_key, lesson_id)
+       values ($1, $2, $3)
+       on conflict (user_id, lesson_key) do nothing
+       returning 1 as inserted`,
+      [userId, lessonKey, lessonId],
+    );
+    const inserted = placeholder.length > 0;
+    // 2. Lock the row for the rest of the transaction.
+    const locked = await this.client.query<PracticeNotesRow>(
+      `select ${NOTES_COLUMNS} from academy_practice_notes
+       where user_id = $1 and lesson_key = $2 for update`,
+      [userId, lessonKey],
+    );
+    const stored = locked[0];
+    if (!stored) throw new Error('Academy practice notes row disappeared under lock');
+    // 3. Optimistic guard.
+    if (expectedRevision !== undefined) {
+      const conflict =
+        expectedRevision === 0 ? !inserted : inserted || stored.revision !== expectedRevision;
+      if (conflict) return { status: 'conflict', current: inserted ? null : stored };
+    }
+    // 4. Merge. An unchanged merge on an existing row writes nothing and keeps the revision.
+    if (!inserted && notesPatchIsNoop(stored, patch)) return { status: 'saved', row: stored };
+    try {
+      const rows = await this.client.query<PracticeNotesRow>(
+        `update academy_practice_notes
+            set texts = texts || $3::jsonb,
+                checks = checks || $4::jsonb,
+                scores = scores || $5::jsonb,
+                revision = case when $6::boolean then 1 else revision + 1 end,
+                updated_at = now()
+          where user_id = $1 and lesson_key = $2
+            and octet_length((texts || $3::jsonb)::text)
+                + octet_length((checks || $4::jsonb)::text)
+                + octet_length((scores || $5::jsonb)::text) <= ${NOTES_SIZE_LIMIT}
+          returning ${NOTES_COLUMNS}`,
+        [
+          userId,
+          lessonKey,
+          JSON.stringify(patch.texts ?? {}),
+          JSON.stringify(patch.checks ?? {}),
+          JSON.stringify(patch.scores ?? {}),
+          inserted,
+        ],
+      );
+      return rows[0] ? { status: 'saved', row: rows[0] } : { status: 'too_large' };
+    } catch (error) {
+      const pg = error as { code?: string; constraint?: string };
+      if (pg.code === '23514' && pg.constraint === 'ck_academy_practice_notes_size')
+        return { status: 'too_large' };
+      throw error;
+    }
   }
 }
 

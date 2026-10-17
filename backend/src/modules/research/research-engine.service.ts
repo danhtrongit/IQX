@@ -61,16 +61,25 @@ function errorText(error: unknown): string {
 /** A truncated answer comes back truncated again: retrying only burns the budget. */
 function isTruncated(error: unknown): boolean {
   const response = (error as { getResponse?: () => unknown })?.getResponse?.();
-  return typeof response === 'object' && response !== null && (response as { code?: unknown }).code === 'AI_OUTPUT_TRUNCATED';
+  return (
+    typeof response === 'object' &&
+    response !== null &&
+    (response as { code?: unknown }).code === 'AI_OUTPUT_TRUNCATED'
+  );
 }
 
 function chunks<T>(items: T[], size: number): T[][] {
   const out: T[][] = [];
-  for (let index = 0; index < items.length; index += size) out.push(items.slice(index, index + size));
+  for (let index = 0; index < items.length; index += size)
+    out.push(items.slice(index, index + size));
   return out;
 }
 
-async function inParallel<T>(items: T[], limit: number, task: (item: T) => Promise<void>): Promise<void> {
+async function inParallel<T>(
+  items: T[],
+  limit: number,
+  task: (item: T) => Promise<void>,
+): Promise<void> {
   const queue = [...items];
   const workers = Array.from({ length: Math.min(limit, queue.length) }, async () => {
     for (let item = queue.shift(); item !== undefined; item = queue.shift()) await task(item);
@@ -96,7 +105,11 @@ export class ResearchEngineService {
     private readonly config: ConfigService<Environment, true>,
   ) {}
 
-  async run(symbol: string, today: string, onProgress: () => Promise<void>): Promise<RunOutcome & { llmCalls: number }> {
+  async run(
+    symbol: string,
+    today: string,
+    onProgress: () => Promise<void>,
+  ): Promise<RunOutcome & { llmCalls: number }> {
     const budget = { calls: 0 };
     try {
       const outcome = await this.process(symbol, today, budget, onProgress);
@@ -122,7 +135,8 @@ export class ResearchEngineService {
     //    brokers in parallel. A broken report is marked failed and the run goes on (§13.5).
     const pending = reports.filter((report) => report.processStatus === 'pending');
     const byBroker = new Map<string, ResearchReport[]>();
-    for (const report of pending) byBroker.set(report.broker, [...(byBroker.get(report.broker) ?? []), report]);
+    for (const report of pending)
+      byBroker.set(report.broker, [...(byBroker.get(report.broker) ?? []), report]);
     await inParallel([...byBroker.values()], BROKER_CONCURRENCY, async (brokerReports) => {
       for (const report of brokerReports) {
         await this.extract(report, today, budget);
@@ -135,8 +149,13 @@ export class ResearchEngineService {
     //    failed run leaves the rest for the next one.
     const unmatched = await this.store.unmatchedClaims(symbol, from);
     // Valuation claims (target, multiples) feed the valuation block, never a thesis.
-    await this.store.markClaimsMatched(unmatched.filter((claim) => claim.claimType === 'valuation').map((claim) => claim.id));
-    for (const batch of chunks(unmatched.filter((claim) => claim.claimType !== 'valuation'), MATCH_CHUNK)) {
+    await this.store.markClaimsMatched(
+      unmatched.filter((claim) => claim.claimType === 'valuation').map((claim) => claim.id),
+    );
+    for (const batch of chunks(
+      unmatched.filter((claim) => claim.claimType !== 'valuation'),
+      MATCH_CHUNK,
+    )) {
       await this.match(symbol, batch, today, budget);
       await this.store.markClaimsMatched(batch.map((claim) => claim.id));
       await onProgress();
@@ -157,7 +176,10 @@ export class ResearchEngineService {
       }
     }
     const processedReports = await this.store.activeReports(symbol, from);
-    await this.store.replaceBrokerCurrentViews(symbol, buildBrokerCurrentViews(processedReports, claims, links, today));
+    await this.store.replaceBrokerCurrentViews(
+      symbol,
+      buildBrokerCurrentViews(processedReports, claims, links, today),
+    );
     theses = await this.store.theses(symbol);
 
     // 4. Thesis builder for the affected theses only, then the automatic checks (§20–§21).
@@ -197,11 +219,19 @@ export class ResearchEngineService {
       this.logger.error(`research circuit breaker for ${symbol}: ${reason}`);
       return { status: 'blocked', reason, fingerprint };
     }
-    const version = await this.store.publish(symbol, { inputFingerprint: fingerprint, theses: ordered, valuation });
+    const version = await this.store.publish(symbol, {
+      inputFingerprint: fingerprint,
+      theses: ordered,
+      valuation,
+    });
     return { status: 'done', published: version };
   }
 
-  private async extract(report: ResearchReport, today: string, budget: { calls: number }): Promise<void> {
+  private async extract(
+    report: ResearchReport,
+    today: string,
+    budget: { calls: number },
+  ): Promise<void> {
     let text: string;
     try {
       if (!report.filePath) throw new Error('REPORT_FILE_MISSING');
@@ -211,7 +241,9 @@ export class ResearchEngineService {
       return;
     }
     try {
-      const { result } = await this.callAi(today, budget, () => this.ai.extractClaims(report, text));
+      const { result } = await this.callAi(today, budget, () =>
+        this.ai.extractClaims(report, text),
+      );
       await this.store.insertClaims(report, result.claims);
       await this.store.markProcessed(report.id, result.target);
     } catch (error) {
@@ -220,12 +252,24 @@ export class ResearchEngineService {
     }
   }
 
-  private async match(symbol: string, claims: StoredClaim[], today: string, budget: { calls: number }) {
+  private async match(
+    symbol: string,
+    claims: StoredClaim[],
+    today: string,
+    budget: { calls: number },
+  ) {
     const live = (await this.store.theses(symbol)).filter(isLive);
-    const { result } = await this.callAi(today, budget, () => this.ai.matchClaims(symbol, live, claims));
+    const { result } = await this.callAi(today, budget, () =>
+      this.ai.matchClaims(symbol, live, claims),
+    );
     const created = new Map<string, string>();
     for (const draft of result.newTheses) {
-      if (!result.matches.some((match) => match.relationship === 'NEW_THESIS' && match.newThesisKey === draft.key)) continue;
+      if (
+        !result.matches.some(
+          (match) => match.relationship === 'NEW_THESIS' && match.newThesisKey === draft.key,
+        )
+      )
+        continue;
       created.set(draft.key, (await this.store.createThesis(symbol, draft)).id);
     }
     const links: Parameters<ResearchStore['linkClaims']>[0] = [];
@@ -233,25 +277,38 @@ export class ResearchEngineService {
     const invalidated = new Set<string>();
     for (const match of result.matches) {
       if (match.relationship === 'IRRELEVANT') continue;
-      const thesisId = match.relationship === 'NEW_THESIS'
-        ? created.get(match.newThesisKey ?? '')
-        : live.some((thesis) => thesis.id === match.thesisId) ? match.thesisId : null;
+      const thesisId =
+        match.relationship === 'NEW_THESIS'
+          ? created.get(match.newThesisKey ?? '')
+          : live.some((thesis) => thesis.id === match.thesisId)
+            ? match.thesisId
+            : null;
       if (!thesisId) continue;
-      const relationship = match.relationship === 'NEW_THESIS' ? 'support' : (match.relationship.toLowerCase() as 'support' | 'update' | 'contradict' | 'replace');
+      const relationship =
+        match.relationship === 'NEW_THESIS'
+          ? 'support'
+          : (match.relationship.toLowerCase() as 'support' | 'update' | 'contradict' | 'replace');
       links.push({ thesisId, claimId: match.claimId, relationship, matchReason: match.match });
       if (match.relationship !== 'SUPPORT') touched.add(thesisId);
       if (match.relationship === 'REPLACE' && match.invalidatesThesis) invalidated.add(thesisId);
     }
     await this.store.linkClaims(links);
     for (const { thesisRef, disagreement } of result.disagreements) {
-      const thesisId = created.get(thesisRef) ?? (live.some((thesis) => thesis.id === thesisRef) ? thesisRef : null);
+      const thesisId =
+        created.get(thesisRef) ??
+        (live.some((thesis) => thesis.id === thesisRef) ? thesisRef : null);
       if (!thesisId) continue;
       await this.store.updateThesis(thesisId, { disagreement });
       touched.add(thesisId);
     }
     for (const thesisId of touched) {
-      if (invalidated.has(thesisId)) await this.store.updateThesis(thesisId, { status: 'invalidated' });
-      else await this.store.updateThesis(thesisId, { status: created.has(thesisId) ? 'active' : 'updated', needsRewrite: true });
+      if (invalidated.has(thesisId))
+        await this.store.updateThesis(thesisId, { status: 'invalidated' });
+      else
+        await this.store.updateThesis(thesisId, {
+          status: created.has(thesisId) ? 'active' : 'updated',
+          needsRewrite: true,
+        });
     }
   }
 
@@ -271,11 +328,20 @@ export class ResearchEngineService {
         canonicalOutcome: thesis.canonicalOutcome,
         direction: thesis.direction,
         isRisk: thesis.isRisk,
-        disagreement: thesis.disagreement && anonymizeDisagreement(thesis, perBroker.map((item) => item.broker)),
+        disagreement:
+          thesis.disagreement &&
+          anonymizeDisagreement(
+            thesis,
+            perBroker.map((item) => item.broker),
+          ),
         previousTitle: thesis.currentTitle,
         previousSummary: thesis.currentSummary,
         // Brokers are anonymized: the builder must never see or write a broker name.
-        evidence: perBroker.map((item, index) => ({ brokerRef: `B${index + 1}`, evidenceDate: item.claim.evidenceDate, claim: claimContent(item.claim) })),
+        evidence: perBroker.map((item, index) => ({
+          brokerRef: `B${index + 1}`,
+          evidenceDate: item.claim.evidenceDate,
+          claim: claimContent(item.claim),
+        })),
       };
     });
     const check = (built: BuiltThesis[], subset: ThesisBuildInput[]) =>
@@ -283,16 +349,24 @@ export class ResearchEngineService {
 
     const first = await this.callAi(today, budget, () => this.ai.buildTheses(symbol, inputs));
     let { passed, failures } = check(first.result, inputs);
-    const missing = inputs.filter((input) => !passed.some((item) => item.thesisId === input.thesisId));
+    const missing = inputs.filter(
+      (input) => !passed.some((item) => item.thesisId === input.thesisId),
+    );
     if (missing.length > 0) {
       // One regeneration with the rejection reasons, then drop what still fails (§21).
       const reasons: ValidationFailure[] = [
         ...failures,
         ...missing
           .filter((input) => !failures.some((failure) => failure.thesisId === input.thesisId))
-          .map((input) => ({ thesisId: input.thesisId, code: 'schema' as const, detail: 'thiếu luận điểm trong kết quả' })),
+          .map((input) => ({
+            thesisId: input.thesisId,
+            code: 'schema' as const,
+            detail: 'thiếu luận điểm trong kết quả',
+          })),
       ];
-      const retry = await this.callAi(today, budget, () => this.ai.buildTheses(symbol, missing, reasons));
+      const retry = await this.callAi(today, budget, () =>
+        this.ai.buildTheses(symbol, missing, reasons),
+      );
       const second = check(retry.result, missing);
       passed = [...passed, ...second.passed];
       failures = second.failures;
@@ -312,18 +386,38 @@ export class ResearchEngineService {
       } else {
         // Still failing after one retry: leave it out until new evidence arrives, so the
         // same rejection does not spend tokens on every search.
-        this.logger.warn(`research thesis ${input.thesisId} rejected: ${failures.filter((f) => f.thesisId === input.thesisId).map((f) => f.code).join(',')}`);
-        await this.store.updateThesis(input.thesisId, { currentTitle: null, currentSummary: null, summaryBrokers: brokers, needsRewrite: false });
+        this.logger.warn(
+          `research thesis ${input.thesisId} rejected: ${failures
+            .filter((f) => f.thesisId === input.thesisId)
+            .map((f) => f.code)
+            .join(',')}`,
+        );
+        await this.store.updateThesis(input.thesisId, {
+          currentTitle: null,
+          currentSummary: null,
+          summaryBrokers: brokers,
+          needsRewrite: false,
+        });
       }
     }
   }
 
-  private async valuation(symbol: string, reports: ResearchReport[], today: string): Promise<ValuationSnapshot> {
+  private async valuation(
+    symbol: string,
+    reports: ResearchReport[],
+    today: string,
+  ): Promise<ValuationSnapshot> {
     const price = await this.price.currentPrice(symbol).catch(() => null);
     const targets = latestBrokerTargets(reports, today, price);
-    const earliest = targets.reduce<string | null>((min, target) => (min === null || target.reportDate < min ? target.reportDate : min), null);
+    const earliest = targets.reduce<string | null>(
+      (min, target) => (min === null || target.reportDate < min ? target.reportDate : min),
+      null,
+    );
     const dilutive = earliest ? await this.store.dilutiveActions(symbol, earliest) : [];
-    const asOf = reports.reduce<string | null>((max, report) => (max === null || report.reportDate > max ? report.reportDate : max), null);
+    const asOf = reports.reduce<string | null>(
+      (max, report) => (max === null || report.reportDate > max ? report.reportDate : max),
+      null,
+    );
     return computeValuation(targets, dilutive, asOf);
   }
 
@@ -347,7 +441,8 @@ export class ResearchEngineService {
         budget.calls += 1;
         await this.store.recordAiUsage(today, { calls: 1, promptTokens: 0, completionTokens: 0 });
         if (isTruncated(error)) break;
-        if (attempt < AI_ATTEMPTS - 1) await new Promise((resolve) => setTimeout(resolve, AI_BACKOFF_MS[attempt]));
+        if (attempt < AI_ATTEMPTS - 1)
+          await new Promise((resolve) => setTimeout(resolve, AI_BACKOFF_MS[attempt]));
       }
     }
     throw lastError instanceof Error ? lastError : new Error(errorText(lastError));
@@ -375,7 +470,10 @@ function isLive(thesis: CanonicalThesis): boolean {
 }
 
 /** Disagreement values name brokers; the builder only sees the same B1/B2 refs as the evidence. */
-function anonymizeDisagreement(thesis: CanonicalThesis, brokers: string[]): CanonicalThesis['disagreement'] {
+function anonymizeDisagreement(
+  thesis: CanonicalThesis,
+  brokers: string[],
+): CanonicalThesis['disagreement'] {
   if (!thesis.disagreement) return null;
   return {
     ...thesis.disagreement,

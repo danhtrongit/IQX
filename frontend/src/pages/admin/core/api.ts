@@ -324,13 +324,15 @@ export type TradingInsight = {
   asOf: string | null
 }
 
-export type AcademyLessonStatus = "completed" | "in_progress" | "failed" | "not_started"
+export type AcademyLessonStatus = "completed" | "in_progress" | "failed" | "not_started" | "locked"
 
 export type AcademyLesson = {
   lessonId: string
   order: number
   name: string
-  completionMode: "quiz" | "guide"
+  kind: "lesson" | "practice" | "chapter_exam"
+  /** Practice (Phòng tập thực chiến) is optional and never counted in totals. */
+  optional: boolean
   status: AcademyLessonStatus
   attempts: number
   latestScore: number | null
@@ -344,6 +346,7 @@ export type AcademyChapter = {
   title: string
   completed: number
   total: number
+  examPassed: boolean
   lessons: AcademyLesson[]
 }
 
@@ -511,7 +514,7 @@ export function adaptLoginHistoryRow(raw: WireLoginHistoryRow): LoginHistoryRow 
 
 type WireTradingInsight = LegacyUser360Response["demo_trading"] & { as_of?: string | null }
 type WireAcademy = LegacyUser360Response["academy"]
-type WireAcademyLessonRef = NonNullable<WireAcademy["current_lesson"]>
+type WireAcademyLessonRef = Pick<NonNullable<WireAcademy["current_lesson"]>, "lesson_id" | "chapter" | "order" | "name" | "label">
 
 function adaptTradingInsight(raw: WireTradingInsight | null | undefined): TradingInsight | null {
   if (!raw) return null
@@ -552,11 +555,13 @@ export function adaptAcademyProgress(raw: WireAcademy | null | undefined): Acade
       title: chapter.title,
       completed: chapter.completed,
       total: chapter.total,
+      examPassed: chapter.exam_passed,
       lessons: chapter.lessons.map((lesson) => ({
         lessonId: lesson.lesson_id,
         order: lesson.order,
         name: lesson.name,
-        completionMode: lesson.completion_mode,
+        kind: lesson.kind,
+        optional: lesson.optional,
         status: lesson.status,
         attempts: lesson.attempts,
         latestScore: lesson.latest_score ?? null,

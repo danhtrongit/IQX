@@ -1,0 +1,8 @@
+{
+  "indicator_id": "rs_sector",
+  "legacy": true,
+  "source_lesson_id": "ch13-l02",
+  "label": "Relative Strength vs ngành",
+  "expected": 4,
+  "tolerance": 0.015
+}

@@ -65,7 +65,7 @@ describe("422 CONFIG_INVALID and SIDE_REQUIRED", () => {
 })
 
 describe("403 CAPABILITY_LOCKED", () => {
-  const locked = new ApiError("Cần hoàn thành bài học của chỉ báo rsi (8/8) trước khi bật.", 403, {
+  const locked = new ApiError("Cần hoàn thành bài học của chỉ báo rsi trước khi bật.", 403, {
     code: "CAPABILITY_LOCKED",
     details: [{ capability: "indicator:rsi", reason: "not_learned", indicator: "rsi" }],
   })
@@ -74,14 +74,14 @@ describe("403 CAPABILITY_LOCKED", () => {
     expect(lockedCapabilitiesOf(locked)).toEqual([{ capability: "indicator:rsi", reason: "not_learned", indicator: "rsi" }])
     expect(saveOutcomeFromError(locked, nameOf)).toMatchObject({
       ok: false, reason: "locked", code: "CAPABILITY_LOCKED", retryable: false,
-      message: "Hoàn thành bài kiểm tra 8/8 của chỉ báo RSI để bật.",
+      message: "Đạt bài kiểm tra của bài học chỉ báo RSI để bật.",
     })
   })
 
   it("uses the id when the registry name is unknown, and a generic line without details", () => {
-    expect(saveOutcomeFromError(locked)).toMatchObject({ message: "Hoàn thành bài kiểm tra 8/8 của chỉ báo rsi để bật." })
+    expect(saveOutcomeFromError(locked)).toMatchObject({ message: "Đạt bài kiểm tra của bài học chỉ báo rsi để bật." })
     const bare = new ApiError("Bị khóa", 403, { code: "CAPABILITY_LOCKED" })
-    expect(saveOutcomeFromError(bare, nameOf)).toMatchObject({ reason: "locked", message: "Hoàn thành bài kiểm tra 8/8 của chỉ báo này để bật." })
+    expect(saveOutcomeFromError(bare, nameOf)).toMatchObject({ reason: "locked", message: "Đạt bài kiểm tra của bài học chỉ báo này để bật." })
     expect(lockedCapabilitiesOf(new ApiError("x", 403, { code: "OTHER", details: [{ capability: "a" }] }))).toEqual([])
   })
 })

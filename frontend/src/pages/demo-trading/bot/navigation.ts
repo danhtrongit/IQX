@@ -1,12 +1,11 @@
 import { useCallback } from "react"
 import { useSearchParams } from "react-router"
 
-/** Chapter titles of the 16 technical lessons (catalog `iqx-academy-outline-13ch-71lessons-v1`). */
+/** Chapter titles of the technical indicator lessons (Học viện v3.2 chapters 4, 7 and 8). */
 export const CHAPTER_TITLES: Readonly<Record<number, string>> = {
-  1: "Chỉ báo kỹ thuật nền tảng",
-  5: "Xu hướng và động lượng nâng cao",
-  7: "Khối lượng và dòng tiền",
-  10: "Kênh giá và động lượng",
+  4: "Phương pháp kỹ thuật",
+  7: "Chỉ báo xu hướng",
+  8: "Chỉ báo động lượng và dòng tiền",
 }
 
 export function chapterTitle(chapter: number): string {

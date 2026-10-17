@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-l01",
+  "questions": [
+    {
+      "correct_option_id": "ef1b4b5753",
+      "id": "ch01-l01-q01",
+      "options": [
+        {
+          "id": "ef1b4b5753",
+          "text": "Làm giảm sức mua của tiền"
+        },
+        {
+          "id": "b55e431a1c",
+          "text": "Làm tăng sức mua của tiền"
+        },
+        {
+          "id": "c65628726b",
+          "text": "Không ảnh hưởng đến tiền nhàn rỗi"
+        }
+      ],
+      "prompt": "Lạm phát ảnh hưởng thế nào đến tiền nhàn rỗi?"
+    },
+    {
+      "correct_option_id": "14cc01e6d5",
+      "id": "ch01-l01-q02",
+      "options": [
+        {
+          "id": "14cc01e6d5",
+          "text": "Đồng sở hữu doanh nghiệp"
+        },
+        {
+          "id": "90f3ac0100",
+          "text": "Chủ nợ của doanh nghiệp"
+        },
+        {
+          "id": "3e4ad26e0a",
+          "text": "Nhân viên của doanh nghiệp"
+        }
+      ],
+      "prompt": "Người nắm giữ cổ phiếu có vai trò gì với doanh nghiệp?"
+    },
+    {
+      "correct_option_id": "6cf7b9c015",
+      "id": "ch01-l01-q03",
+      "options": [
+        {
+          "id": "6cf7b9c015",
+          "text": "Có thể bắt đầu chỉ từ vài triệu đồng"
+        },
+        {
+          "id": "4af9def04e",
+          "text": "Cần nguồn vốn hàng tỷ đồng"
+        },
+        {
+          "id": "8ba0bcdf0c",
+          "text": "Chỉ dành cho nhà đầu tư tổ chức"
+        }
+      ],
+      "prompt": "So với bất động sản, chứng khoán có lợi thế gì về vốn?"
+    }
+  ],
+  "salt": "e9d42c3c52bc839a4182d64bdb3b471f7a1be23791ac2591e7f1508d2f608104"
+}

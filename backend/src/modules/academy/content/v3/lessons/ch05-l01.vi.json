@@ -1,0 +1,631 @@
+{
+  "chapter": 5,
+  "charts": {
+    "c5l1-g1": {
+      "alt": "Giá càng thấp, 3 triệu đồng mỗi tháng mua được càng nhiều chứng chỉ quỹ",
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "digits": 0,
+          "series": [
+            {
+              "name": "Giá",
+              "role": "price",
+              "values": [
+                20,
+                18,
+                16,
+                15,
+                13,
+                12,
+                14,
+                15,
+                17,
+                19,
+                21,
+                22
+              ],
+              "width": 2
+            }
+          ],
+          "title": "Giá (nghìn đồng)"
+        },
+        {
+          "bars": {
+            "colors": [
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos",
+              "pos"
+            ],
+            "name": "Số chứng chỉ quỹ",
+            "values": [
+              150,
+              167,
+              188,
+              200,
+              231,
+              250,
+              214,
+              200,
+              176,
+              158,
+              143,
+              136
+            ]
+          },
+          "nonnegative": true,
+          "notes": [
+            {
+              "i": 0,
+              "text": "150",
+              "tone": "pos",
+              "value": 150
+            },
+            {
+              "i": 1,
+              "text": "167",
+              "tone": "pos",
+              "value": 167
+            },
+            {
+              "i": 2,
+              "text": "188",
+              "tone": "pos",
+              "value": 188
+            },
+            {
+              "i": 3,
+              "text": "200",
+              "tone": "pos",
+              "value": 200
+            },
+            {
+              "i": 4,
+              "text": "231",
+              "tone": "pos",
+              "value": 231
+            },
+            {
+              "i": 5,
+              "text": "250",
+              "tone": "pos",
+              "value": 250
+            },
+            {
+              "i": 6,
+              "text": "214",
+              "tone": "pos",
+              "value": 214
+            },
+            {
+              "i": 7,
+              "text": "200",
+              "tone": "pos",
+              "value": 200
+            },
+            {
+              "i": 8,
+              "text": "176",
+              "tone": "pos",
+              "value": 176
+            },
+            {
+              "i": 9,
+              "text": "158",
+              "tone": "pos",
+              "value": 158
+            },
+            {
+              "i": 10,
+              "text": "143",
+              "tone": "pos",
+              "value": 143
+            },
+            {
+              "i": 11,
+              "text": "136",
+              "tone": "pos",
+              "value": 136
+            }
+          ],
+          "series": [],
+          "title": "Số chứng chỉ quỹ mua được với 3 triệu đồng"
+        }
+      ],
+      "points": [
+        {
+          "i": 0,
+          "label": "20",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 20
+        },
+        {
+          "i": 1,
+          "label": "18",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 18
+        },
+        {
+          "i": 2,
+          "label": "16",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 16
+        },
+        {
+          "i": 3,
+          "label": "15",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 15
+        },
+        {
+          "i": 4,
+          "label": "13",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 13
+        },
+        {
+          "i": 5,
+          "label": "12",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 12
+        },
+        {
+          "i": 6,
+          "label": "14",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 14
+        },
+        {
+          "i": 7,
+          "label": "15",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 15
+        },
+        {
+          "i": 8,
+          "label": "17",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 17
+        },
+        {
+          "i": 9,
+          "label": "19",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 19
+        },
+        {
+          "i": 10,
+          "label": "21",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 21
+        },
+        {
+          "i": 11,
+          "label": "22",
+          "panel": 0,
+          "pos": "above",
+          "tone": "price",
+          "value": 22
+        }
+      ],
+      "x": {
+        "end": 11,
+        "start": 0,
+        "ticks": [
+          "T1",
+          "T2",
+          "T3",
+          "T4",
+          "T5",
+          "T6",
+          "T7",
+          "T8",
+          "T9",
+          "T10",
+          "T11",
+          "T12"
+        ]
+      }
+    },
+    "c5l1-g2": {
+      "kind": "category",
+      "labels": [
+        "Tháng 1",
+        "Tháng 2",
+        "Tháng 3",
+        "Tháng 4",
+        "Tháng 5",
+        "Tháng 6"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Số chứng chỉ quỹ",
+          "tone": "pos",
+          "values": [
+            150,
+            200,
+            250,
+            200,
+            150,
+            120
+          ]
+        }
+      ],
+      "sublabels": [
+        "20.000 đ",
+        "15.000 đ",
+        "12.000 đ",
+        "15.000 đ",
+        "20.000 đ",
+        "25.000 đ"
+      ],
+      "unit": "chứng chỉ",
+      "value_labels": "all"
+    },
+    "c5l1-g3": {
+      "end_labels": [
+        "+5%",
+        "+36%",
+        "72 triệu"
+      ],
+      "kind": "category",
+      "labels": [
+        "Tháng 1",
+        "Tháng 2",
+        "Tháng 3",
+        "Tháng 4",
+        "Tháng 5",
+        "Tháng 6",
+        "Tháng 7",
+        "Tháng 8",
+        "Tháng 9",
+        "Tháng 10",
+        "Tháng 11",
+        "Tháng 12",
+        "Tháng 13",
+        "Tháng 14",
+        "Tháng 15",
+        "Tháng 16",
+        "Tháng 17",
+        "Tháng 18",
+        "Tháng 19",
+        "Tháng 20",
+        "Tháng 21",
+        "Tháng 22",
+        "Tháng 23",
+        "Tháng 24"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Mua một lần 72 triệu",
+          "tone": "warn",
+          "values": [
+            72,
+            68.976,
+            65.952,
+            62.928,
+            59.904,
+            56.88,
+            53.856,
+            50.832,
+            47.808,
+            44.64,
+            45.072,
+            45.504,
+            45.936,
+            46.368,
+            46.8,
+            50.04,
+            53.28,
+            56.52,
+            59.76,
+            63,
+            66.24,
+            69.48,
+            72.72,
+            75.96
+          ]
+        },
+        {
+          "name": "DCA 3 triệu mỗi tháng",
+          "tone": "pos",
+          "values": [
+            3,
+            5.874,
+            8.6165,
+            11.2214,
+            13.6822,
+            15.9915,
+            18.1413,
+            20.1227,
+            21.9256,
+            23.4727,
+            26.6998,
+            29.9557,
+            33.2401,
+            36.5527,
+            39.8933,
+            45.6551,
+            51.6112,
+            57.7497,
+            64.0602,
+            70.5334,
+            77.1608,
+            83.935,
+            90.849,
+            97.8968
+          ]
+        },
+        {
+          "dash": true,
+          "name": "Tiền DCA đã bỏ vào",
+          "tone": "p3",
+          "values": [
+            3,
+            6,
+            9,
+            12,
+            15,
+            18,
+            21,
+            24,
+            27,
+            30,
+            33,
+            36,
+            39,
+            42,
+            45,
+            48,
+            51,
+            54,
+            57,
+            60,
+            63,
+            66,
+            69,
+            72
+          ]
+        }
+      ],
+      "ticks": [
+        0,
+        25,
+        50,
+        75
+      ],
+      "unit": "triệu đồng",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch05-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Thay vì cố đoán thời điểm tốt nhất để mua, nhà đầu tư chia tiền thành nhiều phần bằng nhau và đầu tư đều đặn theo lịch cố định. Đây là phương pháp đơn giản, có kỷ luật và phù hợp với người đi làm có thu nhập hằng tháng.",
+  "lesson_key": "concept:dca",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>DCA</b> (Dollar-Cost Averaging) là phương pháp đầu tư <b>một số tiền cố định</b> theo <b>định kỳ</b>, chẳng hạn 3 triệu đồng mỗi tháng vào cùng một quỹ hoặc cổ phiếu, bất kể giá đang lên hay xuống. Khi giá thấp, số tiền đó mua được nhiều hơn. Khi giá cao, mua được ít hơn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c5l1-g1",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "DCA là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ví dụ đầu tư 3 triệu đồng mỗi tháng vào một quỹ trong 6 tháng, khi giá chứng chỉ quỹ giảm rồi tăng trở lại:",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c5l1-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "18 triệu đồng, mua được 1.070 chứng chỉ quỹ.",
+              "title": "Tổng tiền đầu tư"
+            },
+            {
+              "text": "Khoảng 16.822 đồng, thấp hơn mức giá trung bình 6 tháng là 17.833 đồng.",
+              "title": "Giá vốn bình quân"
+            },
+            {
+              "text": "Giá 25.000 đồng, danh mục đạt 26,75 triệu đồng, lãi khoảng 48,6%.",
+              "title": "Kết quả tháng 6"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        },
+        {
+          "text": "Giá tháng 6 chỉ cao hơn tháng 1 là 25%, nhưng danh mục lãi gần gấp đôi mức đó nhờ mua được nhiều chứng chỉ quỹ hơn khi giá thấp.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao DCA hiệu quả"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khi thị trường giảm sâu rồi mới hồi phục, người mua một lần phải chịu toàn bộ mức sụt giảm, còn người đầu tư định kỳ tiếp tục mua được giá thấp trong giai đoạn giảm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c5l1-g3",
+          "legend": [
+            {
+              "label": "Mua một lần 72 triệu",
+              "tone": "warn"
+            },
+            {
+              "label": "DCA 3 triệu mỗi tháng",
+              "tone": "pos"
+            },
+            {
+              "label": "Tiền DCA đã bỏ vào",
+              "tone": "p3"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Phải chọn đúng thời điểm, dễ mua ở vùng đỉnh, áp lực tâm lý lớn khi thị trường giảm.",
+              "title": "Mua một lần",
+              "tone": "neg"
+            },
+            {
+              "text": "Không cần đoán thời điểm, giảm rủi ro mua đỉnh, biến đầu tư thành thói quen.",
+              "title": "Đầu tư định kỳ",
+              "tone": "pos"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "DCA và mua một lần"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phân tán rủi ro vào nhiều cổ phiếu, phù hợp nhất với người mới.",
+              "title": "Quỹ mở và ETF"
+            },
+            {
+              "text": "Doanh nghiệp đầu ngành, kinh doanh ổn định và tăng trưởng dài hạn.",
+              "title": "Cổ phiếu doanh nghiệp tốt"
+            },
+            {
+              "text": "Đầu tư định kỳ vào doanh nghiệp xấu chỉ là bình quân giá xuống, càng mua càng lỗ.",
+              "title": "Tránh cổ phiếu yếu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        },
+        {
+          "text": "Với số tiền nhỏ mỗi kỳ, chứng chỉ quỹ mở thường thuận tiện hơn vì có thể mua theo số tiền, không cần đủ lô 100 cổ phiếu.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Chọn tài sản để đầu tư định kỳ"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Xác định số tiền mỗi kỳ",
+              "text": "Dùng phần tiền dư sau chi tiêu thiết yếu và quỹ dự phòng, không dùng tiền vay."
+            },
+            {
+              "term": "Chọn lịch cố định",
+              "text": "Ví dụ mua vào một ngày cố định mỗi tháng, ngay sau ngày nhận lương."
+            },
+            {
+              "term": "Kiên trì dài hạn",
+              "text": "Duy trì ít nhất vài năm. Không dừng khi thị trường giảm, vì đó là lúc mua được nhiều nhất."
+            },
+            {
+              "term": "Xem lại định kỳ",
+              "text": "Mỗi năm kiểm tra lại tài sản đang đầu tư, nếu doanh nghiệp hoặc quỹ kém đi thì cân nhắc thay đổi."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách thực hiện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nếu giá tăng liên tục, mua một lần từ đầu thường cho lợi nhuận cao hơn.",
+              "title": "Không tối ưu khi thị trường tăng đều"
+            },
+            {
+              "text": "DCA chỉ hiệu quả khi tài sản có giá trị tăng trưởng trong dài hạn.",
+              "title": "Không cứu được tài sản xấu"
+            },
+            {
+              "text": "Kết quả thể hiện rõ sau nhiều năm, không phù hợp với mục tiêu kiếm lời nhanh.",
+              "title": "Cần kiên nhẫn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s6",
+      "title": "Hạn chế của DCA"
+    }
+  ],
+  "summary": [
+    "<b>DCA</b> là đầu tư một số tiền cố định theo định kỳ, bất kể giá lên hay xuống.",
+    "Giá thấp mua được nhiều hơn, giúp <b>giá vốn bình quân thấp hơn</b> giá trung bình.",
+    "Không cần đoán thời điểm, <b>giảm rủi ro mua đỉnh</b> và tạo thói quen đầu tư.",
+    "Chọn <b>quỹ, ETF hoặc doanh nghiệp tốt</b>, kiên trì dài hạn và không dừng khi thị trường giảm."
+  ],
+  "title": "Đầu tư định kỳ (DCA)"
+}

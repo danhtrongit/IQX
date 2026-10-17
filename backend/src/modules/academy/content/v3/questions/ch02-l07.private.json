@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch02-l07",
+  "questions": [
+    {
+      "correct_option_id": "75abcaf9ae",
+      "id": "ch02-l07-q01",
+      "options": [
+        {
+          "id": "75abcaf9ae",
+          "text": "Khách chưa hiểu hoặc đang lo một điều gì đó"
+        },
+        {
+          "id": "1d37b062d5",
+          "text": "Khách sẽ không bao giờ đầu tư"
+        },
+        {
+          "id": "deff2f0a12",
+          "text": "Khách ghét SACO"
+        }
+      ],
+      "prompt": "Lời từ chối của khách thường có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "cb66a8ed0f",
+      "id": "ch02-l07-q02",
+      "options": [
+        {
+          "id": "cb66a8ed0f",
+          "text": "Đồng cảm"
+        },
+        {
+          "id": "1aeded1d40",
+          "text": "Phản bác ngay"
+        },
+        {
+          "id": "1cab4b73a0",
+          "text": "Đưa ra cam kết lợi nhuận"
+        }
+      ],
+      "prompt": "Bước đầu tiên trong công thức xử lý từ chối là gì?"
+    },
+    {
+      "correct_option_id": "8ca2275f70",
+      "id": "ch02-l07-q03",
+      "options": [
+        {
+          "id": "8ca2275f70",
+          "text": "Thừa nhận có rủi ro, gợi ý bắt đầu nhỏ và đặt mức cắt lỗ trước"
+        },
+        {
+          "id": "2867b95156",
+          "text": "Cam kết sẽ không bao giờ lỗ"
+        },
+        {
+          "id": "062fd802a1",
+          "text": "Nói rằng ai cũng lãi cả"
+        }
+      ],
+      "prompt": "Khi khách nói “Tôi sợ lỗ”, câu trả lời phù hợp là gì?"
+    }
+  ],
+  "salt": "71fd4f2d2c82b9f0d2de570bb3e8ad387319aac3b96a28b3e61b1d2244a3980c"
+}

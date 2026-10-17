@@ -1,0 +1,190 @@
+{
+  "chapter": 2,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch02-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Câu mở lời quyết định người kia có muốn nói chuyện tiếp với bạn hay không. Nguyên tắc vàng: hỏi thăm trước, giới thiệu sau, không chào hàng ngay câu đầu tiên.",
+  "lesson_key": "concept:mo_loi_tiep_can",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "label": "Không nên",
+          "text": "“Chào anh, em đang làm chứng khoán, anh mở tài khoản giúp em nhé, có mã này đang ngon lắm.”",
+          "tone": "bad",
+          "type": "quote"
+        },
+        {
+          "text": "Người nghe cảm thấy bị bán hàng, và câu “mã này đang ngon” còn là một lời hứa hẹn không nên nói.",
+          "type": "paragraph"
+        },
+        {
+          "label": "Nên",
+          "text": "“Lâu quá không gặp anh, dạo này công việc của anh ổn không? Em mới chuyển sang làm bên chứng khoán, cuối tuần có buổi chia sẻ cho người mới, nếu anh có hứng thú em gửi thông tin nhé.”",
+          "tone": "good",
+          "type": "quote"
+        },
+        {
+          "text": "Người nghe cảm thấy được quan tâm, biết bạn làm gì, và có quyền tự chọn có tìm hiểu hay không.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Sai và đúng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Bước"
+            },
+            {
+              "label": "Mục tiêu"
+            },
+            {
+              "label": "Câu mẫu"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Mở lại câu chuyện",
+                "“Dạo này chị với gia đình khỏe không? Lâu rồi em chưa hỏi thăm chị.”"
+              ],
+              "group": {
+                "label": "1. Hỏi thăm",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Cho biết bạn đang làm gì",
+                "“Em đang làm bạn đồng hành đầu tư ở Công ty Chứng khoán DNSE, chủ yếu hướng dẫn người mới làm quen với chứng khoán.”"
+              ],
+              "group": {
+                "label": "2. Chia sẻ",
+                "span": 1
+              }
+            },
+            {
+              "cells": [
+                "Để khách tự chọn",
+                "“Nếu chị có quan tâm chuyện cho tiền sinh lời, em gửi chị một bài viết ngắn đọc thử nhé, chưa cần mở gì đâu ạ.”"
+              ],
+              "group": {
+                "label": "3. Mời nhẹ",
+                "span": 1
+              }
+            }
+          ],
+          "type": "table",
+          "variant": "grouped"
+        },
+        {
+          "text": "Không cần gửi cả ba bước trong một tin nhắn. Hãy chờ người kia trả lời rồi mới đi tiếp, giống như một cuộc trò chuyện bình thường.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Kịch bản nhắn tin 3 bước"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Chào và xưng danh",
+              "text": "“Em chào anh Minh, em là Lan, bạn cùng lớp đại học với anh đây.”"
+            },
+            {
+              "term": "Lý do gọi",
+              "text": "“Em gọi vì nhớ anh từng nói muốn tìm hiểu chứng khoán.”"
+            },
+            {
+              "term": "Xin thời gian",
+              "text": "“Anh có tiện nói chuyện 5 phút không, hay để em gọi lại lúc khác?”"
+            },
+            {
+              "term": "Hẹn bước tiếp",
+              "text": "“Em mời anh cà phê sáng thứ Bảy, em chỉ anh cách bắt đầu cho an toàn nhé.”"
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s3",
+      "title": "Gọi điện trong 30 giây đầu"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Nhắc lại <b>tối đa 2 lần</b>, mỗi lần cách nhau vài ngày, với một nội dung mới có ích, như một bài kiến thức hay lời mời hội thảo. Nếu vẫn chưa có phản hồi, hãy để người đó trong danh sách và tiếp tục chia sẻ nội dung trên mạng xã hội. Nhiều khách hàng quay lại sau vài tháng khi họ thực sự cần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Khi người kia chưa trả lời"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 2,
+          "debrief": "<b>Cách tốt nhất: trả lời thật, nhẹ nhàng, rồi quay lại chuyện của bạn ấy.</b> Câu hỏi đó là dấu hiệu bạn ấy sợ bị bán hàng. Nếu bạn xin mở tài khoản ngay, bạn xác nhận đúng nỗi sợ đó. Nếu bạn im lặng, mối quan hệ dừng lại. Nói rõ mình làm gì và không ép, bạn để lại ấn tượng tốt, khi bạn ấy cần sẽ nhớ đến bạn.",
+          "options": [
+            "“Không, tao làm chứng khoán. Mày mở tài khoản giúp tao nha!”",
+            "Thấy ngại nên không nhắn tiếp nữa",
+            "“Haha không, tao làm bên Chứng khoán DNSE, chủ yếu hướng dẫn người mới. Không cần mở gì đâu, khi nào cần thì hỏi tao.” Rồi hỏi tiếp chuyện của bạn ấy"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Bạn hỏi thăm một người bạn cũ. Bạn ấy trả lời: “Ừ, tao khỏe. Mà mày đang bán bảo hiểm hay gì à?”"
+          ],
+          "title": "Bạn cũ nghi bạn đi bán hàng",
+          "type": "scenario"
+        },
+        {
+          "id": "l4",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Viết tin nhắn cho 3 người cụ thể: một người bạn cũ, một đồng nghiệp, một người thân. Áp dụng 3 bước hỏi thăm, chia sẻ, mời nhẹ. Đọc to lên xem có giống lời mình nói thật không."
+          ],
+          "title": "Bài tự làm: viết 3 tin nhắn mở lời",
+          "type": "workpad"
+        },
+        {
+          "id": "l4",
+          "items": [
+            {
+              "id": "0",
+              "text": "Gửi 5 tin nhắn hỏi thăm hôm nay"
+            },
+            {
+              "id": "1",
+              "text": "Ghi phản hồi của từng người vào bảng ghi chép"
+            },
+            {
+              "id": "2",
+              "text": "Hẹn được ít nhất 1 cuộc gọi hoặc cà phê trong tuần"
+            }
+          ],
+          "mode": "todo",
+          "title": "Việc làm ngay",
+          "type": "checklist"
+        }
+      ],
+      "id": "s5",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "<b>Hỏi thăm trước, giới thiệu sau</b>. Không chào hàng ngay câu đầu.",
+    "Nhắn tin theo 3 bước: <b>hỏi thăm, chia sẻ, mời nhẹ</b>.",
+    "Gọi điện: <b>chào, nêu lý do, xin thời gian, hẹn bước tiếp</b>.",
+    "Chưa trả lời thì <b>nhắc tối đa 2 lần</b>, sau đó tiếp tục chia sẻ giá trị."
+  ],
+  "title": "Mở lời tiếp cận"
+}

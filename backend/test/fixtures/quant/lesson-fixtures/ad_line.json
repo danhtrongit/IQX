@@ -1,0 +1,8 @@
+{
+  "indicator_id": "ad_line",
+  "legacy": true,
+  "source_lesson_id": "ch13-l03",
+  "label": "Advance / Decline Line",
+  "expected": 1060,
+  "tolerance": 0.015
+}

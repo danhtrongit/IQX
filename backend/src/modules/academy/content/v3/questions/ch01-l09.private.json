@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-l09",
+  "questions": [
+    {
+      "correct_option_id": "94a512d13f",
+      "id": "ch01-l09-q01",
+      "options": [
+        {
+          "id": "94a512d13f",
+          "text": "Tích lũy, tăng giá, phân phối, giảm giá"
+        },
+        {
+          "id": "5524ed3d3b",
+          "text": "Phục hồi, tăng trưởng, suy giảm, suy thoái"
+        },
+        {
+          "id": "188c9fd371",
+          "text": "Mở cửa, khớp lệnh, đóng cửa, thanh toán"
+        }
+      ],
+      "prompt": "Thị trường chứng khoán vận động qua bốn pha nào?"
+    },
+    {
+      "correct_option_id": "0dbb42dbf3",
+      "id": "ch01-l09-q02",
+      "options": [
+        {
+          "id": "0dbb42dbf3",
+          "text": "Đi ngang ở vùng thấp sau giai đoạn giảm"
+        },
+        {
+          "id": "7a32357093",
+          "text": "Tăng mạnh với các đỉnh sau cao hơn"
+        },
+        {
+          "id": "a6d4081021",
+          "text": "Biến động mạnh ở vùng cao"
+        }
+      ],
+      "prompt": "Trong pha tích lũy, giá thường diễn biến thế nào?"
+    },
+    {
+      "correct_option_id": "156bafcaef",
+      "id": "ch01-l09-q03",
+      "options": [
+        {
+          "id": "156bafcaef",
+          "text": "Hưng phấn"
+        },
+        {
+          "id": "d4dbd818c4",
+          "text": "Hoảng loạn"
+        },
+        {
+          "id": "ddcd2888c3",
+          "text": "Bi quan"
+        }
+      ],
+      "prompt": "Tâm lý phổ biến tại đỉnh thị trường là gì?"
+    }
+  ],
+  "salt": "a2c917982dd699c67ffe4bc8d09d9346219b6b280733e31afb9191262f4b79e6"
+}

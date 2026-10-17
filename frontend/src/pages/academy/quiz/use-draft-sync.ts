@@ -9,7 +9,7 @@ export type DraftStatus = "idle" | "saving" | "error"
  * so a reload or another device resumes them. Saves are queued one after another and carry the
  * revision the client last saw. A 409 means another tab saved first: the server draft is adopted
  * (the other answers stay), then this choice is applied on top once. A failed save never blocks the
- * quiz: the answers stay on screen and the submit sends all eight anyway.
+ * quiz: the answers stay on screen and the submit sends every answer anyway.
  */
 export function useDraftSync({
   attemptId,

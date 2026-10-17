@@ -65,13 +65,13 @@ describe("library", () => {
     expect(within(library).getByLabelText("5 đã mở")).toBeTruthy()
   })
 
-  it("shows exactly the 16 indicators once all 16 are granted, grouped by chapter 1, 5, 7 and 10", async () => {
+  it("shows exactly the 16 indicators once all 16 are granted, grouped by chapter 4, 7 and 8", async () => {
     world.granted = ALL_16
     await renderTab()
     const library = screen.getByRole("complementary", { name: "Thư viện chỉ báo" })
     expect(within(library).getAllByTestId(/^library-/)).toHaveLength(16)
     expect(within(library).getByLabelText("16 đã mở")).toBeTruthy()
-    for (const chapter of [1, 5, 7, 10]) expect(within(library).getByRole("region", { name: `Chương ${chapter}` })).toBeTruthy()
+    for (const chapter of [4, 7, 8]) expect(within(library).getByRole("region", { name: `Chương ${chapter}` })).toBeTruthy()
   })
 
   it("never lists ADX, ATR or any id outside the 16, even when the server sends one as granted", async () => {

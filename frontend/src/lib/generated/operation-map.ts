@@ -17,11 +17,11 @@ export interface OperationMap {
   "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: T.DeleteStrategyResultSnapshotData; response: T.DeleteStrategyResultSnapshotResponses[keyof T.DeleteStrategyResultSnapshotResponses] }
   "DELETE /api/v2/users/{userId}": { request: T.UsersControllerRemove1Data; response: T.UsersControllerRemove1Responses[keyof T.UsersControllerRemove1Responses] }
   "DELETE /api/v2/watchlists/{symbol}": { request: T.RemoveWatchlistItemV2Data; response: T.RemoveWatchlistItemV2Responses[keyof T.RemoveWatchlistItemV2Responses] }
-  "GET /api/v2/academy/attempts/{attemptId}": { request: T.AcademyAttemptReviewData; response: T.AcademyAttemptReviewResponses[keyof T.AcademyAttemptReviewResponses] }
   "GET /api/v2/academy/catalog": { request: T.AcademyCatalogData; response: T.AcademyCatalogResponses[keyof T.AcademyCatalogResponses] }
   "GET /api/v2/academy/lessons/{lessonId}": { request: T.AcademyLessonData; response: T.AcademyLessonResponses[keyof T.AcademyLessonResponses] }
   "GET /api/v2/academy/lessons/{lessonId}/attempt": { request: T.AcademyResumeAttemptData; response: T.AcademyResumeAttemptResponses[keyof T.AcademyResumeAttemptResponses] }
   "GET /api/v2/academy/lessons/{lessonId}/attempts": { request: T.AcademyLessonAttemptsData; response: T.AcademyLessonAttemptsResponses[keyof T.AcademyLessonAttemptsResponses] }
+  "GET /api/v2/academy/lessons/{lessonId}/notes": { request: T.AcademyLessonNotesData; response: T.AcademyLessonNotesResponses[keyof T.AcademyLessonNotesResponses] }
   "GET /api/v2/academy/progress": { request: T.AcademyProgressData; response: T.AcademyProgressResponses[keyof T.AcademyProgressResponses] }
   "GET /api/v2/admin/alerts/factor-library": { request: T.AdminAlertsControllerFactorLibrary1Data; response: T.AdminAlertsControllerFactorLibrary1Responses[keyof T.AdminAlertsControllerFactorLibrary1Responses] }
   "GET /api/v2/admin/alerts/indicators": { request: T.AdminAlertsControllerIndicators1Data; response: T.AdminAlertsControllerIndicators1Responses[keyof T.AdminAlertsControllerIndicators1Responses] }
@@ -281,7 +281,7 @@ export interface OperationMap {
   "PATCH /api/v2/virtual-trading/admin/config": { request: T.LegacyVirtualTradingAdminControllerUpdateConfig1Data; response: T.LegacyVirtualTradingAdminControllerUpdateConfig1Responses[keyof T.LegacyVirtualTradingAdminControllerUpdateConfig1Responses] }
   "POST /api/v2/academy/attempts": { request: T.AcademyCreateAttemptData; response: T.AcademyCreateAttemptResponses[keyof T.AcademyCreateAttemptResponses] }
   "POST /api/v2/academy/attempts/{attemptId}/submit": { request: T.AcademySubmitAttemptData; response: T.AcademySubmitAttemptResponses[keyof T.AcademySubmitAttemptResponses] }
-  "POST /api/v2/academy/lessons/{lessonId}/complete": { request: T.AcademyCompleteGuideData; response: T.AcademyCompleteGuideResponses[keyof T.AcademyCompleteGuideResponses] }
+  "POST /api/v2/academy/lessons/{lessonId}/scenario": { request: T.AcademyChooseScenarioData; response: T.AcademyChooseScenarioResponses[keyof T.AcademyChooseScenarioResponses] }
   "POST /api/v2/admin/alerts/seed": { request: T.AdminAlertsControllerSeed1Data; response: T.AdminAlertsControllerSeed1Responses[keyof T.AdminAlertsControllerSeed1Responses] }
   "POST /api/v2/admin/alerts/signals": { request: T.AdminAlertsControllerCreate1Data; response: T.AdminAlertsControllerCreate1Responses[keyof T.AdminAlertsControllerCreate1Responses] }
   "POST /api/v2/admin/alerts/telegram/webhook": { request: T.AdminAlertsControllerSetupTelegramWebhook1Data; response: T.AdminAlertsControllerSetupTelegramWebhook1Responses[keyof T.AdminAlertsControllerSetupTelegramWebhook1Responses] }
@@ -407,6 +407,7 @@ export interface OperationMap {
   "POST /api/v2/watchlists": { request: T.AddWatchlistItemV2Data; response: T.AddWatchlistItemV2Responses[keyof T.AddWatchlistItemV2Responses] }
   "POST /api/v2/workspace/ensure": { request: T.EnsureWorkspaceData; response: T.EnsureWorkspaceResponses[keyof T.EnsureWorkspaceResponses] }
   "PUT /api/v2/academy/attempts/{attemptId}/answers": { request: T.AcademySaveDraftAnswersData; response: T.AcademySaveDraftAnswersResponses[keyof T.AcademySaveDraftAnswersResponses] }
+  "PUT /api/v2/academy/lessons/{lessonId}/notes": { request: T.AcademySaveLessonNotesData; response: T.AcademySaveLessonNotesResponses[keyof T.AcademySaveLessonNotesResponses] }
   "PUT /api/v2/admin/alerts/signals/{key}": { request: T.AdminAlertsControllerUpdate1Data; response: T.AdminAlertsControllerUpdate1Responses[keyof T.AdminAlertsControllerUpdate1Responses] }
   "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: T.AdminTeamLeadsControllerUpdatePolicy1Data; response: T.AdminTeamLeadsControllerUpdatePolicy1Responses[keyof T.AdminTeamLeadsControllerUpdatePolicy1Responses] }
   "PUT /api/v2/alerts/rules/{ruleId}": { request: T.AlertsControllerUpdateRule1Data; response: T.AlertsControllerUpdateRule1Responses[keyof T.AlertsControllerUpdateRule1Responses] }
@@ -434,11 +435,11 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "DELETE /api/v2/strategy/result-snapshots/{snapshotId}": { request: "DeleteStrategyResultSnapshotData", response: "DeleteStrategyResultSnapshotResponses" },
   "DELETE /api/v2/users/{userId}": { request: "UsersControllerRemove1Data", response: "UsersControllerRemove1Responses" },
   "DELETE /api/v2/watchlists/{symbol}": { request: "RemoveWatchlistItemV2Data", response: "RemoveWatchlistItemV2Responses" },
-  "GET /api/v2/academy/attempts/{attemptId}": { request: "AcademyAttemptReviewData", response: "AcademyAttemptReviewResponses" },
   "GET /api/v2/academy/catalog": { request: "AcademyCatalogData", response: "AcademyCatalogResponses" },
   "GET /api/v2/academy/lessons/{lessonId}": { request: "AcademyLessonData", response: "AcademyLessonResponses" },
   "GET /api/v2/academy/lessons/{lessonId}/attempt": { request: "AcademyResumeAttemptData", response: "AcademyResumeAttemptResponses" },
   "GET /api/v2/academy/lessons/{lessonId}/attempts": { request: "AcademyLessonAttemptsData", response: "AcademyLessonAttemptsResponses" },
+  "GET /api/v2/academy/lessons/{lessonId}/notes": { request: "AcademyLessonNotesData", response: "AcademyLessonNotesResponses" },
   "GET /api/v2/academy/progress": { request: "AcademyProgressData", response: "AcademyProgressResponses" },
   "GET /api/v2/admin/alerts/factor-library": { request: "AdminAlertsControllerFactorLibrary1Data", response: "AdminAlertsControllerFactorLibrary1Responses" },
   "GET /api/v2/admin/alerts/indicators": { request: "AdminAlertsControllerIndicators1Data", response: "AdminAlertsControllerIndicators1Responses" },
@@ -698,7 +699,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PATCH /api/v2/virtual-trading/admin/config": { request: "LegacyVirtualTradingAdminControllerUpdateConfig1Data", response: "LegacyVirtualTradingAdminControllerUpdateConfig1Responses" },
   "POST /api/v2/academy/attempts": { request: "AcademyCreateAttemptData", response: "AcademyCreateAttemptResponses" },
   "POST /api/v2/academy/attempts/{attemptId}/submit": { request: "AcademySubmitAttemptData", response: "AcademySubmitAttemptResponses" },
-  "POST /api/v2/academy/lessons/{lessonId}/complete": { request: "AcademyCompleteGuideData", response: "AcademyCompleteGuideResponses" },
+  "POST /api/v2/academy/lessons/{lessonId}/scenario": { request: "AcademyChooseScenarioData", response: "AcademyChooseScenarioResponses" },
   "POST /api/v2/admin/alerts/seed": { request: "AdminAlertsControllerSeed1Data", response: "AdminAlertsControllerSeed1Responses" },
   "POST /api/v2/admin/alerts/signals": { request: "AdminAlertsControllerCreate1Data", response: "AdminAlertsControllerCreate1Responses" },
   "POST /api/v2/admin/alerts/telegram/webhook": { request: "AdminAlertsControllerSetupTelegramWebhook1Data", response: "AdminAlertsControllerSetupTelegramWebhook1Responses" },
@@ -824,6 +825,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/watchlists": { request: "AddWatchlistItemV2Data", response: "AddWatchlistItemV2Responses" },
   "POST /api/v2/workspace/ensure": { request: "EnsureWorkspaceData", response: "EnsureWorkspaceResponses" },
   "PUT /api/v2/academy/attempts/{attemptId}/answers": { request: "AcademySaveDraftAnswersData", response: "AcademySaveDraftAnswersResponses" },
+  "PUT /api/v2/academy/lessons/{lessonId}/notes": { request: "AcademySaveLessonNotesData", response: "AcademySaveLessonNotesResponses" },
   "PUT /api/v2/admin/alerts/signals/{key}": { request: "AdminAlertsControllerUpdate1Data", response: "AdminAlertsControllerUpdate1Responses" },
   "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: "AdminTeamLeadsControllerUpdatePolicy1Data", response: "AdminTeamLeadsControllerUpdatePolicy1Responses" },
   "PUT /api/v2/alerts/rules/{ruleId}": { request: "AlertsControllerUpdateRule1Data", response: "AlertsControllerUpdateRule1Responses" },

@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch02-l01",
+  "questions": [
+    {
+      "correct_option_id": "7e59efd375",
+      "id": "ch02-l01-q01",
+      "options": [
+        {
+          "id": "7e59efd375",
+          "text": "Phần phí từ khách còn giao dịch"
+        },
+        {
+          "id": "bff2488417",
+          "text": "Số tài khoản mở được, dù khách không giao dịch"
+        },
+        {
+          "id": "bd41561dc7",
+          "text": "Tiền khách gửi giữ hộ"
+        }
+      ],
+      "prompt": "Thu nhập của SACO đến chủ yếu từ đâu?"
+    },
+    {
+      "correct_option_id": "3db2e50b0f",
+      "id": "ch02-l01-q02",
+      "options": [
+        {
+          "id": "3db2e50b0f",
+          "text": "Traffic, Tư vấn, Chuyển đổi, Chăm sóc"
+        },
+        {
+          "id": "abc380226d",
+          "text": "Chăm sóc, Traffic, Tư vấn, Chuyển đổi"
+        },
+        {
+          "id": "65a65b19e8",
+          "text": "Tư vấn, Chuyển đổi, Traffic, Chăm sóc"
+        }
+      ],
+      "prompt": "Bốn bước của phễu bán hàng theo đúng thứ tự là gì?"
+    },
+    {
+      "correct_option_id": "1acc11713d",
+      "id": "ch02-l01-q03",
+      "options": [
+        {
+          "id": "1acc11713d",
+          "text": "5 người"
+        },
+        {
+          "id": "7f7543d7f0",
+          "text": "20 người"
+        },
+        {
+          "id": "ad0642ed7f",
+          "text": "1 người"
+        }
+      ],
+      "prompt": "Muốn tiếp cận 100 người mỗi tháng với 20 ngày làm việc, mỗi ngày cần tiếp cận bao nhiêu người?"
+    }
+  ],
+  "salt": "b1627e5207e2ee8483f5654e9eb28a3d242f0db5a865c7644c0db38ae0e7984d"
+}

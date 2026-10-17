@@ -124,7 +124,10 @@ const workedFixtureSchema = z.object({
 const fundamentalMetricSchema = z.object({
   id: z.enum(SCREENER_METRIC_IDS),
   name: z.string().min(1),
-  lesson_id: z.string().regex(/^ch\d{2}-l\d{2}$/),
+  lesson_id: z
+    .string()
+    .regex(/^ch\d{2}-l\d{2}$/)
+    .nullable(),
   chapter: z.number().int(),
   unit: z.string().min(1),
   api_unit: z.enum(SCREENER_API_UNITS),

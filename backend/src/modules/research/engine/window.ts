@@ -30,6 +30,10 @@ export function windowStart(today: string, days: number = REPORT_WINDOW_DAYS): s
 }
 
 /** Active iff today − date ≤ days: exactly 30 days old is active, 31 is expired. Future dates are active. */
-export function isWithinWindow(date: string, today: string, days: number = REPORT_WINDOW_DAYS): boolean {
+export function isWithinWindow(
+  date: string,
+  today: string,
+  days: number = REPORT_WINDOW_DAYS,
+): boolean {
   return Math.round((toUtcMs(today) - toUtcMs(date)) / DAY_MS) <= days;
 }

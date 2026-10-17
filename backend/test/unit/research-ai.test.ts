@@ -6,7 +6,10 @@ import {
   chunkReportText,
   targetToVnd,
 } from '../../src/modules/research/research-ai.service.js';
-import { RESEARCH_PROMPT_VERSIONS, researchPrompt } from '../../src/modules/research/research-prompts.js';
+import {
+  RESEARCH_PROMPT_VERSIONS,
+  researchPrompt,
+} from '../../src/modules/research/research-prompts.js';
 import type { StoredClaim, ThesisBuildInput } from '../../src/modules/research/research.types.js';
 
 type Reply = unknown | ((system: string, user: string) => unknown);
@@ -15,7 +18,8 @@ function stub(...replies: Reply[]) {
   const queue = [...replies];
   const complete = vi.fn(async (system: string, user: string, _options?: unknown) => {
     const next = queue.shift();
-    const body = typeof next === 'function' ? (next as (s: string, u: string) => unknown)(system, user) : next;
+    const body =
+      typeof next === 'function' ? (next as (s: string, u: string) => unknown)(system, user) : next;
     return {
       content: typeof body === 'string' ? body : JSON.stringify(body),
       model: 'test',
@@ -25,7 +29,13 @@ function stub(...replies: Reply[]) {
   return { service: new ResearchAiService({ complete } as unknown as AiProviderService), complete };
 }
 
-const report = { symbol: 'HPG', broker: 'SSI', reportDate: '2026-10-01', title: 'HPG', language: 'vi' as const };
+const report = {
+  symbol: 'HPG',
+  broker: 'SSI',
+  reportDate: '2026-10-01',
+  title: 'HPG',
+  language: 'vi' as const,
+};
 
 const rawClaim = (over: Record<string, unknown> = {}) => ({
   subject: 'Dung Quất 2',
@@ -100,7 +110,10 @@ describe('ResearchAiService.extractClaims', () => {
       target: { target_price: 68, unit: 'nghìn đồng', horizon: '12 tháng' },
     });
     const { result, usage } = await service.extractClaims(report, '[[page 1]]\nnội dung');
-    expect(result.claims.map((c) => c.summary)).toEqual(['Dự kiến công suất HRC mới đóng góp từ 2027.', 'Ý khác']);
+    expect(result.claims.map((c) => c.summary)).toEqual([
+      'Dự kiến công suất HRC mới đóng góp từ 2027.',
+      'Ý khác',
+    ]);
     expect(result.claims[0]).toMatchObject({
       claimType: 'growth_driver',
       timeHorizon: '2027',
@@ -110,16 +123,26 @@ describe('ResearchAiService.extractClaims', () => {
     expect(result.claims[1]).toMatchObject({ sourcePage: null, numbers: [] });
     expect(result.target).toEqual({ targetPriceVnd: 68_000, horizon: '12 tháng' });
     expect(usage).toEqual({ calls: 1, promptTokens: 100, completionTokens: 10 });
-    expect(complete.mock.calls[0]![2]).toMatchObject({ temperature: 0.1, maxTokens: 8000, json: true });
+    expect(complete.mock.calls[0]![2]).toMatchObject({
+      temperature: 0.1,
+      maxTokens: 8000,
+      json: true,
+    });
     expect(complete.mock.calls[0]![0]).toContain('nguyên tử');
   });
 
   it('target in plain VND, null target and unusable unit', async () => {
-    const a = await stub({ claims: [], target: { target_price: '68,000', unit: 'VND', horizon: null } }).service.extractClaims(report, 'x');
+    const a = await stub({
+      claims: [],
+      target: { target_price: '68,000', unit: 'VND', horizon: null },
+    }).service.extractClaims(report, 'x');
     expect(a.result.target).toEqual({ targetPriceVnd: 68_000, horizon: null });
     const b = await stub({ claims: [], target: null }).service.extractClaims(report, 'x');
     expect(b.result.target).toBeNull();
-    const c = await stub({ claims: [], target: { target_price: 68, unit: 'USD' } }).service.extractClaims(report, 'x');
+    const c = await stub({
+      claims: [],
+      target: { target_price: 68, unit: 'USD' },
+    }).service.extractClaims(report, 'x');
     expect(c.result.target).toBeNull();
   });
 
@@ -129,7 +152,10 @@ describe('ResearchAiService.extractClaims', () => {
     const many = Array.from({ length: 20 }, (_, i) => rawClaim({ summary: `ý ${i}` }));
     const { service, complete } = stub(
       { claims: many.slice(0, 15), target: { target_price: 68, unit: 'nghìn đồng' } },
-      { claims: [...many.slice(10), rawClaim({ summary: 'thêm 1' })], target: { target_price: 99, unit: 'nghìn đồng' } },
+      {
+        claims: [...many.slice(10), rawClaim({ summary: 'thêm 1' })],
+        target: { target_price: 99, unit: 'nghìn đồng' },
+      },
       { claims: Array.from({ length: 10 }, (_, i) => rawClaim({ summary: `cuối ${i}` })) },
     );
     const { result, usage } = await service.extractClaims(report, text);
@@ -153,7 +179,9 @@ describe('ResearchAiService.extractClaims', () => {
     await expect(stub('not json at all').service.extractClaims(report, 'x')).rejects.toMatchObject({
       message: 'RESEARCH_AI_INVALID_OUTPUT',
     });
-    await expect(stub({ foo: 1 }).service.extractClaims(report, 'x')).rejects.toBeInstanceOf(ResearchAiInvalidOutputError);
+    await expect(stub({ foo: 1 }).service.extractClaims(report, 'x')).rejects.toBeInstanceOf(
+      ResearchAiInvalidOutputError,
+    );
     // fenced JSON is tolerated
     const ok = await stub('```json\n{"claims":[]}\n```').service.extractClaims(report, 'x');
     expect(ok.result.claims).toEqual([]);
@@ -187,7 +215,12 @@ const thesis = {
   direction: 'positive' as const,
   currentSummary: null,
 };
-const verdict = (driver: boolean, mechanism: boolean, direction: boolean) => ({ driver, mechanism, direction, reason: 'r' });
+const verdict = (driver: boolean, mechanism: boolean, direction: boolean) => ({
+  driver,
+  mechanism,
+  direction,
+  reason: 'r',
+});
 const item = (claimId: string, relationship: string, extra: Record<string, unknown> = {}) => ({
   claim_id: claimId,
   relationship,
@@ -233,7 +266,11 @@ describe('ResearchAiService.matchClaims', () => {
     expect(result.matches[2]!.newThesisKey).toBeTruthy();
     expect(result.matches[2]!.newThesisKey).toBe(result.matches[3]!.newThesisKey);
     expect(result.newTheses).toEqual([
-      expect.objectContaining({ key: result.matches[2]!.newThesisKey, canonicalDriver: 'Dự án A', isRisk: true }),
+      expect.objectContaining({
+        key: result.matches[2]!.newThesisKey,
+        canonicalDriver: 'Dự án A',
+        isRisk: true,
+      }),
     ]);
   });
 
@@ -246,7 +283,9 @@ describe('ResearchAiService.matchClaims', () => {
         item('c4', 'SUPPORT', { thesis_id: 'T1' }),
       ],
     });
-    const claims = ['c1', 'c2', 'c3', 'c4'].map((id) => stored(id, { claimType: id === 'c3' ? 'financial_risk' : 'growth_driver' }));
+    const claims = ['c1', 'c2', 'c3', 'c4'].map((id) =>
+      stored(id, { claimType: id === 'c3' ? 'financial_risk' : 'growth_driver' }),
+    );
     const { result } = await service.matchClaims('HPG', [thesis], claims);
     const [m1, m2, m3, m4] = result.matches;
     for (const m of [m1!, m2!, m3!]) {
@@ -257,20 +296,46 @@ describe('ResearchAiService.matchClaims', () => {
     expect(new Set([m1!.newThesisKey, m2!.newThesisKey, m3!.newThesisKey]).size).toBe(3);
     expect(m4).toMatchObject({ relationship: 'SUPPORT', thesisId: 'T1' });
     expect(result.newTheses).toHaveLength(3);
-    expect(result.newTheses.find((t) => t.key === m3!.newThesisKey)).toMatchObject({ isRisk: true, canonicalDriver: 'Công suất HRC mới' });
+    expect(result.newTheses.find((t) => t.key === m3!.newThesisKey)).toMatchObject({
+      isRisk: true,
+      canonicalDriver: 'Công suất HRC mới',
+    });
   });
 
   it('CONTRADICT/REPLACE need driver and mechanism, and only REPLACE can invalidate', async () => {
     const { service } = stub({
       matches: [
-        item('c1', 'REPLACE', { thesis_id: 'T1', invalidates_thesis: true, match: verdict(true, true, false) }),
-        item('c2', 'CONTRADICT', { thesis_id: 'T1', invalidates_thesis: true, match: verdict(true, true, false) }),
-        item('c3', 'REPLACE', { thesis_id: 'T1', invalidates_thesis: true, match: verdict(true, false, false) }),
+        item('c1', 'REPLACE', {
+          thesis_id: 'T1',
+          invalidates_thesis: true,
+          match: verdict(true, true, false),
+        }),
+        item('c2', 'CONTRADICT', {
+          thesis_id: 'T1',
+          invalidates_thesis: true,
+          match: verdict(true, true, false),
+        }),
+        item('c3', 'REPLACE', {
+          thesis_id: 'T1',
+          invalidates_thesis: true,
+          match: verdict(true, false, false),
+        }),
       ],
     });
-    const { result } = await service.matchClaims('HPG', [thesis], ['c1', 'c2', 'c3'].map((id) => stored(id)));
-    expect(result.matches[0]).toMatchObject({ relationship: 'REPLACE', thesisId: 'T1', invalidatesThesis: true });
-    expect(result.matches[1]).toMatchObject({ relationship: 'CONTRADICT', invalidatesThesis: false });
+    const { result } = await service.matchClaims(
+      'HPG',
+      [thesis],
+      ['c1', 'c2', 'c3'].map((id) => stored(id)),
+    );
+    expect(result.matches[0]).toMatchObject({
+      relationship: 'REPLACE',
+      thesisId: 'T1',
+      invalidatesThesis: true,
+    });
+    expect(result.matches[1]).toMatchObject({
+      relationship: 'CONTRADICT',
+      invalidatesThesis: false,
+    });
     expect(result.matches[2]).toMatchObject({ relationship: 'NEW_THESIS', thesisId: null });
   });
 
@@ -289,8 +354,16 @@ describe('ResearchAiService.matchClaims', () => {
     const claims = ['c1', 'c2', 'c3', 'c4', 'c5'].map((id) => stored(id));
     const { result } = await service.matchClaims('HPG', [thesis], claims);
     expect(result.matches.map((m) => m.claimId)).toEqual(['c1', 'c2', 'c3', 'c4', 'c5']);
-    expect(result.matches.map((m) => m.relationship)).toEqual(['NEW_THESIS', 'NEW_THESIS', 'NEW_THESIS', 'SUPPORT', 'NEW_THESIS']);
-    const keys = result.matches.filter((m) => m.relationship === 'NEW_THESIS').map((m) => m.newThesisKey);
+    expect(result.matches.map((m) => m.relationship)).toEqual([
+      'NEW_THESIS',
+      'NEW_THESIS',
+      'NEW_THESIS',
+      'SUPPORT',
+      'NEW_THESIS',
+    ]);
+    const keys = result.matches
+      .filter((m) => m.relationship === 'NEW_THESIS')
+      .map((m) => m.newThesisKey);
     expect(new Set(keys).size).toBe(4);
     expect(result.newTheses.map((t) => t.key).sort()).toEqual([...(keys as string[])].sort());
   });
@@ -304,19 +377,65 @@ describe('ResearchAiService.matchClaims', () => {
       ],
       new_theses: [draft('n1')],
       disagreements: [
-        { thesis_ref: 'n1', dimension: 'timeline', note: 'khác mốc', values: [{ broker: 'SSI', value: 'Q4/2026' }, { broker: 'MBS', value: 'H2/2027' }] },
-        { thesis_ref: 'T1', dimension: 'weird', note: '', values: [{ broker: 'SSI', value: 'Q4/2026' }, { broker: 'MBS', value: 'q4/2026' }] },
-        { thesis_ref: 'GHOST', dimension: 'size', note: '', values: [{ broker: 'SSI', value: '1' }, { broker: 'MBS', value: '2' }] },
-        { thesis_ref: 'T1', dimension: 'weird', note: 'n', values: [{ broker: 'SSI', value: 5 }, { broker: 'MBS', value: 7 }] },
+        {
+          thesis_ref: 'n1',
+          dimension: 'timeline',
+          note: 'khác mốc',
+          values: [
+            { broker: 'SSI', value: 'Q4/2026' },
+            { broker: 'MBS', value: 'H2/2027' },
+          ],
+        },
+        {
+          thesis_ref: 'T1',
+          dimension: 'weird',
+          note: '',
+          values: [
+            { broker: 'SSI', value: 'Q4/2026' },
+            { broker: 'MBS', value: 'q4/2026' },
+          ],
+        },
+        {
+          thesis_ref: 'GHOST',
+          dimension: 'size',
+          note: '',
+          values: [
+            { broker: 'SSI', value: '1' },
+            { broker: 'MBS', value: '2' },
+          ],
+        },
+        {
+          thesis_ref: 'T1',
+          dimension: 'weird',
+          note: 'n',
+          values: [
+            { broker: 'SSI', value: 5 },
+            { broker: 'MBS', value: 7 },
+          ],
+        },
       ],
     });
-    const { result } = await service.matchClaims('HPG', [thesis], ['c1', 'c2', 'c3'].map((id) => stored(id)));
+    const { result } = await service.matchClaims(
+      'HPG',
+      [thesis],
+      ['c1', 'c2', 'c3'].map((id) => stored(id)),
+    );
     const newKey = result.matches[0]!.newThesisKey;
     expect(result.disagreements).toEqual([
-      expect.objectContaining({ thesisRef: newKey, disagreement: expect.objectContaining({ dimension: 'timeline' }) }),
+      expect.objectContaining({
+        thesisRef: newKey,
+        disagreement: expect.objectContaining({ dimension: 'timeline' }),
+      }),
       expect.objectContaining({
         thesisRef: 'T1',
-        disagreement: { dimension: 'other', note: 'n', values: [{ broker: 'SSI', value: '5' }, { broker: 'MBS', value: '7' }] },
+        disagreement: {
+          dimension: 'other',
+          note: 'n',
+          values: [
+            { broker: 'SSI', value: '5' },
+            { broker: 'MBS', value: '7' },
+          ],
+        },
       }),
     ]);
   });
@@ -343,11 +462,15 @@ describe('ResearchAiService.matchClaims', () => {
     expect(result.matches).toHaveLength(15);
     expect(result.newTheses).toHaveLength(1);
     const key = result.newTheses[0]!.key;
-    expect(result.matches.every((m) => m.relationship === 'NEW_THESIS' && m.newThesisKey === key)).toBe(true);
+    expect(
+      result.matches.every((m) => m.relationship === 'NEW_THESIS' && m.newThesisKey === key),
+    ).toBe(true);
   });
 
   it('rejects an invalid envelope and skips the call for no claims', async () => {
-    await expect(stub({ matches: 'x' }).service.matchClaims('HPG', [thesis], [stored('c1')])).rejects.toMatchObject({
+    await expect(
+      stub({ matches: 'x' }).service.matchClaims('HPG', [thesis], [stored('c1')]),
+    ).rejects.toMatchObject({
       message: 'RESEARCH_AI_INVALID_OUTPUT',
     });
     const { service, complete } = stub();
@@ -366,7 +489,10 @@ const buildInput = (over: Partial<ThesisBuildInput> = {}): ThesisBuildInput => (
   disagreement: {
     dimension: 'timeline',
     note: 'SSI nói H1/2027',
-    values: [{ broker: 'SSI', value: 'H1/2027' }, { broker: 'Vietcap', value: 'Q4/2026' }],
+    values: [
+      { broker: 'SSI', value: 'H1/2027' },
+      { broker: 'Vietcap', value: 'Q4/2026' },
+    ],
   },
   previousTitle: null,
   previousSummary: null,
@@ -395,7 +521,12 @@ describe('ResearchAiService.buildTheses', () => {
   it('returns valid theses, clamps materiality, drops invalid and duplicate items', async () => {
     const { service, complete } = stub({
       theses: [
-        { thesis_id: 'T1', title: 'Dự án A bàn giao kỳ vọng', summary: 'Dự kiến đóng góp.', materiality: 7 },
+        {
+          thesis_id: 'T1',
+          title: 'Dự án A bàn giao kỳ vọng',
+          summary: 'Dự kiến đóng góp.',
+          materiality: 7,
+        },
         { thesis_id: 'T1', title: 'Trùng', summary: 'Trùng', materiality: 2 },
         { thesis_id: 'T2', title: '', summary: 'x', materiality: 3 },
         { thesis_id: 'T3', title: 'Có', summary: 'Có', materiality: 'cao' },
@@ -404,11 +535,20 @@ describe('ResearchAiService.buildTheses', () => {
     });
     const { result, usage } = await service.buildTheses('VIC', [buildInput()]);
     expect(result).toEqual([
-      { thesisId: 'T1', title: 'Dự án A bàn giao kỳ vọng', summary: 'Dự kiến đóng góp.', materiality: 5 },
+      {
+        thesisId: 'T1',
+        title: 'Dự án A bàn giao kỳ vọng',
+        summary: 'Dự kiến đóng góp.',
+        materiality: 5,
+      },
       { thesisId: 'T4', title: 'Lạ', summary: 'Lạ', materiality: 2 },
     ]);
     expect(usage).toEqual({ calls: 1, promptTokens: 100, completionTokens: 10 });
-    expect(complete.mock.calls[0]![2]).toMatchObject({ temperature: 0.1, maxTokens: 3000, json: true });
+    expect(complete.mock.calls[0]![2]).toMatchObject({
+      temperature: 0.1,
+      maxTokens: 3000,
+      json: true,
+    });
     const user = complete.mock.calls[0]![1] as string;
     expect(user).not.toContain('Lý do bị từ chối');
     expect(user).not.toMatch(/SSI|Vietcap/);
@@ -417,9 +557,11 @@ describe('ResearchAiService.buildTheses', () => {
 
   it('puts previous rejection reasons in the prompt', async () => {
     const { service, complete } = stub({ theses: [] });
-    await service.buildTheses('VIC', [buildInput()], [
-      { thesisId: 'T1', code: 'untraceable_number', detail: 'số 15% không có trong evidence' },
-    ]);
+    await service.buildTheses(
+      'VIC',
+      [buildInput()],
+      [{ thesisId: 'T1', code: 'untraceable_number', detail: 'số 15% không có trong evidence' }],
+    );
     const user = complete.mock.calls[0]![1] as string;
     expect(user).toContain('Lý do bị từ chối lần trước');
     expect(user).toContain('T1');
@@ -428,7 +570,9 @@ describe('ResearchAiService.buildTheses', () => {
   });
 
   it('rejects an invalid envelope; no inputs means no call', async () => {
-    await expect(stub({ result: [] }).service.buildTheses('VIC', [buildInput()])).rejects.toBeInstanceOf(ResearchAiInvalidOutputError);
+    await expect(
+      stub({ result: [] }).service.buildTheses('VIC', [buildInput()]),
+    ).rejects.toBeInstanceOf(ResearchAiInvalidOutputError);
     const { service, complete } = stub();
     expect((await service.buildTheses('VIC', [])).result).toEqual([]);
     expect(complete).not.toHaveBeenCalled();

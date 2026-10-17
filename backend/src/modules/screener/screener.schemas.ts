@@ -155,7 +155,7 @@ export function normalizeScreenerScope(scope: { market: string; sector: string }
 export const screenerMetricSchema = z.object({
   id: metricIdSchema,
   name: z.string(),
-  lesson_id: z.string(),
+  lesson_id: z.string().nullable(),
   unit: z.string(),
   api_unit: apiUnitSchema,
   /** Descriptive period text of the original registry (display only). */

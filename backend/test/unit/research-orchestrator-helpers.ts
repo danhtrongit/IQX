@@ -175,7 +175,13 @@ export class FakeResearchStore implements ResearchStore {
           r.reportDate >= fromDate,
       )
       .map((r, index) => ({ r, index }))
-      .sort((a, b) => (a.r.reportDate < b.r.reportDate ? -1 : a.r.reportDate > b.r.reportDate ? 1 : a.index - b.index))
+      .sort((a, b) =>
+        a.r.reportDate < b.r.reportDate
+          ? -1
+          : a.r.reportDate > b.r.reportDate
+            ? 1
+            : a.index - b.index,
+      )
       .map(({ r }) => ({ ...r }));
   }
   async activeClaims(symbol: string, fromDate: string): Promise<StoredClaim[]> {
@@ -187,7 +193,9 @@ export class FakeResearchStore implements ResearchStore {
     return (await this.activeClaims(symbol, fromDate)).filter((c) => !this.matched.has(c.id));
   }
   async theses(symbol: string): Promise<CanonicalThesis[]> {
-    return this.thesisRows.filter((t) => t.symbol === symbol).map((t) => ({ ...t, summaryBrokers: [...t.summaryBrokers] }));
+    return this.thesisRows
+      .filter((t) => t.symbol === symbol)
+      .map((t) => ({ ...t, summaryBrokers: [...t.summaryBrokers] }));
   }
   async thesisLinks(symbol: string): Promise<ThesisEvidenceLink[]> {
     const ids = new Set(this.thesisRows.filter((t) => t.symbol === symbol).map((t) => t.id));
@@ -229,7 +237,10 @@ export class FakeResearchStore implements ResearchStore {
   async markClaimsMatched(claimIds: string[]): Promise<void> {
     for (const id of claimIds) this.matched.add(id);
   }
-  async markProcessed(reportId: string, target: { targetPriceVnd: number; horizon: string | null } | null): Promise<void> {
+  async markProcessed(
+    reportId: string,
+    target: { targetPriceVnd: number; horizon: string | null } | null,
+  ): Promise<void> {
     const r = this.report(reportId);
     r.processStatus = 'processed';
     r.processAttempts += 1;
@@ -270,7 +281,9 @@ export class FakeResearchStore implements ResearchStore {
     this.thesisRows.push(created);
     return { ...created };
   }
-  async linkClaims(links: (ThesisEvidenceLink & { matchReason: ClaimMatch['match'] })[]): Promise<void> {
+  async linkClaims(
+    links: (ThesisEvidenceLink & { matchReason: ClaimMatch['match'] })[],
+  ): Promise<void> {
     for (const { thesisId, claimId, relationship } of links) {
       if (this.links.some((l) => l.thesisId === thesisId && l.claimId === claimId)) continue; // ON CONFLICT DO NOTHING
       this.links.push({ thesisId, claimId, relationship });
@@ -279,15 +292,18 @@ export class FakeResearchStore implements ResearchStore {
   async updateThesis(thesisId: string, patch: ThesisPatch): Promise<void> {
     const t = this.thesis(thesisId);
     this.updates.push({ thesisId, patch });
-    for (const [key, value] of Object.entries(patch)) if (value !== undefined) (t as unknown as Record<string, unknown>)[key] = value;
+    for (const [key, value] of Object.entries(patch))
+      if (value !== undefined) (t as unknown as Record<string, unknown>)[key] = value;
   }
   async replaceBrokerCurrentViews(symbol: string, views: BrokerCurrentViewRow[]): Promise<void> {
     this.brokerViews.set(symbol, views);
   }
   async publish(symbol: string, input: PublishInput): Promise<number> {
     this.publishCalls += 1;
-    const version = Math.max(0, ...this.versions.filter((v) => v.symbol === symbol).map((v) => v.version)) + 1;
-    for (const v of this.versions) if (v.symbol === symbol && v.status === 'published') v.status = 'superseded';
+    const version =
+      Math.max(0, ...this.versions.filter((v) => v.symbol === symbol).map((v) => v.version)) + 1;
+    for (const v of this.versions)
+      if (v.symbol === symbol && v.status === 'published') v.status = 'superseded';
     this.versions.push({
       versionId: `ver-${symbol}-${version}`,
       symbol,
@@ -351,7 +367,9 @@ export class FakeResearchStore implements ResearchStore {
   async lastBlockedFingerprint(symbol: string): Promise<string | null> {
     const own = this.jobs.filter((j) => j.symbol === symbol);
     const lastDone = Math.max(0, ...own.filter((j) => j.status === 'done').map((j) => j.seq));
-    const blocked = own.filter((j) => j.status === 'blocked' && j.seq > lastDone).sort((a, b) => b.seq - a.seq)[0];
+    const blocked = own
+      .filter((j) => j.status === 'blocked' && j.seq > lastDone)
+      .sort((a, b) => b.seq - a.seq)[0];
     return blocked?.inputFingerprint ?? null;
   }
 
@@ -366,7 +384,10 @@ export class FakeResearchStore implements ResearchStore {
 
 // ─── scriptable AI ────────────────────────────────────────────────────────────
 
-export type BuildFn = (inputs: ThesisBuildInput[], failures: ValidationFailure[] | undefined) => BuiltThesis[];
+export type BuildFn = (
+  inputs: ThesisBuildInput[],
+  failures: ValidationFailure[] | undefined,
+) => BuiltThesis[];
 
 export function defaultBuild(inputs: ThesisBuildInput[]): BuiltThesis[] {
   return inputs.map((input) => ({
@@ -388,9 +409,23 @@ export function defaultMatch(
   const matches: ClaimMatch[] = claims.map((claim) => {
     const existing = theses.find((t) => t.canonicalDriver === claim.driver);
     if (existing)
-      return { claimId: claim.id, relationship: 'SUPPORT', thesisId: existing.id, newThesisKey: null, invalidatesThesis: false, match: reasoning };
+      return {
+        claimId: claim.id,
+        relationship: 'SUPPORT',
+        thesisId: existing.id,
+        newThesisKey: null,
+        invalidatesThesis: false,
+        match: reasoning,
+      };
     keys.add(claim.driver);
-    return { claimId: claim.id, relationship: 'NEW_THESIS', thesisId: null, newThesisKey: claim.driver, invalidatesThesis: false, match: reasoning };
+    return {
+      claimId: claim.id,
+      relationship: 'NEW_THESIS',
+      thesisId: null,
+      newThesisKey: claim.driver,
+      invalidatesThesis: false,
+      match: reasoning,
+    };
   });
   const newTheses: NewThesisDraft[] = [...keys].map((key) => ({
     key,
@@ -413,7 +448,12 @@ export class StubAi implements ResearchAi {
   extractError: Error | null = null;
   matchError: Error | null = null;
   buildError: Error | null = null;
-  matchFn: ((theses: Pick<CanonicalThesis, 'id' | 'canonicalDriver'>[], claims: StoredClaim[]) => MatchingResult) | null = null;
+  matchFn:
+    | ((
+        theses: Pick<CanonicalThesis, 'id' | 'canonicalDriver'>[],
+        claims: StoredClaim[],
+      ) => MatchingResult)
+    | null = null;
   buildFn: BuildFn = (inputs) => defaultBuild(inputs);
   /** Awaited at the start of every extraction; lets a test hold the job open. */
   gate: Promise<void> | null = null;
@@ -422,7 +462,11 @@ export class StubAi implements ResearchAi {
     return this.extractCalls.length + this.matchCalls + this.buildCalls.length;
   }
 
-  async extractClaims(r: Pick<ResearchReport, 'symbol' | 'broker' | 'reportDate' | 'title' | 'language'> & { id?: string }) {
+  async extractClaims(
+    r: Pick<ResearchReport, 'symbol' | 'broker' | 'reportDate' | 'title' | 'language'> & {
+      id?: string;
+    },
+  ) {
     const id = (r as ResearchReport).id;
     this.extractCalls.push(id);
     if (this.gate) await this.gate;
@@ -431,7 +475,11 @@ export class StubAi implements ResearchAi {
     return { result, usage: usage() };
   }
 
-  async matchClaims(_symbol: string, theses: Pick<CanonicalThesis, 'id' | 'canonicalDriver'>[], claims: StoredClaim[]) {
+  async matchClaims(
+    _symbol: string,
+    theses: Pick<CanonicalThesis, 'id' | 'canonicalDriver'>[],
+    claims: StoredClaim[],
+  ) {
     this.matchCalls += 1;
     if (this.matchError) throw this.matchError;
     return { result: (this.matchFn ?? defaultMatch)(theses, claims), usage: usage() };
@@ -464,8 +512,17 @@ export function makeHarness(): Harness {
     currentPrice: vi.fn(async (_symbol: string): Promise<number | null> => price.value),
   };
   const settings = { RESEARCH_AI_DAILY_CALL_LIMIT: 1_000, RESEARCH_INSIGHT_ENABLED: true };
-  const config = { get: (key: keyof typeof settings) => settings[key] } as unknown as ConfigService<Environment, true>;
-  const engine = new ResearchEngineService(store, ai, price, files as unknown as ReportFiles, config);
+  const config = { get: (key: keyof typeof settings) => settings[key] } as unknown as ConfigService<
+    Environment,
+    true
+  >;
+  const engine = new ResearchEngineService(
+    store,
+    ai,
+    price,
+    files as unknown as ReportFiles,
+    config,
+  );
   return { store, ai, files, price, settings, engine };
 }
 

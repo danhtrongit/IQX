@@ -288,7 +288,7 @@ describe("Lưu", () => {
 
     it("403 CAPABILITY_LOCKED names the indicator whose quiz is missing", async () => {
       world.override["PATCH /strategy/shared-config"] = () => {
-        throw new FakeApiError("Cần hoàn thành bài học của chỉ báo rsi (8/8) trước khi bật.", 403, {
+        throw new FakeApiError("Cần hoàn thành bài học của chỉ báo rsi trước khi bật.", 403, {
           code: "CAPABILITY_LOCKED",
           details: [{ capability: "indicator:rsi", reason: "not_learned", indicator: "rsi" }],
         })
@@ -297,7 +297,7 @@ describe("Lưu", () => {
       const dialog = await openConfig(user)
       await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
       await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
-      expect(await within(dialog).findByText("Hoàn thành bài kiểm tra 8/8 của chỉ báo RSI để bật.")).toBeTruthy()
+      expect(await within(dialog).findByText("Đạt bài kiểm tra của bài học chỉ báo RSI để bật.")).toBeTruthy()
     })
 
     it("blocks Lưu for MACD fast >= slow with the registry's cross-field message, flags the tab and clears when fixed", async () => {

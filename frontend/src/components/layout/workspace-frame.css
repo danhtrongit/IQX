@@ -9,6 +9,8 @@
  *
  * At 900px and below the panel becomes a layer that slides in next to the rail;
  * the rail stays on the right and a closed panel is hidden from focus and clicks.
+ * With data-rail="bar" the rail is a tool bar above the main area instead (HỌC VIỆN),
+ * so the main area keeps the whole width of the phone.
  */
 .workspace-frame {
   --ws-side: 410px;
@@ -154,6 +156,21 @@
     transition:
       transform 150ms ease,
       visibility 0s;
+  }
+}
+
+@media (max-width: 900px) {
+  /* Tool bar above the main area: the main area and the layer take the whole width. */
+  .workspace-frame[data-rail="bar"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .workspace-frame[data-rail="bar"] .workspace-panel {
+    /* Below the 44px tool bar, which stays usable while the layer is open. */
+    top: 2.75rem;
+    right: 0;
+    width: min(405px, 100%);
+    border-right: 0;
   }
 }
 

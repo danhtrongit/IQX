@@ -1,0 +1,578 @@
+{
+  "banks": {
+    "ch01-exam": {
+      "questions": 20
+    },
+    "ch01-l01": {
+      "questions": 3
+    },
+    "ch01-l02": {
+      "questions": 3
+    },
+    "ch01-l03": {
+      "questions": 3
+    },
+    "ch01-l04": {
+      "questions": 3
+    },
+    "ch01-l05": {
+      "questions": 3
+    },
+    "ch01-l06": {
+      "questions": 3
+    },
+    "ch01-l07": {
+      "questions": 3
+    },
+    "ch01-l08": {
+      "questions": 3
+    },
+    "ch01-l09": {
+      "questions": 3
+    },
+    "ch01-l10": {
+      "questions": 3
+    },
+    "ch02-exam": {
+      "questions": 20
+    },
+    "ch02-l01": {
+      "questions": 3
+    },
+    "ch02-l02": {
+      "questions": 3
+    },
+    "ch02-l03": {
+      "questions": 3
+    },
+    "ch02-l04": {
+      "questions": 3
+    },
+    "ch02-l05": {
+      "questions": 3
+    },
+    "ch02-l06": {
+      "questions": 3
+    },
+    "ch02-l07": {
+      "questions": 3
+    },
+    "ch02-l08": {
+      "questions": 3
+    },
+    "ch02-l09": {
+      "questions": 3
+    },
+    "ch02-l10": {
+      "questions": 3
+    },
+    "ch03-exam": {
+      "questions": 20
+    },
+    "ch03-l01": {
+      "questions": 3
+    },
+    "ch03-l02": {
+      "questions": 3
+    },
+    "ch03-l03": {
+      "questions": 3
+    },
+    "ch03-l04": {
+      "questions": 3
+    },
+    "ch03-l05": {
+      "questions": 3
+    },
+    "ch03-l06": {
+      "questions": 3
+    },
+    "ch03-l07": {
+      "questions": 3
+    },
+    "ch03-l08": {
+      "questions": 3
+    },
+    "ch03-l09": {
+      "questions": 3
+    },
+    "ch03-practice": {
+      "questions": 3
+    },
+    "ch04-exam": {
+      "questions": 30
+    },
+    "ch04-l01": {
+      "questions": 5
+    },
+    "ch04-l02": {
+      "questions": 5
+    },
+    "ch04-l03": {
+      "questions": 5
+    },
+    "ch04-l04": {
+      "questions": 5
+    },
+    "ch04-l05": {
+      "questions": 5
+    },
+    "ch04-l06": {
+      "questions": 5
+    },
+    "ch04-l07": {
+      "questions": 5
+    },
+    "ch04-l08": {
+      "questions": 5
+    },
+    "ch04-l09": {
+      "questions": 5
+    },
+    "ch04-l10": {
+      "questions": 5
+    },
+    "ch05-exam": {
+      "questions": 30
+    },
+    "ch05-l01": {
+      "questions": 5
+    },
+    "ch05-l02": {
+      "questions": 5
+    },
+    "ch05-l03": {
+      "questions": 5
+    },
+    "ch05-l04": {
+      "questions": 5
+    }
+  },
+  "counts": {
+    "banks": 49,
+    "blocks": {
+      "cards": 76,
+      "chart": 96,
+      "chart_grid": 4,
+      "checklist": 13,
+      "definitions": 38,
+      "formula": 1,
+      "funnel": 2,
+      "gauges": 1,
+      "heading": 1,
+      "income_calculator": 1,
+      "kv_cards": 2,
+      "note": 3,
+      "objection": 6,
+      "paragraph": 233,
+      "practice_case": 4,
+      "quote": 17,
+      "roleplay_score": 1,
+      "sample_post": 5,
+      "scenario": 19,
+      "stats": 5,
+      "steps": 11,
+      "table": 30,
+      "tiles": 3,
+      "workpad": 18
+    },
+    "chart_kinds": {
+      "candle_glyphs": 8,
+      "category": 10,
+      "compare": 16,
+      "diagram": 5,
+      "flow": 6,
+      "gantt": 3,
+      "milestones": 2,
+      "scale": 3,
+      "schematic": 17,
+      "segment_bar": 11,
+      "series_panels": 33
+    },
+    "charts": 114,
+    "intro_blocks": 2,
+    "lessons": 44,
+    "questions": 280,
+    "sections": 252,
+    "summaries": 44,
+    "svg_ids": 129,
+    "text_figures": 12
+  },
+  "format": "iqx-academy-import-manifest-v1",
+  "gates": {
+    "dashes_resolved": true,
+    "overrides_used": true,
+    "schema": true,
+    "source_sha256": true,
+    "svg_ids": true
+  },
+  "lessons": {
+    "ch01-l01": {
+      "blocks": 7,
+      "charts": 7,
+      "questions": 3,
+      "sections": 3
+    },
+    "ch01-l02": {
+      "blocks": 15,
+      "charts": 4,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch01-l03": {
+      "blocks": 14,
+      "charts": 2,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch01-l04": {
+      "blocks": 16,
+      "charts": 3,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch01-l05": {
+      "blocks": 12,
+      "charts": 3,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch01-l06": {
+      "blocks": 16,
+      "charts": 5,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch01-l07": {
+      "blocks": 13,
+      "charts": 4,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch01-l08": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 3,
+      "sections": 7
+    },
+    "ch01-l09": {
+      "blocks": 11,
+      "charts": 3,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch01-l10": {
+      "blocks": 16,
+      "charts": 3,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch02-l01": {
+      "blocks": 21,
+      "charts": 1,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch02-l02": {
+      "blocks": 9,
+      "charts": 0,
+      "questions": 3,
+      "sections": 4
+    },
+    "ch02-l03": {
+      "blocks": 14,
+      "charts": 1,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch02-l04": {
+      "blocks": 11,
+      "charts": 0,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch02-l05": {
+      "blocks": 12,
+      "charts": 1,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch02-l06": {
+      "blocks": 9,
+      "charts": 1,
+      "questions": 3,
+      "sections": 4
+    },
+    "ch02-l07": {
+      "blocks": 10,
+      "charts": 0,
+      "questions": 3,
+      "sections": 4
+    },
+    "ch02-l08": {
+      "blocks": 11,
+      "charts": 0,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch02-l09": {
+      "blocks": 12,
+      "charts": 1,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch02-l10": {
+      "blocks": 11,
+      "charts": 1,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch03-l01": {
+      "blocks": 11,
+      "charts": 0,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch03-l02": {
+      "blocks": 11,
+      "charts": 0,
+      "questions": 3,
+      "sections": 4
+    },
+    "ch03-l03": {
+      "blocks": 13,
+      "charts": 0,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch03-l04": {
+      "blocks": 14,
+      "charts": 0,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch03-l05": {
+      "blocks": 12,
+      "charts": 0,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch03-l06": {
+      "blocks": 14,
+      "charts": 0,
+      "questions": 3,
+      "sections": 5
+    },
+    "ch03-l07": {
+      "blocks": 13,
+      "charts": 0,
+      "questions": 3,
+      "sections": 7
+    },
+    "ch03-l08": {
+      "blocks": 13,
+      "charts": 0,
+      "questions": 3,
+      "sections": 4
+    },
+    "ch03-l09": {
+      "blocks": 8,
+      "charts": 0,
+      "questions": 3,
+      "sections": 4
+    },
+    "ch03-practice": {
+      "blocks": 8,
+      "charts": 0,
+      "questions": 3,
+      "sections": 6
+    },
+    "ch04-l01": {
+      "blocks": 13,
+      "charts": 9,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch04-l02": {
+      "blocks": 12,
+      "charts": 5,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch04-l03": {
+      "blocks": 13,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch04-l04": {
+      "blocks": 12,
+      "charts": 7,
+      "questions": 5,
+      "sections": 5
+    },
+    "ch04-l05": {
+      "blocks": 15,
+      "charts": 6,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch04-l06": {
+      "blocks": 18,
+      "charts": 6,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch04-l07": {
+      "blocks": 19,
+      "charts": 6,
+      "questions": 5,
+      "sections": 8
+    },
+    "ch04-l08": {
+      "blocks": 15,
+      "charts": 4,
+      "questions": 5,
+      "sections": 5
+    },
+    "ch04-l09": {
+      "blocks": 14,
+      "charts": 3,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch04-l10": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch05-l01": {
+      "blocks": 13,
+      "charts": 3,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch05-l02": {
+      "blocks": 15,
+      "charts": 6,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch05-l03": {
+      "blocks": 21,
+      "charts": 2,
+      "questions": 5,
+      "sections": 9
+    },
+    "ch05-l04": {
+      "blocks": 25,
+      "charts": 5,
+      "questions": 5,
+      "sections": 11
+    }
+  },
+  "outputs": {
+    "catalog.json": "20318db976138a9b2cce964b93dc2ef73b9b63d0dd93e9f4ca0a637c63c0413a",
+    "lessons/ch01-l01.vi.json": "32088215bb1532ce8798c9b87623e5348286da6ab964b2a0022eec19894d97aa",
+    "lessons/ch01-l02.vi.json": "b458ec90b8695fac6fd47ade07a5f9153022d3742ff1c267731a20af189544aa",
+    "lessons/ch01-l03.vi.json": "cc4a0d85c4c389b4113c6339919909921501842b703dd5879532652b530fc17e",
+    "lessons/ch01-l04.vi.json": "366179ee68f4e51e78e0594eded49369230f1aa4174ad909c0526c671b986a16",
+    "lessons/ch01-l05.vi.json": "83551d64798bf885e243e011ded835f497389356e9b3dd46c59426cbdc5c765f",
+    "lessons/ch01-l06.vi.json": "1733dfb46552cb2184846d85c38706dee94d4680a5591154ebdc98f8de550e48",
+    "lessons/ch01-l07.vi.json": "43945c272aa47c4bc0794671d0da6f1b2f1af1e0f1cd61cd29d572f660c99889",
+    "lessons/ch01-l08.vi.json": "9f7e30826d3711ff832aa82e56759fd3a2f016fac2dc3efe8c43d0994a541134",
+    "lessons/ch01-l09.vi.json": "dfa3c225c9d261ee5c108731490910b66b6639502d9ff420233cb9ed8cb1f059",
+    "lessons/ch01-l10.vi.json": "b10b2b71e265481380634803bb614641a280c5005f807a990829923e24790228",
+    "lessons/ch02-l01.vi.json": "c400a7b68cddda81f9d7b21b3922cc6461bc720cb1434ae117b01cb0ff9053d3",
+    "lessons/ch02-l02.vi.json": "ef3e1e70678fac69c2ed851f1f60c9e52bc3dfb04192ed95a343a8031567bea1",
+    "lessons/ch02-l03.vi.json": "ea455e0677068312127777c9d7231d1332c8cbc5f366e68b2a65a9f997d3da57",
+    "lessons/ch02-l04.vi.json": "84973de3ed805e6767ca2ec5f09614afb0b9866adad31b02b09b2eb17346cbe1",
+    "lessons/ch02-l05.vi.json": "4abd45d5fc105f090d1ab540685c2f28bfd7c234e7e13bf98f1ba6c76e4daa9e",
+    "lessons/ch02-l06.vi.json": "5b1260ffadbf83de6fd732701a6aecc679e4d4a9415d64f019035832b44ddec2",
+    "lessons/ch02-l07.vi.json": "58d86d38a2652b920b491619f1451511baf4aa86065adc245273144f4a8002ba",
+    "lessons/ch02-l08.vi.json": "b4008dfcb78e7d633e5612f4f7e4fc7b09671745a63a6d7af9d63548611c6ebb",
+    "lessons/ch02-l09.vi.json": "422ea5683a86d5da969082adf1455453d71b058843ae56f2bda1b666a6b7fb16",
+    "lessons/ch02-l10.vi.json": "8fa80e90f8619c77c1a0d705a5ba32318f6f10bfcc5947f813f8e80bc05eaf94",
+    "lessons/ch03-l01.vi.json": "74077babab9557b4075293d013b7e243183ae2cee892f293a0fb70b5d2ae8ffa",
+    "lessons/ch03-l02.vi.json": "9b6bb035711acd53c142b6fefc2b2f5ebdf8379f91ad5245beb1c00f660e3f2a",
+    "lessons/ch03-l03.vi.json": "502442e5e91b96e9daae0c948c40ab7fd912ce949a48e73af754dc989fb8a6e1",
+    "lessons/ch03-l04.vi.json": "ea48f5144aff2c19ec0f51f74b68cb897a3190c56eb2627484b9a56172d2e426",
+    "lessons/ch03-l05.vi.json": "fb8e7edd9c5db7cd9dc6e1c992141cae10045d60e5e6b7b06c42ef67fcf3a6dd",
+    "lessons/ch03-l06.vi.json": "ef33e9ba96913bf4875de72acd6719d1da70b50f57ffafe0bf2ff4bdd3faf644",
+    "lessons/ch03-l07.vi.json": "85bcc6be3ec2452fce0992e45c1e9d6b33e38ca62f9da687cb6b32fd05e1f97b",
+    "lessons/ch03-l08.vi.json": "72f59cccce2437abe3c57cea0daace465767ad4ab25de3491625e6dedeab46e0",
+    "lessons/ch03-l09.vi.json": "526bda04864aada7ce0dbddcccd342cbb58b0f185e01b7e41002d429724e8683",
+    "lessons/ch03-practice.vi.json": "bf9e36b9256038ff072dd2af58a2567fcfefdfda006a8cf7b67b9965fa3ca2cd",
+    "lessons/ch04-l01.vi.json": "4f37bf29850783afa91d20ac9315b6e31cdbae7e4977b82b5963bed18e1519fb",
+    "lessons/ch04-l02.vi.json": "d7032c3dfa5374f3c5c1f8a354f74b1bed23f26129a062944877d2ec4a0dab32",
+    "lessons/ch04-l03.vi.json": "d185690cd480594347c24274a9f211fab768adaedbe2e9f719339e4b5c0a5a55",
+    "lessons/ch04-l04.vi.json": "f7363d3d58c5640514d630ba50d82df5e9b85f9ae60a29d7bdc4f390c2b06e96",
+    "lessons/ch04-l05.vi.json": "e428acb5a272f36df34aeae89b7116270435f75d5603a355419462b86b3bba24",
+    "lessons/ch04-l06.vi.json": "d28d467d022a389ab679d2943f6d3f8d4a1418cdde05917a6d6bc23e254f32cf",
+    "lessons/ch04-l07.vi.json": "3988c1353ec76f3cf2d8c6ee5872b1682c5eec09ce94b1851525a46684a2d5e1",
+    "lessons/ch04-l08.vi.json": "258dc038d7082fc924b6a7c22a99d0a1d194b7dd0b9145aac4cdb72a1a272a00",
+    "lessons/ch04-l09.vi.json": "6757c1afd86d96f06e8b5c9a4463679f01cd713c659d0c45e0cddee2676c4bb9",
+    "lessons/ch04-l10.vi.json": "eaab29e5468b5acd5ce0eee589e11521e2bbc39748b3892487315dd1f6eafb90",
+    "lessons/ch05-l01.vi.json": "d979e02fdb6e39e24a4533ca9720f41ac9ecc490e1be160880f4c8f45e6c77e4",
+    "lessons/ch05-l02.vi.json": "8d5c8fe6884960421bb9627a07f8019fcec042b94804ea39f71ff40a42d7f45a",
+    "lessons/ch05-l03.vi.json": "042de3f6ce1ff23f7b77e2d6c644035de2ecdae09968c223374d7c0886836282",
+    "lessons/ch05-l04.vi.json": "6794bcc33bf3c44bb8427eb6d2d5d88e1448620cedba0a3444c130acc88dbb0c",
+    "questions/ch01-exam.private.json": "4c7f562d97ccb3ae62b19e4bbdaeeb489463ca3d9c483dca126deff93ef224d5",
+    "questions/ch01-l01.private.json": "a884193331e1eeff5c4842d70f2555d91a3d15683ccb759343c7633627c476bb",
+    "questions/ch01-l02.private.json": "8b366075160a09220171adc54d5ef84640733c6eb852074d0ec89eea999ef4ee",
+    "questions/ch01-l03.private.json": "0f41331356c8f3aa935ab0b284a52232048cc83e45031f2187b399feedec6825",
+    "questions/ch01-l04.private.json": "79dce3afc4524a6bccd33d192e93343768b9d291a2de99b6b0f6e3eba3a83a19",
+    "questions/ch01-l05.private.json": "f5f983d2e17e20c895c6fd8cdd34ffd7e95abc37dc9eded6e72cf73da5b3c08e",
+    "questions/ch01-l06.private.json": "ae49ca410ee9196bd2074eacc96d59a92858c50b40dd62ebab00ec0f1bdf7544",
+    "questions/ch01-l07.private.json": "c3293dfa822c118da28d521a195319d00d387540c4bf9367f18ed7b0ebecbe68",
+    "questions/ch01-l08.private.json": "5bd10dadd2bacca883b689227a11d899bfbffc1583ee435e65abb01b91f9eb19",
+    "questions/ch01-l09.private.json": "fc155c3589e399c627fa0c16483dfa2b8cddbcd263a0dc2cd33b1972458632fb",
+    "questions/ch01-l10.private.json": "d6d7bacab44a4c65ccb2a5a74f1bf2ac395a7d2e2b0d946f5f84f2fc714a854a",
+    "questions/ch02-exam.private.json": "f8a23ab822d2f9eb09a8df597c10e14fac4d1b488dc59e98a7146a6944edd94a",
+    "questions/ch02-l01.private.json": "fccee560ff6607d2868d55655076c9052e0b503fc827cc60c7124565836c2a13",
+    "questions/ch02-l02.private.json": "874fb2b545822dde81943b134eb6607546a98bffc6c88bf1d80b470dfcbfa5c2",
+    "questions/ch02-l03.private.json": "8bbd88b4e079d83ea0e18e3a01271731f9ea2b44f2d0ee8279c2beca3bb43262",
+    "questions/ch02-l04.private.json": "a1b907ee5adc1147d244de7b3c418b94e87aca8eb6650f5d84fff25089d8f0c5",
+    "questions/ch02-l05.private.json": "b3961aa2ebc277c8663752e7b8bd81a4e2505fda4e137ccd8df7ed26ea3b7829",
+    "questions/ch02-l06.private.json": "4d3a1e74333c3814eb599da6f91a11ec7f275fb5967270eac2dc5bf743c6fbd0",
+    "questions/ch02-l07.private.json": "e4ae18808c500bb2dd71e4ce32ef67abaea3c4e782505e5ec056da2be0f92a6f",
+    "questions/ch02-l08.private.json": "a9e79081857dac8769d4677a9615041851a34b28fde007c0effab4acba00874e",
+    "questions/ch02-l09.private.json": "0ecd2d0b37d2509b5b12b0c9349bffa280f8fed2bbfa08c7eb9b71f52e6cd850",
+    "questions/ch02-l10.private.json": "ee24f63311e8831f8e25ef3b620bfcd5953c8d069d0149bf4b7e43801886684d",
+    "questions/ch03-exam.private.json": "8f50671fb97bd1d12aacb21bcf92475e17f7cee3a35b7717596c6ada2b9192e3",
+    "questions/ch03-l01.private.json": "a0e1eaba550dbd83ccfbf4dd31589823e89564ca2050893acdcc48a46d9a4c9f",
+    "questions/ch03-l02.private.json": "7a83e6471ddc40b4d3d636d0af1124b83636c0a97d685a12032d8d6e22ec2330",
+    "questions/ch03-l03.private.json": "969a7604baa3af532e64bc5821bc072dad3dfd5b6c63f65629c5309dd6f6e63e",
+    "questions/ch03-l04.private.json": "0a0c93d87bbd34eb001880c23a42a3492e618f423f81da993e6a866b28c82078",
+    "questions/ch03-l05.private.json": "aceb3cf9cad1f311a5e41f3717ddde1a564eafbcb19dea667fb9c33c9d218245",
+    "questions/ch03-l06.private.json": "22e7a463d35f0a6be2716f7b2aa15769c84928084f3e3dee6d04f59f85ddf1d7",
+    "questions/ch03-l07.private.json": "7c5c5f576c4813cd440314e5b399860aba279edbe091d914621016e0d365b357",
+    "questions/ch03-l08.private.json": "b76a28d07ebe2c261ff3687eb47b1cf7ce08d625bf104d426d39dbf2c6b3e877",
+    "questions/ch03-l09.private.json": "7b66df84852a405d671fe40383fc136d5c5dfb3430bb5ea66f48914fe6d1759b",
+    "questions/ch03-practice.private.json": "9279e2f0f9927bc29161bfe7f965facff8cdfbc3574d165478bc8d158cec5c8b",
+    "questions/ch04-exam.private.json": "ddd37abf95c8aae3307cd1fb8c9177b9c8643fe29829f9a9b13c748b9b2eef03",
+    "questions/ch04-l01.private.json": "5e8203aa7777becb17988726039855c8d3e988beb21cb8954e6be17c2a719bbc",
+    "questions/ch04-l02.private.json": "43b137a522d0502f4824bd3fd9713d4c811c4138054c7c1c564c0ec36316d791",
+    "questions/ch04-l03.private.json": "4301fb7d9f3297e0887042b5a9d87e6d452ccd6dd999cd3f2fdfdf84fc8e079d",
+    "questions/ch04-l04.private.json": "407ee2cc5e18a3a37766f5c364588c4f82d807ef091f410a60cddb8d7903fcb6",
+    "questions/ch04-l05.private.json": "215ea1a34eb80bb4f8a93cee38c3051ab0f50ee29027c9a5cd4e1b617ebbc675",
+    "questions/ch04-l06.private.json": "5102d422b13db59ed302ea04640120a1525fef343e5287dbc6088751ec9ca5ea",
+    "questions/ch04-l07.private.json": "293e2ff0ce371abc469399bac363898e97c538294571e8f024d55e32d05a0af3",
+    "questions/ch04-l08.private.json": "649e44be2318b20d320ec25411587165cbaa9cdcf6e450ea53679afd1928defb",
+    "questions/ch04-l09.private.json": "1798bdc8c1f703a4e2505f2b0741b2b2eef3ded4d443956328d09c36af976fe6",
+    "questions/ch04-l10.private.json": "8b67336ef86ef86a1e976c3ba8e0266af07ba03930f23428bdc0f876377053d7",
+    "questions/ch05-exam.private.json": "2c47af190aeb0fe0517e0b120727909ce97862d470b473597403c0ffd1db4b71",
+    "questions/ch05-l01.private.json": "908927207aa608bb3c4622de58c033873ac680b92e96b3e1ad794ae9362edc93",
+    "questions/ch05-l02.private.json": "670361063d8a2554cff9ee9798d34fe3ab3b0118f6b919ef090f66b0e3937369",
+    "questions/ch05-l03.private.json": "76fa899612a657a47887da088649e2959f266ff82792ec6aa3a5a487a8b43913",
+    "questions/ch05-l04.private.json": "5c0fe6bfc8727f14fb9032c72db9e56e9f5ff9d9a2b9c4acf574675ab49b515f",
+    "retired-lessons.json": "77f342f134a53b75abdd7f705a94688d13aca2db4498dbfe0bb69d3b1275996d"
+  },
+  "source": {
+    "bytes": 566586,
+    "file": "IQX-Hoc-Vien-MAU.html",
+    "sha256": "52d11cb805ee8ce28dc6172908a6383b421947e128c0d908a3c92e389072059f"
+  },
+  "warnings": []
+}

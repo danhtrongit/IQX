@@ -13,10 +13,10 @@ Spec: `IQX_AI_Insight_Goc_nhin_dau_tu_SPEC.md` (v2) + HTML mẫu. Product/UI the
 
 ## 2. Nguồn báo cáo (spec §32 B)
 
-| Nguồn | Vai trò | Cách lấy |
-| --- | --- | --- |
+| Nguồn                                                      | Vai trò         | Cách lấy                                                                                                 |
+| ---------------------------------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------- |
 | Vietstock `finance.vietstock.vn/View/ChannelEDocumentPage` | Chính, ~25 CTCK | Token trang kênh; `reportTypeID` 58 doanh nghiệp, 57 ngành, 51 vĩ mô/chiến lược; PDF `downloadedoc/<id>` |
-| VNDirect `api-finfo.vndirect.com.vn/v4/news` | Phụ | Báo cáo của VNDirect, PDF đính kèm |
+| VNDirect `api-finfo.vndirect.com.vn/v4/news`               | Phụ             | Báo cáo của VNDirect, PDF đính kèm                                                                       |
 
 - Metadata (mã, CTCK, ngày, giá mục tiêu trong tiêu đề) do backend parse, không qua AI. Tên CTCK chuẩn hoá trong `sources/broker-aliases.ts`.
 - Báo cáo nhiều mã/ngành lưu với `symbol = NULL`, không xử lý.

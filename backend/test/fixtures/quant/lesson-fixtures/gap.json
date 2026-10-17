@@ -1,0 +1,8 @@
+{
+  "indicator_id": "gap",
+  "legacy": true,
+  "source_lesson_id": "ch09-l04",
+  "label": "Gap",
+  "expected": 3,
+  "tolerance": 0.015
+}

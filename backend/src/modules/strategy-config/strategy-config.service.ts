@@ -372,7 +372,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
       if (isOn(merged.indicators[id]) && !grants.has(capability)) {
         throw new ForbiddenException({
           code: 'CAPABILITY_LOCKED',
-          message: `Cần hoàn thành bài học của chỉ báo ${id} (8/8) trước khi bật.`,
+          message: `Cần đạt bài kiểm tra của bài học chỉ báo ${id} trước khi bật.`,
           capability,
           reason: 'not_learned',
           details: [{ capability, reason: 'not_learned', indicator: id }],

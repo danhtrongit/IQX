@@ -4,6 +4,2357 @@ export type ClientOptions = {
   baseUrl: string;
 };
 
+export type AcademyBlock =
+  | {
+      text: string;
+      type: "paragraph";
+    }
+  | {
+      text: string;
+      type: "heading";
+    }
+  | {
+      text: string;
+      type: "note";
+    }
+  | {
+      chart_id: string;
+      legend?: Array<{
+        label: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      note?: string;
+      table_toggle?: boolean;
+      title?: string;
+      type: "chart";
+    }
+  | {
+      columns: 2 | 3 | 4 | 5;
+      items: Array<{
+        chart_id: string;
+        text?: string;
+        title: string;
+      }>;
+      layout: "grid" | "rows";
+      type: "chart_grid";
+    }
+  | {
+      aria_label?: string;
+      columns: Array<{
+        align?: "l" | "r" | "c";
+        highlight?: true;
+        label: string;
+        tone?:
+          | "neutral"
+          | "highlight"
+          | "pos"
+          | "neg"
+          | "good"
+          | "bad"
+          | "warn"
+          | "info"
+          | "violet";
+      }>;
+      rows: Array<{
+        cells: Array<
+          | string
+          | {
+              rating: "good" | "mid" | "bad";
+              text: string;
+            }
+          | {
+              colspan?: number;
+              highlight?: true;
+              text: string;
+              tone?:
+                | "neutral"
+                | "highlight"
+                | "pos"
+                | "neg"
+                | "good"
+                | "bad"
+                | "warn"
+                | "info"
+                | "violet";
+            }
+        >;
+        group?: {
+          label: string;
+          span: number;
+        };
+      }>;
+      title?: string;
+      type: "table";
+      variant: "grid" | "rows" | "grouped";
+    }
+  | {
+      columns: 2 | 3 | 4;
+      items: Array<{
+        bullets?: Array<string>;
+        eyebrow?: string;
+        facts?: Array<{
+          label: string;
+          value: string;
+        }>;
+        subtitle?: string;
+        text?: string;
+        title: string;
+        title_tone?:
+          | "neutral"
+          | "highlight"
+          | "pos"
+          | "neg"
+          | "good"
+          | "bad"
+          | "warn"
+          | "info"
+          | "violet";
+        tone?:
+          | "neutral"
+          | "highlight"
+          | "pos"
+          | "neg"
+          | "good"
+          | "bad"
+          | "warn"
+          | "info"
+          | "violet";
+      }>;
+      style: "card" | "tip" | "mistake";
+      type: "cards";
+    }
+  | {
+      items: Array<{
+        label?: string;
+        text?: string;
+        title: string;
+        value?: string;
+      }>;
+      type: "steps";
+    }
+  | {
+      items: Array<{
+        term: string;
+        text: string;
+        tone?:
+          | "neutral"
+          | "highlight"
+          | "pos"
+          | "neg"
+          | "good"
+          | "bad"
+          | "warn"
+          | "info"
+          | "violet";
+      }>;
+      marker?: "check";
+      title?: string;
+      type: "definitions";
+    }
+  | {
+      items: Array<{
+        highlight?: true;
+        icon?: "vault" | "landmark" | "chart-line";
+        label: string;
+        note?: string;
+        tone?:
+          | "neutral"
+          | "highlight"
+          | "pos"
+          | "neg"
+          | "good"
+          | "bad"
+          | "warn"
+          | "info"
+          | "violet";
+        value: string;
+      }>;
+      type: "stats";
+      variant: "hero" | "chip" | "big";
+    }
+  | {
+      items: Array<{
+        badge: string;
+        caption: string;
+        label: string;
+        pct: number;
+        tone: "ok" | "warn" | "bad";
+        value: string;
+      }>;
+      type: "gauges";
+    }
+  | {
+      items: Array<{
+        rows: Array<{
+          label: string;
+          value: string;
+        }>;
+        title: string;
+        tone?:
+          | "neutral"
+          | "highlight"
+          | "pos"
+          | "neg"
+          | "good"
+          | "bad"
+          | "warn"
+          | "info"
+          | "violet";
+        total?: {
+          label: string;
+          tone?:
+            | "neutral"
+            | "highlight"
+            | "pos"
+            | "neg"
+            | "good"
+            | "bad"
+            | "warn"
+            | "info"
+            | "violet";
+          value: string;
+        };
+      }>;
+      type: "kv_cards";
+    }
+  | {
+      rows: Array<{
+        a: string;
+        b: string;
+        label: string;
+        op: "÷" | "×" | "+" | "-";
+        result: string;
+      }>;
+      type: "formula";
+    }
+  | {
+      facts?: Array<{
+        label: string;
+        value: string;
+      }>;
+      groups?: Array<{
+        from: number;
+        label: string;
+        to: number;
+      }>;
+      items: Array<{
+        glyph: string;
+        highlight?: true;
+        sub?: string;
+        title?: string;
+      }>;
+      type: "tiles";
+    }
+  | {
+      label: string;
+      text: string;
+      tone: "good" | "bad" | "neutral";
+      type: "quote";
+    }
+  | {
+      objection: string;
+      response: string;
+      type: "objection";
+    }
+  | {
+      items: Array<{
+        label: string;
+        note?: string;
+        pct: number;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      type: "funnel";
+    }
+  | {
+      audience: string;
+      author: string;
+      body: string;
+      kicker: string;
+      type: "sample_post";
+      why: string;
+    }
+  | {
+      best_option: 0 | 1 | 2;
+      debrief: string;
+      options: [string, string, string];
+      question: string;
+      story: Array<string>;
+      title: string;
+      type: "scenario";
+    }
+  | {
+      id: string;
+      items: Array<{
+        id: string;
+        text: string;
+      }>;
+      mode: "todo" | "self_check";
+      result_label?: string;
+      title: string;
+      type: "checklist";
+    }
+  | {
+      id: string;
+      placeholder?: string;
+      prompts: Array<string>;
+      title: string;
+      type: "workpad";
+    }
+  | {
+      clients: {
+        default: number;
+        label: string;
+      };
+      fee_rate: number;
+      monthly_value_million: {
+        default: number;
+        label: string;
+      };
+      note?: string;
+      result_label: string;
+      share_rate: number;
+      title: string;
+      type: "income_calculator";
+    }
+  | {
+      hints: Array<{
+        term: string;
+        text: string;
+      }>;
+      id: string;
+      pad_title: string;
+      placeholder?: string;
+      profile: {
+        info: Array<string>;
+        mindset: Array<string>;
+        quote: string;
+      };
+      prompts: [string, string, string, string];
+      title: string;
+      type: "practice_case";
+    }
+  | {
+      bands: Array<{
+        label: string;
+        min: number;
+        tone: "good" | "warn" | "bad";
+      }>;
+      criteria: [
+        {
+          hint: string;
+          title: string;
+        },
+        {
+          hint: string;
+          title: string;
+        },
+        {
+          hint: string;
+          title: string;
+        },
+        {
+          hint: string;
+          title: string;
+        },
+        {
+          hint: string;
+          title: string;
+        },
+        {
+          hint: string;
+          title: string;
+        },
+      ];
+      default: number;
+      id: string;
+      max: 10;
+      title?: string;
+      type: "roleplay_score";
+    };
+
+export type AcademyChartModel =
+  | {
+      alt?: string;
+      axes?: boolean;
+      kind: "series_panels";
+      marks: Array<{
+        i: number;
+        label: string;
+      }>;
+      panels: Array<{
+        band?: {
+          lower: Array<number | null>;
+          tone?:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          upper: Array<number | null>;
+        };
+        bars?: {
+          colors: Array<"pos" | "neg" | "neutral">;
+          name: string;
+          values: Array<number | null>;
+        };
+        bounds?: [number, number];
+        candles?: {
+          close: Array<number | null>;
+          high: Array<number | null>;
+          low: Array<number | null>;
+          open: Array<number | null>;
+        };
+        digits?: number;
+        fib?: {
+          dir: "up" | "down";
+          hi: {
+            i: number;
+            v: number;
+          };
+          levels: Array<number>;
+          lo: {
+            i: number;
+            v: number;
+          };
+          zone?: [number, number];
+        };
+        fill_between?: {
+          a: number;
+          above:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          b: number;
+          below:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        };
+        levels?: Array<{
+          label?: string;
+          role: "buy" | "sell" | "neutral" | "avg";
+          value: number;
+        }>;
+        nonnegative?: true;
+        notes?: Array<{
+          i: number;
+          text: string;
+          tone?:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info";
+          value: number;
+        }>;
+        segments?: Array<{
+          dash?: true;
+          extend?: number;
+          from: [number, number];
+          to: [number, number];
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+        series: Array<{
+          dash?: true;
+          name: string;
+          role:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          values: Array<number | null>;
+          width?: 1 | 2 | 3;
+        }>;
+        ticks?: Array<number>;
+        title: string;
+        zero?: true;
+        zones?: Array<{
+          from: number;
+          label?: string;
+          to: number;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+      }>;
+      points?: Array<{
+        i: number;
+        label?: string;
+        panel: number;
+        pos?: "above" | "below" | "left" | "right";
+        shape?: "dot" | "ring";
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        value: number;
+      }>;
+      x: {
+        end: number;
+        shade?: Array<{
+          from: number;
+          label?: string;
+          to: number;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+        start: number;
+        ticks?: Array<string>;
+      };
+    }
+  | {
+      animate?: "draw";
+      bounds?: [number, number];
+      caption_tone?:
+        "price" | "p1" | "p2" | "p4" | "p5" | "pos" | "neg" | "warn" | "info";
+      caption_value?: string;
+      end_labels?: Array<string>;
+      kind: "category";
+      labels: Array<string>;
+      mode: "grouped" | "stacked" | "line";
+      orientation?: "v" | "h";
+      series: Array<{
+        dash?: true;
+        name: string;
+        tone?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        tone_by_sign?: {
+          neg:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          pos:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        };
+        values: Array<number | null>;
+      }>;
+      sublabels?: Array<string>;
+      threshold?: {
+        label: string;
+        tone_at_or_above?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        tone_below?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        value: number;
+      };
+      ticks?: Array<number>;
+      title?: string;
+      unit: string;
+      value_format?: {
+        sign?: true;
+        suffix?: string;
+      };
+      value_labels?: "all" | "last" | "none";
+    }
+  | {
+      alt?: string;
+      brackets?: Array<{
+        from: number;
+        label: string;
+        row: number;
+        to: number;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      kind: "segment_bar";
+      legend?: Array<{
+        label: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      max: number;
+      pictogram?: {
+        icon: "banknote";
+        per_unit: number;
+      };
+      rows: Array<{
+        label: string;
+        segments: Array<{
+          ghost?: true;
+          label?: string;
+          sub?: string;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          value: number;
+        }>;
+        sub?: string;
+        total?: {
+          text: string;
+          tone?:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        };
+      }>;
+      unit?: string;
+    }
+  | {
+      alt?: string;
+      domain: [number, number];
+      ends?: [string, string];
+      gradient?: Array<
+        | "price"
+        | "p1"
+        | "p2"
+        | "p3"
+        | "p4"
+        | "p5"
+        | "pos"
+        | "neg"
+        | "warn"
+        | "info"
+        | "neutral"
+      >;
+      kind: "scale";
+      markers: Array<{
+        label: string;
+        side?: "a" | "b";
+        sub?: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        v: number;
+      }>;
+      orientation: "h" | "v";
+      ticks?: Array<{
+        label: string;
+        v: number;
+      }>;
+      zones?: Array<{
+        from: number;
+        label?: string;
+        to: number;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+    }
+  | {
+      alt: string;
+      axes?: {
+        x?: {
+          arrow?: true;
+          ticks?: Array<{
+            label: string;
+            v: number;
+          }>;
+          title?: string;
+        };
+        y?: {
+          arrow?: true;
+          ticks?: Array<{
+            label: string;
+            v: number;
+          }>;
+          title?: string;
+        };
+      };
+      domain?: {
+        x: [number, number];
+        y: [number, number];
+      };
+      kind: "schematic";
+      layers: Array<
+        | {
+            label?: string;
+            panel?: number;
+            t: "zone";
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            x?: [number, number];
+            y?: [number, number];
+          }
+        | {
+            colors?: Array<
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral"
+            >;
+            dash?: true;
+            panel?: number;
+            pts: Array<[number, number]>;
+            t: "line";
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            width?: 1 | 2 | 3 | 4;
+          }
+        | {
+            arrow?: true;
+            dash?: true;
+            from: [number, number];
+            panel?: number;
+            t: "segment";
+            to: [number, number];
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+          }
+        | {
+            at: [number, number];
+            label?: string;
+            panel?: number;
+            pos?: "above" | "below" | "left" | "right";
+            shape?: "dot" | "ring";
+            size?: "s" | "m" | "l";
+            t: "point";
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+          }
+        | {
+            at: [number, number];
+            panel?: number;
+            pos: "above" | "below";
+            t: "tag";
+            text: string;
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info";
+          }
+        | {
+            label: string;
+            panel?: number;
+            t: "bracket";
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            x: [number, number];
+            y: number;
+          }
+        | {
+            base: number;
+            h: Array<number>;
+            panel?: number;
+            t: "bars";
+            tones: Array<
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral"
+            >;
+            x: Array<number>;
+          }
+        | {
+            anchor?: "start" | "middle" | "end";
+            at: [number, number];
+            panel?: number;
+            t: "text";
+            text: string;
+            tone?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info";
+          }
+      >;
+      panels?: Array<{
+        title?: string;
+        y: [number, number];
+      }>;
+    }
+  | {
+      alt?: string;
+      columns?: Array<{
+        dim?: true;
+        label: string;
+      }>;
+      domain: [number, number];
+      highlight?: {
+        from: number;
+        label?: string;
+        to: number;
+      };
+      kind: "gantt";
+      legend?: Array<{
+        label: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      rows: Array<{
+        markers?: Array<{
+          at: number;
+          text: string;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+        name: string;
+        note?: string;
+        segments: Array<{
+          from: number;
+          label?: string;
+          muted?: true;
+          to: number;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+      }>;
+      tick_format: "hhmm" | "day" | "plain";
+      ticks: Array<{
+        label: string;
+        v: number;
+      }>;
+    }
+  | {
+      alt?: string;
+      brace?: {
+        from: number;
+        label: string;
+        to: number;
+      };
+      kind: "milestones";
+      points: Array<{
+        at: number;
+        detail?: Array<string>;
+        title: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      spans?: Array<{
+        from: number;
+        label: string;
+        side: "above" | "below";
+        to: number;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+    }
+  | {
+      alt: string;
+      domain: [number, number];
+      groups: Array<{
+        annotate?: "ohlc";
+        candles: Array<{
+          c: number;
+          h: number;
+          l: number;
+          label?: string;
+          o: number;
+          size?: "s" | "m" | "l";
+        }>;
+        title?: string;
+      }>;
+      join?: string;
+      kind: "candle_glyphs";
+    }
+  | {
+      alt?: string;
+      edges?:
+        | "sequential"
+        | Array<{
+            from: string;
+            label?: string;
+            to: string;
+          }>;
+      header?: {
+        text: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      };
+      kind: "flow";
+      layout: "row" | "column" | "cycle";
+      nodes: Array<{
+        caption?: string;
+        children?: Array<{
+          sub?: string;
+          title: string;
+          tone?:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+        emph?: true;
+        id: string;
+        sub?: string;
+        title: string;
+        tone?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        value?: string;
+      }>;
+    }
+  | {
+      alt: string;
+      kind: "diagram";
+      shapes: Array<
+        | {
+            dash?: true;
+            fill?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            h: number;
+            opacity?: number;
+            r?: number;
+            stroke?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            t: "rect";
+            w: number;
+            x: number;
+            y: number;
+          }
+        | {
+            cx: number;
+            cy: number;
+            fill?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            opacity?: number;
+            r: number;
+            stroke?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            t: "circle";
+          }
+        | {
+            arrow?: "end" | "both";
+            dash?: true;
+            stroke:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            t: "line";
+            width?: number;
+            x1: number;
+            x2: number;
+            y1: number;
+            y2: number;
+          }
+        | {
+            d: string;
+            fill?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            opacity?: number;
+            stroke?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            t: "path";
+            width?: number;
+          }
+        | {
+            anchor?: "start" | "middle" | "end";
+            size?: "s" | "m" | "l";
+            t: "text";
+            text: string;
+            tone?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info";
+            weight?: "normal" | "bold";
+            x: number;
+            y: number;
+          }
+      >;
+      view_box: [number, number];
+    }
+  | {
+      items: Array<{
+        model: AcademyLeafChartModel;
+        title?: string;
+        tone?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      kind: "compare";
+      layout: "row" | "stack";
+      title?: string;
+    };
+
+export type AcademyLeafChartModel =
+  | {
+      alt?: string;
+      axes?: boolean;
+      kind: "series_panels";
+      marks: Array<{
+        i: number;
+        label: string;
+      }>;
+      panels: Array<{
+        band?: {
+          lower: Array<number | null>;
+          tone?:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          upper: Array<number | null>;
+        };
+        bars?: {
+          colors: Array<"pos" | "neg" | "neutral">;
+          name: string;
+          values: Array<number | null>;
+        };
+        bounds?: [number, number];
+        candles?: {
+          close: Array<number | null>;
+          high: Array<number | null>;
+          low: Array<number | null>;
+          open: Array<number | null>;
+        };
+        digits?: number;
+        fib?: {
+          dir: "up" | "down";
+          hi: {
+            i: number;
+            v: number;
+          };
+          levels: Array<number>;
+          lo: {
+            i: number;
+            v: number;
+          };
+          zone?: [number, number];
+        };
+        fill_between?: {
+          a: number;
+          above:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          b: number;
+          below:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        };
+        levels?: Array<{
+          label?: string;
+          role: "buy" | "sell" | "neutral" | "avg";
+          value: number;
+        }>;
+        nonnegative?: true;
+        notes?: Array<{
+          i: number;
+          text: string;
+          tone?:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info";
+          value: number;
+        }>;
+        segments?: Array<{
+          dash?: true;
+          extend?: number;
+          from: [number, number];
+          to: [number, number];
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+        series: Array<{
+          dash?: true;
+          name: string;
+          role:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          values: Array<number | null>;
+          width?: 1 | 2 | 3;
+        }>;
+        ticks?: Array<number>;
+        title: string;
+        zero?: true;
+        zones?: Array<{
+          from: number;
+          label?: string;
+          to: number;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+      }>;
+      points?: Array<{
+        i: number;
+        label?: string;
+        panel: number;
+        pos?: "above" | "below" | "left" | "right";
+        shape?: "dot" | "ring";
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        value: number;
+      }>;
+      x: {
+        end: number;
+        shade?: Array<{
+          from: number;
+          label?: string;
+          to: number;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+        start: number;
+        ticks?: Array<string>;
+      };
+    }
+  | {
+      animate?: "draw";
+      bounds?: [number, number];
+      caption_tone?:
+        "price" | "p1" | "p2" | "p4" | "p5" | "pos" | "neg" | "warn" | "info";
+      caption_value?: string;
+      end_labels?: Array<string>;
+      kind: "category";
+      labels: Array<string>;
+      mode: "grouped" | "stacked" | "line";
+      orientation?: "v" | "h";
+      series: Array<{
+        dash?: true;
+        name: string;
+        tone?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        tone_by_sign?: {
+          neg:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          pos:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        };
+        values: Array<number | null>;
+      }>;
+      sublabels?: Array<string>;
+      threshold?: {
+        label: string;
+        tone_at_or_above?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        tone_below?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        value: number;
+      };
+      ticks?: Array<number>;
+      title?: string;
+      unit: string;
+      value_format?: {
+        sign?: true;
+        suffix?: string;
+      };
+      value_labels?: "all" | "last" | "none";
+    }
+  | {
+      alt?: string;
+      brackets?: Array<{
+        from: number;
+        label: string;
+        row: number;
+        to: number;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      kind: "segment_bar";
+      legend?: Array<{
+        label: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      max: number;
+      pictogram?: {
+        icon: "banknote";
+        per_unit: number;
+      };
+      rows: Array<{
+        label: string;
+        segments: Array<{
+          ghost?: true;
+          label?: string;
+          sub?: string;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+          value: number;
+        }>;
+        sub?: string;
+        total?: {
+          text: string;
+          tone?:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        };
+      }>;
+      unit?: string;
+    }
+  | {
+      alt?: string;
+      domain: [number, number];
+      ends?: [string, string];
+      gradient?: Array<
+        | "price"
+        | "p1"
+        | "p2"
+        | "p3"
+        | "p4"
+        | "p5"
+        | "pos"
+        | "neg"
+        | "warn"
+        | "info"
+        | "neutral"
+      >;
+      kind: "scale";
+      markers: Array<{
+        label: string;
+        side?: "a" | "b";
+        sub?: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        v: number;
+      }>;
+      orientation: "h" | "v";
+      ticks?: Array<{
+        label: string;
+        v: number;
+      }>;
+      zones?: Array<{
+        from: number;
+        label?: string;
+        to: number;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+    }
+  | {
+      alt: string;
+      axes?: {
+        x?: {
+          arrow?: true;
+          ticks?: Array<{
+            label: string;
+            v: number;
+          }>;
+          title?: string;
+        };
+        y?: {
+          arrow?: true;
+          ticks?: Array<{
+            label: string;
+            v: number;
+          }>;
+          title?: string;
+        };
+      };
+      domain?: {
+        x: [number, number];
+        y: [number, number];
+      };
+      kind: "schematic";
+      layers: Array<
+        | {
+            label?: string;
+            panel?: number;
+            t: "zone";
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            x?: [number, number];
+            y?: [number, number];
+          }
+        | {
+            colors?: Array<
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral"
+            >;
+            dash?: true;
+            panel?: number;
+            pts: Array<[number, number]>;
+            t: "line";
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            width?: 1 | 2 | 3 | 4;
+          }
+        | {
+            arrow?: true;
+            dash?: true;
+            from: [number, number];
+            panel?: number;
+            t: "segment";
+            to: [number, number];
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+          }
+        | {
+            at: [number, number];
+            label?: string;
+            panel?: number;
+            pos?: "above" | "below" | "left" | "right";
+            shape?: "dot" | "ring";
+            size?: "s" | "m" | "l";
+            t: "point";
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+          }
+        | {
+            at: [number, number];
+            panel?: number;
+            pos: "above" | "below";
+            t: "tag";
+            text: string;
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info";
+          }
+        | {
+            label: string;
+            panel?: number;
+            t: "bracket";
+            tone:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            x: [number, number];
+            y: number;
+          }
+        | {
+            base: number;
+            h: Array<number>;
+            panel?: number;
+            t: "bars";
+            tones: Array<
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral"
+            >;
+            x: Array<number>;
+          }
+        | {
+            anchor?: "start" | "middle" | "end";
+            at: [number, number];
+            panel?: number;
+            t: "text";
+            text: string;
+            tone?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info";
+          }
+      >;
+      panels?: Array<{
+        title?: string;
+        y: [number, number];
+      }>;
+    }
+  | {
+      alt?: string;
+      columns?: Array<{
+        dim?: true;
+        label: string;
+      }>;
+      domain: [number, number];
+      highlight?: {
+        from: number;
+        label?: string;
+        to: number;
+      };
+      kind: "gantt";
+      legend?: Array<{
+        label: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      rows: Array<{
+        markers?: Array<{
+          at: number;
+          text: string;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+        name: string;
+        note?: string;
+        segments: Array<{
+          from: number;
+          label?: string;
+          muted?: true;
+          to: number;
+          tone:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+      }>;
+      tick_format: "hhmm" | "day" | "plain";
+      ticks: Array<{
+        label: string;
+        v: number;
+      }>;
+    }
+  | {
+      alt?: string;
+      brace?: {
+        from: number;
+        label: string;
+        to: number;
+      };
+      kind: "milestones";
+      points: Array<{
+        at: number;
+        detail?: Array<string>;
+        title: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+      spans?: Array<{
+        from: number;
+        label: string;
+        side: "above" | "below";
+        to: number;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      }>;
+    }
+  | {
+      alt: string;
+      domain: [number, number];
+      groups: Array<{
+        annotate?: "ohlc";
+        candles: Array<{
+          c: number;
+          h: number;
+          l: number;
+          label?: string;
+          o: number;
+          size?: "s" | "m" | "l";
+        }>;
+        title?: string;
+      }>;
+      join?: string;
+      kind: "candle_glyphs";
+    }
+  | {
+      alt?: string;
+      edges?:
+        | "sequential"
+        | Array<{
+            from: string;
+            label?: string;
+            to: string;
+          }>;
+      header?: {
+        text: string;
+        tone:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+      };
+      kind: "flow";
+      layout: "row" | "column" | "cycle";
+      nodes: Array<{
+        caption?: string;
+        children?: Array<{
+          sub?: string;
+          title: string;
+          tone?:
+            | "price"
+            | "p1"
+            | "p2"
+            | "p3"
+            | "p4"
+            | "p5"
+            | "pos"
+            | "neg"
+            | "warn"
+            | "info"
+            | "neutral";
+        }>;
+        emph?: true;
+        id: string;
+        sub?: string;
+        title: string;
+        tone?:
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral";
+        value?: string;
+      }>;
+    }
+  | {
+      alt: string;
+      kind: "diagram";
+      shapes: Array<
+        | {
+            dash?: true;
+            fill?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            h: number;
+            opacity?: number;
+            r?: number;
+            stroke?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            t: "rect";
+            w: number;
+            x: number;
+            y: number;
+          }
+        | {
+            cx: number;
+            cy: number;
+            fill?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            opacity?: number;
+            r: number;
+            stroke?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            t: "circle";
+          }
+        | {
+            arrow?: "end" | "both";
+            dash?: true;
+            stroke:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            t: "line";
+            width?: number;
+            x1: number;
+            x2: number;
+            y1: number;
+            y2: number;
+          }
+        | {
+            d: string;
+            fill?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            opacity?: number;
+            stroke?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p3"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info"
+              | "neutral";
+            t: "path";
+            width?: number;
+          }
+        | {
+            anchor?: "start" | "middle" | "end";
+            size?: "s" | "m" | "l";
+            t: "text";
+            text: string;
+            tone?:
+              | "price"
+              | "p1"
+              | "p2"
+              | "p4"
+              | "p5"
+              | "pos"
+              | "neg"
+              | "warn"
+              | "info";
+            weight?: "normal" | "bold";
+            x: number;
+            y: number;
+          }
+      >;
+      view_box: [number, number];
+    };
+
 export type AdminJobQueuedV2 = {
   jobId: string;
   job_id: string;
@@ -8668,18 +11019,20 @@ export type LegacyUser360Response = {
     };
     chapters: Array<{
       completed: number;
+      exam_passed: boolean;
       lessons: Array<{
         attempts: number;
         completed_at: string | null;
-        completion_mode: "quiz" | "guide";
         is_current: boolean;
-        kind: "technical" | "fundamental" | "concept" | "guide";
+        kind: "lesson" | "practice" | "chapter_exam";
         latest_score: number | null;
         lesson_id: string;
-        max_score: number | null;
+        max_score: number;
         name: string;
+        optional: boolean;
         order: number;
-        status: "completed" | "in_progress" | "failed" | "not_started";
+        status:
+          "completed" | "in_progress" | "failed" | "not_started" | "locked";
       }>;
       no: number;
       title: string;
@@ -8688,6 +11041,7 @@ export type LegacyUser360Response = {
     completed: number;
     current_lesson: {
       chapter: number;
+      kind: "lesson" | "chapter_exam";
       label: string;
       lesson_id: string;
       name: string;
@@ -24682,6 +27036,7 @@ export type TeamControllerUsers0Responses = {
         completed: number;
         current_lesson: {
           chapter: number;
+          kind: "lesson" | "chapter_exam";
           label: string;
           lesson_id: string;
           name: string;
@@ -24771,18 +27126,20 @@ export type TeamControllerUser0Responses = {
       };
       chapters: Array<{
         completed: number;
+        exam_passed: boolean;
         lessons: Array<{
           attempts: number;
           completed_at: string | null;
-          completion_mode: "quiz" | "guide";
           is_current: boolean;
-          kind: "technical" | "fundamental" | "concept" | "guide";
+          kind: "lesson" | "practice" | "chapter_exam";
           latest_score: number | null;
           lesson_id: string;
-          max_score: number | null;
+          max_score: number;
           name: string;
+          optional: boolean;
           order: number;
-          status: "completed" | "in_progress" | "failed" | "not_started";
+          status:
+            "completed" | "in_progress" | "failed" | "not_started" | "locked";
         }>;
         no: number;
         title: string;
@@ -24791,6 +27148,7 @@ export type TeamControllerUser0Responses = {
       completed: number;
       current_lesson: {
         chapter: number;
+        kind: "lesson" | "chapter_exam";
         label: string;
         lesson_id: string;
         name: string;
@@ -26341,402 +28699,27 @@ export type AcademyCreateAttemptError =
 
 export type AcademyCreateAttemptResponses = {
   201: {
-    assessment_version: string;
     attempt_id: string;
     catalog_version: string;
-    content_version: string;
+    content_version: string | null;
+    kind: "lesson" | "chapter_exam";
     lesson_id: string;
     lesson_key: string;
     questions: Array<{
-      figure:
-        | {
-            chart:
-              | {
-                  kind: "series_panels";
-                  marks: Array<{
-                    i: number;
-                    label: string;
-                  }>;
-                  panels: Array<{
-                    band?: {
-                      lower: Array<number | null>;
-                      upper: Array<number | null>;
-                    };
-                    bars?: {
-                      colors: Array<"pos" | "neg" | "neutral">;
-                      name: string;
-                      values: Array<number | null>;
-                    };
-                    bounds?: [number, number];
-                    digits?: number;
-                    levels?: Array<{
-                      role: "buy" | "sell";
-                      value: number;
-                    }>;
-                    nonnegative?: true;
-                    series: Array<{
-                      dash?: true;
-                      name: string;
-                      role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
-                      values: Array<number | null>;
-                    }>;
-                    ticks?: Array<number>;
-                    title: string;
-                    zero?: true;
-                  }>;
-                  x: {
-                    end: number;
-                    start: number;
-                    ticks?: Array<string>;
-                  };
-                }
-              | {
-                  kind: "grouped";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "line";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "stacked";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "timeline";
-                  labels: Array<string>;
-                  rows: Array<{
-                    detail: string;
-                    end: number;
-                    name: string;
-                    start: number;
-                  }>;
-                  title: string;
-                }
-              | {
-                  kind: "waterfall";
-                  steps: Array<{
-                    name: string;
-                    total?: true;
-                    value: number;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "panels";
-                  panels: Array<
-                    | {
-                        kind: "grouped";
-                        labels: Array<string>;
-                        series: Array<{
-                          name: string;
-                          values: Array<number | null>;
-                        }>;
-                        title: string;
-                        unit: string;
-                      }
-                    | {
-                        kind: "line";
-                        labels: Array<string>;
-                        series: Array<{
-                          name: string;
-                          values: Array<number | null>;
-                        }>;
-                        title: string;
-                        unit: string;
-                      }
-                    | {
-                        kind: "stacked";
-                        labels: Array<string>;
-                        series: Array<{
-                          name: string;
-                          values: Array<number | null>;
-                        }>;
-                        title: string;
-                        unit: string;
-                      }
-                  >;
-                  title: string;
-                };
-            chart_id: string;
-            type: "chart";
-          }
-        | {
-            head: Array<string>;
-            rows: Array<Array<string>>;
-            type: "table";
-          }
-        | null;
-      hint: string | null;
       id: string;
       options: Array<{
         id: string;
         text: string;
       }>;
       prompt: string;
-      section: number | null;
-      topic: string | null;
     }>;
     status: "open" | "submitted";
+    total: number;
   };
 };
 
 export type AcademyCreateAttemptResponse =
   AcademyCreateAttemptResponses[keyof AcademyCreateAttemptResponses];
-
-export type AcademyAttemptReviewData = {
-  body?: never;
-  path: {
-    attemptId: string;
-  };
-  query?: never;
-  url: "/api/v2/academy/attempts/{attemptId}";
-};
-
-export type AcademyAttemptReviewErrors = {
-  /**
-   * Bad request
-   */
-  400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
-   * Request validation failed
-   */
-  422: ApiErrorV2;
-  /**
-   * Rate limit exceeded
-   */
-  429: ApiErrorV2;
-  /**
-   * Service temporarily unavailable
-   */
-  503: ApiErrorV2;
-};
-
-export type AcademyAttemptReviewError =
-  AcademyAttemptReviewErrors[keyof AcademyAttemptReviewErrors];
-
-export type AcademyAttemptReviewResponses = {
-  200: {
-    attempt_id: string;
-    attempts_submitted: number;
-    best_score: number | null;
-    catalog_version: string;
-    completion: {
-      completed: boolean;
-      completed_at: string | null;
-      completion_method: "quiz" | "guide" | "legacy_migration";
-      newly_completed: boolean;
-    };
-    correct: number;
-    granted_capabilities: Array<string>;
-    lesson_id: string;
-    lesson_key: string | null;
-    newly_granted: Array<string>;
-    passed: boolean;
-    progress_revision: number;
-    results: Array<{
-      correct: boolean;
-      correct_option_id: string;
-      explanation: string | null;
-      figure:
-        | {
-            chart:
-              | {
-                  kind: "series_panels";
-                  marks: Array<{
-                    i: number;
-                    label: string;
-                  }>;
-                  panels: Array<{
-                    band?: {
-                      lower: Array<number | null>;
-                      upper: Array<number | null>;
-                    };
-                    bars?: {
-                      colors: Array<"pos" | "neg" | "neutral">;
-                      name: string;
-                      values: Array<number | null>;
-                    };
-                    bounds?: [number, number];
-                    digits?: number;
-                    levels?: Array<{
-                      role: "buy" | "sell";
-                      value: number;
-                    }>;
-                    nonnegative?: true;
-                    series: Array<{
-                      dash?: true;
-                      name: string;
-                      role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
-                      values: Array<number | null>;
-                    }>;
-                    ticks?: Array<number>;
-                    title: string;
-                    zero?: true;
-                  }>;
-                  x: {
-                    end: number;
-                    start: number;
-                    ticks?: Array<string>;
-                  };
-                }
-              | {
-                  kind: "grouped";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "line";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "stacked";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "timeline";
-                  labels: Array<string>;
-                  rows: Array<{
-                    detail: string;
-                    end: number;
-                    name: string;
-                    start: number;
-                  }>;
-                  title: string;
-                }
-              | {
-                  kind: "waterfall";
-                  steps: Array<{
-                    name: string;
-                    total?: true;
-                    value: number;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "panels";
-                  panels: Array<
-                    | {
-                        kind: "grouped";
-                        labels: Array<string>;
-                        series: Array<{
-                          name: string;
-                          values: Array<number | null>;
-                        }>;
-                        title: string;
-                        unit: string;
-                      }
-                    | {
-                        kind: "line";
-                        labels: Array<string>;
-                        series: Array<{
-                          name: string;
-                          values: Array<number | null>;
-                        }>;
-                        title: string;
-                        unit: string;
-                      }
-                    | {
-                        kind: "stacked";
-                        labels: Array<string>;
-                        series: Array<{
-                          name: string;
-                          values: Array<number | null>;
-                        }>;
-                        title: string;
-                        unit: string;
-                      }
-                  >;
-                  title: string;
-                };
-            chart_id: string;
-            type: "chart";
-          }
-        | {
-            head: Array<string>;
-            rows: Array<Array<string>>;
-            type: "table";
-          }
-        | null;
-      hint: string | null;
-      option_id: string;
-      options: Array<{
-        chosen: boolean;
-        correct: boolean;
-        explanation: string | null;
-        id: string;
-        text: string;
-      }>;
-      prompt: string;
-      question_id: string;
-      section: number | null;
-      topic: string | null;
-    }>;
-    review_available: boolean;
-    reward:
-      | {
-          balance_after: number;
-          delta: number;
-          status: "credited";
-        }
-      | {
-          balance_after: number;
-          status: "already_rewarded";
-        }
-      | {
-          status: "unavailable";
-        }
-      | null;
-    score: number;
-    submitted_at: string | null;
-    total: 8;
-    wrong: number;
-  };
-};
-
-export type AcademyAttemptReviewResponse =
-  AcademyAttemptReviewResponses[keyof AcademyAttemptReviewResponses];
 
 export type AcademySaveDraftAnswersData = {
   body: {
@@ -26788,7 +28771,7 @@ export type AcademySaveDraftAnswersResponses = {
     }>;
     attempt_id: string;
     revision: number;
-    total: 8;
+    total: number;
     updated_at: string | null;
   };
 };
@@ -26841,178 +28824,22 @@ export type AcademySubmitAttemptResponses = {
   200: {
     attempt_id: string;
     attempts_submitted: number;
-    best_score: number | null;
+    best_score: number;
     catalog_version: string;
+    chapter_completed: number | null;
     completion: {
       completed: boolean;
       completed_at: string | null;
-      completion_method: "quiz" | "guide" | "legacy_migration";
       newly_completed: boolean;
     };
-    correct: number;
     granted_capabilities: Array<string>;
+    kind: "lesson" | "chapter_exam";
     lesson_id: string;
-    lesson_key: string | null;
+    lesson_key: string;
     newly_granted: Array<string>;
+    next_item_id: string | null;
     passed: boolean;
     progress_revision: number;
-    results: Array<{
-      correct: boolean;
-      correct_option_id: string;
-      explanation: string | null;
-      figure:
-        | {
-            chart:
-              | {
-                  kind: "series_panels";
-                  marks: Array<{
-                    i: number;
-                    label: string;
-                  }>;
-                  panels: Array<{
-                    band?: {
-                      lower: Array<number | null>;
-                      upper: Array<number | null>;
-                    };
-                    bars?: {
-                      colors: Array<"pos" | "neg" | "neutral">;
-                      name: string;
-                      values: Array<number | null>;
-                    };
-                    bounds?: [number, number];
-                    digits?: number;
-                    levels?: Array<{
-                      role: "buy" | "sell";
-                      value: number;
-                    }>;
-                    nonnegative?: true;
-                    series: Array<{
-                      dash?: true;
-                      name: string;
-                      role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
-                      values: Array<number | null>;
-                    }>;
-                    ticks?: Array<number>;
-                    title: string;
-                    zero?: true;
-                  }>;
-                  x: {
-                    end: number;
-                    start: number;
-                    ticks?: Array<string>;
-                  };
-                }
-              | {
-                  kind: "grouped";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "line";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "stacked";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "timeline";
-                  labels: Array<string>;
-                  rows: Array<{
-                    detail: string;
-                    end: number;
-                    name: string;
-                    start: number;
-                  }>;
-                  title: string;
-                }
-              | {
-                  kind: "waterfall";
-                  steps: Array<{
-                    name: string;
-                    total?: true;
-                    value: number;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "panels";
-                  panels: Array<
-                    | {
-                        kind: "grouped";
-                        labels: Array<string>;
-                        series: Array<{
-                          name: string;
-                          values: Array<number | null>;
-                        }>;
-                        title: string;
-                        unit: string;
-                      }
-                    | {
-                        kind: "line";
-                        labels: Array<string>;
-                        series: Array<{
-                          name: string;
-                          values: Array<number | null>;
-                        }>;
-                        title: string;
-                        unit: string;
-                      }
-                    | {
-                        kind: "stacked";
-                        labels: Array<string>;
-                        series: Array<{
-                          name: string;
-                          values: Array<number | null>;
-                        }>;
-                        title: string;
-                        unit: string;
-                      }
-                  >;
-                  title: string;
-                };
-            chart_id: string;
-            type: "chart";
-          }
-        | {
-            head: Array<string>;
-            rows: Array<Array<string>>;
-            type: "table";
-          }
-        | null;
-      hint: string | null;
-      option_id: string;
-      options: Array<{
-        chosen: boolean;
-        correct: boolean;
-        explanation: string | null;
-        id: string;
-        text: string;
-      }>;
-      prompt: string;
-      question_id: string;
-      section: number | null;
-      topic: string | null;
-    }>;
-    review_available: boolean;
     reward:
       | {
           balance_after: number;
@@ -27028,9 +28855,9 @@ export type AcademySubmitAttemptResponses = {
         }
       | null;
     score: number;
-    submitted_at: string | null;
-    total: 8;
-    wrong: number;
+    submitted_at: string;
+    total: number;
+    unlocked_labels: Array<string>;
   };
 };
 
@@ -27073,37 +28900,37 @@ export type AcademyCatalogError =
 export type AcademyCatalogResponses = {
   200: {
     catalog_version: string;
-    chapter_count: number;
     chapters: Array<{
-      lessons: Array<{
-        capability_binding: {
-          id: string;
-          kind: "technical" | "fundamental";
-        } | null;
-        capability_id: string | null;
+      audience: "all";
+      items: Array<{
         chapter: number;
-        completion: {
-          assessment_ready: boolean;
-          assessment_version: string | null;
-          button_label: string | null;
-          mode: "quiz" | "guide";
-          question_count: number | null;
-          required_correct: number | null;
-        };
-        content_status: "published" | "not_published";
         content_version: string | null;
+        has_scenario: boolean;
         id: string;
-        kind: "technical" | "fundamental" | "concept" | "guide";
-        legacy_lesson_ids: Array<string>;
+        intro: string | null;
+        kind: "lesson" | "practice" | "chapter_exam";
         lesson_key: string;
         name: string;
+        optional: boolean;
         order: number;
+        position: number | null;
+        question_count: number;
+        unlock: {
+          capability_id: string;
+          id: string;
+          kind: "technical";
+          label: string;
+        } | null;
       }>;
+      lesson_count: number;
       no: number;
       title: string;
-      type: "technical" | "fundamental" | "tool";
     }>;
-    lesson_count: number;
+    required_total: number;
+    retired_lessons: Array<{
+      lesson_key: string;
+      name: string;
+    }>;
   };
 };
 
@@ -27145,344 +28972,88 @@ export type AcademyLessonErrors = {
 export type AcademyLessonError = AcademyLessonErrors[keyof AcademyLessonErrors];
 
 export type AcademyLessonResponses = {
-  200: {
-    attempts_submitted: number;
-    best_score: number | null;
-    capability_binding: {
-      id: string;
-      kind: "technical" | "fundamental";
-    } | null;
-    capability_id: string | null;
-    catalog_version: string;
-    chapter: number;
-    charts: {
-      [key: string]:
-        | {
-            kind: "series_panels";
-            marks: Array<{
-              i: number;
-              label: string;
-            }>;
-            panels: Array<{
-              band?: {
-                lower: Array<number | null>;
-                upper: Array<number | null>;
-              };
-              bars?: {
-                colors: Array<"pos" | "neg" | "neutral">;
-                name: string;
-                values: Array<number | null>;
-              };
-              bounds?: [number, number];
-              digits?: number;
-              levels?: Array<{
-                role: "buy" | "sell";
-                value: number;
-              }>;
-              nonnegative?: true;
-              series: Array<{
-                dash?: true;
-                name: string;
-                role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
-                values: Array<number | null>;
-              }>;
-              ticks?: Array<number>;
-              title: string;
-              zero?: true;
-            }>;
-            x: {
-              end: number;
-              start: number;
-              ticks?: Array<string>;
-            };
-          }
-        | {
-            kind: "grouped";
-            labels: Array<string>;
-            series: Array<{
-              name: string;
-              values: Array<number | null>;
-            }>;
-            title: string;
-            unit: string;
-          }
-        | {
-            kind: "line";
-            labels: Array<string>;
-            series: Array<{
-              name: string;
-              values: Array<number | null>;
-            }>;
-            title: string;
-            unit: string;
-          }
-        | {
-            kind: "stacked";
-            labels: Array<string>;
-            series: Array<{
-              name: string;
-              values: Array<number | null>;
-            }>;
-            title: string;
-            unit: string;
-          }
-        | {
-            kind: "timeline";
-            labels: Array<string>;
-            rows: Array<{
-              detail: string;
-              end: number;
-              name: string;
-              start: number;
-            }>;
-            title: string;
-          }
-        | {
-            kind: "waterfall";
-            steps: Array<{
-              name: string;
-              total?: true;
-              value: number;
-            }>;
-            title: string;
-            unit: string;
-          }
-        | {
-            kind: "panels";
-            panels: Array<
-              | {
-                  kind: "grouped";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "line";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-              | {
-                  kind: "stacked";
-                  labels: Array<string>;
-                  series: Array<{
-                    name: string;
-                    values: Array<number | null>;
-                  }>;
-                  title: string;
-                  unit: string;
-                }
-            >;
-            title: string;
-          };
-    };
-    completed: boolean;
-    completed_at: string | null;
-    completion: {
-      assessment_ready: boolean;
-      assessment_version: string | null;
-      button_label: string | null;
-      mode: "quiz" | "guide";
-      question_count: number | null;
-      required_correct: number | null;
-    };
-    completion_method: "quiz" | "guide" | "legacy_migration";
-    content_status: "published" | "not_published";
-    content_version: string | null;
-    fixture: {
-      [key: string]: unknown;
-    } | null;
-    id: string;
-    kind: "technical" | "fundamental" | "concept" | "guide";
-    lead: string | null;
-    legacy_lesson_ids: Array<string>;
-    lesson_key: string;
-    name: string;
-    nav_labels: [string, string, string, string] | null;
-    order: number;
-    review_status: string | null;
-    reward:
-      | {
-          balance_after: number;
-          delta: number;
-          status: "credited";
-        }
-      | {
-          balance_after: number;
-          status: "already_rewarded";
-        }
-      | {
-          status: "unavailable";
-        }
-      | null;
-    sections: Array<{
-      blocks: Array<
-        | {
-            html: string;
-            type: "html";
-          }
-        | {
-            align?: Array<"l" | "r" | "c">;
-            aria_label?: string;
-            head: Array<string>;
-            rows: Array<Array<string>>;
-            source?: {
-              chart_id?: string;
-              hook: "macd-seed" | "application";
-              kind: "computed";
-            };
-            type: "table";
-          }
-        | {
-            caption?: string;
-            chart_id: string;
-            illustrative?: boolean;
-            table_toggle: boolean;
-            title: string;
-            type: "chart";
-          }
-        | {
-            alt: string;
-            asset_id: string;
-            caption?: string;
-            height: number;
-            max_width?: number;
-            src: string;
-            title: string;
-            type: "image";
-            width: number;
-            zoom_title: string;
-          }
-        | {
-            items: Array<{
-              html: string;
-              no: string;
-              title: string;
-            }>;
-            type: "steps";
-          }
-        | {
-            aria_label?: string;
-            blocks: Array<
-              | {
-                  html: string;
-                  type: "html";
-                }
-              | {
-                  align?: Array<"l" | "r" | "c">;
-                  aria_label?: string;
-                  head: Array<string>;
-                  rows: Array<Array<string>>;
-                  source?: {
-                    chart_id?: string;
-                    hook: "macd-seed" | "application";
-                    kind: "computed";
-                  };
-                  type: "table";
-                }
-              | {
-                  caption?: string;
-                  chart_id: string;
-                  illustrative?: boolean;
-                  table_toggle: boolean;
-                  title: string;
-                  type: "chart";
-                }
-              | {
-                  alt: string;
-                  asset_id: string;
-                  caption?: string;
-                  height: number;
-                  max_width?: number;
-                  src: string;
-                  title: string;
-                  type: "image";
-                  width: number;
-                  zoom_title: string;
-                }
-              | {
-                  items: Array<{
-                    html: string;
-                    no: string;
-                    title: string;
-                  }>;
-                  type: "steps";
-                }
-            >;
-            title?: string;
-            type: "callout";
-            variant:
-              | "notice"
-              | "worked"
-              | "signal-buy"
-              | "signal-sell"
-              | "filter-example";
-          }
-        | {
-            blocks: Array<
-              | {
-                  html: string;
-                  type: "html";
-                }
-              | {
-                  align?: Array<"l" | "r" | "c">;
-                  aria_label?: string;
-                  head: Array<string>;
-                  rows: Array<Array<string>>;
-                  source?: {
-                    chart_id?: string;
-                    hook: "macd-seed" | "application";
-                    kind: "computed";
-                  };
-                  type: "table";
-                }
-              | {
-                  caption?: string;
-                  chart_id: string;
-                  illustrative?: boolean;
-                  table_toggle: boolean;
-                  title: string;
-                  type: "chart";
-                }
-              | {
-                  alt: string;
-                  asset_id: string;
-                  caption?: string;
-                  height: number;
-                  max_width?: number;
-                  src: string;
-                  title: string;
-                  type: "image";
-                  width: number;
-                  zoom_title: string;
-                }
-              | {
-                  items: Array<{
-                    html: string;
-                    no: string;
-                    title: string;
-                  }>;
-                  type: "steps";
-                }
-            >;
-            summary: string;
-            type: "details";
-          }
-      >;
-      id: string;
-      title: string;
-    }>;
-    sources: Array<string>;
-    title: string;
-  };
+  200:
+    | {
+        attempts_submitted: number;
+        best_score: number | null;
+        catalog_version: string;
+        chapter: number;
+        charts: {
+          [key: string]: AcademyChartModel;
+        };
+        completed_at: string | null;
+        content_version: string;
+        has_scenario: boolean;
+        id: string;
+        intro: string | null;
+        intro_blocks: Array<AcademyBlock>;
+        kind: "lesson" | "practice";
+        lead: string;
+        lesson_key: string;
+        name: string;
+        optional: boolean;
+        order: number;
+        position: number | null;
+        question_count: number;
+        reward:
+          | {
+              balance_after: number;
+              delta: number;
+              status: "credited";
+            }
+          | {
+              balance_after: number;
+              status: "already_rewarded";
+            }
+          | {
+              status: "unavailable";
+            }
+          | null;
+        scenario_choice: {
+          choice: number;
+          chosen_at: string;
+        } | null;
+        sections: Array<{
+          blocks: Array<AcademyBlock>;
+          id: string;
+          title: string;
+        }>;
+        state: "passed" | "open" | "locked";
+        summary: Array<string>;
+        title: string;
+        unlock: {
+          capability_id: string;
+          id: string;
+          kind: "technical";
+          label: string;
+        } | null;
+      }
+    | {
+        attempts_submitted: number;
+        best_score: number | null;
+        catalog_version: string;
+        chapter: number;
+        chapter_title: string;
+        completed_at: string | null;
+        content_version: string | null;
+        has_scenario: boolean;
+        id: string;
+        intro: string;
+        kind: "chapter_exam";
+        lesson_key: string;
+        name: string;
+        optional: boolean;
+        order: number;
+        position: number | null;
+        question_count: number;
+        state: "passed" | "open" | "locked";
+        unlock: {
+          capability_id: string;
+          id: string;
+          kind: "technical";
+          label: string;
+        } | null;
+      };
 };
 
 export type AcademyLessonResponse =
@@ -27526,10 +29097,9 @@ export type AcademyResumeAttemptError =
 export type AcademyResumeAttemptResponses = {
   200: {
     attempt: {
-      assessment_version: string;
       attempt_id: string;
       catalog_version: string;
-      content_version: string;
+      content_version: string | null;
       created_at: string;
       draft: {
         answered_count: number;
@@ -27538,161 +29108,22 @@ export type AcademyResumeAttemptResponses = {
           question_id: string;
         }>;
         revision: number;
-        total: 8;
+        total: number;
         updated_at: string | null;
       };
+      kind: "lesson" | "chapter_exam";
       lesson_id: string;
       lesson_key: string;
       questions: Array<{
-        figure:
-          | {
-              chart:
-                | {
-                    kind: "series_panels";
-                    marks: Array<{
-                      i: number;
-                      label: string;
-                    }>;
-                    panels: Array<{
-                      band?: {
-                        lower: Array<number | null>;
-                        upper: Array<number | null>;
-                      };
-                      bars?: {
-                        colors: Array<"pos" | "neg" | "neutral">;
-                        name: string;
-                        values: Array<number | null>;
-                      };
-                      bounds?: [number, number];
-                      digits?: number;
-                      levels?: Array<{
-                        role: "buy" | "sell";
-                        value: number;
-                      }>;
-                      nonnegative?: true;
-                      series: Array<{
-                        dash?: true;
-                        name: string;
-                        role: "price" | "p1" | "p2" | "p3" | "pos" | "neg";
-                        values: Array<number | null>;
-                      }>;
-                      ticks?: Array<number>;
-                      title: string;
-                      zero?: true;
-                    }>;
-                    x: {
-                      end: number;
-                      start: number;
-                      ticks?: Array<string>;
-                    };
-                  }
-                | {
-                    kind: "grouped";
-                    labels: Array<string>;
-                    series: Array<{
-                      name: string;
-                      values: Array<number | null>;
-                    }>;
-                    title: string;
-                    unit: string;
-                  }
-                | {
-                    kind: "line";
-                    labels: Array<string>;
-                    series: Array<{
-                      name: string;
-                      values: Array<number | null>;
-                    }>;
-                    title: string;
-                    unit: string;
-                  }
-                | {
-                    kind: "stacked";
-                    labels: Array<string>;
-                    series: Array<{
-                      name: string;
-                      values: Array<number | null>;
-                    }>;
-                    title: string;
-                    unit: string;
-                  }
-                | {
-                    kind: "timeline";
-                    labels: Array<string>;
-                    rows: Array<{
-                      detail: string;
-                      end: number;
-                      name: string;
-                      start: number;
-                    }>;
-                    title: string;
-                  }
-                | {
-                    kind: "waterfall";
-                    steps: Array<{
-                      name: string;
-                      total?: true;
-                      value: number;
-                    }>;
-                    title: string;
-                    unit: string;
-                  }
-                | {
-                    kind: "panels";
-                    panels: Array<
-                      | {
-                          kind: "grouped";
-                          labels: Array<string>;
-                          series: Array<{
-                            name: string;
-                            values: Array<number | null>;
-                          }>;
-                          title: string;
-                          unit: string;
-                        }
-                      | {
-                          kind: "line";
-                          labels: Array<string>;
-                          series: Array<{
-                            name: string;
-                            values: Array<number | null>;
-                          }>;
-                          title: string;
-                          unit: string;
-                        }
-                      | {
-                          kind: "stacked";
-                          labels: Array<string>;
-                          series: Array<{
-                            name: string;
-                            values: Array<number | null>;
-                          }>;
-                          title: string;
-                          unit: string;
-                        }
-                    >;
-                    title: string;
-                  };
-              chart_id: string;
-              type: "chart";
-            }
-          | {
-              head: Array<string>;
-              rows: Array<Array<string>>;
-              type: "table";
-            }
-          | null;
-        hint: string | null;
         id: string;
         options: Array<{
           id: string;
           text: string;
         }>;
         prompt: string;
-        section: number | null;
-        topic: string | null;
       }>;
       status: "open" | "submitted";
+      total: number;
     } | null;
     catalog_version: string;
     lesson_id: string;
@@ -27747,10 +29178,9 @@ export type AcademyLessonAttemptsResponses = {
     items: Array<{
       attempt_id: string;
       passed: boolean;
-      review_available: boolean;
       score: number;
       submitted_at: string;
-      total: 8;
+      total: number;
     }>;
     lesson_id: string;
     lesson_key: string;
@@ -27764,20 +29194,16 @@ export type AcademyLessonAttemptsResponses = {
 export type AcademyLessonAttemptsResponse =
   AcademyLessonAttemptsResponses[keyof AcademyLessonAttemptsResponses];
 
-export type AcademyCompleteGuideData = {
-  body: {
-    catalog_version: string;
-    content_version: string;
-    request_id: string;
-  };
+export type AcademyLessonNotesData = {
+  body?: never;
   path: {
     lessonId: string;
   };
   query?: never;
-  url: "/api/v2/academy/lessons/{lessonId}/complete";
+  url: "/api/v2/academy/lessons/{lessonId}/notes";
 };
 
-export type AcademyCompleteGuideErrors = {
+export type AcademyLessonNotesErrors = {
   /**
    * Bad request
    */
@@ -27800,41 +29226,143 @@ export type AcademyCompleteGuideErrors = {
   503: ApiErrorV2;
 };
 
-export type AcademyCompleteGuideError =
-  AcademyCompleteGuideErrors[keyof AcademyCompleteGuideErrors];
+export type AcademyLessonNotesError =
+  AcademyLessonNotesErrors[keyof AcademyLessonNotesErrors];
 
-export type AcademyCompleteGuideResponses = {
+export type AcademyLessonNotesResponses = {
   200: {
-    catalog_version: string;
-    completion: {
-      completed: boolean;
-      completed_at: string | null;
-      completion_method: "quiz" | "guide" | "legacy_migration";
-      newly_completed: boolean;
+    checks: {
+      [key: string]: boolean;
     };
-    granted_capabilities: Array<string>;
     lesson_id: string;
-    lesson_key: string;
-    progress_revision: number;
-    reward:
-      | {
-          balance_after: number;
-          delta: number;
-          status: "credited";
-        }
-      | {
-          balance_after: number;
-          status: "already_rewarded";
-        }
-      | {
-          status: "unavailable";
-        }
-      | null;
+    revision: number;
+    scores: {
+      [key: string]: Array<number>;
+    };
+    texts: {
+      [key: string]: string;
+    };
+    updated_at: string | null;
   };
 };
 
-export type AcademyCompleteGuideResponse =
-  AcademyCompleteGuideResponses[keyof AcademyCompleteGuideResponses];
+export type AcademyLessonNotesResponse =
+  AcademyLessonNotesResponses[keyof AcademyLessonNotesResponses];
+
+export type AcademySaveLessonNotesData = {
+  body: {
+    checks?: {
+      [key: string]: boolean;
+    };
+    expected_revision?: number;
+    scores?: {
+      [key: string]: [number, number, number, number, number, number];
+    };
+    texts?: {
+      [key: string]: string;
+    };
+  };
+  path: {
+    lessonId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/lessons/{lessonId}/notes";
+};
+
+export type AcademySaveLessonNotesErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademySaveLessonNotesError =
+  AcademySaveLessonNotesErrors[keyof AcademySaveLessonNotesErrors];
+
+export type AcademySaveLessonNotesResponses = {
+  200: {
+    checks: {
+      [key: string]: boolean;
+    };
+    lesson_id: string;
+    revision: number;
+    scores: {
+      [key: string]: Array<number>;
+    };
+    texts: {
+      [key: string]: string;
+    };
+    updated_at: string | null;
+  };
+};
+
+export type AcademySaveLessonNotesResponse =
+  AcademySaveLessonNotesResponses[keyof AcademySaveLessonNotesResponses];
+
+export type AcademyChooseScenarioData = {
+  body: {
+    choice: 0 | 1 | 2;
+  };
+  path: {
+    lessonId: string;
+  };
+  query?: never;
+  url: "/api/v2/academy/lessons/{lessonId}/scenario";
+};
+
+export type AcademyChooseScenarioErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyChooseScenarioError =
+  AcademyChooseScenarioErrors[keyof AcademyChooseScenarioErrors];
+
+export type AcademyChooseScenarioResponses = {
+  200: {
+    choice: number;
+    chosen_at: string;
+    created: boolean;
+    lesson_id: string;
+  };
+};
+
+export type AcademyChooseScenarioResponse =
+  AcademyChooseScenarioResponses[keyof AcademyChooseScenarioResponses];
 
 export type AcademyProgressData = {
   body?: never;
@@ -27874,19 +29402,22 @@ export type AcademyProgressResponses = {
     catalog_version: string;
     chapters: Array<{
       done: number;
+      exam_passed: boolean;
       no: number;
       total: number;
     }>;
-    completed: Array<{
-      completed_at: string;
-      completion_method: "quiz" | "guide" | "legacy_migration";
-      lesson_id: string;
-      lesson_key: string;
-    }>;
-    completed_lesson_ids: Array<string>;
     course_done: number;
     course_total: number;
+    current_item_id: string | null;
     granted_capabilities: Array<string>;
+    items: Array<{
+      attempts_submitted: number;
+      best_score: number | null;
+      completed_at: string | null;
+      completion_method: "quiz" | "legacy_migration";
+      id: string;
+      state: "passed" | "open" | "locked";
+    }>;
     progress_revision: number;
   };
 };
@@ -48581,7 +50112,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
       formula: string;
       id: string;
       learned: boolean;
-      lesson_id: string;
+      lesson_id: string | null;
       name: string;
       sell: {
         enabled: boolean;
@@ -49284,7 +50815,7 @@ export type ScreenerMetricsResponses = {
       | "buyback_yield"
       | "shareholder_yield";
     learned: boolean;
-    lesson_id: string;
+    lesson_id: string | null;
     name: string;
     operators: Array<">" | "<">;
     period: string;
@@ -51372,6 +52903,7 @@ export type TeamControllerUsers1Responses = {
         completed: number;
         current_lesson: {
           chapter: number;
+          kind: "lesson" | "chapter_exam";
           label: string;
           lesson_id: string;
           name: string;
@@ -51461,18 +52993,20 @@ export type TeamControllerUser1Responses = {
       };
       chapters: Array<{
         completed: number;
+        exam_passed: boolean;
         lessons: Array<{
           attempts: number;
           completed_at: string | null;
-          completion_mode: "quiz" | "guide";
           is_current: boolean;
-          kind: "technical" | "fundamental" | "concept" | "guide";
+          kind: "lesson" | "practice" | "chapter_exam";
           latest_score: number | null;
           lesson_id: string;
-          max_score: number | null;
+          max_score: number;
           name: string;
+          optional: boolean;
           order: number;
-          status: "completed" | "in_progress" | "failed" | "not_started";
+          status:
+            "completed" | "in_progress" | "failed" | "not_started" | "locked";
         }>;
         no: number;
         title: string;
@@ -51481,6 +53015,7 @@ export type TeamControllerUser1Responses = {
       completed: number;
       current_lesson: {
         chapter: number;
+        kind: "lesson" | "chapter_exam";
         label: string;
         lesson_id: string;
         name: string;

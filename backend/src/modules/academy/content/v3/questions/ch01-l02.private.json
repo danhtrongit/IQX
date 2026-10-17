@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-l02",
+  "questions": [
+    {
+      "correct_option_id": "a45dbe332e",
+      "id": "ch01-l02-q01",
+      "options": [
+        {
+          "id": "a45dbe332e",
+          "text": "Doanh nghiệp bán cổ phiếu mới phát hành cho nhà đầu tư"
+        },
+        {
+          "id": "b46bed17bf",
+          "text": "Các nhà đầu tư mua bán lại cổ phiếu với nhau"
+        },
+        {
+          "id": "43382ce878",
+          "text": "Ngân hàng cho doanh nghiệp vay vốn"
+        }
+      ],
+      "prompt": "Thị trường sơ cấp là nơi diễn ra hoạt động nào?"
+    },
+    {
+      "correct_option_id": "30a821bd3e",
+      "id": "ch01-l02-q02",
+      "options": [
+        {
+          "id": "30a821bd3e",
+          "text": "Lần đầu doanh nghiệp chào bán cổ phiếu ra công chúng"
+        },
+        {
+          "id": "eaa1d8fae9",
+          "text": "Doanh nghiệp chia cổ tức cho cổ đông"
+        },
+        {
+          "id": "4e1cf47c5c",
+          "text": "Doanh nghiệp rời khỏi sàn giao dịch"
+        }
+      ],
+      "prompt": "IPO là gì?"
+    },
+    {
+      "correct_option_id": "4e89ee99f6",
+      "id": "ch01-l02-q03",
+      "options": [
+        {
+          "id": "4e89ee99f6",
+          "text": "Toàn bộ cổ phiếu niêm yết trên HOSE"
+        },
+        {
+          "id": "08a675a835",
+          "text": "Các cổ phiếu trên UPCoM"
+        },
+        {
+          "id": "695834b37e",
+          "text": "Các cổ phiếu trên HNX"
+        }
+      ],
+      "prompt": "VN-Index phản ánh biến động giá của nhóm cổ phiếu nào?"
+    }
+  ],
+  "salt": "fbd87ac5736b920477a19c68a94f2eb693a602eba977b472b1349c27b06fa798"
+}

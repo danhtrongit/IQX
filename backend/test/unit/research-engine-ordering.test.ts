@@ -4,10 +4,20 @@ import { circuitBreak } from '../../src/modules/research/engine/circuit-breaker.
 import { viewFingerprint } from '../../src/modules/research/engine/fingerprint.js';
 import type { ThesisEvidenceEntry } from '../../src/modules/research/engine/current-view.js';
 import { buildShortlist, orderTheses } from '../../src/modules/research/engine/ordering.js';
-import type { CanonicalThesis, InvestmentViewThesis, PublishedView } from '../../src/modules/research/research.types.js';
+import type {
+  CanonicalThesis,
+  InvestmentViewThesis,
+  PublishedView,
+} from '../../src/modules/research/research.types.js';
 import { snapshot, thesis } from './research-engine-helpers.js';
 
-const cand = (id: string, seq: number, materiality: number, brokerCount: number, isRisk = false) => ({
+const cand = (
+  id: string,
+  seq: number,
+  materiality: number,
+  brokerCount: number,
+  isRisk = false,
+) => ({
   thesis: thesis({ id, seq, materiality, isRisk }),
   brokerCount,
   title: `T ${id}`,
@@ -17,8 +27,17 @@ const cand = (id: string, seq: number, materiality: number, brokerCount: number,
 describe('orderTheses', () => {
   it('sorts by materiality, broker count, previous order, seq', () => {
     const out = orderTheses(
-      [cand('a', 1, 3, 1), cand('b', 2, 5, 1), cand('c', 3, 3, 3), cand('d', 4, 3, 1), cand('e', 5, 3, 1)],
-      new Map([['e', 1], ['d', 2]]),
+      [
+        cand('a', 1, 3, 1),
+        cand('b', 2, 5, 1),
+        cand('c', 3, 3, 3),
+        cand('d', 4, 3, 1),
+        cand('e', 5, 3, 1),
+      ],
+      new Map([
+        ['e', 1],
+        ['d', 2],
+      ]),
     );
     expect(out.map((t) => t.id)).toEqual(['b', 'c', 'e', 'd', 'a']);
     expect(out.map((t) => t.order)).toEqual([1, 2, 3, 4, 5]);
@@ -51,7 +70,10 @@ describe('orderTheses', () => {
   });
 
   it('does not touch the selection when a risk thesis is already in', () => {
-    const cs = [...Array.from({ length: 5 }, (_, i) => cand(`p${i}`, i, 4, 2)), cand('r', 10, 1, 1, true)];
+    const cs = [
+      ...Array.from({ length: 5 }, (_, i) => cand(`p${i}`, i, 4, 2)),
+      cand('r', 10, 1, 1, true),
+    ];
     cs[0] = cand('p0', 0, 4, 2, true);
     expect(orderTheses(cs, new Map()).map((t) => t.id)).toEqual(['p0', 'p1', 'p2', 'p3', 'p4']);
   });
@@ -61,7 +83,12 @@ describe('orderTheses', () => {
   });
 });
 
-const th = (id: string, order = 1): InvestmentViewThesis => ({ id, order, title: `t${id}`, summary: `s${id}` });
+const th = (id: string, order = 1): InvestmentViewThesis => ({
+  id,
+  order,
+  title: `t${id}`,
+  summary: `s${id}`,
+});
 const published = (ids: string[], median: number | null): PublishedView => ({
   versionId: 'v',
   symbol: 'VIC',
@@ -78,30 +105,70 @@ describe('circuitBreak (test 27)', () => {
 
   it('median moved > 30% blocks; exactly 30% or less passes', () => {
     const prev = published(['a'], 100_000);
-    expect(circuitBreak(prev, { theses: [th('a')], valuation: snapshot({ targetMedian: 131_000 }) }, true)).toMatch(/median/);
-    expect(circuitBreak(prev, { theses: [th('a')], valuation: snapshot({ targetMedian: 60_000 }) }, true)).toMatch(/median/);
-    expect(circuitBreak(prev, { theses: [th('a')], valuation: snapshot({ targetMedian: 130_000 }) }, true)).toBeNull();
-    expect(circuitBreak(prev, { theses: [th('a')], valuation: snapshot({ targetMedian: 185_000 }) }, true)).not.toBeNull();
+    expect(
+      circuitBreak(
+        prev,
+        { theses: [th('a')], valuation: snapshot({ targetMedian: 131_000 }) },
+        true,
+      ),
+    ).toMatch(/median/);
+    expect(
+      circuitBreak(
+        prev,
+        { theses: [th('a')], valuation: snapshot({ targetMedian: 60_000 }) },
+        true,
+      ),
+    ).toMatch(/median/);
+    expect(
+      circuitBreak(
+        prev,
+        { theses: [th('a')], valuation: snapshot({ targetMedian: 130_000 }) },
+        true,
+      ),
+    ).toBeNull();
+    expect(
+      circuitBreak(
+        prev,
+        { theses: [th('a')], valuation: snapshot({ targetMedian: 185_000 }) },
+        true,
+      ),
+    ).not.toBeNull();
   });
 
   it('null medians on either side are not compared', () => {
-    expect(circuitBreak(published(['a'], null), { theses: [th('a')], valuation: snapshot({ targetMedian: 500 }) }, true)).toBeNull();
-    expect(circuitBreak(published(['a'], 100), { theses: [th('a')], valuation: snapshot() }, true)).toBeNull();
+    expect(
+      circuitBreak(
+        published(['a'], null),
+        { theses: [th('a')], valuation: snapshot({ targetMedian: 500 }) },
+        true,
+      ),
+    ).toBeNull();
+    expect(
+      circuitBreak(published(['a'], 100), { theses: [th('a')], valuation: snapshot() }, true),
+    ).toBeNull();
   });
 
   it('thesis count falling to 0 blocks only while valid reports remain', () => {
     const prev = published(['a'], null);
     expect(circuitBreak(prev, { theses: [], valuation: snapshot() }, true)).toMatch(/0/);
     expect(circuitBreak(prev, { theses: [], valuation: snapshot() }, false)).toBeNull();
-    expect(circuitBreak(published([], null), { theses: [], valuation: snapshot() }, true)).toBeNull();
+    expect(
+      circuitBreak(published([], null), { theses: [], valuation: snapshot() }, true),
+    ).toBeNull();
   });
 
   it('replacing every previous thesis at once (prev ≥ 2) blocks', () => {
     const prev = published(['a', 'b'], null);
-    expect(circuitBreak(prev, { theses: [th('c'), th('d')], valuation: snapshot() }, true)).toMatch(/replaced/);
-    expect(circuitBreak(prev, { theses: [th('c'), th('a')], valuation: snapshot() }, true)).toBeNull();
+    expect(circuitBreak(prev, { theses: [th('c'), th('d')], valuation: snapshot() }, true)).toMatch(
+      /replaced/,
+    );
+    expect(
+      circuitBreak(prev, { theses: [th('c'), th('a')], valuation: snapshot() }, true),
+    ).toBeNull();
     // a single previous thesis replaced is allowed
-    expect(circuitBreak(published(['a'], null), { theses: [th('c')], valuation: snapshot() }, true)).toBeNull();
+    expect(
+      circuitBreak(published(['a'], null), { theses: [th('c')], valuation: snapshot() }, true),
+    ).toBeNull();
   });
 });
 
@@ -126,7 +193,12 @@ describe('viewFingerprint', () => {
     const reordered = { summary: t1.summary, order: 1, title: t1.title, id: 'a' };
     expect(viewFingerprint([reordered, t2], val)).toBe(f);
     expect(viewFingerprint([t1, t2], { ...val, targets: [...targets].reverse() })).toBe(f);
-    expect(viewFingerprint([t1, t2], { ...val, targets: targets.map((t) => ({ ...t, reportId: 'zzz' })) })).toBe(f);
+    expect(
+      viewFingerprint([t1, t2], {
+        ...val,
+        targets: targets.map((t) => ({ ...t, reportId: 'zzz' })),
+      }),
+    ).toBe(f);
     expect(viewFingerprint([t1, t2], { ...val, researchAsOf: '2030-01-01' })).toBe(f);
   });
 
@@ -135,8 +207,18 @@ describe('viewFingerprint', () => {
     expect(viewFingerprint([{ ...th('a'), title: 'x' }], val)).not.toBe(f);
     expect(viewFingerprint([{ ...th('a'), summary: 'x' }], val)).not.toBe(f);
     expect(viewFingerprint([th('a', 2)], val)).not.toBe(f);
-    expect(viewFingerprint([th('a')], { ...val, targets: [{ ...targets[0]!, targetPriceVnd: 191_000 }, targets[1]!] })).not.toBe(f);
-    expect(viewFingerprint([th('a')], { ...val, targets: [{ ...targets[0]!, reportDate: '2026-10-02' }, targets[1]!] })).not.toBe(f);
+    expect(
+      viewFingerprint([th('a')], {
+        ...val,
+        targets: [{ ...targets[0]!, targetPriceVnd: 191_000 }, targets[1]!],
+      }),
+    ).not.toBe(f);
+    expect(
+      viewFingerprint([th('a')], {
+        ...val,
+        targets: [{ ...targets[0]!, reportDate: '2026-10-02' }, targets[1]!],
+      }),
+    ).not.toBe(f);
     expect(viewFingerprint([th('a')], { ...val, hiddenReason: 'corporate_action' })).not.toBe(f);
   });
 });
@@ -144,15 +226,21 @@ describe('viewFingerprint', () => {
 describe('buildShortlist', () => {
   const thesis = (seq: number, isRisk = false) =>
     ({ id: `T${seq}`, seq, isRisk, status: 'active' }) as unknown as CanonicalThesis;
-  const entry = (id: string, brokers: string[], date: string) => ({
-    thesisId: id,
-    brokers,
-    perBroker: brokers.map((broker) => ({ broker, claim: { evidenceDate: date } })),
-  }) as unknown as ThesisEvidenceEntry;
+  const entry = (id: string, brokers: string[], date: string) =>
+    ({
+      thesisId: id,
+      brokers,
+      perBroker: brokers.map((broker) => ({ broker, claim: { evidenceDate: date } })),
+    }) as unknown as ThesisEvidenceEntry;
 
   it('keeps the 8 best-backed theses and gives the last slot to the best risk', () => {
     const theses = Array.from({ length: 10 }, (_, i) => thesis(i + 1, i === 9));
-    const evidence = new Map(theses.map((t, i) => [t.id, entry(t.id, i < 8 ? ['A', 'B'] : ['A'], `2026-10-0${(i % 9) + 1}`)]));
+    const evidence = new Map(
+      theses.map((t, i) => [
+        t.id,
+        entry(t.id, i < 8 ? ['A', 'B'] : ['A'], `2026-10-0${(i % 9) + 1}`),
+      ]),
+    );
     const picked = buildShortlist(theses, evidence);
     expect(picked.size).toBe(8);
     expect(picked.has('T10')).toBe(true);
@@ -160,7 +248,10 @@ describe('buildShortlist', () => {
   });
 
   it('skips theses without evidence', () => {
-    const picked = buildShortlist([thesis(1), thesis(2)], new Map([['T1', entry('T1', ['A'], '2026-10-01')]]));
+    const picked = buildShortlist(
+      [thesis(1), thesis(2)],
+      new Map([['T1', entry('T1', ['A'], '2026-10-01')]]),
+    );
     expect([...picked]).toEqual(['T1']);
   });
 });

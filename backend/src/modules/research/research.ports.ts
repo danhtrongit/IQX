@@ -108,7 +108,10 @@ export interface ResearchStore {
   insertClaims(report: ResearchReport, claims: ExtractedClaim[]): Promise<StoredClaim[]>;
   setClaimStatus(claimIds: string[], status: StoredClaim['status']): Promise<void>;
   markClaimsMatched(claimIds: string[]): Promise<void>;
-  markProcessed(reportId: string, target: { targetPriceVnd: number; horizon: string | null } | null): Promise<void>;
+  markProcessed(
+    reportId: string,
+    target: { targetPriceVnd: number; horizon: string | null } | null,
+  ): Promise<void>;
   markProcessFailed(reportId: string, error: string): Promise<void>;
   createThesis(symbol: string, draft: NewThesisDraft): Promise<CanonicalThesis>;
   linkClaims(links: (ThesisEvidenceLink & { matchReason: ClaimMatch['match'] })[]): Promise<void>;
@@ -135,7 +138,10 @@ export interface ResearchStore {
 
   // ── Daily AI budget ────────────────────────────────────────────────────────
   aiCallsOn(date: string): Promise<number>;
-  recordAiUsage(date: string, usage: { calls: number; promptTokens: number; completionTokens: number }): Promise<void>;
+  recordAiUsage(
+    date: string,
+    usage: { calls: number; promptTokens: number; completionTokens: number },
+  ): Promise<void>;
 }
 
 export interface AiUsage {
@@ -153,7 +159,15 @@ export interface ResearchAi {
   /** Semantic matching + contradiction/disagreement check of new claims vs existing theses (spec §15–§19). */
   matchClaims(
     symbol: string,
-    theses: Pick<CanonicalThesis, 'id' | 'canonicalDriver' | 'canonicalMechanism' | 'canonicalOutcome' | 'direction' | 'currentSummary'>[],
+    theses: Pick<
+      CanonicalThesis,
+      | 'id'
+      | 'canonicalDriver'
+      | 'canonicalMechanism'
+      | 'canonicalOutcome'
+      | 'direction'
+      | 'currentSummary'
+    >[],
     claims: StoredClaim[],
   ): Promise<{ result: MatchingResult; usage: AiUsage }>;
   /** User-facing title/summary of the affected theses only (spec §20). `failures` carries the previous rejection reasons. */

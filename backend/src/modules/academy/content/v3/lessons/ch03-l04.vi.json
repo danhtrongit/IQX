@@ -1,0 +1,335 @@
+{
+  "chapter": 3,
+  "charts": {},
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch03-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Mạng xã hội giúp bạn gặp hàng nghìn người mà không cần ra khỏi nhà. Nhưng mạng xã hội chỉ hiệu quả khi bạn đăng đều, đăng có ích và đăng đúng nguyên tắc nghề.",
+  "lesson_key": "concept:he_sinh_thai_online",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Facebook cá nhân",
+              "text": "Nơi bạn bè, người quen theo dõi hành trình của bạn. Bài viết kiến thức, câu chuyện, hình hoạt động."
+            },
+            {
+              "term": "Zalo",
+              "text": "Nơi chăm sóc khách: nhật ký Zalo, nhóm bản tin, tin nhắn riêng. Gần gũi và dễ trả lời nhất."
+            },
+            {
+              "term": "TikTok, Reels",
+              "text": "Nơi tiếp cận người lạ bằng video ngắn. Giúp thu hút người mới vào phễu."
+            },
+            {
+              "term": "Hội nhóm",
+              "text": "Nhóm đầu tư, nhóm cư dân, nhóm nghề nghiệp. Trả lời câu hỏi có ích, không spam quảng cáo."
+            },
+            {
+              "term": "Livestream",
+              "text": "Khi đã quen máy, livestream hỏi đáp hoặc tổng kết tuần giúp người xem thấy bạn thật nhất."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s1",
+      "title": "Mỗi kênh một vai trò"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Mạng xã hội cũng là một phễu. Mỗi tầng cần một loại nội dung khác nhau.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "label": "10.000 người xem",
+              "note": "Thu hút: video ngắn, chủ đề dễ hiểu",
+              "pct": 100,
+              "tone": "pos"
+            },
+            {
+              "label": "1.000 người theo dõi",
+              "note": "Xây niềm tin: kiến thức, bản tin",
+              "pct": 86,
+              "tone": "pos"
+            },
+            {
+              "label": "200 người nhắn tin",
+              "note": "Hỗ trợ, giải đáp thắc mắc",
+              "pct": 72,
+              "tone": "warn"
+            },
+            {
+              "label": "50 người mở tài khoản",
+              "note": "Chuyển đổi",
+              "pct": 58,
+              "tone": "p5"
+            },
+            {
+              "label": "15 người giao dịch",
+              "pct": 44,
+              "tone": "p4"
+            },
+            {
+              "label": "5 khách lớn",
+              "pct": 32,
+              "tone": "p1"
+            }
+          ],
+          "type": "funnel"
+        },
+        {
+          "text": "Không phải ai thấy bạn cũng thành khách. Việc của bạn là <b>kiên trì xuất hiện ở đầu phễu</b> và chăm sóc thật lòng ở các tầng dưới.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Phễu thương hiệu online"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khoảng <b>80% nội dung là giá trị</b> cho người xem, chỉ <b>20% là giới thiệu dịch vụ</b> của bạn. Một tuần mẫu:",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Ngày"
+            },
+            {
+              "label": "Loại nội dung"
+            },
+            {
+              "label": "Ví dụ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Thứ Hai",
+                "Thị trường",
+                "Điểm qua 3 tin đáng chú ý tuần này"
+              ]
+            },
+            {
+              "cells": [
+                "Thứ Ba",
+                "Kiến thức",
+                "Cổ tức là gì, giải thích trong 1 phút"
+              ]
+            },
+            {
+              "cells": [
+                "Thứ Tư",
+                "Con người",
+                "Một ngày làm việc của mình bắt đầu từ 7 giờ sáng"
+              ]
+            },
+            {
+              "cells": [
+                "Thứ Năm",
+                "Kiến thức",
+                "Sai lầm phổ biến của người mới: mua theo tin đồn"
+              ]
+            },
+            {
+              "cells": [
+                "Thứ Sáu",
+                "Thị trường",
+                "Tổng kết tuần ngắn gọn"
+              ]
+            },
+            {
+              "cells": [
+                "Cuối tuần",
+                "Giới thiệu dịch vụ",
+                "Mời tham gia buổi chia sẻ, nhận bản tin hằng ngày"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "text": "Kết hợp với thói quen 2-3-100 ở Chương 2 · Bài 3: <b>2 ngày 1 bài viết, 100 ngày 100 video</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s3",
+      "title": "Tỷ lệ 80/20 và lịch nội dung tuần"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Mỗi kênh đưa khách tiến thêm một bước. Đừng mong một người lạ xem một video TikTok rồi mở tài khoản ngay.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "label": "Biết đến bạn",
+              "text": "Người lạ thấy video, bấm theo dõi.",
+              "title": "TikTok, Reels"
+            },
+            {
+              "label": "Tin bạn hơn",
+              "text": "Vào trang xem bạn là ai, làm nghề thật không.",
+              "title": "Facebook"
+            },
+            {
+              "label": "Quen dần",
+              "text": "Nhận bản tin mỗi ngày, hỏi đáp trong nhóm.",
+              "title": "Nhóm Zalo"
+            },
+            {
+              "label": "Hành động",
+              "text": "Tư vấn, mở tài khoản, chăm sóc lâu dài.",
+              "title": "Tin nhắn riêng"
+            }
+          ],
+          "type": "steps"
+        },
+        {
+          "columns": [
+            {
+              "label": "Kênh"
+            },
+            {
+              "label": "Vai trò"
+            },
+            {
+              "label": "Tần suất gợi ý"
+            },
+            {
+              "label": "Chỉ số cần xem"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "TikTok, Reels",
+                "Thu hút người lạ",
+                "1 video mỗi ngày",
+                "Lượt xem hết, người theo dõi mới"
+              ]
+            },
+            {
+              "cells": [
+                "Facebook cá nhân",
+                "Xây niềm tin",
+                "2 ngày 1 bài",
+                "Bình luận, lưu bài, tin nhắn"
+              ]
+            },
+            {
+              "cells": [
+                "Nhóm Zalo",
+                "Chăm sóc nhiều người",
+                "3 tin mỗi ngày giao dịch",
+                "Thành viên mới, câu hỏi"
+              ]
+            },
+            {
+              "cells": [
+                "Tin nhắn Zalo riêng",
+                "Chuyển đổi",
+                "Mỗi ngày",
+                "Cuộc hẹn, tài khoản mở"
+              ]
+            },
+            {
+              "cells": [
+                "Livestream, hội nhóm",
+                "Niềm tin sâu, có mặt nơi người mới hỏi",
+                "1 buổi mỗi tuần khi sẵn sàng",
+                "Người xem, câu hỏi, lượt nhắn sau buổi"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "rows"
+        },
+        {
+          "text": "Bốn bài tiếp theo là hướng dẫn chi tiết cho từng kênh, có bài mẫu viết sẵn để bạn làm theo.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Hành trình của khách qua các kênh"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Thu hút người ham lợi nhanh và tạo kỳ vọng sai.",
+              "title": "Không khoe lãi, khoe lệnh"
+            },
+            {
+              "text": "Không “x2 tài khoản”, không “cam kết lãi”.",
+              "title": "Không hứa lợi nhuận"
+            },
+            {
+              "text": "Thông tin cổ phiếu phải ghi rõ chỉ mang tính tham khảo.",
+              "title": "Không “phím mã” chắc chắn tăng"
+            },
+            {
+              "text": "Không chụp tài khoản, tin nhắn của khách khi chưa được đồng ý.",
+              "title": "Không đăng thông tin khách"
+            }
+          ],
+          "style": "mistake",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Nguyên tắc nghề trên mạng"
+    },
+    {
+      "blocks": [
+        {
+          "best_option": 1,
+          "debrief": "<b>Cách tốt nhất: biến xu hướng đó thành nội dung bảo vệ người xem.</b> Video hứa x2 vi phạm nguyên tắc nghề và thu hút đúng kiểu khách FOMO dễ bỏ đi nhất. Mua lượt xem chỉ tạo con số ảo, không tạo niềm tin. Video giải thích “vì sao không nên tin” vẫn bắt được sự chú ý của chủ đề nóng, đồng thời cho thấy bạn là người tử tế.",
+          "options": [
+            "Làm video tương tự nhưng đổi sang mã khác",
+            "Làm video giải thích vì sao không nên tin những lời hứa “x2 tài khoản”, kèm cách tự kiểm tra một cổ phiếu",
+            "Mua lượt xem cho video của mình để bằng họ"
+          ],
+          "question": "Bạn sẽ chọn cách nào?",
+          "story": [
+            "Tuấn thấy một tài khoản TikTok đăng video “Mã này x2 trong 1 tháng, ai theo tôi đều thắng” được hàng trăm nghìn lượt xem. Tuấn định làm video tương tự cho nhanh nổi."
+          ],
+          "title": "Video khoe lãi nhiều lượt xem",
+          "type": "scenario"
+        },
+        {
+          "id": "br4b",
+          "placeholder": "Viết câu trả lời của bạn ở đây…",
+          "prompts": [
+            "Viết tiêu đề nội dung cho 7 ngày tới theo tỷ lệ 80/20, xoay vòng 3 trụ cột: kiến thức, thị trường, con người."
+          ],
+          "title": "Bài tự làm: lịch nội dung 7 ngày",
+          "type": "workpad"
+        }
+      ],
+      "id": "s6",
+      "title": "Thực chiến"
+    }
+  ],
+  "summary": [
+    "Mỗi kênh một vai trò: <b>Facebook</b> kể hành trình, <b>Zalo</b> chăm sóc, <b>TikTok</b> thu hút người mới.",
+    "Online cũng là phễu: <b>kiên trì ở đầu phễu</b>, chăm sóc thật lòng ở tầng dưới.",
+    "Khách đi qua các kênh theo hành trình: <b>TikTok → Facebook → nhóm Zalo → tin nhắn riêng</b>. Nội dung <b>80% giá trị, 20% giới thiệu</b>.",
+    "Không <b>khoe lãi, hứa lợi nhuận, phím mã</b> hay đăng thông tin khách."
+  ],
+  "title": "Hệ sinh thái online"
+}

@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-l07",
+  "questions": [
+    {
+      "correct_option_id": "43c6436117",
+      "id": "ch04-l07-q01",
+      "options": [
+        {
+          "id": "43c6436117",
+          "text": "Đường MACD, đường tín hiệu và histogram"
+        },
+        {
+          "id": "684ae6215f",
+          "text": "Đường giá, khối lượng và RSI"
+        },
+        {
+          "id": "c300e4bf82",
+          "text": "Ba đường MA20, MA50 và MA200"
+        }
+      ],
+      "prompt": "MACD gồm những thành phần nào?"
+    },
+    {
+      "correct_option_id": "4aa207a57e",
+      "id": "ch04-l07-q02",
+      "options": [
+        {
+          "id": "4aa207a57e",
+          "text": "Xu hướng tăng đang chiếm ưu thế"
+        },
+        {
+          "id": "b67128d229",
+          "text": "Cổ phiếu đang quá mua"
+        },
+        {
+          "id": "94b6308459",
+          "text": "Thị trường đang đi ngang"
+        }
+      ],
+      "prompt": "Đường MACD nằm trên 0 cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "0853df98fe",
+      "id": "ch04-l07-q03",
+      "options": [
+        {
+          "id": "0853df98fe",
+          "text": "Tín hiệu mua"
+        },
+        {
+          "id": "0df73f701b",
+          "text": "Tín hiệu bán"
+        },
+        {
+          "id": "3e790d094b",
+          "text": "Không có ý nghĩa"
+        }
+      ],
+      "prompt": "Đường MACD cắt lên trên đường tín hiệu là tín hiệu gì?"
+    },
+    {
+      "correct_option_id": "f9b68ab2e8",
+      "id": "ch04-l07-q04",
+      "options": [
+        {
+          "id": "f9b68ab2e8",
+          "text": "Động lượng đang yếu đi"
+        },
+        {
+          "id": "17b69ab3f8",
+          "text": "Động lượng đang mạnh lên"
+        },
+        {
+          "id": "d90ce15ece",
+          "text": "Khối lượng giao dịch tăng"
+        }
+      ],
+      "prompt": "Các cột histogram ngắn dần cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "d741ae8f87",
+      "id": "ch04-l07-q05",
+      "options": [
+        {
+          "id": "d741ae8f87",
+          "text": "Tạo nhiều giao cắt nhiễu"
+        },
+        {
+          "id": "69d4388c58",
+          "text": "Luôn cho tín hiệu chính xác"
+        },
+        {
+          "id": "14b70907c1",
+          "text": "Không hiển thị được trên biểu đồ"
+        }
+      ],
+      "prompt": "Khi thị trường đi ngang, MACD có hạn chế gì?"
+    }
+  ],
+  "salt": "7217eeb0bff97af7d6b5eb670079d34787c4d4fd29fc32713553f05c866ade15"
+}

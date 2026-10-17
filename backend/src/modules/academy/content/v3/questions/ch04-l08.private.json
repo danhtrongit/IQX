@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch04-l08",
+  "questions": [
+    {
+      "correct_option_id": "ceee016bac",
+      "id": "ch04-l08-q01",
+      "options": [
+        {
+          "id": "ceee016bac",
+          "text": "Dải giữa, dải trên và dải dưới"
+        },
+        {
+          "id": "56370a2e6e",
+          "text": "Đường MACD, đường tín hiệu và histogram"
+        },
+        {
+          "id": "7cdbebf1b3",
+          "text": "Ba đường MA20, MA50 và MA200"
+        }
+      ],
+      "prompt": "Bollinger Bands gồm những đường nào?"
+    },
+    {
+      "correct_option_id": "85652f8212",
+      "id": "ch04-l08-q02",
+      "options": [
+        {
+          "id": "85652f8212",
+          "text": "Đường MA20"
+        },
+        {
+          "id": "2e97050bc8",
+          "text": "Đường MA200"
+        },
+        {
+          "id": "96a617e69c",
+          "text": "Đường RSI"
+        }
+      ],
+      "prompt": "Dải giữa của Bollinger Bands là đường gì?"
+    },
+    {
+      "correct_option_id": "49eb4deaea",
+      "id": "ch04-l08-q03",
+      "options": [
+        {
+          "id": "49eb4deaea",
+          "text": "Thị trường yên ắng, thường trước một đợt biến động mạnh"
+        },
+        {
+          "id": "afac191050",
+          "text": "Giá chắc chắn sẽ tăng"
+        },
+        {
+          "id": "d59db4e527",
+          "text": "Cổ phiếu đã quá mua"
+        }
+      ],
+      "prompt": "Dải Bollinger thắt chặt cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "b26a774a28",
+      "id": "ch04-l08-q04",
+      "options": [
+        {
+          "id": "b26a774a28",
+          "text": "Giá có thể tiếp tục bám dải trên và tăng"
+        },
+        {
+          "id": "998bf9c2e9",
+          "text": "Phải bán ngay lập tức"
+        },
+        {
+          "id": "335aa80828",
+          "text": "Xu hướng tăng đã kết thúc"
+        }
+      ],
+      "prompt": "Trong xu hướng tăng mạnh, giá chạm dải trên có ý nghĩa gì?"
+    },
+    {
+      "correct_option_id": "5cd1e59706",
+      "id": "ch04-l08-q05",
+      "options": [
+        {
+          "id": "5cd1e59706",
+          "text": "Sắp có biến động nhưng chưa biết hướng"
+        },
+        {
+          "id": "7970063679",
+          "text": "Giá chắc chắn sẽ tăng"
+        },
+        {
+          "id": "09fbb3de4e",
+          "text": "Giá chắc chắn sẽ giảm"
+        }
+      ],
+      "prompt": "Khi dải thắt chặt, điều nào đúng?"
+    }
+  ],
+  "salt": "0d6266d9cb81231563a84411967be3f190f759168e97b490bb1dfaf6748dece6"
+}

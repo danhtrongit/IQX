@@ -536,27 +536,31 @@ const WORKED: Record<string, () => number | null> = {
 const WORKED_NOT_OBSERVABLE = new Set(['psar']);
 
 describe('quant v2 calc — technical worked fixtures (lesson files)', () => {
-  const contentDir = join(
+  /**
+   * Worked fixtures of the retired 13-chapter lesson files, moved to test fixtures and keyed by
+   * indicator id (the registries' lesson ids follow the academy catalog, the fixtures do not).
+   */
+  const fixtureDir = join(
     dirname(fileURLToPath(import.meta.url)),
-    '../../src/modules/academy/content',
+    '../fixtures/quant/lesson-fixtures',
   );
-  /** Current registry: worked fixtures live in the re-homed lesson files, keyed by the NEW lesson id. */
-  const lessonFixtures = new Map<string, WorkedFixture>();
-  for (const lessonId of readdirSync(join(contentDir, 'lessons'))) {
-    const lesson = JSON.parse(
-      readFileSync(join(contentDir, 'lessons', lessonId, 'lesson.vi.json'), 'utf8'),
-    ) as { lesson_id: string; fixture?: Omit<WorkedFixture, 'lesson_id'> };
-    if (lesson.fixture)
-      lessonFixtures.set(lesson.lesson_id, { ...lesson.fixture, lesson_id: lessonId });
-  }
-  /** Legacy registry: fixtures of the removed lessons, keyed by the OLD lesson id. */
-  const legacyFixtures = new Map<string, WorkedFixture>();
-  const legacyDir = join(contentDir, 'legacy', 'chapters');
-  for (const chapter of readdirSync(legacyDir)) {
-    const file = join(legacyDir, chapter, 'fixtures.json');
-    for (const fixture of JSON.parse(readFileSync(file, 'utf8')) as WorkedFixture[]) {
-      legacyFixtures.set(fixture.lesson_id, fixture);
-    }
+  const workedFixtures = new Map<string, WorkedFixture & { legacy: boolean }>();
+  for (const name of readdirSync(fixtureDir)) {
+    const fixture = JSON.parse(readFileSync(join(fixtureDir, name), 'utf8')) as {
+      indicator_id: string;
+      legacy: boolean;
+      source_lesson_id: string;
+      label: string;
+      expected: number;
+      tolerance: number;
+    };
+    workedFixtures.set(fixture.indicator_id, {
+      lesson_id: fixture.source_lesson_id,
+      label: fixture.label,
+      expected: fixture.expected,
+      tolerance: fixture.tolerance,
+      legacy: fixture.legacy,
+    });
   }
 
   it('covers every indicator except the documented non-observable one', () => {
@@ -566,14 +570,15 @@ describe('quant v2 calc — technical worked fixtures (lesson files)', () => {
   });
 
   const cases = [
-    ...registry.map((entry) => ({ entry, fixtures: lessonFixtures, legacy: false })),
-    ...legacyRegistry.map((entry) => ({ entry, fixtures: legacyFixtures, legacy: true })),
+    ...registry.map((entry) => ({ entry, legacy: false })),
+    ...legacyRegistry.map((entry) => ({ entry, legacy: true })),
   ];
-  for (const { entry, fixtures, legacy } of cases) {
+  for (const { entry, legacy } of cases) {
     if (WORKED_NOT_OBSERVABLE.has(entry.id)) continue;
-    it(`${legacy ? 'legacy ' : ''}${entry.id} (${entry.lesson_id}) reproduces the lesson fixture`, () => {
-      const fixture = fixtures.get(entry.lesson_id);
-      if (!fixture) throw new Error(`missing fixture for ${entry.lesson_id}`);
+    it(`${legacy ? 'legacy ' : ''}${entry.id} reproduces the lesson fixture`, () => {
+      const fixture = workedFixtures.get(entry.id);
+      if (!fixture) throw new Error(`missing fixture for ${entry.id}`);
+      expect(fixture.legacy).toBe(legacy);
       const worked = entry.worked_fixture as { expected: number };
       expect(worked.expected).toBe(fixture.expected);
       const compute = WORKED[entry.id];

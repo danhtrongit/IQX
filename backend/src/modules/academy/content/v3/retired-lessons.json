@@ -1,0 +1,269 @@
+{
+  "format": "iqx-academy-retired-v3",
+  "lessons": [
+    {
+      "lesson_key": "concept:hop_luu",
+      "name": "Hợp lưu"
+    },
+    {
+      "lesson_key": "guide:ch02-l01",
+      "name": "Bắt đầu với Backtest"
+    },
+    {
+      "lesson_key": "guide:ch02-l02",
+      "name": "Thiết lập điều kiện Mua"
+    },
+    {
+      "lesson_key": "guide:ch02-l03",
+      "name": "Thiết lập điều kiện Bán"
+    },
+    {
+      "lesson_key": "guide:ch02-l04",
+      "name": "Chọn giả định và chạy kiểm thử"
+    },
+    {
+      "lesson_key": "guide:ch02-l05",
+      "name": "Đọc kết quả và lịch sử giao dịch"
+    },
+    {
+      "lesson_key": "guide:ch02-l06",
+      "name": "Điều chỉnh, so sánh và lưu kết quả"
+    },
+    {
+      "lesson_key": "fundamental:revenue_yoy",
+      "name": "Tăng trưởng doanh thu YoY"
+    },
+    {
+      "lesson_key": "fundamental:profit_yoy",
+      "name": "Tăng trưởng LNST YoY"
+    },
+    {
+      "lesson_key": "fundamental:eps_yoy",
+      "name": "Tăng trưởng EPS YoY"
+    },
+    {
+      "lesson_key": "fundamental:gross_margin",
+      "name": "Biên lợi nhuận gộp"
+    },
+    {
+      "lesson_key": "fundamental:net_margin",
+      "name": "Biên lợi nhuận ròng"
+    },
+    {
+      "lesson_key": "fundamental:roe",
+      "name": "ROE"
+    },
+    {
+      "lesson_key": "guide:ch04-l01",
+      "name": "Bắt đầu với Bộ lọc"
+    },
+    {
+      "lesson_key": "guide:ch04-l02",
+      "name": "Thiết lập điều kiện lọc"
+    },
+    {
+      "lesson_key": "guide:ch04-l03",
+      "name": "Chọn kỳ tính cho từng chỉ tiêu"
+    },
+    {
+      "lesson_key": "guide:ch04-l04",
+      "name": "Đọc và kiểm tra kết quả"
+    },
+    {
+      "lesson_key": "guide:ch04-l05",
+      "name": "Điều chỉnh và lưu bộ lọc"
+    },
+    {
+      "lesson_key": "guide:ch04-l06",
+      "name": "Lưu và áp dụng danh mục cho Bot"
+    },
+    {
+      "lesson_key": "technical:ema",
+      "name": "EMA"
+    },
+    {
+      "lesson_key": "technical:ma_cross",
+      "name": "MA Cross"
+    },
+    {
+      "lesson_key": "technical:dmi",
+      "name": "DMI"
+    },
+    {
+      "lesson_key": "technical:stochastic",
+      "name": "Stochastic"
+    },
+    {
+      "lesson_key": "technical:cci",
+      "name": "CCI"
+    },
+    {
+      "lesson_key": "fundamental:roa",
+      "name": "ROA"
+    },
+    {
+      "lesson_key": "fundamental:roic",
+      "name": "ROIC"
+    },
+    {
+      "lesson_key": "fundamental:debt_equity",
+      "name": "D/E — Nợ vay / Vốn chủ sở hữu"
+    },
+    {
+      "lesson_key": "fundamental:net_debt_ebitda",
+      "name": "Net Debt / EBITDA"
+    },
+    {
+      "lesson_key": "fundamental:current_ratio",
+      "name": "Current Ratio"
+    },
+    {
+      "lesson_key": "fundamental:interest_coverage",
+      "name": "Interest Coverage"
+    },
+    {
+      "lesson_key": "technical:obv",
+      "name": "OBV"
+    },
+    {
+      "lesson_key": "technical:mfi",
+      "name": "MFI"
+    },
+    {
+      "lesson_key": "technical:cmf",
+      "name": "Chaikin Money Flow — CMF"
+    },
+    {
+      "lesson_key": "fundamental:cfo_margin",
+      "name": "CFO Margin"
+    },
+    {
+      "lesson_key": "fundamental:cfo_profit",
+      "name": "CFO / LNST"
+    },
+    {
+      "lesson_key": "fundamental:fcf_margin",
+      "name": "FCF Margin"
+    },
+    {
+      "lesson_key": "fundamental:fcf_yoy",
+      "name": "FCF Growth YoY"
+    },
+    {
+      "lesson_key": "fundamental:capex_revenue",
+      "name": "Capex / Revenue"
+    },
+    {
+      "lesson_key": "fundamental:accrual",
+      "name": "Accrual Ratio"
+    },
+    {
+      "lesson_key": "fundamental:pe",
+      "name": "P/E"
+    },
+    {
+      "lesson_key": "fundamental:pb",
+      "name": "P/B"
+    },
+    {
+      "lesson_key": "fundamental:ps",
+      "name": "P/S"
+    },
+    {
+      "lesson_key": "fundamental:ev_ebitda",
+      "name": "EV / EBITDA"
+    },
+    {
+      "lesson_key": "fundamental:peg",
+      "name": "PEG"
+    },
+    {
+      "lesson_key": "fundamental:fcf_yield",
+      "name": "FCF Yield"
+    },
+    {
+      "lesson_key": "technical:donchian",
+      "name": "Donchian Channel"
+    },
+    {
+      "lesson_key": "technical:roc",
+      "name": "ROC"
+    },
+    {
+      "lesson_key": "technical:williams_r",
+      "name": "Williams %R"
+    },
+    {
+      "lesson_key": "fundamental:revenue_cagr3",
+      "name": "Revenue CAGR 3Y"
+    },
+    {
+      "lesson_key": "fundamental:profit_cagr3",
+      "name": "Net Profit CAGR 3Y"
+    },
+    {
+      "lesson_key": "fundamental:eps_cagr3",
+      "name": "EPS CAGR 3Y"
+    },
+    {
+      "lesson_key": "fundamental:asset_turnover",
+      "name": "Asset Turnover"
+    },
+    {
+      "lesson_key": "fundamental:ccc",
+      "name": "Cash Conversion Cycle"
+    },
+    {
+      "lesson_key": "fundamental:working_cap_turnover",
+      "name": "Working Capital Turnover"
+    },
+    {
+      "lesson_key": "fundamental:revenue_growth_stability",
+      "name": "Revenue Growth Stability"
+    },
+    {
+      "lesson_key": "fundamental:eps_growth_stability",
+      "name": "EPS Stability"
+    },
+    {
+      "lesson_key": "fundamental:net_margin_stability",
+      "name": "Margin Stability"
+    },
+    {
+      "lesson_key": "fundamental:roic_stability",
+      "name": "ROIC Stability"
+    },
+    {
+      "lesson_key": "fundamental:fcf_positive_streak",
+      "name": "FCF Positive Streak"
+    },
+    {
+      "lesson_key": "fundamental:profit_positive_streak",
+      "name": "Profit Positive Streak"
+    },
+    {
+      "lesson_key": "fundamental:dividend_yield",
+      "name": "Dividend Yield"
+    },
+    {
+      "lesson_key": "fundamental:payout_ratio",
+      "name": "Payout Ratio"
+    },
+    {
+      "lesson_key": "fundamental:dividend_cagr3",
+      "name": "Dividend Growth"
+    },
+    {
+      "lesson_key": "fundamental:share_count_yoy",
+      "name": "Share Count Growth"
+    },
+    {
+      "lesson_key": "fundamental:buyback_yield",
+      "name": "Buyback Yield"
+    },
+    {
+      "lesson_key": "fundamental:shareholder_yield",
+      "name": "Shareholder Yield"
+    }
+  ]
+}

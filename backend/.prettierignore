@@ -8,4 +8,8 @@ src/modules/academy/content
 src/modules/quant/v2/registry
 src/modules/screener/registry
 test/fixtures/bot-v2/*.cjs
+test/fixtures/academy
+test/fixtures/quant
 docs/specs
+docs/academy-v32
+test/fixtures/research

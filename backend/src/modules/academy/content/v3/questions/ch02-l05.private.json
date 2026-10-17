@@ -1,0 +1,64 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch02-l05",
+  "questions": [
+    {
+      "correct_option_id": "c6baac8d6e",
+      "id": "ch02-l05-q01",
+      "options": [
+        {
+          "id": "c6baac8d6e",
+          "text": "Khách hàng"
+        },
+        {
+          "id": "a78ef32bee",
+          "text": "SACO"
+        },
+        {
+          "id": "e16c8d1bee",
+          "text": "Hai bên nói bằng nhau"
+        }
+      ],
+      "prompt": "Theo quy tắc 70/30, ai nên nói nhiều hơn trong buổi tư vấn?"
+    },
+    {
+      "correct_option_id": "037ccee651",
+      "id": "ch02-l05-q02",
+      "options": [
+        {
+          "id": "037ccee651",
+          "text": "Tiền nhàn rỗi"
+        },
+        {
+          "id": "9126dd2160",
+          "text": "Tiền cần chi tiêu gấp"
+        },
+        {
+          "id": "f098aca9ee",
+          "text": "Tiền đi vay"
+        }
+      ],
+      "prompt": "Tiền dùng để bắt đầu đầu tư nên là loại tiền nào?"
+    },
+    {
+      "correct_option_id": "2849bce2f4",
+      "id": "ch02-l05-q03",
+      "options": [
+        {
+          "id": "2849bce2f4",
+          "text": "Khách hàng"
+        },
+        {
+          "id": "56ead3b196",
+          "text": "SACO"
+        },
+        {
+          "id": "b53f0ae224",
+          "text": "Trưởng nhóm của SACO"
+        }
+      ],
+      "prompt": "Ai là người ra quyết định đầu tư?"
+    }
+  ],
+  "salt": "c0388d44057f371451b0ca532c06bbb12ab605b344d50732b2c49ebc7cfcf288"
+}

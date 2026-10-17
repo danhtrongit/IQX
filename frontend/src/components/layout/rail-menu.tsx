@@ -20,13 +20,59 @@ export type WorkspaceRail = {
  * main-area tool (Insight) while it fills the main area. Selection logic (show, hide,
  * switch) belongs to the workspace frame.
  */
-export function RailMenu({ rail, panelId, panelShown, onSelect }: {
+export function RailMenu({ rail, panelId, panelShown, onSelect, orientation = "vertical" }: {
   rail: WorkspaceRail
   panelId: string
   panelShown: boolean
   onSelect: (item: RailItem, button: HTMLElement) => void
+  /** `horizontal`: a tool bar above the main area, used on phones so the main area keeps the full width. */
+  orientation?: "vertical" | "horizontal"
 }) {
   if (rail.items.length === 0) return null
+
+  function isOn(item: RailItem) {
+    return item.affects === "sidebar" ? panelShown && item.id === rail.activeTool : item.id === rail.mainToolId
+  }
+
+  if (orientation === "horizontal") {
+    return (
+      <nav
+        aria-label="Công cụ theo trang"
+        className="workspace-railbar flex h-11 shrink-0 items-stretch overflow-x-auto overflow-y-hidden border-b border-border bg-card px-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {rail.items.map((item) => {
+          const Icon = item.icon
+          const panelTool = item.affects === "sidebar"
+          const on = isOn(item)
+          // The tool whose view fills the main area stays marked while its panel layer is closed.
+          const current = panelTool ? item.id === rail.activeTool : on
+          return (
+            <Button
+              key={item.id}
+              type="button"
+              variant="ghost"
+              aria-pressed={on}
+              aria-controls={panelTool ? panelId : undefined}
+              aria-expanded={panelTool ? on : undefined}
+              data-tool={item.id}
+              data-current={current || undefined}
+              onClick={(event) => onSelect(item, event.currentTarget)}
+              className={cn(
+                "relative h-full flex-none gap-1.5 rounded-none px-3 text-xs font-semibold focus-visible:ring-inset",
+                current
+                  ? "text-foreground after:absolute after:inset-x-2 after:bottom-0 after:h-0.5 after:rounded-full after:bg-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                on && "bg-primary/15"
+              )}
+            >
+              <Icon aria-hidden="true" className={cn("size-4 shrink-0", current && "text-primary")} />
+              <span>{item.label}</span>
+            </Button>
+          )
+        })}
+      </nav>
+    )
+  }
 
   return (
     <nav
@@ -43,7 +89,7 @@ export function RailMenu({ rail, panelId, panelShown, onSelect }: {
           {rail.items.map((item) => {
             const Icon = item.icon
             const panelTool = item.affects === "sidebar"
-            const on = panelTool ? panelShown && item.id === rail.activeTool : item.id === rail.mainToolId
+            const on = isOn(item)
             return (
               <Button
                 key={item.id}

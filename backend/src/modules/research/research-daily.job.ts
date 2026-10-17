@@ -14,7 +14,8 @@ export class ResearchDailyJob {
   ) {}
 
   async run(scheduledFor: Date): Promise<{ skipped: string } | Record<string, unknown>> {
-    if (!this.config.get('RESEARCH_INSIGHT_ENABLED', { infer: true })) return { skipped: 'feature_disabled' };
+    if (!this.config.get('RESEARCH_INSIGHT_ENABLED', { infer: true }))
+      return { skipped: 'feature_disabled' };
     return this.sync.sync({ today: vnToday(scheduledFor) });
   }
 }

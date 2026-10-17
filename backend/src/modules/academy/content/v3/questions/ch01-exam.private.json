@@ -1,0 +1,387 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch01-exam",
+  "questions": [
+    {
+      "correct_option_id": "76b7ab753b",
+      "id": "ch01-exam-q01",
+      "options": [
+        {
+          "id": "76b7ab753b",
+          "text": "Giá cổ phiếu tăng và cổ tức"
+        },
+        {
+          "id": "c0d1b12a58",
+          "text": "Lãi suất cố định"
+        },
+        {
+          "id": "bef7530963",
+          "text": "Tiền lương hằng tháng"
+        }
+      ],
+      "prompt": "Cổ đông hưởng thành quả kinh doanh của doanh nghiệp qua những hình thức nào?"
+    },
+    {
+      "correct_option_id": "ea4cff866a",
+      "id": "ch01-exam-q02",
+      "options": [
+        {
+          "id": "ea4cff866a",
+          "text": "Hằng quý"
+        },
+        {
+          "id": "5234ffd40e",
+          "text": "Mười năm một lần"
+        },
+        {
+          "id": "f1f4cb83a9",
+          "text": "Không bắt buộc công bố"
+        }
+      ],
+      "prompt": "Doanh nghiệp niêm yết công bố báo cáo tài chính theo chu kỳ nào?"
+    },
+    {
+      "correct_option_id": "0532dc89a2",
+      "id": "ch01-exam-q03",
+      "options": [
+        {
+          "id": "0532dc89a2",
+          "text": "VSDC"
+        },
+        {
+          "id": "7f00e0802e",
+          "text": "Ủy ban Chứng khoán Nhà nước"
+        },
+        {
+          "id": "f6865d00a4",
+          "text": "Doanh nghiệp phát hành"
+        }
+      ],
+      "prompt": "Tổ chức nào lưu ký, bù trừ và thanh toán chứng khoán sau khi lệnh khớp?"
+    },
+    {
+      "correct_option_id": "61bf5d4721",
+      "id": "ch01-exam-q04",
+      "options": [
+        {
+          "id": "61bf5d4721",
+          "text": "30 cổ phiếu có vốn hóa và thanh khoản hàng đầu trên HOSE"
+        },
+        {
+          "id": "208d387d53",
+          "text": "30 cổ phiếu có giá thấp nhất trên HOSE"
+        },
+        {
+          "id": "7e27f9b0ba",
+          "text": "30 cổ phiếu mới niêm yết gần nhất"
+        }
+      ],
+      "prompt": "VN30 gồm những cổ phiếu nào?"
+    },
+    {
+      "correct_option_id": "8c2248ad3b",
+      "id": "ch01-exam-q05",
+      "options": [
+        {
+          "id": "8c2248ad3b",
+          "text": "±7%"
+        },
+        {
+          "id": "d51e2d8669",
+          "text": "±10%"
+        },
+        {
+          "id": "b0a34389d2",
+          "text": "±15%"
+        }
+      ],
+      "prompt": "Biên độ dao động giá trên sàn HOSE là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "b58ea25d0c",
+      "id": "ch01-exam-q06",
+      "options": [
+        {
+          "id": "b58ea25d0c",
+          "text": "Khớp lệnh định kỳ"
+        },
+        {
+          "id": "fc582a81e5",
+          "text": "Khớp lệnh liên tục"
+        },
+        {
+          "id": "f89afd3990",
+          "text": "Giao dịch thỏa thuận"
+        }
+      ],
+      "prompt": "Phiên mở cửa (ATO) và đóng cửa (ATC) áp dụng phương thức khớp lệnh nào?"
+    },
+    {
+      "correct_option_id": "3ee93333c4",
+      "id": "ch01-exam-q07",
+      "options": [
+        {
+          "id": "3ee93333c4",
+          "text": "Cả lãi và lỗ đều được khuếch đại"
+        },
+        {
+          "id": "9674bee031",
+          "text": "Chỉ lãi tăng, lỗ không đổi"
+        },
+        {
+          "id": "c052b5b5b2",
+          "text": "Không thay đổi"
+        }
+      ],
+      "prompt": "Khi dùng margin, lãi và lỗ trên vốn tự có thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "3b1a875781",
+      "id": "ch01-exam-q08",
+      "options": [
+        {
+          "id": "3b1a875781",
+          "text": "Công ty chứng khoán bán giải chấp cổ phiếu"
+        },
+        {
+          "id": "513cf268ce",
+          "text": "Nhà đầu tư được vay thêm"
+        },
+        {
+          "id": "9dc674eb49",
+          "text": "Tài khoản được cộng thêm tiền"
+        }
+      ],
+      "prompt": "Khi tỷ lệ ký quỹ xuống dưới ngưỡng xử lý, điều gì xảy ra?"
+    },
+    {
+      "correct_option_id": "695599195c",
+      "id": "ch01-exam-q09",
+      "options": [
+        {
+          "id": "695599195c",
+          "text": "Cổ tức và chênh lệch giá"
+        },
+        {
+          "id": "9f6eaf7d7e",
+          "text": "Lãi suất cố định định kỳ"
+        },
+        {
+          "id": "965251000f",
+          "text": "Hoàn trả mệnh giá khi đáo hạn"
+        }
+      ],
+      "prompt": "Cổ đông có thể nhận lợi nhuận từ những nguồn nào?"
+    },
+    {
+      "correct_option_id": "1c3ac91ce9",
+      "id": "ch01-exam-q10",
+      "options": [
+        {
+          "id": "1c3ac91ce9",
+          "text": "Trái phiếu Chính phủ"
+        },
+        {
+          "id": "15ad2bb626",
+          "text": "Trái phiếu doanh nghiệp"
+        },
+        {
+          "id": "43c7ee479b",
+          "text": "Hai loại có rủi ro như nhau"
+        }
+      ],
+      "prompt": "Loại trái phiếu nào có rủi ro thấp nhất?"
+    },
+    {
+      "correct_option_id": "7d37e335ef",
+      "id": "ch01-exam-q11",
+      "options": [
+        {
+          "id": "7d37e335ef",
+          "text": "Giá trị tài sản ròng (NAV)"
+        },
+        {
+          "id": "bbfcb7f88d",
+          "text": "Giá khớp lệnh trên sàn"
+        },
+        {
+          "id": "72bb3d2c0e",
+          "text": "Giá trần của phiên"
+        }
+      ],
+      "prompt": "Chứng chỉ quỹ mở được mua bán theo giá nào?"
+    },
+    {
+      "correct_option_id": "7a3103c607",
+      "id": "ch01-exam-q12",
+      "options": [
+        {
+          "id": "7a3103c607",
+          "text": "Chỉ số giảm"
+        },
+        {
+          "id": "b50ccca991",
+          "text": "Chỉ số tăng"
+        },
+        {
+          "id": "e6ab756448",
+          "text": "Chỉ số đi ngang"
+        }
+      ],
+      "prompt": "Vị thế bán hợp đồng tương lai có lãi khi nào?"
+    },
+    {
+      "correct_option_id": "eeb6461e41",
+      "id": "ch01-exam-q13",
+      "options": [
+        {
+          "id": "eeb6461e41",
+          "text": "Biểu quyết tại đại hội đồng cổ đông"
+        },
+        {
+          "id": "2676cdee46",
+          "text": "Nhận lãi suất cố định"
+        },
+        {
+          "id": "1222863ac9",
+          "text": "Được hoàn vốn khi đáo hạn"
+        }
+      ],
+      "prompt": "Quyền nào thuộc về cổ đông?"
+    },
+    {
+      "correct_option_id": "a63db1cc4e",
+      "id": "ch01-exam-q14",
+      "options": [
+        {
+          "id": "a63db1cc4e",
+          "text": "Nộp tiền mua hoặc chuyển nhượng quyền"
+        },
+        {
+          "id": "54c350acf7",
+          "text": "Không cần làm gì"
+        },
+        {
+          "id": "cfaaee375f",
+          "text": "Bán toàn bộ cổ phiếu"
+        }
+      ],
+      "prompt": "Khi doanh nghiệp phát hành quyền mua, cổ đông cần làm gì để tránh thiệt?"
+    },
+    {
+      "correct_option_id": "2e16d1f10d",
+      "id": "ch01-exam-q15",
+      "options": [
+        {
+          "id": "2e16d1f10d",
+          "text": "Giá cổ phiếu phản ánh kỳ vọng về tương lai"
+        },
+        {
+          "id": "3051af9373",
+          "text": "Vì có biên độ dao động giá"
+        },
+        {
+          "id": "ab95017c32",
+          "text": "Vì chu kỳ thanh toán T+2"
+        }
+      ],
+      "prompt": "Vì sao thị trường chứng khoán thường đi trước nền kinh tế?"
+    },
+    {
+      "correct_option_id": "7f9b2add14",
+      "id": "ch01-exam-q16",
+      "options": [
+        {
+          "id": "7f9b2add14",
+          "text": "CPI"
+        },
+        {
+          "id": "ca7fbf8de3",
+          "text": "GDP"
+        },
+        {
+          "id": "ed2b8735fc",
+          "text": "VN-Index"
+        }
+      ],
+      "prompt": "Chỉ số nào đo mức tăng giá hàng hóa và dịch vụ?"
+    },
+    {
+      "correct_option_id": "38a7386b36",
+      "id": "ch01-exam-q17",
+      "options": [
+        {
+          "id": "38a7386b36",
+          "text": "Cổ phiếu phòng thủ"
+        },
+        {
+          "id": "3172cc577a",
+          "text": "Cổ phiếu vốn hóa nhỏ"
+        },
+        {
+          "id": "d64bf13c11",
+          "text": "Cổ phiếu chứng khoán"
+        }
+      ],
+      "prompt": "Trong pha giảm giá, nhóm cổ phiếu nào thường giữ giá tốt hơn?"
+    },
+    {
+      "correct_option_id": "bd14a1e61a",
+      "id": "ch01-exam-q18",
+      "options": [
+        {
+          "id": "bd14a1e61a",
+          "text": "Hiểu bối cảnh để điều chỉnh cách đầu tư"
+        },
+        {
+          "id": "aacf91203b",
+          "text": "Đoán chính xác đỉnh và đáy"
+        },
+        {
+          "id": "12522b3722",
+          "text": "Mua bán liên tục mỗi ngày"
+        }
+      ],
+      "prompt": "Mục tiêu của việc nhận diện pha thị trường là gì?"
+    },
+    {
+      "correct_option_id": "7a096a641c",
+      "id": "ch01-exam-q19",
+      "options": [
+        {
+          "id": "7a096a641c",
+          "text": "Mua đuổi khi giá đã tăng nóng vì sợ bỏ lỡ"
+        },
+        {
+          "id": "e44b6e97a8",
+          "text": "Không chịu cắt lỗ"
+        },
+        {
+          "id": "11517b1c78",
+          "text": "Chốt lời quá sớm"
+        }
+      ],
+      "prompt": "FOMO là sai lầm tâm lý nào?"
+    },
+    {
+      "correct_option_id": "b0ff50f128",
+      "id": "ch01-exam-q20",
+      "options": [
+        {
+          "id": "b0ff50f128",
+          "text": "Lý do mua, kết quả và bài học rút ra"
+        },
+        {
+          "id": "cb357ae3ca",
+          "text": "Chỉ giá mua"
+        },
+        {
+          "id": "fa347dfa40",
+          "text": "Các tin đồn trên mạng"
+        }
+      ],
+      "prompt": "Nhật ký giao dịch nên ghi lại những gì?"
+    }
+  ],
+  "salt": "09d3e82839d439008fc1a2f0a80977643c89b6b7fe5e6af406b5a4e522269022"
+}

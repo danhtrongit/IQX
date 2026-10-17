@@ -3,7 +3,10 @@ import { createHash } from 'node:crypto';
 
 import type { InvestmentViewThesis, ValuationSnapshot } from '../research.types.js';
 
-export function viewFingerprint(theses: InvestmentViewThesis[], valuation: ValuationSnapshot): string {
+export function viewFingerprint(
+  theses: InvestmentViewThesis[],
+  valuation: ValuationSnapshot,
+): string {
   // Every object below is built with a literal key order, so the JSON is canonical by construction.
   const canonical = {
     theses: [...theses]
@@ -13,7 +16,11 @@ export function viewFingerprint(theses: InvestmentViewThesis[], valuation: Valua
       hiddenReason: valuation.hiddenReason,
       targets: [...valuation.targets]
         .sort((a, b) => (a.broker < b.broker ? -1 : a.broker > b.broker ? 1 : 0))
-        .map((t) => ({ broker: t.broker, targetPriceVnd: t.targetPriceVnd, reportDate: t.reportDate })),
+        .map((t) => ({
+          broker: t.broker,
+          targetPriceVnd: t.targetPriceVnd,
+          reportDate: t.reportDate,
+        })),
     },
   };
   return createHash('sha256').update(JSON.stringify(canonical)).digest('hex');

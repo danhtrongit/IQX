@@ -325,7 +325,7 @@ describe("start", () => {
     const notice = await screen.findAllByText(/Bạn chưa mở khóa chỉ báo RSI/)
     expect(notice.length).toBeGreaterThan(0)
     const link = (await screen.findAllByRole("link", { name: /Học bài RSI/ }))[0]
-    expect(link.getAttribute("href")).toBe("/demo-trading?view=academy&lesson=ch01-l01")
+    expect(link.getAttribute("href")).toBe("/demo-trading?view=academy&lesson=ch04-l06")
     expect(screen.queryByRole("button", { name: "Bắt đầu" })).toBeNull()
   })
 })
