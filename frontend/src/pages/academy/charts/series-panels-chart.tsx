@@ -12,12 +12,30 @@ import {
   panelRange,
   seriesPanelsReadout,
   textWidth,
+  thinAxisLabels,
   windowSize,
+  wrapText,
   type SeriesPanel,
   type SeriesPanelsModel,
 } from "./chart-math"
 import { ChartLegendList, type LegendEntry } from "./chart-legend"
 import { DASH, GRID_STROKE, LABEL_FILL, TONE_FILL, TONE_STROKE, textFill } from "./chart-theme"
+import {
+  LINE_HEIGHT,
+  alongLine,
+  annotationWidth,
+  aroundPoint,
+  inZone,
+  placeLabels,
+  polylineSegments,
+  stackRowLabels,
+  type Box,
+  type Candidate,
+  type LabelRequest,
+  type Obstacle,
+  type PlacedLabel,
+  type Segment,
+} from "./series-panels-labels"
 import { NARROW_CHART_WIDTH, useChartWidth } from "./use-chart-width"
 
 const LEVEL_TONE: Record<NonNullable<SeriesPanel["levels"]>[number]["role"], ChartTone> = {
@@ -28,8 +46,13 @@ const LEVEL_TONE: Record<NonNullable<SeriesPanel["levels"]>[number]["role"], Cha
 }
 const BAR_TONE = { pos: "pos", neg: "neg", neutral: "p3" } as const
 
-function panelHeights(model: SeriesPanelsModel, narrow: boolean, thumbnail: boolean): number[] {
-  if (thumbnail) return model.panels.map((_, index) => (index === 0 ? 96 : 40))
+function panelHeights(model: SeriesPanelsModel, narrow: boolean, thumbnail: boolean, width: number): number[] {
+  // A thumbnail keeps about the mockup's 760x260 proportion when it is drawn alone across the reader, and its
+  // 96px sparkline height in a phone grid cell.
+  if (thumbnail) {
+    const scale = Math.max(1, (width * 0.32) / 96)
+    return model.panels.map((_, index) => Math.round((index === 0 ? 96 : 40) * scale))
+  }
   if (model.panels.length === 1) return [narrow ? 200 : 236]
   return model.panels.map((_, index) => (index === 0 ? (narrow ? 176 : 204) : narrow ? 104 : 118))
 }
@@ -69,16 +92,32 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
   const step = (x1 - x0) / n
   const x = (k: number) => x0 + (k + 0.5) * step
   const xi = (i: number) => x(i - model.x.start)
-  const heights = panelHeights(model, narrow, thumbnail)
-  const titleRow = thumbnail ? 0 : 20
-  const topPad = shadeLabels ? 18 : model.marks.length ? 16 : 0
+  const heights = panelHeights(model, narrow, thumbnail, width)
+  // Shade labels sit in rows above the plot; a label that would print over its neighbour drops to the next row.
+  const labelledShades = shadeLabels ? (model.x.shade ?? []).flatMap((shade) => (shade.label ? [{ ...shade, label: shade.label }] : [])) : []
+  const shadeRows = stackRowLabels(
+    labelledShades.map((shade) => ({
+      text: shade.label,
+      size: 10.5,
+      center: (xi(shade.from) + xi(shade.to)) / 2,
+      min: xi(shade.from) - step / 2,
+      max: xi(shade.to) + step / 2,
+    })),
+    width,
+  )
+  const shadeRowCount = Math.max(0, ...shadeRows.map((row) => row.row + 1))
+  const topPad = shadeRowCount ? 18 + (shadeRowCount - 1) * 14 : model.marks.length ? 16 : 0
+  // An untitled panel keeps a small margin so its top tick label is not clipped.
+  const titleRows = model.panels.map((panel) => (thumbnail ? 0 : panel.title ? 20 : 8))
+  const panelGap = thumbnail ? 4 : 8
   const panelTops: number[] = []
   let cursorY = topPad
-  for (const h of heights) {
+  heights.forEach((h, index) => {
     panelTops.push(cursorY)
-    cursorY += h + titleRow + (thumbnail ? 4 : 8)
-  }
-  const height = cursorY + (hasTicks ? 18 : 0)
+    cursorY += titleRows[index] + h + (index < heights.length - 1 ? panelGap : 0)
+  })
+  const xAxisRow = 20
+  const height = cursorY + (hasTicks ? xAxisRow : thumbnail ? 0 : 6)
   const legend = autoLegend && !thumbnail ? legendEntries(model) : []
 
   function moveTo(next: number) {
@@ -108,19 +147,17 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
       : ""
   const tooltipOnLeft = cursor !== null && x(cursor) > width * 0.55
 
-  // x tick labels: keep the non-empty ticks that do not collide with the previous one.
-  const xTicks: { k: number; text: string }[] = []
-  if (hasTicks) {
-    let lastRight = -Infinity
-    model.x.ticks?.forEach((text, k) => {
-      if (!text) return
-      const w = textWidth(text, 10.5)
-      const left = Math.min(Math.max(x(k) - w / 2, 0), width - w)
-      if (left < lastRight + 6) return
-      xTicks.push({ k, text })
-      lastRight = left + w
-    })
-  }
+  // x tick labels: centred on their observation but kept inside the drawing, then thinned so that none overlaps
+  // its neighbour; the last tick always stays.
+  const xTicks = hasTicks
+    ? thinAxisLabels(
+        (model.x.ticks ?? []).flatMap((text, k) => {
+          if (!text) return []
+          const half = textWidth(text, 10.5) / 2
+          return [{ index: k, text, anchor: "middle" as const, at: Math.min(Math.max(x(k), half + 1), width - half - 1) }]
+        }),
+      )
+    : []
 
   return (
     <div ref={measure} className="relative w-full min-w-0 space-y-2">
@@ -146,16 +183,21 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
             <desc id={`${uid}-hint`}>Dữ liệu minh họa. Dùng phím mũi tên trái, phải, Home và End hoặc trỏ vào hình để đọc các giá trị.</desc>
           )}
           {model.panels.map((panel, panelIndex) => {
-            const top = panelTops[panelIndex] + titleRow
+            const top = panelTops[panelIndex] + titleRows[panelIndex]
             const bottom = top + heights[panelIndex]
             const [lo, hi] = panelRange(panel)
             const y = (value: number) => bottom - ((value - lo) / (hi - lo || 1)) * (bottom - top)
             const ticks = thumbnail ? [] : (panel.ticks ?? niceTicks(lo, hi, panelIndex === 0 ? 4 : 2))
             const digits = panel.digits ?? (Math.abs(hi - lo) < 5 ? 2 : Math.abs(hi - lo) < 50 ? 1 : 0)
             const clip = `${uid}-clip-${panelIndex}`
-            const candleWidth = Math.max(1, Math.min(10, step * 0.62))
+            const candleWidth = Math.max(1, Math.min(14, step * 0.62))
             const barWidth = Math.max(1, Math.min(12, step * 0.7))
             const fill = panel.fill_between
+            // The panel above the x axis closes with a baseline when its lowest grid line runs well above its bottom
+            // edge (explicit bounds below the lowest tick), so the axis labels read as attached to the plot.
+            const lowestGrid = Math.max(top, ...ticks.filter((tick) => tick >= lo && tick <= hi).map(y))
+            const baseline = hasTicks && panelIndex === model.panels.length - 1 && bottom - lowestGrid > 16
+            const labels = placePanelLabels({ model, panel, panelIndex, thumbnail, x, xi, y, x0, x1, top, bottom, candleWidth, barWidth })
             return (
               <g key={panelIndex}>
                 <defs>
@@ -179,6 +221,7 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
                   ),
                 )}
                 {thumbnail && <rect x={x0} y={top} width={x1 - x0} height={bottom - top} fill="none" strokeWidth="0.8" className={GRID_STROKE} />}
+                {baseline && <line x1={x0} x2={x1} y1={bottom} y2={bottom} strokeWidth="1" className={GRID_STROKE} />}
                 <g clipPath={`url(#${clip})`}>
                   {model.x.shade?.map((shade, index) => (
                     <rect
@@ -204,10 +247,24 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
                     <line x1={x0} x2={x1} y1={y(0)} y2={y(0)} strokeWidth="1" className="stroke-chart-5" />
                   )}
                   {panel.band && (
-                    <path
-                      d={areaPath(panel.band.upper, panel.band.lower, x, y)}
-                      className={cn(TONE_FILL[panel.band.tone ?? "p1"], "opacity-[0.12]")}
-                    />
+                    <g>
+                      <path
+                        d={areaPath(panel.band.upper, panel.band.lower, x, y)}
+                        className={cn(TONE_FILL[panel.band.tone ?? "p1"], "opacity-[0.12]")}
+                      />
+                      {/* The band edges (upper and lower Bollinger band) are lines of their own, not only a fill. */}
+                      {[panel.band.upper, panel.band.lower].map((edge, index) => (
+                        <path
+                          key={index}
+                          data-band-edge={index === 0 ? "upper" : "lower"}
+                          d={linePath(edge, x, y)}
+                          fill="none"
+                          strokeWidth={thumbnail ? 1 : 1.3}
+                          strokeLinejoin="round"
+                          className={cn(TONE_STROKE[panel.band?.tone ?? "p1"], "opacity-80")}
+                        />
+                      ))}
+                    </g>
                   )}
                   {fill && panel.series[fill.a] && panel.series[fill.b] && (
                     <>
@@ -337,60 +394,43 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
                       ) : null,
                     )}
                 </g>
-                {!thumbnail &&
-                  panel.levels?.map((level, index) =>
-                    level.label ? (
-                      <text key={index} x={x0 + 4} y={y(level.value) - 4} className={cn(textFill(LEVEL_TONE[level.role]), "text-[10.5px]")}>
-                        {level.label}
-                      </text>
-                    ) : null,
-                  )}
-                {!thumbnail &&
-                  panel.zones?.map((zone, index) =>
-                    zone.label ? (
-                      <text key={index} x={x0 + 4} y={y(Math.max(zone.from, zone.to)) + 13} className={cn(textFill(zone.tone), "text-[10.5px]")}>
-                        {zone.label}
-                      </text>
-                    ) : null,
-                  )}
-                {!thumbnail &&
-                  panel.notes?.map((note, index) => {
-                    const px = xi(note.i)
-                    const anchor = px > x1 - 60 ? "end" : px < x0 + 60 ? "start" : "middle"
-                    return (
-                      <text
-                        key={index}
-                        x={px}
-                        y={y(note.value) - 6}
-                        textAnchor={anchor}
-                        className={cn(textFill(note.tone), "text-[11px] font-semibold")}
-                      >
-                        {note.text}
-                      </text>
-                    )
-                  })}
                 {(model.points ?? [])
                   .filter((point) => point.panel === panelIndex)
                   .map((point, index) => (
-                    <PointMark key={index} point={point} cx={xi(point.i)} cy={y(point.value)} left={x0} right={x1} />
+                    <PointMarker key={index} point={point} cx={xi(point.i)} cy={y(point.value)} />
                   ))}
+                {labels.map((placed) => (
+                  <text
+                    key={placed.key}
+                    data-annotation={placed.key}
+                    x={placed.x}
+                    y={placed.y}
+                    textAnchor={placed.anchor}
+                    className={placed.className}
+                  >
+                    {placed.lines.length === 1
+                      ? placed.text
+                      : placed.lines.map((line, index) => (
+                          <tspan key={index} x={placed.x} dy={index === 0 ? 0 : placed.size * LINE_HEIGHT}>
+                            {line}
+                          </tspan>
+                        ))}
+                  </text>
+                ))}
               </g>
             )
           })}
-          {shadeLabels &&
-            model.x.shade?.map((shade, index) =>
-              shade.label ? (
-                <text
-                  key={index}
-                  x={(xi(shade.from) + xi(shade.to)) / 2}
-                  y={12}
-                  textAnchor="middle"
-                  className={cn(textFill(shade.tone), "text-[10.5px] font-semibold")}
-                >
-                  {shade.label}
-                </text>
-              ) : null,
-            )}
+          {labelledShades.map((shade, index) => (
+            <text
+              key={index}
+              x={shadeRows[index].x}
+              y={12 + shadeRows[index].row * 14}
+              textAnchor="middle"
+              className={cn(textFill(shade.tone), "text-[10.5px] font-semibold")}
+            >
+              {shade.label}
+            </text>
+          ))}
           {model.marks.map((mark) => (
             <text
               key={`${mark.label}-${mark.i}`}
@@ -403,7 +443,7 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
             </text>
           ))}
           {xTicks.map((tick) => (
-            <text key={tick.k} x={x(tick.k)} y={height - 5} textAnchor="middle" className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}>
+            <text key={tick.index} x={tick.at} y={height - 5} textAnchor="middle" className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}>
               {tick.text}
             </text>
           ))}
@@ -412,7 +452,7 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
               x1={x(cursor)}
               x2={x(cursor)}
               y1={topPad}
-              y2={height - (hasTicks ? 18 : 0)}
+              y2={height - (hasTicks ? xAxisRow : 0)}
               strokeWidth="1"
               strokeDasharray="3 3"
               className="stroke-foreground"
@@ -423,7 +463,7 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
               x={x0}
               y={topPad}
               width={x1 - x0}
-              height={Math.max(0, height - topPad - (hasTicks ? 18 : 0))}
+              height={Math.max(0, height - topPad - (hasTicks ? xAxisRow : 0))}
               className="fill-transparent"
               style={{ touchAction: "pan-y" }}
               onPointerMove={onPointerMove}
@@ -457,51 +497,19 @@ export function SeriesPanelsChart({ model, label, autoLegend = true }: { model: 
 
 type Point = NonNullable<SeriesPanelsModel["points"]>[number]
 
-function PointMark({ point, cx, cy, left, right }: { point: Point; cx: number; cy: number; left: number; right: number }) {
+const pointRadius = (point: Point) => (point.shape === "ring" ? 5 : 3.5)
+
+/** The marker of a point; its label is placed with the other annotations of the panel. */
+function PointMarker({ point, cx, cy }: { point: Point; cx: number; cy: number }) {
   const ring = point.shape === "ring"
-  const pos = point.pos ?? "above"
-  const labelWidth = point.label ? textWidth(point.label) : 0
-  let tx = cx
-  let ty = cy - 9
-  let anchor: "start" | "middle" | "end" = "middle"
-  if (pos === "below") ty = cy + 16
-  if (pos === "left") {
-    tx = cx - 8
-    ty = cy + 4
-    anchor = "end"
-  }
-  if (pos === "right") {
-    tx = cx + 8
-    ty = cy + 4
-    anchor = "start"
-  }
-  if (anchor === "middle") {
-    if (cx - labelWidth / 2 < left) anchor = "start"
-    else if (cx + labelWidth / 2 > right) anchor = "end"
-  }
-  if (anchor === "end" && tx - labelWidth < left) {
-    anchor = "start"
-    tx = cx + 8
-  }
-  if (anchor === "start" && tx + labelWidth > right) {
-    anchor = "end"
-    tx = cx - 8
-  }
   return (
-    <g>
-      <circle
-        cx={cx}
-        cy={cy}
-        r={ring ? 5 : 3.5}
-        strokeWidth={ring ? 1.8 : 1}
-        className={ring ? cn(TONE_STROKE[point.tone], "fill-none") : cn(TONE_FILL[point.tone], "stroke-card")}
-      />
-      {point.label && (
-        <text x={tx} y={ty} textAnchor={anchor} className={cn(textFill(point.tone), "text-[11px] font-semibold")}>
-          {point.label}
-        </text>
-      )}
-    </g>
+    <circle
+      cx={cx}
+      cy={cy}
+      r={pointRadius(point)}
+      strokeWidth={ring ? 1.8 : 1}
+      className={ring ? cn(TONE_STROKE[point.tone], "fill-none") : cn(TONE_FILL[point.tone], "stroke-card")}
+    />
   )
 }
 
@@ -530,15 +538,177 @@ function FibLevels({
       )}
       {fib.levels.map((level) => {
         const ly = y(fibPrice(fib, level))
-        return (
-          <g key={level}>
-            <line x1={from} x2={right} y1={ly} y2={ly} strokeWidth="0.9" strokeDasharray="3 3" className="stroke-chart-2" />
-            <text x={right - 3} y={ly - 3} textAnchor="end" className="fill-chart-2 text-[10.5px] tabular-nums">
-              {percent.format(level)}
-            </text>
-          </g>
-        )
+        return <line key={level} x1={from} x2={right} y1={ly} y2={ly} strokeWidth="0.9" strokeDasharray="3 3" className="stroke-chart-2" />
       })}
     </g>
   )
+}
+
+type PanelGeometry = {
+  model: SeriesPanelsModel
+  panel: SeriesPanel
+  panelIndex: number
+  thumbnail: boolean
+  x: (k: number) => number
+  xi: (i: number) => number
+  y: (v: number) => number
+  x0: number
+  x1: number
+  top: number
+  bottom: number
+  candleWidth: number
+  barWidth: number
+}
+
+type PanelLabel = PlacedLabel & { className: string }
+
+/* Placement weights: what a label box may cover, from worst to most tolerable. */
+const MARKER_WEIGHT = 300
+const PRICE_WEIGHT = 60
+const SERIES_WEIGHT = 40
+const CANDLE_WEIGHT = 40
+const SEGMENT_WEIGHT = 30
+const LEVEL_WEIGHT = 25
+const BAR_WEIGHT = 20
+const SOFT_WEIGHT = 10
+
+/**
+ * Text annotations of one panel (point labels, notes, level, zone and Fibonacci labels), placed so that they stay
+ * inside the plot and clear the series, candles, bars, markers and each other. A label too wide for the plot wraps.
+ */
+function placePanelLabels(g: PanelGeometry): PanelLabel[] {
+  const { model, panel, panelIndex, thumbnail, x, xi, y, x0, x1, top, bottom, candleWidth, barWidth } = g
+  const points = (model.points ?? []).filter((point) => point.panel === panelIndex)
+  const requests: (LabelRequest & { className: string })[] = []
+  const plotWidth = x1 - x0
+  /**
+   * Candidate positions of a label: on one line first (wrapped only when wider than the plot), then, for a long
+   * label, the same positions with the text split over two lines.
+   */
+  const variants = (text: string, size: number, positions: (lineCount: number) => Candidate[]): Candidate[] => {
+    const width = annotationWidth(text, size)
+    const first = width <= plotWidth - 8 ? [text] : wrapText(text, ((plotWidth - 8) * 0.56) / 0.6, size, 3)
+    const candidates = positions(first.length).map((candidate) => ({ ...candidate, lines: first }))
+    if (first.length === 1 && width > plotWidth * 0.4) {
+      const halves = wrapText(text, (Math.ceil(text.length / 2) + 3) * size * 0.56, size, 2)
+      if (halves.length === 2) candidates.push(...positions(2).map((candidate) => ({ ...candidate, lines: halves })))
+    }
+    return candidates
+  }
+
+  points.forEach((point, index) => {
+    if (!point.label) return
+    requests.push({
+      key: `point-${index}`,
+      text: point.label,
+      size: 11,
+      candidates: variants(point.label, 11, (lines) => aroundPoint(xi(point.i), y(point.value), pointRadius(point) + 5, 11, point.pos ?? "above", lines)),
+      className: cn(textFill(point.tone), "text-[11px] font-semibold"),
+    })
+  })
+  if (!thumbnail) {
+    panel.notes?.forEach((note, index) => {
+      requests.push({
+        key: `note-${index}`,
+        text: note.text,
+        size: 11,
+        candidates: variants(note.text, 11, (lines) => aroundPoint(xi(note.i), y(note.value), 6, 11, "above", lines)),
+        className: cn(textFill(note.tone), "text-[11px] font-semibold"),
+      })
+    })
+    panel.levels?.forEach((level, index) => {
+      if (!level.label) return
+      requests.push({
+        key: `level-${index}`,
+        owner: `level-${index}`,
+        text: level.label,
+        size: 10.5,
+        candidates: variants(level.label, 10.5, (lines) => alongLine(y(level.value), x0, x1, 10.5, "start", lines)),
+        className: cn(textFill(LEVEL_TONE[level.role]), "text-[10.5px]"),
+      })
+    })
+    panel.zones?.forEach((zone, index) => {
+      if (!zone.label) return
+      const zoneTop = y(Math.max(zone.from, zone.to))
+      const zoneBottom = y(Math.min(zone.from, zone.to))
+      requests.push({
+        key: `zone-${index}`,
+        text: zone.label,
+        size: 10.5,
+        candidates: variants(zone.label, 10.5, (lines) => inZone(zoneTop, zoneBottom, x0, x1, 10.5, lines)),
+        className: cn(textFill(zone.tone), "text-[10.5px]"),
+      })
+    })
+    const fib = panel.fib
+    if (fib) {
+      const from = xi(Math.min(fib.lo.i, fib.hi.i))
+      fib.levels.forEach((level) => {
+        requests.push({
+          key: `fib-${level}`,
+          owner: `fib-${level}`,
+          text: percent.format(level),
+          size: 10.5,
+          candidates: alongLine(y(fibPrice(fib, level)), from, x1, 10.5, "end"),
+          className: "fill-chart-2 text-[10.5px] tabular-nums",
+        })
+      })
+    }
+  }
+  if (requests.length === 0) return []
+
+  const segments: Segment[] = []
+  const obstacles: Obstacle[] = []
+  const series = (values: readonly (number | null)[], weight: number) =>
+    segments.push(...polylineSegments(values.map((value, k) => (isNumber(value) ? [x(k), y(value)] : null)), weight))
+  for (const line of panel.series) series(line.values, line.role === "price" ? PRICE_WEIGHT : SERIES_WEIGHT)
+  if (panel.band) {
+    series(panel.band.upper, LEVEL_WEIGHT)
+    series(panel.band.lower, LEVEL_WEIGHT)
+  }
+  const horizontal = (value: number, from: number, weight: number, owner?: string) =>
+    segments.push({ x1: from, y1: y(value), x2: x1, y2: y(value), weight, owner })
+  panel.levels?.forEach((level, index) => horizontal(level.value, x0, LEVEL_WEIGHT, `level-${index}`))
+  if (panel.fib) {
+    const fib = panel.fib
+    const from = xi(Math.min(fib.lo.i, fib.hi.i))
+    fib.levels.forEach((level) => horizontal(fibPrice(fib, level), from, LEVEL_WEIGHT, `fib-${level}`))
+  }
+  if (panel.zero) horizontal(0, x0, SOFT_WEIGHT)
+  panel.segments?.forEach((segment) => {
+    const [fi, fv] = segment.from
+    const [ti, tv] = segment.to
+    const slope = ti === fi ? 0 : (tv - fv) / (ti - fi)
+    const extend = segment.extend ?? 0
+    segments.push({ x1: xi(fi), y1: y(fv), x2: xi(ti + extend), y2: y(tv + slope * extend), weight: SEGMENT_WEIGHT })
+  })
+  for (const mark of model.marks) segments.push({ x1: xi(mark.i), y1: top, x2: xi(mark.i), y2: bottom, weight: SOFT_WEIGHT })
+  const candles = panel.candles
+  candles?.close.forEach((_, k) => {
+    const high = candles.high[k]
+    const low = candles.low[k]
+    if (!isNumber(high) || !isNumber(low)) return
+    obstacles.push({ box: { l: x(k) - candleWidth / 2, r: x(k) + candleWidth / 2, t: y(high), b: y(low) }, weight: CANDLE_WEIGHT })
+  })
+  if (panel.bars) {
+    const [lo, hi] = panelRange(panel)
+    const base = lo > 0 ? lo : hi < 0 ? hi : 0
+    panel.bars.values.forEach((value, k) => {
+      if (!isNumber(value)) return
+      obstacles.push({
+        box: { l: x(k) - barWidth / 2, r: x(k) + barWidth / 2, t: Math.min(y(base), y(value)), b: Math.max(y(base), y(value)) },
+        weight: BAR_WEIGHT,
+      })
+    })
+  }
+  for (const point of points) {
+    const r = pointRadius(point) + 1
+    const cx = xi(point.i)
+    const cy = y(point.value)
+    obstacles.push({ box: { l: cx - r, r: cx + r, t: cy - r, b: cy + r }, weight: MARKER_WEIGHT })
+  }
+
+  const bounds: Box = { l: x0, r: x1, t: top, b: bottom }
+  const placed = placeLabels(requests, { bounds, segments, obstacles })
+  const classes = new Map(requests.map((request) => [request.key, request.className]))
+  return placed.map((label) => ({ ...label, className: classes.get(label.key) ?? LABEL_FILL }))
 }
