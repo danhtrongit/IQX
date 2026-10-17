@@ -4,6 +4,23 @@ import { GRID_STROKE, LABEL_FILL, TONE_FILL, TONE_STROKE, textFill } from "./cha
 import { useChartWidth } from "./use-chart-width"
 
 /**
+ * Wraps a marker label to `maxWidth` without stranding a unit or separator: a token of one or two
+ * characters ("đ", "%", "·") stays on the line of the word before it.
+ */
+function wrapLabel(text: string, maxWidth: number): string[] {
+  const glue = "\u0001"
+  const tokens = text
+    .split(/\s+/)
+    .filter(Boolean)
+    .reduce<string[]>((joined, token) => {
+      if (joined.length > 0 && token.length <= 2) joined[joined.length - 1] += glue + token
+      else joined.push(token)
+      return joined
+    }, [])
+  return wrapText(tokens.join(" "), maxWidth).map((line) => line.split(glue).join(" "))
+}
+
+/**
  * K4: a 1-D scale with zones, an optional stepped colour ramp (one flat segment per tone, never a
  * free gradient) and labelled markers. Horizontal scales put side `a` markers above and side `b`
  * below the track; vertical scales put labels to the right.
@@ -25,8 +42,14 @@ function HorizontalScale({ model, label, width }: { model: ScaleModel; label: st
   const above = model.markers.filter((marker, index) => (marker.side ?? (index % 2 === 0 ? "a" : "b")) === "a")
   const below = model.markers.filter((marker) => !above.includes(marker))
   const lineHeight = 13
+  // A label may grow to half the scale, but never into the room of the next marker on its side.
+  const labelLines = (marker: (typeof model.markers)[number]) => {
+    const side = above.includes(marker) ? above : below
+    const room = Math.min(...side.filter((other) => other !== marker).map((other) => Math.abs(x(other.v) - x(marker.v)) - 8), (width - 24) / 2)
+    return wrapLabel(marker.label, Math.max(110, room))
+  }
   const labelBlock = (markers: typeof model.markers) =>
-    markers.length ? Math.max(...markers.map((marker) => wrapText(marker.label, 110).length + (marker.sub ? 1 : 0))) * lineHeight + 10 : 0
+    markers.length ? Math.max(...markers.map((marker) => labelLines(marker).length + (marker.sub ? 1 : 0))) * lineHeight + 10 : 0
   const zoneLabels = model.zones?.some((zone) => zone.label) ? 16 : 0
   const trackTop = 6 + labelBlock(above)
   const trackHeight = 12
@@ -38,10 +61,16 @@ function HorizontalScale({ model, label, width }: { model: ScaleModel; label: st
   const tones = model.gradient ?? []
   const stepSize = (d1 - d0) / Math.max(1, tones.length)
 
+  // A below-track marker's stem runs down through the tick row: a tick label it would cross is left
+  // out (the marker label already carries that value).
+  const stems = below.map((marker) => x(marker.v))
+  const crossesStem = (at: number, w: number) => stems.some((stem) => Math.abs(stem - at) < w / 2 + 4)
+
   const markerLabel = (marker: (typeof model.markers)[number], y: number, up: boolean) => {
     const px = x(marker.v)
-    const lines = wrapText(marker.label, 110)
-    const anchor = px < left + 50 ? "start" : px > right - 50 ? "end" : "middle"
+    const lines = labelLines(marker)
+    const w = Math.max(...lines.map((line) => textWidth(line)))
+    const anchor = px < left + 50 || px - w / 2 < 2 ? "start" : px > right - 50 || px + w / 2 > width - 2 ? "end" : "middle"
     const all = [...lines.map((text) => ({ text, sub: false })), ...(marker.sub ? [{ text: marker.sub, sub: true }] : [])]
     const startY = up ? y - (all.length - 1) * lineHeight : y
     return (
@@ -87,7 +116,7 @@ function HorizontalScale({ model, label, width }: { model: ScaleModel; label: st
       {model.ticks?.map((tick, index) => (
         <g key={index}>
           <line x1={x(tick.v)} x2={x(tick.v)} y1={trackBottom} y2={trackBottom + 4} strokeWidth="1" className={GRID_STROKE} />
-          {tick.label && (
+          {tick.label && !crossesStem(x(tick.v), textWidth(tick.label, 10.5)) && (
             <text x={x(tick.v)} y={trackBottom + zoneLabels + 14} textAnchor="middle" className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}>
               {tick.label}
             </text>
