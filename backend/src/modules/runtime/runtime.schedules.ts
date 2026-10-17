@@ -143,7 +143,8 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     },
     {
       name: 'research.reports-sync',
-      description: 'Download new broker research reports into the store (no AI); idle while RESEARCH_INSIGHT_ENABLED=false',
+      description:
+        'Download new broker research reports into the store (no AI); idle while RESEARCH_INSIGHT_ENABLED=false',
       pattern: '0 30 6 * * *',
       tradingDay: false,
       enabled: enabled('research.reports-sync'),

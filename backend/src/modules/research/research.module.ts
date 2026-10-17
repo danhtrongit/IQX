@@ -44,8 +44,17 @@ import { VndirectSource } from './sources/vndirect.source.js';
       provide: REPORT_SOURCES,
       inject: [ConfigService, VietstockSource, VndirectSource],
       // RESEARCH_SOURCES picks the enabled sources, e.g. "vietstock" or "vietstock,vndirect".
-      useFactory: (config: ConfigService<Environment, true>, vietstock: VietstockSource, vndirect: VndirectSource) => {
-        const enabled = new Set(config.get('RESEARCH_SOURCES', { infer: true }).split(',').map((id) => id.trim()));
+      useFactory: (
+        config: ConfigService<Environment, true>,
+        vietstock: VietstockSource,
+        vndirect: VndirectSource,
+      ) => {
+        const enabled = new Set(
+          config
+            .get('RESEARCH_SOURCES', { infer: true })
+            .split(',')
+            .map((id) => id.trim()),
+        );
         return [vietstock, vndirect].filter((source) => enabled.has(source.id));
       },
     },

@@ -115,7 +115,12 @@ describe('journey identity classification', () => {
       ai_answers: { ky_thuat: 'ok', dong_tien: 'bad', noi_bo: 'ok', tin_tuc: 'bad' },
       snapshot_matches: true,
     };
-    const current = classifyEvidence([record], 'u1', '2026-01-01T00:00:00Z', '2026-02-01T00:00:00Z');
+    const current = classifyEvidence(
+      [record],
+      'u1',
+      '2026-01-01T00:00:00Z',
+      '2026-02-01T00:00:00Z',
+    );
     const legacyRefs = current.selected_assessment_refs.map((ref) => ({
       ...ref,
       contribution: { ...ref.contribution, dinh_gia: 0 },

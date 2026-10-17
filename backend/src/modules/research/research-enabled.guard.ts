@@ -10,7 +10,10 @@ export class ResearchEnabledGuard implements CanActivate {
 
   canActivate(): boolean {
     if (!this.config.get('RESEARCH_INSIGHT_ENABLED', { infer: true }))
-      throw new NotFoundException({ code: 'FEATURE_DISABLED', message: 'Góc nhìn đầu tư hiện chưa được bật.' });
+      throw new NotFoundException({
+        code: 'FEATURE_DISABLED',
+        message: 'Góc nhìn đầu tư hiện chưa được bật.',
+      });
     return true;
   }
 }

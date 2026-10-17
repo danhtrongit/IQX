@@ -11,10 +11,11 @@ JSON gồm `symbol`, `theses` (mỗi luận điểm: `id`, `driver`, `mechanism`
 ## Quy tắc gom
 
 Hai claim cùng một luận điểm CHỈ KHI khớp đồng thời cả ba chiều:
+
 - `driver`: cùng yếu tố nền tảng.
 - `mechanism`: cùng cơ chế kinh tế.
 - `direction`: cùng chiều tác động.
-Thiếu một chiều thì KHÔNG gom; thà tạo luận điểm mới còn hơn gộp quá tay.
+  Thiếu một chiều thì KHÔNG gom; thà tạo luận điểm mới còn hơn gộp quá tay.
 - Cùng đối tượng nhưng khác cơ chế thì tách (ví dụ một dự án làm tăng doanh thu và làm tăng nhu cầu vốn là hai luận điểm).
 - Cùng kết quả nhưng khác yếu tố thì tách (ví dụ chi phí đầu vào giảm làm biên tăng và cơ cấu sản phẩm cải thiện làm biên tăng là hai luận điểm).
 - Khác mốc thời gian, quy mô hay mức dự báo KHÔNG làm hai claim thành hai luận điểm; đó là bất đồng (xem dưới).

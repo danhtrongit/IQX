@@ -51,8 +51,12 @@ const thesisByDriver = (driver: string) => {
   return found;
 };
 const truncated = () =>
-  Object.assign(new Error('AI output truncated'), { getResponse: () => ({ code: 'AI_OUTPUT_TRUNCATED' }) });
-const claimMatch = (over: Partial<ClaimMatch> & Pick<ClaimMatch, 'claimId' | 'relationship'>): ClaimMatch => ({
+  Object.assign(new Error('AI output truncated'), {
+    getResponse: () => ({ code: 'AI_OUTPUT_TRUNCATED' }),
+  });
+const claimMatch = (
+  over: Partial<ClaimMatch> & Pick<ClaimMatch, 'claimId' | 'relationship'>,
+): ClaimMatch => ({
   thesisId: null,
   newThesisKey: null,
   invalidatesThesis: false,
@@ -62,10 +66,17 @@ const claimMatch = (over: Partial<ClaimMatch> & Pick<ClaimMatch, 'claimId' | 're
 
 /** Run 1 of most scenarios: two brokers, alpha backed by both, beta only by B. */
 async function firstRunTwoBrokers(aAge = 20, bAge = 3) {
-  h.store.addReport(pendingReport('ra', A, day(aAge), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
-  h.store.addReport(pendingReport('rb', B, day(bAge), { targetPriceVnd: 110_000, targetSource: 'metadata' }));
+  h.store.addReport(
+    pendingReport('ra', A, day(aAge), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+  );
+  h.store.addReport(
+    pendingReport('rb', B, day(bAge), { targetPriceVnd: 110_000, targetSource: 'metadata' }),
+  );
   h.ai.extractions.set('ra', { claims: [ec({ driver: 'alpha' })], target: null });
-  h.ai.extractions.set('rb', { claims: [ec({ driver: 'alpha' }), ec({ driver: 'beta' })], target: null });
+  h.ai.extractions.set('rb', {
+    claims: [ec({ driver: 'alpha' }), ec({ driver: 'beta' })],
+    target: null,
+  });
   return run();
 }
 
@@ -84,9 +95,19 @@ describe('research engine: first run (acceptance 9)', () => {
     const view = h.store.publishedRow!;
     expect(view.theses.map((t) => t.order)).toEqual([1, 2]);
     expect(view.theses.map((t) => t.id).sort()).toEqual(['VIC_THESIS_001', 'VIC_THESIS_002']);
-    expect(view.valuation).toMatchObject({ targetMedian: 105_000, targetMin: 100_000, targetMax: 110_000, hiddenReason: null });
+    expect(view.valuation).toMatchObject({
+      targetMedian: 105_000,
+      targetMin: 100_000,
+      targetMax: 110_000,
+      hiddenReason: null,
+    });
     expect(h.store.reports.every((r) => r.processStatus === 'processed')).toBe(true);
-    expect(h.store.brokerViews.get(SYMBOL)?.map((v) => v.broker).sort()).toEqual([B, A]);
+    expect(
+      h.store.brokerViews
+        .get(SYMBOL)
+        ?.map((v) => v.broker)
+        .sort(),
+    ).toEqual([B, A]);
     expect(progress).toBeGreaterThanOrEqual(3);
   });
 
@@ -99,12 +120,26 @@ describe('research engine: first run (acceptance 9)', () => {
 
   it('the extracted target fills an empty slot but never overwrites the metadata one', async () => {
     h.store.addReport(pendingReport('ra', A, day(5)));
-    h.store.addReport(pendingReport('rb', B, day(4), { targetPriceVnd: 120_000, targetSource: 'metadata' }));
-    h.ai.extractions.set('ra', { claims: [ec({ driver: 'alpha' })], target: { targetPriceVnd: 100_000, horizon: '12 tháng' } });
-    h.ai.extractions.set('rb', { claims: [ec({ driver: 'alpha' })], target: { targetPriceVnd: 999_000, horizon: null } });
+    h.store.addReport(
+      pendingReport('rb', B, day(4), { targetPriceVnd: 120_000, targetSource: 'metadata' }),
+    );
+    h.ai.extractions.set('ra', {
+      claims: [ec({ driver: 'alpha' })],
+      target: { targetPriceVnd: 100_000, horizon: '12 tháng' },
+    });
+    h.ai.extractions.set('rb', {
+      claims: [ec({ driver: 'alpha' })],
+      target: { targetPriceVnd: 999_000, horizon: null },
+    });
     await run();
-    expect(h.store.report('ra')).toMatchObject({ targetPriceVnd: 100_000, targetSource: 'extracted' });
-    expect(h.store.report('rb')).toMatchObject({ targetPriceVnd: 120_000, targetSource: 'metadata' });
+    expect(h.store.report('ra')).toMatchObject({
+      targetPriceVnd: 100_000,
+      targetSource: 'extracted',
+    });
+    expect(h.store.report('rb')).toMatchObject({
+      targetPriceVnd: 120_000,
+      targetSource: 'metadata',
+    });
   });
 
   it('nothing worth showing and nothing published yet -> no version', async () => {
@@ -143,7 +178,9 @@ describe('research engine: nothing new (acceptance 10, 23)', () => {
   });
 
   it('23: a new report that only SUPPORTs an existing thesis: no builder call, same fingerprint, no new version', async () => {
-    h.store.addReport(pendingReport('ra', A, day(10), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('ra', A, day(10), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+    );
     await run();
     const buildsBefore = h.ai.buildCalls.length;
 
@@ -157,7 +194,9 @@ describe('research engine: nothing new (acceptance 10, 23)', () => {
     expect(second).toMatchObject({ status: 'done', published: null });
     expect(h.store.versionNumbers).toEqual([1]);
     expect(h.store.touched).toBe(1);
-    expect(h.store.updates.slice(updatesBefore).filter((u) => u.patch.needsRewrite === true)).toHaveLength(0);
+    expect(
+      h.store.updates.slice(updatesBefore).filter((u) => u.patch.needsRewrite === true),
+    ).toHaveLength(0);
   });
 });
 
@@ -191,9 +230,18 @@ describe('research engine: 30-day window (acceptance 5, 6, 7)', () => {
     await firstRunTwoBrokers(20, 3); // alpha: A+B, beta: B only
     const alpha = thesisByDriver('alpha');
     const beta = thesisByDriver('beta');
-    const before = { extract: h.ai.extractCalls.length, match: h.ai.matchCalls, build: h.ai.buildCalls.length };
+    const before = {
+      extract: h.ai.extractCalls.length,
+      match: h.ai.matchCalls,
+      build: h.ai.buildCalls.length,
+    };
     h.ai.buildFn = (inputs) =>
-      inputs.map((i) => ({ thesisId: i.thesisId, title: `Động lực ${i.canonicalDriver}`, summary: 'Còn một nguồn ủng hộ yếu tố này', materiality: 3 }));
+      inputs.map((i) => ({
+        thesisId: i.thesisId,
+        title: `Động lực ${i.canonicalDriver}`,
+        summary: 'Còn một nguồn ủng hộ yếu tố này',
+        materiality: 3,
+      }));
 
     const out = await run('2026-10-27');
 
@@ -222,18 +270,33 @@ describe('research engine: 30-day window (acceptance 5, 6, 7)', () => {
     const claims = h.ai.buildCalls[0]!.inputs.flatMap((i) => i.evidence.map((e) => e.claim));
     expect(claims.length).toBe(3);
     for (const claim of claims) {
-      expect(Object.keys(claim).sort()).toEqual(
-        ['claimType', 'direction', 'driver', 'mechanism', 'numbers', 'outcome', 'sourcePage', 'subject', 'summary', 'timeHorizon'],
-      );
-      for (const key of ['id', 'reportId', 'broker', 'symbol', 'evidenceDate', 'status']) expect(claim).not.toHaveProperty(key);
+      expect(Object.keys(claim).sort()).toEqual([
+        'claimType',
+        'direction',
+        'driver',
+        'mechanism',
+        'numbers',
+        'outcome',
+        'sourcePage',
+        'subject',
+        'summary',
+        'timeHorizon',
+      ]);
+      for (const key of ['id', 'reportId', 'broker', 'symbol', 'evidenceDate', 'status'])
+        expect(claim).not.toHaveProperty(key);
     }
     // The evidence date travels beside the claim, not inside it.
-    expect(h.ai.buildCalls[0]!.inputs.flatMap((i) => i.evidence.map((e) => e.evidenceDate)).every(Boolean)).toBe(true);
+    expect(
+      h.ai.buildCalls[0]!.inputs.flatMap((i) => i.evidence.map((e) => e.evidenceDate)).every(
+        Boolean,
+      ),
+    ).toBe(true);
   });
 });
 
 describe('research engine: chunked matching and builder', () => {
-  const manyClaims = (n: number) => Array.from({ length: n }, (_, i) => ec({ driver: 'alpha', summary: `ý ${i}` }));
+  const manyClaims = (n: number) =>
+    Array.from({ length: n }, (_, i) => ec({ driver: 'alpha', summary: `ý ${i}` }));
 
   it('matches unmatched claims in chunks of 12 and marks each chunk once stored', async () => {
     h.store.addReport(pendingReport('ra', A, day(5)));
@@ -259,7 +322,8 @@ describe('research engine: chunked matching and builder', () => {
     let failFrom = true;
     h.ai.matchFn = (theses, claims) => {
       if (first12.size === 0) for (const claim of claims) first12.add(claim.id);
-      else if (failFrom && !claims.some((claim) => first12.has(claim.id))) throw new Error('match 500');
+      else if (failFrom && !claims.some((claim) => first12.has(claim.id)))
+        throw new Error('match 500');
       return defaultMatch(theses, claims);
     };
 
@@ -285,7 +349,9 @@ describe('research engine: chunked matching and builder', () => {
   it('runs the builder in groups of 4 theses, only for the 8-thesis shortlist', async () => {
     h.store.addReport(pendingReport('ra', A, day(5)));
     h.ai.extractions.set('ra', {
-      claims: ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'].map((driver) => ec({ driver })),
+      claims: ['t1', 't2', 't3', 't4', 't5', 't6', 't7', 't8', 't9'].map((driver) =>
+        ec({ driver }),
+      ),
       target: null,
     });
 
@@ -302,16 +368,29 @@ describe('research engine: chunked matching and builder', () => {
 describe('research engine: thesis lifecycle (acceptance 22)', () => {
   it('22: REPLACE with invalidatesThesis -> thesis invalidated, not shown, nothing rewritten', async () => {
     h.store.addReport(pendingReport('ra', A, day(10)));
-    h.ai.extractions.set('ra', { claims: [ec({ driver: 'alpha' }), ec({ driver: 'beta' })], target: null });
+    h.ai.extractions.set('ra', {
+      claims: [ec({ driver: 'alpha' }), ec({ driver: 'beta' })],
+      target: null,
+    });
     await run();
     const alpha = thesisByDriver('alpha');
     const beta = thesisByDriver('beta');
     const builds = h.ai.buildCalls.length;
 
     h.store.addReport(pendingReport('rc', B, day(1)));
-    h.ai.extractions.set('rc', { claims: [ec({ driver: 'alpha', direction: 'negative' })], target: null });
+    h.ai.extractions.set('rc', {
+      claims: [ec({ driver: 'alpha', direction: 'negative' })],
+      target: null,
+    });
     h.ai.matchFn = (_t, claims) => ({
-      matches: claims.map((c) => claimMatch({ claimId: c.id, relationship: 'REPLACE', thesisId: alpha.id, invalidatesThesis: true })),
+      matches: claims.map((c) =>
+        claimMatch({
+          claimId: c.id,
+          relationship: 'REPLACE',
+          thesisId: alpha.id,
+          invalidatesThesis: true,
+        }),
+      ),
       newTheses: [],
       disagreements: [],
     });
@@ -330,14 +409,20 @@ describe('research engine: automatic checks (acceptance 24)', () => {
   it('24: untraceable number -> regenerated once with the failures -> still failing -> thesis dropped, others kept', async () => {
     h.store.addReport(pendingReport('ra', A, day(5)));
     h.ai.extractions.set('ra', {
-      claims: [ec({ driver: 'alpha', numbers: [{ metric: 'tăng trưởng', value: 20, unit: '%' }] }), ec({ driver: 'beta' })],
+      claims: [
+        ec({ driver: 'alpha', numbers: [{ metric: 'tăng trưởng', value: 20, unit: '%' }] }),
+        ec({ driver: 'beta' }),
+      ],
       target: null,
     });
     h.ai.buildFn = (inputs) =>
       inputs.map((i) => ({
         thesisId: i.thesisId,
         title: `Động lực ${i.canonicalDriver}`,
-        summary: i.canonicalDriver === 'alpha' ? 'Doanh thu tăng 55% nhờ mở rộng công suất' : 'Yếu tố beta hỗ trợ kết quả kinh doanh',
+        summary:
+          i.canonicalDriver === 'alpha'
+            ? 'Doanh thu tăng 55% nhờ mở rộng công suất'
+            : 'Yếu tố beta hỗ trợ kết quả kinh doanh',
         materiality: 3,
       }));
 
@@ -349,11 +434,17 @@ describe('research engine: automatic checks (acceptance 24)', () => {
     expect(h.ai.buildCalls[0]!.inputs).toHaveLength(2);
     expect(h.ai.buildCalls[0]!.failures).toBeUndefined();
     expect(h.ai.buildCalls[1]!.inputs.map((i) => i.thesisId)).toEqual([alpha.id]);
-    expect(h.ai.buildCalls[1]!.failures).toEqual([expect.objectContaining({ thesisId: alpha.id, code: 'untraceable_number' })]);
+    expect(h.ai.buildCalls[1]!.failures).toEqual([
+      expect.objectContaining({ thesisId: alpha.id, code: 'untraceable_number' }),
+    ]);
 
     expect(out).toMatchObject({ status: 'done', published: 1 });
     expect(h.store.publishedRow!.theses.map((t) => t.id)).toEqual([beta.id]);
-    expect(h.store.thesis(alpha.id)).toMatchObject({ currentTitle: null, currentSummary: null, needsRewrite: false });
+    expect(h.store.thesis(alpha.id)).toMatchObject({
+      currentTitle: null,
+      currentSummary: null,
+      needsRewrite: false,
+    });
 
     // The rejection is remembered: another search does not spend tokens on it again.
     const calls = h.ai.totalCalls;
@@ -367,7 +458,9 @@ describe('research engine: automatic checks (acceptance 24)', () => {
       inputs.map((i) => ({
         thesisId: i.thesisId,
         title: 'Động lực alpha',
-        summary: failures ? 'Yếu tố alpha hỗ trợ kết quả kinh doanh' : 'Khuyến nghị mua nhờ yếu tố alpha',
+        summary: failures
+          ? 'Yếu tố alpha hỗ trợ kết quả kinh doanh'
+          : 'Khuyến nghị mua nhờ yếu tố alpha',
         materiality: 3,
       }));
     const out = await run();
@@ -380,10 +473,14 @@ describe('research engine: automatic checks (acceptance 24)', () => {
 
 describe('research engine: circuit breaker (acceptance 27)', () => {
   it('27: median target jumping > 30% -> blocked, previous version stays, same inputs block again with 0 AI calls', async () => {
-    h.store.addReport(pendingReport('ra', A, day(10), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('ra', A, day(10), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+    );
     await run();
 
-    h.store.addReport(pendingReport('rb', B, day(1), { targetPriceVnd: 200_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('rb', B, day(1), { targetPriceVnd: 200_000, targetSource: 'metadata' }),
+    );
     const out = await run();
 
     expect(out.status).toBe('blocked');
@@ -401,9 +498,13 @@ describe('research engine: circuit breaker (acceptance 27)', () => {
   });
 
   it('a move of exactly 30% is allowed', async () => {
-    h.store.addReport(pendingReport('ra', A, day(10), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('ra', A, day(10), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+    );
     await run();
-    h.store.addReport(pendingReport('rb', B, day(1), { targetPriceVnd: 160_000, targetSource: 'metadata' })); // median 130000
+    h.store.addReport(
+      pendingReport('rb', B, day(1), { targetPriceVnd: 160_000, targetSource: 'metadata' }),
+    ); // median 130000
     const out = await run();
     expect(out).toMatchObject({ status: 'done', published: 2 });
   });
@@ -418,7 +519,11 @@ describe('research engine: AI budget and failures (acceptance 14, 15)', () => {
 
     const out = await run();
 
-    expect(out).toMatchObject({ status: 'failed', error: 'RESEARCH_AI_BUDGET_EXCEEDED', llmCalls: 0 });
+    expect(out).toMatchObject({
+      status: 'failed',
+      error: 'RESEARCH_AI_BUDGET_EXCEEDED',
+      llmCalls: 0,
+    });
     expect(h.ai.totalCalls).toBe(calls);
     expect(h.store.versionNumbers).toEqual([1]);
     expect(h.store.report('rc').processStatus).toBe('pending');
@@ -428,7 +533,11 @@ describe('research engine: AI budget and failures (acceptance 14, 15)', () => {
   it('budget: the limit is checked before every call, including mid-run', async () => {
     h.settings.RESEARCH_AI_DAILY_CALL_LIMIT = 3; // 2 extractions + 1 match, then the builder is refused
     const out = await firstRunTwoBrokers();
-    expect(out).toMatchObject({ status: 'failed', error: 'RESEARCH_AI_BUDGET_EXCEEDED', llmCalls: 3 });
+    expect(out).toMatchObject({
+      status: 'failed',
+      error: 'RESEARCH_AI_BUDGET_EXCEEDED',
+      llmCalls: 3,
+    });
     expect(h.ai.buildCalls).toHaveLength(0);
     expect(h.store.versions).toHaveLength(0);
   });
@@ -523,13 +632,17 @@ describe('research engine: AI budget and failures (acceptance 14, 15)', () => {
   });
 
   it('15: an unreadable PDF is marked failed, the other reports are processed and the view published', async () => {
-    h.store.addReport(pendingReport('ra', A, day(5), { targetPriceVnd: 100_000, targetSource: 'metadata' }));
+    h.store.addReport(
+      pendingReport('ra', A, day(5), { targetPriceVnd: 100_000, targetSource: 'metadata' }),
+    );
     h.store.addReport(pendingReport('bad', B, day(4), { filePath: 'research/corrupt.pdf' }));
 
     const out = await run();
 
     expect(h.ai.extractCalls).toEqual(['ra']);
-    expect(h.store.processFailures).toEqual([{ id: 'bad', error: 'unreadable: Cannot read PDF: corrupt' }]);
+    expect(h.store.processFailures).toEqual([
+      { id: 'bad', error: 'unreadable: Cannot read PDF: corrupt' },
+    ]);
     expect(h.store.report('ra').processStatus).toBe('processed');
     expect(out).toMatchObject({ status: 'done', published: 1 });
     expect(h.store.publishedRow!.theses).toHaveLength(1);
@@ -539,7 +652,9 @@ describe('research engine: AI budget and failures (acceptance 14, 15)', () => {
   it('15: a report without a stored file is marked failed (REPORT_FILE_MISSING)', async () => {
     h.store.addReport(pendingReport('nofile', A, day(5), { filePath: null }));
     await run();
-    expect(h.store.processFailures).toEqual([{ id: 'nofile', error: 'unreadable: REPORT_FILE_MISSING' }]);
+    expect(h.store.processFailures).toEqual([
+      { id: 'nofile', error: 'unreadable: REPORT_FILE_MISSING' },
+    ]);
     expect(h.ai.totalCalls).toBe(0);
   });
 });

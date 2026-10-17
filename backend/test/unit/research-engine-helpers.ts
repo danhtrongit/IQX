@@ -9,7 +9,9 @@ import type {
 
 export const TODAY = '2026-10-16';
 
-export function report(p: Partial<ResearchReport> & { id: string; broker: string; reportDate: string }): ResearchReport {
+export function report(
+  p: Partial<ResearchReport> & { id: string; broker: string; reportDate: string },
+): ResearchReport {
   return {
     source: 'vietstock',
     sourceReportId: p.id,
@@ -32,7 +34,9 @@ export function report(p: Partial<ResearchReport> & { id: string; broker: string
   };
 }
 
-export function claim(p: Partial<StoredClaim> & { id: string; reportId: string; broker: string; evidenceDate: string }): StoredClaim {
+export function claim(
+  p: Partial<StoredClaim> & { id: string; reportId: string; broker: string; evidenceDate: string },
+): StoredClaim {
   return {
     subject: 's',
     driver: 'd',
@@ -87,7 +91,10 @@ export function ec(p: Partial<ExtractedClaim> = {}): ExtractedClaim {
   };
 }
 
-export function input(p: Partial<ThesisBuildInput> & { thesisId: string }, claims: ExtractedClaim[] = [ec()]): ThesisBuildInput {
+export function input(
+  p: Partial<ThesisBuildInput> & { thesisId: string },
+  claims: ExtractedClaim[] = [ec()],
+): ThesisBuildInput {
   return {
     canonicalDriver: 'd',
     canonicalMechanism: 'm',
@@ -97,7 +104,11 @@ export function input(p: Partial<ThesisBuildInput> & { thesisId: string }, claim
     disagreement: null,
     previousTitle: null,
     previousSummary: null,
-    evidence: claims.map((c, i) => ({ brokerRef: `B${i + 1}`, evidenceDate: '2026-10-01', claim: c })),
+    evidence: claims.map((c, i) => ({
+      brokerRef: `B${i + 1}`,
+      evidenceDate: '2026-10-01',
+      claim: c,
+    })),
     ...p,
   };
 }

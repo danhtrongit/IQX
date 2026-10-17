@@ -7,7 +7,10 @@ import type { ResearchReport } from '../../src/modules/research/research.types.j
 type Call = { sql: string; values: readonly unknown[] | undefined };
 
 function setup(
-  handler: (sql: string, values: readonly unknown[] | undefined) => unknown[] | Promise<unknown[]> = () => [],
+  handler: (
+    sql: string,
+    values: readonly unknown[] | undefined,
+  ) => unknown[] | Promise<unknown[]> = () => [],
 ) {
   const calls: Call[] = [];
   const run = vi.fn(async (sql: string, values?: readonly unknown[]) => {
@@ -103,7 +106,9 @@ describe('ResearchRepository', () => {
 
   describe('markDownloaded', () => {
     it('marks duplicate/skipped when another downloaded row has the hash', async () => {
-      const { repo, calls } = setup((sql) => (sql.includes('SELECT id FROM research_reports') ? [{ id: 'other' }] : []));
+      const { repo, calls } = setup((sql) =>
+        sql.includes('SELECT id FROM research_reports') ? [{ id: 'other' }] : [],
+      );
       await expect(repo.markDownloaded('r1', file)).resolves.toBe('duplicate');
       const update = calls.find((c) => c.sql.includes("download_status = 'duplicate'"))!;
       expect(update.sql).toContain("process_status = 'skipped'");
@@ -120,7 +125,8 @@ describe('ResearchRepository', () => {
 
     it('falls back to duplicate when the unique index rejects a concurrent winner', async () => {
       const { repo, calls } = setup((sql) => {
-        if (sql.includes("download_status = 'downloaded',")) throw Object.assign(new Error('dup'), { code: '23505' });
+        if (sql.includes("download_status = 'downloaded',"))
+          throw Object.assign(new Error('dup'), { code: '23505' });
         return [];
       });
       await expect(repo.markDownloaded('r1', file)).resolves.toBe('duplicate');
@@ -131,7 +137,8 @@ describe('ResearchRepository', () => {
 
     it('rethrows other errors', async () => {
       const { repo } = setup((sql) => {
-        if (sql.includes("download_status = 'downloaded',")) throw Object.assign(new Error('boom'), { code: '40001' });
+        if (sql.includes("download_status = 'downloaded',"))
+          throw Object.assign(new Error('boom'), { code: '40001' });
         return [];
       });
       await expect(repo.markDownloaded('r1', file)).rejects.toThrow('boom');
@@ -141,7 +148,7 @@ describe('ResearchRepository', () => {
   it('markProcessFailed fails the report at the third attempt and truncates the error', async () => {
     const { repo, calls } = setup();
     await repo.markProcessFailed('r1', 'x'.repeat(900));
-    expect(calls[0]!.sql).toContain('process_attempts + 1 >= 3 THEN \'failed\' ELSE \'pending\'');
+    expect(calls[0]!.sql).toContain("process_attempts + 1 >= 3 THEN 'failed' ELSE 'pending'");
     expect((calls[0]!.values![1] as string).length).toBe(500);
   });
 
@@ -190,10 +197,17 @@ describe('ResearchRepository', () => {
     };
     const stored = await repo.insertClaims(reportRow as unknown as ResearchReport, [claim, claim]);
     expect(calls).toHaveLength(1);
-    expect(stored[0]).toMatchObject({ id: 'c1', sourcePage: 3, evidenceDate: '2026-10-01', status: 'active' });
+    expect(stored[0]).toMatchObject({
+      id: 'c1',
+      sourcePage: 3,
+      evidenceDate: '2026-10-01',
+      status: 'active',
+    });
     expect(calls[0]!.sql).toContain('$4::date');
     expect(JSON.parse(calls[0]!.values![4] as string)).toHaveLength(2);
-    await expect(repo.insertClaims({ ...(reportRow as unknown as ResearchReport) }, [])).resolves.toEqual([]);
+    await expect(
+      repo.insertClaims({ ...(reportRow as unknown as ResearchReport) }, []),
+    ).resolves.toEqual([]);
     expect(calls).toHaveLength(1);
   });
 
@@ -234,8 +248,15 @@ describe('ResearchRepository', () => {
     });
     expect(calls[0]!.sql).toContain('pg_advisory_xact_lock');
     expect(calls[0]!.sql).toContain('iqx:research:thesis-seq:');
-    expect(calls.find((c) => c.sql.includes('INSERT INTO canonical_theses'))!.values![0]).toBe('FPT_THESIS_007');
-    expect(thesis).toMatchObject({ id: 'FPT_THESIS_007', seq: 7, needsRewrite: true, createdAt: '2026-10-01T00:00:00.000Z' });
+    expect(calls.find((c) => c.sql.includes('INSERT INTO canonical_theses'))!.values![0]).toBe(
+      'FPT_THESIS_007',
+    );
+    expect(thesis).toMatchObject({
+      id: 'FPT_THESIS_007',
+      seq: 7,
+      needsRewrite: true,
+      createdAt: '2026-10-01T00:00:00.000Z',
+    });
   });
 
   it('linkClaims lower-cases relationship and ignores conflicts', async () => {
@@ -265,7 +286,9 @@ describe('ResearchRepository', () => {
   });
 
   it('replaceBrokerCurrentViews upserts, replaces claims and drops absent brokers', async () => {
-    const { repo, calls } = setup((sql) => (sql.includes('INSERT INTO broker_current_views') ? [{ id: 'v1' }] : []));
+    const { repo, calls } = setup((sql) =>
+      sql.includes('INSERT INTO broker_current_views') ? [{ id: 'v1' }] : [],
+    );
     await repo.replaceBrokerCurrentViews('FPT', [
       {
         broker: 'SSI',
@@ -282,7 +305,9 @@ describe('ResearchRepository', () => {
     ]);
     const sqls = calls.map((c) => c.sql);
     expect(sqls.some((s) => s.includes('DELETE FROM broker_current_view_claims'))).toBe(true);
-    const claimsInsert = calls.find((c) => c.sql.includes('INSERT INTO broker_current_view_claims'))!;
+    const claimsInsert = calls.find((c) =>
+      c.sql.includes('INSERT INTO broker_current_view_claims'),
+    )!;
     expect(claimsInsert.values).toEqual(['v1', ['c1', 'c2'], ['current', 'inherited']]);
     const prune = calls[calls.length - 1]!;
     expect(prune.sql).toContain('broker <> ALL($2::text[])');
@@ -303,7 +328,9 @@ describe('ResearchRepository', () => {
             target_min: '140000',
             target_max: '160000',
             active_broker_count: 3,
-            targets: [{ broker: 'SSI', targetPriceVnd: 150000, reportDate: '2026-10-01', reportId: 'r1' }],
+            targets: [
+              { broker: 'SSI', targetPriceVnd: 150000, reportDate: '2026-10-01', reportId: 'r1' },
+            ],
             research_as_of: '2026-10-01',
             hidden_reason: null,
           },
@@ -322,7 +349,9 @@ describe('ResearchRepository', () => {
         targetMin: 140000,
         targetMax: 160000,
         activeBrokerCount: 3,
-        targets: [{ broker: 'SSI', targetPriceVnd: 150000, reportDate: '2026-10-01', reportId: 'r1' }],
+        targets: [
+          { broker: 'SSI', targetPriceVnd: 150000, reportDate: '2026-10-01', reportId: 'r1' },
+        ],
         researchAsOf: '2026-10-01',
         hiddenReason: null,
       },
@@ -364,7 +393,9 @@ describe('ResearchRepository', () => {
   });
 
   it('dilutiveActions reads ISS events by exright_date', async () => {
-    const { repo, calls } = setup(() => [{ symbol: 'FPT', ex_date: '2026-10-05', event_code: 'ISS' }]);
+    const { repo, calls } = setup(() => [
+      { symbol: 'FPT', ex_date: '2026-10-05', event_code: 'ISS' },
+    ]);
     await expect(repo.dilutiveActions('FPT', '2026-09-13')).resolves.toEqual([
       { symbol: 'FPT', exDate: '2026-10-05', eventCode: 'ISS' },
     ]);
@@ -386,7 +417,11 @@ describe('ResearchRepository', () => {
     };
 
     it('returns acquired=false for a live lease', async () => {
-      const { repo, calls } = setup((sql) => (sql.includes("status = 'running'\n") || sql.includes('live') ? [{ ...jobRow, live: true }] : []));
+      const { repo, calls } = setup((sql) =>
+        sql.includes("status = 'running'\n") || sql.includes('live')
+          ? [{ ...jobRow, live: true }]
+          : [],
+      );
       const result = await repo.acquireJob('FPT', 60_000);
       expect(result.acquired).toBe(false);
       expect(result.job.id).toBe('j1');
@@ -408,7 +443,9 @@ describe('ResearchRepository', () => {
     });
 
     it('starts a new job when nothing is running', async () => {
-      const { repo, calls } = setup((sql) => (sql.includes('INSERT INTO research_processing_jobs') ? [{ ...jobRow, id: 'j3' }] : []));
+      const { repo, calls } = setup((sql) =>
+        sql.includes('INSERT INTO research_processing_jobs') ? [{ ...jobRow, id: 'j3' }] : [],
+      );
       const result = await repo.acquireJob('FPT', 60_000);
       expect(result).toMatchObject({ acquired: true, job: { id: 'j3', status: 'running' } });
       expect(calls.some((c) => c.sql.includes('lease expired'))).toBe(false);

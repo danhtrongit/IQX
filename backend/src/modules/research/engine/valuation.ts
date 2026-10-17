@@ -43,7 +43,9 @@ export function latestBrokerTargets(
           ? 1
           : -1,
     );
-    const pick = list.find((x) => plausibleAgainstPrice(x.report.targetPriceVnd as number, currentPrice));
+    const pick = list.find((x) =>
+      plausibleAgainstPrice(x.report.targetPriceVnd as number, currentPrice),
+    );
     if (pick) {
       out.push({
         broker,
@@ -69,12 +71,24 @@ export function computeValuation(
 ): ValuationSnapshot {
   const base = { targets, researchAsOf, activeBrokerCount: targets.length };
   if (targets.length === 0) {
-    return { ...base, targetMedian: null, targetMin: null, targetMax: null, hiddenReason: 'no_target' };
+    return {
+      ...base,
+      targetMedian: null,
+      targetMin: null,
+      targetMax: null,
+      hiddenReason: 'no_target',
+    };
   }
   // Ex-date after the report date of ANY target in use → the target is not adjusted for dilution.
   const diluted = dilutive.some((a) => targets.some((t) => a.exDate > t.reportDate));
   if (diluted) {
-    return { ...base, targetMedian: null, targetMin: null, targetMax: null, hiddenReason: 'corporate_action' };
+    return {
+      ...base,
+      targetMedian: null,
+      targetMin: null,
+      targetMax: null,
+      hiddenReason: 'corporate_action',
+    };
   }
   const prices = targets.map((t) => t.targetPriceVnd).sort((a, b) => a - b);
   return {
@@ -87,10 +101,14 @@ export function computeValuation(
 }
 
 /** Valuation as served: upside is computed against the live price at read time (never stored). */
-export function servedValuation(s: ValuationSnapshot, currentPrice: number | null): InvestmentValuation | null {
+export function servedValuation(
+  s: ValuationSnapshot,
+  currentPrice: number | null,
+): InvestmentValuation | null {
   if (s.hiddenReason !== null || s.targetMedian === null) return null;
   const price = currentPrice !== null && currentPrice > 0 ? currentPrice : null;
-  const upsidePercent = price === null ? null : Math.round((s.targetMedian / price - 1) * 100 * 10) / 10 || 0;
+  const upsidePercent =
+    price === null ? null : Math.round((s.targetMedian / price - 1) * 100 * 10) / 10 || 0;
   if (s.activeBrokerCount === 1 || s.targetMin === null || s.targetMax === null) {
     return { mode: 'single', targetMedian: s.targetMedian, currentPrice: price, upsidePercent };
   }

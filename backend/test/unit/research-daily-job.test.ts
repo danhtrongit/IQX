@@ -16,14 +16,19 @@ function make(enabled: boolean) {
 describe('ResearchDailyJob', () => {
   it('RESEARCH_INSIGHT_ENABLED=false -> skipped, sync never called', async () => {
     const { job, sync, config } = make(false);
-    await expect(job.run(new Date('2026-10-13T00:00:00Z'))).resolves.toEqual({ skipped: 'feature_disabled' });
+    await expect(job.run(new Date('2026-10-13T00:00:00Z'))).resolves.toEqual({
+      skipped: 'feature_disabled',
+    });
     expect(sync.sync).not.toHaveBeenCalled();
     expect(config.get).toHaveBeenCalledWith('RESEARCH_INSIGHT_ENABLED', { infer: true });
   });
 
   it('RESEARCH_INSIGHT_ENABLED=true -> calls sync with today in Ho Chi Minh and returns its result', async () => {
     const { job, sync } = make(true);
-    await expect(job.run(new Date('2026-10-13T05:00:00Z'))).resolves.toEqual({ listed: 3, downloaded: 2 });
+    await expect(job.run(new Date('2026-10-13T05:00:00Z'))).resolves.toEqual({
+      listed: 3,
+      downloaded: 2,
+    });
     expect(sync.sync).toHaveBeenCalledExactlyOnceWith({ today: '2026-10-13' });
   });
 

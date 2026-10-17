@@ -85,7 +85,10 @@ export const newThesisDraftSchema = z.object({
   canonical_mechanism: text(400),
   canonical_outcome: text(400),
   direction: directionSchema,
-  is_risk: z.boolean().nullish().transform((value) => value ?? false),
+  is_risk: z
+    .boolean()
+    .nullish()
+    .transform((value) => value ?? false),
 });
 
 export const disagreementItemSchema = z.object({

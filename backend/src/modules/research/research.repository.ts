@@ -85,8 +85,10 @@ function pgCode(error: unknown): string | undefined {
   const direct = (error as { code?: unknown }).code;
   if (typeof direct === 'string') return direct;
   const cause = (error as { cause?: unknown }).cause;
-  return typeof cause === 'object' && cause !== null && typeof (cause as { code?: unknown }).code === 'string'
-    ? ((cause as { code: string }).code)
+  return typeof cause === 'object' &&
+    cause !== null &&
+    typeof (cause as { code?: unknown }).code === 'string'
+    ? (cause as { code: string }).code
     : undefined;
 }
 
@@ -512,7 +514,10 @@ export class ResearchRepository implements ResearchStore {
 
   async markClaimsMatched(claimIds: string[]): Promise<void> {
     if (claimIds.length === 0) return;
-    await this.db.query('UPDATE research_claims SET matched_at = now() WHERE id = ANY($1::uuid[])', [claimIds]);
+    await this.db.query(
+      'UPDATE research_claims SET matched_at = now() WHERE id = ANY($1::uuid[])',
+      [claimIds],
+    );
   }
 
   async markProcessed(
@@ -549,9 +554,10 @@ export class ResearchRepository implements ResearchStore {
 
   async createThesis(symbol: string, draft: NewThesisDraft): Promise<CanonicalThesis> {
     return this.db.transaction(async (tx) => {
-      await tx.query(`SELECT pg_advisory_xact_lock(hashtextextended('iqx:research:thesis-seq:' || $1::text, 0))`, [
-        symbol,
-      ]);
+      await tx.query(
+        `SELECT pg_advisory_xact_lock(hashtextextended('iqx:research:thesis-seq:' || $1::text, 0))`,
+        [symbol],
+      );
       const seqRows = await tx.query<Row>(
         'SELECT COALESCE(MAX(seq), 0) + 1 AS next_seq FROM canonical_theses WHERE symbol = $1',
         [symbol],
@@ -579,7 +585,9 @@ export class ResearchRepository implements ResearchStore {
     });
   }
 
-  async linkClaims(links: (ThesisEvidenceLink & { matchReason: ClaimMatch['match'] })[]): Promise<void> {
+  async linkClaims(
+    links: (ThesisEvidenceLink & { matchReason: ClaimMatch['match'] })[],
+  ): Promise<void> {
     if (links.length === 0) return;
     const payload = links.map((link) => ({
       thesis_id: link.thesisId,
@@ -610,9 +618,14 @@ export class ResearchRepository implements ResearchStore {
     if (patch.currentTitle !== undefined) add('current_title', patch.currentTitle);
     if (patch.currentSummary !== undefined) add('current_summary', patch.currentSummary);
     if (patch.disagreement !== undefined) {
-      add('disagreement', patch.disagreement === null ? null : JSON.stringify(patch.disagreement), '::jsonb');
+      add(
+        'disagreement',
+        patch.disagreement === null ? null : JSON.stringify(patch.disagreement),
+        '::jsonb',
+      );
     }
-    if (patch.summaryBrokers !== undefined) add('summary_brokers', patch.summaryBrokers, '::text[]');
+    if (patch.summaryBrokers !== undefined)
+      add('summary_brokers', patch.summaryBrokers, '::text[]');
     if (patch.needsRewrite !== undefined) add('needs_rewrite', patch.needsRewrite);
     if (sets.length === 0) return;
 
@@ -649,7 +662,9 @@ export class ResearchRepository implements ResearchStore {
           ],
         );
         const viewId = String(rows[0]!.id);
-        await tx.query('DELETE FROM broker_current_view_claims WHERE broker_current_view_id = $1', [viewId]);
+        await tx.query('DELETE FROM broker_current_view_claims WHERE broker_current_view_id = $1', [
+          viewId,
+        ]);
 
         const unique = new Map(view.claims.map((claim) => [claim.claimId, claim.relationship]));
         if (unique.size > 0) {
@@ -671,9 +686,10 @@ export class ResearchRepository implements ResearchStore {
 
   async publish(symbol: string, input: PublishInput): Promise<number> {
     return this.db.transaction(async (tx) => {
-      await tx.query(`SELECT pg_advisory_xact_lock(hashtextextended('iqx:research:publish:' || $1::text, 0))`, [
-        symbol,
-      ]);
+      await tx.query(
+        `SELECT pg_advisory_xact_lock(hashtextextended('iqx:research:publish:' || $1::text, 0))`,
+        [symbol],
+      );
       const versionRows = await tx.query<Row>(
         'SELECT COALESCE(MAX(version), 0) + 1 AS next_version FROM investment_view_versions WHERE symbol = $1',
         [symbol],
@@ -743,9 +759,10 @@ export class ResearchRepository implements ResearchStore {
 
   async acquireJob(symbol: string, staleAfterMs: number): Promise<AcquireJobResult> {
     return this.db.transaction(async (tx) => {
-      await tx.query(`SELECT pg_advisory_xact_lock(hashtextextended('iqx:research:job:' || $1::text, 0))`, [
-        symbol,
-      ]);
+      await tx.query(
+        `SELECT pg_advisory_xact_lock(hashtextextended('iqx:research:job:' || $1::text, 0))`,
+        [symbol],
+      );
       const running = await tx.query<Row>(
         `SELECT ${JOB_COLUMNS},
                 (heartbeat_at > now() - ($2::double precision * interval '1 millisecond')) AS live

@@ -58,7 +58,12 @@ const BUILD_MAX_TOKENS = 3_000;
 
 type ThesisContext = Pick<
   CanonicalThesis,
-  'id' | 'canonicalDriver' | 'canonicalMechanism' | 'canonicalOutcome' | 'direction' | 'currentSummary'
+  | 'id'
+  | 'canonicalDriver'
+  | 'canonicalMechanism'
+  | 'canonicalOutcome'
+  | 'direction'
+  | 'currentSummary'
 >;
 
 const PAGE_MARKER = /(?=\[\[page\s+\d+\]\])/i;
@@ -82,7 +87,11 @@ function hardSplit(piece: string, max: number): string[] {
  * (a single oversized page is split at line breaks). Only the first `maxChunks` are kept:
  * company reports put the thesis and forecasts first.
  */
-export function chunkReportText(text: string, maxChars = EXTRACT_CHUNK_CHARS, maxChunks = EXTRACT_MAX_CHUNKS): string[] {
+export function chunkReportText(
+  text: string,
+  maxChars = EXTRACT_CHUNK_CHARS,
+  maxChunks = EXTRACT_MAX_CHUNKS,
+): string[] {
   const trimmed = text.trim();
   if (!trimmed) return [];
   const pieces = trimmed
@@ -104,7 +113,10 @@ export function chunkReportText(text: string, maxChars = EXTRACT_CHUNK_CHARS, ma
 }
 
 /** Converts the model's target (with its explicit unit) to whole VND, or null when unusable. */
-export function targetToVnd(price: number | string, unit: string | null | undefined): number | null {
+export function targetToVnd(
+  price: number | string,
+  unit: string | null | undefined,
+): number | null {
   let value: number;
   if (typeof price === 'number') value = price;
   else {
@@ -116,7 +128,8 @@ export function targetToVnd(price: number | string, unit: string | null | undefi
   const normalized = (unit ?? '').trim().toLowerCase();
   if (!normalized) return null;
   let factor: number;
-  if (/(nghìn|nghin|ngàn|ngan|thousand)/.test(normalized) || /^(k|'000|000)\b/.test(normalized)) factor = 1_000;
+  if (/(nghìn|nghin|ngàn|ngan|thousand)/.test(normalized) || /^(k|'000|000)\b/.test(normalized))
+    factor = 1_000;
   else if (/triệu|trieu|million/.test(normalized)) factor = 1_000_000;
   else if (/^(vnd|vnđ|đồng|dong|đ|d|vnd\/cp|đồng\/cp)$/.test(normalized)) factor = 1;
   else return null;
@@ -179,7 +192,8 @@ export class ResearchAiService implements ResearchAi {
     });
     meter.add(completion.usage);
     const parsed = envelope.safeParse(parseJsonObject(completion.content));
-    if (!parsed.success) throw new ResearchAiInvalidOutputError('response does not match the output schema');
+    if (!parsed.success)
+      throw new ResearchAiInvalidOutputError('response does not match the output schema');
     return parsed.data;
   }
 
@@ -202,7 +216,13 @@ export class ResearchAiService implements ResearchAi {
         ngon_ngu: report.language,
         doan: `${index + 1}/${chunks.length}`,
       });
-      const data = await this.call(meter, 'extract', `${header}\n---\n${chunk}`, EXTRACT_MAX_TOKENS, extractEnvelopeSchema);
+      const data = await this.call(
+        meter,
+        'extract',
+        `${header}\n---\n${chunk}`,
+        EXTRACT_MAX_TOKENS,
+        extractEnvelopeSchema,
+      );
       for (const raw of data.claims) {
         const parsed = extractedClaimSchema.safeParse(raw);
         if (!parsed.success) continue;
@@ -230,7 +250,10 @@ export class ResearchAiService implements ResearchAi {
       }
       if (!target) target = this.readTarget(data.target);
     }
-    return { result: { claims: claims.slice(0, MAX_CLAIMS_PER_REPORT), target }, usage: meter.total };
+    return {
+      result: { claims: claims.slice(0, MAX_CLAIMS_PER_REPORT), target },
+      usage: meter.total,
+    };
   }
 
   private readTarget(raw: unknown): ExtractedTarget | null {
@@ -282,23 +305,35 @@ export class ResearchAiService implements ResearchAi {
           numbers: c.numbers,
         })),
       };
-      const data = await this.call(meter, 'match', JSON.stringify(payload), MATCH_MAX_TOKENS, matchEnvelopeSchema);
+      const data = await this.call(
+        meter,
+        'match',
+        JSON.stringify(payload),
+        MATCH_MAX_TOKENS,
+        matchEnvelopeSchema,
+      );
 
       const byClaim = new Map<string, ReturnType<typeof matchItemSchema.parse>>();
       for (const raw of data.matches) {
         const parsed = matchItemSchema.safeParse(raw);
-        if (parsed.success && !byClaim.has(parsed.data.claim_id)) byClaim.set(parsed.data.claim_id, parsed.data);
+        if (parsed.success && !byClaim.has(parsed.data.claim_id))
+          byClaim.set(parsed.data.claim_id, parsed.data);
       }
       const drafts = new Map<string, ReturnType<typeof newThesisDraftSchema.parse>>();
       for (const raw of data.new_theses ?? []) {
         const parsed = newThesisDraftSchema.safeParse(raw);
-        if (parsed.success && !drafts.has(parsed.data.key)) drafts.set(parsed.data.key, parsed.data);
+        if (parsed.success && !drafts.has(parsed.data.key))
+          drafts.set(parsed.data.key, parsed.data);
       }
 
       const keyMap = new Map<string, string>();
       const batchNewTheses: NewThesisDraft[] = [];
 
-      const singleton = (claim: StoredClaim, verdict: ClaimMatch['match'] | null, why: string): ClaimMatch => {
+      const singleton = (
+        claim: StoredClaim,
+        verdict: ClaimMatch['match'] | null,
+        why: string,
+      ): ClaimMatch => {
         const key = nextKey();
         const draft: NewThesisDraft = {
           key,
@@ -327,7 +362,9 @@ export class ResearchAiService implements ResearchAi {
       for (const claim of batch) {
         const entry = byClaim.get(claim.id);
         if (!entry) {
-          result.matches.push(singleton(claim, null, 'Không có kết quả so khớp hợp lệ cho claim này'));
+          result.matches.push(
+            singleton(claim, null, 'Không có kết quả so khớp hợp lệ cho claim này'),
+          );
           continue;
         }
         const verdict = entry.match;
@@ -387,9 +424,12 @@ export class ResearchAiService implements ResearchAi {
         // A contradiction/replacement differs in direction by nature; it must still share driver
         // and mechanism with the thesis it contradicts. Merging relations need all three.
         const mergesAsEvidence = relationship === 'SUPPORT' || relationship === 'UPDATE';
-        const dimensionsAgree = verdict.driver && verdict.mechanism && (verdict.direction || !mergesAsEvidence);
+        const dimensionsAgree =
+          verdict.driver && verdict.mechanism && (verdict.direction || !mergesAsEvidence);
         if (!dimensionsAgree) {
-          result.matches.push(singleton(claim, verdict, 'Không khớp đủ driver, mechanism và direction'));
+          result.matches.push(
+            singleton(claim, verdict, 'Không khớp đủ driver, mechanism và direction'),
+          );
           continue;
         }
         if (existingIds.has(ref!)) {

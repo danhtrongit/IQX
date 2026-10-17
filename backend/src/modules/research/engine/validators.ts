@@ -94,7 +94,8 @@ export function findForbiddenTerms(text: string): string[] {
   const masked = new Array<boolean>(tokens.length).fill(false);
   for (const ex of FORBIDDEN_EXCEPTIONS) {
     const p = phraseOf(ex);
-    for (const at of phraseHits(tokens, p)) for (let k = 0; k < p.length; k++) masked[at + k] = true;
+    for (const at of phraseHits(tokens, p))
+      for (let k = 0; k < p.length; k++) masked[at + k] = true;
   }
   const found = new Set<string>();
   for (const term of FORBIDDEN_RECOMMENDATION_TERMS) {
@@ -302,12 +303,15 @@ function parseClaimUnit(unit: string | undefined): UnitInfo {
   const u = norm(unit ?? '');
   const has = (re: RegExp): boolean => re.test(u);
   const w = (term: string): RegExp => new RegExp(`(?<![\\p{L}\\d])${term}(?![\\p{L}\\d])`, 'u');
-  const pct = has(/%/u) || has(w('phần trăm')) || has(w('percent')) || has(w('pct')) || has(w('pp'));
+  const pct =
+    has(/%/u) || has(w('phần trăm')) || has(w('percent')) || has(w('pct')) || has(w('pp'));
   let scale = 1;
   let known = false;
-  if (has(w('(?:nghìn|ngàn)\\s+tỷ')) || has(w('trillion')) || has(w('tn'))) [scale, known] = [1e12, true];
+  if (has(w('(?:nghìn|ngàn)\\s+tỷ')) || has(w('trillion')) || has(w('tn')))
+    [scale, known] = [1e12, true];
   else if (has(w('tỷ')) || has(w('billion')) || has(w('bn'))) [scale, known] = [1e9, true];
-  else if (has(w('triệu')) || has(w('million')) || has(w('mn')) || has(w('mm'))) [scale, known] = [1e6, true];
+  else if (has(w('triệu')) || has(w('million')) || has(w('mn')) || has(w('mm')))
+    [scale, known] = [1e6, true];
   else if (has(w('nghìn')) || has(w('ngàn')) || has(w('thousand'))) [scale, known] = [1e3, true];
   else if (has(w('đồng')) || has(w('vnd')) || has(w('vnđ')) || has(w('usd')) || pct) known = true;
   return { pct, scale, scaleKnown: known, empty: u.trim() === '' };
@@ -411,7 +415,8 @@ export function untraceableNumbers(text: string, claims: ExtractedClaim[]): stri
     } else {
       const v = t.cands[0]?.value;
       // Small counts ("2 dự án", "tháng 10") are prose, not claims.
-      if (!t.hasUnit && t.integer && v !== undefined && v >= 1 && v <= (t.calendar ? 31 : 10)) continue;
+      if (!t.hasUnit && t.integer && v !== undefined && v >= 1 && v <= (t.calendar ? 31 : 10))
+        continue;
       if (!numberTraceable(t, pool)) bad.push(t.raw + (t.pct ? '%' : ''));
     }
   }
@@ -461,16 +466,22 @@ function hasHedge(summary: string): boolean {
 
 function distinctValues(d: Disagreement | null): string[] {
   if (!d) return [];
-  return [...new Set(d.values.map((v) => norm(v.value).replace(/\s+/g, ' ').trim()).filter(Boolean))];
+  return [
+    ...new Set(d.values.map((v) => norm(v.value).replace(/\s+/g, ' ').trim()).filter(Boolean)),
+  ];
 }
 
 function tokenCovered(vt: Tok, summary: Tok[]): boolean {
   return summary.some((st) => {
     if (vt.kind === 'quarter') {
-      return st.kind === 'quarter' && st.q === vt.q && (vt.y === null || st.y === null || st.y === vt.y);
+      return (
+        st.kind === 'quarter' && st.q === vt.q && (vt.y === null || st.y === null || st.y === vt.y)
+      );
     }
     if (vt.kind === 'half') {
-      return st.kind === 'half' && st.h === vt.h && (vt.y === null || st.y === null || st.y === vt.y);
+      return (
+        st.kind === 'half' && st.h === vt.h && (vt.y === null || st.y === null || st.y === vt.y)
+      );
     }
     if (vt.kind === 'year') {
       return (
@@ -552,9 +563,11 @@ export function validateBuiltTheses(
 
     const text = `${title}. ${summary}`;
     const summaryWords = countWords(summary);
-    if (summaryWords > SUMMARY_MAX_WORDS) fail('word_count', `summary has ${summaryWords} words (max ${SUMMARY_MAX_WORDS})`);
+    if (summaryWords > SUMMARY_MAX_WORDS)
+      fail('word_count', `summary has ${summaryWords} words (max ${SUMMARY_MAX_WORDS})`);
     const titleWords = countWords(title);
-    if (titleWords > TITLE_MAX_WORDS) fail('word_count', `title has ${titleWords} words (max ${TITLE_MAX_WORDS})`);
+    if (titleWords > TITLE_MAX_WORDS)
+      fail('word_count', `title has ${titleWords} words (max ${TITLE_MAX_WORDS})`);
 
     const forbidden = findForbiddenTerms(text);
     if (forbidden.length) fail('forbidden_term', `recommendation wording: ${forbidden.join(', ')}`);
@@ -567,7 +580,8 @@ export function validateBuiltTheses(
     // Anonymised refs ("B1") must not leak either.
     for (const ev of input.evidence) {
       const ref = ev.brokerRef.toLowerCase();
-      if (ref && tokens.includes(ref) && !brokerHits.includes(ev.brokerRef)) brokerHits.push(ev.brokerRef);
+      if (ref && tokens.includes(ref) && !brokerHits.includes(ev.brokerRef))
+        brokerHits.push(ev.brokerRef);
     }
     if (brokerHits.length) fail('broker_name', `mentions broker: ${brokerHits.join(', ')}`);
 
@@ -584,7 +598,10 @@ export function validateBuiltTheses(
     const values = distinctValues(input.disagreement);
     const hasDisagreement = values.length >= 2;
     if (signalsDisagreement(summary) && !hasDisagreement) {
-      fail('disagreement', 'summary states a disagreement but the evidence has fewer than 2 distinct values');
+      fail(
+        'disagreement',
+        'summary states a disagreement but the evidence has fewer than 2 distinct values',
+      );
     }
     if (hasDisagreement && !hasHedge(summary)) {
       const summaryToks = tokenize(summary);

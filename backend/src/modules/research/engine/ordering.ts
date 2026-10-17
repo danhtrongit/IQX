@@ -18,7 +18,8 @@ export function orderTheses(
   candidates: ThesisCandidate[],
   previousOrder: Map<string, number>,
 ): InvestmentViewThesis[] {
-  const prev = (c: ThesisCandidate): number => previousOrder.get(c.thesis.id) ?? Number.POSITIVE_INFINITY;
+  const prev = (c: ThesisCandidate): number =>
+    previousOrder.get(c.thesis.id) ?? Number.POSITIVE_INFINITY;
   const sorted = [...candidates].sort(
     (a, b) =>
       b.thesis.materiality - a.thesis.materiality ||
@@ -33,7 +34,12 @@ export function orderTheses(
     if (bestRisk) selected[selected.length - 1] = bestRisk;
   }
 
-  return selected.map((c, i) => ({ id: c.thesis.id, order: i + 1, title: c.title, summary: c.summary }));
+  return selected.map((c, i) => ({
+    id: c.thesis.id,
+    order: i + 1,
+    title: c.title,
+    summary: c.summary,
+  }));
 }
 
 /** Theses worth a builder call per run: the best-backed ones, plus the best risk (spec §20). */
@@ -49,11 +55,27 @@ export function buildShortlist(
   evidence: Map<string, ThesisEvidenceEntry>,
 ): Set<string> {
   const latest = (entry: ThesisEvidenceEntry): string =>
-    entry.perBroker.reduce((max, item) => (item.claim.evidenceDate > max ? item.claim.evidenceDate : max), '');
+    entry.perBroker.reduce(
+      (max, item) => (item.claim.evidenceDate > max ? item.claim.evidenceDate : max),
+      '',
+    );
   const ranked = theses
-    .filter((t) => (t.status === 'active' || t.status === 'updated') && (evidence.get(t.id)?.brokers.length ?? 0) > 0)
-    .map((t) => ({ t, brokers: evidence.get(t.id)!.brokers.length, latest: latest(evidence.get(t.id)!) }))
-    .sort((a, b) => b.brokers - a.brokers || (a.latest === b.latest ? 0 : a.latest > b.latest ? -1 : 1) || a.t.seq - b.t.seq);
+    .filter(
+      (t) =>
+        (t.status === 'active' || t.status === 'updated') &&
+        (evidence.get(t.id)?.brokers.length ?? 0) > 0,
+    )
+    .map((t) => ({
+      t,
+      brokers: evidence.get(t.id)!.brokers.length,
+      latest: latest(evidence.get(t.id)!),
+    }))
+    .sort(
+      (a, b) =>
+        b.brokers - a.brokers ||
+        (a.latest === b.latest ? 0 : a.latest > b.latest ? -1 : 1) ||
+        a.t.seq - b.t.seq,
+    );
   const picked = ranked.slice(0, BUILD_SHORTLIST);
   if (picked.length === BUILD_SHORTLIST && !picked.some((item) => item.t.isRisk)) {
     const risk = ranked.slice(BUILD_SHORTLIST).find((item) => item.t.isRisk);
