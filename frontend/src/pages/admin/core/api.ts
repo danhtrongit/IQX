@@ -324,7 +324,7 @@ export type TradingInsight = {
   asOf: string | null
 }
 
-export type AcademyLessonStatus = "completed" | "in_progress" | "failed" | "not_started"
+export type AcademyLessonStatus = "completed" | "in_progress" | "failed" | "not_started" | "locked"
 
 export type AcademyLesson = {
   lessonId: string
@@ -511,7 +511,7 @@ export function adaptLoginHistoryRow(raw: WireLoginHistoryRow): LoginHistoryRow 
 
 type WireTradingInsight = LegacyUser360Response["demo_trading"] & { as_of?: string | null }
 type WireAcademy = LegacyUser360Response["academy"]
-type WireAcademyLessonRef = NonNullable<WireAcademy["current_lesson"]>
+type WireAcademyLessonRef = Pick<NonNullable<WireAcademy["current_lesson"]>, "lesson_id" | "chapter" | "order" | "name" | "label">
 
 function adaptTradingInsight(raw: WireTradingInsight | null | undefined): TradingInsight | null {
   if (!raw) return null
@@ -556,7 +556,8 @@ export function adaptAcademyProgress(raw: WireAcademy | null | undefined): Acade
         lessonId: lesson.lesson_id,
         order: lesson.order,
         name: lesson.name,
-        completionMode: lesson.completion_mode,
+        // v3.2: every item completes by quiz (guide mode removed); P6 adapts kind/optional/locked.
+        completionMode: "quiz" as const,
         status: lesson.status,
         attempts: lesson.attempts,
         latestScore: lesson.latest_score ?? null,

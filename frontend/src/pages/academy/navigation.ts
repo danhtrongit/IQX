@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from "react-router"
 
 import { ACADEMY_VIEW, LESSON_PARAM, VIEW_PARAM } from "@/pages/demo-trading/workspace-url"
 
-/** Lesson ids are `chNN-lMM`; anything else in the URL is ignored (no lesson open). */
-const LESSON_ID = /^ch\d{2}-l\d{2}$/
+/** Item ids are `chNN-lMM`, `chNN-exam` or `chNN-practice`; anything else in the URL is ignored. */
+const LESSON_ID = /^ch\d{2}-(?:l\d{2}|exam|practice)$/
 
 export function parseLessonParam(value: string | null): string | null {
   return value && LESSON_ID.test(value) ? value : null

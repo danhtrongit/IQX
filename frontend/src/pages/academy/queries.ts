@@ -14,23 +14,24 @@ import { useAuth } from "@/hooks/use-auth"
 import {
   fetchAttemptHistory,
   fetchCatalog,
-  fetchLesson,
+  fetchItem,
   fetchProgress,
   resumeAttempt,
-  type AcademyCatalog,
-  type AcademyHistory,
-  type AcademyLesson,
-  type AcademyProgress,
-  type AcademyResume,
+  type CatalogResponse,
+  type HistoryResponse,
+  type ItemResponse,
+  type ProgressResponse,
+  type ResumeResponse,
 } from "./api"
 
 export const academyKeys = {
   all: ["academy"] as const,
   catalog: ["academy", "catalog"] as const,
   progress: (userId: string | undefined) => ["academy", "progress", userId] as const,
-  lesson: (userId: string | undefined, lessonId: string) => ["academy", "lesson", userId, lessonId] as const,
+  item: (userId: string | undefined, itemId: string) => ["academy", "item", userId, itemId] as const,
   resume: (userId: string | undefined, lessonId: string) => ["academy", "resume", userId, lessonId] as const,
   history: (userId: string | undefined, lessonId: string) => ["academy", "history", userId, lessonId] as const,
+  notes: (userId: string | undefined, itemId: string) => ["academy", "notes", userId, itemId] as const,
 }
 
 /**
@@ -54,7 +55,7 @@ export const COMPLETION_DEPENDENT_ROOTS: readonly QueryKey[] = [
 /** Refresh everything that depends on a lesson completion. Safe to call after a committed response only. */
 export function invalidateAfterCompletion(queryClient: QueryClient): void {
   void queryClient.invalidateQueries({ queryKey: ["academy", "progress"] })
-  void queryClient.invalidateQueries({ queryKey: ["academy", "lesson"] })
+  void queryClient.invalidateQueries({ queryKey: ["academy", "item"] })
   for (const queryKey of COMPLETION_DEPENDENT_ROOTS) void queryClient.invalidateQueries({ queryKey })
 }
 
@@ -63,12 +64,12 @@ export function invalidateAfterSubmit(queryClient: QueryClient, completed: boole
   void queryClient.invalidateQueries({ queryKey: ["academy", "resume"] })
   void queryClient.invalidateQueries({ queryKey: ["academy", "history"] })
   if (completed) invalidateAfterCompletion(queryClient)
-  else void queryClient.invalidateQueries({ queryKey: ["academy", "lesson"] })
+  else void queryClient.invalidateQueries({ queryKey: ["academy", "item"] })
 }
 
 export function useAcademyCatalog() {
   const { isAuthenticated } = useAuth()
-  return useQuery<AcademyCatalog>({
+  return useQuery<CatalogResponse>({
     queryKey: academyKeys.catalog,
     queryFn: ({ signal }) => fetchCatalog(signal),
     enabled: isAuthenticated,
@@ -79,7 +80,7 @@ export function useAcademyCatalog() {
 
 export function useAcademyProgress() {
   const { user, isAuthenticated } = useAuth()
-  return useQuery<AcademyProgress>({
+  return useQuery<ProgressResponse>({
     queryKey: academyKeys.progress(user?.id),
     queryFn: ({ signal }) => fetchProgress(signal),
     enabled: isAuthenticated,
@@ -88,11 +89,11 @@ export function useAcademyProgress() {
   })
 }
 
-export function useAcademyLesson(lessonId: string | null) {
+export function useAcademyItem(lessonId: string | null) {
   const { user, isAuthenticated } = useAuth()
-  return useQuery<AcademyLesson>({
-    queryKey: academyKeys.lesson(user?.id, lessonId ?? ""),
-    queryFn: ({ signal }) => fetchLesson(lessonId as string, signal),
+  return useQuery<ItemResponse>({
+    queryKey: academyKeys.item(user?.id, lessonId ?? ""),
+    queryFn: ({ signal }) => fetchItem(lessonId as string, signal),
     enabled: isAuthenticated && !!lessonId,
     staleTime: 60_000,
     retry: false,
@@ -102,7 +103,7 @@ export function useAcademyLesson(lessonId: string | null) {
 /** The learner's latest open attempt of a quiz lesson, if any (read only; never starts an attempt). */
 export function useAcademyResume(lessonId: string | null, enabled: boolean) {
   const { user, isAuthenticated } = useAuth()
-  return useQuery<AcademyResume>({
+  return useQuery<ResumeResponse>({
     queryKey: academyKeys.resume(user?.id, lessonId ?? ""),
     queryFn: ({ signal }) => resumeAttempt(lessonId as string, signal),
     enabled: isAuthenticated && !!lessonId && enabled,
@@ -114,7 +115,7 @@ export function useAcademyResume(lessonId: string | null, enabled: boolean) {
 /** Submitted attempts of a quiz lesson, newest first. */
 export function useAcademyHistory(lessonId: string | null, enabled: boolean) {
   const { user, isAuthenticated } = useAuth()
-  return useQuery<AcademyHistory>({
+  return useQuery<HistoryResponse>({
     queryKey: academyKeys.history(user?.id, lessonId ?? ""),
     queryFn: ({ signal }) => fetchAttemptHistory(lessonId as string, 5, signal),
     enabled: isAuthenticated && !!lessonId && enabled,

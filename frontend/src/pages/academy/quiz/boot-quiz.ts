@@ -4,8 +4,9 @@
  *
  * - `start`  resume the latest open attempt (with its saved draft) if the server has one, otherwise
  *            start a new attempt;
- * - `retake` always start a new attempt (new idempotency key);
- * - `review` read the committed review of a submitted attempt (history).
+ * - `retake` always start a new attempt (new idempotency key).
+ *
+ * There is no review: results are score-only and a submitted attempt is never re-read.
  *
  * The idempotency key of a started attempt is the only thing kept in `sessionStorage` (so a double
  * click or a retry replays the same attempt); the questions, their order and the ticked answers all
@@ -15,21 +16,21 @@ import type { QueryClient } from "@tanstack/react-query"
 
 import {
   createAttempt,
-  fetchAttemptReview,
   newRequestId,
   resumeAttempt,
-  type AcademyAttempt,
-  type AcademySubmitResult,
+  submitAttempt,
+  type AttemptResponse,
   type DraftState,
+  type SubmitResult,
 } from "../api"
 import { academyKeys, invalidateAfterSubmit } from "../queries"
 import { loadAttemptKey, markAttemptDone, saveAttemptKey } from "../view-state"
 
-export type QuizIntent = { kind: "start" } | { kind: "retake" } | { kind: "review"; attemptId: string }
+export type QuizIntent = { kind: "start" } | { kind: "retake" }
 
 export type BootResult =
-  | { kind: "taking"; attempt: AcademyAttempt; draft: DraftState | null; resumed: boolean }
-  | { kind: "result"; result: AcademySubmitResult }
+  | { kind: "taking"; attempt: AttemptResponse; draft: DraftState | null; resumed: boolean }
+  | { kind: "result"; result: SubmitResult }
 
 /** Key of this run: a start reuses the pending key of the lesson, a retake or a first start gets a fresh one. */
 export function pickAttemptKey(userId: string | undefined, lessonId: string, intent: QuizIntent): string {
@@ -57,9 +58,6 @@ export async function bootQuiz({
   key: string
   signal?: AbortSignal
 }): Promise<BootResult> {
-  if (intent.kind === "review") {
-    return { kind: "result", result: await fetchAttemptReview(intent.attemptId, signal) }
-  }
   if (intent.kind === "start") {
     const resume = await queryClient.fetchQuery({
       queryKey: academyKeys.resume(userId, lessonId),
@@ -71,8 +69,8 @@ export async function bootQuiz({
   saveAttemptKey(userId, lessonId, { key, done: false })
   const created = await createAttempt({ lesson_id: lessonId, catalog_version: catalogVersion, idempotency_key: key }, signal)
   if (created.status === "submitted") {
-    // The key replays an attempt that was already graded (a lost response): its committed result is the answer.
-    const result = await fetchAttemptReview(created.attempt_id, signal)
+    // The key replays an attempt that was already graded (a lost response): a submit replay returns its stored result.
+    const result = await submitAttempt(created.attempt_id, [], key, signal)
     markAttemptDone(userId, lessonId)
     invalidateAfterSubmit(queryClient, result.completion.completed)
     return { kind: "result", result }

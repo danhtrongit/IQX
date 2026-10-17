@@ -119,6 +119,6 @@ export function criteriaSummary(definition: Pick<FilterDefinition, "rules" | "sc
 }
 
 export function metricChapter(metric: Pick<ScreenerMetric, "lesson_id">): number {
-  const match = /^ch(\d+)-/.exec(metric.lesson_id)
+  const match = /^ch(\d+)-/.exec(metric.lesson_id ?? "")
   return match ? Number(match[1]) : 0
 }

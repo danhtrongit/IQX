@@ -77,11 +77,6 @@
       "requestType": "RemoveWatchlistItemV2Data",
       "responseType": "RemoveWatchlistItemV2Responses"
     },
-    "GET /api/v2/academy/attempts/{attemptId}": {
-      "operationId": "academyAttemptReview",
-      "requestType": "AcademyAttemptReviewData",
-      "responseType": "AcademyAttemptReviewResponses"
-    },
     "GET /api/v2/academy/catalog": {
       "operationId": "academyCatalog",
       "requestType": "AcademyCatalogData",
@@ -101,6 +96,11 @@
       "operationId": "academyLessonAttempts",
       "requestType": "AcademyLessonAttemptsData",
       "responseType": "AcademyLessonAttemptsResponses"
+    },
+    "GET /api/v2/academy/lessons/{lessonId}/notes": {
+      "operationId": "academyLessonNotes",
+      "requestType": "AcademyLessonNotesData",
+      "responseType": "AcademyLessonNotesResponses"
     },
     "GET /api/v2/academy/progress": {
       "operationId": "academyProgress",
@@ -1397,10 +1397,10 @@
       "requestType": "AcademySubmitAttemptData",
       "responseType": "AcademySubmitAttemptResponses"
     },
-    "POST /api/v2/academy/lessons/{lessonId}/complete": {
-      "operationId": "academyCompleteGuide",
-      "requestType": "AcademyCompleteGuideData",
-      "responseType": "AcademyCompleteGuideResponses"
+    "POST /api/v2/academy/lessons/{lessonId}/scenario": {
+      "operationId": "academyChooseScenario",
+      "requestType": "AcademyChooseScenarioData",
+      "responseType": "AcademyChooseScenarioResponses"
     },
     "POST /api/v2/admin/alerts/seed": {
       "operationId": "AdminAlertsController_seed[1]",
@@ -2026,6 +2026,11 @@
       "operationId": "academySaveDraftAnswers",
       "requestType": "AcademySaveDraftAnswersData",
       "responseType": "AcademySaveDraftAnswersResponses"
+    },
+    "PUT /api/v2/academy/lessons/{lessonId}/notes": {
+      "operationId": "academySaveLessonNotes",
+      "requestType": "AcademySaveLessonNotesData",
+      "responseType": "AcademySaveLessonNotesResponses"
     },
     "PUT /api/v2/admin/alerts/signals/{key}": {
       "operationId": "AdminAlertsController_update[1]",

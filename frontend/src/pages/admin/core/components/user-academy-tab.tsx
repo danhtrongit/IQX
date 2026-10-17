@@ -13,6 +13,7 @@ const LESSON_STATUS: Record<AcademyLessonStatus, { label: string; tone: StatusTo
   in_progress: { label: "Đang học", tone: "info" },
   failed: { label: "Chưa đạt", tone: "warning" },
   not_started: { label: "Chưa học", tone: "neutral" },
+  locked: { label: "Chưa mở", tone: "neutral" },
 }
 
 function percent(done: number, total: number): number {
