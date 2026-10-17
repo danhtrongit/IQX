@@ -130,8 +130,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 1,
-    "new_lesson_id": "ch01-l01"
+    "new_chapter": 4,
+    "new_lesson_id": "ch04-l06"
   },
   {
     "id": "macd",
@@ -239,8 +239,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 1,
-    "new_lesson_id": "ch01-l02"
+    "new_chapter": 4,
+    "new_lesson_id": "ch04-l07"
   },
   {
     "id": "ma",
@@ -316,8 +316,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 1,
-    "new_lesson_id": "ch01-l03"
+    "new_chapter": 4,
+    "new_lesson_id": "ch04-l05"
   },
   {
     "id": "bollinger",
@@ -488,8 +488,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": "warn_diagnostics_not_blanket_reject"
     },
-    "new_chapter": 1,
-    "new_lesson_id": "ch01-l04"
+    "new_chapter": 4,
+    "new_lesson_id": "ch04-l08"
   },
   {
     "id": "volume",
@@ -610,8 +610,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 1,
-    "new_lesson_id": "ch01-l05"
+    "new_chapter": 4,
+    "new_lesson_id": "ch04-l04"
   },
   {
     "id": "ema",
@@ -687,8 +687,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 5,
-    "new_lesson_id": "ch05-l01"
+    "new_chapter": 7,
+    "new_lesson_id": null
   },
   {
     "id": "ma_cross",
@@ -783,8 +783,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 5,
-    "new_lesson_id": "ch05-l02"
+    "new_chapter": 7,
+    "new_lesson_id": null
   },
   {
     "id": "dmi",
@@ -860,8 +860,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 5,
-    "new_lesson_id": "ch05-l03"
+    "new_chapter": 7,
+    "new_lesson_id": null
   },
   {
     "id": "stochastic",
@@ -1006,8 +1006,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 5,
-    "new_lesson_id": "ch05-l04"
+    "new_chapter": 8,
+    "new_lesson_id": null
   },
   {
     "id": "cci",
@@ -1126,8 +1126,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 5,
-    "new_lesson_id": "ch05-l05"
+    "new_chapter": 8,
+    "new_lesson_id": null
   },
   {
     "id": "obv",
@@ -1203,8 +1203,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 7,
-    "new_lesson_id": "ch07-l01"
+    "new_chapter": 8,
+    "new_lesson_id": null
   },
   {
     "id": "mfi",
@@ -1323,8 +1323,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 7,
-    "new_lesson_id": "ch07-l02"
+    "new_chapter": 8,
+    "new_lesson_id": null
   },
   {
     "id": "cmf",
@@ -1411,8 +1411,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 7,
-    "new_lesson_id": "ch07-l03"
+    "new_chapter": 8,
+    "new_lesson_id": null
   },
   {
     "id": "donchian",
@@ -1488,8 +1488,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 10,
-    "new_lesson_id": "ch10-l01"
+    "new_chapter": 7,
+    "new_lesson_id": null
   },
   {
     "id": "roc",
@@ -1576,8 +1576,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 10,
-    "new_lesson_id": "ch10-l02"
+    "new_chapter": 8,
+    "new_lesson_id": null
   },
   {
     "id": "williams_r",
@@ -1696,7 +1696,7 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 10,
-    "new_lesson_id": "ch10-l03"
+    "new_chapter": 8,
+    "new_lesson_id": null
   }
 ]

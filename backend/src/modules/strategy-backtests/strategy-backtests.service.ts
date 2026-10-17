@@ -462,7 +462,7 @@ export class StrategyBacktestsService {
     if (!locked.length) return;
     throw new ForbiddenException({
       code: 'CAPABILITY_LOCKED',
-      message: `Cần hoàn thành bài học của chỉ báo ${locked.join(', ')} (8/8) trước khi chạy backtest.`,
+      message: `Cần đạt bài kiểm tra của bài học chỉ báo ${locked.join(', ')} trước khi chạy backtest.`,
       capability: indicatorCapability(locked[0]!),
       capabilities: locked.map(indicatorCapability),
       reason: 'not_learned',

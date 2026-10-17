@@ -1,46 +1,57 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
-import { loadAcademyContent } from './academy.content.js';
-import type { AcademyContent, AcademyItem } from './academy.content.types.js';
-import type { ItemKind } from './content/v3/schema.js';
-
-/*
- * Stopgap on the v3.2 loader (P1): required lessons of the published chapters only, exams
- * counted in `chapter_exams`. P3 rewrites this reader per design §8 (exam and practice rows,
- * locked status, ACADEMY_CONTENT provider).
- */
+import {
+  ACADEMY_CONTENT,
+  type AcademyContent,
+  type AcademyContentSource,
+  type AcademyItem,
+} from './academy.content.types.js';
+import { currentItemId, itemStates, type ItemKind } from './content/v3/schema.js';
 
 /**
- * Read-only Academy progress of other users, for the admin and team-lead user views (admin
- * spec v1.1 §5.1.3 / §5.1.4). It is exported from AcademyModule and is NOT behind
- * AcademyEnabledGuard: staff can see what a member learned even while the Academy is hidden.
+ * Read-only Học viện progress of other users, for the admin and team-lead user views (admin
+ * spec v1.1 §5.1.3 / §5.1.4, Học viện spec v3.2 §5). It is exported from AcademyModule and is
+ * NOT behind AcademyEnabledGuard: staff can see what a member learned even while the Academy is
+ * hidden.
  *
- * Only the CURRENT catalog counts, and only its published lessons and chapters. The catalog
- * defines no chapter exams, so none are reported (`chapter_exams.total` is 0).
+ * Only published chapters of the current catalog are listed. Every chapter shows its lessons,
+ * its chapter exam and, for chapter 3, the optional practice (Phòng tập thực chiến). Totals
+ * (`completed / total`, x / 43) count required lessons only: exams are reported through
+ * `chapter_exams` and `exam_passed`, and the optional practice never counts.
  *
- * "Bài đang học" is not stored: it is the not-yet-completed lesson with the most recent open
- * quiz attempt, else the first not-yet-completed published lesson in catalog order. A user with
- * no completion and no attempt in this catalog has not started (no current lesson).
+ * Item states follow the learner's prefix rule (`itemStates` in content/v3/schema.ts): a
+ * completion of any catalog version passes an item; an item is open only when every earlier
+ * required item is passed, else locked. "Bài đang học" is the first open required item
+ * (`currentItemId`), which can be a chapter exam. A user with no completion on a catalog item and
+ * no attempt in the current catalog has not started (no current item).
  */
 
-export type AcademyLessonStatus = 'completed' | 'in_progress' | 'failed' | 'not_started';
+export type AcademyLessonStatus = 'completed' | 'in_progress' | 'failed' | 'not_started' | 'locked';
 
 export type AcademyLessonRef = {
   lesson_id: string;
   chapter: number;
   order: number;
   name: string;
-  /** "Chương c · Bài n: tên bài". */
+  /** "Chương c · Bài n: tên bài", "Bài thi Chương c" or "Chương 3 · Phòng tập thực chiến". */
   label: string;
+};
+
+export type AcademyCurrentItemRef = AcademyLessonRef & {
+  /** The current item is always required: a lesson or a chapter exam. */
+  kind: Exclude<ItemKind, 'practice'>;
 };
 
 export type AcademyProgressSummary = {
   started: boolean;
+  /** Passed required lessons of published chapters. */
   completed: number;
+  /** Required lessons of published chapters (43). */
   total: number;
+  /** Every required item (lessons and chapter exams) of the published chapters is passed. */
   all_done: boolean;
-  current_lesson: AcademyLessonRef | null;
+  current_lesson: AcademyCurrentItemRef | null;
 };
 
 export type AcademyLessonProgress = {
@@ -48,12 +59,14 @@ export type AcademyLessonProgress = {
   order: number;
   name: string;
   kind: ItemKind;
-  completion_mode: 'quiz' | 'guide';
+  /** Practice (Phòng tập thực chiến): never counted in totals. */
+  optional: boolean;
   status: AcademyLessonStatus;
   /** Submitted quiz attempts in this catalog. */
   attempts: number;
   latest_score: number | null;
-  max_score: number | null;
+  /** Question count of the item (3, 5, 20 or 30). */
+  max_score: number;
   completed_at: string | null;
   is_current: boolean;
 };
@@ -61,13 +74,17 @@ export type AcademyLessonProgress = {
 export type AcademyChapterProgress = {
   no: number;
   title: string;
+  /** Required lessons of the chapter. */
   total: number;
+  /** Passed required lessons of the chapter. */
   completed: number;
+  exam_passed: boolean;
   lessons: AcademyLessonProgress[];
 };
 
 export type AcademyProgressDetail = AcademyProgressSummary & {
   catalog_version: string;
+  /** One exam per published chapter. */
   chapter_exams: { total: number; passed: number };
   last_completion:
     (AcademyLessonRef & { completed_at: string; reward_coins: number | null }) | null;
@@ -82,6 +99,7 @@ export type AcademyCompletionFact = {
   reward: unknown;
 };
 
+/** Attempts of one item in the CURRENT catalog only. */
 export type AcademyAttemptFact = {
   lesson_key: string;
   attempts: number;
@@ -98,9 +116,10 @@ const EMPTY_FACTS: AcademyUserFacts = { completions: [], attempts: [] };
 
 @Injectable()
 export class AcademyProgressReader {
-  protected readonly content: () => AcademyContent = loadAcademyContent;
-
-  constructor(private readonly database: DatabaseService) {}
+  constructor(
+    private readonly database: DatabaseService,
+    @Inject(ACADEMY_CONTENT) private readonly content: AcademyContentSource,
+  ) {}
 
   async summaries(userIds: readonly string[]): Promise<Map<string, AcademyProgressSummary>> {
     const content = this.content();
@@ -128,6 +147,7 @@ export class AcademyProgressReader {
            from academy_completions where user_id = any($1::uuid[])`,
         [userIds],
       ),
+      // lesson_key identifies the item (and so its kind) within the current catalog.
       this.database.query<{
         user_id: string;
         lesson_key: string;
@@ -166,13 +186,19 @@ export class AcademyProgressReader {
   }
 }
 
-function lessonRef(lesson: AcademyItem): AcademyLessonRef {
+function itemLabel(item: AcademyItem): string {
+  if (item.kind === 'chapter_exam') return `Bài thi Chương ${item.chapter}`;
+  if (item.kind === 'practice') return `Chương ${item.chapter} · ${item.name}`;
+  return `Chương ${item.chapter} · Bài ${item.position ?? item.order}: ${item.name}`;
+}
+
+function itemRef(item: AcademyItem): AcademyLessonRef {
   return {
-    lesson_id: lesson.id,
-    chapter: lesson.chapter,
-    order: lesson.order,
-    name: lesson.name,
-    label: `Chương ${lesson.chapter} · Bài ${lesson.order}: ${lesson.name}`,
+    lesson_id: item.id,
+    chapter: item.chapter,
+    order: item.order,
+    name: item.name,
+    label: itemLabel(item),
   };
 }
 
@@ -198,31 +224,22 @@ function summarize(detail: AcademyProgressDetail): AcademyProgressSummary {
   };
 }
 
-/** Pure progress view of one user over the published part of the current catalog. */
+/** Pure progress view of one user over the published chapters of the current catalog. */
 export function buildAcademyProgress(
   content: AcademyContent,
   facts: AcademyUserFacts = EMPTY_FACTS,
 ): AcademyProgressDetail {
-  const chapters = content.catalog.chapters.flatMap((chapter) =>
-    chapter.published
-      ? [
-          {
-            chapter,
-            lessons: chapter.items
-              .filter((entry) => entry.kind === 'lesson')
-              .map((entry) => content.items.get(entry.id))
-              .filter((lesson): lesson is AcademyItem => lesson !== undefined),
-          },
-        ]
-      : [],
-  );
-  const examKeys = new Set(
-    [...content.items.values()]
-      .filter((item) => item.kind === 'chapter_exam')
-      .map((item) => item.lesson_key),
-  );
-  const published = chapters.flatMap((entry) => entry.lessons);
-  const publishedKeys = new Set(published.map((lesson) => lesson.lesson_key));
+  const chapters = content.catalog.chapters.flatMap((chapter) => {
+    if (!chapter.published) return [];
+    const items = chapter.items.map((entry) => {
+      const item = content.items.get(entry.id);
+      if (!item) throw new Error(`academy content has no item ${entry.id}`);
+      return item;
+    });
+    return [{ no: chapter.no, title: chapter.title, items }];
+  });
+  const published = chapters.flatMap((chapter) => chapter.items);
+  const publishedKeys = new Set(published.map((item) => item.lesson_key));
 
   const completions = new Map<string, AcademyCompletionFact>();
   for (const row of facts.completions)
@@ -231,29 +248,25 @@ export function buildAcademyProgress(
   for (const row of facts.attempts)
     if (publishedKeys.has(row.lesson_key)) attempts.set(row.lesson_key, row);
 
-  const openLesson = published
-    .filter((lesson) => !completions.has(lesson.lesson_key))
-    .map((lesson) => ({ lesson, openAt: attempts.get(lesson.lesson_key)?.open_at ?? null }))
-    .filter((entry) => entry.openAt !== null)
-    .sort(
-      (a, b) => new Date(b.openAt as Date).getTime() - new Date(a.openAt as Date).getTime(),
-    )[0]?.lesson;
+  const states = itemStates(content.sequence, new Set(completions.keys()));
   const started = completions.size > 0 || attempts.size > 0;
-  const current =
-    started && completions.size < published.length
-      ? (openLesson ?? published.find((lesson) => !completions.has(lesson.lesson_key)) ?? null)
-      : null;
+  const currentId = currentItemId(content.sequence, states);
+  const current = started && currentId !== null ? content.items.get(currentId) : undefined;
+  const isRequiredLesson = (item: AcademyItem) => item.kind === 'lesson' && !item.optional;
+  const passedLessons = (items: readonly AcademyItem[]) =>
+    items.filter((item) => isRequiredLesson(item) && completions.has(item.lesson_key)).length;
+  const exams = published.filter((item) => item.kind === 'chapter_exam');
 
-  let last: { lesson: AcademyItem; completion: AcademyCompletionFact } | null = null;
-  for (const lesson of published) {
-    const completion = completions.get(lesson.lesson_key);
+  let last: { item: AcademyItem; completion: AcademyCompletionFact } | null = null;
+  for (const item of published) {
+    const completion = completions.get(item.lesson_key);
     if (
       completion &&
       (!last ||
         new Date(completion.completed_at).getTime() >
           new Date(last.completion.completed_at).getTime())
     )
-      last = { lesson, completion };
+      last = { item, completion };
   }
   const learningCoins = facts.completions.reduce(
     (sum, row) => sum + (creditedCoins(row.reward) ?? 0),
@@ -263,49 +276,55 @@ export function buildAcademyProgress(
   return {
     catalog_version: content.catalog.catalog_version,
     started,
-    completed: completions.size,
-    total: published.length,
-    all_done: published.length > 0 && completions.size === published.length,
-    current_lesson: current ? lessonRef(current) : null,
+    completed: passedLessons(published),
+    total: content.requiredTotal,
+    all_done: currentId === null,
+    current_lesson:
+      current && current.kind !== 'practice' ? { ...itemRef(current), kind: current.kind } : null,
     chapter_exams: {
-      total: examKeys.size,
-      passed: facts.completions.filter((row) => examKeys.has(row.lesson_key)).length,
+      total: exams.length,
+      passed: exams.filter((item) => completions.has(item.lesson_key)).length,
     },
     last_completion: last
       ? {
-          ...lessonRef(last.lesson),
+          ...itemRef(last.item),
           completed_at: iso(last.completion.completed_at),
           reward_coins: creditedCoins(last.completion.reward),
         }
       : null,
     learning_coins: learningCoins,
-    chapters: chapters.map(({ chapter, lessons }) => ({
-      no: chapter.no,
-      title: chapter.title,
-      total: lessons.length,
-      completed: lessons.filter((lesson) => completions.has(lesson.lesson_key)).length,
-      lessons: lessons.map((lesson): AcademyLessonProgress => {
-        const completion = completions.get(lesson.lesson_key);
-        const attempt = attempts.get(lesson.lesson_key);
+    chapters: chapters.map(({ no, title, items }) => ({
+      no,
+      title,
+      total: items.filter(isRequiredLesson).length,
+      completed: passedLessons(items),
+      exam_passed: items.some(
+        (item) => item.kind === 'chapter_exam' && completions.has(item.lesson_key),
+      ),
+      lessons: items.map((item): AcademyLessonProgress => {
+        const completion = completions.get(item.lesson_key);
+        const attempt = attempts.get(item.lesson_key);
         const status: AcademyLessonStatus = completion
           ? 'completed'
-          : attempt?.open_at
-            ? 'in_progress'
-            : (attempt?.attempts ?? 0) > 0
-              ? 'failed'
-              : 'not_started';
+          : states.get(item.id) === 'locked'
+            ? 'locked'
+            : attempt?.open_at
+              ? 'in_progress'
+              : (attempt?.attempts ?? 0) > 0
+                ? 'failed'
+                : 'not_started';
         return {
-          lesson_id: lesson.id,
-          order: lesson.order,
-          name: lesson.name,
-          kind: lesson.kind,
-          completion_mode: 'quiz',
+          lesson_id: item.id,
+          order: item.order,
+          name: item.name,
+          kind: item.kind,
+          optional: item.optional,
           status,
           attempts: attempt?.attempts ?? 0,
           latest_score: attempt?.latest_score ?? null,
-          max_score: lesson.question_count,
+          max_score: item.question_count,
           completed_at: completion ? iso(completion.completed_at) : null,
-          is_current: current?.id === lesson.id,
+          is_current: current?.id === item.id,
         };
       }),
     })),

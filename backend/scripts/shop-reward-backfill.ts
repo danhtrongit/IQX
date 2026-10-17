@@ -7,7 +7,8 @@
  * Candidates are rows of `academy_completions` that have no `lesson_rewards` row: quiz and guide
  * completions plus the `legacy_migration` ones (lessons completed before the Shop that map to the
  * current catalog, Shop spec 10.2). Lessons that did not map were never written to
- * `academy_completions`, so they cannot be rewarded. Credits go
+ * `academy_completions`, so they cannot be rewarded. Chapter exam completions (`exam:chNN`,
+ * Học viện v3.2) are skipped with reason `exam_never_rewarded`: exams never pay. Credits go
  * through LessonRewardService, i.e. the same `(user_id, lesson_key)` gate and ledger unique key
  * `lesson_first_completion:<user>:<lesson_key>` as the realtime Academy hook, so running it
  * twice, or while users keep completing lessons, can never pay a lesson twice.
@@ -64,7 +65,7 @@ export interface PlannedCredit extends CandidateRow {
 
 export interface SkippedCandidate {
   readonly row: CandidateRow;
-  readonly reason: 'invalid_lesson_key' | 'invalid_completion_method';
+  readonly reason: 'invalid_lesson_key' | 'invalid_completion_method' | 'exam_never_rewarded';
 }
 
 export interface UserPlan {
@@ -131,6 +132,10 @@ export function planBackfill(
   const skipped: SkippedCandidate[] = [];
   const seen = new Set<string>();
   for (const row of rows) {
+    if (row.lessonKey.startsWith('exam:')) {
+      skipped.push({ row, reason: 'exam_never_rewarded' });
+      continue;
+    }
     if (!STABLE_LESSON_KEY.test(row.lessonKey)) {
       skipped.push({ row, reason: 'invalid_lesson_key' });
       continue;

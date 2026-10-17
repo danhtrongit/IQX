@@ -10,7 +10,10 @@ import type {
 import { COIN_POLICY_VERSION, LESSON_REWARD_XU } from './shop.catalog.js';
 import { ShopRepository } from './shop.repository.js';
 
-/** Stable lesson keys: `technical:rsi`, `fundamental:roe`, `concept:hop_luu`, `guide:ch02-l01`. */
+/**
+ * Stable lesson keys: `technical:rsi`, `fundamental:roe`, `concept:hop_luu`, `guide:ch02-l01`.
+ * Chapter exam keys (`exam:ch01`) are deliberately outside this alphabet: exams never pay.
+ */
 const LESSON_KEY = /^(technical|fundamental|concept|guide):[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$/;
 
 /** `legacy_migration` completions (carried over from the old Academy) are paid by the backfill. */
@@ -33,6 +36,9 @@ export function lessonRewardUniqueKey(userId: string, lessonKey: string): string
 
 function assertValidInput(input: LessonRewardInput, source: RewardSource): Date {
   if (!input.userId) throw new TypeError('userId is required');
+  if (input.lessonKey.startsWith('exam:')) {
+    throw new TypeError(`Chapter exams never earn xu: ${input.lessonKey}`);
+  }
   if (!LESSON_KEY.test(input.lessonKey)) {
     throw new TypeError(`Invalid stable lesson key: ${input.lessonKey}`);
   }

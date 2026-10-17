@@ -106,6 +106,24 @@ describe('shop reward backfill: planning (dry run output)', () => {
     expect(plan.totalXu).toBe(100);
   });
 
+  it('Học viện v3.2: never plans chapter exam completions, reports them as exam_never_rewarded', () => {
+    const plan = planBackfill(
+      [
+        row(USER_A, 'exam:ch01', { lessonId: 'ch01-exam' }),
+        row(USER_A, 'concept:dau_tu_chung_khoan', { lessonId: 'ch01-l01' }),
+        row(USER_B, 'exam:ch04', { lessonId: 'ch04-exam', completionMethod: 'legacy_migration' }),
+      ],
+      new Map(),
+    );
+    expect(plan.credits.map((c) => c.lessonKey)).toEqual(['concept:dau_tu_chung_khoan']);
+    expect(plan.skipped.map((s) => [s.row.lessonKey, s.reason])).toEqual([
+      ['exam:ch01', 'exam_never_rewarded'],
+      ['exam:ch04', 'exam_never_rewarded'],
+    ]);
+    expect(plan.totalXu).toBe(100);
+    expect(formatPlan(plan, false)).toContain('exam_never_rewarded');
+  });
+
   it('Shop spec 10.2: plans legacy_migration completions (lessons done before the Shop), once per lesson', () => {
     const plan = planBackfill(
       [

@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 
-import { loadAcademyContent } from '../../src/modules/academy/academy.content.js';
+import { ACADEMY_V3_CATALOG_VERSION } from '../../src/modules/academy/content/v3/schema.js';
+import { academyV3Fixture } from '../unit/academy-v3-fixture.js';
 import {
   authHeader,
   registerAndLogin,
@@ -33,12 +34,14 @@ type TeamUser = {
     completed: number;
     total: number;
     all_done: boolean;
-    current_lesson: { lesson_id: string; label: string } | null;
+    current_lesson: { lesson_id: string; label: string; kind: string } | null;
   };
 };
 type TeamPage = { items: TeamUser[]; total: number; page: number; total_pages: number };
 type AcademyLesson = {
   lesson_id: string;
+  kind: string;
+  optional: boolean;
   status: string;
   attempts: number;
   latest_score: number | null;
@@ -55,7 +58,13 @@ type User360 = Record<string, unknown> & {
     completed: number;
     current_lesson: { lesson_id: string } | null;
     chapter_exams: { total: number; passed: number };
-    chapters: Array<{ no: number; total: number; completed: number; lessons: AcademyLesson[] }>;
+    chapters: Array<{
+      no: number;
+      total: number;
+      completed: number;
+      exam_passed: boolean;
+      lessons: AcademyLesson[];
+    }>;
   };
 };
 
@@ -191,38 +200,41 @@ describe('system acceptance: team lead area (team/*)', () => {
               ($1, current_date - 1, 50000000, null, null, false, now())`,
       [bot?.id],
     );
-    // Academy: ch01-l01 done, ch01-l02 failed once (2/3), ch01-l03 has an open attempt.
-    const content = loadAcademyContent();
-    const chapter1 = content.catalog.chapters[0];
-    const lessons = chapter1?.published ? chapter1.items : [];
-    const [l1, l2, l3] = lessons;
-    const attempt = async (lessonId: string, lessonKey: string, status: 'open' | 'submitted') =>
+    // Học viện v3.2: ch01-l01 done, the carried indicator lesson technical:rsi (ch04-l06) done
+    // out of order, ch01-l02 failed once (2/3) and is the current item; ch01-l03 stays locked.
+    const content = academyV3Fixture();
+    const item = (id: string) => {
+      const found = content.items.get(id);
+      if (!found) throw new Error(id);
+      return found;
+    };
+    const complete = (id: string, catalogVersion: string) =>
       stack.query(
-        `insert into academy_attempts
-           (user_id, lesson_id, lesson_key, catalog_version, content_version, questions_version,
-            question_ids, option_orders, status, idempotency_key, submitted_at, score, passed)
-         values ($1, $2, $3, $4, 'v1', repeat('a', 64), '{q1,q2,q3}', '{}'::jsonb, $5, $6,
-                 ${status === 'submitted' ? 'now()' : 'null'},
-                 ${status === 'submitted' ? '2' : 'null'},
-                 ${status === 'submitted' ? 'false' : 'null'})`,
-        [
-          active.id,
-          lessonId,
-          lessonKey,
-          content.catalog.catalog_version,
-          status,
-          `${lessonId}-${status}`,
-        ],
+        `insert into academy_completions
+           (user_id, lesson_key, catalog_version, lesson_id, completion_method, completed_at, source)
+         values ($1, $2, $3, $4, 'legacy_migration', now() - interval '1 day',
+                 '{"reward": {"status": "credited", "delta": 5, "balance_after": 5}}'::jsonb)`,
+        [active.id, item(id).lesson_key, catalogVersion, id],
       );
+    await complete('ch01-l01', ACADEMY_V3_CATALOG_VERSION);
+    // Carried from the 13-chapter catalog, where RSI was ch01-l01.
+    await complete('ch04-l06', 'iqx-academy-outline-13ch-71lessons-v1');
+    const l2 = item('ch01-l02');
     await stack.query(
-      `insert into academy_completions
-         (user_id, lesson_key, catalog_version, lesson_id, completion_method, completed_at, source)
-       values ($1, $2, $3, $4, 'legacy_migration', now() - interval '1 day',
-               '{"reward": {"status": "credited", "delta": 5, "balance_after": 5}}'::jsonb)`,
-      [active.id, l1?.lesson_key, content.catalog.catalog_version, l1?.id],
+      `insert into academy_attempts
+         (user_id, lesson_id, lesson_key, catalog_version, content_version, questions_version,
+          question_ids, option_orders, status, idempotency_key, submitted_at, score, passed)
+       values ($1, $2, $3, $4, $5, repeat('a', 64), $6::text[], '{}'::jsonb, 'submitted',
+               'ch01-l02-submitted', now(), 2, false)`,
+      [
+        active.id,
+        l2.id,
+        l2.lesson_key,
+        ACADEMY_V3_CATALOG_VERSION,
+        l2.lesson?.content_version ?? 'v3',
+        l2.bank.questions.map((question) => question.id),
+      ],
     );
-    await attempt(l2?.id ?? '', l2?.lesson_key ?? '', 'submitted');
-    await attempt(l3?.id ?? '', l3?.lesson_key ?? '', 'open');
   }, 120_000);
 
   afterAll(async () => {
@@ -420,17 +432,18 @@ describe('system acceptance: team lead area (team/*)', () => {
       bot: { activated: true, pnl_pct: -5 },
       academy: {
         started: true,
-        completed: 1,
+        completed: 2,
+        total: 43,
         all_done: false,
-        current_lesson: { lesson_id: 'ch01-l03' },
+        current_lesson: { lesson_id: 'ch01-l02', kind: 'lesson' },
       },
     });
-    expect(first?.academy.current_lesson?.label).toMatch(/^Chương 1 · Bài 3: /);
+    expect(first?.academy.current_lesson?.label).toMatch(/^Chương 1 · Bài 2: /);
     expect(first?.bot.as_of).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(second).toMatchObject({
       demo_trading: { activated: false, pnl_pct: null },
       bot: { activated: false, pnl_pct: null, as_of: null },
-      academy: { started: false, completed: 0, current_lesson: null, all_done: false },
+      academy: { started: false, completed: 0, total: 43, current_lesson: null, all_done: false },
     });
     // §7.6: no money value anywhere in the list.
     expect(keysOf(page).filter((key) => key.endsWith('_vnd'))).toEqual([]);
@@ -509,20 +522,44 @@ describe('system acceptance: team lead area (team/*)', () => {
       expect.arrayContaining([expect.objectContaining({ amount_vnd: 99_000, status: 'paid' })]),
     );
 
-    const content = loadAcademyContent();
-    const published = content.catalog.chapters.filter((chapter) => chapter.published);
-    expect(view.academy.chapters.map((chapter) => chapter.no)).toEqual(
-      published.map((chapter) => chapter.no),
-    );
-    expect(view.academy.total).toBe(content.requiredTotal);
+    // Published chapters only (1-5); x / 43 counts required lessons; one exam row per chapter.
+    expect(view.academy.chapters.map((chapter) => chapter.no)).toEqual([1, 2, 3, 4, 5]);
+    expect(view.academy.total).toBe(43);
+    expect(view.academy.completed).toBe(2);
     expect(view.academy.chapter_exams).toEqual({ total: 5, passed: 0 });
-    expect(view.academy.current_lesson?.lesson_id).toBe('ch01-l03');
-    const [l1, l2, l3, l4] = view.academy.chapters[0]?.lessons ?? [];
+    expect(view.academy.current_lesson?.lesson_id).toBe('ch01-l02');
+    const chapter1 = view.academy.chapters[0];
+    expect(chapter1).toMatchObject({ total: 10, completed: 1, exam_passed: false });
+    const [l1, l2, l3] = chapter1?.lessons ?? [];
     expect(l1).toMatchObject({ status: 'completed', is_current: false });
     expect(l1?.completed_at).toBeTruthy();
-    expect(l2).toMatchObject({ status: 'failed', attempts: 1, latest_score: 2, max_score: 3 });
-    expect(l3).toMatchObject({ status: 'in_progress', attempts: 0, is_current: true });
-    expect(l4).toMatchObject({ status: 'not_started', attempts: 0, latest_score: null });
+    expect(l2).toMatchObject({
+      status: 'failed',
+      attempts: 1,
+      latest_score: 2,
+      max_score: 3,
+      is_current: true,
+    });
+    expect(l3).toMatchObject({ status: 'locked', attempts: 0, latest_score: null });
+    expect(chapter1?.lessons.at(-1)).toMatchObject({
+      lesson_id: 'ch01-exam',
+      kind: 'chapter_exam',
+      optional: false,
+      status: 'locked',
+      max_score: 20,
+    });
+    expect(view.academy.chapters[2]?.lessons.at(-1)).toMatchObject({
+      lesson_id: 'ch03-practice',
+      kind: 'practice',
+      optional: true,
+    });
+    const chapter4 = view.academy.chapters[3];
+    expect(chapter4?.completed).toBe(1);
+    expect(chapter4?.lessons.find((lesson) => lesson.lesson_id === 'ch04-l06')).toMatchObject({
+      status: 'completed',
+      max_score: 5,
+    });
+    expect(chapter4?.lessons.at(-1)).toMatchObject({ lesson_id: 'ch04-exam', max_score: 30 });
 
     const idleView = (await as(lead, 'GET', `${TEAM}/users/${idle.id}`)).json() as User360;
     expect(idleView.demo_trading).toMatchObject({ activated: false, pnl_pct: null });

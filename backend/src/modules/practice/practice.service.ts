@@ -438,7 +438,7 @@ export class PracticeService {
     if (!granted.has(capability)) {
       throw new ForbiddenException({
         code: 'CAPABILITY_LOCKED',
-        message: `Cần hoàn thành bài học của chỉ báo ${entry.name} (8/8) trước khi luyện tập.`,
+        message: `Cần đạt bài kiểm tra của bài học chỉ báo ${entry.name} trước khi luyện tập.`,
         capability,
         reason: 'not_learned',
         // the v2 error filter forwards only `code`, `message` and array `details`

@@ -15,6 +15,7 @@ import {
   type Rule,
   type SeriesMap,
 } from '../../src/modules/quant/v2/index.js';
+import { academyV3Fixture } from './academy-v3-fixture.js';
 
 /**
  * Bot SPEC §9.1 (calculation variants) and Appendix B (registry) against the IQX engine.
@@ -29,8 +30,10 @@ type SpecEntry = {
   name: string;
   chapter: number;
   lesson_id: string;
+  /** Học viện v3.2 chapter (4, 7 or 8). */
   new_chapter: number;
-  new_lesson_id: string;
+  /** Học viện v3.2 lesson; null while the indicator's chapter is not published. */
+  new_lesson_id: string | null;
   family: string;
   buy: unknown;
   sell: unknown;
@@ -113,18 +116,38 @@ describe('registry matches the approved 16-indicator registryData', () => {
     });
   }
 
-  it('maps stochastic/cci/obv/mfi/cmf/donchian/roc/williams_r to their new lesson numbers', () => {
-    const lessons = Object.fromEntries(registry.map((item) => [item.id, item.lesson_id]));
-    expect(lessons).toMatchObject({
-      stochastic: 'ch05-l04',
-      cci: 'ch05-l05',
-      obv: 'ch07-l01',
-      mfi: 'ch07-l02',
-      cmf: 'ch07-l03',
-      donchian: 'ch10-l01',
-      roc: 'ch10-l02',
-      williams_r: 'ch10-l03',
+  it('Học viện v3.2: 5 indicators live in chapter 4, the other 11 in unpublished chapters 7/8', () => {
+    const placement = Object.fromEntries(
+      registry.map((item) => [item.id, [item.chapter, item.lesson_id]]),
+    );
+    expect(placement).toEqual({
+      volume: [4, 'ch04-l04'],
+      ma: [4, 'ch04-l05'],
+      rsi: [4, 'ch04-l06'],
+      macd: [4, 'ch04-l07'],
+      bollinger: [4, 'ch04-l08'],
+      ema: [7, null],
+      ma_cross: [7, null],
+      dmi: [7, null],
+      donchian: [7, null],
+      stochastic: [8, null],
+      cci: [8, null],
+      roc: [8, null],
+      williams_r: [8, null],
+      obv: [8, null],
+      mfi: [8, null],
+      cmf: [8, null],
     });
+  });
+
+  it('Học viện v3.2: each published indicator lesson is the catalog item that unlocks it', () => {
+    const content = academyV3Fixture();
+    for (const item of registry) {
+      if (item.lesson_id === null) continue;
+      const lesson = content.items.get(item.lesson_id);
+      expect(lesson?.lesson_key, item.id).toBe(`technical:${item.id}`);
+      expect(lesson?.capabilities, item.id).toEqual([`indicator:${item.id}`]);
+    }
   });
 
   it('the default config offers exactly the 16 with master and both sides OFF', () => {
