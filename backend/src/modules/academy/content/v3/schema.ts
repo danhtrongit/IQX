@@ -1568,8 +1568,19 @@ export const notesResponseSchema = z.object({
   updated_at: isoDate.nullable(),
 });
 export type NotesResponse = z.infer<typeof notesResponseSchema>;
+/**
+ * NUL and unpaired UTF-16 surrogates pass JSON.parse but Postgres jsonb rejects them (22P05 / 22P02), which
+ * would surface as a 500. Refuse them at the edge so the client gets a 422.
+ */
+const LONE_SURROGATE = /[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/;
+const notesTextSchema = z
+  .string()
+  .max(NOTES_TEXT_MAX)
+  .refine((text) => !text.includes('\u0000') && !LONE_SURROGATE.test(text), {
+    message: 'Text must not contain NUL or unpaired surrogate characters',
+  });
 export const notesSaveRequestSchema = z.strictObject({
-  texts: z.record(z.string().max(NOTES_KEY_MAX), z.string().max(NOTES_TEXT_MAX)).optional(),
+  texts: z.record(z.string().max(NOTES_KEY_MAX), notesTextSchema).optional(),
   checks: z.record(z.string().max(NOTES_KEY_MAX), z.boolean()).optional(),
   scores: z.record(z.string().max(NOTES_KEY_MAX), z.array(z.number().int().min(0).max(10)).length(6)).optional(),
   /**
