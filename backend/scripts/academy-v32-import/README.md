@@ -32,6 +32,11 @@ node dist/scripts/academy-v32-import/main.js verify
 `extract` runs `verify` at the end. `test/unit/academy-v32-import.test.ts` runs `verify` without the source and,
 when `ACADEMY_V32_SOURCE` points at the mockup, re-extracts in memory and compares with the committed files.
 
+`verify` also pins `catalog.json` to `catalog-table.ts`, recomputes every manifest count and every chart, checks the
+math goldens of design §6.5, and freezes the practice notes keys (`EXPECTED.interactive_keys`). Notes are saved per
+account under those keys, so a change that renames a workpad, checklist item or roleplay id fails `verify` on
+purpose: update the fingerprint only together with a plan for the saved notes.
+
 ## Layout
 
 | File                                       | Role                                                                                               |

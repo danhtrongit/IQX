@@ -5,8 +5,10 @@ import {
   bankFileSchema,
   catalogFileSchema,
   chartModelSchema,
+  interactiveKeysOf,
   lessonFileSchema,
   retiredLessonsFileSchema,
+  scenarioOf,
 } from '../../src/modules/academy/content/v3/schema.js';
 import type {
   BankFile,
@@ -15,7 +17,8 @@ import type {
   LessonFile,
 } from '../../src/modules/academy/content/v3/schema.js';
 import { optionId } from './banks.js';
-import { buildChart, CHART_BUILDERS, TEXT_FIGURES } from './charts/index.js';
+import { buildCatalog } from './catalog-table.js';
+import { buildChart, CHART_BUILDERS, ICONS, TEXT_FIGURES } from './charts/index.js';
 import { c4l6Worked, c4l7Worked, c4l9Worked } from './charts/ch4.js';
 import { c5l1Example } from './charts/ch5.js';
 import { fmtVi } from './charts/math.js';
@@ -29,6 +32,10 @@ export const EXPECTED = {
   lessons: 44,
   banks: 49,
   questions: 280,
+  /** 43 lessons (ch1-3 x3, ch4-5 x5) + practice 3. */
+  lesson_questions: 160,
+  /** 3 x 20 + 2 x 30. */
+  exam_questions: 120,
   sections: 252,
   intro_blocks: 2,
   summaries: 44,
@@ -46,7 +53,30 @@ export const EXPECTED = {
     quote: 17,
   },
   self_check: 2,
+  /**
+   * Practice notes are stored per account under these keys (`academy_practice_notes`), so renaming one
+   * orphans saved work. sha256 of `interactiveKeyList()`; change it only together with a notes migration.
+   */
+  interactive_keys: {
+    count: 80,
+    sha256: '1d6be68dc6192fbe9e6e7539bdaccc84e700222b3f7a304314406eb2763c3f5e',
+  },
 } as const;
+
+/** Every notes key of every lesson, as sorted `<item id> <texts|checks|scores> <key>` lines. */
+export function interactiveKeyList(lessons: Iterable<LessonFile>): string[] {
+  const out: string[] = [];
+  for (const l of lessons) {
+    const k = interactiveKeysOf(l);
+    for (const [ns, set] of [
+      ['texts', k.texts],
+      ['checks', k.checks],
+      ['scores', k.scores],
+    ] as const)
+      for (const key of set) out.push(`${l.id} ${ns} ${key}`);
+  }
+  return out.sort();
+}
 
 const CH2_EXAM_REPLACEMENTS = [
   'tiết kiệm sắp đáo hạn',
@@ -65,7 +95,10 @@ function chartOf<K extends ChartModel['kind']>(
   id: string,
   kind: K,
 ): Model<K> {
-  const lesson = lessons.get(`ch0${id[1]}-l${id.slice(3, id.indexOf('-')).padStart(2, '0')}`);
+  const m0 = /^c(\d+)l(\d+)-/.exec(id);
+  const lesson = m0
+    ? lessons.get(`ch${m0[1]?.padStart(2, '0')}-l${m0[2]?.padStart(2, '0')}`)
+    : undefined;
   const m = lesson?.charts[id];
   if (!m || m.kind !== kind) throw new Error(`golden: ${id} is not a ${kind}`);
   return m as Model<K>;
@@ -99,6 +132,10 @@ export function verify(dir: string = outDir()): string[] {
     readJson(join(dir, OUTPUT_FILES.catalog)),
   );
   if (!catalog) return errors;
+  check(
+    stableJson(catalog) === stableJson(buildCatalog()),
+    'catalog: differs from catalog-table.ts (never edit catalog.json by hand)',
+  );
   const items = catalog.chapters.flatMap((c) =>
     c.published ? c.items.map((i) => ({ ...i, chapter: c.no })) : [],
   );
@@ -134,6 +171,10 @@ export function verify(dir: string = outDir()): string[] {
       `lesson ${it.id}: header differs from the catalog`,
     );
     check(l.title === it.name, `lesson ${it.id}: title differs from catalog name`);
+    check(
+      it.has_scenario === (scenarioOf(l) !== null),
+      `lesson ${it.id}: has_scenario differs from the scenario block`,
+    );
     lessons.set(it.id, l);
   }
 
@@ -192,6 +233,12 @@ export function verify(dir: string = outDir()): string[] {
     check(chartIds.includes(id), `builder ${id} is never used`);
   for (const id of Object.keys(TEXT_FIGURES))
     check(!chartIds.includes(id), `text figure ${id} emitted as a chart`);
+  const keyList = interactiveKeyList(lessons.values());
+  check(
+    keyList.length === EXPECTED.interactive_keys.count &&
+      sha256(keyList.join('\n')) === EXPECTED.interactive_keys.sha256,
+    `interactive keys changed (${keyList.length} keys, sha256 ${sha256(keyList.join('\n'))}): saved notes would be orphaned`,
+  );
 
   /* ---- banks */
   const banks = new Map<string, BankFile>();
@@ -229,6 +276,14 @@ export function verify(dir: string = outDir()): string[] {
   check(
     allQ.length === EXPECTED.questions,
     `questions: ${allQ.length}, expected ${EXPECTED.questions}`,
+  );
+  const examIds = new Set(items.filter((i) => i.kind === 'chapter_exam').map((i) => i.id));
+  const examQ = [...banks.values()]
+    .filter((b) => examIds.has(b.item_id))
+    .reduce((s, b) => s + b.questions.length, 0);
+  check(
+    examQ === EXPECTED.exam_questions && allQ.length - examQ === EXPECTED.lesson_questions,
+    `questions: ${allQ.length - examQ} lesson + ${examQ} exam, expected ${EXPECTED.lesson_questions} + ${EXPECTED.exam_questions}`,
   );
   const prompts = allQ.map((q) => q.prompt);
   check(new Set(prompts).size === prompts.length, 'question prompts repeat across banks');
@@ -289,6 +344,37 @@ export function verify(dir: string = outDir()): string[] {
       stableJson(manifest.counts.blocks) === stableJson(blocks),
       'manifest: block counts differ from the output',
     );
+    const kinds: Record<string, number> = {};
+    for (const l of lessons.values())
+      for (const m of Object.values(l.charts)) kinds[m.kind] = (kinds[m.kind] ?? 0) + 1;
+    check(
+      stableJson(manifest.counts.chart_kinds) === stableJson(kinds),
+      'manifest: chart kind counts differ from the output',
+    );
+    const nTextFigures = Object.keys(TEXT_FIGURES).length;
+    check(
+      manifest.counts.text_figures === nTextFigures &&
+        manifest.counts.svg_ids === chartIds.length + nTextFigures + Object.keys(ICONS).length,
+      `manifest: svg ids ${manifest.counts.svg_ids} != charts + text figures + icons`,
+    );
+    check(
+      manifest.counts.questions === allQ.length && manifest.counts.banks === banks.size,
+      'manifest: question or bank count',
+    );
+    for (const l of lessons.values()) {
+      const row = manifest.lessons[l.id];
+      check(
+        row?.sections === l.sections.length &&
+          row.charts === Object.keys(l.charts).length &&
+          row.questions === (banks.get(l.id)?.questions.length ?? -1),
+        `manifest: per-lesson counts of ${l.id}`,
+      );
+    }
+    for (const b of banks.values())
+      check(
+        manifest.banks[b.item_id]?.questions === b.questions.length,
+        `manifest: bank ${b.item_id}`,
+      );
   }
 
   /* ---- math goldens */
