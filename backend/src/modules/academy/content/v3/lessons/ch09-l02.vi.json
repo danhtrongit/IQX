@@ -1,0 +1,805 @@
+{
+  "chapter": 9,
+  "charts": {
+    "c9l2-g1": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    11.3802,
+                    11.3802,
+                    11.3802,
+                    11.3802,
+                    11.3802
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    13.4198,
+                    13.4198,
+                    13.4198,
+                    13.4198,
+                    13.4198
+                  ]
+                },
+                "bounds": [
+                  -10,
+                  30
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 12.4",
+                    "role": "avg",
+                    "value": 12.4
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      12,
+                      14,
+                      11,
+                      13,
+                      12
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "Doanh nghiệp A · tăng đều"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    0.4401,
+                    0.4401,
+                    0.4401,
+                    0.4401,
+                    0.4401
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    24.3599,
+                    24.3599,
+                    24.3599,
+                    24.3599,
+                    24.3599
+                  ]
+                },
+                "bounds": [
+                  -10,
+                  30
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 12.4",
+                    "role": "avg",
+                    "value": 12.4
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      28,
+                      -4,
+                      22,
+                      2,
+                      14
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "Doanh nghiệp B · thất thường"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c9l2-g2": {
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "band": {
+            "lower": [
+              7.604,
+              7.604,
+              7.604,
+              7.604,
+              7.604
+            ],
+            "tone": "p1",
+            "upper": [
+              17.444,
+              17.444,
+              17.444,
+              17.444,
+              17.444
+            ]
+          },
+          "bounds": [
+            0,
+            20
+          ],
+          "levels": [
+            {
+              "label": "Bình quân 12.524",
+              "role": "avg",
+              "value": 12.524
+            }
+          ],
+          "segments": [
+            {
+              "from": [
+                0,
+                12.524
+              ],
+              "to": [
+                0,
+                16.68
+              ],
+              "tone": "p5"
+            },
+            {
+              "from": [
+                1,
+                12.524
+              ],
+              "to": [
+                1,
+                17
+              ],
+              "tone": "p5"
+            },
+            {
+              "from": [
+                2,
+                12.524
+              ],
+              "to": [
+                2,
+                3.71
+              ],
+              "tone": "p5"
+            },
+            {
+              "from": [
+                3,
+                12.524
+              ],
+              "to": [
+                3,
+                14.35
+              ],
+              "tone": "p5"
+            },
+            {
+              "from": [
+                4,
+                12.524
+              ],
+              "to": [
+                4,
+                10.88
+              ],
+              "tone": "p5"
+            }
+          ],
+          "series": [
+            {
+              "name": "Giá trị",
+              "role": "p1",
+              "values": [
+                16.68,
+                17,
+                3.71,
+                14.35,
+                10.88
+              ],
+              "width": 2
+            }
+          ],
+          "title": ""
+        }
+      ],
+      "x": {
+        "end": 4,
+        "start": 0,
+        "ticks": [
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ]
+      }
+    },
+    "c9l2-g3": {
+      "alt": "Thang tham chiếu độ lệch chuẩn tăng trưởng doanh thu: ổn định dưới 5 điểm phần trăm, thất thường trên 10",
+      "domain": [
+        0,
+        15
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Doanh nghiệp mẫu · 4,9 điểm %",
+          "side": "a",
+          "tone": "p1",
+          "v": 4.92
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0 điểm %",
+          "v": 0
+        },
+        {
+          "label": "5",
+          "v": 5
+        },
+        {
+          "label": "10",
+          "v": 10
+        },
+        {
+          "label": "15+",
+          "v": 15
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Ổn định",
+          "to": 5,
+          "tone": "pos"
+        },
+        {
+          "from": 5,
+          "label": "Trung bình",
+          "to": 10,
+          "tone": "warn"
+        },
+        {
+          "from": 10,
+          "label": "Thất thường",
+          "to": 15,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c9l2-g4": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    18.5858,
+                    18.5858,
+                    18.5858,
+                    18.5858,
+                    18.5858
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    21.4142,
+                    21.4142,
+                    21.4142,
+                    21.4142,
+                    21.4142
+                  ]
+                },
+                "bounds": [
+                  -10,
+                  30
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 20",
+                    "role": "avg",
+                    "value": 20
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      19,
+                      21,
+                      18,
+                      22,
+                      20
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "'21",
+                "'22",
+                "'23",
+                "'24",
+                "'25"
+              ]
+            }
+          },
+          "title": "Tăng nhanh, đều"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    1.4517,
+                    1.4517,
+                    1.4517,
+                    1.4517,
+                    1.4517
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    2.9483,
+                    2.9483,
+                    2.9483,
+                    2.9483,
+                    2.9483
+                  ]
+                },
+                "bounds": [
+                  -10,
+                  30
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 2.2",
+                    "role": "avg",
+                    "value": 2.2
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      2,
+                      3,
+                      1,
+                      3,
+                      2
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "'21",
+                "'22",
+                "'23",
+                "'24",
+                "'25"
+              ]
+            }
+          },
+          "title": "Tăng chậm, đều"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    0.4401,
+                    0.4401,
+                    0.4401,
+                    0.4401,
+                    0.4401
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    24.3599,
+                    24.3599,
+                    24.3599,
+                    24.3599,
+                    24.3599
+                  ]
+                },
+                "bounds": [
+                  -10,
+                  30
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 12.4",
+                    "role": "avg",
+                    "value": 12.4
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      28,
+                      -4,
+                      22,
+                      2,
+                      14
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "'21",
+                "'22",
+                "'23",
+                "'24",
+                "'25"
+              ]
+            }
+          },
+          "title": "Thất thường"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c9l2-rep": {
+      "caption_tone": "price",
+      "caption_value": "4,9 điểm %",
+      "kind": "category",
+      "labels": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Revenue Growth Stability",
+          "tone": "p1",
+          "values": [
+            16.6791,
+            17.0027,
+            3.7058,
+            14.3539,
+            10.8827
+          ]
+        }
+      ],
+      "title": "Revenue Growth Stability",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch09-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Revenue Growth Stability đo mức tăng trưởng doanh thu của doanh nghiệp dao động nhiều hay ít qua các năm. Tăng trưởng đều đặn giúp dự báo tương lai dễ hơn và thường đi kèm mô hình kinh doanh vững.",
+  "lesson_key": "fundamental:revenue_growth_stability",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Revenue Growth Stability</b> là <b>độ lệch chuẩn</b> (standard deviation) của tốc độ tăng trưởng doanh thu từng năm, từ 2021 đến 2025. Đơn vị là <b>điểm %</b>. Con số <b>càng nhỏ</b>, tăng trưởng <b>càng ổn định</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l2-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Hai doanh nghiệp có tăng trưởng bình quân gần bằng nhau. Doanh nghiệp A năm nào cũng tăng quanh mức đó. Doanh nghiệp B lúc tăng mạnh, lúc giảm, nên độ lệch chuẩn lớn hơn nhiều.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Revenue Growth Stability là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Độ lệch chuẩn là <b>khoảng cách điển hình</b> từ giá trị mỗi năm tới đường bình quân. Trên biểu đồ, nó tạo thành một <b>dải</b> bao quanh đường bình quân.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l2-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Mức tăng trưởng trung bình của 5 năm.",
+              "title": "Đường bình quân"
+            },
+            {
+              "text": "Mỗi năm lệch lên hoặc lệch xuống so với bình quân một đoạn.",
+              "title": "Khoảng cách từng năm"
+            },
+            {
+              "text": "Gom các khoảng cách lại thành một con số. Dải hẹp là ổn định, dải rộng là thất thường.",
+              "title": "Dải độ lệch chuẩn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Độ lệch chuẩn hiểu bằng hình"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l2-rep",
+          "table_toggle": true,
+          "title": "Revenue Growth Stability",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tốc độ tăng doanh thu so với năm trước, đơn vị %.",
+              "title": "Đường xanh · tăng trưởng từng năm"
+            },
+            {
+              "text": "Mức tăng trưởng trung bình của 5 năm.",
+              "title": "Đường đứt nét · bình quân"
+            },
+            {
+              "text": "Độ rộng nửa dải chính là con số lớn ở góc phải. Dải càng hẹp càng ổn định.",
+              "title": "Dải tô · bình quân ± độ lệch chuẩn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l2-g3",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh thu tăng với nhịp độ khá đều, dễ dự báo.",
+              "title": "Dưới 5 điểm % · ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "Doanh thu lên xuống mạnh theo chu kỳ hoặc phụ thuộc vào vài hợp đồng lớn.",
+              "title": "Trên 10 điểm % · thất thường",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức tham khảo khác nhau theo ngành. Ngành tiêu dùng thiết yếu thường ổn định hơn ngành thép, bất động sản hay chứng khoán.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l2-g4",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng nhanh và đều là tốt nhất. Đều nhưng gần 0 nghĩa là doanh nghiệp đang đứng yên.",
+              "title": "Đọc cùng mức tăng trưởng"
+            },
+            {
+              "text": "So độ ổn định với doanh nghiệp cùng ngành để biết ai quản trị tốt hơn qua chu kỳ.",
+              "title": "So trong cùng ngành"
+            },
+            {
+              "text": "Xem năm nào lệch xa bình quân nhất và nguyên nhân là gì.",
+              "title": "Tìm năm làm dải rộng ra"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Tăng trưởng doanh thu",
+                "16,7%",
+                "17,0%",
+                "3,7%",
+                "14,4%",
+                "10,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Lệch so với bình quân",
+                "+4,2",
+                "+4,5",
+                {
+                  "rating": "mid",
+                  "text": "−8,8"
+                },
+                "+1,8",
+                "−1,6"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "items": [
+            {
+              "term": "Bình quân 5 năm",
+              "text": "Khoảng 12,5% mỗi năm."
+            },
+            {
+              "term": "Năm lệch nhiều nhất",
+              "text": "Năm 2023 chỉ tăng 3,7%, thấp hơn bình quân 8,8 điểm %."
+            },
+            {
+              "term": "Kết quả",
+              "text": "Độ lệch chuẩn ≈ 4,9 điểm %, ở ranh giới nhóm ổn định."
+            },
+            {
+              "term": "Đọc thêm",
+              "text": "Tăng trưởng bình quân hai chữ số, chỉ một năm chững lại. Đây là bức tranh khá tích cực."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng đều 1% mỗi năm cho độ lệch chuẩn rất nhỏ, nhưng doanh nghiệp gần như không lớn lên.",
+              "title": "Ổn định nhưng tăng chậm"
+            },
+            {
+              "text": "Mua lại công ty khác làm doanh thu nhảy vọt một năm, khiến chỉ tiêu xấu đi dù kinh doanh vẫn tốt.",
+              "title": "Bỏ qua ảnh hưởng của sáp nhập"
+            },
+            {
+              "text": "Ổn định trong quá khứ không bảo đảm sẽ ổn định khi ngành thay đổi.",
+              "title": "Coi 5 năm là mãi mãi"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Revenue Growth Stability</b> là <b>độ lệch chuẩn</b> của tăng trưởng doanh thu 2021-2025, đơn vị điểm %.",
+    "Độ lệch chuẩn là <b>khoảng cách điển hình</b> tới đường bình quân, hiện thành dải quanh bình quân.",
+    "Con số <b>càng nhỏ càng ổn định</b>. Dưới 5 điểm % là ổn định, trên 10 điểm % là thất thường.",
+    "Luôn đọc cùng <b>mức tăng trưởng bình quân</b>. Tăng nhanh và đều mới là tốt nhất."
+  ],
+  "title": "Revenue Growth Stability · độ ổn định tăng trưởng doanh thu"
+}

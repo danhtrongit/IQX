@@ -86,6 +86,11 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
   }
   if (path.startsWith("/cap5/san-ma")) throw new ApiError("Not found", 404)
   if (path === "/watchlists") return { data: [] }
+  // Dashboard phân tích: thiết lập, danh mục và số liệu theo khuôn.
+  if (path === "/dashboard/settings") return { charts: ["ROE"], per: "q", nks: {} }
+  if (path === "/dashboard/catalog") return []
+  if (path.startsWith("/fundamental/")) return { symbol: "FPT", is_bank: false, per: "q", charts: {} }
+  if (path.startsWith("/valuation/")) return { symbol: "FPT", dates: [], charts: {} }
   void init
   return {}
 }
@@ -151,7 +156,9 @@ describe("DemoTradingPage for a brand-new user", () => {
     await renderPage("/demo-trading")
 
     const buttons = within(rail()).getAllByRole("button")
-    expect(buttons.map((button) => button.textContent)).toEqual(["Đặt lệnh", "Danh mục", "Tin tức", "Insight"])
+    expect(buttons.map((button) => button.textContent)).toEqual([
+      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Dashboard phân tích",
+    ])
     expect(buttons.every((button) => !button.hasAttribute("disabled"))).toBe(true)
     expect(rail().querySelector("svg.lucide-lock-keyhole, svg.lucide-lock")).toBeNull()
     expect(document.body.textContent).not.toMatch(/Mở khóa|Cấp \d|trứng|Hành trình/i)
@@ -170,13 +177,13 @@ describe("DemoTradingPage for a brand-new user", () => {
     await renderPage("/demo-trading?view=academy")
 
     const buttons = within(rail()).getAllByRole("button")
-    expect(buttons.map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop"])
+    expect(buttons.map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop", "Flashback"])
     expect(buttons.every((button) => !button.hasAttribute("disabled"))).toBe(true)
     expect(document.body.textContent).not.toMatch(/Mở khóa|Cấp \d|trứng|Hành trình/i)
 
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
-    expect(within(panel()).getByText("43 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("87 bài học")).toBeTruthy()
     // The panel lists the real catalog and the learner's progress.
     expect(await within(panel()).findByText("Chương 1 · Nền tảng")).toBeTruthy()
     expect(within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })).toBeTruthy()
@@ -241,7 +248,7 @@ describe("DemoTradingPage for a brand-new user", () => {
     const { router } = await renderPage("/demo-trading?view=journey&content=journey&symbol=FPT")
     await waitFor(() => expect(router.state.location.search).toBe("?view=academy&symbol=FPT"))
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
-    expect(within(panel()).getByText("43 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("87 bài học")).toBeTruthy()
     expect(paths().filter((call) => /\/cap\d|\/journey|\/bot\/mascot/.test(call))).toEqual([])
   })
 
@@ -333,6 +340,21 @@ describe("DemoTradingPage layout v1.2 behaviour", () => {
     expect(pressed()).toEqual([])
   })
 
+  it("Dashboard phân tích thay vùng chính và bấm lại nút thì quay về tab trước", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/demo-trading?content=board&symbol=FPT")
+    expect(screen.getByRole("tab", { name: "Bảng giá" }).getAttribute("aria-selected")).toBe("true")
+
+    await user.click(within(rail()).getByRole("button", { name: "Dashboard phân tích" }))
+    expect(router.state.location.search).toBe("?content=dashboard&symbol=FPT")
+    await waitFor(() => expect(pressed()).toEqual(["Dashboard phân tích"]))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+    expect(await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })).toBeTruthy()
+
+    await user.click(within(rail()).getByRole("button", { name: "Dashboard phân tích" }))
+    expect(router.state.location.search).toBe("?content=board&symbol=FPT")
+  })
+
   it("picking a panel tool while Insight is shown returns to the tab it replaced", async () => {
     const user = userEvent.setup()
     const { router } = await renderPage("/demo-trading?content=market")
@@ -386,7 +408,7 @@ describe("DemoTradingPage layout v1.2 behaviour", () => {
     expect(frame().getAttribute("data-rail")).toBe("bar")
     expect(frame().querySelector(".workspace-rail")).toBeNull()
     expect(screen.getByRole("main").firstElementChild).toBe(rail())
-    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop"])
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop", "Flashback"])
     expect(within(screen.getByRole("main")).getAllByRole("button", { name: "Học viện" })).toHaveLength(1)
     const toggle = within(rail()).getByRole("button", { name: "Học viện" })
     expect(toggle.getAttribute("aria-controls")).toBe(panel().id)

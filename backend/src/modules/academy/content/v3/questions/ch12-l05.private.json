@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l05",
+  "questions": [
+    {
+      "correct_option_id": "b32ff14217",
+      "id": "ch12-l05-q01",
+      "options": [
+        {
+          "id": "b32ff14217",
+          "text": "Số năm FCF dương liên tiếp tính từ năm gần nhất"
+        },
+        {
+          "id": "f0ada0281a",
+          "text": "Tổng số năm FCF dương trong mọi giai đoạn"
+        },
+        {
+          "id": "1cce58c7f0",
+          "text": "Số quý doanh thu tăng liên tiếp"
+        }
+      ],
+      "prompt": "FCF Positive Streak đếm điều gì?"
+    },
+    {
+      "correct_option_id": "af1cb30c76",
+      "id": "ch12-l05-q02",
+      "options": [
+        {
+          "id": "af1cb30c76",
+          "text": "Dừng đếm tại đó"
+        },
+        {
+          "id": "10b9715a3b",
+          "text": "Bỏ qua và đếm tiếp"
+        },
+        {
+          "id": "613d9d8090",
+          "text": "Trừ đi một năm rồi đếm tiếp"
+        }
+      ],
+      "prompt": "Khi đếm ngược từ năm gần nhất, gặp năm FCF âm thì làm gì?"
+    },
+    {
+      "correct_option_id": "bbbb022704",
+      "id": "ch12-l05-q03",
+      "options": [
+        {
+          "id": "bbbb022704",
+          "text": "Bằng 0"
+        },
+        {
+          "id": "21887c89d2",
+          "text": "Bằng số năm dương trước đó"
+        },
+        {
+          "id": "9d773aefd5",
+          "text": "Bằng tổng số năm đang xét"
+        }
+      ],
+      "prompt": "Nếu năm gần nhất có FCF âm, FCF Positive Streak bằng bao nhiêu?"
+    },
+    {
+      "correct_option_id": "75f9453dc5",
+      "id": "ch12-l05-q04",
+      "options": [
+        {
+          "id": "75f9453dc5",
+          "text": "Chuỗi dài nhưng FCF quá nhỏ chưa phải điểm mạnh"
+        },
+        {
+          "id": "94d13d8180",
+          "text": "FCF Margin luôn bằng số năm của chuỗi"
+        },
+        {
+          "id": "d3654d3907",
+          "text": "Hai chỉ tiêu này đo cùng một con số"
+        }
+      ],
+      "prompt": "Vì sao nên xem FCF Positive Streak cùng với FCF Margin?"
+    },
+    {
+      "correct_option_id": "ba277954e0",
+      "id": "ch12-l05-q05",
+      "options": [
+        {
+          "id": "ba277954e0",
+          "text": "Năm có FCF âm"
+        },
+        {
+          "id": "6747013a18",
+          "text": "Năm có FCF lớn nhất"
+        },
+        {
+          "id": "fea8fa2e05",
+          "text": "Năm doanh nghiệp trả cổ tức"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện FCF Positive Streak, cột đỏ thể hiện gì?"
+    }
+  ],
+  "salt": "7710341d98eeeed96de105b6f04deaf7b102ef96cd80ec4907b23ad908f096a1"
+}

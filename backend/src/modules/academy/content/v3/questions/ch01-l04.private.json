@@ -3,62 +3,62 @@
   "item_id": "ch01-l04",
   "questions": [
     {
-      "correct_option_id": "65ca85df1c",
+      "correct_option_id": "68e519d5fd",
       "id": "ch01-l04-q01",
       "options": [
         {
-          "id": "65ca85df1c",
+          "id": "68e519d5fd",
           "text": "Chiều ngày T+2 (T+2.5)"
         },
         {
-          "id": "c50491031c",
+          "id": "985e3c3afa",
           "text": "Ngay trong ngày T"
         },
         {
-          "id": "22596cbbef",
+          "id": "92c4433129",
           "text": "Sau một tuần"
         }
       ],
       "prompt": "Cổ phiếu mua vào ngày T về tài khoản khi nào?"
     },
     {
-      "correct_option_id": "0b25625c0d",
+      "correct_option_id": "6eb1fb23bb",
       "id": "ch01-l04-q02",
       "options": [
         {
-          "id": "0b25625c0d",
+          "id": "6eb1fb23bb",
           "text": "0,1% giá trị bán"
         },
         {
-          "id": "ec6610d4f8",
+          "id": "339bd6fbe5",
           "text": "1% giá trị bán"
         },
         {
-          "id": "0c6468a411",
+          "id": "7285cb42f0",
           "text": "10% lợi nhuận"
         }
       ],
       "prompt": "Thuế thu nhập cá nhân khi bán chứng khoán là bao nhiêu?"
     },
     {
-      "correct_option_id": "dfd005e41b",
+      "correct_option_id": "e5993cd1b1",
       "id": "ch01-l04-q03",
       "options": [
         {
-          "id": "dfd005e41b",
+          "id": "e5993cd1b1",
           "text": "Vay tiền công ty chứng khoán để mua thêm cổ phiếu"
         },
         {
-          "id": "9547615965",
+          "id": "374461fb87",
           "text": "Gửi tiết kiệm tại công ty chứng khoán"
         },
         {
-          "id": "f5a7216d39",
+          "id": "2bba398e23",
           "text": "Phí giao dịch khi mua cổ phiếu"
         }
       ],
       "prompt": "Giao dịch ký quỹ (margin) là gì?"
     }
   ],
-  "salt": "aae5005e1d70661b4e46374f7fd9d3e88dea9c328f449dd6f49bcbb9403644dc"
+  "salt": "0c41f239d963dfe6aaee9762f6f07c715868fcc343e9845ebce55e24ff8ded3e"
 }

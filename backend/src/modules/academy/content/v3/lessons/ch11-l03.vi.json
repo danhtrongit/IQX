@@ -1,0 +1,423 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l3-g1": {
+      "kind": "category",
+      "labels": [
+        "EBIT",
+        "Chi phí lãi vay"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Số tiền",
+          "tone": "p1",
+          "values": [
+            823,
+            93.5
+          ]
+        }
+      ],
+      "title": "EBIT 4 quý 823 tỷ so với chi phí lãi vay 4 quý 93,5 tỷ",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c11l3-g2": {
+      "kind": "category",
+      "labels": [
+        "Q1/24",
+        "Q2/24",
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Tính từng quý",
+          "tone": "warn",
+          "values": [
+            2.75,
+            4.25,
+            5.25,
+            8.5,
+            3,
+            4.5,
+            5.5,
+            9
+          ]
+        },
+        {
+          "name": "Tính 4 quý",
+          "tone": "p1",
+          "values": [
+            3.94,
+            5.31,
+            6.56,
+            8.44,
+            4.25,
+            5.44,
+            6.5,
+            8.5
+          ]
+        }
+      ],
+      "title": "Số lần lãi vay được EBIT bảo phủ · lần",
+      "unit": "lần",
+      "value_labels": "none"
+    },
+    "c11l3-g3": {
+      "kind": "category",
+      "labels": [
+        "Doanh nghiệp A",
+        "Doanh nghiệp B"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Bình thường",
+          "tone": "p1",
+          "values": [
+            8,
+            2
+          ]
+        },
+        {
+          "name": "EBIT giảm 40%",
+          "tone": "p5",
+          "values": [
+            4.8,
+            1.2
+          ]
+        }
+      ],
+      "title": "Khả năng chịu đựng · lần",
+      "unit": "lần",
+      "value_labels": "all"
+    },
+    "c11l3-g4": {
+      "alt": "Thang tham chiếu Interest Coverage: dưới 1,5 lần là nguy hiểm, trên 5 lần là an toàn",
+      "domain": [
+        0,
+        10
+      ],
+      "ends": [
+        "0",
+        "10 lần"
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Doanh nghiệp mẫu · 8,8",
+          "side": "a",
+          "tone": "p1",
+          "v": 8.8
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0",
+          "v": 0
+        },
+        {
+          "label": "1,5",
+          "v": 1.5
+        },
+        {
+          "label": "3",
+          "v": 3
+        },
+        {
+          "label": "5",
+          "v": 5
+        },
+        {
+          "label": "10",
+          "v": 10
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Nguy hiểm",
+          "to": 1.5,
+          "tone": "neg"
+        },
+        {
+          "from": 1.5,
+          "label": "Cần theo dõi",
+          "to": 3,
+          "tone": "p5"
+        },
+        {
+          "from": 3,
+          "label": "Ổn",
+          "to": 5,
+          "tone": "warn"
+        },
+        {
+          "from": 5,
+          "label": "An toàn",
+          "to": 10,
+          "tone": "pos"
+        }
+      ]
+    },
+    "c11l3-rep": {
+      "caption_tone": "price",
+      "caption_value": "8,80 lần",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Interest Coverage",
+          "tone": "p1",
+          "values": [
+            5.7522,
+            6.1571,
+            6.4251,
+            6.8467,
+            7.3263,
+            7.8756,
+            8.4502,
+            8.8014
+          ]
+        }
+      ],
+      "title": "Interest Coverage",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Interest Coverage cho biết lợi nhuận từ hoạt động kinh doanh lớn gấp bao nhiêu lần chi phí lãi vay. Hệ số càng cao, doanh nghiệp càng dễ dàng trả lãi và càng ít rủi ro khi kinh doanh đi xuống.",
+  "lesson_key": "fundamental:interest_coverage",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Interest Coverage</b> (hệ số khả năng trả lãi) bằng <b>EBIT 4 quý</b> chia cho <b>chi phí lãi vay 4 quý</b>. <b>EBIT</b> (Earnings Before Interest and Taxes) là lợi nhuận trước lãi vay và thuế, tức phần lợi nhuận dùng để trả lãi.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l3-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Hình trên cho thấy EBIT 4 quý của doanh nghiệp mẫu đủ trả khoảng <b>8,8 lần</b> tiền lãi vay cùng kỳ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Interest Coverage là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lợi nhuận từng quý lên xuống theo mùa vụ. Cộng 4 quý gần nhất giúp loại bỏ mùa vụ và cho con số ổn định hơn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l3-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Hệ số nhảy mạnh giữa quý thấp điểm và quý cao điểm, dễ gây hiểu nhầm.",
+              "title": "Tính từng quý"
+            },
+            {
+              "text": "Mỗi quý mới thay thế quý cũ nhất, đường đi mượt và phản ánh đúng xu hướng.",
+              "title": "Tính 4 quý"
+            },
+            {
+              "text": "EBIT và chi phí lãi vay đều lấy tổng 4 quý để cùng một khoảng thời gian.",
+              "title": "Cả tử và mẫu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao dùng 4 quý"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l3-rep",
+          "table_toggle": true,
+          "title": "Interest Coverage",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EBIT 4 quý chia cho lãi vay 4 quý, tính tại mỗi quý. Con số góc phải là giá trị mới nhất.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "EBIT và chi phí lãi vay của riêng từng quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Lãi vay mỗi quý gần như không đổi, EBIT tăng dần, nên hệ số tăng đều qua 8 quý.",
+              "title": "Cách đọc"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l3-g4",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Lợi nhuận dư sức trả lãi. Kinh doanh giảm một phần vẫn chưa ảnh hưởng tới nghĩa vụ trả lãi.",
+              "title": "Trên 3 lần và tăng dần",
+              "tone": "pos"
+            },
+            {
+              "text": "Phần lớn lợi nhuận dùng để trả lãi. Dưới 1 lần nghĩa là lợi nhuận không đủ trả lãi.",
+              "title": "Dưới 1,5 lần",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Ngưỡng an toàn <b>khác nhau theo ngành</b>. Doanh nghiệp có lợi nhuận ổn định như điện, nước có thể chấp nhận hệ số thấp hơn doanh nghiệp có lợi nhuận biến động mạnh như thép, xây dựng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l3-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp A có hệ số 8 vẫn ở mức an toàn khi EBIT giảm 40%. Doanh nghiệp B có hệ số 2 rơi xuống vùng nguy hiểm.",
+              "title": "Kiểm tra khả năng chịu đựng"
+            },
+            {
+              "text": "D/E cho biết nợ nhiều hay ít, Interest Coverage cho biết lợi nhuận có gánh nổi tiền lãi của khoản nợ đó.",
+              "title": "Đi kèm với D/E"
+            },
+            {
+              "text": "Hệ số giảm nhiều quý liền là cảnh báo sớm, kể cả khi vẫn đang trên 3 lần.",
+              "title": "Theo dõi xu hướng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Số liệu doanh nghiệp mẫu, 4 quý gần nhất đến quý 2/2026, đơn vị tỷ đồng.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "EBIT 4 quý ≈ 823",
+              "text": "Cộng EBIT các quý 3/2025, 4/2025, 1/2026 và 2/2026: 186 + 207 + 214 + 216."
+            },
+            {
+              "term": "Lãi vay 4 quý ≈ 93,5",
+              "text": "Khoảng 23,4 mỗi quý trên khoản nợ vay 1.100."
+            },
+            {
+              "term": "Interest Coverage ≈ 8,8 lần",
+              "text": "823 ÷ 93,5. Lợi nhuận kinh doanh gấp gần 9 lần tiền lãi phải trả."
+            },
+            {
+              "term": "Đánh giá",
+              "text": "Nằm trong vùng an toàn, và hệ số đã tăng từ 5,8 lên 8,8 trong 8 quý."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận sau thuế đã trừ lãi vay. Phải dùng EBIT, phần lợi nhuận trước khi trả lãi.",
+              "title": "Dùng lợi nhuận sau thuế"
+            },
+            {
+              "text": "Quý cao điểm cho hệ số rất đẹp, quý thấp điểm rất xấu. Dùng tổng 4 quý.",
+              "title": "Chỉ nhìn một quý"
+            },
+            {
+              "text": "Khi lãi suất tăng hoặc vay thêm, chi phí lãi tăng và hệ số giảm dù EBIT không đổi.",
+              "title": "Quên lãi vay có thể tăng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Interest Coverage = EBIT 4 quý ÷ chi phí lãi vay 4 quý</b>.",
+    "<b>EBIT</b> là lợi nhuận trước lãi vay và thuế, phần lợi nhuận dùng để trả lãi.",
+    "<b>Dưới 1,5 lần</b> là vùng nguy hiểm, <b>trên 3 lần</b> thường được xem là an toàn.",
+    "Kiểm tra khả năng chịu đựng khi <b>lợi nhuận giảm</b> và khi <b>lãi suất tăng</b>."
+  ],
+  "title": "Interest Coverage · khả năng trả lãi"
+}

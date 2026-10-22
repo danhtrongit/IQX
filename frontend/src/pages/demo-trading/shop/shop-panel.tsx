@@ -8,7 +8,7 @@
  * never completes a lesson or hands out coins.
  */
 import { useState } from "react"
-import { ArrowRight, BookOpen, Coins } from "lucide-react"
+import { ArrowRight, BookOpen, Coins, Sparkles } from "lucide-react"
 
 import { SidebarPanel } from "@/components/layout/sidebar-panel"
 import { Badge } from "@/components/ui/badge"
@@ -16,9 +16,11 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { ActivePreview } from "./active-preview"
+import { DemoExchangeDialog } from "./demo-exchange-dialog"
 import { HistoryDialog } from "./history-dialog"
 import { MascotArt } from "./mascot-art"
-import { SHOP_COPY, findEntry, formatXu, ownedEntries } from "./shop-model"
+import { PremiumPurchaseDialog } from "./premium-dialog"
+import { SHOP_COPY, findEntry, formatXu, ownedEntries, petLevelOf } from "./shop-model"
 import { COIN_TEXT, RegionError, RegionLoading, SideTitle } from "./shop-ui"
 import { useAcademyProgress, useActivateMascot, useShopState } from "./use-shop"
 
@@ -29,6 +31,8 @@ export function ShopPanel({ onNavigate }: { onNavigate: (panel: string) => void 
   const progress = useAcademyProgress()
   const activation = useActivateMascot()
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [premiumOpen, setPremiumOpen] = useState(false)
+  const [exchangeOpen, setExchangeOpen] = useState(false)
   const state = shop.data
   const active = state ? findEntry(state, state.active.mascot_id) : undefined
 
@@ -59,10 +63,31 @@ export function ShopPanel({ onNavigate }: { onNavigate: (panel: string) => void 
               <RegionLoading label="Đang tải số bài…" />
             )}
           </span>
-          <button type="button" className={cn(LINK_BUTTON, "shrink-0 text-foreground")} onClick={() => setHistoryOpen(true)}>
-            {SHOP_COPY.history}
-            <ArrowRight className="size-3.5" aria-hidden="true" />
-          </button>
+          <span className="flex shrink-0 items-center gap-2.5">
+            <button type="button" className={cn(LINK_BUTTON, "text-foreground")} onClick={() => setExchangeOpen(true)}>
+              {SHOP_COPY.exchange}
+            </button>
+            <button type="button" className={cn(LINK_BUTTON, "text-foreground")} onClick={() => setHistoryOpen(true)}>
+              {SHOP_COPY.history}
+              <ArrowRight className="size-3.5" aria-hidden="true" />
+            </button>
+          </span>
+        </div>
+      </section>
+
+      <section aria-labelledby="shop-premium-title">
+        <SideTitle id="shop-premium-title">Premium</SideTitle>
+        <div className="flex items-center gap-2.5 rounded-xl border border-border bg-card p-3">
+          <Sparkles className="size-5 shrink-0 text-primary" aria-hidden="true" />
+          <div className="min-w-0 flex-1 text-xs">
+            {state ? `${state.premium_duration_days} ngày Premium` : "Premium"}
+            <span className="mt-0.5 block text-[11px] text-muted-foreground">
+              {state ? <span className={cn("font-semibold", COIN_TEXT)}>{formatXu(state.premium_price_xu)} xu</span> : "—"}
+            </span>
+          </div>
+          <Button type="button" size="sm" variant="outline" disabled={!state} onClick={() => setPremiumOpen(true)}>
+            {SHOP_COPY.premiumBuy}
+          </Button>
         </div>
       </section>
 
@@ -98,10 +123,12 @@ export function ShopPanel({ onNavigate }: { onNavigate: (panel: string) => void 
             {ownedEntries(state).map((entry) => {
               const wearing = state.active.mascot_id === entry.mascot_id
               const pending = activation.pendingMascotId === entry.mascot_id
+              const level = petLevelOf(state, entry.mascot_id)
               return (
                 <li key={entry.mascot_id} className="flex items-center gap-2.5 py-2.5" data-shop-owned={entry.mascot_id}>
                   <MascotArt mascotId={entry.mascot_id} name={entry.name} decorative showReload={false} className="h-11 w-9 shrink-0 overflow-hidden rounded-md" />
                   <b className="min-w-0 flex-1 truncate text-xs">{entry.name}</b>
+                  {level > 1 && <Badge variant="secondary" className="shrink-0 text-[10px]">{`Cấp ${level}`}</Badge>}
                   {wearing ? (
                     <Badge variant="secondary" className="text-primary">Đang dùng</Badge>
                   ) : (
@@ -133,6 +160,18 @@ export function ShopPanel({ onNavigate }: { onNavigate: (panel: string) => void 
       </div>
 
       <HistoryDialog open={historyOpen} onOpenChange={setHistoryOpen} />
+      {premiumOpen && (
+        <PremiumPurchaseDialog
+          onClose={() => setPremiumOpen(false)}
+          onEnterAcademy={() => onNavigate("academy")}
+        />
+      )}
+      {exchangeOpen && (
+        <DemoExchangeDialog
+          onClose={() => setExchangeOpen(false)}
+          onEnterAcademy={() => onNavigate("academy")}
+        />
+      )}
     </SidebarPanel>
   )
 }

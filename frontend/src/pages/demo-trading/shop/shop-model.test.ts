@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import type { CatalogEntry, ShopState } from "./shop-api"
 import {
+  PET_EVOLVE_TOTAL_XU,
   deriveCardState,
   formatLedgerTime,
   formatSignedXu,
@@ -9,7 +10,10 @@ import {
   hasVerifiedAsset,
   ledgerRowLabel,
   newIdempotencyKey,
+  nextPetLevel,
   ownedEntries,
+  petEvolvePrice,
+  petLevelOf,
   storeEntries,
 } from "./shop-model"
 import { ledgerItem, createShopBackend } from "./shop-test-support"
@@ -93,6 +97,31 @@ describe("ledger labels", () => {
 
   it("keeps a reward readable before the lesson names arrive", () => {
     expect(ledgerRowLabel(ledgerItem(4, { label: { lesson_key: "technical:macd", lesson_id: "ch01-l02", mascot_id: null, mascot_name: null } }), undefined)).toEqual({ title: "Hoàn thành bài học", detail: "ch01-l02" })
+  })
+
+  it("names every kind of the coin ledger in Vietnamese", () => {
+    const label = { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null }
+    expect(ledgerRowLabel(ledgerItem(5, { kind: "pet_purchase", label }), names).title).toBe("Mua linh thú")
+    expect(ledgerRowLabel(ledgerItem(6, { kind: "pet_evolve", label }), names).title).toBe("Tiến hoá linh thú")
+    expect(ledgerRowLabel(ledgerItem(7, { kind: "premium_purchase", label }), names).title).toBe("Mua Premium")
+    expect(ledgerRowLabel(ledgerItem(8, { kind: "demo_deposit", label }), names).title).toBe("Đổi tiền sang xu")
+    expect(ledgerRowLabel(ledgerItem(9, { kind: "demo_withdraw", label }), names).title).toBe("Đổi xu sang tiền")
+    expect(ledgerRowLabel(ledgerItem(10, { kind: "adjustment", label }), names).title).toBe("Điều chỉnh xu")
+  })
+})
+
+describe("tiến hoá linh thú", () => {
+  it("reads the level of a mascot, the next step and the price of each step", () => {
+    const state: Pick<ShopState, "pet_levels"> = { pet_levels: [{ mascot_id: "thanh_long", level: 2, updated_at: null }] }
+    const maxed: Pick<ShopState, "pet_levels"> = { pet_levels: [{ mascot_id: "kim_quy", level: 3, updated_at: null }] }
+    expect(petLevelOf(state, "thanh_long")).toBe(2)
+    expect(petLevelOf(state, "loc_huou")).toBe(1)
+    expect(nextPetLevel(state, "thanh_long")).toBe(3)
+    expect(nextPetLevel(state, "loc_huou")).toBe(2)
+    expect(nextPetLevel(maxed, "kim_quy")).toBeNull()
+    expect(petEvolvePrice(2)).toBe(10_000)
+    expect(petEvolvePrice(3)).toBe(30_000)
+    expect(PET_EVOLVE_TOTAL_XU).toBe(40_000)
   })
 })
 

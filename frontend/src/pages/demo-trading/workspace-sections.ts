@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react"
 
 import { SECTION_DEFAULT_TOOL, sectionOfTool, type WorkspaceSection } from "@/config/chrome"
-import { parseDemoContent, type DemoTab } from "./content-tabs-state"
+import { isMainTool, parseDemoContent, type DemoTab } from "./content-tabs-state"
 import { normalizeWorkspaceSearch, VIEW_PARAM } from "./workspace-url"
 
 /** URL params owned by one section; everything else (symbol, tour...) is shared by both. */
@@ -71,7 +71,7 @@ export const workspaceMemory = {
     }
     const patch: SectionMemory = { params: own.toString() }
     const content = parseDemoContent(params.get("content"))
-    if (section === "demo" && content !== "insight") patch.lastTab = content
+    if (section === "demo" && !isMainTool(content)) patch.lastTab = content
     update(section, patch)
   },
   setCollapsedTool(section: WorkspaceSection, tool: string | null) {

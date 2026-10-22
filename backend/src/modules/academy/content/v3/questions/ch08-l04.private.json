@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-l04",
+  "questions": [
+    {
+      "correct_option_id": "9a4b1ff888",
+      "id": "ch08-l04-q01",
+      "options": [
+        {
+          "id": "9a4b1ff888",
+          "text": "Tốc độ tăng trưởng kép hằng năm"
+        },
+        {
+          "id": "b9edd4c745",
+          "text": "Tăng trưởng trung bình cộng các năm"
+        },
+        {
+          "id": "d8f8fb31a8",
+          "text": "Tăng trưởng so với quý liền trước"
+        }
+      ],
+      "prompt": "CAGR là viết tắt của khái niệm nào?"
+    },
+    {
+      "correct_option_id": "cbc62a1727",
+      "id": "ch08-l04-q02",
+      "options": [
+        {
+          "id": "cbc62a1727",
+          "text": "Doanh thu cả năm 2022 và cả năm 2025"
+        },
+        {
+          "id": "1d4410955c",
+          "text": "Doanh thu quý gần nhất và cùng kỳ"
+        },
+        {
+          "id": "33de29307d",
+          "text": "Doanh thu của bốn quý gần nhất"
+        }
+      ],
+      "prompt": "Revenue CAGR 3Y trong bài dùng số liệu nào?"
+    },
+    {
+      "correct_option_id": "ed6a460f20",
+      "id": "ch08-l04-q03",
+      "options": [
+        {
+          "id": "ed6a460f20",
+          "text": "Tăng trưởng nhân dồn lên nhau, không cộng dồn"
+        },
+        {
+          "id": "cf3390521b",
+          "text": "CAGR bỏ qua năm có doanh thu cao nhất"
+        },
+        {
+          "id": "956e411081",
+          "text": "Trung bình cộng chỉ dùng năm gần nhất"
+        }
+      ],
+      "prompt": "Vì sao CAGR thường thấp hơn trung bình cộng tăng trưởng các năm?"
+    },
+    {
+      "correct_option_id": "8ded99bd88",
+      "id": "ch08-l04-q04",
+      "options": [
+        {
+          "id": "8ded99bd88",
+          "text": "Thấp hơn ban đầu"
+        },
+        {
+          "id": "7648f76366",
+          "text": "Bằng đúng ban đầu"
+        },
+        {
+          "id": "452f63bb7f",
+          "text": "Cao hơn ban đầu"
+        }
+      ],
+      "prompt": "Tăng 50% rồi giảm 50% thì kết quả thế nào so với ban đầu?"
+    },
+    {
+      "correct_option_id": "f7201e5f87",
+      "id": "ch08-l04-q05",
+      "options": [
+        {
+          "id": "f7201e5f87",
+          "text": "Doanh thu nếu tăng đều theo CAGR mỗi năm"
+        },
+        {
+          "id": "a0ee33789b",
+          "text": "Doanh thu thực tế của từng quý"
+        },
+        {
+          "id": "635906d23b",
+          "text": "Mức doanh thu trung bình của ngành"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của Revenue CAGR 3Y, đường đứt nét thể hiện gì?"
+    }
+  ],
+  "salt": "b60bd878935979b48d687b169bef084f379803bee6cc1f8f1f515a04aa22db5a"
+}

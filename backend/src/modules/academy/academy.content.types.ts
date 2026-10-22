@@ -7,7 +7,7 @@ import type {
 } from './content/v3/schema.js';
 
 /**
- * Loader output of Học viện v3.2 (design §1.2). `academy.content.ts` implements
+ * Loader output of Học viện v3.3 (design §1.2). `academy.content.ts` implements
  * `buildAcademyContent` / `loadAcademyContent` against these types; the service, grants and the
  * staff progress reader consume exactly these fields.
  */
@@ -18,7 +18,10 @@ export interface AcademyItem extends CatalogItem {
   chapter_title: string;
   /** 1..lesson_count for kind 'lesson', else null. */
   position: number | null;
-  /** `['indicator:<id>']` when the item has `unlock`, else `[]`. */
+  /**
+   * `['indicator:<id>']` for a technical unlock, `['metric:<id>']` for a fundamental one,
+   * `[]` when the item unlocks nothing (spec §4.2).
+   */
   capabilities: string[];
   /** null for chapter exams. `content_version = canonicalHash(file).slice(0, 16)`. */
   lesson: { file: LessonFile; content_version: string } | null;
@@ -34,7 +37,7 @@ export interface AcademyContent {
   items: ReadonlyMap<string, AcademyItem>;
   /** By lesson_key. */
   itemsByKey: ReadonlyMap<string, AcademyItem>;
-  /** Required lessons of published chapters (43). */
+  /** Required lessons of published chapters (87). */
   requiredTotal: number;
   /** lesson_key -> name of keys no longer in the catalog (shop ledger labels). */
   retired: ReadonlyMap<string, string>;

@@ -1,0 +1,349 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l1-g1": {
+      "alt": "ROE bằng lợi nhuận sau thuế 4 quý 584 tỷ chia cho vốn chủ bình quân 4.235 tỷ, bằng 13,8%",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "lnst",
+          "sub": "Từ Q3/25 đến Q2/26",
+          "title": "Lợi nhuận sau thuế 4 quý",
+          "tone": "p1",
+          "value": "584 tỷ"
+        },
+        {
+          "id": "equity",
+          "sub": "(4.001 + 4.469) ÷ 2",
+          "title": "Vốn chủ bình quân",
+          "tone": "warn",
+          "value": "4.235 tỷ"
+        },
+        {
+          "emph": true,
+          "id": "roe",
+          "sub": "100 đồng vốn chủ tạo ra 13,8 đồng lãi",
+          "title": "ROE",
+          "tone": "pos",
+          "value": "13,8%"
+        }
+      ]
+    },
+    "c10l1-g2": {
+      "alt": "Theo phân tích DuPont, ROE 13,8% là tích của biên lợi nhuận ròng 9,3%, vòng quay tài sản 1,02 lần và đòn bẩy tài chính 1,46 lần",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "emph": true,
+          "id": "roe",
+          "title": "ROE",
+          "tone": "pos",
+          "value": "13,8%"
+        },
+        {
+          "id": "margin",
+          "sub": "LNST ÷ Doanh thu · bán hàng có lãi",
+          "title": "Biên lợi nhuận ròng",
+          "tone": "p1",
+          "value": "9,3%"
+        },
+        {
+          "id": "turnover",
+          "sub": "Doanh thu ÷ Tài sản · khai thác tài sản",
+          "title": "Vòng quay tài sản",
+          "tone": "warn",
+          "value": "1,02 lần"
+        },
+        {
+          "id": "leverage",
+          "sub": "Tài sản ÷ Vốn chủ · dùng thêm nợ",
+          "title": "Đòn bẩy tài chính",
+          "tone": "p5",
+          "value": "1,46 lần"
+        }
+      ]
+    },
+    "c10l1-g3": {
+      "kind": "category",
+      "labels": [
+        "Biên ròng",
+        "Vòng quay",
+        "Đòn bẩy"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh nghiệp A",
+          "tone": "p1",
+          "values": [
+            12,
+            1,
+            1.5
+          ]
+        },
+        {
+          "name": "Doanh nghiệp B",
+          "tone": "neg",
+          "values": [
+            3,
+            1,
+            6
+          ]
+        }
+      ],
+      "title": "Cùng ROE 18%, khác nguồn tạo ra",
+      "unit": "",
+      "value_labels": "all"
+    },
+    "c10l1-rep": {
+      "caption_tone": "price",
+      "caption_value": "13,8%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "ROE",
+          "tone": "p1",
+          "values": [
+            12.1801,
+            12.8184,
+            11.9056,
+            12.4227,
+            13.3844,
+            14.0435,
+            13.6162,
+            13.7834
+          ]
+        }
+      ],
+      "title": "ROE",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "ROE cho biết mỗi đồng vốn của cổ đông tạo ra bao nhiêu đồng lợi nhuận trong một năm. Đây là thước đo hiệu quả được nhà đầu tư dùng nhiều nhất khi đánh giá chất lượng doanh nghiệp.",
+  "lesson_key": "fundamental:roe",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l1-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>ROE</b> (Return on Equity) là tỷ suất lợi nhuận trên vốn chủ sở hữu. Lấy <b>lợi nhuận sau thuế 4 quý gần nhất</b> chia cho <b>vốn chủ sở hữu bình quân</b>. Vốn chủ bình quân là trung bình của số dư đầu kỳ và cuối kỳ.",
+          "type": "paragraph"
+        },
+        {
+          "text": "ROE 13,8% nghĩa là mỗi 100 đồng vốn cổ đông tạo ra 13,8 đồng lợi nhuận mỗi năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "ROE là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "ROE có thể tách thành tích của ba chỉ tiêu. Cách tách này gọi là <b>phân tích DuPont</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l1-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Mỗi đồng doanh thu giữ lại bao nhiêu lợi nhuận.",
+              "title": "Biên lợi nhuận ròng"
+            },
+            {
+              "text": "Mỗi đồng tài sản tạo ra bao nhiêu đồng doanh thu.",
+              "title": "Vòng quay tài sản"
+            },
+            {
+              "text": "Tổng tài sản gấp bao nhiêu lần vốn chủ, tức mức dùng thêm nợ.",
+              "title": "Đòn bẩy tài chính"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ba nguồn tạo ra ROE"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l1-rep",
+          "table_toggle": true,
+          "title": "ROE",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE tính theo 4 quý gần nhất, cập nhật mỗi quý.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Lợi nhuận sau thuế cộng dồn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "ROE tăng nhờ lợi nhuận tăng là tốt hơn ROE tăng vì vốn chủ co lại.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ 15% trở lên và duy trì ổn định nhiều năm, đòn bẩy ở mức vừa phải.",
+              "title": "ROE tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới 10% hoặc giảm dần qua nhiều quý, cho thấy vốn cổ đông sinh lời kém.",
+              "title": "ROE yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Cùng một mức ROE có thể đến từ những nguồn rất khác nhau. ROE cao nhờ biên lợi nhuận bền hơn ROE cao nhờ vay nợ nhiều.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l1-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE ổn định quanh một mức cao đáng tin hơn một năm ROE đột biến.",
+              "title": "Xem xu hướng nhiều năm"
+            },
+            {
+              "text": "Mỗi ngành có cấu trúc vốn khác nhau, so khác ngành dễ sai lệch.",
+              "title": "So trong cùng ngành"
+            },
+            {
+              "text": "Xem ROE đến từ biên lãi, vòng quay hay đòn bẩy để đánh giá độ bền.",
+              "title": "Tách theo DuPont"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp mẫu có số liệu 4 quý từ Q3/25 đến Q2/26 như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Lợi nhuận sau thuế 4 quý",
+              "text": "584 tỷ đồng."
+            },
+            {
+              "term": "Vốn chủ bình quân",
+              "text": "Đầu kỳ 4.001, cuối kỳ 4.469. Bình quân (4.001 + 4.469) ÷ 2 = 4.235."
+            },
+            {
+              "term": "ROE",
+              "text": "584 ÷ 4.235 ≈ 13,8%."
+            },
+            {
+              "term": "Tách theo DuPont",
+              "text": "Biên ròng 9,3% × vòng quay 1,02 lần × đòn bẩy 1,46 lần ≈ 13,8%. Đòn bẩy thấp, ROE chủ yếu đến từ hoạt động kinh doanh."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE cao do vay nợ nhiều đi kèm rủi ro lớn khi kinh doanh đi xuống.",
+              "title": "Chỉ nhìn con số ROE"
+            },
+            {
+              "text": "Vốn chủ rất nhỏ làm ROE cao bất thường, không phản ánh hiệu quả thật.",
+              "title": "Bỏ qua vốn chủ âm hoặc rất nhỏ"
+            },
+            {
+              "text": "Lợi nhuận bất thường như bán tài sản có thể đẩy ROE lên trong ngắn hạn.",
+              "title": "Tin vào ROE một năm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>ROE</b> = lợi nhuận sau thuế 4 quý ÷ <b>vốn chủ bình quân</b>.",
+    "ROE <b>từ 15% trở lên và ổn định</b> thường được xem là tốt.",
+    "<b>DuPont</b>: ROE = biên ròng × vòng quay tài sản × đòn bẩy tài chính.",
+    "ROE cao nhờ <b>đòn bẩy lớn</b> kém bền hơn ROE cao nhờ <b>biên lãi tốt</b>."
+  ],
+  "title": "ROE · tỷ suất lợi nhuận trên vốn chủ"
+}

@@ -19,7 +19,7 @@ import {
 } from '../../src/modules/academy/content/v3/schema.js';
 
 /**
- * Học viện v3.2 content for unit tests, built from the real `content/v3` files with the same
+ * Học viện v3.3 content for unit tests, built from the real `content/v3` files with the same
  * shape the runtime loader returns (design §1.2). Independent of `academy.content.ts`, so tests of
  * consumers (staff progress reader, grants) can run before and after the loader swap. Provide it
  * through the `ACADEMY_CONTENT` token: `{ provide: ACADEMY_CONTENT, useValue: academyV3Source }`.
@@ -64,7 +64,9 @@ function buildFixture(): AcademyContent {
         chapter: chapter.no,
         chapter_title: chapter.title,
         position: entry.kind === 'lesson' ? (position += 1) : null,
-        capabilities: entry.unlock ? [`indicator:${entry.unlock.id}`] : [],
+        capabilities: entry.unlock
+          ? [`${entry.unlock.kind === 'technical' ? 'indicator:' : 'metric:'}${entry.unlock.id}`]
+          : [],
         lesson:
           entry.kind === 'chapter_exam' || !lessonFile
             ? null
@@ -88,7 +90,7 @@ function buildFixture(): AcademyContent {
 
 let cached: AcademyContent | null = null;
 
-/** Memoized real v3.2 content (49 items, 43 required lessons). */
+/** Memoized real v3.3 content (101 items, 87 required lessons). */
 export function academyV3Fixture(): AcademyContent {
   cached ??= buildFixture();
   return cached;

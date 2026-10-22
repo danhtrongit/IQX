@@ -86,7 +86,7 @@ describe("WorkspaceFrame on wide screens", () => {
     renderFrame()
     const nav = await screen.findByRole("navigation", { name: "Công cụ theo trang" })
     expect(within(nav).getAllByRole("button").map((button) => button.textContent)).toEqual([
-      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Học viện", "Bot", "Shop",
+      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Dashboard phân tích", "Học viện", "Bot", "Shop", "Flashback",
     ])
   })
 
@@ -198,7 +198,7 @@ describe("WorkspaceFrame on wide screens", () => {
     )
     render(<RouterProvider router={router} />)
     await screen.findByText("Nội dung chính")
-    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop"])
+    expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual(["Học viện", "Bot", "Shop", "Flashback"])
     expect(tool("Bot").getAttribute("aria-pressed")).toBe("true")
     await userEvent.setup().click(tool("Shop"))
     expect(onSelectTool).toHaveBeenCalledWith("shop")
@@ -347,7 +347,7 @@ describe("WorkspaceFrame with the phone tool bar", () => {
     expect(frame().querySelector(".workspace-rail")).toBeNull()
     expect(toggle()).toBeNull()
     expect(within(rail()).getAllByRole("button").map((button) => button.textContent)).toEqual([
-      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Học viện", "Bot", "Shop",
+      "Đặt lệnh", "Danh mục", "Tin tức", "Insight", "Dashboard phân tích", "Học viện", "Bot", "Shop", "Flashback",
     ])
 
     // The bar's tools work as the rail's: open the layer, a second click closes it, focus comes back.

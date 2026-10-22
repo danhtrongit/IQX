@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-l01",
+  "questions": [
+    {
+      "correct_option_id": "487fd5d4c6",
+      "id": "ch08-l01-q01",
+      "options": [
+        {
+          "id": "487fd5d4c6",
+          "text": "Doanh thu cùng quý năm trước"
+        },
+        {
+          "id": "a74428cb7b",
+          "text": "Doanh thu của quý liền trước"
+        },
+        {
+          "id": "c817784423",
+          "text": "Doanh thu trung bình cả năm trước"
+        }
+      ],
+      "prompt": "Tăng trưởng doanh thu YoY so doanh thu quý này với số liệu nào?"
+    },
+    {
+      "correct_option_id": "67bb270958",
+      "id": "ch08-l01-q02",
+      "options": [
+        {
+          "id": "67bb270958",
+          "text": "Để loại bỏ ảnh hưởng của mùa vụ"
+        },
+        {
+          "id": "93f1afaefb",
+          "text": "Vì quý liền trước chưa có số liệu"
+        },
+        {
+          "id": "830399cfa6",
+          "text": "Để con số tăng trưởng luôn dương"
+        }
+      ],
+      "prompt": "Vì sao nên so doanh thu với cùng kỳ năm trước thay vì quý liền trước?"
+    },
+    {
+      "correct_option_id": "7c43042d2a",
+      "id": "ch08-l01-q03",
+      "options": [
+        {
+          "id": "7c43042d2a",
+          "text": "Lợi nhuận sau thuế"
+        },
+        {
+          "id": "9070af311b",
+          "text": "Doanh thu thuần"
+        },
+        {
+          "id": "7448f81e19",
+          "text": "Giá vốn hàng bán"
+        }
+      ],
+      "prompt": "Dòng cuối cùng của báo cáo kết quả kinh doanh là gì?"
+    },
+    {
+      "correct_option_id": "0eb0f925dd",
+      "id": "ch08-l01-q04",
+      "options": [
+        {
+          "id": "0eb0f925dd",
+          "text": "Doanh thu quý đó cao hơn cùng kỳ"
+        },
+        {
+          "id": "3b2294cc39",
+          "text": "Doanh thu quý đó thấp hơn cùng kỳ"
+        },
+        {
+          "id": "a00e1a3973",
+          "text": "Lợi nhuận quý đó cao hơn doanh thu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột xanh cao hơn cột cam ở một quý cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "2ec11ff609",
+      "id": "ch08-l01-q05",
+      "options": [
+        {
+          "id": "2ec11ff609",
+          "text": "Khi doanh thu cùng kỳ bằng 0"
+        },
+        {
+          "id": "a811469e97",
+          "text": "Khi doanh thu quý này giảm"
+        },
+        {
+          "id": "5059194701",
+          "text": "Khi doanh nghiệp có tính mùa vụ"
+        }
+      ],
+      "prompt": "Khi nào không tính được tăng trưởng doanh thu YoY?"
+    }
+  ],
+  "salt": "97a897bceeb024c0cbab5ed2b91912ac3699e368f6fc03c743c94212e5bdad21"
+}

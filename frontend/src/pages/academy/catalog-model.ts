@@ -1,7 +1,7 @@
 import type { CatalogChapter, CatalogItem, CatalogResponse, ItemState, ProgressResponse } from "./content-types"
 
-/** Required lessons of the published chapters (spec v3.2); shown while the catalog is still loading. */
-export const REQUIRED_TOTAL_FALLBACK = 43
+/** Required lessons of the published chapters (spec v3.3); shown while the catalog is still loading. */
+export const REQUIRED_TOTAL_FALLBACK = 87
 
 /** Item id → catalog item, over the published chapters. */
 export function catalogItems(catalog: CatalogResponse | undefined): ReadonlyMap<string, CatalogItem> {

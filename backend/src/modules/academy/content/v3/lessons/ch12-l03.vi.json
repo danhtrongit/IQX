@@ -1,0 +1,362 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l3-g1": {
+      "alt": "Dòng chảy của Capex: CFO tạo ra tiền, Capex dùng tiền mua tài sản cố định, tài sản cố định phân bổ dần qua khấu hao và tạo ra doanh thu trong các năm sau",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "cfo",
+          "title": "CFO",
+          "tone": "pos",
+          "value": "Tiền thu từ kinh doanh"
+        },
+        {
+          "id": "capex",
+          "title": "Capex",
+          "tone": "p5",
+          "value": "Chi mua nhà xưởng, máy móc"
+        },
+        {
+          "id": "fixed",
+          "title": "Tài sản cố định",
+          "tone": "warn",
+          "value": "Dùng trong nhiều năm"
+        },
+        {
+          "id": "revenue",
+          "title": "Doanh thu",
+          "tone": "p1",
+          "value": "Tạo ra trong các năm sau"
+        }
+      ]
+    },
+    "c12l3-g2": {
+      "kind": "category",
+      "labels": [
+        "Phân phối, bán lẻ",
+        "Phần mềm, dịch vụ",
+        "Thực phẩm, đồ uống",
+        "Thép, xi măng",
+        "Điện, hạ tầng"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Mức thấp",
+          "tone": "pos",
+          "values": [
+            1,
+            2,
+            3,
+            6,
+            15
+          ]
+        },
+        {
+          "name": "Mức cao",
+          "tone": "neg",
+          "values": [
+            3,
+            5,
+            7,
+            12,
+            30
+          ]
+        }
+      ],
+      "title": "Capex trên doanh thu, mức thường gặp · %",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c12l3-g3": {
+      "kind": "category",
+      "labels": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh thu, tỷ đồng",
+          "tone": "p1",
+          "values": [
+            1000,
+            1040,
+            1070,
+            1090,
+            1420,
+            1700,
+            1880
+          ]
+        },
+        {
+          "name": "Capex trên doanh thu, %",
+          "tone": "p5",
+          "values": [
+            4,
+            5,
+            14,
+            16,
+            6,
+            5,
+            5
+          ]
+        }
+      ],
+      "title": "Chu kỳ đầu tư: doanh thu và Capex trên doanh thu",
+      "unit": "",
+      "value_labels": "all"
+    },
+    "c12l3-rep": {
+      "caption_tone": "price",
+      "caption_value": "4,1%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Capex / Revenue",
+          "tone": "p1",
+          "values": [
+            4.0484,
+            3.9974,
+            4.0459,
+            3.9377,
+            3.9586,
+            4.0932,
+            4.1183,
+            4.1323
+          ]
+        }
+      ],
+      "title": "Capex / Revenue",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Để duy trì và mở rộng kinh doanh, doanh nghiệp phải chi tiền mua nhà xưởng, máy móc. Capex / Revenue cho biết khoản chi này chiếm bao nhiêu phần doanh thu.",
+  "lesson_key": "fundamental:capex_revenue",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Capex</b> (Capital Expenditure) là <b>chi mua sắm tài sản cố định</b>: nhà xưởng, máy móc, phương tiện, phần mềm. Khoản này nằm trong dòng tiền <b>đầu tư</b>. <b>Capex / Revenue</b> là Capex chia cho doanh thu cùng giai đoạn, tính trên 4 quý gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l3-g1",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thay máy cũ, sửa chữa lớn để giữ năng lực sản xuất hiện có.",
+              "title": "Capex duy trì"
+            },
+            {
+              "text": "Xây nhà máy mới, mở thêm cửa hàng để tăng doanh thu trong tương lai.",
+              "title": "Capex mở rộng"
+            },
+            {
+              "text": "Capex được phân bổ dần qua khấu hao trong nhiều năm.",
+              "title": "Không vào chi phí ngay"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "Capex / Revenue là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ngành cần nhiều tài sản như điện, thép, xi măng có Capex / Revenue cao. Ngành phân phối, phần mềm cần ít tài sản nên tỷ lệ thấp.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l3-g2",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s2",
+      "title": "Mức Capex khác nhau theo ngành"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l3-rep",
+          "table_toggle": true,
+          "title": "Capex / Revenue",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Capex / doanh thu tính trên 4 quý gần nhất, đơn vị phần trăm.",
+              "title": "Đường chính"
+            },
+            {
+              "text": "Capex cộng dồn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột bên dưới"
+            },
+            {
+              "text": "Đường tăng vọt thường là giai đoạn đầu tư lớn. Cần xem doanh thu có tăng theo sau đó không.",
+              "title": "Cách nhìn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ lệ thấp và ổn định so với ngành, hoặc tăng có kế hoạch rồi doanh thu tăng theo.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ cao kéo dài nhiều năm mà doanh thu không tăng, hoặc Capex lớn hơn cả CFO.",
+              "title": "Cần cảnh giác",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Capex thấp chưa chắc tốt. Doanh nghiệp cắt Capex quá mức để làm đẹp dòng tiền có thể đang để tài sản xuống cấp.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l3-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Capex tăng vọt một hai năm thường là giai đoạn xây dựng năng lực mới.",
+              "title": "Nhận diện chu kỳ đầu tư"
+            },
+            {
+              "text": "Sau giai đoạn Capex cao, doanh thu cần tăng tương xứng.",
+              "title": "Kiểm tra hiệu quả sau đầu tư"
+            },
+            {
+              "text": "Capex nhỏ hơn CFO thì doanh nghiệp tự tài trợ được, không phải vay thêm.",
+              "title": "So với CFO"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp mẫu có số liệu cộng dồn 4 quý gần nhất như sau.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Doanh thu",
+              "text": "6.280 tỷ đồng."
+            },
+            {
+              "term": "Capex",
+              "text": "259 tỷ đồng. Capex / Revenue = 259 ÷ 6.280 ≈ 4,1%."
+            },
+            {
+              "term": "So với CFO",
+              "text": "CFO 760 tỷ đồng, gấp gần 3 lần Capex. Doanh nghiệp tự chi trả đầu tư từ tiền kinh doanh."
+            },
+            {
+              "term": "Đọc kết quả",
+              "text": "Mức đầu tư vừa phải, ổn định quanh 4% trong 8 quý, không có dấu hiệu chi tiêu bất thường."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Capex 15% của doanh nghiệp điện không thể so với 2% của doanh nghiệp bán lẻ.",
+              "title": "So khác ngành"
+            },
+            {
+              "text": "Đầu tư mở rộng đúng lúc là nền tảng cho tăng trưởng những năm sau.",
+              "title": "Coi Capex cao luôn xấu"
+            },
+            {
+              "text": "Đánh giá Capex cần chờ xem doanh thu và lợi nhuận phản hồi ra sao.",
+              "title": "Bỏ qua giai đoạn sau đầu tư"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Capex</b> là chi mua sắm tài sản cố định, nằm trong dòng tiền đầu tư.",
+    "<b>Capex / Revenue = Capex ÷ doanh thu</b>, tính trên 4 quý gần nhất.",
+    "Mức tỷ lệ <b>phụ thuộc nhiều vào ngành</b>, chỉ so trong cùng ngành.",
+    "Capex cao cần đi kèm <b>doanh thu tăng sau đó</b> và được tài trợ bằng CFO."
+  ],
+  "title": "Capex / Revenue · tỷ lệ chi đầu tư"
+}

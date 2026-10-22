@@ -3,575 +3,575 @@
   "item_id": "ch05-exam",
   "questions": [
     {
-      "correct_option_id": "c38ca0588b",
+      "correct_option_id": "475a32c153",
       "id": "ch05-exam-q01",
       "options": [
         {
-          "id": "c38ca0588b",
+          "id": "475a32c153",
           "text": "Cùng số tiền, giá thấp mua được nhiều đơn vị hơn"
         },
         {
-          "id": "7bdd12ada7",
+          "id": "98d9ac0748",
           "text": "Vì phí giao dịch được miễn"
         },
         {
-          "id": "3ad90c91b7",
+          "id": "e9c0e00d85",
           "text": "Vì luôn mua đúng đáy"
         }
       ],
       "prompt": "Vì sao DCA giúp giá vốn bình quân thấp hơn giá trung bình?"
     },
     {
-      "correct_option_id": "2c06d2f5cb",
+      "correct_option_id": "383ae077ae",
       "id": "ch05-exam-q02",
       "options": [
         {
-          "id": "2c06d2f5cb",
+          "id": "383ae077ae",
           "text": "Thị trường giảm sâu rồi hồi phục"
         },
         {
-          "id": "9aa4a63ce7",
+          "id": "972d1ccffd",
           "text": "Thị trường tăng đều liên tục"
         },
         {
-          "id": "b2e78230ae",
+          "id": "f53e5c5aab",
           "text": "Thị trường không có giao dịch"
         }
       ],
       "prompt": "DCA phát huy hiệu quả rõ nhất trong tình huống nào?"
     },
     {
-      "correct_option_id": "ff3e9f4a34",
+      "correct_option_id": "320a9ff5e6",
       "id": "ch05-exam-q03",
       "options": [
         {
-          "id": "ff3e9f4a34",
+          "id": "320a9ff5e6",
           "text": "Mua một lần từ đầu thường cho lợi nhuận cao hơn"
         },
         {
-          "id": "21904e92c6",
+          "id": "7a8346424e",
           "text": "DCA chắc chắn bị lỗ"
         },
         {
-          "id": "05953c5462",
+          "id": "63694617fa",
           "text": "Không thể mua được cổ phiếu"
         }
       ],
       "prompt": "Khi thị trường tăng đều liên tục, hạn chế của DCA là gì?"
     },
     {
-      "correct_option_id": "de4f72bb10",
+      "correct_option_id": "7aacb0f239",
       "id": "ch05-exam-q04",
       "options": [
         {
-          "id": "de4f72bb10",
+          "id": "7aacb0f239",
           "text": "Phần tiền dư sau chi tiêu thiết yếu và quỹ dự phòng"
         },
         {
-          "id": "7df643b37e",
+          "id": "502124ee9a",
           "text": "Tiền vay margin"
         },
         {
-          "id": "81e9f9109f",
+          "id": "15387c76de",
           "text": "Tiền vay ngân hàng"
         }
       ],
       "prompt": "Số tiền đầu tư định kỳ nên lấy từ đâu?"
     },
     {
-      "correct_option_id": "0087ae6fa7",
+      "correct_option_id": "c330941788",
       "id": "ch05-exam-q05",
       "options": [
         {
-          "id": "0087ae6fa7",
+          "id": "c330941788",
           "text": "Chứng chỉ quỹ mở"
         },
         {
-          "id": "05040018c9",
+          "id": "385620ba33",
           "text": "Hợp đồng tương lai"
         },
         {
-          "id": "093c8440c7",
+          "id": "2324b47f7e",
           "text": "Chứng quyền"
         }
       ],
       "prompt": "Với số tiền nhỏ mỗi kỳ, tài sản nào thuận tiện để đầu tư định kỳ?"
     },
     {
-      "correct_option_id": "cbcb5b373d",
+      "correct_option_id": "cedc7fab58",
       "id": "ch05-exam-q06",
       "options": [
         {
-          "id": "cbcb5b373d",
+          "id": "cedc7fab58",
           "text": "Bình quân giá xuống, càng mua càng lỗ"
         },
         {
-          "id": "86959c2d89",
+          "id": "c95b8bc3b8",
           "text": "Lợi nhuận chắc chắn tăng"
         },
         {
-          "id": "35aed05a0b",
+          "id": "51f0433a87",
           "text": "Giá vốn bằng không"
         }
       ],
       "prompt": "Đầu tư định kỳ vào doanh nghiệp xấu dẫn đến điều gì?"
     },
     {
-      "correct_option_id": "e8d50edcb1",
+      "correct_option_id": "5734e0be97",
       "id": "ch05-exam-q07",
       "options": [
         {
-          "id": "e8d50edcb1",
+          "id": "5734e0be97",
           "text": "Một ngày cố định mỗi kỳ, ví dụ sau ngày nhận lương"
         },
         {
-          "id": "de1b6f16f2",
+          "id": "164656cfb4",
           "text": "Chỉ mua khi có tin tốt"
         },
         {
-          "id": "db57b2a538",
+          "id": "13cbf5574e",
           "text": "Mua ngẫu nhiên theo cảm xúc"
         }
       ],
       "prompt": "Nên chọn lịch đầu tư định kỳ như thế nào?"
     },
     {
-      "correct_option_id": "abb8e71b8e",
+      "correct_option_id": "e8ed2e9efc",
       "id": "ch05-exam-q08",
       "options": [
         {
-          "id": "abb8e71b8e",
+          "id": "e8ed2e9efc",
           "text": "Tâm lý thị trường, lúc hưng phấn, lúc bi quan"
         },
         {
-          "id": "069a4148d3",
+          "id": "90e5c138ca",
           "text": "Ban lãnh đạo doanh nghiệp"
         },
         {
-          "id": "a3e306f1c2",
+          "id": "ab5d6a1a07",
           "text": "Cơ quan quản lý thị trường"
         }
       ],
       "prompt": "Theo Benjamin Graham, Ông Thị Trường đại diện cho điều gì?"
     },
     {
-      "correct_option_id": "fe47fd46e9",
+      "correct_option_id": "e0dd1e1da1",
       "id": "ch05-exam-q09",
       "options": [
         {
-          "id": "fe47fd46e9",
+          "id": "e0dd1e1da1",
           "text": "Lợi nhuận sau thuế chia cho số cổ phiếu đang lưu hành"
         },
         {
-          "id": "73ebeeeb0c",
+          "id": "2af6fd13b9",
           "text": "Giá cổ phiếu chia cho lợi nhuận"
         },
         {
-          "id": "43d6046e61",
+          "id": "77b8bb88f6",
           "text": "Vốn chủ sở hữu chia cho tổng tài sản"
         }
       ],
       "prompt": "EPS được tính như thế nào?"
     },
     {
-      "correct_option_id": "a56ca05995",
+      "correct_option_id": "15e9b39ae0",
       "id": "ch05-exam-q10",
       "options": [
         {
-          "id": "a56ca05995",
+          "id": "15e9b39ae0",
           "text": "Giá thấp hơn giá trị sổ sách"
         },
         {
-          "id": "959e922399",
+          "id": "c4cd26e788",
           "text": "Doanh nghiệp đang thua lỗ"
         },
         {
-          "id": "8b81a25b71",
+          "id": "a12a4249f1",
           "text": "Giá cao gấp đôi giá trị sổ sách"
         }
       ],
       "prompt": "P/B dưới 1 có nghĩa là gì?"
     },
     {
-      "correct_option_id": "44cfd295c2",
+      "correct_option_id": "e8d3038b23",
       "id": "ch05-exam-q11",
       "options": [
         {
-          "id": "44cfd295c2",
+          "id": "e8d3038b23",
           "text": "15%"
         },
         {
-          "id": "b91e6a165e",
+          "id": "2fc6171e47",
           "text": "1%"
         },
         {
-          "id": "e596965112",
+          "id": "5e96e41210",
           "text": "0%"
         }
       ],
       "prompt": "ROE từ mức nào trở lên thường được xem là tốt?"
     },
     {
-      "correct_option_id": "83ff63fd94",
+      "correct_option_id": "14c6f7cd37",
       "id": "ch05-exam-q12",
       "options": [
         {
-          "id": "83ff63fd94",
+          "id": "14c6f7cd37",
           "text": "Khi so sánh với cùng ngành và với lịch sử của chính doanh nghiệp"
         },
         {
-          "id": "903f9d0a35",
+          "id": "2e21ba07fa",
           "text": "Khi xem riêng một con số"
         },
         {
-          "id": "c75c557b87",
+          "id": "61813610c5",
           "text": "Khi so sánh với giá vàng"
         }
       ],
       "prompt": "Chỉ số P/E có ý nghĩa nhất khi nào?"
     },
     {
-      "correct_option_id": "e23f5b4502",
+      "correct_option_id": "9524f95e14",
       "id": "ch05-exam-q13",
       "options": [
         {
-          "id": "e23f5b4502",
+          "id": "9524f95e14",
           "text": "Lợi thế cạnh tranh, tài chính lành mạnh, ban lãnh đạo đáng tin"
         },
         {
-          "id": "d12c74e147",
+          "id": "fe6c72a68c",
           "text": "Giá cổ phiếu tăng mạnh trong tuần"
         },
         {
-          "id": "27074d39c5",
+          "id": "db055ebd95",
           "text": "Được nhiều người bàn tán trên mạng"
         }
       ],
       "prompt": "Đâu là dấu hiệu của doanh nghiệp tốt?"
     },
     {
-      "correct_option_id": "46fdca714f",
+      "correct_option_id": "50de51d674",
       "id": "ch05-exam-q14",
       "options": [
         {
-          "id": "46fdca714f",
+          "id": "50de51d674",
           "text": "Thị trường bi quan chung dù doanh nghiệp vẫn kinh doanh tốt"
         },
         {
-          "id": "4e05e35a08",
+          "id": "441c029d21",
           "text": "Thị trường đang hưng phấn"
         },
         {
-          "id": "c44b60ef68",
+          "id": "92f3f66e25",
           "text": "Doanh nghiệp thua lỗ nặng nhiều năm liền"
         }
       ],
       "prompt": "Cơ hội đầu tư giá trị thường xuất hiện khi nào?"
     },
     {
-      "correct_option_id": "dfc0ce68e1",
+      "correct_option_id": "11f0b85c6d",
       "id": "ch05-exam-q15",
       "options": [
         {
-          "id": "dfc0ce68e1",
+          "id": "11f0b85c6d",
           "text": "Giá vượt xa giá trị hoặc doanh nghiệp xấu đi"
         },
         {
-          "id": "535bc13898",
+          "id": "c320c81659",
           "text": "Ngay khi giá giảm 1%"
         },
         {
-          "id": "fd457f5f9b",
+          "id": "0a24ae5ebc",
           "text": "Không bao giờ bán"
         }
       ],
       "prompt": "Nhà đầu tư giá trị nên bán khi nào?"
     },
     {
-      "correct_option_id": "35f12cd33b",
+      "correct_option_id": "7beea2c38f",
       "id": "ch05-exam-q16",
       "options": [
         {
-          "id": "35f12cd33b",
+          "id": "7beea2c38f",
           "text": "Sẵn sàng sở hữu cả doanh nghiệp trong 10 năm"
         },
         {
-          "id": "2c051f5cba",
+          "id": "ee67f4bad3",
           "text": "Chỉ nắm giữ trong một tuần"
         },
         {
-          "id": "2851d95110",
+          "id": "9f1bdcc391",
           "text": "Mua theo lời khuyên của người khác"
         }
       ],
       "prompt": "Tiêu chí Ý nghĩa của 4M yêu cầu nhà đầu tư điều gì?"
     },
     {
-      "correct_option_id": "1472e82c63",
+      "correct_option_id": "8975dc5880",
       "id": "ch05-exam-q17",
       "options": [
         {
-          "id": "1472e82c63",
+          "id": "8975dc5880",
           "text": "Chi phí chuyển đổi cao"
         },
         {
-          "id": "a0eafcfa36",
+          "id": "f1bac452e8",
           "text": "Giá cổ phiếu thấp"
         },
         {
-          "id": "1f2e8be0ac",
+          "id": "04acbd2b9f",
           "text": "Có nhiều cổ đông"
         }
       ],
       "prompt": "Loại lợi thế cạnh tranh nào thuộc danh sách của Phil Town?"
     },
     {
-      "correct_option_id": "bba260edee",
+      "correct_option_id": "d52f1e2f2b",
       "id": "ch05-exam-q18",
       "options": [
         {
-          "id": "bba260edee",
+          "id": "d52f1e2f2b",
           "text": "ROIC, vốn chủ sở hữu, EPS, doanh thu, dòng tiền tự do"
         },
         {
-          "id": "fa088898f8",
+          "id": "7b9adf696e",
           "text": "RSI, MACD, MA, Bollinger Bands, Fibonacci"
         },
         {
-          "id": "b3736f0e15",
+          "id": "07954d038d",
           "text": "Giá trần, giá sàn, giá tham chiếu, khối lượng, phí"
         }
       ],
       "prompt": "Năm con số lớn trong phương pháp 4M gồm những gì?"
     },
     {
-      "correct_option_id": "cf64838cc3",
+      "correct_option_id": "5cc3829ea4",
       "id": "ch05-exam-q19",
       "options": [
         {
-          "id": "cf64838cc3",
+          "id": "5cc3829ea4",
           "text": "Tính trên cả vốn chủ sở hữu và vốn vay"
         },
         {
-          "id": "01329a7750",
+          "id": "7108a059b5",
           "text": "Chỉ tính trên doanh thu"
         },
         {
-          "id": "bdea0e2fed",
+          "id": "cd06fc6d69",
           "text": "Không liên quan đến lợi nhuận"
         }
       ],
       "prompt": "ROIC khác ROE ở điểm nào?"
     },
     {
-      "correct_option_id": "8b3477edab",
+      "correct_option_id": "9de6272e52",
       "id": "ch05-exam-q20",
       "options": [
         {
-          "id": "8b3477edab",
+          "id": "9de6272e52",
           "text": "Không quá 3 năm dòng tiền tự do"
         },
         {
-          "id": "a0811085b0",
+          "id": "ae4c1eeaea",
           "text": "Gấp 10 lần lợi nhuận"
         },
         {
-          "id": "c5d93d9367",
+          "id": "a67b744fa6",
           "text": "Không cần quan tâm"
         }
       ],
       "prompt": "Theo 4M, nợ vay dài hạn nên ở mức nào?"
     },
     {
-      "correct_option_id": "1e137cefdd",
+      "correct_option_id": "f010555146",
       "id": "ch05-exam-q21",
       "options": [
         {
-          "id": "1e137cefdd",
+          "id": "f010555146",
           "text": "Nhiều lãnh đạo cùng bán ra lượng lớn cổ phiếu"
         },
         {
-          "id": "a882c26bbb",
+          "id": "3ace27e58c",
           "text": "Công bố thông tin đầy đủ, đúng hạn"
         },
         {
-          "id": "edc17fc816",
+          "id": "8a00931640",
           "text": "Hoàn thành kế hoạch kinh doanh"
         }
       ],
       "prompt": "Đâu là dấu hiệu cảnh báo về ban lãnh đạo?"
     },
     {
-      "correct_option_id": "310b93c662",
+      "correct_option_id": "2f42a3465d",
       "id": "ch05-exam-q22",
       "options": [
         {
-          "id": "310b93c662",
+          "id": "2f42a3465d",
           "text": "Lợi nhuận tương lai, P/E và lợi nhuận mong muốn 15% mỗi năm"
         },
         {
-          "id": "aabeaf269c",
+          "id": "2f1e7df662",
           "text": "Giá đóng cửa của phiên hôm qua"
         },
         {
-          "id": "3f23bdcc6e",
+          "id": "f0e95cd4a6",
           "text": "Số lượng cổ đông của doanh nghiệp"
         }
       ],
       "prompt": "Giá trị hợp lý trong phương pháp 4M được ước tính dựa trên những gì?"
     },
     {
-      "correct_option_id": "29f6e6cd75",
+      "correct_option_id": "166a14f3ef",
       "id": "ch05-exam-q23",
       "options": [
         {
-          "id": "29f6e6cd75",
+          "id": "166a14f3ef",
           "text": "EPS năm tăng mạnh trong 3 năm, kèm ROE từ 17%"
         },
         {
-          "id": "6558700ae7",
+          "id": "b198d5b868",
           "text": "Giá thấp hơn giá trị sổ sách"
         },
         {
-          "id": "25ce6a793d",
+          "id": "3f3fef6b03",
           "text": "Cổ tức cao nhất ngành"
         }
       ],
       "prompt": "Chữ A trong CANSLIM yêu cầu điều gì?"
     },
     {
-      "correct_option_id": "70e6f17e3a",
+      "correct_option_id": "ca4cad8c05",
       "id": "ch05-exam-q24",
       "options": [
         {
-          "id": "70e6f17e3a",
+          "id": "ca4cad8c05",
           "text": "Sản phẩm mới, ban lãnh đạo mới, giá tiến tới đỉnh 52 tuần"
         },
         {
-          "id": "a70beedb7d",
+          "id": "993a2d3965",
           "text": "Giá đang ở đáy 52 tuần"
         },
         {
-          "id": "bfb03a635e",
+          "id": "a0f15145f4",
           "text": "Cổ phiếu vừa niêm yết hôm nay"
         }
       ],
       "prompt": "Chữ N trong CANSLIM bao gồm những gì?"
     },
     {
-      "correct_option_id": "46f82ad2b4",
+      "correct_option_id": "532d1123d0",
       "id": "ch05-exam-q25",
       "options": [
         {
-          "id": "46f82ad2b4",
+          "id": "532d1123d0",
           "text": "Khi giá vượt đỉnh tay cầm kèm khối lượng lớn"
         },
         {
-          "id": "b071a653b8",
+          "id": "47449b06ac",
           "text": "Tại đáy của cốc"
         },
         {
-          "id": "1eff34a697",
+          "id": "5341068f03",
           "text": "Ở giữa tay cầm"
         }
       ],
       "prompt": "Điểm mua của mẫu hình cốc tay cầm nằm ở đâu?"
     },
     {
-      "correct_option_id": "e505043873",
+      "correct_option_id": "d8c3fcf0ad",
       "id": "ch05-exam-q26",
       "options": [
         {
-          "id": "e505043873",
+          "id": "d8c3fcf0ad",
           "text": "Điều chỉnh nhẹ, nằm ở nửa trên của nền, khối lượng giảm dần"
         },
         {
-          "id": "2f3d673ba0",
+          "id": "361ee0fd68",
           "text": "Giảm sâu hơn đáy cốc"
         },
         {
-          "id": "bd65290e38",
+          "id": "fc5fc4c4fe",
           "text": "Khối lượng tăng vọt"
         }
       ],
       "prompt": "Tay cầm tốt có đặc điểm gì?"
     },
     {
-      "correct_option_id": "6e10dab1f7",
+      "correct_option_id": "c4dbad6377",
       "id": "ch05-exam-q27",
       "options": [
         {
-          "id": "6e10dab1f7",
+          "id": "c4dbad6377",
           "text": "Cổ phiếu tăng tốt hơn 80% cổ phiếu khác"
         },
         {
-          "id": "7509409941",
+          "id": "fb5a202a87",
           "text": "Giá cổ phiếu là 80.000 đồng"
         },
         {
-          "id": "34f457aa67",
+          "id": "cf4593b51e",
           "text": "ROE đạt 80%"
         }
       ],
       "prompt": "Chỉ số RS từ 80 trở lên có nghĩa là gì?"
     },
     {
-      "correct_option_id": "2ed3a4f29a",
+      "correct_option_id": "1fc6cd137c",
       "id": "ch05-exam-q28",
       "options": [
         {
-          "id": "2ed3a4f29a",
+          "id": "1fc6cd137c",
           "text": "Quỹ đầu tư, khối ngoại, tự doanh công ty chứng khoán"
         },
         {
-          "id": "7f7d99e652",
+          "id": "5525a961bb",
           "text": "Nhà đầu tư cá nhân nhỏ lẻ"
         },
         {
-          "id": "89f514a0af",
+          "id": "06e0ed9c4a",
           "text": "Người lao động nhận lương"
         }
       ],
       "prompt": "Tại Việt Nam, dòng tiền tổ chức gồm những nhóm nào?"
     },
     {
-      "correct_option_id": "b812497021",
+      "correct_option_id": "9633133dea",
       "id": "ch05-exam-q29",
       "options": [
         {
-          "id": "b812497021",
+          "id": "9633133dea",
           "text": "Ngừng mua mới, giảm tỷ trọng cổ phiếu"
         },
         {
-          "id": "d3711ad78a",
+          "id": "51aa195684",
           "text": "Mua thêm thật mạnh"
         },
         {
-          "id": "fd19f51f5f",
+          "id": "8607f3dbd0",
           "text": "Dùng margin để mua"
         }
       ],
       "prompt": "Theo CANSLIM, khi VN-Index thủng MA50 kèm khối lượng lớn, nên làm gì?"
     },
     {
-      "correct_option_id": "f8b7c7e7cf",
+      "correct_option_id": "3389924023",
       "id": "ch05-exam-q30",
       "options": [
         {
-          "id": "f8b7c7e7cf",
+          "id": "3389924023",
           "text": "CANSLIM mua khi giá lên đỉnh mới và cắt lỗ nhanh, đầu tư giá trị mua khi giá rẻ và nắm giữ lâu"
         },
         {
-          "id": "fe10f2ab69",
+          "id": "c0b6f10337",
           "text": "Hai phương pháp hoàn toàn giống nhau"
         },
         {
-          "id": "1f44102cc9",
+          "id": "57b9e0b6e4",
           "text": "CANSLIM không quan tâm đến lợi nhuận doanh nghiệp"
         }
       ],
       "prompt": "Điểm khác biệt chính giữa CANSLIM và đầu tư giá trị là gì?"
     }
   ],
-  "salt": "97dc64f9df4800e046aae8784bd3e96be385eb4267e3b5d007b165e516cb4d8e"
+  "salt": "c447eb53e7f9281da4f0b0da0649059ad079f63b9d1ecf518f090ab3294a6240"
 }

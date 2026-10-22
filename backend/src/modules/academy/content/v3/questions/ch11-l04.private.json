@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l04",
+  "questions": [
+    {
+      "correct_option_id": "8e766f48f1",
+      "id": "ch11-l04-q01",
+      "options": [
+        {
+          "id": "8e766f48f1",
+          "text": "Nợ vay trừ đi tiền doanh nghiệp đang có"
+        },
+        {
+          "id": "4b46c72067",
+          "text": "Tổng nợ phải trả trừ đi vốn chủ sở hữu"
+        },
+        {
+          "id": "ce0b32b934",
+          "text": "Tài sản ngắn hạn trừ đi tiền và các khoản phải thu"
+        }
+      ],
+      "prompt": "Nợ ròng được tính như thế nào?"
+    },
+    {
+      "correct_option_id": "049088fc2d",
+      "id": "ch11-l04-q02",
+      "options": [
+        {
+          "id": "049088fc2d",
+          "text": "EBIT cộng khấu hao"
+        },
+        {
+          "id": "2660f2f721",
+          "text": "EBIT trừ chi phí lãi vay"
+        },
+        {
+          "id": "3aeea66210",
+          "text": "Lợi nhuận sau thuế cộng cổ tức"
+        }
+      ],
+      "prompt": "EBITDA bằng gì?"
+    },
+    {
+      "correct_option_id": "e6823a2e27",
+      "id": "ch11-l04-q03",
+      "options": [
+        {
+          "id": "e6823a2e27",
+          "text": "Tiền nhiều hơn nợ vay"
+        },
+        {
+          "id": "a3b4062080",
+          "text": "Doanh nghiệp đang thua lỗ nặng"
+        },
+        {
+          "id": "014b8852fa",
+          "text": "Nợ vay tăng rất nhanh"
+        }
+      ],
+      "prompt": "Net Debt / EBITDA âm thường có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "63e1955acf",
+      "id": "ch11-l04-q04",
+      "options": [
+        {
+          "id": "63e1955acf",
+          "text": "Số năm EBITDA cần để trả hết nợ ròng"
+        },
+        {
+          "id": "31adcd8e9a",
+          "text": "Số quý liên tiếp doanh nghiệp đã phải vay thêm nợ"
+        },
+        {
+          "id": "16aebcaa50",
+          "text": "Tỷ lệ cổ tức trên lợi nhuận"
+        }
+      ],
+      "prompt": "Có thể hiểu đơn giản Net Debt / EBITDA là gì?"
+    },
+    {
+      "correct_option_id": "3d7d29589f",
+      "id": "ch11-l04-q05",
+      "options": [
+        {
+          "id": "3d7d29589f",
+          "text": "Giảm dần"
+        },
+        {
+          "id": "433c00b438",
+          "text": "Tăng dần"
+        },
+        {
+          "id": "b1cb29dfb1",
+          "text": "Chuyển sang âm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, nợ ròng giữ quanh một mức còn EBITDA 4 quý tăng dần thì chỉ tiêu thế nào?"
+    }
+  ],
+  "salt": "ab63a7b070eb1db37ddd92e58f54efb79418e798d0f08bd96f9a0fd6dc66ed0c"
+}

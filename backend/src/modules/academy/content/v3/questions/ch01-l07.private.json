@@ -3,62 +3,62 @@
   "item_id": "ch01-l07",
   "questions": [
     {
-      "correct_option_id": "3f4ab13f86",
+      "correct_option_id": "a92052229b",
       "id": "ch01-l07-q01",
       "options": [
         {
-          "id": "3f4ab13f86",
+          "id": "a92052229b",
           "text": "Trước ngày giao dịch không hưởng quyền"
         },
         {
-          "id": "65d39ce3ff",
+          "id": "6ad1307fba",
           "text": "Vào ngày đăng ký cuối cùng"
         },
         {
-          "id": "9e9c7f844f",
+          "id": "8d825c5dc4",
           "text": "Sau ngày giao dịch không hưởng quyền"
         }
       ],
       "prompt": "Muốn được hưởng quyền, nhà đầu tư cần mua cổ phiếu khi nào?"
     },
     {
-      "correct_option_id": "b07f0f9187",
+      "correct_option_id": "b1efd60ddc",
       "id": "ch01-l07-q02",
       "options": [
         {
-          "id": "b07f0f9187",
+          "id": "b1efd60ddc",
           "text": "Mệnh giá 10.000 đồng"
         },
         {
-          "id": "780bd24827",
+          "id": "136e0350e2",
           "text": "Giá thị trường của cổ phiếu"
         },
         {
-          "id": "6e5e44b720",
+          "id": "b8f26ed3bd",
           "text": "Lợi nhuận của nhà đầu tư"
         }
       ],
       "prompt": "Cổ tức được tính theo phần trăm của giá trị nào?"
     },
     {
-      "correct_option_id": "34e595cd64",
+      "correct_option_id": "819305f232",
       "id": "ch01-l07-q03",
       "options": [
         {
-          "id": "34e595cd64",
+          "id": "819305f232",
           "text": "Không đổi"
         },
         {
-          "id": "8eb499628b",
+          "id": "48932d108b",
           "text": "Giảm theo giá cổ phiếu"
         },
         {
-          "id": "f0ab432406",
+          "id": "4899c5d615",
           "text": "Tăng gấp đôi"
         }
       ],
       "prompt": "Sau khi chia cổ tức, tổng tài sản của cổ đông thay đổi thế nào, chưa tính thuế?"
     }
   ],
-  "salt": "1ee4c00c07a1098fa58cb7b21a03c8276d571e29fe2ed7f5b54973661397af20"
+  "salt": "4eaf6d614d3a68063b39c1f6b4ff1ade2098e37a0efa82d8fed7aeaa75366a41"
 }

@@ -3,100 +3,100 @@
   "item_id": "ch04-l09",
   "questions": [
     {
-      "correct_option_id": "9e25fbefad",
+      "correct_option_id": "88a5b84588",
       "id": "ch04-l09-q01",
       "options": [
         {
-          "id": "9e25fbefad",
+          "id": "88a5b84588",
           "text": "Ước lượng giá có thể điều chỉnh về đâu"
         },
         {
-          "id": "1e985cad8a",
+          "id": "5daa33b430",
           "text": "Đo khối lượng giao dịch"
         },
         {
-          "id": "0b6598bfe6",
+          "id": "2d93f12d62",
           "text": "Tính cổ tức của doanh nghiệp"
         }
       ],
       "prompt": "Công cụ Fibonacci thoái lui dùng để làm gì?"
     },
     {
-      "correct_option_id": "789ccc2ce4",
+      "correct_option_id": "aff5c47bc9",
       "id": "ch04-l09-q02",
       "options": [
         {
-          "id": "789ccc2ce4",
+          "id": "aff5c47bc9",
           "text": "61,8%"
         },
         {
-          "id": "40db4ce13e",
+          "id": "0eebe1e560",
           "text": "5%"
         },
         {
-          "id": "ff60f69928",
+          "id": "8a5992aa31",
           "text": "90%"
         }
       ],
       "prompt": "Mức Fibonacci quan trọng nhất là mức nào?"
     },
     {
-      "correct_option_id": "cbfbabbbda",
+      "correct_option_id": "a30d58fd76",
       "id": "ch04-l09-q03",
       "options": [
         {
-          "id": "cbfbabbbda",
+          "id": "a30d58fd76",
           "text": "Từ đáy lên đỉnh của đợt tăng"
         },
         {
-          "id": "62ffc7d05d",
+          "id": "bd54a5fc60",
           "text": "Từ đỉnh xuống đáy của đợt tăng"
         },
         {
-          "id": "c2667e28d9",
+          "id": "2a1048e36e",
           "text": "Từ giá hiện tại đến giá trần"
         }
       ],
       "prompt": "Trong xu hướng tăng, kéo Fibonacci như thế nào?"
     },
     {
-      "correct_option_id": "95ca9aead1",
+      "correct_option_id": "f1c2bd9cd0",
       "id": "ch04-l09-q04",
       "options": [
         {
-          "id": "95ca9aead1",
+          "id": "f1c2bd9cd0",
           "text": "Từ 50% đến 61,8%"
         },
         {
-          "id": "502edc4f5a",
+          "id": "e856ec372c",
           "text": "Từ 0% đến 5%"
         },
         {
-          "id": "1377b032b8",
+          "id": "fbb12aa09c",
           "text": "Trên 100%"
         }
       ],
       "prompt": "Các nhịp điều chỉnh hay dừng lại ở vùng nào?"
     },
     {
-      "correct_option_id": "60589ce382",
+      "correct_option_id": "640928218d",
       "id": "ch04-l09-q05",
       "options": [
         {
-          "id": "60589ce382",
+          "id": "640928218d",
           "text": "Là vùng giá tham khảo, cần chờ tín hiệu xác nhận"
         },
         {
-          "id": "05d1721826",
+          "id": "c9c78266d6",
           "text": "Giá luôn dừng chính xác tại mức"
         },
         {
-          "id": "fdddb9ed1c",
+          "id": "16f0f7e745",
           "text": "Chỉ dùng được khi thị trường đi ngang"
         }
       ],
       "prompt": "Điều nào đúng về các mức Fibonacci?"
     }
   ],
-  "salt": "b289f275fd0377a7a4f149f01e29a56e80ae015d2f1f10b0477c74c5ab4b729f"
+  "salt": "edc6c91dd89170608bba259a802502e2e72e61178df959fc511416b231d81381"
 }

@@ -6,7 +6,7 @@
 import { MASCOT_MANIFEST } from "../journey/config"
 import { mascotAssetRoot } from "../journey/mascot-2d/mascotManifest"
 import type { MascotId } from "../journey/types"
-import type { CatalogEntry, LedgerItem, ShopState } from "./shop-api"
+import type { CatalogEntry, LedgerItem, PurchaseFailure, ShopState } from "./shop-api"
 
 export const SHOP_QUERY_ROOT = ["shop"] as const
 /** Prefix of `["workspace", "state", userId]` (see workspace/use-workspace.ts): the mascot stage everywhere reads it. */
@@ -37,7 +37,23 @@ export const SHOP_COPY = {
   history: "Lịch sử xu",
   alreadyOwnedNoCharge: "Đã sở hữu. Không trừ thêm xu.",
   insufficient: "Chưa đủ xu",
+  evolve: "Tiến hoá",
+  evolveTitle: "Tiến hoá linh thú",
+  premium: "Premium",
+  premiumBuy: "Mua Premium",
+  exchange: "Đổi xu",
+  exchangeTitle: "Đổi xu với tiền Demo",
 } as const
+
+/**
+ * Giá tiến hoá theo cấp đích (spec 1.2): lên cấp 2 là 10.000 xu, lên cấp 3 là 30.000 xu, tổng
+ * 40.000 xu cho một linh thú. Server quyết định lại giá và trả PRICE_CHANGED nếu đã lệch.
+ */
+export const PET_EVOLVE_PRICE_XU: Readonly<Record<2 | 3, number>> = { 2: 10_000, 3: 30_000 }
+export const PET_EVOLVE_TOTAL_XU = 40_000
+export const PET_MAX_LEVEL = 3
+export type PetLevelValue = 1 | 2 | 3
+export type PetTargetLevel = 2 | 3
 
 export type CardState = "buy" | "short" | "owned" | "active" | "unavailable"
 
@@ -84,6 +100,28 @@ function sortCatalog(entries: CatalogEntry[]): CatalogEntry[] {
 
 export function findEntry(state: ShopState, mascotId: string): CatalogEntry | undefined {
   return state.catalog.find((entry) => entry.mascot_id === mascotId)
+}
+
+/** Cấp tiến hoá của một linh thú: 1 khi chưa tiến hoá. */
+export function petLevelOf(state: Pick<ShopState, "pet_levels">, mascotId: string): PetLevelValue {
+  const level = state.pet_levels.find((item) => item.mascot_id === mascotId)?.level
+  return level === 2 || level === 3 ? level : 1
+}
+
+/** Cấp đích tiếp theo của một linh thú; null khi đã ở cấp cao nhất. */
+export function nextPetLevel(state: Pick<ShopState, "pet_levels">, mascotId: string): PetTargetLevel | null {
+  const level = petLevelOf(state, mascotId)
+  return level === 1 ? 2 : level === 2 ? 3 : null
+}
+
+/** Giá của một bước tiến hoá. */
+export function petEvolvePrice(target: PetTargetLevel): number {
+  return PET_EVOLVE_PRICE_XU[target]
+}
+
+/** Nhãn cấp của một linh thú ("Cấp 2"); cấp 1 không ghi ra để khỏi rối. */
+export function petLevelLabel(level: PetLevelValue): string | null {
+  return level > 1 ? `Cấp ${level}` : null
 }
 
 const xuFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 })
@@ -134,6 +172,20 @@ export function ledgerRowLabel(item: LedgerItem, lessonNames: ReadonlyMap<string
       const name = item.label.mascot_name ?? mascotDisplayName(item.label.mascot_id, "")
       return { title: name ? `Mua ${name}` : "Mua linh thú", detail: null }
     }
+    case "pet_purchase": {
+      const name = item.label.mascot_name ?? mascotDisplayName(item.label.mascot_id, "")
+      return { title: "Mua linh thú", detail: name || null }
+    }
+    case "pet_evolve": {
+      const name = item.label.mascot_name ?? mascotDisplayName(item.label.mascot_id, "")
+      return { title: "Tiến hoá linh thú", detail: name || null }
+    }
+    case "premium_purchase":
+      return { title: "Mua Premium", detail: null }
+    case "demo_deposit":
+      return { title: "Đổi tiền sang xu", detail: null }
+    case "demo_withdraw":
+      return { title: "Đổi xu sang tiền", detail: null }
     default:
       return { title: "Điều chỉnh xu", detail: null }
   }
@@ -147,13 +199,51 @@ export function newIdempotencyKey(): string {
   return `shop-${random}`
 }
 
-export function priceChangedMessage(currentPrice: number | null): string {
+export function priceChangedMessage(currentPrice: number | null, what = "linh thú"): string {
   return currentPrice == null
-    ? "Giá linh thú đã thay đổi. Đã cập nhật, vui lòng xác nhận lại."
-    : `Giá linh thú đã thay đổi, hiện là ${formatXu(currentPrice)} xu. Đã cập nhật, vui lòng xác nhận lại.`
+    ? `Giá ${what} đã thay đổi. Đã cập nhật, vui lòng xác nhận lại.`
+    : `Giá ${what} đã thay đổi, hiện là ${formatXu(currentPrice)} xu. Đã cập nhật, vui lòng xác nhận lại.`
 }
 
 export const CATALOG_CHANGED_MESSAGE = "Danh mục linh thú đã thay đổi. Đã cập nhật, vui lòng xác nhận lại."
+
+/** Câu thông báo tiếng Việt cho một lỗi của Shop: mua, tiến hoá, Premium và đổi xu dùng chung. */
+export function shopFailureMessage(failure: PurchaseFailure): string {
+  switch (failure.kind) {
+    case "insufficient":
+      return failure.balance == null || failure.price == null
+        ? "Chưa đủ xu để thực hiện."
+        : `Chưa đủ xu: bạn có ${formatXu(failure.balance)} xu, cần ${formatXu(failure.price)} xu.`
+    case "insufficient_cash":
+      return failure.available == null || failure.need == null
+        ? "Không đủ tiền mặt trong tài khoản Demo Trading."
+        : `Không đủ tiền mặt: bạn có ${formatXu(failure.available)} đồng, cần ${formatXu(failure.need)} đồng.`
+    case "price_changed":
+      return priceChangedMessage(failure.currentPrice)
+    case "catalog_changed":
+      return CATALOG_CHANGED_MESSAGE
+    case "not_for_sale":
+      return "Linh thú này hiện không bán."
+    case "not_owned":
+      return "Bạn chưa sở hữu linh thú này."
+    case "level_locked":
+      return `Phải lên cấp ${failure.requiredLevel ?? 2} trước khi lên cấp tiếp theo.`
+    case "max_level":
+      return `Linh thú đã ở cấp cao nhất (${failure.currentLevel ?? PET_MAX_LEVEL}).`
+    case "limit_reached":
+      return failure.message
+    case "phone_not_verified":
+      return "Tài khoản chưa xác thực số điện thoại nên chưa đổi Premium bằng xu được."
+    case "invalid_amount":
+      return failure.message
+    case "key_reused":
+      return "Yêu cầu trước chưa hoàn tất. Vui lòng xác nhận lại."
+    case "unknown_outcome":
+      return "Chưa xác định được giao dịch đã được ghi nhận hay chưa. Hãy kiểm tra lại trước khi thử lại."
+    default:
+      return failure.message
+  }
+}
 
 export function insufficientMessage(balance: number | null, price: number | null): string {
   if (balance == null || price == null) return "Chưa đủ xu để mua linh thú này."

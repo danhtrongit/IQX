@@ -3,62 +3,62 @@
   "item_id": "ch03-practice",
   "questions": [
     {
-      "correct_option_id": "01f8cb22f2",
+      "correct_option_id": "d72485c6bf",
       "id": "ch03-practice-q01",
       "options": [
         {
-          "id": "01f8cb22f2",
+          "id": "d72485c6bf",
           "text": "Hô mua một mã để chứng minh mình giỏi"
         },
         {
-          "id": "140642eff6",
+          "id": "ae543a1f80",
           "text": "Lắng nghe và thừa nhận"
         },
         {
-          "id": "0642a39ac4",
+          "id": "3d430ec634",
           "text": "Mời khách tự kiểm chứng qua bản tin"
         }
       ],
       "prompt": "Với khách mất niềm tin sau thua lỗ, điều nên tránh nhất là gì?"
     },
     {
-      "correct_option_id": "9ca7512c06",
+      "correct_option_id": "c0f3fd245b",
       "id": "ch03-practice-q02",
       "options": [
         {
-          "id": "9ca7512c06",
+          "id": "c0f3fd245b",
           "text": "Bắt đầu nhỏ, chia giải ngân nhiều đợt"
         },
         {
-          "id": "eab61228c2",
+          "id": "c3adc2dc3f",
           "text": "Dồn toàn bộ tiền tiết kiệm một lần"
         },
         {
-          "id": "7a880a7a7d",
+          "id": "1c558b0eec",
           "text": "Dùng margin để lãi nhanh"
         }
       ],
       "prompt": "Với khách mới sợ “đu đỉnh”, cách bắt đầu phù hợp là gì?"
     },
     {
-      "correct_option_id": "5c6d2320fd",
+      "correct_option_id": "5d2da27a95",
       "id": "ch03-practice-q03",
       "options": [
         {
-          "id": "5c6d2320fd",
+          "id": "5d2da27a95",
           "text": "Tạo thiện cảm, khai thác nhu cầu, xử lý từ chối, kiến thức, EQ, chốt hành động"
         },
         {
-          "id": "be546c5932",
+          "id": "6e2a1b3c8e",
           "text": "Số mã cổ phiếu thuộc tên"
         },
         {
-          "id": "61dda5b371",
+          "id": "5a2c8d3db0",
           "text": "Số lần khen khách"
         }
       ],
       "prompt": "Bảng chấm điểm đóng vai gồm những tiêu chí nào?"
     }
   ],
-  "salt": "76d85ac8b107363b8effc396ca83ea70c94eaf7ece6f6f29ad61b7550501d619"
+  "salt": "869d0e57253134b22864ee64f985dbbb4bedf513f0d991a4353de416de1896f2"
 }

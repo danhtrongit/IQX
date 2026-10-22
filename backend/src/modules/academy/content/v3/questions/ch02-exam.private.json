@@ -3,385 +3,385 @@
   "item_id": "ch02-exam",
   "questions": [
     {
-      "correct_option_id": "17e785f6e6",
+      "correct_option_id": "8898b56562",
       "id": "ch02-exam-q01",
       "options": [
         {
-          "id": "17e785f6e6",
+          "id": "8898b56562",
           "text": "Người bạn đồng hành: kết nối, hướng dẫn, đồng hành"
         },
         {
-          "id": "69f13d94cf",
+          "id": "a4438cca31",
           "text": "Người quản lý tiền thay khách"
         },
         {
-          "id": "33c6080e1e",
+          "id": "6ae7bf5fcf",
           "text": "Người cam kết lợi nhuận cho khách"
         }
       ],
       "prompt": "SACO đóng vai trò gì với nhà đầu tư?"
     },
     {
-      "correct_option_id": "91e1526acc",
+      "correct_option_id": "9b06b960ca",
       "id": "ch02-exam-q02",
       "options": [
         {
-          "id": "91e1526acc",
+          "id": "9b06b960ca",
           "text": "Thu nhập đến từ khách còn giao dịch"
         },
         {
-          "id": "64ab333003",
+          "id": "366b1f5bf0",
           "text": "Vì mở tài khoản bị phạt"
         },
         {
-          "id": "b2127d47da",
+          "id": "946592b2e6",
           "text": "Vì khách cũ không được giới thiệu"
         }
       ],
       "prompt": "Vì sao giữ khách quan trọng hơn mở thật nhiều tài khoản?"
     },
     {
-      "correct_option_id": "83ded1daf1",
+      "correct_option_id": "610aa32b80",
       "id": "ch02-exam-q03",
       "options": [
         {
-          "id": "83ded1daf1",
+          "id": "610aa32b80",
           "text": "Hỏi khách dự định dùng khoản tiền đó khi nào"
         },
         {
-          "id": "f037fa7ee0",
+          "id": "f03296f821",
           "text": "Khuyên chuyển toàn bộ sang cổ phiếu ngay"
         },
         {
-          "id": "ac02672dc1",
+          "id": "c91fff811c",
           "text": "Khuyên giữ ở ngân hàng, không cần tìm hiểu thêm"
         }
       ],
       "prompt": "Khách có khoản tiết kiệm sắp đáo hạn, hỏi nên gửi tiếp hay đầu tư chứng khoán. Bạn nên làm gì trước tiên?"
     },
     {
-      "correct_option_id": "d8c2aa58ce",
+      "correct_option_id": "96ebe31894",
       "id": "ch02-exam-q04",
       "options": [
         {
-          "id": "d8c2aa58ce",
+          "id": "96ebe31894",
           "text": "Đồng ý và mời cả hai vợ chồng cùng tìm hiểu"
         },
         {
-          "id": "67419ce51f",
+          "id": "6208873e9c",
           "text": "Khuyên anh tự quyết vì anh là trụ cột gia đình"
         },
         {
-          "id": "13ac8ac225",
+          "id": "ce19d63d1e",
           "text": "Im lặng chờ anh tự liên hệ lại khi nào cần"
         }
       ],
       "prompt": "Khách nói “Để anh về bàn với vợ đã”. Cách phản hồi phù hợp là gì?"
     },
     {
-      "correct_option_id": "386856e90e",
+      "correct_option_id": "aa47fa1a92",
       "id": "ch02-exam-q05",
       "options": [
         {
-          "id": "386856e90e",
+          "id": "aa47fa1a92",
           "text": "Chia sẻ giá trị để mọi người tin và tìm đến"
         },
         {
-          "id": "0b722ff338",
+          "id": "b2dabf59da",
           "text": "Khoe lãi để thu hút"
         },
         {
-          "id": "e936209368",
+          "id": "113b7ca494",
           "text": "Gửi mã chắc chắn tăng"
         }
       ],
       "prompt": "Mục tiêu của việc đăng bài trên mạng xã hội là gì?"
     },
     {
-      "correct_option_id": "f823fc58ee",
+      "correct_option_id": "8be4a700c8",
       "id": "ch02-exam-q06",
       "options": [
         {
-          "id": "f823fc58ee",
+          "id": "8be4a700c8",
           "text": "Hỏi thăm sức khỏe, công việc rồi mới chia sẻ việc mình làm"
         },
         {
-          "id": "8b46a2dac2",
+          "id": "d708434da0",
           "text": "“Anh mở tài khoản giúp em nhé”"
         },
         {
-          "id": "b14283f0c5",
+          "id": "7b1776df06",
           "text": "“Mã này đang ngon, mua ngay”"
         }
       ],
       "prompt": "Câu mở lời nào phù hợp nhất?"
     },
     {
-      "correct_option_id": "6325fd69a4",
+      "correct_option_id": "a6f7b68f6a",
       "id": "ch02-exam-q07",
       "options": [
         {
-          "id": "6325fd69a4",
+          "id": "a6f7b68f6a",
           "text": "Gọi ngay, nói rõ tình hình và các lựa chọn để khách quyết định"
         },
         {
-          "id": "3160a5ddd6",
+          "id": "8b14a16f2c",
           "text": "Chờ khách tự phát hiện để tránh làm khách lo lắng thêm"
         },
         {
-          "id": "6bdeebd092",
+          "id": "1e7472fd92",
           "text": "Khuyên khách vay thêm tiền để mua bình quân giá xuống"
         }
       ],
       "prompt": "Tài khoản margin của khách sắp chạm ngưỡng gọi ký quỹ. SACO nên làm gì?"
     },
     {
-      "correct_option_id": "76134526dd",
+      "correct_option_id": "aa8f764871",
       "id": "ch02-exam-q08",
       "options": [
         {
-          "id": "76134526dd",
+          "id": "aa8f764871",
           "text": "Nếu tài khoản giảm 10-20%, anh/chị sẽ làm gì?"
         },
         {
-          "id": "ad2e122157",
+          "id": "22ee46ebb0",
           "text": "Anh/chị thích màu gì?"
         },
         {
-          "id": "c78d740b8b",
+          "id": "4d007ecc63",
           "text": "Anh/chị ở đâu?"
         }
       ],
       "prompt": "Câu hỏi nào giúp đánh giá mức chịu đựng rủi ro của khách?"
     },
     {
-      "correct_option_id": "3fb1c5e2db",
+      "correct_option_id": "fa0f731987",
       "id": "ch02-exam-q09",
       "options": [
         {
-          "id": "3fb1c5e2db",
+          "id": "fa0f731987",
           "text": "Tìm hiểu quỹ, ETF, đầu tư định kỳ với số tiền nhỏ"
         },
         {
-          "id": "a78f91db2b",
+          "id": "14c24ffe87",
           "text": "Dùng margin tối đa"
         },
         {
-          "id": "c4c92bb2a0",
+          "id": "dcf4bdbd33",
           "text": "Giao dịch lướt sóng mỗi ngày"
         }
       ],
       "prompt": "Khách nói “Tôi bận, muốn an toàn”, hướng gợi ý phù hợp là gì?"
     },
     {
-      "correct_option_id": "943da6344f",
+      "correct_option_id": "44fe50ec73",
       "id": "ch02-exam-q10",
       "options": [
         {
-          "id": "943da6344f",
+          "id": "44fe50ec73",
           "text": "Dễ bán ra để lấy lại tiền"
         },
         {
-          "id": "475f4db13c",
+          "id": "0b730931ac",
           "text": "Giá tăng mạnh mỗi ngày"
         },
         {
-          "id": "8355a7bf92",
+          "id": "f34ea2ab40",
           "text": "Được chia cổ tức nhiều"
         }
       ],
       "prompt": "Cách giải thích “thanh khoản cao” dễ hiểu nhất là gì?"
     },
     {
-      "correct_option_id": "dcdc350543",
+      "correct_option_id": "30d4367f98",
       "id": "ch02-exam-q11",
       "options": [
         {
-          "id": "dcdc350543",
+          "id": "30d4367f98",
           "text": "Phí khách trả là cho một người đồng hành, không chỉ một nút mua bán"
         },
         {
-          "id": "bed0044b0a",
+          "id": "67628f36fb",
           "text": "Phí 0 đồng trọn đời"
         },
         {
-          "id": "a612bdf6ea",
+          "id": "2805b0dc08",
           "text": "Có SACO thì chắc chắn lãi"
         }
       ],
       "prompt": "Câu tóm gọn giá trị của SACO là gì?"
     },
     {
-      "correct_option_id": "cd7c973f7a",
+      "correct_option_id": "6d2a4c271c",
       "id": "ch02-exam-q12",
       "options": [
         {
-          "id": "cd7c973f7a",
+          "id": "6d2a4c271c",
           "text": "Thừa nhận và nói về giá trị đồng hành"
         },
         {
-          "id": "723a655d43",
+          "id": "73e87a2543",
           "text": "Nói xấu công ty khác"
         },
         {
-          "id": "3064afcf30",
+          "id": "91b817d587",
           "text": "Hứa giảm phí bằng tiền túi"
         }
       ],
       "prompt": "Khi khách so sánh “chỗ khác miễn phí”, SACO nên làm gì?"
     },
     {
-      "correct_option_id": "55ff8583d7",
+      "correct_option_id": "02fbea2452",
       "id": "ch02-exam-q13",
       "options": [
         {
-          "id": "55ff8583d7",
+          "id": "02fbea2452",
           "text": "Gây áp lực bắt khách mở ngay hôm nay"
         },
         {
-          "id": "0e26c3f264",
+          "id": "2a5780ed82",
           "text": "Hỏi rõ điều khách lo"
         },
         {
-          "id": "ac1243be34",
+          "id": "a89d63340d",
           "text": "Đề xuất một bước nhỏ"
         }
       ],
       "prompt": "Hành động nào sai khi xử lý từ chối?"
     },
     {
-      "correct_option_id": "322a56273b",
+      "correct_option_id": "5591ee2bcd",
       "id": "ch02-exam-q14",
       "options": [
         {
-          "id": "322a56273b",
+          "id": "5591ee2bcd",
           "text": "Hỏi khách đang cân nhắc điều gì và hẹn ngày liên hệ lại"
         },
         {
-          "id": "76121c439b",
+          "id": "4655f62730",
           "text": "Bỏ qua khách luôn"
         },
         {
-          "id": "0a71132c3d",
+          "id": "cd582adee8",
           "text": "Nhắn tin liên tục mỗi giờ"
         }
       ],
       "prompt": "Khi khách nói “Để tôi suy nghĩ thêm”, nên làm gì?"
     },
     {
-      "correct_option_id": "069348dded",
+      "correct_option_id": "3c799e9210",
       "id": "ch02-exam-q15",
       "options": [
         {
-          "id": "069348dded",
+          "id": "3c799e9210",
           "text": "Khách hỏi mở tài khoản có lâu không"
         },
         {
-          "id": "fbc4b458b8",
+          "id": "1f1bdaafae",
           "text": "Khách không trả lời tin nhắn"
         },
         {
-          "id": "b07273ef16",
+          "id": "65febce15d",
           "text": "Khách nói không quan tâm"
         }
       ],
       "prompt": "Dấu hiệu nào cho thấy khách đã sẵn sàng?"
     },
     {
-      "correct_option_id": "41a9d9afd3",
+      "correct_option_id": "712d6c2599",
       "id": "ch02-exam-q16",
       "options": [
         {
-          "id": "41a9d9afd3",
+          "id": "712d6c2599",
           "text": "Căn cước công dân, số điện thoại chính chủ, tài khoản ngân hàng đúng tên"
         },
         {
-          "id": "ad8152e391",
+          "id": "81ada7e6dc",
           "text": "Tiền mặt đưa cho SACO"
         },
         {
-          "id": "d4c9acf862",
+          "id": "2e7c8ec571",
           "text": "Mật khẩu email của SACO"
         }
       ],
       "prompt": "Khách cần chuẩn bị gì để mở tài khoản trực tuyến?"
     },
     {
-      "correct_option_id": "cc5a7504a9",
+      "correct_option_id": "0df19b0ea7",
       "id": "ch02-exam-q17",
       "options": [
         {
-          "id": "cc5a7504a9",
+          "id": "0df19b0ea7",
           "text": "Khách tự chuyển từ tài khoản ngân hàng đúng tên mình"
         },
         {
-          "id": "f00844a466",
+          "id": "7584539bb5",
           "text": "SACO nhận tiền rồi nạp hộ"
         },
         {
-          "id": "56640f1070",
+          "id": "8164561cd2",
           "text": "Bất kỳ ai cũng được"
         }
       ],
       "prompt": "Ai nạp tiền vào tài khoản chứng khoán của khách?"
     },
     {
-      "correct_option_id": "1014888df6",
+      "correct_option_id": "5fbfb0f0d4",
       "id": "ch02-exam-q18",
       "options": [
         {
-          "id": "1014888df6",
+          "id": "5fbfb0f0d4",
           "text": "Nói rõ tin chưa xác thực, nhắc khách bám theo kế hoạch"
         },
         {
-          "id": "aa35b8364b",
+          "id": "975a0a5d2b",
           "text": "Chuyển tiếp ngay cho tất cả khách để không ai bị lỡ"
         },
         {
-          "id": "b724afb45b",
+          "id": "0a601d8e14",
           "text": "Bảo khách mua thử một ít để xem phản ứng của giá"
         }
       ],
       "prompt": "Một tin đồn chưa xác thực về cổ phiếu đang lan trong nhóm khách. SACO nên làm gì?"
     },
     {
-      "correct_option_id": "4b471cfde0",
+      "correct_option_id": "0394aa04ea",
       "id": "ch02-exam-q19",
       "options": [
         {
-          "id": "4b471cfde0",
+          "id": "0394aa04ea",
           "text": "Đây là thông tin tham khảo, quyết định là của anh/chị"
         },
         {
-          "id": "e25cdde0ac",
+          "id": "bbe20ecb32",
           "text": "Mã này chắc chắn tăng"
         },
         {
-          "id": "d8ad08fd7e",
+          "id": "69fdf91eab",
           "text": "Em cam kết lãi 3% mỗi tháng"
         }
       ],
       "prompt": "Câu nói nào an toàn khi gửi thông tin cổ phiếu?"
     },
     {
-      "correct_option_id": "8beb3b51d2",
+      "correct_option_id": "f521ddf08e",
       "id": "ch02-exam-q20",
       "options": [
         {
-          "id": "8beb3b51d2",
+          "id": "f521ddf08e",
           "text": "Cách mở lời tiếp cận"
         },
         {
-          "id": "2ba11e0e59",
+          "id": "cc12846d6a",
           "text": "Cách đặt lệnh"
         },
         {
-          "id": "a1c06253c6",
+          "id": "b05bc772be",
           "text": "Cách tính cổ tức"
         }
       ],
       "prompt": "Nếu tiếp cận nhiều người nhưng ít cuộc tư vấn, cần xem lại kỹ năng nào?"
     }
   ],
-  "salt": "edf8d27fe8ee3115136a0019508a8149cd56debb45b9da8fe02a7cbfa5c2fadb"
+  "salt": "5c818a82c82a4a11b77ca4fae634b33eb569980e464dfb5051c42db3229be9ec"
 }

@@ -38,6 +38,7 @@ import {
   insufficientMessage,
   newIdempotencyKey,
   priceChangedMessage,
+  shopFailureMessage,
   shopKeys,
 } from "./shop-model"
 import { COIN_TEXT } from "./shop-ui"
@@ -169,7 +170,7 @@ export function PurchaseDialog({ mascotId, onClose, onEnterAcademy }: {
           return
         default:
           await refreshShop()
-          setPhase({ kind: "confirm", notice: failure.message })
+          setPhase({ kind: "confirm", notice: shopFailureMessage(failure) })
       }
     }
   }

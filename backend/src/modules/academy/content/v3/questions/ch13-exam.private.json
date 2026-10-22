@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-exam",
+  "questions": [
+    {
+      "correct_option_id": "59094490b4",
+      "id": "ch13-exam-q01",
+      "options": [
+        {
+          "id": "59094490b4",
+          "text": "Price to Earnings, giá trên lợi nhuận"
+        },
+        {
+          "id": "39afdf9e3f",
+          "text": "Profit to Equity, lợi nhuận trên vốn"
+        },
+        {
+          "id": "abd4fd711e",
+          "text": "Price to Equity, giá trên vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "P/E là viết tắt của gì?"
+    },
+    {
+      "correct_option_id": "faede683c2",
+      "id": "ch13-exam-q02",
+      "options": [
+        {
+          "id": "faede683c2",
+          "text": "4 quý gần nhất"
+        },
+        {
+          "id": "ae22487f6e",
+          "text": "Quý gần nhất"
+        },
+        {
+          "id": "84fd4b603e",
+          "text": "5 năm gần nhất"
+        }
+      ],
+      "prompt": "P/E dùng EPS của khoảng thời gian nào?"
+    },
+    {
+      "correct_option_id": "44df233613",
+      "id": "ch13-exam-q03",
+      "options": [
+        {
+          "id": "44df233613",
+          "text": "P/E giảm"
+        },
+        {
+          "id": "6ce466f7aa",
+          "text": "P/E tăng"
+        },
+        {
+          "id": "4da1812beb",
+          "text": "P/E không đổi"
+        }
+      ],
+      "prompt": "Giá giữ nguyên, lợi nhuận tăng thì P/E thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "344201fe62",
+      "id": "ch13-exam-q04",
+      "options": [
+        {
+          "id": "344201fe62",
+          "text": "Không có ý nghĩa, cần dùng chỉ số khác"
+        },
+        {
+          "id": "f44d808617",
+          "text": "Rất thấp, cho thấy cổ phiếu đang rất rẻ"
+        },
+        {
+          "id": "5531378b5d",
+          "text": "Bằng đúng P/B của doanh nghiệp"
+        }
+      ],
+      "prompt": "Khi lợi nhuận 4 quý âm, P/E thế nào?"
+    },
+    {
+      "correct_option_id": "694368c628",
+      "id": "ch13-exam-q05",
+      "options": [
+        {
+          "id": "694368c628",
+          "text": "Làm P/E trông rẻ hơn thực tế"
+        },
+        {
+          "id": "dfed56d0ec",
+          "text": "Làm P/E trông đắt hơn thực tế"
+        },
+        {
+          "id": "988ff424fc",
+          "text": "Không ảnh hưởng đến P/E"
+        }
+      ],
+      "prompt": "Khoản lãi bất thường một lần ảnh hưởng thế nào đến P/E?"
+    },
+    {
+      "correct_option_id": "2d22d53bdd",
+      "id": "ch13-exam-q06",
+      "options": [
+        {
+          "id": "2d22d53bdd",
+          "text": "Giá đã giảm trước khi lợi nhuận đi xuống"
+        },
+        {
+          "id": "90e229ff18",
+          "text": "Vì doanh nghiệp ngừng công bố lợi nhuận"
+        },
+        {
+          "id": "ef0b4f44ac",
+          "text": "Vì số cổ phiếu tăng mạnh lúc đó"
+        }
+      ],
+      "prompt": "Vì sao P/E thường rất thấp đúng lúc lợi nhuận đạt đỉnh chu kỳ?"
+    },
+    {
+      "correct_option_id": "fa83db2c70",
+      "id": "ch13-exam-q07",
+      "options": [
+        {
+          "id": "fa83db2c70",
+          "text": "Price to Book, giá trên giá trị sổ sách"
+        },
+        {
+          "id": "a307ea7179",
+          "text": "Profit to Budget, lợi nhuận trên ngân sách"
+        },
+        {
+          "id": "1a8f803e32",
+          "text": "Price to Bond, giá trên trái phiếu"
+        }
+      ],
+      "prompt": "P/B là viết tắt của gì?"
+    },
+    {
+      "correct_option_id": "7eb55a70d2",
+      "id": "ch13-exam-q08",
+      "options": [
+        {
+          "id": "7eb55a70d2",
+          "text": "Thị trường trả đúng bằng giá trị sổ sách"
+        },
+        {
+          "id": "6d64a109c9",
+          "text": "Doanh nghiệp hoàn toàn không có nợ vay"
+        },
+        {
+          "id": "a577337924",
+          "text": "Giá cổ phiếu bằng EPS 4 quý"
+        }
+      ],
+      "prompt": "P/B bằng 1 có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "9647b39e05",
+      "id": "ch13-exam-q09",
+      "options": [
+        {
+          "id": "9647b39e05",
+          "text": "Tài sản trên sổ sách có thể không còn đúng giá trị"
+        },
+        {
+          "id": "694bc5f7af",
+          "text": "Vì P/B dưới 1 chỉ xuất hiện ở ngành công nghệ"
+        },
+        {
+          "id": "78ac68d7f7",
+          "text": "Vì vốn chủ sở hữu luôn bị khai thấp"
+        }
+      ],
+      "prompt": "Vì sao P/B dưới 1 chưa chắc là rẻ?"
+    },
+    {
+      "correct_option_id": "691948bd9a",
+      "id": "ch13-exam-q10",
+      "options": [
+        {
+          "id": "691948bd9a",
+          "text": "Doanh nghiệp công nghệ, dịch vụ ít tài sản"
+        },
+        {
+          "id": "57f7aa60bf",
+          "text": "Ngân hàng thương mại cổ phần lớn"
+        },
+        {
+          "id": "34d3cf8b9c",
+          "text": "Công ty bảo hiểm"
+        }
+      ],
+      "prompt": "P/B ít ý nghĩa với loại doanh nghiệp nào?"
+    },
+    {
+      "correct_option_id": "c7088f06cc",
+      "id": "ch13-exam-q11",
+      "options": [
+        {
+          "id": "c7088f06cc",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "3d95bc1b17",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "a06707a77f",
+          "text": "Luôn bằng 1"
+        }
+      ],
+      "prompt": "Doanh nghiệp có ROE cao thường có P/B thế nào?"
+    },
+    {
+      "correct_option_id": "f2ca7ad3c6",
+      "id": "ch13-exam-q12",
+      "options": [
+        {
+          "id": "f2ca7ad3c6",
+          "text": "Price to Sales, giá trên doanh thu"
+        },
+        {
+          "id": "11e4bf6f08",
+          "text": "Profit to Shares, lợi nhuận trên cổ phiếu"
+        },
+        {
+          "id": "1730f54eea",
+          "text": "Price to Stock, giá trên cổ phiếu"
+        }
+      ],
+      "prompt": "P/S là viết tắt của gì?"
+    },
+    {
+      "correct_option_id": "ba4120b127",
+      "id": "ch13-exam-q13",
+      "options": [
+        {
+          "id": "ba4120b127",
+          "text": "Doanh thu ổn định hơn và ít khi âm"
+        },
+        {
+          "id": "f6dbe3a799",
+          "text": "Doanh thu đã trừ hết mọi chi phí"
+        },
+        {
+          "id": "96f2c534fb",
+          "text": "P/S luôn cho kết luận chính xác hơn"
+        }
+      ],
+      "prompt": "Ưu điểm của P/S so với P/E là gì?"
+    },
+    {
+      "correct_option_id": "e5ddacf4b5",
+      "id": "ch13-exam-q14",
+      "options": [
+        {
+          "id": "e5ddacf4b5",
+          "text": "Chưa chắc rẻ khi tính theo lợi nhuận"
+        },
+        {
+          "id": "3866e6bd6a",
+          "text": "Chắc chắn là cổ phiếu rất rẻ"
+        },
+        {
+          "id": "7d5337a3ea",
+          "text": "Doanh nghiệp đang có nợ vay lớn"
+        }
+      ],
+      "prompt": "P/S thấp nhưng biên lợi nhuận rất mỏng thì nên hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "b0f7895207",
+      "id": "ch13-exam-q15",
+      "options": [
+        {
+          "id": "b0f7895207",
+          "text": "Biên lợi nhuận ngành bán lẻ thấp hơn"
+        },
+        {
+          "id": "77097dabc5",
+          "text": "Ngành bán lẻ có ít cổ đông hơn"
+        },
+        {
+          "id": "dcdf0802c5",
+          "text": "Ngành bán lẻ không công bố doanh thu"
+        }
+      ],
+      "prompt": "Vì sao P/S của ngành bán lẻ thường thấp hơn ngành phần mềm?"
+    },
+    {
+      "correct_option_id": "fe78f34fb8",
+      "id": "ch13-exam-q16",
+      "options": [
+        {
+          "id": "fe78f34fb8",
+          "text": "Tốc độ tăng trưởng EPS"
+        },
+        {
+          "id": "5a4f6bbddf",
+          "text": "Tỷ lệ nợ vay trên vốn"
+        },
+        {
+          "id": "10cbb9b68a",
+          "text": "Biên lợi nhuận gộp"
+        }
+      ],
+      "prompt": "PEG kết hợp P/E với yếu tố nào?"
+    },
+    {
+      "correct_option_id": "ac79fc62d3",
+      "id": "ch13-exam-q17",
+      "options": [
+        {
+          "id": "ac79fc62d3",
+          "text": "1"
+        },
+        {
+          "id": "6fa80a6b71",
+          "text": "10"
+        },
+        {
+          "id": "e0cfe6f3d2",
+          "text": "0"
+        }
+      ],
+      "prompt": "Mốc tham khảo thường dùng cho PEG là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "65ae4feb1d",
+      "id": "ch13-exam-q18",
+      "options": [
+        {
+          "id": "65ae4feb1d",
+          "text": "Thấp"
+        },
+        {
+          "id": "27a0172310",
+          "text": "Âm"
+        },
+        {
+          "id": "25476d62bd",
+          "text": "Không tính được"
+        }
+      ],
+      "prompt": "Doanh nghiệp P/E cao nhưng lợi nhuận tăng rất nhanh có thể có PEG thế nào?"
+    },
+    {
+      "correct_option_id": "8fe5259f08",
+      "id": "ch13-exam-q19",
+      "options": [
+        {
+          "id": "8fe5259f08",
+          "text": "Mức tăng từ nền thấp khó lặp lại lâu dài"
+        },
+        {
+          "id": "a5cdac4ceb",
+          "text": "Vì khi đó P/E luôn bằng 0"
+        },
+        {
+          "id": "613ca18637",
+          "text": "Vì PEG chỉ tính cho năm thua lỗ"
+        }
+      ],
+      "prompt": "Vì sao tăng trưởng đột biến sau một năm thua lỗ làm PEG kém tin cậy?"
+    },
+    {
+      "correct_option_id": "35e7273bb3",
+      "id": "ch13-exam-q20",
+      "options": [
+        {
+          "id": "35e7273bb3",
+          "text": "Giá đã cao so với tốc độ tăng lợi nhuận"
+        },
+        {
+          "id": "5b25d30ea2",
+          "text": "Lợi nhuận đang tăng nhanh hơn giá cổ phiếu"
+        },
+        {
+          "id": "354d211434",
+          "text": "Doanh nghiệp đang có lãi bất thường"
+        }
+      ],
+      "prompt": "PEG cao hơn 1 cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "5b77b1dcbe",
+      "id": "ch13-exam-q21",
+      "options": [
+        {
+          "id": "5b77b1dcbe",
+          "text": "Trừ ra"
+        },
+        {
+          "id": "56ce904b49",
+          "text": "Cộng vào"
+        },
+        {
+          "id": "85abd483fb",
+          "text": "Bỏ qua"
+        }
+      ],
+      "prompt": "Khi tính EV, tiền mặt của doanh nghiệp được xử lý thế nào?"
+    },
+    {
+      "correct_option_id": "45389be2f1",
+      "id": "ch13-exam-q22",
+      "options": [
+        {
+          "id": "45389be2f1",
+          "text": "Doanh nghiệp có nợ vay ròng lớn hơn"
+        },
+        {
+          "id": "e8d3be8137",
+          "text": "Doanh nghiệp có nhiều tiền mặt hơn"
+        },
+        {
+          "id": "d7563adabb",
+          "text": "Hai doanh nghiệp luôn có chỉ số bằng nhau"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp cùng vốn hóa và cùng EBITDA, doanh nghiệp nào có EV/EBITDA cao hơn?"
+    },
+    {
+      "correct_option_id": "9786b48cc8",
+      "id": "ch13-exam-q23",
+      "options": [
+        {
+          "id": "9786b48cc8",
+          "text": "Với ngân hàng, nợ là nguyên liệu kinh doanh"
+        },
+        {
+          "id": "cfd625e4f9",
+          "text": "Vì ngân hàng không có lợi nhuận"
+        },
+        {
+          "id": "f0c82d2c1b",
+          "text": "Vì ngân hàng không có vốn hóa"
+        }
+      ],
+      "prompt": "Vì sao không nên dùng EV/EBITDA cho ngân hàng?"
+    },
+    {
+      "correct_option_id": "7a65333e2e",
+      "id": "ch13-exam-q24",
+      "options": [
+        {
+          "id": "7a65333e2e",
+          "text": "EBITDA chưa trừ chi đầu tư và thuế"
+        },
+        {
+          "id": "13415be86d",
+          "text": "EBITDA đã trừ hai lần chi phí lãi vay"
+        },
+        {
+          "id": "61cd2e487f",
+          "text": "EBITDA chỉ tính doanh thu bán chịu"
+        }
+      ],
+      "prompt": "Vì sao không nên coi EBITDA là tiền mặt?"
+    },
+    {
+      "correct_option_id": "3d2006a257",
+      "id": "ch13-exam-q25",
+      "options": [
+        {
+          "id": "3d2006a257",
+          "text": "Dòng tiền từ hoạt động kinh doanh"
+        },
+        {
+          "id": "d21b03ca30",
+          "text": "Chi đầu tư tài sản cố định"
+        },
+        {
+          "id": "3b580bd8b2",
+          "text": "Lợi nhuận trước thuế và trước lãi vay"
+        }
+      ],
+      "prompt": "CFO là gì?"
+    },
+    {
+      "correct_option_id": "f126098689",
+      "id": "ch13-exam-q26",
+      "options": [
+        {
+          "id": "f126098689",
+          "text": "Chi đầu tư tài sản cố định"
+        },
+        {
+          "id": "23af4d3c21",
+          "text": "Chi trả cổ tức tiền mặt"
+        },
+        {
+          "id": "6ea96681e6",
+          "text": "Chi phí lãi vay trả cho ngân hàng"
+        }
+      ],
+      "prompt": "Capex là gì?"
+    },
+    {
+      "correct_option_id": "199a15571d",
+      "id": "ch13-exam-q27",
+      "options": [
+        {
+          "id": "199a15571d",
+          "text": "Doanh nghiệp chi nhiều tiền hơn tạo ra"
+        },
+        {
+          "id": "1735fb0906",
+          "text": "Cổ phiếu đang rẻ hơn lịch sử"
+        },
+        {
+          "id": "ba2027e5d4",
+          "text": "Doanh nghiệp hoàn toàn không có nợ vay"
+        }
+      ],
+      "prompt": "FCF Yield âm cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "20876d23d1",
+      "id": "ch13-exam-q28",
+      "options": [
+        {
+          "id": "20876d23d1",
+          "text": "Có thể do cắt đầu tư hoặc khoản thu một lần"
+        },
+        {
+          "id": "17e593a9da",
+          "text": "Vì FCF Yield cao luôn đi kèm thua lỗ"
+        },
+        {
+          "id": "466d72f647",
+          "text": "Vì FCF Yield chỉ dùng cho ngân hàng"
+        }
+      ],
+      "prompt": "Vì sao FCF Yield cao chưa chắc là rẻ?"
+    },
+    {
+      "correct_option_id": "5672cbf35a",
+      "id": "ch13-exam-q29",
+      "options": [
+        {
+          "id": "5672cbf35a",
+          "text": "Rẻ hơn thường lệ, cần kiểm tra thêm lợi nhuận"
+        },
+        {
+          "id": "7fded77cb5",
+          "text": "Đắt hơn thường lệ, nên tránh mua ngay lập tức"
+        },
+        {
+          "id": "89a55698e1",
+          "text": "Doanh nghiệp đang tăng trưởng mạnh"
+        }
+      ],
+      "prompt": "Với P/E, P/B, P/S và EV/EBITDA, chỉ số thấp hơn lịch sử thường được hiểu là gì?"
+    },
+    {
+      "correct_option_id": "ec6a455eb2",
+      "id": "ch13-exam-q30",
+      "options": [
+        {
+          "id": "ec6a455eb2",
+          "text": "Trung vị 3 năm của chính doanh nghiệp"
+        },
+        {
+          "id": "017dcda90a",
+          "text": "Chỉ số của toàn thị trường"
+        },
+        {
+          "id": "a5c8b3c861",
+          "text": "Kế hoạch lợi nhuận năm sau của doanh nghiệp"
+        }
+      ],
+      "prompt": "Biểu đồ đại diện của P/E, P/B, P/S, EV/EBITDA và FCF Yield giúp so sánh với gì?"
+    }
+  ],
+  "salt": "601145f167c5f1ddb6450ce13e0a528aa4f170d8d68484f8c25fed1a767c169f"
+}

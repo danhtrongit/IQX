@@ -56,9 +56,9 @@ function portfolioWith(sellable: number) {
   }
 }
 
-function renderPanel() {
+function renderPanel(onNavigate?: (panel: string) => void) {
   const onSymbolChange = vi.fn()
-  render(<OrderPanel symbol="VNM" onSymbolChange={onSymbolChange} />)
+  render(<OrderPanel symbol="VNM" onSymbolChange={onSymbolChange} onNavigate={onNavigate} />)
   return { onSymbolChange, user: userEvent.setup() }
 }
 
@@ -155,5 +155,17 @@ describe("OrderPanel (plain manual order form)", () => {
     expect(screen.getByRole("button", { name: "ĐẶT LỆNH MUA" })).toHaveProperty("disabled", true)
     await user.click(screen.getByRole("button", { name: "Mở tài khoản Demo Trading" }))
     expect(mocks.activate).toHaveBeenCalledTimes(1)
+  })
+
+  it("shows the learning shortcut when the Demo account has no capital, and never a NaN return", async () => {
+    const onNavigate = vi.fn()
+    mocks.account = { ...account, cash_available_vnd: 0, total_cash_vnd: 0 }
+    mocks.portfolio = { ...portfolioWith(0), account: mocks.account, nav_vnd: 0 }
+    const { user } = renderPanel(onNavigate)
+    expect(screen.getByText("Học bài để nhận vốn: 1 bài = 100 xu = 1.000.000đ")).toBeTruthy()
+    expect(document.body.textContent).not.toMatch(/NaN|∞/)
+    expect(screen.getByText(/0\.00%/)).toBeTruthy()
+    await user.click(screen.getByRole("button", { name: "Vào Học viện" }))
+    expect(onNavigate).toHaveBeenCalledWith("academy")
   })
 })

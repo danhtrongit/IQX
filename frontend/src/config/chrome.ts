@@ -2,6 +2,8 @@ import {
   BookOpen,
   Bot,
   ChartCandlestick,
+  History,
+  LayoutDashboard,
   Newspaper,
   ScanSearch,
   ShoppingCart,
@@ -46,7 +48,8 @@ export const HEADER_NAV: readonly { to: string; label: string; hidden?: boolean 
 
 /**
  * Workspace tools, top to bottom per section (layout v1.2). DEMO TRADING:
- * Đặt lệnh · Danh mục · Tin tức · Insight; HỌC VIỆN: Học viện · Bot · Shop.
+ * Đặt lệnh · Danh mục · Tin tức · Insight · Dashboard phân tích; HỌC VIỆN:
+ * Học viện · Bot · Shop. Insight and Dashboard phân tích replace the main area.
  * Săn mã and Mẫu nến are hidden; their links land on Demo Trading → Biểu đồ.
  * A missing or unknown tool is "Đặt lệnh" (DEMO TRADING).
  */
@@ -58,11 +61,13 @@ export const demoChrome: RouteChrome = {
     { id: "portfolio", label: "Danh mục", icon: Wallet, affects: "sidebar", section: "demo" },
     { id: "news", label: "Tin tức", icon: Newspaper, affects: "sidebar", section: "demo" },
     { id: "insight", label: "Insight", icon: TrendingUp, affects: "left", section: "demo" },
+    { id: "dashboard", label: "Dashboard phân tích", icon: LayoutDashboard, affects: "left", section: "demo" },
     { id: "hunt", label: "Săn mã", icon: ScanSearch, affects: "sidebar", section: "demo", hidden: true },
     { id: "patterns", label: "Mẫu nến", icon: ChartCandlestick, affects: "sidebar", section: "demo", hidden: true },
     { id: "academy", label: "Học viện", icon: BookOpen, affects: "sidebar", section: "academy" },
     { id: "bot", label: "Bot", icon: Bot, affects: "sidebar", section: "academy" },
     { id: "shop", label: "Shop", icon: Store, affects: "sidebar", section: "academy" },
+    { id: "flashback", label: "Flashback", icon: History, affects: "sidebar", section: "academy" },
   ],
 }
 

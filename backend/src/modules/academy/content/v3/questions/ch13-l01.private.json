@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l01",
+  "questions": [
+    {
+      "correct_option_id": "41745b9ab3",
+      "id": "ch13-l01-q01",
+      "options": [
+        {
+          "id": "41745b9ab3",
+          "text": "Giá cổ phiếu chia cho EPS 4 quý gần nhất"
+        },
+        {
+          "id": "9709f29509",
+          "text": "Giá cổ phiếu chia cho vốn chủ sở hữu mỗi cổ phiếu"
+        },
+        {
+          "id": "114a6bc85e",
+          "text": "Lợi nhuận 4 quý chia cho doanh thu 4 quý"
+        }
+      ],
+      "prompt": "P/E được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "654d555fe2",
+      "id": "ch13-l01-q02",
+      "options": [
+        {
+          "id": "654d555fe2",
+          "text": "Giá bằng 12 lần lợi nhuận một năm của cổ phiếu"
+        },
+        {
+          "id": "adca2f3031",
+          "text": "Lợi nhuận doanh nghiệp tăng trưởng 12% mỗi năm"
+        },
+        {
+          "id": "e8a6aab9b3",
+          "text": "Cổ phiếu trả cổ tức tiền mặt 12% mỗi năm"
+        }
+      ],
+      "prompt": "P/E bằng 12 có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "54b01f31c7",
+      "id": "ch13-l01-q03",
+      "options": [
+        {
+          "id": "54b01f31c7",
+          "text": "Lợi nhuận có thể đang ở đỉnh và sắp giảm"
+        },
+        {
+          "id": "1c769ac83e",
+          "text": "Vì P/E thấp luôn đi kèm mức nợ vay rất lớn"
+        },
+        {
+          "id": "e11a452a80",
+          "text": "Vì P/E chỉ dùng được cho ngân hàng"
+        }
+      ],
+      "prompt": "Vì sao P/E thấp chưa chắc là cổ phiếu rẻ?"
+    },
+    {
+      "correct_option_id": "b0ae30001b",
+      "id": "ch13-l01-q04",
+      "options": [
+        {
+          "id": "b0ae30001b",
+          "text": "Cổ phiếu đang rẻ hơn so với lịch sử của chính nó"
+        },
+        {
+          "id": "4624d58527",
+          "text": "Lợi nhuận doanh nghiệp đang tăng rất nhanh"
+        },
+        {
+          "id": "8a7f118db9",
+          "text": "Cổ phiếu đắt hơn các doanh nghiệp cùng ngành"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của P/E, P/E nằm dưới dải trung vị ± độ lệch chuẩn cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "1ef0e89b18",
+      "id": "ch13-l01-q05",
+      "options": [
+        {
+          "id": "1ef0e89b18",
+          "text": "Lịch sử của chính nó và doanh nghiệp cùng ngành"
+        },
+        {
+          "id": "e77029a7b8",
+          "text": "P/E của các doanh nghiệp thuộc ngành bất kỳ khác"
+        },
+        {
+          "id": "3dd8053168",
+          "text": "Lãi suất cho vay của ngân hàng"
+        }
+      ],
+      "prompt": "Nên so P/E của một doanh nghiệp với gì?"
+    }
+  ],
+  "salt": "133883dd5aae49023304600a5420d0663d941fbea16cfa69ebbd7d6f3c6c8bc9"
+}

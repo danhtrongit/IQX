@@ -3,62 +3,62 @@
   "item_id": "ch02-l07",
   "questions": [
     {
-      "correct_option_id": "75abcaf9ae",
+      "correct_option_id": "f9448222de",
       "id": "ch02-l07-q01",
       "options": [
         {
-          "id": "75abcaf9ae",
+          "id": "f9448222de",
           "text": "Khách chưa hiểu hoặc đang lo một điều gì đó"
         },
         {
-          "id": "1d37b062d5",
+          "id": "8a82f9a6fc",
           "text": "Khách sẽ không bao giờ đầu tư"
         },
         {
-          "id": "deff2f0a12",
+          "id": "7334af30aa",
           "text": "Khách ghét SACO"
         }
       ],
       "prompt": "Lời từ chối của khách thường có nghĩa là gì?"
     },
     {
-      "correct_option_id": "cb66a8ed0f",
+      "correct_option_id": "7f3ddcb010",
       "id": "ch02-l07-q02",
       "options": [
         {
-          "id": "cb66a8ed0f",
+          "id": "7f3ddcb010",
           "text": "Đồng cảm"
         },
         {
-          "id": "1aeded1d40",
+          "id": "57d86c6ff6",
           "text": "Phản bác ngay"
         },
         {
-          "id": "1cab4b73a0",
+          "id": "859b6c3c77",
           "text": "Đưa ra cam kết lợi nhuận"
         }
       ],
       "prompt": "Bước đầu tiên trong công thức xử lý từ chối là gì?"
     },
     {
-      "correct_option_id": "8ca2275f70",
+      "correct_option_id": "5fb4e8b07b",
       "id": "ch02-l07-q03",
       "options": [
         {
-          "id": "8ca2275f70",
+          "id": "5fb4e8b07b",
           "text": "Thừa nhận có rủi ro, gợi ý bắt đầu nhỏ và đặt mức cắt lỗ trước"
         },
         {
-          "id": "2867b95156",
+          "id": "029d13462a",
           "text": "Cam kết sẽ không bao giờ lỗ"
         },
         {
-          "id": "062fd802a1",
+          "id": "b50dec31e7",
           "text": "Nói rằng ai cũng lãi cả"
         }
       ],
       "prompt": "Khi khách nói “Tôi sợ lỗ”, câu trả lời phù hợp là gì?"
     }
   ],
-  "salt": "71fd4f2d2c82b9f0d2de570bb3e8ad387319aac3b96a28b3e61b1d2244a3980c"
+  "salt": "febc3ca8cd0aca339cd1a703b45858b5013b495bc07c4ce7b2dfa2fb8854b93e"
 }

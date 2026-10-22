@@ -132,6 +132,31 @@
       "requestType": "AdminAuditControllerExport1Data",
       "responseType": "AdminAuditControllerExport1Responses"
     },
+    "GET /api/v2/admin/flashback/alerts": {
+      "operationId": "flashbackAdminAlerts",
+      "requestType": "FlashbackAdminAlertsData",
+      "responseType": "FlashbackAdminAlertsResponses"
+    },
+    "GET /api/v2/admin/flashback/pause": {
+      "operationId": "flashbackAdminPauseStatus",
+      "requestType": "FlashbackAdminPauseStatusData",
+      "responseType": "FlashbackAdminPauseStatusResponses"
+    },
+    "GET /api/v2/admin/flashback/rounds": {
+      "operationId": "flashbackAdminRounds",
+      "requestType": "FlashbackAdminRoundsData",
+      "responseType": "FlashbackAdminRoundsResponses"
+    },
+    "GET /api/v2/admin/flashback/rounds/{id}/reveal": {
+      "operationId": "flashbackAdminReveal",
+      "requestType": "FlashbackAdminRevealData",
+      "responseType": "FlashbackAdminRevealResponses"
+    },
+    "GET /api/v2/admin/flashback/suspects": {
+      "operationId": "flashbackAdminSuspects",
+      "requestType": "FlashbackAdminSuspectsData",
+      "responseType": "FlashbackAdminSuspectsResponses"
+    },
     "GET /api/v2/admin/ipn": {
       "operationId": "adminListIpnLogs_get_api_v2_admin_ipn",
       "requestType": "AdminListIpnLogsGetApiV2AdminIpnData",
@@ -611,6 +636,36 @@
       "operationId": "getChartDrawingV2",
       "requestType": "GetChartDrawingV2Data",
       "responseType": "GetChartDrawingV2Responses"
+    },
+    "GET /api/v2/dashboard/catalog": {
+      "operationId": "dashboardCatalog",
+      "requestType": "DashboardCatalogData",
+      "responseType": "DashboardCatalogResponses"
+    },
+    "GET /api/v2/dashboard/settings": {
+      "operationId": "dashboardSettings",
+      "requestType": "DashboardSettingsData",
+      "responseType": "DashboardSettingsResponses"
+    },
+    "GET /api/v2/flashback/current": {
+      "operationId": "flashbackCurrent",
+      "requestType": "FlashbackCurrentData",
+      "responseType": "FlashbackCurrentResponses"
+    },
+    "GET /api/v2/flashback/current/leaderboard": {
+      "operationId": "flashbackLeaderboard",
+      "requestType": "FlashbackLeaderboardData",
+      "responseType": "FlashbackLeaderboardResponses"
+    },
+    "GET /api/v2/flashback/indicators": {
+      "operationId": "flashbackIndicators",
+      "requestType": "FlashbackIndicatorsData",
+      "responseType": "FlashbackIndicatorsResponses"
+    },
+    "GET /api/v2/fundamental/{symbol}": {
+      "operationId": "dashboardFundamental",
+      "requestType": "DashboardFundamentalData",
+      "responseType": "DashboardFundamentalResponses"
     },
     "GET /api/v2/health": {
       "operationId": "legacyHealth_get_api_v2_health",
@@ -1252,6 +1307,11 @@
       "requestType": "UsersControllerMe1Data",
       "responseType": "UsersControllerMe1Responses"
     },
+    "GET /api/v2/valuation/{symbol}": {
+      "operationId": "dashboardValuation",
+      "requestType": "DashboardValuationData",
+      "responseType": "DashboardValuationResponses"
+    },
     "GET /api/v2/virtual-trading/account": {
       "operationId": "TradingController_account[1]",
       "requestType": "TradingControllerAccount1Data",
@@ -1416,6 +1476,11 @@
       "operationId": "AdminAlertsController_setupTelegramWebhook[1]",
       "requestType": "AdminAlertsControllerSetupTelegramWebhook1Data",
       "responseType": "AdminAlertsControllerSetupTelegramWebhook1Responses"
+    },
+    "POST /api/v2/admin/flashback/pause": {
+      "operationId": "flashbackAdminPause",
+      "requestType": "FlashbackAdminPauseData",
+      "responseType": "FlashbackAdminPauseResponses"
     },
     "POST /api/v2/admin/ipn/{log_id}/retry": {
       "operationId": "adminRetryIpn_post_api_v2_admin_ipn_log_id_retry",
@@ -1837,6 +1902,26 @@
       "requestType": "SyncCap8PlanV2Data",
       "responseType": "SyncCap8PlanV2Responses"
     },
+    "POST /api/v2/flashback/current/join": {
+      "operationId": "flashbackJoin",
+      "requestType": "FlashbackJoinData",
+      "responseType": "FlashbackJoinResponses"
+    },
+    "POST /api/v2/flashback/entries/{id}/finish": {
+      "operationId": "flashbackFinish",
+      "requestType": "FlashbackFinishData",
+      "responseType": "FlashbackFinishResponses"
+    },
+    "POST /api/v2/flashback/entries/{id}/next": {
+      "operationId": "flashbackNext",
+      "requestType": "FlashbackNextData",
+      "responseType": "FlashbackNextResponses"
+    },
+    "POST /api/v2/flashback/entries/{id}/orders": {
+      "operationId": "flashbackPlaceOrder",
+      "requestType": "FlashbackPlaceOrderData",
+      "responseType": "FlashbackPlaceOrderResponses"
+    },
     "POST /api/v2/journey/assessments": {
       "operationId": "JourneyIdentityController_submit[1]",
       "requestType": "JourneyIdentityControllerSubmit1Data",
@@ -1916,6 +2001,21 @@
       "operationId": "receiveSePayIpn_post_api_v2_premium_sepay_ipn",
       "requestType": "ReceiveSePayIpnPostApiV2PremiumSepayIpnData",
       "responseType": "ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses"
+    },
+    "POST /api/v2/shop/demo-exchange": {
+      "operationId": "exchangeShopDemoCash",
+      "requestType": "ExchangeShopDemoCashData",
+      "responseType": "ExchangeShopDemoCashResponses"
+    },
+    "POST /api/v2/shop/pets/{mascotId}/evolve": {
+      "operationId": "evolveShopPet",
+      "requestType": "EvolveShopPetData",
+      "responseType": "EvolveShopPetResponses"
+    },
+    "POST /api/v2/shop/premium-purchases": {
+      "operationId": "purchaseShopPremiumWithXu",
+      "requestType": "PurchaseShopPremiumWithXuData",
+      "responseType": "PurchaseShopPremiumWithXuResponses"
     },
     "POST /api/v2/shop/purchases": {
       "operationId": "purchaseShopMascot",
@@ -2056,6 +2156,16 @@
       "operationId": "saveChartDrawingV2",
       "requestType": "SaveChartDrawingV2Data",
       "responseType": "SaveChartDrawingV2Responses"
+    },
+    "PUT /api/v2/dashboard/settings": {
+      "operationId": "dashboardSaveSettings",
+      "requestType": "DashboardSaveSettingsData",
+      "responseType": "DashboardSaveSettingsResponses"
+    },
+    "PUT /api/v2/flashback/entries/{id}/indicators": {
+      "operationId": "flashbackSaveIndicators",
+      "requestType": "FlashbackSaveIndicatorsData",
+      "responseType": "FlashbackSaveIndicatorsResponses"
     },
     "PUT /api/v2/practice/{indicatorId}/draft": {
       "operationId": "practiceSaveDraft",

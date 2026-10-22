@@ -3,100 +3,100 @@
   "item_id": "ch05-l01",
   "questions": [
     {
-      "correct_option_id": "f5474855ca",
+      "correct_option_id": "724e77a4ee",
       "id": "ch05-l01-q01",
       "options": [
         {
-          "id": "f5474855ca",
+          "id": "724e77a4ee",
           "text": "Đầu tư một số tiền cố định theo định kỳ, bất kể giá lên hay xuống"
         },
         {
-          "id": "2c701280f0",
+          "id": "fedcbc5292",
           "text": "Mua toàn bộ một lần khi giá thấp nhất"
         },
         {
-          "id": "a04e8e9f57",
+          "id": "e48476595a",
           "text": "Bán ra mỗi khi giá tăng 10%"
         }
       ],
       "prompt": "Đầu tư định kỳ (DCA) là phương pháp gì?"
     },
     {
-      "correct_option_id": "5ac6ff4d1e",
+      "correct_option_id": "9b8404f912",
       "id": "ch05-l01-q02",
       "options": [
         {
-          "id": "5ac6ff4d1e",
+          "id": "9b8404f912",
           "text": "Nhiều hơn"
         },
         {
-          "id": "b5c9a350d5",
+          "id": "dcfd8fe516",
           "text": "Ít hơn"
         },
         {
-          "id": "c746d41655",
+          "id": "ccce765ef0",
           "text": "Không thay đổi"
         }
       ],
       "prompt": "Khi giá giảm, cùng một số tiền DCA mua được số lượng thế nào?"
     },
     {
-      "correct_option_id": "56925a7959",
+      "correct_option_id": "611c3f163e",
       "id": "ch05-l01-q03",
       "options": [
         {
-          "id": "56925a7959",
+          "id": "611c3f163e",
           "text": "Không cần đoán thời điểm mua"
         },
         {
-          "id": "ff286fe4ff",
+          "id": "41e3fcb8c3",
           "text": "Luôn lãi nhiều hơn mua một lần"
         },
         {
-          "id": "ba66507a5b",
+          "id": "3e3de803e8",
           "text": "Hoàn toàn không có rủi ro"
         }
       ],
       "prompt": "Ưu điểm lớn nhất của DCA là gì?"
     },
     {
-      "correct_option_id": "97d2a7f36a",
+      "correct_option_id": "8e8859491a",
       "id": "ch05-l01-q04",
       "options": [
         {
-          "id": "97d2a7f36a",
+          "id": "8e8859491a",
           "text": "Quỹ, ETF hoặc cổ phiếu doanh nghiệp tốt"
         },
         {
-          "id": "aef88cd540",
+          "id": "f9bb5c6e07",
           "text": "Cổ phiếu đầu cơ kém chất lượng"
         },
         {
-          "id": "3180804689",
+          "id": "f7964564f4",
           "text": "Chứng quyền sắp đáo hạn"
         }
       ],
       "prompt": "Tài sản nào phù hợp để đầu tư định kỳ?"
     },
     {
-      "correct_option_id": "40606dfe7a",
+      "correct_option_id": "85c6427a7f",
       "id": "ch05-l01-q05",
       "options": [
         {
-          "id": "40606dfe7a",
+          "id": "85c6427a7f",
           "text": "Tiếp tục đầu tư theo kế hoạch"
         },
         {
-          "id": "e37c586ab2",
+          "id": "d7783f85d4",
           "text": "Dừng đầu tư và bán toàn bộ"
         },
         {
-          "id": "49f86b366f",
+          "id": "031aba6d57",
           "text": "Vay margin để mua thêm"
         }
       ],
       "prompt": "Khi thị trường giảm, người đầu tư định kỳ nên làm gì?"
     }
   ],
-  "salt": "3b00fe56a938b0c85cc30f27ec32e842c9e026fcb878d4cc3533300eb5c7d3ec"
+  "salt": "37c74ce7456db93ae01287ce914d195a91bfef929e797c6e8ad9fa2cf9ee2703"
 }

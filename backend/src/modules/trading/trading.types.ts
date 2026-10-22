@@ -34,6 +34,8 @@ export type TradingAccount = {
   cashAvailableVnd: Money;
   cashReservedVnd: Money;
   cashPendingVnd: Money;
+  /** Net capital deposited from outside (xu converted into cash, minus cash converted out). */
+  netDepositedCashVnd: Money;
   activatedAt: Date;
   resetAt: Date | null;
   frozenAt: Date | null;

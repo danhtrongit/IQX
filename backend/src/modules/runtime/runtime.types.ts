@@ -19,6 +19,7 @@ export const RUNTIME_JOB_NAMES = [
   'market.snapshot-wave-1',
   'market.snapshot-wave-2',
   'market.snapshot-wave-3',
+  'flashback.round-cycle',
 ] as const;
 
 export type RuntimeJobName = (typeof RUNTIME_JOB_NAMES)[number];

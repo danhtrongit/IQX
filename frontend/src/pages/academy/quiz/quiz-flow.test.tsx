@@ -215,6 +215,17 @@ describe("quiz: score-only result", () => {
     expect(screen.getByText("Đã mở chỉ báo RSI")).toBeTruthy()
   })
 
+  it("a fundamental lesson opens a chỉ tiêu: Đã mở chỉ tiêu ROE on the ROE lesson pass", async () => {
+    install({ completed: keysBefore("ch10-l01") })
+    const user = userEvent.setup()
+    await openItem("ch10-l01", "Bài học 10.1")
+    await start(user)
+    await answerAll(user, 5)
+    expect((await screen.findByLabelText("Điểm 5 trên 5")).textContent).toBe("5/5")
+    expect(screen.getByText("Đã mở chỉ tiêu ROE")).toBeTruthy()
+    expect(screen.queryByText(/Đã mở chỉ báo/)).toBeNull()
+  })
+
   it("an exam: Bài thi Chương c label, 20 questions, Đã hoàn thành Chương c, no coin toast", async () => {
     install({ completed: keysBefore("ch01-exam") })
     const user = userEvent.setup()

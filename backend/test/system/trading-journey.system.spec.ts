@@ -46,7 +46,7 @@ describe('system acceptance: virtual trading without journey gates', () => {
     expect([400, 409]).toContain(missingGate.statusCode);
   });
 
-  it('funds the manual account once via workspace ensure and fills a BUY without a plan', async () => {
+  it('opens the manual account once with no capital and fills a BUY without a plan', async () => {
     const user = await registerAndLogin(stack.app, 'journey-free');
     const headers = authHeader(user.accessToken);
     for (let call = 0; call < 2; call += 1) {
@@ -57,6 +57,7 @@ describe('system acceptance: virtual trading without journey gates', () => {
       });
       expect([200, 201], ensure.body).toContain(ensure.statusCode);
     }
+    // Flashback spec §1.3: the Demo account opens with 0đ, the user converts xu into cash.
     const funding = await stack.query<{ count: string; total: string }>(
       `select count(*)::text as count, coalesce(sum(l.amount_vnd), 0)::text as total
        from virtual_cash_ledger l
@@ -64,8 +65,34 @@ describe('system acceptance: virtual trading without journey gates', () => {
        where a.user_id = $1 and l.idempotency_key is not null`,
       [user.id],
     );
-    expect(funding[0]).toEqual({ count: '1', total: '100000000' });
+    expect(funding[0]).toEqual({ count: '1', total: '0' });
 
+    const empty = await stack.query<{ cash_available_vnd: string; net_deposited_cash_vnd: string }>(
+      'select cash_available_vnd, net_deposited_cash_vnd from virtual_trading_accounts where user_id = $1',
+      [user.id],
+    );
+    expect(empty[0]).toMatchObject({
+      cash_available_vnd: '0',
+      net_deposited_cash_vnd: '0',
+    });
+
+    // Without capital there is nothing to buy with.
+    const refused = await stack.app.inject({
+      method: 'POST',
+      url: '/api/v2/virtual-trading/orders',
+      headers,
+      payload: { symbol: 'VNM', side: 'buy', order_type: 'market', quantity: 100 },
+    });
+    expect(refused.statusCode, refused.body).toBeGreaterThanOrEqual(400);
+
+    // Capital converted from xu is what makes the order path work.
+    await stack.query(
+      `update virtual_trading_accounts
+          set initial_cash_vnd = 100000000, cash_available_vnd = 100000000,
+              net_deposited_cash_vnd = 100000000
+        where user_id = $1`,
+      [user.id],
+    );
     const buy = await stack.app.inject({
       method: 'POST',
       url: '/api/v2/virtual-trading/orders',
@@ -84,6 +111,13 @@ describe('system acceptance: virtual trading without journey gates', () => {
       headers: authHeader(user.accessToken),
     });
     expect([200, 201]).toContain(activate.statusCode);
+    await stack.query(
+      `update virtual_trading_accounts
+          set initial_cash_vnd = 100000000, cash_available_vnd = 100000000,
+              net_deposited_cash_vnd = 100000000
+        where user_id = $1`,
+      [user.id],
+    );
     const payload = {
       symbol: 'VCB',
       side: 'buy',

@@ -11,7 +11,7 @@
  * the form; the order is placed solely by the confirm button.
  */
 import { useState } from "react"
-import { LoaderCircle, Star } from "lucide-react"
+import { ArrowRight, LoaderCircle, Star } from "lucide-react"
 import { toast } from "sonner"
 
 import { SidebarPanel } from "@/components/layout/sidebar-panel"
@@ -42,15 +42,17 @@ export type OrderPanelProps = {
   symbol: string
   /** Switch the panel to another symbol (keeps the shell, unlike a route change). */
   onSymbolChange: (symbol: string) => void
+  /** Chuyển sang công cụ khác của cùng workspace (Học viện khi tài khoản Demo chưa có vốn). */
+  onNavigate?: (panel: string) => void
 }
 
-export function OrderPanel({ symbol, onSymbolChange }: OrderPanelProps) {
+export function OrderPanel({ symbol, onSymbolChange, onNavigate }: OrderPanelProps) {
   // A symbol change starts a NEW order: remounting drops the typed quantity and
   // limit price so they cannot be sent for a different stock.
-  return <OrderTicket key={symbol} symbol={symbol} onSymbolChange={onSymbolChange} />
+  return <OrderTicket key={symbol} symbol={symbol} onSymbolChange={onSymbolChange} onNavigate={onNavigate} />
 }
 
-function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
+function OrderTicket({ symbol, onSymbolChange, onNavigate }: OrderPanelProps) {
   const { isAuthenticated, isLoading: authLoading, openAuth } = useAuth()
   const { data: quote, isLoading: quoteLoading } = useQuote(symbol)
   const { data: account } = useTradingAccount()
@@ -258,6 +260,17 @@ function OrderTicket({ symbol, onSymbolChange }: OrderPanelProps) {
                 <span className="text-[11px] text-muted-foreground">Tiền khả dụng</span>
                 <span className="text-sm font-bold tabular-nums">{formatMoney(account.cash_available_vnd)}</span>
               </div>
+              {account.cash_available_vnd === 0 && (
+                <div className="rounded-md border border-border bg-muted/40 p-2.5" data-testid="demo-no-capital">
+                  <p className="text-xs leading-5 text-foreground">Học bài để nhận vốn: 1 bài = 100 xu = 1.000.000đ</p>
+                  {onNavigate && (
+                    <Button type="button" size="sm" variant="outline" className="mt-2 w-full" onClick={() => onNavigate("academy")}>
+                      Vào Học viện
+                      <ArrowRight aria-hidden="true" />
+                    </Button>
+                  )}
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <span className="text-[11px] text-muted-foreground">CP có thể bán</span>
                 <span className="text-xs font-medium tabular-nums">{sellable.toLocaleString("vi-VN")} CP</span>

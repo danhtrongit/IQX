@@ -4,7 +4,7 @@ import { CompareChart } from "./compare-chart"
 import { LeafChart } from "./leaf-chart"
 
 /**
- * Draws one precomputed chart model of a lesson. Every `kind` of the v3.2 schema has a renderer;
+ * Draws one precomputed chart model of a lesson. Every `kind` of the v3.3 schema has a renderer;
  * colours come from theme tokens (chart-theme.ts) and every chart lays out at the measured width.
  */
 export function LessonChart({ model, label, autoLegend = true }: { model: ChartModel; label: string; autoLegend?: boolean }) {

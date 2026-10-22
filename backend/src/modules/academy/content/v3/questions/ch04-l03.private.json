@@ -3,100 +3,100 @@
   "item_id": "ch04-l03",
   "questions": [
     {
-      "correct_option_id": "caf2f657b3",
+      "correct_option_id": "5e742c3640",
       "id": "ch04-l03-q01",
       "options": [
         {
-          "id": "caf2f657b3",
+          "id": "5e742c3640",
           "text": "Vùng giá mà lực mua đủ mạnh để ngăn giá giảm tiếp"
         },
         {
-          "id": "5c7df4a232",
+          "id": "87ca5c0601",
           "text": "Vùng giá mà lực bán đủ mạnh để ngăn giá tăng tiếp"
         },
         {
-          "id": "deea0f03fb",
+          "id": "b22530ef69",
           "text": "Mức giá thấp nhất được phép đặt lệnh trong phiên"
         }
       ],
       "prompt": "Hỗ trợ là gì?"
     },
     {
-      "correct_option_id": "24e8603221",
+      "correct_option_id": "ac95e1500d",
       "id": "ch04-l03-q02",
       "options": [
         {
-          "id": "b9e864f0ad",
+          "id": "2793b42437",
           "text": "Mức giá cao nhất được phép đặt lệnh trong phiên"
         },
         {
-          "id": "24e8603221",
+          "id": "ac95e1500d",
           "text": "Vùng giá mà lực bán đủ mạnh để ngăn giá tăng tiếp"
         },
         {
-          "id": "aaf9b955b6",
+          "id": "24211a9284",
           "text": "Vùng giá mà lực mua đủ mạnh để ngăn giá giảm tiếp"
         }
       ],
       "prompt": "Kháng cự là gì?"
     },
     {
-      "correct_option_id": "f6620b56e5",
+      "correct_option_id": "e51eacfce3",
       "id": "ch04-l03-q03",
       "options": [
         {
-          "id": "e537af6def",
+          "id": "b51c0f4ad7",
           "text": "Kháng cự mạnh hơn"
         },
         {
-          "id": "d6bf46a59e",
+          "id": "9da8c90fc0",
           "text": "Không còn ý nghĩa"
         },
         {
-          "id": "f6620b56e5",
+          "id": "e51eacfce3",
           "text": "Hỗ trợ"
         }
       ],
       "prompt": "Khi giá vượt lên trên vùng kháng cự, vùng này thường trở thành gì?"
     },
     {
-      "correct_option_id": "c84f4f6c27",
+      "correct_option_id": "2a1747353a",
       "id": "ch04-l03-q04",
       "options": [
         {
-          "id": "c84f4f6c27",
+          "id": "2a1747353a",
           "text": "Một vùng giá"
         },
         {
-          "id": "71961bec03",
+          "id": "8d5a7d1de6",
           "text": "Một mức giá chính xác"
         },
         {
-          "id": "1f99ba9ed4",
+          "id": "79c52f9d04",
           "text": "Giá tham chiếu của phiên"
         }
       ],
       "prompt": "Hỗ trợ và kháng cự nên được xem là gì?"
     },
     {
-      "correct_option_id": "3460b84891",
+      "correct_option_id": "ac000b105c",
       "id": "ch04-l03-q05",
       "options": [
         {
-          "id": "adee45a035",
+          "id": "b8b94ea681",
           "text": "Giá vượt lên trong phiên rồi quay lại ngay"
         },
         {
-          "id": "3460b84891",
+          "id": "ac000b105c",
           "text": "Giá đóng cửa vượt rõ ràng kèm khối lượng tăng mạnh"
         },
         {
-          "id": "54a1b780f0",
+          "id": "95aed8a7dc",
           "text": "Khối lượng giao dịch rất thấp"
         }
       ],
       "prompt": "Dấu hiệu của phá vỡ thật là gì?"
     }
   ],
-  "salt": "a423001ee4f837aa0ae6f4950ba4bcf79db3a5f1544be1b26cf3c6015c3d20c1"
+  "salt": "2a31f932a291da33dea725407399d44b1eacc2527fa3019e6068d56e3157b62b"
 }

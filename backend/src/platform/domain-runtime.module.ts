@@ -26,6 +26,8 @@ import { ReportsModule, MarketReportsService } from '../modules/reports/index.js
 import { TradingModule } from '../modules/trading/trading.module.js';
 import { TradingRightsService } from '../modules/trading/rights.service.js';
 import { ResearchDailyJob, ResearchModule } from '../modules/research/index.js';
+import { FlashbackJob } from '../modules/flashback/flashback.job.js';
+import { FlashbackModule } from '../modules/flashback/flashback.module.js';
 import {
   RuntimeModule,
   type JobOutcome,
@@ -91,10 +93,15 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly rights: TradingRightsService,
     private readonly strategyAlerts?: StrategyAlertEvaluator,
     private readonly research?: ResearchDailyJob,
+    private readonly flashback?: FlashbackJob,
   ) {}
 
   handlers(): RuntimeJobHandlers {
     return {
+      'flashback.round-cycle': async () => {
+        if (!this.flashback) return { status: 'skipped', reason: 'flashback-unavailable' };
+        return this.flashback.run();
+      },
       'reports.daily': async ({ scheduledFor }) =>
         this.generateReport('daily', ictDate(scheduledFor)),
       'reports.daily-retry': async ({ scheduledFor }) => {
@@ -529,6 +536,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     MarketIntegrationModule,
     TradingModule,
     ResearchModule,
+    FlashbackModule,
   ],
   providers: [DomainRuntimeJobs],
   exports: [DomainRuntimeJobs],

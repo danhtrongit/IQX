@@ -1,0 +1,334 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l2-g1": {
+      "kind": "category",
+      "labels": [
+        "Nợ phải trả",
+        "Vốn chủ"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "Nợ phải trả",
+          "tone": "p5",
+          "values": [
+            1950,
+            0
+          ]
+        },
+        {
+          "name": "Vốn chủ",
+          "tone": "p1",
+          "values": [
+            0,
+            4235
+          ]
+        }
+      ],
+      "title": "Bảng cân đối: tổng tài sản bình quân 6.185 tỷ",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c10l2-g2": {
+      "kind": "category",
+      "labels": [
+        "Đòn bẩy 1,2 lần",
+        "Đòn bẩy 2 lần",
+        "Đòn bẩy 4 lần"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "ROA",
+          "tone": "p1",
+          "values": [
+            8,
+            8,
+            8
+          ]
+        },
+        {
+          "name": "ROE",
+          "tone": "warn",
+          "values": [
+            9.6,
+            16,
+            32
+          ]
+        }
+      ],
+      "title": "Cùng ROA, khác đòn bẩy · %",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c10l2-g3": {
+      "kind": "category",
+      "labels": [
+        "Ngân hàng",
+        "Bất động sản",
+        "Bán lẻ",
+        "Sản xuất",
+        "Phần mềm"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "ROA tham khảo theo ngành · số minh họa",
+          "tone": "p1",
+          "values": [
+            1.5,
+            4,
+            7,
+            8,
+            15
+          ]
+        }
+      ],
+      "title": "ROA tham khảo theo ngành · số minh họa",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c10l2-rep": {
+      "caption_tone": "price",
+      "caption_value": "9,4%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "ROA",
+          "tone": "p1",
+          "values": [
+            7.5365,
+            7.8753,
+            7.7855,
+            8.1378,
+            8.7242,
+            9.0969,
+            9.3088,
+            9.4383
+          ]
+        }
+      ],
+      "title": "ROA",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "ROA cho biết toàn bộ tài sản của doanh nghiệp, dù được tài trợ bằng vốn chủ hay nợ, tạo ra bao nhiêu lợi nhuận. ROA ít bị ảnh hưởng bởi đòn bẩy nên giúp so sánh hiệu quả kinh doanh thực chất.",
+  "lesson_key": "fundamental:roa",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l2-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>ROA</b> (Return on Assets) bằng <b>lợi nhuận sau thuế 4 quý</b> chia cho <b>tổng tài sản bình quân</b>. Tổng tài sản gồm cả phần tài trợ bằng nợ và phần vốn chủ, nên ROA luôn thấp hơn hoặc bằng ROE.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "ROA là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Hai doanh nghiệp có cùng ROA 8% nhưng dùng nợ khác nhau sẽ có ROE rất khác nhau. Khoảng cách giữa ROE và ROA chính là <b>đòn bẩy tài chính</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l2-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đo hiệu quả của toàn bộ tài sản, không phụ thuộc cách huy động vốn.",
+              "title": "ROA"
+            },
+            {
+              "text": "Đo hiệu quả trên phần vốn của cổ đông, tăng lên khi dùng thêm nợ.",
+              "title": "ROE"
+            },
+            {
+              "text": "ROE = ROA × đòn bẩy tài chính (tổng tài sản ÷ vốn chủ).",
+              "title": "Liên hệ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "ROA và ROE khác nhau thế nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l2-rep",
+          "table_toggle": true,
+          "title": "ROA",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROA tính theo lợi nhuận 4 quý gần nhất.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Tổng tài sản bình quân, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Tài sản tăng mà ROA vẫn tăng nghĩa là phần tài sản mới đang sinh lời tốt.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Cao hơn mức chung của ngành và tăng dần theo thời gian.",
+              "title": "ROA tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Tài sản phình to nhanh nhưng lợi nhuận không theo kịp, ROA giảm liên tục.",
+              "title": "ROA yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức ROA phụ thuộc rất lớn vào ngành. Ngành cần nhiều tài sản như ngân hàng, điện, bất động sản thường có ROA thấp.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l2-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE cao nhưng ROA thấp nghĩa là ROE đến chủ yếu từ nợ vay.",
+              "title": "Kiểm tra chất lượng ROE"
+            },
+            {
+              "text": "Các doanh nghiệp cùng ngành có cấu trúc tài sản gần nhau.",
+              "title": "So trong cùng ngành"
+            },
+            {
+              "text": "Sau đợt đầu tư lớn, ROA cho biết tài sản mới có sinh lời hay không.",
+              "title": "Theo dõi khi mở rộng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Lợi nhuận sau thuế 4 quý",
+              "text": "584 tỷ đồng."
+            },
+            {
+              "term": "Tổng tài sản bình quân",
+              "text": "Đầu kỳ 5.905, cuối kỳ 6.465. Bình quân 6.185 tỷ đồng."
+            },
+            {
+              "term": "ROA",
+              "text": "584 ÷ 6.185 ≈ 9,4%."
+            },
+            {
+              "term": "So với ROE",
+              "text": "ROE 13,8% chỉ cao hơn ROA khoảng 1,46 lần. Doanh nghiệp dùng ít nợ."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Ngân hàng ROA 1,5% có thể đã tốt, nhưng với doanh nghiệp phần mềm là rất thấp.",
+              "title": "So ROA giữa các ngành"
+            },
+            {
+              "text": "Tài sản tăng mạnh cuối kỳ làm ROA thấp đi. Nên dùng số bình quân.",
+              "title": "Chỉ dùng tài sản cuối kỳ"
+            },
+            {
+              "text": "Khoản lãi một lần làm ROA tăng tạm thời, không lặp lại năm sau.",
+              "title": "Bỏ qua lợi nhuận bất thường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>ROA</b> = lợi nhuận sau thuế 4 quý ÷ <b>tổng tài sản bình quân</b>.",
+    "ROA đo hiệu quả của <b>toàn bộ tài sản</b>, ít bị ảnh hưởng bởi nợ vay.",
+    "<b>ROE = ROA × đòn bẩy</b>. ROE cao mà ROA thấp là dấu hiệu dùng nhiều nợ.",
+    "Mức ROA <b>khác nhau rất lớn giữa các ngành</b>, chỉ nên so trong cùng ngành."
+  ],
+  "title": "ROA · tỷ suất lợi nhuận trên tổng tài sản"
+}

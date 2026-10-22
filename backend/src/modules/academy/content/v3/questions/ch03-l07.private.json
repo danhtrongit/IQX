@@ -3,62 +3,62 @@
   "item_id": "ch03-l07",
   "questions": [
     {
-      "correct_option_id": "5a14c86008",
+      "correct_option_id": "195ac01774",
       "id": "ch03-l07-q01",
       "options": [
         {
-          "id": "5a14c86008",
+          "id": "195ac01774",
           "text": "Người xem biết rõ kênh dành cho ai và nhớ bạn hơn"
         },
         {
-          "id": "735bed06db",
+          "id": "d7ac03b6b1",
           "text": "Vì TikTok cấm nói chung chung"
         },
         {
-          "id": "5eaac06c55",
+          "id": "197cb2d560",
           "text": "Để được quảng cáo miễn phí"
         }
       ],
       "prompt": "Vì sao nên chọn một ngách nhỏ trên TikTok?"
     },
     {
-      "correct_option_id": "1f0a57f7c2",
+      "correct_option_id": "2b85c93c41",
       "id": "ch03-l07-q02",
       "options": [
         {
-          "id": "1f0a57f7c2",
+          "id": "2b85c93c41",
           "text": "Dành một buổi quay nhiều video cho cả tuần"
         },
         {
-          "id": "f6c54e1b18",
+          "id": "0b35c77c9a",
           "text": "Quay một video rồi đăng nhiều lần một ngày"
         },
         {
-          "id": "109d7b5036",
+          "id": "4c271d2a86",
           "text": "Thuê người khác quay"
         }
       ],
       "prompt": "“Quay theo lô” nghĩa là gì?"
     },
     {
-      "correct_option_id": "ac5b670489",
+      "correct_option_id": "63cb0c4408",
       "id": "ch03-l07-q03",
       "options": [
         {
-          "id": "ac5b670489",
+          "id": "63cb0c4408",
           "text": "Làm video giải thích vì sao không cho mã và cách tự kiểm tra cổ phiếu"
         },
         {
-          "id": "a407d5468f",
+          "id": "aafcbab0ae",
           "text": "Trả lời từng người một mã"
         },
         {
-          "id": "63030f1d7c",
+          "id": "e3a3daa4f4",
           "text": "Xóa hết bình luận"
         }
       ],
       "prompt": "Khi nhiều bình luận xin mã, cách tốt nhất là gì?"
     }
   ],
-  "salt": "810b9faae732d39b486282d49857c853dfaaf928d7bcc18183bb531e7f2d6e9a"
+  "salt": "3cd8d0f695d363055b8bcc1762fa23c5c0ead48eb4f2458ca3c5d9d77684bff1"
 }

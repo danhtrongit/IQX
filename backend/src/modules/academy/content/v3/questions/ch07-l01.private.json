@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch07-l01",
+  "questions": [
+    {
+      "correct_option_id": "bd410bb5dc",
+      "id": "ch07-l01-q01",
+      "options": [
+        {
+          "id": "bd410bb5dc",
+          "text": "Vị trí của giá đóng cửa trong khoảng giá 14 phiên"
+        },
+        {
+          "id": "adcf1b2ca1",
+          "text": "Tổng khối lượng giao dịch của 14 phiên"
+        },
+        {
+          "id": "b356d5ae69",
+          "text": "Phần trăm thay đổi giá so với 14 phiên trước"
+        }
+      ],
+      "prompt": "Stochastic đo điều gì?"
+    },
+    {
+      "correct_option_id": "d80ded7706",
+      "id": "ch07-l01-q02",
+      "options": [
+        {
+          "id": "d80ded7706",
+          "text": "Đường trung bình 3 phiên của %K"
+        },
+        {
+          "id": "163845e8fc",
+          "text": "Giá cao nhất của 14 phiên"
+        },
+        {
+          "id": "5a572250e6",
+          "text": "Hiệu số giữa %K và mức 50"
+        }
+      ],
+      "prompt": "Trong Stochastic, %D là gì?"
+    },
+    {
+      "correct_option_id": "04e996f46b",
+      "id": "ch07-l01-q03",
+      "options": [
+        {
+          "id": "04e996f46b",
+          "text": "Vùng quá bán"
+        },
+        {
+          "id": "a022954aea",
+          "text": "Vùng quá mua"
+        },
+        {
+          "id": "3bfea95be6",
+          "text": "Vùng trung tính"
+        }
+      ],
+      "prompt": "Stochastic nằm dưới 20 được gọi là vùng gì?"
+    },
+    {
+      "correct_option_id": "8addec4c35",
+      "id": "ch07-l01-q04",
+      "options": [
+        {
+          "id": "8addec4c35",
+          "text": "%K cắt lên %D trong vùng quá bán"
+        },
+        {
+          "id": "cca1e1e86b",
+          "text": "%K cắt xuống %D trong vùng quá mua"
+        },
+        {
+          "id": "8a68b20bd8",
+          "text": "%K nằm quanh mức 50 nhiều phiên"
+        }
+      ],
+      "prompt": "Tín hiệu Mua của Stochastic đáng tin hơn khi nào?"
+    },
+    {
+      "correct_option_id": "8984c5cfe9",
+      "id": "ch07-l01-q05",
+      "options": [
+        {
+          "id": "8984c5cfe9",
+          "text": "Có thể nằm trên 80 rất lâu"
+        },
+        {
+          "id": "f37e397fca",
+          "text": "Luôn giảm ngay xuống dưới 20"
+        },
+        {
+          "id": "d6cf57796e",
+          "text": "Không còn dao động nữa"
+        }
+      ],
+      "prompt": "Trong xu hướng tăng mạnh, Stochastic thường thế nào?"
+    }
+  ],
+  "salt": "051dd6cdc12c449b6b81408b29f4ae049053687744b91f6524098a87d5f8df17"
+}

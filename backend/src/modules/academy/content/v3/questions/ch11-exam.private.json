@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-exam",
+  "questions": [
+    {
+      "correct_option_id": "c464c201d1",
+      "id": "ch11-exam-q01",
+      "options": [
+        {
+          "id": "c464c201d1",
+          "text": "Nợ vay ngắn hạn và dài hạn"
+        },
+        {
+          "id": "93c4aadde1",
+          "text": "Toàn bộ nợ phải trả, kể cả nợ nhà cung cấp"
+        },
+        {
+          "id": "b840f7ef83",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Trong D/E, phần tử số là gì?"
+    },
+    {
+      "correct_option_id": "9ff9cd5257",
+      "id": "ch11-exam-q02",
+      "options": [
+        {
+          "id": "9ff9cd5257",
+          "text": "Không, vì đây là khoản không trả lãi"
+        },
+        {
+          "id": "9b74c240d8",
+          "text": "Có, vì mọi khoản nợ đều là nợ vay"
+        },
+        {
+          "id": "8ea3c717a7",
+          "text": "Có, nếu số tiền lớn hơn vốn chủ"
+        }
+      ],
+      "prompt": "Tiền chưa trả nhà cung cấp có được tính vào nợ vay trong D/E không?"
+    },
+    {
+      "correct_option_id": "f63a8d2473",
+      "id": "ch11-exam-q03",
+      "options": [
+        {
+          "id": "f63a8d2473",
+          "text": "Giảm"
+        },
+        {
+          "id": "540c188933",
+          "text": "Tăng"
+        },
+        {
+          "id": "71138bb0d2",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Vốn chủ sở hữu tăng nhờ lợi nhuận giữ lại, nợ vay không đổi. D/E sẽ thế nào?"
+    },
+    {
+      "correct_option_id": "952b079890",
+      "id": "ch11-exam-q04",
+      "options": [
+        {
+          "id": "952b079890",
+          "text": "ROE bị kéo giảm mạnh, có thể âm"
+        },
+        {
+          "id": "e016919029",
+          "text": "ROE tăng cao hơn doanh nghiệp không vay"
+        },
+        {
+          "id": "33a42651d9",
+          "text": "ROE không bị ảnh hưởng"
+        }
+      ],
+      "prompt": "Khi tài sản sinh lời thấp hơn lãi vay, doanh nghiệp vay nhiều sẽ thế nào?"
+    },
+    {
+      "correct_option_id": "749629fa68",
+      "id": "ch11-exam-q05",
+      "options": [
+        {
+          "id": "749629fa68",
+          "text": "Điện, hạ tầng, bất động sản"
+        },
+        {
+          "id": "e355d092d9",
+          "text": "Công nghệ phần mềm và dịch vụ trực tuyến"
+        },
+        {
+          "id": "0876346428",
+          "text": "Dịch vụ tư vấn"
+        }
+      ],
+      "prompt": "Nhóm ngành nào thường có D/E cao hơn mặt bằng chung?"
+    },
+    {
+      "correct_option_id": "60e2ec0de2",
+      "id": "ch11-exam-q06",
+      "options": [
+        {
+          "id": "60e2ec0de2",
+          "text": "So với cùng ngành và theo dõi xu hướng"
+        },
+        {
+          "id": "935b8ee625",
+          "text": "Dùng một ngưỡng chung cho mọi ngành"
+        },
+        {
+          "id": "fe3e8f47ec",
+          "text": "Chỉ xem giá trị của quý gần nhất là đủ để kết luận"
+        }
+      ],
+      "prompt": "Cách đánh giá D/E hợp lý nhất là gì?"
+    },
+    {
+      "correct_option_id": "90d16e5d6d",
+      "id": "ch11-exam-q07",
+      "options": [
+        {
+          "id": "90d16e5d6d",
+          "text": "Nợ vay đang tăng nhanh hơn vốn chủ"
+        },
+        {
+          "id": "4d426ae80a",
+          "text": "Doanh nghiệp đang trả bớt nợ vay mỗi quý đều đặn"
+        },
+        {
+          "id": "3b3c4f0fed",
+          "text": "Vốn chủ đang tăng nhanh hơn nợ"
+        }
+      ],
+      "prompt": "D/E tăng nhiều quý liên tiếp cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "591ad7a9d4",
+      "id": "ch11-exam-q08",
+      "options": [
+        {
+          "id": "591ad7a9d4",
+          "text": "Không, có thể bỏ lỡ cơ hội tăng ROE"
+        },
+        {
+          "id": "0981db3d7a",
+          "text": "Có, vì không vay thì luôn sinh lời cao nhất"
+        },
+        {
+          "id": "9d94691585",
+          "text": "Có, vì nợ vay không bao giờ có lợi"
+        }
+      ],
+      "prompt": "Không vay nợ chút nào có phải lúc nào cũng tốt?"
+    },
+    {
+      "correct_option_id": "25324e9b2d",
+      "id": "ch11-exam-q09",
+      "options": [
+        {
+          "id": "25324e9b2d",
+          "text": "Khả năng trả nợ đến hạn trong 12 tháng"
+        },
+        {
+          "id": "4a4c0906be",
+          "text": "Khả năng sinh lời trên vốn chủ"
+        },
+        {
+          "id": "b5fe6e8e0e",
+          "text": "Tốc độ tăng trưởng doanh thu và lợi nhuận hằng năm"
+        }
+      ],
+      "prompt": "Current Ratio đo điều gì?"
+    },
+    {
+      "correct_option_id": "47184d7a74",
+      "id": "ch11-exam-q10",
+      "options": [
+        {
+          "id": "47184d7a74",
+          "text": "Hàng tồn kho chậm bán"
+        },
+        {
+          "id": "7783b83cfe",
+          "text": "Tiền gửi ngân hàng"
+        },
+        {
+          "id": "acb2ee583e",
+          "text": "Tiền mặt đang giữ tại quỹ của doanh nghiệp"
+        }
+      ],
+      "prompt": "Thành phần nào của tài sản ngắn hạn khó chuyển thành tiền nhất?"
+    },
+    {
+      "correct_option_id": "1ab78596db",
+      "id": "ch11-exam-q11",
+      "options": [
+        {
+          "id": "1ab78596db",
+          "text": "Từ 1,5 đến 3 lần"
+        },
+        {
+          "id": "7b5d9ac1bf",
+          "text": "Dưới 0,5 lần"
+        },
+        {
+          "id": "d2e7f95f10",
+          "text": "Từ 0,5 đến 0,8 lần"
+        }
+      ],
+      "prompt": "Mức Current Ratio nào thường được xem là an toàn?"
+    },
+    {
+      "correct_option_id": "1bcf1d2895",
+      "id": "ch11-exam-q12",
+      "options": [
+        {
+          "id": "1bcf1d2895",
+          "text": "Bán lẻ thu tiền ngay"
+        },
+        {
+          "id": "34d81e9499",
+          "text": "Bất động sản giữ nhiều hàng"
+        },
+        {
+          "id": "c7efd2bbbc",
+          "text": "Đóng tàu có chu kỳ dài"
+        }
+      ],
+      "prompt": "Ngành nào thường có Current Ratio thấp mà vẫn bình thường?"
+    },
+    {
+      "correct_option_id": "f326746ed5",
+      "id": "ch11-exam-q13",
+      "options": [
+        {
+          "id": "f326746ed5",
+          "text": "Nợ ngắn hạn tăng nhanh hơn tài sản ngắn hạn"
+        },
+        {
+          "id": "f2a23949cc",
+          "text": "Tài sản ngắn hạn tăng nhanh hơn nợ ngắn hạn"
+        },
+        {
+          "id": "b5a17d8a3b",
+          "text": "Doanh nghiệp vừa trả hết nợ vay"
+        }
+      ],
+      "prompt": "Current Ratio giảm dần qua nhiều quý cho thấy gì?"
+    },
+    {
+      "correct_option_id": "4f57817ce9",
+      "id": "ch11-exam-q14",
+      "options": [
+        {
+          "id": "4f57817ce9",
+          "text": "Vay mới, bán tài sản hoặc gọi thêm vốn"
+        },
+        {
+          "id": "ba870c5403",
+          "text": "Không cần làm gì vì nợ ngắn hạn sẽ tự giảm theo thời gian"
+        },
+        {
+          "id": "2ddb273769",
+          "text": "Tăng tồn kho để hệ số đẹp hơn"
+        }
+      ],
+      "prompt": "Doanh nghiệp có Current Ratio dưới 1 kéo dài thường phải làm gì để trả nợ?"
+    },
+    {
+      "correct_option_id": "4088b6e95b",
+      "id": "ch11-exam-q15",
+      "options": [
+        {
+          "id": "4088b6e95b",
+          "text": "Vì lợi nhuận sau thuế đã trừ lãi vay"
+        },
+        {
+          "id": "43ec329557",
+          "text": "Vì lợi nhuận sau thuế luôn bằng EBIT"
+        },
+        {
+          "id": "3c4bc53c31",
+          "text": "Vì lợi nhuận sau thuế không có trên báo cáo"
+        }
+      ],
+      "prompt": "Vì sao không dùng lợi nhuận sau thuế để tính khả năng trả lãi?"
+    },
+    {
+      "correct_option_id": "5154e985a0",
+      "id": "ch11-exam-q16",
+      "options": [
+        {
+          "id": "5154e985a0",
+          "text": "An toàn, lợi nhuận dư sức trả lãi"
+        },
+        {
+          "id": "e27639453c",
+          "text": "Nguy hiểm, cần bán cổ phiếu ngay"
+        },
+        {
+          "id": "6eb8682f96",
+          "text": "Không có ý nghĩa gì khi phân tích sức khỏe tài chính"
+        }
+      ],
+      "prompt": "Interest Coverage trên 3 lần thường được đánh giá thế nào?"
+    },
+    {
+      "correct_option_id": "6243143a1d",
+      "id": "ch11-exam-q17",
+      "options": [
+        {
+          "id": "6243143a1d",
+          "text": "Giảm"
+        },
+        {
+          "id": "2e43a93ac2",
+          "text": "Tăng"
+        },
+        {
+          "id": "1473759484",
+          "text": "Không đổi"
+        }
+      ],
+      "prompt": "Lãi suất tăng làm chi phí lãi vay tăng, EBIT không đổi. Interest Coverage sẽ thế nào?"
+    },
+    {
+      "correct_option_id": "bc695a576a",
+      "id": "ch11-exam-q18",
+      "options": [
+        {
+          "id": "bc695a576a",
+          "text": "Doanh nghiệp có lợi nhuận ổn định như điện, nước"
+        },
+        {
+          "id": "d7b5e18bae",
+          "text": "Doanh nghiệp có lợi nhuận biến động mạnh"
+        },
+        {
+          "id": "5aae781232",
+          "text": "Doanh nghiệp vừa chuyển sang thua lỗ"
+        }
+      ],
+      "prompt": "Doanh nghiệp nào có thể chấp nhận Interest Coverage thấp hơn?"
+    },
+    {
+      "correct_option_id": "d08b12d216",
+      "id": "ch11-exam-q19",
+      "options": [
+        {
+          "id": "d08b12d216",
+          "text": "Dễ rơi vào vùng không đủ trả lãi"
+        },
+        {
+          "id": "9e23ba0167",
+          "text": "Không bị ảnh hưởng gì"
+        },
+        {
+          "id": "d7eaae18e3",
+          "text": "Hệ số sẽ tự động tăng lên khi EBIT giảm"
+        }
+      ],
+      "prompt": "Doanh nghiệp có Interest Coverage 2 lần gặp rủi ro gì khi EBIT giảm mạnh?"
+    },
+    {
+      "correct_option_id": "05f3b8c429",
+      "id": "ch11-exam-q20",
+      "options": [
+        {
+          "id": "05f3b8c429",
+          "text": "D/E cho biết nợ nhiều hay ít, Interest Coverage cho biết có gánh nổi tiền lãi"
+        },
+        {
+          "id": "1ea3ad7278",
+          "text": "Hai chỉ tiêu đo cùng một thứ nên chỉ cần xem một"
+        },
+        {
+          "id": "ddfcb25502",
+          "text": "D/E đo lợi nhuận, Interest Coverage đo tài sản"
+        }
+      ],
+      "prompt": "D/E và Interest Coverage bổ sung cho nhau thế nào?"
+    },
+    {
+      "correct_option_id": "83778bce94",
+      "id": "ch11-exam-q21",
+      "options": [
+        {
+          "id": "83778bce94",
+          "text": "EBIT và chi phí lãi vay của từng quý"
+        },
+        {
+          "id": "507cfc4a79",
+          "text": "Nợ vay và vốn chủ sở hữu"
+        },
+        {
+          "id": "46c5fdd94d",
+          "text": "Tài sản ngắn hạn và nợ ngắn hạn"
+        }
+      ],
+      "prompt": "Biểu đồ đại diện của Interest Coverage có cột phía dưới là gì?"
+    },
+    {
+      "correct_option_id": "a0e7088444",
+      "id": "ch11-exam-q22",
+      "options": [
+        {
+          "id": "a0e7088444",
+          "text": "Khấu hao là chi phí ghi sổ, không chi bằng tiền trong kỳ"
+        },
+        {
+          "id": "90ce9db57b",
+          "text": "Khấu hao là một khoản doanh thu bất thường phát sinh trong kỳ"
+        },
+        {
+          "id": "6e1605ecf0",
+          "text": "Khấu hao là tiền lãi vay đã trả"
+        }
+      ],
+      "prompt": "Vì sao EBITDA cộng lại khấu hao?"
+    },
+    {
+      "correct_option_id": "59a1eb9e50",
+      "id": "ch11-exam-q23",
+      "options": [
+        {
+          "id": "59a1eb9e50",
+          "text": "Âm"
+        },
+        {
+          "id": "c0053249b0",
+          "text": "Dương"
+        },
+        {
+          "id": "05753d7931",
+          "text": "Bằng nợ vay"
+        }
+      ],
+      "prompt": "Doanh nghiệp có tiền 800 tỷ và nợ vay 300 tỷ thì nợ ròng thế nào?"
+    },
+    {
+      "correct_option_id": "8b8c7c4e1e",
+      "id": "ch11-exam-q24",
+      "options": [
+        {
+          "id": "8b8c7c4e1e",
+          "text": "Mức nợ cao so với khả năng tạo tiền"
+        },
+        {
+          "id": "74dd74133f",
+          "text": "Mức nợ rất thấp và an toàn so với dòng tiền tạo ra"
+        },
+        {
+          "id": "233807a8eb",
+          "text": "Doanh nghiệp có tiền nhiều hơn nợ"
+        }
+      ],
+      "prompt": "Net Debt / EBITDA trên 4 lần thường được xem là gì?"
+    },
+    {
+      "correct_option_id": "01c576e662",
+      "id": "ch11-exam-q25",
+      "options": [
+        {
+          "id": "01c576e662",
+          "text": "So nợ với dòng tiền tạo ra thay vì với vốn chủ"
+        },
+        {
+          "id": "7fbb47a861",
+          "text": "Không tính đến khoản nợ vay nào"
+        },
+        {
+          "id": "6e4f5b9151",
+          "text": "Chỉ dùng được cho ngân hàng và công ty chứng khoán"
+        }
+      ],
+      "prompt": "Điểm khác của Net Debt / EBITDA so với D/E là gì?"
+    },
+    {
+      "correct_option_id": "3421c3b216",
+      "id": "ch11-exam-q26",
+      "options": [
+        {
+          "id": "3421c3b216",
+          "text": "Doanh nghiệp còn phải nộp thuế, trả lãi và đầu tư"
+        },
+        {
+          "id": "5f388bfa78",
+          "text": "Vì EBITDA luôn tăng theo thời gian"
+        },
+        {
+          "id": "d9cd59d544",
+          "text": "Vì nợ ròng của mọi doanh nghiệp luôn tự giảm về không"
+        }
+      ],
+      "prompt": "Vì sao thời gian trả nợ thật thường dài hơn con số Net Debt / EBITDA?"
+    },
+    {
+      "correct_option_id": "219a2f20f0",
+      "id": "ch11-exam-q27",
+      "options": [
+        {
+          "id": "219a2f20f0",
+          "text": "Khi EBITDA âm"
+        },
+        {
+          "id": "80c4e00679",
+          "text": "Khi nợ ròng âm"
+        },
+        {
+          "id": "37949022e2",
+          "text": "Khi nợ vay giảm"
+        }
+      ],
+      "prompt": "Khi nào Net Debt / EBITDA không còn ý nghĩa?"
+    },
+    {
+      "correct_option_id": "0ebc3fd4bd",
+      "id": "ch11-exam-q28",
+      "options": [
+        {
+          "id": "0ebc3fd4bd",
+          "text": "Nợ ròng tăng hoặc EBITDA giảm"
+        },
+        {
+          "id": "f68e193342",
+          "text": "Tiền tăng mạnh trong khi nợ vay không đổi"
+        },
+        {
+          "id": "a0e95c6756",
+          "text": "Khấu hao tăng trong khi EBIT không đổi"
+        }
+      ],
+      "prompt": "Net Debt / EBITDA tăng có thể do nguyên nhân nào?"
+    },
+    {
+      "correct_option_id": "1fefc140e9",
+      "id": "ch11-exam-q29",
+      "options": [
+        {
+          "id": "1fefc140e9",
+          "text": "Net Debt / EBITDA"
+        },
+        {
+          "id": "12a280e07c",
+          "text": "Current Ratio"
+        },
+        {
+          "id": "758735ea98",
+          "text": "Tỷ lệ tăng trưởng doanh thu"
+        }
+      ],
+      "prompt": "Doanh nghiệp vay nhiều nhưng cũng giữ rất nhiều tiền. Chỉ tiêu nào phản ánh rủi ro sát hơn?"
+    },
+    {
+      "correct_option_id": "54c33d9f55",
+      "id": "ch11-exam-q30",
+      "options": [
+        {
+          "id": "54c33d9f55",
+          "text": "Nợ ròng và EBITDA 4 quý"
+        },
+        {
+          "id": "1d394ba86e",
+          "text": "EBIT và chi phí lãi vay"
+        },
+        {
+          "id": "8e3d0e1009",
+          "text": "Nợ vay và vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Biểu đồ đại diện của Net Debt / EBITDA có cột phía dưới là gì?"
+    }
+  ],
+  "salt": "f0cc7751c221e45431749efb780ca77b0c7e4010710055258022193aafabbe47"
+}

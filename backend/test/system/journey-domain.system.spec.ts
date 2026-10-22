@@ -45,12 +45,12 @@ describe('system acceptance: journey levels 0 through 8', () => {
 
     const cap0 = await stack.app.inject({ method: 'POST', url: '/api/v2/cap0/enter', headers });
     expect(cap0.statusCode, cap0.body).toBe(201);
-    expect(cap0.json()).toMatchObject({ user_id: userId, virtual_balance_init: 100_000_000 });
+    expect(cap0.json()).toMatchObject({ user_id: userId, virtual_balance_init: 0 });
     const accountRows = await stack.query<{ user_id: string; cash_available_vnd: string }>(
       'select user_id, cash_available_vnd from virtual_trading_accounts where user_id = $1',
       [userId],
     );
-    expect(accountRows).toEqual([{ user_id: userId, cash_available_vnd: '100000000' }]);
+    expect(accountRows).toEqual([{ user_id: userId, cash_available_vnd: '0' }]);
 
     for (const level of [7, 8]) {
       const response = await stack.app.inject({

@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { INDICATOR_CAPABILITY_PREFIX } from './academy.capabilities.js';
+import { INDICATOR_CAPABILITY_PREFIX, METRIC_CAPABILITY_PREFIX } from './academy.capabilities.js';
 import type { AcademyContent, AcademyContentFiles, AcademyItem } from './academy.content.types.js';
 import { canonicalHash, deepFreeze } from './academy.hash.js';
 import {
@@ -25,7 +25,7 @@ export type {
 export { ACADEMY_CONTENT } from './academy.content.types.js';
 
 /**
- * Học viện v3.2 content loader (design §1.2). `content/v3` holds the catalog (14 chapters, 1-5
+ * Học viện v3.3 content loader (design §1.2). `content/v3` holds the catalog (13 chapters, all
  * published), one public lesson file per lesson and practice, one PRIVATE question bank per
  * quizzable item and the names of retired lesson keys. Everything is validated against
  * `content/v3/schema.ts` and cross-checked here; any inconsistency stops the boot.
@@ -93,7 +93,15 @@ export function buildAcademyContent(files: AcademyContentFiles): AcademyContent 
         chapter: chapter.no,
         chapter_title: chapter.title,
         position: entry.kind === 'lesson' ? (position += 1) : null,
-        capabilities: entry.unlock ? [`${INDICATOR_CAPABILITY_PREFIX}${entry.unlock.id}`] : [],
+        capabilities: entry.unlock
+          ? [
+              `${
+                entry.unlock.kind === 'technical'
+                  ? INDICATOR_CAPABILITY_PREFIX
+                  : METRIC_CAPABILITY_PREFIX
+              }${entry.unlock.id}`,
+            ]
+          : [],
         lesson: file ? { file, content_version: canonicalHash(file).slice(0, 16) } : null,
         bank: { questions: bank.questions, version: canonicalHash(bank) },
       };

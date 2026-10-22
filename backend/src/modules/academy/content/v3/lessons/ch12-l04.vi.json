@@ -1,0 +1,340 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l4-g1": {
+      "kind": "category",
+      "labels": [
+        "CFO",
+        "Capex",
+        "FCF"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Số tiền",
+          "tone": "p1",
+          "values": [
+            120,
+            40,
+            80
+          ]
+        }
+      ],
+      "title": "CFO trừ Capex bằng FCF · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c12l4-g2": {
+      "alt": "FCF dương là tiền tự do, dùng để trả cổ tức tiền mặt, trả nợ vay, mua lại cổ phiếu hoặc tích lũy đầu tư thêm",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "fcf",
+          "title": "FCF dương",
+          "tone": "pos",
+          "value": "Tiền tự do"
+        },
+        {
+          "children": [
+            {
+              "title": "Trả cổ tức tiền mặt"
+            },
+            {
+              "title": "Trả nợ vay"
+            },
+            {
+              "title": "Mua lại cổ phiếu"
+            },
+            {
+              "title": "Tích lũy, đầu tư thêm"
+            }
+          ],
+          "id": "uses",
+          "title": "Dùng FCF vào đâu",
+          "tone": "p3",
+          "value": "Bốn lựa chọn"
+        }
+      ]
+    },
+    "c12l4-g3": {
+      "kind": "category",
+      "labels": [
+        "Doanh nghiệp A",
+        "Doanh nghiệp B"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Biên lợi nhuận ròng",
+          "tone": "warn",
+          "values": [
+            10,
+            10
+          ]
+        },
+        {
+          "name": "CFO Margin",
+          "tone": "p1",
+          "values": [
+            13,
+            9
+          ]
+        },
+        {
+          "name": "FCF Margin",
+          "tone": "pos",
+          "values": [
+            9,
+            -4
+          ]
+        }
+      ],
+      "title": "Cùng biên lợi nhuận, khác FCF · %",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c12l4-rep": {
+      "caption_tone": "price",
+      "caption_value": "8,0%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "FCF Margin",
+          "tone": "p1",
+          "values": [
+            6.8514,
+            7.201,
+            6.8631,
+            7.1125,
+            8.2984,
+            8.1694,
+            7.7027,
+            7.9783
+          ]
+        }
+      ],
+      "title": "FCF Margin",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Sau khi trả mọi chi phí kinh doanh và chi đầu tư, phần tiền còn lại là tiền doanh nghiệp được tự do sử dụng. FCF Margin cho biết phần tiền này chiếm bao nhiêu trong doanh thu.",
+  "lesson_key": "fundamental:fcf_margin",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>FCF</b> (Free Cash Flow) là <b>dòng tiền tự do</b>, bằng CFO trừ Capex. <b>FCF Margin</b> là FCF chia cho doanh thu, tính trên 4 quý gần nhất.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l4-g1",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "FCF Margin là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "FCF là phần tiền doanh nghiệp được tự do sử dụng mà không ảnh hưởng đến hoạt động hiện tại.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l4-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh nghiệp tự tạo tiền, có thể trả cổ tức, trả nợ hoặc tích lũy.",
+              "title": "FCF dương",
+              "tone": "pos"
+            },
+            {
+              "text": "Tiền kinh doanh không đủ chi đầu tư, phải vay thêm hoặc phát hành cổ phiếu.",
+              "title": "FCF âm",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Tiền tự do dùng vào đâu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l4-rep",
+          "table_toggle": true,
+          "title": "FCF Margin",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "FCF / doanh thu tính trên 4 quý gần nhất, đơn vị phần trăm.",
+              "title": "Đường chính"
+            },
+            {
+              "text": "Xanh dương là CFO, cam là Capex, xanh lá là FCF, đều cộng dồn 4 quý.",
+              "title": "Ba cột mỗi quý"
+            },
+            {
+              "text": "Cột xanh lá bằng cột xanh dương trừ cột cam. Cột xanh lá cao dần là tiền tự do tăng.",
+              "title": "Cách nhìn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "FCF Margin dương và ổn định qua nhiều quý, xu hướng đi lên.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "FCF Margin âm kéo dài mà không có kế hoạch đầu tư rõ ràng, doanh nghiệp phụ thuộc vào vốn vay.",
+              "title": "Cần cảnh giác",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "FCF âm trong giai đoạn xây nhà máy mới là bình thường. Điều quan trọng là FCF trở lại dương khi dự án đi vào hoạt động.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l4-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cùng biên lợi nhuận, doanh nghiệp có FCF Margin cao hơn tạo ra nhiều tiền hơn cho cổ đông.",
+              "title": "So với biên lợi nhuận ròng"
+            },
+            {
+              "text": "Cổ tức tiền mặt bền vững cần được chi trả từ FCF, không phải từ vay nợ.",
+              "title": "Đánh giá khả năng trả cổ tức"
+            },
+            {
+              "text": "FCF giảm do CFO giảm đáng lo hơn FCF giảm do Capex tăng có kế hoạch.",
+              "title": "Tách CFO và Capex"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp mẫu có số liệu cộng dồn 4 quý gần nhất như sau.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "CFO",
+              "text": "760 tỷ đồng."
+            },
+            {
+              "term": "Capex",
+              "text": "259 tỷ đồng."
+            },
+            {
+              "term": "FCF",
+              "text": "760 − 259 = 501 tỷ đồng."
+            },
+            {
+              "term": "FCF Margin",
+              "text": "501 ÷ 6.280 ≈ 8,0%. Mỗi 100 đồng doanh thu để lại khoảng 8 đồng tiền tự do sau khi đã chi đầu tư."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp đang đầu tư mở rộng có thể âm vài năm rồi tạo tiền mạnh hơn.",
+              "title": "Thấy FCF âm là loại ngay"
+            },
+            {
+              "text": "CFO cao chưa đủ. Doanh nghiệp cần chi đầu tư lớn có thể còn lại rất ít tiền.",
+              "title": "Quên trừ Capex"
+            },
+            {
+              "text": "FCF tăng vì ngừng đầu tư chỉ đẹp tạm thời, có thể làm yếu tăng trưởng sau này.",
+              "title": "Tin vào FCF do cắt Capex"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>FCF = CFO − Capex</b>, là tiền còn lại sau chi phí kinh doanh và chi đầu tư.",
+    "<b>FCF Margin = FCF ÷ doanh thu</b>, tính trên 4 quý gần nhất.",
+    "FCF <b>dương và ổn định</b> giúp doanh nghiệp trả cổ tức, trả nợ mà không cần vay thêm.",
+    "Khi FCF giảm, tách xem do <b>CFO giảm</b> hay do <b>Capex tăng</b>."
+  ],
+  "title": "FCF Margin · biên dòng tiền tự do"
+}

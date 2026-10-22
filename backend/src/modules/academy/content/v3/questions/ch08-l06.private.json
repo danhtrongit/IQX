@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-l06",
+  "questions": [
+    {
+      "correct_option_id": "c526646bf1",
+      "id": "ch08-l06-q01",
+      "options": [
+        {
+          "id": "c526646bf1",
+          "text": "EPS cả năm 2022 và cả năm 2025"
+        },
+        {
+          "id": "c65e9d0986",
+          "text": "EPS quý gần nhất và cùng kỳ"
+        },
+        {
+          "id": "f5e3fe85c0",
+          "text": "EPS trung bình của ngành"
+        }
+      ],
+      "prompt": "EPS CAGR 3Y dùng số liệu nào?"
+    },
+    {
+      "correct_option_id": "518b3ae6b0",
+      "id": "ch08-l06-q02",
+      "options": [
+        {
+          "id": "518b3ae6b0",
+          "text": "Số cổ phiếu lưu hành đã tăng"
+        },
+        {
+          "id": "bbf80f58da",
+          "text": "Doanh thu tăng nhanh hơn LNST"
+        },
+        {
+          "id": "977b968d7f",
+          "text": "Chi phí lãi vay đã giảm"
+        }
+      ],
+      "prompt": "EPS CAGR thấp hơn LNST CAGR khá nhiều thường do đâu?"
+    },
+    {
+      "correct_option_id": "a490b62108",
+      "id": "ch08-l06-q03",
+      "options": [
+        {
+          "id": "a490b62108",
+          "text": "Ba con số cao và gần nhau"
+        },
+        {
+          "id": "5aea47b966",
+          "text": "EPS CAGR thấp nhất trong ba"
+        },
+        {
+          "id": "70a83cb6c6",
+          "text": "Doanh thu CAGR cao, EPS CAGR âm"
+        }
+      ],
+      "prompt": "Trường hợp lý tưởng khi đặt ba CAGR doanh thu, LNST và EPS cạnh nhau là gì?"
+    },
+    {
+      "correct_option_id": "79ea9b2485",
+      "id": "ch08-l06-q04",
+      "options": [
+        {
+          "id": "79ea9b2485",
+          "text": "Nó đo lợi nhuận tính trên mỗi cổ phiếu"
+        },
+        {
+          "id": "78cc8bd940",
+          "text": "Nó không phụ thuộc vào lợi nhuận"
+        },
+        {
+          "id": "440ea6492f",
+          "text": "Nó luôn cao hơn LNST CAGR"
+        }
+      ],
+      "prompt": "Vì sao EPS CAGR gần với lợi ích của cổ đông hơn LNST CAGR?"
+    },
+    {
+      "correct_option_id": "754130b230",
+      "id": "ch08-l06-q05",
+      "options": [
+        {
+          "id": "754130b230",
+          "text": "EPS cả năm của từng năm"
+        },
+        {
+          "id": "4828053608",
+          "text": "Số cổ phiếu lưu hành mỗi năm"
+        },
+        {
+          "id": "bb2cb12dfe",
+          "text": "Tăng trưởng EPS theo từng quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của EPS CAGR 3Y, cột xanh thể hiện gì?"
+    }
+  ],
+  "salt": "f050d11a46b0658ca234340fc8e577b43899aa467557acac44e316be4d41ae40"
+}

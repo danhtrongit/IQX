@@ -453,10 +453,10 @@ export class AdminVTService {
     const config = await tx.query<{ initial_cash_vnd: string }>(
       `select initial_cash_vnd from virtual_trading_configs where is_active = true order by created_at desc limit 1`,
     );
-    const initial = exactMoney(
-      config[0]?.initial_cash_vnd ?? acct.initial_cash_vnd,
-      'initial_cash_vnd',
-    );
+    // Vốn cấp lại sau khi reset (Flashback spec §1.3): mặc định 0 đồng. Cấu hình
+    // `virtual_trading_configs.initial_cash_vnd` là tham số "cấp lại vốn" của admin; khi
+    // không có cấu hình nào thì tài khoản Demo mới mở với vốn 0.
+    const initial = exactMoney(config[0]?.initial_cash_vnd ?? 0, 'initial_cash_vnd');
     const initialNumber = Number(initial);
     await this.rights.cancelPendingForResetSameTx(tx, accountId);
     await tx.query(`delete from virtual_settlements where account_id = $1::uuid`, [accountId]);
@@ -464,8 +464,10 @@ export class AdminVTService {
     await tx.query(`delete from virtual_orders where account_id = $1::uuid`, [accountId]);
     await tx.query(`delete from virtual_positions where account_id = $1::uuid`, [accountId]);
     await tx.query(`delete from virtual_cash_ledger where account_id = $1::uuid`, [accountId]);
+    // `net_deposited_cash_vnd` là mẫu số của % lợi nhuận Demo: sau reset mẫu số phải bằng
+    // đúng vốn được cấp lại (0 theo mặc định), nếu không % lợi nhuận sẽ bị tính trên vốn cũ.
     await tx.query(
-      `update virtual_trading_accounts set initial_cash_vnd = $1, cash_available_vnd = $1, cash_reserved_vnd = 0, cash_pending_vnd = 0, status = 'active', reset_at = now(), frozen_at = null, frozen_by_user_id = null, freeze_reason = null, updated_at = now() where id = $2::uuid`,
+      `update virtual_trading_accounts set initial_cash_vnd = $1, cash_available_vnd = $1, cash_reserved_vnd = 0, cash_pending_vnd = 0, net_deposited_cash_vnd = $1, status = 'active', reset_at = now(), frozen_at = null, frozen_by_user_id = null, freeze_reason = null, updated_at = now() where id = $2::uuid`,
       [initial.toString(), accountId],
     );
     await tx.query(

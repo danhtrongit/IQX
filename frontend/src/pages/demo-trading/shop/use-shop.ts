@@ -8,7 +8,13 @@ import {
   fetchLedgerPage,
   fetchLessonNames,
   fetchShopState,
+  postDemoExchange,
+  postEvolve,
+  postPremiumPurchase,
   putActiveMascot,
+  type DemoExchangeBody,
+  type EvolveBody,
+  type PremiumPurchaseBody,
   type ShopState,
 } from "./shop-api"
 import { SHOP_QUERY_ROOT, WORKSPACE_STATE_KEY, shopKeys } from "./shop-model"
@@ -134,4 +140,63 @@ export function useActivateMascot() {
     busy: pending > 0,
     pendingMascotId: mutation.isPending ? mutation.variables?.mascotId ?? null : null,
   }
+}
+
+const EVOLVE_KEY = ["shop", "evolve"] as const
+const PREMIUM_KEY = ["shop", "premium"] as const
+const EXCHANGE_KEY = ["shop", "exchange"] as const
+
+/**
+ * Tiến hoá linh thú: một bước lên cấp (2 rồi 3). Client chỉ gửi giá đã xem để server phát
+ * hiện giá đã đổi; sau khi server xác nhận, trạng thái Shop và trạng thái workspace được tải
+ * lại (linh thú đang dùng có thể đổi hình theo cấp).
+ */
+export function useEvolvePet() {
+  const queryClient = useQueryClient()
+  const pending = useIsMutating({ mutationKey: EVOLVE_KEY })
+  const mutation = useMutation({
+    mutationKey: EVOLVE_KEY,
+    mutationFn: ({ mascotId, ...body }: EvolveBody & { mascotId: string }) => postEvolve(mascotId, body),
+  })
+
+  function refresh() {
+    void queryClient.invalidateQueries({ queryKey: SHOP_QUERY_ROOT })
+    void queryClient.invalidateQueries({ queryKey: WORKSPACE_STATE_KEY })
+  }
+
+  return { evolve: mutation.mutateAsync, busy: pending > 0, refresh }
+}
+
+/** Premium mua bằng xu: 3.000 xu cho 30 ngày, cộng vào thời hạn Premium hiện có. */
+export function usePurchasePremium() {
+  const queryClient = useQueryClient()
+  const pending = useIsMutating({ mutationKey: PREMIUM_KEY })
+  const mutation = useMutation({
+    mutationKey: PREMIUM_KEY,
+    mutationFn: (body: PremiumPurchaseBody) => postPremiumPurchase(body),
+  })
+
+  function refresh() {
+    void queryClient.invalidateQueries({ queryKey: SHOP_QUERY_ROOT })
+  }
+
+  return { purchase: mutation.mutateAsync, busy: pending > 0, refresh }
+}
+
+/** Đổi xu hai chiều với tiền mặt của tài khoản Demo Trading (1 xu = 10.000 đồng). */
+export function useExchangeDemo() {
+  const queryClient = useQueryClient()
+  const pending = useIsMutating({ mutationKey: EXCHANGE_KEY })
+  const mutation = useMutation({
+    mutationKey: EXCHANGE_KEY,
+    mutationFn: (body: DemoExchangeBody) => postDemoExchange(body),
+  })
+
+  function refresh() {
+    void queryClient.invalidateQueries({ queryKey: SHOP_QUERY_ROOT })
+    // The Demo account balance moved: every trading read has to see it again.
+    void queryClient.invalidateQueries({ queryKey: ["trading"] })
+  }
+
+  return { exchange: mutation.mutateAsync, busy: pending > 0, refresh }
 }

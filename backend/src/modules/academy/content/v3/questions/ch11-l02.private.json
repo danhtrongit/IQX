@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l02",
+  "questions": [
+    {
+      "correct_option_id": "1437f942d0",
+      "id": "ch11-l02-q01",
+      "options": [
+        {
+          "id": "1437f942d0",
+          "text": "Tài sản ngắn hạn chia cho nợ ngắn hạn"
+        },
+        {
+          "id": "1ab6bdcfc5",
+          "text": "Nợ ngắn hạn chia cho vốn chủ sở hữu"
+        },
+        {
+          "id": "95b686a708",
+          "text": "Tổng tài sản chia cho tổng nợ phải trả"
+        }
+      ],
+      "prompt": "Current Ratio được tính như thế nào?"
+    },
+    {
+      "correct_option_id": "b5d0537d0c",
+      "id": "ch11-l02-q02",
+      "options": [
+        {
+          "id": "b5d0537d0c",
+          "text": "Nợ ngắn hạn lớn hơn tài sản ngắn hạn"
+        },
+        {
+          "id": "0002ed852b",
+          "text": "Doanh nghiệp không có khoản vay nào"
+        },
+        {
+          "id": "0045633f1a",
+          "text": "Doanh nghiệp đang giữ quá nhiều tiền mặt trong quỹ"
+        }
+      ],
+      "prompt": "Current Ratio dưới 1 lần cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "8281a960d2",
+      "id": "ch11-l02-q03",
+      "options": [
+        {
+          "id": "8281a960d2",
+          "text": "Doanh nghiệp có tài sản ngắn hạn chủ yếu là tiền"
+        },
+        {
+          "id": "6436475c21",
+          "text": "Doanh nghiệp có tài sản ngắn hạn chủ yếu là hàng tồn kho"
+        },
+        {
+          "id": "732be50c6c",
+          "text": "Hai doanh nghiệp chắc chắn như nhau"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp cùng Current Ratio 1,5 lần, doanh nghiệp nào trả nợ ngắn hạn dễ hơn?"
+    },
+    {
+      "correct_option_id": "4970f67f89",
+      "id": "ch11-l02-q04",
+      "options": [
+        {
+          "id": "4970f67f89",
+          "text": "Tiền hoặc tồn kho bị giữ lại mà không sinh lời"
+        },
+        {
+          "id": "a514142f32",
+          "text": "Nợ ngắn hạn khi đó luôn bằng không"
+        },
+        {
+          "id": "b426ab627d",
+          "text": "Doanh nghiệp khi đó chắc chắn đang thua lỗ"
+        }
+      ],
+      "prompt": "Vì sao Current Ratio quá cao chưa chắc đã tốt?"
+    },
+    {
+      "correct_option_id": "d8863c7a2e",
+      "id": "ch11-l02-q05",
+      "options": [
+        {
+          "id": "d8863c7a2e",
+          "text": "Tài sản ngắn hạn và nợ ngắn hạn mỗi quý"
+        },
+        {
+          "id": "ec51fdfcde",
+          "text": "Doanh thu thuần và lợi nhuận gộp của mỗi quý"
+        },
+        {
+          "id": "b602d42b41",
+          "text": "Giá cổ phiếu và khối lượng giao dịch"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của Current Ratio, các cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "cfd4dc296333292716c4436a999c6dffc3788eb75edf7ce831f1d36c35cb1625"
+}

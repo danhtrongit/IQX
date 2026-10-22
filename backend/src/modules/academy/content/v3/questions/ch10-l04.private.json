@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l04",
+  "questions": [
+    {
+      "correct_option_id": "87757fb555",
+      "id": "ch10-l04-q01",
+      "options": [
+        {
+          "id": "87757fb555",
+          "text": "Lợi nhuận gộp chia doanh thu"
+        },
+        {
+          "id": "349fd3085c",
+          "text": "Lợi nhuận sau thuế chia doanh thu"
+        },
+        {
+          "id": "cfdfb2af9b",
+          "text": "Lợi nhuận gộp chia tổng tài sản"
+        }
+      ],
+      "prompt": "Biên lợi nhuận gộp được tính thế nào?"
+    },
+    {
+      "correct_option_id": "f90af590bf",
+      "id": "ch10-l04-q02",
+      "options": [
+        {
+          "id": "f90af590bf",
+          "text": "Doanh thu trừ giá vốn hàng bán"
+        },
+        {
+          "id": "cb9dfd7b84",
+          "text": "Doanh thu trừ mọi chi phí và thuế"
+        },
+        {
+          "id": "bbc37fd6b4",
+          "text": "Doanh thu trừ chi phí bán hàng"
+        }
+      ],
+      "prompt": "Lợi nhuận gộp bằng gì?"
+    },
+    {
+      "correct_option_id": "4dbea7bcf6",
+      "id": "ch10-l04-q03",
+      "options": [
+        {
+          "id": "4dbea7bcf6",
+          "text": "Sức mạnh định giá hoặc lợi thế chi phí"
+        },
+        {
+          "id": "287e91d03e",
+          "text": "Doanh nghiệp đang vay nợ ở mức rất cao"
+        },
+        {
+          "id": "f4beceacf9",
+          "text": "Doanh nghiệp có nhiều tiền mặt"
+        }
+      ],
+      "prompt": "Biên gộp cao và ổn định thường phản ánh điều gì?"
+    },
+    {
+      "correct_option_id": "79cc5a6123",
+      "id": "ch10-l04-q04",
+      "options": [
+        {
+          "id": "79cc5a6123",
+          "text": "Giá bán bị ép hoặc chi phí đầu vào tăng"
+        },
+        {
+          "id": "b593d70baa",
+          "text": "Doanh nghiệp đang trả nợ trước hạn"
+        },
+        {
+          "id": "744cc56c38",
+          "text": "Vòng quay tài sản đang tăng nhanh qua từng quý"
+        }
+      ],
+      "prompt": "Biên gộp giảm liên tục nhiều quý thường là dấu hiệu gì?"
+    },
+    {
+      "correct_option_id": "39f3214fb8",
+      "id": "ch10-l04-q05",
+      "options": [
+        {
+          "id": "39f3214fb8",
+          "text": "Giá vốn và lợi nhuận gộp"
+        },
+        {
+          "id": "0d8cf2a4a1",
+          "text": "Doanh thu và lợi nhuận sau thuế"
+        },
+        {
+          "id": "43de2d2bd9",
+          "text": "Chi phí bán hàng và chi phí quản lý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của biên gộp, cột phía dưới gồm hai phần nào?"
+    }
+  ],
+  "salt": "99492b141f4b186eaeb274d45979413d9c2d4c0859724a0548fa7d52a8ff417e"
+}

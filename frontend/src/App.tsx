@@ -58,6 +58,7 @@ const TeamLeadsPage = lazyPage(() => import("@/pages/admin/team-leads/team-leads
 const TeamLeadDetailPage = lazyPage(() => import("@/pages/admin/team-leads/team-lead-detail-page").then(module => ({ default: module.TeamLeadDetailPage })))
 const SystemPage = lazyPage(() => import("@/pages/admin/core/system-page").then(module => ({ default: module.SystemPage })))
 const AuditPage = lazyPage(() => import("@/pages/admin/core/audit-page").then(module => ({ default: module.AuditPage })))
+const FlashbackPage = lazyPage(() => import("@/pages/admin/core/flashback-page").then(module => ({ default: module.FlashbackPage })))
 const AlertSignalsPage = lazyPage(() => import("@/pages/admin/core/alerts-page").then(module => ({ default: module.AlertSignalsPage })))
 const PlansPage = lazyPage(() => import("@/pages/admin/revenue/plans-page").then(module => ({ default: module.PlansPage })))
 const SubscriptionsPage = lazyPage(() => import("@/pages/admin/revenue/subscriptions-page").then(module => ({ default: module.SubscriptionsPage })))
@@ -150,6 +151,7 @@ export const routes: RouteObject[] = [
           { path: "vt/accounts/:accountId", Component: VTAccountDetailPage },
           { path: "vt/config", Component: VTConfigPage },
           { path: "audit", Component: AuditPage },
+          { path: "flashback", Component: FlashbackPage },
           { path: "system", Component: SystemPage },
           { path: "alerts", Component: AlertSignalsPage },
           { path: "lessons", Component: CoursesPage },

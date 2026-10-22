@@ -3,62 +3,62 @@
   "item_id": "ch03-l05",
   "questions": [
     {
-      "correct_option_id": "8fb1e0a5b4",
+      "correct_option_id": "1ae52cd60d",
       "id": "ch03-l05-q01",
       "options": [
         {
-          "id": "8fb1e0a5b4",
+          "id": "1ae52cd60d",
           "text": "Bài giới thiệu bản thân, bài hướng dẫn người mới, ảnh buổi chia sẻ"
         },
         {
-          "id": "9f06744c6e",
+          "id": "e08dbd42b8",
           "text": "Ảnh chụp lệnh lãi"
         },
         {
-          "id": "877b7626c2",
+          "id": "599fa05811",
           "text": "Link mở tài khoản kèm cam kết lợi nhuận"
         }
       ],
       "prompt": "Mục “Đáng chú ý” trên Facebook nên ghim những gì?"
     },
     {
-      "correct_option_id": "0e98628cf2",
+      "correct_option_id": "8eb7ca5d6e",
       "id": "ch03-l05-q02",
       "options": [
         {
-          "id": "0e98628cf2",
+          "id": "8eb7ca5d6e",
           "text": "Facebook chỉ hiện vài dòng đầu, nó quyết định người đọc có bấm Xem thêm không"
         },
         {
-          "id": "229239e8fb",
+          "id": "630069af13",
           "text": "Vì phải ghi biểu phí ở đó"
         },
         {
-          "id": "3317bafdb4",
+          "id": "ead889d5d9",
           "text": "Không quan trọng"
         }
       ],
       "prompt": "Dòng đầu của bài Facebook quan trọng vì sao?"
     },
     {
-      "correct_option_id": "517f39b914",
+      "correct_option_id": "6d4ff0392f",
       "id": "ch03-l05-q03",
       "options": [
         {
-          "id": "517f39b914",
+          "id": "6d4ff0392f",
           "text": "Tiếp tục bài kiến thức, thêm ảnh thật của mình"
         },
         {
-          "id": "85644cbeed",
+          "id": "985a1cfb5c",
           "text": "Chỉ đăng ảnh selfie"
         },
         {
-          "id": "5614b2d8d6",
+          "id": "c4f0d48052",
           "text": "Bỏ Facebook"
         }
       ],
       "prompt": "Bài kiến thức ít like nhưng có người lưu bài và nhắn hỏi, nên làm gì?"
     }
   ],
-  "salt": "e49c35837963091481042f31354e4d07ded82f132a6c78d3e3c6f52c0383c242"
+  "salt": "9c5b16f6f36572e59c04a82a2a5e9e401488300e734e0c82b9f76bd919692435"
 }

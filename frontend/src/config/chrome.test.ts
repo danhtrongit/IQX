@@ -7,12 +7,13 @@ const visible = demoChrome.items.filter((item) => !item.hidden)
 const inSection = (section: "demo" | "academy") => visible.filter((item) => item.section === section)
 
 describe("demo workspace chrome", () => {
-  it("lists the DEMO TRADING rail tools in order: Đặt lệnh, Danh mục, Tin tức, Insight", () => {
+  it("lists the DEMO TRADING rail tools in order: Đặt lệnh, Danh mục, Tin tức, Insight, Dashboard phân tích", () => {
     expect(inSection("demo").map((item) => [item.id, item.label])).toEqual([
       ["trading", "Đặt lệnh"],
       ["portfolio", "Danh mục"],
       ["news", "Tin tức"],
       ["insight", "Insight"],
+      ["dashboard", "Dashboard phân tích"],
     ])
   })
 
@@ -21,8 +22,9 @@ describe("demo workspace chrome", () => {
       ["academy", "Học viện"],
       ["bot", "Bot"],
       ["shop", "Shop"],
+      ["flashback", "Flashback"],
     ])
-    expect(visible).toHaveLength(7)
+    expect(visible).toHaveLength(9)
   })
 
   it("hides Săn mã and Mẫu nến from the rail", () => {
@@ -36,13 +38,16 @@ describe("demo workspace chrome", () => {
     expect(SECTION_DEFAULT_TOOL).toEqual({ demo: "trading", academy: "academy" })
   })
 
-  it("Insight replaces the main area; every other tool fills the panel", () => {
-    for (const item of demoChrome.items) expect(item.affects).toBe(item.id === "insight" ? "left" : "sidebar")
+  it("Insight and Dashboard phân tích replace the main area; every other tool fills the panel", () => {
+    for (const item of demoChrome.items) {
+      const mainArea = item.id === "insight" || item.id === "dashboard"
+      expect(item.affects).toBe(mainArea ? "left" : "sidebar")
+    }
   })
 
   it("maps tools to sections, with anything unknown falling in DEMO TRADING", () => {
     for (const id of ["academy", "bot", "shop"]) expect(sectionOfTool(id)).toBe("academy")
-    for (const id of ["trading", "portfolio", "news", "insight", "hunt", "patterns", "unknown", "journey", null]) {
+    for (const id of ["trading", "portfolio", "news", "insight", "dashboard", "hunt", "patterns", "unknown", "journey", null]) {
       expect(sectionOfTool(id)).toBe("demo")
     }
   })

@@ -77,9 +77,11 @@ describe('content/v3 schema rejections', () => {
   it('checks the catalog totals, question counts, order and exam placement', () => {
     expect(catalogFileSchema.safeParse(files.catalog).success).toBe(true);
     const wrongTotal = catalog();
-    const stub = wrongTotal.chapters[13]!;
-    stub.lesson_count += 1;
-    expect(issues(catalogFileSchema.safeParse(wrongTotal)).join()).toMatch(/sum of lesson_count/);
+    const last = wrongTotal.chapters[12]!;
+    last.lesson_count += 1;
+    expect(issues(catalogFileSchema.safeParse(wrongTotal)).join()).toMatch(
+      /sum of lesson_count must be 87/,
+    );
 
     const wrongCount = catalog();
     const chapter1 = wrongCount.chapters[0]!;
@@ -139,12 +141,12 @@ describe('content/v3 schema rejections', () => {
 });
 
 describe('buildAcademyContent cross-checks', () => {
-  it('joins the real content: 49 items, 43 required lessons, retired names', () => {
+  it('joins the real content: 101 items, 87 required lessons, retired names', () => {
     const content = buildAcademyContent(files);
-    expect(content.items.size).toBe(49);
-    expect(content.itemsByKey.size).toBe(49);
-    expect(content.requiredTotal).toBe(43);
-    expect(content.sequence).toHaveLength(49);
+    expect(content.items.size).toBe(101);
+    expect(content.itemsByKey.size).toBe(101);
+    expect(content.requiredTotal).toBe(87);
+    expect(content.sequence).toHaveLength(101);
     expect(content.retired.get('concept:hop_luu')).toBe('Hợp lưu');
     const exam = content.items.get('ch04-exam')!;
     expect(exam).toMatchObject({ lesson: null, position: null, capabilities: [] });
@@ -153,6 +155,15 @@ describe('buildAcademyContent cross-checks', () => {
       position: 5,
       capabilities: ['indicator:ma'],
       chapter_title: 'Phương pháp kỹ thuật',
+    });
+    /* Chương 8-13 mở chỉ tiêu cơ bản: capability `metric:<id>`. */
+    expect(content.items.get('ch08-l01')).toMatchObject({
+      capabilities: ['metric:revenue_yoy'],
+      chapter_title: 'Tốc độ tăng trưởng',
+    });
+    expect(content.items.get('ch13-l06')).toMatchObject({
+      capabilities: ['metric:fcf_yield'],
+      chapter_title: 'Định giá',
     });
     expect(content.items.get('ch01-l01')!.lesson!.content_version).toMatch(/^[0-9a-f]{16}$/);
     expect(Object.isFrozen(content.items.get('ch01-l01')!.bank.questions)).toBe(true);
@@ -184,14 +195,14 @@ describe('buildAcademyContent cross-checks', () => {
         ) as BankFile;
         copy.banks.push({
           ...bank,
-          item_id: 'ch06-l01',
+          item_id: 'ch99-l01',
           questions: bank.questions.map((q, i) => ({
             ...q,
-            id: `ch06-l01-q0${i + 1}`,
+            id: `ch99-l01-q0${i + 1}`,
           })),
         });
       }),
-    ).toThrow(/bank ch06-l01 is not a published catalog item/);
+    ).toThrow(/bank ch99-l01 is not a published catalog item/);
     expect(
       broken((copy) => {
         const lesson = copy.lessons.find(

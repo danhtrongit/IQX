@@ -3,100 +3,100 @@
   "item_id": "ch05-l03",
   "questions": [
     {
-      "correct_option_id": "0746c33136",
+      "correct_option_id": "82bba9cd64",
       "id": "ch05-l03-q01",
       "options": [
         {
-          "id": "0746c33136",
+          "id": "82bba9cd64",
           "text": "Ý nghĩa, Lợi thế cạnh tranh, Ban lãnh đạo, Biên an toàn"
         },
         {
-          "id": "b8649cbf62",
+          "id": "0ec0618960",
           "text": "Mua, Bán, Nắm giữ, Cắt lỗ"
         },
         {
-          "id": "5054b6ca66",
+          "id": "951cc800f7",
           "text": "MA, MACD, RSI, Bollinger Bands"
         }
       ],
       "prompt": "Phương pháp 4M gồm những tiêu chí nào?"
     },
     {
-      "correct_option_id": "b6c1b853f0",
+      "correct_option_id": "3d107db9a7",
       "id": "ch05-l03-q02",
       "options": [
         {
-          "id": "b6c1b853f0",
+          "id": "3d107db9a7",
           "text": "Điều giúp doanh nghiệp bảo vệ lợi nhuận trước đối thủ"
         },
         {
-          "id": "f93c0c11e1",
+          "id": "914eae9aae",
           "text": "Số tiền mặt trong tài khoản nhà đầu tư"
         },
         {
-          "id": "6a68cb4649",
+          "id": "42c7844261",
           "text": "Biên độ dao động giá của cổ phiếu"
         }
       ],
       "prompt": "Lợi thế cạnh tranh là gì?"
     },
     {
-      "correct_option_id": "8d4ceebb4f",
+      "correct_option_id": "879c338622",
       "id": "ch05-l03-q03",
       "options": [
         {
-          "id": "8d4ceebb4f",
+          "id": "879c338622",
           "text": "Từ 10% trở lên"
         },
         {
-          "id": "3768d02567",
+          "id": "7eed18b3e6",
           "text": "Khoảng 1%"
         },
         {
-          "id": "0a05daa5dd",
+          "id": "d4851a224c",
           "text": "Từ 50% trở lên"
         }
       ],
       "prompt": "Năm con số lớn trong phương pháp 4M cần tăng trưởng khoảng bao nhiêu mỗi năm?"
     },
     {
-      "correct_option_id": "421697a6ad",
+      "correct_option_id": "7e15e78643",
       "id": "ch05-l03-q04",
       "options": [
         {
-          "id": "421697a6ad",
+          "id": "7e15e78643",
           "text": "Khoảng 50% giá trị hợp lý"
         },
         {
-          "id": "9915f3667f",
+          "id": "74d8687612",
           "text": "Bằng giá trị hợp lý"
         },
         {
-          "id": "aa292b44bc",
+          "id": "bb0cb57cee",
           "text": "Gấp đôi giá trị hợp lý"
         }
       ],
       "prompt": "Theo Phil Town, nên mua cổ phiếu ở mức giá nào?"
     },
     {
-      "correct_option_id": "0840c27aa8",
+      "correct_option_id": "967d823ebc",
       "id": "ch05-l03-q05",
       "options": [
         {
-          "id": "0840c27aa8",
+          "id": "967d823ebc",
           "text": "Khi giá vượt giá trị hợp lý hoặc doanh nghiệp không còn đạt 4M"
         },
         {
-          "id": "24991db02a",
+          "id": "f71e7c7fd7",
           "text": "Ngay khi có lãi 5%"
         },
         {
-          "id": "d4fd63900b",
+          "id": "44d10f573f",
           "text": "Khi giá giảm trong một phiên"
         }
       ],
       "prompt": "Khi nào nên bán cổ phiếu theo phương pháp 4M?"
     }
   ],
-  "salt": "c5fc77ff52e4fd39dc51acadc18261e12df955f6040c9111b1c0f9354d4e8f56"
+  "salt": "f514c75e1b17be9fc261e87529a0ddeb8491681dd2c9a4151c266784a61d07cc"
 }

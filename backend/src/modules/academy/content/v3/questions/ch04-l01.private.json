@@ -3,100 +3,100 @@
   "item_id": "ch04-l01",
   "questions": [
     {
-      "correct_option_id": "8e6c32570c",
+      "correct_option_id": "bb07689cad",
       "id": "ch04-l01-q01",
       "options": [
         {
-          "id": "8e6c32570c",
+          "id": "bb07689cad",
           "text": "Giá mở cửa, cao nhất, thấp nhất, đóng cửa"
         },
         {
-          "id": "3a13a25680",
+          "id": "f18f10f693",
           "text": "Giá trần, giá sàn, giá tham chiếu"
         },
         {
-          "id": "5450ae4048",
+          "id": "9d885dae47",
           "text": "Giá mua và giá bán"
         }
       ],
       "prompt": "Một cây nến thể hiện những mức giá nào?"
     },
     {
-      "correct_option_id": "97bf925fc6",
+      "correct_option_id": "debf9e5af0",
       "id": "ch04-l01-q02",
       "options": [
         {
-          "id": "e469316c3d",
+          "id": "fb5faf6660",
           "text": "Giá đóng cửa thấp hơn giá mở cửa"
         },
         {
-          "id": "97bf925fc6",
+          "id": "debf9e5af0",
           "text": "Giá đóng cửa cao hơn giá mở cửa"
         },
         {
-          "id": "7d7b42ec62",
+          "id": "adf69c8938",
           "text": "Giá đóng cửa bằng giá mở cửa"
         }
       ],
       "prompt": "Nến tăng (màu xanh) có đặc điểm gì?"
     },
     {
-      "correct_option_id": "2aa172ca7b",
+      "correct_option_id": "3b2e942be6",
       "id": "ch04-l01-q03",
       "options": [
         {
-          "id": "5b7b865f1c",
+          "id": "18cc8f1a75",
           "text": "Giá cao nhất và giá thấp nhất"
         },
         {
-          "id": "78be960c5e",
+          "id": "b7148274cb",
           "text": "Giá trần và giá sàn"
         },
         {
-          "id": "2aa172ca7b",
+          "id": "3b2e942be6",
           "text": "Giá mở cửa và giá đóng cửa"
         }
       ],
       "prompt": "Thân nến nằm giữa hai mức giá nào?"
     },
     {
-      "correct_option_id": "68dda738c6",
+      "correct_option_id": "71f7252ebe",
       "id": "ch04-l01-q04",
       "options": [
         {
-          "id": "68dda738c6",
+          "id": "71f7252ebe",
           "text": "Lực mua đẩy giá lên từ vùng giá thấp"
         },
         {
-          "id": "886c7f390b",
+          "id": "412e2e9651",
           "text": "Giá tăng mạnh suốt cả phiên"
         },
         {
-          "id": "b82361621e",
+          "id": "dd178813e8",
           "text": "Phiên không có giao dịch"
         }
       ],
       "prompt": "Bóng dưới dài cho thấy điều gì?"
     },
     {
-      "correct_option_id": "cebdc2822d",
+      "correct_option_id": "4126300345",
       "id": "ch04-l01-q05",
       "options": [
         {
-          "id": "cf6052f3b6",
+          "id": "ec52d1f79c",
           "text": "Thân nến rất dài"
         },
         {
-          "id": "cebdc2822d",
+          "id": "4126300345",
           "text": "Giá mở cửa và đóng cửa gần bằng nhau"
         },
         {
-          "id": "0cc36456e1",
+          "id": "b5d06de880",
           "text": "Không có bóng nến"
         }
       ],
       "prompt": "Nến Doji có đặc điểm gì?"
     }
   ],
-  "salt": "eb879429486db4296d8195fce43f81c6587dfe8fabd3c82298294c8c56ee0ee1"
+  "salt": "50dfae8b5f9116cb95131dbc807455f7ece876f0afbe6bcbe418f9f0b57b5191"
 }

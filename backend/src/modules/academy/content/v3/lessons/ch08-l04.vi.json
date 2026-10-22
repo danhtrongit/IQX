@@ -1,0 +1,414 @@
+{
+  "chapter": 8,
+  "charts": {
+    "c8l4-g1": {
+      "kind": "category",
+      "labels": [
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh thu",
+          "tone": "p1",
+          "values": [
+            4509.3,
+            4676.4,
+            5347.6,
+            5929.6
+          ]
+        }
+      ],
+      "title": "Doanh thu cả năm · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c8l4-g2": {
+      "kind": "category",
+      "labels": [
+        "Năm 0",
+        "Năm 1",
+        "Năm 2"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Giá trị",
+          "tone": "p1",
+          "values": [
+            100,
+            150,
+            75
+          ]
+        }
+      ],
+      "title": "Tăng 50% rồi giảm 50%",
+      "unit": "",
+      "value_labels": "all"
+    },
+    "c8l4-rep": {
+      "items": [
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "9,6%",
+            "kind": "category",
+            "labels": [
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Revenue CAGR 3Y",
+                "tone": "p1",
+                "values": [
+                  4510.4651,
+                  4939.5349,
+                  5413.9535,
+                  5930.2326
+                ]
+              }
+            ],
+            "title": "Revenue CAGR 3Y",
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "Revenue CAGR 3Y"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "9,6%",
+            "kind": "category",
+            "labels": [
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Revenue CAGR 3Y",
+                "tone_by_sign": {
+                  "neg": "neg",
+                  "pos": "pos"
+                },
+                "values": [
+                  4509.2772,
+                  4676.3805,
+                  5347.6216,
+                  5929.5893
+                ]
+              }
+            ],
+            "title": "Revenue CAGR 3Y",
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "Thành phần"
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack",
+      "title": "Revenue CAGR 3Y"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch08-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Revenue CAGR 3Y gói tốc độ tăng doanh thu của cả 3 năm vào một con số: mỗi năm doanh thu tăng đều bao nhiêu phần trăm để đi từ điểm đầu đến điểm cuối.",
+  "lesson_key": "fundamental:revenue_cagr3",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>CAGR</b> (Compound Annual Growth Rate) là tốc độ tăng trưởng kép hằng năm. Tăng trưởng YoY nhìn từng quý, CAGR nhìn <b>cả chặng dài</b>. Revenue CAGR 3Y dùng doanh thu cả năm 2022 và cả năm 2025: từ 2022 đến 2025 là <b>3 bước tăng trưởng</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l4-g1",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "Revenue CAGR 3Y là gì"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu năm cuối chia doanh thu năm đầu.",
+              "title": "Hệ số tăng cả chặng"
+            },
+            {
+              "text": "Lấy căn bậc 3 của hệ số, tức mũ 1/3, vì tăng trưởng nhân dồn qua từng năm.",
+              "title": "Chia đều cho 3 năm"
+            },
+            {
+              "text": "Trừ đi 1 rồi nhân 100%. Kết quả là tốc độ tăng đều mỗi năm.",
+              "title": "Đổi ra phần trăm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        },
+        {
+          "text": "Công thức gọn: CAGR = (năm cuối ÷ năm đầu)1/3 − 1. Năm đầu âm hoặc bằng 0 thì không tính được.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Cách tính"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Tăng trưởng <b>nhân dồn</b> lên nhau, không cộng dồn. Tăng 50% rồi giảm 50% không đưa về chỗ cũ, vì lần giảm tính trên một nền lớn hơn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l4-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Cộng các tốc độ từng năm rồi chia đều. Bỏ qua hiệu ứng nhân dồn, thường cho kết quả cao hơn thực tế.",
+              "title": "Trung bình cộng",
+              "tone": "neg"
+            },
+            {
+              "text": "Đi đúng từ điểm đầu đến điểm cuối. Năm càng biến động, CAGR càng thấp hơn trung bình cộng.",
+              "title": "CAGR",
+              "tone": "pos"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Vì sao CAGR khác trung bình cộng"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c8l4-rep",
+          "title": "Revenue CAGR 3Y",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Revenue CAGR 3Y của giai đoạn 2022 đến 2025.",
+              "title": "Con số lớn"
+            },
+            {
+              "text": "Doanh thu cả năm, từ 2022 đến 2025, đơn vị tỷ đồng.",
+              "title": "Cột xanh"
+            },
+            {
+              "text": "Con đường doanh thu nếu tăng đều đúng bằng CAGR mỗi năm.",
+              "title": "Đường đứt nét"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s4",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh thu tăng nhanh và đều đặn qua từng năm.",
+              "title": "CAGR cao, cột bám sát đường đứt nét",
+              "tone": "pos"
+            },
+            {
+              "text": "Doanh thu đứng yên hoặc co lại sau 3 năm.",
+              "title": "CAGR thấp hoặc âm",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu gần gấp đôi sau 5 năm.",
+              "title": "Trên 15%/năm · cao"
+            },
+            {
+              "text": "Tăng nhanh hơn lạm phát một cách rõ ràng.",
+              "title": "5% đến 15%/năm · khá"
+            },
+            {
+              "text": "Tăng không đáng kể sau khi trừ lạm phát.",
+              "title": "Dưới 5%/năm · thấp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "CAGR 3 năm cho thấy tăng trưởng đã duy trì được lâu, không chỉ một quý.",
+              "title": "Lọc doanh nghiệp tăng trưởng"
+            },
+            {
+              "text": "CAGR cho biết quá khứ, YoY các quý gần nhất cho biết đà tăng còn hay đang chậm lại.",
+              "title": "Kết hợp với YoY"
+            },
+            {
+              "text": "Hai doanh nghiệp cùng CAGR, doanh nghiệp có các cột tăng đều đáng tin hơn.",
+              "title": "Nhìn các cột"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s6",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "Doanh thu (tỷ đồng)"
+            },
+            {
+              "label": "Tăng so năm trước"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "2022",
+                "4.509",
+                "Năm gốc"
+              ]
+            },
+            {
+              "cells": [
+                "2023",
+                "4.676",
+                {
+                  "rating": "mid",
+                  "text": "+3,7%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "2024",
+                "5.348",
+                {
+                  "rating": "good",
+                  "text": "+14,4%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "2025",
+                "5.930",
+                {
+                  "rating": "good",
+                  "text": "+10,9%"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "items": [
+            {
+              "term": "Hệ số cả chặng",
+              "text": "5.930 ÷ 4.509 ≈ 1,315. Doanh thu tăng 31,5% sau 3 năm."
+            },
+            {
+              "term": "CAGR",
+              "text": "1,315 mũ 1/3 ≈ 1,096. Doanh thu tăng đều khoảng 9,6% mỗi năm."
+            },
+            {
+              "term": "Trung bình cộng",
+              "text": "(3,7% + 14,4% + 10,9%) ÷ 3 ≈ 9,7%. Các năm khá đều nên gần với CAGR."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s7",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khi các năm biến động mạnh, trung bình cộng cao hơn tốc độ thật khá nhiều.",
+              "title": "Dùng trung bình cộng"
+            },
+            {
+              "text": "Năm đầu là năm khủng hoảng thì CAGR bị đẩy lên, trông đẹp hơn thực tế.",
+              "title": "Chọn năm gốc quá thấp"
+            },
+            {
+              "text": "CAGR chỉ nối điểm đầu với điểm cuối, không cho biết các năm giữa lên xuống thế nào.",
+              "title": "Coi CAGR là con đường thật"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>CAGR</b> là tốc độ tăng đều mỗi năm để đi từ năm đầu đến năm cuối.",
+    "CAGR 3 năm = <b>(năm cuối ÷ năm đầu)1/3 − 1</b>, dùng số cả năm 2022 và 2025.",
+    "Tăng trưởng <b>nhân dồn</b> nên CAGR thường <b>thấp hơn trung bình cộng</b>.",
+    "Kiểm tra <b>năm gốc</b> và <b>các năm ở giữa</b> trước khi tin con số CAGR."
+  ],
+  "title": "Revenue CAGR 3Y · tăng trưởng doanh thu kép 3 năm"
+}

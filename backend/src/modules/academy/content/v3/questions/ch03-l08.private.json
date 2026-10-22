@@ -3,62 +3,62 @@
   "item_id": "ch03-l08",
   "questions": [
     {
-      "correct_option_id": "bd632d098f",
+      "correct_option_id": "120f5e47bb",
       "id": "ch03-l08-q01",
       "options": [
         {
-          "id": "bd632d098f",
+          "id": "120f5e47bb",
           "text": "Khi đã đăng khoảng 30 video và quen nói trước camera"
         },
         {
-          "id": "8ce4c8f52d",
+          "id": "76deefc3ec",
           "text": "Ngay ngày đầu vào nghề"
         },
         {
-          "id": "8420c4f79b",
+          "id": "bd643e384d",
           "text": "Chỉ khi có 10.000 người theo dõi"
         }
       ],
       "prompt": "Khi nào nên bắt đầu livestream?"
     },
     {
-      "correct_option_id": "084a33c8b0",
+      "correct_option_id": "c10742cb2a",
       "id": "ch03-l08-q02",
       "options": [
         {
-          "id": "084a33c8b0",
+          "id": "c10742cb2a",
           "text": "Giúp đỡ 9 lần mới nhắc đến mình 1 lần"
         },
         {
-          "id": "d93ef3a664",
+          "id": "1e0b2f7537",
           "text": "Đăng 9 bài quảng cáo, 1 bài kiến thức"
         },
         {
-          "id": "1dbcd75ab5",
+          "id": "699ead4675",
           "text": "Vào 9 nhóm mỗi ngày"
         }
       ],
       "prompt": "Quy tắc 9-1 trong hội nhóm là gì?"
     },
     {
-      "correct_option_id": "51af559829",
+      "correct_option_id": "5505475208",
       "id": "ch03-l08-q03",
       "options": [
         {
-          "id": "51af559829",
+          "id": "5505475208",
           "text": "Không khuyến nghị mã trên sóng, nhắc nguyên tắc, mời nhắn riêng"
         },
         {
-          "id": "7a3d6ba952",
+          "id": "f5e7fb88e1",
           "text": "Khuyên vào ngay"
         },
         {
-          "id": "0de606f5a7",
+          "id": "46571bf63a",
           "text": "Lờ đi"
         }
       ],
       "prompt": "Bị hỏi “mai mã X có lên không” trên livestream, nên làm gì?"
     }
   ],
-  "salt": "a80563340076a7af2847426f84c891dc1d0ff6ebf55ae66f842c8cdde34db4e5"
+  "salt": "43952324b04df41887c6b468d602056a9cdcc753d9cc1da0a5574852bf5be41d"
 }

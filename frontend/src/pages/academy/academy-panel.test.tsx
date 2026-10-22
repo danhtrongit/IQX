@@ -41,17 +41,17 @@ async function ready() {
 }
 
 describe("AcademyPanel structure", () => {
-  it("shows Học viện, 43 bài học, the progress x / 43 and the five published chapters", async () => {
+  it("shows Học viện, 87 bài học, the progress x / 87 and the thirteen published chapters", async () => {
     install({ completed: ["concept:ch01_l01", "concept:ch01_l02"] })
     renderAcademy("/demo-trading?view=academy", { main: false })
     await ready()
 
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
-    expect(within(panel()).getByText("43 bài học")).toBeTruthy()
-    expect(within(panel()).getByText("2 / 43")).toBeTruthy()
+    expect(within(panel()).getByText("87 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("2 / 87")).toBeTruthy()
     const bar = within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })
     expect(bar.getAttribute("aria-valuenow")).toBe("2")
-    expect(bar.getAttribute("aria-valuemax")).toBe("43")
+    expect(bar.getAttribute("aria-valuemax")).toBe("87")
 
     const groups = [...panel().querySelectorAll<HTMLElement>("[data-chapter]")]
     expect(groups.map((group) => within(group).getAllByRole("button")[0].textContent)).toEqual([
@@ -60,12 +60,21 @@ describe("AcademyPanel structure", () => {
       expect.stringContaining("Chương 3 · Thương hiệu cá nhân"),
       expect.stringContaining("Chương 4 · Phương pháp kỹ thuật"),
       expect.stringContaining("Chương 5 · Phương pháp cơ bản"),
+      expect.stringContaining("Chương 6 · Chỉ báo xu hướng"),
+      expect.stringContaining("Chương 7 · Chỉ báo động lượng và dòng tiền"),
+      expect.stringContaining("Chương 8 · Tốc độ tăng trưởng"),
+      expect.stringContaining("Chương 9 · Độ ổn định"),
+      expect.stringContaining("Chương 10 · Hiệu quả và biên lợi nhuận"),
+      expect.stringContaining("Chương 11 · Nợ và khả năng thanh toán"),
+      expect.stringContaining("Chương 12 · Dòng tiền"),
+      expect.stringContaining("Chương 13 · Định giá"),
     ])
     // Every item of every chapter is listed: lessons + exam (+ the practice room in chapter 3).
     const sizes = groups.map((group) => group.querySelectorAll("[data-academy-row]").length)
-    expect(sizes).toEqual([11, 11, 11, 11, 5])
+    expect(sizes).toEqual([11, 11, 11, 11, 5, 5, 8, 7, 6, 8, 5, 6, 7])
     expect(within(chapter(1)).getByText("2/10")).toBeTruthy()
     expect(within(chapter(5)).getByText("0/4")).toBeTruthy()
+    expect(within(chapter(13)).getByText("0/6")).toBeTruthy()
   })
 
   it("renders the server states: Xem lại for passed, Học bài for the open lesson, a lock for the rest", async () => {
@@ -122,24 +131,24 @@ describe("AcademyPanel structure", () => {
     expect(within(row("ch04-l05")).queryByRole("button")).toBeNull()
   })
 
-  it("never shows a fake 0 / 43 while progress is loading or failed, and keeps the confirmed value when a refresh fails", async () => {
+  it("never shows a fake 0 / 87 while progress is loading or failed, and keeps the confirmed value when a refresh fails", async () => {
     install({ completed: ["concept:ch01_l01", "concept:ch01_l02"] })
     fake.fail("progress", new ApiError("Dịch vụ tạm thời không khả dụng", 503, "SERVICE_UNAVAILABLE"))
     const user = userEvent.setup()
     renderAcademy("/demo-trading?view=academy", { main: false })
     await within(panel()).findByText("Chương 1 · Nền tảng")
-    expect(within(panel()).queryByText("0 / 43")).toBeNull()
+    expect(within(panel()).queryByText("0 / 87")).toBeNull()
     expect(await within(panel()).findByText("Chưa tải được tiến độ.")).toBeTruthy()
     // Without progress no row offers a control (states are never guessed on the client).
     expect(within(row("ch01-l01")).queryByRole("button")).toBeNull()
 
     await user.click(within(panel()).getByRole("button", { name: "Thử lại" }))
-    expect(await within(panel()).findByText("2 / 43")).toBeTruthy()
+    expect(await within(panel()).findByText("2 / 87")).toBeTruthy()
 
     fake.fail("progress", new ApiError("Lỗi", 503, "SERVICE_UNAVAILABLE"))
     await user.click(within(panel()).getByRole("button", { name: "Làm mới Học viện" }))
     expect(await within(panel()).findByText("Chưa làm mới được tiến độ.")).toBeTruthy()
-    expect(within(panel()).getByText("2 / 43")).toBeTruthy()
+    expect(within(panel()).getByText("2 / 87")).toBeTruthy()
     expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Xem lại")
   })
 
@@ -151,7 +160,7 @@ describe("AcademyPanel structure", () => {
     expect(panel().querySelectorAll("[data-chapter]")).toHaveLength(0)
     await user.click(within(panel()).getAllByRole("button", { name: "Thử lại" }).at(-1) as HTMLElement)
     await ready()
-    expect(panel().querySelectorAll("[data-chapter]")).toHaveLength(5)
+    expect(panel().querySelectorAll("[data-chapter]")).toHaveLength(13)
   })
 })
 
@@ -161,7 +170,10 @@ describe("AcademyPanel chapter open state", () => {
     renderAcademy("/demo-trading?view=academy", { main: false })
     await ready()
     await waitFor(() => expect(chapterButton(2).getAttribute("aria-expanded")).toBe("true"))
-    for (const no of [1, 3, 4, 5]) expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
+    for (let no = 1; no <= 13; no += 1) {
+      if (no === 2) continue
+      expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
+    }
     // Rows of a closed chapter are out of the accessibility tree.
     expect(within(chapter(1)).queryAllByRole("button", { name: /Xem lại/ })).toHaveLength(0)
   })
@@ -176,12 +188,12 @@ describe("AcademyPanel chapter open state", () => {
     expect(chapterButton(3).getAttribute("aria-expanded")).toBe("true")
     expect(chapterButton(5).getAttribute("aria-expanded")).toBe("true")
     for (const no of [1, 3, 5]) await user.click(chapterButton(no))
-    for (let no = 1; no <= 5; no += 1) expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
+    for (let no = 1; no <= 13; no += 1) expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
 
     const catalogCalls = fake.count("GET /academy/catalog")
     await user.click(within(panel()).getByRole("button", { name: "Làm mới Học viện" }))
     await waitFor(() => expect(fake.count("GET /academy/catalog")).toBeGreaterThan(catalogCalls))
-    for (let no = 1; no <= 5; no += 1) expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
+    for (let no = 1; no <= 13; no += 1) expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
   })
 
   it("remembers the open chapters for the session when the panel is remounted", async () => {

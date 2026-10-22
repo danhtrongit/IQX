@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch07-l05",
+  "questions": [
+    {
+      "correct_option_id": "80c4891485",
+      "id": "ch07-l05-q01",
+      "options": [
+        {
+          "id": "80c4891485",
+          "text": "Cộng toàn bộ khối lượng của phiên"
+        },
+        {
+          "id": "50a0628a45",
+          "text": "Trừ toàn bộ khối lượng của phiên"
+        },
+        {
+          "id": "32be34866e",
+          "text": "Giữ nguyên, không thay đổi"
+        }
+      ],
+      "prompt": "OBV thay đổi thế nào khi giá đóng cửa tăng so với phiên trước?"
+    },
+    {
+      "correct_option_id": "4afe016dee",
+      "id": "ch07-l05-q02",
+      "options": [
+        {
+          "id": "4afe016dee",
+          "text": "Giữ nguyên"
+        },
+        {
+          "id": "7b0accbdda",
+          "text": "Cộng một nửa khối lượng"
+        },
+        {
+          "id": "79729f49cf",
+          "text": "Trừ toàn bộ khối lượng"
+        }
+      ],
+      "prompt": "Khi giá đóng cửa bằng phiên trước, OBV thế nào?"
+    },
+    {
+      "correct_option_id": "7042a89158",
+      "id": "ch07-l05-q03",
+      "options": [
+        {
+          "id": "7042a89158",
+          "text": "Hướng đi của đường OBV"
+        },
+        {
+          "id": "9b1cf20f2f",
+          "text": "Giá trị tuyệt đối của OBV"
+        },
+        {
+          "id": "fec932aeeb",
+          "text": "Màu của đường OBV"
+        }
+      ],
+      "prompt": "Điều gì quan trọng nhất khi đọc OBV?"
+    },
+    {
+      "correct_option_id": "73774edf36",
+      "id": "ch07-l05-q04",
+      "options": [
+        {
+          "id": "73774edf36",
+          "text": "Phân kỳ âm"
+        },
+        {
+          "id": "ea11a5022b",
+          "text": "Phân kỳ dương"
+        },
+        {
+          "id": "5dc2fa642c",
+          "text": "Giao cắt vàng"
+        }
+      ],
+      "prompt": "Giá tạo đỉnh cao hơn nhưng OBV tạo đỉnh thấp hơn là hiện tượng gì?"
+    },
+    {
+      "correct_option_id": "3bf03d5bfc",
+      "id": "ch07-l05-q05",
+      "options": [
+        {
+          "id": "3bf03d5bfc",
+          "text": "Xu hướng tăng có dòng tiền ủng hộ"
+        },
+        {
+          "id": "b36f733a99",
+          "text": "Xu hướng tăng sắp kết thúc ngay"
+        },
+        {
+          "id": "dc0faf6089",
+          "text": "Cổ phiếu đang bị bán ra mạnh"
+        }
+      ],
+      "prompt": "OBV đi lên cùng với giá cho thấy điều gì?"
+    }
+  ],
+  "salt": "a5e0877efd33673a8663bb580a6512538ca1506357616129788ce2079af2c6d8"
+}

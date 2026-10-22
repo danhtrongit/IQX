@@ -63,7 +63,7 @@ async function submitScoring(
   return result;
 }
 
-describe('academy v3.2 routes', () => {
+describe('academy v3.3 routes', () => {
   it('registers exactly the 11 routes; review and guide completion are gone', () => {
     const routes = Object.getOwnPropertyNames(AcademyController.prototype)
       .filter((name) => name !== 'constructor')
@@ -353,7 +353,7 @@ describe('AcademyService resume of the open attempt', () => {
     expect((await service.resumeAttempt(USER, LESSON)).attempt?.attempt_id).toBe(
       attempt.attempt_id,
     );
-    await expect(service.resumeAttempt(USER, 'ch09-l01')).rejects.toMatchObject({
+    await expect(service.resumeAttempt(USER, 'ch99-l01')).rejects.toMatchObject({
       status: 404,
       response: { code: 'LESSON_NOT_FOUND' },
     });

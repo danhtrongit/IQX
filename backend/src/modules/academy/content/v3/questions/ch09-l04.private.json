@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l04",
+  "questions": [
+    {
+      "correct_option_id": "166ce9ff31",
+      "id": "ch09-l04-q01",
+      "options": [
+        {
+          "id": "166ce9ff31",
+          "text": "LNST chia số cổ phiếu đang lưu hành"
+        },
+        {
+          "id": "d3ffddf230",
+          "text": "Doanh thu chia số cổ phiếu đang lưu hành"
+        },
+        {
+          "id": "ba7d2617fe",
+          "text": "Giá cổ phiếu chia lợi nhuận"
+        }
+      ],
+      "prompt": "EPS là gì?"
+    },
+    {
+      "correct_option_id": "9f8a57fa07",
+      "id": "ch09-l04-q02",
+      "options": [
+        {
+          "id": "9f8a57fa07",
+          "text": "Hệ số biến thiên: độ lệch chuẩn chia bình quân"
+        },
+        {
+          "id": "6e09cd336a",
+          "text": "Độ lệch chuẩn tính bằng đồng"
+        },
+        {
+          "id": "ec0efccdae",
+          "text": "Mức tăng EPS của năm gần nhất"
+        }
+      ],
+      "prompt": "EPS Stability dùng thước đo nào?"
+    },
+    {
+      "correct_option_id": "56ff6c9ae2",
+      "id": "ch09-l04-q03",
+      "options": [
+        {
+          "id": "56ff6c9ae2",
+          "text": "Để so được doanh nghiệp có mức EPS khác nhau"
+        },
+        {
+          "id": "8ff0a9010b",
+          "text": "Vì độ lệch chuẩn không tính được với EPS"
+        },
+        {
+          "id": "42bce71974",
+          "text": "Để con số luôn nằm dưới 10%"
+        }
+      ],
+      "prompt": "Vì sao EPS Stability dùng hệ số biến thiên thay vì độ lệch chuẩn?"
+    },
+    {
+      "correct_option_id": "07f9f6c6e7",
+      "id": "ch09-l04-q04",
+      "options": [
+        {
+          "id": "07f9f6c6e7",
+          "text": "Khi EPS bình quân gần 0 hoặc âm"
+        },
+        {
+          "id": "7cd21e99a6",
+          "text": "Khi EPS bình quân lớn hơn 5.000 đồng"
+        },
+        {
+          "id": "d2ccb2ee27",
+          "text": "Khi doanh nghiệp trả cổ tức tiền mặt"
+        }
+      ],
+      "prompt": "Khi nào EPS Stability không còn ý nghĩa?"
+    },
+    {
+      "correct_option_id": "d9b35755bb",
+      "id": "ch09-l04-q05",
+      "options": [
+        {
+          "id": "d9b35755bb",
+          "text": "Nửa dải chia EPS bình quân, tính bằng %"
+        },
+        {
+          "id": "8dc993b696",
+          "text": "Khoảng cách năm cao nhất tới năm thấp nhất"
+        },
+        {
+          "id": "1eed0eefd7",
+          "text": "EPS năm gần nhất chia EPS năm đầu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, con số lớn ở góc phải được tính thế nào?"
+    }
+  ],
+  "salt": "080e75ac7b5a8c81d2bdec4ee811d553c230363ce6bb00260af207c5893790b9"
+}

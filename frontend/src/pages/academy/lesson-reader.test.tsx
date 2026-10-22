@@ -92,7 +92,7 @@ describe("LessonReader locked and missing items", () => {
 
   it("explains an item that does not exist, and offers Thử lại for other failures", async () => {
     const user = userEvent.setup()
-    const first = open("ch09-l01")
+    const first = open("ch14-l01")
     expect(await screen.findByText("Không tìm thấy bài học")).toBeTruthy()
     first.unmount()
 

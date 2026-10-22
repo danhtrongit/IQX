@@ -1,0 +1,347 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l4-g1": {
+      "kind": "category",
+      "labels": [
+        "Giá vốn hàng bán",
+        "Lợi nhuận gộp"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "Giá vốn hàng bán",
+          "tone": "p1",
+          "values": [
+            4653,
+            0
+          ]
+        },
+        {
+          "name": "Lợi nhuận gộp",
+          "tone": "p5",
+          "values": [
+            0,
+            1626
+          ]
+        }
+      ],
+      "title": "Doanh thu 4 quý 6.279 tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c10l4-g2": {
+      "kind": "category",
+      "labels": [
+        "Phần mềm",
+        "Dược phẩm",
+        "Hàng tiêu dùng",
+        "Bán lẻ",
+        "Thép",
+        "Phân phối xăng dầu"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "Biên gộp tham khảo theo ngành · số minh họa",
+          "tone": "p1",
+          "values": [
+            55,
+            40,
+            28,
+            18,
+            10,
+            5
+          ]
+        }
+      ],
+      "title": "Biên gộp tham khảo theo ngành · số minh họa",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c10l4-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Doanh nghiệp A · biên gộp ổn định",
+          "tone": "pos",
+          "values": [
+            26.1,
+            26.4,
+            25.8,
+            26.2,
+            26.5,
+            26,
+            26.3,
+            26.4
+          ]
+        },
+        {
+          "name": "Doanh nghiệp B · biên gộp giảm",
+          "tone": "neg",
+          "values": [
+            28.2,
+            27.5,
+            26.4,
+            25.1,
+            23.8,
+            22,
+            20.6,
+            19.3
+          ]
+        }
+      ],
+      "title": "Ổn định và suy giảm · %",
+      "unit": "%",
+      "value_labels": "none"
+    },
+    "c10l4-rep": {
+      "caption_tone": "price",
+      "caption_value": "25,9%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Biên lợi nhuận gộp",
+          "tone": "p1",
+          "values": [
+            23.4335,
+            23.9059,
+            24.0267,
+            24.3741,
+            24.8053,
+            25.18,
+            25.5857,
+            25.8915
+          ]
+        }
+      ],
+      "title": "Biên lợi nhuận gộp",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biên lợi nhuận gộp cho biết mỗi đồng doanh thu còn lại bao nhiêu sau khi trừ giá vốn hàng bán. Chỉ tiêu này phản ánh sức mạnh định giá và lợi thế chi phí của doanh nghiệp.",
+  "lesson_key": "fundamental:gross_margin",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l4-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Biên lợi nhuận gộp</b> (Gross Margin) bằng <b>lợi nhuận gộp</b> chia cho <b>doanh thu thuần</b>, tính theo 4 quý gần nhất. Lợi nhuận gộp là doanh thu trừ <b>giá vốn hàng bán</b>, tức chi phí trực tiếp để làm ra sản phẩm như nguyên liệu, nhân công sản xuất, khấu hao nhà máy.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Biên lợi nhuận gộp là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l4-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thương hiệu mạnh, sản phẩm khác biệt giúp bán giá cao hơn chi phí.",
+              "title": "Sức mạnh định giá"
+            },
+            {
+              "text": "Quy mô lớn, công nghệ tốt giúp giá vốn thấp hơn đối thủ.",
+              "title": "Lợi thế chi phí"
+            },
+            {
+              "text": "Phần mềm có biên gộp cao, thương mại và hàng hóa cơ bản có biên gộp thấp.",
+              "title": "Đặc thù ngành"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Biên gộp phản ánh điều gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l4-rep",
+          "table_toggle": true,
+          "title": "Biên lợi nhuận gộp",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp tính theo 4 quý gần nhất, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu 4 quý chia làm hai phần: giá vốn và lợi nhuận gộp.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Phần lợi nhuận gộp chiếm tỷ trọng lớn dần trong cột là biên gộp đang cải thiện.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Biên gộp cao hơn đối thủ cùng ngành và ổn định hoặc tăng dần qua các quý.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "Biên gộp giảm liên tục, cho thấy giá bán bị ép hoặc chi phí đầu vào tăng mà không chuyển được sang khách hàng.",
+              "title": "Tiêu cực",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Không có một mức chung cho mọi ngành. Xu hướng và so sánh với đối thủ quan trọng hơn con số tuyệt đối.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l4-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp đi xuống nhiều quý liền là cảnh báo sớm về lợi nhuận.",
+              "title": "Theo dõi xu hướng"
+            },
+            {
+              "text": "Doanh nghiệp có biên gộp cao nhất ngành thường có lợi thế cạnh tranh.",
+              "title": "So với đối thủ"
+            },
+            {
+              "text": "Với ngành hàng hóa, biên gộp thay đổi theo giá đầu vào như thép, phân bón, đường.",
+              "title": "Đối chiếu giá nguyên liệu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Doanh thu 4 quý",
+              "text": "6.279 tỷ đồng."
+            },
+            {
+              "term": "Giá vốn hàng bán",
+              "text": "4.653 tỷ đồng."
+            },
+            {
+              "term": "Lợi nhuận gộp",
+              "text": "6.279 − 4.653 = 1.626 tỷ đồng."
+            },
+            {
+              "term": "Biên lợi nhuận gộp",
+              "text": "1.626 ÷ 6.279 ≈ 25,9%. Tăng từ 23,4% của hai năm trước, sức cạnh tranh đang cải thiện."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp bán lẻ biên gộp 18% không hề kém doanh nghiệp phần mềm biên gộp 55%.",
+              "title": "So biên gộp khác ngành"
+            },
+            {
+              "text": "Biên gộp chưa trừ chi phí bán hàng, quản lý, lãi vay và thuế.",
+              "title": "Nhầm với biên ròng"
+            },
+            {
+              "text": "Biên gộp một quý dễ dao động theo mùa vụ, nên dùng số 4 quý.",
+              "title": "Chỉ xem một quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Biên gộp</b> = lợi nhuận gộp ÷ doanh thu, tính theo 4 quý gần nhất.",
+    "Lợi nhuận gộp = doanh thu − <b>giá vốn hàng bán</b>.",
+    "Biên gộp phản ánh <b>sức mạnh định giá</b> và <b>lợi thế chi phí</b>.",
+    "Xem <b>xu hướng</b> và <b>so trong cùng ngành</b>, không so giữa các ngành."
+  ],
+  "title": "Biên lợi nhuận gộp"
+}

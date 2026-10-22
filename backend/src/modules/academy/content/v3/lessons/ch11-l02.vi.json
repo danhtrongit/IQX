@@ -1,0 +1,449 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l2-g1": {
+      "kind": "category",
+      "labels": [
+        "Tiền",
+        "Phải thu",
+        "Hàng tồn kho",
+        "Khác",
+        "Vay ngắn hạn",
+        "Phải trả người bán",
+        "Khác"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "Tài sản ngắn hạn",
+          "tone": "pos",
+          "values": [
+            700,
+            730,
+            815,
+            200,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "name": "Tiền",
+          "tone": "neg",
+          "values": [
+            null,
+            null,
+            null,
+            null,
+            660,
+            748,
+            148
+          ]
+        }
+      ],
+      "title": "Tài sản ngắn hạn 2.445 so với nợ ngắn hạn 1.556",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c11l2-g2": {
+      "kind": "category",
+      "labels": [
+        "Doanh nghiệp A · 1,5 lần",
+        "Doanh nghiệp B · 1,5 lần"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "Tiền",
+          "tone": "pos",
+          "values": [
+            40,
+            5
+          ]
+        },
+        {
+          "name": "Phải thu",
+          "tone": "p1",
+          "values": [
+            40,
+            15
+          ]
+        },
+        {
+          "name": "Tồn kho",
+          "tone": "warn",
+          "values": [
+            20,
+            80
+          ]
+        }
+      ],
+      "title": "Chất lượng tài sản ngắn hạn · %",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c11l2-g3": {
+      "alt": "Thang tham chiếu Current Ratio: dưới 1 lần là thiếu hụt, từ 1,5 đến 3 lần là an toàn",
+      "domain": [
+        0,
+        3.5
+      ],
+      "ends": [
+        "0",
+        "3.5 lần"
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Doanh nghiệp mẫu · 1,57",
+          "side": "a",
+          "tone": "p1",
+          "v": 1.57
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0",
+          "v": 0
+        },
+        {
+          "label": "1",
+          "v": 1
+        },
+        {
+          "label": "1,5",
+          "v": 1.5
+        },
+        {
+          "label": "3",
+          "v": 3
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Thiếu hụt",
+          "to": 1,
+          "tone": "neg"
+        },
+        {
+          "from": 1,
+          "label": "Cần theo dõi",
+          "to": 1.5,
+          "tone": "p5"
+        },
+        {
+          "from": 1.5,
+          "label": "An toàn",
+          "to": 3,
+          "tone": "pos"
+        },
+        {
+          "from": 3,
+          "label": "Dư thừa",
+          "to": 3.5,
+          "tone": "warn"
+        }
+      ]
+    },
+    "c11l2-rep": {
+      "caption_tone": "price",
+      "caption_value": "1,57 lần",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Current Ratio",
+          "tone": "p1",
+          "values": [
+            1.6226,
+            1.6478,
+            1.579,
+            1.5969,
+            1.5954,
+            1.626,
+            1.5635,
+            1.5715
+          ]
+        }
+      ],
+      "title": "Current Ratio",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Current Ratio cho biết tài sản ngắn hạn có đủ để trả các khoản nợ đến hạn trong vòng một năm hay không. Đây là chỉ tiêu đầu tiên cần xem khi đánh giá rủi ro thiếu tiền trong ngắn hạn.",
+  "lesson_key": "fundamental:current_ratio",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Current Ratio</b> (hệ số thanh toán hiện hành) bằng <b>tài sản ngắn hạn</b> chia cho <b>nợ ngắn hạn</b>, tính tại cuối kỳ. Cả hai đều là những khoản sẽ chuyển thành tiền hoặc phải trả trong vòng 12 tháng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l2-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền, các khoản phải thu khách hàng, hàng tồn kho và tài sản ngắn hạn khác.",
+              "title": "Tài sản ngắn hạn"
+            },
+            {
+              "text": "Vay ngắn hạn, tiền phải trả nhà cung cấp và các khoản phải trả khác đến hạn trong năm.",
+              "title": "Nợ ngắn hạn"
+            },
+            {
+              "text": "Hệ số 1,57 nghĩa là mỗi đồng nợ ngắn hạn được đảm bảo bởi 1,57 đồng tài sản ngắn hạn.",
+              "title": "Ý nghĩa"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "Current Ratio là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Không phải tài sản ngắn hạn nào cũng dễ chuyển thành tiền. Tiền có sẵn, phải thu cần thời gian thu hồi, còn hàng tồn kho phải bán được mới có tiền.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l2-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khả năng trả nợ thật sát với con số Current Ratio.",
+              "title": "Phần lớn là tiền và phải thu",
+              "tone": "pos"
+            },
+            {
+              "text": "Current Ratio trông an toàn, nhưng nếu hàng bán chậm, doanh nghiệp vẫn có thể thiếu tiền trả nợ.",
+              "title": "Phần lớn là hàng tồn kho",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Chất lượng tài sản ngắn hạn"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l2-rep",
+          "table_toggle": true,
+          "title": "Current Ratio",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Current Ratio tại cuối mỗi quý trong 8 quý gần nhất. Con số góc phải là giá trị mới nhất.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Tài sản ngắn hạn và nợ ngắn hạn mỗi quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Hai cột tăng giảm gần như cùng nhịp, nên Current Ratio đi ngang quanh mức 1,6 lần.",
+              "title": "Cách đọc"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l2-g3",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tài sản ngắn hạn đủ trả nợ ngắn hạn và còn khoảng dư, rủi ro thiếu tiền thấp.",
+              "title": "Từ 1,5 đến 3 lần",
+              "tone": "pos"
+            },
+            {
+              "text": "Nợ ngắn hạn lớn hơn tài sản ngắn hạn. Doanh nghiệp có thể phải vay mới để trả nợ cũ.",
+              "title": "Dưới 1 lần",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Current Ratio quá cao, trên 3 lần, cũng chưa chắc tốt: tiền hoặc hàng tồn kho có thể đang bị giữ lại mà không sinh lời. Mức hợp lý <b>khác nhau theo ngành</b>: bán lẻ thu tiền ngay nên thường thấp, bất động sản giữ nhiều hàng tồn kho nên thường cao.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Current Ratio dưới 1 kéo dài nhiều quý là tín hiệu cần xem kỹ trước khi đầu tư.",
+              "title": "Lọc rủi ro thanh khoản"
+            },
+            {
+              "text": "Kiểm tra tỷ trọng tiền, phải thu và hàng tồn kho trong tài sản ngắn hạn.",
+              "title": "Xem thành phần"
+            },
+            {
+              "text": "Hệ số giảm dần qua các quý cho thấy nợ ngắn hạn đang tăng nhanh hơn tài sản ngắn hạn.",
+              "title": "Theo dõi xu hướng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Doanh nghiệp"
+            },
+            {
+              "label": "Tài sản ngắn hạn"
+            },
+            {
+              "label": "Nợ ngắn hạn"
+            },
+            {
+              "label": "Current Ratio"
+            },
+            {
+              "label": "Đánh giá"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Doanh nghiệp mẫu",
+                "2.445",
+                "1.556",
+                "1,57",
+                {
+                  "rating": "good",
+                  "text": "An toàn"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Doanh nghiệp B",
+                "1.800",
+                "1.500",
+                "1,20",
+                {
+                  "rating": "mid",
+                  "text": "Cần theo dõi"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Doanh nghiệp C",
+                "900",
+                "1.200",
+                "0,75",
+                {
+                  "rating": "bad",
+                  "text": "Thiếu hụt"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Đơn vị tỷ đồng. Doanh nghiệp C thiếu 300 tỷ tài sản ngắn hạn so với nợ phải trả trong năm, nên cần vay thêm, bán tài sản hoặc gọi vốn để trả nợ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tồn kho lớn làm hệ số đẹp nhưng không giúp trả nợ nếu hàng không bán được.",
+              "title": "Bỏ qua hàng tồn kho chậm bán"
+            },
+            {
+              "text": "Hệ số quá cao có thể do vốn bị giữ trong tiền mặt hay tồn kho, làm giảm hiệu quả sinh lời.",
+              "title": "Nghĩ càng cao càng tốt"
+            },
+            {
+              "text": "Tài sản ngắn hạn thay đổi theo mùa vụ. Cần xem nhiều quý để thấy xu hướng thật.",
+              "title": "Chỉ nhìn một quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Current Ratio = tài sản ngắn hạn ÷ nợ ngắn hạn</b>, đo khả năng trả nợ trong 12 tháng.",
+    "<b>Dưới 1</b> là thiếu hụt, <b>1,5 đến 3</b> thường được xem là an toàn.",
+    "Xem <b>thành phần</b> tài sản ngắn hạn: tiền và phải thu dễ trả nợ hơn hàng tồn kho.",
+    "Hệ số <b>quá cao</b> chưa chắc tốt. So với cùng ngành và theo dõi nhiều quý."
+  ],
+  "title": "Current Ratio · khả năng thanh toán hiện hành"
+}

@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l01",
+  "questions": [
+    {
+      "correct_option_id": "64c60e2c5a",
+      "id": "ch10-l01-q01",
+      "options": [
+        {
+          "id": "64c60e2c5a",
+          "text": "Lợi nhuận tạo ra trên mỗi đồng vốn chủ sở hữu"
+        },
+        {
+          "id": "a864f6fc83",
+          "text": "Doanh thu tạo ra trên mỗi đồng tài sản bình quân"
+        },
+        {
+          "id": "666dd8d718",
+          "text": "Số ngày tiền bị giữ trong hàng tồn kho"
+        }
+      ],
+      "prompt": "ROE đo lường điều gì?"
+    },
+    {
+      "correct_option_id": "2afa509cc8",
+      "id": "ch10-l01-q02",
+      "options": [
+        {
+          "id": "2afa509cc8",
+          "text": "Vốn chủ sở hữu bình quân"
+        },
+        {
+          "id": "bd96a11528",
+          "text": "Tổng tài sản cuối kỳ gần nhất"
+        },
+        {
+          "id": "c6d8a3b58a",
+          "text": "Doanh thu thuần 4 quý"
+        }
+      ],
+      "prompt": "Mẫu số của ROE là gì?"
+    },
+    {
+      "correct_option_id": "a05ca79abc",
+      "id": "ch10-l01-q03",
+      "options": [
+        {
+          "id": "a05ca79abc",
+          "text": "Biên ròng, vòng quay tài sản và đòn bẩy"
+        },
+        {
+          "id": "1079a3048c",
+          "text": "Biên gộp, ROA và chu kỳ chuyển đổi tiền mặt"
+        },
+        {
+          "id": "a99c5eab4e",
+          "text": "Doanh thu, giá vốn và thuế suất"
+        }
+      ],
+      "prompt": "Theo phân tích DuPont, ROE bằng tích của ba chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "5f0f514215",
+      "id": "ch10-l01-q04",
+      "options": [
+        {
+          "id": "5f0f514215",
+          "text": "Doanh nghiệp có ROE đến từ biên lãi tốt"
+        },
+        {
+          "id": "a1354944ac",
+          "text": "Doanh nghiệp có ROE đến từ vay nợ nhiều"
+        },
+        {
+          "id": "297d64ef80",
+          "text": "Hai doanh nghiệp luôn bền vững như nhau vì cùng ROE"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp cùng ROE 18%, doanh nghiệp nào thường bền vững hơn?"
+    },
+    {
+      "correct_option_id": "964d58b127",
+      "id": "ch10-l01-q05",
+      "options": [
+        {
+          "id": "964d58b127",
+          "text": "Lợi nhuận sau thuế cộng dồn 4 quý"
+        },
+        {
+          "id": "f66edc2e30",
+          "text": "Vốn chủ sở hữu cuối mỗi quý báo cáo"
+        },
+        {
+          "id": "7289b7ca90",
+          "text": "Doanh thu thuần của từng quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của ROE, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "8d14965cd0a4b6aae57657f75cea54a6bdd5d8ea3b6c884cba260c487fc63414"
+}

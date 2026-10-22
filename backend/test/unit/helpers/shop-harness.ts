@@ -22,6 +22,12 @@ export interface ShopHarness {
   readonly shop: ShopService;
   readonly rewards: LessonRewardService;
   newUser(options?: { legacyMascot?: MascotId }): Promise<string>;
+  /** Mark the user's phone as verified (the Premium redemption rule reads this flag). */
+  markPhoneVerified(userId: string): Promise<void>;
+  /** Cash history of the Demo account (spec 1.3: every exchange lands in the account history). */
+  demoCashLedger(userId: string): Promise<
+    { kind: string; amountVnd: string; balanceAfterVnd: string }[]
+  >;
   close(): Promise<void>;
 }
 
@@ -44,6 +50,20 @@ export function memoryHarness(): ShopHarness {
       const userId = newUserId();
       if (options.legacyMascot) memory.state.legacy.set(userId, options.legacyMascot);
       return userId;
+    },
+    async markPhoneVerified(userId) {
+      memory.state.phoneVerified.set(userId, new Date());
+    },
+    async demoCashLedger(userId) {
+      const account = memory.state.demoAccounts.get(userId);
+      if (!account) return [];
+      return memory.state.demoCashLedger
+        .filter((row) => row.accountId === account.id)
+        .map((row) => ({
+          kind: row.kind,
+          amountVnd: row.amountVnd.toString(),
+          balanceAfterVnd: row.balanceAfterVnd.toString(),
+        }));
     },
     async close() {
       /* nothing to release */
@@ -103,6 +123,29 @@ export async function postgresHarness(connectionString: string): Promise<ShopHar
         );
       }
       return userId;
+    },
+    async markPhoneVerified(userId) {
+      await database.query(`update users set phone_verified_at = now() where id = $1`, [userId]);
+    },
+    async demoCashLedger(userId) {
+      const rows = await database.query<{
+        kind: string;
+        amount_vnd: string;
+        balance_after_vnd: string;
+      }>(
+        `select l.kind, l.amount_vnd::text as amount_vnd,
+                l.balance_after_vnd::text as balance_after_vnd
+           from virtual_cash_ledger l
+           join virtual_trading_accounts a on a.id = l.account_id
+          where a.user_id = $1
+          order by l.created_at, l.id`,
+        [userId],
+      );
+      return rows.map((row) => ({
+        kind: String(row.kind),
+        amountVnd: String(row.amount_vnd),
+        balanceAfterVnd: String(row.balance_after_vnd),
+      }));
     },
     async close() {
       await database.close();

@@ -3,62 +3,62 @@
   "item_id": "ch03-l04",
   "questions": [
     {
-      "correct_option_id": "c4eec27d7b",
+      "correct_option_id": "14798faf1a",
       "id": "ch03-l04-q01",
       "options": [
         {
-          "id": "c4eec27d7b",
+          "id": "14798faf1a",
           "text": "80% giá trị, 20% giới thiệu dịch vụ"
         },
         {
-          "id": "bb5a519c7b",
+          "id": "173dd033a7",
           "text": "100% giới thiệu dịch vụ"
         },
         {
-          "id": "1fd9838431",
+          "id": "0176b8284a",
           "text": "20% giá trị, 80% quảng cáo"
         }
       ],
       "prompt": "Tỷ lệ nội dung được khuyên là bao nhiêu?"
     },
     {
-      "correct_option_id": "4bf5d22a96",
+      "correct_option_id": "cb9c7d9052",
       "id": "ch03-l04-q02",
       "options": [
         {
-          "id": "4bf5d22a96",
+          "id": "cb9c7d9052",
           "text": "TikTok, Facebook, nhóm Zalo, tin nhắn riêng"
         },
         {
-          "id": "c92394d277",
+          "id": "70159fa255",
           "text": "Tin nhắn riêng, TikTok, Facebook, nhóm Zalo"
         },
         {
-          "id": "98af804605",
+          "id": "9f244835a2",
           "text": "Chỉ cần một video TikTok là khách mở tài khoản"
         }
       ],
       "prompt": "Hành trình khách qua các kênh online thường đi theo thứ tự nào?"
     },
     {
-      "correct_option_id": "10fe8f8c32",
+      "correct_option_id": "ef1c9ffa04",
       "id": "ch03-l04-q03",
       "options": [
         {
-          "id": "10fe8f8c32",
+          "id": "ef1c9ffa04",
           "text": "Zalo: nhóm bản tin và tin nhắn riêng"
         },
         {
-          "id": "1bf94bfacb",
+          "id": "c27a9c09a7",
           "text": "Video TikTok gây tranh cãi"
         },
         {
-          "id": "d0feb566fd",
+          "id": "17c9bc9812",
           "text": "Bình luận dạo trong hội nhóm lạ"
         }
       ],
       "prompt": "Kênh nào phù hợp nhất để chăm sóc khách hằng ngày?"
     }
   ],
-  "salt": "4a461c89c4a5e1f22b3813481a1f112d7af0ac9653f95b454b10a0e51a94a535"
+  "salt": "8539c515879a07077d903d4b27c9b0131fb97e84076281c10d57c31f3d16e244"
 }

@@ -86,13 +86,13 @@ describe("Shop main: collection", () => {
 
     const owned = card("thanh_long")
     expect(owned.getAttribute("data-card-state")).toBe("owned")
-    expect(within(owned).getByRole("button").textContent).toBe("Sử dụng")
+    expect(within(owned).getByRole("button", { name: "Sử dụng" }).textContent).toBe("Sử dụng")
     expect(owned.textContent).toContain("Đã sở hữu")
     expect(owned.textContent).not.toContain("500 xu")
 
     const wearing = card("kim_quy")
     expect(wearing.getAttribute("data-card-state")).toBe("active")
-    const button = within(wearing).getByRole("button") as HTMLButtonElement
+    const button = within(wearing).getByRole("button", { name: "Đang sử dụng" }) as HTMLButtonElement
     expect(button.textContent).toBe("Đang sử dụng")
     expect(button.disabled).toBe(true)
     expect(wearing.textContent).not.toMatch(/Mua|500 xu/)
@@ -109,9 +109,10 @@ describe("Shop main: collection", () => {
     expect(Array.from(document.querySelectorAll("[data-shop-card]")).map((node) => node.getAttribute("data-shop-card"))).toEqual(["bach_ho", "thanh_long"])
     const bachHo = card("bach_ho")
     expect(bachHo.textContent).toContain("Linh thú mặc định")
-    expect(bachHo.textContent).not.toMatch(/xu/)
-    expect(within(bachHo).getByRole("button").textContent).toBe("Đang sử dụng")
-    expect(within(card("thanh_long")).getByRole("button").textContent).toBe("Sử dụng")
+    // Bạch Hổ is free: it never offers a purchase, only the separate evolution step.
+    expect(within(bachHo).queryByRole("button", { name: /^Mua/ })).toBeNull()
+    expect(within(bachHo).getByRole("button", { name: "Đang sử dụng" }).textContent).toBe("Đang sử dụng")
+    expect(within(card("thanh_long")).getByRole("button", { name: "Sử dụng" }).textContent).toBe("Sử dụng")
   })
 
   it("Bạch Hổ offers Sử dụng when another mascot is selected, never a purchase", async () => {
@@ -119,7 +120,7 @@ describe("Shop main: collection", () => {
     setup({ owned: ["bach_ho", "loc_huou"], active: "loc_huou" })
     await screen.findByRole("heading", { name: "Linh thú" })
     await user.click(screen.getByRole("tab", { name: "Đã sở hữu" }))
-    expect(within(card("bach_ho")).getByRole("button").textContent).toBe("Sử dụng")
+    expect(within(card("bach_ho")).getByRole("button", { name: "Sử dụng" }).textContent).toBe("Sử dụng")
     expect(card("bach_ho").textContent).toContain("Linh thú mặc định")
   })
 

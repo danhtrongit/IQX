@@ -1,0 +1,661 @@
+{
+  "chapter": 9,
+  "charts": {
+    "c9l5-g1": {
+      "alt": "ROIC bằng lợi nhuận hoạt động sau thuế chia cho vốn đầu tư bình quân, trong đó vốn đầu tư là vốn chủ sở hữu cộng nợ vay trừ tiền mặt đang để không",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "nopat",
+          "title": "Lợi nhuận hoạt động sau thuế",
+          "tone": "p1",
+          "value": "Lợi nhuận hoạt động"
+        },
+        {
+          "children": [
+            {
+              "title": "Vốn chủ sở hữu",
+              "tone": "price"
+            },
+            {
+              "title": "Cộng nợ vay",
+              "tone": "price"
+            },
+            {
+              "title": "Trừ tiền mặt",
+              "tone": "price"
+            }
+          ],
+          "id": "invested",
+          "title": "Vốn đầu tư bình quân",
+          "tone": "warn",
+          "value": "Vốn đầu tư bình quân"
+        },
+        {
+          "emph": true,
+          "id": "roic",
+          "title": "ROIC (%)",
+          "tone": "pos"
+        }
+      ]
+    },
+    "c9l5-g2": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    14.6901,
+                    14.6901,
+                    14.6901,
+                    14.6901,
+                    14.6901
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    15.7099,
+                    15.7099,
+                    15.7099,
+                    15.7099,
+                    15.7099
+                  ]
+                },
+                "bounds": [
+                  0,
+                  25
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 15.2",
+                    "role": "avg",
+                    "value": 15.2
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      15,
+                      16,
+                      14.5,
+                      15.5,
+                      15
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "Doanh nghiệp A · ROIC ổn định"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    5.5414,
+                    5.5414,
+                    5.5414,
+                    5.5414,
+                    5.5414
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    19.2586,
+                    19.2586,
+                    19.2586,
+                    19.2586,
+                    19.2586
+                  ]
+                },
+                "bounds": [
+                  0,
+                  25
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 12.4",
+                    "role": "avg",
+                    "value": 12.4
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      22,
+                      6,
+                      18,
+                      4,
+                      12
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "Doanh nghiệp B · ROIC dao động"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c9l5-g3": {
+      "alt": "Thang tham chiếu độ lệch chuẩn ROIC: ổn định dưới 2 điểm phần trăm",
+      "domain": [
+        0,
+        6
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Doanh nghiệp mẫu · 1,8 điểm %",
+          "side": "a",
+          "tone": "p1",
+          "v": 1.82
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0 điểm %",
+          "v": 0
+        },
+        {
+          "label": "2",
+          "v": 2
+        },
+        {
+          "label": "4",
+          "v": 4
+        },
+        {
+          "label": "6+",
+          "v": 6
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Ổn định",
+          "to": 2,
+          "tone": "pos"
+        },
+        {
+          "from": 2,
+          "label": "Trung bình",
+          "to": 4,
+          "tone": "warn"
+        },
+        {
+          "from": 4,
+          "label": "Thất thường",
+          "to": 6,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c9l5-g4": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    15.2596,
+                    15.2596,
+                    15.2596,
+                    15.2596,
+                    15.2596
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    16.2604,
+                    16.2604,
+                    16.2604,
+                    16.2604,
+                    16.2604
+                  ]
+                },
+                "bounds": [
+                  0,
+                  20
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 15.76",
+                    "role": "avg",
+                    "value": 15.76
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      15.5,
+                      16,
+                      15,
+                      16.5,
+                      15.8
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "ROIC cao và ổn định"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    3.7183,
+                    3.7183,
+                    3.7183,
+                    3.7183,
+                    3.7183
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    4.2017,
+                    4.2017,
+                    4.2017,
+                    4.2017,
+                    4.2017
+                  ]
+                },
+                "bounds": [
+                  0,
+                  20
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 3.96",
+                    "role": "avg",
+                    "value": 3.96
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      4,
+                      3.6,
+                      4.3,
+                      3.8,
+                      4.1
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "ROIC thấp và ổn định"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c9l5-rep": {
+      "caption_tone": "price",
+      "caption_value": "1,8 điểm %",
+      "kind": "category",
+      "labels": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "ROIC Stability",
+          "tone": "p1",
+          "values": [
+            10.3971,
+            14.2267,
+            10.1201,
+            12.9773,
+            14.3015
+          ]
+        }
+      ],
+      "title": "ROIC Stability",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch09-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "ROIC Stability đo hiệu quả sử dụng vốn của doanh nghiệp có giữ được đều qua các năm hay không. ROIC cao và ổn định là dấu hiệu rõ của một doanh nghiệp có lợi thế cạnh tranh bền.",
+  "lesson_key": "fundamental:roic_stability",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>ROIC</b> (Return On Invested Capital) là tỷ suất lợi nhuận trên vốn đầu tư: mỗi 100 đồng vốn đưa vào kinh doanh tạo ra bao nhiêu đồng lợi nhuận. <b>ROIC Stability</b> là <b>độ lệch chuẩn</b> của ROIC từ 2021 đến 2025, đơn vị điểm %. Con số <b>càng nhỏ</b>, ROIC <b>càng ổn định</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l5-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Vốn đầu tư gồm vốn chủ sở hữu (VCSH) cộng nợ vay, trừ đi tiền mặt chưa dùng vào kinh doanh. Chương 10 sẽ học kỹ về ROIC.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "ROIC Stability là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Mỗi năm có một mức ROIC. Độ lệch chuẩn đo <b>khoảng cách điển hình</b> từ ROIC từng năm tới ROIC bình quân, hiện thành dải quanh đường bình quân.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l5-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh nghiệp tạo ra lợi nhuận từ vốn một cách đều đặn, ít phụ thuộc chu kỳ.",
+              "title": "ROIC ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "Hiệu quả vốn phụ thuộc giá hàng hóa, chu kỳ ngành hoặc các dự án lớn.",
+              "title": "ROIC dao động",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Dải quanh ROIC bình quân"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l5-rep",
+          "table_toggle": true,
+          "title": "ROIC Stability",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận hoạt động sau thuế chia vốn đầu tư bình quân, đơn vị %.",
+              "title": "Đường xanh · ROIC từng năm"
+            },
+            {
+              "text": "ROIC trung bình của 5 năm.",
+              "title": "Đường đứt nét · bình quân"
+            },
+            {
+              "text": "Nửa độ rộng của dải là con số lớn ở góc phải.",
+              "title": "Dải tô · bình quân ± độ lệch chuẩn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l5-g3",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Hiệu quả sử dụng vốn gần như giữ nguyên qua các năm.",
+              "title": "Dưới 2 điểm % · ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "Có năm vốn sinh lời tốt, có năm gần như không sinh lời.",
+              "title": "Trên 4 điểm % · thất thường",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Đọc cùng <b>mức ROIC</b>. ROIC ổn định quanh 15% tốt hơn nhiều so với ROIC ổn định quanh 4%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l5-g4",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC cao và ổn định nhiều năm cho thấy đối thủ khó chen vào kéo hiệu quả xuống.",
+              "title": "Tìm lợi thế cạnh tranh"
+            },
+            {
+              "text": "Doanh thu, biên và ROIC cùng ổn định là bức tranh vững chắc nhất.",
+              "title": "Kết hợp các chỉ tiêu ổn định"
+            },
+            {
+              "text": "Năm ROIC giảm có thể do vừa đầu tư nhà máy mới chưa kịp tạo lợi nhuận.",
+              "title": "Hiểu nguyên nhân dao động"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "ROIC",
+                "10,4%",
+                "14,2%",
+                "10,1%",
+                "13,0%",
+                "14,3%"
+              ]
+            },
+            {
+              "cells": [
+                "Lệch so với bình quân",
+                "−2,0",
+                "+1,8",
+                {
+                  "rating": "mid",
+                  "text": "−2,3"
+                },
+                "+0,6",
+                {
+                  "rating": "good",
+                  "text": "+1,9"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "items": [
+            {
+              "term": "ROIC bình quân",
+              "text": "Khoảng 12,4%, tức 12,4 đồng lợi nhuận trên 100 đồng vốn đầu tư."
+            },
+            {
+              "term": "Dao động",
+              "text": "ROIC đi trong khoảng 10,1% đến 14,3%."
+            },
+            {
+              "term": "Kết quả",
+              "text": "Độ lệch chuẩn ≈ 1,8 điểm %, thuộc nhóm ổn định."
+            },
+            {
+              "term": "Đọc thêm",
+              "text": "ROIC ở mức khá và ổn định, hai năm gần đây đều trên bình quân."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC 3% đều đặn nghĩa là vốn sinh lời kém, có khi thấp hơn lãi tiền gửi.",
+              "title": "Ổn định ở mức thấp"
+            },
+            {
+              "text": "Vốn tăng mạnh khi xây nhà máy làm ROIC giảm tạm thời, không hẳn là hiệu quả kém đi.",
+              "title": "Bỏ qua năm đầu tư lớn"
+            },
+            {
+              "text": "Ngân hàng dùng nợ làm nguyên liệu kinh doanh, ROIC không phù hợp để đánh giá.",
+              "title": "Áp dụng cho ngân hàng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>ROIC</b> là lợi nhuận hoạt động sau thuế chia <b>vốn đầu tư</b> bình quân (VCSH + nợ vay − tiền).",
+    "<b>ROIC Stability</b> là <b>độ lệch chuẩn</b> của ROIC 2021-2025, đơn vị điểm %.",
+    "Con số <b>càng nhỏ càng ổn định</b>. Dưới 2 điểm % là ổn định, trên 4 điểm % là thất thường.",
+    "<b>ROIC cao và ổn định</b> là dấu hiệu của lợi thế cạnh tranh bền."
+  ],
+  "title": "ROIC Stability · độ ổn định ROIC"
+}

@@ -3,62 +3,62 @@
   "item_id": "ch02-l03",
   "questions": [
     {
-      "correct_option_id": "e9bf5323ff",
+      "correct_option_id": "f0b3385ffa",
       "id": "ch02-l03-q01",
       "options": [
         {
-          "id": "e9bf5323ff",
+          "id": "f0b3385ffa",
           "text": "Viết hết, không tự loại ai"
         },
         {
-          "id": "90b3242d79",
+          "id": "859e87b385",
           "text": "Chỉ viết người giàu"
         },
         {
-          "id": "dc78e7f6b0",
+          "id": "8c05b05758",
           "text": "Chỉ viết người đã biết chứng khoán"
         }
       ],
       "prompt": "Khi viết danh sách 100 người, nên làm thế nào?"
     },
     {
-      "correct_option_id": "d92453922b",
+      "correct_option_id": "dfad684fb1",
       "id": "ch02-l03-q02",
       "options": [
         {
-          "id": "d92453922b",
+          "id": "dfad684fb1",
           "text": "Khách hài lòng giới thiệu"
         },
         {
-          "id": "c09b38cbe7",
+          "id": "353b3a1627",
           "text": "Danh sách số điện thoại mua ngoài"
         },
         {
-          "id": "98f9e9b3d9",
+          "id": "e88b78755e",
           "text": "Bình luận dạo trên mạng"
         }
       ],
       "prompt": "Nguồn khách hàng chất lượng nhất là nguồn nào?"
     },
     {
-      "correct_option_id": "135195a902",
+      "correct_option_id": "45d2318788",
       "id": "ch02-l03-q03",
       "options": [
         {
-          "id": "135195a902",
+          "id": "45d2318788",
           "text": "Hình chụp tài khoản lãi và lời hứa lợi nhuận"
         },
         {
-          "id": "17f13222f4",
+          "id": "b74a562e01",
           "text": "Kiến thức đơn giản, dễ hiểu"
         },
         {
-          "id": "3fe2503172",
+          "id": "13739eef93",
           "text": "Hình ảnh hội thảo"
         }
       ],
       "prompt": "Nội dung nào KHÔNG nên đăng trên mạng xã hội?"
     }
   ],
-  "salt": "4bc425881b17e54dc9ed39bead6c00286c02e89f0f944e2f09e3be4136d94f0d"
+  "salt": "217d42d2f89f1fa38487acce1e6ad45077746a979fe14a4e9285a633fdc0de5c"
 }

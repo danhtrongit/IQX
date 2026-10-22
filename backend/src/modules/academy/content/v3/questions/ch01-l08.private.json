@@ -3,62 +3,62 @@
   "item_id": "ch01-l08",
   "questions": [
     {
-      "correct_option_id": "0da4459937",
+      "correct_option_id": "52ab2c0a95",
       "id": "ch01-l08-q01",
       "options": [
         {
-          "id": "0da4459937",
+          "id": "52ab2c0a95",
           "text": "Phục hồi, tăng trưởng, suy giảm, suy thoái"
         },
         {
-          "id": "fc52ca47f4",
+          "id": "2a9f19098a",
           "text": "Tích lũy, tăng giá, phân phối, giảm giá"
         },
         {
-          "id": "ef9243917a",
+          "id": "f1ae333eab",
           "text": "Mở cửa, khớp lệnh, đóng cửa, thanh toán"
         }
       ],
       "prompt": "Chu kỳ kinh tế gồm những giai đoạn nào?"
     },
     {
-      "correct_option_id": "2f323545b8",
+      "correct_option_id": "4be55460b4",
       "id": "ch01-l08-q02",
       "options": [
         {
-          "id": "2f323545b8",
+          "id": "4be55460b4",
           "text": "Được hỗ trợ"
         },
         {
-          "id": "815d37efe3",
+          "id": "a6d04f0f9b",
           "text": "Chịu áp lực"
         },
         {
-          "id": "44ba74a642",
+          "id": "e1c69f7481",
           "text": "Không bị ảnh hưởng"
         }
       ],
       "prompt": "Khi lãi suất giảm, thị trường chứng khoán thường thế nào?"
     },
     {
-      "correct_option_id": "82789c8870",
+      "correct_option_id": "5b0a1a7081",
       "id": "ch01-l08-q03",
       "options": [
         {
-          "id": "82789c8870",
+          "id": "5b0a1a7081",
           "text": "Điện, nước, thực phẩm, dược phẩm"
         },
         {
-          "id": "7b017b997b",
+          "id": "e1e3591a77",
           "text": "Ngân hàng, chứng khoán, thép"
         },
         {
-          "id": "15befeb67f",
+          "id": "1aaedaab38",
           "text": "Bất động sản, vật liệu xây dựng"
         }
       ],
       "prompt": "Cổ phiếu phòng thủ thuộc nhóm ngành nào?"
     }
   ],
-  "salt": "f381cf0123392a382e8e3a9788446ab6c13c3ed8d5b40c753566801cdb0674eb"
+  "salt": "18837f4de4e4b6f932c98aca24e2989f097fb8200d7e0f72dd10bbb51f6115ec"
 }

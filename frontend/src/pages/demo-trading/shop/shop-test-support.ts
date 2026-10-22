@@ -37,6 +37,14 @@ export type BackendOptions = {
   lessons?: number
   ledger?: LedgerItem[]
   price?: number
+  /** Cấp tiến hoá của từng linh thú (1 = chưa tiến hoá). */
+  petLevels?: Record<string, number>
+  premiumPrice?: number
+  premiumDays?: number
+  cashPerXu?: number
+  minExchangeCash?: number
+  /** Tiền mặt của tài khoản Demo Trading. */
+  demoCash?: number
 }
 
 export function ledgerItem(seq: number, overrides: Partial<LedgerItem> = {}): LedgerItem {
@@ -67,6 +75,12 @@ export function createShopBackend(options: BackendOptions = {}) {
     seq: options.ledger?.length ?? 0,
     ledger: [...(options.ledger ?? [])],
     purchases: new Map<string, { mascot_id: string; price_xu: number }>(),
+    petLevels: { ...(options.petLevels ?? {}) },
+    premiumPrice: options.premiumPrice ?? 3_000,
+    premiumDays: options.premiumDays ?? 30,
+    cashPerXu: options.cashPerXu ?? 10_000,
+    minExchangeCash: options.minExchangeCash ?? 10_000,
+    demoCash: options.demoCash ?? 0,
   }
   const calls: Call[] = []
   const rules: Rule[] = []
@@ -74,6 +88,7 @@ export function createShopBackend(options: BackendOptions = {}) {
   const wallet = () => ({ balance: state.balance, last_seq: state.seq })
   const ownedView = () => state.owned.map((mascot_id) => ({ mascot_id, source: mascot_id === "bach_ho" ? "default" : "purchase", acquired_at: null }))
   const activeView = () => ({ mascot_id: state.active, revision: state.revision, updated_at: null })
+  const petLevelsView = () => Object.entries(state.petLevels).map(([mascot_id, level]) => ({ mascot_id, level, updated_at: null }))
 
   function shopState(): ShopState {
     return {
@@ -93,6 +108,10 @@ export function createShopBackend(options: BackendOptions = {}) {
       total_count: 5,
       active: activeView(),
       provisioned: true,
+      pet_levels: petLevelsView(),
+      premium_price_xu: state.premiumPrice,
+      premium_duration_days: state.premiumDays,
+      exchange: { cash_per_xu: state.cashPerXu, min_exchange_cash_vnd: state.minExchangeCash },
     } as ShopState
   }
 
@@ -127,6 +146,104 @@ export function createShopBackend(options: BackendOptions = {}) {
     }))
   }
 
+  /** Tiến hoá: lên cấp 2 (10.000 xu) rồi cấp 3 (30.000 xu), giá và cấp do server quyết định. */
+  function evolve(call: Call) {
+    const mascotId = call.path.split("/")[3]
+    const body = call.body as { target_level: 2 | 3; expected_price_xu: number; idempotency_key: string }
+    const price = body.target_level === 2 ? 10_000 : 30_000
+    if (!state.owned.includes(mascotId)) throw apiError(409, "PET_NOT_OWNED", "Bạn chưa sở hữu linh thú này")
+    const current = state.petLevels[mascotId] ?? 1
+    if (current >= body.target_level) {
+      throw apiError(409, "PET_MAX_LEVEL", "Đã ở cấp cao nhất", [{ current_level: current, max_level: 3 }])
+    }
+    if (current + 1 !== body.target_level) {
+      throw apiError(409, "PET_LEVEL_LOCKED", "Phải lên cấp trước", [{ current_level: current, required_level: current + 1 }])
+    }
+    if (body.expected_price_xu !== price) {
+      throw apiError(409, "PRICE_CHANGED", "Giá đã thay đổi", [{ current_price_xu: price, target_level: body.target_level }])
+    }
+    if (state.balance < price) {
+      throw apiError(409, "INSUFFICIENT_XU", "Chưa đủ xu", [{ balance_xu: state.balance, price_xu: price, shortfall_xu: price - state.balance }])
+    }
+    state.balance -= price
+    state.seq += 1
+    state.petLevels[mascotId] = body.target_level
+    state.ledger.push(ledgerItem(state.seq, {
+      kind: "pet_evolve", delta: -price, balance_after: state.balance,
+      label: { lesson_key: null, lesson_id: null, mascot_id: mascotId, mascot_name: null },
+    }))
+    return {
+      status: "evolved", replayed: false, mascot_id: mascotId, level: body.target_level,
+      previous_level: current, price_xu: price, wallet: wallet(), pet_levels: petLevelsView(),
+    }
+  }
+
+  /** Premium mua bằng xu: 3.000 xu cho 30 ngày. */
+  function premium(call: Call) {
+    const body = call.body as { expected_price_xu: number; idempotency_key: string }
+    if (body.expected_price_xu !== state.premiumPrice) {
+      throw apiError(409, "PRICE_CHANGED", "Giá đã thay đổi", [{ current_price_xu: state.premiumPrice }])
+    }
+    if (state.balance < state.premiumPrice) {
+      throw apiError(409, "INSUFFICIENT_XU", "Chưa đủ xu", [{ balance_xu: state.balance, price_xu: state.premiumPrice, shortfall_xu: state.premiumPrice - state.balance }])
+    }
+    state.balance -= state.premiumPrice
+    state.seq += 1
+    state.ledger.push(ledgerItem(state.seq, {
+      kind: "premium_purchase", delta: -state.premiumPrice, balance_after: state.balance,
+      label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null },
+    }))
+    return {
+      status: "purchased", replayed: false, price_xu: state.premiumPrice, days_granted: state.premiumDays,
+      plan_id: null, starts_at: "2026-10-08T03:00:00.000Z", ends_at: "2026-11-07T03:00:00.000Z", wallet: wallet(),
+    }
+  }
+
+  /** Đổi xu hai chiều: 1 xu = 10.000 đồng, tiền vào phần tiền mặt của tài khoản Demo. */
+  function exchange(call: Call) {
+    const body = call.body as { direction: "xu_to_cash" | "cash_to_xu"; amount: number; idempotency_key: string }
+    if (body.direction === "xu_to_cash") {
+      if (state.balance < body.amount) {
+        throw apiError(409, "INSUFFICIENT_XU", "Chưa đủ xu", [{ balance_xu: state.balance, price_xu: body.amount, shortfall_xu: body.amount - state.balance }])
+      }
+      state.balance -= body.amount
+      state.demoCash += body.amount * state.cashPerXu
+      state.seq += 1
+      state.ledger.push(ledgerItem(state.seq, {
+        kind: "demo_withdraw", delta: -body.amount, balance_after: state.balance,
+        label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null },
+      }))
+      return {
+        direction: body.direction, amount: body.amount, xu_delta: -body.amount,
+        cash_delta_vnd: body.amount * state.cashPerXu, balance_xu: state.balance,
+        cash_available_vnd: state.demoCash, net_deposited_cash_vnd: state.demoCash,
+        cash_per_xu: state.cashPerXu, replayed: false,
+      }
+    }
+    if (body.amount % state.cashPerXu !== 0) {
+      throw apiError(400, "INVALID_AMOUNT", "Số tiền đổi phải là bội số của 10000 đồng", [{ amount_vnd: body.amount, cash_per_xu: state.cashPerXu }])
+    }
+    if (body.amount < state.minExchangeCash) {
+      throw apiError(400, "INVALID_AMOUNT", "Số tiền đổi tối thiểu là 10000 đồng", [{ amount_vnd: body.amount, min_exchange_cash_vnd: state.minExchangeCash }])
+    }
+    if (state.demoCash < body.amount) {
+      throw apiError(409, "INSUFFICIENT_CASH", "Không đủ tiền mặt", [{ cash_available_vnd: state.demoCash, amount_vnd: body.amount, shortfall_vnd: body.amount - state.demoCash }])
+    }
+    const xu = body.amount / state.cashPerXu
+    state.balance += xu
+    state.demoCash -= body.amount
+    state.seq += 1
+    state.ledger.push(ledgerItem(state.seq, {
+      kind: "demo_deposit", delta: xu, balance_after: state.balance,
+      label: { lesson_key: null, lesson_id: null, mascot_id: null, mascot_name: null },
+    }))
+    return {
+      direction: body.direction, amount: body.amount, xu_delta: xu, cash_delta_vnd: -body.amount,
+      balance_xu: state.balance, cash_available_vnd: state.demoCash,
+      net_deposited_cash_vnd: Math.max(0, state.demoCash), cash_per_xu: state.cashPerXu, replayed: false,
+    }
+  }
+
   function route(call: Call): unknown {
     const url = new URL(call.path, "http://x")
     const path = url.pathname
@@ -141,6 +258,9 @@ export function createShopBackend(options: BackendOptions = {}) {
       return { items, next_cursor: more ? String(items[items.length - 1].seq) : null }
     }
     if (path === "/shop/purchases" && call.method === "POST") return purchase(call)
+    if (path.startsWith("/shop/pets/") && path.endsWith("/evolve") && call.method === "POST") return evolve(call)
+    if (path === "/shop/premium-purchases" && call.method === "POST") return premium(call)
+    if (path === "/shop/demo-exchange" && call.method === "POST") return exchange(call)
     if (path.startsWith("/shop/purchases/") && call.method === "GET") {
       const key = decodeURIComponent(path.slice("/shop/purchases/".length))
       const found = state.purchases.get(key)

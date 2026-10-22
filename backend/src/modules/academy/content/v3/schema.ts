@@ -1157,10 +1157,10 @@ export function isInteractiveBlock(b: Block): b is InteractiveBlock {
 
 /* ============================================================== 4. ids, keys, catalog */
 
-export const ACADEMY_V3_CATALOG_VERSION = 'iqx-academy-v3.2-14ch-94lessons';
-export const ACADEMY_V3_CHAPTER_COUNT = 14;
-/** Sum of `lesson_count` over all 14 chapters (required lessons only). */
-export const ACADEMY_V3_LESSON_COUNT = 94;
+export const ACADEMY_V3_CATALOG_VERSION = 'iqx-academy-v3.3-13ch-87lessons';
+export const ACADEMY_V3_CHAPTER_COUNT = 13;
+/** Sum of `lesson_count` over all 13 chapters (required lessons only). */
+export const ACADEMY_V3_LESSON_COUNT = 87;
 
 export const itemIdSchema = z.string().regex(/^ch\d{2}-(?:l\d{2}|exam|practice)$/);
 export const lessonIdSchema = z.string().regex(/^ch\d{2}-(?:l\d{2}|practice)$/);
@@ -1172,12 +1172,82 @@ export type ItemKind = z.infer<typeof itemKindSchema>;
 export const itemStateSchema = z.enum(['passed', 'open', 'locked']);
 export type ItemState = z.infer<typeof itemStateSchema>;
 
-/** Indicator unlocked by passing the lesson (ch04-l04..l08). capability = `indicator:<id>`. */
-export const unlockSchema = z.strictObject({
-  kind: z.literal('technical'),
-  id: z.enum(['volume', 'ma', 'rsi', 'macd', 'bollinger']),
-  label: plainText,
-});
+/**
+ * 16 chỉ báo kỹ thuật mở sau khi đạt bài kiểm tra (spec §4.2). capability = `indicator:<id>`.
+ */
+export const technicalUnlockIdSchema = z.enum([
+  'volume',
+  'ma',
+  'rsi',
+  'macd',
+  'bollinger',
+  'ema',
+  'ma_cross',
+  'dmi',
+  'donchian',
+  'stochastic',
+  'cci',
+  'roc',
+  'williams_r',
+  'obv',
+  'mfi',
+  'cmf',
+]);
+
+/**
+ * 33 chỉ tiêu cơ bản mở trong Bộ lọc (spec §4.2). capability = `metric:<id>`; id trùng
+ * `metric_id` của registry Bộ lọc (`SCREENER_METRIC_IDS`).
+ */
+export const fundamentalUnlockIdSchema = z.enum([
+  'revenue_yoy',
+  'profit_yoy',
+  'eps_yoy',
+  'revenue_cagr3',
+  'profit_cagr3',
+  'eps_cagr3',
+  'profit_positive_streak',
+  'revenue_growth_stability',
+  'net_margin_stability',
+  'eps_growth_stability',
+  'roic_stability',
+  'roe',
+  'roa',
+  'roic',
+  'gross_margin',
+  'net_margin',
+  'asset_turnover',
+  'ccc',
+  'debt_equity',
+  'current_ratio',
+  'interest_coverage',
+  'net_debt_ebitda',
+  'cfo_margin',
+  'cfo_profit',
+  'capex_revenue',
+  'fcf_margin',
+  'fcf_positive_streak',
+  'pe',
+  'pb',
+  'ps',
+  'peg',
+  'ev_ebitda',
+  'fcf_yield',
+]);
+
+/** Chỉ báo kỹ thuật hoặc chỉ tiêu cơ bản mở khi đạt bài kiểm tra (spec §4.2). */
+export const unlockSchema = z.discriminatedUnion('kind', [
+  z.strictObject({
+    kind: z.literal('technical'),
+    id: technicalUnlockIdSchema,
+    label: plainText,
+  }),
+  z.strictObject({
+    kind: z.literal('fundamental'),
+    id: fundamentalUnlockIdSchema,
+    label: plainText,
+  }),
+]);
+export type Unlock = z.infer<typeof unlockSchema>;
 
 /** Lessons: 3 questions in ch1-3, 5 from ch4. Exams: 20 in ch1-3, 30 from ch4. Pass = all correct. */
 export function questionCountFor(chapter: number, kind: ItemKind): number {
@@ -1211,13 +1281,8 @@ const publishedChapterSchema = z.strictObject({
   lesson_count: z.number().int().min(1),
   items: z.array(catalogItemSchema).min(2),
 });
-const stubChapterSchema = z.strictObject({
-  no: z.number().int().min(1).max(ACADEMY_V3_CHAPTER_COUNT),
-  title: plainText,
-  published: z.literal(false),
-  lesson_count: z.number().int().min(1),
-});
-export const catalogChapterSchema = z.discriminatedUnion('published', [publishedChapterSchema, stubChapterSchema]);
+/** v3.3: mọi chương đã phát hành, không còn khái niệm chương stub. */
+export const catalogChapterSchema = publishedChapterSchema;
 export type CatalogChapter = z.infer<typeof catalogChapterSchema>;
 export type PublishedChapter = z.infer<typeof publishedChapterSchema>;
 
@@ -1232,17 +1297,11 @@ export const catalogFileSchema = z
   .superRefine((c, ctx) => {
     const issue = (message: string) => ctx.addIssue({ code: 'custom', message });
     let total = 0;
-    let seenStub = false;
     const ids = new Set<string>();
     const keys = new Set<string>();
     c.chapters.forEach((ch, idx) => {
       total += ch.lesson_count;
       if (ch.no !== idx + 1) issue(`chapter ${idx} must have no ${idx + 1}`);
-      if (!ch.published) {
-        seenStub = true;
-        return;
-      }
-      if (seenStub) issue(`published chapter ${ch.no} after an unpublished one`);
       const cc = `ch${pad2(ch.no)}`;
       const lessons = ch.items.filter((i) => i.kind === 'lesson');
       const exams = ch.items.filter((i) => i.kind === 'chapter_exam');
@@ -1258,8 +1317,8 @@ export const catalogFileSchema = z
         if (it.has_scenario !== (it.kind === 'lesson' && (ch.no === 2 || ch.no === 3)))
           issue(`${it.id}: has_scenario must be true exactly for ch2/ch3 lessons`);
         if ((it.intro !== null) !== (it.kind === 'chapter_exam')) issue(`${it.id}: intro only on exams`);
-        if (it.unlock && !(it.lesson_key === `technical:${it.unlock.id}` && it.kind === 'lesson'))
-          issue(`${it.id}: unlock requires lesson_key technical:${it.unlock.id}`);
+        if (it.unlock && !(it.lesson_key === `${it.unlock.kind}:${it.unlock.id}` && it.kind === 'lesson'))
+          issue(`${it.id}: unlock requires lesson_key ${it.unlock.kind}:${it.unlock.id}`);
         if (it.kind === 'lesson') {
           if (it.id !== `${cc}-l${pad2(k + 1)}`) issue(`${it.id}: lesson id must be ${cc}-l${pad2(k + 1)}`);
           if (!it.unlock && !it.lesson_key.startsWith('concept:')) issue(`${it.id}: non-indicator lessons use concept:`);
@@ -1457,7 +1516,15 @@ export const catalogItemResponseSchema = z.object({
   name: z.string(),
   optional: z.boolean(),
   question_count: z.number().int(),
-  unlock: z.object({ kind: z.literal('technical'), id: z.string(), label: z.string(), capability_id: z.string() }).nullable(),
+  unlock: z
+    .object({
+      kind: z.enum(['technical', 'fundamental']),
+      id: z.string(),
+      label: z.string(),
+      /** `indicator:<id>` for a technical unlock, `metric:<id>` for a fundamental one. */
+      capability_id: z.string(),
+    })
+    .nullable(),
   has_scenario: z.boolean(),
   intro: z.string().nullable(),
   /** null for exams (no lesson content). */
@@ -1467,7 +1534,7 @@ export type CatalogItemResponse = z.infer<typeof catalogItemResponseSchema>;
 
 export const catalogResponseSchema = z.object({
   catalog_version: z.string(),
-  /** 43 now: required lessons of published chapters. */
+  /** 87 now: required lessons of published chapters. */
   required_total: z.number().int(),
   chapters: z.array(
     z.object({

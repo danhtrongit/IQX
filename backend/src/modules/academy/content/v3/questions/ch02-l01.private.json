@@ -3,62 +3,62 @@
   "item_id": "ch02-l01",
   "questions": [
     {
-      "correct_option_id": "7e59efd375",
+      "correct_option_id": "c2578f0559",
       "id": "ch02-l01-q01",
       "options": [
         {
-          "id": "7e59efd375",
+          "id": "c2578f0559",
           "text": "Phần phí từ khách còn giao dịch"
         },
         {
-          "id": "bff2488417",
+          "id": "08f3d9b49e",
           "text": "Số tài khoản mở được, dù khách không giao dịch"
         },
         {
-          "id": "bd41561dc7",
+          "id": "6958e20aec",
           "text": "Tiền khách gửi giữ hộ"
         }
       ],
       "prompt": "Thu nhập của SACO đến chủ yếu từ đâu?"
     },
     {
-      "correct_option_id": "3db2e50b0f",
+      "correct_option_id": "e018c81e14",
       "id": "ch02-l01-q02",
       "options": [
         {
-          "id": "3db2e50b0f",
+          "id": "e018c81e14",
           "text": "Traffic, Tư vấn, Chuyển đổi, Chăm sóc"
         },
         {
-          "id": "abc380226d",
+          "id": "789e67538e",
           "text": "Chăm sóc, Traffic, Tư vấn, Chuyển đổi"
         },
         {
-          "id": "65a65b19e8",
+          "id": "d9ba66031d",
           "text": "Tư vấn, Chuyển đổi, Traffic, Chăm sóc"
         }
       ],
       "prompt": "Bốn bước của phễu bán hàng theo đúng thứ tự là gì?"
     },
     {
-      "correct_option_id": "1acc11713d",
+      "correct_option_id": "4a593b3028",
       "id": "ch02-l01-q03",
       "options": [
         {
-          "id": "1acc11713d",
+          "id": "4a593b3028",
           "text": "5 người"
         },
         {
-          "id": "7f7543d7f0",
+          "id": "37eb9bea19",
           "text": "20 người"
         },
         {
-          "id": "ad0642ed7f",
+          "id": "b5bab8c9ba",
           "text": "1 người"
         }
       ],
       "prompt": "Muốn tiếp cận 100 người mỗi tháng với 20 ngày làm việc, mỗi ngày cần tiếp cận bao nhiêu người?"
     }
   ],
-  "salt": "b1627e5207e2ee8483f5654e9eb28a3d242f0db5a865c7644c0db38ae0e7984d"
+  "salt": "4efa52894e1915d11f884baf222462afc8ae8842954cbd18d25793b19eed8735"
 }

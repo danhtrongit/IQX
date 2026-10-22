@@ -1,0 +1,387 @@
+{
+  "chapter": 8,
+  "charts": {
+    "c8l5-g1": {
+      "kind": "category",
+      "labels": [
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "dash": true,
+          "name": "Tăng đều",
+          "tone": "warn",
+          "values": [
+            373.4,
+            415.4986,
+            462.3436,
+            514.47
+          ]
+        },
+        {
+          "name": "Thực tế",
+          "tone": "p1",
+          "values": [
+            373.4,
+            261.7,
+            385.9,
+            514.47
+          ]
+        }
+      ],
+      "title": "LNST thực tế và đường tăng đều theo CAGR · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "none"
+    },
+    "c8l5-g2": {
+      "kind": "category",
+      "labels": [
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Tăng trưởng LNST",
+          "tone": "pos",
+          "values": [
+            -29.9,
+            47.4,
+            33.3
+          ]
+        }
+      ],
+      "title": "LNST tăng so với năm trước · %",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c8l5-rep": {
+      "items": [
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "11,3%",
+            "kind": "category",
+            "labels": [
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Net Profit CAGR 3Y",
+                "tone": "p1",
+                "values": [
+                  373.6047,
+                  415.4651,
+                  462.2093,
+                  514.5349
+                ]
+              }
+            ],
+            "title": "Net Profit CAGR 3Y",
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "Net Profit CAGR 3Y"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "11,3%",
+            "kind": "category",
+            "labels": [
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Net Profit CAGR 3Y",
+                "tone_by_sign": {
+                  "neg": "neg",
+                  "pos": "pos"
+                },
+                "values": [
+                  373.4342,
+                  261.7377,
+                  385.8816,
+                  514.4704
+                ]
+              }
+            ],
+            "title": "Net Profit CAGR 3Y",
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "Thành phần"
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack",
+      "title": "Net Profit CAGR 3Y"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch08-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Net Profit CAGR 3Y là tốc độ tăng LNST đều mỗi năm trong 3 năm. Lợi nhuận lên xuống mạnh hơn doanh thu, nên đây là nơi khoảng cách giữa CAGR và trung bình cộng thể hiện rõ nhất.",
+  "lesson_key": "fundamental:profit_cagr3",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Net Profit CAGR 3Y áp dụng công thức CAGR cho <b>LNST cả năm</b> 2022 và 2025: (LNST 2025 ÷ LNST 2022)1/3 − 1. Con số này chỉ phụ thuộc vào <b>điểm đầu và điểm cuối</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l5-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Hai con đường trên cùng có CAGR 11,3% mỗi năm. Một đường tăng đều, một đường giảm sâu năm 2023 rồi phục hồi. CAGR không phân biệt được hai trường hợp này.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Net Profit CAGR 3Y là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "LNST của doanh nghiệp mẫu giảm gần 30% năm 2023 rồi tăng mạnh hai năm sau. Cộng ba tốc độ rồi chia ba cho ra 17,0%, cao hơn hẳn tốc độ thật 11,3%.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l5-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giảm 30% cần tăng khoảng 43% mới về lại mức cũ.",
+              "title": "Năm giảm làm mất nền"
+            },
+            {
+              "text": "Nó coi −30% và +43% như hai con số triệt tiêu nhau một phần.",
+              "title": "Trung bình cộng không thấy điều đó"
+            },
+            {
+              "text": "CAGR chỉ dùng điểm đầu và điểm cuối nên phản ánh đúng mức tăng thật.",
+              "title": "CAGR tính đúng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "CAGR và trung bình cộng"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c8l5-rep",
+          "title": "Net Profit CAGR 3Y",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Net Profit CAGR 3Y của giai đoạn 2022 đến 2025.",
+              "title": "Con số lớn"
+            },
+            {
+              "text": "LNST cả năm, đơn vị tỷ đồng.",
+              "title": "Cột xanh"
+            },
+            {
+              "text": "LNST nếu tăng đều theo CAGR. Cột lệch xa đường này là năm biến động.",
+              "title": "Đường đứt nét"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Lợi nhuận tăng nhanh và ổn định, chất lượng tăng trưởng tốt.",
+              "title": "CAGR cao, các cột tăng đều",
+              "tone": "pos"
+            },
+            {
+              "text": "Kết quả phụ thuộc nhiều vào năm đầu và năm cuối, khó dự đoán năm tới.",
+              "title": "CAGR cao nhưng cột lên xuống thất thường",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "LNST CAGR cao hơn doanh thu CAGR nghĩa là biên lợi nhuận đã mở rộng trong 3 năm. Doanh nghiệp mẫu có LNST CAGR 11,3% so với doanh thu CAGR 9,6%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận tăng nhanh hơn doanh thu cho thấy hiệu quả kinh doanh cải thiện.",
+              "title": "So với doanh thu CAGR"
+            },
+            {
+              "text": "Năm 2022 là năm lãi đột biến hay năm lỗ đều làm CAGR sai lệch.",
+              "title": "Kiểm tra năm gốc"
+            },
+            {
+              "text": "Đếm số năm LNST giảm trong giai đoạn. Càng ít năm giảm, CAGR càng đáng tin.",
+              "title": "Xem từng năm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "LNST (tỷ đồng)"
+            },
+            {
+              "label": "Tăng so năm trước"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "2022",
+                "373",
+                "Năm gốc"
+              ]
+            },
+            {
+              "cells": [
+                "2023",
+                "262",
+                {
+                  "rating": "bad",
+                  "text": "−29,9%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "2024",
+                "386",
+                {
+                  "rating": "good",
+                  "text": "+47,4%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "2025",
+                "514",
+                {
+                  "rating": "good",
+                  "text": "+33,3%"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "items": [
+            {
+              "term": "Hệ số cả chặng",
+              "text": "514 ÷ 373 ≈ 1,378. LNST tăng 37,8% sau 3 năm."
+            },
+            {
+              "term": "CAGR",
+              "text": "1,378 mũ 1/3 ≈ 1,113, tức khoảng 11,3% mỗi năm."
+            },
+            {
+              "term": "Trung bình cộng",
+              "text": "(−29,9% + 47,4% + 33,3%) ÷ 3 ≈ 17,0%. Cao hơn CAGR gần 6 điểm phần trăm."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "LNST năm gốc âm hoặc bằng 0 thì CAGR không có ý nghĩa.",
+              "title": "Tính khi năm đầu lỗ"
+            },
+            {
+              "text": "CAGR đẹp có thể che một năm lợi nhuận sụt mạnh.",
+              "title": "Bỏ qua năm giảm ở giữa"
+            },
+            {
+              "text": "Với lợi nhuận biến động, trung bình cộng thổi phồng tốc độ tăng trưởng.",
+              "title": "Dùng trung bình cộng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Net Profit CAGR 3Y = <b>(LNST 2025 ÷ LNST 2022)1/3 − 1</b>.",
+    "CAGR <b>chỉ phụ thuộc điểm đầu và điểm cuối</b>, không thấy các năm ở giữa.",
+    "Lợi nhuận càng biến động, <b>trung bình cộng càng cao hơn CAGR</b>.",
+    "LNST CAGR <b>cao hơn doanh thu CAGR</b> là biên lợi nhuận mở rộng."
+  ],
+  "title": "Net Profit CAGR 3Y · tăng trưởng LNST kép 3 năm"
+}

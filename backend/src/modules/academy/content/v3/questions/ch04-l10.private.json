@@ -3,100 +3,100 @@
   "item_id": "ch04-l10",
   "questions": [
     {
-      "correct_option_id": "9197c7e04e",
+      "correct_option_id": "b8f49961df",
       "id": "ch04-l10-q01",
       "options": [
         {
-          "id": "9197c7e04e",
+          "id": "b8f49961df",
           "text": "5 sóng đẩy và 3 sóng điều chỉnh"
         },
         {
-          "id": "476b9906b6",
+          "id": "51d6059105",
           "text": "3 sóng đẩy và 5 sóng điều chỉnh"
         },
         {
-          "id": "eb90fe8d1d",
+          "id": "7160a1aab3",
           "text": "10 sóng tăng liên tiếp"
         }
       ],
       "prompt": "Một chu kỳ sóng Elliott hoàn chỉnh gồm những sóng nào?"
     },
     {
-      "correct_option_id": "39d947a27f",
+      "correct_option_id": "c91b962239",
       "id": "ch04-l10-q02",
       "options": [
         {
-          "id": "39d947a27f",
+          "id": "c91b962239",
           "text": "Sóng 3"
         },
         {
-          "id": "161443ec6d",
+          "id": "9493dd6b97",
           "text": "Sóng 1"
         },
         {
-          "id": "17f772d247",
+          "id": "287a217809",
           "text": "Sóng 5"
         }
       ],
       "prompt": "Sóng nào thường dài và mạnh nhất?"
     },
     {
-      "correct_option_id": "5cf41c03d7",
+      "correct_option_id": "0659fc38cc",
       "id": "ch04-l10-q03",
       "options": [
         {
-          "id": "5cf41c03d7",
+          "id": "0659fc38cc",
           "text": "Không giảm thấp hơn điểm bắt đầu của sóng 1"
         },
         {
-          "id": "28e7dbf61f",
+          "id": "b56b368624",
           "text": "Luôn dài hơn sóng 3"
         },
         {
-          "id": "815f760c1b",
+          "id": "30a5425afe",
           "text": "Luôn đi lên theo xu hướng chính"
         }
       ],
       "prompt": "Quy tắc nào đúng với sóng 2?"
     },
     {
-      "correct_option_id": "c90f729f07",
+      "correct_option_id": "a03e0dc474",
       "id": "ch04-l10-q04",
       "options": [
         {
-          "id": "c90f729f07",
+          "id": "a03e0dc474",
           "text": "Tâm lý hưng phấn, hay đi kèm phân kỳ giảm"
         },
         {
-          "id": "523a613b71",
+          "id": "f7d2cd1446",
           "text": "Ít người tin xu hướng tăng đã bắt đầu"
         },
         {
-          "id": "3c710bdc88",
+          "id": "b7db6055f5",
           "text": "Khối lượng giao dịch lớn nhất chu kỳ"
         }
       ],
       "prompt": "Sóng 5 thường có đặc điểm gì?"
     },
     {
-      "correct_option_id": "73dd3585f0",
+      "correct_option_id": "eb9f073e80",
       "id": "ch04-l10-q05",
       "options": [
         {
-          "id": "73dd3585f0",
+          "id": "eb9f073e80",
           "text": "Việc đếm sóng mang tính chủ quan"
         },
         {
-          "id": "eff8794b32",
+          "id": "5131efff44",
           "text": "Không áp dụng được cho cổ phiếu"
         },
         {
-          "id": "0c1feb9f05",
+          "id": "283dc64d36",
           "text": "Luôn dự đoán chính xác đỉnh và đáy"
         }
       ],
       "prompt": "Hạn chế lớn nhất của sóng Elliott là gì?"
     }
   ],
-  "salt": "708cdd972f51be328ca153774fe0779f48ff3aa2bb4bfc17635a82bf98a5d276"
+  "salt": "0680de6f56f14d12a39cc706bc33d2eb16af68d3a59fed218bf1ff1586309b2a"
 }

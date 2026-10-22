@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch07-l04",
+  "questions": [
+    {
+      "correct_option_id": "866f060ea0",
+      "id": "ch07-l04-q01",
+      "options": [
+        {
+          "id": "866f060ea0",
+          "text": "Từ −100 đến 0"
+        },
+        {
+          "id": "a004db6654",
+          "text": "Từ 0 đến 100"
+        },
+        {
+          "id": "b5b6640c2d",
+          "text": "Từ −1 đến 1"
+        }
+      ],
+      "prompt": "Thang đo của Williams %R là gì?"
+    },
+    {
+      "correct_option_id": "c435091931",
+      "id": "ch07-l04-q02",
+      "options": [
+        {
+          "id": "c435091931",
+          "text": "Vùng quá mua"
+        },
+        {
+          "id": "1d44c4195e",
+          "text": "Vùng quá bán"
+        },
+        {
+          "id": "38661765b8",
+          "text": "Vùng trung tính"
+        }
+      ],
+      "prompt": "Williams %R trên −20 là vùng gì?"
+    },
+    {
+      "correct_option_id": "b082ca45cc",
+      "id": "ch07-l04-q03",
+      "options": [
+        {
+          "id": "b082ca45cc",
+          "text": "Cùng hình dạng với %K thô, chỉ khác thang đo"
+        },
+        {
+          "id": "50c2e1f294",
+          "text": "Luôn đi ngược chiều với đường %K"
+        },
+        {
+          "id": "32b5c607a7",
+          "text": "Là trung bình 3 phiên của đường %D"
+        }
+      ],
+      "prompt": "Williams %R liên hệ với Stochastic thế nào?"
+    },
+    {
+      "correct_option_id": "b94f4085fe",
+      "id": "ch07-l04-q04",
+      "options": [
+        {
+          "id": "b94f4085fe",
+          "text": "%R đi lên vượt khỏi mức −80"
+        },
+        {
+          "id": "b36b8a5606",
+          "text": "%R đi xuống dưới mức −20"
+        },
+        {
+          "id": "f67d7e47c6",
+          "text": "%R chạm đúng mức −50"
+        }
+      ],
+      "prompt": "Tín hiệu Mua của Williams %R xuất hiện khi nào?"
+    },
+    {
+      "correct_option_id": "5267474d70",
+      "id": "ch07-l04-q05",
+      "options": [
+        {
+          "id": "5267474d70",
+          "text": "Giá đóng cửa gần đỉnh liên tục, xu hướng tăng mạnh"
+        },
+        {
+          "id": "7c212e90d6",
+          "text": "Giá đóng cửa gần đáy liên tục, xu hướng giảm mạnh"
+        },
+        {
+          "id": "3ea55f0295",
+          "text": "Khối lượng giao dịch gần như bằng không"
+        }
+      ],
+      "prompt": "%R nằm sát 0 nhiều phiên liền thường cho thấy điều gì?"
+    }
+  ],
+  "salt": "554117669310b093ba002e7746ebaa4688fd1423f2373cc74147398ecd0f86c5"
+}

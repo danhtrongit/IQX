@@ -1,5 +1,5 @@
 /**
- * A small in-memory Học viện v3.2 backend for the tests. Plug `handler` into the mocked `api()` of
+ * A small in-memory Học viện v3.3 backend for the tests. Plug `handler` into the mocked `api()` of
  * `@/lib/api`; every call is recorded in `calls` ("GET /academy/catalog") and `bodies`.
  * Locks follow the server's prefix rule; answers are graded here and never sent to the client.
  */

@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l03",
+  "questions": [
+    {
+      "correct_option_id": "119d8fb2de",
+      "id": "ch09-l03-q01",
+      "options": [
+        {
+          "id": "119d8fb2de",
+          "text": "Phần LNST trên mỗi 100 đồng doanh thu"
+        },
+        {
+          "id": "6e0a4f073f",
+          "text": "Phần doanh thu trên mỗi cổ phiếu"
+        },
+        {
+          "id": "bccf7b0d6d",
+          "text": "Phần nợ vay trên vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Biên lợi nhuận ròng cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "f2fc70e552",
+      "id": "ch09-l03-q02",
+      "options": [
+        {
+          "id": "f2fc70e552",
+          "text": "Độ lệch chuẩn của biên ròng từng năm"
+        },
+        {
+          "id": "e0bea4fc2d",
+          "text": "Biên ròng bình quân của 5 năm"
+        },
+        {
+          "id": "e706a2d508",
+          "text": "Biên ròng năm gần nhất trừ năm trước"
+        }
+      ],
+      "prompt": "Margin Stability là gì?"
+    },
+    {
+      "correct_option_id": "1cfed50dad",
+      "id": "ch09-l03-q03",
+      "options": [
+        {
+          "id": "1cfed50dad",
+          "text": "Doanh nghiệp có sức định giá và kiểm soát chi phí tốt"
+        },
+        {
+          "id": "c79b8a5ac1",
+          "text": "Doanh nghiệp đang tăng vay nợ rất nhanh"
+        },
+        {
+          "id": "bfccb4f59e",
+          "text": "Doanh nghiệp không có đối thủ cạnh tranh"
+        }
+      ],
+      "prompt": "Biên lợi nhuận ổn định qua nhiều năm thường gợi ý điều gì?"
+    },
+    {
+      "correct_option_id": "4ef468d649",
+      "id": "ch09-l03-q04",
+      "options": [
+        {
+          "id": "4ef468d649",
+          "text": "Biên cao và ổn định"
+        },
+        {
+          "id": "0027517f6f",
+          "text": "Biên thấp và ổn định"
+        },
+        {
+          "id": "22214d29e9",
+          "text": "Biên cao nhưng dao động mạnh"
+        }
+      ],
+      "prompt": "Trường hợp nào tốt nhất khi đọc Margin Stability cùng mức biên?"
+    },
+    {
+      "correct_option_id": "41a02f852e",
+      "id": "ch09-l03-q05",
+      "options": [
+        {
+          "id": "41a02f852e",
+          "text": "Biên ròng bình quân của 5 năm"
+        },
+        {
+          "id": "7dbaf472fb",
+          "text": "Biên ròng của năm gần nhất"
+        },
+        {
+          "id": "734a524149",
+          "text": "Biên ròng trung bình của ngành"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường đứt nét nằm ngang thể hiện gì?"
+    }
+  ],
+  "salt": "d9fe9875c881d71b91aeb00c3a8cc405b553c2e2e29c1e86265af54f6700cd33"
+}

@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l05",
+  "questions": [
+    {
+      "correct_option_id": "c50ef5d43a",
+      "id": "ch09-l05-q01",
+      "options": [
+        {
+          "id": "c50ef5d43a",
+          "text": "Lợi nhuận tạo ra trên mỗi đồng vốn đầu tư"
+        },
+        {
+          "id": "5e7d7de4b9",
+          "text": "Lợi nhuận tạo ra trên mỗi đồng doanh thu"
+        },
+        {
+          "id": "f9260f29b9",
+          "text": "Số tiền mặt doanh nghiệp đang nắm giữ"
+        }
+      ],
+      "prompt": "ROIC đo điều gì?"
+    },
+    {
+      "correct_option_id": "3501d06ee2",
+      "id": "ch09-l05-q02",
+      "options": [
+        {
+          "id": "3501d06ee2",
+          "text": "Vốn chủ sở hữu cộng nợ vay trừ tiền"
+        },
+        {
+          "id": "6775e959e6",
+          "text": "Tổng tài sản cộng tiền mặt"
+        },
+        {
+          "id": "11c6c66d9c",
+          "text": "Doanh thu trừ chi phí hoạt động"
+        }
+      ],
+      "prompt": "Vốn đầu tư trong ROIC gồm những gì?"
+    },
+    {
+      "correct_option_id": "090a8aacb3",
+      "id": "ch09-l05-q03",
+      "options": [
+        {
+          "id": "090a8aacb3",
+          "text": "ROIC qua các năm càng ổn định"
+        },
+        {
+          "id": "99678c3b3e",
+          "text": "ROIC càng cao"
+        },
+        {
+          "id": "1fb341e054",
+          "text": "Doanh nghiệp càng ít nợ vay"
+        }
+      ],
+      "prompt": "ROIC Stability càng nhỏ nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "00bc7e0dd8",
+      "id": "ch09-l05-q04",
+      "options": [
+        {
+          "id": "00bc7e0dd8",
+          "text": "ROIC cao và ổn định nhiều năm"
+        },
+        {
+          "id": "b0ef77d66f",
+          "text": "ROIC thấp và ổn định nhiều năm"
+        },
+        {
+          "id": "0715f29f6e",
+          "text": "ROIC rất cao trong đúng một năm"
+        }
+      ],
+      "prompt": "Trường hợp nào thể hiện rõ lợi thế cạnh tranh bền nhất?"
+    },
+    {
+      "correct_option_id": "7baf57919e",
+      "id": "ch09-l05-q05",
+      "options": [
+        {
+          "id": "7baf57919e",
+          "text": "ROIC của từng năm"
+        },
+        {
+          "id": "a128111663",
+          "text": "ROIC bình quân của 5 năm"
+        },
+        {
+          "id": "59ca5dbc43",
+          "text": "Vốn đầu tư của từng năm"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường xanh có các điểm tròn thể hiện gì?"
+    }
+  ],
+  "salt": "59129323f3084e41259af51dc21dec38ce9fb96ac241d03a96d197119bb244f0"
+}

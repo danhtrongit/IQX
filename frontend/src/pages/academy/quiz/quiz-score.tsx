@@ -34,6 +34,8 @@ export function QuizScore({
   }, [])
 
   const passed = result.passed
+  // The item owns the unlock, so its kind tells a chỉ báo from a chỉ tiêu (spec §4.2).
+  const unlockKind = item.unlock?.kind ?? "technical"
   return (
     <section aria-label={`Kết quả ${quizLabel(item)}`} className="rounded-lg border border-border bg-card p-5 text-center sm:p-8">
       <p className="text-sm font-semibold text-primary">{quizLabel(item)}</p>
@@ -52,7 +54,7 @@ export function QuizScore({
         <ul className="m-0 mt-3 flex list-none flex-wrap justify-center gap-2 p-0">
           {result.unlocked_labels.map((label) => (
             <li key={label} className="rounded-full border border-(--status-success)/50 bg-(--status-success)/10 px-3 py-1 text-sm font-medium text-foreground">
-              {unlockedPill(label)}
+              {unlockedPill(unlockKind, label)}
             </li>
           ))}
           {result.chapter_completed !== null && (

@@ -17,7 +17,7 @@ import { currentItemId, itemStates, type ItemKind } from './content/v3/schema.js
  *
  * Only published chapters of the current catalog are listed. Every chapter shows its lessons,
  * its chapter exam and, for chapter 3, the optional practice (Phòng tập thực chiến). Totals
- * (`completed / total`, x / 43) count required lessons only: exams are reported through
+ * (`completed / total`, x / 87) count required lessons only: exams are reported through
  * `chapter_exams` and `exam_passed`, and the optional practice never counts.
  *
  * Item states follow the learner's prefix rule (`itemStates` in content/v3/schema.ts): a
@@ -47,7 +47,7 @@ export type AcademyProgressSummary = {
   started: boolean;
   /** Passed required lessons of published chapters. */
   completed: number;
-  /** Required lessons of published chapters (43). */
+  /** Required lessons of published chapters (87). */
   total: number;
   /** Every required item (lessons and chapter exams) of the published chapters is passed. */
   all_done: boolean;
