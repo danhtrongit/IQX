@@ -1909,6 +1909,7 @@
         },
         {
           "chart_id": "c4l6-g0",
+          "table_toggle": true,
           "type": "chart"
         }
       ],

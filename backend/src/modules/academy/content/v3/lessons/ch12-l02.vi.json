@@ -128,39 +128,96 @@
       "value_labels": "all"
     },
     "c12l2-rep": {
-      "caption_tone": "price",
-      "caption_value": "1,30 lần",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "CFO / LNST",
-          "tone": "p1",
-          "values": [
-            1.584,
-            1.5519,
-            1.4752,
-            1.4286,
-            1.4961,
-            1.4133,
-            1.3001,
-            1.3027
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "CFO / LNST (4 quý)",
+                "tone": "p1",
+                "values": [
+                  1.5838,
+                  1.5518,
+                  1.4754,
+                  1.4287,
+                  1.496,
+                  1.4132,
+                  1.3,
+                  1.3026
+                ]
+              }
+            ],
+            "unit": "lần",
+            "value_labels": "none"
+          },
+          "title": "CFO / LNST (4 quý) (lần)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "1,30 lần",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "CFO 4 quý",
+                "tone": "p1",
+                "values": [
+                  563.2544,
+                  598.8478,
+                  598.8506,
+                  625.0067,
+                  708.2022,
+                  727.1228,
+                  724.7698,
+                  760.4176
+                ]
+              },
+              {
+                "name": "LNST 4 quý",
+                "tone": "p5",
+                "values": [
+                  355.5876,
+                  385.8816,
+                  405.9342,
+                  437.4843,
+                  473.3727,
+                  514.4704,
+                  557.4678,
+                  583.7418
+                ]
+              }
+            ],
+            "unit": "tỷ đồng",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (tỷ đồng)"
         }
       ],
-      "title": "CFO / LNST",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",

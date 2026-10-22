@@ -638,9 +638,9 @@ describe("real content: scale labels", () => {
 
 describe("real content: v3.3 chart models", () => {
   it("a compare chart with layout 'stack' draws its two leaves one under the other", () => {
-    const { container } = renderLesson(lessonById("ch08-l04"), 760)
+    const { container } = renderLesson(lessonById("ch08-l01"), 760)
     const compare = container.querySelector(
-      '[data-chart-id="c8l4-rep"]'
+      '[data-chart-id="c8l1-rep"]'
     ) as HTMLElement
     expect(compare).not.toBeNull()
     const figures = compare.querySelectorAll("figure")

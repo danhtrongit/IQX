@@ -602,7 +602,7 @@ export class AcademyService implements OnModuleInit {
       },
       granted_capabilities: sortedCapabilities(content, completions),
       newly_granted: newlyGranted,
-      unlocked_labels: item?.unlock && newlyGranted.length ? [item.unlock.label] : [],
+      unlocked_labels: passed && item?.unlock ? [item.unlock.label] : [],
       chapter_completed: item && passed && item.kind === 'chapter_exam' ? item.chapter : null,
       next_item_id: item && passed ? nextRequiredItemId(content.sequence, item.id) : null,
       progress_revision: completions.length,

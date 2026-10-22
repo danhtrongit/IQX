@@ -99,39 +99,96 @@
       "value_labels": "all"
     },
     "c8l3-rep": {
-      "caption_tone": "price",
-      "caption_value": "20,6%",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "Tăng trưởng EPS YoY",
-          "tone": "p1",
-          "values": [
-            37.0946,
-            39.9663,
-            12.2708,
-            21.7061,
-            26.5532,
-            27.176,
-            39.3513,
-            20.5544
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Tăng trưởng YoY",
+                "tone": "p1",
+                "values": [
+                  37.0956,
+                  39.9632,
+                  12.2794,
+                  21.6912,
+                  26.5441,
+                  27.1691,
+                  39.3382,
+                  20.5515
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "Tăng trưởng YoY (%)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "20,6%",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "EPS quý này",
+                "tone": "p1",
+                "values": [
+                  285.7549,
+                  321.494,
+                  303.5158,
+                  355.0735,
+                  361.632,
+                  408.8631,
+                  422.9531,
+                  428.0569
+                ]
+              },
+              {
+                "name": "EPS cùng kỳ",
+                "tone": "p5",
+                "values": [
+                  208.4363,
+                  229.6939,
+                  270.3426,
+                  291.7467,
+                  285.7549,
+                  321.494,
+                  303.5158,
+                  355.0735
+                ]
+              }
+            ],
+            "unit": "đồng/CP",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (đồng/CP)"
         }
       ],
-      "title": "Tăng trưởng EPS YoY",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",

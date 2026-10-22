@@ -144,6 +144,7 @@ describe("OrderPanel (plain manual order form)", () => {
   it("asks a visitor to sign in and offers no confirm button", async () => {
     mocks.auth = { isAuthenticated: false, isLoading: false, isPremium: false, openAuth: vi.fn() }
     const { user } = renderPanel()
+    expect(screen.getByText("Đăng nhập để dùng tài khoản Demo Trading.")).toBeTruthy()
     expect(screen.queryByRole("button", { name: "ĐẶT LỆNH MUA" })).toBeNull()
     await user.click(screen.getByRole("button", { name: "Đăng nhập" }))
     expect(mocks.auth.openAuth).toHaveBeenCalledWith("login")

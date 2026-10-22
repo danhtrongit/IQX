@@ -9,7 +9,7 @@
 
 import { randomInt } from 'node:crypto';
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/database.service.js';
 import {
@@ -124,8 +124,8 @@ const FETCH_FROM = '2010-06-01';
 /** Mốc chỉ số dùng làm lịch giao dịch để phát hiện phiên bị đình chỉnh. */
 const CALENDAR_SYMBOL = 'VNINDEX';
 
-/** Số mã tối đa thử trong một lần tạo đề (giới hạn số lần gọi nguồn dữ liệu). */
-const MAX_SYMBOL_ATTEMPTS = 12;
+const MIN_VN30_POOL_SIZE = 25;
+const MAX_SINGLE_SESSION_JUMP = 0.25;
 
 @Injectable()
 export class FlashbackRoundBuilder {
@@ -135,7 +135,7 @@ export class FlashbackRoundBuilder {
     private readonly database: DatabaseService,
     @Inject(FLASHBACK_REPOSITORY) private readonly repository: FlashbackRepository,
     @Inject('FLASHBACK_MARKET_DATA') private readonly market: FlashbackMarketDataPort,
-    @Inject(FLASHBACK_VN30) private readonly vn30: FlashbackVn30Port,
+    @Optional() @Inject(FLASHBACK_VN30) private readonly vn30?: FlashbackVn30Port,
   ) {}
 
   /**
@@ -152,32 +152,32 @@ export class FlashbackRoundBuilder {
       this.logger.warn('Flashback: không lấy được danh sách VN30 hiện hành');
       return null;
     }
-    const excluded =
-      level >= 1
-        ? new Set<string>()
-        : new Set(
-            await this.repository.recentRoundSymbols(
-              this.database,
-              config.roundsBeforeSymbolRepeat || FLASHBACK_ROUNDS_BEFORE_SYMBOL_REPEAT,
-            ),
-          );
     const total =
       config.warmupSessions + config.historySessions + config.playSessions || FLASHBACK_TOTAL_SESSIONS;
-    const poolAfterExclude = pool.filter((symbol) => !excluded.has(symbol));
-    // Rổ nhỏ (≤ 5 mã) thì chỉ loại mã của 5 đề gần nhất, không loại của 10 đề.
-    const candidates = this.shuffle(
-      poolAfterExclude.length > 0
-        ? poolAfterExclude
-        : pool.filter(
-            (symbol) =>
-              !excluded.has(symbol) || pool.length <= FLASHBACK_MIN_POOL_BEFORE_REPEAT,
-          ),
-    );
+    const excludeCount =
+      config.roundsBeforeSymbolRepeat || FLASHBACK_ROUNDS_BEFORE_SYMBOL_REPEAT;
+
+    let poolAfterExclude = [...pool];
+    if (level === 0) {
+      const excluded10 = new Set(
+        await this.repository.recentRoundSymbols(this.database, excludeCount),
+      );
+      poolAfterExclude = pool.filter((symbol) => !excluded10.has(symbol));
+      // Rổ còn ít hơn 5 mã thì chỉ bỏ các mã của 5 đề gần nhất (BoSung §3.2).
+      if (poolAfterExclude.length < FLASHBACK_MIN_POOL_BEFORE_REPEAT) {
+        const fallbackCount = Math.min(FLASHBACK_MIN_POOL_BEFORE_REPEAT, excludeCount);
+        const excluded5 = new Set(
+          await this.repository.recentRoundSymbols(this.database, fallbackCount),
+        );
+        poolAfterExclude = pool.filter((symbol) => !excluded5.has(symbol));
+      }
+    }
+    const candidates = this.shuffle(poolAfterExclude);
     const today = vietnamDate(now);
     const latestPlayDate = subtractMonths(today, config.minMonthsAgo || FLASHBACK_MIN_MONTHS_AGO);
     const calendar = await this.calendarDates();
 
-    for (const symbol of candidates.slice(0, MAX_SYMBOL_ATTEMPTS)) {
+    for (const symbol of candidates) {
       const series = await this.market.dailyBars(symbol, FETCH_FROM, today);
       if (series.length < total) continue;
       const usedDates = new Set(
@@ -216,6 +216,8 @@ export class FlashbackRoundBuilder {
     calendar: readonly string[] | null,
     usedDates: ReadonlySet<string>,
   ): string | null {
+    if (!this.isCleanWindow(window)) return 'dữ liệu nến không sạch';
+
     const warmup = config.warmupSessions;
     const history = window.slice(warmup, warmup + config.historySessions);
     const play = window.slice(warmup + config.historySessions);
@@ -248,6 +250,42 @@ export class FlashbackRoundBuilder {
     return null;
   }
 
+  /**
+   * Kiểm tra dữ liệu sạch trên toàn bộ 372 phiên (BoSung §4.3):
+   * 1. Giá dương hữu hạn, khối lượng không âm, thấp <= mở/đóng <= cao.
+   * 2. Không có bước nhảy giá đóng cửa bất thường (> 25%) giữa hai phiên liên tiếp chưa điều chỉnh.
+   */
+  private isCleanWindow(window: readonly FlashbackBar[]): boolean {
+    for (let index = 0; index < window.length; index += 1) {
+      const bar = window[index]!;
+      if (
+        !Number.isFinite(bar.o) ||
+        !Number.isFinite(bar.h) ||
+        !Number.isFinite(bar.l) ||
+        !Number.isFinite(bar.c) ||
+        !Number.isFinite(bar.v) ||
+        bar.o <= 0 ||
+        bar.h <= 0 ||
+        bar.l <= 0 ||
+        bar.c <= 0 ||
+        bar.v < 0 ||
+        bar.h < bar.l ||
+        bar.o < bar.l ||
+        bar.o > bar.h ||
+        bar.c < bar.l ||
+        bar.c > bar.h
+      ) {
+        return false;
+      }
+      if (index > 0) {
+        const prev = window[index - 1]!;
+        if (Math.abs(bar.c / prev.c - 1) > MAX_SINGLE_SESSION_JUMP) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
   /** Độ lệch chuẩn lợi suất ngày của các phiên chơi. */
   private dailyVolatility(bars: readonly FlashbackBar[]): number {
     if (bars.length < 2) return 0;
@@ -330,23 +368,58 @@ export class FlashbackRoundBuilder {
   /** Rổ mã VN30 hiện hành (đọc từ kho, làm mới từ feed khi có thể). */
   private async currentPool(now: Date): Promise<string[]> {
     const stored = await this.repository.listCurrentVn30(this.database);
-    if (stored.length >= 25) return stored;
-    try {
-      const current = await this.vn30.fetchCurrent('VN30');
-      if (current.symbols.length > 0) {
-        await this.database.transaction(async (tx) => {
-          await this.repository.replaceVn30(tx, current.symbols, now);
-        });
-        return [...current.symbols];
-      }
-    } catch (error) {
-      this.logger.warn(
-        `Flashback: không làm mới được VN30 (${
-          error instanceof Error ? error.message : 'lỗi không xác định'
-        })`,
-      );
+    const canRefresh =
+      typeof this.market.vn30Symbols === 'function' ||
+      typeof this.vn30?.fetchCurrent === 'function';
+
+    if (stored.length >= MIN_VN30_POOL_SIZE && typeof this.market.vn30Symbols !== 'function') {
+      return stored;
     }
-    return stored;
+
+    let pool = stored;
+    let degraded = stored.length < MIN_VN30_POOL_SIZE;
+    if (canRefresh) {
+      try {
+        const refreshed =
+          typeof this.market.vn30Symbols === 'function'
+            ? await this.market.vn30Symbols()
+            : (await this.vn30!.fetchCurrent('VN30')).symbols;
+        if (refreshed.length > 0) {
+          await this.database.transaction(async (tx) => {
+            await this.repository.replaceVn30(tx, refreshed, now);
+          });
+          pool = [...refreshed];
+        }
+        degraded = refreshed.length < MIN_VN30_POOL_SIZE;
+      } catch (error) {
+        degraded = true;
+        this.logger.warn(
+          `Flashback: không làm mới được VN30 (${
+            error instanceof Error ? error.message : 'lỗi không xác định'
+          })`,
+        );
+      }
+    }
+
+    if (degraded || pool.length < MIN_VN30_POOL_SIZE) {
+      await this.recordPoolDegradedAlert();
+    }
+    return pool;
+  }
+
+  private async recordPoolDegradedAlert(): Promise<void> {
+    const known = await this.repository.hasRecentAlert(this.database, null, 'medium', 30);
+    if (known) return;
+    await this.database.transaction(async (tx) => {
+      await this.repository.appendJobLog(tx, {
+        step: 'alert',
+        roundId: null,
+        result:
+          'alert:medium:vn30_pool_degraded: Rổ VN30 lấy được ít hơn 25 mã hoặc không cập nhật được.',
+        error: null,
+        level: 'medium',
+      });
+    });
   }
 
   /** Xáo trộn bằng CSPRNG (Fisher-Yates). */

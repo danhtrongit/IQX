@@ -23,13 +23,12 @@ export function isCatalogIndicator(id: string): boolean {
 }
 
 export const CHAPTER_TITLES: Record<number, string> = {
-  1: 'Chỉ báo kỹ thuật nền tảng',
-  5: 'Xu hướng và động lượng nâng cao',
-  7: 'Khối lượng và dòng tiền',
-  10: 'Kênh giá và động lượng',
+  4: 'Phương pháp kỹ thuật',
+  6: 'Chỉ báo xu hướng',
+  7: 'Chỉ báo động lượng và dòng tiền',
 };
 
-export const LOCKED_MESSAGE = 'Hoàn thành bài kiểm tra 8/8 của chỉ báo này để bật.';
+export const LOCKED_MESSAGE = 'Đạt bài kiểm tra của bài học chỉ báo này để bật.';
 export const CONFLICT_MESSAGE = 'Cấu hình đã được lưu ở tab hoặc thiết bị khác.';
 
 const EPS = 1e-6;

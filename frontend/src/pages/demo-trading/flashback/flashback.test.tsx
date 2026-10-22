@@ -6,12 +6,14 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { FlashbackMain } from "./flashback-main"
 import { FlashbackPanel } from "./flashback-panel"
 import { FlashbackProvider } from "./flashback-provider"
+import { computeIndicator, defaultParams, validateParams } from "./flashback-indicators"
 import {
   MACD_META,
   MA_META,
   MATCH_PRICE,
   RSI_META,
   createFlashbackBackend,
+  historyBars,
   type BackendOptions,
   type FlashbackBackend,
 } from "./flashback-test-support"
@@ -236,5 +238,154 @@ describe("Flashback: giá khớp", () => {
     renderPanel()
     await waitForMatchPrice()
     expect(screen.getByText("Giá khớp").parentElement?.textContent).toContain(MATCH_PRICE.toLocaleString("vi-VN"))
+  })
+
+  it("phiên 60 chưa kết thúc hiện một nút Kết thúc và xem kết quả, bấm hoặc nhấn Space gọi finish", async () => {
+    const user = userEvent.setup()
+    setup({ joined: true, step: 60, status: "playing" })
+    renderMain()
+    const nextBtn = await screen.findByTestId("flashback-next")
+    expect(nextBtn.textContent).toBe("Kết thúc và xem kết quả")
+    expect(nextBtn.hasAttribute("disabled")).toBe(false)
+    expect(screen.getAllByRole("button", { name: "Kết thúc và xem kết quả" })).toHaveLength(2)
+
+    await user.keyboard(" ")
+    await waitFor(() => expect(backend.callsTo("POST", "/flashback/entries/11111111-1111-4111-8111-111111111111/finish")).toHaveLength(1))
+  })
+
+  it("hiển thị Đề #7, định dạng Hạng 1 / Hạng 2–3 và ẩn mức thưởng 0 xu", async () => {
+    setup({ firstJoinFree: true })
+    renderMain()
+    const card = await screen.findByTestId("join-card")
+    expect(within(card).getByText("Đề #7")).toBeTruthy()
+    expect(within(card).getByText("Hạng 1")).toBeTruthy()
+    expect(within(card).getByText("Hạng 2–3")).toBeTruthy()
+    expect(within(card).queryByText("Hạng 1-1")).toBeNull()
+    expect(within(card).queryByText(/Từ 51 trở xuống/)).toBeNull()
+  })
+
+  it("cài đặt chỉ báo giữ nguyên tham số hiện tại của instance và kiểm tra ngưỡng dưới < ngưỡng trên", async () => {
+    const user = userEvent.setup()
+    setup({
+      joined: true,
+      indicators: [MA_META, RSI_META],
+      savedIndicators: [
+        { id: "ma", params: { period: 50 } },
+        { id: "rsi", params: { period: 14, level: { lower: 30, upper: 70 } } },
+      ],
+    })
+    renderMain()
+    const maSettings = await screen.findByLabelText("Cài đặt MA / SMA 50")
+    await user.click(maSettings)
+    const dialog = await screen.findByTestId("indicator-settings")
+    expect((within(dialog).getByLabelText("Chu kỳ SMA") as HTMLInputElement).value).toBe("50")
+    await user.click(within(dialog).getByRole("button", { name: "Hủy" }))
+
+    await user.click(await screen.findByLabelText("Cài đặt RSI 14"))
+    const rsiDialog = await screen.findByTestId("indicator-settings")
+    const lowerInput = within(rsiDialog).getByLabelText("Ngưỡng quá bán")
+    const upperInput = within(rsiDialog).getByLabelText("Ngưỡng quá mua")
+    await user.clear(lowerInput)
+    await user.type(lowerInput, "45")
+    await user.clear(upperInput)
+    await user.type(upperInput, "55")
+    await user.click(within(rsiDialog).getByRole("button", { name: "OK" }))
+  })
+
+  it("nhân 100 cho pnl_pct của cổ phiếu đang giữ trên panel", async () => {
+    setup({
+      joined: true,
+      step: 2,
+      holdings: 100,
+      positions: [
+        {
+          qty: 100,
+          price: "28800",
+          step: 0,
+          sellable_step: 2,
+          status: "settled",
+          sessions_left: 0,
+          pnl_pct: 0.052,
+          value: "3030000",
+        },
+      ],
+    })
+    renderPanel()
+    expect(await screen.findByText("+5,2%")).toBeTruthy()
+  })
+
+  it("màu các đường chỉ báo đa đường, ngưỡng CCI/ROC/CMF và kiểm tra lower < upper", () => {
+    const bars = historyBars()
+    const dmiPlot = computeIndicator("dmi", { period: 14 }, bars)
+    expect(dmiPlot.series.map((s) => s.color)).toEqual(["#19b37a", "#e24a4a"])
+
+    const maCrossPlot = computeIndicator("ma_cross", { fast: 10, slow: 20 }, bars)
+    expect(maCrossPlot.series[1].color).toBe("#f59e0b")
+
+    const macdPlot = computeIndicator("macd", { fast: 12, slow: 26, signal: 9 }, bars)
+    expect(macdPlot.series[1].color).toBe("#f59e0b")
+
+    const stochPlot = computeIndicator("stochastic", { k: 14, d: 3, smooth: 3 }, bars)
+    expect(stochPlot.series[1].color).toBe("#f59e0b")
+
+    const obvPlot = computeIndicator("obv", { baseline: 20 }, bars)
+    expect(obvPlot.series[1].color).toBe("#f59e0b")
+
+    const bbPlot = computeIndicator("bollinger", { period: 20, k: 2 }, bars)
+    expect(bbPlot.series.map((s) => s.color)).toEqual(["#38bdf8", "#38bdf8", "#60a5fa"])
+
+    const cciPlot = computeIndicator("cci", { period: 20, level: { lower: -100, upper: 100 } }, bars)
+    expect(cciPlot.levels).toEqual([
+      { key: "lower", value: -100, label: "Dưới" },
+      { key: "upper", value: 100, label: "Trên" },
+    ])
+    expect(cciPlot.levelBand).toEqual({ lower: -100, upper: 100 })
+
+    const rocPlot = computeIndicator("roc", { period: 20, level: { lower: -5, upper: 5 } }, bars)
+    expect(rocPlot.levels).toEqual([
+      { key: "lower", value: -5, label: "Dưới" },
+      { key: "upper", value: 5, label: "Trên" },
+    ])
+    expect(rocPlot.levelBand).toEqual({ lower: -5, upper: 5 })
+
+    const cmfPlot = computeIndicator("cmf", { period: 20, level: 0.05 }, bars)
+    expect(cmfPlot.levels).toEqual([{ key: "level", value: 0.05, label: "Ngưỡng" }])
+
+    const invertedDefaults = defaultParams({
+      params: [
+        {
+          key: "level",
+          label: "Ngưỡng",
+          min: -200,
+          max: 200,
+          step: 1,
+          default: 100,
+          lower: { min: -200, max: 200, default: 100 },
+          upper: { min: -200, max: 200, default: -100 },
+        },
+      ],
+      cross_fields: [],
+    })
+    expect(invertedDefaults.level).toEqual({ lower: -100, upper: 100 })
+
+    const invalidThreshold = validateParams(
+      {
+        params: [
+          {
+            key: "level",
+            label: "Ngưỡng",
+            min: 0,
+            max: 100,
+            step: 1,
+            default: 30,
+            lower: { min: 0, max: 100, default: 30 },
+            upper: { min: 0, max: 100, default: 70 },
+          },
+        ],
+        cross_fields: [],
+      },
+      { level: { lower: 75, upper: 60 } },
+    )
+    expect(invalidThreshold).toBe("Ngưỡng dưới phải nhỏ hơn ngưỡng trên.")
   })
 })

@@ -71,6 +71,7 @@ export interface FlashbackLeaderboardEntry extends FlashbackEntryRow {
   readonly username: string;
   readonly phoneVerified: boolean;
   readonly accountCreatedAt: Date;
+  readonly phoneE164?: string | null;
 }
 
 /** Bản ghi lô cổ phiếu đọc từ kho. */

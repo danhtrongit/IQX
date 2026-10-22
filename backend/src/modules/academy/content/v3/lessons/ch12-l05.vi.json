@@ -162,9 +162,18 @@
       "series": [
         {
           "name": "FCF Positive Streak",
+          "per_bar_tones": [
+            "neutral",
+            "neg",
+            "neg",
+            "p1",
+            "p1",
+            "p1",
+            "p1"
+          ],
           "tone_by_sign": {
             "neg": "neg",
-            "pos": "pos"
+            "pos": "p1"
           },
           "values": [
             272.6467,
@@ -177,8 +186,7 @@
           ]
         }
       ],
-      "title": "FCF Positive Streak",
-      "unit": "",
+      "unit": "tỷ đồng",
       "value_labels": "none"
     }
   },

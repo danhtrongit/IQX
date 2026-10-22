@@ -121,39 +121,96 @@
       "value_labels": "none"
     },
     "c8l2-rep": {
-      "caption_tone": "price",
-      "caption_value": "20,6%",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "Tăng trưởng LNST YoY",
-          "tone": "p1",
-          "values": [
-            37.0946,
-            39.9663,
-            22.4772,
-            32.7703,
-            38.058,
-            38.7374,
-            39.3513,
-            20.5544
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Tăng trưởng YoY",
+                "tone": "p1",
+                "values": [
+                  37.1029,
+                  39.9706,
+                  22.4779,
+                  32.7794,
+                  38.0515,
+                  38.7353,
+                  39.3529,
+                  20.5588
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "Tăng trưởng YoY (%)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "20,6%",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Quý này",
+                "tone": "p1",
+                "values": [
+                  94.2991,
+                  106.093,
+                  109.2657,
+                  127.8265,
+                  130.1875,
+                  147.1907,
+                  152.2631,
+                  154.1005
+                ]
+              },
+              {
+                "name": "Cùng kỳ năm trước",
+                "tone": "p5",
+                "values": [
+                  68.784,
+                  75.799,
+                  89.2131,
+                  96.2764,
+                  94.2991,
+                  106.093,
+                  109.2657,
+                  127.8265
+                ]
+              }
+            ],
+            "unit": "tỷ đồng",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (tỷ đồng)"
         }
       ],
-      "title": "Tăng trưởng LNST YoY",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",

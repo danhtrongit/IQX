@@ -80,13 +80,26 @@ export function useFlashbackController(): FlashbackContextValue {
     return instances.map((instance, index) => {
       const sameId = instances.filter((candidate) => candidate.id === instance.id)
       const position = sameId.findIndex((candidate) => candidate.key === instance.key)
+      const computed = computeIndicator(instance.id, instance.params, withWarmup)
+      const plot =
+        warmup.length > 0
+          ? {
+              ...computed,
+              series: computed.series.map((s) => ({ ...s, values: s.values.slice(warmup.length) })),
+              histogram: computed.histogram ? computed.histogram.slice(warmup.length) : undefined,
+              markers: computed.markers
+                ?.filter((m) => m.index >= warmup.length)
+                .map((m) => ({ ...m, index: m.index - warmup.length })),
+            }
+          : computed
       return {
         key: instance.key,
         id: instance.id,
+        params: instance.params,
         label: instanceShortLabel({ id: instance.id, params: instance.params }, metaById.get(instance.id)),
         color: indicatorColor(instance.id, position < 0 ? index : position),
         hidden: hiddenKeys.has(instance.key),
-        plot: computeIndicator(instance.id, instance.params, withWarmup),
+        plot,
       }
     })
   }, [instances, bars, warmup, hiddenKeys, metaById])
@@ -185,6 +198,7 @@ export function useFlashbackController(): FlashbackContextValue {
     historySessions,
     totalSlots,
     step,
+    finished: entry?.status === "finished",
     cash,
     holdings,
     totalAssets,

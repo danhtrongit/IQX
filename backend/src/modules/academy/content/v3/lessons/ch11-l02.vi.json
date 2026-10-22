@@ -28,7 +28,7 @@
           ]
         },
         {
-          "name": "Tiền",
+          "name": "Nợ ngắn hạn",
           "tone": "neg",
           "values": [
             null,
@@ -41,7 +41,7 @@
           ]
         }
       ],
-      "title": "Tài sản ngắn hạn 2.445 so với nợ ngắn hạn 1.556",
+      "title": "Tài sản ngắn hạn 2.445 so với nợ ngắn hạn 1.556 · Current Ratio = 2.445 ÷ 1.556 = 1,57 lần",
       "unit": "tỷ đồng",
       "value_labels": "all"
     },
@@ -148,39 +148,96 @@
       ]
     },
     "c11l2-rep": {
-      "caption_tone": "price",
-      "caption_value": "1,57 lần",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "Current Ratio",
-          "tone": "p1",
-          "values": [
-            1.6226,
-            1.6478,
-            1.579,
-            1.5969,
-            1.5954,
-            1.626,
-            1.5635,
-            1.5715
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Current Ratio",
+                "tone": "p1",
+                "values": [
+                  1.6226,
+                  1.6478,
+                  1.579,
+                  1.5969,
+                  1.5954,
+                  1.626,
+                  1.5635,
+                  1.5715
+                ]
+              }
+            ],
+            "unit": "lần",
+            "value_labels": "none"
+          },
+          "title": "Current Ratio (lần)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "1,57 lần",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Tài sản ngắn hạn",
+                "tone": "p1",
+                "values": [
+                  2307.1369,
+                  2485.3332,
+                  2232.6253,
+                  2336.7395,
+                  2355.1113,
+                  2594.4717,
+                  2336.9571,
+                  2444.9133
+                ]
+              },
+              {
+                "name": "Nợ ngắn hạn",
+                "tone": "p5",
+                "values": [
+                  1421.8931,
+                  1508.2403,
+                  1413.9158,
+                  1463.3377,
+                  1476.2197,
+                  1595.6167,
+                  1494.6839,
+                  1555.7806
+                ]
+              }
+            ],
+            "unit": "tỷ đồng",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (tỷ đồng)"
         }
       ],
-      "title": "Current Ratio",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",

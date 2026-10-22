@@ -4,8 +4,15 @@ import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import {
+  SERIES_COLORS,
+  decimalsForUnit,
+  figureLegend,
+  figureTable,
+  figureTooltip,
+} from "./charts/figure-data"
 import { AnalysisDashboard } from "./dashboard"
-
+import { isSameSettings, nksSignature } from "./model"
 /* Danh mục 33 chỉ tiêu của spec §8, theo đúng thứ tự và nhóm. */
 const GROUPS: [string, string[]][] = [
   [
@@ -340,6 +347,9 @@ describe("Dashboard phân tích · thiết lập biểu đồ", () => {
     expect(notApplicable).toBeTruthy()
     expect(screen.getAllByText("Không áp dụng").length).toBeGreaterThan(0)
     expect(screen.getByText("Ngân hàng")).toBeTruthy()
+    // Thẻ không áp dụng cho ngân hàng không được hiện nhãn "Theo năm, cố định".
+    const revCard = document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')
+    expect(revCard?.textContent).not.toContain("Theo năm, cố định")
 
     // Chỉ tiêu không áp dụng vẫn tick được.
     const checkbox = screen.getByRole("checkbox", { name: "Hiện biểu đồ ROIC" })
@@ -378,20 +388,143 @@ describe("Dashboard phân tích · thiết lập biểu đồ", () => {
     expect(await screen.findByText("Không có chỉ tiêu phù hợp")).toBeTruthy()
   })
 
-  it("kéo thả đổi thứ tự thẻ", async () => {
+  it("kéo thả đổi thứ tự thẻ về đầu, tiến 1 bước và về cuối dashboard", async () => {
     renderDashboard()
     await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })
     await waitFor(() => expect(cardNames()).toHaveLength(DEFAULT_CHARTS.length))
 
-    const source = document.querySelector<HTMLElement>('[data-chart="ROE"]')
-    const target = document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')
-    expect(source).toBeTruthy()
-    expect(target).toBeTruthy()
-
-    fireEvent.dragStart(source as HTMLElement)
-    fireEvent.dragOver(target as HTMLElement)
-    fireEvent.drop(target as HTMLElement)
-
+    // Kéo ROE về đầu
+    const roe = document.querySelector<HTMLElement>('[data-chart="ROE"]')!
+    const first = document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')!
+    fireEvent.dragStart(roe)
+    fireEvent.dragOver(first)
+    fireEvent.drop(first)
     await waitFor(() => expect(cardNames()[0]).toBe("ROE"))
+
+    // Kéo ROE tiến 1 vị trí (từ index 0 sang sau Tăng trưởng doanh thu ở index 1)
+    fireEvent.dragStart(document.querySelector<HTMLElement>('[data-chart="ROE"]')!)
+    fireEvent.dragOver(document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')!)
+    fireEvent.drop(document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')!)
+    await waitFor(() => expect(cardNames().slice(0, 2)).toEqual(["Tăng trưởng doanh thu", "ROE"]))
+
+    // Kéo Tăng trưởng doanh thu xuống cuối cùng (sau P/E)
+    fireEvent.dragStart(document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')!)
+    fireEvent.dragOver(document.querySelector<HTMLElement>('[data-chart="P/E"]')!)
+    fireEvent.drop(document.querySelector<HTMLElement>('[data-chart="P/E"]')!)
+    await waitFor(() => expect(cardNames().at(-1)).toBe("Tăng trưởng doanh thu"))
+  })
+
+  it("chuẩn hoá nks khi đổi về 5 kỳ mặc định và giữ nhãn Theo năm, cố định cho khuôn D/E1/E2", async () => {
+    const user = userEvent.setup()
+    state.charts = ["ROE", "Revenue CAGR 3Y"]
+    renderDashboard()
+    await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })
+    await screen.findByLabelText("Số kỳ hiển thị của ROE")
+
+    const cagrCard = document.querySelector<HTMLElement>('[data-chart="Revenue CAGR 3Y"]')
+    expect(cagrCard?.textContent).toContain("Theo năm, cố định")
+    expect(screen.queryByLabelText("Số kỳ hiển thị của Revenue CAGR 3Y")).toBeNull()
+
+    const select = screen.getByLabelText("Số kỳ hiển thị của ROE") as HTMLSelectElement
+    await user.selectOptions(select, "20")
+    expect(screen.getByRole("button", { name: "Lưu thiết lập" })).toHaveProperty("disabled", false)
+
+    // Chọn lại 5 kỳ (mặc định) thì trạng thái sạch ngay như ban đầu
+    await user.selectOptions(select, "5")
+    expect(screen.getByRole("button", { name: "✓ Đã lưu" })).toHaveProperty("disabled", true)
+    expect(nksSignature({ ROE: { q: 5, y: 5 } })).toBe("")
+    expect(
+      isSameSettings(
+        { charts: ["ROE"], per: "q", nks: { ROE: { q: 5 } } },
+        { charts: ["ROE"], per: "q", nks: {} },
+      ),
+    ).toBe(true)
+  })
+
+  it("định dạng đúng đơn vị, số lẻ, hàng phụ và chú giải của từng khuôn biểu đồ", () => {
+    expect(decimalsForUnit("%")).toBe(1)
+    expect(decimalsForUnit("điểm %")).toBe(1)
+    expect(decimalsForUnit("lần")).toBe(2)
+    expect(decimalsForUnit("tỷ đồng")).toBe(0)
+    expect(decimalsForUnit("đồng/CP")).toBe(0)
+    expect(decimalsForUnit("ngày")).toBe(0)
+    expect(SERIES_COLORS).toEqual(["var(--chart-1)", "#d95926", "#199e70"])
+
+    // Khuôn B có đường chính % (1 số lẻ) và cột phụ tỷ đồng (0 số lẻ)
+    const viewB = {
+      name: "ROE",
+      kind: "B" as const,
+      unit: "%",
+      decimals: 1,
+      labels: ["Q1/26"],
+      main: [{ name: "ROE (4 quý)", v: [15.4] }],
+      sub: { unit: "tỷ đồng", type: "grouped" as const, series: [{ name: "LNST 4 quý", v: [1234.56] }] },
+    }
+    expect(figureTooltip(viewB, 0).rows).toEqual([
+      ["ROE (4 quý)", "15,4%"],
+      ["LNST 4 quý", "1.235 tỷ đồng"],
+    ])
+    expect(figureTable(viewB)).toEqual({
+      columns: ["Kỳ", "ROE (4 quý)", "LNST 4 quý"],
+      rows: [["Q1/26", "15,4%", "1.235 tỷ đồng"]],
+    })
+
+    // Khuôn D có hàng/cột Theo CAGR và cột đầu "Năm"
+    const viewD = {
+      name: "Revenue CAGR 3Y",
+      kind: "D" as const,
+      unit: "%",
+      decimals: 1,
+      mainUnit: "tỷ đồng",
+      hero: 10,
+      labels: ["2023", "2024"],
+      main: [{ name: "Doanh thu", v: [1000, 1200] }],
+    }
+    expect(figureTooltip(viewD, 1).rows).toEqual([
+      ["Doanh thu", "1.200 tỷ đồng"],
+      ["Theo CAGR", "1.100 tỷ đồng"],
+    ])
+    expect(figureTable(viewD)).toEqual({
+      columns: ["Năm", "Doanh thu", "Theo CAGR"],
+      rows: [
+        ["2023", "1.000 tỷ đồng", "1.000 tỷ đồng"],
+        ["2024", "1.200 tỷ đồng", "1.100 tỷ đồng"],
+      ],
+    })
+
+    // Khuôn E1 có hàng Bình quân trong tooltip và cột đầu "Năm"
+    const viewE1 = {
+      name: "EPS Stability",
+      kind: "E1" as const,
+      unit: "%",
+      decimals: 1,
+      mainUnit: "đồng/CP",
+      hero: 8.5,
+      labels: ["2023", "2024"],
+      main: [{ name: "EPS năm", v: [2000, 3000] }],
+    }
+    expect(figureTooltip(viewE1, 0).rows).toEqual([
+      ["EPS năm", "2.000 đồng/CP"],
+      ["Bình quân", "2.500 đồng/CP"],
+    ])
+    expect(figureTable(viewE1)).toEqual({
+      columns: ["Năm", "EPS năm"],
+      rows: [
+        ["2023", "2.000 đồng/CP"],
+        ["2024", "3.000 đồng/CP"],
+      ],
+    })
+
+    // Khuôn F2 chú giải PEG = 1
+    const viewF2 = {
+      name: "PEG",
+      kind: "F2" as const,
+      unit: "lần",
+      decimals: 2,
+      reference: 1,
+      labels: ["Q1/26"],
+      main: [{ name: "PEG cuối quý", v: [1.25] }],
+    }
+    expect(figureLegend(viewF2).map((item) => item.label)).toEqual(["PEG cuối quý", "PEG = 1"])
   })
 })

@@ -3027,6 +3027,7 @@
         },
         {
           "chart_id": "c4l7-g4",
+          "table_toggle": true,
           "type": "chart"
         }
       ],

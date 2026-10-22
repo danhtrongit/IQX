@@ -58,6 +58,9 @@
       ],
       "title": "Biên gộp tham khảo theo ngành · số minh họa",
       "unit": "%",
+      "value_format": {
+        "suffix": "%"
+      },
       "value_labels": "all"
     },
     "c10l4-g3": {
@@ -108,39 +111,96 @@
       "value_labels": "none"
     },
     "c10l4-rep": {
-      "caption_tone": "price",
-      "caption_value": "25,9%",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "Biên lợi nhuận gộp",
-          "tone": "p1",
-          "values": [
-            23.4335,
-            23.9059,
-            24.0267,
-            24.3741,
-            24.8053,
-            25.18,
-            25.5857,
-            25.8915
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Biên gộp (4 quý)",
+                "tone": "p1",
+                "values": [
+                  23.4324,
+                  23.9059,
+                  24.0265,
+                  24.3735,
+                  24.8059,
+                  25.1794,
+                  25.5853,
+                  25.8912
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "Biên gộp (4 quý) (%)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "25,9%",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "stacked",
+            "series": [
+              {
+                "name": "Giá vốn",
+                "tone": "p1",
+                "values": [
+                  3956.629,
+                  4069.2228,
+                  4170.5695,
+                  4277.469,
+                  4344.7369,
+                  4436.5185,
+                  4562.4724,
+                  4653.2546
+                ]
+              },
+              {
+                "name": "Lợi nhuận gộp",
+                "tone": "p5",
+                "values": [
+                  1210.9412,
+                  1278.3988,
+                  1318.9475,
+                  1378.6221,
+                  1433.2464,
+                  1493.0708,
+                  1568.7084,
+                  1625.7208
+                ]
+              }
+            ],
+            "unit": "tỷ đồng",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (tỷ đồng)"
         }
       ],
-      "title": "Biên lợi nhuận gộp",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",

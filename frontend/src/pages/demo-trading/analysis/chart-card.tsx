@@ -9,7 +9,7 @@ import { useChartWidth } from "@/pages/academy/charts/use-chart-width"
 
 import { ChartFigure } from "./charts/figure"
 import { figureLegend, figureTable, type HoverState } from "./charts/figure-data"
-import type { ChartView } from "./model"
+import { FIXED_YEAR_KINDS, type ChartView } from "./model"
 
 export type ChartCardProps = {
   view: ChartView
@@ -90,7 +90,7 @@ export function ChartCard({
             className="mt-0.5 size-4 shrink-0 cursor-grab text-academy-subtle"
           />
           <h3 className="min-w-0 text-sm leading-snug font-semibold break-words">{view.name}</h3>
-          {!period && !pending && (
+          {!notApplicable && !period && !pending && FIXED_YEAR_KINDS[view.kind] && (
             <span className="mt-px shrink-0 rounded-full border border-status-warning/45 px-2 py-px text-[10px] font-semibold whitespace-nowrap text-status-warning">
               Theo năm, cố định
             </span>
@@ -176,7 +176,10 @@ export function ChartCard({
                 <TableHeader>
                   <TableRow>
                     {table.columns.map((column) => (
-                      <TableHead key={column} className="text-xs">
+                      <TableHead
+                        key={column}
+                        className="sticky top-0 bg-card text-right text-xs text-academy-subtle first:text-left"
+                      >
                         {column}
                       </TableHead>
                     ))}
@@ -186,7 +189,7 @@ export function ChartCard({
                   {table.rows.map((row, index) => (
                     <TableRow key={index}>
                       {row.map((cell, cellIndex) => (
-                        <TableCell key={cellIndex} className="text-xs tabular-nums">
+                        <TableCell key={cellIndex} className="text-right text-xs tabular-nums first:text-left">
                           {cell}
                         </TableCell>
                       ))}

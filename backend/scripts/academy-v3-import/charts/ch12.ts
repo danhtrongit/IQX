@@ -189,17 +189,35 @@ const ch12: Record<string, Builder> = {
       unit: '%',
       values: true,
     }),
-  'c12l3-g3': () =>
-    bars({
-      title: 'Chu kỳ đầu tư: doanh thu và Capex trên doanh thu',
-      labels: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
-      series: [
-        { name: 'Doanh thu, tỷ đồng', values: [1000, 1040, 1070, 1090, 1420, 1700, 1880], tone: S1 },
-        { name: 'Capex trên doanh thu, %', values: [4, 5, 14, 16, 6, 5, 5], tone: S2 },
-      ],
-      unit: '',
-      values: true,
-    }),
+  'c12l3-g3': () => ({
+    kind: 'compare',
+    layout: 'stack',
+    title: 'Chu kỳ đầu tư: doanh thu và Capex trên doanh thu',
+    items: [
+      {
+        title: 'Doanh thu · tỷ đồng',
+        model: lines({
+          labels: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+          series: [
+            { name: 'Doanh thu', values: [1000, 1040, 1070, 1090, 1420, 1700, 1880], tone: S1 },
+          ],
+          unit: 'tỷ đồng',
+          values: true,
+        }),
+      },
+      {
+        title: 'Capex trên doanh thu · %',
+        model: bars({
+          labels: ['2019', '2020', '2021', '2022', '2023', '2024', '2025'],
+          series: [
+            { name: 'Capex / doanh thu', values: [4, 5, 14, 16, 6, 5, 5], tone: S2 },
+          ],
+          unit: '%',
+          values: true,
+        }),
+      },
+    ],
+  }),
 
   /* ---------------------------------------------------------- Bài 4 · FCF Margin */
   'c12l4-g1': () =>

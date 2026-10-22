@@ -148,6 +148,8 @@ export const ledgerItemSchema = z.object({
     'demo_deposit',
     'demo_withdraw',
     'adjustment',
+    'flashback_fee',
+    'flashback_reward',
   ]),
   delta: z.number().int(),
   balance_after: z.number().int(),

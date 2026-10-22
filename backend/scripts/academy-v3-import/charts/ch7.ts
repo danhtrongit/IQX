@@ -504,7 +504,7 @@ export const CH7_BUILDERS: Record<string, Builder> = {
     });
   },
   'c7l2-g2': () => {
-    // Cách tính CCI: giá điển hTypical và trung bình 20 phiên của nó.
+    // Cách tính CCI: giá điển hình TP và trung bình 20 phiên của nó.
     const tp = D2.c.map((c, i) => (D2.h[i] as number + (D2.l[i] as number) + c) / 3);
     const m = sma(tp, 20);
     const F = 45;
@@ -516,14 +516,14 @@ export const CH7_BUILDERS: Record<string, Builder> = {
       marks: [],
       panels: [
         {
-          title: 'Giá điển hTypical và trung bình 20 phiên',
+          title: 'Giá điển hình TP và trung bình 20 phiên',
           series: [
-            { name: 'Giá điển hTypical', role: BL, width: 2, values: slice(tp) as number[] },
+            { name: 'Giá điển hình TP', role: BL, width: 2, values: slice(tp) as number[] },
             { name: 'Trung bình 20 phiên', role: GD, width: 2, values: slice(m) as number[] },
           ],
         },
       ],
-      alt: 'Giá điển hTypical so với trung bình 20 phiên của chính nó, khoảng cách giữa hai đường là biên độ dùng để tính CCI',
+      alt: 'Giá điển hình TP so với trung bình 20 phiên của chính nó, khoảng cách giữa hai đường là biên độ dùng để tính CCI',
     };
   },
   'c7l2-g3': () => {

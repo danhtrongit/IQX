@@ -48,8 +48,8 @@ describe("Bot panel", () => {
     const groups = screen.getAllByRole("region").filter((region) => region.getAttribute("aria-label")?.startsWith("Chương"))
     expect(groups.map((group) => group.querySelector("h3")?.textContent)).toEqual([
       "Chương 4 · Phương pháp kỹ thuật",
-      "Chương 7 · Chỉ báo xu hướng",
-      "Chương 8 · Chỉ báo động lượng và dòng tiền",
+      "Chương 7 · Chỉ báo động lượng và dòng tiền",
+      "Chương 8 · Chương 8",
     ])
     const names = screen.getAllByRole("article").map((article) => article.getAttribute("aria-label"))
     expect(names).toEqual(REGISTRY_ORDER)

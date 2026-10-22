@@ -30,9 +30,9 @@ type SpecEntry = {
   name: string;
   chapter: number;
   lesson_id: string;
-  /** Học viện v3.2 chapter (4, 7 or 8). */
+  /** Học viện v3.3 chapter (4, 6 or 7). */
   new_chapter: number;
-  /** Học viện v3.2 lesson; null while the indicator's chapter is not published. */
+  /** Học viện v3.3 lesson id. */
   new_lesson_id: string | null;
   family: string;
   buy: unknown;
@@ -116,7 +116,7 @@ describe('registry matches the approved 16-indicator registryData', () => {
     });
   }
 
-  it('Học viện v3.2: 5 indicators live in chapter 4, the other 11 in unpublished chapters 7/8', () => {
+  it('Học viện v3.3: 5 indicators live in chapter 4, 4 in chapter 6 and 7 in chapter 7', () => {
     const placement = Object.fromEntries(
       registry.map((item) => [item.id, [item.chapter, item.lesson_id]]),
     );
@@ -126,21 +126,21 @@ describe('registry matches the approved 16-indicator registryData', () => {
       rsi: [4, 'ch04-l06'],
       macd: [4, 'ch04-l07'],
       bollinger: [4, 'ch04-l08'],
-      ema: [7, null],
-      ma_cross: [7, null],
-      dmi: [7, null],
-      donchian: [7, null],
-      stochastic: [8, null],
-      cci: [8, null],
-      roc: [8, null],
-      williams_r: [8, null],
-      obv: [8, null],
-      mfi: [8, null],
-      cmf: [8, null],
+      ema: [6, 'ch06-l01'],
+      ma_cross: [6, 'ch06-l02'],
+      dmi: [6, 'ch06-l03'],
+      donchian: [6, 'ch06-l04'],
+      stochastic: [7, 'ch07-l01'],
+      cci: [7, 'ch07-l02'],
+      roc: [7, 'ch07-l03'],
+      williams_r: [7, 'ch07-l04'],
+      obv: [7, 'ch07-l05'],
+      mfi: [7, 'ch07-l06'],
+      cmf: [7, 'ch07-l07'],
     });
   });
 
-  it('Học viện v3.2: each published indicator lesson is the catalog item that unlocks it', () => {
+  it('Học viện v3.3: each published indicator lesson is the catalog item that unlocks it', () => {
     const content = academyV3Fixture();
     for (const item of registry) {
       if (item.lesson_id === null) continue;

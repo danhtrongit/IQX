@@ -233,9 +233,18 @@
       "series": [
         {
           "name": "Profit Positive Streak",
+          "per_bar_tones": [
+            "neutral",
+            "neg",
+            "p1",
+            "p1",
+            "p1",
+            "p1",
+            "p1"
+          ],
           "tone_by_sign": {
             "neg": "neg",
-            "pos": "pos"
+            "pos": "p1"
           },
           "values": [
             259.5516,
@@ -248,8 +257,7 @@
           ]
         }
       ],
-      "title": "Profit Positive Streak",
-      "unit": "",
+      "unit": "tỷ đồng",
       "value_labels": "none"
     }
   },

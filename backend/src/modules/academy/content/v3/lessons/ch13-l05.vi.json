@@ -34,8 +34,8 @@
           3.5
         ],
         "y": [
-          -2,
-          14002
+          -1120,
+          15960
         ]
       },
       "kind": "schematic",
@@ -171,8 +171,8 @@
           4.5
         ],
         "y": [
-          -2,
-          2002
+          -160,
+          2280
         ]
       },
       "kind": "schematic",
@@ -329,6 +329,13 @@
       "marks": [],
       "panels": [
         {
+          "levels": [
+            {
+              "label": "Trung vị 3 năm 8,01",
+              "role": "avg",
+              "value": 8.0087
+            }
+          ],
           "series": [
             {
               "name": "EV / EBITDA",
@@ -1120,7 +1127,15 @@
               "width": 2
             }
           ],
-          "title": "EV / EBITDA"
+          "title": "EV / EBITDA (lần)",
+          "zones": [
+            {
+              "from": 7.3479,
+              "label": "Trung vị ± độ lệch chuẩn",
+              "to": 8.6695,
+              "tone": "neutral"
+            }
+          ]
         }
       ],
       "x": {

@@ -33,6 +33,8 @@ function finite(value: unknown): number | null {
 export interface FlashbackMarketDataPort {
   /** Nến ngày của một mã trong khoảng `[from, to]` (ngày theo định dạng YYYY-MM-DD). */
   dailyBars(symbol: string, from: string, to: string): Promise<FlashbackBar[]>;
+  /** Danh sách mã VN30 hiện hành (tuỳ chọn, nếu cung cấp trực tiếp qua cổng dữ liệu). */
+  vn30Symbols?(): Promise<string[]>;
 }
 
 function previousDay(date: string): string {
@@ -59,31 +61,44 @@ export class MarketFlashbackMarketData implements FlashbackMarketDataPort {
       for (const raw of rows) {
         const row = (raw ?? {}) as Record<string, unknown>;
         const date = flashbarDate(row.time);
+        if (!date || date < from || date > to) {
+          continue;
+        }
         const open = finite(row.open);
         const high = finite(row.high);
         const low = finite(row.low);
         const close = finite(row.close);
         const volume = finite(row.volume);
-        // Không dựng nến giả: nến thiếu hoặc không hợp lệ thì bỏ qua.
-        if (
-          !date ||
-          date > to ||
-          open === null ||
-          high === null ||
-          low === null ||
-          close === null ||
-          volume === null ||
-          open <= 0 ||
-          high <= 0 ||
-          low <= 0 ||
-          close <= 0 ||
-          volume < 0 ||
-          high < Math.max(open, close) ||
-          low > Math.min(open, close)
-        ) {
-          continue;
-        }
-        byDate.set(date, { d: date, o: open, h: high, l: low, c: close, v: volume });
+        const valid =
+          open !== null &&
+          high !== null &&
+          low !== null &&
+          close !== null &&
+          volume !== null &&
+          open > 0 &&
+          high > 0 &&
+          low > 0 &&
+          close > 0 &&
+          volume >= 0 &&
+          high >= low &&
+          open >= low &&
+          open <= high &&
+          close >= low &&
+          close <= high;
+        // Không bỏ qua nến lỗi nằm giữa giai đoạn để bộ lọc dữ liệu sạch (BoSung §4.3) phát hiện.
+        byDate.set(
+          date,
+          valid
+            ? { d: date, o: open, h: high, l: low, c: close, v: volume }
+            : {
+                d: date,
+                o: open ?? -1,
+                h: high ?? -1,
+                l: low ?? -1,
+                c: close ?? -1,
+                v: volume ?? -1,
+              },
+        );
         if (!earliest || date < earliest) earliest = date;
       }
       if (!earliest || earliest <= from) break;

@@ -117,6 +117,13 @@
       "marks": [],
       "panels": [
         {
+          "levels": [
+            {
+              "label": "Trung vị 3 năm 1,67",
+              "role": "avg",
+              "value": 1.6691
+            }
+          ],
           "series": [
             {
               "name": "P/B",
@@ -908,7 +915,15 @@
               "width": 2
             }
           ],
-          "title": "P/B"
+          "title": "P/B (lần)",
+          "zones": [
+            {
+              "from": 1.5033,
+              "label": "Trung vị ± độ lệch chuẩn",
+              "to": 1.8349,
+              "tone": "neutral"
+            }
+          ]
         }
       ],
       "x": {

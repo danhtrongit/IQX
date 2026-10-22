@@ -159,8 +159,12 @@ export function mascotDisplayName(mascotId: string | null | undefined, fallback 
   return mascotId && isMascotId(mascotId) ? MASCOT_MANIFEST[mascotId].name : fallback
 }
 
+export type LedgerRowInput = Omit<LedgerItem, "kind"> & {
+  kind: LedgerItem["kind"] | "flashback_fee" | "flashback_reward" | (string & {})
+}
+
 /** What a ledger row says: lesson name or mascot name, never a raw id when a name is known. */
-export function ledgerRowLabel(item: LedgerItem, lessonNames: ReadonlyMap<string, string> | undefined): { title: string; detail: string | null } {
+export function ledgerRowLabel(item: LedgerRowInput, lessonNames: ReadonlyMap<string, string> | undefined): { title: string; detail: string | null } {
   switch (item.kind) {
     case "lesson_first_completion": {
       const { lesson_key: key, lesson_id: id } = item.label
@@ -186,6 +190,10 @@ export function ledgerRowLabel(item: LedgerItem, lessonNames: ReadonlyMap<string
       return { title: "Đổi tiền sang xu", detail: null }
     case "demo_withdraw":
       return { title: "Đổi xu sang tiền", detail: null }
+    case "flashback_fee":
+      return { title: "Tham gia Flashback", detail: null }
+    case "flashback_reward":
+      return { title: "Thưởng Flashback", detail: null }
     default:
       return { title: "Điều chỉnh xu", detail: null }
   }

@@ -356,33 +356,67 @@
       "layout": "row"
     },
     "c9l4-rep": {
-      "caption_tone": "price",
-      "caption_value": "24,4%",
-      "kind": "category",
-      "labels": [
-        "2021",
-        "2022",
-        "2023",
-        "2024",
-        "2025"
-      ],
-      "mode": "line",
-      "series": [
+      "alt": "EPS Stability: 24,4%",
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
         {
-          "name": "EPS Stability",
-          "tone": "p1",
-          "values": [
-            737.3736,
-            1131.6187,
-            793.1446,
-            1169.3382,
-            1429.0845
-          ]
+          "band": {
+            "lower": [
+              795.7035,
+              795.7035,
+              795.7035,
+              795.7035,
+              795.7035
+            ],
+            "tone": "p1",
+            "upper": [
+              1308.25,
+              1308.25,
+              1308.25,
+              1308.25,
+              1308.25
+            ]
+          },
+          "bounds": [
+            0,
+            1600.5582
+          ],
+          "levels": [
+            {
+              "label": "Bình quân 1051.9767",
+              "role": "avg",
+              "value": 1051.9767
+            }
+          ],
+          "series": [
+            {
+              "name": "Giá trị",
+              "role": "p1",
+              "values": [
+                737.2093,
+                1131.3953,
+                793.0233,
+                1169.186,
+                1429.0698
+              ],
+              "width": 2
+            }
+          ],
+          "title": ""
         }
       ],
-      "title": "EPS Stability",
-      "unit": "",
-      "value_labels": "none"
+      "x": {
+        "end": 4,
+        "start": 0,
+        "ticks": [
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ]
+      }
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -415,6 +449,7 @@
         },
         {
           "chart_id": "c9l4-g2",
+          "table_toggle": true,
           "type": "chart"
         },
         {
@@ -525,6 +560,7 @@
         },
         {
           "chart_id": "c9l4-g4",
+          "table_toggle": true,
           "type": "chart"
         }
       ],

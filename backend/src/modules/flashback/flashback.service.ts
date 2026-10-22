@@ -29,7 +29,7 @@ import {
   FLASHBACK_REWARD_TABLE,
   FLASHBACK_SETTLEMENT_SESSIONS,
   FLASHBACK_TAX_BPS,
-  FLASHBACK_WARMUP_SESSIONS,
+  flashbackRewardForRank,
 } from './flashback.constants.js';
 import {
   flashbackIndicatorCatalog,
@@ -258,12 +258,14 @@ export function maxDrawdownOf(
   round: FlashbackRoundRow,
   orders: readonly FlashbackOrderRow[],
   initialCash: bigint,
+  upToStep: number = FLASHBACK_PLAY_SESSIONS,
 ): number {
+  const limit = Math.max(0, Math.min(FLASHBACK_PLAY_SESSIONS, upToStep));
   let cash = initialCash;
   let holdings = 0n;
   let peak = initialCash;
   let worst = 0;
-  for (let step = 0; step <= FLASHBACK_PLAY_SESSIONS; step += 1) {
+  for (let step = 0; step <= limit; step += 1) {
     for (const order of orders) {
       if (order.step !== step) continue;
       if (order.side === 'buy') {
@@ -338,12 +340,12 @@ export class FlashbackService {
 
     if (entry) {
       const required = flashbackWarmupRequired(entry.indicatorParams);
-      if (required > FLASHBACK_HISTORY_SESSIONS) {
-        const count = Math.min(required, FLASHBACK_WARMUP_SESSIONS);
-        const offset = FLASHBACK_WARMUP_SESSIONS - count;
-        view.warmup_bars = round.warmupBars
-          .slice(offset)
-          .map((bar, index) => toPublicBar(bar, offset + index - FLASHBACK_WARMUP_SESSIONS - 1));
+      if (required > 0 && round.warmupBars.length > 0) {
+        const count = Math.min(round.warmupBars.length, required);
+        const slice = round.warmupBars.slice(round.warmupBars.length - count);
+        view.warmup_bars = slice.map((bar, index) =>
+          toPublicBar(bar, index - slice.length - (FLASHBACK_HISTORY_SESSIONS - 1)),
+        );
       }
     }
     return view;
@@ -652,7 +654,14 @@ export class FlashbackService {
       return { entry: finished, round };
     });
 
-    const rank = await this.provisionalRank(result.entry);
+    const rank =
+      result.entry.rank ?? (await this.provisionalRank(result.round, result.entry));
+    const rewardXu =
+      result.round.status === 'open' && result.entry.rank === null
+        ? rank !== null
+          ? flashbackRewardForRank(rank)
+          : 0
+        : result.entry.rewardXu;
     return {
       entry_id: result.entry.id,
       final_nav: (result.entry.finalNav ?? 0n).toString(),
@@ -661,7 +670,7 @@ export class FlashbackService {
       max_drawdown: result.entry.maxDrawdown ?? 0,
       max_drawdown_percent: (result.entry.maxDrawdown ?? 0) * 100,
       rank,
-      reward_xu: result.entry.rewardXu,
+      reward_xu: rewardXu,
       status: 'finished',
     };
   }
@@ -773,6 +782,14 @@ export class FlashbackService {
       entry.status === 'finished' && entry.pnlPct !== null
         ? entry.pnlPct
         : Number(totalAssets - entry.initialCash) / Number(entry.initialCash);
+    let rank = entry.rank;
+    let rewardXu = entry.rewardXu;
+    if (entry.status === 'finished' && rank === null) {
+      rank = await this.provisionalRank(round, entry);
+      if (round.status === 'open' && rank !== null) {
+        rewardXu = flashbackRewardForRank(rank);
+      }
+    }
     return {
       id: entry.id,
       step: entry.step,
@@ -787,8 +804,8 @@ export class FlashbackService {
       joined_at: entry.joinedAt.toISOString(),
       finished_at: entry.finishedAt ? entry.finishedAt.toISOString() : null,
       final_nav: entry.finalNav === null ? null : entry.finalNav.toString(),
-      rank: entry.rank,
-      reward_xu: entry.rewardXu,
+      rank,
+      reward_xu: rewardXu,
       indicator_params: entry.indicatorParams,
       positions,
       orders: orders.map((order) => this.orderView(order)),
@@ -799,25 +816,50 @@ export class FlashbackService {
     const entry = await this.repository.entryById(this.database, entryId);
     if (!entry) return 0;
     const orders = await this.repository.ordersByEntry(this.database, entryId);
-    return maxDrawdownOf(round, orders, entry.initialCash);
+    const upToStep = entry.status === 'playing' ? entry.step : FLASHBACK_PLAY_SESSIONS;
+    return maxDrawdownOf(round, orders, entry.initialCash, upToStep);
   }
 
-  private async provisionalRank(entry: FlashbackEntryRow): Promise<number | null> {
-    const entries = await this.repository.listEntriesByRound(this.database, entry.roundId);
-    const finished = entries.filter((item) => item.status === 'finished' && item.pnlPct !== null);
-    const sorted = finished.sort((left, right) => {
-      const leftPnl = left.pnlPct ?? Number.NEGATIVE_INFINITY;
-      const rightPnl = right.pnlPct ?? Number.NEGATIVE_INFINITY;
-      if (leftPnl !== rightPnl) return rightPnl - leftPnl;
-      const leftDd = left.maxDrawdown ?? Number.POSITIVE_INFINITY;
-      const rightDd = right.maxDrawdown ?? Number.POSITIVE_INFINITY;
-      if (leftDd !== rightDd) return leftDd - rightDd;
-      const leftDone = left.finishedAt ? left.finishedAt.getTime() : Number.POSITIVE_INFINITY;
-      const rightDone = right.finishedAt ? right.finishedAt.getTime() : Number.POSITIVE_INFINITY;
-      if (leftDone !== rightDone) return leftDone - rightDone;
-      return left.joinedAt.getTime() - right.joinedAt.getTime();
-    });
-    const index = sorted.findIndex((item) => item.id === entry.id);
+  private async provisionalRank(
+    round: FlashbackRoundRow,
+    targetEntry: FlashbackEntryRow,
+  ): Promise<number | null> {
+    const entries = await this.repository.listEntriesByRound(this.database, round.id);
+    if (entries.length === 0) return null;
+    const holdings = await this.repository.holdingsByRound(this.database, round.id);
+    const sorted = entries
+      .map((entry) => {
+        if (entry.status === 'finished') {
+          return {
+            entry,
+            pnlPct: entry.pnlPct,
+            drawdown: entry.maxDrawdown,
+            finishedAt: entry.finishedAt,
+          };
+        }
+        const held = holdings.get(entry.id) ?? 0;
+        const price = barPrice(chartBar(round, entry.step));
+        const nav = entry.cash + BigInt(held) * price;
+        return {
+          entry,
+          pnlPct: Number(nav - entry.initialCash) / Number(entry.initialCash),
+          drawdown: null,
+          finishedAt: null,
+        };
+      })
+      .sort((left, right) => {
+        const leftPnl = left.pnlPct ?? Number.NEGATIVE_INFINITY;
+        const rightPnl = right.pnlPct ?? Number.NEGATIVE_INFINITY;
+        if (leftPnl !== rightPnl) return rightPnl - leftPnl;
+        const leftDd = left.drawdown ?? Number.POSITIVE_INFINITY;
+        const rightDd = right.drawdown ?? Number.POSITIVE_INFINITY;
+        if (leftDd !== rightDd) return leftDd - rightDd;
+        const leftDone = left.finishedAt ? left.finishedAt.getTime() : Number.POSITIVE_INFINITY;
+        const rightDone = right.finishedAt ? right.finishedAt.getTime() : Number.POSITIVE_INFINITY;
+        if (leftDone !== rightDone) return leftDone - rightDone;
+        return left.entry.joinedAt.getTime() - right.entry.joinedAt.getTime();
+      });
+    const index = sorted.findIndex((item) => item.entry.id === targetEntry.id);
     return index < 0 ? null : index + 1;
   }
 }

@@ -684,6 +684,7 @@
         },
         {
           "chart_id": "c4l3-g4",
+          "table_toggle": true,
           "type": "chart"
         },
         {

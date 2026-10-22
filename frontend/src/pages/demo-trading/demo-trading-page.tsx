@@ -38,6 +38,17 @@ const CONTENT_TABS: { id: DemoTab; label: string }[] = [
   { id: "market", label: "Thị trường" },
 ]
 
+function ContentTabBar() {
+  return (
+    <div className="flex shrink-0 items-stretch border-b border-border bg-card">
+      <TabsList variant="line" aria-label="Nội dung demo trading" className="group-data-horizontal/tabs:h-11 min-w-0 flex-1 justify-start overflow-x-auto overflow-y-hidden rounded-none bg-card px-3 py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-4">
+        {CONTENT_TABS.map((tab) => <TabsTrigger key={tab.id} value={tab.id} onFocus={(event) => event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" })} className="h-full flex-none rounded-none px-3 text-xs font-semibold focus-visible:ring-inset group-data-horizontal/tabs:after:bottom-0">{tab.label}</TabsTrigger>)}
+      </TabsList>
+      <div className="flex shrink-0 items-center pr-2"><WorkspacePanelToggle /></div>
+    </div>
+  )
+}
+
 /** DEMO TRADING main area: the three tabs, or Insight in place of them (no tab selected). */
 function ContentTabs({ active, onSelect, children }: { active: DemoContent; onSelect: (content: DemoContent) => void; children: React.ReactNode }) {
   const content = active === "market" || active === "insight" ? (
@@ -47,12 +58,7 @@ function ContentTabs({ active, onSelect, children }: { active: DemoContent; onSe
   ) : children
   return (
     <Tabs value={active} onValueChange={(value) => value && onSelect(value as DemoContent)} className="min-h-0 flex-1 gap-0">
-      <div className="flex shrink-0 items-stretch border-b border-border bg-card">
-        <TabsList variant="line" aria-label="Nội dung demo trading" className="group-data-horizontal/tabs:h-11 min-w-0 flex-1 justify-start overflow-x-auto overflow-y-hidden rounded-none bg-card px-3 py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-4">
-          {CONTENT_TABS.map((tab) => <TabsTrigger key={tab.id} value={tab.id} onFocus={(event) => event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" })} className="h-full flex-none rounded-none px-3 text-xs font-semibold focus-visible:ring-inset group-data-horizontal/tabs:after:bottom-0">{tab.label}</TabsTrigger>)}
-        </TabsList>
-        <div className="flex shrink-0 items-center pr-2"><WorkspacePanelToggle /></div>
-      </div>
+      {active !== "dashboard" && <ContentTabBar />}
       {[...CONTENT_TABS.map((tab) => tab.id), "insight" as const, "dashboard" as const].map((id) => <TabsContent key={id} value={id} forceMount className={cn("min-h-0 min-w-0 flex-1 data-[state=inactive]:hidden", (id === "board" || id === "dashboard") && "flex flex-col")}>
         {active === id && <Suspense fallback={<ContentFallback />}>{content}</Suspense>}
       </TabsContent>)}
@@ -108,7 +114,7 @@ function DemoWorkspace() {
   const practiceId = activeId === "bot" ? parsePracticeParam(params.get("practice")) : null
   const navigationState = location.state as { workspaceSection?: boolean; openPanel?: boolean } | null
   const lastTab = memory.demo?.lastTab ?? "chart"
-  const collapsed = memory[section]?.collapsedTool === activeId
+  const collapsed = (section === "demo" && isMainTool(content)) || memory[section]?.collapsedTool === activeId
 
   // Each section comes back as it was left (tool, tab, lesson, collapsed panel).
   const search = location.search
@@ -179,7 +185,7 @@ function DemoWorkspace() {
       <ContentTabs active={content} onSelect={selectContent}>
         {content === "chart" ? <ChartPage embedded />
           : content === "board" ? <PriceBoardPage embedded />
-            : content === "dashboard" ? <AnalysisDashboard symbol={symbol} />
+            : content === "dashboard" ? <AnalysisDashboard symbol={symbol} tabsSlot={<ContentTabBar />} />
               : <MarketWorkspacePage embedded view={content === "insight" ? "stock" : "market"} />}
       </ContentTabs>
     )
@@ -196,9 +202,9 @@ function DemoWorkspace() {
       collapsed={collapsed}
       onCollapsedChange={onCollapsedChange}
       rail={rail}
-      // HỌC VIỆN is long-form reading: on phones its tools sit in a bar above the lesson so the
-      // article keeps the full width, and the bar's tool buttons open the panel layer.
-      phoneRail={section === "academy" ? "bar" : "column"}
+      // HỌC VIỆN is long-form reading and Dashboard phân tích stacks vertically on phones (spec §2.2):
+      // on phones their tools sit in a horizontal bar at the top.
+      phoneRail={section === "academy" || content === "dashboard" ? "bar" : "column"}
       main={main}
       panel={panel()}
     />

@@ -4,61 +4,23 @@
  * Số liệu port nguyên văn từ page script của bản mẫu v3.3 (C8L1-g1 … C8L6-g2).
  */
 import type { Builder } from './kit.js';
-import { bars, formulaFlow, lines, S1, S2, S3, UP, GD, DN, OR, PK, P3 } from './fund.js';
+import { bars, formulaFlow, lines, wf, S1, S2, S3, UP, GD, DN, OR, PK, P3 } from './fund.js';
 
 const c8: Record<string, Builder> = {
   /* ---------------------------------------------------------- Bài 1 · Tăng trưởng doanh thu YoY */
   'c8l1-g1': () =>
-    bars({
-      title: 'Báo cáo kết quả kinh doanh quý 2/2026 · tỷ đồng',
-      labels: [
-        'Doanh thu',
-        'Giá vốn',
-        'LN gộp',
-        'Chi phí hoạt động',
-        'Lãi vay',
-        'Thuế',
-        'LNST',
-      ],
-      series: [
-        {
-          name: 'Doanh thu',
-          values: [1598.2, null, null, null, null, null, null],
-          tone: S1,
-        },
-        {
-          name: 'Giá vốn',
-          values: [null, -1172.1, null, null, null, null, null],
-          tone: DN,
-        },
-        {
-          name: 'LN gộp',
-          values: [null, null, 426.1, null, null, null, null],
-          tone: GD,
-        },
-        {
-          name: 'Chi phí hoạt động',
-          values: [null, null, null, -210.1, null, null, null],
-          tone: DN,
-        },
-        {
-          name: 'Lãi vay',
-          values: [null, null, null, null, -23.4, null, null],
-          tone: DN,
-        },
-        {
-          name: 'Thuế',
-          values: [null, null, null, null, null, -38.5, null],
-          tone: DN,
-        },
-        {
-          name: 'LNST',
-          values: [null, null, null, null, null, null, 154.1],
-          tone: UP,
-        },
+    wf({
+      steps: [
+        { label: 'Doanh thu', value: 1598.2, kind: 'base', tone: S1, decimals: 1 },
+        { label: 'Giá vốn', value: 1172.1, kind: 'sub', tone: DN, decimals: 1 },
+        { label: 'LN gộp', value: 426.1, kind: 'total', tone: GD, decimals: 1 },
+        { label: 'Chi phí|hoạt động', value: 210.1, kind: 'sub', tone: DN, decimals: 1 },
+        { label: 'Lãi vay', value: 23.4, kind: 'sub', tone: DN, decimals: 1 },
+        { label: 'Thuế', value: 38.5, kind: 'sub', tone: DN, decimals: 1 },
+        { label: 'LNST', value: 154.1, kind: 'total', tone: UP, decimals: 1 },
       ],
       unit: 'tỷ đồng',
-      values: true,
+      alt: 'Báo cáo kết quả kinh doanh quý 2/2026: từ doanh thu 1.598,2 tỷ đồng, trừ giá vốn 1.172,1 còn lợi nhuận gộp 426,1, trừ chi phí hoạt động 210,1, lãi vay 23,4 và thuế 38,5 còn lợi nhuận sau thuế 154,1 tỷ đồng',
     }),
   'c8l1-g2': () =>
     bars({
@@ -249,12 +211,17 @@ const c8: Record<string, Builder> = {
       title: 'LNST tăng so với năm trước · %',
       labels: ['2023', '2024', '2025'],
       series: [
-        { name: 'Tăng trưởng LNST', values: [-29.9, 47.4, 33.3], tone: UP },
+        {
+          name: 'Tăng trưởng LNST',
+          values: [-29.9, 47.4, 33.3],
+          tone: UP,
+          toneBySign: { pos: UP, neg: DN },
+        },
       ],
       unit: '%',
       values: true,
+      refs: [{ value: 11.3, label: 'CAGR 11,3%', tone: S1 }],
     }),
-
   /* ---------------------------------------------------------- Bài 6 · EPS CAGR 3Y */
   'c8l6-g1': () =>
     formulaFlow(

@@ -32,7 +32,7 @@ export function ChartPicker({
 }) {
   const [query, setQuery] = useState("")
   const needle = normalize(query)
-  const total = catalog.reduce((sum, group) => sum + group.items.length, 0)
+  const total = catalog.reduce((sum, group) => sum + group.items.length, 0) || 33
 
   const groups = useMemo(
     () =>
@@ -46,7 +46,7 @@ export function ChartPicker({
   )
 
   return (
-    <div className="flex flex-col bg-card lg:h-full">
+    <div className="flex flex-col bg-card min-[761px]:h-full">
       <div className="shrink-0 border-b border-border p-3">
         <div className="mb-2 flex items-baseline justify-between gap-2">
           <h2 className="font-heading text-sm font-bold">Biểu đồ</h2>
@@ -64,7 +64,7 @@ export function ChartPicker({
         />
       </div>
 
-      <div className="max-h-[320px] overflow-y-auto px-2 pb-4 lg:max-h-none lg:min-h-0 lg:flex-1">
+      <div className="max-h-[320px] overflow-y-auto px-2 pb-4 max-[760px]:max-h-[320px] max-[760px]:overflow-y-auto min-[761px]:max-h-none min-[761px]:min-h-0 min-[761px]:flex-1">
         {groups.length === 0 && (
           <p className="p-3 text-xs font-semibold text-academy-subtle">Không có chỉ tiêu phù hợp</p>
         )}

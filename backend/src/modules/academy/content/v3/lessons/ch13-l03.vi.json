@@ -93,7 +93,11 @@
         }
       ],
       "title": "P/S thường lệ theo ngành · số liệu minh họa",
-      "unit": " lần",
+      "unit": "lần",
+      "value_format": {
+        "decimals": 1,
+        "suffix": " lần"
+      },
       "value_labels": "all"
     },
     "c13l3-rep": {
@@ -102,6 +106,13 @@
       "marks": [],
       "panels": [
         {
+          "levels": [
+            {
+              "label": "Trung vị 3 năm 1,07",
+              "role": "avg",
+              "value": 1.0686
+            }
+          ],
           "series": [
             {
               "name": "P/S",
@@ -893,7 +904,15 @@
               "width": 2
             }
           ],
-          "title": "P/S"
+          "title": "P/S (lần)",
+          "zones": [
+            {
+              "from": 0.9204,
+              "label": "Trung vị ± độ lệch chuẩn",
+              "to": 1.2168,
+              "tone": "neutral"
+            }
+          ]
         }
       ],
       "x": {

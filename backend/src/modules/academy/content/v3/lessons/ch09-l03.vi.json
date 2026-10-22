@@ -353,33 +353,67 @@
       ]
     },
     "c9l3-rep": {
-      "caption_tone": "price",
-      "caption_value": "1,2 điểm %",
-      "kind": "category",
-      "labels": [
-        "2021",
-        "2022",
-        "2023",
-        "2024",
-        "2025"
-      ],
-      "mode": "line",
-      "series": [
+      "alt": "Margin Stability: 1,2 điểm %",
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
         {
-          "name": "Margin Stability",
-          "tone": "p1",
-          "values": [
-            6.3138,
-            8.2815,
-            5.597,
-            7.2159,
-            8.6763
-          ]
+          "band": {
+            "lower": [
+              6.0584,
+              6.0584,
+              6.0584,
+              6.0584,
+              6.0584
+            ],
+            "tone": "p1",
+            "upper": [
+              8.3753,
+              8.3753,
+              8.3753,
+              8.3753,
+              8.3753
+            ]
+          },
+          "bounds": [
+            0,
+            9.7186
+          ],
+          "levels": [
+            {
+              "label": "Bình quân 7.2169",
+              "role": "avg",
+              "value": 7.2169
+            }
+          ],
+          "series": [
+            {
+              "name": "Giá trị",
+              "role": "p1",
+              "values": [
+                6.314,
+                8.282,
+                5.5959,
+                7.2151,
+                8.6773
+              ],
+              "width": 2
+            }
+          ],
+          "title": ""
         }
       ],
-      "title": "Margin Stability",
-      "unit": "",
-      "value_labels": "none"
+      "x": {
+        "end": 4,
+        "start": 0,
+        "ticks": [
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ]
+      }
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -417,6 +451,7 @@
         },
         {
           "chart_id": "c9l3-g2",
+          "table_toggle": true,
           "type": "chart"
         },
         {
@@ -479,6 +514,7 @@
         },
         {
           "chart_id": "c9l3-g3",
+          "table_toggle": true,
           "type": "chart"
         },
         {

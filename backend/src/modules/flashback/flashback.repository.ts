@@ -229,6 +229,28 @@ export abstract class FlashbackRepository {
     symbols: readonly string[],
     effectiveFrom: Date,
   ): Promise<void>;
+
+  // -------------------------------------------------------------- khoá job
+  async tryAcquireJobLock(_db: SqlClient): Promise<boolean> {
+    return true;
+  }
+
+  async releaseJobLock(_db: SqlClient): Promise<void> {}
+
+  async withJobLock<T>(
+    dbOrFn: SqlClient | (() => Promise<T>),
+    maybeFn?: () => Promise<T>,
+  ): Promise<{ ran: boolean; result?: T }> {
+    const fn = typeof dbOrFn === 'function' ? dbOrFn : maybeFn!;
+    const db = typeof dbOrFn === 'function' ? ({} as SqlClient) : dbOrFn;
+    const locked = await this.tryAcquireJobLock(db);
+    if (!locked) return { ran: false };
+    try {
+      return { ran: true, result: await fn() };
+    } finally {
+      await this.releaseJobLock(db);
+    }
+  }
 }
 
 /** Mức độ cảnh báo (spec v1.2 §6.1). */
@@ -426,23 +448,30 @@ export class PgFlashbackRepository extends FlashbackRepository {
     tx: SqlClient,
     input: NewFlashbackRound,
   ): Promise<FlashbackRoundRow | null> {
-    const rows = await tx.query<Row>(
-      `insert into flashback_rounds
-         (round_no, status, symbol, start_date, warmup_bars, bars, scheduled_open_at, fallback_level)
-       values ($1, 'ready', $2, $3, $4::jsonb, $5::jsonb, $6, $7)
-       on conflict (round_no) do nothing
-       returning ${ROUND_COLUMNS}`,
-      [
-        input.roundNo,
-        input.symbol,
-        input.startDate,
-        JSON.stringify(input.warmupBars),
-        JSON.stringify(input.bars),
-        input.scheduledOpenAt,
-        input.fallbackLevel,
-      ],
-    );
-    return rows[0] ? mapRound(rows[0]) : null;
+    try {
+      const rows = await tx.query<Row>(
+        `insert into flashback_rounds
+           (round_no, status, symbol, start_date, warmup_bars, bars, scheduled_open_at, fallback_level)
+         values ($1, 'ready', $2, $3, $4::jsonb, $5::jsonb, $6, $7)
+         on conflict do nothing
+         returning ${ROUND_COLUMNS}`,
+        [
+          input.roundNo,
+          input.symbol,
+          input.startDate,
+          JSON.stringify(input.warmupBars),
+          JSON.stringify(input.bars),
+          input.scheduledOpenAt,
+          input.fallbackLevel,
+        ],
+      );
+      return rows[0] ? mapRound(rows[0]) : null;
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async transitionRound(
@@ -452,22 +481,35 @@ export class PgFlashbackRepository extends FlashbackRepository {
     to: FlashbackRoundStatus,
     extra?: { opensAt?: Date; closesAt?: Date },
   ): Promise<FlashbackRoundRow | null> {
-    const rows = await tx.query<Row>(
-      `update flashback_rounds
-          set status = $3,
-              opens_at = coalesce($4::timestamptz, opens_at),
-              closes_at = coalesce($5::timestamptz, closes_at),
-              updated_at = now()
-        where id = $1 and status = any($2::text[])
-        returning ${ROUND_COLUMNS}`,
-      [id, [...from], to, extra?.opensAt ?? null, extra?.closesAt ?? null],
-    );
-    return rows[0] ? mapRound(rows[0]) : null;
+    try {
+      const rows = await tx.query<Row>(
+        `update flashback_rounds
+            set status = $3,
+                opens_at = coalesce($4::timestamptz, opens_at),
+                closes_at = coalesce($5::timestamptz, closes_at),
+                updated_at = now()
+          where id = $1 and status = any($2::text[])
+          returning ${ROUND_COLUMNS}`,
+        [id, [...from], to, extra?.opensAt ?? null, extra?.closesAt ?? null],
+      );
+      return rows[0] ? mapRound(rows[0]) : null;
+    } catch (error) {
+      if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async recentRoundSymbols(db: SqlClient, limit: number): Promise<string[]> {
     const rows = await db.query<{ symbol: string }>(
-      `select distinct symbol from flashback_rounds order by round_no desc limit $1`,
+      `select distinct symbol
+         from (
+           select symbol
+             from flashback_rounds
+            order by round_no desc
+            limit $1
+         ) recent`,
       [limit],
     );
     return rows.map((row) => row.symbol);
@@ -537,7 +579,8 @@ export class PgFlashbackRepository extends FlashbackRepository {
               e.step, e.cash, e.initial_cash, e.finished_at, e.final_nav, e.pnl_pct, e.max_drawdown,
               e.rank, e.reward_xu, e.status,
               coalesce(u.username, u.email) as username,
-              u.phone_verified_at, u.created_at as account_created_at
+              u.phone_verified_at, u.created_at as account_created_at,
+              coalesce(u.phone_e164, u.phone_number) as phone_e164
          from flashback_entries e
          join users u on u.id = e.user_id
         where e.round_id = $1
@@ -550,6 +593,8 @@ export class PgFlashbackRepository extends FlashbackRepository {
       phoneVerified:
         row.phone_verified_at !== null && row.phone_verified_at !== undefined,
       accountCreatedAt: toDate(row.account_created_at),
+      phoneE164:
+        row.phone_e164 === null || row.phone_e164 === undefined ? null : String(row.phone_e164),
     }));
   }
 
@@ -949,5 +994,25 @@ export class PgFlashbackRepository extends FlashbackRepository {
         [symbol, effectiveFrom],
       );
     }
+  }
+
+  override async tryAcquireJobLock(db: SqlClient = this.database): Promise<boolean> {
+    const rows = await db.query<{ locked: boolean }>(
+      `select pg_try_advisory_lock(78291042) as locked`,
+    );
+    return rows[0]?.locked === true;
+  }
+
+  override async releaseJobLock(db: SqlClient = this.database): Promise<void> {
+    await db.query(`select pg_advisory_unlock(78291042)`);
+  }
+
+  override async withJobLock<T>(
+    dbOrFn: SqlClient | (() => Promise<T>),
+    maybeFn?: () => Promise<T>,
+  ): Promise<{ ran: boolean; result?: T }> {
+    const fn = typeof dbOrFn === 'function' ? dbOrFn : maybeFn!;
+    const db = typeof dbOrFn === 'function' ? this.database : dbOrFn;
+    return super.withJobLock(db, fn);
   }
 }

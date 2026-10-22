@@ -2589,6 +2589,26 @@
                       "minLength": 1,
                       "type": "string"
                     },
+                    "per_bar_tones": {
+                      "items": {
+                        "enum": [
+                          "price",
+                          "p1",
+                          "p2",
+                          "p3",
+                          "p4",
+                          "p5",
+                          "pos",
+                          "neg",
+                          "warn",
+                          "info",
+                          "neutral"
+                        ],
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
                     "tone": {
                       "enum": [
                         "price",
@@ -2741,6 +2761,11 @@
               "value_format": {
                 "additionalProperties": false,
                 "properties": {
+                  "decimals": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
                   "sign": {
                     "enum": [
                       true
@@ -5997,6 +6022,26 @@
                       "minLength": 1,
                       "type": "string"
                     },
+                    "per_bar_tones": {
+                      "items": {
+                        "enum": [
+                          "price",
+                          "p1",
+                          "p2",
+                          "p3",
+                          "p4",
+                          "p5",
+                          "pos",
+                          "neg",
+                          "warn",
+                          "info",
+                          "neutral"
+                        ],
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
                     "tone": {
                       "enum": [
                         "price",
@@ -6149,6 +6194,11 @@
               "value_format": {
                 "additionalProperties": false,
                 "properties": {
+                  "decimals": {
+                    "maximum": 4,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
                   "sign": {
                     "enum": [
                       true
@@ -76890,12 +76940,14 @@
                             "type": "string"
                           },
                           "start_date": {
+                            "nullable": true,
                             "type": "string"
                           },
                           "status": {
                             "type": "string"
                           },
                           "symbol": {
+                            "nullable": true,
                             "type": "string"
                           },
                           "total_fee_xu": {
@@ -122156,7 +122208,9 @@
                               "premium_purchase",
                               "demo_deposit",
                               "demo_withdraw",
-                              "adjustment"
+                              "adjustment",
+                              "flashback_fee",
+                              "flashback_reward"
                             ],
                             "type": "string"
                           },

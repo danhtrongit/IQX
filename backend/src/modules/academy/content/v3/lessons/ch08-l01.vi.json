@@ -2,113 +2,218 @@
   "chapter": 8,
   "charts": {
     "c8l1-g1": {
-      "kind": "category",
-      "labels": [
-        "Doanh thu",
-        "Giá vốn",
-        "LN gộp",
-        "Chi phí hoạt động",
-        "Lãi vay",
-        "Thuế",
-        "LNST"
-      ],
-      "mode": "grouped",
-      "series": [
-        {
-          "name": "Doanh thu",
-          "tone": "p1",
-          "values": [
-            1598.2,
-            null,
-            null,
-            null,
-            null,
-            null,
-            null
+      "alt": "Báo cáo kết quả kinh doanh quý 2/2026: từ doanh thu 1.598,2 tỷ đồng, trừ giá vốn 1.172,1 còn lợi nhuận gộp 426,1, trừ chi phí hoạt động 210,1, lãi vay 23,4 và thuế 38,5 còn lợi nhuận sau thuế 154,1 tỷ đồng",
+      "axes": {
+        "x": {
+          "ticks": [
+            {
+              "label": "Doanh thu",
+              "v": 0
+            },
+            {
+              "label": "Giá vốn",
+              "v": 1
+            },
+            {
+              "label": "LN gộp",
+              "v": 2
+            },
+            {
+              "label": "Chi phí hoạt động",
+              "v": 3
+            },
+            {
+              "label": "Lãi vay",
+              "v": 4
+            },
+            {
+              "label": "Thuế",
+              "v": 5
+            },
+            {
+              "label": "LNST",
+              "v": 6
+            }
           ]
         },
-        {
-          "name": "Giá vốn",
-          "tone": "neg",
-          "values": [
-            null,
-            -1172.1,
-            null,
-            null,
-            null,
-            null,
-            null
-          ]
-        },
-        {
-          "name": "LN gộp",
-          "tone": "warn",
-          "values": [
-            null,
-            null,
-            426.1,
-            null,
-            null,
-            null,
-            null
-          ]
-        },
-        {
-          "name": "Chi phí hoạt động",
-          "tone": "neg",
-          "values": [
-            null,
-            null,
-            null,
-            -210.1,
-            null,
-            null,
-            null
-          ]
-        },
-        {
-          "name": "Lãi vay",
-          "tone": "neg",
-          "values": [
-            null,
-            null,
-            null,
-            null,
-            -23.4,
-            null,
-            null
-          ]
-        },
-        {
-          "name": "Thuế",
-          "tone": "neg",
-          "values": [
-            null,
-            null,
-            null,
-            null,
-            null,
-            -38.5,
-            null
-          ]
-        },
-        {
-          "name": "LNST",
-          "tone": "pos",
-          "values": [
-            null,
-            null,
-            null,
-            null,
-            null,
-            null,
-            154.1
-          ]
+        "y": {
+          "ticks": []
         }
-      ],
-      "title": "Báo cáo kết quả kinh doanh quý 2/2026 · tỷ đồng",
-      "unit": "tỷ đồng",
-      "value_labels": "all"
+      },
+      "domain": {
+        "x": [
+          -0.5,
+          6.5
+        ],
+        "y": [
+          -127.856,
+          1821.948
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "base": 0,
+          "h": [
+            1598.2
+          ],
+          "t": "bars",
+          "tones": [
+            "p1"
+          ],
+          "x": [
+            0
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            0,
+            1598.2
+          ],
+          "t": "text",
+          "text": "1.598,2",
+          "tone": "price"
+        },
+        {
+          "base": 1598.2,
+          "h": [
+            -1172.1
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            1
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            1,
+            1598.2
+          ],
+          "t": "text",
+          "text": "−1.172,1",
+          "tone": "price"
+        },
+        {
+          "base": 0,
+          "h": [
+            426.1
+          ],
+          "t": "bars",
+          "tones": [
+            "warn"
+          ],
+          "x": [
+            2
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            2,
+            426.10000000000014
+          ],
+          "t": "text",
+          "text": "426,1",
+          "tone": "warn"
+        },
+        {
+          "base": 426.1,
+          "h": [
+            -210.1
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            3
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            3,
+            426.10000000000014
+          ],
+          "t": "text",
+          "text": "−210,1",
+          "tone": "price"
+        },
+        {
+          "base": 216,
+          "h": [
+            -23.4
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            4
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            4,
+            216.00000000000014
+          ],
+          "t": "text",
+          "text": "−23,4",
+          "tone": "price"
+        },
+        {
+          "base": 192.6,
+          "h": [
+            -38.5
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            5
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            5,
+            192.60000000000014
+          ],
+          "t": "text",
+          "text": "−38,5",
+          "tone": "price"
+        },
+        {
+          "base": 0,
+          "h": [
+            154.1
+          ],
+          "t": "bars",
+          "tones": [
+            "pos"
+          ],
+          "x": [
+            6
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            6,
+            154.10000000000014
+          ],
+          "t": "text",
+          "text": "154,1",
+          "tone": "warn"
+        }
+      ]
     },
     "c8l1-g2": {
       "kind": "category",
@@ -173,39 +278,96 @@
       "value_labels": "all"
     },
     "c8l1-rep": {
-      "caption_tone": "price",
-      "caption_value": "10,2%",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "Tăng trưởng doanh thu YoY",
-          "tone": "p1",
-          "values": [
-            15.3226,
-            13.1285,
-            12.1591,
-            12.9749,
-            9.0605,
-            9.7716,
-            15.4018,
-            10.19
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Tăng trưởng YoY",
+                "tone": "p1",
+                "values": [
+                  15.3235,
+                  13.125,
+                  12.1618,
+                  12.9779,
+                  9.0588,
+                  9.7721,
+                  15.4044,
+                  10.1912
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "Tăng trưởng YoY (%)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "10,2%",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Quý này",
+                "tone": "p1",
+                "values": [
+                  1345.313,
+                  1551.5037,
+                  1308.8815,
+                  1450.3928,
+                  1467.2053,
+                  1703.1097,
+                  1510.473,
+                  1598.1874
+                ]
+              },
+              {
+                "name": "Cùng kỳ năm trước",
+                "tone": "p5",
+                "values": [
+                  1166.5653,
+                  1371.4524,
+                  1166.986,
+                  1283.8188,
+                  1345.313,
+                  1551.5037,
+                  1308.8815,
+                  1450.3928
+                ]
+              }
+            ],
+            "unit": "tỷ đồng",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (tỷ đồng)"
         }
       ],
-      "title": "Tăng trưởng doanh thu YoY",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -224,7 +386,6 @@
         },
         {
           "chart_id": "c8l1-g1",
-          "table_toggle": true,
           "type": "chart"
         },
         {

@@ -8,6 +8,7 @@ import {
   bars,
   formulaFlow,
   hb,
+  lines,
   wf,
   zones,
   S1,
@@ -18,7 +19,6 @@ import {
   OR,
   PK,
 } from './fund.js';
-
 const ch13: Record<string, Builder> = {
   /* ---------------------------------------------------------- Bài 1 · P/E */
   'c13l1-g1': () =>
@@ -67,36 +67,43 @@ const ch13: Record<string, Builder> = {
       ],
       'P/E bằng giá hiện tại 30.000 đồng chia cho tổng EPS 4 quý gần nhất 2.500 đồng, bằng 12 lần',
     ),
-  'c13l1-g3': () =>
-    bars({
-      title: 'EPS 4 quý và P/E theo quý',
-      labels: [
-        'Q1/24',
-        'Q2/24',
-        'Q3/24',
-        'Q4/24',
-        'Q1/25',
-        'Q2/25',
-        'Q3/25',
-        'Q4/25',
-        'Q1/26',
-        'Q2/26',
-      ],
-      series: [
-        {
-          name: 'EPS 4 quý, đồng',
-          values: [1800, 2100, 2500, 2900, 3200, 3300, 2900, 2300, 1800, 1500],
-          tone: GD,
-        },
-        {
-          name: 'P/E, lần',
-          values: [20, 18.1, 16, 13.8, 11.9, 10.9, 11.4, 13, 15.6, 18],
-          tone: S1,
-        },
-      ],
-      unit: '',
-      values: true,
-    }),
+  'c13l1-g3': () => ({
+    kind: 'compare',
+    layout: 'stack',
+    title: 'EPS 4 quý và P/E theo quý',
+    items: [
+      {
+        title: 'EPS 4 quý · đồng',
+        model: bars({
+          labels: ['Q1/24', 'Q2/24', 'Q3/24', 'Q4/24', 'Q1/25', 'Q2/25', 'Q3/25', 'Q4/25', 'Q1/26', 'Q2/26'],
+          series: [
+            {
+              name: 'EPS 4 quý',
+              values: [1800, 2100, 2500, 2900, 3200, 3300, 2900, 2300, 1800, 1500],
+              tone: GD,
+            },
+          ],
+          unit: 'đồng',
+          values: true,
+        }),
+      },
+      {
+        title: 'P/E · lần',
+        model: lines({
+          labels: ['Q1/24', 'Q2/24', 'Q3/24', 'Q4/24', 'Q1/25', 'Q2/25', 'Q3/25', 'Q4/25', 'Q1/26', 'Q2/26'],
+          series: [
+            {
+              name: 'P/E',
+              values: [20, 18.1, 16, 13.8, 11.9, 10.9, 11.4, 13, 15.6, 18],
+              tone: S1,
+            },
+          ],
+          unit: 'lần',
+          values: true,
+        }),
+      },
+    ],
+  }),
   'c13l1-g4': () =>
     hb({
       title: 'P/E so cùng ngành',

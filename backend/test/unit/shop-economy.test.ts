@@ -10,6 +10,7 @@ import {
   PREMIUM_DURATION_DAYS,
   PREMIUM_PRICE_XU,
 } from '../../src/modules/shop/shop.catalog.js';
+import { ledgerItemSchema } from '../../src/modules/shop/shop.schemas.js';
 import {
   allLedger,
   expectLedgerConsistent,
@@ -53,6 +54,8 @@ describe('xu economy prices', () => {
     expect(MASCOT_CATALOG_VERSION).toBe('iqx-mascot-shop-v2');
     // Lên cấp 3 tốn tổng 40.000 xu cho một linh thú.
     expect(PET_EVOLVE_LEVEL2_XU + PET_EVOLVE_LEVEL3_XU).toBe(40_000);
+    expect(ledgerItemSchema.shape.kind.options).toContain('flashback_fee');
+    expect(ledgerItemSchema.shape.kind.options).toContain('flashback_reward');
   });
 });
 

@@ -169,6 +169,14 @@ export function FlashbackChart({
     })
     .filter((marker): marker is { order: FlashbackOrder; index: number } => marker !== null)
 
+  function updateHover(clientX: number, target: SVGSVGElement) {
+    const rect = target.getBoundingClientRect()
+    const widthUsed = rect.width || width
+    const offset = ((clientX - rect.left) / widthUsed) * width
+    const index = Math.floor((offset - PAD_LEFT) / slot)
+    setHover(index >= 0 && index <= current ? index : null)
+  }
+
   return (
     <div className="relative min-h-[360px] w-full" ref={measure}>
       <svg
@@ -177,13 +185,16 @@ export function FlashbackChart({
         viewBox={`0 0 ${width} ${HEIGHT}`}
         className="block w-full touch-pan-y"
         style={{ height: HEIGHT }}
-        onMouseMove={(event) => {
-          const rect = event.currentTarget.getBoundingClientRect()
-          const offset = ((event.clientX - rect.left) / rect.width) * width
-          const index = Math.floor((offset - PAD_LEFT) / slot)
-          setHover(index >= 0 && index <= current ? index : null)
-        }}
+        onMouseMove={(event) => updateHover(event.clientX, event.currentTarget)}
         onMouseLeave={() => setHover(null)}
+        onTouchStart={(event) => {
+          const touch = event.touches[0]
+          if (touch) updateHover(touch.clientX, event.currentTarget)
+        }}
+        onTouchMove={(event) => {
+          const touch = event.touches[0]
+          if (touch) updateHover(touch.clientX, event.currentTarget)
+        }}
       >
         {/* Phần chưa chơi: tôi tối và đánh dấu "?" */}
         {current < totalSlots - 1 && (
@@ -203,7 +214,19 @@ export function FlashbackChart({
         {/* Vạch "Bắt đầu" ngăn giữa lịch sử và phần chơi */}
         <line x1={startX} x2={startX} y1={0} y2={HEIGHT - 16} stroke={GRID} strokeDasharray="4 4" />
 
-        {/* Đường ngăn giữa các ô */}
+        {/* Vạch dọc khi rê chuột hoặc chạm trên biểu đồ */}
+        {hover !== null && hover <= current && (
+          <line
+            data-testid="flashback-crosshair"
+            x1={x(hover)}
+            x2={x(hover)}
+            y1={0}
+            y2={HEIGHT - 16}
+            stroke={AXIS_TEXT}
+            strokeDasharray="3 3"
+            opacity={0.75}
+          />
+        )}
         {panes.slice(1).map((pane) => (
           <line key={pane.key} x1={PAD_LEFT} x2={width - PAD_RIGHT} y1={pane.y - GAP / 2} y2={pane.y - GAP / 2} stroke={GRID} />
         ))}
@@ -548,13 +571,17 @@ function IndicatorPane({
   const y = (value: number) => pane.y + ((scale.high - value) / (scale.high - scale.low)) * pane.h
 
   const band = indicator.plot.levelBand
-  const lower = band ? indicator.plot.levels?.find((level) => level.key === band[0]) : undefined
-  const upper = band ? indicator.plot.levels?.find((level) => level.key === band[1]) : undefined
+  const lowerValue = Array.isArray(band)
+    ? indicator.plot.levels?.find((level) => level.key === band[0])?.value
+    : band?.lower
+  const upperValue = Array.isArray(band)
+    ? indicator.plot.levels?.find((level) => level.key === band[1])?.value
+    : band?.upper
 
   return (
     <g>
-      {band && lower && upper && (
-        <rect x={PAD_LEFT} y={y(upper.value)} width={right - PAD_LEFT} height={Math.max(0, y(lower.value) - y(upper.value))} fill={indicator.color} opacity={0.07} />
+      {lowerValue !== undefined && upperValue !== undefined && (
+        <rect x={PAD_LEFT} y={y(upperValue)} width={right - PAD_LEFT} height={Math.max(0, y(lowerValue) - y(upperValue))} fill={indicator.color} opacity={0.07} />
       )}
       {indicator.plot.levels?.map((level) => (
         <g key={level.key}>
@@ -597,7 +624,7 @@ function IndicatorPane({
   )
 }
 
-type LegendValue = { key: string; value: number | null; tone?: "up" | "down" }
+type LegendValue = { key: string; value: number | null; color?: string; tone?: "up" | "down" }
 
 /** Giá trị của các đường của một chỉ báo tại phiên đang xem, cho dòng chú giải. */
 function legendValues(indicator: ChartIndicator, index: number): LegendValue[] {
@@ -606,6 +633,7 @@ function legendValues(indicator: ChartIndicator, index: number): LegendValue[] {
     return {
       key: line.key,
       value,
+      color: line.histogram ? undefined : (line.color ?? indicator.color),
       tone: line.histogram ? (value != null && value < 0 ? "down" : "up") : undefined,
     }
   })
@@ -638,17 +666,22 @@ function LegendRow({
       )}
     >
       <span className="truncate font-bold text-foreground">{indicator.label}</span>
-      {values.map((value) => (
-        <span
-          key={value.key}
-          className={cn(
-            "font-semibold",
-            value.tone === "up" ? "text-price-up" : value.tone === "down" ? "text-price-down" : "text-academy-label",
-          )}
-        >
-          {indicatorValue(value.value)}
-        </span>
-      ))}
+      {values.map((value, idx) => {
+        const line = indicator.plot.series[idx]
+        const color = value.color ?? line?.color
+        return (
+          <span
+            key={value.key}
+            style={color ? { color } : undefined}
+            className={cn(
+              "font-semibold",
+              value.tone === "up" ? "text-price-up" : value.tone === "down" ? "text-price-down" : "text-academy-label",
+            )}
+          >
+            {indicatorValue(value.value)}
+          </span>
+        )
+      })}
       <span className="flex items-center gap-0.5">
         <button
           type="button"

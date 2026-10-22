@@ -47,12 +47,14 @@ export const academyKeys = {
  * - `["bot"]`             Bot tool: overview, shared config and registry, universe (bot/api.ts `botKeys.all`)
  * - `["practice"]`        Mini luyện tập: indicator list and granted flags (`practiceKeys`)
  * - `["strategy"]`        Chiến lược: Bộ lọc metric library, Backtest registry
+ * - `["flashback"]`       Flashback: unlocked technical indicators (`flashbackKeys`)
  */
 export const COMPLETION_DEPENDENT_ROOTS: readonly QueryKey[] = [
   ["shop"],
   ["bot"],
   ["practice"],
   ["strategy"],
+  ["flashback"],
 ]
 
 /**

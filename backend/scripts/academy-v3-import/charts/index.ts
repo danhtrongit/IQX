@@ -104,7 +104,7 @@ export const SVG_LEGENDS: Readonly<Record<string, LegendItem[]>> = {
   'c7l1-g4': L(['%K', 'p1'], ['%D', 'p5']),
   'c7l2-g1': L(['CCI 20', 'p1']),
   'c7l2-g2': L(
-    ['Giá điển hTypical', 'p1'],
+    ['Giá điển hình TP', 'p1'],
     ['Trung bình 20 phiên của TP', 'warn'],
   ),
   'c7l2-g3': L(['CCI 20', 'p1'], ['Mua', 'pos'], ['Bán', 'neg']),

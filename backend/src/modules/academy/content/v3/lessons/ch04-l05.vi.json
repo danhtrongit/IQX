@@ -2692,6 +2692,7 @@
         },
         {
           "chart_id": "c4l5-g3",
+          "table_toggle": true,
           "type": "chart"
         }
       ],
@@ -2735,6 +2736,7 @@
         },
         {
           "chart_id": "c4l5-g5",
+          "table_toggle": true,
           "type": "chart"
         }
       ],

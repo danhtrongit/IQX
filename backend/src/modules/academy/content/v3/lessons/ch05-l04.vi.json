@@ -1304,6 +1304,7 @@
         },
         {
           "chart_id": "c5l4-g2",
+          "table_toggle": true,
           "type": "chart"
         }
       ],

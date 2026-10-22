@@ -170,8 +170,8 @@ const adminRoundSchema = z.object({
   total_fee_xu: z.number(),
   total_reward_xu: z.number(),
   fallback_level: z.number(),
-  symbol: z.string().optional(),
-  start_date: z.string().optional(),
+  symbol: z.string().nullable().optional(),
+  start_date: z.string().nullable().optional(),
 });
 
 const adminRoundsResponseSchema = z.object({

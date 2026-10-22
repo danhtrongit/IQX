@@ -154,39 +154,96 @@
       ]
     },
     "c11l4-rep": {
-      "caption_tone": "price",
-      "caption_value": "0,39 lần",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "Net Debt / EBITDA",
-          "tone": "p1",
-          "values": [
-            0.6198,
-            0.6294,
-            0.5083,
-            0.4835,
-            0.4675,
-            0.4693,
-            0.408,
-            0.3942
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Nợ ròng / EBITDA",
+                "tone": "p1",
+                "values": [
+                  0.6197,
+                  0.6294,
+                  0.5082,
+                  0.4835,
+                  0.4674,
+                  0.4694,
+                  0.4079,
+                  0.3941
+                ]
+              }
+            ],
+            "unit": "lần",
+            "value_labels": "none"
+          },
+          "title": "Nợ ròng / EBITDA (lần)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "0,39 lần",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Nợ ròng",
+                "tone": "p1",
+                "values": [
+                  448.4559,
+                  479.5493,
+                  400.3769,
+                  400.3769,
+                  408.51,
+                  434.6711,
+                  400.3769,
+                  400.3769
+                ]
+              },
+              {
+                "name": "EBITDA 4 quý",
+                "tone": "p5",
+                "values": [
+                  723.5031,
+                  761.9636,
+                  787.7215,
+                  828.0423,
+                  873.7794,
+                  926.1564,
+                  981.2326,
+                  1015.616
+                ]
+              }
+            ],
+            "unit": "tỷ đồng",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (tỷ đồng)"
         }
       ],
-      "title": "Net Debt / EBITDA",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",

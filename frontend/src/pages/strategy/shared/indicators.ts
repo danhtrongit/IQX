@@ -33,8 +33,8 @@ export function isCatalogIndicator(id: string): boolean {
 /** Chapter heading of the technical lessons in the library. */
 export const CHAPTER_TITLES: Readonly<Record<number, string>> = {
   4: "Phương pháp kỹ thuật",
-  7: "Chỉ báo xu hướng",
-  8: "Chỉ báo động lượng và dòng tiền",
+  6: "Chỉ báo xu hướng",
+  7: "Chỉ báo động lượng và dòng tiền",
 }
 
 export function chapterTitle(chapter: number): string {

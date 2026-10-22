@@ -726,14 +726,14 @@
       }
     },
     "c7l2-g2": {
-      "alt": "Giá điển hTypical so với trung bình 20 phiên của chính nó, khoảng cách giữa hai đường là biên độ dùng để tính CCI",
+      "alt": "Giá điển hình TP so với trung bình 20 phiên của chính nó, khoảng cách giữa hai đường là biên độ dùng để tính CCI",
       "kind": "series_panels",
       "marks": [],
       "panels": [
         {
           "series": [
             {
-              "name": "Giá điển hTypical",
+              "name": "Giá điển hình TP",
               "role": "p1",
               "values": [
                 21133.6344269192,
@@ -887,7 +887,7 @@
               "width": 2
             }
           ],
-          "title": "Giá điển hTypical và trung bình 20 phiên"
+          "title": "Giá điển hình TP và trung bình 20 phiên"
         }
       ],
       "x": {
@@ -1706,7 +1706,7 @@
           "chart_id": "c7l2-g2",
           "legend": [
             {
-              "label": "Giá điển hTypical",
+              "label": "Giá điển hình TP",
               "tone": "p1"
             },
             {

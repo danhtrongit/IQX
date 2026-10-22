@@ -46,8 +46,8 @@
           6.5
         ],
         "y": [
-          -2,
-          102
+          -8,
+          114
         ]
       },
       "kind": "schematic",
@@ -310,39 +310,82 @@
       "value_labels": "all"
     },
     "c10l5-rep": {
-      "caption_tone": "price",
-      "caption_value": "9,3%",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "Biên lợi nhuận ròng",
-          "tone": "p1",
-          "values": [
-            6.8811,
-            7.2159,
-            7.3947,
-            7.7347,
-            8.1927,
-            8.6763,
-            9.0923,
-            9.2968
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Biên ròng (4 quý)",
+                "tone": "p1",
+                "values": [
+                  6.8824,
+                  7.2147,
+                  7.3941,
+                  7.7353,
+                  8.1941,
+                  8.6765,
+                  9.0912,
+                  9.2971
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "Biên ròng (4 quý) (%)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "9,3%",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "LNST 4 quý",
+                "tone": "p1",
+                "values": [
+                  355.5876,
+                  385.8816,
+                  405.9342,
+                  437.4843,
+                  473.3727,
+                  514.4704,
+                  557.4678,
+                  583.7418
+                ]
+              }
+            ],
+            "unit": "tỷ đồng",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (tỷ đồng)"
         }
       ],
-      "title": "Biên lợi nhuận ròng",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",

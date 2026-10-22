@@ -609,6 +609,19 @@ export type AcademyChartModel =
       series: Array<{
         dash?: true;
         name: string;
+        per_bar_tones?: Array<
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral"
+        >;
         tone?:
           | "price"
           | "p1"
@@ -682,6 +695,7 @@ export type AcademyChartModel =
       title?: string;
       unit: string;
       value_format?: {
+        decimals?: number;
         sign?: true;
         suffix?: string;
       };
@@ -1600,6 +1614,19 @@ export type AcademyLeafChartModel =
       series: Array<{
         dash?: true;
         name: string;
+        per_bar_tones?: Array<
+          | "price"
+          | "p1"
+          | "p2"
+          | "p3"
+          | "p4"
+          | "p5"
+          | "pos"
+          | "neg"
+          | "warn"
+          | "info"
+          | "neutral"
+        >;
         tone?:
           | "price"
           | "p1"
@@ -1673,6 +1700,7 @@ export type AcademyLeafChartModel =
       title?: string;
       unit: string;
       value_format?: {
+        decimals?: number;
         sign?: true;
         suffix?: string;
       };
@@ -30127,9 +30155,9 @@ export type FlashbackAdminRoundsResponses = {
       player_count: number;
       round_no: number;
       scheduled_open_at: string;
-      start_date?: string;
+      start_date?: string | null;
       status: string;
-      symbol?: string;
+      symbol?: string | null;
       total_fee_xu: number;
       total_reward_xu: number;
     }>;
@@ -47214,7 +47242,9 @@ export type ListShopCoinLedgerResponses = {
         | "premium_purchase"
         | "demo_deposit"
         | "demo_withdraw"
-        | "adjustment";
+        | "adjustment"
+        | "flashback_fee"
+        | "flashback_reward";
       label: {
         lesson_id: string | null;
         lesson_key: string | null;

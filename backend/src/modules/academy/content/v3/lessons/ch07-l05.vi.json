@@ -2255,6 +2255,7 @@
         },
         {
           "chart_id": "c7l5-g2",
+          "table_toggle": true,
           "type": "chart"
         },
         {

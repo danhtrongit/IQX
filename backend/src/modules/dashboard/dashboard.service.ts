@@ -30,6 +30,7 @@ import {
 import {
   annualStatements,
   buildDashboardChart,
+  displayValue,
   sliceQuarters,
   type DashboardChartPayload,
   type DashboardNotApplicablePayload,
@@ -319,7 +320,7 @@ export class DashboardService {
         { price: price.close, shares },
         'ttm',
       );
-      values.push(result.status === 'ok' ? result.value : null);
+      values.push(result.status === 'ok' ? displayValue(spec.metric_id, result.value) : null);
     }
     return { name: spec.name, kind: 'F', unit: dashboardUnit(spec.metric_id), v: values };
   }

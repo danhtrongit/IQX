@@ -513,33 +513,67 @@
       "layout": "row"
     },
     "c9l2-rep": {
-      "caption_tone": "price",
-      "caption_value": "4,9 điểm %",
-      "kind": "category",
-      "labels": [
-        "2021",
-        "2022",
-        "2023",
-        "2024",
-        "2025"
-      ],
-      "mode": "line",
-      "series": [
+      "alt": "Revenue Growth Stability: 4,9 điểm %",
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
         {
-          "name": "Revenue Growth Stability",
-          "tone": "p1",
-          "values": [
-            16.6791,
-            17.0027,
-            3.7058,
-            14.3539,
-            10.8827
-          ]
+          "band": {
+            "lower": [
+              7.6043,
+              7.6043,
+              7.6043,
+              7.6043,
+              7.6043
+            ],
+            "tone": "p1",
+            "upper": [
+              17.4422,
+              17.4422,
+              17.4422,
+              17.4422,
+              17.4422
+            ]
+          },
+          "bounds": [
+            0,
+            19.5352
+          ],
+          "levels": [
+            {
+              "label": "Bình quân 12.5232",
+              "role": "avg",
+              "value": 12.5232
+            }
+          ],
+          "series": [
+            {
+              "name": "Giá trị",
+              "role": "p1",
+              "values": [
+                16.6744,
+                17,
+                3.7093,
+                14.3488,
+                10.8837
+              ],
+              "width": 2
+            }
+          ],
+          "title": ""
         }
       ],
-      "title": "Revenue Growth Stability",
-      "unit": "",
-      "value_labels": "none"
+      "x": {
+        "end": 4,
+        "start": 0,
+        "ticks": [
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ]
+      }
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -558,6 +592,7 @@
         },
         {
           "chart_id": "c9l2-g1",
+          "table_toggle": true,
           "type": "chart"
         },
         {
@@ -668,6 +703,7 @@
       "blocks": [
         {
           "chart_id": "c9l2-g4",
+          "table_toggle": true,
           "type": "chart"
         },
         {

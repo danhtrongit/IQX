@@ -66,6 +66,7 @@ const WINDOW_FIELD_KEYS: Record<string, true> = {
   period: true,
   lookback: true,
   baseline: true,
+  sma_period: true,
   fast: true,
   slow: true,
   signal: true,
@@ -74,12 +75,30 @@ const WINDOW_FIELD_KEYS: Record<string, true> = {
   d: true,
 };
 
+/** Thứ tự bài học của 16 chỉ báo trong danh mục Học viện v3.3 (spec Flashback v1.1 §2.7). */
+const FLASHBACK_LESSON_CATALOG: Readonly<
+  Record<string, { readonly chapter: number; readonly lesson_id: string; readonly order: number }>
+> = {
+  volume: { chapter: 4, lesson_id: 'ch04-l04', order: 1 },
+  ma: { chapter: 4, lesson_id: 'ch04-l05', order: 2 },
+  rsi: { chapter: 4, lesson_id: 'ch04-l06', order: 3 },
+  macd: { chapter: 4, lesson_id: 'ch04-l07', order: 4 },
+  bollinger: { chapter: 4, lesson_id: 'ch04-l08', order: 5 },
+  ema: { chapter: 6, lesson_id: 'ch06-l01', order: 6 },
+  ma_cross: { chapter: 6, lesson_id: 'ch06-l02', order: 7 },
+  dmi: { chapter: 6, lesson_id: 'ch06-l03', order: 8 },
+  donchian: { chapter: 6, lesson_id: 'ch06-l04', order: 9 },
+  stochastic: { chapter: 7, lesson_id: 'ch07-l01', order: 10 },
+  cci: { chapter: 7, lesson_id: 'ch07-l02', order: 11 },
+  roc: { chapter: 7, lesson_id: 'ch07-l03', order: 12 },
+  williams_r: { chapter: 7, lesson_id: 'ch07-l04', order: 13 },
+  obv: { chapter: 7, lesson_id: 'ch07-l05', order: 14 },
+  mfi: { chapter: 7, lesson_id: 'ch07-l06', order: 15 },
+  cmf: { chapter: 7, lesson_id: 'ch07-l07', order: 16 },
+};
+
 /** Sai số cho phép khi kiểm tra giá trị nằm đúng bước nhảy. */
 const STEP_TOLERANCE = 1e-6;
-
-function isWindowField(field: RegistryField): boolean {
-  return field.type === 'integer' && WINDOW_FIELD_KEYS[field.key] === true;
-}
 
 function sideOf(entry: RegistryEntry, side: 'buy' | 'sell', field: RegistryField): FlashbackParamSide {
   const override = entry[side].field_overrides?.[field.key];
@@ -91,15 +110,54 @@ function sideOf(entry: RegistryEntry, side: 'buy' | 'sell', field: RegistryField
   };
 }
 
+function computeIndicatorWarmup(
+  id: string,
+  paramsMeta: readonly FlashbackIndicatorParamMeta[],
+  values: FlashbackIndicatorParams,
+): number {
+  const numOf = (key: string, fallback: number): number => {
+    const raw = values[key];
+    if (typeof raw === 'number' && Number.isFinite(raw)) return raw;
+    const meta = paramsMeta.find((item) => item.key === key);
+    return meta ? meta.default : fallback;
+  };
+  if (id === 'macd') {
+    return numOf('slow', 26) + numOf('signal', 9);
+  }
+  if (id === 'stochastic') {
+    return numOf('k', 14) + numOf('smooth', 3) + numOf('d', 3);
+  }
+  if (id === 'dmi') {
+    return numOf('period', 14) * 2;
+  }
+  if (id === 'obv') {
+    const smaPeriod = values.sma_period;
+    if (typeof smaPeriod === 'number' && Number.isFinite(smaPeriod)) return smaPeriod;
+    return numOf('baseline', 20);
+  }
+  let maxWindow = 0;
+  for (const param of paramsMeta) {
+    if (param.type !== 'integer' || !WINDOW_FIELD_KEYS[param.key]) continue;
+    const raw = values[param.key];
+    const numeric = typeof raw === 'number' && Number.isFinite(raw) ? raw : param.default;
+    if (numeric > maxWindow) maxWindow = numeric;
+  }
+  return maxWindow;
+}
+
 function buildCatalog(): FlashbackIndicatorMeta[] {
   return loadTechnicalRegistry()
     .filter((entry) => entry.availability === 'ohlcv')
     .map((entry) => {
-      const params = entry.fields.map((field) => {
-        const lower = sideOf(entry, 'buy', field);
-        const upper = sideOf(entry, 'sell', field);
+      const params: FlashbackIndicatorParamMeta[] = entry.fields.map((field) => {
+        const buySide = sideOf(entry, 'buy', field);
+        const sellSide = sideOf(entry, 'sell', field);
         const differs =
-          lower.min !== upper.min || lower.max !== upper.max || lower.default !== upper.default;
+          buySide.min !== sellSide.min ||
+          buySide.max !== sellSide.max ||
+          buySide.default !== sellSide.default;
+        const [lower, upper] =
+          buySide.default <= sellSide.default ? [buySide, sellSide] : [sellSide, buySide];
         return {
           key: field.key,
           label: field.label,
@@ -113,16 +171,13 @@ function buildCatalog(): FlashbackIndicatorMeta[] {
           upper: differs ? upper : null,
         };
       });
-      const warmup = params.reduce((max, param) => {
-        const field = entry.fields.find((item) => item.key === param.key);
-        if (!field || !isWindowField(field)) return max;
-        return Math.max(max, param.default);
-      }, 0);
+      const warmup = computeIndicatorWarmup(entry.id, params, {});
+      const lessonInfo = FLASHBACK_LESSON_CATALOG[entry.id];
       return {
         id: entry.id,
         name: entry.name,
-        chapter: entry.chapter,
-        lesson_id: entry.lesson_id,
+        chapter: lessonInfo?.chapter ?? entry.chapter,
+        lesson_id: lessonInfo?.lesson_id ?? entry.lesson_id,
         params,
         cross_fields: (entry.validation?.cross_fields ?? []).map((rule) => ({
           left: rule.left,
@@ -131,6 +186,12 @@ function buildCatalog(): FlashbackIndicatorMeta[] {
         })),
         warmup_sessions: warmup,
       };
+    })
+    .sort((left, right) => {
+      const leftOrder = FLASHBACK_LESSON_CATALOG[left.id]?.order ?? 999;
+      const rightOrder = FLASHBACK_LESSON_CATALOG[right.id]?.order ?? 999;
+      if (leftOrder !== rightOrder) return leftOrder - rightOrder;
+      return (left.lesson_id ?? '').localeCompare(right.lesson_id ?? '');
     });
 }
 
@@ -141,6 +202,9 @@ export function flashbackIndicatorCatalog(): readonly FlashbackIndicatorMeta[] {
   catalog ??= buildCatalog();
   return catalog;
 }
+
+/** Danh mục 16 chỉ báo đã sắp theo thứ tự bài học (spec v1.1 §2.7). */
+export const FLASHBACK_INDICATORS: readonly FlashbackIndicatorMeta[] = buildCatalog();
 
 /** Metadata của một chỉ báo theo id. */
 export function flashbackIndicatorMeta(id: string): FlashbackIndicatorMeta | undefined {
@@ -155,12 +219,8 @@ export function flashbackWarmupRequired(
   for (const instance of instances) {
     const meta = flashbackIndicatorMeta(instance.id);
     if (!meta) continue;
-    for (const param of meta.params) {
-      const value = instance.params[param.key];
-      if (value === undefined) continue;
-      const numeric = typeof value === 'number' ? value : Math.max(value.lower, value.upper);
-      required = Math.max(required, numeric);
-    }
+    const warmup = computeIndicatorWarmup(meta.id, meta.params, instance.params);
+    if (warmup > required) required = warmup;
   }
   return required;
 }
@@ -194,6 +254,7 @@ function checkValue(
   if (lowerError) return lowerError;
   const upperError = check(value.upper, upperMin, upperMax);
   if (upperError) return upperError;
+  if (value.lower >= value.upper) return 'Ngưỡng dưới phải nhỏ hơn ngưỡng trên.';
   return null;
 }
 

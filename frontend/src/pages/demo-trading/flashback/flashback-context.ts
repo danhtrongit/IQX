@@ -26,6 +26,7 @@ export type LocalIndicator = {
 export type ChartIndicator = {
   key: string
   id: string
+  params?: FlashbackIndicatorParams
   label: string
   color: string
   hidden: boolean
@@ -46,6 +47,7 @@ export type FlashbackContextValue = {
   historySessions: number
   totalSlots: number
   step: number
+  finished?: boolean
   cash: number
   holdings: number
   totalAssets: number

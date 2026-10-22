@@ -63,10 +63,11 @@ export type DashboardDraft = { charts: ChartName[]; per: PeriodMode; nks: Period
 
 /** Chữ ký của phần số kỳ, không phụ thuộc thứ tự khoá. */
 export function nksSignature(nks: PeriodCounts): string {
-  return Object.keys(nks)
+  const normalized = normalizedPeriodCounts(nks)
+  return Object.keys(normalized)
     .sort()
     .map((name) => {
-      const counts = nks[name]
+      const counts = normalized[name]
       return `${name}:${counts.q ?? DEFAULT_PERIOD_COUNT}:${counts.y ?? DEFAULT_PERIOD_COUNT}`
     })
     .join("|")

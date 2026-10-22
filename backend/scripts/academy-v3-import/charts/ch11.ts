@@ -79,11 +79,11 @@ const ch11: Record<string, Builder> = {
   /* ---------------------------------------------------------- Bài 2 · Current Ratio */
   'c11l2-g1': () =>
     bars({
-      title: 'Tài sản ngắn hạn 2.445 so với nợ ngắn hạn 1.556',
+      title: 'Tài sản ngắn hạn 2.445 so với nợ ngắn hạn 1.556 · Current Ratio = 2.445 ÷ 1.556 = 1,57 lần',
       labels: ['Tiền', 'Phải thu', 'Hàng tồn kho', 'Khác', 'Vay ngắn hạn', 'Phải trả người bán', 'Khác'],
       series: [
         { name: 'Tài sản ngắn hạn', values: [700, 730, 815, 200, null, null, null], tone: UP },
-        { name: 'Tiền', values: [null, null, null, null, 660, 748, 148], tone: DN },
+        { name: 'Nợ ngắn hạn', values: [null, null, null, null, 660, 748, 148], tone: DN },
       ],
       stacked: true,
       unit: 'tỷ đồng',

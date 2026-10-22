@@ -412,6 +412,7 @@
         },
         {
           "chart_id": "c5l3-g2",
+          "table_toggle": true,
           "type": "chart"
         },
         {

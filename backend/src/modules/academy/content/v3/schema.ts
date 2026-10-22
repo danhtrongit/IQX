@@ -1,13 +1,13 @@
 import { z } from 'zod';
 
 /**
- * Học viện v3.2: the shared contract.
+ * Học viện v3.3: the shared contract.
  *
  * One file holds everything that more than one package depends on:
  *   1. text conventions (plain text vs inline HTML) and the visible-copy bans
  *   2. chart models (precomputed by the importer; the browser only draws)
  *   3. lesson blocks (static + interactive) and the public lesson file
- *   4. the catalog file (14 chapters, ch1-5 published, ch6-14 stubs)
+ *   4. the catalog file (13 published chapters)
  *   5. the private question bank file and its public projection
  *   6. the HTTP wire shapes of `api/v2/academy/*` (also the OpenAPI source)
  *   7. pure helpers: the learning sequence + unlock states, interactive keys
@@ -314,6 +314,8 @@ const categorySchema = z
           tone: chartToneSchema.optional(),
           /** Colour each value by its sign instead of `tone` (C4L6-g0 price changes). */
           tone_by_sign: z.strictObject({ pos: chartToneSchema, neg: chartToneSchema }).optional(),
+          /** Per-bar colour override (e.g. faded pre-streak bar or highlighted row). */
+          per_bar_tones: z.array(chartToneSchema.nullable()).optional(),
           dash: z.literal(true).optional(),
         }),
       )
@@ -325,7 +327,11 @@ const categorySchema = z
      * (C1L5-g2 cash flows, C1L4-g4 / C1L10-g2 gains and losses). `suffix` follows the number ("%").
      */
     value_format: z
-      .strictObject({ sign: z.literal(true).optional(), suffix: chartString(8).optional() })
+      .strictObject({
+        sign: z.literal(true).optional(),
+        suffix: chartString(8).optional(),
+        decimals: z.number().int().min(0).max(4).optional(),
+      })
       .optional(),
     threshold: z
       .strictObject({
@@ -350,6 +356,8 @@ const categorySchema = z
       if (s.values.length !== m.labels.length)
         ctx.addIssue({ code: 'custom', message: `series ${s.name} length differs from labels` });
       if (s.tone && s.tone_by_sign) ctx.addIssue({ code: 'custom', message: `series ${s.name}: tone or tone_by_sign` });
+      if (s.per_bar_tones && s.per_bar_tones.length !== m.labels.length)
+        ctx.addIssue({ code: 'custom', message: `series ${s.name} per_bar_tones length differs from labels` });
     }
     if (m.sublabels && m.sublabels.length !== m.labels.length)
       ctx.addIssue({ code: 'custom', message: 'sublabels length differs from labels' });

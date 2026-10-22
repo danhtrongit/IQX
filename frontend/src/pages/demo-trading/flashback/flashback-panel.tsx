@@ -153,7 +153,7 @@ export function FlashbackPanel({ onNavigate }: { onNavigate: (panel: string) => 
                           position.pnl_pct > 0 ? "text-price-up" : position.pnl_pct < 0 ? "text-price-down" : "text-foreground",
                         )}
                       >
-                        {formatSignedPercent(position.pnl_pct, 1)}
+                        {formatSignedPercent(position.pnl_pct * 100, 1)}
                       </span>
                     </span>
                     {position.status === "settled" ? (
@@ -215,6 +215,12 @@ export function FlashbackPanel({ onNavigate }: { onNavigate: (panel: string) => 
           </div>
 
           <section className="space-y-1.5 rounded-lg border border-border bg-card p-3">
+            {game.round?.round_no != null ? (
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold tracking-wide text-muted-foreground uppercase">Bảng xếp hạng</span>
+                <span className="font-semibold text-foreground">{`Đề #${game.round.round_no}`}</span>
+              </div>
+            ) : null}
             {leaderboard.isPending ? (
               <p className="text-xs text-muted-foreground">Đang tải bảng xếp hạng…</p>
             ) : leaderboard.isError ? (
@@ -224,7 +230,7 @@ export function FlashbackPanel({ onNavigate }: { onNavigate: (panel: string) => 
                 {leaderboard.data?.rows.map((row) => (
                   <li key={row.user_id} className="flex items-center gap-2 text-xs">
                     <span className="w-6 shrink-0 tabular-nums text-muted-foreground">{row.rank}</span>
-                    <span className="min-w-0 flex-1 truncate">
+                    <span className={cn("min-w-0 flex-1 truncate", row.is_me && "font-semibold text-foreground")}>
                       {row.username}
                       {row.status === "playing" ? (
                         <span className="text-muted-foreground"> · đang chơi phiên {row.step}/60</span>
@@ -244,7 +250,10 @@ export function FlashbackPanel({ onNavigate }: { onNavigate: (panel: string) => 
                     </b>
                   </li>
                 ))}
-                {leaderboard.data?.me ? (
+                {leaderboard.data?.me &&
+                !leaderboard.data.rows.some(
+                  (row) => row.is_me || row.user_id === leaderboard.data.me?.user_id,
+                ) ? (
                   <li className="flex items-center gap-2 border-t border-border pt-1.5 text-xs">
                     <span className="w-6 shrink-0 tabular-nums text-muted-foreground">
                       {leaderboard.data.me.rank === 0 ? "—" : leaderboard.data.me.rank}
@@ -270,13 +279,24 @@ export function FlashbackPanel({ onNavigate }: { onNavigate: (panel: string) => 
 
           <section className="space-y-1.5 rounded-lg border border-chart-2/40 bg-chart-2/10 p-3">
             <h3 className="text-xs font-bold tracking-wide text-muted-foreground uppercase">Thưởng xu mỗi đề</h3>
-            {game.round?.reward_table.map((row) => (
-              <Row
-                key={`${row.from_rank}-${row.to_rank ?? "last"}`}
-                label={row.to_rank ? `Hạng ${row.from_rank}-${row.to_rank}` : `Hạng ${row.from_rank} trở xuống`}
-                value={`${formatNumber(row.xu)} xu`}
-              />
-            ))}
+            {game.round?.reward_table
+              .filter((row) => (row.reward_xu ?? row.xu ?? 0) > 0)
+              .map((row) => {
+                const rewardXu = row.reward_xu ?? row.xu ?? 0
+                const label =
+                  row.to_rank === row.from_rank
+                    ? `Hạng ${row.from_rank}`
+                    : row.to_rank
+                      ? `Hạng ${row.from_rank}–${row.to_rank}`
+                      : `Từ ${row.from_rank} trở xuống`
+                return (
+                  <Row
+                    key={`${row.from_rank}-${row.to_rank ?? "last"}`}
+                    label={label}
+                    value={`${formatNumber(rewardXu)} xu`}
+                  />
+                )
+              })}
             <Row label="Phí tham gia" value={`${formatNumber(game.round?.fee_xu ?? 100)} xu, lần đầu miễn phí`} />
           </section>
 

@@ -966,6 +966,7 @@
         },
         {
           "chart_id": "c4l4-g2",
+          "table_toggle": true,
           "type": "chart"
         }
       ],

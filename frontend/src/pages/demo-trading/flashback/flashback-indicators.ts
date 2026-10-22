@@ -25,6 +25,8 @@ export type IndicatorSeries = {
 export type IndicatorPlot = {
   kind: IndicatorKind
   series: IndicatorSeries[]
+  histogram?: (number | null)[]
+  markers?: { index: number; [key: string]: unknown }[]
   /** Ngưỡng ngang của ô riêng. */
   levels?: { key: string; value: number; label: string }[]
   /** Vẽ vạch 0 (MACD, CCI, ROC, CMF). */
@@ -32,7 +34,7 @@ export type IndicatorPlot = {
   /** Miền giá trị cố định của ô riêng (RSI 0-100, Williams %R -100..0). */
   range?: [number, number]
   /** Tô vùng giữa hai ngưỡng của ô riêng. */
-  levelBand?: [string, string]
+  levelBand?: [string, string] | { lower: number; upper: number }
   /** Hai đường cần khoanh điểm giao cắt (MA Cross). */
   cross?: [string, string]
 }
@@ -371,7 +373,7 @@ export function computeIndicator(
         kind: "over",
         series: [
           { key: "f", values: sma(closes, fast) },
-          { key: "s", values: sma(closes, slow) },
+          { key: "s", values: sma(closes, slow), color: "#f59e0b" },
         ],
         cross: ["f", "s"],
       }
@@ -383,9 +385,9 @@ export function computeIndicator(
       return {
         kind: "over",
         series: [
-          { key: "u", values: bands.upper, band: { upper: "u", lower: "l" } },
-          { key: "l", values: bands.lower },
-          { key: "m", values: bands.middle },
+          { key: "u", values: bands.upper, color: "#38bdf8", band: { upper: "u", lower: "l" } },
+          { key: "l", values: bands.lower, color: "#38bdf8" },
+          { key: "m", values: bands.middle, color: "#60a5fa" },
         ],
       }
     }
@@ -424,7 +426,7 @@ export function computeIndicator(
         kind: "pane",
         series: [
           { key: "a", values: lines.macd },
-          { key: "s", values: lines.signal },
+          { key: "s", values: lines.signal, color: "#f59e0b" },
           { key: "h", values: lines.histogram, histogram: true },
         ],
         zero: true,
@@ -435,8 +437,8 @@ export function computeIndicator(
       return {
         kind: "pane",
         series: [
-          { key: "p", values: lines.plus },
-          { key: "m", values: lines.minus },
+          { key: "p", values: lines.plus, color: "#19b37a" },
+          { key: "m", values: lines.minus, color: "#e24a4a" },
         ],
       }
     }
@@ -447,7 +449,7 @@ export function computeIndicator(
         kind: "pane",
         series: [
           { key: "k", values: lines.k },
-          { key: "d", values: lines.d },
+          { key: "d", values: lines.d, color: "#f59e0b" },
         ],
         range: [0, 100],
         levels: level
@@ -465,7 +467,13 @@ export function computeIndicator(
         kind: "pane",
         series: [{ key: "a", values: cci(series, numberParam(params, "period", 20)) }],
         zero: true,
-        levels: level ? [{ key: "level", value: level.lower, label: "Ngưỡng" }] : [],
+        levels: level
+          ? [
+              { key: "lower", value: level.lower, label: "Dưới" },
+              { key: "upper", value: level.upper, label: "Trên" },
+            ]
+          : [],
+        levelBand: level ? { lower: level.lower, upper: level.upper } : undefined,
       }
     }
     case "roc": {
@@ -474,7 +482,13 @@ export function computeIndicator(
         kind: "pane",
         series: [{ key: "a", values: roc(closes, numberParam(params, "period", 20)) }],
         zero: true,
-        levels: level ? [{ key: "level", value: level.lower, label: "Ngưỡng" }] : [],
+        levels: level
+          ? [
+              { key: "lower", value: level.lower, label: "Dưới" },
+              { key: "upper", value: level.upper, label: "Trên" },
+            ]
+          : [],
+        levelBand: level ? { lower: level.lower, upper: level.upper } : undefined,
       }
     }
     case "williams_r": {
@@ -498,7 +512,7 @@ export function computeIndicator(
         kind: "pane",
         series: [
           { key: "a", values: lines.obv },
-          { key: "b", values: lines.signal },
+          { key: "b", values: lines.signal, color: "#f59e0b" },
         ],
       }
     }
@@ -518,12 +532,18 @@ export function computeIndicator(
       }
     }
     case "cmf": {
-      const level = levelParam(params, "level")
+      const rawLevel = params.level
+      const threshold =
+        typeof rawLevel === "number"
+          ? rawLevel
+          : typeof rawLevel === "object" && rawLevel !== null
+            ? rawLevel.lower
+            : 0
       return {
         kind: "pane",
         series: [{ key: "a", values: cmf(series, numberParam(params, "period", 20)) }],
         zero: true,
-        levels: level ? [{ key: "level", value: level.lower, label: "Ngưỡng" }] : [],
+        levels: [{ key: "level", value: threshold, label: "Ngưỡng" }],
       }
     }
     default:
@@ -553,7 +573,10 @@ export function defaultParams(meta: IndicatorMetaLike): FlashbackIndicatorParams
   const params: FlashbackIndicatorParams = {}
   for (const param of meta.params) {
     if (param.lower && param.upper) {
-      params[param.key] = { lower: param.lower.default, upper: param.upper.default }
+      params[param.key] = {
+        lower: Math.min(param.lower.default, param.upper.default),
+        upper: Math.max(param.lower.default, param.upper.default),
+      }
       continue
     }
     params[param.key] = param.default
@@ -578,6 +601,9 @@ export function validateParams(meta: IndicatorMetaLike, params: FlashbackIndicat
     if (lower) return lower
     const upper = checkRange(param.label, value.upper, param.upper?.min ?? param.min, param.upper?.max ?? param.max, param.step)
     if (upper) return upper
+    if (param.lower && param.upper && value.lower >= value.upper) {
+      return "Ngưỡng dưới phải nhỏ hơn ngưỡng trên."
+    }
   }
   for (const rule of meta.cross_fields) {
     const left = params[rule.left]

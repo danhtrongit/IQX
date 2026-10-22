@@ -35,11 +35,11 @@ const REWARD_MIN_ACCOUNT_DAYS = 7;
 
 const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
 
-/** Mốc giờ đổi đề (giờ Việt Nam) đứng sau một thời điểm. */
-export function nextChangeBoundary(after: Date, changeHourUtc7: number): Date {
-  const vnDate = new Date(after.getTime() + VN_OFFSET_MS).toISOString().slice(0, 10);
+/** Mốc giờ đổi đề (giờ Việt Nam) tại hoặc ngay sau một thời điểm. */
+export function nextChangeBoundary(atOrAfter: Date, changeHourUtc7: number): Date {
+  const vnDate = new Date(atOrAfter.getTime() + VN_OFFSET_MS).toISOString().slice(0, 10);
   let candidate = Date.parse(`${vnDate}T00:00:00Z`) - VN_OFFSET_MS + changeHourUtc7 * 3_600_000;
-  if (candidate <= after.getTime()) {
+  if (candidate < atOrAfter.getTime()) {
     const nextDay = new Date(Date.parse(`${vnDate}T00:00:00Z`) + 86_400_000)
       .toISOString()
       .slice(0, 10);
@@ -60,17 +60,48 @@ export class FlashbackJob {
   ) {}
 
   /** Chạy toàn bộ vòng đời đề. */
-  async run(): Promise<JobOutcome> {
-    const now = this.clock.now();
-    const config = await this.config();
-    const detail: Record<string, unknown> = {};
-    detail.closed = await this.closeOpenRounds(now);
-    detail.settled = await this.settleClosingRounds(now);
-    detail.paid = await this.payClosedRounds();
-    detail.opened = await this.openReadyRound(now, config);
-    detail.created = await this.createNextRound(now, config);
-    await this.checkAlerts(now);
-    return { status: 'completed', detail };
+  async run(now: Date = this.clock.now()): Promise<JobOutcome> {
+    const locked = (await this.repository.tryAcquireJobLock?.(this.database)) ?? true;
+    if (!locked) {
+      return { status: 'skipped', reason: 'locked', detail: { locked: false } };
+    }
+    try {
+      const config = await this.config();
+      const detail: Record<string, unknown> = {};
+
+      let urgentCreated = false;
+      if (!(await this.isPaused())) {
+        const [open, ready] = await Promise.all([
+          this.repository.openRound(this.database),
+          this.repository.readyRound(this.database),
+        ]);
+        const openExpired =
+          open !== null && open.closesAt !== null && open.closesAt.getTime() <= now.getTime();
+        if (!ready && (!open || openExpired)) {
+          urgentCreated = await this.createNextRound(now, config);
+        }
+      }
+
+      detail.closed = await this.closeOpenRounds(now);
+
+      // Bước 4 (mở đề ready) không chờ bước 2 và 3 (chốt và trả thưởng đề cũ) xong (BoSung §5.3).
+      const [settledAndPaid, opened] = await Promise.all([
+        (async () => {
+          const settled = await this.settleClosingRounds(now);
+          const paid = await this.payClosedRounds();
+          return { settled, paid };
+        })(),
+        this.openReadyRound(now, config),
+      ]);
+      detail.settled = settledAndPaid.settled;
+      detail.paid = settledAndPaid.paid;
+      detail.opened = opened;
+      detail.created = (await this.createNextRound(now, config)) || urgentCreated;
+      await this.checkAlerts(now);
+      return { status: 'completed', detail };
+    } finally {
+      await this.repository.releaseJobLock?.(this.database);
+    }
   }
 
   private async config(): Promise<FlashbackConfig> {
@@ -211,7 +242,11 @@ export class FlashbackJob {
     const ready = await this.repository.readyRound(this.database);
     if (!ready) return false;
     if (ready.scheduledOpenAt > now) return false;
-    const closesAt = new Date(now.getTime() + config.roundDurationHours * 3_600_000);
+    const minClose = new Date(now.getTime() + config.roundDurationHours * 3_600_000);
+    const openedLate = now.getTime() - ready.scheduledOpenAt.getTime() > 5 * 60_000;
+    const closesAt = openedLate
+      ? minClose
+      : nextChangeBoundary(minClose, config.changeHourUtc7 || FLASHBACK_CHANGE_HOUR_UTC7);
     const updated = await this.database.transaction(async (tx) =>
       this.repository.transitionRound(tx, ready.id, ['ready'], 'open', {
         opensAt: now,
@@ -229,9 +264,16 @@ export class FlashbackJob {
     if (await this.isPaused()) return false;
     const ready = await this.repository.readyRound(this.database);
     if (ready) return false;
-    if (await this.backingOff(now)) return false;
 
-    for (let level = 0; level <= 3; level += 1) {
+    const open = await this.repository.openRound(this.database);
+    const openActive =
+      open !== null && (open.closesAt === null || open.closesAt.getTime() > now.getTime());
+    const urgent = !openActive;
+
+    if (await this.backingOff(now, urgent)) return false;
+
+    const maxLevel = urgent ? 3 : 0;
+    for (let level = 0; level <= maxLevel; level += 1) {
       let built = null;
       try {
         built = await this.builder.build(now, level, config);
@@ -244,11 +286,8 @@ export class FlashbackJob {
         continue;
       }
       if (!built) continue;
-      const open = await this.repository.openRound(this.database);
-      const scheduledOpenAt = nextChangeBoundary(
-        open?.closesAt ?? now,
-        config.changeHourUtc7 || FLASHBACK_CHANGE_HOUR_UTC7,
-      );
+      const currentOpen = await this.repository.openRound(this.database);
+      const scheduledOpenAt = currentOpen?.closesAt ?? now;
       const created = await this.database.transaction(async (tx) => {
         const roundNo = await this.repository.nextRoundNo(tx);
         return this.repository.insertRound(tx, {
@@ -266,32 +305,74 @@ export class FlashbackJob {
         await this.repository.setSetting(tx, FLASHBACK_BACKOFF_KEY, null);
       });
       await this.log('b5', created.id, `tạo đề ${created.roundNo}`, null);
+      if (created.fallbackLevel > 0) {
+        await this.alertFor(
+          created.id,
+          'low',
+          `Đề ${created.roundNo} được tạo bằng phương án dự phòng mức ${created.fallbackLevel} (spec v1.2 §6.3).`,
+        );
+      }
       return true;
     }
 
-    await this.alert(
-      'Không tạo được đề mới: đã thử hết các mức nới điều kiện (spec v1.2 §6.3). ' +
-        'Đề đang mở được kéo dài thêm 24 giờ.',
-    );
-    const open = await this.repository.openRound(this.database);
-    if (open?.closesAt) {
-      const closesAt = new Date(open.closesAt.getTime() + 24 * 3_600_000);
-      await this.database.transaction(async (tx) =>
-        this.repository.transitionRound(tx, open.id, ['open'], 'open', { closesAt }),
-      );
+    if (urgent) {
+      const currentOpen = await this.repository.openRound(this.database);
+      if (currentOpen) {
+        const baseTime = currentOpen.closesAt
+          ? Math.max(currentOpen.closesAt.getTime(), now.getTime())
+          : now.getTime();
+        const closesAt = new Date(baseTime + 24 * 3_600_000);
+        await this.database.transaction(async (tx) =>
+          this.repository.transitionRound(tx, currentOpen.id, ['open'], 'open', { closesAt }),
+        );
+        await this.log(
+          'b5',
+          currentOpen.id,
+          'alert:low:fallback_extend_24h: kéo dài đề đang mở thêm 24 giờ',
+          null,
+          'low',
+        );
+        await this.alertFor(
+          currentOpen.id,
+          'low',
+          'alert:low:fallback_extend_24h: Không tạo được đề mới sau khi đã thử hết các mức nới điều kiện (spec v1.2 §6.3). Đề đang mở được kéo dài thêm 24 giờ.',
+        );
+      } else {
+        await this.alert(
+          'alert:low:fallback_extend_24h: Không tạo được đề mới sau khi đã thử hết các mức nới điều kiện (spec v1.2 §6.3).',
+          'low',
+        );
+      }
     }
-    await this.database.transaction(async (tx) => {
-      await this.repository.setSetting(tx, FLASHBACK_BACKOFF_KEY, {
-        nextAttemptAt: new Date(now.getTime() + FLASHBACK_MAX_RETRY_MINUTES * 60_000).toISOString(),
-      });
-    });
+
+    await this.recordBackoff(now, urgent);
     return false;
   }
 
-  private async backingOff(now: Date): Promise<boolean> {
+  private async recordBackoff(now: Date, urgent: boolean): Promise<void> {
+    const stored = await this.repository.getSetting(this.database, FLASHBACK_BACKOFF_KEY);
+    const prevFailures =
+      stored && typeof stored === 'object' && 'failures' in stored && typeof stored.failures === 'number'
+        ? stored.failures
+        : 0;
+    const failures = prevFailures + 1;
+    const delayMinutes = urgent
+      ? FLASHBACK_MAX_RETRY_MINUTES
+      : Math.min(FLASHBACK_MAX_RETRY_MINUTES, 2 ** Math.min(4, failures - 1));
+    await this.database.transaction(async (tx) => {
+      await this.repository.setSetting(tx, FLASHBACK_BACKOFF_KEY, {
+        failures,
+        urgent,
+        nextAttemptAt: new Date(now.getTime() + delayMinutes * 60_000).toISOString(),
+      });
+    });
+  }
+
+  private async backingOff(now: Date, urgent = false): Promise<boolean> {
     const stored = await this.repository.getSetting(this.database, FLASHBACK_BACKOFF_KEY);
     if (!stored || typeof stored !== 'object') return false;
-    const nextAttemptAt = (stored as Record<string, unknown>).nextAttemptAt;
+    if (urgent && (!('urgent' in stored) || stored.urgent !== true)) return false;
+    const nextAttemptAt = 'nextAttemptAt' in stored ? stored.nextAttemptAt : undefined;
     if (typeof nextAttemptAt !== 'string') return false;
     return new Date(nextAttemptAt).getTime() > now.getTime();
   }

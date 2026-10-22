@@ -25,7 +25,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -41,7 +44,10 @@
             "key": "value",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ],
       "field_overrides": {
@@ -72,7 +78,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -88,7 +97,10 @@
             "key": "value",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ],
       "field_overrides": {
@@ -161,7 +173,10 @@
             "key": "signal",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -187,7 +202,10 @@
             "key": "signal",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -268,7 +286,10 @@
             "key": "value",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -292,7 +313,10 @@
             "key": "value",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -329,7 +353,7 @@
       "enabled": false,
       "params": {
         "period": 20,
-        "k": 2.0
+        "k": 2
       },
       "rules": [
         {
@@ -346,7 +370,10 @@
             "key": "lower",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -371,7 +398,10 @@
             },
             "bounds": "open"
           },
-          "allowed_ops": ["∈", "∉"]
+          "allowed_ops": [
+            "∈",
+            "∉"
+          ]
         },
         {
           "id": "r3",
@@ -387,7 +417,10 @@
             "key": "close",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -395,7 +428,7 @@
       "enabled": false,
       "params": {
         "period": 20,
-        "k": 2.0
+        "k": 2
       },
       "rules": [
         {
@@ -412,7 +445,10 @@
             "key": "upper",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -437,7 +473,10 @@
             },
             "bounds": "open"
           },
-          "allowed_ops": ["∈", "∉"]
+          "allowed_ops": [
+            "∈",
+            "∉"
+          ]
         },
         {
           "id": "r3",
@@ -453,7 +492,10 @@
             "key": "close",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -501,7 +543,7 @@
       "enabled": false,
       "params": {
         "lookback": 20,
-        "mult": 1.0
+        "mult": 1
       },
       "rules": [
         {
@@ -518,7 +560,10 @@
             "key": "close",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -534,7 +579,10 @@
             "key": "threshold",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -542,7 +590,7 @@
       "enabled": false,
       "params": {
         "lookback": 20,
-        "mult": 1.0
+        "mult": 1
       },
       "rules": [
         {
@@ -559,7 +607,10 @@
             "key": "close",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -575,7 +626,10 @@
             "key": "threshold",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -639,7 +693,10 @@
             "key": "value",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -663,7 +720,10 @@
             "key": "value",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -687,8 +747,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 7,
-    "new_lesson_id": null
+    "new_chapter": 6,
+    "new_lesson_id": "ch06-l01"
   },
   {
     "id": "ma_cross",
@@ -717,7 +777,10 @@
             "key": "slow",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -742,7 +805,10 @@
             "key": "slow",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -783,8 +849,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 7,
-    "new_lesson_id": null
+    "new_chapter": 6,
+    "new_lesson_id": "ch06-l02"
   },
   {
     "id": "dmi",
@@ -812,7 +878,10 @@
             "key": "minus",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -836,7 +905,10 @@
             "key": "minus",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -860,8 +932,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 7,
-    "new_lesson_id": null
+    "new_chapter": 6,
+    "new_lesson_id": "ch06-l03"
   },
   {
     "id": "stochastic",
@@ -891,7 +963,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -907,7 +982,10 @@
             "key": "signal",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -933,7 +1011,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -949,7 +1030,10 @@
             "key": "signal",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1006,8 +1090,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 8,
-    "new_lesson_id": null
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l01"
   },
   {
     "id": "cci",
@@ -1035,7 +1119,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -1051,7 +1138,10 @@
             "key": "value",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1075,7 +1165,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -1091,7 +1184,10 @@
             "key": "value",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1126,8 +1222,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 8,
-    "new_lesson_id": null
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l02"
   },
   {
     "id": "obv",
@@ -1155,7 +1251,10 @@
             "key": "baseline",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1179,7 +1278,10 @@
             "key": "baseline",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1203,8 +1305,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 8,
-    "new_lesson_id": null
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l05"
   },
   {
     "id": "mfi",
@@ -1232,7 +1334,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -1248,7 +1353,10 @@
             "key": "value",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1272,7 +1380,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -1288,7 +1399,10 @@
             "key": "value",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1323,8 +1437,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 8,
-    "new_lesson_id": null
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l06"
   },
   {
     "id": "cmf",
@@ -1352,7 +1466,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1376,7 +1493,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1411,8 +1531,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 8,
-    "new_lesson_id": null
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l07"
   },
   {
     "id": "donchian",
@@ -1440,7 +1560,10 @@
             "key": "upper",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1464,7 +1587,10 @@
             "key": "lower",
             "offset": 0
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1488,8 +1614,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 7,
-    "new_lesson_id": null
+    "new_chapter": 6,
+    "new_lesson_id": "ch06-l04"
   },
   {
     "id": "roc",
@@ -1501,7 +1627,7 @@
       "enabled": false,
       "params": {
         "period": 20,
-        "level": 5.0
+        "level": 5
       },
       "rules": [
         {
@@ -1517,7 +1643,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1525,7 +1654,7 @@
       "enabled": false,
       "params": {
         "period": 20,
-        "level": -5.0
+        "level": -5
       },
       "rules": [
         {
@@ -1541,7 +1670,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1576,8 +1708,8 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 8,
-    "new_lesson_id": null
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l03"
   },
   {
     "id": "williams_r",
@@ -1605,7 +1737,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -1621,7 +1756,10 @@
             "key": "value",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1645,7 +1783,10 @@
             "kind": "param",
             "key": "level"
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         },
         {
           "id": "r2",
@@ -1661,7 +1802,10 @@
             "key": "value",
             "offset": -1
           },
-          "allowed_ops": [">", "<"]
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
@@ -1696,7 +1840,7 @@
       "membership": "open_interval; complement_on_valid_only",
       "bollinger_impossible_direction": null
     },
-    "new_chapter": 8,
-    "new_lesson_id": null
+    "new_chapter": 7,
+    "new_lesson_id": "ch07-l04"
   }
 ]

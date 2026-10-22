@@ -220,7 +220,7 @@ function OrderTicket({ symbol, onSymbolChange, onNavigate }: OrderPanelProps) {
           {!isAuthenticated ? (
             <>
               <p className="text-xs text-muted-foreground">
-                Đăng nhập để dùng tài khoản Demo Trading 100 triệu VND.
+                Đăng nhập để dùng tài khoản Demo Trading.
               </p>
               <Button type="button" size="sm" className="w-full" onClick={() => openAuth("login")}>
                 Đăng nhập

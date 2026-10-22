@@ -20,7 +20,9 @@ export type CoinLedgerKind =
   | 'premium_purchase'
   | 'demo_deposit'
   | 'demo_withdraw'
-  | 'adjustment';
+  | 'adjustment'
+  | 'flashback_fee'
+  | 'flashback_reward';
 
 export interface WalletState {
   readonly balance: number;

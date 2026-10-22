@@ -17,8 +17,12 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { FlashbackIndicatorMeta, FlashbackIndicatorParams } from "./flashback-api"
 import { defaultParams, validateParams } from "./flashback-indicators"
-import { formatNumber } from "./flashback-model"
 
+const rangeBoundFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 })
+
+function formatRangeBound(value: number): string {
+  return Number.isFinite(value) ? rangeBoundFormat.format(value) : "—"
+}
 export function IndicatorPicker({
   open,
   onOpenChange,
@@ -110,21 +114,26 @@ export function IndicatorSettings({
   open,
   onOpenChange,
   indicator,
+  instanceKey,
+  initialParams,
   onSave,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   indicator: FlashbackIndicatorMeta | null
+  instanceKey?: string | null
+  initialParams?: FlashbackIndicatorParams
   onSave: (params: FlashbackIndicatorParams) => void
 }) {
   const [raw, setRaw] = useState<Record<string, string>>({})
   const [error, setError] = useState<string | null>(null)
   const [openedFor, setOpenedFor] = useState<string | null>(null)
 
-  // Mở hộp cho một chỉ báo khác thì nạp lại tham số mặc định của chỉ báo đó.
-  if (open && indicator && openedFor !== indicator.id) {
-    setOpenedFor(indicator.id)
-    setRaw(rawOf(defaultParams(indicator)))
+  // Mở hộp cho một instance hoặc chỉ báo khác thì nạp tham số hiện tại (hoặc mặc định) của nó.
+  const targetKey = instanceKey ?? indicator?.id ?? null
+  if (open && indicator && openedFor !== targetKey) {
+    setOpenedFor(targetKey)
+    setRaw(rawOf(initialParams ?? defaultParams(indicator)))
     setError(null)
   }
   if (!open && openedFor !== null) setOpenedFor(null)
@@ -184,7 +193,7 @@ export function IndicatorSettings({
                   <div key={param.key} className="space-y-1">
                     <div className="grid grid-cols-[1fr_110px] items-center gap-x-3">
                       <Label htmlFor={`${param.key}-lower`} className="text-sm font-semibold">
-                        {param.label}
+                        {param.lower.label || "Ngưỡng dưới"}
                       </Label>
                       <Input
                         id={`${param.key}-lower`}
@@ -199,11 +208,11 @@ export function IndicatorSettings({
                       />
                     </div>
                     <p className="text-right text-[11px] text-muted-foreground">
-                      {formatNumber(param.lower.min)} – {formatNumber(param.lower.max)}
+                      {formatRangeBound(param.lower.min)} – {formatRangeBound(param.lower.max)}
                     </p>
                     <div className="grid grid-cols-[1fr_110px] items-center gap-x-3">
-                      <Label htmlFor={`${param.key}-upper`} className="sr-only">
-                        {param.upper.label}
+                      <Label htmlFor={`${param.key}-upper`} className="text-sm font-semibold">
+                        {param.upper.label || "Ngưỡng trên"}
                       </Label>
                       <Input
                         id={`${param.key}-upper`}
@@ -218,7 +227,7 @@ export function IndicatorSettings({
                       />
                     </div>
                     <p className="text-right text-[11px] text-muted-foreground">
-                      {formatNumber(param.upper.min)} – {formatNumber(param.upper.max)}
+                      {formatRangeBound(param.upper.min)} – {formatRangeBound(param.upper.max)}
                     </p>
                   </div>
                 )
@@ -242,7 +251,7 @@ export function IndicatorSettings({
                     />
                   </div>
                   <p className="text-right text-[11px] text-muted-foreground">
-                    {formatNumber(param.min)} – {formatNumber(param.max)}
+                    {formatRangeBound(param.min)} – {formatRangeBound(param.max)}
                   </p>
                 </div>
               )

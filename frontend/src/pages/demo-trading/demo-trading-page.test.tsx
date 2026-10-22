@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { HeaderSearch } from "@/components/layout/header-search"
 import { demoChrome } from "@/config/chrome"
 import { RailProvider } from "@/context/rail"
 import { createFakeApi, createWorld } from "./bot/test-support"
@@ -86,12 +87,14 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
   }
   if (path.startsWith("/cap5/san-ma")) throw new ApiError("Not found", 404)
   if (path === "/watchlists") return { data: [] }
+  if (path.startsWith("/instruments")) {
+    return { data: [{ symbol: "VCB", name: "NH TMCP Ngoại thương Việt Nam", exchange: "HOSE" }] }
+  }
   // Dashboard phân tích: thiết lập, danh mục và số liệu theo khuôn.
   if (path === "/dashboard/settings") return { charts: ["ROE"], per: "q", nks: {} }
   if (path === "/dashboard/catalog") return []
   if (path.startsWith("/fundamental/")) return { symbol: "FPT", is_bank: false, per: "q", charts: {} }
   if (path.startsWith("/valuation/")) return { symbol: "FPT", dates: [], charts: {} }
-  void init
   return {}
 }
 
@@ -106,7 +109,7 @@ async function renderPage(initial: string) {
         path: "/demo-trading",
         loader: demoTradingLoader,
         handle: { chrome: demoChrome },
-        element: <RailProvider><DemoTradingPage /></RailProvider>,
+        element: <RailProvider><HeaderSearch /><DemoTradingPage /></RailProvider>,
       },
     ],
     { initialEntries: [initial] },
@@ -424,15 +427,36 @@ describe("DemoTradingPage layout v1.2 behaviour", () => {
     unmount()
   })
 
-  it("keeps the rail column of DEMO TRADING on narrow screens", async () => {
+  it("keeps the rail column of DEMO TRADING on narrow screens, except on Dashboard phân tích where it stacks vertically", async () => {
     vi.stubGlobal("matchMedia", (query: string) => ({
       matches: query === "(max-width: 900px)",
       media: query,
       addEventListener() {},
       removeEventListener() {},
     }))
-    await renderPage("/demo-trading?view=trading")
+    const { unmount } = await renderPage("/demo-trading?view=trading")
     expect(frame().getAttribute("data-rail")).toBe("column")
     expect(rail().classList.contains("workspace-rail")).toBe(true)
+    unmount()
+
+    await renderPage("/demo-trading?content=dashboard&symbol=FPT")
+    expect(frame().getAttribute("data-rail")).toBe("bar")
+    expect(screen.getByRole("main").firstElementChild).toBe(rail())
+    expect(await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })).toBeTruthy()
+    expect(screen.getByRole("tablist", { name: "Nội dung demo trading" })).toBeTruthy()
+  })
+
+  it("updates the active symbol in /demo-trading from HeaderSearch without leaving the dashboard", async () => {
+    const user = userEvent.setup()
+    const { router } = await renderPage("/demo-trading?content=dashboard&symbol=FPT")
+    expect(await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })).toBeTruthy()
+
+    await user.click(screen.getByRole("button", { name: "Tìm mã cổ phiếu" }))
+    await user.type(screen.getByRole("combobox", { name: "Tìm mã hoặc tên công ty" }), "VCB")
+    const option = await screen.findByRole("option", { name: /VCB/ })
+    await user.click(option)
+
+    expect(router.state.location.pathname).toBe("/demo-trading")
+    expect(router.state.location.search).toBe("?content=dashboard&symbol=VCB")
   })
 })

@@ -346,6 +346,17 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
     expect(pe.unit).toBe('lần');
     expect(pe.v).toHaveLength(response.dates.length);
     expect(pe.v[0]).toBeTypeOf('number');
+    const fcfYield = response.charts['FCF Yield'] as {
+      name: string;
+      kind: string;
+      unit: string;
+      v: (number | null)[];
+    };
+    expect(fcfYield.kind).toBe('F');
+    expect(fcfYield.unit).toBe('%');
+    // FCF TTM = 4 * (90 - 20) = 280; market cap = 90 * 1000 = 90,000 -> percentage points (* 100)
+    expect(fcfYield.v[0]).toBeCloseTo((280 / 90_000) * 100, 6);
+    expect(fcfYield.v[1]).toBeCloseTo((280 / 91_000) * 100, 6);
   });
 
   it('marks the 22 indicators a bank does not have and keeps the 11 others', async () => {

@@ -8,11 +8,22 @@ import {
 } from '../../src/modules/flashback/flashback.constants.js';
 import { FlashbackAdminService } from '../../src/modules/flashback/flashback-admin.service.js';
 import { FlashbackAdminController } from '../../src/modules/flashback/flashback.controller.js';
+import {
+  FLASHBACK_INDICATORS,
+  flashbackIndicatorMeta,
+  flashbackWarmupRequired,
+  validateFlashbackIndicatorParams,
+} from '../../src/modules/flashback/flashback.indicators.js';
+import { FlashbackJob, nextChangeBoundary } from '../../src/modules/flashback/flashback.job.js';
 import type {
   FlashbackJobLogRow,
   FlashbackLedgerEntry,
   FlashbackRepository,
 } from '../../src/modules/flashback/flashback.repository.js';
+import {
+  FlashbackRoundBuilder,
+  readFlashbackConfig,
+} from '../../src/modules/flashback/flashback.round-builder.js';
 import {
   FLASHBACK_CLOCK,
   FlashbackService,
@@ -115,6 +126,10 @@ interface FakeState {
   jobLog: FlashbackJobLogRow[];
   settings: Record<string, unknown>;
   teamMembers: string[];
+  vn30: string[];
+  recentSymbols: string[];
+  recentLimitCalls: number[];
+  phones: Record<string, string>;
 }
 
 function createFake(state: Partial<FakeState> = {}) {
@@ -128,23 +143,48 @@ function createFake(state: Partial<FakeState> = {}) {
     jobLog: [],
     settings: {},
     teamMembers: [],
+    vn30: ['AAA', 'BBB'],
+    recentSymbols: [],
+    recentLimitCalls: [],
+    phones: {},
     ...state,
   };
   let lotSeq = 0;
   let orderSeq = 0;
 
   const repository = {
-    openRound: async () => data.round,
-    readyRound: async () => null,
+    openRound: async () => (data.round && data.round.status === 'open' ? data.round : null),
+    readyRound: async () => (data.round && data.round.status === 'ready' ? data.round : null),
     roundById: async (_db: SqlClient, id: string) =>
       data.round && data.round.id === id ? data.round : null,
     listRounds: async () => (data.round ? [data.round] : []),
     nextRoundNo: async () => 2,
     insertRound: async () => null,
-    transitionRound: async () => null,
-    recentRoundSymbols: async () => [],
+    transitionRound: async (
+      _tx: SqlClient,
+      id: string,
+      from: readonly string[],
+      to: FlashbackRoundRow['status'],
+      extra?: { opensAt?: Date; closesAt?: Date },
+    ) => {
+      if (!data.round || data.round.id !== id || !from.includes(data.round.status)) return null;
+      data.round = {
+        ...data.round,
+        status: to,
+        opensAt: extra?.opensAt ?? data.round.opensAt,
+        closesAt: extra?.closesAt ?? data.round.closesAt,
+      };
+      return data.round;
+    },
+    recentRoundSymbols: async (_db: SqlClient, limit: number) => {
+      data.recentLimitCalls.push(limit);
+      return data.recentSymbols.slice(0, limit);
+    },
     roundChartDates: async () => [],
-    roundsByStatus: async () => [],
+    roundsByStatus: async (_db: SqlClient, status: string) =>
+      data.round && data.round.status === status ? [data.round] : [],
+    tryAcquireJobLock: async () => true,
+    releaseJobLock: async () => undefined,
     advanceEntryStep: async (_db: SqlClient, id: string, fromStep: number, toStep: number) => {
       const entry = data.entries.find((item) => item.id === id);
       if (!entry || entry.step !== fromStep) return null;
@@ -225,6 +265,7 @@ function createFake(state: Partial<FakeState> = {}) {
             username: item.userId,
             phoneVerified: true,
             accountCreatedAt: new Date(NOW.getTime() - 30 * 86_400_000),
+            phoneE164: data.phones[item.userId] ?? null,
           }),
         ),
     holdingsByRound: async (_db: SqlClient, roundId: string) => {
@@ -333,7 +374,7 @@ function createFake(state: Partial<FakeState> = {}) {
     },
     listJobLog: async () => data.jobLog,
     hasRecentAlert: async () => false,
-    listCurrentVn30: async () => ['AAA', 'BBB'],
+    listCurrentVn30: async () => data.vn30,
     replaceVn30: async () => undefined,
   } as unknown as FlashbackRepository;
 
@@ -352,7 +393,7 @@ function createFake(state: Partial<FakeState> = {}) {
   const service = new FlashbackService(database, repository, grants, clock);
   const admin = new FlashbackAdminService(database, repository);
   const adminController = new FlashbackAdminController(admin);
-  return { service, admin, adminController, data, repository };
+  return { service, admin, adminController, data, repository, database };
 }
 
 describe('FlashbackService', () => {
@@ -598,17 +639,184 @@ describe('FlashbackService', () => {
     expect(data.entries[0]?.finishedAt?.toISOString()).toBe(NOW.toISOString());
     expect(FLASHBACK_CLOCK).toBeDefined();
   });
+  it('không rò giá tương lai qua max_drawdown khi đang chơi dở', async () => {
+    const bars = buildBars();
+    // Giả sử ở phiên 10 giá sập mạnh xuống 10.000, nhưng người chơi mới ở phiên 1 (giá tăng 28.800 -> 28.900)
+    bars[59 + 10] = { d: '2020-03-11', o: 10_000, h: 10_000, l: 10_000, c: 10_000, v: 1_000_000 };
+    const { service, data } = createFake({
+      round: { ...buildRound(), bars },
+    });
+    data.entries.push(buildEntry());
+    const ordered = await service.placeOrder(USER, 'entry-1', { side: 'buy', qty: 100 });
+    expect(ordered.max_drawdown).toBeCloseTo((100 * 28_800 * 0.0015) / 10_000_000, 6);
+    const nextStep = await service.next(USER, 'entry-1');
+    expect(nextStep.max_drawdown).toBeLessThan(0.01);
+  });
+
+  it('tính hạng tạm thời và thưởng tạm thời theo toàn bộ người chơi khi đề còn mở', async () => {
+    const { service, data } = createFake();
+    // Người chơi khác đang chơi ở phiên 10 và giữ 200 cp (lãi cao hơn người chơi hiện tại đứng yên)
+    data.entries.push(
+      buildEntry({ id: 'entry-other', userId: OTHER_USER, step: 10, cash: 4_000_000n }),
+      buildEntry({ id: 'entry-1', userId: USER, step: 60 }),
+    );
+    data.lots.push({
+      id: 'lot-other',
+      entryId: 'entry-other',
+      qty: 250,
+      price: 28_800n,
+      step: 0,
+      sellableStep: 2,
+      createdAt: NOW,
+    });
+    const finished = await service.finish(USER, 'entry-1');
+    expect(finished.rank).toBe(2);
+    expect(finished.reward_xu).toBe(500);
+
+    const current = await service.getCurrent(USER);
+    expect(current.my_entry?.rank).toBe(2);
+    expect(current.my_entry?.reward_xu).toBe(500);
+  });
+
+  it('sắp xếp đủ 16 chỉ báo theo thứ tự bài học v3.3, ngưỡng dưới < ngưỡng trên và gửi warmup_bars ngay từ chu kỳ nhỏ', async () => {
+    expect(FLASHBACK_INDICATORS.map((item) => item.id)).toEqual([
+      'volume',
+      'ma',
+      'rsi',
+      'macd',
+      'bollinger',
+      'ema',
+      'ma_cross',
+      'dmi',
+      'donchian',
+      'stochastic',
+      'cci',
+      'roc',
+      'williams_r',
+      'obv',
+      'mfi',
+      'cmf',
+    ]);
+    expect(FLASHBACK_INDICATORS.map((item) => item.lesson_id)).toEqual([
+      'ch04-l04',
+      'ch04-l05',
+      'ch04-l06',
+      'ch04-l07',
+      'ch04-l08',
+      'ch06-l01',
+      'ch06-l02',
+      'ch06-l03',
+      'ch06-l04',
+      'ch07-l01',
+      'ch07-l02',
+      'ch07-l03',
+      'ch07-l04',
+      'ch07-l05',
+      'ch07-l06',
+      'ch07-l07',
+    ]);
+
+    const roc = flashbackIndicatorMeta('roc')!;
+    const rocLevel = roc.params.find((p) => p.key === 'level')!;
+    expect(rocLevel.lower?.default).toBe(-5);
+    expect(rocLevel.upper?.default).toBe(5);
+
+    const cci = flashbackIndicatorMeta('cci')!;
+    const cciLevel = cci.params.find((p) => p.key === 'level')!;
+    expect(cciLevel.lower?.default).toBe(-100);
+    expect(cciLevel.upper?.default).toBe(100);
+
+    const rsi = flashbackIndicatorMeta('rsi')!;
+    expect(
+      validateFlashbackIndicatorParams(rsi, { period: 14, level: { lower: 45, upper: 45 } }),
+    ).toBeTruthy();
+    expect(
+      validateFlashbackIndicatorParams(cci, { period: 20, level: { lower: 100, upper: -100 } }),
+    ).toBe('CCI: Ngưỡng dưới phải nhỏ hơn ngưỡng trên.');
+
+    expect(
+      flashbackWarmupRequired([
+        { id: 'cci', params: { period: 20, level: { lower: -100, upper: 100 } } },
+      ]),
+    ).toBe(20);
+    expect(
+      flashbackWarmupRequired([{ id: 'macd', params: { fast: 12, slow: 26, signal: 9 } }]),
+    ).toBe(35);
+    expect(
+      flashbackWarmupRequired([
+        { id: 'stochastic', params: { k: 14, smooth: 3, d: 3, level: { lower: 20, upper: 80 } } },
+      ]),
+    ).toBe(20);
+    expect(flashbackWarmupRequired([{ id: 'dmi', params: { period: 14 } }])).toBe(28);
+
+    const warmupBars: FlashbackBar[] = Array.from({ length: 30 }, (_, idx) => ({
+      d: `2019-11-${String(idx + 1).padStart(2, '0')}`,
+      o: 27_500,
+      h: 27_500,
+      l: 27_500,
+      c: 27_500,
+      v: 500_000,
+    }));
+    const { service, data } = createFake({
+      round: { ...buildRound(), warmupBars },
+    });
+    data.entries.push(
+      buildEntry({
+        indicatorParams: [{ id: 'rsi', params: { period: 14, level: { lower: 30, upper: 70 } } }],
+      }),
+    );
+    const current = await service.getCurrent(USER);
+    expect(current.warmup_bars).toHaveLength(14);
+    expect(current.warmup_bars?.[13]?.session).toBe(-60);
+  });
 });
 
 describe('FlashbackAdminService', () => {
-  it('trả id của đề để gọi được endpoint reveal, không lộ mã/giai đoạn của đề đang mở', async () => {
-    const { admin } = createFake();
+  it('trả id của đề để gọi được endpoint reveal, luôn ẩn symbol và start_date trong danh sách', async () => {
+    const { admin, data } = createFake({
+      round: { ...buildRound(), status: 'closed' },
+    });
     const rounds = await admin.rounds();
     expect(rounds).toHaveLength(1);
     expect(rounds[0]?.id).toBe('round-1');
     expect(rounds[0]?.round_no).toBe(1);
-    expect(rounds[0]?.symbol).toBeUndefined();
-    expect(rounds[0]?.start_date).toBeUndefined();
+    expect(rounds[0]?.symbol).toBeNull();
+    expect(rounds[0]?.start_date).toBeNull();
+
+    await expect(
+      admin.revealRound('round-1', { adminId: 'tl-1', actorRole: 'team_lead', role: 'team_lead' }),
+    ).rejects.toMatchObject({ response: { code: 'INSUFFICIENT_ROLE' } });
+
+    const revealed = await admin.revealRound('round-1', {
+      adminId: 'admin-1',
+      actorRole: 'admin',
+      role: 'admin',
+      ip: '127.0.0.1',
+    });
+    expect(revealed.symbol).toBe('AAA');
+    expect(revealed.start_date).toBe('2020-01-01');
+    expect(data.jobLog.some((item) => item.step === 'reveal')).toBe(true);
+  });
+
+  it('phát hiện tài khoản trùng số điện thoại (same_phone) và fallback sang đề gần nhất khi không có đề mở', async () => {
+    const { admin, data } = createFake({
+      round: { ...buildRound(), status: 'closed' },
+      phones: { alice: '+84901234567', bob: '+84901234567' },
+    });
+    data.entries.push(
+      buildEntry({ id: 'e-1', userId: 'alice' }),
+      buildEntry({ id: 'e-2', userId: 'bob' }),
+    );
+    const suspects = await admin.suspects();
+    expect(suspects).toEqual([
+      {
+        round_id: 'round-1',
+        reason: 'same_phone',
+        shared: '+84901234567',
+        user_count: 2,
+        usernames: ['alice', 'bob'],
+      },
+    ]);
   });
 
   it('đọc và ghi trạng thái tạm dừng', async () => {
@@ -655,5 +863,65 @@ describe('FlashbackAdminService', () => {
     expect(alerts[0]?.level_label).toBe('Cao');
     expect(alerts[1]?.level).toBe('low');
     expect(alerts[1]?.level_label).toBe('Thấp');
+  });
+});
+
+describe('FlashbackJob & FlashbackRoundBuilder', () => {
+  it('nextChangeBoundary giữ nguyên mốc 20:00 UTC+7 và chỉ dịch sang ngày hôm sau khi đã qua 20:00', () => {
+    const exact20Vn = new Date('2026-01-05T13:00:00.000Z');
+    expect(nextChangeBoundary(exact20Vn, 20).toISOString()).toBe('2026-01-05T13:00:00.000Z');
+    const after20Vn = new Date('2026-01-05T13:01:00.000Z');
+    expect(nextChangeBoundary(after20Vn, 20).toISOString()).toBe('2026-01-06T13:00:00.000Z');
+  });
+
+  it('chỉ loại 5 đề gần nhất khi rổ còn dưới 5 mã sau khi loại 10 đề, kiểm tra dữ liệu sạch và ghi cảnh báo khi rổ VN30 < 25 mã', async () => {
+    const { data, repository, database } = createFake({
+      vn30: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'S11', 'S12'],
+      recentSymbols: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9'],
+    });
+
+    const cleanSeries: FlashbackBar[] = Array.from({ length: 400 }, (_, i) => {
+      const day = new Date(Date.UTC(2018, 0, 1 + i)).toISOString().slice(0, 10);
+      const close = 30_000 + (i % 2 === 0 ? 500 : -400);
+      return { d: day, o: close, h: close + 100, l: close - 100, c: close, v: 1_000_000 };
+    });
+    const dirtySeries: FlashbackBar[] = cleanSeries.map((bar, i) =>
+      i === 100 ? { ...bar, c: bar.c * 1.5, h: bar.c * 1.5 } : bar,
+    );
+
+    const builder = new FlashbackRoundBuilder(database, repository, {
+      dailyBars: async (symbol: string) => (symbol === 'S12' ? dirtySeries : cleanSeries),
+    });
+
+    const config = readFlashbackConfig({});
+    const built = await builder.build(NOW, 0, config);
+    expect(built).not.toBeNull();
+    expect(data.recentLimitCalls).toEqual([10, 5]);
+    expect(
+      data.jobLog.some(
+        (item) =>
+          item.step === 'alert' &&
+          item.level === 'medium' &&
+          item.result.includes('vn30_pool_degraded'),
+      ),
+    ).toBe(true);
+  });
+
+  it('kéo dài đề đang mở thêm 24 giờ và không đóng đề khi tới giờ đổi đề mà mọi mức dự phòng 0..3 đều thất bại', async () => {
+    const expiredRound: FlashbackRoundRow = {
+      ...buildRound(),
+      closesAt: new Date(NOW.getTime() - 60_000),
+    };
+    const { data, repository, database } = createFake({ round: expiredRound });
+    const builder = {
+      build: async () => null,
+    } as unknown as FlashbackRoundBuilder;
+    const job = new FlashbackJob(database, repository, { now: () => NOW }, builder);
+
+    const outcome = await job.run(NOW);
+    expect(outcome.status).toBe('completed');
+    expect(data.round?.status).toBe('open');
+    expect(data.round?.closesAt?.getTime()).toBe(NOW.getTime() + 24 * 3_600_000);
+    expect(data.jobLog.some((item) => item.result.includes('fallback_extend_24h'))).toBe(true);
   });
 });

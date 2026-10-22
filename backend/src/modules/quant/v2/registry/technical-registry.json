@@ -406,7 +406,7 @@
       "enabled": false,
       "params": {
         "period": 20,
-        "k": 2.0
+        "k": 2
       },
       "rules": [
         {
@@ -481,7 +481,7 @@
       "enabled": false,
       "params": {
         "period": 20,
-        "k": 2.0
+        "k": 2
       },
       "rules": [
         {
@@ -612,7 +612,7 @@
       "enabled": false,
       "params": {
         "lookback": 20,
-        "mult": 1.0
+        "mult": 1
       },
       "rules": [
         {
@@ -659,7 +659,7 @@
       "enabled": false,
       "params": {
         "lookback": 20,
-        "mult": 1.0
+        "mult": 1
       },
       "rules": [
         {
@@ -750,8 +750,8 @@
   {
     "id": "ema",
     "name": "EMA",
-    "chapter": 7,
-    "lesson_id": null,
+    "chapter": 6,
+    "lesson_id": "ch06-l01",
     "legacy_chapter": 5,
     "legacy_lesson_id": "ch05-l01",
     "calculation_version": "iqx-ta-2.0",
@@ -849,8 +849,8 @@
   {
     "id": "ma_cross",
     "name": "MA Cross",
-    "chapter": 7,
-    "lesson_id": null,
+    "chapter": 6,
+    "lesson_id": "ch06-l02",
     "legacy_chapter": 5,
     "legacy_lesson_id": "ch05-l02",
     "calculation_version": "iqx-ta-2.0",
@@ -967,8 +967,8 @@
   {
     "id": "dmi",
     "name": "DMI",
-    "chapter": 7,
-    "lesson_id": null,
+    "chapter": 6,
+    "lesson_id": "ch06-l03",
     "legacy_chapter": 5,
     "legacy_lesson_id": "ch05-l03",
     "calculation_version": "iqx-ta-2.0",
@@ -1066,8 +1066,8 @@
   {
     "id": "stochastic",
     "name": "Stochastic",
-    "chapter": 8,
-    "lesson_id": null,
+    "chapter": 7,
+    "lesson_id": "ch07-l01",
     "legacy_chapter": 5,
     "legacy_lesson_id": "ch05-l05",
     "calculation_version": "iqx-ta-2.0",
@@ -1240,8 +1240,8 @@
   {
     "id": "cci",
     "name": "CCI",
-    "chapter": 8,
-    "lesson_id": null,
+    "chapter": 7,
+    "lesson_id": "ch07-l02",
     "legacy_chapter": 5,
     "legacy_lesson_id": "ch05-l06",
     "calculation_version": "iqx-ta-2.0",
@@ -1388,8 +1388,8 @@
   {
     "id": "obv",
     "name": "OBV",
-    "chapter": 8,
-    "lesson_id": null,
+    "chapter": 7,
+    "lesson_id": "ch07-l05",
     "legacy_chapter": 7,
     "legacy_lesson_id": "ch07-l04",
     "calculation_version": "iqx-ta-2.0",
@@ -1487,8 +1487,8 @@
   {
     "id": "mfi",
     "name": "MFI",
-    "chapter": 8,
-    "lesson_id": null,
+    "chapter": 7,
+    "lesson_id": "ch07-l06",
     "legacy_chapter": 7,
     "legacy_lesson_id": "ch07-l05",
     "calculation_version": "iqx-ta-2.0",
@@ -1635,8 +1635,8 @@
   {
     "id": "cmf",
     "name": "Chaikin Money Flow",
-    "chapter": 8,
-    "lesson_id": null,
+    "chapter": 7,
+    "lesson_id": "ch07-l07",
     "legacy_chapter": 7,
     "legacy_lesson_id": "ch07-l06",
     "calculation_version": "iqx-ta-2.0",
@@ -1745,8 +1745,8 @@
   {
     "id": "donchian",
     "name": "Donchian Channel",
-    "chapter": 7,
-    "lesson_id": null,
+    "chapter": 6,
+    "lesson_id": "ch06-l04",
     "legacy_chapter": 11,
     "legacy_lesson_id": "ch11-l01",
     "calculation_version": "iqx-ta-2.0",
@@ -1844,8 +1844,8 @@
   {
     "id": "roc",
     "name": "ROC",
-    "chapter": 8,
-    "lesson_id": null,
+    "chapter": 7,
+    "lesson_id": "ch07-l03",
     "legacy_chapter": 11,
     "legacy_lesson_id": "ch11-l04",
     "calculation_version": "iqx-ta-2.0",
@@ -1856,7 +1856,7 @@
       "enabled": false,
       "params": {
         "period": 20,
-        "level": 5.0
+        "level": 5
       },
       "rules": [
         {
@@ -1883,7 +1883,7 @@
       "enabled": false,
       "params": {
         "period": 20,
-        "level": -5.0
+        "level": -5
       },
       "rules": [
         {
@@ -1954,8 +1954,8 @@
   {
     "id": "williams_r",
     "name": "Williams %R",
-    "chapter": 8,
-    "lesson_id": null,
+    "chapter": 7,
+    "lesson_id": "ch07-l04",
     "legacy_chapter": 11,
     "legacy_lesson_id": "ch11-l05",
     "calculation_version": "iqx-ta-2.0",

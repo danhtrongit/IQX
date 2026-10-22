@@ -2460,6 +2460,7 @@
         },
         {
           "chart_id": "c7l6-g2",
+          "table_toggle": true,
           "type": "chart"
         },
         {

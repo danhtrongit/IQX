@@ -77,6 +77,7 @@ export type FlashbackIndicatorInstance = {
 
 /** Giá trị một tham số: số đơn hoặc cặp ngưỡng dưới/trên. */
 export type FlashbackIndicatorParamValue = number | { lower: number; upper: number }
+export type FlashbackParamValue = FlashbackIndicatorParamValue
 export type FlashbackIndicatorParams = Record<string, FlashbackIndicatorParamValue>
 
 /** Một phía của ngưỡng (phía Mua của Bot là "dưới", phía Bán là "trên"). */
@@ -112,8 +113,18 @@ export type FlashbackIndicatorMeta = {
   warmup_sessions: number
 }
 
+export type FlashbackRewardRow = {
+  from_rank: number
+  to_rank: number | null
+  xu?: number
+  reward_xu?: number
+}
+
 /** Đề đang mở. */
-export type FlashbackCurrent = Omit<CurrentResponse, "my_entry"> & { my_entry: FlashbackEntry | null }
+export type FlashbackCurrent = Omit<CurrentResponse, "my_entry" | "reward_table"> & {
+  my_entry: FlashbackEntry | null
+  reward_table: FlashbackRewardRow[]
+}
 
 export type FlashbackJoinResult = ApiResponseFor<"POST /api/v2/flashback/current/join">
 export type FlashbackNextResult = ApiResponseFor<"POST /api/v2/flashback/entries/{id}/next">

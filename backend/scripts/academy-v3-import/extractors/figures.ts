@@ -9,12 +9,16 @@ import { fail } from './context.js';
 import { table } from './tables.js';
 
 /** Data kinds get the "Xem bảng số liệu" toggle. */
-const TABLE_KINDS: ReadonlySet<ChartModel['kind']> = new Set([
-  'series_panels',
-  'category',
-  'segment_bar',
-]);
+const TABLE_KINDS: Partial<Record<ChartModel['kind'], true>> = {
+  series_panels: true,
+  category: true,
+  segment_bar: true,
+};
 
+function hasTable(model: ChartModel): boolean {
+  if (model.kind === 'compare') return model.items.some((item) => Boolean(TABLE_KINDS[item.model.kind]));
+  return Boolean(TABLE_KINDS[model.kind]);
+}
 /**
  * Register a chart model for an `svg[id]` and return its id (text figures and icons are not charts).
  * Charts listed in `DROPPED_CHARTS` are not part of the content: they are recorded and return null.
@@ -73,7 +77,7 @@ export function figure(ctx: Ctx, el: Element): Block[] {
         title: REPRESENTATIVE_DATA[id]?.metric ?? id,
         ...(lg ? { legend: lg } : {}),
         ...(note ? { note } : {}),
-        ...(TABLE_KINDS.has(model.kind) ? { table_toggle: true } : {}),
+        ...(hasTable(model) ? { table_toggle: true } : {}),
       },
     ];
   }
@@ -99,7 +103,7 @@ export function figure(ctx: Ctx, el: Element): Block[] {
       ...(title ? { title } : {}),
       ...(lg ? { legend: lg } : {}),
       ...(note ? { note } : {}),
-      ...(TABLE_KINDS.has(model.kind) ? { table_toggle: true } : {}),
+      ...(hasTable(model) ? { table_toggle: true } : {}),
     },
   ];
 }

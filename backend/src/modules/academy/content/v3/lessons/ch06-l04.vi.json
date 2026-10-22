@@ -1373,12 +1373,27 @@
               29206.0165
             ]
           },
+          "levels": [
+            {
+              "label": "Biên trên = giá cao nhất 20 phiên trước",
+              "role": "avg",
+              "value": 28564.5698
+            }
+          ],
           "series": [],
           "title": ""
         }
       ],
       "x": {
         "end": 81,
+        "shade": [
+          {
+            "from": 60,
+            "label": "20 phiên trước",
+            "to": 79,
+            "tone": "p1"
+          }
+        ],
         "start": 58
       }
     },

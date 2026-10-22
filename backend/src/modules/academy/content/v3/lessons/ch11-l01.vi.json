@@ -193,39 +193,96 @@
       ]
     },
     "c11l1-rep": {
-      "caption_tone": "price",
-      "caption_value": "0,25 lần",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "D/E",
-          "tone": "p1",
-          "values": [
-            0.3598,
-            0.3478,
-            0.2841,
-            0.275,
-            0.274,
-            0.2643,
-            0.255,
-            0.2462
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Nợ vay / VCSH",
+                "tone": "p1",
+                "values": [
+                  0.3599,
+                  0.3478,
+                  0.2841,
+                  0.275,
+                  0.274,
+                  0.2643,
+                  0.255,
+                  0.2462
+                ]
+              }
+            ],
+            "unit": "lần",
+            "value_labels": "none"
+          },
+          "title": "Nợ vay / VCSH (lần)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "0,25 lần",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Nợ vay",
+                "tone": "p1",
+                "values": [
+                  1100.3769,
+                  1100.3769,
+                  1100.3769,
+                  1100.3769,
+                  1100.3769,
+                  1100.3769,
+                  1100.3769,
+                  1100.3769
+                ]
+              },
+              {
+                "name": "Vốn chủ sở hữu",
+                "tone": "p5",
+                "values": [
+                  3057.9486,
+                  3164.0416,
+                  3873.3073,
+                  4001.1338,
+                  4015.5568,
+                  4162.7476,
+                  4315.0107,
+                  4469.1112
+                ]
+              }
+            ],
+            "unit": "tỷ đồng",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (tỷ đồng)"
         }
       ],
-      "title": "D/E",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",

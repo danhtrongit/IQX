@@ -244,8 +244,8 @@ export function Panel({
               : seriesIndex === 0
                 ? "var(--chart-1)"
                 : seriesIndex === 1
-                  ? "var(--chart-6)"
-                  : "var(--chart-8)"
+                  ? "#d95926"
+                  : "#199e70"
             const faded = bars.faded?.(index) === true
             return (
               <path

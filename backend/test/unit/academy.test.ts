@@ -672,6 +672,11 @@ describe('academy v3.3 attempts and grading', () => {
       next_item_id: 'ch04-l07',
     });
     expect(result.granted_capabilities).toContain('indicator:rsi');
+    const again = await pass(service, 'ch04-l06', 'attempt-key-0002');
+    expect(again).toMatchObject({
+      newly_granted: [],
+      unlocked_labels: ['RSI'],
+    });
   });
 
   it('an exam pass completes the chapter without a reward or a hook call', async () => {

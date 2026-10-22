@@ -5,7 +5,7 @@
  * xem mã/giai đoạn của một đề đã đóng (có ghi nhật ký kiểm tra).
  */
 
-import { ConflictException, Inject, Injectable } from '@nestjs/common';
+import { ConflictException, ForbiddenException, Inject, Injectable } from '@nestjs/common';
 
 import { DatabaseService, type SqlClient } from '../../platform/database/database.service.js';
 import { auditContext, recordAudit, type AuditContext } from '../users/audit.js';
@@ -32,9 +32,9 @@ export interface FlashbackAdminRoundView {
   readonly total_fee_xu: number;
   readonly total_reward_xu: number;
   readonly fallback_level: number;
-  /** Chỉ có khi đề đã đóng hoặc đã trả thưởng. */
-  readonly symbol?: string;
-  readonly start_date?: string;
+  /** Luôn ẩn trong danh sách; chỉ hiện qua endpoint reveal kèm ghi nhật ký (spec v1.2 §7). */
+  readonly symbol: string | null;
+  readonly start_date: string | null;
 }
 
 /** Một cảnh báo của tác vụ. */
@@ -65,7 +65,7 @@ export class FlashbackAdminService {
     @Inject(FLASHBACK_REPOSITORY) private readonly repository: FlashbackRepository,
   ) {}
 
-  /** Danh sách đề (không lộ mã/giai đoạn của đề đang chờ hoặc đang mở). */
+  /** Danh sách đề (không lộ mã/giai đoạn trong danh sách; chỉ xem qua reveal). */
   async rounds(limit = 50): Promise<FlashbackAdminRoundView[]> {
     const rounds = await this.repository.listRounds(this.database, limit);
     const views: FlashbackAdminRoundView[] = [];
@@ -73,7 +73,6 @@ export class FlashbackAdminService {
       const entries = await this.repository.listEntriesByRound(this.database, round.id);
       const totalFee = entries.reduce((sum, entry) => sum + entry.feeXu, 0);
       const totalReward = entries.reduce((sum, entry) => sum + entry.rewardXu, 0);
-      const revealed = round.status === 'closed' || round.status === 'paid';
       views.push({
         id: round.id,
         round_no: round.roundNo,
@@ -85,7 +84,8 @@ export class FlashbackAdminService {
         total_fee_xu: totalFee,
         total_reward_xu: totalReward,
         fallback_level: round.fallbackLevel,
-        ...(revealed ? { symbol: round.symbol, start_date: round.startDate } : {}),
+        symbol: null,
+        start_date: null,
       });
     }
     return views;
@@ -108,29 +108,38 @@ export class FlashbackAdminService {
   }
 
   /**
-   * Tài khoản bị nghi vấn: nhiều tài khoản cùng dùng một địa chỉ IP hoặc một thiết bị
-   * (user-agent) trong gần đây rồi cùng tham gia một đề.
+   * Tài khoản bị nghi vấn: nhiều tài khoản cùng dùng một địa chỉ IP, một thiết bị (user-agent)
+   * hoặc một số điện thoại cùng tham gia một đề.
    */
   async suspects(roundId?: string): Promise<FlashbackAdminSuspectView[]> {
     const round = roundId
       ? await this.repository.roundById(this.database, roundId)
-      : await this.repository.openRound(this.database);
+      : ((await this.repository.openRound(this.database)) ??
+        (await this.repository.listRounds(this.database, 1))[0] ??
+        null);
     if (!round) return [];
     const rows = await this.database.query<Row>(
-      `select lh.*, e.round_id::text as entry_round_id, coalesce(u.username, u.email) as username
-         from user_login_history lh
-         join flashback_entries e on e.user_id = lh.user_id and e.round_id = $1
+      `select lh.ip, lh.user_agent,
+              e.user_id::text as user_id,
+              e.round_id::text as entry_round_id,
+              coalesce(u.username, u.email) as username,
+              coalesce(u.phone_e164, u.phone_number) as phone_e164
+         from flashback_entries e
          join users u on u.id = e.user_id
+         left join user_login_history lh on lh.user_id = e.user_id
+        where e.round_id = $1
         limit 5000`,
       [round.id],
     );
     const byIp = new Map<string, { users: Set<string>; names: Set<string> }>();
     const byAgent = new Map<string, { users: Set<string>; names: Set<string> }>();
+    const byPhone = new Map<string, { users: Set<string>; names: Set<string> }>();
     for (const row of rows) {
       const userId = String(row.user_id ?? '');
       const username = String(row.username ?? '');
       const ip = row.ip ? String(row.ip) : '';
       const agent = row.user_agent ? String(row.user_agent) : '';
+      const phone = String(row.phone_e164 ?? row.phone_number ?? row.phone ?? '').trim();
       if (ip) {
         const bucket = byIp.get(ip) ?? { users: new Set<string>(), names: new Set<string>() };
         bucket.users.add(userId);
@@ -142,6 +151,22 @@ export class FlashbackAdminService {
         bucket.users.add(userId);
         bucket.names.add(username);
         byAgent.set(agent, bucket);
+      }
+      if (phone) {
+        const bucket = byPhone.get(phone) ?? { users: new Set<string>(), names: new Set<string>() };
+        bucket.users.add(userId);
+        bucket.names.add(username);
+        byPhone.set(phone, bucket);
+      }
+    }
+    const entries = await this.repository.leaderboardEntries(this.database, round.id);
+    for (const entry of entries) {
+      const phone = entry.phoneE164 ? entry.phoneE164.trim() : '';
+      if (phone) {
+        const bucket = byPhone.get(phone) ?? { users: new Set<string>(), names: new Set<string>() };
+        bucket.users.add(entry.userId);
+        bucket.names.add(entry.username);
+        byPhone.set(phone, bucket);
       }
     }
     const suspects: FlashbackAdminSuspectView[] = [];
@@ -165,6 +190,16 @@ export class FlashbackAdminService {
           usernames: [...bucket.names],
         });
     }
+    for (const [phone, bucket] of byPhone) {
+      if (bucket.users.size > 1)
+        suspects.push({
+          round_id: round.id,
+          reason: 'same_phone',
+          shared: phone,
+          user_count: bucket.users.size,
+          usernames: [...bucket.names],
+        });
+    }
     return suspects.sort((left, right) => right.user_count - left.user_count).slice(0, 100);
   }
 
@@ -182,14 +217,25 @@ export class FlashbackAdminService {
     return stored === true;
   }
 
-  /** Xem mã và giai đoạn của một đề đã đóng (ghi nhật ký kiểm tra). */
+  /** Xem mã và giai đoạn của một đề đã đóng (chỉ quản trị viên cao nhất, ghi nhật ký kiểm tra). */
   async reveal(
     roundId: string,
-    context: AuditContext,
-    request: { ip: string | null; userAgent: string | null; requestId: string | null },
+    context: Partial<AuditContext> & { readonly id?: string; readonly role?: string },
+    request?: { ip?: string | null; userAgent?: string | null; requestId?: string | null },
   ): Promise<{ round_no: number; symbol: string; start_date: string; session_range: string }> {
+    const role = context.role ?? context.actorRole ?? 'admin';
+    if (role !== 'admin' && role !== 'superadmin') {
+      throw new ForbiddenException({
+        code: 'INSUFFICIENT_ROLE',
+        message: 'Chỉ quản trị viên cao nhất mới được xem mã và giai đoạn của đề đã đóng.',
+      });
+    }
     const round = await this.repository.roundById(this.database, roundId);
-    if (!round) throw new ConflictException({ code: 'FLASHBACK_ROUND_NOT_FOUND', message: 'Không tìm thấy đề.' });
+    if (!round)
+      throw new ConflictException({
+        code: 'FLASHBACK_ROUND_NOT_FOUND',
+        message: 'Không tìm thấy đề.',
+      });
     if (round.status !== 'closed' && round.status !== 'paid')
       throw new ConflictException({
         code: 'FLASHBACK_ROUND_NOT_REVEALABLE',
@@ -198,8 +244,17 @@ export class FlashbackAdminService {
     const bars = round.bars;
     const first = bars[0]?.d ?? '';
     const last = bars[bars.length - 1]?.d ?? '';
+    const adminId = context.adminId ?? context.id ?? 'admin';
+    const ip = request?.ip ?? context.ip ?? null;
+    const fullAudit: AuditContext = {
+      adminId,
+      actorRole: 'admin',
+      ip,
+      userAgent: request?.userAgent ?? context.userAgent ?? null,
+      requestId: request?.requestId ?? context.requestId ?? null,
+    };
     await this.database.transaction(async (tx: SqlClient) => {
-      await recordAudit(tx, context, {
+      await recordAudit(tx, fullAudit, {
         action: 'flashback.round.reveal',
         targetEntity: 'flashback_round',
         targetId: round.id,
@@ -209,8 +264,8 @@ export class FlashbackAdminService {
       await this.repository.appendJobLog(tx, {
         step: 'reveal',
         roundId: round.id,
-        result: `quản trị ${context.adminId} xem mã đề ${round.roundNo}`,
-        error: request.ip,
+        result: `quản trị ${adminId} xem mã đề ${round.roundNo}`,
+        error: ip,
       });
     });
     return {
@@ -221,6 +276,14 @@ export class FlashbackAdminService {
     };
   }
 
+  /** Alias cho `reveal` (spec v1.2 §7). */
+  async revealRound(
+    roundId: string,
+    context: Partial<AuditContext> & { readonly id?: string; readonly role?: string },
+    request?: { ip?: string | null; userAgent?: string | null; requestId?: string | null },
+  ): Promise<{ round_no: number; symbol: string; start_date: string; session_range: string }> {
+    return this.reveal(roundId, context, request);
+  }
   /** Audit context từ request của quản trị. */
   static context(admin: Parameters<typeof auditContext>[0], request: Parameters<typeof auditContext>[1]): AuditContext {
     return auditContext(admin, request);

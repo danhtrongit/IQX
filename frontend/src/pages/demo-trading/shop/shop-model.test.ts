@@ -106,7 +106,9 @@ describe("ledger labels", () => {
     expect(ledgerRowLabel(ledgerItem(7, { kind: "premium_purchase", label }), names).title).toBe("Mua Premium")
     expect(ledgerRowLabel(ledgerItem(8, { kind: "demo_deposit", label }), names).title).toBe("Đổi tiền sang xu")
     expect(ledgerRowLabel(ledgerItem(9, { kind: "demo_withdraw", label }), names).title).toBe("Đổi xu sang tiền")
-    expect(ledgerRowLabel(ledgerItem(10, { kind: "adjustment", label }), names).title).toBe("Điều chỉnh xu")
+    expect(ledgerRowLabel({ ...ledgerItem(10, { label }), kind: "flashback_fee" }, names)).toEqual({ title: "Tham gia Flashback", detail: null })
+    expect(ledgerRowLabel({ ...ledgerItem(11, { label }), kind: "flashback_reward" }, names)).toEqual({ title: "Thưởng Flashback", detail: null })
+    expect(ledgerRowLabel(ledgerItem(12, { kind: "adjustment", label }), names).title).toBe("Điều chỉnh xu")
   })
 })
 

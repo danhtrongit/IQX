@@ -102,24 +102,24 @@ export function newIdempotencyKey(): string {
   return `practice-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`
 }
 
-/** Academy lesson (`view=academy&lesson=<id>`) that grants each practice indicator; null = lesson not published yet. */
+/** Academy lesson (`view=academy&lesson=<id>`) that grants each practice indicator. */
 export const PRACTICE_INDICATORS: Readonly<Record<string, { name: string; lessonId: string | null }>> = {
   rsi: { name: "RSI", lessonId: "ch04-l06" },
   macd: { name: "MACD", lessonId: "ch04-l07" },
   ma: { name: "MA / SMA", lessonId: "ch04-l05" },
   bollinger: { name: "Bollinger Bands", lessonId: "ch04-l08" },
   volume: { name: "Khối lượng", lessonId: "ch04-l04" },
-  ema: { name: "EMA", lessonId: null },
-  ma_cross: { name: "MA Cross", lessonId: null },
-  dmi: { name: "DMI", lessonId: null },
-  stochastic: { name: "Stochastic", lessonId: null },
-  cci: { name: "CCI", lessonId: null },
-  obv: { name: "OBV", lessonId: null },
-  mfi: { name: "MFI", lessonId: null },
-  cmf: { name: "Chaikin Money Flow", lessonId: null },
-  donchian: { name: "Donchian Channel", lessonId: null },
-  roc: { name: "ROC", lessonId: null },
-  williams_r: { name: "Williams %R", lessonId: null },
+  ema: { name: "EMA", lessonId: "ch06-l01" },
+  ma_cross: { name: "MA Cross", lessonId: "ch06-l02" },
+  dmi: { name: "DMI", lessonId: "ch06-l03" },
+  stochastic: { name: "Stochastic", lessonId: "ch07-l01" },
+  cci: { name: "CCI", lessonId: "ch07-l02" },
+  obv: { name: "OBV", lessonId: "ch07-l05" },
+  mfi: { name: "MFI", lessonId: "ch07-l06" },
+  cmf: { name: "Chaikin Money Flow", lessonId: "ch07-l07" },
+  donchian: { name: "Donchian Channel", lessonId: "ch06-l04" },
+  roc: { name: "ROC", lessonId: "ch07-l03" },
+  williams_r: { name: "Williams %R", lessonId: "ch07-l04" },
 }
 
 export function lessonLink(indicatorId: string): string | null {

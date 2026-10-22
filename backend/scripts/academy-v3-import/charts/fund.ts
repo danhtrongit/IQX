@@ -48,6 +48,7 @@ export interface BarsSeries {
   tone: ChartTone;
   /** Tô màu theo dấu của từng giá trị thay vì theo series. */
   toneBySign?: { pos: ChartTone; neg: ChartTone };
+  perBarTones?: readonly (ChartTone | null)[];
 }
 
 export interface BarsOptions {
@@ -58,6 +59,7 @@ export interface BarsOptions {
   /** Hiện số trên đầu cột. */
   values?: boolean;
   title?: string;
+  refs?: readonly { value: number; label?: string; tone?: ChartTone }[];
 }
 
 /**
@@ -68,10 +70,12 @@ export interface BarsOptions {
  * nên số liệu hiển thị trùng bản mẫu.
  */
 export function bars(o: BarsOptions): Category {
+  const ref = o.refs?.[0];
   const series = o.series.map((se) => ({
     name: se.name,
     values: se.values.map((v) => (v === null ? null : r4(v))),
     ...(se.toneBySign ? { tone_by_sign: se.toneBySign } : { tone: se.tone }),
+    ...(se.perBarTones ? { per_bar_tones: [...se.perBarTones] } : {}),
   }));
   return {
     kind: 'category',
@@ -81,6 +85,16 @@ export function bars(o: BarsOptions): Category {
     unit: o.unit ?? '',
     series,
     value_labels: o.values ? 'all' : 'none',
+    ...(ref
+      ? {
+          threshold: {
+            value: ref.value,
+            label: ref.label ?? fmtNum(ref.value),
+            ...(ref.tone === 'pos' ? { tone_at_or_above: 'pos' as const } : {}),
+            ...(ref.tone === 'neg' ? { tone_below: 'neg' as const } : {}),
+          },
+        }
+      : {}),
   } as Category;
 }
 
@@ -289,21 +303,35 @@ export interface HbOptions {
 
 /** `hb()` của bản mẫu -> `category` orientation 'h'. */
 export function hb(o: HbOptions): Category {
+  const baseTone = o.items[0]?.tone ?? S1;
+  const hasVaryingTones = o.items.some((it) => (it.tone ?? baseTone) !== baseTone);
+  const unitTrim = o.unit?.trim();
   return {
     kind: 'category',
     mode: 'grouped',
     ...(o.title ? { title: o.title } : {}),
     labels: o.items.map((it) => it.label),
-    unit: o.unit ?? '',
+    unit: unitTrim ?? '',
     series: [
       {
         name: o.title ?? 'Giá trị',
         values: o.items.map((it) => r4(it.value)),
-        tone: o.items[0]?.tone ?? S1,
+        tone: baseTone,
+        ...(hasVaryingTones ? { per_bar_tones: o.items.map((it) => it.tone ?? baseTone) } : {}),
       },
     ],
     orientation: 'h',
     value_labels: 'all',
+    ...(o.unit
+      ? {
+          value_format: {
+            suffix: o.unit.startsWith('%') ? '%' : ` ${o.unit.trim()}`,
+            ...(o.decimals !== undefined ? { decimals: o.decimals } : {}),
+          },
+        }
+      : o.decimals !== undefined
+        ? { value_format: { decimals: o.decimals } }
+        : {}),
     ...(o.ref
       ? { threshold: { value: o.ref[0], label: o.ref[1], tone_at_or_above: 'p5' as const } }
       : {}),
@@ -394,9 +422,10 @@ export function wf(o: WfOptions): Schematic {
       anchor: 'middle',
     });
   });
+  const span = Math.max(hi - lo, 10);
   return {
     kind: 'schematic',
-    domain: { x: [-0.5, n - 0.5], y: [lo - 2, hi + 2] },
+    domain: { x: [-0.5, n - 0.5], y: [r4(lo - span * 0.08), r4(hi + span * 0.14)] },
     axes: {
       x: {
         ticks: o.steps.map((st, i) => ({ v: i, label: st.label.replace(/\|/g, ' ') })),

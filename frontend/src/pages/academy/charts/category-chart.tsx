@@ -29,7 +29,9 @@ import { useChartWidth } from "./use-chart-width"
 /** Categorical order for series without a tone (DESIGN.md §2.5). */
 const SERIES_ORDER: ChartTone[] = ["p1", "info", "p4", "p5", "p2", "p3"]
 
-type Series = CategoryModel["series"][number]
+type Series = CategoryModel["series"][number] & {
+  per_bar_tones?: readonly (ChartTone | null)[]
+}
 
 function seriesTone(series: Series, index: number): ChartTone {
   return (
@@ -44,8 +46,11 @@ function valueTone(
   model: CategoryModel,
   series: Series,
   index: number,
+  barIndex: number,
   value: number
 ): ChartTone {
+  const perBar = series.per_bar_tones?.[barIndex]
+  if (perBar) return perBar
   if (series.tone_by_sign)
     return value >= 0 ? series.tone_by_sign.pos : series.tone_by_sign.neg
   const threshold = model.threshold
@@ -78,7 +83,10 @@ export function CategoryChart({
       ? model.series.map((series, index) => ({
           label: series.name,
           tone: seriesTone(series, index),
-          shape: model.mode === "line" ? ("line" as const) : ("bar" as const),
+          shape:
+            model.mode === "line" || series.dash === true
+              ? ("line" as const)
+              : ("bar" as const),
           dash: series.dash === true,
         }))
       : []
@@ -242,7 +250,15 @@ function VerticalChart({
   const y = (value: number) =>
     bottom - ((value - lo) / (hi - lo || 1)) * plotHeight
   const zeroY = y(Math.min(Math.max(0, lo), hi))
-  const seriesCount = model.series.length
+  const barSeriesList =
+    model.mode === "line"
+      ? []
+      : model.series.filter((series) => !series.dash)
+  const lineSeriesList =
+    model.mode === "line"
+      ? model.series
+      : model.series.filter((series) => series.dash === true)
+  const seriesCount = Math.max(1, barSeriesList.length)
   const threshold = model.threshold
 
   /** Bars, their value labels and the boxes they cover, for a plot that ends at `right`. */
@@ -263,7 +279,7 @@ function VerticalChart({
         let stackBottom = 0
         const totals = stackTotals(model, index)
         const labelSeries = stackLabelSeries(model, index)
-        model.series.forEach((series, s) => {
+        barSeriesList.forEach((series, s) => {
           const value = series.values[index]
           if (!isNumber(value)) return
           let x: number
@@ -304,7 +320,7 @@ function VerticalChart({
           const text = valueText(model, shownValue)
           bars.push({
             key: `${index}-${s}`,
-            tone: valueTone(model, series, s, value),
+            tone: valueTone(model, series, s, index, value),
             x,
             y0,
             y1,
@@ -401,7 +417,7 @@ function VerticalChart({
   const height = bottom + 10 + maxLines * 13
 
   // Line end labels sit right of the last point, spread apart when two series end close together.
-  const lastIndexes = model.series.map((series) =>
+  const lastIndexes = lineSeriesList.map((series) =>
     series.values.reduce<number>(
       (last, value, index) => (isNumber(value) ? index : last),
       -1
@@ -410,7 +426,7 @@ function VerticalChart({
   const endYs =
     model.mode === "line" && model.end_labels
       ? spreadVertically(
-          model.series.map((series, s) =>
+          lineSeriesList.map((series, s) =>
             lastIndexes[s] >= 0
               ? y(series.values[lastIndexes[s]] as number) + 4
               : bottom
@@ -469,7 +485,7 @@ function VerticalChart({
             width={Math.max(1, barWidth - 1)}
             height={Math.max(0.8, Math.abs(bar.y0 - bar.y1))}
             rx="1.5"
-            className={TONE_FILL[bar.tone]}
+            className={cn(TONE_FILL[bar.tone], bar.tone === "neutral" && "opacity-45")}
           />
           {bar.label && (
             <text
@@ -483,8 +499,7 @@ function VerticalChart({
           )}
         </g>
       ))}
-      {model.mode === "line" &&
-        model.series.map((series, s) => {
+      {lineSeriesList.map((series, s) => {
           const tone = seriesTone(series, s)
           const lastIndex = lastIndexes[s]
           return (
@@ -697,7 +712,7 @@ function HorizontalBars({
             {model.series.map((series, s) => {
               const value = series.values[index]
               if (!isNumber(value)) return null
-              const tone = valueTone(model, series, s, value)
+              const tone = valueTone(model, series, s, index, value)
               const barTop =
                 model.mode === "grouped"
                   ? mid - (barHeight * seriesCount) / 2 + s * barHeight
@@ -736,7 +751,7 @@ function HorizontalBars({
                     width={Math.max(1, Math.abs(x1 - x0))}
                     height={Math.max(4, barHeight - 2)}
                     rx="1.5"
-                    className={TONE_FILL[tone]}
+                    className={cn(TONE_FILL[tone], tone === "neutral" && "opacity-45")}
                   />
                   {showValue && (
                     <text

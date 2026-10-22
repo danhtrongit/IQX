@@ -210,6 +210,8 @@ export interface PricePanelOptions {
   oscShade?: { from: number; to: number; tone: ChartTone; label?: string }[];
   /** Cột phân kỳ tô màu theo dấu (bản mẫu vẽ cột từ mốc 0 tới giá trị chỉ báo). */
   oscBars?: { name: string; values: readonly Num[]; colors: readonly ('pos' | 'neg')[] };
+  /** Đường tham chiếu ngang trên biểu đồ giá. */
+  levels?: { value: number; role: 'buy' | 'sell' | 'neutral' | 'avg'; label?: string }[];
   marks?: { i: number; label: string }[];
   points?: Point[];
   alt: string;
@@ -263,7 +265,12 @@ export function pricePanels(
       lower: slice(opts.band.lower),
       tone: opts.band.tone,
     };
-
+  if (opts.levels)
+    pricePanel.levels = opts.levels.map((l) => ({
+      value: round4(l.value),
+      role: l.role,
+      ...(l.label ? { label: l.label } : {}),
+    }));
   const panels: Panel[] = [pricePanel];
   if (opts.osc) {
     const oscPanel: Panel = {

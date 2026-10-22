@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { Check, CircleAlert, LoaderCircle, Search } from "lucide-react"
-import { useNavigate } from "react-router"
+import { useLocation, useNavigate } from "react-router"
 
 import { Button } from "@/components/ui/button"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
@@ -22,6 +22,7 @@ function useDebouncedValue<T>(value: T, delay: number): T {
 /** Global stock lookup shared by every route in the app shell. */
 export function HeaderSearch() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
   const [term, setTerm] = useState("")
   const [retry, setRetry] = useState(0)
@@ -49,7 +50,14 @@ export function HeaderSearch() {
   function select(symbol: string) {
     setOpen(false)
     setTerm("")
-    navigate(`/co-phieu/${encodeURIComponent(symbol)}`)
+    const normalized = symbol.trim().toUpperCase()
+    if (location.pathname.startsWith("/demo-trading")) {
+      const next = new URLSearchParams(location.search)
+      next.set("symbol", normalized)
+      navigate({ pathname: location.pathname, search: `?${next.toString()}` })
+      return
+    }
+    navigate(`/co-phieu/${encodeURIComponent(normalized)}`)
   }
 
   return (
@@ -67,7 +75,7 @@ export function HeaderSearch() {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[min(24rem,calc(100vw-2rem))] p-0">
-        <Command shouldFilter={false}>
+        <Command label="Tìm mã hoặc tên công ty" shouldFilter={false}>
           <CommandInput autoFocus value={term} onValueChange={setTerm} placeholder="Tìm mã hoặc tên công ty…" aria-label="Tìm mã hoặc tên công ty" />
           <CommandList className="max-h-72">
             {!query && <CommandEmpty>Nhập mã hoặc tên công ty để bắt đầu.</CommandEmpty>}

@@ -53,11 +53,18 @@ export function formatCompact(value: number | null | undefined): string {
  * A category chart's value label or tick: formatCompact plus the model's `value_format` (an explicit "+" or "−"
  * and a suffix such as "%"), so "−10%" and "+11%" read apart without relying on colour.
  */
-export function formatCategoryValue(value: number, format: CategoryModel["value_format"]): string {
+export function formatCategoryValue(
+  value: number,
+  format: (CategoryModel["value_format"] & { decimals?: number }) | undefined,
+): string {
   if (!format) return formatCompact(value)
   const rounded = Math.abs(value) < 5e-3 ? 0 : value
   const sign = format.sign && rounded !== 0 ? (rounded > 0 ? "+" : "−") : rounded < 0 ? "-" : ""
-  return `${sign}${formatCompact(Math.abs(rounded))}${format.suffix ?? ""}`
+  const digits =
+    format.decimals !== undefined
+      ? formatValue(Math.abs(rounded), format.decimals)
+      : formatCompact(Math.abs(rounded))
+  return `${sign}${digits}${format.suffix ?? ""}`
 }
 
 /**
@@ -68,6 +75,7 @@ export function stackTotals(model: CategoryModel, index: number): { pos: number;
   let pos = 0
   let neg = 0
   for (const series of model.series) {
+    if (series.dash) continue
     const value = series.values[index]
     if (!isNumber(value)) continue
     if (value >= 0) pos += value
@@ -78,7 +86,8 @@ export function stackTotals(model: CategoryModel, index: number): { pos: number;
 
 /** The series index whose segment carries a stacked category's value label: the last one with a value. */
 export function stackLabelSeries(model: CategoryModel, index: number): number {
-  for (let s = model.series.length - 1; s >= 0; s--) if (isNumber(model.series[s].values[index])) return s
+  for (let s = model.series.length - 1; s >= 0; s--)
+    if (!model.series[s].dash && isNumber(model.series[s].values[index])) return s
   return -1
 }
 

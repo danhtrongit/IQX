@@ -59,8 +59,8 @@
           3.5
         ],
         "y": [
-          -2,
-          103.5
+          -8.12,
+          115.71
         ]
       },
       "kind": "schematic",
@@ -172,6 +172,12 @@
       "series": [
         {
           "name": "CCC tham khảo theo mô hình kinh doanh · số minh họa",
+          "per_bar_tones": [
+            "pos",
+            "p1",
+            "p1",
+            "p5"
+          ],
           "tone": "pos",
           "values": [
             -15,
@@ -182,43 +188,117 @@
         }
       ],
       "title": "CCC tham khảo theo mô hình kinh doanh · số minh họa",
-      "unit": " ngày",
+      "unit": "ngày",
+      "value_format": {
+        "suffix": " ngày"
+      },
       "value_labels": "all"
     },
     "c10l7-rep": {
-      "caption_tone": "price",
-      "caption_value": "47 ngày",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
+      "items": [
         {
-          "name": "Cash Conversion Cycle",
-          "tone": "p1",
-          "values": [
-            63.9511,
-            71.2897,
-            50.4903,
-            52.6236,
-            53.9704,
-            61.3856,
-            45.2454,
-            47.1495
-          ]
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "CCC",
+                "tone": "p1",
+                "values": [
+                  63.9412,
+                  71.2941,
+                  50.5,
+                  52.6176,
+                  53.9706,
+                  61.3824,
+                  45.2353,
+                  47.1471
+                ]
+              }
+            ],
+            "unit": "ngày",
+            "value_labels": "none"
+          },
+          "title": "CCC (ngày)"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "47 ngày",
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q4/24",
+              "Q1/25",
+              "Q2/25",
+              "Q3/25",
+              "Q4/25",
+              "Q1/26",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Ngày tồn kho",
+                "tone": "p1",
+                "values": [
+                  69.6782,
+                  79.7104,
+                  59.0464,
+                  62.9629,
+                  65.26,
+                  74.5134,
+                  58.4275,
+                  61.6711
+                ]
+              },
+              {
+                "name": "Ngày thu tiền",
+                "tone": "p5",
+                "values": [
+                  44.3936,
+                  48.3431,
+                  39.4772,
+                  40.6966,
+                  41.846,
+                  47.256,
+                  37.8313,
+                  39.7718
+                ]
+              },
+              {
+                "name": "Ngày trả tiền",
+                "tone": "pos",
+                "values": [
+                  50.1206,
+                  56.7638,
+                  48.0333,
+                  51.036,
+                  53.1356,
+                  60.3839,
+                  51.0135,
+                  54.2934
+                ]
+              }
+            ],
+            "unit": "ngày",
+            "value_labels": "none"
+          },
+          "title": "Thành phần (ngày)"
         }
       ],
-      "title": "Cash Conversion Cycle",
-      "unit": "",
-      "value_labels": "none"
+      "kind": "compare",
+      "layout": "stack"
     }
   },
   "format": "iqx-academy-lesson-v3",

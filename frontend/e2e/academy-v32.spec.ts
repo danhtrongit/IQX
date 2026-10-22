@@ -1,5 +1,5 @@
 /**
- * Học viện v3.2 against the real backend (design §9). Skips unless E2E_REAL_BACKEND=1.
+ * Học viện v3.3 against the real backend (design §9). Skips unless E2E_REAL_BACKEND=1.
  * Setup: backend on :3001 (or E2E_API_BASE_URL) with migrations applied and ACADEMY_ENABLED=true.
  * A fresh user is registered per run. Correct answers come from the private banks read on the Node
  * side and are matched by their stable option ids; the browser never sees them before submit.
@@ -83,7 +83,7 @@ async function signIn(page: Page, session: Session) {
   }, session)
 }
 
-test.describe("Học viện v3.2 on the real backend", () => {
+test.describe("Học viện v3.3 on the real backend", () => {
   test.skip(process.env.E2E_REAL_BACKEND !== "1", "Set E2E_REAL_BACKEND=1 with a migrated backend and ACADEMY_ENABLED=true")
   test.setTimeout(120_000)
 
@@ -91,14 +91,14 @@ test.describe("Học viện v3.2 on the real backend", () => {
     const session = await register(request)
     const api = client(request, session)
     const progress = (await api.get<{ items: { id: string; state: string }[]; course_total: number }>("/academy/progress")).body
-    expect(progress.course_total).toBe(43)
+    expect(progress.course_total).toBe(87)
     expect(progress.items.filter((item) => item.state === "open").map((item) => item.id)).toEqual(["ch01-l01"])
-    expect((await api.post("/academy/attempts", { lesson_id: "ch01-l02", catalog_version: "iqx-academy-v3.2-14ch-94lessons", idempotency_key: `e2e-locked-${Date.now()}` })).status).toBe(403)
+    expect((await api.post("/academy/attempts", { lesson_id: "ch01-l02", catalog_version: "iqx-academy-v3.3-13ch-87lessons", idempotency_key: `e2e-locked-${Date.now()}` })).status).toBe(403)
 
     await signIn(page, session)
     await page.goto("/demo-trading?view=academy&lesson=ch01-l01")
     const panel = page.getByRole("complementary")
-    await expect(panel.getByText("43 bài học")).toBeVisible()
+    await expect(panel.getByText("87 bài học")).toBeVisible()
     await expect(panel.locator('[data-academy-row="ch01-l02"]').getByText("Chưa mở")).toBeVisible()
 
     await page.getByRole("button", { name: "Làm bài kiểm tra" }).click()
@@ -121,7 +121,7 @@ test.describe("Học viện v3.2 on the real backend", () => {
     await passUntil(api, "ch02-l01")
     const refused = await api.post<{ error?: { code?: string } }>("/academy/attempts", {
       lesson_id: "ch02-l01",
-      catalog_version: "iqx-academy-v3.2-14ch-94lessons",
+      catalog_version: "iqx-academy-v3.3-13ch-87lessons",
       idempotency_key: `e2e-scenario-${Date.now()}`,
     })
     expect(refused.status).toBe(403)

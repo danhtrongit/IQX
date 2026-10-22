@@ -52,8 +52,8 @@
           2.5
         ],
         "y": [
-          -2,
-          2402
+          -192,
+          2736
         ]
       },
       "kind": "schematic",
@@ -164,6 +164,13 @@
       "marks": [],
       "panels": [
         {
+          "levels": [
+            {
+              "label": "Trung vị 3 năm 6,2",
+              "role": "avg",
+              "value": 6.1919
+            }
+          ],
           "series": [
             {
               "name": "FCF Yield",
@@ -955,7 +962,15 @@
               "width": 2
             }
           ],
-          "title": "FCF Yield"
+          "title": "FCF Yield (%)",
+          "zones": [
+            {
+              "from": 4.9244,
+              "label": "Trung vị ± độ lệch chuẩn",
+              "to": 7.4594,
+              "tone": "neutral"
+            }
+          ]
         }
       ],
       "x": {

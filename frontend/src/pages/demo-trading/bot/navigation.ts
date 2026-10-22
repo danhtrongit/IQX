@@ -1,11 +1,11 @@
 import { useCallback } from "react"
 import { useSearchParams } from "react-router"
 
-/** Chapter titles of the technical indicator lessons (Học viện v3.2 chapters 4, 7 and 8). */
+/** Chapter titles of the technical indicator lessons (Học viện v3.3 chapters 4, 6 and 7). */
 export const CHAPTER_TITLES: Readonly<Record<number, string>> = {
   4: "Phương pháp kỹ thuật",
-  7: "Chỉ báo xu hướng",
-  8: "Chỉ báo động lượng và dòng tiền",
+  6: "Chỉ báo xu hướng",
+  7: "Chỉ báo động lượng và dòng tiền",
 }
 
 export function chapterTitle(chapter: number): string {

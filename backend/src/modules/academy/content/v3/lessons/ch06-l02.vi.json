@@ -2474,6 +2474,13 @@
             ],
             "x": {
               "end": 149,
+              "shade": [
+                {
+                  "from": 101,
+                  "to": 149,
+                  "tone": "pos"
+                }
+              ],
               "start": 95
             }
           },
@@ -3080,6 +3087,7 @@
         },
         {
           "chart_id": "c6l2-g3",
+          "table_toggle": true,
           "type": "chart"
         }
       ],

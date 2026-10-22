@@ -30,8 +30,11 @@ export type BackendOptions = {
   firstJoinFree?: boolean
   /** Số phiên đã chơi. */
   step?: number
+  status?: "playing" | "finished"
   cash?: number
   holdings?: number
+  positions?: FlashbackPosition[]
+  warmupBars?: FlashbackBar[]
   /** Chỉ báo người dùng đã mở. */
   indicators?: FlashbackIndicatorMeta[]
   /** Chỉ báo đã lưu trong lượt chơi. */
@@ -114,9 +117,11 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     joined: options.joined ?? false,
     firstJoinFree: options.firstJoinFree ?? true,
     step: options.step ?? 0,
+    status: options.status,
     cash: options.cash ?? FLASHBACK_INITIAL_CASH,
     holdings: options.holdings ?? 0,
-    positions: [] as FlashbackPosition[],
+    positions: options.positions ?? ([] as FlashbackPosition[]),
+    warmupBars: options.warmupBars ?? ([] as FlashbackBar[]),
     orders: [] as FlashbackOrder[],
     indicators: options.indicators ?? [],
     savedIndicators: options.savedIndicators ?? [],
@@ -139,7 +144,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       pnl_percent: ((state.cash + state.holdings * lastClose - FLASHBACK_INITIAL_CASH) / FLASHBACK_INITIAL_CASH) * 100,
       max_drawdown: 0,
       max_drawdown_percent: 0,
-      status: state.step >= PLAY_SESSIONS ? "finished" : "playing",
+      status: state.status ?? (state.step >= PLAY_SESSIONS ? "finished" : "playing"),
       joined_at: "2026-10-22T00:00:00.000Z",
       finished_at: null,
       final_nav: state.step >= PLAY_SESSIONS ? String(state.cash + state.holdings * lastClose) : null,
@@ -164,11 +169,13 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
         { from_rank: 2, to_rank: 3, xu: 500 },
         { from_rank: 4, to_rank: 10, xu: 200 },
         { from_rank: 11, to_rank: 50, xu: 100 },
+        { from_rank: 51, to_rank: null, xu: 0 },
       ],
       joined: state.joined,
       my_entry: state.joined ? entry() : null,
       bars: history,
       played_bars: Array.from({ length: state.step }, (_, index) => playedBar(index)),
+      warmup_bars: state.warmupBars,
       history_sessions: HISTORY_SESSIONS,
       play_sessions: PLAY_SESSIONS,
       total_sessions: HISTORY_SESSIONS + PLAY_SESSIONS,
@@ -272,8 +279,8 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       }
       if (action === "finish") {
         state.step = PLAY_SESSIONS
+        state.status = "finished"
         return {
-          entry_id: FLASHBACK_ENTRY_ID,
           final_nav: String(state.cash + state.holdings * MATCH_PRICE),
           pnl_pct: 0,
           pnl_percent: ((state.cash + state.holdings * MATCH_PRICE - FLASHBACK_INITIAL_CASH) / FLASHBACK_INITIAL_CASH) * 100,

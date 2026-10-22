@@ -257,6 +257,7 @@ export const CH6_BUILDERS: Record<string, Builder> = {
               { name: 'MA 50', values: sl, role: PK, width: 2 },
               { name: 'MA 20', values: f, role: GD, width: 2 },
             ],
+            oscShade: shade,
             alt: 'Khoảng thời gian MA 20 nằm trên MA 50 được tô nền',
           }),
         },
@@ -381,7 +382,7 @@ export const CH6_BUILDERS: Record<string, Builder> = {
       const on = (D.p[i] as number) > (D.m[i] as number);
       if (on && start === null) start = i;
       if ((!on || i === to - 1) && start !== null) {
-        shade.push({ from: start, to: on ? i : i - 1, tone: on ? UP : DN });
+        shade.push({ from: start, to: on ? i : i - 1, tone: UP });
         start = null;
       }
     }
@@ -420,8 +421,11 @@ export const CH6_BUILDERS: Record<string, Builder> = {
     const at = bi ?? 90;
     const from = at - 22;
     const to = at + 2;
+    const upperVal = K.u[at] as number;
     return pricePanels(D4, from, to, {
       alt: 'Kênh Donchian 20 phiên: vùng 20 phiên trước và phiên đang xét',
+      oscShade: [{ from: at - 20, to: at - 1, tone: BL, label: '20 phiên trước' }],
+      levels: [{ value: upperVal, role: 'avg', label: 'Biên trên = giá cao nhất 20 phiên trước' }],
       marks: [{ i: at, label: 'Phiên đang xét' }],
     });
   },

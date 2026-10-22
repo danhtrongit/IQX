@@ -2131,6 +2131,7 @@
         },
         {
           "chart_id": "c6l1-g2",
+          "table_toggle": true,
           "type": "chart"
         },
         {
