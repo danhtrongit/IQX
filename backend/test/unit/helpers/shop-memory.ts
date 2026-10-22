@@ -7,12 +7,16 @@ import type {
 import { DEFAULT_MASCOT_ID, type MascotId } from '../../../src/modules/shop/shop.catalog.js';
 import {
   ShopRepository,
+  type DemoExchangeRow,
   type LedgerRow,
   type LockedWallet,
   type NewLedgerEntry,
   type NewPurchase,
   type NewReward,
   type OwnershipRow,
+  type PetLevelRow,
+  type PremiumPlanRow,
+  type PremiumXuPurchaseRow,
   type ProfileRow,
   type ProvisionResult,
   type PurchaseRow,
@@ -23,6 +27,22 @@ import {
 type OwnershipEntry = OwnershipRow & { userId: string; ref: Record<string, unknown> };
 type LedgerEntry = NewLedgerEntry & { createdAt: Date };
 type PurchaseEntry = PurchaseRow & { userId: string };
+type PetLevelEntry = PetLevelRow & { userId: string };
+type PremiumPurchaseEntry = PremiumXuPurchaseRow & { userId: string };
+type DemoAccountEntry = {
+  id: string;
+  userId: string;
+  cashAvailableVnd: bigint;
+  netDepositedCashVnd: bigint;
+};
+type DemoCashEntry = {
+  accountId: string;
+  amountVnd: bigint;
+  balanceAfterVnd: bigint;
+  kind: string;
+  note: string;
+  idempotencyKey: string;
+};
 
 interface MemoryState {
   wallets: Map<string, WalletState>;
@@ -32,6 +52,14 @@ interface MemoryState {
   ownerships: Map<string, OwnershipEntry>;
   profiles: Map<string, ProfileRow>;
   legacy: Map<string, MascotId>;
+  petLevels: Map<string, PetLevelEntry>;
+  demoAccounts: Map<string, DemoAccountEntry>;
+  demoCashLedger: DemoCashEntry[];
+  demoExchanges: DemoExchangeRow[];
+  premiumPurchases: PremiumPurchaseEntry[];
+  plans: Map<string, PremiumPlanRow>;
+  entitlements: Map<string, { startsAt: Date; endsAt: Date; planId: string | null }>;
+  phoneVerified: Map<string, Date>;
 }
 
 function emptyState(): MemoryState {
@@ -43,6 +71,14 @@ function emptyState(): MemoryState {
     ownerships: new Map(),
     profiles: new Map(),
     legacy: new Map(),
+    petLevels: new Map(),
+    demoAccounts: new Map(),
+    demoCashLedger: [],
+    demoExchanges: [],
+    premiumPurchases: [],
+    plans: new Map(),
+    entitlements: new Map(),
+    phoneVerified: new Map(),
   };
 }
 
@@ -301,6 +337,224 @@ export class MemoryShopRepository extends ShopRepository {
 
   async findLegacyMascot(db: SqlClient, userId: string): Promise<MascotId | null> {
     return mem(db).state.legacy.get(userId) ?? null;
+  }
+
+  async findLedgerByUniqueKey(db: SqlClient, uniqueKey: string): Promise<LedgerRow | null> {
+    const row = mem(db).state.ledger.find((entry) => entry.uniqueKey === uniqueKey);
+    if (!row) return null;
+    return {
+      id: row.id,
+      seq: row.seq,
+      kind: row.kind,
+      delta: row.delta,
+      balanceAfter: row.balanceAfter,
+      ref: row.ref,
+      createdAt: row.createdAt,
+    };
+  }
+
+  async listPetLevels(db: SqlClient, userId: string): Promise<PetLevelRow[]> {
+    return [...mem(db).state.petLevels.values()]
+      .filter((row) => row.userId === userId)
+      .map((row) => ({ petId: row.petId, level: row.level, updatedAt: row.updatedAt }));
+  }
+
+  async upsertPetLevel(
+    tx: SqlClient,
+    input: { userId: string; petId: MascotId; level: number },
+  ): Promise<void> {
+    mem(tx).state.petLevels.set(`${input.userId}|${input.petId}`, {
+      userId: input.userId,
+      petId: input.petId,
+      level: input.level,
+      updatedAt: new Date(),
+    });
+  }
+
+  async findDemoAccount(
+    tx: SqlClient,
+    userId: string,
+    _lock: boolean,
+  ): Promise<DemoAccountEntry | null> {
+    const account = mem(tx).state.demoAccounts.get(userId);
+    return account ? { ...account } : null;
+  }
+
+  async createDemoAccountIfAbsent(
+    tx: SqlClient,
+    userId: string,
+  ): Promise<{ account: DemoAccountEntry; created: boolean }> {
+    const { state } = mem(tx);
+    const existing = state.demoAccounts.get(userId);
+    if (existing) return { account: { ...existing }, created: false };
+    const account: DemoAccountEntry = {
+      id: randomUUID(),
+      userId,
+      cashAvailableVnd: 0n,
+      netDepositedCashVnd: 0n,
+    };
+    state.demoAccounts.set(userId, account);
+    state.demoCashLedger.push({
+      accountId: account.id,
+      amountVnd: 0n,
+      balanceAfterVnd: 0n,
+      kind: 'activate',
+      note: 'Vốn demo khởi tạo 0 VND, cấp đúng một lần',
+      idempotencyKey: `manual:initial_funding:${userId}`,
+    });
+    return { account: { ...account }, created: true };
+  }
+
+  async updateDemoAccountCash(
+    tx: SqlClient,
+    input: {
+      accountId: string;
+      cashAvailableVnd: bigint;
+      netDepositedCashVnd: bigint;
+    },
+  ): Promise<void> {
+    const { state } = mem(tx);
+    const account = [...state.demoAccounts.values()].find((row) => row.id === input.accountId);
+    if (!account) throw new Error('Demo trading account does not exist');
+    account.cashAvailableVnd = input.cashAvailableVnd;
+    account.netDepositedCashVnd = input.netDepositedCashVnd;
+  }
+
+  async findDemoExchangeByKey(
+    db: SqlClient,
+    uniqueKey: string,
+  ): Promise<DemoExchangeRow | null> {
+    const row = mem(db).state.demoExchanges.find((entry) => entry.uniqueKey === uniqueKey);
+    return row ? { ...row } : null;
+  }
+
+  async insertDemoExchange(
+    tx: SqlClient,
+    exchange: {
+      id: string;
+      userId: string;
+      direction: DemoExchangeRow['direction'];
+      xuDelta: number;
+      cashDeltaVnd: bigint;
+      uniqueKey: string;
+    },
+  ): Promise<DemoExchangeRow> {
+    const { state } = mem(tx);
+    if (state.demoExchanges.some((row) => row.uniqueKey === exchange.uniqueKey)) {
+      throw violation('uq_demo_exchange_ledger_unique_key');
+    }
+    const row: DemoExchangeRow = {
+      id: exchange.id,
+      userId: exchange.userId,
+      direction: exchange.direction,
+      xuDelta: exchange.xuDelta,
+      cashDeltaVnd: exchange.cashDeltaVnd,
+      uniqueKey: exchange.uniqueKey,
+      createdAt: new Date(),
+    };
+    state.demoExchanges.push(row);
+    return { ...row };
+  }
+
+  async findPremiumXuPurchaseByKey(
+    db: SqlClient,
+    userId: string,
+    uniqueKey: string,
+  ): Promise<PremiumXuPurchaseRow | null> {
+    const row = mem(db).state.premiumPurchases.find(
+      (entry) => entry.userId === userId && entry.uniqueKey === uniqueKey,
+    );
+    return row ? { ...row } : null;
+  }
+
+  async insertPremiumXuPurchase(
+    tx: SqlClient,
+    purchase: {
+      id: string;
+      userId: string;
+      planId: string | null;
+      xuSpent: number;
+      daysGranted: number;
+      uniqueKey: string;
+      ledgerId: string;
+    },
+  ): Promise<PremiumXuPurchaseRow> {
+    const { state } = mem(tx);
+    if (state.premiumPurchases.some((row) => row.uniqueKey === purchase.uniqueKey)) {
+      throw violation('uq_premium_xu_purchases_unique_key');
+    }
+    const row: PremiumPurchaseEntry = {
+      id: purchase.id,
+      userId: purchase.userId,
+      planId: purchase.planId,
+      xuSpent: purchase.xuSpent,
+      daysGranted: purchase.daysGranted,
+      uniqueKey: purchase.uniqueKey,
+      ledgerId: purchase.ledgerId,
+      createdAt: new Date(),
+    };
+    state.premiumPurchases.push(row);
+    return { ...row };
+  }
+
+  async findLatestPremiumXuPurchase(
+    db: SqlClient,
+    userId: string,
+  ): Promise<PremiumXuPurchaseRow | null> {
+    const rows = mem(db).state.premiumPurchases.filter((row) => row.userId === userId);
+    const last = rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+    return last ? { ...last } : null;
+  }
+
+  async findPremiumPlan(db: SqlClient, planId: string): Promise<PremiumPlanRow | null> {
+    return mem(db).state.plans.get(planId) ?? null;
+  }
+
+  async findActiveMonthlyPremiumPlan(db: SqlClient): Promise<PremiumPlanRow | null> {
+    const plans = [...mem(db).state.plans.values()].filter(
+      (plan) => plan.isActive && plan.durationDays === 30,
+    );
+    return plans[0] ?? null;
+  }
+
+  async findActivePremiumGrant(
+    db: SqlClient,
+    userId: string,
+  ): Promise<{ startsAt: Date; endsAt: Date; planId: string | null } | null> {
+    const grant = mem(db).state.entitlements.get(userId);
+    if (!grant || grant.endsAt.getTime() <= Date.now()) return null;
+    return { ...grant };
+  }
+
+  async appendDemoCashLedger(
+    tx: SqlClient,
+    input: {
+      accountId: string;
+      amountVnd: bigint;
+      balanceAfterVnd: bigint;
+      kind: string;
+      note: string;
+      idempotencyKey: string;
+    },
+  ): Promise<void> {
+    mem(tx).state.demoCashLedger.push({ ...input });
+  }
+
+  async grantPremiumDays(
+    tx: SqlClient,
+    input: { userId: string; planId: string | null; days: number; note?: string },
+  ): Promise<{ startsAt: Date; endsAt: Date }> {
+    const { state } = mem(tx);
+    const current = state.entitlements.get(input.userId);
+    const now = new Date();
+    const startsAt = current && current.endsAt.getTime() > now.getTime() ? current.endsAt : now;
+    const endsAt = new Date(startsAt.getTime() + input.days * 24 * 60 * 60 * 1000);
+    state.entitlements.set(input.userId, { startsAt, endsAt, planId: input.planId });
+    return { startsAt, endsAt };
+  }
+
+  async findPhoneVerifiedAt(db: SqlClient, userId: string): Promise<Date | null> {
+    return mem(db).state.phoneVerified.get(userId) ?? null;
   }
 }
 

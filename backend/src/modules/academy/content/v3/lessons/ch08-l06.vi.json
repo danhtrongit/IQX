@@ -1,0 +1,376 @@
+{
+  "chapter": 8,
+  "charts": {
+    "c8l6-g1": {
+      "alt": "Lợi nhuận chia cho nhiều cổ phiếu hơn nên EPS tăng chậm hơn LNST: LNST CAGR 11,3% mỗi năm, số cổ phiếu tăng 2,9% mỗi năm nên EPS CAGR chỉ 8,1%",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "lnst-cagr",
+          "title": "LNST CAGR",
+          "tone": "pos",
+          "value": "11,3% mỗi năm"
+        },
+        {
+          "id": "shares",
+          "sub": "330 lên 360 triệu",
+          "title": "Số cổ phiếu tăng",
+          "tone": "warn",
+          "value": "+2,9% mỗi năm"
+        },
+        {
+          "emph": true,
+          "id": "eps-cagr",
+          "title": "EPS CAGR",
+          "tone": "p1",
+          "value": "8,1% mỗi năm"
+        }
+      ]
+    },
+    "c8l6-g2": {
+      "kind": "category",
+      "labels": [
+        "Doanh thu CAGR",
+        "LNST CAGR",
+        "EPS CAGR"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "CAGR",
+          "tone": "p1",
+          "values": [
+            9.6,
+            11.3,
+            8.1
+          ]
+        }
+      ],
+      "title": "Ba tốc độ CAGR · %",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c8l6-rep": {
+      "items": [
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "8,1%",
+            "kind": "category",
+            "labels": [
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "EPS CAGR 3Y",
+                "tone": "p1",
+                "values": [
+                  1131.9767,
+                  1223.5465,
+                  1322.093,
+                  1429.3605
+                ]
+              }
+            ],
+            "title": "EPS CAGR 3Y",
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "EPS CAGR 3Y"
+        },
+        {
+          "model": {
+            "caption_tone": "price",
+            "caption_value": "8,1%",
+            "kind": "category",
+            "labels": [
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "EPS CAGR 3Y",
+                "tone_by_sign": {
+                  "neg": "neg",
+                  "pos": "pos"
+                },
+                "values": [
+                  1131.6187,
+                  793.1446,
+                  1169.3382,
+                  1429.0845
+                ]
+              }
+            ],
+            "title": "EPS CAGR 3Y",
+            "unit": "",
+            "value_labels": "none"
+          },
+          "title": "Thành phần"
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack",
+      "title": "EPS CAGR 3Y"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch08-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "EPS CAGR 3Y là tốc độ tăng lợi nhuận trên mỗi cổ phiếu đều mỗi năm trong 3 năm. Đây là con số gần nhất với phần lợi nhuận cổ đông thật sự nhận thêm theo thời gian.",
+  "lesson_key": "fundamental:eps_cagr3",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "EPS CAGR 3Y dùng <b>EPS cả năm</b> 2022 và 2025: (EPS 2025 ÷ EPS 2022)1/3 − 1. EPS cả năm là tổng EPS của bốn quý trong năm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l6-g1",
+          "type": "chart"
+        },
+        {
+          "text": "LNST tăng 11,3% mỗi năm, nhưng số cổ phiếu tăng từ 330 lên 360 triệu. Phần lợi nhuận của mỗi cổ phiếu chỉ tăng 8,1% mỗi năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "EPS CAGR 3Y là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Đặt ba chỉ tiêu CAGR cạnh nhau cho thấy tăng trưởng đi từ bán hàng đến lợi nhuận rồi đến từng cổ phiếu ra sao.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l6-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "LNST tăng nhanh hơn doanh thu: biên lợi nhuận mở rộng.",
+              "title": "Doanh thu → LNST"
+            },
+            {
+              "text": "EPS tăng chậm hơn LNST: số cổ phiếu tăng, có pha loãng.",
+              "title": "LNST → EPS"
+            },
+            {
+              "text": "Ba con số cao, gần nhau, và EPS không thấp hơn LNST.",
+              "title": "Trường hợp lý tưởng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ba tốc độ tăng trưởng"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c8l6-rep",
+          "title": "EPS CAGR 3Y",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EPS CAGR 3Y của giai đoạn 2022 đến 2025.",
+              "title": "Con số lớn"
+            },
+            {
+              "text": "EPS cả năm, đơn vị đồng trên mỗi cổ phiếu.",
+              "title": "Cột xanh"
+            },
+            {
+              "text": "EPS nếu tăng đều theo CAGR từ năm 2022 đến năm 2025.",
+              "title": "Đường đứt nét"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Lợi nhuận tăng tốt và gần như toàn bộ phần tăng đến được với cổ đông hiện hữu.",
+              "title": "EPS CAGR cao và gần LNST CAGR",
+              "tone": "pos"
+            },
+            {
+              "text": "Doanh nghiệp liên tục phát hành thêm cổ phiếu, cổ đông bị pha loãng.",
+              "title": "EPS CAGR thấp hơn LNST CAGR nhiều",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức tham khảo giống doanh thu CAGR: trên 15% mỗi năm là cao, 5% đến 15% là khá, dưới 5% là thấp.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Về dài hạn, giá cổ phiếu thường đi theo EPS nhiều hơn theo LNST.",
+              "title": "Đo tăng trưởng của cổ đông"
+            },
+            {
+              "text": "Khoảng cách giữa hai con số cho biết mức pha loãng trong 3 năm.",
+              "title": "So với LNST CAGR"
+            },
+            {
+              "text": "EPS CAGR là quá khứ 3 năm, EPS YoY cho biết đà tăng hiện tại.",
+              "title": "Kết hợp với EPS YoY"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "LNST (tỷ đồng)"
+            },
+            {
+              "label": "Số cổ phiếu (triệu)"
+            },
+            {
+              "label": "EPS (đồng)"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "2022",
+                "373",
+                "330",
+                "1.132"
+              ]
+            },
+            {
+              "cells": [
+                "2023",
+                "262",
+                "330",
+                "793"
+              ]
+            },
+            {
+              "cells": [
+                "2024",
+                "386",
+                "330",
+                "1.169"
+              ]
+            },
+            {
+              "cells": [
+                "2025",
+                "514",
+                "360",
+                "1.429"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "items": [
+            {
+              "term": "Hệ số cả chặng",
+              "text": "1.429 ÷ 1.132 ≈ 1,263. EPS tăng 26,3% sau 3 năm."
+            },
+            {
+              "term": "EPS CAGR",
+              "text": "1,263 mũ 1/3 ≈ 1,081, tức khoảng 8,1% mỗi năm."
+            },
+            {
+              "term": "So với LNST CAGR",
+              "text": "11,3% so với 8,1%. Khoảng 3 điểm phần trăm mỗi năm mất đi do phát hành thêm cổ phiếu năm 2025."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận tăng không có nghĩa phần của mỗi cổ phiếu tăng tương ứng.",
+              "title": "Chỉ xem LNST CAGR"
+            },
+            {
+              "text": "Năm gốc lỗ thì EPS CAGR không có ý nghĩa.",
+              "title": "Tính khi EPS năm đầu âm"
+            },
+            {
+              "text": "EPS 2023 giảm gần 30%. CAGR 8,1% không cho thấy điều này.",
+              "title": "Bỏ qua năm giảm ở giữa"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "EPS CAGR 3Y = <b>(EPS 2025 ÷ EPS 2022)1/3 − 1</b>, dùng EPS cả năm.",
+    "Số cổ phiếu tăng làm <b>EPS CAGR thấp hơn LNST CAGR</b>.",
+    "Đặt <b>doanh thu, LNST và EPS CAGR</b> cạnh nhau để thấy toàn bộ bức tranh tăng trưởng.",
+    "Lý tưởng là <b>ba con số cao, gần nhau</b>, các năm tăng đều."
+  ],
+  "title": "EPS CAGR 3Y · tăng trưởng EPS kép 3 năm"
+}

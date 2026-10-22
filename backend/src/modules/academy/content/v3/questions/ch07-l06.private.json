@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch07-l06",
+  "questions": [
+    {
+      "correct_option_id": "6cadc164b2",
+      "id": "ch07-l06-q01",
+      "options": [
+        {
+          "id": "6cadc164b2",
+          "text": "MFI có tính cả khối lượng"
+        },
+        {
+          "id": "a3837a0a71",
+          "text": "MFI chỉ dùng giá mở cửa"
+        },
+        {
+          "id": "7a516a8c44",
+          "text": "MFI không có vùng quá mua"
+        }
+      ],
+      "prompt": "MFI khác RSI ở điểm nào?"
+    },
+    {
+      "correct_option_id": "1110a08c70",
+      "id": "ch07-l06-q02",
+      "options": [
+        {
+          "id": "1110a08c70",
+          "text": "Giá điển hình nhân khối lượng"
+        },
+        {
+          "id": "3c13bf2c0d",
+          "text": "Giá đóng cửa trừ giá mở cửa"
+        },
+        {
+          "id": "b5093d3f9f",
+          "text": "Khối lượng chia cho số phiên"
+        }
+      ],
+      "prompt": "Dòng tiền của một phiên trong MFI được tính từ đâu?"
+    },
+    {
+      "correct_option_id": "7561796648",
+      "id": "ch07-l06-q03",
+      "options": [
+        {
+          "id": "7561796648",
+          "text": "Giá điển hình cao hơn phiên trước"
+        },
+        {
+          "id": "dc48790fb1",
+          "text": "Khối lượng cao hơn phiên trước"
+        },
+        {
+          "id": "00ae6ea2ef",
+          "text": "Giá mở cửa cao hơn giá đóng cửa"
+        }
+      ],
+      "prompt": "Khi nào dòng tiền của phiên được tính là dương?"
+    },
+    {
+      "correct_option_id": "f742264d9c",
+      "id": "ch07-l06-q04",
+      "options": [
+        {
+          "id": "f742264d9c",
+          "text": "Vùng quá mua"
+        },
+        {
+          "id": "48ab91d2cb",
+          "text": "Vùng quá bán"
+        },
+        {
+          "id": "95a2602340",
+          "text": "Vùng tích lũy"
+        }
+      ],
+      "prompt": "MFI trên 80 là vùng gì?"
+    },
+    {
+      "correct_option_id": "9c0c3e217c",
+      "id": "ch07-l06-q05",
+      "options": [
+        {
+          "id": "9c0c3e217c",
+          "text": "Đà tăng thiếu khối lượng ủng hộ"
+        },
+        {
+          "id": "e70f075c0a",
+          "text": "Lực mua đang rất mạnh"
+        },
+        {
+          "id": "01fdecea48",
+          "text": "Cổ phiếu không còn giao dịch"
+        }
+      ],
+      "prompt": "MFI thấp hơn RSI rõ rệt khi giá đang tăng cho thấy điều gì?"
+    }
+  ],
+  "salt": "f21b663362e073bfb966d339367e4cb95337c37ffcfc91db3070bfd766e4432e"
+}

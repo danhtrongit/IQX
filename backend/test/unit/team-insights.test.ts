@@ -38,8 +38,8 @@ function row(view: ReturnType<typeof buildAcademyProgress>, id: string) {
   return found;
 }
 
-describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học viện v3.2)', () => {
-  it('lists the 5 published chapters with lessons, exam and practice; totals count 43 required lessons', () => {
+describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học viện v3.3)', () => {
+  it('lists the 13 published chapters with lessons, exam and practice; totals count 87 required lessons', () => {
     const view = buildAcademyProgress(content);
     expect(view.catalog_version).toBe(ACADEMY_V3_CATALOG_VERSION);
     expect(view.chapters.map((chapter) => [chapter.no, chapter.total])).toEqual([
@@ -48,8 +48,16 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
       [3, 9],
       [4, 10],
       [5, 4],
+      [6, 4],
+      [7, 7],
+      [8, 6],
+      [9, 5],
+      [10, 7],
+      [11, 4],
+      [12, 5],
+      [13, 6],
     ]);
-    expect(view.total).toBe(43);
+    expect(view.total).toBe(87);
     expect(view).toMatchObject({
       started: false,
       completed: 0,
@@ -57,7 +65,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
       current_lesson: null,
       last_completion: null,
       learning_coins: 0,
-      chapter_exams: { total: 5, passed: 0 },
+      chapter_exams: { total: 13, passed: 0 },
     });
     const ch3 = view.chapters[2]?.lessons ?? [];
     expect(ch3.map((l) => [l.lesson_id, l.kind, l.optional]).slice(-2)).toEqual([
@@ -99,10 +107,10 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
       ],
       attempts: [
         // An attempt key outside the catalog is ignored.
-        { lesson_key: 'technical:ema', attempts: 3, latest_score: 7, open_at: null },
+        { lesson_key: 'concept:hop_luu', attempts: 3, latest_score: 7, open_at: null },
       ],
     });
-    expect(view).toMatchObject({ started: true, completed: 1, total: 43, learning_coins: 200 });
+    expect(view).toMatchObject({ started: true, completed: 1, total: 87, learning_coins: 200 });
     expect(row(view, 'ch04-l06')).toMatchObject({ status: 'completed', kind: 'lesson' });
     expect(row(view, 'ch04-l05').status).toBe('locked');
     expect(view.current_lesson).toEqual({
@@ -158,7 +166,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
     const throughCh3 = ids((id) => /^ch0[1-3]-/.test(id) && !id.endsWith('practice'));
     const view = buildAcademyProgress(content, { completions: done(throughCh3), attempts: [] });
     expect(view.completed).toBe(29);
-    expect(view.chapter_exams).toEqual({ total: 5, passed: 3 });
+    expect(view.chapter_exams).toEqual({ total: 13, passed: 3 });
     expect(row(view, 'ch03-practice')).toMatchObject({ status: 'not_started', is_current: false });
     expect(row(view, 'ch04-l01')).toMatchObject({ status: 'not_started', is_current: true });
     expect(view.current_lesson?.lesson_id).toBe('ch04-l01');
@@ -178,7 +186,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
       completions: done(ids((id) => isLesson(id) || (isExam(id) && id !== 'ch05-exam'))),
       attempts: [],
     });
-    expect(lessonsOnly).toMatchObject({ completed: 43, total: 43, all_done: false });
+    expect(lessonsOnly).toMatchObject({ completed: 87, total: 87, all_done: false });
     expect(lessonsOnly.current_lesson).toMatchObject({
       lesson_id: 'ch05-exam',
       label: 'Bài thi Chương 5',
@@ -190,10 +198,10 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
     });
     expect(all).toMatchObject({
       started: true,
-      completed: 43,
+      completed: 87,
       all_done: true,
       current_lesson: null,
-      chapter_exams: { total: 5, passed: 5 },
+      chapter_exams: { total: 13, passed: 13 },
     });
     expect(all.chapters.every((chapter) => chapter.exam_passed)).toBe(true);
   });
@@ -222,7 +230,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
     expect(summaries.get(userId)).toEqual({
       started: true,
       completed: 1,
-      total: 43,
+      total: 87,
       all_done: false,
       current_lesson: expect.objectContaining({ lesson_id: 'ch01-l02', kind: 'lesson' }),
     });

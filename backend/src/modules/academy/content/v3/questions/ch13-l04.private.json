@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l04",
+  "questions": [
+    {
+      "correct_option_id": "a5ae56ebed",
+      "id": "ch13-l04-q01",
+      "options": [
+        {
+          "id": "a5ae56ebed",
+          "text": "P/E chia cho tốc độ tăng trưởng EPS"
+        },
+        {
+          "id": "c8530a80ea",
+          "text": "P/E nhân với tốc độ tăng trưởng EPS"
+        },
+        {
+          "id": "50a0e1ac9b",
+          "text": "EPS chia cho tốc độ tăng trưởng giá"
+        }
+      ],
+      "prompt": "PEG được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "4d1dcb133e",
+      "id": "ch13-l04-q02",
+      "options": [
+        {
+          "id": "4d1dcb133e",
+          "text": "Số 20"
+        },
+        {
+          "id": "1187a751a6",
+          "text": "Số 0,2"
+        },
+        {
+          "id": "615ae589b1",
+          "text": "Số 1,2"
+        }
+      ],
+      "prompt": "Khi EPS tăng 20%, tăng trưởng được đưa vào PEG dưới dạng nào?"
+    },
+    {
+      "correct_option_id": "9c1df5f40c",
+      "id": "ch13-l04-q03",
+      "options": [
+        {
+          "id": "9c1df5f40c",
+          "text": "Giá thấp so với tốc độ tăng lợi nhuận"
+        },
+        {
+          "id": "2cc49dcceb",
+          "text": "Doanh nghiệp đang thua lỗ trong 4 quý gần nhất"
+        },
+        {
+          "id": "92cf2c27f3",
+          "text": "Giá cao so với tốc độ tăng lợi nhuận"
+        }
+      ],
+      "prompt": "PEG dưới 1 thường được hiểu là gì?"
+    },
+    {
+      "correct_option_id": "65a76cbb49",
+      "id": "ch13-l04-q04",
+      "options": [
+        {
+          "id": "65a76cbb49",
+          "text": "EPS đi ngang hoặc giảm"
+        },
+        {
+          "id": "cf12151439",
+          "text": "P/E lớn hơn 10 lần"
+        },
+        {
+          "id": "8a06fb39bf",
+          "text": "Doanh nghiệp có nợ vay"
+        }
+      ],
+      "prompt": "PEG không có ý nghĩa trong trường hợp nào?"
+    },
+    {
+      "correct_option_id": "a52f6355f9",
+      "id": "ch13-l04-q05",
+      "options": [
+        {
+          "id": "a52f6355f9",
+          "text": "PEG bằng 1"
+        },
+        {
+          "id": "ccad9178a1",
+          "text": "PEG bằng 0"
+        },
+        {
+          "id": "0e925f8541",
+          "text": "PEG bằng trung vị ngành"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của PEG, đường mốc nằm ở mức nào?"
+    }
+  ],
+  "salt": "93de7bd25d5f2bbbd53a1a85bf831d69cff2c33531f7c80968096c8ed0c94bfb"
+}

@@ -3,100 +3,100 @@
   "item_id": "ch05-l04",
   "questions": [
     {
-      "correct_option_id": "9df52d667e",
+      "correct_option_id": "d40f3ca47b",
       "id": "ch05-l04-q01",
       "options": [
         {
-          "id": "9df52d667e",
+          "id": "d40f3ca47b",
           "text": "EPS quý gần nhất tăng mạnh so với cùng kỳ, thường từ 20% đến 25% trở lên"
         },
         {
-          "id": "52f68e734d",
+          "id": "a73e0c3c58",
           "text": "Cổ phiếu có giá thấp hơn giá trị sổ sách"
         },
         {
-          "id": "17b83db92a",
+          "id": "ae82147adc",
           "text": "Doanh nghiệp có nhiều cổ đông"
         }
       ],
       "prompt": "Chữ C trong CANSLIM yêu cầu điều gì?"
     },
     {
-      "correct_option_id": "85f5f79e9d",
+      "correct_option_id": "e20c0259a8",
       "id": "ch05-l04-q02",
       "options": [
         {
-          "id": "85f5f79e9d",
+          "id": "e20c0259a8",
           "text": "Kiểm tra xu hướng thị trường chung"
         },
         {
-          "id": "670947b381",
+          "id": "308175ee14",
           "text": "Mua ngay cổ phiếu tăng mạnh nhất"
         },
         {
-          "id": "3f73c93583",
+          "id": "b3d0c77d0d",
           "text": "Bán toàn bộ cổ phiếu đang có"
         }
       ],
       "prompt": "Theo CANSLIM, bước đầu tiên khi áp dụng là gì?"
     },
     {
-      "correct_option_id": "7a3094643e",
+      "correct_option_id": "8d8760edbc",
       "id": "ch05-l04-q03",
       "options": [
         {
-          "id": "7a3094643e",
+          "id": "8d8760edbc",
           "text": "Cao hơn trung bình 50 phiên ít nhất 40% đến 50%"
         },
         {
-          "id": "05035c7bbe",
+          "id": "c0a7d310b9",
           "text": "Thấp hơn trung bình"
         },
         {
-          "id": "d846374a3c",
+          "id": "804a3214f1",
           "text": "Bằng đúng phiên trước đó"
         }
       ],
       "prompt": "Phiên giá vượt điểm mua cần có khối lượng như thế nào?"
     },
     {
-      "correct_option_id": "086d4f1eb5",
+      "correct_option_id": "e3f1d231ae",
       "id": "ch05-l04-q04",
       "options": [
         {
-          "id": "086d4f1eb5",
+          "id": "e3f1d231ae",
           "text": "Rủi ro tăng và dễ bị cắt lỗ khi giá điều chỉnh"
         },
         {
-          "id": "44ba67e99c",
+          "id": "91ad4e5ebd",
           "text": "Vì sàn không cho phép đặt lệnh"
         },
         {
-          "id": "8d9fdd5469",
+          "id": "dcc39e20dd",
           "text": "Vì cổ phiếu sẽ bị tạm ngừng giao dịch"
         }
       ],
       "prompt": "Vì sao không nên mua khi giá đã cao hơn điểm mua quá 5%?"
     },
     {
-      "correct_option_id": "4b6605821f",
+      "correct_option_id": "fd06da45e6",
       "id": "ch05-l04-q05",
       "options": [
         {
-          "id": "4b6605821f",
+          "id": "fd06da45e6",
           "text": "Bán khi giá giảm 7% đến 8% so với giá mua"
         },
         {
-          "id": "209746872b",
+          "id": "f4cdb54cd7",
           "text": "Không bao giờ cắt lỗ"
         },
         {
-          "id": "0baa384ff1",
+          "id": "555edd429a",
           "text": "Chờ giá giảm 50% rồi mới bán"
         }
       ],
       "prompt": "Quy tắc cắt lỗ của CANSLIM là gì?"
     }
   ],
-  "salt": "d850410d4a774f37968e9a96567ccf7585b42cfe0484b6cc6d835c12732d2d08"
+  "salt": "57c2e5c73a57bb1a6deff9287c63b13761d58c1c38b831675f0a18c3753d1552"
 }

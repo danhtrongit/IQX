@@ -940,6 +940,84 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 107,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/rounds",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/rounds",
+      "matchedOperation": "GET /api/v2/admin/flashback/rounds",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/rounds"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 113,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/alerts",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/alerts",
+      "matchedOperation": "GET /api/v2/admin/flashback/alerts",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/alerts"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 119,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/suspects",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/suspects",
+      "matchedOperation": "GET /api/v2/admin/flashback/suspects",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/suspects"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 125,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/pause",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/pause",
+      "matchedOperation": "GET /api/v2/admin/flashback/pause",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/pause"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 137,
+      "callee": "api",
+      "raw": "/admin/flashback/pause",
+      "method": "POST",
+      "route": "/api/v2/admin/flashback/pause",
+      "matchedOperation": "POST /api/v2/admin/flashback/pause",
+      "matchedOperations": [
+        "POST /api/v2/admin/flashback/pause"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 151,
+      "callee": "api",
+      "raw": "/admin/flashback/rounds/{encodeURIComponent(id)}/reveal",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/rounds/{encodeURIComponent(id)}/reveal",
+      "matchedOperation": "GET /api/v2/admin/flashback/rounds/{id}/reveal",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/rounds/{id}/reveal"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/admin/learning/api.ts",
       "line": 147,
       "callee": "apiUpload",
@@ -1931,6 +2009,71 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/demo-trading/analysis/api.ts",
+      "line": 51,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/dashboard/settings",
+      "method": "GET",
+      "route": "/api/v2/dashboard/settings",
+      "matchedOperation": "GET /api/v2/dashboard/settings",
+      "matchedOperations": [
+        "GET /api/v2/dashboard/settings"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/analysis/api.ts",
+      "line": 55,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/dashboard/catalog",
+      "method": "GET",
+      "route": "/api/v2/dashboard/catalog",
+      "matchedOperation": "GET /api/v2/dashboard/catalog",
+      "matchedOperations": [
+        "GET /api/v2/dashboard/catalog"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/analysis/api.ts",
+      "line": 59,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/dashboard/settings",
+      "method": "PUT",
+      "route": "/api/v2/dashboard/settings",
+      "matchedOperation": "PUT /api/v2/dashboard/settings",
+      "matchedOperations": [
+        "PUT /api/v2/dashboard/settings"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/analysis/api.ts",
+      "line": 69,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/fundamental/{symbol}",
+      "method": "GET",
+      "route": "/api/v2/fundamental/{symbol}",
+      "matchedOperation": "GET /api/v2/fundamental/{symbol}",
+      "matchedOperations": [
+        "GET /api/v2/fundamental/{symbol}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/analysis/api.ts",
+      "line": 83,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/valuation/{symbol}",
+      "method": "GET",
+      "route": "/api/v2/valuation/{symbol}",
+      "matchedOperation": "GET /api/v2/valuation/{symbol}",
+      "matchedOperations": [
+        "GET /api/v2/valuation/{symbol}"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/demo-trading/bot/api.ts",
       "line": 53,
       "callee": "requestOperation",
@@ -2588,7 +2731,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 120,
+      "line": 164,
       "callee": "requestOperation",
       "raw": "GET /api/v2/shop",
       "method": "GET",
@@ -2601,7 +2744,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 125,
+      "line": 169,
       "callee": "requestOperation",
       "raw": "GET /api/v2/shop/coin-ledger",
       "method": "GET",
@@ -2614,7 +2757,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 129,
+      "line": 173,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/progress",
       "method": "GET",
@@ -2627,7 +2770,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 136,
+      "line": 180,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/catalog",
       "method": "GET",
@@ -2640,7 +2783,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 168,
+      "line": 212,
       "callee": "requestOperation",
       "raw": "POST /api/v2/shop/purchases",
       "method": "POST",
@@ -2653,7 +2796,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 175,
+      "line": 219,
       "callee": "requestOperation",
       "raw": "GET /api/v2/shop/purchases/{idempotencyKey}",
       "method": "GET",
@@ -2666,7 +2809,7 @@
     },
     {
       "file": "src/pages/demo-trading/shop/shop-api.ts",
-      "line": 182,
+      "line": 226,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/shop/active-mascot",
       "method": "PUT",
@@ -2674,6 +2817,45 @@
       "matchedOperation": "PUT /api/v2/shop/active-mascot",
       "matchedOperations": [
         "PUT /api/v2/shop/active-mascot"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 236,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/shop/pets/{mascotId}/evolve",
+      "method": "POST",
+      "route": "/api/v2/shop/pets/{mascotId}/evolve",
+      "matchedOperation": "POST /api/v2/shop/pets/{mascotId}/evolve",
+      "matchedOperations": [
+        "POST /api/v2/shop/pets/{mascotId}/evolve"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 244,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/shop/premium-purchases",
+      "method": "POST",
+      "route": "/api/v2/shop/premium-purchases",
+      "matchedOperation": "POST /api/v2/shop/premium-purchases",
+      "matchedOperations": [
+        "POST /api/v2/shop/premium-purchases"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/shop/shop-api.ts",
+      "line": 251,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/shop/demo-exchange",
+      "method": "POST",
+      "route": "/api/v2/shop/demo-exchange",
+      "matchedOperation": "POST /api/v2/shop/demo-exchange",
+      "matchedOperations": [
+        "POST /api/v2/shop/demo-exchange"
       ],
       "classification": "api-call"
     },
@@ -3860,6 +4042,9 @@
     "GET /api/v2/cap7/progress",
     "GET /api/v2/cap8/positions/{symbol}/exit-context",
     "GET /api/v2/cap8/progress",
+    "GET /api/v2/flashback/current",
+    "GET /api/v2/flashback/current/leaderboard",
+    "GET /api/v2/flashback/indicators",
     "GET /api/v2/health",
     "GET /api/v2/market-analysis/{type}",
     "GET /api/v2/market-data/company/{symbol}/bctc",
@@ -3999,6 +4184,10 @@
     "POST /api/v2/cap8/exits",
     "POST /api/v2/cap8/graduate",
     "POST /api/v2/cap8/positions/{symbol}/sync-plan",
+    "POST /api/v2/flashback/current/join",
+    "POST /api/v2/flashback/entries/{id}/finish",
+    "POST /api/v2/flashback/entries/{id}/next",
+    "POST /api/v2/flashback/entries/{id}/orders",
     "POST /api/v2/journey/assessments",
     "POST /api/v2/journey/assessments/{assessmentId}/reveal",
     "POST /api/v2/journey/reading-datasets",
@@ -4007,6 +4196,7 @@
     "POST /api/v2/premium/sepay/ipn",
     "POST /api/v2/strategy/lists",
     "POST /api/v2/telegram/webhook/{secret}",
-    "PUT /api/v2/backtest/strategies/{strategyId}"
+    "PUT /api/v2/backtest/strategies/{strategyId}",
+    "PUT /api/v2/flashback/entries/{id}/indicators"
   ]
 }

@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-exam",
+  "questions": [
+    {
+      "correct_option_id": "715565f014",
+      "id": "ch09-exam-q01",
+      "options": [
+        {
+          "id": "715565f014",
+          "text": "Lợi nhuận sau thuế"
+        },
+        {
+          "id": "341e0944ca",
+          "text": "Doanh thu thuần"
+        },
+        {
+          "id": "53f7b37d8a",
+          "text": "Dòng tiền từ hoạt động kinh doanh"
+        }
+      ],
+      "prompt": "Profit Positive Streak được tính trên chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "c9134ce60c",
+      "id": "ch09-exam-q02",
+      "options": [
+        {
+          "id": "c9134ce60c",
+          "text": "Từ 2021 đến 2025"
+        },
+        {
+          "id": "7f4d07bdea",
+          "text": "Từ 2019 đến 2025 trừ 2020"
+        },
+        {
+          "id": "956a354130",
+          "text": "Chỉ năm 2025"
+        }
+      ],
+      "prompt": "Doanh nghiệp lãi 2019, lỗ 2020, lãi từ 2021 đến 2025. Chuỗi năm lãi gồm những năm nào?"
+    },
+    {
+      "correct_option_id": "d1e8bb16aa",
+      "id": "ch09-exam-q03",
+      "options": [
+        {
+          "id": "d1e8bb16aa",
+          "text": "7 năm"
+        },
+        {
+          "id": "b8eeff02d1",
+          "text": "5 năm"
+        },
+        {
+          "id": "48b9cbf0fc",
+          "text": "10 năm"
+        }
+      ],
+      "prompt": "Với dữ liệu 7 năm, Profit Positive Streak lớn nhất có thể là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "3048dc2a64",
+      "id": "ch09-exam-q04",
+      "options": [
+        {
+          "id": "3048dc2a64",
+          "text": "Chuỗi không cho biết lãi nhiều hay ít"
+        },
+        {
+          "id": "7295878bef",
+          "text": "Chuỗi chỉ tính các năm doanh thu tăng"
+        },
+        {
+          "id": "e844467088",
+          "text": "Chuỗi đã bao gồm cả các năm lỗ"
+        }
+      ],
+      "prompt": "Vì sao chuỗi năm lãi dài chưa đủ để kết luận doanh nghiệp tốt?"
+    },
+    {
+      "correct_option_id": "cd0f6fd2bb",
+      "id": "ch09-exam-q05",
+      "options": [
+        {
+          "id": "cd0f6fd2bb",
+          "text": "Vẫn được tính, dù kinh doanh chính có thể đang lỗ"
+        },
+        {
+          "id": "a5a5d15d00",
+          "text": "Không được tính vào chuỗi"
+        },
+        {
+          "id": "aa070f7649",
+          "text": "Làm chuỗi tự động bằng 0"
+        }
+      ],
+      "prompt": "Một năm có lãi nhờ bán tài sản ảnh hưởng thế nào tới chuỗi năm lãi?"
+    },
+    {
+      "correct_option_id": "ae5b30ec32",
+      "id": "ch09-exam-q06",
+      "options": [
+        {
+          "id": "ae5b30ec32",
+          "text": "Năm có lãi nhưng không thuộc chuỗi hiện tại"
+        },
+        {
+          "id": "4954ae77ac",
+          "text": "Năm chưa có báo cáo tài chính"
+        },
+        {
+          "id": "294e176fc2",
+          "text": "Năm lợi nhuận giảm so với năm trước"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của chuỗi năm lãi, cột màu mờ thể hiện gì?"
+    },
+    {
+      "correct_option_id": "3de41d41bc",
+      "id": "ch09-exam-q07",
+      "options": [
+        {
+          "id": "3de41d41bc",
+          "text": "Điểm %"
+        },
+        {
+          "id": "ea2551adc2",
+          "text": "Tỷ đồng"
+        },
+        {
+          "id": "18ce26a38d",
+          "text": "Số năm"
+        }
+      ],
+      "prompt": "Revenue Growth Stability có đơn vị là gì?"
+    },
+    {
+      "correct_option_id": "1bb6f1f68c",
+      "id": "ch09-exam-q08",
+      "options": [
+        {
+          "id": "1bb6f1f68c",
+          "text": "A có Revenue Growth Stability nhỏ hơn B"
+        },
+        {
+          "id": "ff49fa9169",
+          "text": "B có Revenue Growth Stability nhỏ hơn A"
+        },
+        {
+          "id": "c4eeeab08e",
+          "text": "Hai doanh nghiệp có độ ổn định bằng nhau"
+        }
+      ],
+      "prompt": "Doanh nghiệp A tăng đều quanh 12% mỗi năm, B lúc tăng 28% lúc giảm 4%. Nhận xét nào đúng?"
+    },
+    {
+      "correct_option_id": "429d0b5453",
+      "id": "ch09-exam-q09",
+      "options": [
+        {
+          "id": "429d0b5453",
+          "text": "Các năm nằm gần đường bình quân"
+        },
+        {
+          "id": "354def5aff",
+          "text": "Doanh thu tăng rất nhanh"
+        },
+        {
+          "id": "f5746db61d",
+          "text": "Doanh nghiệp có nhiều năm lỗ"
+        }
+      ],
+      "prompt": "Trên biểu đồ, dải độ lệch chuẩn hẹp cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "e2c21bc1f4",
+      "id": "ch09-exam-q10",
+      "options": [
+        {
+          "id": "e2c21bc1f4",
+          "text": "Tăng nhanh và đều"
+        },
+        {
+          "id": "5b4de2be03",
+          "text": "Tăng chậm và đều"
+        },
+        {
+          "id": "77e7fea0b3",
+          "text": "Tăng nhanh nhưng thất thường"
+        }
+      ],
+      "prompt": "Trường hợp nào là tốt nhất khi xét tăng trưởng doanh thu?"
+    },
+    {
+      "correct_option_id": "b1469d807c",
+      "id": "ch09-exam-q11",
+      "options": [
+        {
+          "id": "b1469d807c",
+          "text": "Doanh thu nhảy vọt trong một năm"
+        },
+        {
+          "id": "d2ca517beb",
+          "text": "Doanh thu bị trừ đi phần của công ty con"
+        },
+        {
+          "id": "f3ca494afc",
+          "text": "Tăng trưởng doanh thu không còn tính được"
+        }
+      ],
+      "prompt": "Vì sao một thương vụ mua lại công ty khác có thể làm Revenue Growth Stability xấu đi?"
+    },
+    {
+      "correct_option_id": "ffc4142c10",
+      "id": "ch09-exam-q12",
+      "options": [
+        {
+          "id": "ffc4142c10",
+          "text": "Tiêu dùng thiết yếu"
+        },
+        {
+          "id": "054a386ae4",
+          "text": "Thép"
+        },
+        {
+          "id": "82362dc39a",
+          "text": "Chứng khoán"
+        }
+      ],
+      "prompt": "Ngành nào thường có tăng trưởng doanh thu ổn định hơn?"
+    },
+    {
+      "correct_option_id": "a05d72f08e",
+      "id": "ch09-exam-q13",
+      "options": [
+        {
+          "id": "a05d72f08e",
+          "text": "Biên lợi nhuận ròng"
+        },
+        {
+          "id": "8cca9e28fb",
+          "text": "Biên lợi nhuận gộp"
+        },
+        {
+          "id": "f8d0be1abf",
+          "text": "Tăng trưởng doanh thu"
+        }
+      ],
+      "prompt": "Margin Stability đo độ ổn định của chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "ba1c43444b",
+      "id": "ch09-exam-q14",
+      "options": [
+        {
+          "id": "ba1c43444b",
+          "text": "Giá nguyên liệu hoặc giá bán biến động"
+        },
+        {
+          "id": "89e02d2e1e",
+          "text": "Số cổ phiếu lưu hành không đổi"
+        },
+        {
+          "id": "ef3af7f577",
+          "text": "Doanh nghiệp không vay nợ"
+        }
+      ],
+      "prompt": "Biên ròng dao động mạnh thường do nguyên nhân nào?"
+    },
+    {
+      "correct_option_id": "9b2f0d4fb8",
+      "id": "ch09-exam-q15",
+      "options": [
+        {
+          "id": "9b2f0d4fb8",
+          "text": "Ổn định nhưng rất mỏng, dễ chuyển sang lỗ"
+        },
+        {
+          "id": "d28545fcd8",
+          "text": "Là mức biên tốt nhất có thể có"
+        },
+        {
+          "id": "1d5b9398b6",
+          "text": "Là dấu hiệu biên đang dao động mạnh"
+        }
+      ],
+      "prompt": "Biên ròng 1% năm nào cũng giữ nguyên nên được hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "2e9707a4be",
+      "id": "ch09-exam-q16",
+      "options": [
+        {
+          "id": "2e9707a4be",
+          "text": "Mỗi ngành có mức biên rất khác nhau"
+        },
+        {
+          "id": "0b2b645fdf",
+          "text": "Các ngành này không có biên lợi nhuận"
+        },
+        {
+          "id": "0070469692",
+          "text": "Các ngành này dùng chung một mức biên"
+        }
+      ],
+      "prompt": "Vì sao không nên so Margin Stability giữa ngân hàng, bán lẻ và phần mềm?"
+    },
+    {
+      "correct_option_id": "fd344e0971",
+      "id": "ch09-exam-q17",
+      "options": [
+        {
+          "id": "fd344e0971",
+          "text": "Lấy doanh thu dự kiến nhân biên bình quân"
+        },
+        {
+          "id": "3ef6dfe6d1",
+          "text": "Lấy LNST năm trước nhân hai"
+        },
+        {
+          "id": "b184f8b9a4",
+          "text": "Lấy giá cổ phiếu chia biên bình quân"
+        }
+      ],
+      "prompt": "Biên ròng ổn định giúp ích gì khi ước tính lợi nhuận?"
+    },
+    {
+      "correct_option_id": "c80f92b241",
+      "id": "ch09-exam-q18",
+      "options": [
+        {
+          "id": "c80f92b241",
+          "text": "Ổn định"
+        },
+        {
+          "id": "32bf29ee8c",
+          "text": "Trung bình"
+        },
+        {
+          "id": "9f8641f03f",
+          "text": "Thất thường"
+        }
+      ],
+      "prompt": "Margin Stability của doanh nghiệp mẫu khoảng 1,2 điểm % thuộc nhóm nào?"
+    },
+    {
+      "correct_option_id": "3084325257",
+      "id": "ch09-exam-q19",
+      "options": [
+        {
+          "id": "3084325257",
+          "text": "%"
+        },
+        {
+          "id": "b5e9d75b6e",
+          "text": "Đồng trên cổ phiếu"
+        },
+        {
+          "id": "6b2e366a98",
+          "text": "Điểm %"
+        }
+      ],
+      "prompt": "EPS Stability có đơn vị là gì?"
+    },
+    {
+      "correct_option_id": "b32a610e43",
+      "id": "ch09-exam-q20",
+      "options": [
+        {
+          "id": "b32a610e43",
+          "text": "Doanh nghiệp có EPS bình quân lớn hơn"
+        },
+        {
+          "id": "a10c9ce52d",
+          "text": "Doanh nghiệp có EPS bình quân nhỏ hơn"
+        },
+        {
+          "id": "d2ebebf467",
+          "text": "Hai doanh nghiệp tốt như nhau"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp có cùng độ lệch chuẩn EPS. Doanh nghiệp nào có EPS Stability tốt hơn?"
+    },
+    {
+      "correct_option_id": "415e4cb6a7",
+      "id": "ch09-exam-q21",
+      "options": [
+        {
+          "id": "415e4cb6a7",
+          "text": "Hệ số biến thiên vẫn khá cao"
+        },
+        {
+          "id": "b00f843293",
+          "text": "Hệ số biến thiên luôn bằng 0"
+        },
+        {
+          "id": "f3ffa7a080",
+          "text": "Không tính được hệ số biến thiên"
+        }
+      ],
+      "prompt": "EPS tăng đều từ 1.000 lên 2.000 đồng ảnh hưởng thế nào tới EPS Stability?"
+    },
+    {
+      "correct_option_id": "8d736fc8e1",
+      "id": "ch09-exam-q22",
+      "options": [
+        {
+          "id": "8d736fc8e1",
+          "text": "EPS giảm dù LNST không đổi"
+        },
+        {
+          "id": "4828d10385",
+          "text": "EPS tăng dù LNST giảm"
+        },
+        {
+          "id": "61f997f228",
+          "text": "EPS không bị ảnh hưởng"
+        }
+      ],
+      "prompt": "Phát hành thêm nhiều cổ phiếu có thể làm EPS thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "a3df311b65",
+      "id": "ch09-exam-q23",
+      "options": [
+        {
+          "id": "a3df311b65",
+          "text": "P/E tính trên một năm phản ánh đúng hơn"
+        },
+        {
+          "id": "48ab92fe90",
+          "text": "P/E luôn thấp hơn trung bình ngành"
+        },
+        {
+          "id": "fb20885ffe",
+          "text": "Không cần xem lợi nhuận nữa"
+        }
+      ],
+      "prompt": "EPS ổn định giúp ích gì khi dùng P/E?"
+    },
+    {
+      "correct_option_id": "58725804f7",
+      "id": "ch09-exam-q24",
+      "options": [
+        {
+          "id": "58725804f7",
+          "text": "Dưới 15%"
+        },
+        {
+          "id": "51dc50a1d4",
+          "text": "Từ 15% đến 35%"
+        },
+        {
+          "id": "3a9e441221",
+          "text": "Trên 35%"
+        }
+      ],
+      "prompt": "Mức EPS Stability nào được xem là ổn định theo mức tham khảo?"
+    },
+    {
+      "correct_option_id": "8dcbd9d75e",
+      "id": "ch09-exam-q25",
+      "options": [
+        {
+          "id": "8dcbd9d75e",
+          "text": "Lợi nhuận hoạt động sau thuế"
+        },
+        {
+          "id": "39757b252e",
+          "text": "Doanh thu thuần"
+        },
+        {
+          "id": "167e680b5d",
+          "text": "Lợi nhuận gộp trước chi phí"
+        }
+      ],
+      "prompt": "Lợi nhuận dùng để tính ROIC là gì?"
+    },
+    {
+      "correct_option_id": "f23ce81251",
+      "id": "ch09-exam-q26",
+      "options": [
+        {
+          "id": "f23ce81251",
+          "text": "Tiền đang để không chưa dùng vào kinh doanh"
+        },
+        {
+          "id": "b6093145de",
+          "text": "Tiền luôn được tính là nợ vay"
+        },
+        {
+          "id": "e28bc5183d",
+          "text": "Tiền đã nằm trong lợi nhuận"
+        }
+      ],
+      "prompt": "Vì sao vốn đầu tư trong ROIC trừ đi tiền?"
+    },
+    {
+      "correct_option_id": "824750db76",
+      "id": "ch09-exam-q27",
+      "options": [
+        {
+          "id": "824750db76",
+          "text": "Độ lệch chuẩn của ROIC từng năm"
+        },
+        {
+          "id": "2dfaa620e2",
+          "text": "ROIC bình quân của 5 năm"
+        },
+        {
+          "id": "d043a7774d",
+          "text": "ROIC năm gần nhất trừ năm đầu"
+        }
+      ],
+      "prompt": "ROIC Stability đo bằng gì?"
+    },
+    {
+      "correct_option_id": "9448f66c9a",
+      "id": "ch09-exam-q28",
+      "options": [
+        {
+          "id": "9448f66c9a",
+          "text": "Có thể giảm tạm thời vì vốn tăng trước lợi nhuận"
+        },
+        {
+          "id": "0a675ec6db",
+          "text": "Luôn tăng mạnh ngay trong năm đó"
+        },
+        {
+          "id": "f52a6ec29a",
+          "text": "Không thay đổi vì vốn không đổi"
+        }
+      ],
+      "prompt": "Năm doanh nghiệp vừa xây nhà máy lớn, ROIC thường thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "bb10dd4a3f",
+      "id": "ch09-exam-q29",
+      "options": [
+        {
+          "id": "bb10dd4a3f",
+          "text": "Ngân hàng dùng nợ làm nguyên liệu kinh doanh"
+        },
+        {
+          "id": "188bf39f7d",
+          "text": "Ngân hàng không có vốn chủ sở hữu"
+        },
+        {
+          "id": "724cf2b6fa",
+          "text": "Ngân hàng không công bố lợi nhuận"
+        }
+      ],
+      "prompt": "Vì sao ROIC không phù hợp để đánh giá ngân hàng?"
+    },
+    {
+      "correct_option_id": "153e5fa5f0",
+      "id": "ch09-exam-q30",
+      "options": [
+        {
+          "id": "153e5fa5f0",
+          "text": "Doanh thu, biên và ROIC cùng ổn định ở mức tốt"
+        },
+        {
+          "id": "4bb31e861b",
+          "text": "Chỉ doanh thu ổn định, biên dao động mạnh"
+        },
+        {
+          "id": "c5de7a3b58",
+          "text": "Chỉ ROIC cao trong năm gần nhất"
+        }
+      ],
+      "prompt": "Bức tranh nào vững chắc nhất khi kết hợp các chỉ tiêu ổn định?"
+    }
+  ],
+  "salt": "9778f906173c4bbbd8d94a1e125d181a2a3b743ab4cc02e1add71abedc7c9b97"
+}

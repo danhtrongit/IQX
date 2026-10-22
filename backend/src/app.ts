@@ -54,6 +54,8 @@ import { ScreenerModule } from './modules/screener/screener.module.js';
 import { StrategyBacktestsModule } from './modules/strategy-backtests/strategy-backtests.module.js';
 import { SavedFiltersModule } from './modules/saved-filters/saved-filters.module.js';
 import { ShopModule } from './modules/shop/shop.module.js';
+import { DashboardModule } from './modules/dashboard/dashboard.module.js';
+import { FlashbackModule } from './modules/flashback/flashback.module.js';
 import { WorkspaceModule } from './modules/workspace/workspace.module.js';
 import { PracticeModule } from './modules/practice/practice.module.js';
 import { ResearchModule } from './modules/research/index.js';
@@ -100,8 +102,10 @@ export function createApiModule(
       StrategyBacktestsModule,
       SavedFiltersModule,
       ShopModule,
+      DashboardModule,
       WorkspaceModule,
       PracticeModule,
+      FlashbackModule,
       ResearchModule,
       NotificationsModule,
       ReferralsModule,

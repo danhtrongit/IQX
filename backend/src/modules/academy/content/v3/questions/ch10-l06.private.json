@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l06",
+  "questions": [
+    {
+      "correct_option_id": "a2160980f9",
+      "id": "ch10-l06-q01",
+      "options": [
+        {
+          "id": "a2160980f9",
+          "text": "Doanh thu 4 quý chia tổng tài sản bình quân"
+        },
+        {
+          "id": "2df6cc8b78",
+          "text": "Lợi nhuận sau thuế 4 quý chia tổng tài sản cuối kỳ"
+        },
+        {
+          "id": "9454d9cc4f",
+          "text": "Tổng tài sản chia vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Vòng quay tài sản được tính thế nào?"
+    },
+    {
+      "correct_option_id": "6ad018e6ae",
+      "id": "ch10-l06-q02",
+      "options": [
+        {
+          "id": "6ad018e6ae",
+          "text": "Mỗi 100 đồng tài sản tạo ra 102 đồng doanh thu"
+        },
+        {
+          "id": "a9c7d30484",
+          "text": "Mỗi 100 đồng doanh thu tạo ra 102 đồng lợi nhuận"
+        },
+        {
+          "id": "d065ac4de3",
+          "text": "Tài sản tăng 2% so với năm trước"
+        }
+      ],
+      "prompt": "Vòng quay tài sản 1,02 lần có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "e7af984ee5",
+      "id": "ch10-l06-q03",
+      "options": [
+        {
+          "id": "e7af984ee5",
+          "text": "Biên lợi nhuận ròng và vòng quay tài sản"
+        },
+        {
+          "id": "7e8d509f3a",
+          "text": "Biên lợi nhuận gộp và đòn bẩy tài chính"
+        },
+        {
+          "id": "0328edb0de",
+          "text": "ROE và chu kỳ chuyển đổi tiền mặt"
+        }
+      ],
+      "prompt": "ROA bằng tích của hai chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "061b624463",
+      "id": "ch10-l06-q04",
+      "options": [
+        {
+          "id": "061b624463",
+          "text": "Thủy điện, hạ tầng cần nhiều tài sản"
+        },
+        {
+          "id": "13ad86a008",
+          "text": "Chuỗi bán lẻ có hàng hóa bán ra liên tục"
+        },
+        {
+          "id": "cdc1a9a80b",
+          "text": "Doanh nghiệp phân phối hàng hóa"
+        }
+      ],
+      "prompt": "Mô hình kinh doanh nào thường có vòng quay tài sản thấp?"
+    },
+    {
+      "correct_option_id": "6e1ca7761a",
+      "id": "ch10-l06-q05",
+      "options": [
+        {
+          "id": "6e1ca7761a",
+          "text": "Đi xuống"
+        },
+        {
+          "id": "93b68eedd0",
+          "text": "Đi lên"
+        },
+        {
+          "id": "342a256ba8",
+          "text": "Không thay đổi"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, khi cột tài sản tăng nhanh hơn cột doanh thu thì đường vòng quay thế nào?"
+    }
+  ],
+  "salt": "849dfc2fa8abb87594b49d1be3064d852376699bcf8fa9774342941f2a2a8b58"
+}

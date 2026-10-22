@@ -28918,7 +28918,7 @@ export type AcademyCatalogResponses = {
         unlock: {
           capability_id: string;
           id: string;
-          kind: "technical";
+          kind: "technical" | "fundamental";
           label: string;
         } | null;
       }>;
@@ -29024,7 +29024,7 @@ export type AcademyLessonResponses = {
         unlock: {
           capability_id: string;
           id: string;
-          kind: "technical";
+          kind: "technical" | "fundamental";
           label: string;
         } | null;
       }
@@ -29050,7 +29050,7 @@ export type AcademyLessonResponses = {
         unlock: {
           capability_id: string;
           id: string;
-          kind: "technical";
+          kind: "technical" | "fundamental";
           label: string;
         } | null;
       };
@@ -29933,6 +29933,309 @@ export type AdminAuditControllerExport1Responses = {
 
 export type AdminAuditControllerExport1Response =
   AdminAuditControllerExport1Responses[keyof AdminAuditControllerExport1Responses];
+
+export type FlashbackAdminAlertsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/alerts";
+};
+
+export type FlashbackAdminAlertsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminAlertsError =
+  FlashbackAdminAlertsErrors[keyof FlashbackAdminAlertsErrors];
+
+export type FlashbackAdminAlertsResponses = {
+  200: {
+    alerts: Array<{
+      error: string | null;
+      level: "high" | "medium" | "low";
+      level_label: string | null;
+      result: string;
+      round_id: string | null;
+      run_at: string;
+      step: string;
+    }>;
+  };
+};
+
+export type FlashbackAdminAlertsResponse =
+  FlashbackAdminAlertsResponses[keyof FlashbackAdminAlertsResponses];
+
+export type FlashbackAdminPauseStatusData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/pause";
+};
+
+export type FlashbackAdminPauseStatusErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminPauseStatusError =
+  FlashbackAdminPauseStatusErrors[keyof FlashbackAdminPauseStatusErrors];
+
+export type FlashbackAdminPauseStatusResponses = {
+  200: {
+    paused: boolean;
+  };
+};
+
+export type FlashbackAdminPauseStatusResponse =
+  FlashbackAdminPauseStatusResponses[keyof FlashbackAdminPauseStatusResponses];
+
+export type FlashbackAdminPauseData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/pause";
+};
+
+export type FlashbackAdminPauseErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminPauseError =
+  FlashbackAdminPauseErrors[keyof FlashbackAdminPauseErrors];
+
+export type FlashbackAdminPauseResponses = {
+  200: {
+    paused: boolean;
+  };
+};
+
+export type FlashbackAdminPauseResponse =
+  FlashbackAdminPauseResponses[keyof FlashbackAdminPauseResponses];
+
+export type FlashbackAdminRoundsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/rounds";
+};
+
+export type FlashbackAdminRoundsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminRoundsError =
+  FlashbackAdminRoundsErrors[keyof FlashbackAdminRoundsErrors];
+
+export type FlashbackAdminRoundsResponses = {
+  200: {
+    rounds: Array<{
+      closes_at: string | null;
+      fallback_level: number;
+      id: string;
+      opens_at: string | null;
+      player_count: number;
+      round_no: number;
+      scheduled_open_at: string;
+      start_date?: string;
+      status: string;
+      symbol?: string;
+      total_fee_xu: number;
+      total_reward_xu: number;
+    }>;
+  };
+};
+
+export type FlashbackAdminRoundsResponse =
+  FlashbackAdminRoundsResponses[keyof FlashbackAdminRoundsResponses];
+
+export type FlashbackAdminRevealData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/rounds/{id}/reveal";
+};
+
+export type FlashbackAdminRevealErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminRevealError =
+  FlashbackAdminRevealErrors[keyof FlashbackAdminRevealErrors];
+
+export type FlashbackAdminRevealResponses = {
+  200: {
+    [key: string]: unknown;
+  };
+};
+
+export type FlashbackAdminRevealResponse =
+  FlashbackAdminRevealResponses[keyof FlashbackAdminRevealResponses];
+
+export type FlashbackAdminSuspectsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/suspects";
+};
+
+export type FlashbackAdminSuspectsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminSuspectsError =
+  FlashbackAdminSuspectsErrors[keyof FlashbackAdminSuspectsErrors];
+
+export type FlashbackAdminSuspectsResponses = {
+  200: {
+    suspects: Array<{
+      reason: string;
+      round_id: string;
+      shared: string;
+      user_count: number;
+      usernames: Array<string>;
+    }>;
+  };
+};
+
+export type FlashbackAdminSuspectsResponse =
+  FlashbackAdminSuspectsResponses[keyof FlashbackAdminSuspectsResponses];
 
 export type AdminListIpnLogsGetApiV2AdminIpnData = {
   body?: never;
@@ -39922,6 +40225,828 @@ export type SaveChartDrawingV2Responses = {
 export type SaveChartDrawingV2Response =
   SaveChartDrawingV2Responses[keyof SaveChartDrawingV2Responses];
 
+export type DashboardCatalogData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/dashboard/catalog";
+};
+
+export type DashboardCatalogErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DashboardCatalogError =
+  DashboardCatalogErrors[keyof DashboardCatalogErrors];
+
+export type DashboardCatalogResponses = {
+  200: Array<{
+    group: string;
+    items: Array<{
+      na_for_bank: boolean;
+      name:
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROIC Stability"
+        | "ROE"
+        | "ROA"
+        | "ROIC"
+        | "Biên lợi nhuận gộp"
+        | "Biên lợi nhuận ròng"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "EV / EBITDA"
+        | "FCF Yield";
+    }>;
+  }>;
+};
+
+export type DashboardCatalogResponse =
+  DashboardCatalogResponses[keyof DashboardCatalogResponses];
+
+export type DashboardSettingsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/dashboard/settings";
+};
+
+export type DashboardSettingsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DashboardSettingsError =
+  DashboardSettingsErrors[keyof DashboardSettingsErrors];
+
+export type DashboardSettingsResponses = {
+  200: {
+    charts: Array<
+      | "Tăng trưởng doanh thu"
+      | "Tăng trưởng LNST"
+      | "Tăng trưởng EPS"
+      | "Revenue CAGR 3Y"
+      | "Net Profit CAGR 3Y"
+      | "EPS CAGR 3Y"
+      | "Profit Positive Streak"
+      | "Revenue Growth Stability"
+      | "Margin Stability"
+      | "EPS Stability"
+      | "ROIC Stability"
+      | "ROE"
+      | "ROA"
+      | "ROIC"
+      | "Biên lợi nhuận gộp"
+      | "Biên lợi nhuận ròng"
+      | "Asset Turnover"
+      | "Cash Conversion Cycle"
+      | "D/E"
+      | "Current Ratio"
+      | "Interest Coverage"
+      | "Net Debt / EBITDA"
+      | "CFO Margin"
+      | "CFO / LNST"
+      | "Capex / Revenue"
+      | "FCF Margin"
+      | "FCF Positive Streak"
+      | "P/E"
+      | "P/B"
+      | "P/S"
+      | "PEG"
+      | "EV / EBITDA"
+      | "FCF Yield"
+    >;
+    nks: {
+      [key: string]: {
+        q?: 4 | 5 | 8 | 12 | 20;
+        y?: 3 | 5 | 10;
+      };
+    };
+    per: "q" | "y";
+  };
+};
+
+export type DashboardSettingsResponse =
+  DashboardSettingsResponses[keyof DashboardSettingsResponses];
+
+export type DashboardSaveSettingsData = {
+  body: {
+    charts: Array<
+      | "Tăng trưởng doanh thu"
+      | "Tăng trưởng LNST"
+      | "Tăng trưởng EPS"
+      | "Revenue CAGR 3Y"
+      | "Net Profit CAGR 3Y"
+      | "EPS CAGR 3Y"
+      | "Profit Positive Streak"
+      | "Revenue Growth Stability"
+      | "Margin Stability"
+      | "EPS Stability"
+      | "ROIC Stability"
+      | "ROE"
+      | "ROA"
+      | "ROIC"
+      | "Biên lợi nhuận gộp"
+      | "Biên lợi nhuận ròng"
+      | "Asset Turnover"
+      | "Cash Conversion Cycle"
+      | "D/E"
+      | "Current Ratio"
+      | "Interest Coverage"
+      | "Net Debt / EBITDA"
+      | "CFO Margin"
+      | "CFO / LNST"
+      | "Capex / Revenue"
+      | "FCF Margin"
+      | "FCF Positive Streak"
+      | "P/E"
+      | "P/B"
+      | "P/S"
+      | "PEG"
+      | "EV / EBITDA"
+      | "FCF Yield"
+    >;
+    nks: {
+      [key: string]: {
+        q?: 4 | 5 | 8 | 12 | 20;
+        y?: 3 | 5 | 10;
+      };
+    };
+    per: "q" | "y";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/dashboard/settings";
+};
+
+export type DashboardSaveSettingsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DashboardSaveSettingsError =
+  DashboardSaveSettingsErrors[keyof DashboardSaveSettingsErrors];
+
+export type DashboardSaveSettingsResponses = {
+  200: {
+    charts: Array<
+      | "Tăng trưởng doanh thu"
+      | "Tăng trưởng LNST"
+      | "Tăng trưởng EPS"
+      | "Revenue CAGR 3Y"
+      | "Net Profit CAGR 3Y"
+      | "EPS CAGR 3Y"
+      | "Profit Positive Streak"
+      | "Revenue Growth Stability"
+      | "Margin Stability"
+      | "EPS Stability"
+      | "ROIC Stability"
+      | "ROE"
+      | "ROA"
+      | "ROIC"
+      | "Biên lợi nhuận gộp"
+      | "Biên lợi nhuận ròng"
+      | "Asset Turnover"
+      | "Cash Conversion Cycle"
+      | "D/E"
+      | "Current Ratio"
+      | "Interest Coverage"
+      | "Net Debt / EBITDA"
+      | "CFO Margin"
+      | "CFO / LNST"
+      | "Capex / Revenue"
+      | "FCF Margin"
+      | "FCF Positive Streak"
+      | "P/E"
+      | "P/B"
+      | "P/S"
+      | "PEG"
+      | "EV / EBITDA"
+      | "FCF Yield"
+    >;
+    nks: {
+      [key: string]: {
+        q?: 4 | 5 | 8 | 12 | 20;
+        y?: 3 | 5 | 10;
+      };
+    };
+    per: "q" | "y";
+    revision: number;
+    updated_at: string;
+  };
+};
+
+export type DashboardSaveSettingsResponse =
+  DashboardSaveSettingsResponses[keyof DashboardSaveSettingsResponses];
+
+export type FlashbackCurrentData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/current";
+};
+
+export type FlashbackCurrentErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackCurrentError =
+  FlashbackCurrentErrors[keyof FlashbackCurrentErrors];
+
+export type FlashbackCurrentResponses = {
+  200: {
+    bars: Array<{
+      close: number;
+      high: number;
+      low: number;
+      open: number;
+      session: number;
+      volume: number;
+    }>;
+    closes_at: string;
+    fee_xu: number;
+    first_join_free: boolean;
+    history_sessions: number;
+    joined: boolean;
+    my_entry: {
+      [key: string]: unknown;
+    } | null;
+    play_sessions: number;
+    played_bars: Array<{
+      close: number;
+      high: number;
+      low: number;
+      open: number;
+      session: number;
+      volume: number;
+    }>;
+    player_count: number;
+    reward_table: Array<{
+      from_rank: number;
+      to_rank: number | null;
+      xu: number;
+    }>;
+    round_id: string;
+    round_no: number;
+    total_sessions: number;
+    warmup_bars?: Array<{
+      close: number;
+      high: number;
+      low: number;
+      open: number;
+      session: number;
+      volume: number;
+    }>;
+  };
+};
+
+export type FlashbackCurrentResponse =
+  FlashbackCurrentResponses[keyof FlashbackCurrentResponses];
+
+export type FlashbackJoinData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/current/join";
+};
+
+export type FlashbackJoinErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackJoinError = FlashbackJoinErrors[keyof FlashbackJoinErrors];
+
+export type FlashbackJoinResponses = {
+  200: {
+    cash: string;
+    entry_id: string;
+    fee_xu: number;
+    first_join: boolean;
+    joined_at: string;
+    round_id: string;
+  };
+};
+
+export type FlashbackJoinResponse =
+  FlashbackJoinResponses[keyof FlashbackJoinResponses];
+
+export type FlashbackLeaderboardData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/current/leaderboard";
+};
+
+export type FlashbackLeaderboardErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackLeaderboardError =
+  FlashbackLeaderboardErrors[keyof FlashbackLeaderboardErrors];
+
+export type FlashbackLeaderboardResponses = {
+  200: {
+    me: {
+      [key: string]: unknown;
+    } | null;
+    rows: Array<{
+      [key: string]: unknown;
+    }>;
+    scope: "all" | "team";
+    total_players: number;
+  };
+};
+
+export type FlashbackLeaderboardResponse =
+  FlashbackLeaderboardResponses[keyof FlashbackLeaderboardResponses];
+
+export type FlashbackFinishData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/entries/{id}/finish";
+};
+
+export type FlashbackFinishErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackFinishError =
+  FlashbackFinishErrors[keyof FlashbackFinishErrors];
+
+export type FlashbackFinishResponses = {
+  200: {
+    entry_id: string;
+    final_nav: string;
+    max_drawdown: number;
+    max_drawdown_percent: number;
+    pnl_pct: number;
+    pnl_percent: number;
+    rank: number | null;
+    reward_xu: number;
+    status: "finished";
+  };
+};
+
+export type FlashbackFinishResponse =
+  FlashbackFinishResponses[keyof FlashbackFinishResponses];
+
+export type FlashbackSaveIndicatorsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/entries/{id}/indicators";
+};
+
+export type FlashbackSaveIndicatorsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackSaveIndicatorsError =
+  FlashbackSaveIndicatorsErrors[keyof FlashbackSaveIndicatorsErrors];
+
+export type FlashbackSaveIndicatorsResponses = {
+  200: {
+    entry_id: string;
+    indicators: Array<{
+      [key: string]: unknown;
+    }>;
+    warmup_required: number;
+  };
+};
+
+export type FlashbackSaveIndicatorsResponse =
+  FlashbackSaveIndicatorsResponses[keyof FlashbackSaveIndicatorsResponses];
+
+export type FlashbackNextData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/entries/{id}/next";
+};
+
+export type FlashbackNextErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackNextError = FlashbackNextErrors[keyof FlashbackNextErrors];
+
+export type FlashbackNextResponses = {
+  200: {
+    bar: {
+      close: number;
+      high: number;
+      low: number;
+      open: number;
+      session: number;
+      volume: number;
+    };
+    cash: string;
+    entry_id: string;
+    holdings: number;
+    max_drawdown: number;
+    pnl_pct: number;
+    pnl_percent: number;
+    step: number;
+  };
+};
+
+export type FlashbackNextResponse =
+  FlashbackNextResponses[keyof FlashbackNextResponses];
+
+export type FlashbackPlaceOrderData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/entries/{id}/orders";
+};
+
+export type FlashbackPlaceOrderErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackPlaceOrderError =
+  FlashbackPlaceOrderErrors[keyof FlashbackPlaceOrderErrors];
+
+export type FlashbackPlaceOrderResponses = {
+  200: {
+    cash: string;
+    holdings: number;
+    max_drawdown: number;
+    order: {
+      [key: string]: unknown;
+    };
+    pnl_pct: number;
+    pnl_percent: number;
+    total_assets: string;
+  };
+};
+
+export type FlashbackPlaceOrderResponse =
+  FlashbackPlaceOrderResponses[keyof FlashbackPlaceOrderResponses];
+
+export type FlashbackIndicatorsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/indicators";
+};
+
+export type FlashbackIndicatorsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackIndicatorsError =
+  FlashbackIndicatorsErrors[keyof FlashbackIndicatorsErrors];
+
+export type FlashbackIndicatorsResponses = {
+  200: {
+    indicators: Array<{
+      [key: string]: unknown;
+    }>;
+  };
+};
+
+export type FlashbackIndicatorsResponse =
+  FlashbackIndicatorsResponses[keyof FlashbackIndicatorsResponses];
+
+export type DashboardFundamentalData = {
+  body?: never;
+  path: {
+    symbol: string;
+  };
+  query?: {
+    charts?: string;
+    per?: "q" | "y";
+  };
+  url: "/api/v2/fundamental/{symbol}";
+};
+
+export type DashboardFundamentalErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DashboardFundamentalError =
+  DashboardFundamentalErrors[keyof DashboardFundamentalErrors];
+
+export type DashboardFundamentalResponses = {
+  200: {
+    charts: {
+      [key: string]:
+        | {
+            na: 1;
+            name: string;
+          }
+        | {
+            decimals: number;
+            hero?: number | null;
+            kind: "A" | "B" | "C" | "D" | "E1" | "E2" | "F" | "F2";
+            labels?: Array<string>;
+            main?: Array<{
+              name: string;
+              v: Array<number | null>;
+            }>;
+            mainUnit?: string;
+            name: string;
+            note?: string;
+            q?: {
+              labels: Array<string>;
+              main: Array<{
+                name: string;
+                v: Array<number | null>;
+              }>;
+              sub?: {
+                series: Array<{
+                  name: string;
+                  v: Array<number | null>;
+                }>;
+                type: "grouped" | "stacked";
+                unit: string;
+              };
+            };
+            ref?: number;
+            status:
+              | "ok"
+              | "missing"
+              | "not_applicable"
+              | "insufficient_base"
+              | "definition_pending"
+              | "data_unavailable";
+            unit: string;
+            v?: Array<number | null>;
+            y?: {
+              labels: Array<string>;
+              main: Array<{
+                name: string;
+                v: Array<number | null>;
+              }>;
+              sub?: {
+                series: Array<{
+                  name: string;
+                  v: Array<number | null>;
+                }>;
+                type: "grouped" | "stacked";
+                unit: string;
+              };
+            };
+          };
+    };
+    is_bank: boolean;
+    per: "q" | "y";
+    symbol: string;
+  };
+};
+
+export type DashboardFundamentalResponse =
+  DashboardFundamentalResponses[keyof DashboardFundamentalResponses];
+
 export type LegacyHealthGetApiV2HealthData = {
   body?: never;
   path?: never;
@@ -45948,6 +47073,10 @@ export type GetShopResponses = {
       sort_order: number;
     }>;
     catalog_version: string;
+    exchange: {
+      cash_per_xu: number;
+      min_exchange_cash_vnd: number;
+    };
     owned: Array<{
       acquired_at: string | null;
       mascot_id:
@@ -45955,6 +47084,14 @@ export type GetShopResponses = {
       source: "default" | "purchase" | "legacy_grant";
     }>;
     owned_count: number;
+    pet_levels: Array<{
+      level: number;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      updated_at: string | null;
+    }>;
+    premium_duration_days: number;
+    premium_price_xu: number;
     provisioned: boolean;
     total_count: number;
     totals: {
@@ -46069,7 +47206,15 @@ export type ListShopCoinLedgerResponses = {
       created_at: string;
       delta: number;
       id: string;
-      kind: "lesson_first_completion" | "mascot_purchase" | "adjustment";
+      kind:
+        | "lesson_first_completion"
+        | "mascot_purchase"
+        | "pet_purchase"
+        | "pet_evolve"
+        | "premium_purchase"
+        | "demo_deposit"
+        | "demo_withdraw"
+        | "adjustment";
       label: {
         lesson_id: string | null;
         lesson_key: string | null;
@@ -46084,6 +47229,192 @@ export type ListShopCoinLedgerResponses = {
 
 export type ListShopCoinLedgerResponse =
   ListShopCoinLedgerResponses[keyof ListShopCoinLedgerResponses];
+
+export type ExchangeShopDemoCashData = {
+  body: {
+    amount: number;
+    direction: "xu_to_cash" | "cash_to_xu";
+    idempotency_key: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/shop/demo-exchange";
+};
+
+export type ExchangeShopDemoCashErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * INSUFFICIENT_XU, INSUFFICIENT_CASH (details[0] has cash_available_vnd/amount_vnd/shortfall_vnd), IDEMPOTENCY_KEY_REUSED
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type ExchangeShopDemoCashError =
+  ExchangeShopDemoCashErrors[keyof ExchangeShopDemoCashErrors];
+
+export type ExchangeShopDemoCashResponses = {
+  200: {
+    amount: number;
+    balance_xu: number;
+    cash_available_vnd: number;
+    cash_delta_vnd: number;
+    cash_per_xu: number;
+    direction: "xu_to_cash" | "cash_to_xu";
+    net_deposited_cash_vnd: number;
+    replayed: boolean;
+    xu_delta: number;
+  };
+};
+
+export type ExchangeShopDemoCashResponse =
+  ExchangeShopDemoCashResponses[keyof ExchangeShopDemoCashResponses];
+
+export type EvolveShopPetData = {
+  body: {
+    expected_price_xu: number;
+    idempotency_key: string;
+    target_level: 2 | 3;
+  };
+  path: {
+    mascotId: string;
+  };
+  query?: never;
+  url: "/api/v2/shop/pets/{mascotId}/evolve";
+};
+
+export type EvolveShopPetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * PET_NOT_OWNED, PET_LEVEL_LOCKED, PET_MAX_LEVEL, PRICE_CHANGED, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu)
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type EvolveShopPetError = EvolveShopPetErrors[keyof EvolveShopPetErrors];
+
+export type EvolveShopPetResponses = {
+  200: {
+    level: number;
+    mascot_id:
+      "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+    pet_levels: Array<{
+      level: number;
+      mascot_id:
+        "bach_ho" | "thanh_long" | "loc_huou" | "phung_hoang" | "kim_quy";
+      updated_at: string | null;
+    }>;
+    previous_level: number;
+    price_xu: number;
+    replayed: boolean;
+    status: "evolved";
+    wallet: {
+      balance: number;
+      last_seq: number;
+    };
+  };
+};
+
+export type EvolveShopPetResponse =
+  EvolveShopPetResponses[keyof EvolveShopPetResponses];
+
+export type PurchaseShopPremiumWithXuData = {
+  body: {
+    days?: number;
+    expected_price_xu: number;
+    idempotency_key: string;
+    plan_id?: string;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/shop/premium-purchases";
+};
+
+export type PurchaseShopPremiumWithXuErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * PREMIUM_PURCHASE_LIMIT, PRICE_CHANGED, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu), IDEMPOTENCY_KEY_REUSED
+   */
+  409: unknown;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type PurchaseShopPremiumWithXuError =
+  PurchaseShopPremiumWithXuErrors[keyof PurchaseShopPremiumWithXuErrors];
+
+export type PurchaseShopPremiumWithXuResponses = {
+  200: {
+    days_granted: number;
+    ends_at: string;
+    plan_id: string | null;
+    price_xu: number;
+    replayed: boolean;
+    starts_at: string;
+    status: "purchased";
+    wallet: {
+      balance: number;
+      last_seq: number;
+    };
+  };
+};
+
+export type PurchaseShopPremiumWithXuResponse =
+  PurchaseShopPremiumWithXuResponses[keyof PurchaseShopPremiumWithXuResponses];
 
 export type PurchaseShopMascotData = {
   body: {
@@ -53627,6 +54958,67 @@ export type UsersControllerUpdate1Responses = {
 
 export type UsersControllerUpdate1Response =
   UsersControllerUpdate1Responses[keyof UsersControllerUpdate1Responses];
+
+export type DashboardValuationData = {
+  body?: never;
+  path: {
+    symbol: string;
+  };
+  query?: {
+    from?: string;
+    charts?: string;
+  };
+  url: "/api/v2/valuation/{symbol}";
+};
+
+export type DashboardValuationErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DashboardValuationError =
+  DashboardValuationErrors[keyof DashboardValuationErrors];
+
+export type DashboardValuationResponses = {
+  200: {
+    charts: {
+      [key: string]:
+        | {
+            na: 1;
+            name: string;
+          }
+        | {
+            kind: "F";
+            name: string;
+            unit: string;
+            v: Array<number | null>;
+          };
+    };
+    dates: Array<string>;
+    symbol: string;
+  };
+};
+
+export type DashboardValuationResponse =
+  DashboardValuationResponses[keyof DashboardValuationResponses];
 
 export type TradingControllerAccount1Data = {
   body?: never;

@@ -1,5 +1,5 @@
 /**
- * Allowlist sanitizer for the Inline HTML of Học viện v3.2 lesson content.
+ * Allowlist sanitizer for the Inline HTML of Học viện v3.3 lesson content.
  *
  * The content schema (`backend/src/modules/academy/content/v3/schema.ts`, `inlineHtml`) allows only
  * `<b> <strong> <em> <br>` and `<span class="tone-…">`. The server validates that at boot, but the

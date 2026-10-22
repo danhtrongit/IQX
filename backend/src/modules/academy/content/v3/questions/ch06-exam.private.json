@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch06-exam",
+  "questions": [
+    {
+      "correct_option_id": "1dd3450487",
+      "id": "ch06-exam-q01",
+      "options": [
+        {
+          "id": "1dd3450487",
+          "text": "Exponential Moving Average, đường trung bình hàm mũ"
+        },
+        {
+          "id": "a297955198",
+          "text": "Equal Moving Average, đường trung bình đều"
+        },
+        {
+          "id": "0a2d23c5d7",
+          "text": "Extended Market Average, trung bình thị trường"
+        }
+      ],
+      "prompt": "EMA là viết tắt của gì?"
+    },
+    {
+      "correct_option_id": "6eaad0940c",
+      "id": "ch06-exam-q02",
+      "options": [
+        {
+          "id": "6eaad0940c",
+          "text": "Nhanh hơn"
+        },
+        {
+          "id": "bc22d85a61",
+          "text": "Chậm hơn"
+        },
+        {
+          "id": "c992b52efa",
+          "text": "Giống hệt nhau"
+        }
+      ],
+      "prompt": "Với cùng chu kỳ, EMA phản ứng thế nào so với MA khi giá đổi hướng?"
+    },
+    {
+      "correct_option_id": "d45add7e4a",
+      "id": "ch06-exam-q03",
+      "options": [
+        {
+          "id": "d45add7e4a",
+          "text": "Phiên gần nhất"
+        },
+        {
+          "id": "13bbccc105",
+          "text": "Phiên xa nhất"
+        },
+        {
+          "id": "87cc87d161",
+          "text": "Mọi phiên như nhau"
+        }
+      ],
+      "prompt": "Trong EMA, phiên nào có trọng số lớn nhất?"
+    },
+    {
+      "correct_option_id": "8c73908b07",
+      "id": "ch06-exam-q04",
+      "options": [
+        {
+          "id": "8c73908b07",
+          "text": "Xu hướng tăng"
+        },
+        {
+          "id": "0083a52484",
+          "text": "Xu hướng giảm"
+        },
+        {
+          "id": "259e2a851a",
+          "text": "Thị trường đi ngang"
+        }
+      ],
+      "prompt": "Giá đóng cửa nằm trên EMA và EMA dốc lên cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "ab26b07003",
+      "id": "ch06-exam-q05",
+      "options": [
+        {
+          "id": "ab26b07003",
+          "text": "EMA 50 đến EMA 200"
+        },
+        {
+          "id": "95b0e6de22",
+          "text": "EMA 9 đến EMA 12"
+        },
+        {
+          "id": "2b7041f627",
+          "text": "EMA 3"
+        }
+      ],
+      "prompt": "Chu kỳ EMA nào thường dùng để theo dõi xu hướng dài hạn?"
+    },
+    {
+      "correct_option_id": "2a2da361f6",
+      "id": "ch06-exam-q06",
+      "options": [
+        {
+          "id": "2a2da361f6",
+          "text": "Kết quả đẹp trong quá khứ nhưng khó lặp lại"
+        },
+        {
+          "id": "0338ab9405",
+          "text": "EMA không còn vẽ được trên biểu đồ"
+        },
+        {
+          "id": "8b3c8e3b76",
+          "text": "Giá cổ phiếu sẽ giảm"
+        }
+      ],
+      "prompt": "Chọn chu kỳ EMA cho khớp nhất với dữ liệu quá khứ có rủi ro gì?"
+    },
+    {
+      "correct_option_id": "a22247825b",
+      "id": "ch06-exam-q07",
+      "options": [
+        {
+          "id": "a22247825b",
+          "text": "Xác định xu hướng chính trước khi tìm điểm mua"
+        },
+        {
+          "id": "c29391941b",
+          "text": "Đo khối lượng giao dịch trung bình"
+        },
+        {
+          "id": "0431c97939",
+          "text": "Tính phí của lệnh bán"
+        }
+      ],
+      "prompt": "Trong cách dùng mẫu, EMA 50 được dùng để làm gì?"
+    },
+    {
+      "correct_option_id": "d5c81de188",
+      "id": "ch06-exam-q08",
+      "options": [
+        {
+          "id": "d5c81de188",
+          "text": "Tín hiệu Bán"
+        },
+        {
+          "id": "782305fdf4",
+          "text": "Tín hiệu Mua"
+        },
+        {
+          "id": "1a3c5543b4",
+          "text": "Không có ý nghĩa"
+        }
+      ],
+      "prompt": "SMA 20 cắt xuống dưới SMA 50 là tín hiệu gì?"
+    },
+    {
+      "correct_option_id": "4181a985f1",
+      "id": "ch06-exam-q09",
+      "options": [
+        {
+          "id": "4181a985f1",
+          "text": "MA 50 cắt xuống MA 200"
+        },
+        {
+          "id": "5382fdae46",
+          "text": "MA 50 cắt lên MA 200"
+        },
+        {
+          "id": "00f40467f1",
+          "text": "Giá đóng cửa chạm MA 50"
+        }
+      ],
+      "prompt": "Giao cắt tử thần (Death Cross) là trường hợp nào?"
+    },
+    {
+      "correct_option_id": "9ecfde2adc",
+      "id": "ch06-exam-q10",
+      "options": [
+        {
+          "id": "9ecfde2adc",
+          "text": "Chu kỳ ngắn, phản ứng nhanh theo giá"
+        },
+        {
+          "id": "3666b659e6",
+          "text": "Chu kỳ dài, thể hiện xu hướng dài hạn"
+        },
+        {
+          "id": "b5b872cbf6",
+          "text": "Không phụ thuộc vào giá"
+        }
+      ],
+      "prompt": "SMA nhanh trong MA Cross có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "a155c8859b",
+      "id": "ch06-exam-q11",
+      "options": [
+        {
+          "id": "a155c8859b",
+          "text": "Không, giao cắt chỉ xảy ra ở phiên đổi vị trí"
+        },
+        {
+          "id": "d5feed5ad7",
+          "text": "Có, mọi phiên sau đều là giao cắt"
+        },
+        {
+          "id": "c8218a80e2",
+          "text": "Có, nếu giá tiếp tục tăng"
+        }
+      ],
+      "prompt": "Sau phiên giao cắt lên, đường nhanh vẫn nằm trên đường chậm. Các phiên sau có phải là giao cắt không?"
+    },
+    {
+      "correct_option_id": "2ea07f468e",
+      "id": "ch06-exam-q12",
+      "options": [
+        {
+          "id": "2ea07f468e",
+          "text": "Hai đường cắt qua lại, tạo nhiều tín hiệu giả"
+        },
+        {
+          "id": "fb5f9e275b",
+          "text": "Hai đường không bao giờ cắt nhau"
+        },
+        {
+          "id": "7b9472939c",
+          "text": "Luôn cho tín hiệu đúng"
+        }
+      ],
+      "prompt": "Trong thị trường đi ngang, MA Cross thường gặp vấn đề gì?"
+    },
+    {
+      "correct_option_id": "999e75f893",
+      "id": "ch06-exam-q13",
+      "options": [
+        {
+          "id": "999e75f893",
+          "text": "Dài hạn"
+        },
+        {
+          "id": "dbc01fcec4",
+          "text": "Trong phiên"
+        },
+        {
+          "id": "db29213734",
+          "text": "Một tuần"
+        }
+      ],
+      "prompt": "Cặp chu kỳ 50 và 200 thường dùng cho góc nhìn nào?"
+    },
+    {
+      "correct_option_id": "7233ba9e18",
+      "id": "ch06-exam-q14",
+      "options": [
+        {
+          "id": "7233ba9e18",
+          "text": "Khối lượng tăng và giá nằm trên cả hai đường"
+        },
+        {
+          "id": "653100c26d",
+          "text": "Giá nằm dưới cả hai đường"
+        },
+        {
+          "id": "5155c7c6fe",
+          "text": "Khối lượng giảm mạnh"
+        }
+      ],
+      "prompt": "Giao cắt lên đáng tin hơn khi đi kèm điều gì?"
+    },
+    {
+      "correct_option_id": "321620d91d",
+      "id": "ch06-exam-q15",
+      "options": [
+        {
+          "id": "321620d91d",
+          "text": "+DI và −DI"
+        },
+        {
+          "id": "f816a856da",
+          "text": "RSI và MACD"
+        },
+        {
+          "id": "f9104c2edd",
+          "text": "Biên trên và biên dưới"
+        }
+      ],
+      "prompt": "Trong IQX, DMI gồm những đường nào?"
+    },
+    {
+      "correct_option_id": "a5cd0caee5",
+      "id": "ch06-exam-q16",
+      "options": [
+        {
+          "id": "a5cd0caee5",
+          "text": "Phe bán chiếm ưu thế"
+        },
+        {
+          "id": "e998ba2a95",
+          "text": "Phe mua chiếm ưu thế"
+        },
+        {
+          "id": "fc108106cd",
+          "text": "Khối lượng tăng đột biến"
+        }
+      ],
+      "prompt": "−DI nằm trên +DI gợi ý gì?"
+    },
+    {
+      "correct_option_id": "9b031f1d27",
+      "id": "ch06-exam-q17",
+      "options": [
+        {
+          "id": "9b031f1d27",
+          "text": "Phần đỉnh hôm nay vượt lên trên đỉnh hôm qua"
+        },
+        {
+          "id": "9bc1fa7f18",
+          "text": "Phần giá đóng cửa cao hơn giá mở cửa"
+        },
+        {
+          "id": "2ff32f3507",
+          "text": "Phần khối lượng tăng thêm so với hôm qua"
+        }
+      ],
+      "prompt": "+DM của một phiên được tính từ đâu?"
+    },
+    {
+      "correct_option_id": "a9b4228314",
+      "id": "ch06-exam-q18",
+      "options": [
+        {
+          "id": "a9b4228314",
+          "text": "Phần đáy hôm nay thủng xuống dưới đáy hôm qua"
+        },
+        {
+          "id": "18acfacf99",
+          "text": "Phần giá đóng cửa thấp hơn giá mở cửa"
+        },
+        {
+          "id": "4247b7ba0e",
+          "text": "Phần khối lượng giảm đi so với hôm qua"
+        }
+      ],
+      "prompt": "−DM của một phiên được tính từ đâu?"
+    },
+    {
+      "correct_option_id": "8ad7414a3a",
+      "id": "ch06-exam-q19",
+      "options": [
+        {
+          "id": "8ad7414a3a",
+          "text": "Xu hướng đang mạnh lên"
+        },
+        {
+          "id": "2d839ff7e5",
+          "text": "Xu hướng chắc chắn sắp kết thúc"
+        },
+        {
+          "id": "28d0c4a00b",
+          "text": "Giá không thay đổi"
+        }
+      ],
+      "prompt": "Khoảng cách giữa +DI và −DI mở rộng dần cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "a8824d3b51",
+      "id": "ch06-exam-q20",
+      "options": [
+        {
+          "id": "a8824d3b51",
+          "text": "Khi −DI vượt lên trên +DI"
+        },
+        {
+          "id": "b0cd986a3a",
+          "text": "Khi +DI vượt lên trên −DI"
+        },
+        {
+          "id": "e305944659",
+          "text": "Khi hai đường đi song song"
+        }
+      ],
+      "prompt": "Theo cách sử dụng trong bài, khi nào nên cân nhắc bán?"
+    },
+    {
+      "correct_option_id": "c7d08071bf",
+      "id": "ch06-exam-q21",
+      "options": [
+        {
+          "id": "c7d08071bf",
+          "text": "14"
+        },
+        {
+          "id": "fa0304684e",
+          "text": "200"
+        },
+        {
+          "id": "31e353d334",
+          "text": "3"
+        }
+      ],
+      "prompt": "Chu kỳ mặc định của DMI là bao nhiêu phiên?"
+    },
+    {
+      "correct_option_id": "8ebfb49020",
+      "id": "ch06-exam-q22",
+      "options": [
+        {
+          "id": "8ebfb49020",
+          "text": "Giá thấp nhất của 20 phiên trước"
+        },
+        {
+          "id": "048b4966b5",
+          "text": "Giá thấp nhất của phiên hôm nay"
+        },
+        {
+          "id": "53cc536f0d",
+          "text": "Trung bình giá thấp nhất 20 phiên"
+        }
+      ],
+      "prompt": "Biên dưới của kênh Donchian 20 là gì?"
+    },
+    {
+      "correct_option_id": "b20c3745a1",
+      "id": "ch06-exam-q23",
+      "options": [
+        {
+          "id": "b20c3745a1",
+          "text": "Bứt phá tăng, tín hiệu Mua"
+        },
+        {
+          "id": "f6d725265b",
+          "text": "Phá vỡ giảm, tín hiệu Bán"
+        },
+        {
+          "id": "d7353529f3",
+          "text": "Không có ý nghĩa"
+        }
+      ],
+      "prompt": "Giá đóng cửa vượt lên trên biên trên của kênh Donchian là gì?"
+    },
+    {
+      "correct_option_id": "6b737d6f42",
+      "id": "ch06-exam-q24",
+      "options": [
+        {
+          "id": "6b737d6f42",
+          "text": "Giá đóng cửa không bao giờ vượt được biên trên"
+        },
+        {
+          "id": "d976792670",
+          "text": "Kênh rộng gấp đôi"
+        },
+        {
+          "id": "5df306d76e",
+          "text": "Kênh không vẽ được"
+        }
+      ],
+      "prompt": "Nếu tính cả phiên đang xét vào biên trên của kênh Donchian thì sao?"
+    },
+    {
+      "correct_option_id": "de8c823dc0",
+      "id": "ch06-exam-q25",
+      "options": [
+        {
+          "id": "de8c823dc0",
+          "text": "Giá đang biến động mạnh"
+        },
+        {
+          "id": "5816d0c9b8",
+          "text": "Giá đang tích lũy"
+        },
+        {
+          "id": "5f9472f31b",
+          "text": "Thị trường ngừng giao dịch"
+        }
+      ],
+      "prompt": "Kênh Donchian mở rộng nhanh cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "01e18aac70",
+      "id": "ch06-exam-q26",
+      "options": [
+        {
+          "id": "01e18aac70",
+          "text": "Chờ giá đóng cửa vượt biên trên"
+        },
+        {
+          "id": "5ea7782433",
+          "text": "Mua ngay khi giá chạm biên trên"
+        },
+        {
+          "id": "173d0ed555",
+          "text": "Mua khi giá chạm biên dưới"
+        }
+      ],
+      "prompt": "Làm sao tránh mua theo bứt phá trong phiên rồi giá quay đầu?"
+    },
+    {
+      "correct_option_id": "a32c1cd0f9",
+      "id": "ch06-exam-q27",
+      "options": [
+        {
+          "id": "a32c1cd0f9",
+          "text": "Khối lượng cao hơn trung bình"
+        },
+        {
+          "id": "75d0dddd60",
+          "text": "Khối lượng thấp hơn trung bình"
+        },
+        {
+          "id": "192222fa68",
+          "text": "Khối lượng không thay đổi"
+        }
+      ],
+      "prompt": "Bứt phá kèm khối lượng thế nào thì đáng tin hơn?"
+    },
+    {
+      "correct_option_id": "e80d05ae40",
+      "id": "ch06-exam-q28",
+      "options": [
+        {
+          "id": "e80d05ae40",
+          "text": "Donchian Channel"
+        },
+        {
+          "id": "18abe97397",
+          "text": "EMA"
+        },
+        {
+          "id": "c4a2f6cf64",
+          "text": "MA Cross"
+        }
+      ],
+      "prompt": "Chỉ báo nào dùng giá cao nhất và thấp nhất của N phiên trước?"
+    },
+    {
+      "correct_option_id": "9dc29a888a",
+      "id": "ch06-exam-q29",
+      "options": [
+        {
+          "id": "9dc29a888a",
+          "text": "DMI"
+        },
+        {
+          "id": "7c05e09c23",
+          "text": "Donchian Channel"
+        },
+        {
+          "id": "10913b4ade",
+          "text": "EMA"
+        }
+      ],
+      "prompt": "Chỉ báo nào cho biết phe mua hay phe bán đang chiếm ưu thế bằng hai đường riêng?"
+    },
+    {
+      "correct_option_id": "9f26859463",
+      "id": "ch06-exam-q30",
+      "options": [
+        {
+          "id": "9f26859463",
+          "text": "MA Cross"
+        },
+        {
+          "id": "50d8ac8e05",
+          "text": "DMI"
+        },
+        {
+          "id": "056dcf635d",
+          "text": "Donchian Channel"
+        }
+      ],
+      "prompt": "Chỉ báo nào dùng hai đường trung bình có chu kỳ khác nhau để tìm tín hiệu?"
+    }
+  ],
+  "salt": "13e59c9253da3652a74a9aae6fb447f1f55d40c27cf7f8ca69f7ad8978cc0afa"
+}

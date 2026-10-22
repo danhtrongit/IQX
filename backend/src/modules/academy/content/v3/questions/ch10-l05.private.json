@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l05",
+  "questions": [
+    {
+      "correct_option_id": "cb348f2903",
+      "id": "ch10-l05-q01",
+      "options": [
+        {
+          "id": "cb348f2903",
+          "text": "Lợi nhuận sau thuế chia doanh thu"
+        },
+        {
+          "id": "3be324418b",
+          "text": "Lợi nhuận gộp chia doanh thu"
+        },
+        {
+          "id": "0e55f18b38",
+          "text": "Lợi nhuận sau thuế chia vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Biên lợi nhuận ròng được tính thế nào?"
+    },
+    {
+      "correct_option_id": "b73a68224c",
+      "id": "ch10-l05-q02",
+      "options": [
+        {
+          "id": "b73a68224c",
+          "text": "Chi phí hoạt động, lãi vay và thuế"
+        },
+        {
+          "id": "96a55d50ab",
+          "text": "Giá vốn hàng bán và khấu hao tài sản cố định"
+        },
+        {
+          "id": "57204948e0",
+          "text": "Cổ tức đã trả cho cổ đông"
+        }
+      ],
+      "prompt": "Khoảng cách giữa biên gộp và biên ròng do đâu tạo ra?"
+    },
+    {
+      "correct_option_id": "141ab6bff7",
+      "id": "ch10-l05-q03",
+      "options": [
+        {
+          "id": "141ab6bff7",
+          "text": "Là lợi nhuận bất thường, khó lặp lại"
+        },
+        {
+          "id": "2c15aff487",
+          "text": "Là hiệu quả kinh doanh chính đã cải thiện"
+        },
+        {
+          "id": "a0cefe53f7",
+          "text": "Là dấu hiệu biên gộp chắc chắn tăng"
+        }
+      ],
+      "prompt": "Biên ròng tăng vọt trong một quý nhờ bán tài sản nên được hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "1f41862704",
+      "id": "ch10-l05-q04",
+      "options": [
+        {
+          "id": "1f41862704",
+          "text": "Chi phí bán hàng, quản lý đang tăng"
+        },
+        {
+          "id": "223e4b9a66",
+          "text": "Giá vốn hàng bán đang giảm mạnh"
+        },
+        {
+          "id": "af07d630d5",
+          "text": "Doanh nghiệp đang được miễn thuế thu nhập"
+        }
+      ],
+      "prompt": "Biên gộp tăng nhưng biên ròng không tăng thường cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "6f1783ac23",
+      "id": "ch10-l05-q05",
+      "options": [
+        {
+          "id": "6f1783ac23",
+          "text": "Lợi nhuận sau thuế cộng dồn 4 quý"
+        },
+        {
+          "id": "3d068347f8",
+          "text": "Doanh thu thuần cộng dồn của 4 quý gần nhất"
+        },
+        {
+          "id": "87efdb0c94",
+          "text": "Chi phí hoạt động từng quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của biên ròng, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "1377ee0fb727f591617b6c3c0d2756a00eb3b809e381aa50619dbca843bc0e37"
+}

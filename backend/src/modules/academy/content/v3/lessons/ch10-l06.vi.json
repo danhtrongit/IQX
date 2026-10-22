@@ -1,0 +1,324 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l6-g1": {
+      "kind": "category",
+      "labels": [
+        "Doanh thu 4 quý",
+        "Tài sản bình quân"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "Doanh thu 4 quý so với tài sản bình quân",
+          "tone": "p1",
+          "values": [
+            6279,
+            6185
+          ]
+        }
+      ],
+      "title": "Doanh thu 4 quý so với tài sản bình quân",
+      "unit": " tỷ",
+      "value_labels": "all"
+    },
+    "c10l6-g2": {
+      "kind": "category",
+      "labels": [
+        "Siêu thị: lãi mỏng",
+        "Thủy điện: lãi dày"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Vòng quay tài sản",
+          "tone": "p1",
+          "values": [
+            3,
+            0.3
+          ]
+        },
+        {
+          "name": "Biên lợi nhuận ròng",
+          "tone": "p5",
+          "values": [
+            2.5,
+            25
+          ]
+        }
+      ],
+      "title": "Hai mô hình cùng ROA 7,5%",
+      "unit": "",
+      "value_labels": "all"
+    },
+    "c10l6-g3": {
+      "kind": "category",
+      "labels": [
+        "Phân phối",
+        "Bán lẻ",
+        "Sản xuất",
+        "Bất động sản",
+        "Điện"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "Vòng quay tài sản tham khảo theo ngành · số minh họa",
+          "tone": "p1",
+          "values": [
+            3,
+            2.5,
+            1,
+            0.3,
+            0.3
+          ]
+        }
+      ],
+      "title": "Vòng quay tài sản tham khảo theo ngành · số minh họa",
+      "unit": " lần",
+      "value_labels": "all"
+    },
+    "c10l6-rep": {
+      "caption_tone": "price",
+      "caption_value": "1,02 lần",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Asset Turnover",
+          "tone": "p1",
+          "values": [
+            1.0952,
+            1.0914,
+            1.0528,
+            1.0521,
+            1.0649,
+            1.0485,
+            1.0238,
+            1.0152
+          ]
+        }
+      ],
+      "title": "Asset Turnover",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Vòng quay tài sản cho biết mỗi đồng tài sản tạo ra bao nhiêu đồng doanh thu trong một năm. Chỉ tiêu này đo mức độ doanh nghiệp khai thác tài sản của mình.",
+  "lesson_key": "fundamental:asset_turnover",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l6-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Asset Turnover</b> (vòng quay tài sản) bằng <b>doanh thu 4 quý gần nhất</b> chia cho <b>tổng tài sản bình quân</b>, đơn vị là lần. Vòng quay 1,02 lần nghĩa là mỗi 100 đồng tài sản tạo ra 102 đồng doanh thu mỗi năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Asset Turnover là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "ROA bằng <b>biên lợi nhuận ròng × vòng quay tài sản</b>. Có doanh nghiệp lãi mỏng nhưng bán rất nhiều, có doanh nghiệp bán ít nhưng lãi dày.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l6-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bán lẻ, phân phối: biên ròng thấp nhưng hàng bán ra liên tục.",
+              "title": "Lãi mỏng, quay nhanh"
+            },
+            {
+              "text": "Điện, hạ tầng, bất động sản: tài sản lớn, mỗi đồng doanh thu lãi cao.",
+              "title": "Lãi dày, quay chậm"
+            },
+            {
+              "text": "ROA nhân đòn bẩy tài chính ra ROE, đúng như phân tích DuPont.",
+              "title": "Nhân thêm đòn bẩy"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Hai cách đạt cùng ROA"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l6-rep",
+          "table_toggle": true,
+          "title": "Asset Turnover",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vòng quay tài sản theo 4 quý gần nhất, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hai cột cạnh nhau: doanh thu 4 quý và tài sản bình quân.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tài sản tăng nhanh hơn cột doanh thu thì đường vòng quay đi xuống.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Vòng quay ổn định hoặc tăng, tài sản mới nhanh chóng tạo ra doanh thu.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "Vòng quay giảm liên tục, tài sản tăng mà doanh thu đứng yên. Có thể do tồn kho ứ đọng hoặc đầu tư kém hiệu quả.",
+              "title": "Tiêu cực",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Vòng quay phụ thuộc rất nhiều vào mô hình kinh doanh, chỉ so trong cùng ngành.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l6-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vòng quay giảm tạm thời là bình thường, nhưng cần hồi phục khi nhà máy mới chạy.",
+              "title": "Theo dõi sau đầu tư lớn"
+            },
+            {
+              "text": "Biên ròng × vòng quay cho ra ROA, giúp thấy nguồn hiệu quả.",
+              "title": "Ghép với biên ròng"
+            },
+            {
+              "text": "Cùng ngành, vòng quay cao hơn cho thấy quản lý tài sản tốt hơn.",
+              "title": "So với đối thủ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Doanh thu 4 quý",
+              "text": "6.279 tỷ đồng."
+            },
+            {
+              "term": "Tổng tài sản bình quân",
+              "text": "(5.905 + 6.465) ÷ 2 = 6.185 tỷ đồng."
+            },
+            {
+              "term": "Vòng quay tài sản",
+              "text": "6.279 ÷ 6.185 ≈ 1,02 lần."
+            },
+            {
+              "term": "Ghép với biên ròng",
+              "text": "9,3% × 1,02 ≈ 9,4%, đúng bằng ROA. Vòng quay đã giảm từ 1,10 lần hai năm trước do tài sản tăng nhanh hơn doanh thu."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp điện vòng quay 0,3 lần không có nghĩa kém doanh nghiệp bán lẻ 2,5 lần.",
+              "title": "So khác ngành"
+            },
+            {
+              "text": "Bán nhiều nhưng lỗ thì vòng quay cao vẫn không có ý nghĩa.",
+              "title": "Chỉ nhìn vòng quay"
+            },
+            {
+              "text": "Tài sản tăng đột biến cuối năm làm vòng quay thấp đi, nên dùng số bình quân.",
+              "title": "Dùng tài sản cuối kỳ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Vòng quay tài sản</b> = doanh thu 4 quý ÷ <b>tổng tài sản bình quân</b>, đơn vị lần.",
+    "Đo mức độ doanh nghiệp <b>khai thác tài sản</b> để tạo doanh thu.",
+    "<b>ROA = biên ròng × vòng quay</b>. Lãi mỏng quay nhanh hoặc lãi dày quay chậm.",
+    "Vòng quay <b>giảm liên tục</b> là dấu hiệu tài sản đang kém hiệu quả."
+  ],
+  "title": "Asset Turnover · vòng quay tài sản"
+}

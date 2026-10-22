@@ -1,5 +1,5 @@
 {
-  "catalog_version": "iqx-academy-v3.2-14ch-94lessons",
+  "catalog_version": "iqx-academy-v3.3-13ch-87lessons",
   "chapters": [
     {
       "audience": "all",
@@ -655,57 +655,875 @@
       "title": "Phương pháp cơ bản"
     },
     {
-      "lesson_count": 7,
-      "no": 6,
-      "published": false,
-      "title": "Backtest và Bộ lọc"
-    },
-    {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch06-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:ema",
+          "name": "EMA · đường trung bình hàm mũ",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": {
+            "id": "ema",
+            "kind": "technical",
+            "label": "EMA"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch06-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:ma_cross",
+          "name": "MA Cross · giao cắt đường trung bình",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": {
+            "id": "ma_cross",
+            "kind": "technical",
+            "label": "MA Cross"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch06-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:dmi",
+          "name": "DMI · chỉ báo định hướng",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": {
+            "id": "dmi",
+            "kind": "technical",
+            "label": "DMI"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch06-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:donchian",
+          "name": "Donchian Channel · kênh giá",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": {
+            "id": "donchian",
+            "kind": "technical",
+            "label": "Donchian Channel"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch06-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 6.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch06",
+          "name": "Bài thi Chương 6",
+          "optional": false,
+          "order": 5,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
       "lesson_count": 4,
-      "no": 7,
-      "published": false,
+      "no": 6,
+      "published": true,
       "title": "Chỉ báo xu hướng"
     },
     {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch07-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:stochastic",
+          "name": "Stochastic · dao động ngẫu nhiên",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": {
+            "id": "stochastic",
+            "kind": "technical",
+            "label": "Stochastic"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch07-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:cci",
+          "name": "CCI · chỉ số kênh hàng hóa",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": {
+            "id": "cci",
+            "kind": "technical",
+            "label": "CCI"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch07-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:roc",
+          "name": "ROC · tốc độ thay đổi giá",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": {
+            "id": "roc",
+            "kind": "technical",
+            "label": "ROC"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch07-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:williams_r",
+          "name": "Williams %R · chỉ báo Williams",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": {
+            "id": "williams_r",
+            "kind": "technical",
+            "label": "Williams %R"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch07-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:obv",
+          "name": "OBV · khối lượng cân bằng",
+          "optional": false,
+          "order": 5,
+          "question_count": 5,
+          "unlock": {
+            "id": "obv",
+            "kind": "technical",
+            "label": "OBV"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch07-l06",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:mfi",
+          "name": "MFI · chỉ số dòng tiền",
+          "optional": false,
+          "order": 6,
+          "question_count": 5,
+          "unlock": {
+            "id": "mfi",
+            "kind": "technical",
+            "label": "MFI"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch07-l07",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "technical:cmf",
+          "name": "Chaikin Money Flow · dòng tiền Chaikin",
+          "optional": false,
+          "order": 7,
+          "question_count": 5,
+          "unlock": {
+            "id": "cmf",
+            "kind": "technical",
+            "label": "Chaikin Money Flow"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch07-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 7.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch07",
+          "name": "Bài thi Chương 7",
+          "optional": false,
+          "order": 8,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
       "lesson_count": 7,
-      "no": 8,
-      "published": false,
+      "no": 7,
+      "published": true,
       "title": "Chỉ báo động lượng và dòng tiền"
     },
     {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch08-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:revenue_yoy",
+          "name": "Tăng trưởng doanh thu YoY",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": {
+            "id": "revenue_yoy",
+            "kind": "fundamental",
+            "label": "Tăng trưởng doanh thu YoY"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch08-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:profit_yoy",
+          "name": "Tăng trưởng LNST YoY",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": {
+            "id": "profit_yoy",
+            "kind": "fundamental",
+            "label": "Tăng trưởng LNST YoY"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch08-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:eps_yoy",
+          "name": "Tăng trưởng EPS YoY",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": {
+            "id": "eps_yoy",
+            "kind": "fundamental",
+            "label": "Tăng trưởng EPS YoY"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch08-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:revenue_cagr3",
+          "name": "Revenue CAGR 3Y · tăng trưởng doanh thu kép 3 năm",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": {
+            "id": "revenue_cagr3",
+            "kind": "fundamental",
+            "label": "Revenue CAGR 3Y"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch08-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:profit_cagr3",
+          "name": "Net Profit CAGR 3Y · tăng trưởng LNST kép 3 năm",
+          "optional": false,
+          "order": 5,
+          "question_count": 5,
+          "unlock": {
+            "id": "profit_cagr3",
+            "kind": "fundamental",
+            "label": "Net Profit CAGR 3Y"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch08-l06",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:eps_cagr3",
+          "name": "EPS CAGR 3Y · tăng trưởng EPS kép 3 năm",
+          "optional": false,
+          "order": 6,
+          "question_count": 5,
+          "unlock": {
+            "id": "eps_cagr3",
+            "kind": "fundamental",
+            "label": "EPS CAGR 3Y"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch08-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 8.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch08",
+          "name": "Bài thi Chương 8",
+          "optional": false,
+          "order": 7,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
       "lesson_count": 6,
-      "no": 9,
-      "published": false,
+      "no": 8,
+      "published": true,
       "title": "Tốc độ tăng trưởng"
     },
     {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch09-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:profit_positive_streak",
+          "name": "Profit Positive Streak · số năm lãi liên tiếp",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": {
+            "id": "profit_positive_streak",
+            "kind": "fundamental",
+            "label": "Profit Positive Streak"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch09-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:revenue_growth_stability",
+          "name": "Revenue Growth Stability · độ ổn định tăng trưởng doanh thu",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": {
+            "id": "revenue_growth_stability",
+            "kind": "fundamental",
+            "label": "Revenue Growth Stability"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch09-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:net_margin_stability",
+          "name": "Margin Stability · độ ổn định biên lợi nhuận",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": {
+            "id": "net_margin_stability",
+            "kind": "fundamental",
+            "label": "Margin Stability"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch09-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:eps_growth_stability",
+          "name": "EPS Stability · độ ổn định EPS",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": {
+            "id": "eps_growth_stability",
+            "kind": "fundamental",
+            "label": "EPS Stability"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch09-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:roic_stability",
+          "name": "ROIC Stability · độ ổn định ROIC",
+          "optional": false,
+          "order": 5,
+          "question_count": 5,
+          "unlock": {
+            "id": "roic_stability",
+            "kind": "fundamental",
+            "label": "ROIC Stability"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch09-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 9.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch09",
+          "name": "Bài thi Chương 9",
+          "optional": false,
+          "order": 6,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
       "lesson_count": 5,
-      "no": 10,
-      "published": false,
+      "no": 9,
+      "published": true,
       "title": "Độ ổn định"
     },
     {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch10-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:roe",
+          "name": "ROE · tỷ suất lợi nhuận trên vốn chủ",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": {
+            "id": "roe",
+            "kind": "fundamental",
+            "label": "ROE"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch10-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:roa",
+          "name": "ROA · tỷ suất lợi nhuận trên tổng tài sản",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": {
+            "id": "roa",
+            "kind": "fundamental",
+            "label": "ROA"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch10-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:roic",
+          "name": "ROIC · tỷ suất lợi nhuận trên vốn đầu tư",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": {
+            "id": "roic",
+            "kind": "fundamental",
+            "label": "ROIC"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch10-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:gross_margin",
+          "name": "Biên lợi nhuận gộp",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": {
+            "id": "gross_margin",
+            "kind": "fundamental",
+            "label": "Biên lợi nhuận gộp"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch10-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:net_margin",
+          "name": "Biên lợi nhuận ròng",
+          "optional": false,
+          "order": 5,
+          "question_count": 5,
+          "unlock": {
+            "id": "net_margin",
+            "kind": "fundamental",
+            "label": "Biên lợi nhuận ròng"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch10-l06",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:asset_turnover",
+          "name": "Asset Turnover · vòng quay tài sản",
+          "optional": false,
+          "order": 6,
+          "question_count": 5,
+          "unlock": {
+            "id": "asset_turnover",
+            "kind": "fundamental",
+            "label": "Asset Turnover"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch10-l07",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:ccc",
+          "name": "Cash Conversion Cycle · chu kỳ chuyển đổi tiền mặt",
+          "optional": false,
+          "order": 7,
+          "question_count": 5,
+          "unlock": {
+            "id": "ccc",
+            "kind": "fundamental",
+            "label": "Cash Conversion Cycle"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch10-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 10.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch10",
+          "name": "Bài thi Chương 10",
+          "optional": false,
+          "order": 8,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
       "lesson_count": 7,
-      "no": 11,
-      "published": false,
+      "no": 10,
+      "published": true,
       "title": "Hiệu quả và biên lợi nhuận"
     },
     {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch11-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:debt_equity",
+          "name": "D/E · nợ vay trên vốn chủ",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": {
+            "id": "debt_equity",
+            "kind": "fundamental",
+            "label": "D/E"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch11-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:current_ratio",
+          "name": "Current Ratio · khả năng thanh toán hiện hành",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": {
+            "id": "current_ratio",
+            "kind": "fundamental",
+            "label": "Current Ratio"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch11-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:interest_coverage",
+          "name": "Interest Coverage · khả năng trả lãi",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": {
+            "id": "interest_coverage",
+            "kind": "fundamental",
+            "label": "Interest Coverage"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch11-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:net_debt_ebitda",
+          "name": "Net Debt / EBITDA · nợ ròng trên EBITDA",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": {
+            "id": "net_debt_ebitda",
+            "kind": "fundamental",
+            "label": "Net Debt / EBITDA"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch11-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 11.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch11",
+          "name": "Bài thi Chương 11",
+          "optional": false,
+          "order": 5,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
       "lesson_count": 4,
-      "no": 12,
-      "published": false,
+      "no": 11,
+      "published": true,
       "title": "Nợ và khả năng thanh toán"
     },
     {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch12-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:cfo_margin",
+          "name": "CFO Margin · biên dòng tiền hoạt động",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": {
+            "id": "cfo_margin",
+            "kind": "fundamental",
+            "label": "CFO Margin"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch12-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:cfo_profit",
+          "name": "CFO / LNST · chất lượng lợi nhuận",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": {
+            "id": "cfo_profit",
+            "kind": "fundamental",
+            "label": "CFO / LNST"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch12-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:capex_revenue",
+          "name": "Capex / Revenue · tỷ lệ chi đầu tư",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": {
+            "id": "capex_revenue",
+            "kind": "fundamental",
+            "label": "Capex / Revenue"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch12-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:fcf_margin",
+          "name": "FCF Margin · biên dòng tiền tự do",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": {
+            "id": "fcf_margin",
+            "kind": "fundamental",
+            "label": "FCF Margin"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch12-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:fcf_positive_streak",
+          "name": "FCF Positive Streak · số năm dòng tiền tự do dương liên tiếp",
+          "optional": false,
+          "order": 5,
+          "question_count": 5,
+          "unlock": {
+            "id": "fcf_positive_streak",
+            "kind": "fundamental",
+            "label": "FCF Positive Streak"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch12-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 12.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch12",
+          "name": "Bài thi Chương 12",
+          "optional": false,
+          "order": 6,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
       "lesson_count": 5,
-      "no": 13,
-      "published": false,
+      "no": 12,
+      "published": true,
       "title": "Dòng tiền"
     },
     {
+      "audience": "all",
+      "items": [
+        {
+          "has_scenario": false,
+          "id": "ch13-l01",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:pe",
+          "name": "P/E · giá trên lợi nhuận",
+          "optional": false,
+          "order": 1,
+          "question_count": 5,
+          "unlock": {
+            "id": "pe",
+            "kind": "fundamental",
+            "label": "P/E"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch13-l02",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:pb",
+          "name": "P/B · giá trên giá trị sổ sách",
+          "optional": false,
+          "order": 2,
+          "question_count": 5,
+          "unlock": {
+            "id": "pb",
+            "kind": "fundamental",
+            "label": "P/B"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch13-l03",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:ps",
+          "name": "P/S · giá trên doanh thu",
+          "optional": false,
+          "order": 3,
+          "question_count": 5,
+          "unlock": {
+            "id": "ps",
+            "kind": "fundamental",
+            "label": "P/S"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch13-l04",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:peg",
+          "name": "PEG · P/E so với tăng trưởng",
+          "optional": false,
+          "order": 4,
+          "question_count": 5,
+          "unlock": {
+            "id": "peg",
+            "kind": "fundamental",
+            "label": "PEG"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch13-l05",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:ev_ebitda",
+          "name": "EV / EBITDA",
+          "optional": false,
+          "order": 5,
+          "question_count": 5,
+          "unlock": {
+            "id": "ev_ebitda",
+            "kind": "fundamental",
+            "label": "EV / EBITDA"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch13-l06",
+          "intro": null,
+          "kind": "lesson",
+          "lesson_key": "fundamental:fcf_yield",
+          "name": "FCF Yield · tỷ suất dòng tiền tự do",
+          "optional": false,
+          "order": 6,
+          "question_count": 5,
+          "unlock": {
+            "id": "fcf_yield",
+            "kind": "fundamental",
+            "label": "FCF Yield"
+          }
+        },
+        {
+          "has_scenario": false,
+          "id": "ch13-exam",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 13.",
+          "kind": "chapter_exam",
+          "lesson_key": "exam:ch13",
+          "name": "Bài thi Chương 13",
+          "optional": false,
+          "order": 7,
+          "question_count": 30,
+          "unlock": null
+        }
+      ],
       "lesson_count": 6,
-      "no": 14,
-      "published": false,
+      "no": 13,
+      "published": true,
       "title": "Định giá"
     }
   ],

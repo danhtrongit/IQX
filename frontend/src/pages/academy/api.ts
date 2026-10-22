@@ -1,5 +1,5 @@
 /**
- * Data layer of the Học viện tool (v3.2: 14 chapters, chapters 1-5 published), authenticated.
+ * Data layer of the Học viện tool (v3.3: 13 chapters, all published), authenticated.
  *
  * 1  `GET  /academy/catalog`                    published chapters, items (lesson / exam / practice), retired names
  * 2  `GET  /academy/progress`                   server-computed item states, course and chapter counts, grants

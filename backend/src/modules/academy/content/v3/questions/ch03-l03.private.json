@@ -3,62 +3,62 @@
   "item_id": "ch03-l03",
   "questions": [
     {
-      "correct_option_id": "e30076eb28",
+      "correct_option_id": "3c7f5cca67",
       "id": "ch03-l03-q01",
       "options": [
         {
-          "id": "e30076eb28",
+          "id": "3c7f5cca67",
           "text": "Bạn là ai, bạn giúp ai, giúp gì, câu mở"
         },
         {
-          "id": "96720e6259",
+          "id": "f6d8a5bb31",
           "text": "Tên, số tài khoản, biểu phí"
         },
         {
-          "id": "32b1c3f8bc",
+          "id": "28d16c8f8b",
           "text": "Mã cổ phiếu, giá mục tiêu, lời hứa"
         }
       ],
       "prompt": "Câu giới thiệu 30 giây gồm những phần nào?"
     },
     {
-      "correct_option_id": "7a08aa4d48",
+      "correct_option_id": "4372d4fc55",
       "id": "ch03-l03-q02",
       "options": [
         {
-          "id": "7a08aa4d48",
+          "id": "4372d4fc55",
           "text": "Trong 24 giờ sau khi gặp, nhắn cảm ơn và gửi một thứ có ích"
         },
         {
-          "id": "d7c824fdd0",
+          "id": "29c9787856",
           "text": "Phải chốt mở tài khoản trong 24 giờ"
         },
         {
-          "id": "9fa4339def",
+          "id": "a6ffab968e",
           "text": "Đăng 24 bài mỗi ngày"
         }
       ],
       "prompt": "Quy tắc 24 giờ là gì?"
     },
     {
-      "correct_option_id": "4ed40f9aff",
+      "correct_option_id": "2822c9a3fc",
       "id": "ch03-l03-q03",
       "options": [
         {
-          "id": "4ed40f9aff",
+          "id": "2822c9a3fc",
           "text": "Giới thiệu ngắn, quan tâm lại người đối diện, kết nối sau"
         },
         {
-          "id": "57259407cd",
+          "id": "be372e4665",
           "text": "Mời mở tài khoản ngay tại bàn"
         },
         {
-          "id": "1ab932b219",
+          "id": "71b4c0e97a",
           "text": "Giấu nghề vì sợ bị nghĩ là đi bán hàng"
         }
       ],
       "prompt": "Ở đám cưới, khi có người hỏi bạn làm gì, nên làm gì?"
     }
   ],
-  "salt": "bfff9aec6b722d82a98d581399112c1d25499f597906c8ce6168eb35cdafe31f"
+  "salt": "5d9e408c17b855171108fea17ee5002414bc1db584a84c3b79776ca5c289c20d"
 }

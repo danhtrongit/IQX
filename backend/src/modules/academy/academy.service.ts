@@ -17,7 +17,7 @@ import {
   type LessonRewardPort,
 } from '../../platform/ports/lesson-reward.port.js';
 import { sortedCapabilities } from './academy-grants.service.js';
-import { INDICATOR_CAPABILITY_PREFIX } from './academy.capabilities.js';
+import { INDICATOR_CAPABILITY_PREFIX, METRIC_CAPABILITY_PREFIX } from './academy.capabilities.js';
 import { loadAcademyContent } from './academy.content.js';
 import type { AcademyContent, AcademyContentSource, AcademyItem } from './academy.content.types.js';
 import {
@@ -660,7 +660,11 @@ export function catalogItemView(item: AcademyItem): CatalogItemResponse {
           kind: item.unlock.kind,
           id: item.unlock.id,
           label: item.unlock.label,
-          capability_id: `${INDICATOR_CAPABILITY_PREFIX}${item.unlock.id}`,
+          capability_id: `${
+            item.unlock.kind === 'technical'
+              ? INDICATOR_CAPABILITY_PREFIX
+              : METRIC_CAPABILITY_PREFIX
+          }${item.unlock.id}`,
         }
       : null,
     has_scenario: item.has_scenario,

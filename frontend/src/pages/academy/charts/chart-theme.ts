@@ -1,7 +1,7 @@
 import type { ChartTone } from "../content-types"
 
 /**
- * Colour roles of the v3.2 chart models, mapped to theme tokens (schema.ts §2), never to the hex
+ * Colour roles of the v3.3 chart models, mapped to theme tokens (schema.ts §2), never to the hex
  * values of the mockup. Class names are written out in full so Tailwind can see them.
  *
  *   price -> foreground, p1 -> chart-1, p2 -> chart-2, p3 -> chart-5 (lines only), p4 -> chart-7,

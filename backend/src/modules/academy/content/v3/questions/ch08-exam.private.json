@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-exam",
+  "questions": [
+    {
+      "correct_option_id": "7e71800676",
+      "id": "ch08-exam-q01",
+      "options": [
+        {
+          "id": "7e71800676",
+          "text": "So với cùng kỳ năm trước"
+        },
+        {
+          "id": "72f3e323b4",
+          "text": "So với quý liền trước"
+        },
+        {
+          "id": "89058e2af0",
+          "text": "So với trung bình ngành"
+        }
+      ],
+      "prompt": "YoY có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "0d545aca62",
+      "id": "ch08-exam-q02",
+      "options": [
+        {
+          "id": "0d545aca62",
+          "text": "Thấp hơn do mùa vụ"
+        },
+        {
+          "id": "273096f50d",
+          "text": "Luôn cao hơn"
+        },
+        {
+          "id": "483aab2730",
+          "text": "Luôn bằng nhau"
+        }
+      ],
+      "prompt": "Doanh nghiệp bán chạy nhất vào quý 4. Quý 1 năm sau so với quý 4 thường thế nào?"
+    },
+    {
+      "correct_option_id": "ba58c08757",
+      "id": "ch08-exam-q03",
+      "options": [
+        {
+          "id": "ba58c08757",
+          "text": "Tiền thu từ bán hàng và dịch vụ"
+        },
+        {
+          "id": "667367426a",
+          "text": "Phần lợi nhuận thuộc về cổ đông"
+        },
+        {
+          "id": "edbe1c4527",
+          "text": "Tiền doanh nghiệp đi vay ngân hàng"
+        }
+      ],
+      "prompt": "Doanh thu là gì?"
+    },
+    {
+      "correct_option_id": "c1536351a9",
+      "id": "ch08-exam-q04",
+      "options": [
+        {
+          "id": "c1536351a9",
+          "text": "Lượng hàng bán ra gần như không tăng"
+        },
+        {
+          "id": "6b4170c96e",
+          "text": "Doanh nghiệp đang mở rộng rất mạnh"
+        },
+        {
+          "id": "95f7b3820c",
+          "text": "Biên lợi nhuận chắc chắn tăng"
+        }
+      ],
+      "prompt": "Tăng trưởng doanh thu dưới mức lạm phát cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "bfb1386ba7",
+      "id": "ch08-exam-q05",
+      "options": [
+        {
+          "id": "bfb1386ba7",
+          "text": "Lợi nhuận đi xuống"
+        },
+        {
+          "id": "a2183d6149",
+          "text": "Số cổ phiếu tăng lên"
+        },
+        {
+          "id": "e040a02339",
+          "text": "EPS luôn tăng theo"
+        }
+      ],
+      "prompt": "Doanh thu tăng nhờ giảm giá bán mạnh có thể dẫn đến điều gì?"
+    },
+    {
+      "correct_option_id": "aef61d01e9",
+      "id": "ch08-exam-q06",
+      "options": [
+        {
+          "id": "aef61d01e9",
+          "text": "Cần xem xu hướng nhiều quý"
+        },
+        {
+          "id": "c86a32f787",
+          "text": "Đủ để kết luận doanh nghiệp tốt"
+        },
+        {
+          "id": "4400ff7bbe",
+          "text": "Nên bỏ qua vì không quan trọng"
+        }
+      ],
+      "prompt": "Một quý doanh thu tăng mạnh nên được nhìn nhận thế nào?"
+    },
+    {
+      "correct_option_id": "30a49a0a06",
+      "id": "ch08-exam-q07",
+      "options": [
+        {
+          "id": "30a49a0a06",
+          "text": "Phần còn lại sau khi trừ mọi chi phí và thuế"
+        },
+        {
+          "id": "89f30505a2",
+          "text": "Tổng tiền bán hàng trong kỳ"
+        },
+        {
+          "id": "5b64bc2f15",
+          "text": "Doanh thu trừ đi giá vốn"
+        }
+      ],
+      "prompt": "LNST là gì?"
+    },
+    {
+      "correct_option_id": "18dcfa4bdb",
+      "id": "ch08-exam-q08",
+      "options": [
+        {
+          "id": "18dcfa4bdb",
+          "text": "Nhiều chi phí cố định không tăng theo"
+        },
+        {
+          "id": "b8b907360a",
+          "text": "Số cổ phiếu lưu hành giảm mạnh"
+        },
+        {
+          "id": "70bd898085",
+          "text": "Doanh nghiệp không có chi phí"
+        }
+      ],
+      "prompt": "Doanh thu tăng 10% nhưng LNST tăng 40%. Lý do có thể là gì?"
+    },
+    {
+      "correct_option_id": "84b70a0ed0",
+      "id": "ch08-exam-q09",
+      "options": [
+        {
+          "id": "84b70a0ed0",
+          "text": "Làm LNST tăng đột biến, khó lặp lại"
+        },
+        {
+          "id": "90f51abebf",
+          "text": "Làm doanh thu giảm theo"
+        },
+        {
+          "id": "f1885598ce",
+          "text": "Không ảnh hưởng đến LNST"
+        }
+      ],
+      "prompt": "Khoản lãi từ bán tài sản một lần ảnh hưởng thế nào đến tăng trưởng LNST?"
+    },
+    {
+      "correct_option_id": "ad3825c37e",
+      "id": "ch08-exam-q10",
+      "options": [
+        {
+          "id": "ad3825c37e",
+          "text": "Không tính được"
+        },
+        {
+          "id": "cb308c4e33",
+          "text": "Bằng 100%"
+        },
+        {
+          "id": "7e1749ca98",
+          "text": "Bằng 0%"
+        }
+      ],
+      "prompt": "Cùng kỳ năm trước LNST bằng 0. Tăng trưởng LNST YoY quý này thế nào?"
+    },
+    {
+      "correct_option_id": "af7d460493",
+      "id": "ch08-exam-q11",
+      "options": [
+        {
+          "id": "af7d460493",
+          "text": "Chi phí đang tăng nhanh hơn doanh thu"
+        },
+        {
+          "id": "5e177571e7",
+          "text": "Biên lợi nhuận đang mở rộng"
+        },
+        {
+          "id": "bc732eb9c6",
+          "text": "Doanh nghiệp vừa phát hành cổ phiếu"
+        }
+      ],
+      "prompt": "LNST tăng chậm hơn doanh thu qua nhiều quý cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "3956f81ffa",
+      "id": "ch08-exam-q12",
+      "options": [
+        {
+          "id": "3956f81ffa",
+          "text": "Lợi nhuận trên mỗi cổ phiếu"
+        },
+        {
+          "id": "54d78bd7c6",
+          "text": "Doanh thu trên mỗi cổ phiếu"
+        },
+        {
+          "id": "6af04b8f1a",
+          "text": "Vốn chủ sở hữu trên mỗi cổ phiếu"
+        }
+      ],
+      "prompt": "EPS là viết tắt của chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "1d2e0472b6",
+      "id": "ch08-exam-q13",
+      "options": [
+        {
+          "id": "1d2e0472b6",
+          "text": "Đúng bằng 20%"
+        },
+        {
+          "id": "62736d0729",
+          "text": "Ít hơn 20%"
+        },
+        {
+          "id": "780eb1485c",
+          "text": "Nhiều hơn 20%"
+        }
+      ],
+      "prompt": "LNST tăng 20%, số cổ phiếu không đổi. EPS tăng bao nhiêu?"
+    },
+    {
+      "correct_option_id": "8108182ee4",
+      "id": "ch08-exam-q14",
+      "options": [
+        {
+          "id": "8108182ee4",
+          "text": "Làm số cổ phiếu tăng và EPS giảm"
+        },
+        {
+          "id": "0a3c86f2cd",
+          "text": "Làm LNST tăng và EPS tăng"
+        },
+        {
+          "id": "5df5fe6afe",
+          "text": "Không ảnh hưởng đến số cổ phiếu"
+        }
+      ],
+      "prompt": "Chia cổ tức bằng cổ phiếu ảnh hưởng thế nào đến EPS?"
+    },
+    {
+      "correct_option_id": "9945b41654",
+      "id": "ch08-exam-q15",
+      "options": [
+        {
+          "id": "9945b41654",
+          "text": "Lợi nhuận bị chia cho nhiều cổ phiếu hơn"
+        },
+        {
+          "id": "7129e2c083",
+          "text": "Giá cổ phiếu giảm trong một phiên"
+        },
+        {
+          "id": "a1dd37d0f0",
+          "text": "Doanh thu bị chia cho nhiều quý hơn"
+        }
+      ],
+      "prompt": "Pha loãng cổ phiếu là gì?"
+    },
+    {
+      "correct_option_id": "4d410746d2",
+      "id": "ch08-exam-q16",
+      "options": [
+        {
+          "id": "4d410746d2",
+          "text": "EPS phản ánh phần lợi nhuận của mỗi cổ phiếu"
+        },
+        {
+          "id": "ebe896e712",
+          "text": "EPS không bị ảnh hưởng bởi lợi nhuận"
+        },
+        {
+          "id": "a0ba85221e",
+          "text": "EPS luôn tăng nhanh hơn LNST"
+        }
+      ],
+      "prompt": "Vì sao nhà đầu tư nên ưu tiên EPS hơn LNST?"
+    },
+    {
+      "correct_option_id": "bf4346a837",
+      "id": "ch08-exam-q17",
+      "options": [
+        {
+          "id": "bf4346a837",
+          "text": "EPS cùng quý năm trước"
+        },
+        {
+          "id": "4a2ad47a34",
+          "text": "EPS quý liền trước"
+        },
+        {
+          "id": "49e3eba1da",
+          "text": "EPS trung bình 4 quý"
+        }
+      ],
+      "prompt": "Tăng trưởng EPS YoY so EPS quý này với số liệu nào?"
+    },
+    {
+      "correct_option_id": "d63894ef81",
+      "id": "ch08-exam-q18",
+      "options": [
+        {
+          "id": "d63894ef81",
+          "text": "3 bước"
+        },
+        {
+          "id": "3f25522a43",
+          "text": "4 bước"
+        },
+        {
+          "id": "db858b647f",
+          "text": "2 bước"
+        }
+      ],
+      "prompt": "CAGR 3 năm từ 2022 đến 2025 gồm bao nhiêu bước tăng trưởng?"
+    },
+    {
+      "correct_option_id": "19690f461c",
+      "id": "ch08-exam-q19",
+      "options": [
+        {
+          "id": "19690f461c",
+          "text": "(Năm cuối ÷ năm đầu) mũ 1/3, rồi trừ 1"
+        },
+        {
+          "id": "acf7bd8a10",
+          "text": "(Năm cuối − năm đầu) ÷ 3"
+        },
+        {
+          "id": "b8a9a63b78",
+          "text": "Tổng tăng trưởng các năm chia 3"
+        }
+      ],
+      "prompt": "Công thức CAGR 3 năm là gì?"
+    },
+    {
+      "correct_option_id": "e31f47616d",
+      "id": "ch08-exam-q20",
+      "options": [
+        {
+          "id": "e31f47616d",
+          "text": "Gần bằng nhau"
+        },
+        {
+          "id": "3a865e28c7",
+          "text": "Chênh lệch rất lớn"
+        },
+        {
+          "id": "b9200d1426",
+          "text": "CAGR luôn cao hơn nhiều"
+        }
+      ],
+      "prompt": "Các năm tăng trưởng rất đều nhau thì CAGR và trung bình cộng thế nào?"
+    },
+    {
+      "correct_option_id": "6e29f7448c",
+      "id": "ch08-exam-q21",
+      "options": [
+        {
+          "id": "6e29f7448c",
+          "text": "Bị đẩy lên cao hơn thực tế"
+        },
+        {
+          "id": "eae8e6841f",
+          "text": "Bị kéo xuống thấp hơn thực tế"
+        },
+        {
+          "id": "b09747e8ed",
+          "text": "Không thay đổi"
+        }
+      ],
+      "prompt": "Chọn năm gốc là năm khủng hoảng có lợi nhuận rất thấp sẽ làm CAGR thế nào?"
+    },
+    {
+      "correct_option_id": "521510fff3",
+      "id": "ch08-exam-q22",
+      "options": [
+        {
+          "id": "521510fff3",
+          "text": "Không cho biết các năm giữa lên xuống ra sao"
+        },
+        {
+          "id": "24e38ff38f",
+          "text": "Cho biết chính xác từng năm"
+        },
+        {
+          "id": "0af39d0b4f",
+          "text": "Cho biết năm nào lỗ"
+        }
+      ],
+      "prompt": "CAGR cho biết điều gì về các năm ở giữa giai đoạn?"
+    },
+    {
+      "correct_option_id": "4df7d0bf18",
+      "id": "ch08-exam-q23",
+      "options": [
+        {
+          "id": "4df7d0bf18",
+          "text": "CAGR là quá khứ, YoY cho biết đà tăng hiện tại"
+        },
+        {
+          "id": "c2401ed3a7",
+          "text": "Hai chỉ tiêu luôn cho cùng một con số"
+        },
+        {
+          "id": "d3c110cb41",
+          "text": "YoY thay thế hoàn toàn được CAGR"
+        }
+      ],
+      "prompt": "Vì sao nên kết hợp CAGR 3 năm với tăng trưởng YoY gần nhất?"
+    },
+    {
+      "correct_option_id": "f79ef192fb",
+      "id": "ch08-exam-q24",
+      "options": [
+        {
+          "id": "f79ef192fb",
+          "text": "Nhiều hơn 30%"
+        },
+        {
+          "id": "dce405da61",
+          "text": "Đúng 30%"
+        },
+        {
+          "id": "d2803f5dbe",
+          "text": "Ít hơn 30%"
+        }
+      ],
+      "prompt": "LNST giảm 30% thì cần tăng bao nhiêu để về lại mức cũ?"
+    },
+    {
+      "correct_option_id": "1bd75bb0b2",
+      "id": "ch08-exam-q25",
+      "options": [
+        {
+          "id": "1bd75bb0b2",
+          "text": "Cao hơn CAGR khá nhiều"
+        },
+        {
+          "id": "2408bdc0c4",
+          "text": "Thấp hơn CAGR khá nhiều"
+        },
+        {
+          "id": "83a25fe20c",
+          "text": "Luôn bằng CAGR"
+        }
+      ],
+      "prompt": "Lợi nhuận biến động mạnh qua các năm thì trung bình cộng so với CAGR thế nào?"
+    },
+    {
+      "correct_option_id": "17ecfc786f",
+      "id": "ch08-exam-q26",
+      "options": [
+        {
+          "id": "17ecfc786f",
+          "text": "Doanh nghiệp có lợi nhuận tăng đều từng năm"
+        },
+        {
+          "id": "c5199f0a39",
+          "text": "Doanh nghiệp có lợi nhuận lên xuống mạnh"
+        },
+        {
+          "id": "84aecbce89",
+          "text": "Hai doanh nghiệp đáng tin như nhau"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp cùng Net Profit CAGR. Doanh nghiệp nào đáng tin hơn?"
+    },
+    {
+      "correct_option_id": "c3a63660eb",
+      "id": "ch08-exam-q27",
+      "options": [
+        {
+          "id": "c3a63660eb",
+          "text": "Số cổ phiếu không đổi trong giai đoạn"
+        },
+        {
+          "id": "003b007b7e",
+          "text": "Doanh thu không đổi trong giai đoạn"
+        },
+        {
+          "id": "59c9dfdfcb",
+          "text": "Doanh nghiệp không trả cổ tức"
+        }
+      ],
+      "prompt": "EPS CAGR bằng LNST CAGR khi nào?"
+    },
+    {
+      "correct_option_id": "82a93b6405",
+      "id": "ch08-exam-q28",
+      "options": [
+        {
+          "id": "82a93b6405",
+          "text": "Mức pha loãng trong giai đoạn"
+        },
+        {
+          "id": "cc5b04cdba",
+          "text": "Mức tăng của biên lợi nhuận"
+        },
+        {
+          "id": "1aaf07a19f",
+          "text": "Tốc độ tăng của doanh thu"
+        }
+      ],
+      "prompt": "Khoảng cách giữa LNST CAGR và EPS CAGR cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "873c6c39bd",
+      "id": "ch08-exam-q29",
+      "options": [
+        {
+          "id": "873c6c39bd",
+          "text": "Phần tăng hoặc giảm so với cùng kỳ"
+        },
+        {
+          "id": "41fffea0a7",
+          "text": "Mức chênh giữa doanh thu và lợi nhuận"
+        },
+        {
+          "id": "7083355a9b",
+          "text": "Số cổ phiếu phát hành thêm"
+        }
+      ],
+      "prompt": "Trên các biểu đồ đại diện YoY, khoảng cách giữa cột xanh và cột cam thể hiện gì?"
+    },
+    {
+      "correct_option_id": "b72b6c36c3",
+      "id": "ch08-exam-q30",
+      "options": [
+        {
+          "id": "b72b6c36c3",
+          "text": "Chỉ tiêu tăng khá đều qua các năm"
+        },
+        {
+          "id": "526e7e9d45",
+          "text": "Chỉ tiêu biến động rất mạnh"
+        },
+        {
+          "id": "0bf789ae5d",
+          "text": "Doanh nghiệp đã phát hành thêm cổ phiếu"
+        }
+      ],
+      "prompt": "Trên các biểu đồ đại diện CAGR, các cột bám sát đường đứt nét cho thấy điều gì?"
+    }
+  ],
+  "salt": "a395ed724f1e023f3fe4f5febb1bafba3875ea72072b84c85c4873d95e4509bf"
+}

@@ -1,0 +1,547 @@
+{
+  "chapter": 9,
+  "charts": {
+    "c9l1-g1": {
+      "kind": "category",
+      "labels": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "LNST",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "p1"
+          },
+          "values": [
+            259.55,
+            -118.48,
+            243.33,
+            373.43,
+            261.74,
+            385.88,
+            514.47
+          ]
+        }
+      ],
+      "title": "LNST theo năm · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c9l1-g2": {
+      "kind": "category",
+      "labels": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh nghiệp A",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "pos"
+          },
+          "values": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "name": "Doanh nghiệp B",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "pos"
+          },
+          "values": [
+            1,
+            0,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "name": "Doanh nghiệp C",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "pos"
+          },
+          "values": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            0
+          ]
+        }
+      ],
+      "title": "Chuỗi lãi liên tiếp tính ngược từ năm gần nhất",
+      "unit": "1 là lãi, 0 là lỗ",
+      "value_labels": "none"
+    },
+    "c9l1-g3": {
+      "alt": "Thang tham chiếu số năm lãi liên tiếp: dưới 3 năm là yếu, từ 5 năm trở lên là tốt",
+      "domain": [
+        0,
+        7
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Doanh nghiệp mẫu · 5 năm",
+          "side": "a",
+          "tone": "p1",
+          "v": 5
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0",
+          "v": 0
+        },
+        {
+          "label": "1",
+          "v": 1
+        },
+        {
+          "label": "2",
+          "v": 2
+        },
+        {
+          "label": "3",
+          "v": 3
+        },
+        {
+          "label": "4",
+          "v": 4
+        },
+        {
+          "label": "5",
+          "v": 5
+        },
+        {
+          "label": "6",
+          "v": 6
+        },
+        {
+          "label": "7",
+          "v": 7
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Yếu",
+          "to": 2,
+          "tone": "neg"
+        },
+        {
+          "from": 2,
+          "label": "Trung bình",
+          "to": 4,
+          "tone": "warn"
+        },
+        {
+          "from": 4,
+          "label": "Tốt",
+          "to": 7,
+          "tone": "pos"
+        }
+      ]
+    },
+    "c9l1-g4": {
+      "kind": "category",
+      "labels": [
+        "'19",
+        "'20",
+        "'21",
+        "'22",
+        "'23",
+        "'24",
+        "'25"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Lãi lớn, tăng đều",
+          "tone": "pos",
+          "values": [
+            180,
+            220,
+            260,
+            300,
+            350,
+            410,
+            480
+          ]
+        },
+        {
+          "name": "Lãi rất mỏng, đi ngang",
+          "tone": "warn",
+          "values": [
+            12,
+            8,
+            15,
+            6,
+            10,
+            9,
+            11
+          ]
+        }
+      ],
+      "title": "Cùng chuỗi lãi, khác quy mô · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "none"
+    },
+    "c9l1-rep": {
+      "caption_tone": "price",
+      "caption_value": "5 năm",
+      "kind": "category",
+      "labels": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Profit Positive Streak",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "pos"
+          },
+          "values": [
+            259.5516,
+            -118.4797,
+            243.3333,
+            373.4342,
+            261.7377,
+            385.8816,
+            514.4704
+          ]
+        }
+      ],
+      "title": "Profit Positive Streak",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch09-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Profit Positive Streak đếm xem doanh nghiệp đã có lãi liên tục bao nhiêu năm tính đến năm gần nhất. Chuỗi càng dài, doanh nghiệp càng chứng tỏ khả năng tạo lợi nhuận qua nhiều hoàn cảnh khác nhau.",
+  "lesson_key": "fundamental:profit_positive_streak",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Profit Positive Streak</b> (chuỗi năm lãi) là số năm <b>lợi nhuận sau thuế (LNST) dương liên tiếp</b>, đếm ngược từ năm gần nhất. Dữ liệu dùng 7 năm từ 2019 đến 2025, nên chỉ tiêu nằm trong khoảng từ 0 đến 7 năm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l1-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Doanh nghiệp mẫu lỗ năm 2020, sau đó lãi liên tục từ 2021 đến 2025. Chuỗi năm lãi là <b>5 năm</b>. Năm 2019 có lãi nhưng không được tính vì chuỗi đã bị năm 2020 cắt đứt.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Profit Positive Streak là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Bắt đầu từ năm gần nhất và đi lùi về quá khứ. Mỗi năm có lãi cộng thêm 1. Gặp năm lỗ đầu tiên thì <b>dừng đếm</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l1-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chuỗi đạt mức tối đa là 7 năm.",
+              "title": "Lãi cả 7 năm"
+            },
+            {
+              "text": "Chỉ đếm các năm lãi nằm sau năm lỗ gần nhất.",
+              "title": "Lỗ ở giữa giai đoạn"
+            },
+            {
+              "text": "Chuỗi bằng 0, dù các năm trước đều có lãi.",
+              "title": "Lỗ ở năm gần nhất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Cách đếm"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l1-rep",
+          "table_toggle": true,
+          "title": "Profit Positive Streak",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Mỗi cột là LNST của một năm, đơn vị tỷ đồng. Cột màu đậm thuộc chuỗi lãi hiện tại.",
+              "title": "Cột xanh · năm có lãi"
+            },
+            {
+              "text": "Cột nằm dưới mốc 0. Năm lỗ gần nhất là điểm chuỗi bắt đầu được đếm lại.",
+              "title": "Cột đỏ · năm lỗ"
+            },
+            {
+              "text": "Số năm lãi liên tiếp tính đến năm gần nhất, ở đây là 5 năm đến 2025.",
+              "title": "Số lớn góc phải"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l1-g3",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh nghiệp giữ được lãi qua nhiều chu kỳ kinh tế, mô hình kinh doanh có sức bền.",
+              "title": "Chuỗi dài · 5 đến 7 năm",
+              "tone": "pos"
+            },
+            {
+              "text": "Lợi nhuận chưa vững. Chuỗi bằng 0 nghĩa là năm gần nhất đang lỗ.",
+              "title": "Chuỗi ngắn · 0 đến 2 năm",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức tham khảo trên áp dụng cho dữ liệu 7 năm. Chuỗi chỉ cho biết có lãi hay không, chưa nói lãi nhiều hay ít.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Ưu tiên doanh nghiệp có chuỗi lãi dài trước khi phân tích sâu hơn.",
+              "title": "Lọc sơ bộ"
+            },
+            {
+              "text": "Đặt chuỗi cạnh biểu đồ LNST để biết lợi nhuận đang tăng, đi ngang hay chỉ vừa đủ dương.",
+              "title": "Xem cùng quy mô lãi"
+            },
+            {
+              "text": "Năm lỗ vì sự kiện một lần khác với lỗ do mô hình kinh doanh yếu đi.",
+              "title": "Tìm nguyên nhân năm lỗ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        },
+        {
+          "chart_id": "c9l1-g4",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Hai doanh nghiệp cùng có chuỗi 7 năm. Một bên lãi lớn và tăng đều, bên kia lãi rất mỏng, chỉ nhỉnh hơn 0. Chuỗi bằng nhau nhưng chất lượng lợi nhuận rất khác nhau.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2019"
+            },
+            {
+              "label": "2020"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "LNST (tỷ đồng)",
+                "260",
+                "−118",
+                "243",
+                "373",
+                "262",
+                "386",
+                "514"
+              ]
+            },
+            {
+              "cells": [
+                "Kết quả",
+                "Lãi",
+                {
+                  "rating": "bad",
+                  "text": "Lỗ"
+                },
+                {
+                  "rating": "good",
+                  "text": "Lãi"
+                },
+                {
+                  "rating": "good",
+                  "text": "Lãi"
+                },
+                {
+                  "rating": "good",
+                  "text": "Lãi"
+                },
+                {
+                  "rating": "good",
+                  "text": "Lãi"
+                },
+                {
+                  "rating": "good",
+                  "text": "Lãi"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "items": [
+            {
+              "term": "Đếm từ 2025 lùi về",
+              "text": "2025, 2024, 2023, 2022, 2021 đều lãi, cộng được 5 năm."
+            },
+            {
+              "term": "Dừng ở 2020",
+              "text": "Năm 2020 lỗ 118 tỷ đồng nên dừng đếm. Năm 2019 không được tính."
+            },
+            {
+              "term": "Kết quả",
+              "text": "Profit Positive Streak = 5 năm, thuộc nhóm chuỗi dài."
+            },
+            {
+              "term": "Đọc thêm",
+              "text": "LNST tăng từ 243 lên 514 tỷ đồng sau năm lỗ, cho thấy doanh nghiệp đã phục hồi rõ."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lãi 5 tỷ đồng mỗi năm vẫn tạo chuỗi dài, nhưng không đủ hấp dẫn.",
+              "title": "Chỉ nhìn chuỗi, bỏ qua mức lãi"
+            },
+            {
+              "text": "Một năm có lãi nhờ bán tài sản vẫn được tính vào chuỗi, dù kinh doanh chính đang lỗ.",
+              "title": "Bỏ qua lãi bất thường"
+            },
+            {
+              "text": "Một năm lỗ do khủng hoảng chung của ngành có thể không phản ánh sức khỏe lâu dài.",
+              "title": "Loại ngay vì một năm lỗ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Profit Positive Streak</b> là số năm <b>LNST dương liên tiếp</b> đếm ngược từ năm gần nhất.",
+    "Gặp năm lỗ đầu tiên thì <b>dừng đếm</b>. Năm gần nhất lỗ thì chuỗi bằng 0.",
+    "Với dữ liệu 7 năm, chuỗi <b>từ 5 năm trở lên</b> là dấu hiệu lợi nhuận bền.",
+    "Luôn đọc chuỗi cùng <b>quy mô và xu hướng của LNST</b>."
+  ],
+  "title": "Profit Positive Streak · số năm lãi liên tiếp"
+}

@@ -1,0 +1,509 @@
+{
+  "chapter": 8,
+  "charts": {
+    "c8l1-g1": {
+      "kind": "category",
+      "labels": [
+        "Doanh thu",
+        "Giá vốn",
+        "LN gộp",
+        "Chi phí hoạt động",
+        "Lãi vay",
+        "Thuế",
+        "LNST"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh thu",
+          "tone": "p1",
+          "values": [
+            1598.2,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "name": "Giá vốn",
+          "tone": "neg",
+          "values": [
+            null,
+            -1172.1,
+            null,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "name": "LN gộp",
+          "tone": "warn",
+          "values": [
+            null,
+            null,
+            426.1,
+            null,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "name": "Chi phí hoạt động",
+          "tone": "neg",
+          "values": [
+            null,
+            null,
+            null,
+            -210.1,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "name": "Lãi vay",
+          "tone": "neg",
+          "values": [
+            null,
+            null,
+            null,
+            null,
+            -23.4,
+            null,
+            null
+          ]
+        },
+        {
+          "name": "Thuế",
+          "tone": "neg",
+          "values": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            -38.5,
+            null
+          ]
+        },
+        {
+          "name": "LNST",
+          "tone": "pos",
+          "values": [
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            154.1
+          ]
+        }
+      ],
+      "title": "Báo cáo kết quả kinh doanh quý 2/2026 · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c8l1-g2": {
+      "kind": "category",
+      "labels": [
+        "Q1/23",
+        "Q2/23",
+        "Q3/23",
+        "Q4/23",
+        "Q1/24",
+        "Q2/24",
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh thu",
+          "tone": "p1",
+          "values": [
+            1020.1,
+            1118.3,
+            1166.6,
+            1371.5,
+            1167,
+            1283.8,
+            1345.3,
+            1551.5,
+            1308.9,
+            1450.4,
+            1467.2,
+            1703.1
+          ]
+        }
+      ],
+      "title": "Doanh thu theo quý · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "none"
+    },
+    "c8l1-g3": {
+      "kind": "category",
+      "labels": [
+        "Q2/2025",
+        "Q2/2026"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh thu",
+          "tone": "p1",
+          "values": [
+            1450.4,
+            1598.2
+          ]
+        }
+      ],
+      "title": "Tăng trưởng doanh thu YoY · %",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c8l1-rep": {
+      "caption_tone": "price",
+      "caption_value": "10,2%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Tăng trưởng doanh thu YoY",
+          "tone": "p1",
+          "values": [
+            15.3226,
+            13.1285,
+            12.1591,
+            12.9749,
+            9.0605,
+            9.7716,
+            15.4018,
+            10.19
+          ]
+        }
+      ],
+      "title": "Tăng trưởng doanh thu YoY",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch08-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tăng trưởng doanh thu YoY cho biết doanh nghiệp bán được nhiều hơn hay ít hơn so với cùng quý năm trước. Đây là con số đầu tiên cần xem khi doanh nghiệp công bố kết quả kinh doanh mỗi quý.",
+  "lesson_key": "fundamental:revenue_yoy",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "Mỗi quý, doanh nghiệp niêm yết công bố <b>báo cáo kết quả kinh doanh</b>: bảng ghi lại doanh nghiệp thu được bao nhiêu và còn lại bao nhiêu lợi nhuận. Dòng trên cùng là <b>doanh thu</b>, tiền thu từ bán hàng và dịch vụ. Lần lượt trừ đi giá vốn, chi phí và thuế, dòng cuối cùng là <b>lợi nhuận sau thuế (LNST)</b>, phần thuộc về cổ đông.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l1-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>YoY</b> (Year over Year) nghĩa là so với cùng kỳ năm trước. Tăng trưởng doanh thu YoY so doanh thu quý này với doanh thu của <b>đúng quý đó năm trước</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tăng trưởng doanh thu YoY là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Nhiều ngành có <b>tính mùa vụ</b>: bán chạy vào cuối năm, chậm vào đầu năm. Doanh nghiệp mẫu luôn có doanh thu cao nhất ở quý 4 và thấp nhất ở quý 1.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l1-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Quý 1/2025 so với quý 4/2024 giảm 15,6%. Con số này chỉ phản ánh mùa vụ, không phải kinh doanh đi xuống.",
+              "title": "So với quý liền trước",
+              "tone": "neg"
+            },
+            {
+              "text": "Quý 1/2025 so với quý 1/2024 tăng 12,2%. Hai quý cùng mùa nên so sánh công bằng.",
+              "title": "So với cùng kỳ năm trước",
+              "tone": "pos"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao so với cùng kỳ"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c8l1-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu của quý vừa công bố.",
+              "title": "Quý này"
+            },
+            {
+              "text": "Doanh thu của cùng quý năm trước.",
+              "title": "Cùng kỳ"
+            },
+            {
+              "text": "(Quý này ÷ cùng kỳ − 1) × 100%. Cùng kỳ bằng 0 thì không tính được.",
+              "title": "Tăng trưởng YoY"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Cách tính"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c8l1-rep",
+          "table_toggle": true,
+          "title": "Tăng trưởng doanh thu YoY",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng doanh thu YoY của từng quý, tính bằng %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu của quý đó, đơn vị tỷ đồng.",
+              "title": "Cột xanh"
+            },
+            {
+              "text": "Doanh thu cùng kỳ năm trước. Cột xanh cao hơn cột cam là doanh thu đang tăng.",
+              "title": "Cột cam"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s4",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tăng trưởng dương liên tục, ổn định. Sản phẩm vẫn được thị trường đón nhận.",
+              "title": "Tăng đều qua nhiều quý",
+              "tone": "pos"
+            },
+            {
+              "text": "Doanh thu thấp hơn cùng kỳ, hoặc tốc độ tăng chậm lại nhiều quý liền.",
+              "title": "Âm hoặc giảm dần",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp đang mở rộng mạnh.",
+              "title": "Trên 15% · tăng nhanh"
+            },
+            {
+              "text": "Tăng nhanh hơn lạm phát, mức phổ biến của doanh nghiệp trưởng thành.",
+              "title": "5% đến 15% · tăng ổn"
+            },
+            {
+              "text": "Gần bằng lạm phát, lượng hàng bán ra gần như không tăng.",
+              "title": "Dưới 5% · tăng chậm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        },
+        {
+          "text": "Các mức trên chỉ để tham khảo. Mỗi ngành có tốc độ tăng trưởng bình thường khác nhau.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Một quý tăng mạnh chưa nói lên nhiều. Ưu tiên doanh nghiệp tăng trưởng dương 4 đến 8 quý liền.",
+              "title": "Xem xu hướng nhiều quý"
+            },
+            {
+              "text": "Doanh nghiệp tăng nhanh hơn trung bình ngành đang giành thêm thị phần.",
+              "title": "So với cùng ngành"
+            },
+            {
+              "text": "Doanh thu tăng chỉ có ý nghĩa khi lợi nhuận cũng tăng theo. Bài sau sẽ xem LNST.",
+              "title": "Đi kèm lợi nhuận"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s6",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Năm 2024"
+            },
+            {
+              "label": "Năm 2025"
+            },
+            {
+              "label": "YoY"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Quý 1",
+                "1.167",
+                "1.309",
+                {
+                  "rating": "good",
+                  "text": "+12,2%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Quý 2",
+                "1.284",
+                "1.450",
+                {
+                  "rating": "good",
+                  "text": "+13,0%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Quý 3",
+                "1.345",
+                "1.467",
+                {
+                  "rating": "good",
+                  "text": "+9,1%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Quý 4",
+                "1.552",
+                "1.703",
+                {
+                  "rating": "good",
+                  "text": "+9,8%"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Doanh thu của doanh nghiệp mẫu (tỷ đồng). Cả bốn quý năm 2025 đều cao hơn cùng kỳ, nhưng tốc độ chậm dần từ khoảng 13% xuống khoảng 9 đến 10%. Doanh nghiệp vẫn tăng trưởng tốt, cần theo dõi tiếp xem đà chậm lại có kéo dài không.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s7",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Quý 1 so với quý 4 thường giảm vì mùa vụ. Luôn so với cùng kỳ năm trước.",
+              "title": "So với quý liền trước"
+            },
+            {
+              "text": "Cùng kỳ năm trước quá thấp thì tăng trưởng năm nay trông rất cao dù kinh doanh chỉ hồi phục.",
+              "title": "Bỏ qua nền so sánh"
+            },
+            {
+              "text": "Bán nhiều hơn nhờ giảm giá mạnh có thể khiến lợi nhuận đi xuống.",
+              "title": "Chỉ nhìn doanh thu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Doanh thu</b> là dòng đầu, <b>LNST</b> là dòng cuối của báo cáo kết quả kinh doanh.",
+    "YoY so quý này với <b>cùng quý năm trước</b> để loại bỏ ảnh hưởng của mùa vụ.",
+    "Tăng trưởng YoY = <b>(quý này ÷ cùng kỳ − 1) × 100%</b>.",
+    "Xem <b>xu hướng nhiều quý</b>, so với cùng ngành và đi kèm lợi nhuận."
+  ],
+  "title": "Tăng trưởng doanh thu YoY"
+}

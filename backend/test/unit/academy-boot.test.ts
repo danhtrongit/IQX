@@ -7,13 +7,13 @@ import {
 import { academyV3Fixture } from './academy-v3-fixture.js';
 
 describe('academy boot on the real content/v3', () => {
-  it('loads, validates and memoizes 49 items with 43 required lessons', () => {
+  it('loads, validates and memoizes 101 items with 87 required lessons', () => {
     expect(ACADEMY_CONTENT_DIR).toMatch(/src\/modules\/academy\/content\/v3$/);
     const content = loadAcademyContent();
     expect(loadAcademyContent()).toBe(content);
-    expect(content.items.size).toBe(49);
-    expect(content.requiredTotal).toBe(43);
-    expect(content.catalog.chapters.filter((chapter) => chapter.published)).toHaveLength(5);
+    expect(content.items.size).toBe(101);
+    expect(content.requiredTotal).toBe(87);
+    expect(content.catalog.chapters.filter((chapter) => chapter.published)).toHaveLength(13);
   });
 
   it('matches the independent test fixture item for item', () => {

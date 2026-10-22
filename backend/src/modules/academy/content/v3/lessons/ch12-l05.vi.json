@@ -1,0 +1,437 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l5-g1": {
+      "kind": "category",
+      "labels": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "FCF",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "p1"
+          },
+          "values": [
+            150,
+            -80,
+            60,
+            -40,
+            120,
+            180,
+            210
+          ]
+        }
+      ],
+      "title": "FCF tăng trưởng qua các năm · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c12l5-g2": {
+      "kind": "category",
+      "labels": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh nghiệp A",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "pos"
+          },
+          "values": [
+            1,
+            1,
+            1,
+            -1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "name": "Doanh nghiệp B",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "pos"
+          },
+          "values": [
+            -1,
+            -1,
+            1,
+            1,
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "name": "Doanh nghiệp C",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "pos"
+          },
+          "values": [
+            1,
+            1,
+            1,
+            1,
+            1,
+            1,
+            -1
+          ]
+        }
+      ],
+      "title": "Cách đếm chuỗi FCF dương liên tiếp",
+      "unit": "1 là dương, 0 là âm",
+      "value_labels": "none"
+    },
+    "c12l5-g3": {
+      "kind": "category",
+      "labels": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh nghiệp A",
+          "tone": "p1",
+          "values": [
+            8,
+            10,
+            6,
+            9,
+            7,
+            11,
+            10
+          ]
+        },
+        {
+          "name": "Doanh nghiệp B",
+          "tone": "p1",
+          "values": [
+            150,
+            170,
+            160,
+            190,
+            210,
+            230,
+            250
+          ]
+        }
+      ],
+      "title": "Chuỗi dài nhưng khác độ lớn · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "none"
+    },
+    "c12l5-rep": {
+      "caption_tone": "price",
+      "caption_value": "4 năm",
+      "kind": "category",
+      "labels": [
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "FCF Positive Streak",
+          "tone_by_sign": {
+            "neg": "neg",
+            "pos": "pos"
+          },
+          "values": [
+            272.6467,
+            -203.8389,
+            -112.4298,
+            312.1913,
+            133.0107,
+            385.0829,
+            484.4099
+          ]
+        }
+      ],
+      "title": "FCF Positive Streak",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tạo ra tiền tự do một năm thì dễ, duy trì nhiều năm liền mới khó. FCF Positive Streak đếm số năm liên tiếp gần nhất doanh nghiệp có dòng tiền tự do dương.",
+  "lesson_key": "fundamental:fcf_positive_streak",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>FCF Positive Streak</b> là <b>chuỗi năm FCF dương liên tiếp</b>, đếm ngược từ năm gần nhất. FCF mỗi năm bằng CFO trừ Capex của năm đó. Dữ liệu xét trong giai đoạn 2019 đến 2025, nên chuỗi dài nhất là 7 năm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l5-g1",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "FCF Positive Streak là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Bắt đầu từ năm gần nhất và đi lùi. Gặp năm FCF âm đầu tiên thì <b>dừng đếm</b>. Những năm dương ở trước năm âm đó không được tính.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l5-g2",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s2",
+      "title": "Cách đếm"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l5-rep",
+          "table_toggle": true,
+          "title": "FCF Positive Streak",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Số năm FCF dương liên tiếp tính đến năm gần nhất.",
+              "title": "Số lớn góc phải"
+            },
+            {
+              "text": "Năm có FCF dương. Cột nhạt hơn là năm dương nhưng nằm ngoài chuỗi hiện tại.",
+              "title": "Cột xanh"
+            },
+            {
+              "text": "Năm có FCF âm, nằm dưới đường 0. Năm âm gần nhất là nơi chuỗi bị ngắt.",
+              "title": "Cột đỏ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Chuỗi từ 5 năm trở lên, cho thấy doanh nghiệp tự tạo tiền đều đặn qua nhiều điều kiện thị trường.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "Chuỗi bằng 0, tức năm gần nhất FCF âm, hoặc FCF đổi dấu liên tục giữa các năm.",
+              "title": "Cần cảnh giác",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Chuỗi ngắn do vừa trải qua giai đoạn đầu tư lớn khác với chuỗi ngắn do kinh doanh không tạo ra tiền. Hãy xem lại CFO và Capex của năm âm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l5-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chuỗi dài giúp phân biệt doanh nghiệp tạo tiền ổn định với doanh nghiệp chỉ may mắn một năm.",
+              "title": "Đo độ bền của dòng tiền"
+            },
+            {
+              "text": "Chuỗi dài nhưng FCF rất nhỏ so với doanh thu chưa phải điểm mạnh. Xem thêm FCF Margin.",
+              "title": "Kết hợp với độ lớn FCF"
+            },
+            {
+              "text": "Doanh nghiệp trả cổ tức đều đặn nhiều năm cần có chuỗi FCF dương tương ứng.",
+              "title": "Kiểm tra cổ tức tiền mặt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "CFO"
+            },
+            {
+              "label": "Capex"
+            },
+            {
+              "label": "FCF"
+            },
+            {
+              "label": "Dấu"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "2021",
+                "180",
+                "290",
+                "−110",
+                {
+                  "rating": "bad",
+                  "text": "Âm"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "2022",
+                "520",
+                "210",
+                "310",
+                {
+                  "rating": "good",
+                  "text": "Dương"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "2023",
+                "360",
+                "230",
+                "130",
+                {
+                  "rating": "good",
+                  "text": "Dương"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "2024",
+                "600",
+                "215",
+                "385",
+                {
+                  "rating": "good",
+                  "text": "Dương"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "2025",
+                "730",
+                "245",
+                "485",
+                {
+                  "rating": "good",
+                  "text": "Dương"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Đơn vị tỷ đồng. Đếm lùi từ 2025: bốn năm 2025, 2024, 2023, 2022 đều dương, đến 2021 thì âm. FCF Positive Streak bằng <b>4 năm</b>.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chỉ tính các năm liên tiếp tính từ năm gần nhất, không cộng các năm dương rải rác.",
+              "title": "Đếm tổng số năm dương"
+            },
+            {
+              "text": "FCF dương vài tỷ đồng mỗi năm vẫn tính vào chuỗi nhưng đóng góp rất ít.",
+              "title": "Bỏ qua độ lớn"
+            },
+            {
+              "text": "Chuỗi ngắn do một năm xây nhà máy chưa chắc là dấu hiệu xấu.",
+              "title": "Loại doanh nghiệp vừa đầu tư"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>FCF Positive Streak</b> là số năm FCF dương liên tiếp, đếm ngược từ năm gần nhất.",
+    "Gặp <b>năm FCF âm đầu tiên thì dừng</b>, giai đoạn xét là 2019 đến 2025.",
+    "Chuỗi dài cho thấy doanh nghiệp <b>tạo tiền đều đặn</b>.",
+    "Kết hợp với <b>FCF Margin</b> để biết lượng tiền tạo ra lớn hay nhỏ."
+  ],
+  "title": "FCF Positive Streak · số năm dòng tiền tự do dương liên tiếp"
+}

@@ -1,0 +1,646 @@
+{
+  "chapter": 9,
+  "charts": {
+    "c9l3-g1": {
+      "kind": "category",
+      "labels": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "Chi phí",
+          "tone": "p3",
+          "values": [
+            93.69,
+            91.72,
+            94.4,
+            92.78,
+            91.32
+          ]
+        },
+        {
+          "name": "LNST",
+          "tone": "pos",
+          "values": [
+            6.31,
+            8.28,
+            5.6,
+            7.22,
+            8.68
+          ]
+        }
+      ],
+      "title": "Mỗi 100 đồng doanh thu thu được bao nhiêu lợi nhuận ròng",
+      "unit": "đồng",
+      "value_labels": "all"
+    },
+    "c9l3-g2": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    10.0593,
+                    10.0593,
+                    10.0593,
+                    10.0593,
+                    10.0593
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    10.6607,
+                    10.6607,
+                    10.6607,
+                    10.6607,
+                    10.6607
+                  ]
+                },
+                "bounds": [
+                  0,
+                  16
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 10.36",
+                    "role": "avg",
+                    "value": 10.36
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      10.2,
+                      10.8,
+                      9.9,
+                      10.5,
+                      10.4
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "Doanh nghiệp A · biên ổn định"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    3.6218,
+                    3.6218,
+                    3.6218,
+                    3.6218,
+                    3.6218
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    12.7782,
+                    12.7782,
+                    12.7782,
+                    12.7782,
+                    12.7782
+                  ]
+                },
+                "bounds": [
+                  0,
+                  16
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân 8.2",
+                    "role": "avg",
+                    "value": 8.2
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "Giá trị",
+                    "role": "p1",
+                    "values": [
+                      14,
+                      4,
+                      12,
+                      2,
+                      9
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "Doanh nghiệp B · biên dao động"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c9l3-g3": {
+      "items": [
+        {
+          "model": {
+            "kind": "category",
+            "labels": [
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Biên lợi nhuận ròng",
+                "tone": "warn",
+                "values": [
+                  17,
+                  9,
+                  19,
+                  8,
+                  15
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "Biên cao, dao động"
+        },
+        {
+          "model": {
+            "kind": "category",
+            "labels": [
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Biên lợi nhuận ròng",
+                "tone": "pos",
+                "values": [
+                  15,
+                  16,
+                  15.5,
+                  16,
+                  15.5
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "Biên cao, ổn định · tốt nhất"
+        },
+        {
+          "model": {
+            "kind": "category",
+            "labels": [
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Biên lợi nhuận ròng",
+                "tone": "neg",
+                "values": [
+                  5,
+                  1,
+                  4.5,
+                  0.5,
+                  3
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "Biên thấp, dao động"
+        },
+        {
+          "model": {
+            "kind": "category",
+            "labels": [
+              "2021",
+              "2022",
+              "2023",
+              "2024",
+              "2025"
+            ],
+            "mode": "line",
+            "series": [
+              {
+                "name": "Biên lợi nhuận ròng",
+                "tone": "p1",
+                "values": [
+                  2.5,
+                  3,
+                  2.8,
+                  3,
+                  2.7
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_labels": "none"
+          },
+          "title": "Biên thấp, ổn định"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c9l3-g4": {
+      "alt": "Thang tham chiếu độ lệch chuẩn biên lợi nhuận ròng: ổn định dưới 1,5 điểm phần trăm",
+      "domain": [
+        0,
+        4.5
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Doanh nghiệp mẫu · 1,2 điểm %",
+          "side": "a",
+          "tone": "p1",
+          "v": 1.16
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0 điểm %",
+          "v": 0
+        },
+        {
+          "label": "1,5",
+          "v": 1.5
+        },
+        {
+          "label": "3,0",
+          "v": 3
+        },
+        {
+          "label": "4,5+",
+          "v": 4.5
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Ổn định",
+          "to": 1.5,
+          "tone": "pos"
+        },
+        {
+          "from": 1.5,
+          "label": "Trung bình",
+          "to": 3,
+          "tone": "warn"
+        },
+        {
+          "from": 3,
+          "label": "Thất thường",
+          "to": 4.5,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c9l3-rep": {
+      "caption_tone": "price",
+      "caption_value": "1,2 điểm %",
+      "kind": "category",
+      "labels": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Margin Stability",
+          "tone": "p1",
+          "values": [
+            6.3138,
+            8.2815,
+            5.597,
+            7.2159,
+            8.6763
+          ]
+        }
+      ],
+      "title": "Margin Stability",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch09-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Margin Stability đo biên lợi nhuận ròng của doanh nghiệp thay đổi nhiều hay ít qua các năm. Biên ổn định cho thấy doanh nghiệp giữ được giá bán và kiểm soát được chi phí.",
+  "lesson_key": "fundamental:net_margin_stability",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Biên lợi nhuận ròng</b> (net margin) là phần LNST trên mỗi 100 đồng doanh thu. <b>Margin Stability</b> là <b>độ lệch chuẩn</b> của biên ròng từng năm từ 2021 đến 2025, đơn vị điểm %. Con số <b>càng nhỏ</b>, biên <b>càng ổn định</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l3-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Cứ 100 đồng doanh thu, doanh nghiệp mẫu giữ lại từ 5,6 đến 8,7 đồng lợi nhuận tùy năm. Margin Stability đo mức dao động này.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Margin Stability là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Giống bài trước, độ lệch chuẩn là <b>khoảng cách điển hình</b> của biên từng năm so với biên bình quân. Dải hẹp nghĩa là biên gần như giữ nguyên qua các năm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l3-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh nghiệp có sức định giá, chuyển được chi phí tăng sang giá bán.",
+              "title": "Biên ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "Lợi nhuận phụ thuộc giá nguyên liệu, giá bán hoặc chi phí lãi vay biến động.",
+              "title": "Biên dao động",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Dải quanh biên bình quân"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l3-rep",
+          "table_toggle": true,
+          "title": "Margin Stability",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "LNST chia doanh thu của mỗi năm, đơn vị %.",
+              "title": "Đường xanh · biên ròng từng năm"
+            },
+            {
+              "text": "Biên ròng trung bình của 5 năm.",
+              "title": "Đường đứt nét · bình quân"
+            },
+            {
+              "text": "Nửa độ rộng của dải là con số lớn ở góc phải.",
+              "title": "Dải tô · bình quân ± độ lệch chuẩn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Độ ổn định phải đọc <b>cùng mức biên</b>. Biên cao và ổn định tốt hơn biên thấp và ổn định.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l3-g3",
+          "type": "chart"
+        },
+        {
+          "chart_id": "c9l3-g4",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Biên gần như giữ nguyên qua các năm, lợi nhuận dễ dự báo.",
+              "title": "Dưới 1,5 điểm % · ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "Biên lên xuống mạnh, lợi nhuận có thể thay đổi rất lớn dù doanh thu không đổi.",
+              "title": "Trên 3 điểm % · thất thường",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên cao và ổn định qua nhiều năm thường là dấu hiệu của lợi thế cạnh tranh.",
+              "title": "Tìm doanh nghiệp có sức định giá"
+            },
+            {
+              "text": "Biên ổn định cho phép lấy doanh thu dự kiến nhân biên bình quân để ước lợi nhuận.",
+              "title": "Ước tính lợi nhuận"
+            },
+            {
+              "text": "Mỗi ngành có mức biên riêng. Bán lẻ biên thấp, phần mềm biên cao.",
+              "title": "So trong cùng ngành"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Biên ròng",
+                "6,3%",
+                "8,3%",
+                "5,6%",
+                "7,2%",
+                "8,7%"
+              ]
+            },
+            {
+              "cells": [
+                "Lệch so với bình quân",
+                "−0,9",
+                "+1,1",
+                {
+                  "rating": "mid",
+                  "text": "−1,6"
+                },
+                "0,0",
+                {
+                  "rating": "good",
+                  "text": "+1,5"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "items": [
+            {
+              "term": "Biên bình quân",
+              "text": "Khoảng 7,2%, tức 7,2 đồng lãi trên 100 đồng doanh thu."
+            },
+            {
+              "term": "Biên thấp nhất và cao nhất",
+              "text": "5,6% năm 2023 và 8,7% năm 2025."
+            },
+            {
+              "term": "Kết quả",
+              "text": "Độ lệch chuẩn ≈ 1,2 điểm %, thuộc nhóm ổn định."
+            },
+            {
+              "term": "Đọc thêm",
+              "text": "Biên ổn định nhưng ở mức trung bình. Hai năm gần đây biên tăng là điểm tích cực."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên 1% năm nào cũng vậy vẫn rất mỏng, chỉ cần chi phí tăng nhẹ là lỗ.",
+              "title": "Ổn định ở mức rất thấp"
+            },
+            {
+              "text": "Biên của ngân hàng, bán lẻ và phần mềm không cùng thước đo.",
+              "title": "So khác ngành"
+            },
+            {
+              "text": "Lãi từ bán tài sản làm biên ròng một năm tăng vọt, khiến dải rộng ra.",
+              "title": "Bỏ qua khoản lãi bất thường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Margin Stability</b> là <b>độ lệch chuẩn</b> của biên LNST ròng 2021-2025, đơn vị điểm %.",
+    "Con số <b>càng nhỏ</b>, biên <b>càng ổn định</b>. Dưới 1,5 điểm % là ổn định.",
+    "Biên ổn định thường gắn với <b>sức định giá</b> và kiểm soát chi phí tốt.",
+    "<b>Biên cao và ổn định</b> tốt hơn biên thấp và ổn định."
+  ],
+  "title": "Margin Stability · độ ổn định biên lợi nhuận"
+}

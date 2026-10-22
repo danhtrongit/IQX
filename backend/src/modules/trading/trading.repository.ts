@@ -67,6 +67,7 @@ export function mapAccount(row: Row): TradingAccount {
     cashAvailableVnd: bigint(row.cash_available_vnd),
     cashReservedVnd: bigint(row.cash_reserved_vnd),
     cashPendingVnd: bigint(row.cash_pending_vnd),
+    netDepositedCashVnd: bigint(row.net_deposited_cash_vnd ?? 0),
     activatedAt: date(row.activated_at),
     resetAt: nullableDate(row.reset_at),
     frozenAt: nullableDate(row.frozen_at),
@@ -156,7 +157,7 @@ export class TradingRepository {
        (id, initial_cash_vnd, buy_fee_rate_bps, sell_fee_rate_bps, sell_tax_rate_bps,
         settlement_mode, board_lot_size, trading_enabled, holidays, is_active,
         created_by, created_at, updated_at)
-       values ($1, 100000000, 15, 15, 10, 'T0', 100, true, '[]', true, $2, now(), now())
+       values ($1, 0, 15, 15, 10, 'T0', 100, true, '[]', true, $2, now(), now())
        returning *`,
       [randomUUID(), createdBy ?? null],
     );

@@ -48,7 +48,12 @@ type PlanViewRow = Record<string, unknown> & {
   sell_date: Date | string | null;
 };
 
-const INITIAL_CASH = 100_000_000;
+/**
+ * Vốn mở tài khoản Demo Trading khi vào Cấp 0 (Flashback spec §1.3): tài khoản Demo mới
+ * không có vốn, người dùng phải đổi từ xu sang tiền. `virtual_balance_init` ghi lại đúng
+ * số vốn mà tài khoản ảo được mở, nên nó cũng bằng 0.
+ */
+const INITIAL_CASH = 0;
 const REASON_LABELS: Record<string, string> = {
   cong_ty_toi_biet: 'Công ty tôi biết',
   nguoi_quen_gioi_thieu: 'Người quen giới thiệu',

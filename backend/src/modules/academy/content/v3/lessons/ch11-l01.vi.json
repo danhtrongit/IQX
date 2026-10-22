@@ -1,0 +1,474 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l1-g1": {
+      "kind": "category",
+      "labels": [
+        "Tổng tài sản",
+        "Nợ vay",
+        "Nợ khác",
+        "Vốn chủ sở hữu"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Tổng tài sản",
+          "tone": "p1",
+          "values": [
+            6465,
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "name": "Nợ vay",
+          "tone": "p5",
+          "values": [
+            null,
+            1100,
+            null,
+            null
+          ]
+        },
+        {
+          "name": "Nợ khác",
+          "tone": "warn",
+          "values": [
+            null,
+            null,
+            896,
+            null
+          ]
+        },
+        {
+          "name": "Vốn chủ sở hữu",
+          "tone": "p1",
+          "values": [
+            null,
+            null,
+            null,
+            4469
+          ]
+        }
+      ],
+      "title": "Bảng cân đối: tổng tài sản 6.465 tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c11l1-g2": {
+      "alt": "D/E chỉ tính nợ vay có trả lãi là 1.100 tỷ; nợ khác 896 tỷ không trả lãi nên không tính vào D/E",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "children": [
+            {
+              "title": "Vay ngắn hạn ngân hàng"
+            },
+            {
+              "title": "Vay dài hạn ngân hàng"
+            },
+            {
+              "title": "Trái phiếu phát hành"
+            }
+          ],
+          "id": "no",
+          "title": "Nợ vay · có trả lãi",
+          "tone": "p5",
+          "value": "1.100 tỷ"
+        },
+        {
+          "children": [
+            {
+              "title": "Phải trả nhà cung cấp"
+            },
+            {
+              "title": "Người mua trả tiền trước"
+            },
+            {
+              "title": "Lương, thuế còn phải trả"
+            }
+          ],
+          "id": "other",
+          "title": "Nợ khác · không trả lãi",
+          "tone": "warn",
+          "value": "896 tỷ"
+        }
+      ]
+    },
+    "c11l1-g3": {
+      "kind": "category",
+      "labels": [
+        "Năm thuận lợi",
+        "Năm khó khăn"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "A · không vay",
+          "tone": "p1",
+          "values": [
+            15,
+            2
+          ]
+        },
+        {
+          "name": "B · vay 50% tài sản",
+          "tone": "p5",
+          "values": [
+            20,
+            -6
+          ]
+        }
+      ],
+      "title": "Đòn bẩy hai mặt · ROE %",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c11l1-g4": {
+      "alt": "Thang tham chiếu D/E: dưới 0,5 lần là thấp, trên 2 lần là rất cao",
+      "domain": [
+        0,
+        2.5
+      ],
+      "ends": [
+        "0",
+        "2.5 lần"
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Doanh nghiệp mẫu · 0,25",
+          "side": "a",
+          "tone": "p1",
+          "v": 0.25
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0",
+          "v": 0
+        },
+        {
+          "label": "0,5",
+          "v": 0.5
+        },
+        {
+          "label": "1",
+          "v": 1
+        },
+        {
+          "label": "2",
+          "v": 2
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Thấp",
+          "to": 0.5,
+          "tone": "pos"
+        },
+        {
+          "from": 0.5,
+          "label": "Vừa phải",
+          "to": 1,
+          "tone": "warn"
+        },
+        {
+          "from": 1,
+          "label": "Cao",
+          "to": 2,
+          "tone": "p5"
+        },
+        {
+          "from": 2,
+          "label": "Rất cao",
+          "to": 2.5,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c11l1-rep": {
+      "caption_tone": "price",
+      "caption_value": "0,25 lần",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "D/E",
+          "tone": "p1",
+          "values": [
+            0.3598,
+            0.3478,
+            0.2841,
+            0.275,
+            0.274,
+            0.2643,
+            0.255,
+            0.2462
+          ]
+        }
+      ],
+      "title": "D/E",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "D/E cho biết doanh nghiệp đang dùng bao nhiêu đồng nợ vay cho mỗi đồng vốn chủ sở hữu. Đây là thước đo cơ bản nhất về mức đòn bẩy tài chính và rủi ro nợ của doanh nghiệp.",
+  "lesson_key": "fundamental:debt_equity",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>Bảng cân đối kế toán</b> luôn cân bằng: <b>tài sản = nợ phải trả + vốn chủ sở hữu</b>. Tài sản là những gì doanh nghiệp đang có. Nợ phải trả và vốn chủ cho biết tiền để mua những tài sản đó đến từ đâu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l1-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>D/E</b> (Debt to Equity, nợ vay trên vốn chủ) lấy <b>nợ vay ngắn hạn và dài hạn</b> chia cho <b>vốn chủ sở hữu (VCSH)</b>, tính tại cuối kỳ báo cáo. Đơn vị là lần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "D/E là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Nợ phải trả gồm nhiều khoản. Chỉ những khoản <b>phải trả lãi</b> mới được tính là nợ vay trong D/E.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l1-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vay ngân hàng, trái phiếu. Phải trả lãi và trả gốc đúng hạn, là nguồn gây áp lực tài chính.",
+              "title": "Nợ vay"
+            },
+            {
+              "text": "Tiền chưa trả nhà cung cấp, tiền khách đặt trước. Phát sinh từ hoạt động kinh doanh, thường không có lãi.",
+              "title": "Nợ khác"
+            },
+            {
+              "text": "Hai doanh nghiệp cùng tổng nợ phải trả có thể có rủi ro rất khác nhau, tùy phần nợ vay lớn hay nhỏ.",
+              "title": "Vì sao tách riêng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Nợ vay khác nợ phải trả"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Vay nợ giúp doanh nghiệp làm ăn lớn hơn số vốn chủ đang có. Khi kinh doanh tốt, lợi nhuận trên vốn chủ tăng mạnh. Khi kinh doanh kém, tiền lãi vay vẫn phải trả và khoản lỗ cũng bị khuếch đại.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l1-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tài sản sinh lời 15%, cao hơn lãi vay 10%. Doanh nghiệp vay nợ có ROE 20%, cao hơn doanh nghiệp không vay.",
+              "title": "Năm thuận lợi",
+              "tone": "pos"
+            },
+            {
+              "text": "Tài sản chỉ sinh lời 2%, thấp hơn lãi vay. Doanh nghiệp vay nợ chuyển sang lỗ, ROE âm 6%.",
+              "title": "Năm khó khăn",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Đòn bẩy hai mặt"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l1-rep",
+          "table_toggle": true,
+          "title": "D/E",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "D/E tại cuối mỗi quý, theo dõi 8 quý gần nhất. Con số góc phải là giá trị quý mới nhất.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hai cột mỗi quý: nợ vay và vốn chủ sở hữu, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Nợ vay đứng yên, vốn chủ tăng dần nhờ lợi nhuận giữ lại, nên D/E giảm dần qua các quý.",
+              "title": "Cách đọc"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s4",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l1-g4",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Doanh nghiệp ít phụ thuộc vào vay nợ, chịu đựng tốt hơn khi lãi suất tăng hay kinh doanh chững lại.",
+              "title": "D/E thấp hoặc giảm dần",
+              "tone": "pos"
+            },
+            {
+              "text": "Áp lực trả lãi và gốc lớn. Chỉ cần lợi nhuận giảm là doanh nghiệp có thể gặp khó khăn.",
+              "title": "D/E cao hoặc tăng nhanh",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Các mức trên chỉ để tham khảo. <b>Mức hợp lý khác nhau theo ngành</b>: bất động sản, điện, hạ tầng cần nhiều vốn nên D/E thường cao hơn; công nghệ, bán lẻ thường thấp. Ngân hàng và công ty chứng khoán có cấu trúc vốn riêng, không đánh giá bằng mức này.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đặt D/E cạnh các doanh nghiệp cùng ngành thay vì dùng một ngưỡng chung cho mọi ngành.",
+              "title": "So với cùng ngành"
+            },
+            {
+              "text": "D/E tăng nhiều quý liền là dấu hiệu doanh nghiệp đang vay thêm nhanh hơn vốn chủ tăng.",
+              "title": "Theo dõi xu hướng"
+            },
+            {
+              "text": "D/E cao vẫn chấp nhận được nếu lợi nhuận đủ lớn và ổn định để trả lãi vay.",
+              "title": "Kết hợp khả năng trả lãi"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s6",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Bảng cân đối của doanh nghiệp mẫu cuối quý 2/2026, đơn vị tỷ đồng.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Tổng tài sản 6.465",
+              "text": "Bằng nợ phải trả 1.996 cộng vốn chủ sở hữu 4.469."
+            },
+            {
+              "term": "Nợ vay 1.100",
+              "text": "Gồm vay ngắn hạn 660 và vay dài hạn 440. Phần nợ còn lại 896 là nợ không có lãi."
+            },
+            {
+              "term": "D/E ≈ 0,25 lần",
+              "text": "1.100 ÷ 4.469. Mỗi đồng vốn chủ đi kèm khoảng 0,25 đồng nợ vay."
+            },
+            {
+              "term": "Nếu dùng tổng nợ phải trả",
+              "text": "1.996 ÷ 4.469 ≈ 0,45 lần. Con số cao hơn vì gồm cả nợ không có lãi, không phải D/E."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s7",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tính cả tiền nợ nhà cung cấp làm D/E bị phóng đại so với rủi ro thật.",
+              "title": "Nhầm nợ vay với nợ phải trả"
+            },
+            {
+              "text": "D/E 1 lần là cao với công ty phần mềm nhưng bình thường với doanh nghiệp điện.",
+              "title": "Dùng một ngưỡng cho mọi ngành"
+            },
+            {
+              "text": "Vay hợp lý giúp tăng ROE. Không vay chút nào có thể làm doanh nghiệp bỏ lỡ cơ hội mở rộng.",
+              "title": "Cho rằng không nợ luôn tốt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Tài sản = nợ phải trả + vốn chủ sở hữu</b>. D/E lấy phần <b>nợ vay</b> chia cho vốn chủ.",
+    "Nợ vay là khoản <b>phải trả lãi</b>, khác với nợ phải trả nói chung.",
+    "Đòn bẩy có <b>hai mặt</b>: tăng ROE khi kinh doanh tốt, khuếch đại khoản lỗ khi kinh doanh kém.",
+    "Mức hợp lý <b>khác nhau theo ngành</b>. So với cùng ngành và theo dõi xu hướng qua các quý."
+  ],
+  "title": "D/E · nợ vay trên vốn chủ"
+}

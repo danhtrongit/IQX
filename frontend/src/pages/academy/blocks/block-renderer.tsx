@@ -62,7 +62,7 @@ function StaticBlockView({ block, charts }: { block: StaticBlock; charts: BlockR
 }
 
 /**
- * Renders a list of v3.2 lesson blocks in order. The wrapper is a size container, so card and
+ * Renders a list of v3.3 lesson blocks in order. The wrapper is a size container, so card and
  * chart grids respond to the width of the reader (not of the window): one column below 560px.
  */
 export function BlockRenderer({ blocks, charts, renderInteractive }: BlockRendererProps) {

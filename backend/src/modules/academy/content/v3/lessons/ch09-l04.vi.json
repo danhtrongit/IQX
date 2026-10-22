@@ -1,0 +1,630 @@
+{
+  "chapter": 9,
+  "charts": {
+    "c9l4-g1": {
+      "alt": "EPS năm 2025 bằng lợi nhuận sau thuế 514 tỷ đồng chia cho 360 triệu cổ phiếu lưu hành, tức khoảng 1.429 đồng mỗi cổ phiếu",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "lnst",
+          "title": "Lợi nhuận sau thuế",
+          "tone": "p1",
+          "value": "514 tỷ đồng"
+        },
+        {
+          "id": "shares",
+          "title": "Số cổ phiếu lưu hành",
+          "tone": "warn",
+          "value": "360 triệu"
+        },
+        {
+          "emph": true,
+          "id": "eps",
+          "title": "EPS năm 2025",
+          "tone": "pos",
+          "value": "xấp xỉ 1.429 đồng"
+        }
+      ]
+    },
+    "c9l4-g2": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    858.5786,
+                    858.5786,
+                    858.5786,
+                    858.5786,
+                    858.5786
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    1141.4214,
+                    1141.4214,
+                    1141.4214,
+                    1141.4214,
+                    1141.4214
+                  ]
+                },
+                "bounds": [
+                  0,
+                  1500
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân",
+                    "role": "avg",
+                    "value": 1000
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "EPS",
+                    "role": "p1",
+                    "values": [
+                      800,
+                      1200,
+                      900,
+                      1100,
+                      1000
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "Doanh nghiệp A · EPS khoảng 1.000 đồng"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    4858.5786,
+                    4858.5786,
+                    4858.5786,
+                    4858.5786,
+                    4858.5786
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    5141.4214,
+                    5141.4214,
+                    5141.4214,
+                    5141.4214,
+                    5141.4214
+                  ]
+                },
+                "bounds": [
+                  0,
+                  6000
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân",
+                    "role": "avg",
+                    "value": 5000
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "EPS",
+                    "role": "p1",
+                    "values": [
+                      4800,
+                      5200,
+                      4900,
+                      5100,
+                      5000
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "Doanh nghiệp B · EPS khoảng 5.000 đồng"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c9l4-g3": {
+      "alt": "Thang tham chiếu hệ số biến thiên của EPS: ổn định dưới 15%, thất thường trên 35%",
+      "domain": [
+        0,
+        50
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Doanh nghiệp mẫu · 24,4%",
+          "side": "a",
+          "tone": "p1",
+          "v": 24.35
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0 %",
+          "v": 0
+        },
+        {
+          "label": "15",
+          "v": 15
+        },
+        {
+          "label": "35",
+          "v": 35
+        },
+        {
+          "label": "50+",
+          "v": 50
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Ổn định",
+          "to": 15,
+          "tone": "pos"
+        },
+        {
+          "from": 15,
+          "label": "Trung bình",
+          "to": 35,
+          "tone": "warn"
+        },
+        {
+          "from": 35,
+          "label": "Thất thường",
+          "to": 50,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c9l4-g4": {
+      "items": [
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    817.1573,
+                    817.1573,
+                    817.1573,
+                    817.1573,
+                    817.1573
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    1382.8427,
+                    1382.8427,
+                    1382.8427,
+                    1382.8427,
+                    1382.8427
+                  ]
+                },
+                "bounds": [
+                  0,
+                  1600
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân",
+                    "role": "avg",
+                    "value": 1100
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "EPS",
+                    "role": "p1",
+                    "values": [
+                      700,
+                      900,
+                      1100,
+                      1300,
+                      1500
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "EPS tăng đều"
+        },
+        {
+          "model": {
+            "kind": "series_panels",
+            "marks": [],
+            "panels": [
+              {
+                "band": {
+                  "lower": [
+                    826.1387,
+                    826.1387,
+                    826.1387,
+                    826.1387,
+                    826.1387
+                  ],
+                  "tone": "p1",
+                  "upper": [
+                    1373.8613,
+                    1373.8613,
+                    1373.8613,
+                    1373.8613,
+                    1373.8613
+                  ]
+                },
+                "bounds": [
+                  0,
+                  1600
+                ],
+                "levels": [
+                  {
+                    "label": "Bình quân",
+                    "role": "avg",
+                    "value": 1100
+                  }
+                ],
+                "series": [
+                  {
+                    "name": "EPS",
+                    "role": "p1",
+                    "values": [
+                      1400,
+                      800,
+                      1350,
+                      750,
+                      1200
+                    ],
+                    "width": 2
+                  }
+                ],
+                "title": ""
+              }
+            ],
+            "x": {
+              "end": 4,
+              "start": 0,
+              "ticks": [
+                "2021",
+                "2022",
+                "2023",
+                "2024",
+                "2025"
+              ]
+            }
+          },
+          "title": "EPS lên xuống thất thường"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c9l4-rep": {
+      "caption_tone": "price",
+      "caption_value": "24,4%",
+      "kind": "category",
+      "labels": [
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "EPS Stability",
+          "tone": "p1",
+          "values": [
+            737.3736,
+            1131.6187,
+            793.1446,
+            1169.3382,
+            1429.0845
+          ]
+        }
+      ],
+      "title": "EPS Stability",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch09-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "EPS Stability đo lợi nhuận trên mỗi cổ phiếu dao động nhiều hay ít qua các năm. Vì EPS mỗi doanh nghiệp một khác, chỉ tiêu này đo dao động theo tỷ lệ phần trăm để so sánh công bằng.",
+  "lesson_key": "fundamental:eps_growth_stability",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>EPS</b> (Earnings Per Share) là lợi nhuận trên mỗi cổ phiếu, bằng LNST chia số cổ phiếu đang lưu hành. <b>EPS Stability</b> là <b>hệ số biến thiên</b> (coefficient of variation) của EPS từ 2021 đến 2025, đơn vị %. Con số <b>càng nhỏ</b>, EPS <b>càng ổn định</b>.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l4-g1",
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "EPS Stability là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "EPS có đơn vị đồng và mỗi doanh nghiệp một mức. Dao động 141 đồng là lớn với EPS 1.000 đồng nhưng rất nhỏ với EPS 5.000 đồng. Hệ số biến thiên lấy <b>độ lệch chuẩn chia EPS bình quân</b>, rồi nhân 100 để ra %.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c9l4-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khoảng cách điển hình của EPS từng năm tới EPS bình quân, đơn vị đồng.",
+              "title": "Độ lệch chuẩn"
+            },
+            {
+              "text": "Đổi dao động thành tỷ lệ so với chính mức EPS của doanh nghiệp.",
+              "title": "Chia EPS bình quân"
+            },
+            {
+              "text": "Không còn đơn vị đồng, nên so được giữa doanh nghiệp lớn và nhỏ.",
+              "title": "Hệ số biến thiên"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao dùng hệ số biến thiên"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l4-rep",
+          "table_toggle": true,
+          "title": "EPS Stability",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận trên mỗi cổ phiếu, đơn vị đồng.",
+              "title": "Đường xanh · EPS từng năm"
+            },
+            {
+              "text": "Mức EPS trung bình của 5 năm.",
+              "title": "Đường đứt nét · EPS bình quân"
+            },
+            {
+              "text": "Con số lớn ở góc phải là nửa dải chia cho EPS bình quân, tính bằng %.",
+              "title": "Dải tô · bình quân ± độ lệch chuẩn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c9l4-g3",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "EPS mỗi năm chỉ lệch nhẹ quanh mức bình quân.",
+              "title": "Dưới 15% · ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "EPS lên xuống mạnh, khó dựa vào lợi nhuận một năm để định giá.",
+              "title": "Trên 35% · thất thường",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Chỉ tiêu chỉ có ý nghĩa khi EPS bình quân dương và đủ lớn. Đọc kèm xu hướng: EPS tăng đều cũng làm hệ số biến thiên lớn lên.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "EPS ổn định thì P/E tính trên một năm phản ánh đúng hơn giá trị doanh nghiệp.",
+              "title": "Đánh giá độ tin cậy của P/E"
+            },
+            {
+              "text": "Dao động vì EPS tăng mạnh khác hẳn dao động vì EPS lên xuống thất thường.",
+              "title": "Xem cùng hướng đi của EPS"
+            },
+            {
+              "text": "Vì là tỷ lệ %, chỉ tiêu so được doanh nghiệp EPS 800 đồng với doanh nghiệp EPS 6.000 đồng.",
+              "title": "So doanh nghiệp khác quy mô"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        },
+        {
+          "chart_id": "c9l4-g4",
+          "type": "chart"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "2021"
+            },
+            {
+              "label": "2022"
+            },
+            {
+              "label": "2023"
+            },
+            {
+              "label": "2024"
+            },
+            {
+              "label": "2025"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "EPS (đồng)",
+                "737",
+                "1.132",
+                "793",
+                "1.169",
+                "1.429"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "items": [
+            {
+              "term": "EPS bình quân",
+              "text": "Khoảng 1.052 đồng."
+            },
+            {
+              "term": "Độ lệch chuẩn",
+              "text": "Khoảng 256 đồng."
+            },
+            {
+              "term": "Hệ số biến thiên",
+              "text": "256 ÷ 1.052 × 100 ≈ 24,4%, thuộc nhóm trung bình."
+            },
+            {
+              "term": "Đọc thêm",
+              "text": "Một phần dao động đến từ việc EPS tăng gần gấp đôi sau 5 năm, nên không hoàn toàn là tín hiệu xấu."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chia cho bình quân rất nhỏ làm hệ số biến thiên lớn bất thường, không còn ý nghĩa.",
+              "title": "Dùng khi EPS gần 0 hoặc âm"
+            },
+            {
+              "text": "EPS tăng đều từ 1.000 lên 2.000 đồng vẫn cho hệ số biến thiên khá cao.",
+              "title": "Coi tăng trưởng là bất ổn"
+            },
+            {
+              "text": "Số cổ phiếu tăng làm EPS giảm dù LNST không đổi, khiến EPS dao động.",
+              "title": "Bỏ qua phát hành thêm cổ phiếu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>EPS Stability</b> là <b>hệ số biến thiên</b> của EPS 2021-2025: độ lệch chuẩn chia bình quân, nhân 100.",
+    "Đo theo % nên <b>so được doanh nghiệp có mức EPS khác nhau</b>.",
+    "Con số <b>càng nhỏ càng ổn định</b>. Dưới 15% là ổn định, trên 35% là thất thường.",
+    "Không dùng khi EPS bình quân <b>gần 0 hoặc âm</b>, và luôn xem kèm <b>xu hướng EPS</b>."
+  ],
+  "title": "EPS Stability · độ ổn định EPS"
+}

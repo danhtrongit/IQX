@@ -3,62 +3,62 @@
   "item_id": "ch01-l02",
   "questions": [
     {
-      "correct_option_id": "a45dbe332e",
+      "correct_option_id": "3932360dd6",
       "id": "ch01-l02-q01",
       "options": [
         {
-          "id": "a45dbe332e",
+          "id": "3932360dd6",
           "text": "Doanh nghiệp bán cổ phiếu mới phát hành cho nhà đầu tư"
         },
         {
-          "id": "b46bed17bf",
+          "id": "8737a13b9d",
           "text": "Các nhà đầu tư mua bán lại cổ phiếu với nhau"
         },
         {
-          "id": "43382ce878",
+          "id": "1a75bdf3f0",
           "text": "Ngân hàng cho doanh nghiệp vay vốn"
         }
       ],
       "prompt": "Thị trường sơ cấp là nơi diễn ra hoạt động nào?"
     },
     {
-      "correct_option_id": "30a821bd3e",
+      "correct_option_id": "3b0f752f72",
       "id": "ch01-l02-q02",
       "options": [
         {
-          "id": "30a821bd3e",
+          "id": "3b0f752f72",
           "text": "Lần đầu doanh nghiệp chào bán cổ phiếu ra công chúng"
         },
         {
-          "id": "eaa1d8fae9",
+          "id": "4106c12aec",
           "text": "Doanh nghiệp chia cổ tức cho cổ đông"
         },
         {
-          "id": "4e1cf47c5c",
+          "id": "20e3df3047",
           "text": "Doanh nghiệp rời khỏi sàn giao dịch"
         }
       ],
       "prompt": "IPO là gì?"
     },
     {
-      "correct_option_id": "4e89ee99f6",
+      "correct_option_id": "b41fe8bef6",
       "id": "ch01-l02-q03",
       "options": [
         {
-          "id": "4e89ee99f6",
+          "id": "b41fe8bef6",
           "text": "Toàn bộ cổ phiếu niêm yết trên HOSE"
         },
         {
-          "id": "08a675a835",
+          "id": "d91df424c5",
           "text": "Các cổ phiếu trên UPCoM"
         },
         {
-          "id": "695834b37e",
+          "id": "a611939778",
           "text": "Các cổ phiếu trên HNX"
         }
       ],
       "prompt": "VN-Index phản ánh biến động giá của nhóm cổ phiếu nào?"
     }
   ],
-  "salt": "fbd87ac5736b920477a19c68a94f2eb693a602eba977b472b1349c27b06fa798"
+  "salt": "46561acdcc2c14c3748280bab13d207bee7020e1a90b03895047d07b3487f41e"
 }

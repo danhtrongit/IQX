@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-l03",
+  "questions": [
+    {
+      "correct_option_id": "3e844d1870",
+      "id": "ch08-l03-q01",
+      "options": [
+        {
+          "id": "3e844d1870",
+          "text": "LNST chia cho số cổ phiếu lưu hành"
+        },
+        {
+          "id": "02d7ffe975",
+          "text": "Doanh thu chia cho số cổ phiếu lưu hành"
+        },
+        {
+          "id": "bf469eb4fd",
+          "text": "LNST chia cho vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "EPS được tính như thế nào?"
+    },
+    {
+      "correct_option_id": "0687d2395b",
+      "id": "ch08-l03-q02",
+      "options": [
+        {
+          "id": "0687d2395b",
+          "text": "EPS giảm"
+        },
+        {
+          "id": "a2b4bda739",
+          "text": "EPS tăng"
+        },
+        {
+          "id": "cd21483592",
+          "text": "EPS giữ nguyên"
+        }
+      ],
+      "prompt": "Doanh nghiệp phát hành thêm cổ phiếu, LNST không đổi. EPS thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "d91ae99c72",
+      "id": "ch08-l03-q03",
+      "options": [
+        {
+          "id": "d91ae99c72",
+          "text": "Thấp hơn tăng trưởng LNST"
+        },
+        {
+          "id": "e3af75fdbf",
+          "text": "Cao hơn tăng trưởng LNST"
+        },
+        {
+          "id": "09fee304f3",
+          "text": "Luôn bằng tăng trưởng LNST"
+        }
+      ],
+      "prompt": "Pha loãng cổ phiếu làm tăng trưởng EPS thay đổi ra sao so với tăng trưởng LNST?"
+    },
+    {
+      "correct_option_id": "3717485df5",
+      "id": "ch08-l03-q04",
+      "options": [
+        {
+          "id": "3717485df5",
+          "text": "EPS phụ thuộc số cổ phiếu mỗi công ty phát hành"
+        },
+        {
+          "id": "4c4d8ab67d",
+          "text": "EPS của mọi công ty luôn bằng nhau"
+        },
+        {
+          "id": "d020e09110",
+          "text": "EPS chỉ dùng cho công ty ngân hàng"
+        }
+      ],
+      "prompt": "Vì sao không nên so EPS giữa hai công ty khác nhau?"
+    },
+    {
+      "correct_option_id": "aed118981e",
+      "id": "ch08-l03-q05",
+      "options": [
+        {
+          "id": "aed118981e",
+          "text": "EPS cùng kỳ năm trước"
+        },
+        {
+          "id": "1f71e26355",
+          "text": "EPS của quý liền trước"
+        },
+        {
+          "id": "5e0a6734e2",
+          "text": "Số cổ phiếu lưu hành"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của EPS YoY, cột cam thể hiện gì?"
+    }
+  ],
+  "salt": "cfa525ecfb135cb31b54086a5ed2a710696882bff5d6cb8f6a28c3b4ac41d27d"
+}

@@ -1,0 +1,397 @@
+{
+  "chapter": 13,
+  "charts": {
+    "c13l4-g1": {
+      "kind": "category",
+      "labels": [
+        "Doanh nghiệp A",
+        "Doanh nghiệp B"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "P/E, lần",
+          "tone": "p1",
+          "values": [
+            20,
+            10
+          ]
+        },
+        {
+          "name": "Tăng trưởng EPS, %",
+          "tone": "pos",
+          "values": [
+            25,
+            5
+          ]
+        }
+      ],
+      "title": "Hai doanh nghiệp: P/E và tăng trưởng EPS",
+      "unit": "",
+      "value_labels": "all"
+    },
+    "c13l4-g2": {
+      "alt": "PEG bằng P/E 15 lần chia tăng trưởng EPS 20%, bằng 0,75",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "pe",
+          "title": "P/E",
+          "tone": "price",
+          "value": "15 lần"
+        },
+        {
+          "id": "growth",
+          "sub": "EPS tăng 20%, dùng số 20",
+          "title": "Tăng trưởng EPS",
+          "tone": "pos",
+          "value": "20"
+        },
+        {
+          "emph": true,
+          "id": "peg",
+          "title": "PEG",
+          "tone": "warn",
+          "value": "0,75"
+        }
+      ]
+    },
+    "c13l4-g3": {
+      "alt": "Thang PEG: dưới 1 là giá thấp so với tăng trưởng, trên 1 là giá cao so với tăng trưởng; EPS đi ngang hoặc giảm thì PEG không có ý nghĩa",
+      "domain": [
+        0,
+        3
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Mốc PEG = 1 · tương xứng",
+          "side": "a",
+          "tone": "p1",
+          "v": 1
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0",
+          "v": 0
+        },
+        {
+          "label": "0,5",
+          "v": 0.5
+        },
+        {
+          "label": "1",
+          "v": 1
+        },
+        {
+          "label": "1,5",
+          "v": 1.5
+        },
+        {
+          "label": "2",
+          "v": 2
+        },
+        {
+          "label": "2,5",
+          "v": 2.5
+        },
+        {
+          "label": "3",
+          "v": 3
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Giá thấp so với tăng trưởng",
+          "to": 1,
+          "tone": "pos"
+        },
+        {
+          "from": 1,
+          "label": "Giá cao so với tăng trưởng",
+          "to": 3,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c13l4-rep": {
+      "caption_tone": "price",
+      "caption_value": "0,41 lần",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "PEG",
+          "tone": "p1",
+          "values": [
+            6.476,
+            0.8385,
+            0.3327,
+            0.4157,
+            0.5117,
+            0.6126,
+            0.6489,
+            0.4051
+          ]
+        }
+      ],
+      "title": "PEG",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch13-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "PEG đặt P/E cạnh tốc độ tăng trưởng lợi nhuận. Nhờ vậy có thể so một cổ phiếu P/E cao nhưng tăng nhanh với một cổ phiếu P/E thấp nhưng tăng chậm.",
+  "lesson_key": "fundamental:peg",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>PEG</b> (Price/Earnings to Growth, P/E so với tăng trưởng) là P/E chia cho tốc độ tăng trưởng EPS. P/E cao chưa chắc đắt nếu lợi nhuận đang tăng rất nhanh.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l4-g1",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "PEG là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Tốc độ tăng trưởng EPS được dùng <b>dưới dạng số %</b>: EPS tăng 20% thì chia cho 20, không chia cho 0,2.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c13l4-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giá chia EPS 4 quý gần nhất.",
+              "title": "P/E"
+            },
+            {
+              "text": "EPS 4 quý gần nhất so với EPS 4 quý cùng kỳ năm trước.",
+              "title": "Tăng trưởng EPS"
+            },
+            {
+              "text": "EPS đi ngang hoặc giảm thì PEG không có ý nghĩa.",
+              "title": "Chỉ khi tăng trưởng dương"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Cách tính PEG"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l4-rep",
+          "table_toggle": true,
+          "title": "PEG",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "PEG tại ngày cuối mỗi quý, qua 8 quý gần nhất.",
+              "title": "Đường chính · PEG cuối quý"
+            },
+            {
+              "text": "Mốc tham khảo. Dưới đường là giá thấp so với tốc độ tăng trưởng.",
+              "title": "Đường mốc PEG = 1"
+            },
+            {
+              "text": "Quý có tăng trưởng EPS âm hoặc bằng 0, PEG không được tính.",
+              "title": "Quý bị trống"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c13l4-g3",
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Giá thấp so với tốc độ tăng lợi nhuận, với điều kiện mức tăng trưởng đó bền vững.",
+              "title": "PEG dưới 1",
+              "tone": "pos"
+            },
+            {
+              "text": "Giá đã cao so với tốc độ tăng lợi nhuận. Cổ phiếu cần tăng trưởng nhanh hơn để xứng với mức giá.",
+              "title": "PEG trên 1",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "<b>PEG thấp chưa chắc là rẻ.</b> Tăng trưởng cao từ mức nền thấp hoặc từ khoản lãi bất thường thường không lặp lại, làm PEG thấp giả tạo.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phù hợp để so các doanh nghiệp đang tăng trưởng nhanh, có P/E khác nhau.",
+              "title": "So doanh nghiệp tăng trưởng"
+            },
+            {
+              "text": "Xem tăng trưởng EPS nhiều năm, không chỉ dựa vào một năm tăng đột biến.",
+              "title": "Kiểm tra tăng trưởng bền vững"
+            },
+            {
+              "text": "Theo dõi PEG qua các quý và đặt cạnh doanh nghiệp cùng ngành.",
+              "title": "So với lịch sử và cùng ngành"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Doanh nghiệp"
+            },
+            {
+              "label": "P/E"
+            },
+            {
+              "label": "Tăng trưởng EPS"
+            },
+            {
+              "label": "PEG"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "A",
+                "18 lần",
+                "30%",
+                {
+                  "rating": "good",
+                  "text": "0,6"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "B",
+                "8 lần",
+                "4%",
+                {
+                  "rating": "mid",
+                  "text": "2,0"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "C",
+                "10 lần",
+                "Giảm 15%",
+                {
+                  "rating": "bad",
+                  "text": "Không tính"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "A có P/E cao nhất nhưng PEG thấp nhất, vì lợi nhuận tăng nhanh. B có P/E thấp nhưng tăng chậm, PEG cao. C có lợi nhuận giảm nên PEG không có ý nghĩa.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chia cho tăng trưởng âm cho ra PEG âm, trông như rất rẻ nhưng hoàn toàn sai.",
+              "title": "Tính PEG khi EPS giảm"
+            },
+            {
+              "text": "EPS tăng 80% sau một năm thua lỗ không phải tốc độ tăng trưởng lâu dài.",
+              "title": "Tin vào một năm tăng đột biến"
+            },
+            {
+              "text": "Mốc 1 chỉ để tham khảo. Ngành có rủi ro cao thường có PEG thấp hơn.",
+              "title": "Coi mốc 1 là tuyệt đối"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>PEG = P/E ÷ tăng trưởng EPS</b>, tăng trưởng tính bằng số %.",
+    "Mốc tham khảo là <b>1</b>: dưới 1 là giá thấp so với tốc độ tăng lợi nhuận.",
+    "Chỉ có ý nghĩa khi <b>EPS tăng trưởng dương</b>.",
+    "<b>PEG thấp chưa chắc rẻ</b> nếu tăng trưởng không bền vững."
+  ],
+  "title": "PEG · P/E so với tăng trưởng"
+}

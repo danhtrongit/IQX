@@ -43,19 +43,71 @@ describe('academy grants (design §5)', () => {
     expect([...next].filter((capability) => capability.startsWith('metric:'))).toHaveLength(42);
   });
 
-  it('opens exactly the 5 indicators for a user who passed every v3.2 item', () => {
+  it('opens exactly the 16 indicators and 33 metrics for a user who passed every v3.3 item', () => {
+    /* Spec v3.3 §4.2: 16 chỉ báo kỹ thuật, 33 chỉ tiêu cơ bản. */
+    const technical = [
+      'bollinger',
+      'cci',
+      'cmf',
+      'donchian',
+      'dmi',
+      'ema',
+      'macd',
+      'ma',
+      'ma_cross',
+      'mfi',
+      'obv',
+      'roc',
+      'rsi',
+      'stochastic',
+      'volume',
+      'williams_r',
+    ];
+    const fundamental = [
+      'asset_turnover',
+      'capex_revenue',
+      'ccc',
+      'cfo_margin',
+      'cfo_profit',
+      'current_ratio',
+      'debt_equity',
+      'eps_cagr3',
+      'eps_growth_stability',
+      'eps_yoy',
+      'ev_ebitda',
+      'fcf_margin',
+      'fcf_positive_streak',
+      'fcf_yield',
+      'gross_margin',
+      'interest_coverage',
+      'net_debt_ebitda',
+      'net_margin',
+      'net_margin_stability',
+      'pb',
+      'pe',
+      'peg',
+      'profit_cagr3',
+      'profit_positive_streak',
+      'profit_yoy',
+      'ps',
+      'revenue_cagr3',
+      'revenue_growth_stability',
+      'revenue_yoy',
+      'roa',
+      'roe',
+      'roic',
+      'roic_stability',
+    ];
+    const expected = [
+      ...technical.map((id) => `indicator:${id}`),
+      ...fundamental.map((id) => `metric:${id}`),
+    ].sort();
     const all = [...content.items.values()].map((item) => item.lesson_key);
-    expect([...capabilitiesFromCompletions(content, keys(all))].sort()).toEqual([
-      'indicator:bollinger',
-      'indicator:ma',
-      'indicator:macd',
-      'indicator:rsi',
-      'indicator:volume',
-    ]);
-    // The reachable set of a new user: no published item grants a metric.
+    expect([...capabilitiesFromCompletions(content, keys(all))].sort()).toEqual(expected);
+    // The reachable set of a learner: every published item grants its own capability.
     const reachable = new Set([...content.items.values()].flatMap((item) => item.capabilities));
-    expect(reachable.size).toBe(5);
-    expect([...content.items.values()].filter((item) => item.capabilities.length)).toHaveLength(5);
+    expect([...reachable].sort()).toEqual(expected);
+    expect([...content.items.values()].filter((item) => item.capabilities.length)).toHaveLength(49);
   });
 
   it('concept, exam, guide and unknown keys open nothing', () => {

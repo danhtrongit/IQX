@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch13-l02",
+  "questions": [
+    {
+      "correct_option_id": "804366eeeb",
+      "id": "ch13-l02-q01",
+      "options": [
+        {
+          "id": "804366eeeb",
+          "text": "Vốn hóa chia cho vốn chủ sở hữu"
+        },
+        {
+          "id": "66b270cc5e",
+          "text": "Vốn hóa chia cho tổng tài sản"
+        },
+        {
+          "id": "cc64a99798",
+          "text": "Giá cổ phiếu chia cho EPS 4 quý"
+        }
+      ],
+      "prompt": "P/B được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "c4bd528d83",
+      "id": "ch13-l02-q02",
+      "options": [
+        {
+          "id": "c4bd528d83",
+          "text": "Tổng tài sản trừ nợ phải trả"
+        },
+        {
+          "id": "1d5c604361",
+          "text": "Tổng tài sản cộng nợ phải trả"
+        },
+        {
+          "id": "a97135fefa",
+          "text": "Doanh thu trừ giá vốn hàng bán"
+        }
+      ],
+      "prompt": "Vốn chủ sở hữu là gì?"
+    },
+    {
+      "correct_option_id": "5d2628387d",
+      "id": "ch13-l02-q03",
+      "options": [
+        {
+          "id": "5d2628387d",
+          "text": "Ngân hàng, bảo hiểm và doanh nghiệp nhiều tài sản"
+        },
+        {
+          "id": "30e4151614",
+          "text": "Doanh nghiệp phần mềm và dịch vụ tư vấn"
+        },
+        {
+          "id": "1c04f609d5",
+          "text": "Doanh nghiệp mới thành lập và chưa có tài sản nào"
+        }
+      ],
+      "prompt": "P/B phù hợp nhất với nhóm doanh nghiệp nào?"
+    },
+    {
+      "correct_option_id": "91f10c51ac",
+      "id": "ch13-l02-q04",
+      "options": [
+        {
+          "id": "91f10c51ac",
+          "text": "ROE"
+        },
+        {
+          "id": "78b06bf418",
+          "text": "Khối lượng giao dịch"
+        },
+        {
+          "id": "bdd3bdbd8e",
+          "text": "Số lượng nhân viên"
+        }
+      ],
+      "prompt": "P/B nên được đọc cùng chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "46e47f61b7",
+      "id": "ch13-l02-q05",
+      "options": [
+        {
+          "id": "46e47f61b7",
+          "text": "Mức P/B thường lệ của chính doanh nghiệp"
+        },
+        {
+          "id": "4208cdcf27",
+          "text": "Mức P/B trung bình của toàn thị trường"
+        },
+        {
+          "id": "f87ad42830",
+          "text": "Mức P/B mà doanh nghiệp đặt mục tiêu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của P/B, đường trung vị 3 năm thể hiện điều gì?"
+    }
+  ],
+  "salt": "432c338cd0f4c0b21cb646dba48f85ab857ac78502f5f5ea000c4480941c7991"
+}

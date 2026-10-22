@@ -7,6 +7,7 @@
  *   /admin/system          → SystemPage
  *   /admin/audit           → AuditPage
  *   /admin/alerts          → AlertSignalsPage
+ *   /admin/flashback       → FlashbackPage
  *
  * Everything below the page exports is reusable by the other `/admin/**`
  * surfaces (tables, badges, confirmation gate, Vietnamese labels, adapters and
@@ -19,6 +20,7 @@ export { UserDetailPage } from "./user-detail-page"
 export { SystemPage } from "./system-page"
 export { AuditPage } from "./audit-page"
 export { AlertSignalsPage } from "./alerts-page"
+export { FlashbackPage } from "./flashback-page"
 
 export {
   AdminDataTable,

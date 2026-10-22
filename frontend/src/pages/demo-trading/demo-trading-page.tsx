@@ -12,8 +12,10 @@ import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 import { AcademyMain } from "@/pages/academy/academy-main"
 import { AcademyPanel } from "@/pages/academy/academy-panel"
-import { parseDemoContent, withDemoContent, type DemoContent, type DemoTab } from "./content-tabs-state"
+import { isMainTool, parseDemoContent, withDemoContent, type DemoContent, type DemoTab } from "./content-tabs-state"
+import { AnalysisDashboard } from "./analysis"
 import { BotMain, BotPanel } from "./bot"
+import { FlashbackMain, FlashbackPanel, FlashbackProvider } from "./flashback"
 import { HuntPanel } from "./insights/hunt-panel"
 import type { MascotId } from "./journey/types"
 import { NewsPanel } from "./market/news-panel"
@@ -51,7 +53,7 @@ function ContentTabs({ active, onSelect, children }: { active: DemoContent; onSe
         </TabsList>
         <div className="flex shrink-0 items-center pr-2"><WorkspacePanelToggle /></div>
       </div>
-      {[...CONTENT_TABS.map((tab) => tab.id), "insight" as const].map((id) => <TabsContent key={id} value={id} forceMount className={cn("min-h-0 min-w-0 flex-1 data-[state=inactive]:hidden", id === "board" && "flex flex-col")}>
+      {[...CONTENT_TABS.map((tab) => tab.id), "insight" as const, "dashboard" as const].map((id) => <TabsContent key={id} value={id} forceMount className={cn("min-h-0 min-w-0 flex-1 data-[state=inactive]:hidden", (id === "board" || id === "dashboard") && "flex flex-col")}>
         {active === id && <Suspense fallback={<ContentFallback />}>{content}</Suspense>}
       </TabsContent>)}
     </Tabs>
@@ -79,6 +81,8 @@ function AcademySection({ toolId, label, practice, mascotId, onNavigate }: {
               <BotMain mascotId={mascotId} />
             ) : toolId === "shop" ? (
               <ShopMain onNavigate={onNavigate} />
+            ) : toolId === "flashback" ? (
+              <FlashbackMain onNavigate={onNavigate} />
             ) : (
               <AcademyMain mascotId={mascotId} />
             )}
@@ -139,28 +143,32 @@ function DemoWorkspace() {
   const rail: WorkspaceRail = {
     items: demoChrome.items.filter((item) => !item.hidden && item.section === section),
     activeTool: activeId,
-    mainToolId: section === "demo" && content === "insight" ? "insight" : null,
+    mainToolId: section === "demo" && isMainTool(content) ? content : null,
     onSelectTool: (id) => {
-      // A panel tool picked while Insight is on screen brings back the tab it replaced.
+      // A panel tool picked while a main-area tool is on screen brings back the tab it replaced.
       let next = new URLSearchParams(params)
-      if (section === "demo" && content === "insight") next = withDemoContent(next, lastTab)
+      if (section === "demo" && isMainTool(content)) next = withDemoContent(next, lastTab)
       next.set("view", id)
       setParams(next, { replace: true })
     },
-    // Insight replaces the tabs; a second click returns to the tab it replaced.
-    onSelectMainTool: () => selectContent(content === "insight" ? lastTab : "insight"),
+    // A main-area tool replaces the tabs; a second click returns to the tab it replaced.
+    onSelectMainTool: (id) => {
+      if (!isMainTool(id)) return
+      selectContent(content === id ? lastTab : id)
+    },
   }
 
   function panel() {
     if (practiceId) return <PracticePanel />
     switch (activeId) {
-      case "trading": return <OrderPanel symbol={symbol} onSymbolChange={selectSymbol} />
+      case "trading": return <OrderPanel symbol={symbol} onSymbolChange={selectSymbol} onNavigate={navigatePanel} />
       case "portfolio": return <PortfolioPanel symbol={symbol} onSymbolChange={selectSymbol} onNavigate={navigatePanel} />
       case "hunt": return <HuntPanel onNavigate={navigatePanel} />
       case "news": return <NewsPanel symbol={symbol} />
       case "patterns": return <PatternsPanel symbol={symbol} />
       case "bot": return <BotPanel />
       case "shop": return <ShopPanel onNavigate={navigatePanel} />
+      case "flashback": return <FlashbackPanel onNavigate={navigatePanel} />
       default: return <AcademyPanel />
     }
   }
@@ -171,29 +179,35 @@ function DemoWorkspace() {
       <ContentTabs active={content} onSelect={selectContent}>
         {content === "chart" ? <ChartPage embedded />
           : content === "board" ? <PriceBoardPage embedded />
-            : <MarketWorkspacePage embedded view={content === "insight" ? "stock" : "market"} />}
+            : content === "dashboard" ? <AnalysisDashboard symbol={symbol} />
+              : <MarketWorkspacePage embedded view={content === "insight" ? "stock" : "market"} />}
       </ContentTabs>
     )
 
+  const frame = (
+    <WorkspaceFrame
+      // Switching sections starts each one afresh (on phones its panel layer starts closed).
+      key={section}
+      panelLabel={activeItem?.label ?? "Đặt lệnh"}
+      // A direct link to a tool opens its layer; a direct link to a lesson shows the lesson, and the
+      // header's section links keep the layer closed.
+      defaultPanelOpen={params.has("view") && navigationState?.workspaceSection !== true && !(activeId === "academy" && params.has("lesson"))}
+      revealKey={openRequested ? location.key : null}
+      collapsed={collapsed}
+      onCollapsedChange={onCollapsedChange}
+      rail={rail}
+      // HỌC VIỆN is long-form reading: on phones its tools sit in a bar above the lesson so the
+      // article keeps the full width, and the bar's tool buttons open the panel layer.
+      phoneRail={section === "academy" ? "bar" : "column"}
+      main={main}
+      panel={panel()}
+    />
+  )
+
   return <>
     <PracticeProvider indicatorId={practiceId}>
-      <WorkspaceFrame
-        // Switching sections starts each one afresh (on phones its panel layer starts closed).
-        key={section}
-        panelLabel={activeItem?.label ?? "Đặt lệnh"}
-        // A direct link to a tool opens its layer; a direct link to a lesson shows the lesson, and the
-        // header's section links keep the layer closed.
-        defaultPanelOpen={params.has("view") && navigationState?.workspaceSection !== true && !(activeId === "academy" && params.has("lesson"))}
-        revealKey={openRequested ? location.key : null}
-        collapsed={collapsed}
-        onCollapsedChange={onCollapsedChange}
-        rail={rail}
-        // HỌC VIỆN is long-form reading: on phones its tools sit in a bar above the lesson so the
-        // article keeps the full width, and the bar's tool buttons open the panel layer.
-        phoneRail={section === "academy" ? "bar" : "column"}
-        main={main}
-        panel={panel()}
-      />
+      {/* Flashback: vùng chính và panel dùng chung một lượt chơi. */}
+      {activeId === "flashback" ? <FlashbackProvider>{frame}</FlashbackProvider> : frame}
     </PracticeProvider>
     <TradingRuntime />
   </>

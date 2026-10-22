@@ -3,6 +3,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import {
   MASCOT_CATALOG,
   MASCOT_CATALOG_VERSION,
+  MASCOT_PRICE_XU,
   type MascotId,
 } from '../../src/modules/shop/shop.catalog.js';
 import {
@@ -34,7 +35,7 @@ function buy(
 ) {
   return {
     mascot_id: mascotId,
-    expected_price_xu: 500,
+    expected_price_xu: MASCOT_PRICE_XU,
     catalog_version: MASCOT_CATALOG_VERSION,
     idempotency_key: nextKey(userId.slice(0, 4)),
     ...overrides,
@@ -53,16 +54,16 @@ async function rejectedWith(promise: Promise<unknown>) {
 }
 
 describe('mascot catalog', () => {
-  it('lists Bach Ho as the free default and four 500 xu mascots with real asset slugs', () => {
-    expect(MASCOT_CATALOG_VERSION).toBe('iqx-mascot-shop-v1');
+  it('lists Bach Ho as the free default and four 2.000 xu mascots with real asset slugs', () => {
+    expect(MASCOT_CATALOG_VERSION).toBe('iqx-mascot-shop-v2');
     expect(
       MASCOT_CATALOG.map((m) => [m.mascot_id, m.name, m.price_xu, m.for_sale, m.asset_slug]),
     ).toEqual([
       ['bach_ho', 'Bạch Hổ', 0, false, 'bach-ho'],
-      ['thanh_long', 'Thanh Long', 500, true, 'thanh-long'],
-      ['loc_huou', 'Lộc Hươu', 500, true, 'loc-huou'],
-      ['phung_hoang', 'Phụng Hoàng', 500, true, 'phung-hoang'],
-      ['kim_quy', 'Kim Quy', 500, true, 'kim-quy'],
+      ['thanh_long', 'Thanh Long', 2000, true, 'thanh-long'],
+      ['loc_huou', 'Lộc Hươu', 2000, true, 'loc-huou'],
+      ['phung_hoang', 'Phụng Hoàng', 2000, true, 'phung-hoang'],
+      ['kim_quy', 'Kim Quy', 2000, true, 'kim-quy'],
     ]);
     expect(MASCOT_CATALOG.filter((m) => m.is_default).map((m) => m.mascot_id)).toEqual(['bach_ho']);
     expect(MASCOT_CATALOG.map((m) => m.sort_order)).toEqual([1, 2, 3, 4, 5]);
@@ -73,7 +74,7 @@ describe('shop request schemas', () => {
   it('rejects client-supplied owner, balance, reward and non-integer prices', () => {
     const valid = {
       mascot_id: 'thanh_long',
-      expected_price_xu: 500,
+      expected_price_xu: MASCOT_PRICE_XU,
       catalog_version: MASCOT_CATALOG_VERSION,
       idempotency_key: 'purchase-0001',
     };
@@ -155,7 +156,7 @@ describe.each(harnessFactories)(
           'kim_quy',
         ]);
         expect(shop.catalog[1]).toMatchObject({
-          price_xu: 500,
+          price_xu: MASCOT_PRICE_XU,
           asset_root: '/assets/mascots-2d/v2/thanh-long',
         });
         expect(ledger).toEqual({ items: [], next_cursor: null });
@@ -216,71 +217,71 @@ describe.each(harnessFactories)(
     });
 
     describe('purchase', () => {
-      it('P01: 500 xu buys one mascot: balance 0, one purchase, one -500 entry, active unchanged', async () => {
+      it('P01: 2.000 xu buys one mascot: balance 0, one purchase, one -2.000 entry, active unchanged', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 5);
+        await fundLessons(h, userId, 20);
         const result = await h.shop.purchase(userId, buy(userId, 'thanh_long'));
         expect(result).toMatchObject({
           status: 'purchased',
           replayed: false,
-          wallet: { balance: 0, last_seq: 6 },
+          wallet: { balance: 0, last_seq: 21 },
           active: { mascot_id: 'bach_ho', revision: 1 },
           catalog_version: MASCOT_CATALOG_VERSION,
-          purchase: { mascot_id: 'thanh_long', price_xu: 500 },
+          purchase: { mascot_id: 'thanh_long', price_xu: MASCOT_PRICE_XU },
         });
         expect(result.owned.map((o) => o.mascot_id).sort()).toEqual(['bach_ho', 'thanh_long']);
         expect(result.owned.find((o) => o.mascot_id === 'thanh_long')?.source).toBe('purchase');
 
         const rows = await expectLedgerConsistent(h, userId, 0);
-        const purchases = rows.filter((r) => r.kind === 'mascot_purchase');
+        const purchases = rows.filter((r) => r.kind === 'pet_purchase');
         expect(purchases).toHaveLength(1);
-        expect(purchases[0]).toMatchObject({ delta: -500, balanceAfter: 0, seq: 6 });
+        expect(purchases[0]).toMatchObject({ delta: -MASCOT_PRICE_XU, balanceAfter: 0, seq: 21 });
         expect(purchases[0]?.ref).toMatchObject({ mascot_id: 'thanh_long' });
       });
 
       it('refuses with INSUFFICIENT_XU (and the current balance) when short, changing nothing', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 4);
+        await fundLessons(h, userId, 16);
         const error = await rejectedWith(h.shop.purchase(userId, buy(userId, 'loc_huou')));
         expect(error).toMatchObject({ status: 409, code: 'INSUFFICIENT_XU' });
-        expect(error.details).toEqual([{ balance_xu: 400, price_xu: 500, shortfall_xu: 100 }]);
+        expect(error.details).toEqual([{ balance_xu: 1600, price_xu: 2000, shortfall_xu: 400 }]);
         const snapshot = await snapshotOf(h, userId);
-        expect(snapshot.wallet).toMatchObject({ balance: 400, lastSeq: 4 });
+        expect(snapshot.wallet).toMatchObject({ balance: 1600, lastSeq: 16 });
         expect(snapshot.owned.map((o) => o.mascotId)).not.toContain('loc_huou');
-        await expectLedgerConsistent(h, userId, 400);
+        await expectLedgerConsistent(h, userId, 1600);
       });
 
       it('a user with no wallet at all is refused with a 0 xu balance', async () => {
         const userId = await h.newUser();
         const error = await rejectedWith(h.shop.purchase(userId, buy(userId, 'phung_hoang')));
         expect(error).toMatchObject({ status: 409, code: 'INSUFFICIENT_XU' });
-        expect(error.details).toEqual([{ balance_xu: 0, price_xu: 500, shortfall_xu: 500 }]);
+        expect(error.details).toEqual([{ balance_xu: 0, price_xu: 2000, shortfall_xu: 2000 }]);
       });
 
       it('P07: replaying the same key and payload returns the same purchase without a second charge', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 10);
+        await fundLessons(h, userId, 40);
         const request = buy(userId, 'thanh_long');
         const first = await h.shop.purchase(userId, request);
         const second = await h.shop.purchase(userId, request);
         expect(second).toMatchObject({
           status: 'purchased',
           replayed: true,
-          wallet: { balance: 500 },
+          wallet: { balance: 2000 },
         });
         expect(second.purchase?.id).toBe(first.purchase?.id);
         expect(second.purchase?.ledger_id).toBe(first.purchase?.ledger_id);
-        const rows = await expectLedgerConsistent(h, userId, 500);
-        expect(rows.filter((r) => r.kind === 'mascot_purchase')).toHaveLength(1);
+        const rows = await expectLedgerConsistent(h, userId, 2000);
+        expect(rows.filter((r) => r.kind === 'pet_purchase')).toHaveLength(1);
 
         const lookup = await h.shop.getPurchaseStatus(userId, request.idempotency_key);
-        expect(lookup).toMatchObject({ status: 'completed', wallet: { balance: 500 } });
+        expect(lookup).toMatchObject({ status: 'completed', wallet: { balance: 2000 } });
         expect(lookup.purchase?.id).toBe(first.purchase?.id);
       });
 
       it('P07: the same key with a different payload is rejected and never buys another mascot', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 10);
+        await fundLessons(h, userId, 40);
         const request = buy(userId, 'thanh_long');
         await h.shop.purchase(userId, request);
         const other = await rejectedWith(
@@ -293,12 +294,12 @@ describe.each(harnessFactories)(
         expect(otherPrice).toMatchObject({ status: 409, code: 'IDEMPOTENCY_KEY_REUSED' });
         const snapshot = await snapshotOf(h, userId);
         expect(snapshot.owned.map((o) => o.mascotId)).not.toContain('loc_huou');
-        await expectLedgerConsistent(h, userId, 500);
+        await expectLedgerConsistent(h, userId, 2000);
       });
 
-      it('P04: with 600 xu, two concurrent purchases of different mascots: one wins, 100 xu left', async () => {
+      it('P04: with 2.400 xu, two concurrent purchases of different mascots: one wins, 400 xu left', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 6);
+        await fundLessons(h, userId, 24);
         const outcomes = await Promise.allSettled([
           h.shop.purchase(userId, buy(userId, 'thanh_long')),
           h.shop.purchase(userId, buy(userId, 'loc_huou')),
@@ -308,14 +309,14 @@ describe.each(harnessFactories)(
         expect((rejected as PromiseRejectedResult).reason).toMatchObject({
           response: { code: 'INSUFFICIENT_XU' },
         });
-        const rows = await expectLedgerConsistent(h, userId, 100);
-        expect(rows.filter((r) => r.kind === 'mascot_purchase')).toHaveLength(1);
+        const rows = await expectLedgerConsistent(h, userId, 400);
+        expect(rows.filter((r) => r.kind === 'pet_purchase')).toHaveLength(1);
         expect((await snapshotOf(h, userId)).owned).toHaveLength(2); // bach_ho + the winner
       });
 
-      it('with 1,000 xu both different purchases succeed and leave exactly 0', async () => {
+      it('with 4.000 xu both different purchases succeed and leave exactly 0', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 10);
+        await fundLessons(h, userId, 40);
         const outcomes = await Promise.allSettled([
           h.shop.purchase(userId, buy(userId, 'thanh_long')),
           h.shop.purchase(userId, buy(userId, 'loc_huou')),
@@ -326,7 +327,7 @@ describe.each(harnessFactories)(
 
       it('P05: two concurrent purchases of the same mascot (fresh keys) charge only once', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 10);
+        await fundLessons(h, userId, 40);
         const results = await Promise.all([
           h.shop.purchase(userId, buy(userId, 'phung_hoang')),
           h.shop.purchase(userId, buy(userId, 'phung_hoang')),
@@ -337,32 +338,32 @@ describe.each(harnessFactories)(
         for (const r of results.filter((x) => x.status === 'already_owned')) {
           expect(r.purchase).toBeNull();
         }
-        const rows = await expectLedgerConsistent(h, userId, 500);
-        expect(rows.filter((r) => r.kind === 'mascot_purchase')).toHaveLength(1);
+        const rows = await expectLedgerConsistent(h, userId, 2000);
+        expect(rows.filter((r) => r.kind === 'pet_purchase')).toHaveLength(1);
       });
 
       it('buying an already owned mascot with a new key never charges', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 6);
+        await fundLessons(h, userId, 24);
         await h.shop.purchase(userId, buy(userId, 'kim_quy'));
         const again = await h.shop.purchase(userId, buy(userId, 'kim_quy'));
         expect(again).toMatchObject({
           status: 'already_owned',
           replayed: false,
-          wallet: { balance: 100 },
+          wallet: { balance: 400 },
         });
-        await expectLedgerConsistent(h, userId, 100);
+        await expectLedgerConsistent(h, userId, 400);
       });
 
       it('P08: resolves the price on the server and rejects stale price or catalog confirmations', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 6);
+        await fundLessons(h, userId, 24);
         const cheap = await rejectedWith(
           h.shop.purchase(userId, buy(userId, 'thanh_long', { expected_price_xu: 1 })),
         );
         expect(cheap).toMatchObject({ status: 409, code: 'PRICE_CHANGED' });
         expect(cheap.details).toEqual([
-          { current_price_xu: 500, catalog_version: MASCOT_CATALOG_VERSION },
+          { current_price_xu: MASCOT_PRICE_XU, catalog_version: MASCOT_CATALOG_VERSION },
         ]);
         const stale = await rejectedWith(
           h.shop.purchase(
@@ -377,7 +378,7 @@ describe.each(harnessFactories)(
           h.shop.purchase(userId, buy(userId, 'bach_ho', { expected_price_xu: 0 })),
         );
         expect(free).toMatchObject({ status: 409, code: 'MASCOT_NOT_FOR_SALE' });
-        await expectLedgerConsistent(h, userId, 600);
+        await expectLedgerConsistent(h, userId, 2400);
         expect((await snapshotOf(h, userId)).owned.map((o) => o.mascotId)).not.toContain(
           'thanh_long',
         );
@@ -385,7 +386,7 @@ describe.each(harnessFactories)(
 
       it('P06: a failure between the ledger entry and the ownership rolls the whole purchase back', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 5);
+        await fundLessons(h, userId, 20);
         const spy = vi.spyOn(h.repository, 'insertOwnership').mockImplementationOnce(async () => {
           throw new Error('injected failure after ledger and purchase rows');
         });
@@ -395,10 +396,10 @@ describe.each(harnessFactories)(
         spy.mockRestore();
 
         const snapshot = await snapshotOf(h, userId);
-        expect(snapshot.wallet).toMatchObject({ balance: 500, lastSeq: 5 });
+        expect(snapshot.wallet).toMatchObject({ balance: 2000, lastSeq: 20 });
         expect(snapshot.owned.map((o) => o.mascotId)).not.toContain('thanh_long');
-        const rows = await expectLedgerConsistent(h, userId, 500);
-        expect(rows.some((r) => r.kind === 'mascot_purchase')).toBe(false);
+        const rows = await expectLedgerConsistent(h, userId, 2000);
+        expect(rows.some((r) => r.kind === 'pet_purchase')).toBe(false);
         // The same request can be retried afterwards and succeeds exactly once.
         const retry = await h.shop.purchase(userId, buy(userId, 'thanh_long'));
         expect(retry.status).toBe('purchased');
@@ -407,7 +408,7 @@ describe.each(harnessFactories)(
 
       it('never changes the active mascot or its revision', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 5);
+        await fundLessons(h, userId, 20);
         await h.shop.provision(userId);
         const before = (await h.shop.getShop(userId)).active;
         await h.shop.purchase(userId, buy(userId, 'loc_huou'));
@@ -420,7 +421,7 @@ describe.each(harnessFactories)(
     describe('rewards and purchases share one wallet', () => {
       it('L03: concurrent rewards and purchases never lose an update or overspend', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 5);
+        await fundLessons(h, userId, 20);
         const rewards = Array.from({ length: 5 }, (_, index) =>
           h.database.transaction((tx) =>
             h.rewards.creditFirstCompletion(tx, {
@@ -445,32 +446,32 @@ describe.each(harnessFactories)(
         const rows = await expectLedgerConsistent(
           h,
           userId,
-          1000 - 500 * (await purchasesMade(h, userId)),
+          2500 - 2000 * (await purchasesMade(h, userId)),
         );
-        expect(rows.filter((r) => r.kind === 'lesson_first_completion')).toHaveLength(10);
+        expect(rows.filter((r) => r.kind === 'lesson_first_completion')).toHaveLength(25);
       });
 
-      it('L01/L08: 71 rewards and four purchases reconcile to 7,100 earned / 2,000 spent / 5,100 left', async () => {
+      it('L01/L08: 100 rewards and four purchases reconcile to 10,000 earned / 8,000 spent / 2,000 left', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 71, 'fundamental:l');
+        await fundLessons(h, userId, 100, 'fundamental:l');
         for (const id of ['thanh_long', 'loc_huou', 'phung_hoang', 'kim_quy']) {
           await h.shop.purchase(userId, buy(userId, id));
         }
         const shop = await h.shop.getShop(userId);
         expect(shop).toMatchObject({
-          wallet: { balance: 5100, last_seq: 75 },
-          totals: { earned_xu: 7100, spent_xu: 2000, lessons_rewarded: 71 },
+          wallet: { balance: 2000, last_seq: 104 },
+          totals: { earned_xu: 10000, spent_xu: 8000, lessons_rewarded: 100 },
           owned_count: 5,
           active: { mascot_id: 'bach_ho' },
         });
-        await expectLedgerConsistent(h, userId, 5100);
+        await expectLedgerConsistent(h, userId, 2000);
       });
     });
 
     describe('active mascot', () => {
       async function ownedUser(...mascots: string[]) {
         const userId = await h.newUser();
-        await fundLessons(h, userId, mascots.length * 5);
+        await fundLessons(h, userId, mascots.length * 20);
         for (const id of mascots) await h.shop.purchase(userId, buy(userId, id));
         return userId;
       }
@@ -572,7 +573,7 @@ describe.each(harnessFactories)(
     describe('coin ledger pagination', () => {
       it('L04: walks the whole ledger by seq with no gaps or duplicates', async () => {
         const userId = await h.newUser();
-        await fundLessons(h, userId, 10);
+        await fundLessons(h, userId, 40);
         await h.shop.purchase(userId, buy(userId, 'thanh_long'));
         await h.shop.purchase(userId, buy(userId, 'loc_huou'));
 
@@ -598,10 +599,10 @@ describe.each(harnessFactories)(
 
         const firstPage = await h.shop.listLedger(userId, { limit: 20 });
         const purchase = firstPage.items.find(
-          (item) => item.kind === 'mascot_purchase' && item.label.mascot_id === 'thanh_long',
+          (item) => item.kind === 'pet_purchase' && item.label.mascot_id === 'thanh_long',
         );
         expect(purchase).toMatchObject({
-          delta: -500,
+          delta: -MASCOT_PRICE_XU,
           label: { mascot_id: 'thanh_long', mascot_name: 'Thanh Long' },
         });
         const reward = firstPage.items.find((item) => item.kind === 'lesson_first_completion');
@@ -613,5 +614,5 @@ describe.each(harnessFactories)(
 );
 
 async function purchasesMade(h: ShopHarness, userId: string): Promise<number> {
-  return (await allLedger(h, userId)).filter((r) => r.kind === 'mascot_purchase').length;
+  return (await allLedger(h, userId)).filter((r) => r.kind === 'pet_purchase').length;
 }

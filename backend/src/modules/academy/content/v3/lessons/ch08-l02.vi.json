@@ -1,0 +1,368 @@
+{
+  "chapter": 8,
+  "charts": {
+    "c8l2-g1": {
+      "kind": "category",
+      "labels": [
+        "Năm trước",
+        "Năm nay"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "Chi phí cố định",
+          "tone": "warn",
+          "values": [
+            300,
+            300
+          ]
+        },
+        {
+          "name": "Chi phí biến đổi",
+          "tone": "p5",
+          "values": [
+            600,
+            660
+          ]
+        },
+        {
+          "name": "Lợi nhuận",
+          "tone": "pos",
+          "values": [
+            100,
+            140
+          ]
+        }
+      ],
+      "title": "Chi phí cố định khuếch đại lợi nhuận · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c8l2-g2": {
+      "kind": "category",
+      "labels": [
+        "Quý 1",
+        "Quý 2",
+        "Quý 3",
+        "Quý 4"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "LNST 2020",
+          "tone": "p5",
+          "values": [
+            28,
+            -227.4,
+            33.8,
+            47.1
+          ]
+        },
+        {
+          "name": "LNST 2021",
+          "tone": "p1",
+          "values": [
+            54.9,
+            55.4,
+            58.6,
+            74.4
+          ]
+        }
+      ],
+      "title": "LNST theo quý · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c8l2-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Tăng trưởng LNST YoY",
+          "tone": "pos",
+          "values": [
+            37.1,
+            40,
+            22.5,
+            32.8,
+            38.1,
+            38.7,
+            39.4,
+            20.6
+          ]
+        },
+        {
+          "name": "Tăng trưởng doanh thu YoY",
+          "tone": "p1",
+          "values": [
+            15.3,
+            13.1,
+            12.2,
+            13,
+            9.1,
+            9.8,
+            15.4,
+            10.2
+          ]
+        }
+      ],
+      "title": "Tăng trưởng LNST YoY so với doanh thu YoY · %",
+      "unit": "%",
+      "value_labels": "none"
+    },
+    "c8l2-rep": {
+      "caption_tone": "price",
+      "caption_value": "20,6%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Tăng trưởng LNST YoY",
+          "tone": "p1",
+          "values": [
+            37.0946,
+            39.9663,
+            22.4772,
+            32.7703,
+            38.058,
+            38.7374,
+            39.3513,
+            20.5544
+          ]
+        }
+      ],
+      "title": "Tăng trưởng LNST YoY",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch08-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tăng trưởng LNST YoY cho biết lợi nhuận thuộc về cổ đông tăng hay giảm so với cùng quý năm trước. Giá cổ phiếu về dài hạn thường đi theo lợi nhuận, nên đây là chỉ tiêu được thị trường theo dõi sát nhất.",
+  "lesson_key": "fundamental:profit_yoy",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>LNST</b> (lợi nhuận sau thuế) là phần còn lại sau khi trừ mọi chi phí và thuế. Tăng trưởng LNST YoY so LNST quý này với cùng quý năm trước, cách tính giống doanh thu.",
+          "type": "paragraph"
+        },
+        {
+          "text": "LNST thường <b>biến động mạnh hơn doanh thu</b>. Lý do là nhiều chi phí gần như cố định: khi doanh thu tăng thêm, phần lớn khoản tăng thêm chảy thẳng vào lợi nhuận.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l2-g1",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s1",
+      "title": "Tăng trưởng LNST YoY là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Nếu cùng kỳ năm trước <b>lỗ hoặc bằng 0</b>, phép chia không còn ý nghĩa, tăng trưởng YoY bị bỏ trống. Nếu cùng kỳ <b>lãi rất ít</b>, tăng trưởng sẽ rất cao dù lợi nhuận chỉ trở lại mức bình thường.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c8l2-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tính bình thường.",
+              "title": "Cùng kỳ lãi"
+            },
+            {
+              "text": "Vẫn tính được nhưng con số bị phóng đại. Cần xem cả số tuyệt đối.",
+              "title": "Cùng kỳ lãi rất thấp"
+            },
+            {
+              "text": "Không tính YoY. Ghi nhận là \"chuyển từ lỗ sang lãi\".",
+              "title": "Cùng kỳ lỗ hoặc bằng 0"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Khi nào không tính được"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c8l2-rep",
+          "table_toggle": true,
+          "title": "Tăng trưởng LNST YoY",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng LNST YoY của từng quý, tính bằng %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "LNST của quý đó, đơn vị tỷ đồng.",
+              "title": "Cột xanh"
+            },
+            {
+              "text": "LNST cùng kỳ năm trước. Khoảng cách giữa hai cột chính là phần tăng thêm.",
+              "title": "Cột cam"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c8l2-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Biên lợi nhuận đang mở rộng: doanh nghiệp kiểm soát chi phí tốt hoặc bán được giá cao hơn.",
+              "title": "LNST tăng nhanh hơn doanh thu",
+              "tone": "pos"
+            },
+            {
+              "text": "Chi phí tăng nhanh hơn doanh thu, mỗi đồng bán ra giữ lại ít lợi nhuận hơn.",
+              "title": "LNST tăng chậm hơn hoặc giảm",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Ở doanh nghiệp mẫu, đường LNST nằm trên đường doanh thu suốt 8 quý: lợi nhuận tăng nhanh hơn doanh thu.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "LNST tăng dương nhiều quý liên tiếp đáng tin hơn một quý tăng đột biến.",
+              "title": "Tìm tăng trưởng đều"
+            },
+            {
+              "text": "Lợi nhuận bền vững cần đến từ bán hàng nhiều hơn, không chỉ từ cắt giảm chi phí.",
+              "title": "Đặt cạnh doanh thu"
+            },
+            {
+              "text": "Lãi từ bán tài sản hay thanh lý công ty con chỉ có một lần, không lặp lại năm sau.",
+              "title": "Kiểm tra khoản bất thường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Quý 2/2026",
+              "text": "LNST 154,1 tỷ đồng, doanh thu 1.598 tỷ đồng."
+            },
+            {
+              "term": "Quý 2/2025",
+              "text": "LNST 127,8 tỷ đồng, doanh thu 1.450 tỷ đồng."
+            },
+            {
+              "term": "Tăng trưởng",
+              "text": "LNST: 154,1 ÷ 127,8 − 1 ≈ +20,6%. Doanh thu: ≈ +10,2%."
+            },
+            {
+              "term": "Đọc kết quả",
+              "text": "Lợi nhuận tăng gấp đôi tốc độ doanh thu. Biên lợi nhuận tiếp tục cải thiện so với cùng kỳ."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thường do cùng kỳ lãi rất thấp. Hãy so LNST với các năm trước đó.",
+              "title": "Tin con số tăng vài trăm phần trăm"
+            },
+            {
+              "text": "Một khoản thu nhập một lần có thể làm LNST tăng vọt trong một quý.",
+              "title": "Bỏ qua lãi bất thường"
+            },
+            {
+              "text": "Phép chia cho số âm cho ra kết quả vô nghĩa. Chỉ ghi nhận là chuyển từ lỗ sang lãi.",
+              "title": "Tính YoY khi cùng kỳ lỗ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>LNST</b> là dòng cuối của báo cáo kết quả kinh doanh, phần thuộc về cổ đông.",
+    "LNST <b>biến động mạnh hơn doanh thu</b> vì nhiều chi phí gần như cố định.",
+    "Cùng kỳ <b>lỗ hoặc bằng 0</b> thì không tính YoY. Cùng kỳ <b>quá thấp</b> làm con số bị phóng đại.",
+    "LNST tăng <b>nhanh hơn doanh thu</b> là dấu hiệu biên lợi nhuận mở rộng."
+  ],
+  "title": "Tăng trưởng LNST YoY"
+}

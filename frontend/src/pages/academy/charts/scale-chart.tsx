@@ -7,7 +7,7 @@ import { useChartWidth } from "./use-chart-width"
  * Wraps a marker label to `maxWidth` without stranding a unit or separator: a token of one or two
  * characters ("đ", "%", "·") stays on the line of the word before it.
  */
-function wrapLabel(text: string, maxWidth: number): string[] {
+function wrapLabel(text: string, maxWidth: number, size = 11): string[] {
   const glue = "\u0001"
   const tokens = text
     .split(/\s+/)
@@ -17,7 +17,57 @@ function wrapLabel(text: string, maxWidth: number): string[] {
       else joined.push(token)
       return joined
     }, [])
-  return wrapText(tokens.join(" "), maxWidth).map((line) => line.split(glue).join(" "))
+  return wrapText(tokens.join(" "), maxWidth, size).map((line) => line.split(glue).join(" "))
+}
+
+/**
+ * Anchor and x of a label that has to stay inside the drawing: a label centred on `at` that would
+ * cross an edge is anchored to that edge instead, and the anchor point is pulled back so the text
+ * ends inside as well. A label wider than the drawing starts at its left edge.
+ */
+function fitLabel(
+  text: string,
+  at: number,
+  size: number,
+  min: number,
+  max: number,
+  prefer: "start" | "middle" | "end" = "middle",
+): { anchor: "start" | "middle" | "end"; x: number } {
+  const w = textWidth(text, size)
+  if (w > max - min) return { anchor: "start", x: min }
+  if (prefer === "start") {
+    if (at >= min && at + w <= max) return { anchor: "start", x: at }
+    return { anchor: "start", x: Math.max(min, Math.min(at, max - w)) }
+  }
+  if (prefer === "end") {
+    if (at <= max && at - w >= min) return { anchor: "end", x: at }
+    return { anchor: "end", x: Math.min(max, Math.max(at, min + w)) }
+  }
+  if (at - w / 2 < min) return { anchor: "start", x: Math.min(Math.max(at, min), max - w) }
+  if (at + w / 2 > max) return { anchor: "end", x: Math.max(Math.min(at, max), min + w) }
+  return { anchor: "middle", x: at }
+}
+
+/**
+ * Places a wrapped label inside the drawing: every line shares one anchor, so the block still reads
+ * as one label (its widest line decides the anchor) and no line leaves the drawing.
+ */
+function fitLines(
+  lines: string[],
+  at: number,
+  size: number,
+  min: number,
+  max: number,
+): { anchor: "start" | "middle" | "end"; x: number; xFor: (line: string) => number } {
+  const widest = Math.max(...lines.map((line) => textWidth(line, size)))
+  const anchor = at - widest / 2 < min ? "start" : at + widest / 2 > max ? "end" : "middle"
+  const xFor = (line: string) => {
+    const w = textWidth(line, size)
+    if (anchor === "start") return Math.max(min, Math.min(at, max - w))
+    if (anchor === "end") return Math.min(max, Math.max(at, w))
+    return at
+  }
+  return { anchor, x: xFor(lines[0] ?? ""), xFor }
 }
 
 /**
@@ -50,13 +100,23 @@ function HorizontalScale({ model, label, width }: { model: ScaleModel; label: st
   }
   const labelBlock = (markers: typeof model.markers) =>
     markers.length ? Math.max(...markers.map((marker) => labelLines(marker).length + (marker.sub ? 1 : 0))) * lineHeight + 10 : 0
-  const zoneLabels = model.zones?.some((zone) => zone.label) ? 16 : 0
+  const zoneLabelSize = 10.5
+  // A zone names its own span: its label wraps to the zone, so it never reaches into the
+  // neighbouring zone nor out of the drawing.
+  const zoneLabelBlocks = (model.zones ?? []).map((zone) => {
+    if (!zone.label) return null
+    const lines = wrapLabel(zone.label, Math.max(24, x(zone.to) - x(zone.from) - 4), zoneLabelSize)
+    const centre = (x(zone.from) + x(zone.to)) / 2
+    return { zone, lines, ...fitLines(lines, centre, zoneLabelSize, 0, width) }
+  })
+  const zoneRows = Math.max(0, ...zoneLabelBlocks.map((block) => block?.lines.length ?? 0))
+  const zoneLabelHeight = zoneRows ? zoneRows * lineHeight + 3 : 0
   const trackTop = 6 + labelBlock(above)
   const trackHeight = 12
   const trackBottom = trackTop + trackHeight
   const ticksRow = model.ticks?.length ? 16 : 0
   const endsRow = model.ends ? 18 : 0
-  const belowTop = trackBottom + zoneLabels + ticksRow + 6
+  const belowTop = trackBottom + zoneLabelHeight + ticksRow + 6
   const height = belowTop + labelBlock(below) + endsRow + 4
   const tones = model.gradient ?? []
   const stepSize = (d1 - d0) / Math.max(1, tones.length)
@@ -71,14 +131,21 @@ function HorizontalScale({ model, label, width }: { model: ScaleModel; label: st
     const lines = labelLines(marker)
     const w = Math.max(...lines.map((line) => textWidth(line)))
     const anchor = px < left + 50 || px - w / 2 < 2 ? "start" : px > right - 50 || px + w / 2 > width - 2 ? "end" : "middle"
+    // The block never leaves the drawing: an anchored label is pulled back to the edge it leans on.
+    const labelX =
+      anchor === "start"
+        ? Math.min(Math.max(px, 0), width - w)
+        : anchor === "end"
+          ? Math.max(Math.min(px, width), w)
+          : Math.min(Math.max(px, w / 2), width - w / 2)
     const all = [...lines.map((text) => ({ text, sub: false })), ...(marker.sub ? [{ text: marker.sub, sub: true }] : [])]
     const startY = up ? y - (all.length - 1) * lineHeight : y
     return (
-      <text x={px} y={startY} textAnchor={anchor} className="text-[11px]">
+      <text x={labelX} y={startY} textAnchor={anchor} className="text-[11px]">
         {all.map((line, index) => (
           <tspan
             key={index}
-            x={px}
+            x={labelX}
             dy={index === 0 ? 0 : lineHeight}
             className={line.sub ? cn(LABEL_FILL, "tabular-nums") : cn(textFill(marker.tone), "font-semibold")}
           >
@@ -103,26 +170,36 @@ function HorizontalScale({ model, label, width }: { model: ScaleModel; label: st
           className={cn(TONE_FILL[tone], "opacity-60")}
         />
       ))}
-      {model.zones?.map((zone, index) => (
-        <g key={index}>
-          <rect x={x(zone.from)} y={trackTop} width={Math.max(1, x(zone.to) - x(zone.from))} height={trackHeight} className={cn(TONE_FILL[zone.tone], "opacity-70")} />
-          {zone.label && (
-            <text x={(x(zone.from) + x(zone.to)) / 2} y={trackBottom + 12} textAnchor="middle" className={cn(textFill(zone.tone), "text-[10.5px]")}>
-              {zone.label}
-            </text>
-          )}
-        </g>
-      ))}
-      {model.ticks?.map((tick, index) => (
-        <g key={index}>
-          <line x1={x(tick.v)} x2={x(tick.v)} y1={trackBottom} y2={trackBottom + 4} strokeWidth="1" className={GRID_STROKE} />
-          {tick.label && !crossesStem(x(tick.v), textWidth(tick.label, 10.5)) && (
-            <text x={x(tick.v)} y={trackBottom + zoneLabels + 14} textAnchor="middle" className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}>
-              {tick.label}
-            </text>
-          )}
-        </g>
-      ))}
+      {model.zones?.map((zone, index) => {
+        const block = zoneLabelBlocks[index]
+        return (
+          <g key={index}>
+            <rect x={x(zone.from)} y={trackTop} width={Math.max(1, x(zone.to) - x(zone.from))} height={trackHeight} className={cn(TONE_FILL[zone.tone], "opacity-70")} />
+            {block && (
+              <text x={block.x} y={trackBottom + 12} textAnchor={block.anchor} className={cn(textFill(zone.tone), "text-[10.5px]")}>
+                {block.lines.map((line, lineIndex) => (
+                  <tspan key={lineIndex} x={block.xFor(line)} dy={lineIndex === 0 ? 0 : lineHeight}>
+                    {line}
+                  </tspan>
+                ))}
+              </text>
+            )}
+          </g>
+        )
+      })}
+      {model.ticks?.map((tick, index) => {
+        const fit = tick.label ? fitLabel(tick.label, x(tick.v), 10.5, 0, width) : null
+        return (
+          <g key={index}>
+            <line x1={x(tick.v)} x2={x(tick.v)} y1={trackBottom} y2={trackBottom + 4} strokeWidth="1" className={GRID_STROKE} />
+            {fit && !crossesStem(x(tick.v), textWidth(tick.label ?? "", 10.5)) && (
+              <text x={fit.x} y={trackBottom + zoneLabelHeight + 14} textAnchor={fit.anchor} className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}>
+                {tick.label}
+              </text>
+            )}
+          </g>
+        )
+      })}
       {model.markers.map((marker, index) => {
         const up = above.includes(marker)
         return (
@@ -142,10 +219,10 @@ function HorizontalScale({ model, label, width }: { model: ScaleModel; label: st
       })}
       {model.ends && (
         <>
-          <text x={left} y={height - 6} className={cn(LABEL_FILL, "text-[11px] font-semibold")}>
+          <text x={Math.min(left, width - textWidth(model.ends[0], 11))} y={height - 6} className={cn(LABEL_FILL, "text-[11px] font-semibold")}>
             {model.ends[0]}
           </text>
-          <text x={right} y={height - 6} textAnchor="end" className={cn(LABEL_FILL, "text-[11px] font-semibold")}>
+          <text x={Math.max(right, textWidth(model.ends[1], 11))} y={height - 6} textAnchor="end" className={cn(LABEL_FILL, "text-[11px] font-semibold")}>
             {model.ends[1]}
           </text>
         </>
@@ -181,20 +258,24 @@ function VerticalScale({ model, label, width }: { model: ScaleModel; label: stri
           className={cn(TONE_FILL[tone], "opacity-60")}
         />
       ))}
-      {model.zones?.map((zone, index) => (
-        <g key={index}>
-          <rect x={trackX} y={y(zone.to)} width={trackWidth} height={Math.max(1, y(zone.from) - y(zone.to))} className={cn(TONE_FILL[zone.tone], "opacity-70")} />
-          {zone.label && (
-            <text
-              x={narrow ? labelX : zoneX}
-              y={(y(zone.from) + y(zone.to)) / 2 + (narrow ? 18 : 4)}
-              className={cn(textFill(zone.tone), "text-[11px]")}
-            >
-              {zone.label}
-            </text>
-          )}
-        </g>
-      ))}
+      {model.zones?.map((zone, index) => {
+        const fit = zone.label ? fitLabel(zone.label, narrow ? labelX : zoneX, 11, 0, width, "start") : null
+        return (
+          <g key={index}>
+            <rect x={trackX} y={y(zone.to)} width={trackWidth} height={Math.max(1, y(zone.from) - y(zone.to))} className={cn(TONE_FILL[zone.tone], "opacity-70")} />
+            {fit && (
+              <text
+                x={fit.x}
+                y={(y(zone.from) + y(zone.to)) / 2 + (narrow ? 18 : 4)}
+                textAnchor={fit.anchor}
+                className={cn(textFill(zone.tone), "text-[11px]")}
+              >
+                {zone.label}
+              </text>
+            )}
+          </g>
+        )
+      })}
       {model.ticks?.map((tick, index) => (
         <text key={index} x={trackX - 4} y={y(tick.v) + 4} textAnchor="end" className={cn(LABEL_FILL, "text-[10.5px] tabular-nums")}>
           {tick.label}
@@ -202,13 +283,14 @@ function VerticalScale({ model, label, width }: { model: ScaleModel; label: stri
       ))}
       {model.markers.map((marker, index) => {
         const my = Math.min(Math.max(y(marker.v), top + 6), bottom - (marker.sub ? 14 : 2))
+        const markerX = Math.min(labelX, Math.max(0, width - textWidth(marker.label, 11)))
         return (
           <g key={index}>
             <line x1={trackX - 3} x2={labelX - 4} y1={y(marker.v)} y2={y(marker.v)} strokeWidth="2" className={TONE_STROKE[marker.tone]} />
-            <text x={labelX} y={my + 4} className="text-[11px]">
+            <text x={markerX} y={my + 4} className="text-[11px]">
               <tspan className={cn(textFill(marker.tone), "font-semibold")}>{marker.label}</tspan>
               {marker.sub && (
-                <tspan x={labelX} dy={13} className={cn(LABEL_FILL, "tabular-nums")}>
+                <tspan x={markerX} dy={13} className={cn(LABEL_FILL, "tabular-nums")}>
                   {marker.sub}
                 </tspan>
               )}

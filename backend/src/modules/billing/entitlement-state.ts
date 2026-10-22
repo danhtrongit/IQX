@@ -52,6 +52,47 @@ export async function addSubscriptionHistory(
 }
 
 /**
+ * Premium bought with xu (Flashback spec §1.2): the grant is stacked on the current Premium
+ * period, so an active Premium is extended by `days` and a user without Premium starts now.
+ * The caller runs it inside its own transaction (the xu debit and this grant commit together).
+ */
+export async function grantPremiumDays(
+  client: BillingSqlClient,
+  input: {
+    userId: string;
+    planId: string | null;
+    days: number;
+    note?: string;
+  },
+): Promise<{ startsAt: Date; endsAt: Date }> {
+  await lockEntitlementUser(client, input.userId);
+  const [boundary] = await client.query<{ starts_at: Date | string }>(
+    `select greatest(now(), coalesce(max(ends_at), now())) as starts_at
+       from billing_entitlement_grants
+      where user_id = $1 and status = 'active' and ends_at > now()`,
+    [input.userId],
+  );
+  const startsAt = new Date(boundary?.starts_at ?? new Date());
+  const endsAt = new Date(startsAt.getTime() + input.days * 24 * 60 * 60 * 1000);
+  await client.query(
+    `insert into billing_entitlement_grants
+       (user_id, plan_id, order_id, kind, duration_days, starts_at, ends_at, original_ends_at,
+        status, granted_by_user_id, note, created_at, updated_at)
+     values ($1, $2, null, 'xu_purchase', $3, $4, $5, $5, 'active', null, $6, now(), now())`,
+    [
+      input.userId,
+      input.planId,
+      input.days,
+      startsAt.toISOString(),
+      endsAt.toISOString(),
+      input.note ?? null,
+    ],
+  );
+  await refreshSubscriptionState(client, input.userId, input.planId);
+  return { startsAt, endsAt };
+}
+
+/**
  * Project the user's active grants onto premium_subscriptions and the user <-> premium role.
  * Only those two roles are ever rewritten: admin and team_lead keep their role whatever the
  * grants say (admin spec v1.1 §1.1 rule 1).
@@ -59,7 +100,7 @@ export async function addSubscriptionHistory(
 export async function refreshSubscriptionState(
   client: BillingSqlClient,
   userId: string,
-  fallbackPlanId: string,
+  fallbackPlanId: string | null,
 ): Promise<void> {
   const [aggregate] = await client.query<
     Record<string, unknown> & {

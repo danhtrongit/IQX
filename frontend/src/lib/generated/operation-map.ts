@@ -28,6 +28,11 @@ export interface OperationMap {
   "GET /api/v2/admin/alerts/signals": { request: T.AdminAlertsControllerSignals1Data; response: T.AdminAlertsControllerSignals1Responses[keyof T.AdminAlertsControllerSignals1Responses] }
   "GET /api/v2/admin/audit": { request: T.AdminAuditControllerList1Data; response: T.AdminAuditControllerList1Responses[keyof T.AdminAuditControllerList1Responses] }
   "GET /api/v2/admin/audit/export": { request: T.AdminAuditControllerExport1Data; response: T.AdminAuditControllerExport1Responses[keyof T.AdminAuditControllerExport1Responses] }
+  "GET /api/v2/admin/flashback/alerts": { request: T.FlashbackAdminAlertsData; response: T.FlashbackAdminAlertsResponses[keyof T.FlashbackAdminAlertsResponses] }
+  "GET /api/v2/admin/flashback/pause": { request: T.FlashbackAdminPauseStatusData; response: T.FlashbackAdminPauseStatusResponses[keyof T.FlashbackAdminPauseStatusResponses] }
+  "GET /api/v2/admin/flashback/rounds": { request: T.FlashbackAdminRoundsData; response: T.FlashbackAdminRoundsResponses[keyof T.FlashbackAdminRoundsResponses] }
+  "GET /api/v2/admin/flashback/rounds/{id}/reveal": { request: T.FlashbackAdminRevealData; response: T.FlashbackAdminRevealResponses[keyof T.FlashbackAdminRevealResponses] }
+  "GET /api/v2/admin/flashback/suspects": { request: T.FlashbackAdminSuspectsData; response: T.FlashbackAdminSuspectsResponses[keyof T.FlashbackAdminSuspectsResponses] }
   "GET /api/v2/admin/ipn": { request: T.AdminListIpnLogsGetApiV2AdminIpnData; response: T.AdminListIpnLogsGetApiV2AdminIpnResponses[keyof T.AdminListIpnLogsGetApiV2AdminIpnResponses] }
   "GET /api/v2/admin/ipn/{log_id}": { request: T.AdminGetIpnLogGetApiV2AdminIpnLogIdData; response: T.AdminGetIpnLogGetApiV2AdminIpnLogIdResponses[keyof T.AdminGetIpnLogGetApiV2AdminIpnLogIdResponses] }
   "GET /api/v2/admin/lessons/courses": { request: T.AdminLearningControllerCourses1Data; response: T.AdminLearningControllerCourses1Responses[keyof T.AdminLearningControllerCourses1Responses] }
@@ -124,6 +129,12 @@ export interface OperationMap {
   "GET /api/v2/cap8/positions/{symbol}/exit-context": { request: T.GetCap8ExitContextV2Data; response: T.GetCap8ExitContextV2Responses[keyof T.GetCap8ExitContextV2Responses] }
   "GET /api/v2/cap8/progress": { request: T.GetCap8ProgressV2Data; response: T.GetCap8ProgressV2Responses[keyof T.GetCap8ProgressV2Responses] }
   "GET /api/v2/chart-drawings/{symbol}": { request: T.GetChartDrawingV2Data; response: T.GetChartDrawingV2Responses[keyof T.GetChartDrawingV2Responses] }
+  "GET /api/v2/dashboard/catalog": { request: T.DashboardCatalogData; response: T.DashboardCatalogResponses[keyof T.DashboardCatalogResponses] }
+  "GET /api/v2/dashboard/settings": { request: T.DashboardSettingsData; response: T.DashboardSettingsResponses[keyof T.DashboardSettingsResponses] }
+  "GET /api/v2/flashback/current": { request: T.FlashbackCurrentData; response: T.FlashbackCurrentResponses[keyof T.FlashbackCurrentResponses] }
+  "GET /api/v2/flashback/current/leaderboard": { request: T.FlashbackLeaderboardData; response: T.FlashbackLeaderboardResponses[keyof T.FlashbackLeaderboardResponses] }
+  "GET /api/v2/flashback/indicators": { request: T.FlashbackIndicatorsData; response: T.FlashbackIndicatorsResponses[keyof T.FlashbackIndicatorsResponses] }
+  "GET /api/v2/fundamental/{symbol}": { request: T.DashboardFundamentalData; response: T.DashboardFundamentalResponses[keyof T.DashboardFundamentalResponses] }
   "GET /api/v2/health": { request: T.LegacyHealthGetApiV2HealthData; response: T.LegacyHealthGetApiV2HealthResponses[keyof T.LegacyHealthGetApiV2HealthResponses] }
   "GET /api/v2/instruments": { request: T.SearchInstrumentsV2Data; response: T.SearchInstrumentsV2Responses[keyof T.SearchInstrumentsV2Responses] }
   "GET /api/v2/instruments/{symbol}": { request: T.GetInstrumentV2Data; response: T.GetInstrumentV2Responses[keyof T.GetInstrumentV2Responses] }
@@ -252,6 +263,7 @@ export interface OperationMap {
   "GET /api/v2/users": { request: T.UsersControllerList1Data; response: T.UsersControllerList1Responses[keyof T.UsersControllerList1Responses] }
   "GET /api/v2/users/{userId}": { request: T.UsersControllerGet1Data; response: T.UsersControllerGet1Responses[keyof T.UsersControllerGet1Responses] }
   "GET /api/v2/users/me": { request: T.UsersControllerMe1Data; response: T.UsersControllerMe1Responses[keyof T.UsersControllerMe1Responses] }
+  "GET /api/v2/valuation/{symbol}": { request: T.DashboardValuationData; response: T.DashboardValuationResponses[keyof T.DashboardValuationResponses] }
   "GET /api/v2/virtual-trading/account": { request: T.TradingControllerAccount1Data; response: T.TradingControllerAccount1Responses[keyof T.TradingControllerAccount1Responses] }
   "GET /api/v2/virtual-trading/admin/accounts": { request: T.LegacyVirtualTradingAdminControllerAccounts1Data; response: T.LegacyVirtualTradingAdminControllerAccounts1Responses[keyof T.LegacyVirtualTradingAdminControllerAccounts1Responses] }
   "GET /api/v2/virtual-trading/admin/config": { request: T.LegacyVirtualTradingAdminControllerConfig1Data; response: T.LegacyVirtualTradingAdminControllerConfig1Responses[keyof T.LegacyVirtualTradingAdminControllerConfig1Responses] }
@@ -285,6 +297,7 @@ export interface OperationMap {
   "POST /api/v2/admin/alerts/seed": { request: T.AdminAlertsControllerSeed1Data; response: T.AdminAlertsControllerSeed1Responses[keyof T.AdminAlertsControllerSeed1Responses] }
   "POST /api/v2/admin/alerts/signals": { request: T.AdminAlertsControllerCreate1Data; response: T.AdminAlertsControllerCreate1Responses[keyof T.AdminAlertsControllerCreate1Responses] }
   "POST /api/v2/admin/alerts/telegram/webhook": { request: T.AdminAlertsControllerSetupTelegramWebhook1Data; response: T.AdminAlertsControllerSetupTelegramWebhook1Responses[keyof T.AdminAlertsControllerSetupTelegramWebhook1Responses] }
+  "POST /api/v2/admin/flashback/pause": { request: T.FlashbackAdminPauseData; response: T.FlashbackAdminPauseResponses[keyof T.FlashbackAdminPauseResponses] }
   "POST /api/v2/admin/ipn/{log_id}/retry": { request: T.AdminRetryIpnPostApiV2AdminIpnLogIdRetryData; response: T.AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses[keyof T.AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses] }
   "POST /api/v2/admin/journey/identity/qa-grants": { request: T.JourneyIdentityControllerGrantQa1Data; response: T.JourneyIdentityControllerGrantQa1Responses[keyof T.JourneyIdentityControllerGrantQa1Responses] }
   "POST /api/v2/admin/lessons/courses": { request: T.AdminLearningControllerCreateCourse1Data; response: T.AdminLearningControllerCreateCourse1Responses[keyof T.AdminLearningControllerCreateCourse1Responses] }
@@ -369,6 +382,10 @@ export interface OperationMap {
   "POST /api/v2/cap8/exits": { request: T.RecordCap8ExitV2Data; response: T.RecordCap8ExitV2Responses[keyof T.RecordCap8ExitV2Responses] }
   "POST /api/v2/cap8/graduate": { request: T.GraduateCap8V2Data; response: T.GraduateCap8V2Responses[keyof T.GraduateCap8V2Responses] }
   "POST /api/v2/cap8/positions/{symbol}/sync-plan": { request: T.SyncCap8PlanV2Data; response: T.SyncCap8PlanV2Responses[keyof T.SyncCap8PlanV2Responses] }
+  "POST /api/v2/flashback/current/join": { request: T.FlashbackJoinData; response: T.FlashbackJoinResponses[keyof T.FlashbackJoinResponses] }
+  "POST /api/v2/flashback/entries/{id}/finish": { request: T.FlashbackFinishData; response: T.FlashbackFinishResponses[keyof T.FlashbackFinishResponses] }
+  "POST /api/v2/flashback/entries/{id}/next": { request: T.FlashbackNextData; response: T.FlashbackNextResponses[keyof T.FlashbackNextResponses] }
+  "POST /api/v2/flashback/entries/{id}/orders": { request: T.FlashbackPlaceOrderData; response: T.FlashbackPlaceOrderResponses[keyof T.FlashbackPlaceOrderResponses] }
   "POST /api/v2/journey/assessments": { request: T.JourneyIdentityControllerSubmit1Data; response: T.JourneyIdentityControllerSubmit1Responses[keyof T.JourneyIdentityControllerSubmit1Responses] }
   "POST /api/v2/journey/assessments/{assessmentId}/reveal": { request: T.JourneyIdentityControllerReveal1Data; response: T.JourneyIdentityControllerReveal1Responses[keyof T.JourneyIdentityControllerReveal1Responses] }
   "POST /api/v2/journey/events": { request: T.JourneyEventControllerRecord1Data; response: T.JourneyEventControllerRecord1Responses[keyof T.JourneyEventControllerRecord1Responses] }
@@ -385,6 +402,9 @@ export interface OperationMap {
   "POST /api/v2/premium/admin/users/{user_id}/grant": { request: T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantData; response: T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses[keyof T.AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses] }
   "POST /api/v2/premium/checkout": { request: T.CreatePremiumCheckoutPostApiV2PremiumCheckoutData; response: T.CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses[keyof T.CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses] }
   "POST /api/v2/premium/sepay/ipn": { request: T.ReceiveSePayIpnPostApiV2PremiumSepayIpnData; response: T.ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses[keyof T.ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses] }
+  "POST /api/v2/shop/demo-exchange": { request: T.ExchangeShopDemoCashData; response: T.ExchangeShopDemoCashResponses[keyof T.ExchangeShopDemoCashResponses] }
+  "POST /api/v2/shop/pets/{mascotId}/evolve": { request: T.EvolveShopPetData; response: T.EvolveShopPetResponses[keyof T.EvolveShopPetResponses] }
+  "POST /api/v2/shop/premium-purchases": { request: T.PurchaseShopPremiumWithXuData; response: T.PurchaseShopPremiumWithXuResponses[keyof T.PurchaseShopPremiumWithXuResponses] }
   "POST /api/v2/shop/purchases": { request: T.PurchaseShopMascotData; response: T.PurchaseShopMascotResponses[keyof T.PurchaseShopMascotResponses] }
   "POST /api/v2/strategy/alerts": { request: T.StrategyAlertsCreateData; response: T.StrategyAlertsCreateResponses[keyof T.StrategyAlertsCreateResponses] }
   "POST /api/v2/strategy/alerts/source-preview": { request: T.StrategyAlertsSourcePreviewData; response: T.StrategyAlertsSourcePreviewResponses[keyof T.StrategyAlertsSourcePreviewResponses] }
@@ -413,6 +433,8 @@ export interface OperationMap {
   "PUT /api/v2/alerts/rules/{ruleId}": { request: T.AlertsControllerUpdateRule1Data; response: T.AlertsControllerUpdateRule1Responses[keyof T.AlertsControllerUpdateRule1Responses] }
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: T.QuantControllerUpdate0Data; response: T.QuantControllerUpdate0Responses[keyof T.QuantControllerUpdate0Responses] }
   "PUT /api/v2/chart-drawings/{symbol}": { request: T.SaveChartDrawingV2Data; response: T.SaveChartDrawingV2Responses[keyof T.SaveChartDrawingV2Responses] }
+  "PUT /api/v2/dashboard/settings": { request: T.DashboardSaveSettingsData; response: T.DashboardSaveSettingsResponses[keyof T.DashboardSaveSettingsResponses] }
+  "PUT /api/v2/flashback/entries/{id}/indicators": { request: T.FlashbackSaveIndicatorsData; response: T.FlashbackSaveIndicatorsResponses[keyof T.FlashbackSaveIndicatorsResponses] }
   "PUT /api/v2/practice/{indicatorId}/draft": { request: T.PracticeSaveDraftData; response: T.PracticeSaveDraftResponses[keyof T.PracticeSaveDraftResponses] }
   "PUT /api/v2/shop/active-mascot": { request: T.SetShopActiveMascotData; response: T.SetShopActiveMascotResponses[keyof T.SetShopActiveMascotResponses] }
   "PUT /api/v2/strategy/filters/{filterId}": { request: T.UpdateStrategySavedFilterData; response: T.UpdateStrategySavedFilterResponses[keyof T.UpdateStrategySavedFilterResponses] }
@@ -446,6 +468,11 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/admin/alerts/signals": { request: "AdminAlertsControllerSignals1Data", response: "AdminAlertsControllerSignals1Responses" },
   "GET /api/v2/admin/audit": { request: "AdminAuditControllerList1Data", response: "AdminAuditControllerList1Responses" },
   "GET /api/v2/admin/audit/export": { request: "AdminAuditControllerExport1Data", response: "AdminAuditControllerExport1Responses" },
+  "GET /api/v2/admin/flashback/alerts": { request: "FlashbackAdminAlertsData", response: "FlashbackAdminAlertsResponses" },
+  "GET /api/v2/admin/flashback/pause": { request: "FlashbackAdminPauseStatusData", response: "FlashbackAdminPauseStatusResponses" },
+  "GET /api/v2/admin/flashback/rounds": { request: "FlashbackAdminRoundsData", response: "FlashbackAdminRoundsResponses" },
+  "GET /api/v2/admin/flashback/rounds/{id}/reveal": { request: "FlashbackAdminRevealData", response: "FlashbackAdminRevealResponses" },
+  "GET /api/v2/admin/flashback/suspects": { request: "FlashbackAdminSuspectsData", response: "FlashbackAdminSuspectsResponses" },
   "GET /api/v2/admin/ipn": { request: "AdminListIpnLogsGetApiV2AdminIpnData", response: "AdminListIpnLogsGetApiV2AdminIpnResponses" },
   "GET /api/v2/admin/ipn/{log_id}": { request: "AdminGetIpnLogGetApiV2AdminIpnLogIdData", response: "AdminGetIpnLogGetApiV2AdminIpnLogIdResponses" },
   "GET /api/v2/admin/lessons/courses": { request: "AdminLearningControllerCourses1Data", response: "AdminLearningControllerCourses1Responses" },
@@ -542,6 +569,12 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/cap8/positions/{symbol}/exit-context": { request: "GetCap8ExitContextV2Data", response: "GetCap8ExitContextV2Responses" },
   "GET /api/v2/cap8/progress": { request: "GetCap8ProgressV2Data", response: "GetCap8ProgressV2Responses" },
   "GET /api/v2/chart-drawings/{symbol}": { request: "GetChartDrawingV2Data", response: "GetChartDrawingV2Responses" },
+  "GET /api/v2/dashboard/catalog": { request: "DashboardCatalogData", response: "DashboardCatalogResponses" },
+  "GET /api/v2/dashboard/settings": { request: "DashboardSettingsData", response: "DashboardSettingsResponses" },
+  "GET /api/v2/flashback/current": { request: "FlashbackCurrentData", response: "FlashbackCurrentResponses" },
+  "GET /api/v2/flashback/current/leaderboard": { request: "FlashbackLeaderboardData", response: "FlashbackLeaderboardResponses" },
+  "GET /api/v2/flashback/indicators": { request: "FlashbackIndicatorsData", response: "FlashbackIndicatorsResponses" },
+  "GET /api/v2/fundamental/{symbol}": { request: "DashboardFundamentalData", response: "DashboardFundamentalResponses" },
   "GET /api/v2/health": { request: "LegacyHealthGetApiV2HealthData", response: "LegacyHealthGetApiV2HealthResponses" },
   "GET /api/v2/instruments": { request: "SearchInstrumentsV2Data", response: "SearchInstrumentsV2Responses" },
   "GET /api/v2/instruments/{symbol}": { request: "GetInstrumentV2Data", response: "GetInstrumentV2Responses" },
@@ -670,6 +703,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/users": { request: "UsersControllerList1Data", response: "UsersControllerList1Responses" },
   "GET /api/v2/users/{userId}": { request: "UsersControllerGet1Data", response: "UsersControllerGet1Responses" },
   "GET /api/v2/users/me": { request: "UsersControllerMe1Data", response: "UsersControllerMe1Responses" },
+  "GET /api/v2/valuation/{symbol}": { request: "DashboardValuationData", response: "DashboardValuationResponses" },
   "GET /api/v2/virtual-trading/account": { request: "TradingControllerAccount1Data", response: "TradingControllerAccount1Responses" },
   "GET /api/v2/virtual-trading/admin/accounts": { request: "LegacyVirtualTradingAdminControllerAccounts1Data", response: "LegacyVirtualTradingAdminControllerAccounts1Responses" },
   "GET /api/v2/virtual-trading/admin/config": { request: "LegacyVirtualTradingAdminControllerConfig1Data", response: "LegacyVirtualTradingAdminControllerConfig1Responses" },
@@ -703,6 +737,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/admin/alerts/seed": { request: "AdminAlertsControllerSeed1Data", response: "AdminAlertsControllerSeed1Responses" },
   "POST /api/v2/admin/alerts/signals": { request: "AdminAlertsControllerCreate1Data", response: "AdminAlertsControllerCreate1Responses" },
   "POST /api/v2/admin/alerts/telegram/webhook": { request: "AdminAlertsControllerSetupTelegramWebhook1Data", response: "AdminAlertsControllerSetupTelegramWebhook1Responses" },
+  "POST /api/v2/admin/flashback/pause": { request: "FlashbackAdminPauseData", response: "FlashbackAdminPauseResponses" },
   "POST /api/v2/admin/ipn/{log_id}/retry": { request: "AdminRetryIpnPostApiV2AdminIpnLogIdRetryData", response: "AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses" },
   "POST /api/v2/admin/journey/identity/qa-grants": { request: "JourneyIdentityControllerGrantQa1Data", response: "JourneyIdentityControllerGrantQa1Responses" },
   "POST /api/v2/admin/lessons/courses": { request: "AdminLearningControllerCreateCourse1Data", response: "AdminLearningControllerCreateCourse1Responses" },
@@ -787,6 +822,10 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/cap8/exits": { request: "RecordCap8ExitV2Data", response: "RecordCap8ExitV2Responses" },
   "POST /api/v2/cap8/graduate": { request: "GraduateCap8V2Data", response: "GraduateCap8V2Responses" },
   "POST /api/v2/cap8/positions/{symbol}/sync-plan": { request: "SyncCap8PlanV2Data", response: "SyncCap8PlanV2Responses" },
+  "POST /api/v2/flashback/current/join": { request: "FlashbackJoinData", response: "FlashbackJoinResponses" },
+  "POST /api/v2/flashback/entries/{id}/finish": { request: "FlashbackFinishData", response: "FlashbackFinishResponses" },
+  "POST /api/v2/flashback/entries/{id}/next": { request: "FlashbackNextData", response: "FlashbackNextResponses" },
+  "POST /api/v2/flashback/entries/{id}/orders": { request: "FlashbackPlaceOrderData", response: "FlashbackPlaceOrderResponses" },
   "POST /api/v2/journey/assessments": { request: "JourneyIdentityControllerSubmit1Data", response: "JourneyIdentityControllerSubmit1Responses" },
   "POST /api/v2/journey/assessments/{assessmentId}/reveal": { request: "JourneyIdentityControllerReveal1Data", response: "JourneyIdentityControllerReveal1Responses" },
   "POST /api/v2/journey/events": { request: "JourneyEventControllerRecord1Data", response: "JourneyEventControllerRecord1Responses" },
@@ -803,6 +842,9 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/premium/admin/users/{user_id}/grant": { request: "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantData", response: "AdminGrantPremiumPostApiV2PremiumAdminUsersUserIdGrantResponses" },
   "POST /api/v2/premium/checkout": { request: "CreatePremiumCheckoutPostApiV2PremiumCheckoutData", response: "CreatePremiumCheckoutPostApiV2PremiumCheckoutResponses" },
   "POST /api/v2/premium/sepay/ipn": { request: "ReceiveSePayIpnPostApiV2PremiumSepayIpnData", response: "ReceiveSePayIpnPostApiV2PremiumSepayIpnResponses" },
+  "POST /api/v2/shop/demo-exchange": { request: "ExchangeShopDemoCashData", response: "ExchangeShopDemoCashResponses" },
+  "POST /api/v2/shop/pets/{mascotId}/evolve": { request: "EvolveShopPetData", response: "EvolveShopPetResponses" },
+  "POST /api/v2/shop/premium-purchases": { request: "PurchaseShopPremiumWithXuData", response: "PurchaseShopPremiumWithXuResponses" },
   "POST /api/v2/shop/purchases": { request: "PurchaseShopMascotData", response: "PurchaseShopMascotResponses" },
   "POST /api/v2/strategy/alerts": { request: "StrategyAlertsCreateData", response: "StrategyAlertsCreateResponses" },
   "POST /api/v2/strategy/alerts/source-preview": { request: "StrategyAlertsSourcePreviewData", response: "StrategyAlertsSourcePreviewResponses" },
@@ -831,6 +873,8 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PUT /api/v2/alerts/rules/{ruleId}": { request: "AlertsControllerUpdateRule1Data", response: "AlertsControllerUpdateRule1Responses" },
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: "QuantControllerUpdate0Data", response: "QuantControllerUpdate0Responses" },
   "PUT /api/v2/chart-drawings/{symbol}": { request: "SaveChartDrawingV2Data", response: "SaveChartDrawingV2Responses" },
+  "PUT /api/v2/dashboard/settings": { request: "DashboardSaveSettingsData", response: "DashboardSaveSettingsResponses" },
+  "PUT /api/v2/flashback/entries/{id}/indicators": { request: "FlashbackSaveIndicatorsData", response: "FlashbackSaveIndicatorsResponses" },
   "PUT /api/v2/practice/{indicatorId}/draft": { request: "PracticeSaveDraftData", response: "PracticeSaveDraftResponses" },
   "PUT /api/v2/shop/active-mascot": { request: "SetShopActiveMascotData", response: "SetShopActiveMascotResponses" },
   "PUT /api/v2/strategy/filters/{filterId}": { request: "UpdateStrategySavedFilterData", response: "UpdateStrategySavedFilterResponses" },

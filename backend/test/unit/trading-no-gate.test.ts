@@ -39,6 +39,7 @@ class FakeTradingRepository {
     cashAvailableVnd: 100_000_000n,
     cashReservedVnd: 0n,
     cashPendingVnd: 0n,
+    netDepositedCashVnd: 100_000_000n,
     activatedAt: NOW,
     resetAt: null,
     frozenAt: null,

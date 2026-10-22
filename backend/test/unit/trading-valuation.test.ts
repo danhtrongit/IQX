@@ -16,6 +16,7 @@ const account: TradingAccount = {
   cashAvailableVnd: 700_000n,
   cashReservedVnd: 200_000n,
   cashPendingVnd: 100_000n,
+  netDepositedCashVnd: 2_000_000n,
   activatedAt: now,
   resetAt: null,
   frozenAt: null,
@@ -37,10 +38,14 @@ const position: TradingPosition = {
   activeDynamicStopVnd: null,
 };
 
-function service(getQuote: (symbol: string) => Promise<TradingQuote>, positions = [position]) {
+function service(
+  getQuote: (symbol: string) => Promise<TradingQuote>,
+  positions = [position],
+  accountOverride: TradingAccount = account,
+) {
   return new TradingService(
     {
-      getAccountByUser: vi.fn().mockResolvedValue(account),
+      getAccountByUser: vi.fn().mockResolvedValue(accountOverride),
       listPositions: vi.fn().mockResolvedValue(positions),
     } as never,
     { getQuote, validateSymbol: async () => true },
@@ -80,6 +85,36 @@ describe('trading portfolio valuation', () => {
     const result = await service(getQuote, []).getPortfolio('user');
     expect(result.nav_vnd).toBe(1_000_000);
     expect(quotes).toBe(0);
+  });
+
+  it('measures the profit against the net deposited capital, not the money that came in', async () => {
+    const deposited: TradingAccount = {
+      ...account,
+      initialCashVnd: 0n,
+      cashAvailableVnd: 1_100_000n,
+      cashReservedVnd: 0n,
+      cashPendingVnd: 0n,
+      netDepositedCashVnd: 1_000_000n,
+    };
+    const result = await service(async () => quote('VCB', 90_000n), [], deposited).getPortfolio(
+      'user',
+    );
+    expect(result.nav_vnd).toBe(1_100_000);
+    // 100.000 lãi trên 1.000.000 vốn nạp ròng là +10%, không phải +100%.
+    expect(result.return_pct).toBe(10);
+  });
+
+  it('reports no profit when nothing was deposited into the account', async () => {
+    const empty: TradingAccount = {
+      ...account,
+      initialCashVnd: 0n,
+      cashAvailableVnd: 0n,
+      cashReservedVnd: 0n,
+      cashPendingVnd: 0n,
+      netDepositedCashVnd: 0n,
+    };
+    const result = await service(async () => quote('VCB', 90_000n), [], empty).getPortfolio('user');
+    expect(result.return_pct).toBe(0);
   });
 });
 

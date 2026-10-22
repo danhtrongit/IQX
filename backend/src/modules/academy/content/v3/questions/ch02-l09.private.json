@@ -3,62 +3,62 @@
   "item_id": "ch02-l09",
   "questions": [
     {
-      "correct_option_id": "6911bbb5a1",
+      "correct_option_id": "4f9c7963b0",
       "id": "ch02-l09-q01",
       "options": [
         {
-          "id": "6911bbb5a1",
+          "id": "4f9c7963b0",
           "text": "30 ngày đầu tiên"
         },
         {
-          "id": "7b60843ce9",
+          "id": "c9175ac0b1",
           "text": "Sau 5 năm"
         },
         {
-          "id": "edf3c224a0",
+          "id": "44c47d3412",
           "text": "Khi thị trường tăng mạnh"
         }
       ],
       "prompt": "Giai đoạn nào khách mới dễ bỏ cuộc nhất?"
     },
     {
-      "correct_option_id": "b29e1719ae",
+      "correct_option_id": "2dd963be30",
       "id": "ch02-l09-q02",
       "options": [
         {
-          "id": "b29e1719ae",
+          "id": "2dd963be30",
           "text": "Chủ động gọi khách, nhắc kế hoạch và kiểm tra margin"
         },
         {
-          "id": "390e1ed34c",
+          "id": "fd440d9743",
           "text": "Im lặng chờ thị trường hồi"
         },
         {
-          "id": "b7e8ed7772",
+          "id": "1675f19d1c",
           "text": "Hứa chắc chắn sẽ hồi"
         }
       ],
       "prompt": "Khi thị trường giảm mạnh, SACO nên làm gì?"
     },
     {
-      "correct_option_id": "f512edc65a",
+      "correct_option_id": "9ed18f5163",
       "id": "ch02-l09-q03",
       "options": [
         {
-          "id": "f512edc65a",
+          "id": "9ed18f5163",
           "text": "Ngay sau khi khách cảm thấy hài lòng"
         },
         {
-          "id": "6e2330d571",
+          "id": "29a745fc32",
           "text": "Ngay ngày đầu gặp mặt"
         },
         {
-          "id": "0e98289d29",
+          "id": "a7bb46a55f",
           "text": "Khi khách đang thua lỗ"
         }
       ],
       "prompt": "Thời điểm tốt nhất để xin khách giới thiệu là khi nào?"
     }
   ],
-  "salt": "184a66df0a1124015f2c62a2ccae6176264fe5d09d8a2979e945bb3817fe2591"
+  "salt": "85d892cdb813b8a0064b2a48a0840e8ac88ade92f3f438a30c809ca59ac3dd7f"
 }

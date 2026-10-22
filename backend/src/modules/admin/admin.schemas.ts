@@ -105,7 +105,8 @@ export const settlementsQuerySchema = paginationSchema.extend({
 
 export const tradingConfigUpdateSchema = z
   .object({
-    initial_cash_vnd: z.number().int().positive().safe().optional(),
+    // Vốn cấp lại cho tài khoản Demo sau khi admin reset (Flashback spec §1.3): mặc định 0.
+    initial_cash_vnd: z.number().int().min(0).safe().optional(),
     buy_fee_rate_bps: z.number().int().min(0).max(10_000).optional(),
     sell_fee_rate_bps: z.number().int().min(0).max(10_000).optional(),
     sell_tax_rate_bps: z.number().int().min(0).max(10_000).optional(),

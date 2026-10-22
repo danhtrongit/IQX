@@ -12,15 +12,25 @@ import { CurrentUser, type AuthenticatedUser } from '../auth/index.js';
 import {
   activeMascotBodySchema,
   activeMascotResultSchema,
+  demoExchangeBodySchema,
+  demoExchangeResultSchema,
+  evolveBodySchema,
+  evolveResultSchema,
   ledgerPageSchema,
   ledgerQuerySchema,
+  petIdParamSchema,
+  premiumPurchaseBodySchema,
+  premiumPurchaseResultSchema,
   purchaseBodySchema,
   purchaseKeyParamSchema,
   purchaseResultSchema,
   purchaseStatusSchema,
   shopStateSchema,
   type ActiveMascotBody,
+  type DemoExchangeBody,
+  type EvolveBody,
   type LedgerQuery,
+  type PremiumPurchaseBody,
   type PurchaseBody,
 } from './shop.schemas.js';
 import { ShopService } from './shop.service.js';
@@ -107,5 +117,61 @@ export class ShopController {
     @Body({ schema: activeMascotBodySchema }) body: ActiveMascotBody,
   ) {
     return this.shop.setActiveMascot(user.id, body);
+  }
+
+  @Post('pets/:mascotId/evolve')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'evolveShopPet',
+    summary:
+      'Tiến hoá linh thú lên cấp 2 rồi cấp 3 (idempotent; chỉ đổi hình ảnh, không lợi thế giao dịch)',
+  })
+  @ApiOkResponse({ schema: openApi(evolveResultSchema) })
+  @ApiConflictResponse({
+    description:
+      'PET_NOT_OWNED, PET_LEVEL_LOCKED, PET_MAX_LEVEL, PRICE_CHANGED, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu)',
+  })
+  evolvePet(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('mascotId', { schema: petIdParamSchema }) mascotId: string,
+    @Body({ schema: evolveBodySchema }) body: EvolveBody,
+  ) {
+    return this.shop.evolvePet(user.id, mascotId, body);
+  }
+
+  @Post('premium-purchases')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'purchaseShopPremiumWithXu',
+    summary: 'Mua Premium 30 ngày bằng xu (idempotent; tối đa 1 lần mỗi 30 ngày)',
+  })
+  @ApiOkResponse({ schema: openApi(premiumPurchaseResultSchema) })
+  @ApiConflictResponse({
+    description:
+      'PREMIUM_PURCHASE_LIMIT, PRICE_CHANGED, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu), IDEMPOTENCY_KEY_REUSED',
+  })
+  purchasePremium(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body({ schema: premiumPurchaseBodySchema }) body: PremiumPurchaseBody,
+  ) {
+    return this.shop.purchasePremium(user.id, body);
+  }
+
+  @Post('demo-exchange')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'exchangeShopDemoCash',
+    summary: 'Đổi xu hai chiều với tiền Demo Trading (1 xu = 10.000 VND; idempotent)',
+  })
+  @ApiOkResponse({ schema: openApi(demoExchangeResultSchema) })
+  @ApiConflictResponse({
+    description:
+      'INSUFFICIENT_XU, INSUFFICIENT_CASH (details[0] has cash_available_vnd/amount_vnd/shortfall_vnd), IDEMPOTENCY_KEY_REUSED',
+  })
+  exchangeDemo(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body({ schema: demoExchangeBodySchema }) body: DemoExchangeBody,
+  ) {
+    return this.shop.exchangeDemo(user.id, body);
   }
 }

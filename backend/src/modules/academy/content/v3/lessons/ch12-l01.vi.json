@@ -1,0 +1,610 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l1-g1": {
+      "alt": "Ba dòng tiền trong báo cáo lưu chuyển tiền tệ: CFO thường dương ở doanh nghiệp tốt, CFI thường âm khi đang đầu tư và CFF âm khi trả nợ, trả cổ tức",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "children": [
+            {
+              "title": "Thu tiền bán hàng"
+            },
+            {
+              "title": "Trả nhà cung cấp"
+            },
+            {
+              "title": "Trả lương nhân viên"
+            },
+            {
+              "title": "Trả lãi vay, nộp thuế"
+            }
+          ],
+          "id": "cfo",
+          "title": "Kinh doanh · CFO",
+          "tone": "pos",
+          "value": "Thường dương"
+        },
+        {
+          "children": [
+            {
+              "title": "Mua nhà xưởng, máy móc"
+            },
+            {
+              "title": "Góp vốn, cho vay"
+            },
+            {
+              "title": "Bán tài sản cố định"
+            },
+            {
+              "title": "Thu lãi, cổ tức"
+            }
+          ],
+          "id": "cfi",
+          "title": "Đầu tư · CFI",
+          "tone": "warn",
+          "value": "Thường âm khi đang đầu tư"
+        },
+        {
+          "children": [
+            {
+              "title": "Vay ngân hàng"
+            },
+            {
+              "title": "Phát hành cổ phiếu"
+            },
+            {
+              "title": "Trả nợ gốc vay"
+            },
+            {
+              "title": "Trả cổ tức"
+            }
+          ],
+          "id": "cff",
+          "title": "Tài chính · CFF",
+          "tone": "p1",
+          "value": "Âm khi trả nợ, trả cổ tức"
+        }
+      ]
+    },
+    "c12l1-g2": {
+      "alt": "Từ LNST 100 tỷ đồng, cộng khấu hao 30, trừ tăng phải thu 35 và tăng tồn kho 15, cộng tăng phải trả 10, còn CFO 90 tỷ đồng",
+      "axes": {
+        "x": {
+          "ticks": [
+            {
+              "label": "LNST",
+              "v": 0
+            },
+            {
+              "label": "Khấu hao",
+              "v": 1
+            },
+            {
+              "label": "Tăng phải thu",
+              "v": 2
+            },
+            {
+              "label": "Tăng tồn kho",
+              "v": 3
+            },
+            {
+              "label": "Tăng phải trả",
+              "v": 4
+            },
+            {
+              "label": "CFO",
+              "v": 5
+            }
+          ]
+        },
+        "y": {
+          "ticks": []
+        }
+      },
+      "domain": {
+        "x": [
+          -0.5,
+          5.5
+        ],
+        "y": [
+          -2,
+          132
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "base": 0,
+          "h": [
+            100
+          ],
+          "t": "bars",
+          "tones": [
+            "p5"
+          ],
+          "x": [
+            0
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            0,
+            100
+          ],
+          "t": "text",
+          "text": "100",
+          "tone": "price"
+        },
+        {
+          "base": 100,
+          "h": [
+            30
+          ],
+          "t": "bars",
+          "tones": [
+            "pos"
+          ],
+          "x": [
+            1
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            1,
+            130
+          ],
+          "t": "text",
+          "text": "+30",
+          "tone": "price"
+        },
+        {
+          "base": 130,
+          "h": [
+            -35
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            2
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            2,
+            130
+          ],
+          "t": "text",
+          "text": "−35",
+          "tone": "price"
+        },
+        {
+          "base": 95,
+          "h": [
+            -15
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            3
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            3,
+            95
+          ],
+          "t": "text",
+          "text": "−15",
+          "tone": "price"
+        },
+        {
+          "base": 80,
+          "h": [
+            10
+          ],
+          "t": "bars",
+          "tones": [
+            "pos"
+          ],
+          "x": [
+            4
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            4,
+            90
+          ],
+          "t": "text",
+          "text": "+10",
+          "tone": "price"
+        },
+        {
+          "base": 0,
+          "h": [
+            90
+          ],
+          "t": "bars",
+          "tones": [
+            "p1"
+          ],
+          "x": [
+            5
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            5,
+            90
+          ],
+          "t": "text",
+          "text": "90",
+          "tone": "warn"
+        }
+      ]
+    },
+    "c12l1-g3": {
+      "alt": "CFO Margin bằng CFO 120 tỷ chia doanh thu 1.000 tỷ, bằng 12%",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "revenue",
+          "title": "Doanh thu 4 quý gần nhất",
+          "tone": "p3",
+          "value": "1.000 tỷ"
+        },
+        {
+          "id": "cfo",
+          "title": "CFO 4 quý gần nhất",
+          "tone": "pos",
+          "value": "120 tỷ"
+        },
+        {
+          "emph": true,
+          "id": "margin",
+          "sub": "12 đồng tiền trên 100 đồng doanh thu",
+          "title": "CFO Margin",
+          "tone": "warn",
+          "value": "12%"
+        }
+      ]
+    },
+    "c12l1-g4": {
+      "kind": "category",
+      "labels": [
+        "Q1/24",
+        "Q2/24",
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Biên lợi nhuận ròng",
+          "tone": "warn",
+          "values": [
+            8,
+            8.5,
+            9,
+            9.5,
+            10,
+            10.5,
+            11,
+            11.5
+          ]
+        },
+        {
+          "name": "CFO Margin",
+          "tone": "p1",
+          "values": [
+            10,
+            9.6,
+            8.4,
+            7.2,
+            5.8,
+            4.5,
+            3.2,
+            2.2
+          ]
+        }
+      ],
+      "title": "Biên lợi nhuận ròng so với CFO Margin · %",
+      "unit": "%",
+      "value_labels": "none"
+    },
+    "c12l1-rep": {
+      "caption_tone": "price",
+      "caption_value": "12,1%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "CFO Margin",
+          "tone": "p1",
+          "values": [
+            10.8998,
+            11.1984,
+            10.909,
+            11.0502,
+            12.2569,
+            12.2626,
+            11.821,
+            12.1105
+          ]
+        }
+      ],
+      "title": "CFO Margin",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Lợi nhuận là con số kế toán, còn tiền là thứ doanh nghiệp thực sự thu về. CFO Margin cho biết mỗi 100 đồng doanh thu mang lại bao nhiêu đồng tiền mặt từ hoạt động kinh doanh chính.",
+  "lesson_key": "fundamental:cfo_margin",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>CFO</b> (Cash Flow from Operations) là <b>dòng tiền thuần từ hoạt động kinh doanh</b>: tiền thu từ bán hàng trừ tiền chi cho nhà cung cấp, nhân viên, lãi vay, thuế. Số liệu lấy trên <b>báo cáo lưu chuyển tiền tệ</b>, báo cáo ghi lại tiền thực sự vào và ra khỏi doanh nghiệp. Báo cáo này chia tiền thành ba dòng.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l1-g1",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền từ việc bán hàng, sản xuất, cung cấp dịch vụ. Đây là dòng tiền quan trọng nhất.",
+              "title": "Kinh doanh · CFO"
+            },
+            {
+              "text": "Tiền chi mua nhà xưởng, máy móc, góp vốn và tiền thu khi bán các tài sản đó.",
+              "title": "Đầu tư · CFI"
+            },
+            {
+              "text": "Tiền vay, trả nợ, phát hành cổ phiếu, trả cổ tức cho cổ đông.",
+              "title": "Tài chính · CFF"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "CFO Margin là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Kế toán ghi nhận doanh thu khi <b>giao hàng</b>, không phải khi <b>nhận tiền</b>. Vì vậy lợi nhuận sau thuế (LNST) và CFO thường lệch nhau. Đi từ LNST đến CFO qua các khoản điều chỉnh chính.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l1-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khấu hao làm giảm lợi nhuận nhưng không phải chi tiền trong kỳ.",
+              "title": "Khấu hao cộng lại"
+            },
+            {
+              "text": "Bán chịu và hàng nằm trong kho đã giữ tiền lại, chưa thu về.",
+              "title": "Phải thu, tồn kho trừ đi"
+            },
+            {
+              "text": "Mua chịu của nhà cung cấp giúp doanh nghiệp giữ tiền lâu hơn.",
+              "title": "Phải trả cộng vào"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao lợi nhuận khác tiền"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lấy CFO chia cho doanh thu của cùng giai đoạn. Dùng <b>tổng 4 quý gần nhất</b> để loại bỏ yếu tố mùa vụ.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l1-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s3",
+      "title": "Cách tính"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l1-rep",
+          "table_toggle": true,
+          "title": "CFO Margin",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "CFO Margin tính trên 4 quý gần nhất, cập nhật mỗi quý.",
+              "title": "Đường chính"
+            },
+            {
+              "text": "CFO cộng dồn 4 quý, đơn vị tỷ đồng. Cột cao dần là tiền thu về tăng lên.",
+              "title": "Cột bên dưới"
+            },
+            {
+              "text": "Đường đi ngang hoặc đi lên đều đặn tốt hơn một quý tăng vọt rồi tụt lại.",
+              "title": "Cách nhìn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s4",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "CFO Margin dương, ổn định hoặc tăng dần qua nhiều quý, gần với biên lợi nhuận ròng hoặc cao hơn.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "CFO Margin âm hoặc giảm dần trong khi biên lợi nhuận ròng vẫn tăng.",
+              "title": "Cần cảnh giác",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức cao hay thấp tùy ngành. Doanh nghiệp bán lẻ có biên mỏng nên CFO Margin vài phần trăm vẫn là bình thường. Hãy so với chính doanh nghiệp qua thời gian và với các doanh nghiệp cùng ngành.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s5",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l1-g4",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Hai đường đi cùng nhau là lợi nhuận có tiền. Khoảng cách mở rộng là dấu hiệu cần tìm hiểu.",
+              "title": "So với biên lợi nhuận ròng"
+            },
+            {
+              "text": "Một quý âm có thể do mùa vụ. Nhiều quý liên tiếp đi xuống mới đáng lo.",
+              "title": "Xem xu hướng nhiều quý"
+            },
+            {
+              "text": "Chỉ so CFO Margin giữa các doanh nghiệp có mô hình kinh doanh giống nhau.",
+              "title": "So trong cùng ngành"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s6",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Doanh nghiệp mẫu có số liệu cộng dồn 4 quý gần nhất như sau.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Doanh thu",
+              "text": "6.280 tỷ đồng."
+            },
+            {
+              "term": "LNST",
+              "text": "584 tỷ đồng, biên lợi nhuận ròng khoảng 9,3%."
+            },
+            {
+              "term": "CFO",
+              "text": "760 tỷ đồng. CFO Margin = 760 ÷ 6.280 ≈ 12,1%."
+            },
+            {
+              "term": "Đọc kết quả",
+              "text": "CFO Margin cao hơn biên lợi nhuận ròng. Mỗi 100 đồng doanh thu mang về khoảng 12 đồng tiền mặt, lợi nhuận được hậu thuẫn bằng tiền thật."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s7",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận tăng nhưng tiền không về là dấu hiệu bán chịu nhiều hoặc hàng tồn kho phình to.",
+              "title": "Chỉ nhìn lợi nhuận"
+            },
+            {
+              "text": "Dòng tiền từng quý biến động mạnh theo mùa vụ. Dùng tổng 4 quý cho ổn định.",
+              "title": "Dùng số một quý"
+            },
+            {
+              "text": "Tiền trong két còn chịu tác động của đầu tư và vay nợ. CFO chỉ là phần từ kinh doanh.",
+              "title": "Nhầm CFO với tiền tăng thêm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s8",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Báo cáo lưu chuyển tiền tệ có ba dòng: <b>kinh doanh</b>, <b>đầu tư</b> và <b>tài chính</b>.",
+    "Lợi nhuận khác tiền vì <b>khấu hao</b>, <b>phải thu</b>, <b>tồn kho</b> và <b>phải trả</b>.",
+    "<b>CFO Margin = CFO ÷ doanh thu</b>, tính trên 4 quý gần nhất.",
+    "CFO Margin <b>ổn định và gần biên lợi nhuận ròng</b> là lợi nhuận có tiền thật."
+  ],
+  "title": "CFO Margin · biên dòng tiền hoạt động"
+}

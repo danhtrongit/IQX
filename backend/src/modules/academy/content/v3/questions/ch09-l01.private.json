@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l01",
+  "questions": [
+    {
+      "correct_option_id": "0cdbaecd68",
+      "id": "ch09-l01-q01",
+      "options": [
+        {
+          "id": "0cdbaecd68",
+          "text": "Số năm LNST dương liên tiếp tính đến năm gần nhất"
+        },
+        {
+          "id": "7e235db94e",
+          "text": "Tổng số năm có lãi trong toàn bộ 7 năm"
+        },
+        {
+          "id": "f2e9821d61",
+          "text": "Số năm doanh thu tăng liên tiếp"
+        }
+      ],
+      "prompt": "Profit Positive Streak đếm điều gì?"
+    },
+    {
+      "correct_option_id": "d4722e12cc",
+      "id": "ch09-l01-q02",
+      "options": [
+        {
+          "id": "d4722e12cc",
+          "text": "Dừng đếm, các năm trước đó không được tính"
+        },
+        {
+          "id": "f11bdb73d1",
+          "text": "Bỏ qua năm lỗ rồi đếm tiếp"
+        },
+        {
+          "id": "d24deda002",
+          "text": "Trừ đi một năm rồi đếm tiếp"
+        }
+      ],
+      "prompt": "Khi đếm chuỗi năm lãi, gặp năm lỗ thì làm gì?"
+    },
+    {
+      "correct_option_id": "7a7d8c401d",
+      "id": "ch09-l01-q03",
+      "options": [
+        {
+          "id": "7a7d8c401d",
+          "text": "0 năm"
+        },
+        {
+          "id": "84f3bc996e",
+          "text": "Bằng số năm lãi trước đó"
+        },
+        {
+          "id": "d187b2fb2a",
+          "text": "Bằng 1 năm"
+        }
+      ],
+      "prompt": "Năm gần nhất doanh nghiệp bị lỗ thì chuỗi năm lãi bằng bao nhiêu?"
+    },
+    {
+      "correct_option_id": "2d2021308e",
+      "id": "ch09-l01-q04",
+      "options": [
+        {
+          "id": "2d2021308e",
+          "text": "Năm doanh nghiệp bị lỗ"
+        },
+        {
+          "id": "75ec344714",
+          "text": "Năm doanh thu giảm"
+        },
+        {
+          "id": "cafb2f777d",
+          "text": "Năm doanh nghiệp trả cổ tức"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột đỏ nằm dưới mốc 0 thể hiện gì?"
+    },
+    {
+      "correct_option_id": "e677e3c450",
+      "id": "ch09-l01-q05",
+      "options": [
+        {
+          "id": "e677e3c450",
+          "text": "Quy mô và xu hướng của LNST"
+        },
+        {
+          "id": "57529ff9e2",
+          "text": "Số cổ đông của doanh nghiệp"
+        },
+        {
+          "id": "a259f42985",
+          "text": "Giá cổ phiếu năm gần nhất"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp cùng có chuỗi 7 năm. Cần xem thêm gì để so sánh?"
+    }
+  ],
+  "salt": "57942c3b200853aa27d6688cf9765f62c1ac256cb2d604ae4929e3d898e30b1e"
+}

@@ -3,62 +3,62 @@
   "item_id": "ch03-l02",
   "questions": [
     {
-      "correct_option_id": "ea3389516d",
+      "correct_option_id": "0d466276b8",
       "id": "ch03-l02-q01",
       "options": [
         {
-          "id": "ea3389516d",
+          "id": "0d466276b8",
           "text": "Bạn là ai, bạn giúp ai, cách liên hệ, ghi rõ SACO tại DNSE"
         },
         {
-          "id": "e9cfe8e6c1",
+          "id": "ab7a6fb1bb",
           "text": "Cam kết lợi nhuận hằng tháng"
         },
         {
-          "id": "8ee8877d66",
+          "id": "2699697820",
           "text": "Để trống cho bí ẩn"
         }
       ],
       "prompt": "Phần giới thiệu trên hồ sơ mạng xã hội nên có gì?"
     },
     {
-      "correct_option_id": "5cc6d7590d",
+      "correct_option_id": "02cc7f5c1d",
       "id": "ch03-l02-q02",
       "options": [
         {
-          "id": "5cc6d7590d",
+          "id": "02cc7f5c1d",
           "text": "Kiến thức, thị trường, con người"
         },
         {
-          "id": "ac39387727",
+          "id": "c9d323a577",
           "text": "Khoe lãi, tin đồn, quảng cáo"
         },
         {
-          "id": "6bc0377cfd",
+          "id": "78be511d29",
           "text": "Giải trí, bói toán, than thở"
         }
       ],
       "prompt": "Ba trụ cột nội dung được gợi ý là gì?"
     },
     {
-      "correct_option_id": "298806e42c",
+      "correct_option_id": "362d917e8f",
       "id": "ch03-l02-q03",
       "options": [
         {
-          "id": "298806e42c",
+          "id": "362d917e8f",
           "text": "Tự xưng chức danh không có thật như “chuyên gia”"
         },
         {
-          "id": "74e6bd5b9d",
+          "id": "3892da071c",
           "text": "Dùng ảnh rõ mặt, tên thật"
         },
         {
-          "id": "6a31fa66b3",
+          "id": "7aeb8c86fe",
           "text": "Dùng cùng một ảnh đại diện ở mọi kênh"
         }
       ],
       "prompt": "Điều nào KHÔNG nên làm khi xây hình ảnh?"
     }
   ],
-  "salt": "9a564d2977cf792ad3e76aca86db13c66249e4f2cc0fbe8ae2ed803176435afb"
+  "salt": "62a232f64c4867711e83f2ffaefaf3770c05a106df5fa2b4c7524d25a0085fa9"
 }

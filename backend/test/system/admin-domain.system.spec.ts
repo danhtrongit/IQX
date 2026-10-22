@@ -122,7 +122,7 @@ describe('system acceptance: admin domain', () => {
       {
         url: '/api/v2/admin/vt/config',
         verify: (body) => {
-          expect(Number((body as JsonObject).initial_cash_vnd)).toBe(100_000_000);
+          expect(Number((body as JsonObject).initial_cash_vnd)).toBe(0);
           expect(body).toMatchObject({ trading_enabled: true });
         },
       },

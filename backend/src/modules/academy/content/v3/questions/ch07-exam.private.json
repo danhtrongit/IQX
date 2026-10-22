@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch07-exam",
+  "questions": [
+    {
+      "correct_option_id": "71136831d4",
+      "id": "ch07-exam-q01",
+      "options": [
+        {
+          "id": "71136831d4",
+          "text": "14, 3, 3"
+        },
+        {
+          "id": "e3fc98ccb0",
+          "text": "20, 2, 2"
+        },
+        {
+          "id": "0bc7a84024",
+          "text": "12, 26, 9"
+        }
+      ],
+      "prompt": "Thiết lập mặc định của Stochastic là gì?"
+    },
+    {
+      "correct_option_id": "e2c1a99a61",
+      "id": "ch07-exam-q02",
+      "options": [
+        {
+          "id": "e2c1a99a61",
+          "text": "Giá đóng cửa bằng giá cao nhất của khoảng 14 phiên"
+        },
+        {
+          "id": "ad2ec984aa",
+          "text": "Giá đóng cửa bằng giá thấp nhất của khoảng 14 phiên"
+        },
+        {
+          "id": "4e05ea0321",
+          "text": "Giá đóng cửa bằng giá mở cửa"
+        }
+      ],
+      "prompt": "%K thô bằng 100 khi nào?"
+    },
+    {
+      "correct_option_id": "5a165f3276",
+      "id": "ch07-exam-q03",
+      "options": [
+        {
+          "id": "5a165f3276",
+          "text": "Nhạy hơn, nhiều tín hiệu và nhiều nhiễu hơn"
+        },
+        {
+          "id": "b9426342ab",
+          "text": "Chậm hơn, hầu như không có tín hiệu"
+        },
+        {
+          "id": "a662e504f5",
+          "text": "Hoàn toàn giống RSI về cách tính"
+        }
+      ],
+      "prompt": "So với RSI, Stochastic có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "8e805b87f9",
+      "id": "ch07-exam-q04",
+      "options": [
+        {
+          "id": "8e805b87f9",
+          "text": "%K cắt xuống %D trong vùng quá mua"
+        },
+        {
+          "id": "35f174c2ce",
+          "text": "%K cắt lên %D trong vùng quá bán"
+        },
+        {
+          "id": "364fc483d0",
+          "text": "%K và %D cùng nằm quanh 50"
+        }
+      ],
+      "prompt": "Tín hiệu Bán của Stochastic đáng tin hơn khi nào?"
+    },
+    {
+      "correct_option_id": "95b4647545",
+      "id": "ch07-exam-q05",
+      "options": [
+        {
+          "id": "95b4647545",
+          "text": "Trong xu hướng giảm mạnh, chỉ báo có thể nằm dưới 20 rất lâu"
+        },
+        {
+          "id": "a8d8c61d8e",
+          "text": "Stochastic sẽ ngừng được tính"
+        },
+        {
+          "id": "e106d0dbcd",
+          "text": "Giá chắc chắn tăng gấp đôi"
+        }
+      ],
+      "prompt": "Chỉ vì Stochastic dưới 20 mà mua ngay có rủi ro gì?"
+    },
+    {
+      "correct_option_id": "fc987dbd0c",
+      "id": "ch07-exam-q06",
+      "options": [
+        {
+          "id": "fc987dbd0c",
+          "text": "Giá điển hình (TP)"
+        },
+        {
+          "id": "7d6a4fd1fc",
+          "text": "Giá mở cửa"
+        },
+        {
+          "id": "e8cc2578e5",
+          "text": "Khối lượng khớp lệnh"
+        }
+      ],
+      "prompt": "CCI dùng giá trị nào của mỗi phiên làm đầu vào?"
+    },
+    {
+      "correct_option_id": "ef9fa0feac",
+      "id": "ch07-exam-q07",
+      "options": [
+        {
+          "id": "ef9fa0feac",
+          "text": "+100 và −100"
+        },
+        {
+          "id": "53046b7219",
+          "text": "20 và 80"
+        },
+        {
+          "id": "e14e7609fc",
+          "text": "−20 và −80"
+        }
+      ],
+      "prompt": "Hai mốc quan trọng của CCI là gì?"
+    },
+    {
+      "correct_option_id": "4671d9828c",
+      "id": "ch07-exam-q08",
+      "options": [
+        {
+          "id": "4671d9828c",
+          "text": "Giá thấp hơn trung bình nhiều so với bình thường"
+        },
+        {
+          "id": "0fcd635a0b",
+          "text": "Giá cao hơn trung bình nhiều so với bình thường"
+        },
+        {
+          "id": "899ba7a010",
+          "text": "Giá đang bằng đúng mức trung bình"
+        }
+      ],
+      "prompt": "CCI dưới −100 cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "1266459d3a",
+      "id": "ch07-exam-q09",
+      "options": [
+        {
+          "id": "1266459d3a",
+          "text": "CCI quay xuống dưới +100"
+        },
+        {
+          "id": "1a61a5a7e3",
+          "text": "CCI quay lên trên −100"
+        },
+        {
+          "id": "ed8036b0df",
+          "text": "CCI đứng yên tại mức 0"
+        }
+      ],
+      "prompt": "Tín hiệu Bán thường dùng với CCI là gì?"
+    },
+    {
+      "correct_option_id": "2ffdd0b4c1",
+      "id": "ch07-exam-q10",
+      "options": [
+        {
+          "id": "2ffdd0b4c1",
+          "text": "CCI không bị chặn, có thể vượt xa ±100"
+        },
+        {
+          "id": "b9a5be68ea",
+          "text": "CCI luôn nằm trong khoảng 0 đến 1"
+        },
+        {
+          "id": "e8dac5f56c",
+          "text": "CCI chỉ có giá trị dương"
+        }
+      ],
+      "prompt": "Coi ±100 là giới hạn của CCI là sai vì sao?"
+    },
+    {
+      "correct_option_id": "c44cdfd6c8",
+      "id": "ch07-exam-q11",
+      "options": [
+        {
+          "id": "c44cdfd6c8",
+          "text": "Giá đóng cửa 20 phiên trước"
+        },
+        {
+          "id": "5101b8a314",
+          "text": "Giá cao nhất 20 phiên"
+        },
+        {
+          "id": "76c4bf37ce",
+          "text": "Trung bình 20 phiên"
+        }
+      ],
+      "prompt": "ROC 20 so sánh giá đóng cửa hôm nay với giá nào?"
+    },
+    {
+      "correct_option_id": "ffe3bcf331",
+      "id": "ch07-exam-q12",
+      "options": [
+        {
+          "id": "ffe3bcf331",
+          "text": "Giá hôm nay thấp hơn giá N phiên trước"
+        },
+        {
+          "id": "9dbe9cc0f7",
+          "text": "Giá hôm nay cao hơn giá N phiên trước"
+        },
+        {
+          "id": "5c93182f5f",
+          "text": "Khối lượng hôm nay giảm mạnh"
+        }
+      ],
+      "prompt": "ROC âm cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "212ec6151d",
+      "id": "ch07-exam-q13",
+      "options": [
+        {
+          "id": "212ec6151d",
+          "text": "Là mức tham khảo, tùy độ biến động của từng cổ phiếu"
+        },
+        {
+          "id": "cc42979f26",
+          "text": "Là giới hạn mà ROC không bao giờ vượt qua"
+        },
+        {
+          "id": "d82ab95182",
+          "text": "Là mức cố định áp dụng cho mọi mã"
+        }
+      ],
+      "prompt": "Mốc ±5% của ROC nên được hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "15b1c81f6a",
+      "id": "ch07-exam-q14",
+      "options": [
+        {
+          "id": "15b1c81f6a",
+          "text": "Giá đi ngang, ROC cắt 0 liên tục"
+        },
+        {
+          "id": "35ed811b67",
+          "text": "Xu hướng tăng rõ ràng và ổn định"
+        },
+        {
+          "id": "1e04943ce5",
+          "text": "Xu hướng giảm rõ ràng và ổn định"
+        }
+      ],
+      "prompt": "ROC dễ cho tín hiệu giả trong giai đoạn nào?"
+    },
+    {
+      "correct_option_id": "4720a9b208",
+      "id": "ch07-exam-q15",
+      "options": [
+        {
+          "id": "4720a9b208",
+          "text": "Vùng quá bán"
+        },
+        {
+          "id": "d113f70367",
+          "text": "Vùng quá mua"
+        },
+        {
+          "id": "a0557dcc67",
+          "text": "Vùng trung tính"
+        }
+      ],
+      "prompt": "Williams %R dưới −80 là vùng gì?"
+    },
+    {
+      "correct_option_id": "cf7eb0b000",
+      "id": "ch07-exam-q16",
+      "options": [
+        {
+          "id": "cf7eb0b000",
+          "text": "Giá cao nhất của 14 phiên"
+        },
+        {
+          "id": "d278850c6d",
+          "text": "Giá mở cửa của phiên hôm nay"
+        },
+        {
+          "id": "1cd01ad80c",
+          "text": "Đường trung bình 20 phiên"
+        }
+      ],
+      "prompt": "Williams %R đo khoảng cách từ giá đóng cửa tới đâu?"
+    },
+    {
+      "correct_option_id": "90815b7c30",
+      "id": "ch07-exam-q17",
+      "options": [
+        {
+          "id": "90815b7c30",
+          "text": "−20"
+        },
+        {
+          "id": "588f2a97c1",
+          "text": "−80"
+        },
+        {
+          "id": "1fc07e5925",
+          "text": "+80"
+        }
+      ],
+      "prompt": "Mốc 80 của Stochastic tương ứng mốc nào của Williams %R?"
+    },
+    {
+      "correct_option_id": "6c91c98dc0",
+      "id": "ch07-exam-q18",
+      "options": [
+        {
+          "id": "6c91c98dc0",
+          "text": "%R không có bước lấy trung bình để làm mượt"
+        },
+        {
+          "id": "f06ac3b159",
+          "text": "%R dùng khối lượng thay cho giá"
+        },
+        {
+          "id": "399f862ffe",
+          "text": "%R tính trên 200 phiên"
+        }
+      ],
+      "prompt": "Vì sao %R giật hơn %K của Stochastic?"
+    },
+    {
+      "correct_option_id": "64ea3b90e2",
+      "id": "ch07-exam-q19",
+      "options": [
+        {
+          "id": "64ea3b90e2",
+          "text": "0"
+        },
+        {
+          "id": "92153bb927",
+          "text": "100"
+        },
+        {
+          "id": "1819b31435",
+          "text": "Giá đóng cửa phiên đầu"
+        }
+      ],
+      "prompt": "OBV bắt đầu từ giá trị nào?"
+    },
+    {
+      "correct_option_id": "e39c26eb74",
+      "id": "ch07-exam-q20",
+      "options": [
+        {
+          "id": "e39c26eb74",
+          "text": "Trừ toàn bộ khối lượng của phiên"
+        },
+        {
+          "id": "f457634f58",
+          "text": "Cộng toàn bộ khối lượng của phiên"
+        },
+        {
+          "id": "15b9d1e6c4",
+          "text": "Giữ nguyên, không thay đổi"
+        }
+      ],
+      "prompt": "Khi giá đóng cửa giảm so với phiên trước, OBV thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "4d9cb966fc",
+      "id": "ch07-exam-q21",
+      "options": [
+        {
+          "id": "4d9cb966fc",
+          "text": "Phân kỳ dương"
+        },
+        {
+          "id": "f81bbacc6e",
+          "text": "Phân kỳ âm"
+        },
+        {
+          "id": "acf379eca3",
+          "text": "Giao cắt tử thần"
+        }
+      ],
+      "prompt": "Giá tạo đáy thấp hơn nhưng OBV tạo đáy cao hơn là hiện tượng gì?"
+    },
+    {
+      "correct_option_id": "0b2d025bb8",
+      "id": "ch07-exam-q22",
+      "options": [
+        {
+          "id": "0b2d025bb8",
+          "text": "Đường trung bình 20 phiên của OBV"
+        },
+        {
+          "id": "a326fdc761",
+          "text": "Đường giá mở cửa"
+        },
+        {
+          "id": "2c7d2df5e2",
+          "text": "Đường biên trên Donchian"
+        }
+      ],
+      "prompt": "OBV thường được xem kèm đường nào?"
+    },
+    {
+      "correct_option_id": "557144bb85",
+      "id": "ch07-exam-q23",
+      "options": [
+        {
+          "id": "557144bb85",
+          "text": "RSI có tính khối lượng"
+        },
+        {
+          "id": "020e8ca532",
+          "text": "MACD có tính khối lượng"
+        },
+        {
+          "id": "02cd46b538",
+          "text": "Bollinger có tính khối lượng"
+        }
+      ],
+      "prompt": "MFI thường được giới thiệu là chỉ báo như thế nào?"
+    },
+    {
+      "correct_option_id": "4ac7c1a74c",
+      "id": "ch07-exam-q24",
+      "options": [
+        {
+          "id": "4ac7c1a74c",
+          "text": "14 phiên"
+        },
+        {
+          "id": "9887364077",
+          "text": "50 phiên"
+        },
+        {
+          "id": "65602c1250",
+          "text": "3 phiên"
+        }
+      ],
+      "prompt": "Chu kỳ mặc định của MFI là bao nhiêu phiên?"
+    },
+    {
+      "correct_option_id": "74a9b5cb03",
+      "id": "ch07-exam-q25",
+      "options": [
+        {
+          "id": "74a9b5cb03",
+          "text": "MFI đi lên vượt 20"
+        },
+        {
+          "id": "7aafb8db70",
+          "text": "MFI đi xuống dưới 80"
+        },
+        {
+          "id": "9f7f57d8a9",
+          "text": "MFI đứng yên ở mức 50"
+        }
+      ],
+      "prompt": "Tín hiệu Mua của MFI xuất hiện khi nào?"
+    },
+    {
+      "correct_option_id": "b9f1c96508",
+      "id": "ch07-exam-q26",
+      "options": [
+        {
+          "id": "b9f1c96508",
+          "text": "Khối lượng nhỏ, thất thường làm MFI nhảy mạnh"
+        },
+        {
+          "id": "50a4247d4f",
+          "text": "MFI không tính được khi giá thấp"
+        },
+        {
+          "id": "9ee8431ff7",
+          "text": "Thanh khoản thấp làm MFI luôn bằng 50"
+        }
+      ],
+      "prompt": "Vì sao MFI khó đọc với cổ phiếu thanh khoản thấp?"
+    },
+    {
+      "correct_option_id": "c5a85fda88",
+      "id": "ch07-exam-q27",
+      "options": [
+        {
+          "id": "c5a85fda88",
+          "text": "Từ −1 đến 1"
+        },
+        {
+          "id": "9cc9dc6d0f",
+          "text": "Từ 0 đến 100"
+        },
+        {
+          "id": "edc0a4ad74",
+          "text": "Từ −100 đến 0"
+        }
+      ],
+      "prompt": "Thang đo lý thuyết của CMF là gì?"
+    },
+    {
+      "correct_option_id": "7e58e0e8a4",
+      "id": "ch07-exam-q28",
+      "options": [
+        {
+          "id": "7e58e0e8a4",
+          "text": "Tổng khối lượng dòng tiền chia cho tổng khối lượng của 20 phiên"
+        },
+        {
+          "id": "e46d35dd7e",
+          "text": "Giá đóng cửa chia cho giá 20 phiên trước"
+        },
+        {
+          "id": "1f95dc4031",
+          "text": "Giá cao nhất trừ giá thấp nhất của 20 phiên"
+        }
+      ],
+      "prompt": "CMF được tính như thế nào?"
+    },
+    {
+      "correct_option_id": "88410df164",
+      "id": "ch07-exam-q29",
+      "options": [
+        {
+          "id": "88410df164",
+          "text": "Giá đóng cửa ở mức thấp nhất của phiên"
+        },
+        {
+          "id": "5c911b8387",
+          "text": "Giá đóng cửa ở mức cao nhất của phiên"
+        },
+        {
+          "id": "0ae908c91c",
+          "text": "Giá đóng cửa bằng giá mở cửa"
+        }
+      ],
+      "prompt": "Hệ số dòng tiền của CMF bằng −1 khi nào?"
+    },
+    {
+      "correct_option_id": "fdeeef8067",
+      "id": "ch07-exam-q30",
+      "options": [
+        {
+          "id": "fdeeef8067",
+          "text": "Bứt phá có dòng tiền ủng hộ"
+        },
+        {
+          "id": "0413be955a",
+          "text": "Bứt phá chắc chắn là giả"
+        },
+        {
+          "id": "64eec175cb",
+          "text": "Phe bán đang phân phối mạnh"
+        }
+      ],
+      "prompt": "Giá vượt kháng cự trong khi CMF dương cho thấy điều gì?"
+    }
+  ],
+  "salt": "6b5476b290c0a9197c93228402114c8ada0332130a0257bef48d1fc8cc38bff9"
+}

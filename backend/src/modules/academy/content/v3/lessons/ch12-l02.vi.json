@@ -1,0 +1,429 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l2-g1": {
+      "kind": "category",
+      "labels": [
+        "Doanh nghiệp A",
+        "Doanh nghiệp B"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "LNST",
+          "tone": "p5",
+          "values": [
+            100,
+            100
+          ]
+        },
+        {
+          "name": "CFO",
+          "tone": "p1",
+          "values": [
+            130,
+            40
+          ]
+        }
+      ],
+      "title": "Hai doanh nghiệp cùng LNST, khác CFO · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c12l2-g2": {
+      "alt": "Thang tham chiếu CFO trên LNST: dưới 0,5 lần là lợi nhuận trên giấy, từ 1 lần là có tiền thật",
+      "domain": [
+        0,
+        2
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Doanh nghiệp B · 0,4",
+          "side": "a",
+          "tone": "p1",
+          "v": 0.4
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0",
+          "v": 0
+        },
+        {
+          "label": "0,5",
+          "v": 0.5
+        },
+        {
+          "label": "1",
+          "v": 1
+        },
+        {
+          "label": "1,5",
+          "v": 1.5
+        },
+        {
+          "label": "2",
+          "v": 2
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Lợi nhuận trên giấy",
+          "to": 0.5,
+          "tone": "neg"
+        },
+        {
+          "from": 0.5,
+          "label": "Cần theo dõi",
+          "to": 1,
+          "tone": "warn"
+        },
+        {
+          "from": 1,
+          "label": "Có tiền thật",
+          "to": 2,
+          "tone": "pos"
+        }
+      ]
+    },
+    "c12l2-g3": {
+      "kind": "category",
+      "labels": [
+        "Năm 1",
+        "Năm 2",
+        "Năm 3",
+        "Năm 4",
+        "Năm 5"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "LNST",
+          "tone": "p5",
+          "values": [
+            150,
+            180,
+            220,
+            270,
+            340
+          ]
+        },
+        {
+          "name": "CFO",
+          "tone": "p1",
+          "values": [
+            165,
+            175,
+            170,
+            150,
+            120
+          ]
+        }
+      ],
+      "title": "LNST tăng, CFO không theo · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c12l2-rep": {
+      "caption_tone": "price",
+      "caption_value": "1,30 lần",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "CFO / LNST",
+          "tone": "p1",
+          "values": [
+            1.584,
+            1.5519,
+            1.4752,
+            1.4286,
+            1.4961,
+            1.4133,
+            1.3001,
+            1.3027
+          ]
+        }
+      ],
+      "title": "CFO / LNST",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Hai doanh nghiệp cùng báo lãi 100 tỷ, nhưng một bên thu về 130 tỷ tiền mặt, bên kia chỉ thu 40 tỷ. Tỷ lệ CFO / LNST cho biết lợi nhuận được chuyển thành tiền đến mức nào.",
+  "lesson_key": "fundamental:cfo_profit",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "text": "<b>CFO / LNST</b> là tỷ lệ giữa dòng tiền thuần từ hoạt động kinh doanh và lợi nhuận sau thuế, đơn vị là <b>lần</b>. Chỉ tiêu này còn gọi là <b>chất lượng lợi nhuận</b> (earnings quality).",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l2-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "CFO bằng hoặc lớn hơn LNST, tỷ lệ quanh 1 lần hoặc cao hơn.",
+              "title": "Lợi nhuận có tiền thật",
+              "tone": "pos"
+            },
+            {
+              "text": "CFO thấp hơn nhiều so với LNST, phần lớn lợi nhuận chưa thu được tiền.",
+              "title": "Lợi nhuận trên giấy",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        }
+      ],
+      "id": "s1",
+      "title": "CFO / LNST là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Lấy CFO 4 quý chia cho LNST 4 quý. Kết quả rơi vào một trong các vùng sau.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l2-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Hơn một nửa lợi nhuận chưa thành tiền. Cần xem phải thu và tồn kho.",
+              "title": "Dưới 0,5 lần"
+            },
+            {
+              "text": "Chấp nhận được với doanh nghiệp đang mở rộng nhanh, cần theo dõi thêm.",
+              "title": "Từ 0,5 đến 1 lần"
+            },
+            {
+              "text": "Lợi nhuận được chuyển hết thành tiền, thường nhờ khấu hao được cộng lại.",
+              "title": "Từ 1 lần trở lên"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Cách đọc mức tỷ lệ"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l2-rep",
+          "table_toggle": true,
+          "title": "CFO / LNST",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ CFO / LNST tính trên 4 quý gần nhất, đơn vị lần.",
+              "title": "Đường chính"
+            },
+            {
+              "text": "CFO cộng dồn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột xanh"
+            },
+            {
+              "text": "LNST cộng dồn 4 quý. Cột xanh cao hơn cột cam là tỷ lệ trên 1.",
+              "title": "Cột cam"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ lệ quanh 1 lần hoặc cao hơn và duy trì qua nhiều quý.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ dưới 0,5 lần kéo dài, hoặc giảm đều trong khi LNST tăng mạnh.",
+              "title": "Cần cảnh giác",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Khi LNST âm, tỷ lệ mất ý nghĩa. Lúc đó hãy xem trực tiếp CFO dương hay âm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l2-g3",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "LNST tăng mạnh cần có CFO tăng theo. Nếu không, tăng trưởng chưa chắc bền.",
+              "title": "Kiểm tra lợi nhuận tăng trưởng"
+            },
+            {
+              "text": "Cộng CFO và LNST của 3 đến 5 năm rồi chia, kết quả ít bị nhiễu hơn.",
+              "title": "Xem nhiều năm"
+            },
+            {
+              "text": "Xem phải thu khách hàng và hàng tồn kho có tăng nhanh hơn doanh thu không.",
+              "title": "Tìm nguyên nhân khi tỷ lệ thấp"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Năm"
+            },
+            {
+              "label": "LNST"
+            },
+            {
+              "label": "CFO"
+            },
+            {
+              "label": "CFO / LNST"
+            },
+            {
+              "label": "Đánh giá"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Năm 1",
+                "200",
+                "230",
+                "1,15 lần",
+                {
+                  "rating": "good",
+                  "text": "Tốt"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Năm 2",
+                "260",
+                "210",
+                "0,81 lần",
+                {
+                  "rating": "mid",
+                  "text": "Theo dõi"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Năm 3",
+                "340",
+                "120",
+                "0,35 lần",
+                {
+                  "rating": "bad",
+                  "text": "Yếu"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Đơn vị tỷ đồng. LNST tăng 70% sau hai năm nhưng CFO giảm gần một nửa. Lợi nhuận đang tăng chủ yếu trên giấy, cần kiểm tra khoản phải thu và hàng tồn kho.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Một năm tỷ lệ thấp có thể do trữ hàng theo kế hoạch. Cần xem xu hướng.",
+              "title": "Chỉ xem một năm"
+            },
+            {
+              "text": "Chia cho số âm cho kết quả khó hiểu. Khi lỗ, hãy đọc CFO trực tiếp.",
+              "title": "Tính khi LNST âm"
+            },
+            {
+              "text": "Lãi bán tài sản làm LNST cao nhưng không nằm trong CFO, khiến tỷ lệ thấp đi.",
+              "title": "Bỏ qua khoản bất thường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>CFO / LNST</b> đo phần lợi nhuận được chuyển thành tiền, đơn vị lần.",
+    "Quanh <b>1 lần hoặc cao hơn</b> là lợi nhuận có tiền thật.",
+    "Dưới <b>0,5 lần kéo dài</b> là dấu hiệu lợi nhuận trên giấy.",
+    "Khi LNST tăng mà tỷ lệ giảm đều, hãy kiểm tra <b>phải thu</b> và <b>tồn kho</b>."
+  ],
+  "title": "CFO / LNST · chất lượng lợi nhuận"
+}

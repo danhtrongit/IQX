@@ -3,62 +3,62 @@
   "item_id": "ch03-l09",
   "questions": [
     {
-      "correct_option_id": "639fcd581f",
+      "correct_option_id": "f4170f780d",
       "id": "ch03-l09-q01",
       "options": [
         {
-          "id": "639fcd581f",
+          "id": "f4170f780d",
           "text": "Đăng vài tuần không thấy khách là bỏ"
         },
         {
-          "id": "3772f5f5cb",
+          "id": "1011e40230",
           "text": "Xuất hiện đều đặn mỗi ngày"
         },
         {
-          "id": "f73d5145c2",
+          "id": "9f92bfc41d",
           "text": "Đo bằng số cuộc hẹn"
         }
       ],
       "prompt": "Sai lầm “muốn kết quả nhanh” là gì?"
     },
     {
-      "correct_option_id": "b944f01467",
+      "correct_option_id": "310f8e6920",
       "id": "ch03-l09-q02",
       "options": [
         {
-          "id": "b944f01467",
+          "id": "310f8e6920",
           "text": "Số người nhắn hỏi, số cuộc hẹn, số lượt được giới thiệu"
         },
         {
-          "id": "8d30c5e0ba",
+          "id": "dab148b489",
           "text": "Chỉ lượt thích"
         },
         {
-          "id": "41e020a589",
+          "id": "56500e0223",
           "text": "Số lượt xem mua thêm"
         }
       ],
       "prompt": "Chỉ số chính để đo thương hiệu là gì?"
     },
     {
-      "correct_option_id": "4942c7b399",
+      "correct_option_id": "323973769b",
       "id": "ch03-l09-q03",
       "options": [
         {
-          "id": "4942c7b399",
+          "id": "323973769b",
           "text": "Dựng nền: chỉnh hồ sơ, đăng bài, quay video, gặp người quen"
         },
         {
-          "id": "db4f543469",
+          "id": "da4c8a0147",
           "text": "Tổ chức hội thảo lớn"
         },
         {
-          "id": "a85cd89ab0",
+          "id": "ade90f15c7",
           "text": "Chạy quảng cáo hứa lợi nhuận"
         }
       ],
       "prompt": "Giai đoạn ngày 1-30 của kế hoạch 100 ngày tập trung vào việc gì?"
     }
   ],
-  "salt": "2c9caa616e996edeb01f209279698f5c230d4e6f5d8b5802d36f4b74c5bbdea1"
+  "salt": "c44c09a613542f80a03fc9f64342aa57e6116d19f86e0ba1690c6b36b7b405f9"
 }

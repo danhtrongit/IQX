@@ -1,0 +1,497 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l3-g1": {
+      "alt": "ROIC bằng NOPAT 4 quý 658 tỷ chia cho vốn đầu tư bình quân 4.635 tỷ, bằng 14,2%",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "nopat",
+          "sub": "EBIT 823 × (1 − thuế 20%)",
+          "title": "NOPAT 4 quý",
+          "tone": "p1",
+          "value": "658 tỷ"
+        },
+        {
+          "id": "invested",
+          "sub": "(4.401 + 4.869) ÷ 2",
+          "title": "Vốn đầu tư bình quân",
+          "tone": "warn",
+          "value": "4.635 tỷ"
+        },
+        {
+          "emph": true,
+          "id": "roic",
+          "sub": "Lãi trên toàn bộ vốn chủ sở hữu và nợ vay",
+          "title": "ROIC",
+          "tone": "pos",
+          "value": "14,2%"
+        }
+      ]
+    },
+    "c10l3-g2": {
+      "alt": "Vốn đầu tư bằng vốn chủ sở hữu 4.469 tỷ cộng nợ vay 1.100 tỷ trừ tiền mặt 700 tỷ, bằng 4.869 tỷ",
+      "axes": {
+        "x": {
+          "ticks": [
+            {
+              "label": "Vốn chủ sở hữu",
+              "v": 0
+            },
+            {
+              "label": "Cộng nợ vay",
+              "v": 1
+            },
+            {
+              "label": "Trừ tiền mặt",
+              "v": 2
+            },
+            {
+              "label": "Vốn đầu tư",
+              "v": 3
+            }
+          ]
+        },
+        "y": {
+          "ticks": []
+        }
+      },
+      "domain": {
+        "x": [
+          -0.5,
+          3.5
+        ],
+        "y": [
+          -2,
+          5571
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "base": 0,
+          "h": [
+            4469
+          ],
+          "t": "bars",
+          "tones": [
+            "p1"
+          ],
+          "x": [
+            0
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            0,
+            4469
+          ],
+          "t": "text",
+          "text": "4.469",
+          "tone": "price"
+        },
+        {
+          "base": 4469,
+          "h": [
+            1100
+          ],
+          "t": "bars",
+          "tones": [
+            "p5"
+          ],
+          "x": [
+            1
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            1,
+            5569
+          ],
+          "t": "text",
+          "text": "+1.100",
+          "tone": "price"
+        },
+        {
+          "base": 5569,
+          "h": [
+            -700
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            2
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            2,
+            5569
+          ],
+          "t": "text",
+          "text": "−700",
+          "tone": "price"
+        },
+        {
+          "base": 0,
+          "h": [
+            4869
+          ],
+          "t": "bars",
+          "tones": [
+            "warn"
+          ],
+          "x": [
+            3
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            3,
+            4869
+          ],
+          "t": "text",
+          "text": "4.869",
+          "tone": "warn"
+        }
+      ]
+    },
+    "c10l3-g3": {
+      "kind": "category",
+      "labels": [
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "ROIC",
+          "tone": "p1",
+          "values": [
+            8.4,
+            9.6,
+            11.6,
+            12.8,
+            13.5,
+            12.2,
+            13.6,
+            14.2
+          ]
+        }
+      ],
+      "threshold": {
+        "label": "Chi phí vốn 11%",
+        "value": 11
+      },
+      "title": "ROIC so với chi phí vốn · %",
+      "unit": "%",
+      "value_labels": "none"
+    },
+    "c10l3-rep": {
+      "caption_tone": "price",
+      "caption_value": "14,2%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "ROIC",
+          "tone": "p1",
+          "values": [
+            12.6127,
+            12.9773,
+            12.6184,
+            13.0624,
+            13.8251,
+            14.3015,
+            14.068,
+            14.207
+          ]
+        }
+      ],
+      "title": "ROIC",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "ROIC đo lợi nhuận từ hoạt động kinh doanh chính trên toàn bộ vốn đã bỏ vào, gồm cả vốn chủ và nợ vay. Đây là thước đo cho biết doanh nghiệp có thực sự tạo ra giá trị hay không.",
+  "lesson_key": "fundamental:roic",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l3-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>ROIC</b> (Return on Invested Capital) bằng <b>lợi nhuận hoạt động sau thuế</b> chia cho <b>vốn đầu tư bình quân</b>. Lợi nhuận hoạt động sau thuế, gọi tắt là <b>NOPAT</b>, bằng EBIT (lợi nhuận trước lãi vay và thuế) nhân với (1 − thuế suất).",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "ROIC là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l3-g2",
+          "type": "chart"
+        },
+        {
+          "text": "Vốn đầu tư là số vốn thực sự nằm trong hoạt động kinh doanh. Lấy <b>vốn chủ cộng nợ vay</b>, rồi <b>trừ tiền mặt</b> vì tiền đang nằm yên chưa được dùng để kinh doanh.",
+          "type": "paragraph"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi nhuận trước lãi vay, nên không bị ảnh hưởng bởi cách vay nợ.",
+              "title": "Dùng EBIT"
+            },
+            {
+              "text": "Mọi nguồn vốn có chi phí đều nằm trong mẫu số.",
+              "title": "Tính cả nợ vay"
+            },
+            {
+              "text": "Chỉ tính phần vốn đang thực sự dùng cho kinh doanh.",
+              "title": "Trừ tiền mặt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vốn đầu tư gồm những gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l3-rep",
+          "table_toggle": true,
+          "title": "ROIC",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROIC tính theo NOPAT 4 quý và vốn đầu tư bình quân.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "NOPAT cộng dồn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "NOPAT tăng đều và ROIC giữ vững là doanh nghiệp mở rộng mà vẫn hiệu quả.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "ROIC cao hơn chi phí vốn, thường khoảng 10% đến 12%. ROIC trên 15% ổn định là rất tốt.",
+              "title": "Tạo ra giá trị",
+              "tone": "pos"
+            },
+            {
+              "text": "ROIC thấp hơn chi phí vốn. Doanh nghiệp càng mở rộng càng làm mất giá trị.",
+              "title": "Phá hủy giá trị",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "<b>Chi phí vốn</b> là mức lợi nhuận tối thiểu mà người cho vay và cổ đông đòi hỏi. ROIC phải vượt mức này thì đồng vốn mới thực sự sinh lời.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l3-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khoảng cách giữa ROIC và chi phí vốn càng lớn, giá trị tạo ra càng nhiều.",
+              "title": "So với chi phí vốn"
+            },
+            {
+              "text": "ROIC cao và ổn định thường là dấu hiệu của lợi thế cạnh tranh.",
+              "title": "Xem độ bền nhiều năm"
+            },
+            {
+              "text": "ROE cao nhưng ROIC thấp cho thấy ROE được đẩy lên bằng nợ vay.",
+              "title": "So với ROE"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Khoản mục"
+            },
+            {
+              "label": "Đầu kỳ"
+            },
+            {
+              "label": "Cuối kỳ"
+            },
+            {
+              "label": "Ghi chú"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Vốn chủ sở hữu",
+                "4.001",
+                "4.469",
+                "Tỷ đồng"
+              ]
+            },
+            {
+              "cells": [
+                "Nợ vay",
+                "1.100",
+                "1.100",
+                "Ngắn hạn và dài hạn"
+              ]
+            },
+            {
+              "cells": [
+                "Tiền mặt",
+                "700",
+                "700",
+                "Được trừ ra"
+              ]
+            },
+            {
+              "cells": [
+                "Vốn đầu tư",
+                "4.401",
+                "4.869",
+                "Bình quân 4.635"
+              ]
+            },
+            {
+              "cells": [
+                "NOPAT 4 quý",
+                {
+                  "colspan": 2,
+                  "text": "823 × (1 − 20%) = 658"
+                },
+                "EBIT × (1 − thuế)"
+              ]
+            },
+            {
+              "cells": [
+                "ROIC",
+                {
+                  "colspan": 2,
+                  "text": "658 ÷ 4.635 ≈ 14,2%"
+                },
+                {
+                  "rating": "good",
+                  "text": "Trên chi phí vốn"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "LNST đã trừ lãi vay. ROIC cần lợi nhuận trước lãi vay, sau thuế.",
+              "title": "Dùng lợi nhuận sau thuế"
+            },
+            {
+              "text": "Doanh nghiệp giữ nhiều tiền sẽ có ROIC thấp hơn thực tế.",
+              "title": "Quên trừ tiền mặt"
+            },
+            {
+              "text": "ROIC có thể giảm tạm thời khi vừa đầu tư dự án lớn chưa tạo doanh thu.",
+              "title": "Chỉ nhìn một năm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>ROIC</b> = NOPAT 4 quý ÷ <b>vốn đầu tư bình quân</b>.",
+    "<b>NOPAT</b> = EBIT × (1 − thuế suất). <b>Vốn đầu tư</b> = vốn chủ + nợ vay − tiền.",
+    "ROIC <b>cao hơn chi phí vốn</b> là tạo ra giá trị, thấp hơn là phá hủy giá trị.",
+    "ROIC <b>cao và ổn định</b> nhiều năm là dấu hiệu của lợi thế cạnh tranh."
+  ],
+  "title": "ROIC · tỷ suất lợi nhuận trên vốn đầu tư"
+}

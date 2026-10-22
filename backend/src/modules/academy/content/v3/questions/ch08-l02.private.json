@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-l02",
+  "questions": [
+    {
+      "correct_option_id": "911e3d5d65",
+      "id": "ch08-l02-q01",
+      "options": [
+        {
+          "id": "911e3d5d65",
+          "text": "Nhiều chi phí gần như cố định"
+        },
+        {
+          "id": "b6d04550d0",
+          "text": "Thuế thay đổi theo từng quý"
+        },
+        {
+          "id": "7499042d62",
+          "text": "Doanh thu không có tính mùa vụ"
+        }
+      ],
+      "prompt": "Vì sao LNST thường biến động mạnh hơn doanh thu?"
+    },
+    {
+      "correct_option_id": "aa69856777",
+      "id": "ch08-l02-q02",
+      "options": [
+        {
+          "id": "aa69856777",
+          "text": "Không tính, ghi nhận chuyển từ lỗ sang lãi"
+        },
+        {
+          "id": "2f7252d48c",
+          "text": "Tính bình thường và cho kết quả dương"
+        },
+        {
+          "id": "65c7ae93cc",
+          "text": "Lấy quý liền trước để thay thế"
+        }
+      ],
+      "prompt": "Cùng kỳ năm trước doanh nghiệp bị lỗ. Tăng trưởng LNST YoY quý này được xử lý thế nào?"
+    },
+    {
+      "correct_option_id": "75e14d9fed",
+      "id": "ch08-l02-q03",
+      "options": [
+        {
+          "id": "75e14d9fed",
+          "text": "Biên lợi nhuận đang mở rộng"
+        },
+        {
+          "id": "09d754960c",
+          "text": "Doanh nghiệp đang bán ít hàng hơn"
+        },
+        {
+          "id": "c20379b8c2",
+          "text": "Số cổ phiếu lưu hành đang tăng"
+        }
+      ],
+      "prompt": "LNST tăng nhanh hơn doanh thu qua nhiều quý thường cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "6cafb048d8",
+      "id": "ch08-l02-q04",
+      "options": [
+        {
+          "id": "6cafb048d8",
+          "text": "Con số bị phóng đại do nền so sánh thấp"
+        },
+        {
+          "id": "ea8c78a74f",
+          "text": "Doanh nghiệp chắc chắn đã đổi hướng kinh doanh"
+        },
+        {
+          "id": "88ae1d8f67",
+          "text": "Đây là mức tăng trưởng sẽ lặp lại hằng năm"
+        }
+      ],
+      "prompt": "Tăng trưởng LNST YoY rất cao khi cùng kỳ lãi rất thấp cần hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "87950ce062",
+      "id": "ch08-l02-q05",
+      "options": [
+        {
+          "id": "87950ce062",
+          "text": "Tăng trưởng LNST YoY theo từng quý"
+        },
+        {
+          "id": "0094784d86",
+          "text": "LNST cộng dồn từ đầu năm"
+        },
+        {
+          "id": "f6e84b46ad",
+          "text": "Doanh thu của từng quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của LNST YoY, đường phía trên thể hiện gì?"
+    }
+  ],
+  "salt": "37273beaf003231614b0ac5546a896efcc4f4ca2fd79f455fb64f21be006a7c2"
+}

@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch07-l02",
+  "questions": [
+    {
+      "correct_option_id": "8af09c8fda",
+      "id": "ch07-l02-q01",
+      "options": [
+        {
+          "id": "8af09c8fda",
+          "text": "Trung bình của giá cao nhất, thấp nhất và đóng cửa"
+        },
+        {
+          "id": "e9afa1ea51",
+          "text": "Giá mở cửa của phiên giao dịch đầu tiên"
+        },
+        {
+          "id": "fb15d8e1fd",
+          "text": "Giá đóng cửa cao nhất trong 20 phiên"
+        }
+      ],
+      "prompt": "Giá điển hình (TP) dùng trong CCI là gì?"
+    },
+    {
+      "correct_option_id": "871feec2d0",
+      "id": "ch07-l02-q02",
+      "options": [
+        {
+          "id": "871feec2d0",
+          "text": "Giá lệch khỏi trung bình bao xa so với mức lệch thông thường"
+        },
+        {
+          "id": "43a58a0836",
+          "text": "Số phiên tăng giá liên tiếp trong 20 phiên"
+        },
+        {
+          "id": "c756265eda",
+          "text": "Khối lượng của phiên so với trung bình"
+        }
+      ],
+      "prompt": "CCI đo điều gì?"
+    },
+    {
+      "correct_option_id": "422bd876ac",
+      "id": "ch07-l02-q03",
+      "options": [
+        {
+          "id": "422bd876ac",
+          "text": "Dao động quanh 0 và không có giới hạn"
+        },
+        {
+          "id": "a286a6cf00",
+          "text": "Luôn nằm trong khoảng 0 đến 100"
+        },
+        {
+          "id": "e8a20f3f2f",
+          "text": "Luôn nằm trong khoảng −1 đến 1"
+        }
+      ],
+      "prompt": "Thang đo của CCI có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "bb349d490a",
+      "id": "ch07-l02-q04",
+      "options": [
+        {
+          "id": "bb349d490a",
+          "text": "CCI quay lên trên −100"
+        },
+        {
+          "id": "f7e6080eda",
+          "text": "CCI quay xuống dưới +100"
+        },
+        {
+          "id": "a25ac1db49",
+          "text": "CCI nằm yên quanh mức 0"
+        }
+      ],
+      "prompt": "Tín hiệu Mua thường dùng với CCI là gì?"
+    },
+    {
+      "correct_option_id": "e89201e4a0",
+      "id": "ch07-l02-q05",
+      "options": [
+        {
+          "id": "e89201e4a0",
+          "text": "Động lượng tăng đang rất mạnh"
+        },
+        {
+          "id": "d0bd14eeab",
+          "text": "Cổ phiếu chắc chắn sẽ giảm ngay"
+        },
+        {
+          "id": "f1edc2f5a0",
+          "text": "Giao dịch đã ngừng lại"
+        }
+      ],
+      "prompt": "CCI vượt +100 trong một xu hướng tăng có thể cho thấy điều gì?"
+    }
+  ],
+  "salt": "3db41f53ab36aff2e7cc71e99de1db8aa810d21ea8e661566c376ecfd94c144a"
+}

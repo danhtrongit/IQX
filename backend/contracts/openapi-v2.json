@@ -34880,7 +34880,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 745 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 767 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -44933,7 +44933,6 @@
                     "type": "array"
                   },
                   "initial_cash_vnd": {
-                    "exclusiveMinimum": true,
                     "maximum": 9007199254740991,
                     "minimum": 0,
                     "type": "integer"
@@ -70787,7 +70786,6 @@
                     "type": "array"
                   },
                   "initial_cash_vnd": {
-                    "exclusiveMinimum": true,
                     "maximum": 9007199254740991,
                     "minimum": 0,
                     "type": "integer"
@@ -73368,7 +73366,8 @@
                                     },
                                     "kind": {
                                       "enum": [
-                                        "technical"
+                                        "technical",
+                                        "fundamental"
                                       ],
                                       "type": "string"
                                     },
@@ -73778,7 +73777,8 @@
                             },
                             "kind": {
                               "enum": [
-                                "technical"
+                                "technical",
+                                "fundamental"
                               ],
                               "type": "string"
                             },
@@ -73918,7 +73918,8 @@
                             },
                             "kind": {
                               "enum": [
-                                "technical"
+                                "technical",
+                                "fundamental"
                               ],
                               "type": "string"
                             },
@@ -76502,6 +76503,735 @@
           "admin"
         ],
         "x-response-schema-status": "v2-declared"
+      }
+    },
+    "/api/v2/admin/flashback/alerts": {
+      "get": {
+        "operationId": "flashbackAdminAlerts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "alerts": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "error": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "level": {
+                            "enum": [
+                              "high",
+                              "medium",
+                              "low"
+                            ],
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "level_label": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "result": {
+                            "type": "string"
+                          },
+                          "round_id": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "run_at": {
+                            "type": "string"
+                          },
+                          "step": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "run_at",
+                          "step",
+                          "round_id",
+                          "result",
+                          "error",
+                          "level",
+                          "level_label"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "alerts"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Cảnh báo của tác vụ Flashback",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/pause": {
+      "get": {
+        "operationId": "flashbackAdminPauseStatus",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "paused": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "paused"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Trạng thái tạm dừng Flashback",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      },
+      "post": {
+        "operationId": "flashbackAdminPause",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "paused": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "paused"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạm dừng Flashback",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/rounds": {
+      "get": {
+        "operationId": "flashbackAdminRounds",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "rounds": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "closes_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "fallback_level": {
+                            "type": "number"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "opens_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "player_count": {
+                            "type": "number"
+                          },
+                          "round_no": {
+                            "type": "number"
+                          },
+                          "scheduled_open_at": {
+                            "type": "string"
+                          },
+                          "start_date": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "symbol": {
+                            "type": "string"
+                          },
+                          "total_fee_xu": {
+                            "type": "number"
+                          },
+                          "total_reward_xu": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "round_no",
+                          "status",
+                          "scheduled_open_at",
+                          "opens_at",
+                          "closes_at",
+                          "player_count",
+                          "total_fee_xu",
+                          "total_reward_xu",
+                          "fallback_level"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "rounds"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách đề Flashback",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/rounds/{id}/reveal": {
+      "get": {
+        "operationId": "flashbackAdminReveal",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {},
+                  "properties": {},
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Xem mã của đề đã đóng",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/suspects": {
+      "get": {
+        "operationId": "flashbackAdminSuspects",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "suspects": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "reason": {
+                            "type": "string"
+                          },
+                          "round_id": {
+                            "type": "string"
+                          },
+                          "shared": {
+                            "type": "string"
+                          },
+                          "user_count": {
+                            "type": "number"
+                          },
+                          "usernames": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "round_id",
+                          "reason",
+                          "shared",
+                          "user_count",
+                          "usernames"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "suspects"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tài khoản bị nghi vấn",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
       }
     },
     "/api/v2/admin/ipn": {
@@ -85229,7 +85959,6 @@
                     "type": "array"
                   },
                   "initial_cash_vnd": {
-                    "exclusiveMinimum": true,
                     "maximum": 9007199254740991,
                     "minimum": 0,
                     "type": "integer"
@@ -102289,6 +103018,2174 @@
         "x-response-schema-status": "v2-declared"
       }
     },
+    "/api/v2/dashboard/catalog": {
+      "get": {
+        "operationId": "dashboardCatalog",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "group": {
+                        "type": "string"
+                      },
+                      "items": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "na_for_bank": {
+                              "type": "boolean"
+                            },
+                            "name": {
+                              "enum": [
+                                "Tăng trưởng doanh thu",
+                                "Tăng trưởng LNST",
+                                "Tăng trưởng EPS",
+                                "Revenue CAGR 3Y",
+                                "Net Profit CAGR 3Y",
+                                "EPS CAGR 3Y",
+                                "Profit Positive Streak",
+                                "Revenue Growth Stability",
+                                "Margin Stability",
+                                "EPS Stability",
+                                "ROIC Stability",
+                                "ROE",
+                                "ROA",
+                                "ROIC",
+                                "Biên lợi nhuận gộp",
+                                "Biên lợi nhuận ròng",
+                                "Asset Turnover",
+                                "Cash Conversion Cycle",
+                                "D/E",
+                                "Current Ratio",
+                                "Interest Coverage",
+                                "Net Debt / EBITDA",
+                                "CFO Margin",
+                                "CFO / LNST",
+                                "Capex / Revenue",
+                                "FCF Margin",
+                                "FCF Positive Streak",
+                                "P/E",
+                                "P/B",
+                                "P/S",
+                                "PEG",
+                                "EV / EBITDA",
+                                "FCF Yield"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "na_for_bank"
+                          ],
+                          "type": "object"
+                        },
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "group",
+                      "items"
+                    ],
+                    "type": "object"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "The 33 analysis charts in their 6 groups, with the bank not-applicable flag",
+        "tags": [
+          "Dashboard phân tích"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/dashboard/settings": {
+      "get": {
+        "operationId": "dashboardSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "charts": {
+                      "items": {
+                        "enum": [
+                          "Tăng trưởng doanh thu",
+                          "Tăng trưởng LNST",
+                          "Tăng trưởng EPS",
+                          "Revenue CAGR 3Y",
+                          "Net Profit CAGR 3Y",
+                          "EPS CAGR 3Y",
+                          "Profit Positive Streak",
+                          "Revenue Growth Stability",
+                          "Margin Stability",
+                          "EPS Stability",
+                          "ROIC Stability",
+                          "ROE",
+                          "ROA",
+                          "ROIC",
+                          "Biên lợi nhuận gộp",
+                          "Biên lợi nhuận ròng",
+                          "Asset Turnover",
+                          "Cash Conversion Cycle",
+                          "D/E",
+                          "Current Ratio",
+                          "Interest Coverage",
+                          "Net Debt / EBITDA",
+                          "CFO Margin",
+                          "CFO / LNST",
+                          "Capex / Revenue",
+                          "FCF Margin",
+                          "FCF Positive Streak",
+                          "P/E",
+                          "P/B",
+                          "P/S",
+                          "PEG",
+                          "EV / EBITDA",
+                          "FCF Yield"
+                        ],
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "nks": {
+                      "additionalProperties": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "q": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  4
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  5
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  8
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  12
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  20
+                                ],
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "y": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  5
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  10
+                                ],
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "object"
+                    },
+                    "per": {
+                      "enum": [
+                        "q",
+                        "y"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "charts",
+                    "per",
+                    "nks"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dashboard settings of the account: chart list and order, quarter/year mode, periods per chart",
+        "tags": [
+          "Dashboard phân tích"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      },
+      "put": {
+        "operationId": "dashboardSaveSettings",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "charts": {
+                    "items": {
+                      "enum": [
+                        "Tăng trưởng doanh thu",
+                        "Tăng trưởng LNST",
+                        "Tăng trưởng EPS",
+                        "Revenue CAGR 3Y",
+                        "Net Profit CAGR 3Y",
+                        "EPS CAGR 3Y",
+                        "Profit Positive Streak",
+                        "Revenue Growth Stability",
+                        "Margin Stability",
+                        "EPS Stability",
+                        "ROIC Stability",
+                        "ROE",
+                        "ROA",
+                        "ROIC",
+                        "Biên lợi nhuận gộp",
+                        "Biên lợi nhuận ròng",
+                        "Asset Turnover",
+                        "Cash Conversion Cycle",
+                        "D/E",
+                        "Current Ratio",
+                        "Interest Coverage",
+                        "Net Debt / EBITDA",
+                        "CFO Margin",
+                        "CFO / LNST",
+                        "Capex / Revenue",
+                        "FCF Margin",
+                        "FCF Positive Streak",
+                        "P/E",
+                        "P/B",
+                        "P/S",
+                        "PEG",
+                        "EV / EBITDA",
+                        "FCF Yield"
+                      ],
+                      "type": "string"
+                    },
+                    "maxItems": 33,
+                    "type": "array"
+                  },
+                  "nks": {
+                    "additionalProperties": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "q": {
+                          "anyOf": [
+                            {
+                              "enum": [
+                                4
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                5
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                8
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                12
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                20
+                              ],
+                              "type": "number"
+                            }
+                          ]
+                        },
+                        "y": {
+                          "anyOf": [
+                            {
+                              "enum": [
+                                3
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                5
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                10
+                              ],
+                              "type": "number"
+                            }
+                          ]
+                        }
+                      },
+                      "type": "object"
+                    },
+                    "type": "object"
+                  },
+                  "per": {
+                    "enum": [
+                      "q",
+                      "y"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "charts",
+                  "per",
+                  "nks"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "charts": {
+                      "items": {
+                        "enum": [
+                          "Tăng trưởng doanh thu",
+                          "Tăng trưởng LNST",
+                          "Tăng trưởng EPS",
+                          "Revenue CAGR 3Y",
+                          "Net Profit CAGR 3Y",
+                          "EPS CAGR 3Y",
+                          "Profit Positive Streak",
+                          "Revenue Growth Stability",
+                          "Margin Stability",
+                          "EPS Stability",
+                          "ROIC Stability",
+                          "ROE",
+                          "ROA",
+                          "ROIC",
+                          "Biên lợi nhuận gộp",
+                          "Biên lợi nhuận ròng",
+                          "Asset Turnover",
+                          "Cash Conversion Cycle",
+                          "D/E",
+                          "Current Ratio",
+                          "Interest Coverage",
+                          "Net Debt / EBITDA",
+                          "CFO Margin",
+                          "CFO / LNST",
+                          "Capex / Revenue",
+                          "FCF Margin",
+                          "FCF Positive Streak",
+                          "P/E",
+                          "P/B",
+                          "P/S",
+                          "PEG",
+                          "EV / EBITDA",
+                          "FCF Yield"
+                        ],
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "nks": {
+                      "additionalProperties": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "q": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  4
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  5
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  8
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  12
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  20
+                                ],
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "y": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  5
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  10
+                                ],
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        },
+                        "type": "object"
+                      },
+                      "type": "object"
+                    },
+                    "per": {
+                      "enum": [
+                        "q",
+                        "y"
+                      ],
+                      "type": "string"
+                    },
+                    "revision": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "updated_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "charts",
+                    "per",
+                    "nks",
+                    "revision",
+                    "updated_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Save the dashboard settings of the account (server side, per account)",
+        "tags": [
+          "Dashboard phân tích"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/current": {
+      "get": {
+        "operationId": "flashbackCurrent",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bars": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "close": {
+                            "type": "number"
+                          },
+                          "high": {
+                            "type": "number"
+                          },
+                          "low": {
+                            "type": "number"
+                          },
+                          "open": {
+                            "type": "number"
+                          },
+                          "session": {
+                            "type": "number"
+                          },
+                          "volume": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "session",
+                          "open",
+                          "high",
+                          "low",
+                          "close",
+                          "volume"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "closes_at": {
+                      "type": "string"
+                    },
+                    "fee_xu": {
+                      "type": "number"
+                    },
+                    "first_join_free": {
+                      "type": "boolean"
+                    },
+                    "history_sessions": {
+                      "type": "number"
+                    },
+                    "joined": {
+                      "type": "boolean"
+                    },
+                    "my_entry": {
+                      "additionalProperties": {},
+                      "nullable": true,
+                      "properties": {},
+                      "type": "object"
+                    },
+                    "play_sessions": {
+                      "type": "number"
+                    },
+                    "played_bars": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "close": {
+                            "type": "number"
+                          },
+                          "high": {
+                            "type": "number"
+                          },
+                          "low": {
+                            "type": "number"
+                          },
+                          "open": {
+                            "type": "number"
+                          },
+                          "session": {
+                            "type": "number"
+                          },
+                          "volume": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "session",
+                          "open",
+                          "high",
+                          "low",
+                          "close",
+                          "volume"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "player_count": {
+                      "type": "number"
+                    },
+                    "reward_table": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "from_rank": {
+                            "type": "number"
+                          },
+                          "to_rank": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "xu": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "from_rank",
+                          "to_rank",
+                          "xu"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "round_id": {
+                      "type": "string"
+                    },
+                    "round_no": {
+                      "type": "number"
+                    },
+                    "total_sessions": {
+                      "type": "number"
+                    },
+                    "warmup_bars": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "close": {
+                            "type": "number"
+                          },
+                          "high": {
+                            "type": "number"
+                          },
+                          "low": {
+                            "type": "number"
+                          },
+                          "open": {
+                            "type": "number"
+                          },
+                          "session": {
+                            "type": "number"
+                          },
+                          "volume": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "session",
+                          "open",
+                          "high",
+                          "low",
+                          "close",
+                          "volume"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "round_id",
+                    "round_no",
+                    "closes_at",
+                    "player_count",
+                    "fee_xu",
+                    "first_join_free",
+                    "reward_table",
+                    "joined",
+                    "my_entry",
+                    "bars",
+                    "played_bars",
+                    "history_sessions",
+                    "play_sessions",
+                    "total_sessions"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đề đang mở và lượt chơi của tôi",
+        "tags": [
+          "Flashback"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/current/join": {
+      "post": {
+        "operationId": "flashbackJoin",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cash": {
+                      "type": "string"
+                    },
+                    "entry_id": {
+                      "type": "string"
+                    },
+                    "fee_xu": {
+                      "type": "number"
+                    },
+                    "first_join": {
+                      "type": "boolean"
+                    },
+                    "joined_at": {
+                      "type": "string"
+                    },
+                    "round_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "entry_id",
+                    "round_id",
+                    "first_join",
+                    "fee_xu",
+                    "cash",
+                    "joined_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tham gia đề hiện tại",
+        "tags": [
+          "Flashback"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/current/leaderboard": {
+      "get": {
+        "operationId": "flashbackLeaderboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "me": {
+                      "additionalProperties": {},
+                      "nullable": true,
+                      "properties": {},
+                      "type": "object"
+                    },
+                    "rows": {
+                      "items": {
+                        "additionalProperties": {},
+                        "properties": {},
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "scope": {
+                      "enum": [
+                        "all",
+                        "team"
+                      ],
+                      "type": "string"
+                    },
+                    "total_players": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "scope",
+                    "rows",
+                    "me",
+                    "total_players"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bảng xếp hạng của đề hiện tại",
+        "tags": [
+          "Flashback"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/entries/{id}/finish": {
+      "post": {
+        "operationId": "flashbackFinish",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "entry_id": {
+                      "type": "string"
+                    },
+                    "final_nav": {
+                      "type": "string"
+                    },
+                    "max_drawdown": {
+                      "type": "number"
+                    },
+                    "max_drawdown_percent": {
+                      "type": "number"
+                    },
+                    "pnl_pct": {
+                      "type": "number"
+                    },
+                    "pnl_percent": {
+                      "type": "number"
+                    },
+                    "rank": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "reward_xu": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "finished"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "entry_id",
+                    "final_nav",
+                    "pnl_pct",
+                    "pnl_percent",
+                    "max_drawdown",
+                    "max_drawdown_percent",
+                    "rank",
+                    "reward_xu",
+                    "status"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Kết thúc lượt chơi và xem kết quả",
+        "tags": [
+          "Flashback"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/entries/{id}/indicators": {
+      "put": {
+        "operationId": "flashbackSaveIndicators",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "entry_id": {
+                      "type": "string"
+                    },
+                    "indicators": {
+                      "items": {
+                        "additionalProperties": {},
+                        "properties": {},
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "warmup_required": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "entry_id",
+                    "indicators",
+                    "warmup_required"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lưu tham số chỉ báo của lượt chơi",
+        "tags": [
+          "Flashback"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/entries/{id}/next": {
+      "post": {
+        "operationId": "flashbackNext",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bar": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "close": {
+                          "type": "number"
+                        },
+                        "high": {
+                          "type": "number"
+                        },
+                        "low": {
+                          "type": "number"
+                        },
+                        "open": {
+                          "type": "number"
+                        },
+                        "session": {
+                          "type": "number"
+                        },
+                        "volume": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "session",
+                        "open",
+                        "high",
+                        "low",
+                        "close",
+                        "volume"
+                      ],
+                      "type": "object"
+                    },
+                    "cash": {
+                      "type": "string"
+                    },
+                    "entry_id": {
+                      "type": "string"
+                    },
+                    "holdings": {
+                      "type": "number"
+                    },
+                    "max_drawdown": {
+                      "type": "number"
+                    },
+                    "pnl_pct": {
+                      "type": "number"
+                    },
+                    "pnl_percent": {
+                      "type": "number"
+                    },
+                    "step": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "entry_id",
+                    "step",
+                    "bar",
+                    "cash",
+                    "holdings",
+                    "pnl_pct",
+                    "pnl_percent",
+                    "max_drawdown"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mở nến phiên tiếp theo",
+        "tags": [
+          "Flashback"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/entries/{id}/orders": {
+      "post": {
+        "operationId": "flashbackPlaceOrder",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "cash": {
+                      "type": "string"
+                    },
+                    "holdings": {
+                      "type": "number"
+                    },
+                    "max_drawdown": {
+                      "type": "number"
+                    },
+                    "order": {
+                      "additionalProperties": {},
+                      "properties": {},
+                      "type": "object"
+                    },
+                    "pnl_pct": {
+                      "type": "number"
+                    },
+                    "pnl_percent": {
+                      "type": "number"
+                    },
+                    "total_assets": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "order",
+                    "cash",
+                    "holdings",
+                    "total_assets",
+                    "pnl_pct",
+                    "pnl_percent",
+                    "max_drawdown"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đặt lệnh mua hoặc bán",
+        "tags": [
+          "Flashback"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/indicators": {
+      "get": {
+        "operationId": "flashbackIndicators",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "indicators": {
+                      "items": {
+                        "additionalProperties": {},
+                        "properties": {},
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "indicators"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chỉ báo đã mở kèm tham số",
+        "tags": [
+          "Flashback"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/fundamental/{symbol}": {
+      "get": {
+        "operationId": "dashboardFundamental",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "pattern": "^[A-Z0-9]{1,10}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "charts",
+            "required": false,
+            "schema": {
+              "maxLength": 1000,
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "per",
+            "required": false,
+            "schema": {
+              "default": "q",
+              "enum": [
+                "q",
+                "y"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "charts": {
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "na": {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "na"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "decimals": {
+                                "maximum": 9007199254740991,
+                                "minimum": -9007199254740991,
+                                "type": "integer"
+                              },
+                              "hero": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "kind": {
+                                "enum": [
+                                  "A",
+                                  "B",
+                                  "C",
+                                  "D",
+                                  "E1",
+                                  "E2",
+                                  "F",
+                                  "F2"
+                                ],
+                                "type": "string"
+                              },
+                              "labels": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "main": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "v": {
+                                      "items": {
+                                        "nullable": true,
+                                        "type": "number"
+                                      },
+                                      "type": "array"
+                                    }
+                                  },
+                                  "required": [
+                                    "name",
+                                    "v"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "mainUnit": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "note": {
+                                "type": "string"
+                              },
+                              "q": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "labels": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "main": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "name": {
+                                          "type": "string"
+                                        },
+                                        "v": {
+                                          "items": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          },
+                                          "type": "array"
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "v"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "sub": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "series": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "name": {
+                                              "type": "string"
+                                            },
+                                            "v": {
+                                              "items": {
+                                                "nullable": true,
+                                                "type": "number"
+                                              },
+                                              "type": "array"
+                                            }
+                                          },
+                                          "required": [
+                                            "name",
+                                            "v"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "grouped",
+                                          "stacked"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "unit",
+                                      "type",
+                                      "series"
+                                    ],
+                                    "type": "object"
+                                  }
+                                },
+                                "required": [
+                                  "labels",
+                                  "main"
+                                ],
+                                "type": "object"
+                              },
+                              "ref": {
+                                "type": "number"
+                              },
+                              "status": {
+                                "enum": [
+                                  "ok",
+                                  "missing",
+                                  "not_applicable",
+                                  "insufficient_base",
+                                  "definition_pending",
+                                  "data_unavailable"
+                                ],
+                                "type": "string"
+                              },
+                              "unit": {
+                                "type": "string"
+                              },
+                              "v": {
+                                "items": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "type": "array"
+                              },
+                              "y": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "labels": {
+                                    "items": {
+                                      "type": "string"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "main": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "name": {
+                                          "type": "string"
+                                        },
+                                        "v": {
+                                          "items": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          },
+                                          "type": "array"
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "v"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "sub": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "series": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "name": {
+                                              "type": "string"
+                                            },
+                                            "v": {
+                                              "items": {
+                                                "nullable": true,
+                                                "type": "number"
+                                              },
+                                              "type": "array"
+                                            }
+                                          },
+                                          "required": [
+                                            "name",
+                                            "v"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "type": "array"
+                                      },
+                                      "type": {
+                                        "enum": [
+                                          "grouped",
+                                          "stacked"
+                                        ],
+                                        "type": "string"
+                                      },
+                                      "unit": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "unit",
+                                      "type",
+                                      "series"
+                                    ],
+                                    "type": "object"
+                                  }
+                                },
+                                "required": [
+                                  "labels",
+                                  "main"
+                                ],
+                                "type": "object"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "kind",
+                              "unit",
+                              "decimals",
+                              "status"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      },
+                      "type": "object"
+                    },
+                    "is_bank": {
+                      "type": "boolean"
+                    },
+                    "per": {
+                      "enum": [
+                        "q",
+                        "y"
+                      ],
+                      "type": "string"
+                    },
+                    "symbol": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "symbol",
+                    "is_bank",
+                    "per",
+                    "charts"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chart data of one symbol: 20 quarters and 10 years per chart, na for the charts a bank does not have",
+        "tags": [
+          "Dashboard phân tích"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/health": {
       "get": {
         "operationId": "legacyHealth_get_api_v2_health",
@@ -118805,6 +121702,26 @@
                     "catalog_version": {
                       "type": "string"
                     },
+                    "exchange": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "cash_per_xu": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "min_exchange_cash_vnd": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "cash_per_xu",
+                        "min_exchange_cash_vnd"
+                      ],
+                      "type": "object"
+                    },
                     "owned": {
                       "items": {
                         "additionalProperties": false,
@@ -118842,6 +121759,49 @@
                       "type": "array"
                     },
                     "owned_count": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "pet_levels": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "level": {
+                            "maximum": 3,
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "mascot_id": {
+                            "enum": [
+                              "bach_ho",
+                              "thanh_long",
+                              "loc_huou",
+                              "phung_hoang",
+                              "kim_quy"
+                            ],
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "mascot_id",
+                          "level",
+                          "updated_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "premium_duration_days": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "premium_price_xu": {
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer"
@@ -118910,7 +121870,11 @@
                     "owned_count",
                     "total_count",
                     "active",
-                    "provisioned"
+                    "provisioned",
+                    "pet_levels",
+                    "premium_price_xu",
+                    "premium_duration_days",
+                    "exchange"
                   ],
                   "type": "object"
                 }
@@ -119187,6 +122151,11 @@
                             "enum": [
                               "lesson_first_completion",
                               "mascot_purchase",
+                              "pet_purchase",
+                              "pet_evolve",
+                              "premium_purchase",
+                              "demo_deposit",
+                              "demo_withdraw",
                               "adjustment"
                             ],
                             "type": "string"
@@ -119310,6 +122279,603 @@
           }
         ],
         "summary": "xu ledger, newest first by commit sequence, cursor-paginated",
+        "tags": [
+          "Shop"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/shop/demo-exchange": {
+      "post": {
+        "operationId": "exchangeShopDemoCash",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "amount": {
+                    "maximum": 100000000000,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "direction": {
+                    "enum": [
+                      "xu_to_cash",
+                      "cash_to_xu"
+                    ],
+                    "type": "string"
+                  },
+                  "idempotency_key": {
+                    "maxLength": 128,
+                    "minLength": 8,
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "direction",
+                  "amount",
+                  "idempotency_key"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "amount": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "balance_xu": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "cash_available_vnd": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "cash_delta_vnd": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "cash_per_xu": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "direction": {
+                      "enum": [
+                        "xu_to_cash",
+                        "cash_to_xu"
+                      ],
+                      "type": "string"
+                    },
+                    "net_deposited_cash_vnd": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "replayed": {
+                      "type": "boolean"
+                    },
+                    "xu_delta": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "direction",
+                    "amount",
+                    "xu_delta",
+                    "cash_delta_vnd",
+                    "balance_xu",
+                    "cash_available_vnd",
+                    "net_deposited_cash_vnd",
+                    "cash_per_xu",
+                    "replayed"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "INSUFFICIENT_XU, INSUFFICIENT_CASH (details[0] has cash_available_vnd/amount_vnd/shortfall_vnd), IDEMPOTENCY_KEY_REUSED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đổi xu hai chiều với tiền Demo Trading (1 xu = 10.000 VND; idempotent)",
+        "tags": [
+          "Shop"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/shop/pets/{mascotId}/evolve": {
+      "post": {
+        "operationId": "evolveShopPet",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "mascotId",
+            "required": true,
+            "schema": {
+              "maxLength": 24,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "expected_price_xu": {
+                    "maximum": 1000000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "idempotency_key": {
+                    "maxLength": 128,
+                    "minLength": 8,
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                  },
+                  "target_level": {
+                    "anyOf": [
+                      {
+                        "enum": [
+                          2
+                        ],
+                        "type": "number"
+                      },
+                      {
+                        "enum": [
+                          3
+                        ],
+                        "type": "number"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "target_level",
+                  "expected_price_xu",
+                  "idempotency_key"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "level": {
+                      "maximum": 3,
+                      "minimum": 2,
+                      "type": "integer"
+                    },
+                    "mascot_id": {
+                      "enum": [
+                        "bach_ho",
+                        "thanh_long",
+                        "loc_huou",
+                        "phung_hoang",
+                        "kim_quy"
+                      ],
+                      "type": "string"
+                    },
+                    "pet_levels": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "level": {
+                            "maximum": 3,
+                            "minimum": 1,
+                            "type": "integer"
+                          },
+                          "mascot_id": {
+                            "enum": [
+                              "bach_ho",
+                              "thanh_long",
+                              "loc_huou",
+                              "phung_hoang",
+                              "kim_quy"
+                            ],
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "mascot_id",
+                          "level",
+                          "updated_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "previous_level": {
+                      "maximum": 3,
+                      "minimum": 1,
+                      "type": "integer"
+                    },
+                    "price_xu": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "replayed": {
+                      "type": "boolean"
+                    },
+                    "status": {
+                      "enum": [
+                        "evolved"
+                      ],
+                      "type": "string"
+                    },
+                    "wallet": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "balance": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "last_seq": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "balance",
+                        "last_seq"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "replayed",
+                    "mascot_id",
+                    "level",
+                    "previous_level",
+                    "price_xu",
+                    "wallet",
+                    "pet_levels"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "PET_NOT_OWNED, PET_LEVEL_LOCKED, PET_MAX_LEVEL, PRICE_CHANGED, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tiến hoá linh thú lên cấp 2 rồi cấp 3 (idempotent; chỉ đổi hình ảnh, không lợi thế giao dịch)",
+        "tags": [
+          "Shop"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/shop/premium-purchases": {
+      "post": {
+        "operationId": "purchaseShopPremiumWithXu",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "days": {
+                    "maximum": 365,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "expected_price_xu": {
+                    "maximum": 1000000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "idempotency_key": {
+                    "maxLength": 128,
+                    "minLength": 8,
+                    "pattern": "^[A-Za-z0-9._:-]+$",
+                    "type": "string"
+                  },
+                  "plan_id": {
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "expected_price_xu",
+                  "idempotency_key"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "days_granted": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "ends_at": {
+                      "type": "string"
+                    },
+                    "plan_id": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "price_xu": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "type": "integer"
+                    },
+                    "replayed": {
+                      "type": "boolean"
+                    },
+                    "starts_at": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "purchased"
+                      ],
+                      "type": "string"
+                    },
+                    "wallet": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "balance": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        },
+                        "last_seq": {
+                          "maximum": 9007199254740991,
+                          "minimum": -9007199254740991,
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "balance",
+                        "last_seq"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "replayed",
+                    "price_xu",
+                    "days_granted",
+                    "plan_id",
+                    "starts_at",
+                    "ends_at",
+                    "wallet"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "409": {
+            "description": "PREMIUM_PURCHASE_LIMIT, PRICE_CHANGED, INSUFFICIENT_XU (details[0] has balance_xu/price_xu/shortfall_xu), IDEMPOTENCY_KEY_REUSED"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Mua Premium 30 ngày bằng xu (idempotent; tối đa 1 lần mỗi 30 ngày)",
         "tags": [
           "Shop"
         ],
@@ -146313,6 +149879,187 @@
         "x-response-schema-status": "legacy-mapped"
       }
     },
+    "/api/v2/valuation/{symbol}": {
+      "get": {
+        "operationId": "dashboardValuation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "pattern": "^[A-Z0-9]{1,10}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "from",
+            "required": false,
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "charts",
+            "required": false,
+            "schema": {
+              "maxLength": 1000,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "charts": {
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "na": {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "na"
+                            ],
+                            "type": "object"
+                          },
+                          {
+                            "additionalProperties": false,
+                            "properties": {
+                              "kind": {
+                                "enum": [
+                                  "F"
+                                ],
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "unit": {
+                                "type": "string"
+                              },
+                              "v": {
+                                "items": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "type": "array"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "kind",
+                              "unit",
+                              "v"
+                            ],
+                            "type": "object"
+                          }
+                        ]
+                      },
+                      "type": "object"
+                    },
+                    "dates": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    },
+                    "symbol": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "symbol",
+                    "dates",
+                    "charts"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Daily valuation series of one symbol, using the report published at that date",
+        "tags": [
+          "Dashboard phân tích"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/virtual-trading/account": {
       "get": {
         "operationId": "TradingController_account[1]",
@@ -146740,7 +150487,6 @@
                     "type": "array"
                   },
                   "initial_cash_vnd": {
-                    "exclusiveMinimum": true,
                     "maximum": 9007199254740991,
                     "minimum": 0,
                     "type": "integer"
@@ -149192,11 +152938,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 560,
+    "authenticatedOperations": 582,
     "noContentResponses": 18,
-    "operations": 763,
+    "operations": 785,
     "publicOperations": 203,
-    "responseSchemas": 745,
+    "responseSchemas": 767,
     "untypedResponses": 0
   }
 }

@@ -10,13 +10,17 @@
 import { useState, type CSSProperties } from "react"
 import { Check, Coins } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { MASCOT_MANIFEST } from "../journey/config"
+import { DemoExchangeDialog } from "./demo-exchange-dialog"
+import { EvolveDialog } from "./evolve-dialog"
 import { HistoryDialog } from "./history-dialog"
 import { MascotArt } from "./mascot-art"
+import { PremiumPurchaseDialog } from "./premium-dialog"
 import { PurchaseDialog } from "./purchase-dialog"
 import type { CatalogEntry, ShopState } from "./shop-api"
 import {
@@ -24,7 +28,10 @@ import {
   deriveCardState,
   formatXu,
   isMascotId,
+  nextPetLevel,
   ownedEntries,
+  petEvolvePrice,
+  petLevelOf,
   storeEntries,
   type CardState,
 } from "./shop-model"
@@ -33,11 +40,12 @@ import { useActivateMascot, useShopState } from "./use-shop"
 
 type View = "store" | "owned"
 
-function ShopCard({ entry, state, onBuy, onUse, busy, pendingMascotId }: {
+function ShopCard({ entry, state, onBuy, onUse, onEvolve, busy, pendingMascotId }: {
   entry: CatalogEntry
   state: ShopState
   onBuy: (entry: CatalogEntry) => void
   onUse: (entry: CatalogEntry) => void
+  onEvolve: (entry: CatalogEntry) => void
   busy: boolean
   pendingMascotId: string | null
 }) {
@@ -46,6 +54,8 @@ function ShopCard({ entry, state, onBuy, onUse, busy, pendingMascotId }: {
   const shortfall = Math.max(0, entry.price_xu - state.wallet.balance)
   const accent = isMascotId(entry.mascot_id) ? MASCOT_MANIFEST[entry.mascot_id].accent : "var(--primary)"
   const hintId = `shop-hint-${entry.mascot_id}`
+  const level = petLevelOf(state, entry.mascot_id)
+  const evolveTarget = nextPetLevel(state, entry.mascot_id)
 
   return (
     <article
@@ -70,7 +80,10 @@ function ShopCard({ entry, state, onBuy, onUse, busy, pendingMascotId }: {
       </div>
       <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-3 min-[901px]:max-[1260px]:px-3">
         <div className="min-w-0">
-          <h3 className="truncate font-heading text-base font-bold min-[901px]:max-[1260px]:text-sm">{entry.name}</h3>
+          <div className="flex min-w-0 items-center gap-2">
+            <h3 className="truncate font-heading text-base font-bold min-[901px]:max-[1260px]:text-sm">{entry.name}</h3>
+            {owned && level > 1 && <Badge variant="secondary" className="shrink-0 text-[10px]">{`Cấp ${level}`}</Badge>}
+          </div>
           <div className="mt-1 min-h-4 text-[11px] text-muted-foreground">
             {entry.is_default && owned ? (
               SHOP_COPY.defaultMascot
@@ -88,6 +101,21 @@ function ShopCard({ entry, state, onBuy, onUse, busy, pendingMascotId }: {
         </div>
         <CardButton card={card} entry={entry} onBuy={onBuy} onUse={onUse} busy={busy} pending={pendingMascotId === entry.mascot_id} describedBy={card === "short" ? hintId : undefined} />
       </div>
+      {owned && evolveTarget !== null && (
+        <div className="flex items-center justify-between gap-3 border-t border-border px-4 py-2.5 min-[901px]:max-[1260px]:px-3">
+          <span className="text-[11px] text-muted-foreground">{`Tiến hoá lên cấp ${evolveTarget}`}</span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0 text-xs"
+            data-shop-action="evolve"
+            onClick={() => onEvolve(entry)}
+          >
+            {`${SHOP_COPY.evolve} · ${formatXu(petEvolvePrice(evolveTarget))} xu`}
+          </Button>
+        </div>
+      )}
     </article>
   )
 }
@@ -136,6 +164,9 @@ export function ShopMain({ onNavigate }: { onNavigate: (panel: string) => void }
   const activation = useActivateMascot()
   const [view, setView] = useState<View>("store")
   const [buying, setBuying] = useState<string | null>(null)
+  const [evolving, setEvolving] = useState<string | null>(null)
+  const [premiumOpen, setPremiumOpen] = useState(false)
+  const [exchangeOpen, setExchangeOpen] = useState(false)
   const [historyOpen, setHistoryOpen] = useState(false)
   const state = shop.data
 
@@ -166,10 +197,18 @@ export function ShopMain({ onNavigate }: { onNavigate: (panel: string) => void }
             <h2 className="font-heading text-base font-bold">{SHOP_COPY.title}</h2>
             <span className="text-xs text-muted-foreground" data-testid="shop-owned-count">{state.owned_count} / {state.total_count} đã sở hữu</span>
           </div>
-          <TabsList aria-label="Bộ sưu tập linh thú" className="h-9">
-            <TabsTrigger value="store" className="px-3 text-xs">{SHOP_COPY.tabStore}</TabsTrigger>
-            <TabsTrigger value="owned" className="px-3 text-xs">{SHOP_COPY.tabOwned}</TabsTrigger>
-          </TabsList>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => setPremiumOpen(true)}>
+              {`${SHOP_COPY.premiumBuy} · ${formatXu(state.premium_price_xu)} xu`}
+            </Button>
+            <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => setExchangeOpen(true)}>
+              {SHOP_COPY.exchange}
+            </Button>
+            <TabsList aria-label="Bộ sưu tập linh thú" className="h-9">
+              <TabsTrigger value="store" className="px-3 text-xs">{SHOP_COPY.tabStore}</TabsTrigger>
+              <TabsTrigger value="owned" className="px-3 text-xs">{SHOP_COPY.tabOwned}</TabsTrigger>
+            </TabsList>
+          </div>
         </div>
         {(["store", "owned"] as const).map((tab) => (
           <TabsContent key={tab} value={tab} className="min-w-0 focus-visible:outline-none">
@@ -183,6 +222,7 @@ export function ShopMain({ onNavigate }: { onNavigate: (panel: string) => void }
                   pendingMascotId={activation.pendingMascotId}
                   onBuy={(target) => setBuying(target.mascot_id)}
                   onUse={(target) => void activation.activate(target)}
+                  onEvolve={(target) => setEvolving(target.mascot_id)}
                 />
               ))}
             </div>
@@ -195,6 +235,26 @@ export function ShopMain({ onNavigate }: { onNavigate: (panel: string) => void }
           key={buying}
           mascotId={buying}
           onClose={() => setBuying(null)}
+          onEnterAcademy={() => onNavigate("academy")}
+        />
+      )}
+      {evolving && (
+        <EvolveDialog
+          key={evolving}
+          mascotId={evolving}
+          onClose={() => setEvolving(null)}
+          onEnterAcademy={() => onNavigate("academy")}
+        />
+      )}
+      {premiumOpen && (
+        <PremiumPurchaseDialog
+          onClose={() => setPremiumOpen(false)}
+          onEnterAcademy={() => onNavigate("academy")}
+        />
+      )}
+      {exchangeOpen && (
+        <DemoExchangeDialog
+          onClose={() => setExchangeOpen(false)}
           onEnterAcademy={() => onNavigate("academy")}
         />
       )}

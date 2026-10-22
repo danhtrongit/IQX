@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-exam",
+  "questions": [
+    {
+      "correct_option_id": "76f5119611",
+      "id": "ch12-exam-q01",
+      "options": [
+        {
+          "id": "76f5119611",
+          "text": "Dòng tiền kinh doanh"
+        },
+        {
+          "id": "3f25892d9c",
+          "text": "Dòng tiền đầu tư"
+        },
+        {
+          "id": "af7b980112",
+          "text": "Dòng tiền tài chính"
+        }
+      ],
+      "prompt": "Dòng tiền nào phản ánh tiền từ bán hàng, sản xuất, cung cấp dịch vụ?"
+    },
+    {
+      "correct_option_id": "29c4d9dedc",
+      "id": "ch12-exam-q02",
+      "options": [
+        {
+          "id": "29c4d9dedc",
+          "text": "Dòng tiền tài chính"
+        },
+        {
+          "id": "08865f4e82",
+          "text": "Dòng tiền kinh doanh"
+        },
+        {
+          "id": "df2f09730c",
+          "text": "Dòng tiền đầu tư"
+        }
+      ],
+      "prompt": "Vay ngân hàng và trả cổ tức thuộc dòng tiền nào?"
+    },
+    {
+      "correct_option_id": "f2d1557475",
+      "id": "ch12-exam-q03",
+      "options": [
+        {
+          "id": "f2d1557475",
+          "text": "Dòng tiền đầu tư"
+        },
+        {
+          "id": "e59e059a2f",
+          "text": "Dòng tiền tài chính"
+        },
+        {
+          "id": "2ccfdb4e20",
+          "text": "Dòng tiền kinh doanh"
+        }
+      ],
+      "prompt": "Mua máy móc mới thuộc dòng tiền nào?"
+    },
+    {
+      "correct_option_id": "9e5c400711",
+      "id": "ch12-exam-q04",
+      "options": [
+        {
+          "id": "9e5c400711",
+          "text": "Khấu hao"
+        },
+        {
+          "id": "7376b35953",
+          "text": "Tăng phải thu khách hàng"
+        },
+        {
+          "id": "4bc3c0c602",
+          "text": "Tăng hàng tồn kho"
+        }
+      ],
+      "prompt": "Khoản nào được cộng lại khi đi từ LNST đến CFO vì không phải chi tiền trong kỳ?"
+    },
+    {
+      "correct_option_id": "e75ae34c2a",
+      "id": "ch12-exam-q05",
+      "options": [
+        {
+          "id": "e75ae34c2a",
+          "text": "Làm CFO thấp hơn lợi nhuận"
+        },
+        {
+          "id": "a1ac271780",
+          "text": "Làm CFO cao hơn lợi nhuận"
+        },
+        {
+          "id": "d3241da54d",
+          "text": "Không ảnh hưởng đến CFO"
+        }
+      ],
+      "prompt": "Phải thu khách hàng tăng mạnh ảnh hưởng thế nào đến CFO?"
+    },
+    {
+      "correct_option_id": "b715a61500",
+      "id": "ch12-exam-q06",
+      "options": [
+        {
+          "id": "b715a61500",
+          "text": "Để giảm ảnh hưởng của mùa vụ"
+        },
+        {
+          "id": "3cca921961",
+          "text": "Để CFO Margin luôn dương"
+        },
+        {
+          "id": "c04f511664",
+          "text": "Vì báo cáo quý không có CFO"
+        }
+      ],
+      "prompt": "Vì sao nên dùng số liệu cộng dồn 4 quý khi tính CFO Margin?"
+    },
+    {
+      "correct_option_id": "b73584ffbf",
+      "id": "ch12-exam-q07",
+      "options": [
+        {
+          "id": "b73584ffbf",
+          "text": "Lợi nhuận tăng nhưng tiền không về tương xứng"
+        },
+        {
+          "id": "e31f3b67cf",
+          "text": "Doanh nghiệp đang kinh doanh rất hiệu quả"
+        },
+        {
+          "id": "5754715527",
+          "text": "Doanh nghiệp vừa giảm được chi phí lãi vay"
+        }
+      ],
+      "prompt": "CFO Margin giảm dần trong khi biên lợi nhuận ròng tăng là dấu hiệu gì?"
+    },
+    {
+      "correct_option_id": "e146332d20",
+      "id": "ch12-exam-q08",
+      "options": [
+        {
+          "id": "e146332d20",
+          "text": "Có thể bình thường vì ngành có biên mỏng"
+        },
+        {
+          "id": "6fbc85fd85",
+          "text": "Chắc chắn là doanh nghiệp yếu kém"
+        },
+        {
+          "id": "0f45f1eb1f",
+          "text": "Doanh nghiệp đang đầu tư quá nhiều"
+        }
+      ],
+      "prompt": "CFO Margin của doanh nghiệp bán lẻ chỉ vài phần trăm nên hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "cbf9804ba5",
+      "id": "ch12-exam-q09",
+      "options": [
+        {
+          "id": "cbf9804ba5",
+          "text": "Tiền tăng thêm còn chịu tác động của đầu tư và vay nợ"
+        },
+        {
+          "id": "2197b23e6c",
+          "text": "CFO luôn lớn hơn tiền tăng thêm trong kỳ"
+        },
+        {
+          "id": "4a3df71bf2",
+          "text": "Hai con số này luôn bằng nhau"
+        }
+      ],
+      "prompt": "CFO khác với tiền mặt tăng thêm trong kỳ ở điểm nào?"
+    },
+    {
+      "correct_option_id": "8542d18aeb",
+      "id": "ch12-exam-q10",
+      "options": [
+        {
+          "id": "8542d18aeb",
+          "text": "Chất lượng lợi nhuận"
+        },
+        {
+          "id": "3c269d4748",
+          "text": "Biên lợi nhuận gộp"
+        },
+        {
+          "id": "e94e7f9322",
+          "text": "Vòng quay tài sản"
+        }
+      ],
+      "prompt": "Chỉ tiêu CFO / LNST còn được gọi là gì?"
+    },
+    {
+      "correct_option_id": "bccffe150b",
+      "id": "ch12-exam-q11",
+      "options": [
+        {
+          "id": "bccffe150b",
+          "text": "Lần"
+        },
+        {
+          "id": "abb38e6a72",
+          "text": "Phần trăm"
+        },
+        {
+          "id": "234738ae49",
+          "text": "Tỷ đồng"
+        }
+      ],
+      "prompt": "Đơn vị của CFO / LNST là gì?"
+    },
+    {
+      "correct_option_id": "a7faba75a3",
+      "id": "ch12-exam-q12",
+      "options": [
+        {
+          "id": "a7faba75a3",
+          "text": "Tỷ lệ mất ý nghĩa, xem trực tiếp CFO"
+        },
+        {
+          "id": "2769c68b2e",
+          "text": "Tỷ lệ âm luôn là tín hiệu tốt"
+        },
+        {
+          "id": "9e47179dfd",
+          "text": "Đổi dấu tỷ lệ rồi đọc như bình thường"
+        }
+      ],
+      "prompt": "Khi LNST âm, nên đọc chỉ tiêu CFO / LNST thế nào?"
+    },
+    {
+      "correct_option_id": "0bf5e49986",
+      "id": "ch12-exam-q13",
+      "options": [
+        {
+          "id": "0bf5e49986",
+          "text": "Tăng trưởng lợi nhuận có thể không bền"
+        },
+        {
+          "id": "5afc393f9b",
+          "text": "Doanh nghiệp đang tăng tốc trả nợ"
+        },
+        {
+          "id": "d23515dd9e",
+          "text": "Chất lượng lợi nhuận đang cải thiện"
+        }
+      ],
+      "prompt": "LNST tăng mạnh nhưng CFO giảm dần qua nhiều năm cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "5db79db662",
+      "id": "ch12-exam-q14",
+      "options": [
+        {
+          "id": "5db79db662",
+          "text": "Làm tỷ lệ thấp đi vì LNST tăng mà CFO không đổi"
+        },
+        {
+          "id": "2fce87eef3",
+          "text": "Làm tỷ lệ cao lên vì CFO tăng mạnh"
+        },
+        {
+          "id": "0d27d14291",
+          "text": "Không làm tỷ lệ thay đổi"
+        }
+      ],
+      "prompt": "Lãi từ bán tài sản làm tỷ lệ CFO / LNST thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "89d6dbcb0b",
+      "id": "ch12-exam-q15",
+      "options": [
+        {
+          "id": "89d6dbcb0b",
+          "text": "Lợi nhuận có tiền thật hậu thuẫn"
+        },
+        {
+          "id": "1eb32ceb45",
+          "text": "Lợi nhuận chủ yếu nằm trên giấy"
+        },
+        {
+          "id": "fe1b52ad3e",
+          "text": "Doanh nghiệp đang phụ thuộc vốn vay"
+        }
+      ],
+      "prompt": "CFO lớn hơn LNST trong nhiều năm liền cho thấy điều gì về lợi nhuận?"
+    },
+    {
+      "correct_option_id": "7d662814dd",
+      "id": "ch12-exam-q16",
+      "options": [
+        {
+          "id": "7d662814dd",
+          "text": "Nhằm tăng năng lực và doanh thu tương lai"
+        },
+        {
+          "id": "451adfb516",
+          "text": "Dùng để thay máy cũ, giữ năng lực hiện có"
+        },
+        {
+          "id": "4337500520",
+          "text": "Dùng để trả nợ vay ngân hàng"
+        }
+      ],
+      "prompt": "Capex mở rộng khác Capex duy trì ở điểm nào?"
+    },
+    {
+      "correct_option_id": "f422bae951",
+      "id": "ch12-exam-q17",
+      "options": [
+        {
+          "id": "f422bae951",
+          "text": "Phân bổ dần qua khấu hao nhiều năm"
+        },
+        {
+          "id": "aa57390cf2",
+          "text": "Ghi toàn bộ vào chi phí ngay năm chi"
+        },
+        {
+          "id": "00d38f2d8e",
+          "text": "Không bao giờ được tính vào chi phí"
+        }
+      ],
+      "prompt": "Capex được đưa vào chi phí như thế nào?"
+    },
+    {
+      "correct_option_id": "c7b43bb8de",
+      "id": "ch12-exam-q18",
+      "options": [
+        {
+          "id": "c7b43bb8de",
+          "text": "Điện và hạ tầng"
+        },
+        {
+          "id": "f80031fdbd",
+          "text": "Phân phối và bán lẻ"
+        },
+        {
+          "id": "7eb633e5cb",
+          "text": "Phần mềm và dịch vụ"
+        }
+      ],
+      "prompt": "Ngành nào thường có Capex / Revenue cao?"
+    },
+    {
+      "correct_option_id": "09e246dbbc",
+      "id": "ch12-exam-q19",
+      "options": [
+        {
+          "id": "09e246dbbc",
+          "text": "Tài sản xuống cấp, yếu tăng trưởng sau này"
+        },
+        {
+          "id": "33fcc78e82",
+          "text": "Doanh thu chắc chắn tăng mạnh hơn"
+        },
+        {
+          "id": "07dfe83029",
+          "text": "Chất lượng lợi nhuận luôn được cải thiện"
+        }
+      ],
+      "prompt": "Capex rất thấp do cắt giảm quá mức có thể dẫn đến điều gì?"
+    },
+    {
+      "correct_option_id": "424aed2747",
+      "id": "ch12-exam-q20",
+      "options": [
+        {
+          "id": "424aed2747",
+          "text": "Doanh nghiệp tự tài trợ đầu tư bằng tiền kinh doanh"
+        },
+        {
+          "id": "50b6b52306",
+          "text": "Doanh nghiệp phải vay thêm để đầu tư"
+        },
+        {
+          "id": "56c216f23d",
+          "text": "Doanh nghiệp đang không có doanh thu"
+        }
+      ],
+      "prompt": "Capex nhỏ hơn CFO cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "a5da1799e9",
+      "id": "ch12-exam-q21",
+      "options": [
+        {
+          "id": "a5da1799e9",
+          "text": "CFO trừ Capex"
+        },
+        {
+          "id": "8e0e5f9ec6",
+          "text": "CFO cộng Capex"
+        },
+        {
+          "id": "f44b6660bc",
+          "text": "LNST trừ Capex"
+        }
+      ],
+      "prompt": "Dòng tiền tự do (FCF) bằng gì?"
+    },
+    {
+      "correct_option_id": "c1d33da51b",
+      "id": "ch12-exam-q22",
+      "options": [
+        {
+          "id": "c1d33da51b",
+          "text": "Trả cổ tức, trả nợ mà không cần vay thêm"
+        },
+        {
+          "id": "d04659626f",
+          "text": "Ngừng hoàn toàn mọi hoạt động đầu tư"
+        },
+        {
+          "id": "38d51be45c",
+          "text": "Tăng hàng tồn kho mà không cần tiền"
+        }
+      ],
+      "prompt": "FCF Margin dương và ổn định giúp doanh nghiệp làm gì?"
+    },
+    {
+      "correct_option_id": "4a2d2b9f2a",
+      "id": "ch12-exam-q23",
+      "options": [
+        {
+          "id": "4a2d2b9f2a",
+          "text": "Có thể bình thường, cần xem FCF có trở lại dương"
+        },
+        {
+          "id": "7f70dd1b26",
+          "text": "Luôn là dấu hiệu doanh nghiệp sắp phá sản"
+        },
+        {
+          "id": "256c829376",
+          "text": "Cho thấy CFO của doanh nghiệp đang âm"
+        }
+      ],
+      "prompt": "FCF âm trong giai đoạn xây nhà máy mới nên hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "830ac4c5c9",
+      "id": "ch12-exam-q24",
+      "options": [
+        {
+          "id": "830ac4c5c9",
+          "text": "CFO giảm"
+        },
+        {
+          "id": "38f4747aa1",
+          "text": "Capex tăng theo kế hoạch mở rộng"
+        },
+        {
+          "id": "c008f4763a",
+          "text": "Doanh thu tăng nhanh hơn dự kiến"
+        }
+      ],
+      "prompt": "FCF giảm do nguyên nhân nào đáng lo hơn?"
+    },
+    {
+      "correct_option_id": "7f086f5ee7",
+      "id": "ch12-exam-q25",
+      "options": [
+        {
+          "id": "7f086f5ee7",
+          "text": "Dòng tiền tự do"
+        },
+        {
+          "id": "3585572987",
+          "text": "Khoản vay ngân hàng mới"
+        },
+        {
+          "id": "1839b97a4e",
+          "text": "Tiền phát hành thêm cổ phiếu"
+        }
+      ],
+      "prompt": "Cổ tức tiền mặt bền vững nên được chi trả từ đâu?"
+    },
+    {
+      "correct_option_id": "6522f24c80",
+      "id": "ch12-exam-q26",
+      "options": [
+        {
+          "id": "6522f24c80",
+          "text": "Chỉ đẹp tạm thời, có thể làm yếu tăng trưởng"
+        },
+        {
+          "id": "f381e631e4",
+          "text": "Luôn là dấu hiệu tốt và bền vững"
+        },
+        {
+          "id": "0185c6160c",
+          "text": "Cho thấy CFO đang tăng rất mạnh"
+        }
+      ],
+      "prompt": "FCF tăng chỉ nhờ ngừng đầu tư nên được đánh giá thế nào?"
+    },
+    {
+      "correct_option_id": "4648b1456f",
+      "id": "ch12-exam-q27",
+      "options": [
+        {
+          "id": "4648b1456f",
+          "text": "CFO trừ Capex của năm đó"
+        },
+        {
+          "id": "a378fe4467",
+          "text": "LNST cộng khấu hao của năm đó"
+        },
+        {
+          "id": "25004d4a5a",
+          "text": "Doanh thu trừ chi phí của năm đó"
+        }
+      ],
+      "prompt": "FCF mỗi năm trong FCF Positive Streak được tính bằng gì?"
+    },
+    {
+      "correct_option_id": "984b6a7ba9",
+      "id": "ch12-exam-q28",
+      "options": [
+        {
+          "id": "984b6a7ba9",
+          "text": "Chỉ đếm các năm dương liền nhau tính từ năm gần nhất"
+        },
+        {
+          "id": "2da5c61c29",
+          "text": "Cộng tất cả các năm dương trong giai đoạn"
+        },
+        {
+          "id": "e40f8f3325",
+          "text": "Đếm các năm dương liền nhau dài nhất bất kỳ"
+        }
+      ],
+      "prompt": "Doanh nghiệp có FCF dương ở các năm rải rác, xen kẽ năm âm. Chuỗi FCF dương được đếm thế nào?"
+    },
+    {
+      "correct_option_id": "60f7e1f723",
+      "id": "ch12-exam-q29",
+      "options": [
+        {
+          "id": "60f7e1f723",
+          "text": "Doanh nghiệp tạo tiền đều đặn qua nhiều năm"
+        },
+        {
+          "id": "228baa1a3e",
+          "text": "Doanh nghiệp có biên lợi nhuận cao nhất ngành"
+        },
+        {
+          "id": "41e5bd7977",
+          "text": "Doanh nghiệp không bao giờ phải đầu tư"
+        }
+      ],
+      "prompt": "Chuỗi FCF dương dài cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "52264b80a0",
+      "id": "ch12-exam-q30",
+      "options": [
+        {
+          "id": "52264b80a0",
+          "text": "Năm FCF dương nhưng nằm ngoài chuỗi hiện tại"
+        },
+        {
+          "id": "f34788f2f0",
+          "text": "Năm FCF âm nhỏ hơn năm trước"
+        },
+        {
+          "id": "8de16ee055",
+          "text": "Năm chưa có số liệu báo cáo"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện FCF Positive Streak, cột xanh nhạt hơn thể hiện gì?"
+    }
+  ],
+  "salt": "1bf5be7faa1ef5b327c6980611fea4b77fa0ca54133f3dc821e7dbbeb12087ed"
+}

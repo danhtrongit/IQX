@@ -146,16 +146,172 @@
     },
     "ch05-l04": {
       "questions": 5
+    },
+    "ch06-exam": {
+      "questions": 30
+    },
+    "ch06-l01": {
+      "questions": 5
+    },
+    "ch06-l02": {
+      "questions": 5
+    },
+    "ch06-l03": {
+      "questions": 5
+    },
+    "ch06-l04": {
+      "questions": 5
+    },
+    "ch07-exam": {
+      "questions": 30
+    },
+    "ch07-l01": {
+      "questions": 5
+    },
+    "ch07-l02": {
+      "questions": 5
+    },
+    "ch07-l03": {
+      "questions": 5
+    },
+    "ch07-l04": {
+      "questions": 5
+    },
+    "ch07-l05": {
+      "questions": 5
+    },
+    "ch07-l06": {
+      "questions": 5
+    },
+    "ch07-l07": {
+      "questions": 5
+    },
+    "ch08-exam": {
+      "questions": 30
+    },
+    "ch08-l01": {
+      "questions": 5
+    },
+    "ch08-l02": {
+      "questions": 5
+    },
+    "ch08-l03": {
+      "questions": 5
+    },
+    "ch08-l04": {
+      "questions": 5
+    },
+    "ch08-l05": {
+      "questions": 5
+    },
+    "ch08-l06": {
+      "questions": 5
+    },
+    "ch09-exam": {
+      "questions": 30
+    },
+    "ch09-l01": {
+      "questions": 5
+    },
+    "ch09-l02": {
+      "questions": 5
+    },
+    "ch09-l03": {
+      "questions": 5
+    },
+    "ch09-l04": {
+      "questions": 5
+    },
+    "ch09-l05": {
+      "questions": 5
+    },
+    "ch10-exam": {
+      "questions": 30
+    },
+    "ch10-l01": {
+      "questions": 5
+    },
+    "ch10-l02": {
+      "questions": 5
+    },
+    "ch10-l03": {
+      "questions": 5
+    },
+    "ch10-l04": {
+      "questions": 5
+    },
+    "ch10-l05": {
+      "questions": 5
+    },
+    "ch10-l06": {
+      "questions": 5
+    },
+    "ch10-l07": {
+      "questions": 5
+    },
+    "ch11-exam": {
+      "questions": 30
+    },
+    "ch11-l01": {
+      "questions": 5
+    },
+    "ch11-l02": {
+      "questions": 5
+    },
+    "ch11-l03": {
+      "questions": 5
+    },
+    "ch11-l04": {
+      "questions": 5
+    },
+    "ch12-exam": {
+      "questions": 30
+    },
+    "ch12-l01": {
+      "questions": 5
+    },
+    "ch12-l02": {
+      "questions": 5
+    },
+    "ch12-l03": {
+      "questions": 5
+    },
+    "ch12-l04": {
+      "questions": 5
+    },
+    "ch12-l05": {
+      "questions": 5
+    },
+    "ch13-exam": {
+      "questions": 30
+    },
+    "ch13-l01": {
+      "questions": 5
+    },
+    "ch13-l02": {
+      "questions": 5
+    },
+    "ch13-l03": {
+      "questions": 5
+    },
+    "ch13-l04": {
+      "questions": 5
+    },
+    "ch13-l05": {
+      "questions": 5
+    },
+    "ch13-l06": {
+      "questions": 5
     }
   },
   "counts": {
-    "banks": 49,
+    "banks": 101,
     "blocks": {
-      "cards": 76,
-      "chart": 96,
+      "cards": 299,
+      "chart": 273,
       "chart_grid": 4,
       "checklist": 13,
-      "definitions": 38,
+      "definitions": 67,
       "formula": 1,
       "funnel": 2,
       "gauges": 1,
@@ -164,7 +320,7 @@
       "kv_cards": 2,
       "note": 3,
       "objection": 6,
-      "paragraph": 233,
+      "paragraph": 407,
       "practice_case": 4,
       "quote": 17,
       "roleplay_score": 1,
@@ -172,30 +328,30 @@
       "scenario": 19,
       "stats": 5,
       "steps": 11,
-      "table": 30,
+      "table": 55,
       "tiles": 3,
       "workpad": 18
     },
     "chart_kinds": {
       "candle_glyphs": 8,
-      "category": 10,
-      "compare": 16,
+      "category": 96,
+      "compare": 34,
       "diagram": 5,
-      "flow": 6,
+      "flow": 24,
       "gantt": 3,
       "milestones": 2,
-      "scale": 3,
-      "schematic": 17,
+      "scale": 14,
+      "schematic": 25,
       "segment_bar": 11,
-      "series_panels": 33
+      "series_panels": 69
     },
-    "charts": 114,
+    "charts": 291,
     "intro_blocks": 2,
-    "lessons": 44,
-    "questions": 280,
-    "sections": 252,
-    "summaries": 44,
-    "svg_ids": 129,
+    "lessons": 88,
+    "questions": 740,
+    "sections": 557,
+    "summaries": 88,
+    "svg_ids": 273,
     "text_figures": 12
   },
   "format": "iqx-academy-import-manifest-v1",
@@ -470,10 +626,274 @@
       "charts": 5,
       "questions": 5,
       "sections": 11
+    },
+    "ch06-l01": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch06-l02": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch06-l03": {
+      "blocks": 14,
+      "charts": 3,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch06-l04": {
+      "blocks": 10,
+      "charts": 3,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch07-l01": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch07-l02": {
+      "blocks": 11,
+      "charts": 3,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch07-l03": {
+      "blocks": 12,
+      "charts": 3,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch07-l04": {
+      "blocks": 13,
+      "charts": 3,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch07-l05": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch07-l06": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch07-l07": {
+      "blocks": 12,
+      "charts": 3,
+      "questions": 5,
+      "sections": 6
+    },
+    "ch08-l01": {
+      "blocks": 17,
+      "charts": 4,
+      "questions": 5,
+      "sections": 8
+    },
+    "ch08-l02": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch08-l03": {
+      "blocks": 13,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch08-l04": {
+      "blocks": 15,
+      "charts": 3,
+      "questions": 5,
+      "sections": 8
+    },
+    "ch08-l05": {
+      "blocks": 14,
+      "charts": 3,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch08-l06": {
+      "blocks": 14,
+      "charts": 3,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch09-l01": {
+      "blocks": 17,
+      "charts": 5,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch09-l02": {
+      "blocks": 16,
+      "charts": 5,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch09-l03": {
+      "blocks": 16,
+      "charts": 5,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch09-l04": {
+      "blocks": 15,
+      "charts": 5,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch09-l05": {
+      "blocks": 16,
+      "charts": 5,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch10-l01": {
+      "blocks": 15,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch10-l02": {
+      "blocks": 13,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch10-l03": {
+      "blocks": 13,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch10-l04": {
+      "blocks": 12,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch10-l05": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch10-l06": {
+      "blocks": 13,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch10-l07": {
+      "blocks": 13,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch11-l01": {
+      "blocks": 18,
+      "charts": 5,
+      "questions": 5,
+      "sections": 8
+    },
+    "ch11-l02": {
+      "blocks": 15,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch11-l03": {
+      "blocks": 16,
+      "charts": 5,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch11-l04": {
+      "blocks": 18,
+      "charts": 5,
+      "questions": 5,
+      "sections": 8
+    },
+    "ch12-l01": {
+      "blocks": 17,
+      "charts": 5,
+      "questions": 5,
+      "sections": 8
+    },
+    "ch12-l02": {
+      "blocks": 15,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch12-l03": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch12-l04": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch12-l05": {
+      "blocks": 13,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch13-l01": {
+      "blocks": 16,
+      "charts": 5,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch13-l02": {
+      "blocks": 15,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch13-l03": {
+      "blocks": 13,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch13-l04": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch13-l05": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
+    },
+    "ch13-l06": {
+      "blocks": 14,
+      "charts": 4,
+      "questions": 5,
+      "sections": 7
     }
   },
   "outputs": {
-    "catalog.json": "20318db976138a9b2cce964b93dc2ef73b9b63d0dd93e9f4ca0a637c63c0413a",
+    "catalog.json": "e3c9268b8c31b7c15e6cb39fb467797857ad5b92bd40a866c1bfbdc7b9b8b0f2",
     "lessons/ch01-l01.vi.json": "32088215bb1532ce8798c9b87623e5348286da6ab964b2a0022eec19894d97aa",
     "lessons/ch01-l02.vi.json": "b458ec90b8695fac6fd47ade07a5f9153022d3742ff1c267731a20af189544aa",
     "lessons/ch01-l03.vi.json": "cc4a0d85c4c389b4113c6339919909921501842b703dd5879532652b530fc17e",
@@ -518,61 +938,157 @@
     "lessons/ch05-l02.vi.json": "8d5c8fe6884960421bb9627a07f8019fcec042b94804ea39f71ff40a42d7f45a",
     "lessons/ch05-l03.vi.json": "042de3f6ce1ff23f7b77e2d6c644035de2ecdae09968c223374d7c0886836282",
     "lessons/ch05-l04.vi.json": "6794bcc33bf3c44bb8427eb6d2d5d88e1448620cedba0a3444c130acc88dbb0c",
-    "questions/ch01-exam.private.json": "4c7f562d97ccb3ae62b19e4bbdaeeb489463ca3d9c483dca126deff93ef224d5",
-    "questions/ch01-l01.private.json": "a884193331e1eeff5c4842d70f2555d91a3d15683ccb759343c7633627c476bb",
-    "questions/ch01-l02.private.json": "8b366075160a09220171adc54d5ef84640733c6eb852074d0ec89eea999ef4ee",
-    "questions/ch01-l03.private.json": "0f41331356c8f3aa935ab0b284a52232048cc83e45031f2187b399feedec6825",
-    "questions/ch01-l04.private.json": "79dce3afc4524a6bccd33d192e93343768b9d291a2de99b6b0f6e3eba3a83a19",
-    "questions/ch01-l05.private.json": "f5f983d2e17e20c895c6fd8cdd34ffd7e95abc37dc9eded6e72cf73da5b3c08e",
-    "questions/ch01-l06.private.json": "ae49ca410ee9196bd2074eacc96d59a92858c50b40dd62ebab00ec0f1bdf7544",
-    "questions/ch01-l07.private.json": "c3293dfa822c118da28d521a195319d00d387540c4bf9367f18ed7b0ebecbe68",
-    "questions/ch01-l08.private.json": "5bd10dadd2bacca883b689227a11d899bfbffc1583ee435e65abb01b91f9eb19",
-    "questions/ch01-l09.private.json": "fc155c3589e399c627fa0c16483dfa2b8cddbcd263a0dc2cd33b1972458632fb",
-    "questions/ch01-l10.private.json": "d6d7bacab44a4c65ccb2a5a74f1bf2ac395a7d2e2b0d946f5f84f2fc714a854a",
-    "questions/ch02-exam.private.json": "f8a23ab822d2f9eb09a8df597c10e14fac4d1b488dc59e98a7146a6944edd94a",
-    "questions/ch02-l01.private.json": "fccee560ff6607d2868d55655076c9052e0b503fc827cc60c7124565836c2a13",
-    "questions/ch02-l02.private.json": "874fb2b545822dde81943b134eb6607546a98bffc6c88bf1d80b470dfcbfa5c2",
-    "questions/ch02-l03.private.json": "8bbd88b4e079d83ea0e18e3a01271731f9ea2b44f2d0ee8279c2beca3bb43262",
-    "questions/ch02-l04.private.json": "a1b907ee5adc1147d244de7b3c418b94e87aca8eb6650f5d84fff25089d8f0c5",
-    "questions/ch02-l05.private.json": "b3961aa2ebc277c8663752e7b8bd81a4e2505fda4e137ccd8df7ed26ea3b7829",
-    "questions/ch02-l06.private.json": "4d3a1e74333c3814eb599da6f91a11ec7f275fb5967270eac2dc5bf743c6fbd0",
-    "questions/ch02-l07.private.json": "e4ae18808c500bb2dd71e4ce32ef67abaea3c4e782505e5ec056da2be0f92a6f",
-    "questions/ch02-l08.private.json": "a9e79081857dac8769d4677a9615041851a34b28fde007c0effab4acba00874e",
-    "questions/ch02-l09.private.json": "0ecd2d0b37d2509b5b12b0c9349bffa280f8fed2bbfa08c7eb9b71f52e6cd850",
-    "questions/ch02-l10.private.json": "ee24f63311e8831f8e25ef3b620bfcd5953c8d069d0149bf4b7e43801886684d",
-    "questions/ch03-exam.private.json": "8f50671fb97bd1d12aacb21bcf92475e17f7cee3a35b7717596c6ada2b9192e3",
-    "questions/ch03-l01.private.json": "a0e1eaba550dbd83ccfbf4dd31589823e89564ca2050893acdcc48a46d9a4c9f",
-    "questions/ch03-l02.private.json": "7a83e6471ddc40b4d3d636d0af1124b83636c0a97d685a12032d8d6e22ec2330",
-    "questions/ch03-l03.private.json": "969a7604baa3af532e64bc5821bc072dad3dfd5b6c63f65629c5309dd6f6e63e",
-    "questions/ch03-l04.private.json": "0a0c93d87bbd34eb001880c23a42a3492e618f423f81da993e6a866b28c82078",
-    "questions/ch03-l05.private.json": "aceb3cf9cad1f311a5e41f3717ddde1a564eafbcb19dea667fb9c33c9d218245",
-    "questions/ch03-l06.private.json": "22e7a463d35f0a6be2716f7b2aa15769c84928084f3e3dee6d04f59f85ddf1d7",
-    "questions/ch03-l07.private.json": "7c5c5f576c4813cd440314e5b399860aba279edbe091d914621016e0d365b357",
-    "questions/ch03-l08.private.json": "b76a28d07ebe2c261ff3687eb47b1cf7ce08d625bf104d426d39dbf2c6b3e877",
-    "questions/ch03-l09.private.json": "7b66df84852a405d671fe40383fc136d5c5dfb3430bb5ea66f48914fe6d1759b",
-    "questions/ch03-practice.private.json": "9279e2f0f9927bc29161bfe7f965facff8cdfbc3574d165478bc8d158cec5c8b",
-    "questions/ch04-exam.private.json": "ddd37abf95c8aae3307cd1fb8c9177b9c8643fe29829f9a9b13c748b9b2eef03",
-    "questions/ch04-l01.private.json": "5e8203aa7777becb17988726039855c8d3e988beb21cb8954e6be17c2a719bbc",
-    "questions/ch04-l02.private.json": "43b137a522d0502f4824bd3fd9713d4c811c4138054c7c1c564c0ec36316d791",
-    "questions/ch04-l03.private.json": "4301fb7d9f3297e0887042b5a9d87e6d452ccd6dd999cd3f2fdfdf84fc8e079d",
-    "questions/ch04-l04.private.json": "407ee2cc5e18a3a37766f5c364588c4f82d807ef091f410a60cddb8d7903fcb6",
-    "questions/ch04-l05.private.json": "215ea1a34eb80bb4f8a93cee38c3051ab0f50ee29027c9a5cd4e1b617ebbc675",
-    "questions/ch04-l06.private.json": "5102d422b13db59ed302ea04640120a1525fef343e5287dbc6088751ec9ca5ea",
-    "questions/ch04-l07.private.json": "293e2ff0ce371abc469399bac363898e97c538294571e8f024d55e32d05a0af3",
-    "questions/ch04-l08.private.json": "649e44be2318b20d320ec25411587165cbaa9cdcf6e450ea53679afd1928defb",
-    "questions/ch04-l09.private.json": "1798bdc8c1f703a4e2505f2b0741b2b2eef3ded4d443956328d09c36af976fe6",
-    "questions/ch04-l10.private.json": "8b67336ef86ef86a1e976c3ba8e0266af07ba03930f23428bdc0f876377053d7",
-    "questions/ch05-exam.private.json": "2c47af190aeb0fe0517e0b120727909ce97862d470b473597403c0ffd1db4b71",
-    "questions/ch05-l01.private.json": "908927207aa608bb3c4622de58c033873ac680b92e96b3e1ad794ae9362edc93",
-    "questions/ch05-l02.private.json": "670361063d8a2554cff9ee9798d34fe3ab3b0118f6b919ef090f66b0e3937369",
-    "questions/ch05-l03.private.json": "76fa899612a657a47887da088649e2959f266ff82792ec6aa3a5a487a8b43913",
-    "questions/ch05-l04.private.json": "5c0fe6bfc8727f14fb9032c72db9e56e9f5ff9d9a2b9c4acf574675ab49b515f",
-    "retired-lessons.json": "77f342f134a53b75abdd7f705a94688d13aca2db4498dbfe0bb69d3b1275996d"
+    "lessons/ch06-l01.vi.json": "d4bcbf674b91a48bafdb2134e728f8b0cd9d60beb91af57e96746edf82af44eb",
+    "lessons/ch06-l02.vi.json": "dc65c873ed5336e355b98444de0de6ae58340867cf4eaee79c39db7ceeedca58",
+    "lessons/ch06-l03.vi.json": "32a088d7a3e4011050fed38f1da1883f1cbf5e15bb969752751772bcfc3d635f",
+    "lessons/ch06-l04.vi.json": "8b80d97b613ed7b7e2e0547ba0ed6fc4e18a1fd7a9c0cd5a224b9ce089747f59",
+    "lessons/ch07-l01.vi.json": "c164e679efa9dbb852c400d631b7e90684f1a34b7e6f4bf713a94cc54dba903f",
+    "lessons/ch07-l02.vi.json": "e8019fef8bdbeb633f30a89814bab78862f69c0b7a1153556773ba80674e67b7",
+    "lessons/ch07-l03.vi.json": "128e627c96572905cca7aabd1aded49d1b866aaaefd74934a7bd1e5369af0356",
+    "lessons/ch07-l04.vi.json": "449ea33378093a64fbb0dd5592f349b75c69fd603f04ba4083852f3fa87ed826",
+    "lessons/ch07-l05.vi.json": "f75e59f61bd8a88a5c9077ee3f2ee7c006cfd9ce0c78c3360a2cd5babf9c5ef2",
+    "lessons/ch07-l06.vi.json": "2dceee7281e837d835e0736381d5d6d69a59f84191750758102ff7a91c9fdb5e",
+    "lessons/ch07-l07.vi.json": "e8cebaa00dcfd460226327b98365651beb4bbbb2872a4dc761fc98f31b5f9a08",
+    "lessons/ch08-l01.vi.json": "0e64ce2922839c20b24e80fdd4a5c94e46d356b6cfdec02f222fc75df7bdc230",
+    "lessons/ch08-l02.vi.json": "fc4f6f4114bbb98974f5ae8f77247ffa81ba923dfd5883926a6c3812b5f50a2f",
+    "lessons/ch08-l03.vi.json": "e4aa1b4785c2c50e6a08522946ff03a9b578cce68af38e3b5e42f12be675df3d",
+    "lessons/ch08-l04.vi.json": "bb25c5d5652bdf44ec989b419debdb48274c6981ef9b34ba80eb2857cc19bb92",
+    "lessons/ch08-l05.vi.json": "30cec947b577f83913fb71d1aadb14814a35bccc43b1984cd740c6b20088c5af",
+    "lessons/ch08-l06.vi.json": "59e943bce42498b166a9b8985eea50f290089e5e23b4e81e4f4e5aaaab025b86",
+    "lessons/ch09-l01.vi.json": "28672edc9cdf159df712a14cd599248b21e4c448d4348672d7fe1f7639bb0fe7",
+    "lessons/ch09-l02.vi.json": "132ac55fbbda24e0fd5d1caa0d507737848cb4d362e1221562e2c4657e41ea66",
+    "lessons/ch09-l03.vi.json": "3e96e117c8ec0974440c596c45582bad7c02c8b5eacb15ee37c2cc0497487dc4",
+    "lessons/ch09-l04.vi.json": "0ad1e7955ee5a842fea07b923b89701ed539a04736a3292903b73fda2cfbc3e4",
+    "lessons/ch09-l05.vi.json": "126bc260db9de17d3c9dd6ff0fda23c272648e1ed0d9e3230d04babe18412418",
+    "lessons/ch10-l01.vi.json": "c1d36e2ea3b0745bb12e0b5032eacaad985a3be21bab0025c665cd7724dd9fe9",
+    "lessons/ch10-l02.vi.json": "f67a5f951c455744f6a702715263e28c5f0e95c90547d0c58d26297bd582bd31",
+    "lessons/ch10-l03.vi.json": "4d0657d56432f5dc3a0555331f99d98990b362175c75778f927d1234075a5a2d",
+    "lessons/ch10-l04.vi.json": "99701b99de3759012981294ca6bec20a3152391cd75fcdee672ad3ee84c7fc40",
+    "lessons/ch10-l05.vi.json": "5f7727791367b7469167506e46960a7ba9296619ea0753633421158d202c086f",
+    "lessons/ch10-l06.vi.json": "89fd7d378c0e76f337eee7f4532b3f4a11fbbeec5c50a3aec5f87ca188b6d015",
+    "lessons/ch10-l07.vi.json": "a1867071b91b870fef265ba8ebf96f28aba075d6db15ed40ff5fbd33824fb1b6",
+    "lessons/ch11-l01.vi.json": "c5cdc4e6f6aa61c502517247cabd605039f43f394cdb2126b86ebd3690a7d1d4",
+    "lessons/ch11-l02.vi.json": "138bffa6ba00cf5adb0e0029921952a40ce041c60e713195ffc4af91564242c6",
+    "lessons/ch11-l03.vi.json": "da5676c391d7bc4298a4feea1cefa419943cdab7b321784aada29d043bf091da",
+    "lessons/ch11-l04.vi.json": "8af7519990add33e5bd587190c78757d44726c6a489f1359daa8f8f573eb8368",
+    "lessons/ch12-l01.vi.json": "81bcde825b1c68b4e9302e2dcb697bd8211b5af7d5d1a0aec623f61e3ff19317",
+    "lessons/ch12-l02.vi.json": "29154210fdb18047686ee7133e1528e5b709c61b570aa024927b92122a064016",
+    "lessons/ch12-l03.vi.json": "c89e6e33316d1d8c612d25948114f06cb7914cfe6757d1af1bb1a5eb060c5729",
+    "lessons/ch12-l04.vi.json": "851db9deb6d26675200f9f10a8a3d3179a46f6cd616fcf0620d692a30da9871f",
+    "lessons/ch12-l05.vi.json": "c303a39253dc800787022dd910b743dadccbdd17678ca0edab403df571d966b7",
+    "lessons/ch13-l01.vi.json": "42dee271a46180ce13b3abfe7a45033ff8d76c44109f40f5833459b46378fad2",
+    "lessons/ch13-l02.vi.json": "5ab1a1a38d93f0e16a29308a4c3f31eb2fea74231056d9531d433d6ac03fedce",
+    "lessons/ch13-l03.vi.json": "dd16371fbb7bb921223d372865e12483ba9dbc29c5c22af6fff0800c52a84b82",
+    "lessons/ch13-l04.vi.json": "289b7cf90db305d72be215b0c0386021533233c4854a550ee082b2eeb2d92caa",
+    "lessons/ch13-l05.vi.json": "7a606374c0b4d663ef71a2a27d69016877997e0d0d13772feba3ee89c3a3023b",
+    "lessons/ch13-l06.vi.json": "74d2678e654ccdea62db1fa1fed482359b8b523d149498d87c6036479bb0a689",
+    "questions/ch01-exam.private.json": "2125e6c639db2d6cdb58ae566e9b8f8bb0cf80eff5d191cb2329bdddcd876ac0",
+    "questions/ch01-l01.private.json": "c250c1f544a073cf01eea416a5d18a3f594fd6406226f1cbefabf60e8e2f1cb4",
+    "questions/ch01-l02.private.json": "62223a24dff377f803621825364df6c8b456237870e0ab6685e8f6aaa4831910",
+    "questions/ch01-l03.private.json": "ec96fc9b53e3db97a5fbd740a65aff447b60f523157caabd8ec33fc61039e079",
+    "questions/ch01-l04.private.json": "d9bc07e6c78fc60c0dab5b19d9626e0ecd675ad8e4f5df143aaf584c863e5c81",
+    "questions/ch01-l05.private.json": "54f16fc3a472b28649b23c2ddf7cc00560345e6a8cf5a6c5bf69b904401e37d4",
+    "questions/ch01-l06.private.json": "d0e62ea903a4391851354e02bed6e117f4c8d5403671de4d2ea747b1778a49d6",
+    "questions/ch01-l07.private.json": "98ea17230127f176994d3f1158986ad3d3630a8da913f540bc2809ab9e513417",
+    "questions/ch01-l08.private.json": "823072f36ecacb6edb8a4832906bb8a8e38f2021cd77ca95f623d7c82f1faeef",
+    "questions/ch01-l09.private.json": "a069e6619a67b94cd3d3fe1adce1af16e939dc23c5d6a489fc1e223c98c32734",
+    "questions/ch01-l10.private.json": "ce4d55e231406ba6773fab47269808371758f6936840e87b990a068d9f8dbc05",
+    "questions/ch02-exam.private.json": "6b3b85c23e3e5fe968ea8f7517b8b9508a70659285eef30d8289a5756d04b374",
+    "questions/ch02-l01.private.json": "00a777df89be7053144b064cd642923df04d42d3d4c2deda1f558fd37c4208a3",
+    "questions/ch02-l02.private.json": "7a6c92c63cfc5a7656b1f0b7d07f09aef40aecc47fe2a142e51f95fd47664d1f",
+    "questions/ch02-l03.private.json": "da2ce511af465037b9c43df50ca5d4e00d777949d178d3656dd3c6976d3047db",
+    "questions/ch02-l04.private.json": "3464b12a7cdbe0035353fd9fd0cc536b583b0332032d7f94245d2eb1a9b811c2",
+    "questions/ch02-l05.private.json": "cce90529e0336c72a84917e3a74c0e3bc390d65ce66cbb3f9cb0b4b1f3be9026",
+    "questions/ch02-l06.private.json": "3df793ae9981d8a527101df1cb5e9202ab76c0b46b69020f94dc1dcec90821ce",
+    "questions/ch02-l07.private.json": "18beda118105e44f87ca8c9db93c282db22008398d549c99c4170d432cc701a8",
+    "questions/ch02-l08.private.json": "8a20794a51e6aaaef1dff81701465247bcce7604580ef923de022452298a8445",
+    "questions/ch02-l09.private.json": "41837df051bd3ad01ad76403f32e13ecb5c986a0052fd5eed045975ca0e8446e",
+    "questions/ch02-l10.private.json": "27a66dd4d9debca69da53537dc2f21494422f1f5a0640c3b4a0836d9f0c2db5b",
+    "questions/ch03-exam.private.json": "92734437a8fb5e94e44fec82f3394fb72cd9c9e905b269d21c51ca24ad02f6cc",
+    "questions/ch03-l01.private.json": "f2f5d5a5405b5d30deb5104a98776e223e7312ecf3183ac1487593d0237943ee",
+    "questions/ch03-l02.private.json": "588d065664016e2795cdf3b23db5244b469d1d8a90343996a6eef013bdbe0804",
+    "questions/ch03-l03.private.json": "d23dc383bfcc0c1ef518675e3a26b6838f7f53551c89af23567ea15cfcd6d8b9",
+    "questions/ch03-l04.private.json": "3ae1fc23840c22664c6dc1658246493e8d92e1a5162c3100fbf7cb25e9fa8133",
+    "questions/ch03-l05.private.json": "1293094b88e6f253117a5bbf8d0fdbbeb64a2b6e3ffb6c20b67c710c6dcaf8c0",
+    "questions/ch03-l06.private.json": "5675709c427b7f7c989797f4261c8850bb01136271c57e7aa8f6bfcc2815eff8",
+    "questions/ch03-l07.private.json": "21ace0454172888f02263c498d206d251c514469eba32700dacac81aa2b726ac",
+    "questions/ch03-l08.private.json": "1512db4e7b80c591e49e04261a8055e6d1f9f145414862503306fb0c90963958",
+    "questions/ch03-l09.private.json": "9c51a9856f5ea4d107dbda0020e4b6366080b9ce09367324b08c725a0e4a0954",
+    "questions/ch03-practice.private.json": "40860eb837fa923a848e1632e03270ad12832e0ea33a1d8fc345552e66813fb1",
+    "questions/ch04-exam.private.json": "e94b814b61a2f27505c2fc0615a921b4eb124a7732469496feac7033877c0449",
+    "questions/ch04-l01.private.json": "9a4d384f4cd3ff2e0190aa750fd460078b3de28c1470e68033b7e0212e71c07c",
+    "questions/ch04-l02.private.json": "7a9dba94d9d7e306fc551acd049f9b77a4a4e796e66b117f1017888020a90cd7",
+    "questions/ch04-l03.private.json": "81ec9c40e1fc318a7c3efc8dc2e9afd47223c3ab0218f6f40725c89459f2541d",
+    "questions/ch04-l04.private.json": "5ebb7cdabe5d21f9a3925c0b87f7d0bf38dd9df1fec6a0d1900758ee56faa230",
+    "questions/ch04-l05.private.json": "5df449328712657134d2e83f79f17753ec43d6239fcbe2654b73f7b246d9258f",
+    "questions/ch04-l06.private.json": "b3420911e3d73465d2e7185f850a2cf97846a93e06c8494912dd9e222be798f8",
+    "questions/ch04-l07.private.json": "24e365e0a42b908ab17cf74091509577bfbe6cf8bc212772db4001d5c2eac63c",
+    "questions/ch04-l08.private.json": "b85693c3366cb8ac8127f1761ead1f7eedd24dc796b9e3f2de75f633c7fdf74f",
+    "questions/ch04-l09.private.json": "0612304b0a5f2a3162aa8d854551ba3991186aa01ff56a43ed8896d7eb01f88b",
+    "questions/ch04-l10.private.json": "8e0b9420f1d2fb5213b8c2e875ba63032eb350ac6dd5d6bc4ca0cd103db243b7",
+    "questions/ch05-exam.private.json": "ab96c1e2c711e157dfc4e4c79cfb29e2480b1f264ec626b8ca941dcfa6c47b91",
+    "questions/ch05-l01.private.json": "f9772cbfa4ed3d9516793975d61a61deffbb15bcf177c8429933994fc2ab6225",
+    "questions/ch05-l02.private.json": "224a401a1f88a8a59b458aa7d8fca2168a5991b99f6b458712ce28dd0b1de04b",
+    "questions/ch05-l03.private.json": "9ebb811ee9a6e07637f6ee8743d4ea739925a6fbb000c398330ecc12f57bec84",
+    "questions/ch05-l04.private.json": "b665777044382d90ac598452030aace4eda5c065fc2f67d0fcc124e1ef257579",
+    "questions/ch06-exam.private.json": "7658834a8454dfd5a23509fa6c9cfac04ab3034816e4b923a82bc61e83de1345",
+    "questions/ch06-l01.private.json": "92c86ba3f1c5b36437e7638cfae727742d89dedcf002d656644a6bd82f189758",
+    "questions/ch06-l02.private.json": "b4740c4d2328327dfb3a07b4ebee3617552b34d1ebc731a17dc974286eff194c",
+    "questions/ch06-l03.private.json": "f0ef37a0303c46686d3bf383becc587a9f594ac6c2c3fe0839c7ed9c96664bbb",
+    "questions/ch06-l04.private.json": "ccaff7a5a16578bea955b6ce572e9983aaa0ed1376f8bf90bd40d851c1830ab2",
+    "questions/ch07-exam.private.json": "c5cdc58b9760eff9f62c21f72f93fbcc4b4d65afa1bcfa82801328d98245cd5c",
+    "questions/ch07-l01.private.json": "5649a0d9461bec258442c54e7a213b19ab63eb90efc26033a25c65a1132620a3",
+    "questions/ch07-l02.private.json": "9e1c335f5384682add221f3ba8256e71203f8d9e45508579eb88d4244213191b",
+    "questions/ch07-l03.private.json": "d63c5a161733639b0dc6e3a5797cd3403cfcfa70c620f16e8c4910da105b9258",
+    "questions/ch07-l04.private.json": "312c60b94df11a05a8dad386293f842a3a583b23304d02f736fd1424b393568c",
+    "questions/ch07-l05.private.json": "284d0fd0e92fd74c7a7d0a66b07b8a23c64d2014879ee30d3354bfef199232e3",
+    "questions/ch07-l06.private.json": "aeecebadcec87b26d1fe0a163c62bc59caa49422b5650022b798ea68529d5c1c",
+    "questions/ch07-l07.private.json": "518ae8fea0e0e477c4c7a8d582fa6bdf437e76e75961c0aa0af549ca2a402c3a",
+    "questions/ch08-exam.private.json": "36e6b0ff7286c06354fc2d6b5fd636d18207108a215ccfb4ff5c33b96cb35aea",
+    "questions/ch08-l01.private.json": "526361053b44bbffa01a9551a90ac75449f7ce0245af5cd9eadd46aab7337a90",
+    "questions/ch08-l02.private.json": "17e2c2acb802c7721762df6a064fc2ced48b4fc128807f6de30aeb8a563f24a9",
+    "questions/ch08-l03.private.json": "e41ad9bb6a4567c0af9b4128b05916b07221e0790fb65862d3d730284f214877",
+    "questions/ch08-l04.private.json": "6e5245a479d4462260310561e81669715477eb747569fe0aec4b6349c1fa283d",
+    "questions/ch08-l05.private.json": "42151eefc04ece40381ed07fc15364025b38ebf33d509baa6d8ad84f887ec446",
+    "questions/ch08-l06.private.json": "8d7e7ff92eca3bd61c18b82f68b42ab8f9bb40155e6aeed68e75f819f37e5710",
+    "questions/ch09-exam.private.json": "5b681787273d0c09590414c3abf316e31dd93a8c1bcd7b00d52e8181dddd7e16",
+    "questions/ch09-l01.private.json": "0dac708d7f2e55987e5919c740d96900a91846156494561dc5e902e2c4c605c8",
+    "questions/ch09-l02.private.json": "f4159d911f9fa24e142532f5af96fd3c39b6798dd9895132ca7d22c546e53008",
+    "questions/ch09-l03.private.json": "e2e5a243e0fec85ee626a611fbac39d1164d850b5e8ee85887e42335dc886d7a",
+    "questions/ch09-l04.private.json": "20c6b81084611881d5d394fa1589917526cb0702a11df97b5ee5957a4f581eac",
+    "questions/ch09-l05.private.json": "9e752e27036d66f0437f4c27c39918fdc62ded1d1ff58b8d0f4c39325fb582cc",
+    "questions/ch10-exam.private.json": "1f085ba4eb18c184dd45cc76622684725c38c48f05cdd556a540f79e3637d5be",
+    "questions/ch10-l01.private.json": "729e17d50640827d124a9d8745da2f8b1b33350bc620e650a8bbfab38c5c984c",
+    "questions/ch10-l02.private.json": "1688e6414128fe0f95176526eedb787d1b088c602612d15c21e95bc6a55fca1b",
+    "questions/ch10-l03.private.json": "c72f59c6ba27f985810363d9bf0bfb48e352dca9af522f0a0ec99d1d8962a5de",
+    "questions/ch10-l04.private.json": "53c186db8c20df7579f7efe399debfa88499ca93fde38e83b3d6f685e40a2016",
+    "questions/ch10-l05.private.json": "f3305981e81ade534afccdf489e1dd660cb582cd898d75f1b8fef276d80d9efe",
+    "questions/ch10-l06.private.json": "465ee7b48035b46c743ecfcfa6763b8385c3f933d3f46da764a97f9bfbd4d54d",
+    "questions/ch10-l07.private.json": "309485308672527d61bf290fbb748a1d9b71dc69e5623dee8958e3e948a682f1",
+    "questions/ch11-exam.private.json": "5ed0b77c2956b92eb518bb05a131a3745c6b4041eb064ed3dd48d6aff137277a",
+    "questions/ch11-l01.private.json": "46ddb15b774ae59c76385011734c1cd7a18f61c7f8df3f618116af7126ef7ec8",
+    "questions/ch11-l02.private.json": "87fc64e032079a4dd711931d2a88b0e24831a3453277a030c052e301d40b44c2",
+    "questions/ch11-l03.private.json": "0ad6584353d435b3be29e2f4d65336a0cb7a221ae1410794c1303d3eef88a5a0",
+    "questions/ch11-l04.private.json": "82c81baa872d0eba4185d22dc9b9f470724952a46892be1b56b882e1c07ae217",
+    "questions/ch12-exam.private.json": "f9a8e563d52a19f1ed3e450ab5d7a8b18f93bb12c2ad4c3cf8f46ee2e81f4c50",
+    "questions/ch12-l01.private.json": "43a465b2124287f98ed4d84f2a9b31ee892ab37fddb0fb0554945760599d2a30",
+    "questions/ch12-l02.private.json": "9eb99cab3ebd46ff50291224846b39d73d89bd214153777270d6c977d2d90ee1",
+    "questions/ch12-l03.private.json": "a2057687a1f9c20dee295914938b1434534fec2b117f944a5fa4a83826a05003",
+    "questions/ch12-l04.private.json": "d4040de9a428d547a689c02c0db88eed7208762768e087381f8015cde5aca088",
+    "questions/ch12-l05.private.json": "9284df2a6b18dc16550c90bb0c68a65065c924b70c9b4b34824885261fe1e60a",
+    "questions/ch13-exam.private.json": "1d3f5cfdab0dde927dda6b702602ca8dc7a92a362a9471259cb6705a00b49d0f",
+    "questions/ch13-l01.private.json": "0d071105df9fb7461093180423f6f9270e66f15b60cdea89df946df81ce564a4",
+    "questions/ch13-l02.private.json": "fc2255e9501d51196a0a51534a5ef519c19eae6ab43472194052f56517178baa",
+    "questions/ch13-l03.private.json": "f0388b139e19d21b7348c25945cdd91a7467e8617b44acfa4c92ec736a2d833f",
+    "questions/ch13-l04.private.json": "348b92b4495a4d9938a4cda00d9b897b5114065cfe3ae19f717ef0455e316ecd",
+    "questions/ch13-l05.private.json": "0f692be7bb7715c8a82a211e8072ef8b8091316cf7483b83491d2f90a94a6ba6",
+    "questions/ch13-l06.private.json": "ffb10939a168e34ca9f886895d04ec21e9d2f437bafe269a1c7713d9acf7833d",
+    "retired-lessons.json": "99a1bbce492d931f6c94b40d8a45d0bf09adffba81a3fef3f3f19fb7a6e52184"
   },
   "source": {
-    "bytes": 566586,
-    "file": "IQX-Hoc-Vien-MAU.html",
-    "sha256": "52d11cb805ee8ce28dc6172908a6383b421947e128c0d908a3c92e389072059f"
+    "bytes": 1798022,
+    "file": "IQX-Hoc-Vien-v3-MAU.html",
+    "sha256": "67a8afcea01093dd5a477b681fcf2423d4a21899b1897d9c290537307be5826e"
   },
   "warnings": []
 }

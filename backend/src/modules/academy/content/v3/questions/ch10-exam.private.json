@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-exam",
+  "questions": [
+    {
+      "correct_option_id": "e6199aa96a",
+      "id": "ch10-exam-q01",
+      "options": [
+        {
+          "id": "e6199aa96a",
+          "text": "Mỗi đồng vốn chủ tạo ra bao nhiêu lợi nhuận"
+        },
+        {
+          "id": "781b9e0054",
+          "text": "Mỗi đồng doanh thu còn lại bao nhiêu lãi"
+        },
+        {
+          "id": "a50bc40b73",
+          "text": "Mỗi đồng tài sản tạo ra bao nhiêu đồng doanh thu"
+        }
+      ],
+      "prompt": "ROE cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "b70dc32700",
+      "id": "ch10-exam-q02",
+      "options": [
+        {
+          "id": "b70dc32700",
+          "text": "Để phản ánh vốn thực sự dùng trong cả kỳ"
+        },
+        {
+          "id": "6d06f1260b",
+          "text": "Để ROE luôn cao hơn ROA"
+        },
+        {
+          "id": "5f6e7dbde7",
+          "text": "Vì vốn chủ cuối kỳ không được công bố trên báo cáo"
+        }
+      ],
+      "prompt": "Vì sao dùng vốn chủ bình quân khi tính ROE?"
+    },
+    {
+      "correct_option_id": "a357b30afe",
+      "id": "ch10-exam-q03",
+      "options": [
+        {
+          "id": "a357b30afe",
+          "text": "Đòn bẩy tài chính"
+        },
+        {
+          "id": "f784c4af04",
+          "text": "Vòng quay tài sản"
+        },
+        {
+          "id": "460df4db4a",
+          "text": "Biên lợi nhuận ròng"
+        }
+      ],
+      "prompt": "Thành phần nào trong DuPont đo mức dùng thêm nợ?"
+    },
+    {
+      "correct_option_id": "a3289afc63",
+      "id": "ch10-exam-q04",
+      "options": [
+        {
+          "id": "a3289afc63",
+          "text": "Từ 15% trở lên"
+        },
+        {
+          "id": "31924dc3d4",
+          "text": "Dưới 5%"
+        },
+        {
+          "id": "a18f552bca",
+          "text": "Đúng bằng lãi suất tiết kiệm"
+        }
+      ],
+      "prompt": "Mức ROE nào thường được xem là tốt nếu duy trì ổn định?"
+    },
+    {
+      "correct_option_id": "f652945c7c",
+      "id": "ch10-exam-q05",
+      "options": [
+        {
+          "id": "f652945c7c",
+          "text": "Làm ROE méo mó, không phản ánh hiệu quả thật"
+        },
+        {
+          "id": "4cf203e46f",
+          "text": "Làm ROE luôn bằng ROA"
+        },
+        {
+          "id": "9fb5a87319",
+          "text": "Không ảnh hưởng gì đến ROE vì lợi nhuận không đổi"
+        }
+      ],
+      "prompt": "Vốn chủ rất nhỏ hoặc âm ảnh hưởng thế nào đến ROE?"
+    },
+    {
+      "correct_option_id": "51378d98af",
+      "id": "ch10-exam-q06",
+      "options": [
+        {
+          "id": "51378d98af",
+          "text": "Lợi nhuận kinh doanh tăng"
+        },
+        {
+          "id": "c22c916b21",
+          "text": "Vốn chủ co lại do lỗ lũy kế"
+        },
+        {
+          "id": "69efee44a6",
+          "text": "Một khoản lãi bán tài sản"
+        }
+      ],
+      "prompt": "ROE tăng vì điều gì thì đáng tin hơn?"
+    },
+    {
+      "correct_option_id": "3d458893b4",
+      "id": "ch10-exam-q07",
+      "options": [
+        {
+          "id": "3d458893b4",
+          "text": "ROA tính trên toàn bộ tài sản, ROE chỉ trên vốn chủ"
+        },
+        {
+          "id": "174f6753e5",
+          "text": "ROA dùng doanh thu làm tử số, ROE dùng lợi nhuận sau thuế"
+        },
+        {
+          "id": "cd1ee4bc29",
+          "text": "ROA tính theo quý, ROE tính theo năm"
+        }
+      ],
+      "prompt": "ROA khác ROE ở điểm nào?"
+    },
+    {
+      "correct_option_id": "51edba242d",
+      "id": "ch10-exam-q08",
+      "options": [
+        {
+          "id": "51edba242d",
+          "text": "ROE bằng ROA nhân đòn bẩy tài chính"
+        },
+        {
+          "id": "2ba8b36f35",
+          "text": "ROE bằng ROA chia vòng quay tài sản"
+        },
+        {
+          "id": "88ec86c756",
+          "text": "ROE bằng ROA cộng biên lợi nhuận gộp"
+        }
+      ],
+      "prompt": "Liên hệ giữa ROE và ROA là gì?"
+    },
+    {
+      "correct_option_id": "24abbe4b8a",
+      "id": "ch10-exam-q09",
+      "options": [
+        {
+          "id": "24abbe4b8a",
+          "text": "Ngân hàng"
+        },
+        {
+          "id": "4d1444f295",
+          "text": "Phần mềm"
+        },
+        {
+          "id": "5adf8778e2",
+          "text": "Dịch vụ tư vấn"
+        }
+      ],
+      "prompt": "Ngành nào thường có ROA thấp do cần nhiều tài sản?"
+    },
+    {
+      "correct_option_id": "58424b3f16",
+      "id": "ch10-exam-q10",
+      "options": [
+        {
+          "id": "58424b3f16",
+          "text": "Tài sản mới có sinh lời hay không"
+        },
+        {
+          "id": "6224f39509",
+          "text": "Doanh nghiệp đã vay bao nhiêu"
+        },
+        {
+          "id": "9cfc9216b0",
+          "text": "Giá cổ phiếu sẽ tăng hay giảm trong năm tới"
+        }
+      ],
+      "prompt": "Sau một đợt đầu tư lớn, ROA giúp kiểm tra điều gì?"
+    },
+    {
+      "correct_option_id": "eb5cdc62d7",
+      "id": "ch10-exam-q11",
+      "options": [
+        {
+          "id": "eb5cdc62d7",
+          "text": "Lợi nhuận hoạt động trên toàn bộ vốn đầu tư"
+        },
+        {
+          "id": "2a91b5e972",
+          "text": "Lợi nhuận sau thuế trên vốn chủ sở hữu bình quân"
+        },
+        {
+          "id": "616ffe5f45",
+          "text": "Doanh thu trên tổng tài sản bình quân"
+        }
+      ],
+      "prompt": "ROIC đo lường điều gì?"
+    },
+    {
+      "correct_option_id": "e9e90ffe46",
+      "id": "ch10-exam-q12",
+      "options": [
+        {
+          "id": "e9e90ffe46",
+          "text": "Tiền mặt chưa được dùng cho kinh doanh"
+        },
+        {
+          "id": "59380247e5",
+          "text": "Tiền mặt là một khoản nợ phải trả"
+        },
+        {
+          "id": "fd724e7c78",
+          "text": "Tiền mặt luôn được chia hết cho cổ đông mỗi năm"
+        }
+      ],
+      "prompt": "Vì sao vốn đầu tư được trừ tiền mặt?"
+    },
+    {
+      "correct_option_id": "eeab6fe76e",
+      "id": "ch10-exam-q13",
+      "options": [
+        {
+          "id": "eeab6fe76e",
+          "text": "Doanh nghiệp đang phá hủy giá trị"
+        },
+        {
+          "id": "8d4e1deb62",
+          "text": "Doanh nghiệp đang tạo ra giá trị"
+        },
+        {
+          "id": "9ccbf47362",
+          "text": "Doanh nghiệp có lợi thế cạnh tranh"
+        }
+      ],
+      "prompt": "ROIC thấp hơn chi phí vốn trong nhiều năm nói lên điều gì?"
+    },
+    {
+      "correct_option_id": "398e8c3db3",
+      "id": "ch10-exam-q14",
+      "options": [
+        {
+          "id": "398e8c3db3",
+          "text": "Mức lợi nhuận tối thiểu người góp vốn đòi hỏi"
+        },
+        {
+          "id": "d3e97e5b4d",
+          "text": "Tổng chi phí lãi vay doanh nghiệp phải trả trong năm"
+        },
+        {
+          "id": "4453fb41d0",
+          "text": "Chi phí mua sắm tài sản cố định"
+        }
+      ],
+      "prompt": "Chi phí vốn là gì?"
+    },
+    {
+      "correct_option_id": "a01d1700bb",
+      "id": "ch10-exam-q15",
+      "options": [
+        {
+          "id": "a01d1700bb",
+          "text": "Lợi thế cạnh tranh bền vững"
+        },
+        {
+          "id": "f3b7a89085",
+          "text": "Doanh nghiệp vay nợ ngày càng nhiều"
+        },
+        {
+          "id": "80a3c5b73b",
+          "text": "Lợi nhuận bất thường lặp lại"
+        }
+      ],
+      "prompt": "ROIC cao và ổn định nhiều năm thường là dấu hiệu của gì?"
+    },
+    {
+      "correct_option_id": "e6835fc902",
+      "id": "ch10-exam-q16",
+      "options": [
+        {
+          "id": "e6835fc902",
+          "text": "Chi phí trực tiếp làm ra sản phẩm"
+        },
+        {
+          "id": "5f80effc9d",
+          "text": "Chi phí bán hàng và quản lý doanh nghiệp"
+        },
+        {
+          "id": "8c63c74b32",
+          "text": "Chi phí lãi vay và thuế"
+        }
+      ],
+      "prompt": "Giá vốn hàng bán gồm những chi phí nào?"
+    },
+    {
+      "correct_option_id": "cb16507943",
+      "id": "ch10-exam-q17",
+      "options": [
+        {
+          "id": "cb16507943",
+          "text": "Mỗi ngành có cấu trúc chi phí rất khác nhau"
+        },
+        {
+          "id": "886eff8a7e",
+          "text": "Vì biên gộp chỉ dùng cho ngành bán lẻ"
+        },
+        {
+          "id": "f1bb4a36cf",
+          "text": "Vì các ngành dùng đơn vị tiền tệ khác nhau khi báo cáo"
+        }
+      ],
+      "prompt": "Vì sao không nên so biên gộp giữa các ngành khác nhau?"
+    },
+    {
+      "correct_option_id": "992d7fd031",
+      "id": "ch10-exam-q18",
+      "options": [
+        {
+          "id": "992d7fd031",
+          "text": "Giá nguyên liệu đầu vào"
+        },
+        {
+          "id": "3d59e8c1a5",
+          "text": "Số lượng cổ đông"
+        },
+        {
+          "id": "b227318e5f",
+          "text": "Lãi suất tiền gửi ngân hàng kỳ hạn dài"
+        }
+      ],
+      "prompt": "Với doanh nghiệp ngành hàng hóa, biên gộp thường thay đổi theo yếu tố nào?"
+    },
+    {
+      "correct_option_id": "cea7d3807f",
+      "id": "ch10-exam-q19",
+      "options": [
+        {
+          "id": "cea7d3807f",
+          "text": "Để giảm dao động theo mùa vụ"
+        },
+        {
+          "id": "daf30f0779",
+          "text": "Để biên gộp luôn tăng"
+        },
+        {
+          "id": "665f0b79af",
+          "text": "Vì báo cáo quý không có giá vốn"
+        }
+      ],
+      "prompt": "Vì sao nên dùng biên gộp tính theo 4 quý?"
+    },
+    {
+      "correct_option_id": "d2d96afb1e",
+      "id": "ch10-exam-q20",
+      "options": [
+        {
+          "id": "d2d96afb1e",
+          "text": "Biên ròng đã trừ thêm chi phí hoạt động, lãi vay, thuế"
+        },
+        {
+          "id": "1327056f48",
+          "text": "Biên ròng chưa trừ giá vốn hàng bán"
+        },
+        {
+          "id": "dbb411b596",
+          "text": "Biên ròng tính trên tổng tài sản"
+        }
+      ],
+      "prompt": "Biên ròng khác biên gộp ở điểm nào?"
+    },
+    {
+      "correct_option_id": "adb4c63730",
+      "id": "ch10-exam-q21",
+      "options": [
+        {
+          "id": "adb4c63730",
+          "text": "Làm biên ròng đẹp lên tạm thời"
+        },
+        {
+          "id": "3cd7e7eada",
+          "text": "Làm biên gộp của quý đó giảm mạnh"
+        },
+        {
+          "id": "70f8e7b39e",
+          "text": "Không ảnh hưởng đến biên ròng"
+        }
+      ],
+      "prompt": "Lợi nhuận bất thường ảnh hưởng thế nào đến biên ròng?"
+    },
+    {
+      "correct_option_id": "eab1c33eb8",
+      "id": "ch10-exam-q22",
+      "options": [
+        {
+          "id": "eab1c33eb8",
+          "text": "Tổng lợi nhuận vẫn có thể giảm"
+        },
+        {
+          "id": "ad3e19f5fb",
+          "text": "Tổng lợi nhuận chắc chắn tăng theo biên ròng"
+        },
+        {
+          "id": "c81ad46b0e",
+          "text": "ROE chắc chắn tăng"
+        }
+      ],
+      "prompt": "Biên ròng tăng nhưng doanh thu giảm mạnh thì điều gì có thể xảy ra?"
+    },
+    {
+      "correct_option_id": "18eb4ec853",
+      "id": "ch10-exam-q23",
+      "options": [
+        {
+          "id": "18eb4ec853",
+          "text": "Mức khai thác tài sản để tạo doanh thu"
+        },
+        {
+          "id": "1f33fbd818",
+          "text": "Mức lợi nhuận còn lại trên mỗi đồng doanh thu"
+        },
+        {
+          "id": "2e9c6a8f9f",
+          "text": "Số ngày thu tiền từ khách hàng"
+        }
+      ],
+      "prompt": "Vòng quay tài sản đo lường điều gì?"
+    },
+    {
+      "correct_option_id": "95ba3d2c38",
+      "id": "ch10-exam-q24",
+      "options": [
+        {
+          "id": "95ba3d2c38",
+          "text": "Một bên lãi mỏng quay nhanh, một bên lãi dày quay chậm"
+        },
+        {
+          "id": "63817e6431",
+          "text": "Hai bên có cùng biên lợi nhuận ròng"
+        },
+        {
+          "id": "b2aa9d5fba",
+          "text": "Hai bên có cùng vòng quay tài sản"
+        }
+      ],
+      "prompt": "Siêu thị và thủy điện có thể cùng ROA vì sao?"
+    },
+    {
+      "correct_option_id": "832ea6f589",
+      "id": "ch10-exam-q25",
+      "options": [
+        {
+          "id": "832ea6f589",
+          "text": "Tồn kho ứ đọng hoặc đầu tư kém hiệu quả"
+        },
+        {
+          "id": "478ea0b979",
+          "text": "Doanh thu tăng nhanh hơn tổng tài sản bình quân"
+        },
+        {
+          "id": "805ea05faf",
+          "text": "Doanh nghiệp trả hết nợ vay"
+        }
+      ],
+      "prompt": "Vòng quay tài sản giảm liên tục có thể do nguyên nhân nào?"
+    },
+    {
+      "correct_option_id": "82cd287b77",
+      "id": "ch10-exam-q26",
+      "options": [
+        {
+          "id": "82cd287b77",
+          "text": "Tồn kho bình quân so với giá vốn"
+        },
+        {
+          "id": "c889f14bb9",
+          "text": "Tồn kho cuối kỳ so với lợi nhuận"
+        },
+        {
+          "id": "7e7280793f",
+          "text": "Phải thu bình quân so với doanh thu"
+        }
+      ],
+      "prompt": "Ngày tồn kho được tính dựa trên gì?"
+    },
+    {
+      "correct_option_id": "a49e51a72c",
+      "id": "ch10-exam-q27",
+      "options": [
+        {
+          "id": "a49e51a72c",
+          "text": "Khách hàng trả tiền chậm hơn"
+        },
+        {
+          "id": "6ff58edc9c",
+          "text": "Hàng bán nhanh hơn"
+        },
+        {
+          "id": "2a066b44f8",
+          "text": "Được nợ nhà cung cấp lâu hơn trước đây"
+        }
+      ],
+      "prompt": "Ngày thu tiền dài ra cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "84300e5f46",
+      "id": "ch10-exam-q28",
+      "options": [
+        {
+          "id": "84300e5f46",
+          "text": "CCC ngắn lại"
+        },
+        {
+          "id": "7e71451114",
+          "text": "CCC dài ra"
+        },
+        {
+          "id": "a2e53c92c3",
+          "text": "CCC không đổi"
+        }
+      ],
+      "prompt": "Ngày trả tiền tăng làm CCC thay đổi thế nào?"
+    },
+    {
+      "correct_option_id": "99661cb54e",
+      "id": "ch10-exam-q29",
+      "options": [
+        {
+          "id": "99661cb54e",
+          "text": "Cần thêm vốn lưu động, phải vay nhiều hơn"
+        },
+        {
+          "id": "4386307405",
+          "text": "Dòng tiền từ hoạt động kinh doanh chắc chắn tăng lên"
+        },
+        {
+          "id": "31e5d7261d",
+          "text": "Biên lợi nhuận gộp chắc chắn tăng"
+        }
+      ],
+      "prompt": "CCC kéo dài liên tục thường dẫn tới điều gì?"
+    },
+    {
+      "correct_option_id": "ca314cb5e8",
+      "id": "ch10-exam-q30",
+      "options": [
+        {
+          "id": "ca314cb5e8",
+          "text": "Có thể làm xấu quan hệ với đối tác"
+        },
+        {
+          "id": "70bf81d789",
+          "text": "Vì CCC chắc chắn sẽ trở thành số âm ngay quý sau"
+        },
+        {
+          "id": "e5271c9992",
+          "text": "Vì tồn kho sẽ tăng theo"
+        }
+      ],
+      "prompt": "Vì sao CCC rút ngắn chỉ nhờ chậm trả nhà cung cấp cần thận trọng?"
+    }
+  ],
+  "salt": "d89fe9d91092ef6a6cb3952f5448e1b696ab2980489a68bb6c14f17f8f71e5bd"
+}

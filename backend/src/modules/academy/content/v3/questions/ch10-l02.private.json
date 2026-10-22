@@ -1,0 +1,102 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l02",
+  "questions": [
+    {
+      "correct_option_id": "22b3bac733",
+      "id": "ch10-l02-q01",
+      "options": [
+        {
+          "id": "22b3bac733",
+          "text": "Lợi nhuận sau thuế 4 quý chia tổng tài sản bình quân"
+        },
+        {
+          "id": "ee56e81cef",
+          "text": "Lợi nhuận gộp 4 quý chia vốn chủ sở hữu bình quân"
+        },
+        {
+          "id": "143fd23548",
+          "text": "Doanh thu 4 quý chia tổng tài sản bình quân"
+        }
+      ],
+      "prompt": "ROA được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "11e77dadf9",
+      "id": "ch10-l02-q02",
+      "options": [
+        {
+          "id": "11e77dadf9",
+          "text": "Tổng tài sản gồm cả phần tài trợ bằng nợ"
+        },
+        {
+          "id": "209a176558",
+          "text": "ROA không tính lợi nhuận của quý gần nhất"
+        },
+        {
+          "id": "e2998a061e",
+          "text": "ROA dùng lợi nhuận trước thuế"
+        }
+      ],
+      "prompt": "Vì sao ROA thường thấp hơn ROE?"
+    },
+    {
+      "correct_option_id": "c17b573281",
+      "id": "ch10-l02-q03",
+      "options": [
+        {
+          "id": "c17b573281",
+          "text": "ROE được đẩy lên chủ yếu nhờ nợ vay"
+        },
+        {
+          "id": "fb7f8058ff",
+          "text": "Doanh nghiệp hoàn toàn không dùng đến nợ vay"
+        },
+        {
+          "id": "698f33642e",
+          "text": "Biên lợi nhuận gộp đang rất cao"
+        }
+      ],
+      "prompt": "ROE cao nhưng ROA thấp thường cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "ff3ed2c459",
+      "id": "ch10-l02-q04",
+      "options": [
+        {
+          "id": "ff3ed2c459",
+          "text": "So với các doanh nghiệp cùng ngành"
+        },
+        {
+          "id": "75743d4825",
+          "text": "So ngân hàng với doanh nghiệp phần mềm"
+        },
+        {
+          "id": "e43d904b16",
+          "text": "So với lãi suất tiền gửi mỗi tháng"
+        }
+      ],
+      "prompt": "Khi so sánh ROA, cách làm nào hợp lý?"
+    },
+    {
+      "correct_option_id": "c76e2cdd3d",
+      "id": "ch10-l02-q05",
+      "options": [
+        {
+          "id": "c76e2cdd3d",
+          "text": "Tổng tài sản bình quân"
+        },
+        {
+          "id": "cc4e260746",
+          "text": "Lợi nhuận sau thuế từng quý"
+        },
+        {
+          "id": "7f9acb506a",
+          "text": "Vốn chủ sở hữu cuối kỳ"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của ROA, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "01e54f2f45a4e54f422d38b84f7e3299606098f0905081c933b0aad2ce98d281"
+}

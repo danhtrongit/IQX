@@ -585,12 +585,14 @@ function VerticalChart({
               : bottom
           )
         )
+        // A sublabel at the last slot would run past the chart; it keeps its anchor inside.
+        const placed = clampAnchor(cx(index), textWidth(text, 10), width)
         return (
           <text
             key={index}
-            x={cx(index)}
+            x={placed.x}
             y={top - 4 - valueRow}
-            textAnchor="middle"
+            textAnchor={placed.anchor}
             className={cn(LABEL_FILL, "text-[10px] tabular-nums")}
           >
             {text}

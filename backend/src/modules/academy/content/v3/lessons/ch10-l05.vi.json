@@ -1,0 +1,597 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l5-g1": {
+      "alt": "Từ 100 đồng doanh thu, trừ 74,1 đồng giá vốn còn 25,9 đồng lợi nhuận gộp, trừ 12,8 đồng chi phí bán hàng quản lý, 1,5 đồng lãi vay và 2,3 đồng thuế còn 9,3 đồng lợi nhuận sau thuế",
+      "axes": {
+        "x": {
+          "ticks": [
+            {
+              "label": "Doanh thu",
+              "v": 0
+            },
+            {
+              "label": "Giá vốn",
+              "v": 1
+            },
+            {
+              "label": "Lợi nhuận gộp",
+              "v": 2
+            },
+            {
+              "label": "Chi phí bán hàng, quản lý",
+              "v": 3
+            },
+            {
+              "label": "Lãi vay",
+              "v": 4
+            },
+            {
+              "label": "Thuế",
+              "v": 5
+            },
+            {
+              "label": "Lợi nhuận sau thuế",
+              "v": 6
+            }
+          ]
+        },
+        "y": {
+          "ticks": []
+        }
+      },
+      "domain": {
+        "x": [
+          -0.5,
+          6.5
+        ],
+        "y": [
+          -2,
+          102
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "base": 0,
+          "h": [
+            100
+          ],
+          "t": "bars",
+          "tones": [
+            "p1"
+          ],
+          "x": [
+            0
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            0,
+            100
+          ],
+          "t": "text",
+          "text": "100",
+          "tone": "price"
+        },
+        {
+          "base": 100,
+          "h": [
+            -74.1
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            1
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            1,
+            100
+          ],
+          "t": "text",
+          "text": "−74,1",
+          "tone": "price"
+        },
+        {
+          "base": 0,
+          "h": [
+            25.9
+          ],
+          "t": "bars",
+          "tones": [
+            "p5"
+          ],
+          "x": [
+            2
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            2,
+            25.900000000000006
+          ],
+          "t": "text",
+          "text": "25,9",
+          "tone": "warn"
+        },
+        {
+          "base": 25.9,
+          "h": [
+            -12.8
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            3
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            3,
+            25.900000000000006
+          ],
+          "t": "text",
+          "text": "−12,8",
+          "tone": "price"
+        },
+        {
+          "base": 13.1,
+          "h": [
+            -1.5
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            4
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            4,
+            13.100000000000005
+          ],
+          "t": "text",
+          "text": "−1,5",
+          "tone": "price"
+        },
+        {
+          "base": 11.6,
+          "h": [
+            -2.3
+          ],
+          "t": "bars",
+          "tones": [
+            "neg"
+          ],
+          "x": [
+            5
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            5,
+            11.600000000000005
+          ],
+          "t": "text",
+          "text": "−2,3",
+          "tone": "price"
+        },
+        {
+          "base": 0,
+          "h": [
+            9.3
+          ],
+          "t": "bars",
+          "tones": [
+            "pos"
+          ],
+          "x": [
+            6
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            6,
+            9.300000000000004
+          ],
+          "t": "text",
+          "text": "9,3",
+          "tone": "warn"
+        }
+      ]
+    },
+    "c10l5-g2": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Biên gộp",
+          "tone": "p5",
+          "values": [
+            23.4,
+            23.9,
+            24,
+            24.4,
+            24.8,
+            25.2,
+            25.6,
+            25.9
+          ]
+        },
+        {
+          "name": "Biên ròng",
+          "tone": "p1",
+          "values": [
+            6.9,
+            7.2,
+            7.4,
+            7.7,
+            8.2,
+            8.7,
+            9.1,
+            9.3
+          ]
+        }
+      ],
+      "title": "Biên gộp và biên ròng · %",
+      "unit": "%",
+      "value_labels": "none"
+    },
+    "c10l5-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "LNST từ kinh doanh chính",
+          "tone": "p1",
+          "values": [
+            94,
+            106,
+            109,
+            128,
+            132,
+            147,
+            152,
+            154
+          ]
+        },
+        {
+          "name": "Lãi bất thường",
+          "tone": "warn",
+          "values": [
+            null,
+            null,
+            null,
+            null,
+            180,
+            null,
+            null,
+            null
+          ]
+        }
+      ],
+      "title": "LNST theo quý · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c10l5-rep": {
+      "caption_tone": "price",
+      "caption_value": "9,3%",
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Biên lợi nhuận ròng",
+          "tone": "p1",
+          "values": [
+            6.8811,
+            7.2159,
+            7.3947,
+            7.7347,
+            8.1927,
+            8.6763,
+            9.0923,
+            9.2968
+          ]
+        }
+      ],
+      "title": "Biên lợi nhuận ròng",
+      "unit": "",
+      "value_labels": "none"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biên lợi nhuận ròng cho biết sau khi trừ hết mọi chi phí, lãi vay và thuế, mỗi đồng doanh thu còn lại bao nhiêu lợi nhuận cho cổ đông.",
+  "lesson_key": "fundamental:net_margin",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l5-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Biên lợi nhuận ròng</b> (Net Margin) bằng <b>lợi nhuận sau thuế</b> chia cho <b>doanh thu thuần</b>, tính theo 4 quý gần nhất. Từ 100 đồng doanh thu, doanh nghiệp mẫu còn lại 9,3 đồng sau khi trả mọi chi phí.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Biên lợi nhuận ròng là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khoảng cách giữa biên gộp và biên ròng là phần bị tiêu tốn bởi <b>chi phí bán hàng, chi phí quản lý, lãi vay và thuế</b>. Khoảng cách thu hẹp nghĩa là doanh nghiệp kiểm soát chi phí tốt hơn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l5-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bán hàng và quản lý doanh nghiệp, thường là phần lớn nhất.",
+              "title": "Chi phí hoạt động"
+            },
+            {
+              "text": "Chủ yếu là lãi vay, phụ thuộc mức nợ của doanh nghiệp.",
+              "title": "Chi phí tài chính"
+            },
+            {
+              "text": "Thuế thu nhập doanh nghiệp, phổ biến ở mức 20%.",
+              "title": "Thuế thu nhập"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Từ biên gộp đến biên ròng"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l5-rep",
+          "table_toggle": true,
+          "title": "Biên lợi nhuận ròng",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên ròng tính theo 4 quý gần nhất, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Lợi nhuận sau thuế cộng dồn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Lợi nhuận tăng nhanh hơn doanh thu thì đường biên ròng đi lên.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Biên ròng ổn định hoặc tăng dần, đến từ hoạt động kinh doanh chính.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "Biên ròng giảm dần, hoặc chỉ tăng nhờ khoản lãi bất thường không lặp lại.",
+              "title": "Tiêu cực",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Một quý lợi nhuận tăng vọt nhờ bán tài sản hay hoàn nhập dự phòng sẽ làm biên ròng đẹp lên tạm thời.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l5-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên gộp tăng mà biên ròng không tăng là chi phí đang phình ra.",
+              "title": "So cùng biên gộp"
+            },
+            {
+              "text": "Kiểm tra lợi nhuận đến từ kinh doanh chính hay từ thu nhập khác.",
+              "title": "Tìm nguồn lợi nhuận"
+            },
+            {
+              "text": "Biên ròng cao hơn đối thủ giúp doanh nghiệp chịu đựng tốt hơn khi thị trường xấu.",
+              "title": "So trong cùng ngành"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Khoản mục 4 quý"
+            },
+            {
+              "label": "Tỷ đồng"
+            },
+            {
+              "label": "% doanh thu"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Doanh thu thuần",
+                "6.279",
+                "100%"
+              ]
+            },
+            {
+              "cells": [
+                "Lợi nhuận gộp",
+                "1.626",
+                "25,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Chi phí bán hàng và quản lý",
+                "−803",
+                "−12,8%"
+              ]
+            },
+            {
+              "cells": [
+                "Lãi vay",
+                "−94",
+                "−1,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Thuế thu nhập",
+                "−146",
+                "−2,3%"
+              ]
+            },
+            {
+              "cells": [
+                "Lợi nhuận sau thuế",
+                "584",
+                {
+                  "rating": "good",
+                  "text": "9,3%"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Biên ròng tăng từ 6,9% lên 9,3% trong hai năm, cùng chiều với biên gộp.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lãi bán tài sản, thanh lý công ty con không lặp lại ở các năm sau.",
+              "title": "Bỏ qua lãi bất thường"
+            },
+            {
+              "text": "Bán lẻ biên ròng 3% có thể vẫn rất hiệu quả nhờ vòng quay lớn.",
+              "title": "So biên ròng khác ngành"
+            },
+            {
+              "text": "Biên ròng tăng nhưng doanh thu giảm mạnh thì tổng lợi nhuận vẫn có thể giảm.",
+              "title": "Chỉ nhìn biên, không nhìn quy mô"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Biên ròng</b> = lợi nhuận sau thuế ÷ doanh thu, tính theo 4 quý gần nhất.",
+    "Khoảng cách với biên gộp là <b>chi phí hoạt động, lãi vay và thuế</b>.",
+    "Biên ròng tăng nhờ <b>kinh doanh chính</b> mới bền, cẩn thận <b>lãi bất thường</b>.",
+    "Biên ròng là thành phần đầu tiên trong <b>phân tích DuPont</b> của ROE."
+  ],
+  "title": "Biên lợi nhuận ròng"
+}

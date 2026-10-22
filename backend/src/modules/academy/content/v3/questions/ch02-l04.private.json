@@ -3,62 +3,62 @@
   "item_id": "ch02-l04",
   "questions": [
     {
-      "correct_option_id": "d650944902",
+      "correct_option_id": "521615851d",
       "id": "ch02-l04-q01",
       "options": [
         {
-          "id": "d650944902",
+          "id": "521615851d",
           "text": "Hỏi thăm trước, giới thiệu sau"
         },
         {
-          "id": "c790546781",
+          "id": "049d798a51",
           "text": "Giới thiệu sản phẩm ngay câu đầu"
         },
         {
-          "id": "8f142ab7ad",
+          "id": "4b02762759",
           "text": "Gửi mã cổ phiếu để gây chú ý"
         }
       ],
       "prompt": "Nguyên tắc vàng khi mở lời là gì?"
     },
     {
-      "correct_option_id": "5ab1e8c073",
+      "correct_option_id": "7e07b457d5",
       "id": "ch02-l04-q02",
       "options": [
         {
-          "id": "5ab1e8c073",
+          "id": "7e07b457d5",
           "text": "Nhắc lại tối đa 2 lần với nội dung có ích"
         },
         {
-          "id": "e7596ee025",
+          "id": "8bd48404d9",
           "text": "Nhắn liên tục mỗi giờ"
         },
         {
-          "id": "d294b60fd8",
+          "id": "408b178281",
           "text": "Xóa khỏi danh sách ngay"
         }
       ],
       "prompt": "Khi người kia chưa trả lời tin nhắn, nên làm gì?"
     },
     {
-      "correct_option_id": "32c17e417c",
+      "correct_option_id": "84523c9758",
       "id": "ch02-l04-q03",
       "options": [
         {
-          "id": "32c17e417c",
+          "id": "84523c9758",
           "text": "Hỏi khách có tiện nói chuyện không"
         },
         {
-          "id": "9ab4657ae1",
+          "id": "beda54b126",
           "text": "Đọc ngay biểu phí"
         },
         {
-          "id": "ff2e048eab",
+          "id": "b9a468e019",
           "text": "Yêu cầu khách mở tài khoản"
         }
       ],
       "prompt": "Khi gọi điện, sau khi chào và nêu lý do, bước tiếp theo là gì?"
     }
   ],
-  "salt": "d7addb2b33c554a43e38d3f45e7a690e155f3a12bf677680c334dfe179cacf32"
+  "salt": "01ec068261bf33ee997bb507cd91e9438e36401be27b0b1af940bd351ece974b"
 }

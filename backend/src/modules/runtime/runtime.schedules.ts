@@ -149,6 +149,13 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       tradingDay: false,
       enabled: enabled('research.reports-sync'),
     },
+    {
+      name: 'flashback.round-cycle',
+      description: 'Vòng đời đề Flashback: đóng đề, chốt kết quả, trả thưởng, mở đề và tạo đề kế tiếp',
+      everyMs: 60_000,
+      tradingDay: false,
+      enabled: enabled('flashback.round-cycle'),
+    },
   ];
 }
 

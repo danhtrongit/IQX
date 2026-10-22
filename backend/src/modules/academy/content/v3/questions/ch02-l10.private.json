@@ -3,62 +3,62 @@
   "item_id": "ch02-l10",
   "questions": [
     {
-      "correct_option_id": "fcf18bf59e",
+      "correct_option_id": "f2b782ce7f",
       "id": "ch02-l10-q01",
       "options": [
         {
-          "id": "fcf18bf59e",
+          "id": "f2b782ce7f",
           "text": "Giữ mật khẩu, OTP và giao dịch thay khách"
         },
         {
-          "id": "4f1904848f",
+          "id": "3cbabfccd1",
           "text": "Gửi bản tin sáng"
         },
         {
-          "id": "678e6b95b9",
+          "id": "106b0a727c",
           "text": "Nhắc khách sự kiện cổ tức"
         }
       ],
       "prompt": "Hành động nào SACO tuyệt đối không được làm?"
     },
     {
-      "correct_option_id": "bbb0ae2eb9",
+      "correct_option_id": "5b5fb6ae6a",
       "id": "ch02-l10-q02",
       "options": [
         {
-          "id": "bbb0ae2eb9",
+          "id": "5b5fb6ae6a",
           "text": "5 người tiếp cận, 2 cuộc tư vấn, 1 bài chia sẻ"
         },
         {
-          "id": "b52405aa4a",
+          "id": "56577e353f",
           "text": "5 tài khoản, 2 triệu tiền nạp, 1 mã cổ phiếu"
         },
         {
-          "id": "fb396a1c46",
+          "id": "ed9e7f5f0a",
           "text": "5 cuộc gọi, 2 tin nhắn, 1 bữa ăn"
         }
       ],
       "prompt": "Công thức 5 - 2 - 1 mỗi ngày gồm những gì?"
     },
     {
-      "correct_option_id": "c516dfba5a",
+      "correct_option_id": "b66abcba2a",
       "id": "ch02-l10-q03",
       "options": [
         {
-          "id": "c516dfba5a",
+          "id": "b66abcba2a",
           "text": "Tiếp cận người mới"
         },
         {
-          "id": "23bfdff779",
+          "id": "d35e7defc6",
           "text": "Đặt lệnh giao dịch"
         },
         {
-          "id": "f745395c5c",
+          "id": "d546f63bae",
           "text": "Gửi bản tin sáng"
         }
       ],
       "prompt": "Buổi tối là thời gian phù hợp nhất cho việc gì?"
     }
   ],
-  "salt": "5f172b13f2c19f04f2b42a769a3378638addc2c1927f1a320b214e16e3d59301"
+  "salt": "630e878b9079db69bf1f2914b00176c8006314e293ceeda50d1b9fcdfe36a5e3"
 }

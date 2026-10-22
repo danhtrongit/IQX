@@ -3,62 +3,62 @@
   "item_id": "ch01-l06",
   "questions": [
     {
-      "correct_option_id": "a6560ea784",
+      "correct_option_id": "a9622c8d73",
       "id": "ch01-l06-q01",
       "options": [
         {
-          "id": "a6560ea784",
+          "id": "a9622c8d73",
           "text": "Quỹ mô phỏng một chỉ số, mua bán trên sàn như cổ phiếu"
         },
         {
-          "id": "2a98005016",
+          "id": "a29a91821b",
           "text": "Hợp đồng mua bán chỉ số trong tương lai"
         },
         {
-          "id": "3a8d90a8f5",
+          "id": "6bb78779e4",
           "text": "Một loại cổ phiếu ưu đãi"
         }
       ],
       "prompt": "ETF là gì?"
     },
     {
-      "correct_option_id": "e4e0d1716c",
+      "correct_option_id": "bbac17db77",
       "id": "ch01-l06-q02",
       "options": [
         {
-          "id": "e4e0d1716c",
+          "id": "bbac17db77",
           "text": "Giá cổ phiếu cơ sở không vượt giá thực hiện vào ngày đáo hạn"
         },
         {
-          "id": "1da7a89ab3",
+          "id": "7feb475b4b",
           "text": "Giá cổ phiếu cơ sở tăng mạnh"
         },
         {
-          "id": "7639b8f6aa",
+          "id": "95c2f66a32",
           "text": "Thị trường nghỉ lễ"
         }
       ],
       "prompt": "Chứng quyền mất toàn bộ giá trị khi nào?"
     },
     {
-      "correct_option_id": "f675308ffd",
+      "correct_option_id": "99db8aab50",
       "id": "ch01-l06-q03",
       "options": [
         {
-          "id": "f675308ffd",
+          "id": "99db8aab50",
           "text": "Quỹ và ETF"
         },
         {
-          "id": "383c35ed57",
+          "id": "709c8e89d1",
           "text": "Hợp đồng tương lai"
         },
         {
-          "id": "62c39d892c",
+          "id": "cbe3925e5b",
           "text": "Chứng quyền"
         }
       ],
       "prompt": "Nhóm sản phẩm nào phù hợp với người mới?"
     }
   ],
-  "salt": "b7504ee2eff2076041478aa7680487e82bd522d4a598ae03f3e25e04af2f61e0"
+  "salt": "b2261bb388f16644a5306112b36db65e8e634cdff5327093ca65e072bfe55824"
 }

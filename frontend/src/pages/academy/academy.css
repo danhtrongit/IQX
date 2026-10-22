@@ -1,5 +1,5 @@
 /*
- * Học viện v3.2 lesson styles. Only theme tokens (src/index.css) are used, so dark and light both
+ * Học viện v3.3 lesson styles. Only theme tokens (src/index.css) are used, so dark and light both
  * read well. Text never uses muted-foreground here: sub-text is --academy-subtle and chart labels
  * are --academy-label (DESIGN.md §2.2, Học viện exception). Lines, grids and bars may stay grey.
  */

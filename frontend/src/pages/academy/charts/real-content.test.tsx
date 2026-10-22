@@ -7,7 +7,7 @@ import { annotationsOnLine, textBoxes, textOverlaps } from "./test-geometry"
 import type { CatalogResponse, LessonContent } from "../content-types"
 
 /**
- * Integration: renders every real v3.2 lesson of the backend content (`content/v3/lessons` and
+ * Integration: renders every real v3.3 lesson of the backend content (`content/v3/lessons` and
  * `catalog.json` only, never the private question banks) at phone and desktop reader widths.
  */
 type LessonFile = Pick<
@@ -61,8 +61,8 @@ function renderLesson(lesson: LessonFile, width: number) {
 }
 
 describe("real Học viện content", () => {
-  it("has the 44 lesson files of the published catalog", () => {
-    expect(lessons).toHaveLength(44)
+  it("has the 88 lesson files of the published catalog", () => {
+    expect(lessons).toHaveLength(88)
     const published = catalog.chapters.flatMap((chapter) =>
       "items" in chapter ? chapter.items : []
     )
@@ -614,4 +614,76 @@ describe("real content: schematic labels", () => {
       }
     )
   }
+})
+
+const scales = lessons.flatMap((lesson) =>
+  Object.entries(lesson.charts)
+    .filter(([, chart]) => chart.kind === "scale")
+    .map(([id]) => [lesson.id, id] as const)
+)
+
+describe("real content: scale labels", () => {
+  for (const width of [358, 760]) {
+    it.each(scales)(
+      `%s %s keeps every label apart and inside at ${width}px`,
+      (lessonId, chartId) => {
+        const { container } = renderLesson(lessonById(lessonId), width)
+        const svg = chartSvg(container, chartId)
+        expect(textOverlaps(svg)).toEqual([])
+        expect(svgOverflows(container, width)).toEqual([])
+      }
+    )
+  }
+})
+
+describe("real content: v3.3 chart models", () => {
+  it("a compare chart with layout 'stack' draws its two leaves one under the other", () => {
+    const { container } = renderLesson(lessonById("ch08-l04"), 760)
+    const compare = container.querySelector(
+      '[data-chart-id="c8l4-rep"]'
+    ) as HTMLElement
+    expect(compare).not.toBeNull()
+    const figures = compare.querySelectorAll("figure")
+    expect(figures).toHaveLength(2)
+    // One column: a stacked compare never puts its leaves side by side.
+    expect(figures[0]?.parentElement?.style.gridTemplateColumns).toContain(
+      "1"
+    )
+    // Both leaves are drawn.
+    expect(compare.querySelectorAll("svg[viewBox]")).toHaveLength(2)
+  })
+
+  it("a category chart with orientation 'h' draws its bars sideways", () => {
+    const { container } = renderLesson(lessonById("ch10-l02"), 760)
+    const svg = chartSvg(container, "c10l2-g3")
+    // The zero axis of a horizontal chart is a vertical line.
+    expect(
+      [...svg.querySelectorAll("line")].filter(
+        (line) => line.getAttribute("x1") === line.getAttribute("x2")
+      ).length
+    ).toBeGreaterThan(0)
+    const bars = [...svg.querySelectorAll("rect")]
+      .map((rect) => ({
+        w: Number(rect.getAttribute("width")),
+        h: Number(rect.getAttribute("height")),
+      }))
+      .filter((bar) => bar.w > 0 && bar.h > 0)
+    expect(bars.some((bar) => bar.w > bar.h)).toBe(true)
+  })
+
+  it("a scale chart draws its zones and its markers", () => {
+    const { container } = renderLesson(lessonById("ch12-l02"), 358)
+    const svg = chartSvg(container, "c12l2-g2")
+    const printed = texts(svg)
+    expect(printed).toContain("Cần theo dõi")
+    expect(printed).toContain("Có tiền thật")
+    expect(printed).toContain("Doanh nghiệp B · 0,4")
+    // The narrow first zone names itself on two lines instead of reaching into the next zone.
+    const zone = [...svg.querySelectorAll("text")].find((node) =>
+      (node.textContent ?? "").includes("Lợi nhuận")
+    ) as SVGTextElement
+    expect(
+      [...zone.querySelectorAll("tspan")].map((span) => span.textContent ?? "")
+    ).toEqual(["Lợi nhuận", "trên giấy"])
+  })
 })

@@ -210,6 +210,6 @@ describe('memory-only: ledger unique key format', () => {
       `lesson_first_completion:${userId}:technical:rsi`,
     );
     expect(lessonRewardUniqueKey(userId, 'technical:rsi')).toBe(memory.state.ledger[0]?.uniqueKey);
-    expect(memory.state.ledger[0]?.policyVersion).toBe('iqx-shop-xu-v1');
+    expect(memory.state.ledger[0]?.policyVersion).toBe('iqx-shop-xu-v2');
   });
 });

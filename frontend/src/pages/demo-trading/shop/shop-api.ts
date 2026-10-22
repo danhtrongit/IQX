@@ -22,6 +22,17 @@ export type ActiveMascotResult = ApiResponseFor<"PUT /api/v2/shop/active-mascot"
 export type PurchaseBody = ApiRequestFor<"POST /api/v2/shop/purchases">["body"]
 export type AcademyProgress = ApiResponseFor<"GET /api/v2/academy/progress">
 export type AcademyCatalog = ApiResponseFor<"GET /api/v2/academy/catalog">
+/** Tiến hoá linh thú: lên cấp 2 rồi cấp 3, giá do server quyết định lại. */
+export type EvolveResult = ApiResponseFor<"POST /api/v2/shop/pets/{mascotId}/evolve">
+export type EvolveBody = ApiRequestFor<"POST /api/v2/shop/pets/{mascotId}/evolve">["body"]
+/** Premium mua bằng xu: 3.000 xu cho 30 ngày. */
+export type PremiumPurchaseResult = ApiResponseFor<"POST /api/v2/shop/premium-purchases">
+export type PremiumPurchaseBody = ApiRequestFor<"POST /api/v2/shop/premium-purchases">["body"]
+/** Đổi xu hai chiều với tiền Demo Trading: 1 xu = 10.000 đồng. */
+export type DemoExchangeResult = ApiResponseFor<"POST /api/v2/shop/demo-exchange">
+export type DemoExchangeBody = ApiRequestFor<"POST /api/v2/shop/demo-exchange">["body"]
+export type PetLevel = ShopState["pet_levels"][number]
+export type ExchangeDirection = DemoExchangeBody["direction"]
 
 export const LEDGER_PAGE_SIZE = 20
 /** A purchase that has not answered by now is "outcome unknown", never "failed". */
@@ -81,6 +92,12 @@ export function parseShopState(raw: unknown): ShopState {
   const active = parseActive(raw.active, "Shop")
   if (!isRecord(raw.totals) || !isCount(raw.totals.earned_xu) || !isCount(raw.totals.spent_xu)) invalid("Shop")
   if (!isCount(raw.owned_count) || !isCount(raw.total_count)) invalid("Shop")
+  if (!Array.isArray(raw.pet_levels)) invalid("Shop")
+  for (const level of raw.pet_levels) {
+    if (!isRecord(level) || !isText(level.mascot_id) || !isInt(level.level) || level.level < 1 || level.level > 3) invalid("Shop")
+  }
+  if (!isCount(raw.premium_price_xu) || !isCount(raw.premium_duration_days)) invalid("Shop")
+  if (!isRecord(raw.exchange) || !isCount(raw.exchange.cash_per_xu) || !isCount(raw.exchange.min_exchange_cash_vnd)) invalid("Shop")
   return { ...(raw as ShopState), wallet, owned, active }
 }
 
@@ -114,6 +131,33 @@ export function parseActiveResult(raw: unknown): ActiveMascotResult {
   if (!isRecord(raw) || typeof raw.changed !== "boolean") invalid("linh thú đang sử dụng")
   const active = parseActive(raw.active, "linh thú đang sử dụng")
   return { changed: raw.changed, active }
+}
+
+export function parseEvolveResult(raw: unknown): EvolveResult {
+  if (!isRecord(raw) || raw.status !== "evolved") invalid("tiến hoá linh thú")
+  if (!isText(raw.mascot_id) || !isInt(raw.level) || !isInt(raw.previous_level) || !isCount(raw.price_xu)) {
+    invalid("tiến hoá linh thú")
+  }
+  if (!Array.isArray(raw.pet_levels)) invalid("tiến hoá linh thú")
+  const wallet = parseWallet(raw.wallet, "tiến hoá linh thú")
+  return { ...(raw as EvolveResult), wallet }
+}
+
+export function parsePremiumPurchaseResult(raw: unknown): PremiumPurchaseResult {
+  if (!isRecord(raw) || raw.status !== "purchased") invalid("mua Premium")
+  if (!isCount(raw.price_xu) || !isCount(raw.days_granted) || !isText(raw.starts_at) || !isText(raw.ends_at)) {
+    invalid("mua Premium")
+  }
+  const wallet = parseWallet(raw.wallet, "mua Premium")
+  return { ...(raw as PremiumPurchaseResult), wallet }
+}
+
+export function parseDemoExchangeResult(raw: unknown): DemoExchangeResult {
+  if (!isRecord(raw)) invalid("đổi xu")
+  if (raw.direction !== "xu_to_cash" && raw.direction !== "cash_to_xu") invalid("đổi xu")
+  if (!isInt(raw.amount) || !isInt(raw.xu_delta) || !isInt(raw.cash_delta_vnd)) invalid("đổi xu")
+  if (!isCount(raw.balance_xu) || !isCount(raw.cash_available_vnd) || !isCount(raw.cash_per_xu)) invalid("đổi xu")
+  return raw as DemoExchangeResult
 }
 
 export async function fetchShopState(signal?: AbortSignal): Promise<ShopState> {
@@ -185,6 +229,29 @@ export async function putActiveMascot(mascotId: string, expectedRevision: number
   )
 }
 
+/** Tiến hoá linh thú: một bước lên cấp (2 rồi 3), giá xác nhận và server quyết định lại. */
+export function postEvolve(mascotId: string, body: EvolveBody): Promise<EvolveResult> {
+  return withDeadline(PURCHASE_TIMEOUT_MS, async (signal) =>
+    parseEvolveResult(
+      await requestOperation("POST /api/v2/shop/pets/{mascotId}/evolve", { path: { mascotId }, body }, { signal }),
+    ),
+  )
+}
+
+/** Premium mua bằng xu: cộng 30 ngày vào thời hạn Premium hiện có. */
+export function postPremiumPurchase(body: PremiumPurchaseBody): Promise<PremiumPurchaseResult> {
+  return withDeadline(PURCHASE_TIMEOUT_MS, async (signal) =>
+    parsePremiumPurchaseResult(await requestOperation("POST /api/v2/shop/premium-purchases", { body }, { signal })),
+  )
+}
+
+/** Đổi xu hai chiều với tiền mặt của tài khoản Demo Trading. */
+export function postDemoExchange(body: DemoExchangeBody): Promise<DemoExchangeResult> {
+  return withDeadline(PURCHASE_TIMEOUT_MS, async (signal) =>
+    parseDemoExchangeResult(await requestOperation("POST /api/v2/shop/demo-exchange", { body }, { signal })),
+  )
+}
+
 /** First detail object of an error envelope (`error.details[0]`), when the server sent one. */
 function firstDetail(error: ApiError): JsonRecord | null {
   const details = error.details
@@ -198,9 +265,21 @@ function detailCount(detail: JsonRecord | null, key: string): number | null {
 
 export type PurchaseFailure =
   | { kind: "insufficient"; balance: number | null; price: number | null }
+  | { kind: "insufficient_cash"; available: number | null; need: number | null }
   | { kind: "price_changed"; currentPrice: number | null }
   | { kind: "catalog_changed" }
   | { kind: "not_for_sale" }
+  | { kind: "not_owned" }
+  /** Tiến hoá: phải lên cấp trước mới lên được cấp sau. */
+  | { kind: "level_locked"; currentLevel: number | null; requiredLevel: number | null }
+  /** Tiến hoá: linh thú đã ở cấp cao nhất. */
+  | { kind: "max_level"; currentLevel: number | null }
+  /** Premium: chỉ đổi được một lần mỗi 30 ngày. */
+  | { kind: "limit_reached"; message: string }
+  /** Premium: tài khoản chưa xác thực số điện thoại. */
+  | { kind: "phone_not_verified" }
+  /** Số tiền đổi không hợp lệ (không phải bội số của 10.000 đồng, hoặc dưới mức tối thiểu). */
+  | { kind: "invalid_amount"; message: string }
   | { kind: "key_reused" }
   /** Network error, timeout or a server fault: the purchase may or may not have committed. */
   | { kind: "unknown_outcome" }
@@ -214,12 +293,27 @@ export function classifyPurchaseError(error: unknown): PurchaseFailure {
   switch (error.code) {
     case "INSUFFICIENT_XU":
       return { kind: "insufficient", balance: detailCount(detail, "balance_xu"), price: detailCount(detail, "price_xu") }
+    case "INSUFFICIENT_CASH":
+      return { kind: "insufficient_cash", available: detailCount(detail, "cash_available_vnd"), need: detailCount(detail, "amount_vnd") }
     case "PRICE_CHANGED":
       return { kind: "price_changed", currentPrice: detailCount(detail, "current_price_xu") }
     case "CATALOG_CHANGED":
       return { kind: "catalog_changed" }
     case "MASCOT_NOT_FOR_SALE":
       return { kind: "not_for_sale" }
+    case "PET_NOT_OWNED":
+    case "MASCOT_NOT_OWNED":
+      return { kind: "not_owned" }
+    case "PET_LEVEL_LOCKED":
+      return { kind: "level_locked", currentLevel: detailCount(detail, "current_level"), requiredLevel: detailCount(detail, "required_level") }
+    case "PET_MAX_LEVEL":
+      return { kind: "max_level", currentLevel: detailCount(detail, "current_level") }
+    case "PREMIUM_PURCHASE_LIMIT":
+      return { kind: "limit_reached", message: error.message }
+    case "PHONE_NOT_VERIFIED":
+      return { kind: "phone_not_verified" }
+    case "INVALID_AMOUNT":
+      return { kind: "invalid_amount", message: error.message }
     case "IDEMPOTENCY_KEY_REUSED":
       return { kind: "key_reused" }
     default:

@@ -1,5 +1,5 @@
 /**
- * Học viện v3.2 content and wire types, all derived from the generated backend contracts
+ * Học viện v3.3 content and wire types, all derived from the generated backend contracts
  * (`backend/src/modules/academy/content/v3/schema.ts` §6). The three named unions come from the
  * schema's `.meta({ id })`: AcademyBlock, AcademyChartModel, AcademyLeafChartModel.
  *
@@ -13,6 +13,8 @@ export type CatalogResponse = ApiResponseFor<"GET /api/v2/academy/catalog">
 export type CatalogChapter = CatalogResponse["chapters"][number]
 export type CatalogItem = CatalogChapter["items"][number]
 export type ItemKind = CatalogItem["kind"]
+/** What a passed lesson opens: a technical indicator (Bot/Backtest) or a fundamental metric (Bộ lọc). */
+export type UnlockKind = NonNullable<CatalogItem["unlock"]>["kind"]
 
 export type ProgressResponse = ApiResponseFor<"GET /api/v2/academy/progress">
 export type ProgressItem = ProgressResponse["items"][number]

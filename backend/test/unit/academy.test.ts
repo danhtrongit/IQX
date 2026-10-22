@@ -140,19 +140,27 @@ function contentWithBigPractice(): AcademyContent {
   return { ...content, items, itemsByKey };
 }
 
-describe('academy v3.2 catalog', () => {
-  it('serves 5 published chapters, 43 required lessons, 5 exams and the optional practice', () => {
+describe('academy v3.3 catalog', () => {
+  it('serves 13 published chapters, 87 required lessons, 13 exams and the optional practice', () => {
     const { service } = setup();
     const catalog = service.catalog();
     expect(catalogResponseSchema.parse(catalog)).toEqual(catalog);
     expect(catalog.catalog_version).toBe(ACADEMY_V3_CATALOG_VERSION);
-    expect(catalog.required_total).toBe(43);
+    expect(catalog.required_total).toBe(87);
     expect(catalog.chapters.map((chapter) => [chapter.no, chapter.lesson_count])).toEqual([
       [1, 10],
       [2, 10],
       [3, 9],
       [4, 10],
       [5, 4],
+      [6, 4],
+      [7, 7],
+      [8, 6],
+      [9, 5],
+      [10, 7],
+      [11, 4],
+      [12, 5],
+      [13, 6],
     ]);
     expect(catalog.chapters.map((chapter) => chapter.title)).toEqual([
       'Nền tảng',
@@ -160,10 +168,18 @@ describe('academy v3.2 catalog', () => {
       'Thương hiệu cá nhân',
       'Phương pháp kỹ thuật',
       'Phương pháp cơ bản',
+      'Chỉ báo xu hướng',
+      'Chỉ báo động lượng và dòng tiền',
+      'Tốc độ tăng trưởng',
+      'Độ ổn định',
+      'Hiệu quả và biên lợi nhuận',
+      'Nợ và khả năng thanh toán',
+      'Dòng tiền',
+      'Định giá',
     ]);
     const items = catalog.chapters.flatMap((chapter) => chapter.items);
-    expect(items).toHaveLength(49);
-    expect(items.filter((entry) => entry.kind === 'chapter_exam')).toHaveLength(5);
+    expect(items).toHaveLength(101);
+    expect(items.filter((entry) => entry.kind === 'chapter_exam')).toHaveLength(13);
     const practice = items.filter((entry) => entry.optional);
     expect(practice.map((entry) => [entry.id, entry.kind, entry.position])).toEqual([
       ['ch03-practice', 'practice', null],
@@ -187,7 +203,7 @@ describe('academy v3.2 catalog', () => {
         expect(entry.content_version).toBeNull();
         expect(entry.position).toBeNull();
       } else {
-        expect(entry.lesson_key).toMatch(/^(concept|technical):[a-z0-9_]+$/);
+        expect(entry.lesson_key).toMatch(/^(concept|technical|fundamental):[a-z0-9_]+$/);
         expect(entry.question_count).toBe(entry.chapter <= 3 ? 3 : 5);
         expect(entry.intro).toBeNull();
         expect(entry.content_version).toMatch(/^[0-9a-f]{16}$/);
@@ -209,11 +225,56 @@ describe('academy v3.2 catalog', () => {
       ['ch04-l06', 'technical:rsi', 'indicator:rsi'],
       ['ch04-l07', 'technical:macd', 'indicator:macd'],
       ['ch04-l08', 'technical:bollinger', 'indicator:bollinger'],
+      ['ch06-l01', 'technical:ema', 'indicator:ema'],
+      ['ch06-l02', 'technical:ma_cross', 'indicator:ma_cross'],
+      ['ch06-l03', 'technical:dmi', 'indicator:dmi'],
+      ['ch06-l04', 'technical:donchian', 'indicator:donchian'],
+      ['ch07-l01', 'technical:stochastic', 'indicator:stochastic'],
+      ['ch07-l02', 'technical:cci', 'indicator:cci'],
+      ['ch07-l03', 'technical:roc', 'indicator:roc'],
+      ['ch07-l04', 'technical:williams_r', 'indicator:williams_r'],
+      ['ch07-l05', 'technical:obv', 'indicator:obv'],
+      ['ch07-l06', 'technical:mfi', 'indicator:mfi'],
+      ['ch07-l07', 'technical:cmf', 'indicator:cmf'],
+      ['ch08-l01', 'fundamental:revenue_yoy', 'metric:revenue_yoy'],
+      ['ch08-l02', 'fundamental:profit_yoy', 'metric:profit_yoy'],
+      ['ch08-l03', 'fundamental:eps_yoy', 'metric:eps_yoy'],
+      ['ch08-l04', 'fundamental:revenue_cagr3', 'metric:revenue_cagr3'],
+      ['ch08-l05', 'fundamental:profit_cagr3', 'metric:profit_cagr3'],
+      ['ch08-l06', 'fundamental:eps_cagr3', 'metric:eps_cagr3'],
+      ['ch09-l01', 'fundamental:profit_positive_streak', 'metric:profit_positive_streak'],
+      ['ch09-l02', 'fundamental:revenue_growth_stability', 'metric:revenue_growth_stability'],
+      ['ch09-l03', 'fundamental:net_margin_stability', 'metric:net_margin_stability'],
+      ['ch09-l04', 'fundamental:eps_growth_stability', 'metric:eps_growth_stability'],
+      ['ch09-l05', 'fundamental:roic_stability', 'metric:roic_stability'],
+      ['ch10-l01', 'fundamental:roe', 'metric:roe'],
+      ['ch10-l02', 'fundamental:roa', 'metric:roa'],
+      ['ch10-l03', 'fundamental:roic', 'metric:roic'],
+      ['ch10-l04', 'fundamental:gross_margin', 'metric:gross_margin'],
+      ['ch10-l05', 'fundamental:net_margin', 'metric:net_margin'],
+      ['ch10-l06', 'fundamental:asset_turnover', 'metric:asset_turnover'],
+      ['ch10-l07', 'fundamental:ccc', 'metric:ccc'],
+      ['ch11-l01', 'fundamental:debt_equity', 'metric:debt_equity'],
+      ['ch11-l02', 'fundamental:current_ratio', 'metric:current_ratio'],
+      ['ch11-l03', 'fundamental:interest_coverage', 'metric:interest_coverage'],
+      ['ch11-l04', 'fundamental:net_debt_ebitda', 'metric:net_debt_ebitda'],
+      ['ch12-l01', 'fundamental:cfo_margin', 'metric:cfo_margin'],
+      ['ch12-l02', 'fundamental:cfo_profit', 'metric:cfo_profit'],
+      ['ch12-l03', 'fundamental:capex_revenue', 'metric:capex_revenue'],
+      ['ch12-l04', 'fundamental:fcf_margin', 'metric:fcf_margin'],
+      ['ch12-l05', 'fundamental:fcf_positive_streak', 'metric:fcf_positive_streak'],
+      ['ch13-l01', 'fundamental:pe', 'metric:pe'],
+      ['ch13-l02', 'fundamental:pb', 'metric:pb'],
+      ['ch13-l03', 'fundamental:ps', 'metric:ps'],
+      ['ch13-l04', 'fundamental:peg', 'metric:peg'],
+      ['ch13-l05', 'fundamental:ev_ebitda', 'metric:ev_ebitda'],
+      ['ch13-l06', 'fundamental:fcf_yield', 'metric:fcf_yield'],
     ]);
+    expect(unlocks).toHaveLength(49);
   });
 });
 
-describe('academy v3.2 sequence and progress (design §3)', () => {
+describe('academy v3.3 sequence and progress (design §3)', () => {
   const states = (keys: string[]) =>
     new Map(
       buildProgress(
@@ -222,7 +283,7 @@ describe('academy v3.2 sequence and progress (design §3)', () => {
       ).items.map((entry) => [entry.id, entry.state]),
     );
 
-  it('a new user has only ch01-l01 open and 0 / 43', () => {
+  it('a new user has only ch01-l01 open and 0 / 87', () => {
     const progress = buildProgress(content, []);
     expect(progressResponseSchema.parse(progress)).toEqual(progress);
     expect(
@@ -230,10 +291,12 @@ describe('academy v3.2 sequence and progress (design §3)', () => {
     ).toEqual(['ch01-l01']);
     expect(progress).toMatchObject({
       course_done: 0,
-      course_total: 43,
+      course_total: 87,
       current_item_id: 'ch01-l01',
     });
-    expect(progress.chapters.map((chapter) => chapter.total)).toEqual([10, 10, 9, 10, 4]);
+    expect(progress.chapters.map((chapter) => chapter.total)).toEqual([
+      10, 10, 9, 10, 4, 4, 7, 6, 5, 7, 4, 5, 6,
+    ]);
     expect(progress.granted_capabilities).toEqual([]);
   });
 
@@ -271,14 +334,17 @@ describe('academy v3.2 sequence and progress (design §3)', () => {
   it('counts every published lesson once and reports null current when all is passed', () => {
     const all = [...content.items.values()].map((entry) => completion(entry.lesson_key));
     const progress = buildProgress(content, all);
-    expect(progress).toMatchObject({ course_done: 43, current_item_id: null });
-    expect(progress.granted_capabilities).toEqual([
-      'indicator:bollinger',
-      'indicator:ma',
-      'indicator:macd',
-      'indicator:rsi',
-      'indicator:volume',
-    ]);
+    expect(progress).toMatchObject({ course_done: 87, current_item_id: null });
+    const expected = [
+      ...new Set([...content.items.values()].flatMap((entry) => entry.capabilities)),
+    ].sort();
+    expect(progress.granted_capabilities).toEqual(expected);
+    expect(
+      progress.granted_capabilities.filter((capability) => capability.startsWith('indicator:')),
+    ).toHaveLength(16);
+    expect(
+      progress.granted_capabilities.filter((capability) => capability.startsWith('metric:')),
+    ).toHaveLength(33);
   });
 
   it('maps completion methods outside quiz / legacy_migration to null', () => {
@@ -313,7 +379,7 @@ describe('academy v3.2 sequence and progress (design §3)', () => {
   });
 });
 
-describe('academy v3.2 item content', () => {
+describe('academy v3.3 item content', () => {
   it('serves a lesson with its blocks and no answers; a locked item is 403; unknown is 404', async () => {
     const { service } = setup();
     const lesson = await service.lesson(USER, 'ch01-l01');
@@ -330,6 +396,10 @@ describe('academy v3.2 item content', () => {
       response: { code: 'ACADEMY_ITEM_LOCKED' },
     });
     await expect(service.lesson(USER, 'ch06-l01')).rejects.toMatchObject({
+      status: 403,
+      response: { code: 'ACADEMY_ITEM_LOCKED' },
+    });
+    await expect(service.lesson(USER, 'ch99-l01')).rejects.toMatchObject({
       status: 404,
       response: { code: 'LESSON_NOT_FOUND' },
     });
@@ -353,7 +423,7 @@ describe('academy v3.2 item content', () => {
   });
 });
 
-describe('academy v3.2 scenario choice', () => {
+describe('academy v3.3 scenario choice', () => {
   it('requires a choice before the quiz, stores it once and returns the first choice on replay', async () => {
     const { service, memory } = setup();
     memory.complete(USER, keysBefore('ch02-l01'));
@@ -403,7 +473,7 @@ describe('academy v3.2 scenario choice', () => {
   });
 });
 
-describe('academy v3.2 practice notes', () => {
+describe('academy v3.3 practice notes', () => {
   it('is only available for lessons with interactive blocks and respects the lock', async () => {
     const { service, memory } = setup();
     await expect(service.lessonNotes(USER, 'ch01-l01')).rejects.toMatchObject({
@@ -529,7 +599,7 @@ describe('academy v3.2 practice notes', () => {
   });
 });
 
-describe('academy v3.2 attempts and grading', () => {
+describe('academy v3.3 attempts and grading', () => {
   const cases: Array<[string, number, boolean]> = [
     ['ch01-l01', 2, false],
     ['ch01-l01', 3, true],
@@ -712,9 +782,13 @@ describe('academy v3.2 attempts and grading', () => {
         idempotency_key: 'attempt-key-0001',
       }),
     ).rejects.toMatchObject({ status: 409, response: { code: 'CATALOG_VERSION_MISMATCH' } });
-    await expect(start(service, 'ch09-l01')).rejects.toMatchObject({
+    await expect(start(service, 'ch99-l01')).rejects.toMatchObject({
       status: 404,
       response: { code: 'LESSON_NOT_FOUND' },
+    });
+    await expect(start(service, 'ch09-l01')).rejects.toMatchObject({
+      status: 403,
+      response: { code: 'ACADEMY_ITEM_LOCKED' },
     });
     await expect(start(service, 'ch01-exam')).rejects.toMatchObject({
       status: 403,
@@ -821,7 +895,7 @@ describe('academy v3.2 attempts and grading', () => {
   });
 });
 
-describe('academy v3.2 responses never carry answers', () => {
+describe('academy v3.3 responses never carry answers', () => {
   it('walks every response and checks the exact keys of attempt, resume, draft, submit and history', async () => {
     const { service, memory } = setup();
     const responses: unknown[] = [service.catalog(), await service.progress(USER)];
@@ -920,7 +994,7 @@ describe('academy grading primitives', () => {
   });
 });
 
-describe('academy SQL store (v3.2)', () => {
+describe('academy SQL store (v3.3)', () => {
   const makeStore = (rows: unknown[] = []) => {
     const statements: Array<{ text: string; values?: readonly unknown[] }> = [];
     const store = new AcademySqlStore({
