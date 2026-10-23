@@ -32,6 +32,7 @@ const ROUNDS = [
     player_count: 42,
     total_fee_xu: 8400,
     total_reward_xu: 6000,
+    held_reward_xu: 0,
     fallback_level: 0,
   },
   {
@@ -44,6 +45,7 @@ const ROUNDS = [
     player_count: 30,
     total_fee_xu: 6000,
     total_reward_xu: 5000,
+    held_reward_xu: 1000,
     fallback_level: 2,
     symbol: "VIC",
     start_date: "2015-03-02",
@@ -72,8 +74,31 @@ const SUSPECTS = [
   },
 ]
 
+const HOLDS = [
+  {
+    id: "hold-1",
+    round_id: "round-closed",
+    round_no: 7,
+    user_id: "user-9",
+    username: "lan.nguyen",
+    amount: 1000,
+    reason: "same_phone",
+    status: "held",
+    created_at: "2026-10-20T13:01:00.000Z",
+    decided_at: null,
+    decided_by: null,
+  },
+]
+
+const SETTINGS = [
+  { key: "round_duration_hours", label: "Thời lượng một đề (giờ)", value: 48, default_value: 48 },
+  { key: "entry_fee_xu", label: "Phí tham gia (xu)", value: 0, default_value: 100 },
+]
+
 /** Trạng thái tạm dừng mà máy chủ trả về; mỗi phép thử đổi được. */
 let pausedOnServer = false
+/** Người đang xem có trong SUPER_ADMIN_USER_IDS hay không. */
+let superAdminOnServer = true
 
 function install() {
   const handler = async (path: string, init?: RequestInit) => {
@@ -86,8 +111,13 @@ function install() {
         pausedOnServer = body.paused === true
         return { paused: pausedOnServer }
       }
-      return { paused: pausedOnServer }
+      return { paused: pausedOnServer, super_admin: superAdminOnServer }
     }
+    if (path === "/admin/flashback/reward-holds?status=held") return { holds: HOLDS }
+    if (path === "/admin/flashback/reward-holds/hold-1/release" && init?.method === "POST") {
+      return { ...HOLDS[0], status: "released", decided_at: "2026-10-21T00:00:00.000Z", decided_by: "admin-1" }
+    }
+    if (path === "/admin/flashback/settings") return { settings: SETTINGS }
     if (path.includes("/reveal")) {
       return { round_no: 7, symbol: "VIC", start_date: "2015-03-02", session_range: "2015-03-02..2015-08-28" }
     }
@@ -110,6 +140,7 @@ beforeEach(() => {
   mocks.toast.success.mockReset()
   mocks.toast.error.mockReset()
   pausedOnServer = false
+  superAdminOnServer = true
   install()
 })
 
@@ -165,7 +196,8 @@ describe("màn quản trị Flashback", () => {
     renderPage()
     await screen.findAllByRole("table")
 
-    await user.click(screen.getByRole("button", { name: "Tạm dừng Flashback" }))
+    // Nút chỉ hiện khi máy chủ báo super_admin (FB-08).
+    await user.click(await screen.findByRole("button", { name: "Tạm dừng Flashback" }))
     // Chưa gọi POST: trạng thái tạm dừng vẫn chỉ được đọc bằng GET.
     expect(callsTo("/admin/flashback/pause").some(([, init]) => init?.method === "POST")).toBe(false)
 
@@ -238,5 +270,39 @@ describe("màn quản trị Flashback", () => {
     const retry = screen.getByRole("button", { name: "Thử lại" })
     await user.click(retry)
     await waitFor(() => expect(callsTo("/admin/flashback/rounds").length).toBeGreaterThan(1))
+  })
+
+  it("FB-08: không có trong SUPER_ADMIN_USER_IDS thì ẩn nút tạm dừng và xem mã, dù vai trò là admin", async () => {
+    superAdminOnServer = false
+    renderPage()
+    const table = (await screen.findAllByRole("table"))[0]
+    await within(table).findByText("#7")
+    await waitFor(() => expect(callsTo("/admin/flashback/pause").length).toBeGreaterThan(0))
+    expect(screen.queryByRole("button", { name: /Tạm dừng Flashback/ })).toBeNull()
+    expect(screen.queryByRole("button", { name: "Xem mã và giai đoạn của đề #7" })).toBeNull()
+  })
+
+  it("FB-07: bảng đề hiện thưởng tạm giữ và danh sách giữ có nút Trả thưởng cần xác nhận", async () => {
+    const user = userEvent.setup()
+    renderPage()
+    const roundsTable = (await screen.findAllByRole("table"))[0]
+    await within(roundsTable).findByText("#7")
+    expect(within(roundsTable).getByText("Thưởng tạm giữ (xu)")).toBeTruthy()
+
+    const release = await screen.findByRole("button", { name: "Trả thưởng đề #7 cho lan.nguyen" })
+    expect(screen.getAllByText("Cùng số điện thoại").length).toBeGreaterThan(0)
+    await user.click(release)
+    expect(callsTo("/admin/flashback/reward-holds/hold-1/release")).toHaveLength(0)
+    const dialog = await screen.findByRole("dialog")
+    await user.click(within(dialog).getByRole("button", { name: "Trả thưởng" }))
+    await waitFor(() => expect(callsTo("/admin/flashback/reward-holds/hold-1/release")).toHaveLength(1))
+    await waitFor(() => expect(mocks.toast.success).toHaveBeenCalledWith("Đã trả thưởng"))
+  })
+
+  it("FB-11i: bảng Tham số vận hành chỉ đọc", async () => {
+    renderPage()
+    expect(await screen.findByText("Thời lượng một đề (giờ)")).toBeTruthy()
+    expect(screen.getByText("entry_fee_xu")).toBeTruthy()
+    expect(screen.queryByRole("textbox")).toBeNull()
   })
 })

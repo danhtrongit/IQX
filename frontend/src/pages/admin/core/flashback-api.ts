@@ -9,13 +9,14 @@
  * dùng trong giao diện. Mã và giai đoạn của đề KHÔNG được đưa vào kiểu dùng
  * trong giao diện: đề đã đóng cũng chỉ lộ qua endpoint xem mã (có ghi nhật ký).
  */
-import { ApiError, api } from "@/lib/api"
 import { requestOperation } from "@/lib/contract-client"
 import type { ApiResponseFor } from "@/lib/contract-types"
 
 export type FlashbackRoundsResponse = ApiResponseFor<"GET /api/v2/admin/flashback/rounds">
 export type FlashbackAlertsResponse = ApiResponseFor<"GET /api/v2/admin/flashback/alerts">
 export type FlashbackSuspectsResponse = ApiResponseFor<"GET /api/v2/admin/flashback/suspects">
+export type FlashbackRewardHoldsResponse = ApiResponseFor<"GET /api/v2/admin/flashback/reward-holds">
+export type FlashbackSettingsResponse = ApiResponseFor<"GET /api/v2/admin/flashback/settings">
 
 /** Mức độ cảnh báo (spec v1.2 §6.1). */
 export type FlashbackAlertLevel = "high" | "medium" | "low"
@@ -29,6 +30,8 @@ export type FlashbackRound = {
   playerCount: number
   totalFeeXu: number
   totalRewardXu: number
+  /** Thưởng đang tạm giữ chờ duyệt (spec 22-10 FB-07). */
+  heldRewardXu: number
   /** Mức nới điều kiện đã dùng khi tạo đề (0 = không nới). */
   fallbackLevel: number
   /** Định danh đề: dùng cho endpoint xem mã. */
@@ -54,6 +57,37 @@ export type FlashbackSuspect = {
   usernames: string[]
 }
 
+/** Trạng thái tạm dừng và quyền của người đang xem (spec 22-10 FB-08). */
+export type FlashbackPauseStatus = {
+  paused: boolean
+  /** Có trong `SUPER_ADMIN_USER_IDS`: được tạm dừng và xem mã. */
+  superAdmin: boolean
+}
+
+export type FlashbackRewardHoldStatus = "held" | "released" | "voided"
+
+/** Một khoản thưởng bị tạm giữ vì tài khoản nằm trong nhóm nghi gian lận (FB-07). */
+export type FlashbackRewardHold = {
+  id: string
+  roundId: string
+  roundNo: number
+  userId: string
+  username: string
+  amount: number
+  reason: string
+  status: FlashbackRewardHoldStatus
+  createdAt: string
+  decidedAt: string | null
+}
+
+/** Một tham số vận hành chỉ đọc (spec v1.2 §9, spec 22-10 FB-11i). */
+export type FlashbackSetting = {
+  key: string
+  label: string
+  value: string | number
+  defaultValue: string | number
+}
+
 export type FlashbackReveal = {
   roundNo: number
   symbol: string
@@ -64,6 +98,8 @@ export type FlashbackReveal = {
 type RoundRow = FlashbackRoundsResponse["rounds"][number]
 type AlertRow = FlashbackAlertsResponse["alerts"][number]
 type SuspectRow = FlashbackSuspectsResponse["suspects"][number]
+type RewardHoldRow = FlashbackRewardHoldsResponse["holds"][number]
+type SettingRow = FlashbackSettingsResponse["settings"][number]
 
 export function adaptRound(row: RoundRow): FlashbackRound {
   return {
@@ -75,6 +111,7 @@ export function adaptRound(row: RoundRow): FlashbackRound {
     playerCount: row.player_count,
     totalFeeXu: row.total_fee_xu,
     totalRewardXu: row.total_reward_xu,
+    heldRewardXu: row.held_reward_xu,
     fallbackLevel: row.fallback_level,
     id: row.id,
   }
@@ -102,6 +139,25 @@ export function adaptSuspect(row: SuspectRow): FlashbackSuspect {
   }
 }
 
+export function adaptRewardHold(row: RewardHoldRow): FlashbackRewardHold {
+  return {
+    id: row.id,
+    roundId: row.round_id,
+    roundNo: row.round_no,
+    userId: row.user_id,
+    username: row.username,
+    amount: row.amount,
+    reason: row.reason,
+    status: row.status,
+    createdAt: row.created_at,
+    decidedAt: row.decided_at,
+  }
+}
+
+export function adaptSetting(row: SettingRow): FlashbackSetting {
+  return { key: row.key, label: row.label, value: row.value, defaultValue: row.default_value }
+}
+
 /** Danh sách đề: số đề, trạng thái, giờ mở/đóng, người chơi, phí và thưởng. */
 export async function fetchFlashbackRounds(signal?: AbortSignal): Promise<FlashbackRound[]> {
   const response = await requestOperation("GET /api/v2/admin/flashback/rounds", {}, { signal })
@@ -120,50 +176,57 @@ export async function fetchFlashbackSuspects(signal?: AbortSignal): Promise<Flas
   return response.suspects.map(adaptSuspect)
 }
 
-/** Trạng thái tạm dừng hiện tại do máy chủ giữ. */
-export async function fetchFlashbackPauseStatus(signal?: AbortSignal): Promise<boolean> {
+/** Trạng thái tạm dừng do máy chủ giữ, kèm quyền quản trị cao nhất của người đang xem. */
+export async function fetchFlashbackPauseStatus(signal?: AbortSignal): Promise<FlashbackPauseStatus> {
   const response = await requestOperation("GET /api/v2/admin/flashback/pause", {}, { signal })
-  return response.paused
+  return { paused: response.paused, superAdmin: response.super_admin }
 }
 
 /**
  * Tạm dừng Flashback (dừng mở đề mới) hoặc chạy lại. Đề đang mở vẫn chạy tới
- * giờ đóng và trả thưởng bình thường.
- *
- * Contract sinh cho lời gọi này chưa có kiểu thân (`body?: never`) nên dùng
- * `api()` của `@/lib/api` — cùng ranh giới HTTP, cùng token và làm mới phiên.
+ * giờ đóng và trả thưởng bình thường. Chỉ quản trị cao nhất (máy chủ kiểm tra).
  */
 export async function setFlashbackPaused(paused: boolean): Promise<boolean> {
-  const raw = await api<{ paused?: boolean }>("/admin/flashback/pause", {
-    method: "POST",
-    body: JSON.stringify({ paused }),
-  })
-  return raw.paused === true
+  const response = await requestOperation("POST /api/v2/admin/flashback/pause", { body: { paused } })
+  return response.paused
 }
 
-/**
- * Mã và giai đoạn của một đề đã đóng; máy chủ ghi nhật ký mỗi lần xem.
- *
- * Contract sinh cho route này chưa khai báo kiểu tham đường dẫn (`path?: never`)
- * nên dùng `api()` của `@/lib/api` với đường dẫn dựng tay.
- */
+/** Mã và giai đoạn của một đề đã đóng; máy chủ ghi nhật ký mỗi lần xem. */
 export async function revealFlashbackRound(id: string): Promise<FlashbackReveal> {
-  const raw = await api<unknown>(`/admin/flashback/rounds/${encodeURIComponent(id)}/reveal`)
-  return parseReveal(raw)
+  const response = await requestOperation("GET /api/v2/admin/flashback/rounds/{id}/reveal", { path: { id } })
+  return {
+    roundNo: response.round_no,
+    symbol: response.symbol,
+    startDate: response.start_date,
+    sessionRange: response.session_range,
+  }
 }
 
-/** Câu trả lời của endpoint xem mã là đối tượng lỏng: kiểm lại từng trường. */
-function parseReveal(raw: unknown): FlashbackReveal {
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) {
-    throw new ApiError("Phản hồi Flashback không hợp lệ", 502, { code: "INVALID_RESPONSE" })
-  }
-  const row = raw as Record<string, unknown>
-  const number = typeof row.round_no === "number" ? row.round_no : null
-  const symbol = typeof row.symbol === "string" ? row.symbol : null
-  const startDate = typeof row.start_date === "string" ? row.start_date : null
-  const sessionRange = typeof row.session_range === "string" ? row.session_range : null
-  if (number === null || symbol === null || startDate === null || sessionRange === null) {
-    throw new ApiError("Phản hồi Flashback không hợp lệ", 502, { code: "INVALID_RESPONSE" })
-  }
-  return { roundNo: number, symbol, startDate, sessionRange }
+/** Thưởng bị tạm giữ (mặc định: đang chờ duyệt). */
+export async function fetchFlashbackRewardHolds(
+  status: FlashbackRewardHoldStatus = "held",
+  signal?: AbortSignal,
+): Promise<FlashbackRewardHold[]> {
+  const response = await requestOperation("GET /api/v2/admin/flashback/reward-holds", { query: { status } }, { signal })
+  return response.holds.map(adaptRewardHold)
+}
+
+/** Trả khoản thưởng đang giữ vào ví xu của người chơi (máy chủ ghi nhật ký). */
+export async function releaseFlashbackRewardHold(id: string): Promise<FlashbackRewardHold> {
+  return adaptRewardHold(
+    await requestOperation("POST /api/v2/admin/flashback/reward-holds/{id}/release", { path: { id } }),
+  )
+}
+
+/** Huỷ khoản thưởng đang giữ: không cộng xu (máy chủ ghi nhật ký). */
+export async function voidFlashbackRewardHold(id: string): Promise<FlashbackRewardHold> {
+  return adaptRewardHold(
+    await requestOperation("POST /api/v2/admin/flashback/reward-holds/{id}/void", { path: { id } }),
+  )
+}
+
+/** Bảng tham số vận hành chỉ đọc. */
+export async function fetchFlashbackSettings(signal?: AbortSignal): Promise<FlashbackSetting[]> {
+  const response = await requestOperation("GET /api/v2/admin/flashback/settings", {}, { signal })
+  return response.settings.map(adaptSetting)
 }
