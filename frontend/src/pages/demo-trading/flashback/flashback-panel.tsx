@@ -24,6 +24,7 @@ import {
   formatMoney,
   formatNumber,
   formatSignedPercent,
+  leaderboardPercent,
   maxBuyQty,
   orderPreview,
   sellableQty,
@@ -228,32 +229,30 @@ export function FlashbackPanel({ onNavigate }: { onNavigate: (panel: string) => 
             ) : (
               <ul className="m-0 list-none space-y-1 p-0">
                 {leaderboard.data?.rows.map((row) => (
-                  <li key={row.user_id} className="flex items-center gap-2 text-xs">
+                  <li key={`${row.rank}-${row.username}`} className="flex items-center gap-2 text-xs">
                     <span className="w-6 shrink-0 tabular-nums text-muted-foreground">{row.rank}</span>
                     <span className={cn("min-w-0 flex-1 truncate", row.is_me && "font-semibold text-foreground")}>
                       {row.username}
-                      {row.status === "playing" ? (
+                      {row.is_me && row.status === "playing" ? (
                         <span className="text-muted-foreground"> · đang chơi phiên {row.step}/60</span>
                       ) : null}
                     </span>
                     <b
                       className={cn(
                         "shrink-0 tabular-nums",
-                        (row.pnl_percent ?? 0) > 0
+                        (row.pnl_pct ?? 0) > 0
                           ? "text-price-up"
-                          : (row.pnl_percent ?? 0) < 0
+                          : (row.pnl_pct ?? 0) < 0
                             ? "text-price-down"
                             : "text-foreground",
                       )}
                     >
-                      {formatSignedPercent(row.pnl_percent)}
+                      {formatSignedPercent(leaderboardPercent(row.pnl_pct))}
                     </b>
                   </li>
                 ))}
                 {leaderboard.data?.me &&
-                !leaderboard.data.rows.some(
-                  (row) => row.is_me || row.user_id === leaderboard.data.me?.user_id,
-                ) ? (
+                !leaderboard.data.rows.some((row) => row.is_me) ? (
                   <li className="flex items-center gap-2 border-t border-border pt-1.5 text-xs">
                     <span className="w-6 shrink-0 tabular-nums text-muted-foreground">
                       {leaderboard.data.me.rank === 0 ? "—" : leaderboard.data.me.rank}
@@ -264,7 +263,7 @@ export function FlashbackPanel({ onNavigate }: { onNavigate: (panel: string) => 
                         <span className="text-muted-foreground"> · đang chơi phiên {leaderboard.data.me.step}/60</span>
                       ) : null}
                     </span>
-                    <b className="shrink-0 tabular-nums text-foreground">{formatSignedPercent(leaderboard.data.me.pnl_percent)}</b>
+                    <b className="shrink-0 tabular-nums text-foreground">{formatSignedPercent(leaderboardPercent(leaderboard.data.me.pnl_pct))}</b>
                   </li>
                 ) : null}
                 {!leaderboard.data?.rows.length && !leaderboard.data?.me ? (

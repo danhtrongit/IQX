@@ -16,6 +16,7 @@ import {
   FLASHBACK_INITIAL_CASH,
   formatMoney,
   formatNumber,
+  FLASHBACK_REWARD_INELIGIBLE_TEXT,
   formatSignedPercent,
   navSeriesOf,
   orderCounts,
@@ -96,8 +97,18 @@ export function FlashbackResult({ onClose, onShowLeaderboard }: { onClose: () =>
         </div>
 
         <div className="space-y-1.5 rounded-lg border border-chart-2/40 bg-chart-2/10 p-3">
-          <Row label="Phí tham gia" value={game.round?.first_join_free ? "Miễn phí" : `−${formatNumber(game.round?.fee_xu ?? 100)} xu`} />
-          <Row label={`Thưởng theo hạng tạm thời (${rewardLabel(rank)})`} value={`+${formatNumber(entry?.reward_xu ?? 0)} xu`} />
+          <Row
+            label="Phí tham gia"
+            value={game.round?.first_join_free || !game.round?.fee_xu ? "Miễn phí" : `−${formatNumber(game.round.fee_xu)} xu`}
+          />
+          {entry?.reward_eligible === false ? (
+            // FB-11a: chưa đủ điều kiện thì không hiện số xu tạm tính.
+            <p role="note" className="text-xs leading-5 text-foreground" data-testid="flashback-reward-ineligible">
+              {FLASHBACK_REWARD_INELIGIBLE_TEXT}
+            </p>
+          ) : (
+            <Row label={`Thưởng theo hạng tạm thời (${rewardLabel(rank)})`} value={`+${formatNumber(entry?.reward_xu ?? 0)} xu`} />
+          )}
           <p className="text-[11px] leading-5 text-chart-2">Xu thưởng được cộng khi đề đóng, theo hạng cuối cùng</p>
         </div>
 
