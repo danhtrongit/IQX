@@ -1,3 +1,5 @@
+import { FundamentalChart } from "@/components/fundamental-charts"
+
 import type { ChartModel } from "../content-types"
 import { chartTables, type DataTable } from "./chart-math"
 import { CompareChart } from "./compare-chart"
@@ -6,9 +8,19 @@ import { LeafChart } from "./leaf-chart"
 /**
  * Draws one precomputed chart model of a lesson. Every `kind` of the v3.3 schema has a renderer;
  * colours come from theme tokens (chart-theme.ts) and every chart lays out at the measured width.
+ * `fundamental` (the 33 representative charts) uses the shared Dashboard renderer.
  */
 export function LessonChart({ model, label, autoLegend = true }: { model: ChartModel; label: string; autoLegend?: boolean }) {
   if (model.kind === "compare") return <CompareChart model={model} label={label} />
+  // Biểu đồ đại diện Chương 8-13: cùng bộ khuôn với Dashboard phân tích (spec cập nhật 22-10 DB-02).
+  // Bộ khuôn tự có chú giải và nút "Bảng số".
+  if (model.kind === "fundamental") {
+    return (
+      <div role="group" aria-label={label} className="min-w-0">
+        <FundamentalChart chart={model.chart} />
+      </div>
+    )
+  }
   return <LeafChart model={model} label={label} autoLegend={autoLegend} />
 }
 

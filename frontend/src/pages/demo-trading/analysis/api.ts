@@ -73,6 +73,13 @@ export function fetchFundamental(
   )
 }
 
+export type InstrumentDetail = ApiResponseFor<"GET /api/v2/instruments/{symbol}">
+
+/** Thông tin một mã trong danh sách mã: ngành cấp 1 và 2 cho nhãn loại doanh nghiệp. */
+export function fetchInstrument(symbol: string, signal?: AbortSignal): Promise<InstrumentDetail> {
+  return requestOperation("GET /api/v2/instruments/{symbol}", { path: { symbol } }, { signal })
+}
+
 /** Chuỗi định giá theo ngày (khuôn F). `from` là ngày bắt đầu, tối đa 10 năm. */
 export function fetchValuation(
   symbol: string,

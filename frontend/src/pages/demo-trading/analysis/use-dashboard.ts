@@ -4,6 +4,7 @@ import {
   fetchDashboardCatalog,
   fetchDashboardSettings,
   fetchFundamental,
+  fetchInstrument,
   fetchValuation,
   saveDashboardSettings,
   type PeriodMode,
@@ -64,6 +65,28 @@ export function useValuation(symbol: string, from: string, charts: string[], ena
     placeholderData: (previous, previousQuery) =>
       previousQuery?.queryKey[2] === symbol ? keepPreviousData(previous) : undefined,
   })
+}
+
+/** Ngành cấp 2 của mã báo đây là ngân hàng (VCI ghi "Ngân hàng", có nguồn ghi "Banks"). */
+export function isBankIndustry(industry: string | null | undefined): boolean {
+  return !!industry && /ng[âa]n h[àa]ng|\bbanks?\b/i.test(industry)
+}
+
+/**
+ * Loại doanh nghiệp đoán từ danh sách mã (cùng nguồn với ô tìm kiếm), để nhãn
+ * "Ngân hàng" hiện ngay trước khi số liệu về (DB-05d). `null` khi chưa biết.
+ */
+export function useInstrumentIsBank(symbol: string): boolean | null {
+  const query = useQuery({
+    queryKey: ["instruments", "detail", symbol],
+    queryFn: ({ signal }) => fetchInstrument(symbol, signal),
+    enabled: symbol.length > 0,
+    staleTime: 60 * 60_000,
+    retry: false,
+  })
+  if (!query.data) return null
+  const instrument = query.data.data
+  return isBankIndustry(instrument.icbLv2) || isBankIndustry(instrument.icbLv1)
 }
 
 /** Lưu thiết lập theo tài khoản; câu trả lời là thiết lập đã lưu. */

@@ -1,118 +1,139 @@
-import { useState } from "react"
-import { GripVertical, X } from "lucide-react"
+import type { ReactNode } from "react"
+import { useSortable } from "@dnd-kit/sortable"
+import { CSS } from "@dnd-kit/utilities"
+import { ArrowDown, ArrowUp, EllipsisVertical, GripVertical, X } from "lucide-react"
 
+import { FundamentalChart, hasChartData } from "@/components/fundamental-charts"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
-import { useChartWidth } from "@/pages/academy/charts/use-chart-width"
 
-import { ChartFigure } from "./charts/figure"
-import { figureLegend, figureTable, type HoverState } from "./charts/figure-data"
-import { FIXED_YEAR_KINDS, type ChartView } from "./model"
+import type { ChartView } from "./model"
 
 export type ChartCardProps = {
   view: ChartView
-  /** Số kỳ hiển thị của biểu đồ; null cho khuôn cố định theo năm (spec §4.1). */
+  /** Khuôn cố định theo năm (D, E1, E2): có nhãn "Theo năm, cố định", không có ô số kỳ (spec §4.1). */
+  fixedYear: boolean
+  /** Ô số kỳ; null khi thẻ không có ô này (khuôn cố định, chỉ tiêu không áp dụng). */
   period: { count: number; options: readonly number[]; unit: string } | null
   onPeriodChange: (count: number) => void
   onRemove: () => void
+  /** Đổi chỗ với thẻ trước hoặc sau; bỏ trống khi thẻ đã ở đầu hoặc cuối (DB-05a). */
+  onMoveUp?: () => void
+  onMoveDown?: () => void
   /** Chỉ tiêu không áp dụng cho mã ngân hàng (spec §7). */
   notApplicable?: boolean
   /** Số liệu đang tải: thẻ hiện khung chờ, chưa vẽ gì. */
   pending?: boolean
-  /** Lý do biểu đồ trống do máy chủ báo. */
+  /** Lý do biểu đồ trống do máy chủ báo (chỉ hiện khi không có số liệu). */
   note?: string
-  /** Kéo thả đổi thứ tự (pattern HTML5 của trang quản trị). */
-  drag: {
-    dragging: boolean
-    over: boolean
-    onDragStart: () => void
-    onDragEnd: () => void
-    onDragOver: () => void
-    onDragLeave: () => void
-    onDrop: () => void
-  }
 }
 
 const BANK_NOTE = "Không áp dụng cho ngân hàng. Báo cáo tài chính ngân hàng không có chỉ tiêu này theo cách tính của doanh nghiệp thông thường."
+const EMPTY_NOTE = "Đang cập nhật dữ liệu"
+
+/** Nhãn vàng dạng pill: "Theo năm, cố định", "Không áp dụng" (DB-05f). */
+export function WarningPill({ children }: { children: ReactNode }) {
+  return (
+    <span className="shrink-0 rounded-full border border-status-warning/45 px-2 py-px text-[10px] font-semibold whitespace-nowrap text-status-warning">
+      {children}
+    </span>
+  )
+}
+
+function EmptyNote({ children }: { children: ReactNode }) {
+  return (
+    <p className="flex min-h-40 items-center justify-center rounded-lg border border-dashed border-border px-4 py-6 text-center text-xs leading-5 font-semibold text-text-secondary">
+      {children}
+    </p>
+  )
+}
 
 /**
- * Một thẻ biểu đồ của dashboard (spec §4): tay kéo, tên chỉ tiêu, ô số kỳ,
- * thân biểu đồ, chú giải và bảng số. Đầu thẻ không có con số lớn của kỳ
- * gần nhất.
+ * Một thẻ biểu đồ của dashboard (spec §4): tay kéo, tên chỉ tiêu, ô số kỳ và
+ * thân biểu đồ vẽ bằng bộ khuôn dùng chung. Đầu thẻ không có con số lớn của
+ * kỳ gần nhất. Kéo bằng tay kéo chạy được cả chuột, cảm ứng và bàn phím;
+ * menu thẻ có Lên trên / Xuống dưới cho trường hợp không kéo được.
  */
 export function ChartCard({
   view,
+  fixedYear,
   period,
   onPeriodChange,
   onRemove,
+  onMoveUp,
+  onMoveDown,
   notApplicable = false,
   pending = false,
   note,
-  drag,
 }: ChartCardProps) {
-  const [measure, width] = useChartWidth()
-  const [hover, setHover] = useState<HoverState | null>(null)
-  const [tableOpen, setTableOpen] = useState(false)
-  const legend = figureLegend(view)
-  const table = figureTable(view)
-  const hasData = view.labels.length > 0 && (view.main[0]?.v ?? []).some((value) => value !== null)
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } =
+    useSortable({ id: view.name })
+  const hasData = hasChartData(view)
 
   return (
     <article
+      ref={setNodeRef}
       data-chart={view.name}
-      draggable
-      onDragStart={(event) => {
-        event.dataTransfer?.setData("text/plain", view.name)
-        drag.onDragStart()
-      }}
-      onDragEnd={drag.onDragEnd}
-      onDragOver={(event) => {
-        event.preventDefault()
-        drag.onDragOver()
-      }}
-      onDragLeave={drag.onDragLeave}
-      onDrop={(event) => {
-        event.preventDefault()
-        drag.onDrop()
-      }}
+      style={{ transform: CSS.Translate.toString(transform), transition: transition }}
       className={cn(
-        "flex min-w-0 flex-col gap-2 rounded-lg border border-border bg-card p-3",
-        drag.dragging && "opacity-50",
-        drag.over && "outline-2 outline-dashed outline-primary",
+        "relative flex min-w-0 flex-col gap-2 rounded-lg border border-border bg-card p-3",
+        isDragging && "z-10 opacity-70 outline-2 outline-dashed outline-primary",
       )}
     >
       <header className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 items-start gap-1.5">
-          <GripVertical
-            aria-hidden="true"
-            className="mt-0.5 size-4 shrink-0 cursor-grab text-academy-subtle"
-          />
+          <button
+            type="button"
+            ref={setActivatorNodeRef}
+            aria-label={`Kéo để đổi chỗ ${view.name}`}
+            className="mt-0.5 shrink-0 cursor-grab touch-none rounded-sm text-text-secondary hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVertical aria-hidden="true" className="size-4" />
+          </button>
           <h3 className="min-w-0 text-sm leading-snug font-semibold break-words">{view.name}</h3>
-          {!notApplicable && !period && !pending && FIXED_YEAR_KINDS[view.kind] && (
-            <span className="mt-px shrink-0 rounded-full border border-status-warning/45 px-2 py-px text-[10px] font-semibold whitespace-nowrap text-status-warning">
-              Theo năm, cố định
-            </span>
-          )}
+          {!notApplicable && fixedYear && <WarningPill>Theo năm, cố định</WarningPill>}
         </div>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          draggable={false}
-          aria-label={`Bỏ ${view.name} khỏi dashboard`}
-          onClick={onRemove}
-        >
-          <X aria-hidden="true" />
-        </Button>
+        <div className="flex shrink-0 items-center">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button type="button" variant="ghost" size="icon-sm" aria-label={`Tuỳ chọn ${view.name}`}>
+                <EllipsisVertical aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem disabled={!onMoveUp} onSelect={() => onMoveUp?.()}>
+                <ArrowUp aria-hidden="true" /> Lên trên
+              </DropdownMenuItem>
+              <DropdownMenuItem disabled={!onMoveDown} onSelect={() => onMoveDown?.()}>
+                <ArrowDown aria-hidden="true" /> Xuống dưới
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Bỏ ${view.name} khỏi dashboard`}
+            onClick={onRemove}
+          >
+            <X aria-hidden="true" />
+          </Button>
+        </div>
       </header>
 
-      {period && !pending && (
+      {period && (
         <select
           aria-label={`Số kỳ hiển thị của ${view.name}`}
           value={period.count}
-          draggable={false}
           onChange={(event) => onPeriodChange(Number(event.target.value))}
           className="h-7 w-fit rounded-sm border border-border bg-input px-2 text-xs font-semibold text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
         >
@@ -127,79 +148,11 @@ export function ChartCard({
       {pending ? (
         <Skeleton className="h-40 w-full rounded-sm" />
       ) : notApplicable ? (
-        <p className="flex min-h-40 items-center justify-center rounded-lg border border-dashed border-border px-4 py-6 text-center text-xs leading-5 font-semibold text-academy-subtle">
-          {BANK_NOTE}
-        </p>
+        <EmptyNote>{BANK_NOTE}</EmptyNote>
       ) : !hasData ? (
-        <p className="flex min-h-40 items-center justify-center rounded-lg border border-dashed border-border px-4 py-6 text-center text-xs leading-5 font-semibold text-academy-subtle">
-          {note ?? "Chưa có dữ liệu cho chỉ tiêu này."}
-        </p>
+        <EmptyNote>{note ?? EMPTY_NOTE}</EmptyNote>
       ) : (
-        <div ref={measure} className="min-w-0">
-          <ChartFigure view={view} width={width} hover={hover} onHover={setHover} />
-        </div>
-      )}
-
-      {!notApplicable && hasData && (
-        <>
-          <ul className="m-0 flex list-none flex-wrap gap-x-4 gap-y-1 p-0 text-xs text-academy-subtle">
-            {legend.map((item) => (
-              <li key={item.label} className="inline-flex items-center gap-1.5">
-                {item.shape === "line" ? (
-                  <svg width="20" height="8" aria-hidden="true" className="shrink-0">
-                    <line x1="0" y1="4" x2="20" y2="4" stroke={item.color} strokeWidth="2" />
-                  </svg>
-                ) : (
-                  <span
-                    aria-hidden="true"
-                    className="size-2 shrink-0 rounded-[1px]"
-                    style={{ background: item.color, opacity: item.shape === "band" ? 0.25 : 1 }}
-                  />
-                )}
-                {item.label}
-              </li>
-            ))}
-          </ul>
-
-          <button
-            type="button"
-            aria-expanded={tableOpen}
-            onClick={() => setTableOpen((open) => !open)}
-            className="w-fit text-[11px] font-semibold text-academy-subtle hover:text-foreground"
-          >
-            {tableOpen ? "Ẩn bảng" : "Bảng số"}
-          </button>
-
-          {tableOpen && (
-            <div className="max-h-60 overflow-y-auto rounded-sm border border-border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {table.columns.map((column) => (
-                      <TableHead
-                        key={column}
-                        className="sticky top-0 bg-card text-right text-xs text-academy-subtle first:text-left"
-                      >
-                        {column}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {table.rows.map((row, index) => (
-                    <TableRow key={index}>
-                      {row.map((cell, cellIndex) => (
-                        <TableCell key={cellIndex} className="text-right text-xs tabular-nums first:text-left">
-                          {cell}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </>
+        <FundamentalChart chart={view} />
       )}
     </article>
   )

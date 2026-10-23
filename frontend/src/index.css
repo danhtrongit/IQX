@@ -76,6 +76,7 @@
     --color-status-warning: var(--status-warning);
     --color-academy-subtle: var(--academy-subtle);
     --color-academy-label: var(--academy-label);
+    --color-text-secondary: var(--text-secondary);
     --radius-sm: calc(var(--radius) * 0.5);
     --radius-md: calc(var(--radius) * 0.75);
     --radius-lg: var(--radius);
@@ -151,6 +152,15 @@
     /* Học viện reader: sub-text and chart labels (never muted-foreground there). */
     --academy-subtle: oklch(0.330 0.020 256);
     --academy-label: oklch(0.380 0.020 256);
+    /* Chữ phụ của Dashboard phân tích và bộ khuôn biểu đồ chỉ tiêu: không dùng chữ xám (spec Dashboard §2.3). */
+    --text-secondary: oklch(0.380 0.020 256);
+    /* Bộ khuôn biểu đồ chỉ tiêu (spec Dashboard §9): chuỗi chính, thứ hai, thứ ba, âm, đường tham chiếu, dải. */
+    --s1: var(--chart-1);
+    --s2: #d95926;
+    --s3: #199e70;
+    --neg: var(--price-down);
+    --ref-line: var(--chart-5);
+    --band: color-mix(in oklab, var(--s1) 14%, transparent);
 }
 
 .dark {
@@ -210,6 +220,13 @@
     --status-warning: oklch(0.79 0.14 80);
     --academy-subtle: oklch(0.925 0.018 245);
     --academy-label: oklch(0.870 0.022 248);
+    --text-secondary: #c9d6e4;
+    --s1: var(--chart-1);
+    --s2: #d95926;
+    --s3: #199e70;
+    --neg: #e66767;
+    --ref-line: #8aa0b8;
+    --band: color-mix(in oklab, var(--s1) 13%, transparent);
 }
 
 @layer base {
