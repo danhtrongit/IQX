@@ -34316,6 +34316,9 @@
           "initial_cash_vnd": {
             "type": "integer"
           },
+          "net_deposited_cash_vnd": {
+            "type": "integer"
+          },
           "reset_at": {
             "oneOf": [
               {
@@ -34350,6 +34353,7 @@
           "cash_available_vnd",
           "cash_reserved_vnd",
           "cash_pending_vnd",
+          "net_deposited_cash_vnd",
           "total_cash_vnd",
           "activated_at",
           "reset_at",
@@ -35092,7 +35096,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 767 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 771 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -76882,10 +76886,14 @@
                   "properties": {
                     "paused": {
                       "type": "boolean"
+                    },
+                    "super_admin": {
+                      "type": "boolean"
                     }
                   },
                   "required": [
-                    "paused"
+                    "paused",
+                    "super_admin"
                   ],
                   "type": "object"
                 }
@@ -76972,6 +76980,25 @@
       "post": {
         "operationId": "flashbackAdminPause",
         "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "paused": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "paused"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -77058,7 +77085,499 @@
             "bearer": []
           }
         ],
-        "summary": "Tạm dừng Flashback",
+        "summary": "Tạm dừng Flashback (chỉ quản trị viên cao nhất)",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/reward-holds": {
+      "get": {
+        "operationId": "flashbackAdminRewardHolds",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "enum": [
+                "held",
+                "released",
+                "voided"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "holds": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "amount": {
+                            "type": "number"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "decided_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "decided_by": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "reason": {
+                            "type": "string"
+                          },
+                          "round_id": {
+                            "type": "string"
+                          },
+                          "round_no": {
+                            "type": "number"
+                          },
+                          "status": {
+                            "enum": [
+                              "held",
+                              "released",
+                              "voided"
+                            ],
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "round_id",
+                          "round_no",
+                          "user_id",
+                          "username",
+                          "amount",
+                          "reason",
+                          "status",
+                          "decided_by",
+                          "decided_at",
+                          "created_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "holds"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thưởng đang giữ của tài khoản bị đánh dấu",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/reward-holds/{id}/release": {
+      "post": {
+        "operationId": "flashbackAdminReleaseRewardHold",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "amount": {
+                      "type": "number"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "decided_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "decided_by": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "round_id": {
+                      "type": "string"
+                    },
+                    "round_no": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "held",
+                        "released",
+                        "voided"
+                      ],
+                      "type": "string"
+                    },
+                    "user_id": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "round_id",
+                    "round_no",
+                    "user_id",
+                    "username",
+                    "amount",
+                    "reason",
+                    "status",
+                    "decided_by",
+                    "decided_at",
+                    "created_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Trả thưởng đang giữ",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/reward-holds/{id}/void": {
+      "post": {
+        "operationId": "flashbackAdminVoidRewardHold",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "amount": {
+                      "type": "number"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "decided_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "decided_by": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    },
+                    "round_id": {
+                      "type": "string"
+                    },
+                    "round_no": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "held",
+                        "released",
+                        "voided"
+                      ],
+                      "type": "string"
+                    },
+                    "user_id": {
+                      "type": "string"
+                    },
+                    "username": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "round_id",
+                    "round_no",
+                    "user_id",
+                    "username",
+                    "amount",
+                    "reason",
+                    "status",
+                    "decided_by",
+                    "decided_at",
+                    "created_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Huỷ thưởng đang giữ",
         "tags": [
           "Flashback Admin"
         ],
@@ -77089,6 +77608,9 @@
                             "type": "string"
                           },
                           "fallback_level": {
+                            "type": "number"
+                          },
+                          "held_reward_xu": {
                             "type": "number"
                           },
                           "id": {
@@ -77135,6 +77657,7 @@
                           "player_count",
                           "total_fee_xu",
                           "total_reward_xu",
+                          "held_reward_xu",
                           "fallback_level"
                         ],
                         "type": "object"
@@ -77231,14 +77754,44 @@
     "/api/v2/admin/flashback/rounds/{id}/reveal": {
       "get": {
         "operationId": "flashbackAdminReveal",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": {},
-                  "properties": {},
+                  "additionalProperties": false,
+                  "properties": {
+                    "round_no": {
+                      "type": "number"
+                    },
+                    "session_range": {
+                      "type": "string"
+                    },
+                    "start_date": {
+                      "type": "string"
+                    },
+                    "symbol": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "round_no",
+                    "symbol",
+                    "start_date",
+                    "session_range"
+                  ],
                   "type": "object"
                 }
               }
@@ -77311,7 +77864,146 @@
             "bearer": []
           }
         ],
-        "summary": "Xem mã của đề đã đóng",
+        "summary": "Xem mã của đề đã đóng (chỉ quản trị viên cao nhất)",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/settings": {
+      "get": {
+        "operationId": "flashbackAdminSettings",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "settings": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "default_value": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "key": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "value": {
+                            "anyOf": [
+                              {
+                                "type": "string"
+                              },
+                              {
+                                "type": "number"
+                              }
+                            ]
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "label",
+                          "value",
+                          "default_value"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "settings"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tham số vận hành Flashback (chỉ đọc)",
         "tags": [
           "Flashback Admin"
         ],
@@ -104205,6 +104897,24 @@
       "post": {
         "operationId": "flashbackJoin",
         "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "default": {},
+                "properties": {
+                  "device_id": {
+                    "pattern": "^[A-Za-z0-9_-]{8,64}$",
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -104312,7 +105022,21 @@
     "/api/v2/flashback/current/leaderboard": {
       "get": {
         "operationId": "flashbackLeaderboard",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "scope",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "team"
+              ],
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -104321,15 +105045,75 @@
                   "additionalProperties": false,
                   "properties": {
                     "me": {
-                      "additionalProperties": {},
+                      "additionalProperties": false,
                       "nullable": true,
-                      "properties": {},
+                      "properties": {
+                        "is_me": {
+                          "type": "boolean"
+                        },
+                        "pnl_pct": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "rank": {
+                          "type": "number"
+                        },
+                        "status": {
+                          "enum": [
+                            "playing",
+                            "finished"
+                          ],
+                          "type": "string"
+                        },
+                        "step": {
+                          "type": "number"
+                        },
+                        "username": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "rank",
+                        "username",
+                        "pnl_pct",
+                        "is_me"
+                      ],
                       "type": "object"
                     },
                     "rows": {
                       "items": {
-                        "additionalProperties": {},
-                        "properties": {},
+                        "additionalProperties": false,
+                        "properties": {
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "pnl_pct": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "rank": {
+                            "type": "number"
+                          },
+                          "status": {
+                            "enum": [
+                              "playing",
+                              "finished"
+                            ],
+                            "type": "string"
+                          },
+                          "step": {
+                            "type": "number"
+                          },
+                          "username": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "rank",
+                          "username",
+                          "pnl_pct",
+                          "is_me"
+                        ],
                         "type": "object"
                       },
                       "type": "array"
@@ -104424,7 +105208,18 @@
     "/api/v2/flashback/entries/{id}/finish": {
       "post": {
         "operationId": "flashbackFinish",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -104454,6 +105249,9 @@
                       "nullable": true,
                       "type": "number"
                     },
+                    "reward_eligible": {
+                      "type": "boolean"
+                    },
                     "reward_xu": {
                       "type": "number"
                     },
@@ -104473,6 +105271,7 @@
                     "max_drawdown_percent",
                     "rank",
                     "reward_xu",
+                    "reward_eligible",
                     "status"
                   ],
                   "type": "object"
@@ -104548,7 +105347,79 @@
     "/api/v2/flashback/entries/{id}/indicators": {
       "put": {
         "operationId": "flashbackSaveIndicators",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "indicators": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "maxLength": 64,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "params": {
+                          "additionalProperties": {
+                            "anyOf": [
+                              {
+                                "type": "number"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "lower": {
+                                    "type": "number"
+                                  },
+                                  "upper": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "lower",
+                                  "upper"
+                                ],
+                                "type": "object"
+                              }
+                            ]
+                          },
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "params"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 16,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "indicators"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -104649,7 +105520,18 @@
     "/api/v2/flashback/entries/{id}/next": {
       "post": {
         "operationId": "flashbackNext",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "content": {
@@ -104794,7 +105676,52 @@
     "/api/v2/flashback/entries/{id}/orders": {
       "post": {
         "operationId": "flashbackPlaceOrder",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "idempotency_key": {
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "qty": {
+                    "maximum": 1000000000,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "side": {
+                    "enum": [
+                      "buy",
+                      "sell"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "side",
+                  "qty"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "content": {
@@ -153177,11 +154104,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 582,
+    "authenticatedOperations": 586,
     "noContentResponses": 18,
-    "operations": 785,
+    "operations": 789,
     "publicOperations": 203,
-    "responseSchemas": 767,
+    "responseSchemas": 771,
     "untypedResponses": 0
   }
 }

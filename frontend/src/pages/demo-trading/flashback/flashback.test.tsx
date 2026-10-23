@@ -20,7 +20,7 @@ import {
 
 const mocks = vi.hoisted(() => ({
   api: vi.fn(),
-  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn() },
+  toast: { success: vi.fn(), error: vi.fn(), warning: vi.fn(), info: vi.fn() },
 }))
 
 vi.mock("@/lib/api", async (importOriginal) => ({ ...(await importOriginal<typeof import("@/lib/api")>()), api: mocks.api }))
@@ -73,6 +73,7 @@ beforeEach(() => {
   mocks.toast.success.mockReset()
   mocks.toast.error.mockReset()
   mocks.toast.warning.mockReset()
+  mocks.toast.info.mockReset()
   vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} })
 })
 
@@ -387,5 +388,101 @@ describe("Flashback: giá khớp", () => {
       { level: { lower: 75, upper: 60 } },
     )
     expect(invalidThreshold).toBe("Ngưỡng dưới phải nhỏ hơn ngưỡng trên.")
+  })
+})
+
+describe("Flashback: bản 22-10", () => {
+  it("FB-07: tham gia gửi kèm mã thiết bị do trình duyệt sinh và giữ nguyên giữa các lần", async () => {
+    const user = userEvent.setup()
+    setup({ firstJoinFree: true })
+    renderMain()
+    await user.click(await screen.findByRole("button", { name: "Tham gia miễn phí" }))
+    await waitFor(() => expect(backend.callsTo("POST", "/flashback/current/join")).toHaveLength(1))
+    const body = backend.callsTo("POST", "/flashback/current/join")[0]?.body as { device_id?: string }
+    expect(body.device_id).toMatch(/^[A-Za-z0-9_-]{8,64}$/)
+    expect(localStorage.getItem("iqx.flashback.device-id")).toBe(body.device_id)
+  })
+
+  it("FB-11b: chỉ 402 XU_INSUFFICIENT báo thiếu xu kèm nút sang Học viện", async () => {
+    const user = userEvent.setup()
+    setup({ firstJoinFree: true, joinError: { status: 402, code: "XU_INSUFFICIENT" } })
+    renderMain()
+    await user.click(await screen.findByRole("button", { name: "Tham gia miễn phí" }))
+    const card = await screen.findByTestId("join-card")
+    await waitFor(() => expect(within(card).getByRole("alert").textContent).toBe("Chưa đủ xu, học thêm bài để có xu"))
+    expect(within(card).getByRole("button", { name: "Học thêm bài để có xu" })).toBeTruthy()
+  })
+
+  it("FB-11b: lỗi khác báo Không tham gia được, thử lại", async () => {
+    const user = userEvent.setup()
+    setup({ firstJoinFree: true, joinError: { status: 500, code: "INTERNAL" } })
+    renderMain()
+    await user.click(await screen.findByRole("button", { name: "Tham gia miễn phí" }))
+    const card = await screen.findByTestId("join-card")
+    await waitFor(() => expect(within(card).getByRole("alert").textContent).toBe("Không tham gia được, thử lại"))
+    expect(within(card).queryByRole("button", { name: "Học thêm bài để có xu" })).toBeNull()
+  })
+
+  it("FB-06/FB-11b: 409 thì tải lại đề, không báo lỗi", async () => {
+    const user = userEvent.setup()
+    setup({ firstJoinFree: true, joinError: { status: 409, code: "FLASHBACK_ROUND_CLOSED" } })
+    renderMain()
+    await user.click(await screen.findByRole("button", { name: "Tham gia miễn phí" }))
+    await waitFor(() => expect(backend.callsTo("GET", "/flashback/current").length).toBeGreaterThanOrEqual(2))
+    expect(within(screen.getByTestId("join-card")).queryByRole("alert")).toBeNull()
+  })
+
+  it("FB-06: Phiên tiếp nhận 409 FLASHBACK_ROUND_CLOSED thì tải lại đề", async () => {
+    const user = userEvent.setup()
+    setup({ joined: true, nextError: { status: 409, code: "FLASHBACK_ROUND_CLOSED" } })
+    renderMain()
+    await user.click(await screen.findByTestId("flashback-next"))
+    await waitFor(() => expect(mocks.toast.info).toHaveBeenCalledWith("Đề đã tới giờ đóng. Đang tải lại đề."))
+    await waitFor(() => expect(backend.callsTo("GET", "/flashback/current").length).toBeGreaterThanOrEqual(2))
+    expect(mocks.toast.error).not.toHaveBeenCalled()
+  })
+
+  it("FB-11c: thanh nút đáy điện thoại khoá Mua và Bán khi chưa tham gia", async () => {
+    setup({ firstJoinFree: true })
+    renderMain()
+    await screen.findByTestId("join-card")
+    expect(screen.getByTestId("flashback-buy-mobile").hasAttribute("disabled")).toBe(true)
+    expect(screen.getByTestId("flashback-sell-mobile").hasAttribute("disabled")).toBe(true)
+  })
+
+  it("FB-11c: đã tham gia thì Mua và Bán ở đáy bấm được", async () => {
+    setup({ joined: true })
+    renderMain()
+    await waitFor(() => expect(screen.getByTestId("flashback-buy-mobile").hasAttribute("disabled")).toBe(false))
+    expect(screen.getByTestId("flashback-sell-mobile").hasAttribute("disabled")).toBe(false)
+  })
+
+  it("FB-11a: chưa đủ điều kiện nhận thưởng thì màn kết quả thay số xu bằng câu giải thích", async () => {
+    setup({ joined: true, step: 60, status: "finished", rewardEligible: false })
+    renderMain()
+    const result = await screen.findByTestId("flashback-result")
+    expect(within(result).getByTestId("flashback-reward-ineligible").textContent).toBe(
+      "Tài khoản chưa đủ điều kiện nhận thưởng (cần xác thực số điện thoại và tạo đủ 7 ngày)",
+    )
+    expect(within(result).queryByText(/Thưởng theo hạng tạm thời/)).toBeNull()
+  })
+
+  it("§1.14: phí tham gia 0 xu từ lần hai thì hiện Tham gia miễn phí", async () => {
+    setup({ firstJoinFree: false, feeXu: 0 })
+    renderMain()
+    const card = await screen.findByTestId("join-card")
+    expect(within(card).getByText("Phí tham gia").parentElement?.textContent).toContain("Miễn phí")
+    expect(within(card).getByRole("button", { name: "Tham gia miễn phí" })).toBeTruthy()
+  })
+
+  it("FB-10: bảng xếp hạng hiện % từ pnl_pct và phiên đang chơi chỉ ở dòng của mình", async () => {
+    const user = userEvent.setup()
+    setup({ joined: true, step: 12 })
+    renderPanel()
+    await user.click(await screen.findByRole("tab", { name: /Xếp hạng/ }))
+    expect(await screen.findByText("ngoclan.vo")).toBeTruthy()
+    expect(screen.getByText("+12,00%")).toBeTruthy()
+    expect(screen.getByText(/đang chơi phiên 12\/60/)).toBeTruthy()
+    expect(screen.getAllByText(/đang chơi phiên/)).toHaveLength(1)
   })
 })

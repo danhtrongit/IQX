@@ -174,6 +174,41 @@ export class DatabaseService implements OnApplicationShutdown {
     }
   }
 
+  /**
+   * Chạy `operation` trên MỘT kết nối riêng lấy từ pool, giữ suốt lần gọi.
+   *
+   * Dùng cho khoá phiên (`pg_try_advisory_lock` / `pg_advisory_unlock`): lấy khoá và nhả khoá
+   * phải nằm trên cùng một kết nối. Kết nối không mở transaction; các bước bên trong vẫn gọi
+   * `transaction()` như thường (mỗi bước một kết nối khác của pool). Khi `operation` ném lỗi,
+   * kết nối bị huỷ thay vì trả về pool, nên khoá phiên (nếu còn) mất theo kết nối.
+   */
+  async withDedicatedClient<T>(operation: (client: SqlClient) => Promise<T>): Promise<T> {
+    let client: PoolClient | undefined;
+    let failure: unknown;
+    try {
+      client = await this.getPool().connect();
+      const dedicated: SqlClient = {
+        query: async <Row extends Record<string, unknown> = Record<string, unknown>>(
+          text: string,
+          values?: readonly unknown[],
+        ): Promise<Row[]> => {
+          const result = await client!.query<Row & QueryResultRow>(
+            text,
+            values ? [...values] : undefined,
+          );
+          return result.rows;
+        },
+      };
+      return await operation(dedicated);
+    } catch (error) {
+      failure = error;
+      return this.rethrowDatabaseError(error);
+    } finally {
+      // `release(true)` huỷ kết nối: không để trạng thái phiên lỗi quay lại pool.
+      client?.release(failure === undefined ? undefined : true);
+    }
+  }
+
   async health(): Promise<DatabaseHealth> {
     if (!this.isConfigured()) {
       return { status: 'disabled' };

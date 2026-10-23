@@ -4,6 +4,8 @@
  *
  * Mọi lời gọi được ghi lại để test kiểm tra thân yêu cầu và số nến nhận được.
  */
+import { ApiError } from "@/lib/api"
+
 import type {
   FlashbackBar,
   FlashbackEntry,
@@ -41,6 +43,12 @@ export type BackendOptions = {
   savedIndicators?: FlashbackIndicatorInstance[]
   feeXu?: number
   playerCount?: number
+  /** Đủ điều kiện nhận thưởng (mặc định có). */
+  rewardEligible?: boolean
+  /** Lỗi server trả cho lần tham gia (ví dụ 402 XU_INSUFFICIENT, 409 FLASHBACK_ROUND_CLOSED). */
+  joinError?: { status: number; code: string }
+  /** Lỗi server trả cho "Phiên tiếp". */
+  nextError?: { status: number; code: string }
 }
 
 export const RSI_META: FlashbackIndicatorMeta = {
@@ -127,6 +135,9 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     savedIndicators: options.savedIndicators ?? [],
     feeXu: options.feeXu ?? 100,
     playerCount: options.playerCount ?? 12,
+    rewardEligible: options.rewardEligible ?? true,
+    joinError: options.joinError ?? null,
+    nextError: options.nextError ?? null,
     sequence: 0,
   }
   const calls: Call[] = []
@@ -149,7 +160,8 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       finished_at: null,
       final_nav: state.step >= PLAY_SESSIONS ? String(state.cash + state.holdings * lastClose) : null,
       rank: state.step >= PLAY_SESSIONS ? 3 : null,
-      reward_xu: state.step >= PLAY_SESSIONS ? 500 : 0,
+      reward_xu: state.step >= PLAY_SESSIONS && state.rewardEligible ? 500 : 0,
+      reward_eligible: state.rewardEligible,
       indicator_params: state.savedIndicators,
       positions: state.positions,
       orders: state.orders,
@@ -235,6 +247,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     const path = call.path.split("?")[0]
     if (path === "/flashback/current" && call.method === "GET") return current()
     if (path === "/flashback/current/join" && call.method === "POST") {
+      if (state.joinError) throw new ApiError("lỗi", state.joinError.status, state.joinError.code)
       state.joined = true
       return {
         entry_id: FLASHBACK_ENTRY_ID,
@@ -249,10 +262,11 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       return {
         scope: "all",
         rows: [
-          { rank: 1, user_id: "u1", username: "ngoclan.vo", pnl_pct: 12, pnl_percent: 12, max_drawdown: 3, status: "finished", step: 60, reward_xu: 1000, is_me: false },
-          { rank: 2, user_id: "u2", username: "minhkhoa", pnl_pct: 8, pnl_percent: 8, max_drawdown: 4, status: "finished", step: 60, reward_xu: 500, is_me: false },
+          // FB-10: các dòng khác chỉ có hạng, tên, lãi lỗ (tỉ lệ) và is_me.
+          { rank: 1, username: "ngoclan.vo", pnl_pct: 0.12, is_me: false },
+          { rank: 2, username: "minhkhoa", pnl_pct: 0.08, is_me: false },
         ],
-        me: { rank: 0, user_id: "me", username: "nguyenvana", pnl_pct: 3, pnl_percent: 3, max_drawdown: 2, status: "playing", step: state.step, reward_xu: 0, is_me: true },
+        me: { rank: 0, username: "nguyenvana", pnl_pct: 0.03, is_me: true, status: "playing", step: state.step },
         total_players: 12,
       }
     }
@@ -261,6 +275,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     if (entryMatch && call.method === "POST") {
       const action = entryMatch[2]
       if (action === "next") {
+        if (state.nextError) throw new ApiError("lỗi", state.nextError.status, state.nextError.code)
         state.step += 1
         return {
           entry_id: FLASHBACK_ENTRY_ID,
@@ -287,7 +302,8 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
           max_drawdown: 0,
           max_drawdown_percent: 0,
           rank: 3,
-          reward_xu: 500,
+          reward_xu: state.rewardEligible ? 500 : 0,
+          reward_eligible: state.rewardEligible,
           status: "finished",
         }
       }

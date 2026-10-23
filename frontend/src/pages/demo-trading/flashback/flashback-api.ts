@@ -64,6 +64,8 @@ export type FlashbackEntry = {
   final_nav: string | null
   rank: number | null
   reward_xu: number
+  /** Đủ điều kiện nhận thưởng (đã xác thực số điện thoại, tài khoản tạo đủ 7 ngày). */
+  reward_eligible: boolean
   indicator_params: FlashbackIndicatorInstance[]
   positions: FlashbackPosition[]
   orders: FlashbackOrder[]
@@ -131,23 +133,13 @@ export type FlashbackNextResult = ApiResponseFor<"POST /api/v2/flashback/entries
 export type FlashbackFinishResult = ApiResponseFor<"POST /api/v2/flashback/entries/{id}/finish">
 export type FlashbackOrderResult = Omit<OrderResponse, "order"> & { order: FlashbackOrder }
 
-export type FlashbackLeaderboardRow = {
-  rank: number
-  user_id: string
-  username: string
-  pnl_pct: number | null
-  pnl_percent: number | null
-  max_drawdown: number | null
-  status: "playing" | "finished"
-  step: number
-  reward_xu: number
-  is_me: boolean
-}
+/**
+ * Một dòng bảng xếp hạng (spec 22-10 FB-10): chỉ hạng, tên đăng nhập, lãi lỗ và `is_me`. Riêng
+ * dòng của mình có thêm phiên đang chơi và trạng thái.
+ */
+export type FlashbackLeaderboardRow = LeaderboardResponse["rows"][number]
 
-export type FlashbackLeaderboard = Omit<LeaderboardResponse, "rows" | "me"> & {
-  rows: FlashbackLeaderboardRow[]
-  me: FlashbackLeaderboardRow | null
-}
+export type FlashbackLeaderboard = LeaderboardResponse
 
 export type FlashbackIndicatorList = Omit<IndicatorsResponse, "indicators"> & {
   indicators: FlashbackIndicatorMeta[]
@@ -186,8 +178,42 @@ export function fetchCurrent(signal?: AbortSignal): Promise<FlashbackCurrent> {
   return call<FlashbackCurrent>(FLASHBACK_OPERATIONS.current, {}, signal)
 }
 
+/** Khoá lưu mã thiết bị của trình duyệt (spec 22-10 FB-07). */
+const DEVICE_ID_KEY = "iqx.flashback.device-id"
+let memoryDeviceId: string | null = null
+
+function randomDeviceId(): string {
+  try {
+    return crypto.randomUUID()
+  } catch {
+    return `d${Date.now().toString(36)}${Math.random().toString(36).slice(2, 12)}`
+  }
+}
+
+/**
+ * Mã thiết bị do trình duyệt sinh một lần và giữ trong localStorage, gửi kèm khi tham gia để
+ * nhận diện nhiều tài khoản trên cùng một máy. Không đọc được localStorage thì dùng mã trong bộ
+ * nhớ của tab.
+ */
+export function flashbackDeviceId(): string {
+  try {
+    const stored = localStorage.getItem(DEVICE_ID_KEY)
+    if (stored && /^[A-Za-z0-9_-]{8,64}$/.test(stored)) return stored
+    const created = randomDeviceId()
+    localStorage.setItem(DEVICE_ID_KEY, created)
+    return created
+  } catch {
+    memoryDeviceId ??= randomDeviceId()
+    return memoryDeviceId
+  }
+}
+
 export function joinRound(signal?: AbortSignal): Promise<FlashbackJoinResult> {
-  return call<FlashbackJoinResult>(FLASHBACK_OPERATIONS.join, {}, signal)
+  return call<FlashbackJoinResult>(
+    FLASHBACK_OPERATIONS.join,
+    { body: { device_id: flashbackDeviceId() } },
+    signal,
+  )
 }
 
 export function fetchNextBar(entryId: string, signal?: AbortSignal): Promise<FlashbackNextResult> {

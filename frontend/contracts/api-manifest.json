@@ -142,6 +142,11 @@
       "requestType": "FlashbackAdminPauseStatusData",
       "responseType": "FlashbackAdminPauseStatusResponses"
     },
+    "GET /api/v2/admin/flashback/reward-holds": {
+      "operationId": "flashbackAdminRewardHolds",
+      "requestType": "FlashbackAdminRewardHoldsData",
+      "responseType": "FlashbackAdminRewardHoldsResponses"
+    },
     "GET /api/v2/admin/flashback/rounds": {
       "operationId": "flashbackAdminRounds",
       "requestType": "FlashbackAdminRoundsData",
@@ -151,6 +156,11 @@
       "operationId": "flashbackAdminReveal",
       "requestType": "FlashbackAdminRevealData",
       "responseType": "FlashbackAdminRevealResponses"
+    },
+    "GET /api/v2/admin/flashback/settings": {
+      "operationId": "flashbackAdminSettings",
+      "requestType": "FlashbackAdminSettingsData",
+      "responseType": "FlashbackAdminSettingsResponses"
     },
     "GET /api/v2/admin/flashback/suspects": {
       "operationId": "flashbackAdminSuspects",
@@ -1481,6 +1491,16 @@
       "operationId": "flashbackAdminPause",
       "requestType": "FlashbackAdminPauseData",
       "responseType": "FlashbackAdminPauseResponses"
+    },
+    "POST /api/v2/admin/flashback/reward-holds/{id}/release": {
+      "operationId": "flashbackAdminReleaseRewardHold",
+      "requestType": "FlashbackAdminReleaseRewardHoldData",
+      "responseType": "FlashbackAdminReleaseRewardHoldResponses"
+    },
+    "POST /api/v2/admin/flashback/reward-holds/{id}/void": {
+      "operationId": "flashbackAdminVoidRewardHold",
+      "requestType": "FlashbackAdminVoidRewardHoldData",
+      "responseType": "FlashbackAdminVoidRewardHoldResponses"
     },
     "POST /api/v2/admin/ipn/{log_id}/retry": {
       "operationId": "adminRetryIpn_post_api_v2_admin_ipn_log_id_retry",

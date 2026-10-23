@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Eye, PauseCircle, PlayCircle } from "lucide-react"
+import { Ban, Eye, PauseCircle, PlayCircle, Send } from "lucide-react"
 import { toast } from "sonner"
 
 import { PanelState } from "@/components/layout/panel-state"
@@ -13,7 +13,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { useAuth } from "@/hooks/use-auth"
 import { errorMessage } from "@/lib/api"
 import { formatDateTime, formatNumber } from "@/lib/format"
 
@@ -24,13 +23,18 @@ import type {
   FlashbackAlert,
   FlashbackAlertLevel,
   FlashbackReveal,
+  FlashbackRewardHold,
   FlashbackRound,
+  FlashbackSetting,
   FlashbackSuspect,
 } from "./flashback-api"
 import {
+  useDecideRewardHold,
   useFlashbackAlerts,
   useFlashbackPauseStatus,
+  useFlashbackRewardHolds,
   useFlashbackRounds,
+  useFlashbackSettings,
   useFlashbackSuspects,
   usePauseFlashback,
   useRevealFlashbackRound,
@@ -57,6 +61,7 @@ const ALERT_LEVEL: Record<FlashbackAlertLevel, string> = {
 const SUSPECT_REASON: Record<string, string> = {
   same_ip: "Cùng địa chỉ IP",
   same_device: "Cùng thiết bị",
+  same_phone: "Cùng số điện thoại",
 }
 
 /** Chỉ đề đã đóng mới xem được mã (máy chủ kiểm tra lại và ghi nhật ký). */
@@ -85,13 +90,15 @@ function Section({ title, description, children }: {
  *
  * Không có thao tác tạo, sửa hay chọn đề. Mã và giai đoạn của đề không có ở đây:
  * đề đã đóng cũng chỉ lộ qua thao tác "Xem mã và giai đoạn" và mỗi lần xem máy
- * chủ ghi nhật ký. Nút tạm dừng đọc trạng thái từ máy chủ và là tuỳ chọn an toàn
- * cho quản trị cao nhất.
+ * chủ ghi nhật ký. Nút tạm dừng và xem mã chỉ hiện với quản trị cao nhất
+ * (`SUPER_ADMIN_USER_IDS`, máy chủ báo qua `super_admin` và tự kiểm tra lại).
+ * Thưởng của tài khoản nghi gian lận bị tạm giữ ở đây chờ trả hoặc huỷ.
  */
 export function FlashbackPage() {
-  const { user } = useAuth()
-  const isTopAdmin = user?.role === "admin"
   const rounds = useFlashbackRounds()
+  const holds = useFlashbackRewardHolds()
+  const settings = useFlashbackSettings()
+  const decide = useDecideRewardHold()
   const alerts = useFlashbackAlerts()
   const suspects = useFlashbackSuspects()
   const pauseStatus = useFlashbackPauseStatus()
@@ -101,7 +108,9 @@ export function FlashbackPage() {
   const [revealed, setRevealed] = useState<FlashbackReveal | null>(null)
 
   /** Flashback đang tạm dừng: đọc từ máy chủ, không suy đoán từ phiên. */
-  const paused = pauseStatus.data === true
+  const paused = pauseStatus.data?.paused === true
+  /** Quản trị cao nhất theo máy chủ (FB-08), không theo vai trò trong phiên. */
+  const isTopAdmin = pauseStatus.data?.superAdmin === true
 
   const roundRows = rounds.data ?? []
   const fallbacks = roundRows.filter((round) => round.fallbackLevel > 0)
@@ -137,6 +146,104 @@ export function FlashbackPage() {
       onError: (error) => toast.error(errorMessage(error)),
     })
   }
+
+  function askDecide(hold: FlashbackRewardHold, action: "release" | "void") {
+    const release = action === "release"
+    confirm.ask({
+      title: release ? "Trả thưởng cho tài khoản này?" : "Huỷ khoản thưởng này?",
+      description: release
+        ? `Cộng ${formatNumber(hold.amount)} xu vào ví của ${hold.username} cho đề #${hold.roundNo}.`
+        : `Không cộng ${formatNumber(hold.amount)} xu cho ${hold.username} ở đề #${hold.roundNo}. Thao tác không hoàn tác được.`,
+      body: <p className="text-muted-foreground">Máy chủ ghi nhật ký kiểm tra cho thao tác này.</p>,
+      confirmLabel: release ? "Trả thưởng" : "Huỷ thưởng",
+      tone: release ? "default" : "destructive",
+      run: async () => {
+        try {
+          await decide.mutateAsync({ id: hold.id, action })
+          toast.success(release ? "Đã trả thưởng" : "Đã huỷ thưởng")
+        } catch (error) {
+          toast.error(errorMessage(error))
+          throw error
+        }
+      },
+    })
+  }
+
+  const holdColumns: AdminColumn<FlashbackRewardHold>[] = [
+    { id: "roundNo", header: "Đề", cell: (row) => <span className="font-semibold">{`#${row.roundNo}`}</span> },
+    { id: "username", header: "Tài khoản", cell: (row) => row.username },
+    {
+      id: "amount",
+      header: "Thưởng giữ (xu)",
+      align: "right",
+      cell: (row) => <span className="tabular-nums">{formatNumber(row.amount)}</span>,
+    },
+    { id: "reason", header: "Lý do", cell: (row) => SUSPECT_REASON[row.reason] ?? row.reason },
+    {
+      id: "createdAt",
+      header: "Thời điểm",
+      cell: (row) => <span className="tabular-nums">{formatDateTime(row.createdAt)}</span>,
+    },
+    {
+      id: "actions",
+      header: <span className="sr-only">Thao tác</span>,
+      cell: (row) => (
+        <div className="flex justify-end gap-1.5">
+          <Button
+            type="button"
+            size="xs"
+            variant="outline"
+            aria-label={`Trả thưởng đề #${row.roundNo} cho ${row.username}`}
+            disabled={decide.isPending}
+            onClick={() => askDecide(row, "release")}
+          >
+            <Send aria-hidden="true" />
+            Trả thưởng
+          </Button>
+          <Button
+            type="button"
+            size="xs"
+            variant="ghost"
+            aria-label={`Huỷ thưởng đề #${row.roundNo} của ${row.username}`}
+            disabled={decide.isPending}
+            onClick={() => askDecide(row, "void")}
+          >
+            <Ban aria-hidden="true" />
+            Huỷ thưởng
+          </Button>
+        </div>
+      ),
+    },
+  ]
+
+  const settingColumns: AdminColumn<FlashbackSetting>[] = [
+    { id: "label", header: "Tham số", cell: (row) => row.label },
+    {
+      id: "key",
+      header: "Khoá",
+      cell: (row) => <span className="font-mono text-xs">{row.key}</span>,
+    },
+    {
+      id: "value",
+      header: "Giá trị",
+      align: "right",
+      cell: (row) => (
+        <span className="tabular-nums font-semibold">
+          {typeof row.value === "number" ? formatNumber(row.value) : row.value}
+        </span>
+      ),
+    },
+    {
+      id: "defaultValue",
+      header: "Mặc định",
+      align: "right",
+      cell: (row) => (
+        <span className="tabular-nums text-muted-foreground">
+          {typeof row.defaultValue === "number" ? formatNumber(row.defaultValue) : row.defaultValue}
+        </span>
+      ),
+    },
+  ]
 
   const roundColumns: AdminColumn<FlashbackRound>[] = [
     {
@@ -192,6 +299,17 @@ export function FlashbackPage() {
       header: "Thưởng đã trả (xu)",
       align: "right",
       cell: (row) => formatNumber(row.totalRewardXu),
+    },
+    {
+      id: "heldRewardXu",
+      header: "Thưởng tạm giữ (xu)",
+      align: "right",
+      cell: (row) =>
+        row.heldRewardXu > 0 ? (
+          <span className="tabular-nums text-status-warning">{formatNumber(row.heldRewardXu)}</span>
+        ) : (
+          formatNumber(0)
+        ),
     },
     ...(isTopAdmin
       ? [
@@ -395,6 +513,48 @@ export function FlashbackPage() {
           )}
         </Section>
       </div>
+
+      <Section
+        title="Thưởng tạm giữ"
+        description="Thưởng của tài khoản nằm trong nhóm nghi gian lận được giữ lại khi đề đóng. Trả thưởng cộng xu vào ví, huỷ thưởng thì không cộng."
+      >
+        {holds.isError ? (
+          <PanelState
+            title="Không tải được danh sách thưởng tạm giữ"
+            description={errorMessage(holds.error)}
+            action={{ label: "Thử lại", onClick: () => void holds.refetch() }}
+          />
+        ) : (
+          <AdminDataTable
+            columns={holdColumns}
+            rows={holds.data ?? []}
+            rowKey={(row) => `hold-${row.id}`}
+            loading={holds.isPending}
+            emptyLabel="Không có khoản thưởng nào đang tạm giữ."
+          />
+        )}
+      </Section>
+
+      <Section
+        title="Tham số vận hành"
+        description="Chỉ đọc. Muốn đổi tham số thì sửa bảng flashback_settings theo hướng dẫn vận hành; tác vụ đọc lại ở lần chạy kế tiếp."
+      >
+        {settings.isError ? (
+          <PanelState
+            title="Không tải được tham số vận hành"
+            description={errorMessage(settings.error)}
+            action={{ label: "Thử lại", onClick: () => void settings.refetch() }}
+          />
+        ) : (
+          <AdminDataTable
+            columns={settingColumns}
+            rows={settings.data ?? []}
+            rowKey={(row) => `setting-${row.key}`}
+            loading={settings.isPending}
+            emptyLabel="Chưa đọc được tham số."
+          />
+        )}
+      </Section>
 
       {confirm.element}
 

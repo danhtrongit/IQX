@@ -30,8 +30,10 @@ export interface OperationMap {
   "GET /api/v2/admin/audit/export": { request: T.AdminAuditControllerExport1Data; response: T.AdminAuditControllerExport1Responses[keyof T.AdminAuditControllerExport1Responses] }
   "GET /api/v2/admin/flashback/alerts": { request: T.FlashbackAdminAlertsData; response: T.FlashbackAdminAlertsResponses[keyof T.FlashbackAdminAlertsResponses] }
   "GET /api/v2/admin/flashback/pause": { request: T.FlashbackAdminPauseStatusData; response: T.FlashbackAdminPauseStatusResponses[keyof T.FlashbackAdminPauseStatusResponses] }
+  "GET /api/v2/admin/flashback/reward-holds": { request: T.FlashbackAdminRewardHoldsData; response: T.FlashbackAdminRewardHoldsResponses[keyof T.FlashbackAdminRewardHoldsResponses] }
   "GET /api/v2/admin/flashback/rounds": { request: T.FlashbackAdminRoundsData; response: T.FlashbackAdminRoundsResponses[keyof T.FlashbackAdminRoundsResponses] }
   "GET /api/v2/admin/flashback/rounds/{id}/reveal": { request: T.FlashbackAdminRevealData; response: T.FlashbackAdminRevealResponses[keyof T.FlashbackAdminRevealResponses] }
+  "GET /api/v2/admin/flashback/settings": { request: T.FlashbackAdminSettingsData; response: T.FlashbackAdminSettingsResponses[keyof T.FlashbackAdminSettingsResponses] }
   "GET /api/v2/admin/flashback/suspects": { request: T.FlashbackAdminSuspectsData; response: T.FlashbackAdminSuspectsResponses[keyof T.FlashbackAdminSuspectsResponses] }
   "GET /api/v2/admin/ipn": { request: T.AdminListIpnLogsGetApiV2AdminIpnData; response: T.AdminListIpnLogsGetApiV2AdminIpnResponses[keyof T.AdminListIpnLogsGetApiV2AdminIpnResponses] }
   "GET /api/v2/admin/ipn/{log_id}": { request: T.AdminGetIpnLogGetApiV2AdminIpnLogIdData; response: T.AdminGetIpnLogGetApiV2AdminIpnLogIdResponses[keyof T.AdminGetIpnLogGetApiV2AdminIpnLogIdResponses] }
@@ -298,6 +300,8 @@ export interface OperationMap {
   "POST /api/v2/admin/alerts/signals": { request: T.AdminAlertsControllerCreate1Data; response: T.AdminAlertsControllerCreate1Responses[keyof T.AdminAlertsControllerCreate1Responses] }
   "POST /api/v2/admin/alerts/telegram/webhook": { request: T.AdminAlertsControllerSetupTelegramWebhook1Data; response: T.AdminAlertsControllerSetupTelegramWebhook1Responses[keyof T.AdminAlertsControllerSetupTelegramWebhook1Responses] }
   "POST /api/v2/admin/flashback/pause": { request: T.FlashbackAdminPauseData; response: T.FlashbackAdminPauseResponses[keyof T.FlashbackAdminPauseResponses] }
+  "POST /api/v2/admin/flashback/reward-holds/{id}/release": { request: T.FlashbackAdminReleaseRewardHoldData; response: T.FlashbackAdminReleaseRewardHoldResponses[keyof T.FlashbackAdminReleaseRewardHoldResponses] }
+  "POST /api/v2/admin/flashback/reward-holds/{id}/void": { request: T.FlashbackAdminVoidRewardHoldData; response: T.FlashbackAdminVoidRewardHoldResponses[keyof T.FlashbackAdminVoidRewardHoldResponses] }
   "POST /api/v2/admin/ipn/{log_id}/retry": { request: T.AdminRetryIpnPostApiV2AdminIpnLogIdRetryData; response: T.AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses[keyof T.AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses] }
   "POST /api/v2/admin/journey/identity/qa-grants": { request: T.JourneyIdentityControllerGrantQa1Data; response: T.JourneyIdentityControllerGrantQa1Responses[keyof T.JourneyIdentityControllerGrantQa1Responses] }
   "POST /api/v2/admin/lessons/courses": { request: T.AdminLearningControllerCreateCourse1Data; response: T.AdminLearningControllerCreateCourse1Responses[keyof T.AdminLearningControllerCreateCourse1Responses] }
@@ -470,8 +474,10 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/admin/audit/export": { request: "AdminAuditControllerExport1Data", response: "AdminAuditControllerExport1Responses" },
   "GET /api/v2/admin/flashback/alerts": { request: "FlashbackAdminAlertsData", response: "FlashbackAdminAlertsResponses" },
   "GET /api/v2/admin/flashback/pause": { request: "FlashbackAdminPauseStatusData", response: "FlashbackAdminPauseStatusResponses" },
+  "GET /api/v2/admin/flashback/reward-holds": { request: "FlashbackAdminRewardHoldsData", response: "FlashbackAdminRewardHoldsResponses" },
   "GET /api/v2/admin/flashback/rounds": { request: "FlashbackAdminRoundsData", response: "FlashbackAdminRoundsResponses" },
   "GET /api/v2/admin/flashback/rounds/{id}/reveal": { request: "FlashbackAdminRevealData", response: "FlashbackAdminRevealResponses" },
+  "GET /api/v2/admin/flashback/settings": { request: "FlashbackAdminSettingsData", response: "FlashbackAdminSettingsResponses" },
   "GET /api/v2/admin/flashback/suspects": { request: "FlashbackAdminSuspectsData", response: "FlashbackAdminSuspectsResponses" },
   "GET /api/v2/admin/ipn": { request: "AdminListIpnLogsGetApiV2AdminIpnData", response: "AdminListIpnLogsGetApiV2AdminIpnResponses" },
   "GET /api/v2/admin/ipn/{log_id}": { request: "AdminGetIpnLogGetApiV2AdminIpnLogIdData", response: "AdminGetIpnLogGetApiV2AdminIpnLogIdResponses" },
@@ -738,6 +744,8 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/admin/alerts/signals": { request: "AdminAlertsControllerCreate1Data", response: "AdminAlertsControllerCreate1Responses" },
   "POST /api/v2/admin/alerts/telegram/webhook": { request: "AdminAlertsControllerSetupTelegramWebhook1Data", response: "AdminAlertsControllerSetupTelegramWebhook1Responses" },
   "POST /api/v2/admin/flashback/pause": { request: "FlashbackAdminPauseData", response: "FlashbackAdminPauseResponses" },
+  "POST /api/v2/admin/flashback/reward-holds/{id}/release": { request: "FlashbackAdminReleaseRewardHoldData", response: "FlashbackAdminReleaseRewardHoldResponses" },
+  "POST /api/v2/admin/flashback/reward-holds/{id}/void": { request: "FlashbackAdminVoidRewardHoldData", response: "FlashbackAdminVoidRewardHoldResponses" },
   "POST /api/v2/admin/ipn/{log_id}/retry": { request: "AdminRetryIpnPostApiV2AdminIpnLogIdRetryData", response: "AdminRetryIpnPostApiV2AdminIpnLogIdRetryResponses" },
   "POST /api/v2/admin/journey/identity/qa-grants": { request: "JourneyIdentityControllerGrantQa1Data", response: "JourneyIdentityControllerGrantQa1Responses" },
   "POST /api/v2/admin/lessons/courses": { request: "AdminLearningControllerCreateCourse1Data", response: "AdminLearningControllerCreateCourse1Responses" },

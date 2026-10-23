@@ -3,9 +3,16 @@
  *
  * Chạy mỗi phút, mỗi bước một transaction riêng và idempotent để chạy lại nhiều lần vẫn an toàn:
  * b1 đóng đề, b2 chốt kết quả và xếp hạng, b3 trả thưởng, b4 mở đề đã chờ, b5 tạo đề kế tiếp.
+ *
+ * Bản 22-10:
+ * - FB-01: đề mở đúng giờ đóng ở mốc 20:00 đầu tiên không sớm hơn `scheduled_open_at + 48h`
+ *   (48 giờ trừ vài giây trễ), đề mở muộn hơn 5 phút giữ đủ 48 giờ tính từ lúc mở thật.
+ * - FB-02: khoá phiên giữ trên MỘT kết nối riêng suốt lần chạy.
+ * - FB-07: thưởng của tài khoản bị đánh dấu được giữ lại chờ quản trị viên duyệt.
+ * - FB-09: cảnh báo gửi thêm ra kênh kỹ thuật (Telegram) khi có cấu hình.
  */
 
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/database.service.js';
 import type { JobOutcome } from '../runtime/runtime.types.js';
@@ -14,9 +21,17 @@ import {
   FLASHBACK_CHANGE_HOUR_UTC7,
   FLASHBACK_CONFIG_KEY,
   FLASHBACK_MAX_RETRY_MINUTES,
+  FLASHBACK_ON_TIME_GRACE_MS,
   FLASHBACK_PAUSED_KEY,
+  flashbackRewardEligible,
   flashbackRewardForRank,
+  flashbackRewardLedgerKey,
 } from './flashback.constants.js';
+import {
+  FLASHBACK_OPS_ALERTS,
+  noopFlashbackOpsAlerts,
+  type FlashbackOpsAlertPort,
+} from './flashback.alerts.js';
 import { FLASHBACK_CLOCK, maxDrawdownOf, type FlashbackClock } from './flashback.service.js';
 import {
   FLASHBACK_REPOSITORY,
@@ -24,14 +39,13 @@ import {
   type FlashbackAlertLevel,
 } from './flashback.repository.js';
 import {
+  FlashbackCalendarUnavailableError,
   FlashbackRoundBuilder,
   readFlashbackConfig,
   type FlashbackConfig,
 } from './flashback.round-builder.js';
+import { flashbackFlaggedUsers } from './flashback.suspects.js';
 import type { FlashbackRoundRow } from './flashback.types.js';
-
-/** Số ngày tài khoản phải có để được nhận thưởng (spec v1.1 §2.9). */
-const REWARD_MIN_ACCOUNT_DAYS = 7;
 
 const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
 
@@ -48,6 +62,28 @@ export function nextChangeBoundary(atOrAfter: Date, changeHourUtc7: number): Dat
   return new Date(candidate);
 }
 
+/**
+ * Giờ đóng của một đề mở lúc `now` (spec 22-10 FB-01, BoSung §5.4).
+ *
+ * - Mở đúng giờ (trễ không quá 5 phút so với `scheduledOpenAt`): mốc đổi đề đầu tiên không sớm
+ *   hơn `scheduledOpenAt + 48h`. Tác vụ chạy ở 20:00:30 vẫn đóng lúc 20:00 ngày N+2.
+ *   Đề kế sau một đề mở muộn cũng đi nhánh này nên lịch tự quay về mốc 20:00.
+ * - Mở muộn hơn 5 phút: `now + 48h`, giữ đủ 48 giờ tính từ lúc mở thật.
+ */
+export function flashbackClosesAt(
+  scheduledOpenAt: Date,
+  now: Date,
+  config: Pick<FlashbackConfig, 'roundDurationHours' | 'changeHourUtc7'>,
+): Date {
+  const durationMs = (config.roundDurationHours || 48) * 3_600_000;
+  const late = now.getTime() - scheduledOpenAt.getTime() > FLASHBACK_ON_TIME_GRACE_MS;
+  if (late) return new Date(now.getTime() + durationMs);
+  return nextChangeBoundary(
+    new Date(scheduledOpenAt.getTime() + durationMs),
+    config.changeHourUtc7 || FLASHBACK_CHANGE_HOUR_UTC7,
+  );
+}
+
 @Injectable()
 export class FlashbackJob {
   private readonly logger = new Logger(FlashbackJob.name);
@@ -57,51 +93,63 @@ export class FlashbackJob {
     @Inject(FLASHBACK_REPOSITORY) private readonly repository: FlashbackRepository,
     @Inject(FLASHBACK_CLOCK) private readonly clock: FlashbackClock,
     private readonly builder: FlashbackRoundBuilder,
+    @Optional()
+    @Inject(FLASHBACK_OPS_ALERTS)
+    private readonly opsAlerts: FlashbackOpsAlertPort = noopFlashbackOpsAlerts,
   ) {}
 
-  /** Chạy toàn bộ vòng đời đề. */
+  /**
+   * Chạy toàn bộ vòng đời đề dưới khoá phiên (FB-02). Khoá được lấy và nhả trên cùng một kết
+   * nối riêng của pool; kết nối lỗi thì bị huỷ nên khoá không thể kẹt trên một kết nối rảnh.
+   */
   async run(now: Date = this.clock.now()): Promise<JobOutcome> {
-    const locked = (await this.repository.tryAcquireJobLock?.(this.database)) ?? true;
-    if (!locked) {
-      return { status: 'skipped', reason: 'locked', detail: { locked: false } };
-    }
-    try {
-      const config = await this.config();
-      const detail: Record<string, unknown> = {};
-
-      let urgentCreated = false;
-      if (!(await this.isPaused())) {
-        const [open, ready] = await Promise.all([
-          this.repository.openRound(this.database),
-          this.repository.readyRound(this.database),
-        ]);
-        const openExpired =
-          open !== null && open.closesAt !== null && open.closesAt.getTime() <= now.getTime();
-        if (!ready && (!open || openExpired)) {
-          urgentCreated = await this.createNextRound(now, config);
-        }
+    return this.database.withDedicatedClient(async (client) => {
+      const locked = await this.repository.tryAcquireJobLock(client);
+      if (!locked) {
+        return { status: 'skipped', reason: 'locked', detail: { locked: false } };
       }
+      try {
+        return await this.cycle(now);
+      } finally {
+        await this.repository.releaseJobLock(client);
+      }
+    });
+  }
 
-      detail.closed = await this.closeOpenRounds(now);
+  private async cycle(now: Date): Promise<JobOutcome> {
+    const config = await this.config();
+    const detail: Record<string, unknown> = {};
 
-      // Bước 4 (mở đề ready) không chờ bước 2 và 3 (chốt và trả thưởng đề cũ) xong (BoSung §5.3).
-      const [settledAndPaid, opened] = await Promise.all([
-        (async () => {
-          const settled = await this.settleClosingRounds(now);
-          const paid = await this.payClosedRounds();
-          return { settled, paid };
-        })(),
-        this.openReadyRound(now, config),
+    let urgentCreated = false;
+    if (!(await this.isPaused())) {
+      const [open, ready] = await Promise.all([
+        this.repository.openRound(this.database),
+        this.repository.readyRound(this.database),
       ]);
-      detail.settled = settledAndPaid.settled;
-      detail.paid = settledAndPaid.paid;
-      detail.opened = opened;
-      detail.created = (await this.createNextRound(now, config)) || urgentCreated;
-      await this.checkAlerts(now);
-      return { status: 'completed', detail };
-    } finally {
-      await this.repository.releaseJobLock?.(this.database);
+      const openExpired =
+        open !== null && open.closesAt !== null && open.closesAt.getTime() <= now.getTime();
+      if (!ready && (!open || openExpired)) {
+        urgentCreated = await this.createNextRound(now, config);
+      }
     }
+
+    detail.closed = await this.closeOpenRounds(now);
+
+    // Bước 4 (mở đề ready) không chờ bước 2 và 3 (chốt và trả thưởng đề cũ) xong (BoSung §5.3).
+    const [settledAndPaid, opened] = await Promise.all([
+      (async () => {
+        const settled = await this.settleClosingRounds(now);
+        const paid = await this.payClosedRounds();
+        return { settled, paid };
+      })(),
+      this.openReadyRound(now, config),
+    ]);
+    detail.settled = settledAndPaid.settled;
+    detail.paid = settledAndPaid.paid;
+    detail.opened = opened;
+    detail.created = (await this.createNextRound(now, config)) || urgentCreated;
+    await this.checkAlerts(now);
+    return { status: 'completed', detail };
   }
 
   private async config(): Promise<FlashbackConfig> {
@@ -167,18 +215,16 @@ export class FlashbackJob {
             const rightDrawdown = right.maxDrawdown ?? Number.POSITIVE_INFINITY;
             if (leftDrawdown !== rightDrawdown) return leftDrawdown - rightDrawdown;
             const leftDone = left.finishedAt ? left.finishedAt.getTime() : Number.POSITIVE_INFINITY;
-            const rightDone = right.finishedAt ? right.finishedAt.getTime() : Number.POSITIVE_INFINITY;
+            const rightDone = right.finishedAt
+              ? right.finishedAt.getTime()
+              : Number.POSITIVE_INFINITY;
             if (leftDone !== rightDone) return leftDone - rightDone;
             return left.joinedAt.getTime() - right.joinedAt.getTime();
           });
         for (const [index, entry] of finished.entries()) {
           const rank = index + 1;
           const info = infos.find((item) => item.id === entry.id);
-          const eligible =
-            info !== undefined &&
-            info.phoneVerified &&
-            info.accountCreatedAt.getTime() <=
-              now.getTime() - REWARD_MIN_ACCOUNT_DAYS * 86_400_000;
+          const eligible = flashbackRewardEligible(info, now);
           await this.repository.assignEntryRanking(
             tx,
             entry.id,
@@ -199,14 +245,36 @@ export class FlashbackJob {
 
   // ------------------------------------------------------------------ b3
 
+  /**
+   * Trả thưởng (BoSung §5.3 bước 3). Tài khoản không bị đánh dấu được cộng xu ngay; tài khoản
+   * bị đánh dấu (FB-07) chỉ được ghi một khoản "giữ" chờ quản trị viên duyệt. Đề chuyển sang
+   * `paid` khi phần không bị giữ đã trả xong. Chạy lại không trả hai lần: khoá duy nhất của
+   * ledger và của bảng giữ thưởng chặn dòng thứ hai.
+   */
   private async payClosedRounds(): Promise<number> {
     const rounds = await this.repository.roundsByStatus(this.database, 'closed');
     let paid = 0;
     for (const round of rounds) {
-      const done = await this.database.transaction(async (tx) => {
+      const result = await this.database.transaction(async (tx) => {
         const entries = await this.repository.leaderboardEntries(tx, round.id);
+        const flagged = flashbackFlaggedUsers(await this.repository.entrySignals(tx, round.id));
+        let held = 0;
         for (const entry of entries) {
           if (entry.status !== 'finished' || entry.rewardXu <= 0) continue;
+          const reason = flagged.get(entry.userId);
+          if (reason) {
+            if (
+              await this.repository.insertRewardHold(tx, {
+                roundId: round.id,
+                userId: entry.userId,
+                entryId: entry.id,
+                amount: entry.rewardXu,
+                reason,
+              })
+            )
+              held += 1;
+            continue;
+          }
           const wallet = await this.repository.lockWallet(tx, entry.userId);
           const seq = wallet.lastSeq + 1;
           const balanceAfter = wallet.balance + entry.rewardXu;
@@ -216,18 +284,25 @@ export class FlashbackJob {
             kind: 'flashback_reward',
             delta: entry.rewardXu,
             balanceAfter,
-            uniqueKey: `flashback_reward:${round.id}:${entry.userId}`,
+            uniqueKey: flashbackRewardLedgerKey(round.id, entry.userId),
             ref: { round_id: round.id, round_no: round.roundNo, rank: entry.rank },
             policyVersion: 'iqx-flashback-v1',
           });
           if (appended) await this.repository.saveWallet(tx, entry.userId, balanceAfter, seq);
         }
-        await this.repository.transitionRound(tx, round.id, ['closed'], 'paid');
-        return true;
+        const moved = await this.repository.transitionRound(tx, round.id, ['closed'], 'paid');
+        return { moved: moved !== null, held };
       });
-      if (done) {
+      if (result.moved) {
         paid += 1;
-        await this.log('b3', round.id, `trả thưởng đề ${round.roundNo}`, null);
+        await this.log(
+          'b3',
+          round.id,
+          result.held > 0
+            ? `trả thưởng đề ${round.roundNo}, giữ ${result.held} khoản chờ duyệt`
+            : `trả thưởng đề ${round.roundNo}`,
+          null,
+        );
       }
     }
     return paid;
@@ -242,11 +317,7 @@ export class FlashbackJob {
     const ready = await this.repository.readyRound(this.database);
     if (!ready) return false;
     if (ready.scheduledOpenAt > now) return false;
-    const minClose = new Date(now.getTime() + config.roundDurationHours * 3_600_000);
-    const openedLate = now.getTime() - ready.scheduledOpenAt.getTime() > 5 * 60_000;
-    const closesAt = openedLate
-      ? minClose
-      : nextChangeBoundary(minClose, config.changeHourUtc7 || FLASHBACK_CHANGE_HOUR_UTC7);
+    const closesAt = flashbackClosesAt(ready.scheduledOpenAt, now, config);
     const updated = await this.database.transaction(async (tx) =>
       this.repository.transitionRound(tx, ready.id, ['ready'], 'open', {
         opensAt: now,
@@ -283,6 +354,8 @@ export class FlashbackJob {
             error instanceof Error ? error.message : 'lỗi không xác định'
           })`,
         );
+        // Không có lịch giao dịch thì mọi mức đều hỏng như nhau: bỏ lần này, thử lại sau (FB-11h).
+        if (error instanceof FlashbackCalendarUnavailableError) break;
         continue;
       }
       if (!built) continue;
@@ -298,6 +371,7 @@ export class FlashbackJob {
           bars: built.bars,
           scheduledOpenAt,
           fallbackLevel: built.fallbackLevel,
+          priceSource: built.priceSource,
         });
       });
       if (!created) continue;
@@ -307,7 +381,7 @@ export class FlashbackJob {
       await this.log('b5', created.id, `tạo đề ${created.roundNo}`, null);
       if (created.fallbackLevel > 0) {
         await this.alertFor(
-          created.id,
+          created,
           'low',
           `Đề ${created.roundNo} được tạo bằng phương án dự phòng mức ${created.fallbackLevel} (spec v1.2 §6.3).`,
         );
@@ -333,7 +407,7 @@ export class FlashbackJob {
           'low',
         );
         await this.alertFor(
-          currentOpen.id,
+          currentOpen,
           'low',
           'alert:low:fallback_extend_24h: Không tạo được đề mới sau khi đã thử hết các mức nới điều kiện (spec v1.2 §6.3). Đề đang mở được kéo dài thêm 24 giờ.',
         );
@@ -352,7 +426,10 @@ export class FlashbackJob {
   private async recordBackoff(now: Date, urgent: boolean): Promise<void> {
     const stored = await this.repository.getSetting(this.database, FLASHBACK_BACKOFF_KEY);
     const prevFailures =
-      stored && typeof stored === 'object' && 'failures' in stored && typeof stored.failures === 'number'
+      stored &&
+      typeof stored === 'object' &&
+      'failures' in stored &&
+      typeof stored.failures === 'number'
         ? stored.failures
         : 0;
     const failures = prevFailures + 1;
@@ -397,10 +474,11 @@ export class FlashbackJob {
     });
   }
 
-  /** Ghi cảnh báo vào nhật ký tác vụ (chưa có kênh cảnh báo riêng cho quản trị trong repo). */
+  /** Cảnh báo không gắn với một đề: ghi nhật ký và gửi ra kênh kỹ thuật. */
   private async alert(message: string, level: FlashbackAlertLevel = 'high'): Promise<void> {
     this.logger.warn(`Flashback: [${level}] ${message}`);
     await this.log('alert', null, message, null, level);
+    await this.opsAlerts.send({ level, message });
   }
 
   /**
@@ -422,14 +500,14 @@ export class FlashbackJob {
         round.closesAt.getTime() < now.getTime() - lateByMs
       ) {
         await this.alertFor(
-          round.id,
+          round,
           'high',
           `Đề ${round.roundNo} quá giờ đóng hơn 10 phút mà vẫn đang mở.`,
         );
       }
       if (round.status === 'closed' && now.getTime() - round.updatedAt.getTime() > 60 * 60_000) {
         await this.alertFor(
-          round.id,
+          round,
           'medium',
           `Đề ${round.roundNo} đã chốt quá 1 giờ mà chưa trả thưởng.`,
         );
@@ -445,7 +523,7 @@ export class FlashbackJob {
       );
       if (lastClosed) {
         await this.alertFor(
-          lastClosed.id,
+          lastClosed,
           'high',
           `Đề ${lastClosed.roundNo} đã quá giờ đóng 10 phút nhưng chưa có đề mới đang mở.`,
         );
@@ -454,7 +532,7 @@ export class FlashbackJob {
 
     if (open?.opensAt && !ready && now.getTime() - open.opensAt.getTime() > 6 * 3_600_000) {
       await this.alertFor(
-        open.id,
+        open,
         'medium',
         `Đề ${open.roundNo} đã mở hơn 6 giờ mà chưa có đề chờ (ready).`,
       );
@@ -465,22 +543,31 @@ export class FlashbackJob {
     );
     if (fallbackRound) {
       await this.alertFor(
-        fallbackRound.id,
+        fallbackRound,
         'low',
         `Đề ${fallbackRound.roundNo} được tạo bằng phương án dự phòng mức ${fallbackRound.fallbackLevel} (spec v1.2 §6.3).`,
       );
     }
   }
 
-  /** Ghi cảnh báo có mức độ; không lặp lại cùng một cảnh báo trong 30 phút. */
+  /**
+   * Ghi cảnh báo có mức độ và gửi ra kênh kỹ thuật; không lặp lại cùng một cảnh báo trong 30
+   * phút. Nội dung chỉ có số đề, trạng thái và mức (không có mã, không có giai đoạn).
+   */
   private async alertFor(
-    roundId: string,
+    round: Pick<FlashbackRoundRow, 'id' | 'roundNo' | 'status'>,
     level: FlashbackAlertLevel,
     message: string,
   ): Promise<void> {
-    const known = await this.repository.hasRecentAlert(this.database, roundId, level, 30);
+    const known = await this.repository.hasRecentAlert(this.database, round.id, level, 30);
     if (known) return;
     this.logger.warn(`Flashback: [${level}] ${message}`);
-    await this.log('alert', roundId, message, null, level);
+    await this.log('alert', round.id, message, null, level);
+    await this.opsAlerts.send({
+      level,
+      message,
+      roundNo: round.roundNo,
+      roundStatus: round.status,
+    });
   }
 }

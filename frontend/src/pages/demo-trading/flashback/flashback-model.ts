@@ -12,6 +12,15 @@ import type {
   FlashbackPosition,
 } from "./flashback-api"
 
+/** Câu thay cho số xu thưởng khi tài khoản chưa đủ điều kiện (spec 22-10 FB-11a, v1.1 §2.9). */
+export const FLASHBACK_REWARD_INELIGIBLE_TEXT =
+  "Tài khoản chưa đủ điều kiện nhận thưởng (cần xác thực số điện thoại và tạo đủ 7 ngày)"
+
+/** Lãi lỗ theo % của một dòng xếp hạng (server chỉ gửi `pnl_pct` dạng tỉ lệ). */
+export function leaderboardPercent(pnlPct: number | null | undefined): number | null {
+  return pnlPct == null || !Number.isFinite(pnlPct) ? null : pnlPct * 100
+}
+
 /** Vốn ban đầu của một lượt chơi. */
 export const FLASHBACK_INITIAL_CASH = 10_000_000
 /** Số phiên lịch sử đi kèm mỗi đề. */
@@ -46,10 +55,34 @@ export function formatSignedPercent(value: number | null | undefined, digits = 2
   return `${sign}${formatPercent(Math.abs(value), digits)}`
 }
 
-/** "Mua tối đa": số nguyên lớn nhất sao cho số cp × giá × (1 + phí) ≤ tiền mặt. */
+/** Phí 0,15% theo điểm cơ bản, như server (`FLASHBACK_FEE_BPS`). */
+const FLASHBACK_FEE_BPS = 15n
+/** Thuế 0,1% theo điểm cơ bản, như server (`FLASHBACK_TAX_BPS`). */
+const FLASHBACK_TAX_BPS = 10n
+
+/** Làm tròn theo điểm cơ bản, nửa lên: giống `roundBasisPoints` của server. */
+function roundBasisPoints(amount: bigint, bps: bigint): bigint {
+  return (amount * bps + 5_000n) / 10_000n
+}
+
+function toWholeDong(value: number): bigint {
+  return Number.isFinite(value) && value > 0 ? BigInt(Math.floor(value)) : 0n
+}
+
+/**
+ * "Mua tối đa" (spec 22-10 FB-11d): cùng công thức số nguyên với server
+ * (`backend/src/modules/flashback/flashback.service.ts`): `floor(cash × 10000 / (price × 10015))`,
+ * rồi chỉnh ±1 theo phí làm tròn của lệnh mua.
+ */
 export function maxBuyQty(cash: number, price: number): number {
-  if (price <= 0) return 0
-  return Math.max(0, Math.floor(cash / (price * (1 + FLASHBACK_FEE_RATE))))
+  const money = toWholeDong(cash)
+  const unit = toWholeDong(price)
+  if (unit <= 0n || money <= 0n) return 0
+  const affordable = (qty: bigint) => unit * qty + roundBasisPoints(unit * qty, FLASHBACK_FEE_BPS) <= money
+  let qty = (money * 10_000n) / (unit * (10_000n + FLASHBACK_FEE_BPS))
+  while (qty > 0n && !affordable(qty)) qty -= 1n
+  while (affordable(qty + 1n)) qty += 1n
+  return Number(qty)
 }
 
 /** "Bán được": tổng cổ phiếu đã về (đủ T+2) của người chơi. */
@@ -73,8 +106,9 @@ export type OrderPreview = {
 /** Giá trị lệnh, phí, thuế và tổng tiền của một lệnh. */
 export function orderPreview(side: FlashbackOrderSide, qty: number, price: number): OrderPreview {
   const value = qty * price
-  const fee = Math.round(value * FLASHBACK_FEE_RATE)
-  const tax = side === "sell" ? Math.round(value * FLASHBACK_TAX_RATE) : 0
+  const amount = toWholeDong(value)
+  const fee = Number(roundBasisPoints(amount, FLASHBACK_FEE_BPS))
+  const tax = side === "sell" ? Number(roundBasisPoints(amount, FLASHBACK_TAX_BPS)) : 0
   return { value, fee, tax, total: side === "buy" ? value + fee : value - fee - tax }
 }
 

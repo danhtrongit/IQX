@@ -8,6 +8,7 @@
  */
 
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 import { DatabaseModule } from '../../platform/database/database.module.js';
 import { AcademyModule } from '../academy/academy.module.js';
@@ -15,7 +16,9 @@ import { AuthModule } from '../auth/index.js';
 import { MarketDataModule } from '../market-data/index.js';
 import { IndexMembershipProvider, MarketIntegrationModule } from '../market-integration/index.js';
 import { FlashbackAdminController, FlashbackController } from './flashback.controller.js';
-import { FlashbackAdminService } from './flashback-admin.service.js';
+import type { Environment } from '../../platform/config/environment.js';
+import { FLASHBACK_OPS_ALERTS, TelegramFlashbackOpsAlerts } from './flashback.alerts.js';
+import { FLASHBACK_SUPER_ADMINS, FlashbackAdminService } from './flashback-admin.service.js';
 import { FlashbackJob } from './flashback.job.js';
 import { MarketFlashbackMarketData } from './flashback.market-data.js';
 import { FLASHBACK_REPOSITORY, PgFlashbackRepository } from './flashback.repository.js';
@@ -35,6 +38,14 @@ export const FLASHBACK_MARKET_DATA = 'FLASHBACK_MARKET_DATA';
     { provide: FLASHBACK_CLOCK, useValue: systemFlashbackClock },
     { provide: FLASHBACK_MARKET_DATA, useExisting: MarketFlashbackMarketData },
     { provide: FLASHBACK_VN30, useExisting: IndexMembershipProvider },
+    TelegramFlashbackOpsAlerts,
+    { provide: FLASHBACK_OPS_ALERTS, useExisting: TelegramFlashbackOpsAlerts },
+    {
+      provide: FLASHBACK_SUPER_ADMINS,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<Environment, true>) =>
+        config.get('SUPER_ADMIN_USER_IDS', { infer: true }) ?? [],
+    },
     FlashbackService,
     FlashbackAdminService,
     FlashbackRoundBuilder,
