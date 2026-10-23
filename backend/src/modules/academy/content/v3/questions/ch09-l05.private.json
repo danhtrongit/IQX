@@ -79,6 +79,7 @@
       "prompt": "Trường hợp nào thể hiện rõ lợi thế cạnh tranh bền nhất?"
     },
     {
+      "chart_id": "c9l5-rep",
       "correct_option_id": "7baf57919e",
       "id": "ch09-l05-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Vốn đầu tư của từng năm"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, đường xanh có các điểm tròn thể hiện gì?",
-      "chart_id": "c9l5-rep"
+      "prompt": "Trên biểu đồ đại diện, đường xanh có các điểm tròn thể hiện gì?"
     }
   ],
   "salt": "59129323f3084e41259af51dc21dec38ce9fb96ac241d03a96d197119bb244f0"

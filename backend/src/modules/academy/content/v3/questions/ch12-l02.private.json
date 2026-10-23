@@ -79,6 +79,7 @@
       "prompt": "Khi tỷ lệ CFO / LNST thấp, nên kiểm tra khoản mục nào trước?"
     },
     {
+      "chart_id": "c12l2-rep",
       "correct_option_id": "53ffdbbeae",
       "id": "ch12-l02-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Doanh thu đang giảm so với quý trước"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện CFO / LNST, cột xanh cao hơn cột cam nghĩa là gì?",
-      "chart_id": "c12l2-rep"
+      "prompt": "Trên biểu đồ đại diện CFO / LNST, cột xanh cao hơn cột cam nghĩa là gì?"
     }
   ],
   "salt": "503f481eeb763c9114c50551d8b3fd57357eaf65264ac85efe88c4f1879f72d1"

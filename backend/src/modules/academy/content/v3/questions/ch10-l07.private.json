@@ -79,6 +79,7 @@
       "prompt": "Xu hướng CCC nào thường được xem là tích cực?"
     },
     {
+      "chart_id": "c10l7-rep",
       "correct_option_id": "e4c4fc0df9",
       "id": "ch10-l07-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Tiền mặt, phải thu, hàng tồn kho"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của CCC, ba cột mỗi quý là gì?",
-      "chart_id": "c10l7-rep"
+      "prompt": "Trên biểu đồ đại diện của CCC, ba cột mỗi quý là gì?"
     }
   ],
   "salt": "9cf1791f159f0fdc2470593e5991f39d04c767ddb0969a40f163fd7e8c9a7d0b"

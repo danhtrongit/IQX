@@ -168,7 +168,7 @@
           "type": "chart"
         },
         {
-          "text": "<b>ROE</b> (Return on Equity) là tỷ suất lợi nhuận trên vốn chủ sở hữu. Lấy <b>lợi nhuận sau thuế 4 quý gần nhất</b> chia cho <b>vốn chủ sở hữu bình quân</b>. Vốn chủ bình quân là trung bình của số dư đầu kỳ và cuối kỳ.",
+          "text": "<b>ROE</b> (Return on Equity) là tỷ suất lợi nhuận trên vốn chủ sở hữu. Lấy <b>lợi nhuận sau thuế 4 quý gần nhất</b> chia cho <b>vốn chủ sở hữu bình quân</b>. Vốn chủ bình quân là trung bình của số dư đầu kỳ và cuối kỳ. IQX dùng lợi nhuận và vốn chủ sở hữu thuộc cổ đông công ty mẹ, không gồm lợi ích cổ đông thiểu số.",
           "type": "paragraph"
         },
         {

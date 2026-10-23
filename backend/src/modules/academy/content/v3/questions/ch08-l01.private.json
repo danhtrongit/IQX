@@ -60,6 +60,7 @@
       "prompt": "Dòng cuối cùng của báo cáo kết quả kinh doanh là gì?"
     },
     {
+      "chart_id": "c8l1-rep",
       "correct_option_id": "0eb0f925dd",
       "id": "ch08-l01-q04",
       "options": [
@@ -76,8 +77,7 @@
           "text": "Lợi nhuận quý đó cao hơn doanh thu"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, cột xanh cao hơn cột cam ở một quý cho thấy điều gì?",
-      "chart_id": "c8l1-rep"
+      "prompt": "Trên biểu đồ đại diện, cột xanh cao hơn cột cam ở một quý cho thấy điều gì?"
     },
     {
       "correct_option_id": "2ec11ff609",

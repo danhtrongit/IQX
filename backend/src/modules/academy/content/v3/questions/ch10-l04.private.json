@@ -79,6 +79,7 @@
       "prompt": "Biên gộp giảm liên tục nhiều quý thường là dấu hiệu gì?"
     },
     {
+      "chart_id": "c10l4-rep",
       "correct_option_id": "39f3214fb8",
       "id": "ch10-l04-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Chi phí bán hàng và chi phí quản lý"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của biên gộp, cột phía dưới gồm hai phần nào?",
-      "chart_id": "c10l4-rep"
+      "prompt": "Trên biểu đồ đại diện của biên gộp, cột phía dưới gồm hai phần nào?"
     }
   ],
   "salt": "99492b141f4b186eaeb274d45979413d9c2d4c0859724a0548fa7d52a8ff417e"

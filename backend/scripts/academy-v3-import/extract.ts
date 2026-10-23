@@ -12,7 +12,7 @@ import type {
   LessonFile,
   RetiredLessonsFile,
 } from '../../src/modules/academy/content/v3/schema.js';
-import { buildBank, ensureSalts } from './banks.js';
+import { buildBank, ensureSalts, type QuestionOverride } from './banks.js';
 import { checkExam, extractLesson } from './blocks.js';
 import { buildCatalog, CATALOG_ROWS } from './catalog-table.js';
 import { gateSvgIds, TEXT_FIGURES } from './charts/index.js';
@@ -135,9 +135,28 @@ export function extract(
     if (!opts.write) throw new Error('bank salts missing from overrides/salts.json');
     writeFileSync(saltsPath, stableJson(salts));
   }
-  const banks: BankFile[] = CATALOG_ROWS.map((row, g) =>
-    buildBank(norm, row, source.items[g] as (typeof source.items)[number], salts[row.id] as string),
+  const questionOverrides = readJsonFile<Record<string, QuestionOverride>>(
+    join(overridesDir, 'questions.json'),
+    {},
   );
+  const usedQuestionOverrides = new Set<string>();
+  const banks: BankFile[] = CATALOG_ROWS.map((row, g) =>
+    buildBank(
+      norm,
+      row,
+      source.items[g] as (typeof source.items)[number],
+      salts[row.id] as string,
+      questionOverrides,
+      usedQuestionOverrides,
+    ),
+  );
+  const unusedQuestions = Object.keys(questionOverrides).filter(
+    (id) => !usedQuestionOverrides.has(id),
+  );
+  if (unusedQuestions.length)
+    throw new Error(
+      `unused overrides in overrides/questions.json:\n  ${unusedQuestions.join('\n  ')}`,
+    );
 
   /* text gates */
   if (norm.missing.length)
@@ -236,7 +255,9 @@ export function extract(
     warnings: [
       ...new Set([
         ...norm.warnings,
-        ...Object.entries(droppedCharts).map(([id, reason]) => `chart ${id} bị bỏ khỏi nội dung: ${reason}`),
+        ...Object.entries(droppedCharts).map(
+          ([id, reason]) => `chart ${id} bị bỏ khỏi nội dung: ${reason}`,
+        ),
       ]),
     ],
   };

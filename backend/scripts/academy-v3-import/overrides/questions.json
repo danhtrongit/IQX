@@ -1,0 +1,181 @@
+{
+  "ch01-l10-q02": {
+    "options": [
+      "Vì phần lãi được tính trên số vốn đã nhỏ đi sau khi lỗ",
+      "Vì khi lãi luôn phải trừ thêm một nửa phí",
+      "Vì lãi và lỗ luôn được tính trên cùng một số vốn"
+    ],
+    "prompt": "Vì sao lỗ một nửa thì phải lãi nhiều hơn một nửa mới hòa vốn?"
+  },
+  "ch02-l01-q03": {
+    "options": [
+      "Mục tiêu ngày nhỏ và cụ thể nên dễ bắt tay làm, dễ theo dõi",
+      "Để cuối tháng không phải báo cáo kết quả",
+      "Để mỗi ngày làm ít hơn mức mục tiêu tháng cần"
+    ],
+    "prompt": "Vì sao nên chia mục tiêu tháng thành mục tiêu ngày?"
+  },
+  "ch07-exam-q17": {
+    "options": [
+      "Cùng ý nghĩa nhưng thang âm: quá mua gần 0, quá bán gần −100",
+      "Cùng thang 0 đến 100 và giống hệt Stochastic",
+      "Ngược ý nghĩa: gần 0 là vùng quá bán"
+    ],
+    "prompt": "Williams %R khác Stochastic thế nào về thang đo?"
+  },
+  "ch08-exam-q13": {
+    "options": [
+      "Tăng trưởng bằng nhau",
+      "EPS tăng ít hơn LNST",
+      "EPS tăng nhiều hơn LNST"
+    ],
+    "prompt": "Số cổ phiếu không đổi thì EPS và LNST tăng trưởng thế nào so với nhau?"
+  },
+  "ch08-exam-q18": {
+    "options": [
+      "Tốc độ tăng trưởng bình quân mỗi năm theo lãi kép giữa hai mốc đầu và cuối",
+      "Tổng mức tăng trưởng cộng dồn của cả ba năm",
+      "Tăng trưởng của riêng năm cuối"
+    ],
+    "prompt": "CAGR 3 năm phản ánh điều gì?"
+  },
+  "ch08-exam-q24": {
+    "options": [
+      "Vì cùng một mức tăng được chia cho kỳ gốc nhỏ nên ra tỷ lệ lớn",
+      "Vì kỳ gốc thấp làm LNST kỳ này tăng thật",
+      "Vì tăng trưởng luôn được tính trên kỳ hiện tại"
+    ],
+    "prompt": "Vì sao kỳ gốc có LNST thấp làm tốc độ tăng trưởng bị phóng đại?"
+  },
+  "ch08-l01-q04": {
+    "chart_id": "c8l1-rep"
+  },
+  "ch08-l02-q05": {
+    "chart_id": "c8l2-rep"
+  },
+  "ch08-l03-q05": {
+    "chart_id": "c8l3-rep"
+  },
+  "ch08-l04-q04": {
+    "options": [
+      "CAGR tính theo lãi kép nên phản ánh đúng mức tăng thực giữa mốc đầu và mốc cuối",
+      "CAGR bỏ qua năm đầu và năm cuối",
+      "CAGR luôn lớn hơn trung bình cộng"
+    ],
+    "prompt": "Vì sao CAGR khác trung bình cộng các mức tăng trưởng từng năm?"
+  },
+  "ch08-l04-q05": {
+    "chart_id": "c8l4-rep"
+  },
+  "ch08-l05-q05": {
+    "chart_id": "c8l5-rep"
+  },
+  "ch08-l06-q05": {
+    "chart_id": "c8l6-rep"
+  },
+  "ch09-exam-q02": {
+    "options": [
+      "Vì chuỗi chỉ đếm các năm lãi liên tiếp tính đến hiện tại",
+      "Vì năm lỗ bị trừ vào các năm lãi trước",
+      "Vì chuỗi chỉ đếm năm có lợi nhuận cao nhất"
+    ],
+    "prompt": "Vì sao một năm lỗ ở giữa làm chuỗi năm lãi bị tính lại từ đầu?"
+  },
+  "ch09-exam-q03": {
+    "options": [
+      "Khi mọi năm trong dữ liệu đều có lãi",
+      "Khi doanh nghiệp lãi ở năm gần nhất",
+      "Khi tổng lợi nhuận các năm lớn nhất"
+    ],
+    "prompt": "Profit Positive Streak lớn nhất khi nào?"
+  },
+  "ch09-l01-q04": {
+    "chart_id": "c9l1-rep"
+  },
+  "ch09-l02-q04": {
+    "chart_id": "c9l2-rep"
+  },
+  "ch09-l03-q05": {
+    "chart_id": "c9l3-rep"
+  },
+  "ch09-l04-q05": {
+    "chart_id": "c9l4-rep"
+  },
+  "ch09-l05-q05": {
+    "chart_id": "c9l5-rep"
+  },
+  "ch10-l01-q05": {
+    "chart_id": "c10l1-rep"
+  },
+  "ch10-l02-q05": {
+    "chart_id": "c10l2-rep"
+  },
+  "ch10-l03-q05": {
+    "chart_id": "c10l3-rep"
+  },
+  "ch10-l04-q05": {
+    "chart_id": "c10l4-rep"
+  },
+  "ch10-l05-q05": {
+    "chart_id": "c10l5-rep"
+  },
+  "ch10-l06-q05": {
+    "chart_id": "c10l6-rep"
+  },
+  "ch10-l07-q05": {
+    "chart_id": "c10l7-rep"
+  },
+  "ch11-exam-q23": {
+    "options": [
+      "Dấu âm, doanh nghiệp đang có tiền ròng",
+      "Dấu dương, doanh nghiệp đang nợ ròng",
+      "Bằng 0, tiền bù trừ vừa đủ nợ"
+    ],
+    "prompt": "Tiền mặt lớn hơn nợ vay thì nợ ròng mang dấu gì và nghĩa là gì?"
+  },
+  "ch11-l01-q05": {
+    "chart_id": "c11l1-rep"
+  },
+  "ch11-l02-q05": {
+    "chart_id": "c11l2-rep"
+  },
+  "ch11-l03-q05": {
+    "chart_id": "c11l3-rep"
+  },
+  "ch11-l04-q05": {
+    "chart_id": "c11l4-rep"
+  },
+  "ch12-l01-q05": {
+    "chart_id": "c12l1-rep"
+  },
+  "ch12-l02-q05": {
+    "chart_id": "c12l2-rep"
+  },
+  "ch12-l03-q05": {
+    "chart_id": "c12l3-rep"
+  },
+  "ch12-l04-q05": {
+    "chart_id": "c12l4-rep"
+  },
+  "ch12-l05-q05": {
+    "chart_id": "c12l5-rep"
+  },
+  "ch13-l01-q04": {
+    "chart_id": "c13l1-rep"
+  },
+  "ch13-l02-q05": {
+    "chart_id": "c13l2-rep"
+  },
+  "ch13-l03-q05": {
+    "chart_id": "c13l3-rep"
+  },
+  "ch13-l04-q05": {
+    "chart_id": "c13l4-rep"
+  },
+  "ch13-l05-q05": {
+    "chart_id": "c13l5-rep"
+  },
+  "ch13-l06-q05": {
+    "chart_id": "c13l6-rep"
+  }
+}

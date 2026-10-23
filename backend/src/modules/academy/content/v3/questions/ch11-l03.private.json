@@ -79,6 +79,7 @@
       "prompt": "Interest Coverage dưới 1 lần nghĩa là gì?"
     },
     {
+      "chart_id": "c11l3-rep",
       "correct_option_id": "8562748a14",
       "id": "ch11-l03-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Đi ngang"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, lãi vay quý gần như không đổi còn EBIT tăng dần thì hệ số thế nào?",
-      "chart_id": "c11l3-rep"
+      "prompt": "Trên biểu đồ đại diện, lãi vay quý gần như không đổi còn EBIT tăng dần thì hệ số thế nào?"
     }
   ],
   "salt": "91aa91d4ca36c7385cd1da2764f8be140d8e4b3094819e6954dd4e47ffb94add"

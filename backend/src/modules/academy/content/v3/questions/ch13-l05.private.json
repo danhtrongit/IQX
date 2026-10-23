@@ -79,6 +79,7 @@
       "prompt": "EV/EBITDA đặc biệt hữu ích khi nào?"
     },
     {
+      "chart_id": "c13l5-rep",
       "correct_option_id": "b58301063b",
       "id": "ch13-l05-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Nợ vay của doanh nghiệp đã giảm hẳn về mức 0"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của EV/EBITDA, đường chính nằm trên dải dao động cho thấy điều gì?",
-      "chart_id": "c13l5-rep"
+      "prompt": "Trên biểu đồ đại diện của EV/EBITDA, đường chính nằm trên dải dao động cho thấy điều gì?"
     }
   ],
   "salt": "5a34c792d17b2b90bf828ae9ab390ee8e1de8cb2b47c269ecb2a255fc1f50d4f"

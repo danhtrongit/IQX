@@ -79,6 +79,7 @@
       "prompt": "Vì sao CAGR khác trung bình cộng các mức tăng trưởng từng năm?"
     },
     {
+      "chart_id": "c8l4-rep",
       "correct_option_id": "f7201e5f87",
       "id": "ch08-l04-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Mức doanh thu trung bình của ngành"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của Revenue CAGR 3Y, đường đứt nét thể hiện gì?",
-      "chart_id": "c8l4-rep"
+      "prompt": "Trên biểu đồ đại diện của Revenue CAGR 3Y, đường đứt nét thể hiện gì?"
     }
   ],
   "salt": "b60bd878935979b48d687b169bef084f379803bee6cc1f8f1f515a04aa22db5a"

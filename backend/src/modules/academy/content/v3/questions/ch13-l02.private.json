@@ -79,6 +79,7 @@
       "prompt": "P/B nên được đọc cùng chỉ tiêu nào?"
     },
     {
+      "chart_id": "c13l2-rep",
       "correct_option_id": "46e47f61b7",
       "id": "ch13-l02-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Mức P/B mà doanh nghiệp đặt mục tiêu"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của P/B, đường trung vị 3 năm thể hiện điều gì?",
-      "chart_id": "c13l2-rep"
+      "prompt": "Trên biểu đồ đại diện của P/B, đường trung vị 3 năm thể hiện điều gì?"
     }
   ],
   "salt": "432c338cd0f4c0b21cb646dba48f85ab857ac78502f5f5ea000c4480941c7991"

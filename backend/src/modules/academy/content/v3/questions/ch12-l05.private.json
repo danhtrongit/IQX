@@ -79,6 +79,7 @@
       "prompt": "Vì sao nên xem FCF Positive Streak cùng với FCF Margin?"
     },
     {
+      "chart_id": "c12l5-rep",
       "correct_option_id": "ba277954e0",
       "id": "ch12-l05-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Năm doanh nghiệp trả cổ tức"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện FCF Positive Streak, cột đỏ thể hiện gì?",
-      "chart_id": "c12l5-rep"
+      "prompt": "Trên biểu đồ đại diện FCF Positive Streak, cột đỏ thể hiện gì?"
     }
   ],
   "salt": "7710341d98eeeed96de105b6f04deaf7b102ef96cd80ec4907b23ad908f096a1"

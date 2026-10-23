@@ -79,6 +79,7 @@
       "prompt": "PEG không có ý nghĩa trong trường hợp nào?"
     },
     {
+      "chart_id": "c13l4-rep",
       "correct_option_id": "a52f6355f9",
       "id": "ch13-l04-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "PEG bằng trung vị ngành"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của PEG, đường mốc nằm ở mức nào?",
-      "chart_id": "c13l4-rep"
+      "prompt": "Trên biểu đồ đại diện của PEG, đường mốc nằm ở mức nào?"
     }
   ],
   "salt": "93de7bd25d5f2bbbd53a1a85bf831d69cff2c33531f7c80968096c8ed0c94bfb"

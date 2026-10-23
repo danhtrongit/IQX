@@ -79,6 +79,7 @@
       "prompt": "Trường hợp nào tốt nhất khi đọc Margin Stability cùng mức biên?"
     },
     {
+      "chart_id": "c9l3-rep",
       "correct_option_id": "41a02f852e",
       "id": "ch09-l03-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Biên ròng trung bình của ngành"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, đường đứt nét nằm ngang thể hiện gì?",
-      "chart_id": "c9l3-rep"
+      "prompt": "Trên biểu đồ đại diện, đường đứt nét nằm ngang thể hiện gì?"
     }
   ],
   "salt": "d9fe9875c881d71b91aeb00c3a8cc405b553c2e2e29c1e86265af54f6700cd33"

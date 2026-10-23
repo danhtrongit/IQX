@@ -79,6 +79,7 @@
       "prompt": "Có thể hiểu đơn giản Net Debt / EBITDA là gì?"
     },
     {
+      "chart_id": "c11l4-rep",
       "correct_option_id": "3d7d29589f",
       "id": "ch11-l04-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Chuyển sang âm"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, nợ ròng giữ quanh một mức còn EBITDA 4 quý tăng dần thì chỉ tiêu thế nào?",
-      "chart_id": "c11l4-rep"
+      "prompt": "Trên biểu đồ đại diện, nợ ròng giữ quanh một mức còn EBITDA 4 quý tăng dần thì chỉ tiêu thế nào?"
     }
   ],
   "salt": "ab63a7b070eb1db37ddd92e58f54efb79418e798d0f08bd96f9a0fd6dc66ed0c"

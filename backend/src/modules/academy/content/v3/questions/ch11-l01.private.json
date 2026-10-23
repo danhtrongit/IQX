@@ -79,6 +79,7 @@
       "prompt": "Vì sao đòn bẩy tài chính được gọi là con dao hai lưỡi?"
     },
     {
+      "chart_id": "c11l1-rep",
       "correct_option_id": "ef2552e384",
       "id": "ch11-l01-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Không thay đổi"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của D/E, nợ vay đứng yên còn vốn chủ tăng dần thì đường D/E thế nào?",
-      "chart_id": "c11l1-rep"
+      "prompt": "Trên biểu đồ đại diện của D/E, nợ vay đứng yên còn vốn chủ tăng dần thì đường D/E thế nào?"
     }
   ],
   "salt": "e359c913ee10880e412b7ff37c320b15de956e366629d8a91dd10d6db988631d"

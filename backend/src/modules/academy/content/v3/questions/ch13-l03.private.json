@@ -79,6 +79,7 @@
       "prompt": "Vì sao không nên so P/S giữa các ngành khác nhau?"
     },
     {
+      "chart_id": "c13l3-rep",
       "correct_option_id": "0d85d99cf7",
       "id": "ch13-l03-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Cho thấy doanh thu dự kiến năm sau"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của P/S, dải trung vị ± độ lệch chuẩn dùng để làm gì?",
-      "chart_id": "c13l3-rep"
+      "prompt": "Trên biểu đồ đại diện của P/S, dải trung vị ± độ lệch chuẩn dùng để làm gì?"
     }
   ],
   "salt": "066bef8203c962e0f7565d744d21d520040e5595da0bc43ce58b47568630c974"

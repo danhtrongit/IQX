@@ -79,6 +79,7 @@
       "prompt": "Vì sao ROIC dùng EBIT thay vì lợi nhuận sau thuế?"
     },
     {
+      "chart_id": "c10l3-rep",
       "correct_option_id": "772e42a598",
       "id": "ch10-l03-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Chi phí lãi vay từng quý"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của ROIC, cột phía dưới thể hiện gì?",
-      "chart_id": "c10l3-rep"
+      "prompt": "Trên biểu đồ đại diện của ROIC, cột phía dưới thể hiện gì?"
     }
   ],
   "salt": "7315a0d9c6c21eee89360c679090fcfa03193690da94187bd955408cd4e7c24b"

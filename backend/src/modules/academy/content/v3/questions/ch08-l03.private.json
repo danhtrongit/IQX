@@ -79,6 +79,7 @@
       "prompt": "Vì sao không nên so EPS giữa hai công ty khác nhau?"
     },
     {
+      "chart_id": "c8l3-rep",
       "correct_option_id": "aed118981e",
       "id": "ch08-l03-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Số cổ phiếu lưu hành"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của EPS YoY, cột cam thể hiện gì?",
-      "chart_id": "c8l3-rep"
+      "prompt": "Trên biểu đồ đại diện của EPS YoY, cột cam thể hiện gì?"
     }
   ],
   "salt": "cfa525ecfb135cb31b54086a5ed2a710696882bff5d6cb8f6a28c3b4ac41d27d"

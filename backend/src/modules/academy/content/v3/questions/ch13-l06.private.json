@@ -79,6 +79,7 @@
       "prompt": "FCF Yield thấp hơn nhiều so với tỷ suất lợi nhuận cho thấy điều gì?"
     },
     {
+      "chart_id": "c13l6-rep",
       "correct_option_id": "cc03ee0147",
       "id": "ch13-l06-q05",
       "options": [
@@ -95,8 +96,7 @@
           "text": "Doanh nghiệp vừa tăng mạnh đầu tư"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của FCF Yield, đường chính nằm trên dải dao động cho thấy điều gì?",
-      "chart_id": "c13l6-rep"
+      "prompt": "Trên biểu đồ đại diện của FCF Yield, đường chính nằm trên dải dao động cho thấy điều gì?"
     }
   ],
   "salt": "73eb5212b28aa5c71d4f843d9b8220fe89130df260701fa3cc786ab05803da2b"

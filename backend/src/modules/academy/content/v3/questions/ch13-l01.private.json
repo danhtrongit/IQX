@@ -60,6 +60,7 @@
       "prompt": "Vì sao P/E thấp chưa chắc là cổ phiếu rẻ?"
     },
     {
+      "chart_id": "c13l1-rep",
       "correct_option_id": "b0ae30001b",
       "id": "ch13-l01-q04",
       "options": [
@@ -76,8 +77,7 @@
           "text": "Cổ phiếu đắt hơn các doanh nghiệp cùng ngành"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của P/E, P/E nằm dưới dải trung vị ± độ lệch chuẩn cho thấy điều gì?",
-      "chart_id": "c13l1-rep"
+      "prompt": "Trên biểu đồ đại diện của P/E, P/E nằm dưới dải trung vị ± độ lệch chuẩn cho thấy điều gì?"
     },
     {
       "correct_option_id": "1ef0e89b18",
