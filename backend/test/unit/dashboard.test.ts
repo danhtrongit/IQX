@@ -202,6 +202,7 @@ describe('dashboard catalog (33 chỉ tiêu, 6 nhóm, 11 chỉ tiêu ngân hàng
     expect(flagged).toHaveLength(22);
     expect(catalog.flatMap((group) => group.items).find((item) => item.name === 'ROE')).toEqual({
       name: 'ROE',
+      kind: 'B',
       na_for_bank: false,
     });
   });

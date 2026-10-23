@@ -2,15 +2,7 @@
  * Dashboard phân tích (spec §1–§11): thiết lập theo tài khoản, danh mục 33 chỉ tiêu và số liệu
  * theo khuôn biểu đồ. Mã đang xem là trạng thái chung của trang, không nằm trong thiết lập.
  */
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  Put,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags, type SchemaObject } from '@nestjs/swagger';
 import { z } from 'zod';
 
@@ -34,7 +26,7 @@ import { DashboardService } from './dashboard.service.js';
 const openApi = (schema: z.ZodType) =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
 
-/** Thiết lập và danh mục: theo tài khoản, nên cần đăng nhập. */
+/** Thiết lập: theo tài khoản, nên cần đăng nhập. */
 @ApiTags('Dashboard phân tích')
 @UseGuards(ApiAuthGuard)
 @Controller('api/v2/dashboard')
@@ -64,23 +56,27 @@ export class DashboardSettingsController {
   ) {
     return this.dashboard.saveSettings(user.id, body);
   }
+}
 
-  @Get('catalog')
+/**
+ * Danh mục và số liệu của một mã: công khai như dữ liệu báo cáo tài chính và giá. Khách chưa đăng
+ * nhập xem được bộ mặc định (spec cập nhật 22-10 §3.7); chỉ lưu thiết lập mới cần đăng nhập.
+ */
+@ApiTags('Dashboard phân tích')
+@Controller('api/v2')
+export class DashboardDataController {
+  constructor(private readonly dashboard: DashboardService) {}
+
+  @Get('dashboard/catalog')
   @ApiOperation({
     operationId: 'dashboardCatalog',
-    summary: 'The 33 analysis charts in their 6 groups, with the bank not-applicable flag',
+    summary:
+      'The 33 analysis charts in their 6 groups, with the chart shape and the bank not-applicable flag',
   })
   @ApiOkResponse({ schema: openApi(dashboardCatalogSchema) })
   catalog() {
     return this.dashboard.catalog();
   }
-}
-
-/** Số liệu của một mã: công khai như dữ liệu báo cáo tài chính và giá. */
-@ApiTags('Dashboard phân tích')
-@Controller('api/v2')
-export class DashboardDataController {
-  constructor(private readonly dashboard: DashboardService) {}
 
   @Get('fundamental/:symbol')
   @ApiOperation({
