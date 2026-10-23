@@ -7,6 +7,8 @@ export type TradingAccount = {
   cash_reserved_vnd: number
   cash_pending_vnd: number
   total_cash_vnd: number
+  /** Vốn nạp ròng từ đổi xu (nạp trừ rút), đồng. Spec 22-10 FB-12. */
+  net_deposited_cash_vnd: number
   activated_at: string
   reset_at: string | null
   created_at: string
