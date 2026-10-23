@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState, type KeyboardEvent } from "react"
 import { Check, CircleAlert, LoaderCircle, Search } from "lucide-react"
 import { useLocation, useNavigate } from "react-router"
 
@@ -19,6 +19,12 @@ function useDebouncedValue<T>(value: T, delay: number): T {
   return debounced
 }
 
+/** The result whose symbol is exactly what was typed (case-insensitive). */
+function exactMatch(items: readonly SymbolSearchResult[], query: string): SymbolSearchResult | undefined {
+  const wanted = query.trim().toUpperCase()
+  return items.find((item) => item.symbol === wanted)
+}
+
 /** Global stock lookup shared by every route in the app shell. */
 export function HeaderSearch() {
   const navigate = useNavigate()
@@ -31,6 +37,8 @@ export function HeaderSearch() {
   const [results, setResults] = useState<SymbolSearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<unknown>(null)
+  /** Enter bấm khi kết quả chưa về: chọn ngay khi kết quả của đúng chuỗi đó về (DB-05b). */
+  const pendingEnter = useRef<string | null>(null)
   useEffect(() => {
     if (!open || !debounced) return
     const controller = new AbortController()
@@ -39,15 +47,41 @@ export function HeaderSearch() {
       setError(null)
       setLoading(true)
       void searchTradableSymbols(debounced, controller.signal)
-        .then(setResults)
+        .then((items) => {
+          if (controller.signal.aborted) return
+          setResults(items)
+          if (pendingEnter.current !== null && pendingEnter.current === debounced) {
+            pendingEnter.current = null
+            const pick = exactMatch(items, debounced) ?? items[0]
+            if (pick) select(pick.symbol)
+          }
+        })
         .catch((reason: unknown) => { if (!controller.signal.aborted) { setResults([]); setError(reason) } })
         .finally(() => { if (!controller.signal.aborted) setLoading(false) })
     })
     return () => controller.abort()
+    // `select` chỉ đọc router và state setter ổn định; thêm vào sẽ gọi lại tìm kiếm mỗi lần render.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounced, open, retry])
   const isLoading = query.length > 0 && (query !== debounced || loading)
 
+  function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== "Enter" || !query) return
+    // Gõ đúng một mã có trong danh sách: chọn mã đó, không phụ thuộc dòng đang được tô.
+    const exact = !isLoading ? exactMatch(results, query) : undefined
+    if (exact) {
+      event.preventDefault()
+      select(exact.symbol)
+      return
+    }
+    if (isLoading) {
+      event.preventDefault()
+      pendingEnter.current = query
+    }
+  }
+
   function select(symbol: string) {
+    pendingEnter.current = null
     setOpen(false)
     setTerm("")
     const normalized = symbol.trim().toUpperCase()
@@ -76,7 +110,7 @@ export function HeaderSearch() {
       </PopoverTrigger>
       <PopoverContent align="end" className="w-[min(24rem,calc(100vw-2rem))] p-0">
         <Command label="Tìm mã hoặc tên công ty" shouldFilter={false}>
-          <CommandInput autoFocus value={term} onValueChange={setTerm} placeholder="Tìm mã hoặc tên công ty…" aria-label="Tìm mã hoặc tên công ty" />
+          <CommandInput autoFocus value={term} onValueChange={(value) => { pendingEnter.current = null; setTerm(value) }} onKeyDown={handleKeyDown} placeholder="Tìm mã hoặc tên công ty…" aria-label="Tìm mã hoặc tên công ty" />
           <CommandList className="max-h-72">
             {!query && <CommandEmpty>Nhập mã hoặc tên công ty để bắt đầu.</CommandEmpty>}
             {isLoading && query && (
