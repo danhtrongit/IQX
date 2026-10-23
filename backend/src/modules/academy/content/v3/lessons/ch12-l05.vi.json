@@ -146,48 +146,38 @@
       "value_labels": "none"
     },
     "c12l5-rep": {
-      "caption_tone": "price",
-      "caption_value": "4 năm",
-      "kind": "category",
-      "labels": [
-        "2019",
-        "2020",
-        "2021",
-        "2022",
-        "2023",
-        "2024",
-        "2025"
-      ],
-      "mode": "grouped",
-      "series": [
-        {
-          "name": "FCF Positive Streak",
-          "per_bar_tones": [
-            "neutral",
-            "neg",
-            "neg",
-            "p1",
-            "p1",
-            "p1",
-            "p1"
-          ],
-          "tone_by_sign": {
-            "neg": "neg",
-            "pos": "p1"
-          },
-          "values": [
-            272.6467,
-            -203.8389,
-            -112.4298,
-            312.1913,
-            133.0107,
-            385.0829,
-            484.4099
-          ]
-        }
-      ],
-      "unit": "tỷ đồng",
-      "value_labels": "none"
+      "alt": "FCF Positive Streak: 4 năm",
+      "chart": {
+        "hero": 4,
+        "kind": "E2",
+        "labels": [
+          "2019",
+          "2020",
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "main": [
+          {
+            "name": "FCF Positive Streak",
+            "v": [
+              272.6467,
+              -203.8389,
+              -112.4298,
+              312.1913,
+              133.0107,
+              385.0829,
+              484.4099
+            ]
+          }
+        ],
+        "mainUnit": "tỷ đồng",
+        "name": "FCF Positive Streak",
+        "unit": "năm"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -232,7 +222,6 @@
       "blocks": [
         {
           "chart_id": "c12l5-rep",
-          "table_toggle": true,
           "title": "FCF Positive Streak",
           "type": "chart"
         },

@@ -166,6 +166,7 @@ export class DashboardService {
       group: group.group,
       items: group.items.map((item) => ({
         name: item.name,
+        kind: item.kind,
         na_for_bank: !appliesToBank(item.metric_id),
       })),
     }));

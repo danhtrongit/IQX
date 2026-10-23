@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { MemoryRouter } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -10,7 +10,8 @@ import {
   figureLegend,
   figureTable,
   figureTooltip,
-} from "./charts/figure-data"
+} from "@/components/fundamental-charts"
+
 import { AnalysisDashboard } from "./dashboard"
 import { isSameSettings, nksSignature } from "./model"
 /* Danh mục 33 chỉ tiêu của spec §8, theo đúng thứ tự và nhóm. */
@@ -105,6 +106,7 @@ const mocks = vi.hoisted(() => ({
   requestOperation: vi.fn(),
   toast: Object.assign(vi.fn(), { success: vi.fn(), error: vi.fn() }),
   openAuth: vi.fn(),
+  auth: { isAuthenticated: true },
 }))
 
 vi.mock("@/lib/contract-client", async (importOriginal) => ({
@@ -112,7 +114,12 @@ vi.mock("@/lib/contract-client", async (importOriginal) => ({
   requestOperation: mocks.requestOperation,
 }))
 vi.mock("@/hooks/use-auth", () => ({
-  useAuth: () => ({ isAuthenticated: true, user: { id: "tester" }, openAuth: mocks.openAuth }),
+  useAuth: () => ({
+    isAuthenticated: mocks.auth.isAuthenticated,
+    isLoading: false,
+    user: mocks.auth.isAuthenticated ? { id: "tester" } : null,
+    openAuth: mocks.openAuth,
+  }),
 }))
 vi.mock("sonner", () => ({ toast: mocks.toast }))
 
@@ -122,6 +129,8 @@ type FakeState = {
   per: "q" | "y"
   nks: Record<string, { q?: number; y?: number }>
   isBank: boolean
+  /** Giữ câu trả lời số liệu để xem thẻ lúc đang tải. */
+  holdFundamental?: boolean
   saved: { charts: string[]; per: "q" | "y"; nks: Record<string, { q?: number; y?: number }> } | null
 }
 
@@ -172,6 +181,7 @@ function chartEntry(name: string, isBank: boolean) {
       },
     },
     ...(kind === "F2" ? { ref: 1 } : {}),
+    ...(name === "D/E" ? { legend_note: "Tiền gồm đầu tư tài chính ngắn hạn" } : {}),
   }
 }
 
@@ -186,12 +196,20 @@ function install() {
           group,
           items: items.map((name) => ({
             name,
+            kind: KIND_BY_NAME[name] ?? "B",
             na_for_bank: !BANK_NAMES.includes(name),
           })),
         })),
       )
     }
+    if (key === "GET /api/v2/instruments/{symbol}") {
+      return Promise.resolve({
+        data: { symbol: "VCB", icbLv1: "Tài chính", icbLv2: state.isBank ? "Ngân hàng" : "Công nghệ" },
+        meta: {},
+      })
+    }
     if (key === "GET /api/v2/fundamental/{symbol}") {
+      if (state.holdFundamental) return new Promise(() => {})
       const charts: Record<string, unknown> = {}
       for (const name of ALL_NAMES) charts[name] = chartEntry(name, state.isBank)
       return Promise.resolve({
@@ -236,6 +254,8 @@ function cardNames(): string[] {
 
 beforeEach(() => {
   state = { charts: [...DEFAULT_CHARTS], per: "q", nks: {}, isBank: false, saved: null }
+  mocks.auth.isAuthenticated = true
+  mocks.openAuth.mockReset()
   mocks.requestOperation.mockReset()
   mocks.toast.success.mockReset()
   mocks.toast.error.mockReset()
@@ -317,6 +337,14 @@ describe("Dashboard phân tích · thiết lập biểu đồ", () => {
 
   it("Mặc định đưa về 6 biểu đồ, Quý và 5 kỳ nhưng chưa lưu", async () => {
     const user = userEvent.setup()
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    )
     state.charts = ["ROE"]
     renderDashboard()
     await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })
@@ -388,30 +416,110 @@ describe("Dashboard phân tích · thiết lập biểu đồ", () => {
     expect(await screen.findByText("Không có chỉ tiêu phù hợp")).toBeTruthy()
   })
 
-  it("kéo thả đổi thứ tự thẻ về đầu, tiến 1 bước và về cuối dashboard", async () => {
+  it("menu thẻ có Lên trên và Xuống dưới để đổi thứ tự khi không kéo được", async () => {
+    const user = userEvent.setup()
     renderDashboard()
     await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })
     await waitFor(() => expect(cardNames()).toHaveLength(DEFAULT_CHARTS.length))
 
-    // Kéo ROE về đầu
-    const roe = document.querySelector<HTMLElement>('[data-chart="ROE"]')!
-    const first = document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')!
-    fireEvent.dragStart(roe)
-    fireEvent.dragOver(first)
-    fireEvent.drop(first)
-    await waitFor(() => expect(cardNames()[0]).toBe("ROE"))
+    await user.click(screen.getByRole("button", { name: "Tuỳ chọn ROE" }))
+    await user.click(await screen.findByRole("menuitem", { name: "Lên trên" }))
+    await waitFor(() => expect(cardNames().slice(2, 4)).toEqual(["ROE", "Biên lợi nhuận ròng"]))
+    expect(screen.getByRole("button", { name: "Lưu thiết lập" })).toHaveProperty("disabled", false)
 
-    // Kéo ROE tiến 1 vị trí (từ index 0 sang sau Tăng trưởng doanh thu ở index 1)
-    fireEvent.dragStart(document.querySelector<HTMLElement>('[data-chart="ROE"]')!)
-    fireEvent.dragOver(document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')!)
-    fireEvent.drop(document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')!)
-    await waitFor(() => expect(cardNames().slice(0, 2)).toEqual(["Tăng trưởng doanh thu", "ROE"]))
+    await user.click(screen.getByRole("button", { name: "Tuỳ chọn ROE" }))
+    await user.click(await screen.findByRole("menuitem", { name: "Xuống dưới" }))
+    await waitFor(() => expect(cardNames().slice(2, 4)).toEqual(["Biên lợi nhuận ròng", "ROE"]))
 
-    // Kéo Tăng trưởng doanh thu xuống cuối cùng (sau P/E)
-    fireEvent.dragStart(document.querySelector<HTMLElement>('[data-chart="Tăng trưởng doanh thu"]')!)
-    fireEvent.dragOver(document.querySelector<HTMLElement>('[data-chart="P/E"]')!)
-    fireEvent.drop(document.querySelector<HTMLElement>('[data-chart="P/E"]')!)
-    await waitFor(() => expect(cardNames().at(-1)).toBe("Tăng trưởng doanh thu"))
+    // Thẻ đầu không lên được nữa, thẻ cuối không xuống được nữa.
+    await user.click(screen.getByRole("button", { name: "Tuỳ chọn Tăng trưởng doanh thu" }))
+    expect((await screen.findByRole("menuitem", { name: "Lên trên" })).getAttribute("aria-disabled")).toBe("true")
+    await user.keyboard("{Escape}")
+    await user.click(screen.getByRole("button", { name: "Tuỳ chọn P/E" }))
+    expect((await screen.findByRole("menuitem", { name: "Xuống dưới" })).getAttribute("aria-disabled")).toBe("true")
+    await user.keyboard("{Escape}")
+
+    // Lên rồi xuống trả lại đúng thứ tự đã lưu: không còn thay đổi chưa lưu.
+    await waitFor(() => expect(screen.getByRole("button", { name: "✓ Đã lưu" })).toHaveProperty("disabled", true))
+  })
+
+  it("tay kéo là nút kéo thả dùng được bằng cảm ứng và bàn phím", async () => {
+    renderDashboard()
+    await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })
+    await waitFor(() => expect(cardNames()).toHaveLength(DEFAULT_CHARTS.length))
+
+    const handle = screen.getByRole("button", { name: "Kéo để đổi chỗ ROE" })
+    expect(handle.getAttribute("aria-roledescription")).toBe("sortable")
+    expect(handle.className).toContain("touch-none")
+  })
+
+  it("ô số kỳ và nhãn Theo năm, cố định hiện ngay cả khi thẻ đang tải", async () => {
+    state.holdFundamental = true
+    state.charts = ["ROE", "Revenue CAGR 3Y"]
+    renderDashboard()
+    await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })
+    expect(await screen.findByLabelText("Số kỳ hiển thị của ROE")).toBeTruthy()
+    const cagr = document.querySelector<HTMLElement>('[data-chart="Revenue CAGR 3Y"]')
+    expect(cagr?.textContent).toContain("Theo năm, cố định")
+  })
+
+  it("nhãn Ngân hàng hiện theo ngành của mã trước khi số liệu về", async () => {
+    state.holdFundamental = true
+    state.isBank = true
+    renderDashboard("VCB")
+    expect(await screen.findByText("Ngân hàng")).toBeTruthy()
+  })
+
+  it("khách chưa đăng nhập xem bộ mặc định, đổi tạm được và Lưu thiết lập mời đăng nhập", async () => {
+    const user = userEvent.setup()
+    mocks.auth.isAuthenticated = false
+    renderDashboard()
+    await screen.findByRole("heading", { level: 1, name: "Dashboard phân tích" })
+    await waitFor(() => expect(cardNames()).toEqual(DEFAULT_CHARTS))
+    expect(mocks.requestOperation.mock.calls.map(([key]) => key)).not.toContain("GET /api/v2/dashboard/settings")
+
+    await user.click(screen.getByRole("button", { name: "Bỏ ROE khỏi dashboard" }))
+    await waitFor(() => expect(cardNames()).not.toContain("ROE"))
+
+    await user.click(screen.getByRole("button", { name: "Lưu thiết lập" }))
+    expect(mocks.openAuth).toHaveBeenCalledWith("login")
+    expect(state.saved).toBeNull()
+  })
+
+  it("legend_note hiện dưới chú giải, note chỉ là lời báo biểu đồ trống", async () => {
+    renderDashboard()
+    await screen.findByLabelText("Số kỳ hiển thị của D/E")
+    await waitFor(() =>
+      expect(document.querySelector('[data-chart="D/E"]')?.textContent).toContain(
+        "Tiền gồm đầu tư tài chính ngắn hạn",
+      ),
+    )
+    expect(document.querySelector('[data-chart="ROE"]')?.textContent).not.toContain("Tiền gồm")
+  })
+
+  it("biểu đồ trong thẻ có hộp số liệu khi rê chuột và Bảng số mở đúng các kỳ đang hiện", async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    )
+    state.charts = ["ROE"]
+    renderDashboard()
+    await screen.findByLabelText("Số kỳ hiển thị của ROE")
+    const card = await waitFor(() => {
+      const element = document.querySelector<HTMLElement>('[data-chart="ROE"] [data-fundamental-chart="B"]')
+      expect(element).toBeTruthy()
+      return element as HTMLElement
+    })
+    await user.click(within(card).getByRole("button", { name: "Bảng số" }))
+    const rows = within(card).getAllByRole("row")
+    expect(rows).toHaveLength(6)
+    expect(rows[5]?.textContent).toContain("Q1/26")
+    expect(within(card).getByRole("button", { name: "Ẩn bảng" }).getAttribute("aria-expanded")).toBe("true")
   })
 
   it("chuẩn hoá nks khi đổi về 5 kỳ mặc định và giữ nhãn Theo năm, cố định cho khuôn D/E1/E2", async () => {
@@ -448,7 +556,7 @@ describe("Dashboard phân tích · thiết lập biểu đồ", () => {
     expect(decimalsForUnit("tỷ đồng")).toBe(0)
     expect(decimalsForUnit("đồng/CP")).toBe(0)
     expect(decimalsForUnit("ngày")).toBe(0)
-    expect(SERIES_COLORS).toEqual(["var(--chart-1)", "#d95926", "#199e70"])
+    expect(SERIES_COLORS).toEqual(["var(--s1)", "var(--s2)", "var(--s3)"])
 
     // Khuôn B có đường chính % (1 số lẻ) và cột phụ tỷ đồng (0 số lẻ)
     const viewB = {
@@ -521,7 +629,7 @@ describe("Dashboard phân tích · thiết lập biểu đồ", () => {
       kind: "F2" as const,
       unit: "lần",
       decimals: 2,
-      reference: 1,
+      ref: 1,
       labels: ["Q1/26"],
       main: [{ name: "PEG cuối quý", v: [1.25] }],
     }

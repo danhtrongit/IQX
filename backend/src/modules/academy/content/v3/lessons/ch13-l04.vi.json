@@ -120,42 +120,39 @@
       ]
     },
     "c13l4-rep": {
-      "caption_tone": "price",
-      "caption_value": "0,41 lần",
-      "kind": "category",
-      "labels": [
-        "Q3/24",
-        "Q4/24",
-        "Q1/25",
-        "Q2/25",
-        "Q3/25",
-        "Q4/25",
-        "Q1/26",
-        "Q2/26"
-      ],
-      "mode": "line",
-      "series": [
-        {
-          "name": "PEG cuối quý",
-          "tone": "p1",
-          "values": [
-            6.4744,
-            0.8372,
-            0.3349,
-            0.414,
-            0.5116,
-            0.614,
-            0.6512,
-            0.4047
-          ]
-        }
-      ],
-      "threshold": {
-        "label": "PEG = 1",
-        "value": 1
+      "alt": "PEG: 0,41 lần",
+      "chart": {
+        "kind": "F2",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "PEG cuối quý",
+            "v": [
+              6.4744,
+              0.8372,
+              0.3349,
+              0.414,
+              0.5116,
+              0.614,
+              0.6512,
+              0.4047
+            ]
+          }
+        ],
+        "name": "PEG",
+        "ref": 1,
+        "unit": "lần"
       },
-      "unit": "lần",
-      "value_labels": "none"
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -218,7 +215,6 @@
       "blocks": [
         {
           "chart_id": "c13l4-rep",
-          "table_toggle": true,
           "title": "PEG",
           "type": "chart"
         },

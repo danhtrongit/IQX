@@ -1,5 +1,17 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core"
+import { SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 import { toast } from "sonner"
+
+import { FIXED_YEAR_KINDS, decimalsForUnit } from "@/components/fundamental-charts"
 
 import { PanelState } from "@/components/layout/panel-state"
 import { Button } from "@/components/ui/button"
@@ -8,18 +20,17 @@ import { useAuth } from "@/hooks/use-auth"
 import { errorMessage } from "@/lib/api"
 import { cn } from "@/lib/utils"
 
-import type { ChartName } from "./api"
+import type { ChartKind, ChartName } from "./api"
 import { isNotApplicable } from "./api"
 import { ChartCard } from "./chart-card"
 import { ChartPicker } from "./chart-picker"
 import {
   DEFAULT_DRAFT,
-  FIXED_YEAR_KINDS,
   PERIOD_OPTIONS,
   chartView,
   dailyWindowStart,
-  decimalsForUnit,
   isSameSettings,
+  legendNoteOf,
   normalizedPeriodCounts,
   periodCount,
   valuationFrom,
@@ -31,6 +42,7 @@ import {
   useDashboardCatalog,
   useDashboardSettings,
   useFundamental,
+  useInstrumentIsBank,
   useSaveDashboardSettings,
   useValuation,
 } from "./use-dashboard"
@@ -56,7 +68,9 @@ type CardModel = {
   /** Số liệu của thẻ này chưa về: thẻ hiện khung chờ. */
   pending: boolean
   note?: string
-  /** Ô số kỳ; null cho khuôn cố định theo năm (spec §4.1). */
+  /** Khuôn cố định theo năm (D, E1, E2). */
+  fixedYear: boolean
+  /** Ô số kỳ; null cho khuôn cố định theo năm và chỉ tiêu không áp dụng (spec §4.1). */
   period: { count: number; options: readonly number[]; unit: string } | null
 }
 
@@ -66,25 +80,41 @@ type CardModel = {
  *
  * Mã đang xem là trạng thái chung của trang: dashboard chỉ hiện mã, không đổi
  * mã. Danh sách biểu đồ, thứ tự, Quý/Năm và số kỳ giữ nguyên khi đổi mã.
+ *
+ * Khách chưa đăng nhập xem bộ mặc định và đổi được trên màn hình; nút "Lưu
+ * thiết lập" mời đăng nhập (spec cập nhật 22-10 §3.7).
  */
 export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSlot?: ReactNode }) {
-  const { isAuthenticated, openAuth } = useAuth()
+  const { isAuthenticated, isLoading: authLoading, openAuth } = useAuth()
   const [override, setOverride] = useState<DashboardDraft | null>(null)
-  const [dragName, setDragName] = useState<ChartName | null>(null)
-  const [dragOver, setDragOver] = useState<ChartName | null>(null)
   const pendingScroll = useRef<string | null>(null)
 
   const settings = useDashboardSettings(isAuthenticated)
   const catalog = useDashboardCatalog()
   const save = useSaveDashboardSettings()
+  const instrumentIsBank = useInstrumentIsBank(symbol)
 
-  /** Thiết lập đang làm việc: bản đã lưu cho tới khi người dùng đổi gì. */
-  const base: DashboardDraft = settings.data ?? DEFAULT_DRAFT
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
+  /** Khách: bộ mặc định. Thành viên: bản đã lưu cho tới khi người dùng đổi gì. */
+  const guest = !isAuthenticated && !authLoading
+  const saved = isAuthenticated ? settings.data : guest ? DEFAULT_DRAFT : undefined
+  const base: DashboardDraft = saved ?? DEFAULT_DRAFT
   const draft = override ?? base
   const selected = draft.charts
   const per = draft.per
   const requested = selected.length > 0 ? selected : [BANK_PROBE_CHART]
-  const ready = isAuthenticated && !!settings.data
+  const ready = !!saved
+
+  /** Khuôn của từng chỉ tiêu theo danh mục: biết ngay thẻ nào có ô số kỳ (DB-05e). */
+  const kindByName = useMemo(() => {
+    const out = new Map<string, ChartKind>()
+    for (const group of catalog.data ?? []) for (const item of group.items) out.set(item.name, item.kind)
+    return out
+  }, [catalog.data])
 
   const fundamental = useFundamental(symbol, requested, per, ready)
   const fundamentalData = fundamental.data
@@ -114,17 +144,21 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
       const data = entry && !isNotApplicable(entry) ? entry : undefined
       const notApplicable = isNotApplicable(entry)
       const count = periodCount(draft.nks, name, per)
+      const kind = data?.kind ?? kindByName.get(name)
+      const fixedYear = kind !== undefined && FIXED_YEAR_KINDS[kind]
+      // Ô số kỳ luôn hiện, kể cả lúc thẻ đang tải (DB-05e).
       const period =
-        data && !FIXED_YEAR_KINDS[data.kind]
+        kind !== undefined && !fixedYear && !notApplicable
           ? { count, options: PERIOD_OPTIONS[per], unit: per === "q" ? "quý" : "năm" }
           : null
       if (!data) {
         return {
           name,
-          view: { name, kind: "B", unit: "", decimals: 0, labels: [], main: [] },
+          view: { name, kind: kind ?? "B", unit: "", decimals: 0, labels: [], main: [] },
           notApplicable,
           pending: loading,
-          period: null,
+          fixedYear,
+          period,
         }
       }
       if (data.kind === "F") {
@@ -141,10 +175,12 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
             decimals: decimalsForUnit(unit),
             labels: dates.slice(start),
             main: [{ name, v: daily && "v" in daily ? daily.v.slice(start) : [] }],
+            ...legendNoteOf(data),
           },
           notApplicable: false,
           pending: loading || valuationLoading,
           ...(data.note ? { note: data.note } : {}),
+          fixedYear,
           period,
         }
       }
@@ -154,6 +190,7 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
         notApplicable: false,
         pending: false,
         ...(data.note ? { note: data.note } : {}),
+        fixedYear,
         period,
       }
     })
@@ -163,13 +200,14 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
     valuationData,
     draft.nks,
     per,
+    kindByName,
     fundamental.isPending,
     fundamental.isPlaceholderData,
     valuation.isPending,
     valuation.isPlaceholderData,
   ])
 
-  const dirty = !!settings.data && !isSameSettings(draft, settings.data)
+  const dirty = !!saved && !isSameSettings(draft, saved)
 
   function update(changes: Partial<DashboardDraft>) {
     setOverride({ ...draft, ...changes })
@@ -191,19 +229,23 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
     update({ nks: { ...draft.nks, [name]: { ...draft.nks[name], [per]: count } } })
   }
 
-  function moveChart(from: ChartName, to: ChartName) {
-    if (from === to) return
-    const fromIndex = selected.indexOf(from)
-    const toIndex = selected.indexOf(to)
-    if (fromIndex < 0 || toIndex < 0) return
-    const charts = [...selected]
-    charts.splice(fromIndex, 1)
-    const targetIndex = charts.indexOf(to)
-    charts.splice(targetIndex + (fromIndex <= toIndex ? 1 : 0), 0, from)
-    update({ charts })
+  function moveChart(fromIndex: number, toIndex: number) {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0) return
+    if (fromIndex >= selected.length || toIndex >= selected.length) return
+    update({ charts: arrayMove([...selected], fromIndex, toIndex) })
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+    moveChart(selected.indexOf(active.id as ChartName), selected.indexOf(over.id as ChartName))
   }
 
   function handleSave() {
+    if (!isAuthenticated) {
+      openAuth("login")
+      return
+    }
     const normalizedNks = normalizedPeriodCounts(draft.nks)
     const nextDraft: DashboardDraft = { charts: draft.charts, per: draft.per, nks: normalizedNks }
     setOverride(nextDraft)
@@ -221,10 +263,11 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
     toast.success("Đã đưa về bộ mặc định, bấm Lưu thiết lập để giữ")
   }
 
-  const isBank = fundamentalData?.is_bank ?? null
+  // Loại doanh nghiệp: theo số liệu khi đã về, trước đó theo ngành của mã (DB-05d).
+  const isBank = fundamentalData?.is_bank ?? instrumentIsBank
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col min-[761px]:flex-row">
+    <div data-analysis-dashboard="" className="flex min-h-0 flex-1 flex-col min-[761px]:flex-row">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col">
         {tabsSlot}
         <div className="min-h-0 min-w-0 flex-1 overflow-y-auto">
@@ -240,7 +283,7 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
                     "rounded-full border px-2 py-0.5 text-xs font-semibold",
                     isBank
                       ? "border-status-warning/50 text-status-warning"
-                      : "border-border text-academy-subtle",
+                      : "border-border text-text-secondary",
                   )}
                 >
                   {isBank ? "Ngân hàng" : "Doanh nghiệp thông thường"}
@@ -285,32 +328,29 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
                   size="sm"
                   className="max-[760px]:flex-1"
                   onClick={handleSave}
-                  disabled={!dirty || save.isPending}
+                  disabled={isAuthenticated && (!dirty || save.isPending)}
                 >
-                  {dirty ? "Lưu thiết lập" : "✓ Đã lưu"}
+                  {!isAuthenticated || dirty ? "Lưu thiết lập" : "✓ Đã lưu"}
                 </Button>
               </div>
             </header>
 
-            {!isAuthenticated && (
-              <PanelState
-                title="Cần đăng nhập để dùng Dashboard phân tích"
-                description="Thiết lập biểu đồ lưu theo tài khoản. Đăng nhập để chọn chỉ tiêu và lưu thiết lập của riêng bạn."
-                descriptionClassName="text-academy-subtle"
-                action={{ label: "Đăng nhập", onClick: () => openAuth("login") }}
-              />
+            {guest && (
+              <p className="text-xs leading-5 text-text-secondary">
+                Bạn đang xem bộ biểu đồ mặc định. Thay đổi chỉ áp dụng trên màn hình này. Đăng nhập để lưu thiết lập theo tài khoản.
+              </p>
             )}
 
             {isAuthenticated && settings.isError && (
               <PanelState
                 title="Không tải được thiết lập dashboard"
                 description={errorMessage(settings.error)}
-                descriptionClassName="text-academy-subtle"
+                descriptionClassName="text-text-secondary"
                 action={{ label: "Thử lại", onClick: () => void settings.refetch() }}
               />
             )}
 
-            {isAuthenticated && !settings.isError && !settings.data && (
+            {!saved && !(isAuthenticated && settings.isError) && (
               <div className="grid grid-cols-1 gap-3 min-[1250px]:grid-cols-2">
                 {[0, 1, 2, 3].map((index) => (
                   <Skeleton key={index} className="h-64 w-full rounded-lg" />
@@ -318,52 +358,43 @@ export function AnalysisDashboard({ symbol, tabsSlot }: { symbol: string; tabsSl
               </div>
             )}
 
-            {isAuthenticated && settings.data && fundamental.isError && (
+            {saved && fundamental.isError && (
               <PanelState
                 title="Không tải được số liệu dashboard"
                 description={errorMessage(fundamental.error)}
-                descriptionClassName="text-academy-subtle"
+                descriptionClassName="text-text-secondary"
                 action={{ label: "Thử lại", onClick: () => void fundamental.refetch() }}
               />
             )}
 
-            {isAuthenticated && settings.data && !fundamental.isError && selected.length === 0 && (
-              <p className="rounded-lg border border-dashed border-border px-4 py-12 text-center text-sm font-semibold text-academy-subtle">
+            {saved && !fundamental.isError && selected.length === 0 && (
+              <p className="rounded-lg border border-dashed border-border px-4 py-12 text-center text-sm font-semibold text-text-secondary">
                 Chưa có biểu đồ nào. Tick chọn chỉ tiêu ở khung bên phải để thêm biểu đồ.
               </p>
             )}
-          {isAuthenticated && settings.data && !fundamental.isError && selected.length > 0 && (
-            <div className="grid grid-cols-1 gap-3 min-[1250px]:grid-cols-2">
-              {cards.map((card) => (
-                <ChartCard
-                  key={card.name}
-                  view={card.view}
-                  period={card.period}
-                  onPeriodChange={(count) => changePeriod(card.name, count)}
-                  onRemove={() => removeChart(card.name)}
-                  notApplicable={card.notApplicable}
-                  pending={card.pending}
-                  {...(card.note ? { note: card.note } : {})}
-                  drag={{
-                    dragging: dragName === card.name,
-                    over: dragOver === card.name && dragName !== card.name,
-                    onDragStart: () => setDragName(card.name),
-                    onDragEnd: () => {
-                      setDragName(null)
-                      setDragOver(null)
-                    },
-                    onDragOver: () => setDragOver(card.name),
-                    onDragLeave: () => setDragOver(null),
-                    onDrop: () => {
-                      if (dragName) moveChart(dragName, card.name)
-                      setDragName(null)
-                      setDragOver(null)
-                    },
-                  }}
-                />
-              ))}
-            </div>
-          )}
+            {saved && !fundamental.isError && selected.length > 0 && (
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={selected} strategy={rectSortingStrategy}>
+                  <div className="grid grid-cols-1 gap-3 min-[1250px]:grid-cols-2">
+                    {cards.map((card, index) => (
+                      <ChartCard
+                        key={card.name}
+                        view={card.view}
+                        fixedYear={card.fixedYear}
+                        period={card.period}
+                        onPeriodChange={(count) => changePeriod(card.name, count)}
+                        onRemove={() => removeChart(card.name)}
+                        {...(index > 0 ? { onMoveUp: () => moveChart(index, index - 1) } : {})}
+                        {...(index < cards.length - 1 ? { onMoveDown: () => moveChart(index, index + 1) } : {})}
+                        notApplicable={card.notApplicable}
+                        pending={card.pending}
+                        {...(card.note ? { note: card.note } : {})}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
+            )}
           </div>
         </div>
       </div>

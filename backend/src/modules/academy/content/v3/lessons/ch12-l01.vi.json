@@ -332,82 +332,57 @@
       "value_labels": "none"
     },
     "c12l1-rep": {
-      "items": [
-        {
-          "model": {
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "line",
-            "series": [
-              {
-                "name": "CFO / doanh thu (4 quý)",
-                "tone": "p1",
-                "values": [
-                  10.9,
-                  11.1985,
-                  10.9088,
-                  11.05,
-                  12.2574,
-                  12.2632,
-                  11.8206,
-                  12.1103
-                ]
-              }
-            ],
-            "unit": "%",
-            "value_labels": "none"
-          },
-          "title": "CFO / doanh thu (4 quý) (%)"
+      "alt": "CFO Margin: 12,1%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "CFO / doanh thu (4 quý)",
+            "v": [
+              10.9,
+              11.1985,
+              10.9088,
+              11.05,
+              12.2574,
+              12.2632,
+              11.8206,
+              12.1103
+            ]
+          }
+        ],
+        "name": "CFO Margin",
+        "sub": {
+          "series": [
+            {
+              "name": "CFO 4 quý",
+              "v": [
+                563.2544,
+                598.8478,
+                598.8506,
+                625.0067,
+                708.2022,
+                727.1228,
+                724.7698,
+                760.4176
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
         },
-        {
-          "model": {
-            "caption_tone": "price",
-            "caption_value": "12,1%",
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "grouped",
-            "series": [
-              {
-                "name": "CFO 4 quý",
-                "tone": "p1",
-                "values": [
-                  563.2544,
-                  598.8478,
-                  598.8506,
-                  625.0067,
-                  708.2022,
-                  727.1228,
-                  724.7698,
-                  760.4176
-                ]
-              }
-            ],
-            "unit": "tỷ đồng",
-            "value_labels": "none"
-          },
-          "title": "Thành phần (tỷ đồng)"
-        }
-      ],
-      "kind": "compare",
-      "layout": "stack"
+        "unit": "%"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -502,7 +477,6 @@
       "blocks": [
         {
           "chart_id": "c12l1-rep",
-          "table_toggle": true,
           "title": "CFO Margin",
           "type": "chart"
         },

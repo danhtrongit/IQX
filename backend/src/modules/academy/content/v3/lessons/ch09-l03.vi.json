@@ -354,66 +354,33 @@
     },
     "c9l3-rep": {
       "alt": "Margin Stability: 1,2 điểm %",
-      "kind": "series_panels",
-      "marks": [],
-      "panels": [
-        {
-          "band": {
-            "lower": [
-              6.0584,
-              6.0584,
-              6.0584,
-              6.0584,
-              6.0584
-            ],
-            "tone": "p1",
-            "upper": [
-              8.3753,
-              8.3753,
-              8.3753,
-              8.3753,
-              8.3753
-            ]
-          },
-          "bounds": [
-            0,
-            9.7186
-          ],
-          "levels": [
-            {
-              "label": "Bình quân 7.2169",
-              "role": "avg",
-              "value": 7.2169
-            }
-          ],
-          "series": [
-            {
-              "name": "Giá trị",
-              "role": "p1",
-              "values": [
-                6.314,
-                8.282,
-                5.5959,
-                7.2151,
-                8.6773
-              ],
-              "width": 2
-            }
-          ],
-          "title": ""
-        }
-      ],
-      "x": {
-        "end": 4,
-        "start": 0,
-        "ticks": [
+      "chart": {
+        "hero": 1.1585,
+        "kind": "E1",
+        "labels": [
           "2021",
           "2022",
           "2023",
           "2024",
           "2025"
-        ]
-      }
+        ],
+        "main": [
+          {
+            "name": "Biên ròng năm",
+            "v": [
+              6.314,
+              8.282,
+              5.5959,
+              7.2151,
+              8.6773
+            ]
+          }
+        ],
+        "mainUnit": "%",
+        "name": "Margin Stability",
+        "unit": "điểm %"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -479,7 +446,6 @@
       "blocks": [
         {
           "chart_id": "c9l3-rep",
-          "table_toggle": true,
           "title": "Margin Stability",
           "type": "chart"
         },

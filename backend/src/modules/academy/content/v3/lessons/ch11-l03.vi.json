@@ -168,96 +168,70 @@
       ]
     },
     "c11l3-rep": {
-      "items": [
-        {
-          "model": {
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "line",
-            "series": [
-              {
-                "name": "EBIT / lãi vay (4 quý)",
-                "tone": "p1",
-                "values": [
-                  5.7537,
-                  6.1581,
-                  6.4265,
-                  6.8456,
-                  7.3272,
-                  7.875,
-                  8.4485,
-                  8.8015
-                ]
-              }
-            ],
-            "unit": "lần",
-            "value_labels": "none"
-          },
-          "title": "EBIT / lãi vay (4 quý) (lần)"
+      "alt": "Interest Coverage: 8,80 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "EBIT / lãi vay (4 quý)",
+            "v": [
+              5.7537,
+              6.1581,
+              6.4265,
+              6.8456,
+              7.3272,
+              7.875,
+              8.4485,
+              8.8015
+            ]
+          }
+        ],
+        "name": "Interest Coverage",
+        "sub": {
+          "series": [
+            {
+              "name": "EBIT quý",
+              "v": [
+                141.2569,
+                155.9993,
+                159.9651,
+                183.1661,
+                186.1174,
+                207.3714,
+                213.7119,
+                216.0086
+              ]
+            },
+            {
+              "name": "Chi phí lãi vay quý",
+              "v": [
+                23.383,
+                23.383,
+                23.383,
+                23.383,
+                23.383,
+                23.383,
+                23.383,
+                23.383
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
         },
-        {
-          "model": {
-            "caption_tone": "price",
-            "caption_value": "8,80 lần",
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "grouped",
-            "series": [
-              {
-                "name": "EBIT quý",
-                "tone": "p1",
-                "values": [
-                  141.2569,
-                  155.9993,
-                  159.9651,
-                  183.1661,
-                  186.1174,
-                  207.3714,
-                  213.7119,
-                  216.0086
-                ]
-              },
-              {
-                "name": "Chi phí lãi vay quý",
-                "tone": "p5",
-                "values": [
-                  23.383,
-                  23.383,
-                  23.383,
-                  23.383,
-                  23.383,
-                  23.383,
-                  23.383,
-                  23.383
-                ]
-              }
-            ],
-            "unit": "tỷ đồng",
-            "value_labels": "none"
-          },
-          "title": "Thành phần (tỷ đồng)"
-        }
-      ],
-      "kind": "compare",
-      "layout": "stack"
+        "unit": "lần"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -325,7 +299,6 @@
       "blocks": [
         {
           "chart_id": "c11l3-rep",
-          "table_toggle": true,
           "title": "Interest Coverage",
           "type": "chart"
         },

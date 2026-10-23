@@ -714,6 +714,63 @@ const diagramSchema = z
       ctx.addIssue({ code: 'custom', message: `diagram with text must be <= ${DIAGRAM_TEXT_MAX_WIDTH} wide` });
   });
 
+/**
+ * K12: the 33 "Biểu đồ đại diện" of Chương 8-13 in the Dashboard phân tích model (Dashboard spec §9, §11;
+ * spec cập nhật 22-10 DB-02). `chart` is exactly what one Dashboard card draws, with the sample company
+ * numbers precomputed by the importer: the frontend renders it with the same shared component
+ * (`components/fundamental-charts`), so a lesson's ROE chart and the Dashboard's ROE card share layout,
+ * colours, axes and legend. Kinds:
+ *   A, B, C  `labels` + one `main` line + `sub` bars (A: this period vs same period last year, C: 3 day counts);
+ *   D        `main` yearly bars, `hero` = CAGR % (dashed line grows from the first year at that rate);
+ *   E1       `main` yearly line, `hero` = the stability figure, mean and mean ± sd drawn by the renderer;
+ *   E2       `main` yearly bars, `hero` = years in the current positive streak;
+ *   F        `labels` are trading dates (YYYY-MM-DD), median and median ± sd of the whole window;
+ *   F2       `main` line with markers and the `ref` dashed line (PEG = 1).
+ */
+const FUNDAMENTAL_KINDS = ['A', 'B', 'C', 'D', 'E1', 'E2', 'F', 'F2'] as const;
+const fundamentalSeriesSchema = z.strictObject({ name: chartString(60), v: z.array(nnum) });
+const fundamentalSchema = z
+  .strictObject({
+    kind: z.literal('fundamental'),
+    chart: z.strictObject({
+      name: chartString(60),
+      kind: z.enum(FUNDAMENTAL_KINDS),
+      unit: chartString(24, { allowEmpty: true }),
+      labels: z.array(chartString(24)).min(1).max(800),
+      main: z.array(fundamentalSeriesSchema).min(1).max(3),
+      sub: z
+        .strictObject({
+          unit: chartString(24, { allowEmpty: true }),
+          type: z.enum(['grouped', 'stacked']),
+          series: z.array(fundamentalSeriesSchema).min(1).max(3),
+        })
+        .optional(),
+      mainUnit: chartString(24).optional(),
+      hero: nnum.optional(),
+      ref: num.optional(),
+      /** Definition note under the legend, same text as the Dashboard's `legend_note` (DB-06). */
+      legendNote: chartString(200).optional(),
+    }),
+    alt: label,
+  })
+  .superRefine((m, ctx) => {
+    const c = m.chart;
+    const n = c.labels.length;
+    for (const s of [...c.main, ...(c.sub?.series ?? [])])
+      if (s.v.length !== n) ctx.addIssue({ code: 'custom', message: `series ${s.name} length differs from labels` });
+    const banded = c.kind === 'A' || c.kind === 'B' || c.kind === 'C';
+    if (banded !== !!c.sub) ctx.addIssue({ code: 'custom', message: `kind ${c.kind}: sub bars only (and always) for A, B, C` });
+    const fixed = c.kind === 'D' || c.kind === 'E1' || c.kind === 'E2';
+    if (fixed && (c.mainUnit === undefined || c.hero === undefined))
+      ctx.addIssue({ code: 'custom', message: `kind ${c.kind}: mainUnit and hero required` });
+    if (!fixed && (c.mainUnit !== undefined || c.hero !== undefined))
+      ctx.addIssue({ code: 'custom', message: `kind ${c.kind}: mainUnit and hero only for D, E1, E2` });
+    if ((c.kind === 'F2') !== (c.ref !== undefined))
+      ctx.addIssue({ code: 'custom', message: 'ref only (and always) for F2' });
+    if (c.kind === 'F' && c.labels.some((d) => !/^\d{4}-\d{2}-\d{2}$/.test(d)))
+      ctx.addIssue({ code: 'custom', message: 'kind F labels must be YYYY-MM-DD dates' });
+  });
+
 /** Every chart model except `compare` (keeps the schema and the renderer non-recursive). */
 export const leafChartModelSchema = z.discriminatedUnion('kind', [
   seriesPanelsSchema,
@@ -752,6 +809,7 @@ export const chartModelSchema = z.discriminatedUnion('kind', [
   flowSchema,
   diagramSchema,
   compareSchema,
+  fundamentalSchema,
 ]).meta({ id: 'AcademyChartModel' });
 export type ChartModel = z.infer<typeof chartModelSchema>;
 export type ChartKind = ChartModel['kind'];

@@ -1397,6 +1397,32 @@ export type AcademyChartModel =
       kind: "compare";
       layout: "row" | "stack";
       title?: string;
+    }
+  | {
+      alt: string;
+      chart: {
+        hero?: number | null;
+        kind: "A" | "B" | "C" | "D" | "E1" | "E2" | "F" | "F2";
+        labels: Array<string>;
+        legendNote?: string;
+        main: Array<{
+          name: string;
+          v: Array<number | null>;
+        }>;
+        mainUnit?: string;
+        name: string;
+        ref?: number;
+        sub?: {
+          series: Array<{
+            name: string;
+            v: Array<number | null>;
+          }>;
+          type: "grouped" | "stacked";
+          unit: string;
+        };
+        unit: string;
+      };
+      kind: "fundamental";
     };
 
 export type AcademyLeafChartModel =
@@ -40292,6 +40318,7 @@ export type DashboardCatalogResponses = {
   200: Array<{
     group: string;
     items: Array<{
+      kind: "A" | "B" | "C" | "D" | "E1" | "E2" | "F" | "F2";
       na_for_bank: boolean;
       name:
         | "Tăng trưởng doanh thu"

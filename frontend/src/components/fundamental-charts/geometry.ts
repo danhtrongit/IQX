@@ -1,5 +1,5 @@
 /**
- * Hình học của một tấm biểu đồ dashboard (spec §9): thang giá trị, vị trí
+ * Hình học của một tấm biểu đồ chỉ tiêu (spec §9): thang giá trị, vị trí
  * nhãn trục ngang và hình cột. Không có React, không có I/O.
  */
 
@@ -55,4 +55,23 @@ export function barPath(
     return `M${x},${top + height}V${top + radius}Q${x},${top} ${x + radius},${top}H${x + width - radius}Q${x + width},${top} ${x + width},${top + radius}V${top + height}Z`
   }
   return `M${x},${top}V${top + height - radius}Q${x},${top + height} ${x + radius},${top + height}H${x + width - radius}Q${x + width},${top + height} ${x + width},${top + height - radius}V${top}Z`
+}
+
+/** Đường gấp khúc qua các giá trị số; kỳ trống làm đường đứt đoạn (spec §10). */
+export function linePath(
+  values: readonly (number | null)[],
+  x: (index: number) => number,
+  y: (value: number) => number,
+): string {
+  let path = ""
+  let begun = false
+  values.forEach((value, index) => {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+      begun = false
+      return
+    }
+    path += `${begun ? "L" : "M"}${x(index).toFixed(2)},${y(value).toFixed(2)}`
+    begun = true
+  })
+  return path
 }

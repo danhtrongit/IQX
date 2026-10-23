@@ -85,6 +85,8 @@ export const dashboardCatalogSchema = z.array(
     items: z.array(
       z.object({
         name: dashboardChartNameSchema,
+        /** Khuôn biểu đồ (spec §9): biết trước khuôn cố định theo năm để hiện ô số kỳ ngay (DB-05e). */
+        kind: z.enum(DASHBOARD_CHART_KINDS),
         na_for_bank: z.boolean(),
       }),
     ),
