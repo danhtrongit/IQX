@@ -941,7 +941,7 @@
     },
     {
       "file": "src/pages/admin/core/flashback-api.ts",
-      "line": 107,
+      "line": 163,
       "callee": "requestOperation",
       "raw": "GET /api/v2/admin/flashback/rounds",
       "method": "GET",
@@ -954,7 +954,7 @@
     },
     {
       "file": "src/pages/admin/core/flashback-api.ts",
-      "line": 113,
+      "line": 169,
       "callee": "requestOperation",
       "raw": "GET /api/v2/admin/flashback/alerts",
       "method": "GET",
@@ -967,7 +967,7 @@
     },
     {
       "file": "src/pages/admin/core/flashback-api.ts",
-      "line": 119,
+      "line": 175,
       "callee": "requestOperation",
       "raw": "GET /api/v2/admin/flashback/suspects",
       "method": "GET",
@@ -980,7 +980,7 @@
     },
     {
       "file": "src/pages/admin/core/flashback-api.ts",
-      "line": 125,
+      "line": 181,
       "callee": "requestOperation",
       "raw": "GET /api/v2/admin/flashback/pause",
       "method": "GET",
@@ -993,9 +993,9 @@
     },
     {
       "file": "src/pages/admin/core/flashback-api.ts",
-      "line": 137,
-      "callee": "api",
-      "raw": "/admin/flashback/pause",
+      "line": 190,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/flashback/pause",
       "method": "POST",
       "route": "/api/v2/admin/flashback/pause",
       "matchedOperation": "POST /api/v2/admin/flashback/pause",
@@ -1006,14 +1006,66 @@
     },
     {
       "file": "src/pages/admin/core/flashback-api.ts",
-      "line": 151,
-      "callee": "api",
-      "raw": "/admin/flashback/rounds/{encodeURIComponent(id)}/reveal",
+      "line": 196,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/rounds/{id}/reveal",
       "method": "GET",
-      "route": "/api/v2/admin/flashback/rounds/{encodeURIComponent(id)}/reveal",
+      "route": "/api/v2/admin/flashback/rounds/{id}/reveal",
       "matchedOperation": "GET /api/v2/admin/flashback/rounds/{id}/reveal",
       "matchedOperations": [
         "GET /api/v2/admin/flashback/rounds/{id}/reveal"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 210,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/reward-holds",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/reward-holds",
+      "matchedOperation": "GET /api/v2/admin/flashback/reward-holds",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/reward-holds"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 217,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/flashback/reward-holds/{id}/release",
+      "method": "POST",
+      "route": "/api/v2/admin/flashback/reward-holds/{id}/release",
+      "matchedOperation": "POST /api/v2/admin/flashback/reward-holds/{id}/release",
+      "matchedOperations": [
+        "POST /api/v2/admin/flashback/reward-holds/{id}/release"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 224,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/flashback/reward-holds/{id}/void",
+      "method": "POST",
+      "route": "/api/v2/admin/flashback/reward-holds/{id}/void",
+      "matchedOperation": "POST /api/v2/admin/flashback/reward-holds/{id}/void",
+      "matchedOperations": [
+        "POST /api/v2/admin/flashback/reward-holds/{id}/void"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-api.ts",
+      "line": 230,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/settings",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/settings",
+      "matchedOperation": "GET /api/v2/admin/flashback/settings",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/settings"
       ],
       "classification": "api-call"
     },
@@ -4007,8 +4059,6 @@
     "DELETE /api/v2/chart-drawings/{symbol}",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
-    "GET /api/v2/admin/flashback/reward-holds",
-    "GET /api/v2/admin/flashback/settings",
     "GET /api/v2/admin/metrics/plan-distribution",
     "GET /api/v2/admin/users/{user_id}/subscriptions/history",
     "GET /api/v2/admin/vt/accounts",
@@ -4146,8 +4196,6 @@
     "PATCH /api/v2/cap5/task",
     "PATCH /api/v2/cap8/positions/{symbol}/dynamic-stop",
     "POST /api/v2/admin/alerts/telegram/webhook",
-    "POST /api/v2/admin/flashback/reward-holds/{id}/release",
-    "POST /api/v2/admin/flashback/reward-holds/{id}/void",
     "POST /api/v2/admin/journey/identity/qa-grants",
     "POST /api/v2/admin/lessons/courses/{courseId}/thumbnail",
     "POST /api/v2/admin/lessons/episodes/{episodeId}/file",
