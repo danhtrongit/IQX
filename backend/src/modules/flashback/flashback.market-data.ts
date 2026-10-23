@@ -170,7 +170,7 @@ export function normalizeFlashbackRows(
       row.d,
       valid
         ? { d: row.d, o: open, h: high, l: low, c: close, v: volume }
-        : { d: row.d, o: open ?? -1, h: high ?? -1, l: low ?? -1, c: close ?? -1, v: volume ?? -1 },
+        : { d: row.d, o: -1, h: -1, l: -1, c: -1, v: volume ?? -1 },
     );
   }
   const bars = [...byDate.values()].sort((left, right) => left.d.localeCompare(right.d));
