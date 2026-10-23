@@ -711,6 +711,28 @@ describe('academy v3.3 attempts and grading', () => {
     expect((await service.progress(USER)).course_done).toBe(before);
   });
 
+  it('QA-08: 87 lessons pay 8.700 xu, the practice makes 8.800, exams pay nothing', async () => {
+    const { service, memory } = setup();
+    const paid = { lesson: 0, practice: 0, exam: 0 };
+    let lessons = 0;
+    for (const entry of content.items.values()) {
+      openItem(memory, entry.id);
+      const result = await pass(service, entry.id, `attempt-key-${entry.id}`);
+      expect(result.passed, entry.id).toBe(true);
+      const delta = result.reward?.status === 'credited' ? result.reward.delta : 0;
+      if (entry.kind === 'chapter_exam') paid.exam += delta;
+      else if (entry.kind === 'practice') paid.practice += delta;
+      else {
+        paid.lesson += delta;
+        lessons += 1;
+      }
+    }
+    expect(lessons).toBe(87);
+    expect(paid.lesson).toBe(8700);
+    expect(paid.lesson + paid.practice).toBe(8800);
+    expect(paid.exam).toBe(0);
+  });
+
   it('a failing reward hook rolls the whole pass back; a retry then succeeds', async () => {
     const { service, rewards, memory } = setup();
     rewards!.failWith = new Error('ledger down');

@@ -13,7 +13,7 @@ const sources = import.meta.glob(["/src/**/*.{ts,tsx,js,mjs,json}", "/e2e/**/*.{
 
 const SELF = "/src/pages/academy/no-backend-questions.test.ts"
 /** The Playwright spec answers through the real backend and may read the banks on the Node side (design §9). */
-const ALLOWED = new Set(["/e2e/academy-v32.spec.ts"])
+const ALLOWED = new Set(["/e2e/academy-v33.spec.ts"])
 
 describe("frontend never touches the private question banks", () => {
   it("scans the frontend sources", () => {
