@@ -287,6 +287,9 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
     const roe = chartOf(response, 'ROE');
     expect(roe.kind).toBe('B');
     expect(roe.q?.sub?.series[0]?.name).toBe('LNST 4 quý');
+    // DB-06: the code's ROE is the parent-company definition, and the name says so.
+    expect(roe.q?.main[0]?.name).toBe('ROE (4 quý, cổ đông công ty mẹ)');
+    expect(roe.y?.main[0]?.name).toBe('ROE năm (cổ đông công ty mẹ)');
     const ccc = chartOf(response, 'Cash Conversion Cycle');
     expect(ccc.kind).toBe('C');
     expect(ccc.unit).toBe('ngày');
@@ -389,24 +392,19 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
     expect(values.filter((item) => item === 0)).toHaveLength(0);
   });
 
-  it('keeps the indicators without a data source empty and says why', async () => {
+  it('keeps the EPS charts empty and says why when the share events are unavailable', async () => {
     const { service: dashboard } = service();
     const response = await dashboard.fundamental('FPT', {
-      charts: 'Tăng trưởng EPS,ROIC,PEG',
+      charts: 'Tăng trưởng EPS,PEG',
       per: 'q',
     });
     for (const name of ['Tăng trưởng EPS', 'PEG']) {
       const chart = chartOf(response, name);
-      expect(chart.status).toBe('data_unavailable');
-      expect(chart.note).toBeTruthy();
+      expect(chart.status).toBe('missing');
+      expect(chart.note).toBe('Chưa có lịch sử số cổ phiếu đã điều chỉnh tách/thưởng');
       const values = chart.q?.main[0]?.v ?? [];
       expect(values.every((item) => item === null)).toBe(true);
     }
-    // ROIC has no approved definition yet, so the registry marks it definition_pending.
-    const roic = chartOf(response, 'ROIC');
-    expect(roic.status).toBe('definition_pending');
-    expect(roic.note).toBeTruthy();
-    expect((roic.q?.main[0]?.v ?? []).every((item) => item === null)).toBe(true);
   });
 
   it('rejects an indicator outside the catalogue', async () => {

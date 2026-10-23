@@ -41017,6 +41017,7 @@ export type DashboardFundamentalResponses = {
             hero?: number | null;
             kind: "A" | "B" | "C" | "D" | "E1" | "E2" | "F" | "F2";
             labels?: Array<string>;
+            legend_note?: string;
             main?: Array<{
               name: string;
               v: Array<number | null>;
