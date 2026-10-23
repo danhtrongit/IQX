@@ -272,16 +272,14 @@ function createFake(state: Partial<FakeState> = {}) {
     leaderboardEntries: async (_db: SqlClient, roundId: string) =>
       data.entries
         .filter((item) => item.roundId === roundId)
-        .map(
-          (item): FlashbackLeaderboardEntry => ({
-            ...item,
-            username: item.userId,
-            displayName: item.userId,
-            phoneVerified: true,
-            accountCreatedAt: new Date(NOW.getTime() - 30 * 86_400_000),
-            phoneE164: data.phones[item.userId] ?? null,
-          }),
-        ),
+        .map((item): FlashbackLeaderboardEntry => ({
+          ...item,
+          username: item.userId,
+          displayName: item.userId,
+          phoneVerified: true,
+          accountCreatedAt: new Date(NOW.getTime() - 30 * 86_400_000),
+          phoneE164: data.phones[item.userId] ?? null,
+        })),
     holdingsByRound: async (_db: SqlClient, roundId: string) => {
       const map = new Map<string, number>();
       for (const lot of data.lots) {
@@ -330,10 +328,7 @@ function createFake(state: Partial<FakeState> = {}) {
       });
       return true;
     },
-    listRewardHolds: async (
-      _db: SqlClient,
-      filter: { status?: string; roundId?: string },
-    ) =>
+    listRewardHolds: async (_db: SqlClient, filter: { status?: string; roundId?: string }) =>
       data.holds.filter(
         (h) =>
           (!filter.status || h.status === filter.status) &&
@@ -998,7 +993,8 @@ describe('FlashbackJob & FlashbackRoundBuilder', () => {
       dailyBars: async (symbol: string) => (symbol === 'S12' ? dirtySeries : cleanSeries),
     });
 
-    const config = readFlashbackConfig({});
+    // Test này kiểm tra luật loại mã và dữ liệu sạch, nên mở rộng khoảng lợi nhuận tối đa.
+    const config = readFlashbackConfig({ min_max_profit: -1, max_max_profit: 1e9 });
     const built = await builder.build(NOW, 0, config);
     expect(built).not.toBeNull();
     expect(data.recentLimitCalls).toEqual([10, 5]);

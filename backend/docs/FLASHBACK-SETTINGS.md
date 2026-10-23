@@ -20,6 +20,8 @@ code dùng giá trị mặc định (`FLASHBACK_DEFAULT_SETTINGS` trong
 | `play_sessions` | 60 | Số phiên chơi |
 | `min_liquidity_vnd` | 10000000000 | Thanh khoản bình quân tối thiểu (đồng/phiên) |
 | `min_daily_volatility` | 0.01 | Độ lệch chuẩn lợi suất ngày tối thiểu |
+| `min_max_profit` | 0.2 | Lợi nhuận tối đa của đề (chơi hoàn hảo theo đúng luật: giá đóng cửa, phí 0,15%, thuế 0,1%, T+2, từ Phiên 0 tới Phiên 60), cận dưới. Không nới ở mức dự phòng nào |
+| `max_max_profit` | 0.4 | Như trên, cận trên |
 | `max_start_attempts` | 200 | Số lần thử ngày bắt đầu cho mỗi mã |
 | `entry_fee_xu` | 100 | Phí tham gia từ lần thứ hai (xu). `0` = miễn phí (phương án dự phòng pháp lý §1.14) |
 

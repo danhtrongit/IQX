@@ -73,7 +73,8 @@ const notFound = (code: string, message: string) => new NotFoundException({ code
 const forbidden = (code: string, message: string) => new ForbiddenException({ code, message });
 const invalid = (code: string, message: string) =>
   new UnprocessableEntityException({ code, message });
-const paymentRequired = (code: string, message: string) => new HttpException({ code, message }, 402);
+const paymentRequired = (code: string, message: string) =>
+  new HttpException({ code, message }, 402);
 
 /** Một nến gửi cho trình duyệt (không có ngày thật, không có mã). */
 export interface FlashbackPublicBar {
@@ -393,8 +394,7 @@ export class FlashbackService {
     const validated: FlashbackIndicatorInstance[] = [];
     for (const instance of indicators) {
       const meta = flashbackIndicatorMeta(instance.id);
-      if (!meta)
-        throw invalid('FLASHBACK_INDICATOR_UNKNOWN', `Không có chỉ báo "${instance.id}".`);
+      if (!meta) throw invalid('FLASHBACK_INDICATOR_UNKNOWN', `Không có chỉ báo "${instance.id}".`);
       if (!granted.has(`indicator:${instance.id}`))
         throw forbidden(
           'FLASHBACK_INDICATOR_LOCKED',
@@ -411,8 +411,7 @@ export class FlashbackService {
       if (current.status !== 'playing')
         throw conflict('FLASHBACK_ALREADY_FINISHED', 'Lượt chơi đã kết thúc.');
       const updated = await this.repository.updateEntryIndicators(tx, current.id, validated);
-      if (!updated)
-        throw notFound('FLASHBACK_ENTRY_NOT_FOUND', 'Không tìm thấy lượt chơi.');
+      if (!updated) throw notFound('FLASHBACK_ENTRY_NOT_FOUND', 'Không tìm thấy lượt chơi.');
       return updated;
     });
     return {
@@ -432,8 +431,7 @@ export class FlashbackService {
     const entryFee = await this.entryFeeXu();
     const entry = await this.database.transaction(async (tx) => {
       const existing = await this.repository.entryByRoundUser(tx, round.id, userId);
-      if (existing)
-        throw conflict('FLASHBACK_ALREADY_JOINED', 'Bạn đã tham gia đề này rồi.');
+      if (existing) throw conflict('FLASHBACK_ALREADY_JOINED', 'Bạn đã tham gia đề này rồi.');
       const priorEntries = await this.repository.countEntriesByUser(tx, userId);
       const firstJoin = priorEntries === 0;
       const fee = firstJoin ? 0 : entryFee;
@@ -456,8 +454,7 @@ export class FlashbackService {
           ref: { round_id: round.id, round_no: round.roundNo },
           policyVersion: 'iqx-flashback-v1',
         });
-        if (!appended)
-          throw conflict('FLASHBACK_ALREADY_JOINED', 'Bạn đã tham gia đề này rồi.');
+        if (!appended) throw conflict('FLASHBACK_ALREADY_JOINED', 'Bạn đã tham gia đề này rồi.');
         await this.repository.saveWallet(tx, userId, balanceAfter, seq);
       }
       const created = await this.repository.insertEntry(tx, {
@@ -470,8 +467,7 @@ export class FlashbackService {
         deviceId: context.deviceId ?? null,
         joinIp: context.ip ?? null,
       });
-      if (!created)
-        throw conflict('FLASHBACK_ALREADY_JOINED', 'Bạn đã tham gia đề này rồi.');
+      if (!created) throw conflict('FLASHBACK_ALREADY_JOINED', 'Bạn đã tham gia đề này rồi.');
       return created;
     });
     return {
@@ -562,8 +558,7 @@ export class FlashbackService {
 
       if (input.side === 'buy') {
         const total = amount + fee;
-        if (total > entry.cash)
-          throw badRequest('INSUFFICIENT_CASH', 'Không đủ tiền mặt.');
+        if (total > entry.cash) throw badRequest('INSUFFICIENT_CASH', 'Không đủ tiền mặt.');
         cash = entry.cash - total;
         holdings = (await this.repository.lotsByEntry(tx, entry.id)).reduce(
           (sum, lot) => sum + lot.qty,
@@ -636,7 +631,8 @@ export class FlashbackService {
     });
 
     const totalAssets =
-      result.entry.cash + BigInt(result.holdings) * barPrice(chartBar(result.round, result.entry.step));
+      result.entry.cash +
+      BigInt(result.holdings) * barPrice(chartBar(result.round, result.entry.step));
     const pnlPct =
       Number(totalAssets - result.entry.initialCash) / Number(result.entry.initialCash);
     return {
@@ -666,10 +662,7 @@ export class FlashbackService {
       // Chỉ kết thúc được ở phiên 60 (FB-03): kết thúc sớm sẽ lộ giá đóng cửa phiên 60.
       // Đề tới giờ đóng thì tác vụ tự kết thúc các lượt còn dở (bước 2).
       if (entry.step < FLASHBACK_PLAY_SESSIONS)
-        throw conflict(
-          'FLASHBACK_NOT_AT_END',
-          'Chỉ kết thúc được khi đã chơi đủ 60 phiên.',
-        );
+        throw conflict('FLASHBACK_NOT_AT_END', 'Chỉ kết thúc được khi đã chơi đủ 60 phiên.');
       const lots = await this.repository.lotsByEntry(tx, entry.id);
       const holdings = lots.reduce((sum, lot) => sum + lot.qty, 0);
       const orders = await this.repository.ordersByEntry(tx, entry.id);
@@ -683,13 +676,11 @@ export class FlashbackService {
         maxDrawdown: drawdown,
         finishedAt: this.clock.now(),
       });
-      if (!finished)
-        throw conflict('FLASHBACK_ALREADY_FINISHED', 'Lượt chơi đã kết thúc.');
+      if (!finished) throw conflict('FLASHBACK_ALREADY_FINISHED', 'Lượt chơi đã kết thúc.');
       return { entry: finished, round };
     });
 
-    const rank =
-      result.entry.rank ?? (await this.provisionalRank(result.round, result.entry));
+    const rank = result.entry.rank ?? (await this.provisionalRank(result.round, result.entry));
     const eligible = await this.rewardEligible(userId);
     const rewardXu =
       result.round.status === 'open' && result.entry.rank === null
@@ -720,8 +711,7 @@ export class FlashbackService {
     let members: string[] | null = null;
     if (scope === 'team') {
       members = await this.repository.teamMemberIds(this.database, userId);
-      if (members.length === 0)
-        return { scope, rows: [], me: null, total_players: 0 };
+      if (members.length === 0) return { scope, rows: [], me: null, total_players: 0 };
     }
 
     const rows = entries

@@ -22,11 +22,14 @@ import {
   FLASHBACK_DEFAULT_SETTINGS,
   FLASHBACK_EARLIEST_START_DATE,
   FLASHBACK_FALLBACK_LIQUIDITY_VND,
+  FLASHBACK_FEE_BPS,
   FLASHBACK_MAX_MISSING_SESSIONS,
   FLASHBACK_MAX_ZERO_VOLUME_SESSIONS,
   FLASHBACK_MIN_MONTHS_AGO,
   FLASHBACK_MIN_POOL_BEFORE_REPEAT,
   FLASHBACK_ROUNDS_BEFORE_SYMBOL_REPEAT,
+  FLASHBACK_SETTLEMENT_SESSIONS,
+  FLASHBACK_TAX_BPS,
   FLASHBACK_TOTAL_SESSIONS,
   flashbackHosePriceBand,
 } from './flashback.constants.js';
@@ -59,6 +62,9 @@ export interface FlashbackConfig {
   readonly playSessions: number;
   readonly minLiquidityVnd: number;
   readonly minDailyVolatility: number;
+  /** Khoảng lợi nhuận tối đa cho phép (0,2 = 20%), xem `flashbackMaxProfit`. */
+  readonly minMaxProfit: number;
+  readonly maxMaxProfit: number;
   readonly maxStartAttempts: number;
   /** Phí tham gia từ lần thứ hai (xu); 0 = miễn phí (spec 22-10 §1.14). */
   readonly entryFeeXu: number;
@@ -132,6 +138,8 @@ export function readFlashbackConfig(value: unknown): FlashbackConfig {
       raw.min_daily_volatility,
       FLASHBACK_DEFAULT_SETTINGS.min_daily_volatility,
     ),
+    minMaxProfit: numberOr(raw.min_max_profit, FLASHBACK_DEFAULT_SETTINGS.min_max_profit),
+    maxMaxProfit: numberOr(raw.max_max_profit, FLASHBACK_DEFAULT_SETTINGS.max_max_profit),
     maxStartAttempts: numberOr(
       raw.max_start_attempts,
       FLASHBACK_DEFAULT_SETTINGS.max_start_attempts,
@@ -142,6 +150,34 @@ export function readFlashbackConfig(value: unknown): FlashbackConfig {
         ? fee
         : FLASHBACK_DEFAULT_SETTINGS.entry_fee_xu,
   };
+}
+
+/**
+ * Lợi nhuận tối đa (0,25 = 25%) của người chơi biết trước giá, theo đúng luật đặt lệnh:
+ * khớp giá đóng cửa, phí 0,15% hai chiều, thuế 0,1% khi bán, mua ở phiên T thì bán từ phiên T+2,
+ * một phiên đặt được nhiều lệnh, cổ phiếu còn giữ cuối đề tính theo giá đóng cửa phiên cuối.
+ * Mỗi lô sinh lời độc lập theo tỉ lệ nên dồn hết vốn vào mỗi lần mua là tối ưu; bỏ qua làm tròn
+ * số cổ phiếu. `closes[k]` là giá đóng cửa của Phiên k (Phiên 0 = nến lịch sử cuối cùng).
+ */
+export function flashbackMaxProfit(closes: readonly number[]): number {
+  const n = closes.length;
+  if (n === 0) return 0;
+  const buy = 1 + FLASHBACK_FEE_BPS / 10_000;
+  const sell = 1 - (FLASHBACK_FEE_BPS + FLASHBACK_TAX_BPS) / 10_000;
+  // cash[j]: tài sản lớn nhất (toàn tiền mặt) có được sau khi đặt xong lệnh ở Phiên j.
+  const cash: number[] = new Array<number>(n).fill(1);
+  for (let j = 0; j < n; j += 1) {
+    let best = j > 0 ? cash[j - 1]! : 1;
+    for (let i = 0; i + FLASHBACK_SETTLEMENT_SESSIONS <= j; i += 1) {
+      best = Math.max(best, (cash[i]! * closes[j]! * sell) / (closes[i]! * buy));
+    }
+    cash[j] = best;
+  }
+  let end = cash[n - 1]!;
+  for (let i = 0; i < n; i += 1) {
+    end = Math.max(end, (cash[i]! * closes[n - 1]!) / (closes[i]! * buy));
+  }
+  return end - 1;
 }
 
 /** Kết quả dựng một đề. */
@@ -341,6 +377,14 @@ export class FlashbackRoundBuilder {
       const volatility = this.dailyVolatility(play);
       if (volatility < config.minDailyVolatility) return 'độ biến động không đạt';
     }
+
+    // Lợi nhuận tối đa khi chơi hoàn hảo, tính từ Phiên 0 (nến lịch sử cuối) tới Phiên 60.
+    const maxProfit = flashbackMaxProfit([
+      history[history.length - 1]!.c,
+      ...play.map((bar) => bar.c),
+    ]);
+    if (maxProfit < config.minMaxProfit || maxProfit > config.maxMaxProfit)
+      return 'lợi nhuận tối đa ngoài khoảng cho phép';
 
     const missing = this.maxMissingRun(window, calendar);
     if (missing > FLASHBACK_MAX_MISSING_SESSIONS) return 'có quãng đình chỉnh quá dài';

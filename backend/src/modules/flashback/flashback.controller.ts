@@ -17,12 +17,7 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import {
-  ApiOkResponse,
-  ApiOperation,
-  ApiTags,
-  type SchemaObject,
-} from '@nestjs/swagger';
+import { ApiOkResponse, ApiOperation, ApiTags, type SchemaObject } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 import { z } from 'zod';
 
@@ -359,7 +354,10 @@ export class FlashbackController {
   }
 
   @Put('entries/:id/indicators')
-  @ApiOperation({ operationId: 'flashbackSaveIndicators', summary: 'Lưu tham số chỉ báo của lượt chơi' })
+  @ApiOperation({
+    operationId: 'flashbackSaveIndicators',
+    summary: 'Lưu tham số chỉ báo của lượt chơi',
+  })
   @ApiOkResponse({ schema: openapi(saveIndicatorsResponseSchema) })
   async saveIndicators(
     @CurrentUser() user: AuthenticatedUser,

@@ -6,13 +6,7 @@
  */
 
 /** Vòng đời của một đề (spec v1.2 §5.1). */
-export const FLASHBACK_ROUND_STATUSES = [
-  'ready',
-  'open',
-  'closing',
-  'closed',
-  'paid',
-] as const;
+export const FLASHBACK_ROUND_STATUSES = ['ready', 'open', 'closing', 'closed', 'paid'] as const;
 
 export type FlashbackRoundStatus = (typeof FLASHBACK_ROUND_STATUSES)[number];
 
@@ -71,6 +65,13 @@ export const FLASHBACK_FALLBACK_LIQUIDITY_VND = 5_000_000_000n;
 /** Độ lệch chuẩn lợi suất ngày tối thiểu trong 60 phiên chơi. */
 export const FLASHBACK_MIN_DAILY_VOLATILITY = 0.01;
 
+/**
+ * Lợi nhuận tối đa của đề: chơi hoàn hảo (biết trước giá) theo đúng luật game phải nằm trong
+ * khoảng này. Đề lời quá dễ hoặc quá ít cơ hội đều bị loại. Không nới ở mọi mức dự phòng.
+ */
+export const FLASHBACK_MIN_MAX_PROFIT = 0.2;
+export const FLASHBACK_MAX_MAX_PROFIT = 0.4;
+
 /** Số lần thử ngày bắt đầu tối đa cho mỗi mã. */
 export const FLASHBACK_MAX_START_ATTEMPTS = 200;
 
@@ -120,6 +121,8 @@ export const FLASHBACK_DEFAULT_SETTINGS = {
   play_sessions: FLASHBACK_PLAY_SESSIONS,
   min_liquidity_vnd: Number(FLASHBACK_MIN_LIQUIDITY_VND),
   min_daily_volatility: FLASHBACK_MIN_DAILY_VOLATILITY,
+  min_max_profit: FLASHBACK_MIN_MAX_PROFIT,
+  max_max_profit: FLASHBACK_MAX_MAX_PROFIT,
   max_start_attempts: FLASHBACK_MAX_START_ATTEMPTS,
   entry_fee_xu: FLASHBACK_JOIN_FEE_XU,
 } as const;
@@ -152,7 +155,8 @@ export function flashbackRewardEligible(
 ): boolean {
   if (!info || !info.phoneVerified) return false;
   return (
-    info.accountCreatedAt.getTime() <= now.getTime() - FLASHBACK_REWARD_MIN_ACCOUNT_DAYS * 86_400_000
+    info.accountCreatedAt.getTime() <=
+    now.getTime() - FLASHBACK_REWARD_MIN_ACCOUNT_DAYS * 86_400_000
   );
 }
 
