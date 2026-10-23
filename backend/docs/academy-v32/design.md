@@ -968,3 +968,12 @@ Rejected:
   2N+1 search and adds a new error contract. Out of scope for v3.2.
 - content-frontend 3 alternative "scope the scan / allow under scenario": superseded by the rename, which keeps one strict rule.
 - backend-correctness 12 alternative "add `guide` to the enum": guide mode is removed; mapping to null avoids reviving it in the UI.
+
+## v3.3 (cập nhật 22-10)
+
+Chi tiết các khoảng trống và quyết định nằm ở `backend/docs/update-22-10/spec-update-22-10.md` mục 2. Phần HV-01 đến HV-05 làm trong đợt này:
+
+- Câu hỏi khái niệm thay cho câu phải tính (10 câu viết lại, `question_version` tự đổi theo hash ngân hàng).
+- Câu hỏi có thể có `chart_id` trỏ tới biểu đồ của chính bài (33 câu đọc biểu đồ Chương 8 đến 13 trỏ tới `c{ch}l{n}-rep`). `chart_id` được gửi cùng câu hỏi, trình duyệt vẽ từ `charts` của bài đã tải. Đáp án không gửi.
+- `GET /strategy/screener/metrics` ẩn 9 chỉ tiêu không có bài học với người không có quyền cũ `fundamental:*`.
+- e2e đổi tên thành `frontend/e2e/academy-v33.spec.ts`.

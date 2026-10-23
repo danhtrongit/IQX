@@ -95,7 +95,8 @@
           "text": "Doanh thu đang giảm so với quý trước"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện CFO / LNST, cột xanh cao hơn cột cam nghĩa là gì?"
+      "prompt": "Trên biểu đồ đại diện CFO / LNST, cột xanh cao hơn cột cam nghĩa là gì?",
+      "chart_id": "c12l2-rep"
     }
   ],
   "salt": "503f481eeb763c9114c50551d8b3fd57357eaf65264ac85efe88c4f1879f72d1"

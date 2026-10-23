@@ -95,7 +95,8 @@
           "text": "Giá cổ phiếu và khối lượng giao dịch"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của Current Ratio, các cột phía dưới thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện của Current Ratio, các cột phía dưới thể hiện gì?",
+      "chart_id": "c11l2-rep"
     }
   ],
   "salt": "cfd4dc296333292716c4436a999c6dffc3788eb75edf7ce831f1d36c35cb1625"

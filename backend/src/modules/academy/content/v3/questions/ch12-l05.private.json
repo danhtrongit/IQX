@@ -95,7 +95,8 @@
           "text": "Năm doanh nghiệp trả cổ tức"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện FCF Positive Streak, cột đỏ thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện FCF Positive Streak, cột đỏ thể hiện gì?",
+      "chart_id": "c12l5-rep"
     }
   ],
   "salt": "7710341d98eeeed96de105b6f04deaf7b102ef96cd80ec4907b23ad908f096a1"

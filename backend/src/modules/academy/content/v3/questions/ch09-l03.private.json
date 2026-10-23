@@ -95,7 +95,8 @@
           "text": "Biên ròng trung bình của ngành"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, đường đứt nét nằm ngang thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện, đường đứt nét nằm ngang thể hiện gì?",
+      "chart_id": "c9l3-rep"
     }
   ],
   "salt": "d9fe9875c881d71b91aeb00c3a8cc405b553c2e2e29c1e86265af54f6700cd33"

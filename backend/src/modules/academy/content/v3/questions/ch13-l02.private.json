@@ -95,7 +95,8 @@
           "text": "Mức P/B mà doanh nghiệp đặt mục tiêu"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của P/B, đường trung vị 3 năm thể hiện điều gì?"
+      "prompt": "Trên biểu đồ đại diện của P/B, đường trung vị 3 năm thể hiện điều gì?",
+      "chart_id": "c13l2-rep"
     }
   ],
   "salt": "432c338cd0f4c0b21cb646dba48f85ab857ac78502f5f5ea000c4480941c7991"

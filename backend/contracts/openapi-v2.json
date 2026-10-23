@@ -72682,6 +72682,9 @@
                       "items": {
                         "additionalProperties": false,
                         "properties": {
+                          "chart_id": {
+                            "type": "string"
+                          },
                           "id": {
                             "type": "string"
                           },
@@ -74189,6 +74192,9 @@
                           "items": {
                             "additionalProperties": false,
                             "properties": {
+                              "chart_id": {
+                                "type": "string"
+                              },
                               "id": {
                                 "type": "string"
                               },

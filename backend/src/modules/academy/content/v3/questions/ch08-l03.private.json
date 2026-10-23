@@ -95,7 +95,8 @@
           "text": "Số cổ phiếu lưu hành"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của EPS YoY, cột cam thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện của EPS YoY, cột cam thể hiện gì?",
+      "chart_id": "c8l3-rep"
     }
   ],
   "salt": "cfa525ecfb135cb31b54086a5ed2a710696882bff5d6cb8f6a28c3b4ac41d27d"

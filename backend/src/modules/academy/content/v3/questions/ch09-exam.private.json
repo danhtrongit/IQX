@@ -27,18 +27,18 @@
       "options": [
         {
           "id": "c9134ce60c",
-          "text": "Từ 2021 đến 2025"
+          "text": "Vì chuỗi chỉ đếm các năm lãi liên tiếp tính đến hiện tại"
         },
         {
           "id": "7f4d07bdea",
-          "text": "Từ 2019 đến 2025 trừ 2020"
+          "text": "Vì năm lỗ bị trừ vào các năm lãi trước"
         },
         {
           "id": "956a354130",
-          "text": "Chỉ năm 2025"
+          "text": "Vì chuỗi chỉ đếm năm có lợi nhuận cao nhất"
         }
       ],
-      "prompt": "Doanh nghiệp lãi 2019, lỗ 2020, lãi từ 2021 đến 2025. Chuỗi năm lãi gồm những năm nào?"
+      "prompt": "Vì sao một năm lỗ ở giữa làm chuỗi năm lãi bị tính lại từ đầu?"
     },
     {
       "correct_option_id": "d1e8bb16aa",
@@ -46,18 +46,18 @@
       "options": [
         {
           "id": "d1e8bb16aa",
-          "text": "7 năm"
+          "text": "Khi mọi năm trong dữ liệu đều có lãi"
         },
         {
           "id": "b8eeff02d1",
-          "text": "5 năm"
+          "text": "Khi doanh nghiệp lãi ở năm gần nhất"
         },
         {
           "id": "48b9cbf0fc",
-          "text": "10 năm"
+          "text": "Khi tổng lợi nhuận các năm lớn nhất"
         }
       ],
-      "prompt": "Với dữ liệu 7 năm, Profit Positive Streak lớn nhất có thể là bao nhiêu?"
+      "prompt": "Profit Positive Streak lớn nhất khi nào?"
     },
     {
       "correct_option_id": "3048dc2a64",

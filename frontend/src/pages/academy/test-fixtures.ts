@@ -243,7 +243,13 @@ export function buildBank(item: CatalogItem): BankQuestion[] {
 }
 
 export function buildAttempt(item: CatalogItem, attemptId: string = ATTEMPT_ID): AttemptResponse {
-  const questions = buildBank(item).map(({ id, prompt, options }) => ({ id, prompt, options }))
+  // HV-02: the first question of ch10-l01 reads the lesson's representative chart.
+  const questions = buildBank(item).map(({ id, prompt, options }, index) => ({
+    id,
+    prompt,
+    options,
+    ...(item.id === "ch10-l01" && index === 0 ? { chart_id: "c10l1-rep" } : {}),
+  }))
   return {
     attempt_id: attemptId,
     lesson_id: item.id,

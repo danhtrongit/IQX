@@ -28734,6 +28734,7 @@ export type AcademyCreateAttemptResponses = {
     lesson_id: string;
     lesson_key: string;
     questions: Array<{
+      chart_id?: string;
       id: string;
       options: Array<{
         id: string;
@@ -29143,6 +29144,7 @@ export type AcademyResumeAttemptResponses = {
       lesson_id: string;
       lesson_key: string;
       questions: Array<{
+        chart_id?: string;
         id: string;
         options: Array<{
           id: string;

@@ -95,7 +95,8 @@
           "text": "Vốn đầu tư của từng năm"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, đường xanh có các điểm tròn thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện, đường xanh có các điểm tròn thể hiện gì?",
+      "chart_id": "c9l5-rep"
     }
   ],
   "salt": "59129323f3084e41259af51dc21dec38ce9fb96ac241d03a96d197119bb244f0"

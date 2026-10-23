@@ -76,7 +76,8 @@
           "text": "Cổ phiếu đắt hơn các doanh nghiệp cùng ngành"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của P/E, P/E nằm dưới dải trung vị ± độ lệch chuẩn cho thấy điều gì?"
+      "prompt": "Trên biểu đồ đại diện của P/E, P/E nằm dưới dải trung vị ± độ lệch chuẩn cho thấy điều gì?",
+      "chart_id": "c13l1-rep"
     },
     {
       "correct_option_id": "1ef0e89b18",

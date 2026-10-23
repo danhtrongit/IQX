@@ -426,18 +426,18 @@
       "options": [
         {
           "id": "59a1eb9e50",
-          "text": "Âm"
+          "text": "Dấu âm, doanh nghiệp đang có tiền ròng"
         },
         {
           "id": "c0053249b0",
-          "text": "Dương"
+          "text": "Dấu dương, doanh nghiệp đang nợ ròng"
         },
         {
           "id": "05753d7931",
-          "text": "Bằng nợ vay"
+          "text": "Bằng 0, tiền bù trừ vừa đủ nợ"
         }
       ],
-      "prompt": "Doanh nghiệp có tiền 800 tỷ và nợ vay 300 tỷ thì nợ ròng thế nào?"
+      "prompt": "Tiền mặt lớn hơn nợ vay thì nợ ròng mang dấu gì và nghĩa là gì?"
     },
     {
       "correct_option_id": "8b8c7c4e1e",

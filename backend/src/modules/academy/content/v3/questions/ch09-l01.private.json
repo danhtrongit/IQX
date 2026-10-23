@@ -76,7 +76,8 @@
           "text": "Năm doanh nghiệp trả cổ tức"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, cột đỏ nằm dưới mốc 0 thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện, cột đỏ nằm dưới mốc 0 thể hiện gì?",
+      "chart_id": "c9l1-rep"
     },
     {
       "correct_option_id": "e677e3c450",

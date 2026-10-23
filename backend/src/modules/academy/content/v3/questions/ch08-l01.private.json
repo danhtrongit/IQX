@@ -76,7 +76,8 @@
           "text": "Lợi nhuận quý đó cao hơn doanh thu"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, cột xanh cao hơn cột cam ở một quý cho thấy điều gì?"
+      "prompt": "Trên biểu đồ đại diện, cột xanh cao hơn cột cam ở một quý cho thấy điều gì?",
+      "chart_id": "c8l1-rep"
     },
     {
       "correct_option_id": "2ec11ff609",

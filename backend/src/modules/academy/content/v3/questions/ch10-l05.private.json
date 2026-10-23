@@ -95,7 +95,8 @@
           "text": "Chi phí hoạt động từng quý"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của biên ròng, cột phía dưới thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện của biên ròng, cột phía dưới thể hiện gì?",
+      "chart_id": "c10l5-rep"
     }
   ],
   "salt": "1377ee0fb727f591617b6c3c0d2756a00eb3b809e381aa50619dbca843bc0e37"

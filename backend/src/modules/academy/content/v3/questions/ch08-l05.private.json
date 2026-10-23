@@ -95,7 +95,8 @@
           "text": "Năm đó doanh nghiệp không nộp thuế"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của Net Profit CAGR 3Y, một cột nằm xa đường đứt nét cho thấy điều gì?"
+      "prompt": "Trên biểu đồ đại diện của Net Profit CAGR 3Y, một cột nằm xa đường đứt nét cho thấy điều gì?",
+      "chart_id": "c8l5-rep"
     }
   ],
   "salt": "b28872ff586c66780629f29ac848ea922df9ecd3e0fda44c3e010e293ae6fbe7"

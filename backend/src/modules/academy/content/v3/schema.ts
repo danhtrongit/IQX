@@ -1431,6 +1431,8 @@ export const bankQuestionSchema = z
     correct_option_id: optionIdSchema,
     /** Kept for later use; never served (spec §3.2-6). */
     explanation: plainText.optional(),
+    /** HV-02: chart-reading question. Must be a chart of the same lesson (checked at content build). Served. */
+    chart_id: keyId.optional(),
   })
   .superRefine((q, ctx) => {
     const ids = q.options.map((o) => o.id);
@@ -1462,6 +1464,8 @@ export const publicQuestionSchema = z.object({
   id: z.string(),
   prompt: z.string(),
   options: z.array(z.object({ id: z.string(), text: z.string() })),
+  /** Chart of the lesson the question is about; the client draws it from the lesson's `charts`. */
+  chart_id: z.string().optional(),
 });
 export type PublicQuestion = z.infer<typeof publicQuestionSchema>;
 
@@ -1470,6 +1474,7 @@ export function toPublicQuestion(q: BankQuestion, optionOrder: readonly string[]
   return {
     id: q.id,
     prompt: q.prompt,
+    ...(q.chart_id ? { chart_id: q.chart_id } : {}),
     options: optionOrder.map((id) => {
       const text = byId.get(id);
       if (text === undefined) throw new Error(`option ${id} not in ${q.id}`);

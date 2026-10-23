@@ -76,7 +76,8 @@
           "text": "Khoảng dự báo cho năm tới"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, dải tô quanh đường đứt nét thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện, dải tô quanh đường đứt nét thể hiện gì?",
+      "chart_id": "c9l2-rep"
     },
     {
       "correct_option_id": "c4f09c9b77",

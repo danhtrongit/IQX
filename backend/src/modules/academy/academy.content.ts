@@ -87,6 +87,9 @@ export function buildAcademyContent(files: AcademyContentFiles): AcademyContent 
         if (entry.has_scenario !== (scenarioOf(file) !== null))
           fail(`${entry.id} has_scenario does not match its lesson file`);
       }
+      for (const question of bank.questions)
+        if (question.chart_id && !(file && question.chart_id in file.charts))
+          fail(`${question.id} chart_id ${question.chart_id} is not a chart of ${entry.id}`);
       if (entry.kind === 'lesson') requiredTotal += 1;
       const item: AcademyItem = {
         ...entry,

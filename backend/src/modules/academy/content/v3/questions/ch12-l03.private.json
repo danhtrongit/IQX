@@ -95,7 +95,8 @@
           "text": "Doanh thu cộng dồn 4 quý gần nhất"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện Capex / Revenue, đường chính thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện Capex / Revenue, đường chính thể hiện gì?",
+      "chart_id": "c12l3-rep"
     }
   ],
   "salt": "942aca27dae856b5e1d3cc00c7296ad4d184ec80f27ce2fa853d6918e32ffc54"

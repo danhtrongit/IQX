@@ -95,7 +95,8 @@
           "text": "Lợi nhuận sau thuế 4 quý"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện FCF Margin, cột xanh lá mỗi quý thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện FCF Margin, cột xanh lá mỗi quý thể hiện gì?",
+      "chart_id": "c12l4-rep"
     }
   ],
   "salt": "f149aeb18dee4dfb6f915b79e7eca3517e5e9f85a6a73446db7d92ba0a6ceb6b"

@@ -95,7 +95,8 @@
           "text": "Lợi nhuận gộp cộng dồn 4 quý"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện CFO Margin, các cột bên dưới thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện CFO Margin, các cột bên dưới thể hiện gì?",
+      "chart_id": "c12l1-rep"
     }
   ],
   "salt": "f0a61708411834abd0828a71aad9ade5169ed16c92cdda99f4b095c58611f793"

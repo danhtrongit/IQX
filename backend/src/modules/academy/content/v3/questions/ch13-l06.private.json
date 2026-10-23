@@ -95,7 +95,8 @@
           "text": "Doanh nghiệp vừa tăng mạnh đầu tư"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của FCF Yield, đường chính nằm trên dải dao động cho thấy điều gì?"
+      "prompt": "Trên biểu đồ đại diện của FCF Yield, đường chính nằm trên dải dao động cho thấy điều gì?",
+      "chart_id": "c13l6-rep"
     }
   ],
   "salt": "73eb5212b28aa5c71d4f843d9b8220fe89130df260701fa3cc786ab05803da2b"

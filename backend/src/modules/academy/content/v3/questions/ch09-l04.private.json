@@ -95,7 +95,8 @@
           "text": "EPS năm gần nhất chia EPS năm đầu"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện, con số lớn ở góc phải được tính thế nào?"
+      "prompt": "Trên biểu đồ đại diện, con số lớn ở góc phải được tính thế nào?",
+      "chart_id": "c9l4-rep"
     }
   ],
   "salt": "080e75ac7b5a8c81d2bdec4ee811d553c230363ce6bb00260af207c5893790b9"

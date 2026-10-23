@@ -95,7 +95,8 @@
           "text": "Doanh thu của từng quý"
         }
       ],
-      "prompt": "Trên biểu đồ đại diện của LNST YoY, đường phía trên thể hiện gì?"
+      "prompt": "Trên biểu đồ đại diện của LNST YoY, đường phía trên thể hiện gì?",
+      "chart_id": "c8l2-rep"
     }
   ],
   "salt": "37273beaf003231614b0ac5546a896efcc4f4ca2fd79f455fb64f21be006a7c2"
