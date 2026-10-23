@@ -5179,6 +5179,168 @@
               "items"
             ],
             "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "alt": {
+                "maxLength": 400,
+                "minLength": 1,
+                "type": "string"
+              },
+              "chart": {
+                "additionalProperties": false,
+                "properties": {
+                  "hero": {
+                    "nullable": true,
+                    "type": "number"
+                  },
+                  "kind": {
+                    "enum": [
+                      "A",
+                      "B",
+                      "C",
+                      "D",
+                      "E1",
+                      "E2",
+                      "F",
+                      "F2"
+                    ],
+                    "type": "string"
+                  },
+                  "labels": {
+                    "items": {
+                      "maxLength": 24,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "maxItems": 800,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "legendNote": {
+                    "maxLength": 200,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "main": {
+                    "items": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "name": {
+                          "maxLength": 60,
+                          "minLength": 1,
+                          "type": "string"
+                        },
+                        "v": {
+                          "items": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "name",
+                        "v"
+                      ],
+                      "type": "object"
+                    },
+                    "maxItems": 3,
+                    "minItems": 1,
+                    "type": "array"
+                  },
+                  "mainUnit": {
+                    "maxLength": 24,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "name": {
+                    "maxLength": 60,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "ref": {
+                    "type": "number"
+                  },
+                  "sub": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "series": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "name": {
+                              "maxLength": 60,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "v": {
+                              "items": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "name",
+                            "v"
+                          ],
+                          "type": "object"
+                        },
+                        "maxItems": 3,
+                        "minItems": 1,
+                        "type": "array"
+                      },
+                      "type": {
+                        "enum": [
+                          "grouped",
+                          "stacked"
+                        ],
+                        "type": "string"
+                      },
+                      "unit": {
+                        "maxLength": 24,
+                        "minLength": 0,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "unit",
+                      "type",
+                      "series"
+                    ],
+                    "type": "object"
+                  },
+                  "unit": {
+                    "maxLength": 24,
+                    "minLength": 0,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name",
+                  "kind",
+                  "unit",
+                  "labels",
+                  "main"
+                ],
+                "type": "object"
+              },
+              "kind": {
+                "enum": [
+                  "fundamental"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "chart",
+              "alt"
+            ],
+            "type": "object"
           }
         ]
       },
@@ -103089,6 +103251,19 @@
                         "items": {
                           "additionalProperties": false,
                           "properties": {
+                            "kind": {
+                              "enum": [
+                                "A",
+                                "B",
+                                "C",
+                                "D",
+                                "E1",
+                                "E2",
+                                "F",
+                                "F2"
+                              ],
+                              "type": "string"
+                            },
                             "na_for_bank": {
                               "type": "boolean"
                             },
@@ -103133,6 +103308,7 @@
                           },
                           "required": [
                             "name",
+                            "kind",
                             "na_for_bank"
                           ],
                           "type": "object"
@@ -103208,7 +103384,7 @@
             "bearer": []
           }
         ],
-        "summary": "The 33 analysis charts in their 6 groups, with the bank not-applicable flag",
+        "summary": "The 33 analysis charts in their 6 groups, with the chart shape and the bank not-applicable flag",
         "tags": [
           "Dashboard phân tích"
         ],

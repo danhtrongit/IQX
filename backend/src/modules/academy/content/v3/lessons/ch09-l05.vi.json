@@ -370,66 +370,33 @@
     },
     "c9l5-rep": {
       "alt": "ROIC Stability: 1,8 điểm %",
-      "kind": "series_panels",
-      "marks": [],
-      "panels": [
-        {
-          "band": {
-            "lower": [
-              10.5887,
-              10.5887,
-              10.5887,
-              10.5887,
-              10.5887
-            ],
-            "tone": "p1",
-            "upper": [
-              14.2206,
-              14.2206,
-              14.2206,
-              14.2206,
-              14.2206
-            ]
-          },
-          "bounds": [
-            0,
-            16.0186
-          ],
-          "levels": [
-            {
-              "label": "Bình quân 12.4046",
-              "role": "avg",
-              "value": 12.4046
-            }
-          ],
-          "series": [
-            {
-              "name": "Giá trị",
-              "role": "p1",
-              "values": [
-                10.3988,
-                14.2256,
-                10.1198,
-                12.9767,
-                14.3023
-              ],
-              "width": 2
-            }
-          ],
-          "title": ""
-        }
-      ],
-      "x": {
-        "end": 4,
-        "start": 0,
-        "ticks": [
+      "chart": {
+        "hero": 1.8159,
+        "kind": "E1",
+        "labels": [
           "2021",
           "2022",
           "2023",
           "2024",
           "2025"
-        ]
-      }
+        ],
+        "main": [
+          {
+            "name": "ROIC năm",
+            "v": [
+              10.3988,
+              14.2256,
+              10.1198,
+              12.9767,
+              14.3023
+            ]
+          }
+        ],
+        "mainUnit": "%",
+        "name": "ROIC Stability",
+        "unit": "điểm %"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -494,7 +461,6 @@
       "blocks": [
         {
           "chart_id": "c9l5-rep",
-          "table_toggle": true,
           "title": "ROIC Stability",
           "type": "chart"
         },

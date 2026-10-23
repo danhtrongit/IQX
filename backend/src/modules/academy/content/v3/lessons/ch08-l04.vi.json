@@ -50,41 +50,32 @@
       "value_labels": "all"
     },
     "c8l4-rep": {
-      "caption_tone": "price",
-      "caption_value": "9,6%",
-      "kind": "category",
-      "labels": [
-        "2022",
-        "2023",
-        "2024",
-        "2025"
-      ],
-      "mode": "grouped",
-      "series": [
-        {
-          "name": "Doanh thu",
-          "tone": "p1",
-          "values": [
-            4509.2772,
-            4676.3805,
-            5347.6216,
-            5929.5893
-          ]
-        },
-        {
-          "dash": true,
-          "name": "Theo CAGR",
-          "tone": "warn",
-          "values": [
-            4510.4651,
-            4939.5349,
-            5413.9535,
-            5930.2326
-          ]
-        }
-      ],
-      "unit": "tỷ đồng",
-      "value_labels": "none"
+      "alt": "Revenue CAGR 3Y: 9,6%",
+      "chart": {
+        "hero": 9.5568,
+        "kind": "D",
+        "labels": [
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "main": [
+          {
+            "name": "Doanh thu",
+            "v": [
+              4509.2772,
+              4676.3805,
+              5347.6216,
+              5929.5893
+            ]
+          }
+        ],
+        "mainUnit": "tỷ đồng",
+        "name": "Revenue CAGR 3Y",
+        "unit": "%"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -175,7 +166,6 @@
       "blocks": [
         {
           "chart_id": "c8l4-rep",
-          "table_toggle": true,
           "title": "Revenue CAGR 3Y",
           "type": "chart"
         },

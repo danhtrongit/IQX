@@ -2062,7 +2062,20 @@
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 83,
+      "line": 80,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/instruments/{symbol}",
+      "method": "GET",
+      "route": "/api/v2/instruments/{symbol}",
+      "matchedOperation": "GET /api/v2/instruments/{symbol}",
+      "matchedOperations": [
+        "GET /api/v2/instruments/{symbol}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/analysis/api.ts",
+      "line": 90,
       "callee": "requestOperation",
       "raw": "GET /api/v2/valuation/{symbol}",
       "method": "GET",

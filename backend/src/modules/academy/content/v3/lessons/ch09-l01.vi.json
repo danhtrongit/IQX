@@ -217,48 +217,38 @@
       "value_labels": "none"
     },
     "c9l1-rep": {
-      "caption_tone": "price",
-      "caption_value": "5 năm",
-      "kind": "category",
-      "labels": [
-        "2019",
-        "2020",
-        "2021",
-        "2022",
-        "2023",
-        "2024",
-        "2025"
-      ],
-      "mode": "grouped",
-      "series": [
-        {
-          "name": "Profit Positive Streak",
-          "per_bar_tones": [
-            "neutral",
-            "neg",
-            "p1",
-            "p1",
-            "p1",
-            "p1",
-            "p1"
-          ],
-          "tone_by_sign": {
-            "neg": "neg",
-            "pos": "p1"
-          },
-          "values": [
-            259.5516,
-            -118.4797,
-            243.3333,
-            373.4342,
-            261.7377,
-            385.8816,
-            514.4704
-          ]
-        }
-      ],
-      "unit": "tỷ đồng",
-      "value_labels": "none"
+      "alt": "Profit Positive Streak: 5 năm",
+      "chart": {
+        "hero": 5,
+        "kind": "E2",
+        "labels": [
+          "2019",
+          "2020",
+          "2021",
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "main": [
+          {
+            "name": "Profit Positive Streak",
+            "v": [
+              259.5516,
+              -118.4797,
+              243.3333,
+              373.4342,
+              261.7377,
+              385.8816,
+              514.4704
+            ]
+          }
+        ],
+        "mainUnit": "tỷ đồng",
+        "name": "Profit Positive Streak",
+        "unit": "năm"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -326,7 +316,6 @@
       "blocks": [
         {
           "chart_id": "c9l1-rep",
-          "table_toggle": true,
           "title": "Profit Positive Streak",
           "type": "chart"
         },
