@@ -192,6 +192,29 @@ export const environmentSchema = z
       z.string().min(16).max(256).optional(),
     ),
     TELEGRAM_LINK_TTL_SECONDS: z.coerce.number().int().min(60).max(86_400).default(600),
+    // Nhóm Telegram kỹ thuật nhận cảnh báo Flashback (spec 22-10 FB-09). Bỏ trống thì chỉ ghi log.
+    OPS_ALERT_TELEGRAM_CHAT_ID: z.preprocess(
+      (value) => (value === '' ? undefined : value),
+      z
+        .string()
+        .regex(/^-?\d{1,20}$|^@[A-Za-z][A-Za-z0-9_]{4,31}$/)
+        .optional(),
+    ),
+    // Danh sách user id (uuid, cách nhau dấu phẩy) của quản trị viên cao nhất (spec 22-10 FB-08):
+    // chỉ họ được xem mã đề đã đóng và bấm "Tạm dừng Flashback". Bỏ trống thì không ai được.
+    SUPER_ADMIN_USER_IDS: z.preprocess(
+      (value) =>
+        typeof value === 'string'
+          ? value
+              .split(',')
+              .map((item) => item.trim().toLowerCase())
+              .filter(Boolean)
+          : value,
+      z.array(z.uuid()).default([]),
+    ),
+    // Đổi Premium bằng xu chỉ cho tài khoản đã xác thực số điện thoại (spec 22-10 §1.14: bật khi
+    // phát hành). Đặt `false` để tắt tạm thời.
+    PREMIUM_XU_REDEEM_PHONE_VERIFIED_ONLY: booleanSetting(true),
     ALERT_COOLDOWN_SECONDS: z.coerce.number().int().min(0).max(86_400).default(900),
     ALERT_SCAN_ENABLED: booleanSetting(false),
     // AI Insight v2 "Góc nhìn đầu tư". OFF until the owner signs off the report sources and

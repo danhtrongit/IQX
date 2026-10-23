@@ -5,6 +5,11 @@
  * một mã và một ngày bắt đầu, rồi kiểm tra các điều kiện của §4.3 trên 372 phiên liên tục
  * (252 warmup + 60 lịch sử + 60 chơi). Nếu không mã nào đạt thì nới điều kiện theo thang
  * §6.3 và ghi `fallback_level` của đề.
+ *
+ * Bản 22-10: rổ VN30 làm mới ở mỗi lần tạo đề (FB-05), giá chuẩn hoá về đồng và ghi nguồn
+ * (FB-04), kiểm tra chồng giai đoạn với MỌI đề cùng mã (FB-11e), bước nhảy giá theo biên độ
+ * HOSE từng thời kỳ (FB-11f), mốc tải dữ liệu tính từ `earliest_start_date` (FB-11g) và bắt buộc
+ * có lịch giao dịch VNINDEX phủ giai đoạn (FB-11h).
  */
 
 import { randomInt } from 'node:crypto';
@@ -13,17 +18,24 @@ import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/database.service.js';
 import {
+  FLASHBACK_BAND_TOLERANCE,
   FLASHBACK_DEFAULT_SETTINGS,
   FLASHBACK_EARLIEST_START_DATE,
+  FLASHBACK_FALLBACK_LIQUIDITY_VND,
   FLASHBACK_MAX_MISSING_SESSIONS,
   FLASHBACK_MAX_ZERO_VOLUME_SESSIONS,
-  FLASHBACK_MIN_LIQUIDITY_VND,
   FLASHBACK_MIN_MONTHS_AGO,
   FLASHBACK_MIN_POOL_BEFORE_REPEAT,
   FLASHBACK_ROUNDS_BEFORE_SYMBOL_REPEAT,
   FLASHBACK_TOTAL_SESSIONS,
+  flashbackHosePriceBand,
 } from './flashback.constants.js';
-import type { FlashbackMarketDataPort } from './flashback.market-data.js';
+import {
+  FLASHBACK_OPS_ALERTS,
+  noopFlashbackOpsAlerts,
+  type FlashbackOpsAlertPort,
+} from './flashback.alerts.js';
+import type { FlashbackMarketDataPort, FlashbackSeries } from './flashback.market-data.js';
 import { FLASHBACK_REPOSITORY, FlashbackRepository } from './flashback.repository.js';
 import type { FlashbackBar } from './flashback.types.js';
 
@@ -48,6 +60,8 @@ export interface FlashbackConfig {
   readonly minLiquidityVnd: number;
   readonly minDailyVolatility: number;
   readonly maxStartAttempts: number;
+  /** Phí tham gia từ lần thứ hai (xu); 0 = miễn phí (spec 22-10 §1.14). */
+  readonly entryFeeXu: number;
 }
 
 const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
@@ -70,6 +84,21 @@ export function subtractMonths(date: string, months: number): string {
   return parsed.toISOString().slice(0, 10);
 }
 
+/**
+ * Ngày bắt đầu tải dữ liệu (FB-11g): `earliest_start_date` lùi đủ cho `warmupSessions` phiên
+ * khởi tạo (khoảng 7/5 ngày lịch mỗi phiên) cộng 60 ngày dự phòng cho ngày lễ.
+ */
+export function flashbackFetchFrom(
+  config: Pick<FlashbackConfig, 'earliestStartDate' | 'warmupSessions'>,
+): string {
+  const start = Date.parse(`${config.earliestStartDate}T00:00:00Z`);
+  const base = Number.isFinite(start)
+    ? start
+    : Date.parse(`${FLASHBACK_EARLIEST_START_DATE}T00:00:00Z`);
+  const days = Math.ceil((Math.max(0, config.warmupSessions) * 7) / 5) + 60;
+  return new Date(base - days * 86_400_000).toISOString().slice(0, 10);
+}
+
 function numberOr(value: unknown, fallback: number): number {
   const parsed = typeof value === 'number' ? value : Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
@@ -82,6 +111,7 @@ function stringOr(value: unknown, fallback: string): string {
 /** Đọc tham số vận hành từ `flashback_settings`, thiếu thì dùng mặc định của spec. */
 export function readFlashbackConfig(value: unknown): FlashbackConfig {
   const raw = (value ?? {}) as Record<string, unknown>;
+  const fee = numberOr(raw.entry_fee_xu, FLASHBACK_DEFAULT_SETTINGS.entry_fee_xu);
   return {
     roundDurationHours: numberOr(
       raw.round_duration_hours,
@@ -97,15 +127,20 @@ export function readFlashbackConfig(value: unknown): FlashbackConfig {
     warmupSessions: numberOr(raw.warmup_sessions, FLASHBACK_DEFAULT_SETTINGS.warmup_sessions),
     historySessions: numberOr(raw.history_sessions, FLASHBACK_DEFAULT_SETTINGS.history_sessions),
     playSessions: numberOr(raw.play_sessions, FLASHBACK_DEFAULT_SETTINGS.play_sessions),
-    minLiquidityVnd: numberOr(
-      raw.min_liquidity_vnd,
-      FLASHBACK_DEFAULT_SETTINGS.min_liquidity_vnd,
-    ),
+    minLiquidityVnd: numberOr(raw.min_liquidity_vnd, FLASHBACK_DEFAULT_SETTINGS.min_liquidity_vnd),
     minDailyVolatility: numberOr(
       raw.min_daily_volatility,
       FLASHBACK_DEFAULT_SETTINGS.min_daily_volatility,
     ),
-    maxStartAttempts: numberOr(raw.max_start_attempts, FLASHBACK_DEFAULT_SETTINGS.max_start_attempts),
+    maxStartAttempts: numberOr(
+      raw.max_start_attempts,
+      FLASHBACK_DEFAULT_SETTINGS.max_start_attempts,
+    ),
+    // Phí là số nguyên không âm; giá trị hỏng thì quay về mặc định thay vì cho tham gia sai phí.
+    entryFeeXu:
+      Number.isSafeInteger(fee) && fee >= 0 && fee <= 100_000
+        ? fee
+        : FLASHBACK_DEFAULT_SETTINGS.entry_fee_xu,
   };
 }
 
@@ -116,31 +151,61 @@ export interface FlashbackRoundBuildResult {
   readonly bars: readonly FlashbackBar[];
   readonly warmupBars: readonly FlashbackBar[];
   readonly fallbackLevel: number;
+  /** Nguồn và đơn vị giá (FB-04), lưu vào `flashback_rounds.price_source`. */
+  readonly priceSource: string;
 }
 
-/** Ngày bắt đầu tải dữ liệu (trước mốc 2012 để đủ 252 phiên khởi tạo). */
-const FETCH_FROM = '2010-06-01';
+/** Không lấy được lịch giao dịch VNINDEX: bỏ lần tạo đề này và thử lại (FB-11h). */
+export class FlashbackCalendarUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'FlashbackCalendarUnavailableError';
+  }
+}
 
 /** Mốc chỉ số dùng làm lịch giao dịch để phát hiện phiên bị đình chỉnh. */
 const CALENDAR_SYMBOL = 'VNINDEX';
 
 const MIN_VN30_POOL_SIZE = 25;
-const MAX_SINGLE_SESSION_JUMP = 0.25;
+
+/** Lịch giao dịch: danh sách ngày tăng dần và vị trí của từng ngày. */
+interface TradingCalendar {
+  readonly dates: readonly string[];
+  readonly position: ReadonlyMap<string, number>;
+}
+
+/** Vị trí đầu tiên có ngày >= `date` (tìm nhị phân). */
+function lowerBound(dates: readonly string[], date: string): number {
+  let low = 0;
+  let high = dates.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    if (dates[middle]! < date) low = middle + 1;
+    else high = middle;
+  }
+  return low;
+}
 
 @Injectable()
 export class FlashbackRoundBuilder {
   private readonly logger = new Logger(FlashbackRoundBuilder.name);
+  /** Rổ đã làm mới cho một lần tạo đề (cùng `now` cho các mức nới 0..3). */
+  private poolCache: { at: number; pool: string[] } | null = null;
 
   constructor(
     private readonly database: DatabaseService,
     @Inject(FLASHBACK_REPOSITORY) private readonly repository: FlashbackRepository,
     @Inject('FLASHBACK_MARKET_DATA') private readonly market: FlashbackMarketDataPort,
     @Optional() @Inject(FLASHBACK_VN30) private readonly vn30?: FlashbackVn30Port,
+    @Optional()
+    @Inject(FLASHBACK_OPS_ALERTS)
+    private readonly alerts: FlashbackOpsAlertPort = noopFlashbackOpsAlerts,
   ) {}
 
   /**
    * Thử tạo một đề ở mức nới điều kiện `level` (0 = nguyên luật, 3 = bỏ điều kiện dao động).
-   * Trả về `null` khi không mã nào đạt yêu cầu.
+   * Trả về `null` khi không mã nào đạt yêu cầu. Ném `FlashbackCalendarUnavailableError` khi
+   * không có lịch giao dịch để kiểm tra quãng đình chỉ.
    */
   async build(
     now: Date,
@@ -153,9 +218,9 @@ export class FlashbackRoundBuilder {
       return null;
     }
     const total =
-      config.warmupSessions + config.historySessions + config.playSessions || FLASHBACK_TOTAL_SESSIONS;
-    const excludeCount =
-      config.roundsBeforeSymbolRepeat || FLASHBACK_ROUNDS_BEFORE_SYMBOL_REPEAT;
+      config.warmupSessions + config.historySessions + config.playSessions ||
+      FLASHBACK_TOTAL_SESSIONS;
+    const excludeCount = config.roundsBeforeSymbolRepeat || FLASHBACK_ROUNDS_BEFORE_SYMBOL_REPEAT;
 
     let poolAfterExclude = [...pool];
     if (level === 0) {
@@ -174,21 +239,31 @@ export class FlashbackRoundBuilder {
     }
     const candidates = this.shuffle(poolAfterExclude);
     const today = vietnamDate(now);
+    const fetchFrom = flashbackFetchFrom(config);
     const latestPlayDate = subtractMonths(today, config.minMonthsAgo || FLASHBACK_MIN_MONTHS_AGO);
-    const calendar = await this.calendarDates();
+    const calendar = await this.calendar(fetchFrom, today);
 
     for (const symbol of candidates) {
-      const series = await this.market.dailyBars(symbol, FETCH_FROM, today);
-      if (series.length < total) continue;
+      const series = await this.series(symbol, fetchFrom, today);
+      if (!series || series.bars.length < total) continue;
+      const bars = series.bars;
+      // Mọi đề cùng mã, không giới hạn số đề (FB-11e).
       const usedDates = new Set(
-        (await this.repository.roundChartDates(this.database, symbol, 50)).flat(),
+        (await this.repository.roundChartDates(this.database, symbol)).flat(),
       );
       for (let attempt = 0; attempt < config.maxStartAttempts; attempt += 1) {
-        const maxStart = series.length - total;
+        const maxStart = bars.length - total;
         if (maxStart <= 0) break;
         const start = randomInt(maxStart + 1);
-        const window = series.slice(start, start + total);
-        const reason = this.rejectReason(window, config, level, latestPlayDate, calendar, usedDates);
+        const window = bars.slice(start, start + total);
+        const reason = this.rejectReason(
+          window,
+          config,
+          level,
+          latestPlayDate,
+          calendar,
+          usedDates,
+        );
         if (reason) continue;
         const warmup = window.slice(0, config.warmupSessions);
         const chart = window.slice(
@@ -201,10 +276,26 @@ export class FlashbackRoundBuilder {
           bars: chart,
           warmupBars: warmup,
           fallbackLevel: level,
+          priceSource: series.source,
         };
       }
     }
     return null;
+  }
+
+  /** Nến của một mã; lỗi nguồn (kể cả sai đơn vị) thì bỏ mã đó trong lần tạo đề này. */
+  private async series(symbol: string, from: string, to: string): Promise<FlashbackSeries | null> {
+    try {
+      if (typeof this.market.dailySeries === 'function') {
+        return await this.market.dailySeries(symbol, from, to);
+      }
+      return { bars: await this.market.dailyBars(symbol, from, to), source: 'unknown' };
+    } catch (error) {
+      this.logger.warn(
+        `Flashback: bỏ một mã vì lỗi nguồn nến (${error instanceof Error ? error.message : 'lỗi không xác định'})`,
+      );
+      return null;
+    }
   }
 
   /** Lý do từ chối một cửa sổ phiên (null = đạt). */
@@ -213,11 +304,9 @@ export class FlashbackRoundBuilder {
     config: FlashbackConfig,
     level: number,
     latestPlayDate: string,
-    calendar: readonly string[] | null,
+    calendar: TradingCalendar,
     usedDates: ReadonlySet<string>,
   ): string | null {
-    if (!this.isCleanWindow(window)) return 'dữ liệu nến không sạch';
-
     const warmup = config.warmupSessions;
     const history = window.slice(warmup, warmup + config.historySessions);
     const play = window.slice(warmup + config.historySessions);
@@ -228,13 +317,24 @@ export class FlashbackRoundBuilder {
     if (lastPlay > latestPlayDate) return 'phiên chơi cuối quá gần hiện tại';
 
     const chart = [...history, ...play];
+    // Không chồng giai đoạn với đề cũ cùng mã: không bao giờ nới (BoSung §6.3).
+    if (chart.some((bar) => usedDates.has(bar.d))) return 'trùng giai đoạn với đề cũ';
+
+    // Lịch phải phủ cả giai đoạn, nếu không thì không kiểm tra được quãng đình chỉ (FB-11h).
+    const first = window[0]?.d ?? '';
+    const calendarFirst = calendar.dates[0] ?? '';
+    if (!calendarFirst || calendarFirst > first) return 'lịch giao dịch không phủ giai đoạn';
+
+    if (!this.isCleanWindow(window, calendar)) return 'dữ liệu nến không sạch';
+
     const zeroVolume = chart.filter((bar) => bar.v === 0).length;
-    if (zeroVolume > FLASHBACK_MAX_ZERO_VOLUME_SESSIONS) return 'quá nhiều phiên không có giao dịch';
+    if (zeroVolume > FLASHBACK_MAX_ZERO_VOLUME_SESSIONS)
+      return 'quá nhiều phiên không có giao dịch';
 
     const liquidity =
       chart.reduce((sum, bar) => sum + bar.c * bar.v, 0) / Math.max(1, chart.length);
     const liquidityFloor =
-      level >= 2 ? Number(FLASHBACK_MIN_LIQUIDITY_VND) / 2 : config.minLiquidityVnd;
+      level >= 2 ? Number(FLASHBACK_FALLBACK_LIQUIDITY_VND) : config.minLiquidityVnd;
     if (liquidity < liquidityFloor) return 'thanh khoản không đạt';
 
     if (level < 3) {
@@ -244,18 +344,16 @@ export class FlashbackRoundBuilder {
 
     const missing = this.maxMissingRun(window, calendar);
     if (missing > FLASHBACK_MAX_MISSING_SESSIONS) return 'có quãng đình chỉnh quá dài';
-
-    const overlap = chart.find((bar) => usedDates.has(bar.d));
-    if (overlap) return 'trùng giai đoạn với đề cũ';
     return null;
   }
 
   /**
    * Kiểm tra dữ liệu sạch trên toàn bộ 372 phiên (BoSung §4.3):
    * 1. Giá dương hữu hạn, khối lượng không âm, thấp <= mở/đóng <= cao.
-   * 2. Không có bước nhảy giá đóng cửa bất thường (> 25%) giữa hai phiên liên tiếp chưa điều chỉnh.
+   * 2. Không có bước nhảy giá đóng cửa vượt biên độ HOSE của ngày đó cộng 0,5% sai số làm tròn
+   *    (FB-11f). Phiên đầu tiên sau quãng tạm ngừng giao dịch (thiếu phiên trên lịch) được miễn.
    */
-  private isCleanWindow(window: readonly FlashbackBar[]): boolean {
+  private isCleanWindow(window: readonly FlashbackBar[], calendar: TradingCalendar): boolean {
     for (let index = 0; index < window.length; index += 1) {
       const bar = window[index]!;
       if (
@@ -279,13 +377,18 @@ export class FlashbackRoundBuilder {
       }
       if (index > 0) {
         const prev = window[index - 1]!;
-        if (Math.abs(bar.c / prev.c - 1) > MAX_SINGLE_SESSION_JUMP) {
-          return false;
+        const limit = flashbackHosePriceBand(bar.d) + FLASHBACK_BAND_TOLERANCE;
+        if (Math.abs(bar.c / prev.c - 1) > limit) {
+          const at = calendar.position.get(bar.d);
+          const before = calendar.position.get(prev.d);
+          const resumedAfterHalt = at !== undefined && before !== undefined && at - before > 1;
+          if (!resumedAfterHalt) return false;
         }
       }
     }
     return true;
   }
+
   /** Độ lệch chuẩn lợi suất ngày của các phiên chơi. */
   private dailyVolatility(bars: readonly FlashbackBar[]): number {
     if (bars.length < 2) return 0;
@@ -297,129 +400,113 @@ export class FlashbackRoundBuilder {
     }
     if (returns.length === 0) return 0;
     const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
-    const variance =
-      returns.reduce((sum, value) => sum + (value - mean) ** 2, 0) / returns.length;
+    const variance = returns.reduce((sum, value) => sum + (value - mean) ** 2, 0) / returns.length;
     return Math.sqrt(variance);
   }
 
-  /**
-   * Số phiên liên tục bị thiếu tối đa. Nếu có lịch giao dịch của chỉ số thì so với lịch đó,
-   * nếu không thì dùng xấp xỉ theo ngày làm việc.
-   */
-  private maxMissingRun(
-    window: readonly FlashbackBar[],
-    calendar: readonly string[] | null,
-  ): number {
-    const dates = window.map((bar) => bar.d);
-    if (calendar && calendar.length > 0) {
-      const first = dates[0] ?? '';
-      const last = dates[dates.length - 1] ?? '';
-      const present = new Set(dates);
-      let run = 0;
-      let worst = 0;
-      for (const day of calendar) {
-        if (day < first || day > last) continue;
-        if (present.has(day)) {
-          run = 0;
-          continue;
-        }
-        run += 1;
-        if (run > worst) worst = run;
-      }
-      return worst;
-    }
+  /** Số phiên liên tục bị thiếu tối đa so với lịch giao dịch của VNINDEX. */
+  private maxMissingRun(window: readonly FlashbackBar[], calendar: TradingCalendar): number {
+    const first = window[0]?.d ?? '';
+    const last = window[window.length - 1]?.d ?? '';
+    const present = new Set(window.map((bar) => bar.d));
+    let run = 0;
     let worst = 0;
-    for (let index = 1; index < dates.length; index += 1) {
-      const missing = this.weekdaysBetween(dates[index - 1] ?? '', dates[index] ?? '') - 1;
-      if (missing > worst) worst = missing;
+    for (let index = lowerBound(calendar.dates, first); index < calendar.dates.length; index += 1) {
+      const day = calendar.dates[index]!;
+      if (day > last) break;
+      if (present.has(day)) {
+        run = 0;
+        continue;
+      }
+      run += 1;
+      if (run > worst) worst = run;
     }
     return worst;
   }
 
-  /** Số ngày làm việc nằm giữa hai ngày (không tính ngày đầu và ngày cuối). */
-  private weekdaysBetween(from: string, to: string): number {
-    const start = new Date(`${from}T00:00:00Z`).getTime();
-    const end = new Date(`${to}T00:00:00Z`).getTime();
-    if (end <= start) return 1;
-    let count = 0;
-    for (let time = start + 86_400_000; time < end; time += 86_400_000) {
-      const day = new Date(time).getUTCDay();
-      if (day !== 0 && day !== 6) count += 1;
-    }
-    return count + 1;
-  }
-
-  /** Ngày giao dịch của chỉ số (lịch tham chiếu để phát hiện đình chỉnh). */
-  private async calendarDates(): Promise<string[] | null> {
+  /**
+   * Lịch giao dịch của VNINDEX trong khoảng tải dữ liệu. Không lấy được thì bỏ lần tạo đề
+   * (FB-11h): không còn đếm xấp xỉ theo ngày thường.
+   */
+  private async calendar(from: string, to: string): Promise<TradingCalendar> {
+    let bars: readonly FlashbackBar[];
     try {
-      const bars = await this.market.dailyBars(CALENDAR_SYMBOL, FETCH_FROM, vietnamDate(new Date()));
-      if (bars.length === 0) return null;
-      return bars.map((bar) => bar.d);
+      bars = await this.market.dailyBars(CALENDAR_SYMBOL, from, to);
     } catch (error) {
-      this.logger.warn(
-        `Flashback: không lấy được lịch giao dịch của ${CALENDAR_SYMBOL} (${
+      throw new FlashbackCalendarUnavailableError(
+        `Không lấy được lịch giao dịch ${CALENDAR_SYMBOL} (${
           error instanceof Error ? error.message : 'lỗi không xác định'
         })`,
       );
-      return null;
     }
+    if (bars.length === 0) {
+      throw new FlashbackCalendarUnavailableError(`Lịch giao dịch ${CALENDAR_SYMBOL} rỗng`);
+    }
+    const dates = [...new Set(bars.map((bar) => bar.d))].sort();
+    return { dates, position: new Map(dates.map((date, index) => [date, index])) };
   }
 
-  /** Rổ mã VN30 hiện hành (đọc từ kho, làm mới từ feed khi có thể). */
+  /**
+   * Rổ mã VN30 hiện hành (FB-05). Mỗi lần tạo đề gọi nguồn thành phần chỉ số và đồng bộ bảng
+   * `vn30_constituents` (mã rời rổ có `effective_to`, mã mới có `effective_from`). Nguồn lỗi
+   * hoặc trả ít hơn 25 mã thì giữ rổ đang lưu và bắn cảnh báo (BoSung §6.1).
+   */
   private async currentPool(now: Date): Promise<string[]> {
+    if (this.poolCache && this.poolCache.at === now.getTime()) return [...this.poolCache.pool];
     const stored = await this.repository.listCurrentVn30(this.database);
-    const canRefresh =
-      typeof this.market.vn30Symbols === 'function' ||
-      typeof this.vn30?.fetchCurrent === 'function';
-
-    if (stored.length >= MIN_VN30_POOL_SIZE && typeof this.market.vn30Symbols !== 'function') {
-      return stored;
-    }
+    const fetcher =
+      typeof this.market.vn30Symbols === 'function'
+        ? () => this.market.vn30Symbols!()
+        : this.vn30 && typeof this.vn30.fetchCurrent === 'function'
+          ? async () => (await this.vn30!.fetchCurrent('VN30')).symbols
+          : null;
 
     let pool = stored;
-    let degraded = stored.length < MIN_VN30_POOL_SIZE;
-    if (canRefresh) {
+    let problem: string | null = null;
+    if (!fetcher) {
+      problem = 'không có nguồn thành phần chỉ số';
+    } else {
       try {
-        const refreshed =
-          typeof this.market.vn30Symbols === 'function'
-            ? await this.market.vn30Symbols()
-            : (await this.vn30!.fetchCurrent('VN30')).symbols;
-        if (refreshed.length > 0) {
+        const fetched = [...new Set((await fetcher()).map((symbol) => symbol.trim().toUpperCase()))]
+          .filter(Boolean)
+          .sort();
+        if (fetched.length >= MIN_VN30_POOL_SIZE) {
           await this.database.transaction(async (tx) => {
-            await this.repository.replaceVn30(tx, refreshed, now);
+            await this.repository.syncVn30(tx, fetched, now);
           });
-          pool = [...refreshed];
+          pool = fetched;
+        } else {
+          problem = `nguồn chỉ trả ${fetched.length} mã`;
+          // Chưa từng có rổ thì tạm dùng rổ thiếu cho lần này, nhưng không ghi đè bảng.
+          if (stored.length === 0) pool = fetched;
         }
-        degraded = refreshed.length < MIN_VN30_POOL_SIZE;
       } catch (error) {
-        degraded = true;
-        this.logger.warn(
-          `Flashback: không làm mới được VN30 (${
-            error instanceof Error ? error.message : 'lỗi không xác định'
-          })`,
-        );
+        problem = `lỗi nguồn (${error instanceof Error ? error.message : 'không xác định'})`;
       }
     }
 
-    if (degraded || pool.length < MIN_VN30_POOL_SIZE) {
-      await this.recordPoolDegradedAlert();
+    if (problem || pool.length < MIN_VN30_POOL_SIZE) {
+      this.logger.warn(`Flashback: rổ VN30 không cập nhật được: ${problem ?? 'rổ dưới 25 mã'}`);
+      await this.recordPoolDegradedAlert(problem ?? `rổ chỉ có ${pool.length} mã`);
     }
+    this.poolCache = { at: now.getTime(), pool: [...pool] };
     return pool;
   }
 
-  private async recordPoolDegradedAlert(): Promise<void> {
+  private async recordPoolDegradedAlert(detail: string): Promise<void> {
     const known = await this.repository.hasRecentAlert(this.database, null, 'medium', 30);
     if (known) return;
+    const message = `alert:medium:vn30_pool_degraded: Rổ VN30 không cập nhật được hoặc lấy được ít hơn 25 mã (${detail}). Đang dùng rổ đã lưu.`;
     await this.database.transaction(async (tx) => {
       await this.repository.appendJobLog(tx, {
         step: 'alert',
         roundId: null,
-        result:
-          'alert:medium:vn30_pool_degraded: Rổ VN30 lấy được ít hơn 25 mã hoặc không cập nhật được.',
+        result: message,
         error: null,
         level: 'medium',
       });
     });
+    await this.alerts.send({ level: 'medium', message });
   }
 
   /** Xáo trộn bằng CSPRNG (Fisher-Yates). */

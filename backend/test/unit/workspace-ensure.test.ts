@@ -238,6 +238,8 @@ describe('legacy POST /virtual-trading/account/activate', () => {
         'created_at',
         'id',
         'initial_cash_vnd',
+        // Thêm ở 22-10 (FB-12), không bỏ khoá cũ nào.
+        'net_deposited_cash_vnd',
         'reset_at',
         'status',
         'total_cash_vnd',
