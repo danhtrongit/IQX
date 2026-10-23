@@ -450,7 +450,7 @@ describe('ScreenerService.metrics', () => {
     const dividend = metrics.find((m) => m.id === 'dividend_yield')!;
     expect(dividend).toMatchObject({ supported: false, readiness: 'data_unavailable' });
     expect(dividend.unsupported_reason).toBeTruthy();
-    expect(metrics.find((m) => m.id === 'roic')?.readiness).toBe('definition_pending');
+    expect(metrics.find((m) => m.id === 'roic')?.readiness).toBe('ready');
     expect(metrics.every((m) => m.allowed_periods.some((p) => p.id === m.default_period))).toBe(
       true,
     );
@@ -666,7 +666,7 @@ describe('ScreenerService.run', () => {
     const fake = fakeVci({ revenue: {} });
     const { service: svc } = service(UNIVERSE, fake.vci, [
       'metric:dividend_yield',
-      'metric:roic',
+      'metric:payout_ratio',
       'metric:roe',
     ]);
     const error = await svc
@@ -683,7 +683,7 @@ describe('ScreenerService.run', () => {
               api_unit: 'ratio',
             },
           ],
-          columns: [{ metric_id: 'roic', period: 'ttm' }],
+          columns: [{ metric_id: 'payout_ratio', period: 'ttm' }],
         }),
         NOW,
       )
@@ -693,7 +693,7 @@ describe('ScreenerService.run', () => {
       code: 'METRIC_NOT_READY',
       details: [
         { metric_id: 'dividend_yield', readiness: 'data_unavailable' },
-        { metric_id: 'roic', readiness: 'definition_pending' },
+        { metric_id: 'payout_ratio', readiness: 'data_unavailable' },
       ],
     });
     expect(fake.statementCalls).toEqual([]);

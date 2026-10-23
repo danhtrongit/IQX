@@ -106,7 +106,7 @@
       "ttm",
       "year"
     ],
-    "readiness": "data_unavailable",
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -132,7 +132,7 @@
       "tolerance": 0.015,
       "synthetic": true
     },
-    "notes": "EPS cơ bản lấy lợi nhuận dành cho cổ đông phổ thông chia số cổ phiếu phổ thông bình quân gia quyền. Không thay số bình quân bằng số cuối kỳ. Bộ dữ liệu phải có cờ điều chỉnh so sánh; thiếu cơ sở điều chỉnh thì không tự ghép hai EPS."
+    "notes": "EPS quý = LNST cổ đông công ty mẹ / số cổ phiếu bình quân (đầu và cuối quý) đã điều chỉnh hồi tố theo chia tách, thưởng và cổ tức bằng cổ phiếu (VCI /v1/events, ISS). Số cổ phiếu cuối quý = vốn góp / mệnh giá 10.000 đồng. EPS 4 quý và EPS năm là tổng EPS các quý nên mọi kỳ cùng một gốc. Thiếu lịch sử sự kiện thì không tự ghép hai EPS khác cơ sở."
   },
   {
     "id": "gross_margin",
@@ -327,7 +327,7 @@
     "allowed_periods": [
       "ttm"
     ],
-    "readiness": "definition_pending",
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -353,7 +353,7 @@
       "tolerance": 0.015,
       "synthetic": true
     },
-    "notes": "NOPAT = EBIT hoạt động × (1 − thuế suất chuẩn hóa). Ví dụ EBIT 200 và thuế suất 25% cho NOPAT 150. Vốn đầu tư theo biến thể của gói = vốn chủ hợp nhất + nợ vay có lãi − tiền không phục vụ hoạt động. Dữ liệu phân loại tiền và thuế suất chưa có thì chỉ tiêu trả thiếu dữ liệu, không tự ước lượng rồi giấu giả định."
+    "notes": "NOPAT = EBIT × (1 − thuế suất hiệu dụng); EBIT = LNTT + chi phí lãi vay. Thuế suất hiệu dụng = chi phí thuế TNDN / LNTT tính trên cùng 4 quý (hoặc năm), kẹp trong [0; 0,5]; LNTT không dương thì dùng 20%. Vốn đầu tư = VCSH hợp nhất + nợ vay ngắn và dài hạn − tiền và tương đương tiền, bình quân đầu kỳ và cuối kỳ. Không áp dụng cho ngân hàng, bảo hiểm, chứng khoán."
   },
   {
     "id": "debt_equity",
@@ -992,7 +992,7 @@
     "allowed_periods": [
       "ttm"
     ],
-    "readiness": "data_unavailable",
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -1018,7 +1018,7 @@
       "tolerance": 0.015,
       "synthetic": true
     },
-    "notes": "Phiên bản đầu dùng EPS YoY TTM quá khứ đã học, không âm thầm dùng dự phóng của chuyên gia. Cần cả EPS TTM dương và tăng trưởng EPS dương. Giá trị tăng trưởng rất gần 0 làm tỷ số cực nhạy; phải cho người dùng nhìn được mẫu số."
+    "notes": "Phiên bản đầu dùng EPS YoY TTM quá khứ đã học (EPS điều chỉnh tách/thưởng), không âm thầm dùng dự phóng của chuyên gia. P/E = giá / EPS 4 quý điều chỉnh. Cần EPS TTM dương và tăng trưởng EPS từ 5% trở lên; dưới 5% tỷ số cực nhạy nên để trống."
   },
   {
     "id": "fcf_yield",
@@ -1165,7 +1165,7 @@
     "allowed_periods": [
       "three_year"
     ],
-    "readiness": "data_unavailable",
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -1191,7 +1191,7 @@
       "tolerance": 0.015,
       "synthetic": true
     },
-    "notes": "Bốn mốc EPS năm phải cùng cơ sở điều chỉnh và đã được công bố tại ngày lọc. Gói chỉ tính CAGR thông thường khi cả bốn mốc dương. Không lấy bình quân EPS rồi tính tăng trưởng từ bình quân đó."
+    "notes": "Bốn mốc EPS năm điều chỉnh cùng gốc (tổng EPS 4 quý của năm, số cổ phiếu bình quân đã điều chỉnh tách/thưởng) và đã công bố tại ngày lọc. Gói chỉ tính CAGR thông thường khi cả bốn mốc dương. Không lấy bình quân EPS rồi tính tăng trưởng từ bình quân đó."
   },
   {
     "id": "asset_turnover",
@@ -1390,7 +1390,7 @@
     "allowed_periods": [
       "three_year"
     ],
-    "readiness": "data_unavailable",
+    "readiness": "ready",
     "applicability": "all",
     "operators": [
       ">",
@@ -1420,7 +1420,7 @@
       "tolerance": 0.015,
       "synthetic": true
     },
-    "notes": "Tên bài EPS Stability được giữ từ chương trình. Định nghĩa kỹ thuật cụ thể dùng ba tăng trưởng năm hợp lệ trên bốn EPS năm đã điều chỉnh; chia 3. Tăng trưởng âm hợp lệ vẫn được giữ dấu khi tính."
+    "notes": "Tên bài EPS Stability được giữ từ chương trình. Định nghĩa kỹ thuật cụ thể dùng ba tăng trưởng năm hợp lệ trên bốn EPS năm đã điều chỉnh tách/thưởng; chia 3. Tăng trưởng âm hợp lệ vẫn được giữ dấu khi tính."
   },
   {
     "id": "net_margin_stability",
@@ -1484,7 +1484,7 @@
     "allowed_periods": [
       "three_year"
     ],
-    "readiness": "definition_pending",
+    "readiness": "ready",
     "applicability": "non_financial",
     "operators": [
       ">",
@@ -1514,7 +1514,7 @@
       "tolerance": 0.015,
       "synthetic": true
     },
-    "notes": "Dùng ba giá trị ROIC năm đã tính theo cùng calculation_version. Không điền 0 vào năm thiếu dữ liệu. Công ty ROIC ổn định nhưng thấp vẫn khác công ty ổn định ở mức cao; cần kết hợp điều kiện về mức ROIC."
+    "notes": "Dùng ba giá trị ROIC năm tính theo cùng định nghĩa ROIC (NOPAT năm / vốn đầu tư bình quân). Không điền 0 vào năm thiếu dữ liệu. Công ty ROIC ổn định nhưng thấp vẫn khác công ty ổn định ở mức cao; cần kết hợp điều kiện về mức ROIC."
   },
   {
     "id": "fcf_positive_streak",

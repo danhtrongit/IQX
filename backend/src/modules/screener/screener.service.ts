@@ -44,7 +44,9 @@ import {
   type ScreenerRunHeader,
   type ScreenerRunInput,
 } from './screener.schemas.js';
+import { shareEventsFromVci, withShareHistory, type ShareEvent } from './screener.shares.js';
 import {
+  EPS_METRICS,
   evaluateScreenerMetric,
   normalizeVciStatements,
   PRICE_METRICS,
@@ -395,6 +397,8 @@ export class ScreenerService {
       this.logger.warn(`Screener statements unavailable for ${symbol}: ${errorText(error)}`);
       return this.providerFailure(specs);
     }
+    if (specs.some((spec) => EPS_METRICS.has(spec.metric_id) || spec.metric_id === 'pe'))
+      statements = withShareHistory(statements, await this.shareEvents(symbol, now));
     const market: MarketInputs = {
       price,
       shares: needsMarket ? await this.shares(symbol) : null,
@@ -419,6 +423,17 @@ export class ScreenerService {
       cash_flow: cash!.data,
     };
     return normalizeVciStatements(sections, now);
+  }
+
+  /** Split/bonus share events (VCI `/v1/events` ISS); null when the source fails. */
+  private async shareEvents(symbol: string, now: Date): Promise<ShareEvent[] | null> {
+    try {
+      const events = await this.vci.fetchShareEvents(symbol);
+      return shareEventsFromVci(events.data, now);
+    } catch (error) {
+      this.logger.warn(`Screener share events unavailable for ${symbol}: ${errorText(error)}`);
+      return null;
+    }
   }
 
   /** Shares on VCI's current market-cap basis (latest statistics-financial row). */

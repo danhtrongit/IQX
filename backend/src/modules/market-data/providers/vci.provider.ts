@@ -341,6 +341,27 @@ export class VciMarketProvider {
     return { data: this.content(raw).map(snakeObject), rawEndpoint: endpoint };
   }
 
+  /**
+   * Toàn bộ sự kiện phát hành cổ phiếu (`ISS`) của một mã từ 2000 tới hết năm sau — đầu vào điều
+   * chỉnh tách/thưởng cho EPS và số cổ phiếu (Dashboard/Bộ lọc). Cache 6 giờ.
+   */
+  async fetchShareEvents(symbol: string): Promise<ProviderResult<JsonObject[]>> {
+    const endpoint = `${IQ}/v1/events`;
+    const nextYear = new Date().getUTCFullYear() + 1;
+    const raw = await this.get(
+      this.query(endpoint, {
+        ticker: symbol,
+        fromDate: '20000101',
+        toDate: `${nextYear}1231`,
+        eventCode: 'ISS',
+        page: 0,
+        size: 1000,
+      }),
+      21_600_000,
+    );
+    return { data: this.content(raw).map(snakeObject), rawEndpoint: endpoint };
+  }
+
   async fetchFinancialRaw(
     symbol: string,
     section: string,

@@ -104918,6 +104918,9 @@
                                 },
                                 "type": "array"
                               },
+                              "legend_note": {
+                                "type": "string"
+                              },
                               "main": {
                                 "items": {
                                   "additionalProperties": false,

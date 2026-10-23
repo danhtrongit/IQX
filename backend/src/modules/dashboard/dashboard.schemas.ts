@@ -120,6 +120,8 @@ export const dashboardChartSchema = z.object({
   status: z.enum(METRIC_STATUSES),
   /** Lý do biểu đồ trống (chỉ tiêu chưa có nguồn dữ liệu, chưa đủ lịch sử…). */
   note: z.string().optional(),
+  /** Chú giải định nghĩa hiện cùng chú thích, ví dụ "Tiền gồm đầu tư tài chính ngắn hạn" (DB-06). */
+  legend_note: z.string().optional(),
   q: dashboardSeriesSchema.optional(),
   y: dashboardSeriesSchema.optional(),
   labels: z.array(z.string()).optional(),

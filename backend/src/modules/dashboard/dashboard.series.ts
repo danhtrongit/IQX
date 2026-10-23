@@ -5,17 +5,25 @@
  * (`evaluateScreenerMetric` / `calculateMetric` của `modules/screener`), nên số liệu khớp đúng
  * công thức đang dùng trong sản phẩm. Phần chỉ làm ở đây là:
  *  - dựng lịch sử kỳ (20 quý / 10 năm) và các số thành phần đi kèm (cột dưới đường chính);
- *  - quy đổi đơn vị: tỷ đồng (VCI báo cáo bằng triệu đồng), % và điểm % (phần trăm), lần, ngày;
+ *  - quy đổi đơn vị: tỷ đồng (VCI báo cáo bằng đồng), % và điểm % (phần trăm), lần, ngày,
+ *    đồng/CP (EPS điều chỉnh tách/thưởng của `withShareHistory`);
  *  - quy tắc §10: kỳ không tính được thì để trống (null), không vẽ số 0.
  */
-import { calculateMetric, metricSupport, type MetricStatus } from '../screener/screener.metrics.js';
+import {
+  calculateMetric,
+  METRIC_REASONS,
+  metricSupport,
+  type MetricStatus,
+} from '../screener/screener.metrics.js';
 import {
   fundamentalMetric,
   type ScreenerMetricId,
   type ScreenerPeriod,
 } from '../screener/screener.registry.js';
+import { periodEnd } from '../screener/screener.shares.js';
 import {
   evaluateScreenerMetric,
+  nopatOf,
   type MarketInputs,
   type NormalizedStatements,
   type StatementConcept,
@@ -31,8 +39,8 @@ import {
   type DashboardSubType,
 } from './dashboard.catalog.js';
 
-/** VCI báo cáo tài chính bằng triệu đồng; Dashboard hiển thị tỷ đồng. */
-const MILLION_VND = 1000;
+/** VCI báo cáo tài chính bằng đồng; Dashboard hiển thị tỷ đồng. */
+const VND_PER_BILLION = 1_000_000_000;
 /** Số ngày của một năm (DIO/DSO/DPO — công thức CCC của registry). */
 const DAYS_PER_YEAR = 365;
 
@@ -43,6 +51,7 @@ const FLOW_CONCEPTS: readonly StatementConcept[] = [
   'gross_profit',
   'interest_expense',
   'pbt',
+  'income_tax',
   'npat',
   'npat_parent',
   'depreciation',
@@ -51,6 +60,7 @@ const FLOW_CONCEPTS: readonly StatementConcept[] = [
   'capex',
   'share_issuance',
   'share_buyback',
+  'eps',
 ];
 
 /** Concepts that are balances: a fiscal year keeps the end-of-year value. */
@@ -68,6 +78,8 @@ const BALANCE_CONCEPTS: readonly StatementConcept[] = [
   'equity',
   'preferred_equity',
   'nci',
+  'charter_capital',
+  'shares',
 ];
 
 export interface DashboardWindow {
@@ -111,6 +123,8 @@ export interface DashboardChartPayload {
   status: MetricStatus;
   /** Why the chart is empty (display only). */
   note?: string;
+  /** Definition note shown with the legend, e.g. what "tiền" covers (DB-06). */
+  legend_note?: string;
   /** Quarter mode (kinds A/B/C/F2). */
   q?: DashboardSeriesData;
   /** Year mode (kinds A/B/C/F2). */
@@ -146,9 +160,9 @@ const average = (a: number | null, b: number | null): number | null =>
 const sum = (a: number | null, b: number | null): number | null =>
   a === null || b === null ? null : a + b;
 
-/** Million VND → billion VND (the unit of the bars). */
+/** VND → billion VND (the unit of the bars). */
 export const toBillion = (v: number | null): number | null =>
-  v === null ? null : v / MILLION_VND;
+  v === null ? null : v / VND_PER_BILLION;
 
 /**
  * Registry formula value → display unit: a ratio travels as a fraction, the dashboard shows
@@ -366,7 +380,8 @@ const MAIN_NAMES: Readonly<Partial<Record<ScreenerMetricId, { q: string; y: stri
   eps_yoy: { q: 'Tăng trưởng so với cùng kỳ', y: 'Tăng trưởng so với năm trước' },
   gross_margin: { q: 'Biên gộp (4 quý)', y: 'Biên gộp năm' },
   net_margin: { q: 'Biên ròng (4 quý)', y: 'Biên ròng năm' },
-  roe: { q: 'ROE (4 quý)', y: 'ROE năm' },
+  // DB-06: ROE = LNST cổ đông công ty mẹ / VCSH cổ đông công ty mẹ bình quân.
+  roe: { q: 'ROE (4 quý, cổ đông công ty mẹ)', y: 'ROE năm (cổ đông công ty mẹ)' },
   roa: { q: 'ROA (4 quý)', y: 'ROA năm' },
   roic: { q: 'ROIC (4 quý)', y: 'ROIC năm' },
   asset_turnover: { q: 'Vòng quay tài sản (4 quý)', y: 'Vòng quay tài sản năm' },
@@ -392,6 +407,11 @@ const MAIN_NAMES: Readonly<Partial<Record<ScreenerMetricId, { q: string; y: stri
   net_margin_stability: { q: 'Biên ròng năm', y: 'Biên ròng năm' },
   eps_growth_stability: { q: 'EPS năm', y: 'EPS năm' },
   roic_stability: { q: 'ROIC năm', y: 'ROIC năm' },
+};
+
+/** Chú giải định nghĩa đi kèm chú thích của một chỉ tiêu (DB-06). */
+const LEGEND_NOTES: Readonly<Partial<Record<ScreenerMetricId, string>>> = {
+  net_debt_ebitda: 'Tiền gồm đầu tư tài chính ngắn hạn',
 };
 
 /** Tên đường chính của một chỉ tiêu (bảng trên là nguồn duy nhất). */
@@ -466,7 +486,7 @@ function subValues(
     case 'profit_yoy':
       return [[window.point('npat_parent')], [window.previous?.point('npat_parent') ?? null]];
     case 'eps_yoy':
-      return [[null], [null]];
+      return [[window.point('eps')], [window.previous?.point('eps') ?? null]];
     case 'gross_margin':
       return [[window.flow('cogs')], [window.flow('gross_profit')]];
     case 'net_margin':
@@ -476,7 +496,9 @@ function subValues(
     case 'roa':
       return [[average(window.end('total_assets'), window.start('total_assets'))]];
     case 'roic':
-      return [[null]];
+      return [
+        [nopatOf(window.flow('pbt'), window.flow('interest_expense'), window.flow('income_tax'))],
+      ];
     case 'asset_turnover':
       return [
         [window.flow('revenue')],
@@ -520,6 +542,11 @@ export interface DashboardContext {
   statements: NormalizedStatements;
   /** Price and share count of the company (null when the chart does not need them). */
   market: MarketInputs;
+  /**
+   * Adjusted close (VND) of the last session on or before a date — PEG takes the P/E at the
+   * last session of each period. Absent when no price history was loaded.
+   */
+  priceAt?: (date: string) => number | null;
 }
 
 /** Indexes of the most recent quarters, oldest first. */
@@ -568,12 +595,7 @@ function evaluatePeriod(
       ...(annual.reason ? { reason: annual.reason } : {}),
     };
   }
-  if (spec.metric_id === 'peg') {
-    // PEG needs the price at the end of the period and the split/bonus adjusted EPS history;
-    // neither is available (the registry marks PEG as data_unavailable), so it stays empty (§10).
-    const value = pegValue(null, null);
-    return { value, status: value === null ? 'data_unavailable' : 'ok' };
-  }
+  if (spec.metric_id === 'peg') return pegPeriod(context, index, mode, window);
   const period: ScreenerPeriod =
     mode === 'q' ? (QUARTER_PERIOD[spec.metric_id] ?? 'ttm') : 'year';
   const statements =
@@ -585,6 +607,40 @@ function evaluatePeriod(
     value: result.status === 'ok' ? displayValue(spec.metric_id, result.value) : null,
     status: result.status,
     ...(result.reason ? { reason: result.reason } : {}),
+  };
+}
+
+/**
+ * PEG of one period (kind F2, spec §8.6): P/E at the last session of the quarter (or year) —
+ * adjusted close / adjusted EPS 4 quý (EPS năm) — divided by the EPS growth against the same
+ * window one year earlier. Empty below 5% growth or with a non-positive P/E (§10).
+ */
+function pegPeriod(
+  context: DashboardContext,
+  index: number,
+  mode: 'q' | 'y',
+  window: DashboardWindow,
+): PeriodValue {
+  if (!context.statements.quarters.some((quarter) => quarter.values.shares !== undefined))
+    return { value: null, status: 'missing', reason: METRIC_REASONS.shareHistoryUnavailable };
+  const period = mode === 'q' ? context.statements.quarters[index] : context.statements.years[index];
+  const eps = mode === 'q' ? window.flow('eps') : window.point('eps');
+  const base =
+    mode === 'q' ? (window.previous?.flow('eps') ?? null) : (window.previous?.point('eps') ?? null);
+  const growth = calculateMetric('eps_yoy', [eps, base]);
+  if (growth.status !== 'ok')
+    return { value: null, status: growth.status, ...(growth.reason ? { reason: growth.reason } : {}) };
+  const price = period && context.priceAt ? context.priceAt(periodEnd(period)) : null;
+  if (price === null)
+    return { value: null, status: 'missing', reason: METRIC_REASONS.priceUnavailable };
+  const pe = calculateMetric('pe', [price, eps]);
+  if (pe.status !== 'ok')
+    return { value: null, status: pe.status, ...(pe.reason ? { reason: pe.reason } : {}) };
+  const peg = calculateMetric('peg', [pe.value, growth.value]);
+  return {
+    value: peg.status === 'ok' ? peg.value : null,
+    status: peg.status,
+    ...(peg.reason ? { reason: peg.reason } : {}),
   };
 }
 
@@ -661,7 +717,8 @@ function toPeriodSeries(
     main: [{ name: names[mode], v: points.map((point) => point.main) }],
   };
   if (subNames && spec.sub_unit && spec.sub_type) {
-    const inDays = spec.metric_id === 'ccc';
+    // Amounts travel in VND and show in tỷ đồng; days and EPS (đồng/CP) are shown as they are.
+    const inBillions = spec.sub_unit === 'tỷ đồng';
     series.sub = {
       unit: spec.sub_unit,
       type: spec.sub_type,
@@ -669,7 +726,7 @@ function toPeriodSeries(
         name,
         v: points.map((point) => {
           const raw = point.sub[position]?.[0] ?? null;
-          return inDays ? raw : toBillion(raw);
+          return inBillions ? toBillion(raw) : raw;
         }),
       })),
     };
@@ -692,7 +749,7 @@ function annualValues(
       case 'profit_cagr3':
         return toBillion(window.point('npat_parent'));
       case 'eps_cagr3':
-        return null;
+        return window.point('eps');
       case 'profit_positive_streak':
         return toBillion(window.point('npat_parent'));
       case 'fcf_positive_streak':
@@ -714,8 +771,16 @@ function annualValues(
         return margin.status === 'ok' ? displayValue('net_margin', margin.value) : null;
       }
       case 'eps_growth_stability':
-      case 'roic_stability':
-        return null;
+        return window.point('eps');
+      case 'roic_stability': {
+        const roic = evaluateScreenerMetric(
+          'roic',
+          sliceYears(context.statements, index),
+          context.market,
+          'year',
+        );
+        return roic.status === 'ok' ? displayValue('roic', roic.value) : null;
+      }
       default:
         return null;
     }
@@ -749,9 +814,9 @@ function buildFixedChart(
 }
 
 /**
- * Chart payload of one indicator. An indicator the registry cannot compute (no split/bonus
- * adjusted EPS history, no normalized tax rate) stays empty with its status and reason — the
- * client shows "—"; nothing is ever invented (§10).
+ * Chart payload of one indicator. An indicator the registry cannot compute (no data source, no
+ * share-event history for the adjusted EPS) stays empty with its status and reason — the client
+ * shows "—"; nothing is ever invented (§10).
  */
 export function buildDashboardChart(
   spec: DashboardChartSpec,
@@ -765,6 +830,8 @@ export function buildDashboardChart(
     decimals: dashboardDecimals(unit),
     status: 'ok',
   };
+  const legend = LEGEND_NOTES[spec.metric_id];
+  if (legend) payload.legend_note = legend;
   if (spec.kind === 'F') {
     // A daily valuation chart: the series itself comes from the valuation endpoint.
     return { ...payload, v: [] };
