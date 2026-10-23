@@ -47,6 +47,8 @@ const CONCEPT_FIELDS = {
   gross_profit: { field: 'isa5' },
   interest_expense: { field: 'isa8', negate: true },
   pbt: { field: 'isa16' },
+  /** Chi phí thuế TNDN (hiện hành + hoãn lại), VCI báo cáo số âm. */
+  income_tax: { field: 'isa19', negate: true },
   npat: { field: 'isa20' },
   npat_parent: { field: 'isa22' },
   depreciation: { field: 'cfa2' },
@@ -66,11 +68,18 @@ const CONCEPT_FIELDS = {
   payables: { field: 'bsa57' },
   lt_debt: { field: 'bsa71' },
   equity: { field: 'bsa78' },
+  /** Vốn góp của chủ sở hữu (đồng): số cổ phiếu = vốn góp / mệnh giá 10.000 đồng. */
+  charter_capital: { field: 'bsa80' },
   preferred_equity: { field: 'bsa174' },
   nci: { field: 'bsa210' },
 } as const satisfies Record<string, { field: string; negate?: boolean }>;
 
-export type StatementConcept = keyof typeof CONCEPT_FIELDS;
+/**
+ * Statement concepts: the VCI lines above plus two derived by `withShareHistory`
+ * (`screener.shares.ts`): `shares` = split/bonus-adjusted shares at the period end, `eps` =
+ * adjusted EPS of the period (đồng/CP, a flow: TTM/annual EPS = sum of the quarterly EPS).
+ */
+export type StatementConcept = keyof typeof CONCEPT_FIELDS | 'shares' | 'eps';
 
 export interface StatementPeriod {
   year: number;
@@ -110,6 +119,27 @@ function dateOnly(value: unknown): string | null {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value) ? value.slice(0, 10) : null;
 }
 
+/** A quarter without a publication date counts as published 45 days after its end (DB-04). */
+export const UNDATED_QUARTER_LAG_DAYS = 45;
+/** A fiscal year without a publication date counts as published 90 days after its end. */
+export const UNDATED_YEAR_LAG_DAYS = 90;
+
+/**
+ * Publication date assumed for a report whose source row has no `public_date`: the legal filing
+ * deadline (quarter end + 45 days for the consolidated quarterly report, year end + 90 days for
+ * the audited annual report). Never earlier, so an undated report never feeds an older date.
+ */
+export function assumedPublication(year: number, quarter: 1 | 2 | 3 | 4 | null): string {
+  const end = Date.UTC(year, (quarter ?? 4) * 3, 0);
+  const lag = quarter === null ? UNDATED_YEAR_LAG_DAYS : UNDATED_QUARTER_LAG_DAYS;
+  return new Date(end + lag * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** Publication date of a period, or the assumed one when the source does not state it. */
+export function availableDate(period: StatementPeriod): string {
+  return period.published_at ?? assumedPublication(period.year, period.quarter);
+}
+
 /** Merges the three VCI sections per (year, period) and keeps only reports published before as-of. */
 export function normalizeVciStatements(
   sections: VciStatementSections,
@@ -125,7 +155,9 @@ export function normalizeVciStatements(
         if (!year) continue;
         if (kind === 'years' ? length !== 5 : length < 1 || length > 4) continue;
         const published = dateOnly(row.public_date);
-        if (published !== null && published >= cutoff) continue;
+        const assumed =
+          published ?? assumedPublication(year, kind === 'years' ? null : (length as 1 | 2 | 3 | 4));
+        if (assumed >= cutoff) continue;
         const key = `${year}:${length}`;
         const period = merged.get(key) ?? {
           year,
@@ -281,6 +313,39 @@ function flowSum(w: FlowWindow | null, c: StatementConcept): number | null {
 const sub = (a: number | null, b: number | null) => (a === null || b === null ? null : a - b);
 const add = (...xs: (number | null)[]) =>
   xs.some((x) => x === null) ? null : (xs as number[]).reduce((s, x) => s + x, 0);
+
+/** Thuế suất dùng khi lợi nhuận trước thuế không dương (DB-01). */
+export const ROIC_FALLBACK_TAX_RATE = 0.2;
+/** Thuế suất hiệu dụng được kẹp trong [0; 0,5] (DB-01). */
+export const ROIC_MAX_TAX_RATE = 0.5;
+
+/**
+ * Thuế suất hiệu dụng của một cửa sổ dòng chảy (4 quý hoặc một năm): chi phí thuế TNDN / LNTT,
+ * kẹp trong [0; 0,5]; LNTT không dương thì dùng 20%.
+ */
+export function effectiveTaxRate(tax: number | null, pbt: number | null): number | null {
+  if (pbt === null) return null;
+  if (pbt <= 0) return ROIC_FALLBACK_TAX_RATE;
+  if (tax === null) return null;
+  return Math.min(ROIC_MAX_TAX_RATE, Math.max(0, tax / pbt));
+}
+
+/** NOPAT = EBIT × (1 − thuế suất hiệu dụng), EBIT = LNTT + chi phí lãi vay (định nghĩa registry). */
+export function nopatOf(
+  pbt: number | null,
+  interestExpense: number | null,
+  tax: number | null,
+): number | null {
+  const ebit = add(pbt, interestExpense);
+  const rate = effectiveTaxRate(tax, pbt);
+  return ebit === null || rate === null ? null : ebit * (1 - rate);
+}
+
+/** Vốn đầu tư cuối kỳ = VCSH + nợ vay (ngắn + dài hạn) − tiền và tương đương tiền. */
+export function investedCapitalOf(values: Partial<Record<StatementConcept, number>>): number | null {
+  const pick = (c: StatementConcept) => values[c] ?? null;
+  return sub(add(pick('equity'), pick('st_debt'), pick('lt_debt')), pick('cash'));
+}
 
 interface Derived {
   value: MetricValue;
@@ -471,7 +536,71 @@ function derive(
     return calc(series, `FY${oldest}–FY${fy.year}`, used);
   };
 
+  const eps = (w: FlowWindow | null) => flowSum(w, 'eps');
+  /** Share history built (`withShareHistory`): EPS and P/E use the adjusted EPS only. */
+  const adjustedEps = s.quarters.some((p) => p.values.shares !== undefined);
+  const roicOf = (
+    w: FlowWindow | null,
+    e: StatementPeriod | null,
+    b: StatementPeriod | null,
+  ): (number | null)[] => {
+    const icEnd = e ? investedCapitalOf(e.values) : null;
+    const icStart = b ? investedCapitalOf(b.values) : null;
+    return [
+      nopatOf(flowSum(w, 'pbt'), flowSum(w, 'interest_expense'), flowSum(w, 'income_tax')),
+      icEnd === null || icStart === null ? null : (icEnd + icStart) / 2,
+    ];
+  };
+
+  if (EPS_METRICS.has(id) && !adjustedEps)
+    return { value: missing(METRIC_REASONS.shareHistoryUnavailable), label: null, used: [] };
+
   switch (id) {
+    case 'eps_yoy':
+      return growth(eps);
+    case 'eps_cagr3':
+      return cagr3('eps');
+    case 'eps_growth_stability': {
+      const ys = fiscalYears(4);
+      if (!ys) return insufficientHistory();
+      const label = `FY${ys[3]!.year}–FY${ys[0]!.year}`;
+      const series = ys.map((p) => bal(p, 'eps')).reverse();
+      const growths: number[] = [];
+      for (let i = 1; i < series.length; i += 1) {
+        const g = calculateMetric('eps_yoy', [series[i], series[i - 1]]);
+        if (g.status !== 'ok') return { value: g, label, used: ys };
+        growths.push(g.value!);
+      }
+      return calc(growths, label, ys);
+    }
+    case 'roic':
+      return cur && end ? calc(roicOf(cur, end, start), cur.label, [...cur.periods, end, start]) : noReport();
+    case 'roic_stability': {
+      const ys = fiscalYears(4);
+      if (!ys) return insufficientHistory();
+      const label = `FY${ys[2]!.year}–FY${ys[0]!.year}`;
+      const values: number[] = [];
+      for (let i = 2; i >= 0; i -= 1) {
+        const p = ys[i]!;
+        const r = calculateMetric('roic', roicOf({ label: `FY${p.year}`, periods: [p] }, p, ys[i + 1]!));
+        if (r.status !== 'ok') return { value: r, label, used: ys };
+        values.push(r.value!);
+      }
+      return calc(values, label, ys);
+    }
+    case 'peg': {
+      const w = valuationView.flow(0);
+      const base = valuationView.flow(1);
+      if (!w || !base) return noReport();
+      const used = [...w.periods, ...base.periods];
+      if (market.price === null || market.price <= 0)
+        return { value: missing(METRIC_REASONS.priceUnavailable), label: w.label, used };
+      const g = calculateMetric('eps_yoy', [eps(w), eps(base)]);
+      if (g.status !== 'ok') return { value: g, label: w.label, used, comparison: base.label };
+      const pe = calculateMetric('pe', [market.price, eps(w)]);
+      if (pe.status !== 'ok') return { value: pe, label: w.label, used, comparison: base.label };
+      return { ...calc([pe.value, g.value], w.label, used), comparison: base.label };
+    }
     case 'revenue_yoy':
       return growth((w) => flowSum(w, 'revenue'));
     case 'profit_yoy':
@@ -532,6 +661,14 @@ function derive(
         ? calc([sub(debt(end), eligibleCash(end)), ebitda(cur)], cur.label, [...cur.periods, end])
         : noReport();
     case 'pe':
+      // Adjusted EPS (DB-03): price / EPS 4 quý điều chỉnh, same basis as the adjusted price.
+      if (adjustedEps) {
+        const w = valuationView.flow(0);
+        if (!w) return noReport();
+        if (market.price === null || market.price <= 0)
+          return { value: missing(METRIC_REASONS.priceUnavailable), label: w.label, used: w.periods };
+        return calc([market.price, eps(w)], w.label, w.periods);
+      }
       return valuation((w, _p, cap) => {
         const earnings = flowSum(w, 'npat_parent');
         return [market.price, earnings === null ? null : earnings / (cap / market.price!)];
@@ -628,6 +765,14 @@ function labelOf(p: StatementPeriod): string {
   return p.quarter === null ? `FY${p.year}` : quarterLabel(p);
 }
 
+/** Metrics built on the split/bonus-adjusted EPS (they need the VCI share events). */
+export const EPS_METRICS: ReadonlySet<ScreenerMetricId> = new Set<ScreenerMetricId>([
+  'eps_yoy',
+  'eps_cagr3',
+  'eps_growth_stability',
+  'peg',
+]);
+
 /** Metrics whose formula needs the observed price and share count. */
 export const PRICE_METRICS: ReadonlySet<ScreenerMetricId> = new Set<ScreenerMetricId>([
   'pe',
@@ -636,4 +781,5 @@ export const PRICE_METRICS: ReadonlySet<ScreenerMetricId> = new Set<ScreenerMetr
   'ev_ebitda',
   'fcf_yield',
   'buyback_yield',
+  'peg',
 ]);

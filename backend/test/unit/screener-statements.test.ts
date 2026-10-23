@@ -317,14 +317,11 @@ describe('evaluateScreenerMetric', () => {
       reason_code: 'data_unavailable',
     });
     expect(dividend.reason).toContain('cổ tức');
-    expect(evaluateScreenerMetric('roic', statements, noMarket, 'ttm')).toMatchObject({
-      status: 'definition_pending',
-      value: null,
+    // EPS growth needs the split/bonus share history (`withShareHistory`); without it, missing.
+    expect(evaluateScreenerMetric('eps_yoy', statements, noMarket, 'quarter')).toMatchObject({
+      status: 'missing',
+      reason_code: 'share_history_unavailable',
     });
-    // EPS growth needs split-adjusted EPS, which the source does not provide.
-    expect(evaluateScreenerMetric('eps_yoy', statements, noMarket, 'quarter').status).toBe(
-      'data_unavailable',
-    );
   });
 });
 

@@ -169,7 +169,9 @@ describe('support matrix', () => {
         expect(support).toEqual({ supported: true, unsupported_reason: null });
       }
     }
-    for (const id of ['dividend_yield', 'shareholder_yield', 'eps_yoy', 'roic'] as const)
+    for (const id of ['dividend_yield', 'shareholder_yield'] as const)
       expect(metricSupport(id).supported).toBe(false);
+    for (const id of ['eps_yoy', 'eps_cagr3', 'eps_growth_stability', 'peg', 'roic', 'roic_stability'] as const)
+      expect(metricSupport(id).supported).toBe(true);
   });
 });
