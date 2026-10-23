@@ -1,0 +1,1055 @@
+{
+ "source": "VCI iq-insight financial-statement + /v1/events, captured 2026-10-23",
+ "symbols": {
+  "HPG": {
+   "BALANCE_SHEET": [
+    {
+     "year_report": 2021,
+     "length_report": 1,
+     "public_date": "2021-04-27T00:00:00",
+     "bsa2": 14018629193714,
+     "bsa56": 37292384217221,
+     "bsa71": 18268026878382,
+     "bsa78": 66221560358804,
+     "bsa80": 33132826590000
+    },
+    {
+     "year_report": 2021,
+     "length_report": 2,
+     "public_date": "2021-09-07T00:00:00",
+     "bsa2": 14644183731657,
+     "bsa56": 40271515461442,
+     "bsa71": 15722216250958,
+     "bsa78": 73984439097755,
+     "bsa80": 44729227060000
+    },
+    {
+     "year_report": 2021,
+     "length_report": 3,
+     "public_date": "2021-10-30T00:00:00",
+     "bsa2": 13376486099355,
+     "bsa56": 43356751775423,
+     "bsa71": 17710867201107,
+     "bsa78": 84325684009499,
+     "bsa80": 44729227060000
+    },
+    {
+     "year_report": 2021,
+     "length_report": 4,
+     "public_date": "2022-01-28T00:00:00",
+     "bsa2": 22471375562130,
+     "bsa56": 43747643082356,
+     "bsa71": 13464931998700,
+     "bsa78": 90780176983438,
+     "bsa80": 44729227060000
+    },
+    {
+     "year_report": 2022,
+     "length_report": 1,
+     "public_date": "2022-04-29T00:00:00",
+     "bsa2": 19060014590301,
+     "bsa56": 46260963681821,
+     "bsa71": 13921989392311,
+     "bsa78": 98957937963037,
+     "bsa80": 44729227060000
+    },
+    {
+     "year_report": 2022,
+     "length_report": 2,
+     "public_date": "2022-08-29T00:00:00",
+     "bsa2": 20325198022112,
+     "bsa56": 56575628198553,
+     "bsa71": 13443161725051,
+     "bsa78": 99915401148975,
+     "bsa80": 44729227060000
+    },
+    {
+     "year_report": 2022,
+     "length_report": 3,
+     "public_date": "2022-10-28T00:00:00",
+     "bsa2": 11881408346665,
+     "bsa56": 52871495029424,
+     "bsa71": 12629305426051,
+     "bsa78": 98075482927856,
+     "bsa80": 58147857000000
+    },
+    {
+     "year_report": 2022,
+     "length_report": 4,
+     "public_date": "2023-01-30T00:00:00",
+     "bsa2": 8324588920227,
+     "bsa56": 46748670400471,
+     "bsa71": 11151651204402,
+     "bsa78": 96112939615783,
+     "bsa80": 58147857000000
+    },
+    {
+     "year_report": 2023,
+     "length_report": 1,
+     "public_date": "2023-04-28T00:00:00",
+     "bsa2": 7868451566326,
+     "bsa56": 50354261925455,
+     "bsa71": 10304996868419,
+     "bsa78": 96437975271673,
+     "bsa80": 58147857000000
+    },
+    {
+     "year_report": 2023,
+     "length_report": 2,
+     "public_date": "2023-08-29T00:00:00",
+     "bsa2": 13252855086239,
+     "bsa56": 51748268155863,
+     "bsa71": 8878939971816,
+     "bsa78": 97860291061122,
+     "bsa80": 58147857000000
+    },
+    {
+     "year_report": 2023,
+     "length_report": 3,
+     "public_date": "2023-10-27T00:00:00",
+     "bsa2": 9696669423876,
+     "bsa56": 49237590969260,
+     "bsa71": 8744590378258,
+     "bsa78": 99865188256444,
+     "bsa80": 58147857000000
+    },
+    {
+     "year_report": 2023,
+     "length_report": 4,
+     "public_date": "2024-01-30T00:00:00",
+     "bsa2": 12267401160884,
+     "bsa56": 54981883180636,
+     "bsa71": 10399119292481,
+     "bsa78": 102836419239379,
+     "bsa80": 58147857000000
+    },
+    {
+     "year_report": 2024,
+     "length_report": 1,
+     "public_date": "2024-04-25T00:00:00",
+     "bsa2": 12428888036237,
+     "bsa56": 61438295764670,
+     "bsa71": 16080142067527,
+     "bsa78": 105624580573088,
+     "bsa80": 58147857000000
+    },
+    {
+     "year_report": 2024,
+     "length_report": 2,
+     "public_date": "2024-08-30T00:00:00",
+     "bsa2": 13032037853283,
+     "bsa56": 53315313650059,
+     "bsa71": 19674955314582,
+     "bsa78": 108676564894031,
+     "bsa80": 63962502000000
+    },
+    {
+     "year_report": 2024,
+     "length_report": 3,
+     "public_date": "2024-10-30T00:00:00",
+     "bsa2": 8500998079280,
+     "bsa56": 54180722680952,
+     "bsa71": 24517626484538,
+     "bsa78": 111779097236460,
+     "bsa80": 63962502000000
+    },
+    {
+     "year_report": 2024,
+     "length_report": 4,
+     "public_date": "2025-03-27T00:00:00",
+     "bsa2": 6887646139852,
+     "bsa56": 55882686213459,
+     "bsa71": 27080443256096,
+     "bsa78": 114647457983699,
+     "bsa80": 63962502000000
+    },
+    {
+     "year_report": 2025,
+     "length_report": 1,
+     "public_date": "2025-04-29T00:00:00",
+     "bsa2": 7459035818129,
+     "bsa56": 61784512821075,
+     "bsa71": 27256965869238,
+     "bsa78": 117996879089129,
+     "bsa80": 63962502000000
+    },
+    {
+     "year_report": 2025,
+     "length_report": 2,
+     "public_date": "2025-08-29T00:00:00",
+     "bsa2": 10688024277258,
+     "bsa56": 66692028477152,
+     "bsa71": 27312288660990,
+     "bsa78": 122359504913282,
+     "bsa80": 63962502000000
+    },
+    {
+     "year_report": 2025,
+     "length_report": 3,
+     "public_date": "2025-10-29T00:00:00",
+     "bsa2": 9092562739415,
+     "bsa56": 68482383626253,
+     "bsa71": 28356095137594,
+     "bsa78": 127516012099269,
+     "bsa80": 76754658550000
+    },
+    {
+     "year_report": 2025,
+     "length_report": 4,
+     "public_date": "2026-03-30T00:00:00",
+     "bsa2": 8300890304205,
+     "bsa56": 64694957245143,
+     "bsa71": 27479194057074,
+     "bsa78": 131220010876575,
+     "bsa80": 76754658550000
+    }
+   ],
+   "INCOME_STATEMENT": [
+    {
+     "year_report": 2021,
+     "length_report": 1,
+     "public_date": "2021-04-27T00:00:00",
+     "isa8": -621546963567,
+     "isa16": 7690213194491,
+     "isa19": -684654148523,
+     "isa20": 7005559045968,
+     "isa22": 6977554343152
+    },
+    {
+     "year_report": 2021,
+     "length_report": 2,
+     "public_date": "2021-09-07T00:00:00",
+     "isa8": -599661392906,
+     "isa16": 10349452188126,
+     "isa19": -604300765939,
+     "isa20": 9745151422187,
+     "isa22": 9721406525008
+    },
+    {
+     "year_report": 2021,
+     "length_report": 3,
+     "public_date": "2021-10-30T00:00:00",
+     "isa8": -675107905208,
+     "isa16": 10978756069697,
+     "isa19": -627911872513,
+     "isa20": 10350844197184,
+     "isa22": 10351739079315
+    },
+    {
+     "year_report": 2021,
+     "length_report": 4,
+     "public_date": "2022-01-28T00:00:00",
+     "isa8": -629506996556,
+     "isa16": 8038356261876,
+     "isa19": -618955995917,
+     "isa20": 7419400265959,
+     "isa22": 7427443249985
+    },
+    {
+     "year_report": 2022,
+     "length_report": 1,
+     "public_date": "2022-04-29T00:00:00",
+     "isa8": -596932887294,
+     "isa16": 8922103855907,
+     "isa19": -715773499084,
+     "isa20": 8206330356823,
+     "isa22": 8216960357730
+    },
+    {
+     "year_report": 2022,
+     "length_report": 2,
+     "public_date": "2022-08-29T00:00:00",
+     "isa8": -717352725484,
+     "isa16": 4379340489328,
+     "isa19": -356767109462,
+     "isa20": 4022573379866,
+     "isa22": 4032232311020
+    },
+    {
+     "year_report": 2022,
+     "length_report": 3,
+     "public_date": "2022-10-28T00:00:00",
+     "isa8": -836700531276,
+     "isa16": -1299955296196,
+     "isa19": -485752083843,
+     "isa20": -1785707380039,
+     "isa22": -1774133616408
+    },
+    {
+     "year_report": 2022,
+     "length_report": 4,
+     "public_date": "2023-01-30T00:00:00",
+     "isa8": -932651987764,
+     "isa16": -2078547921756,
+     "isa19": 79780619621,
+     "isa20": -1998767302135,
+     "isa22": -1991548498312
+    },
+    {
+     "year_report": 2023,
+     "length_report": 1,
+     "public_date": "2023-04-28T00:00:00",
+     "isa8": -989588839615,
+     "isa16": 532042789767,
+     "isa19": -148813181696,
+     "isa20": 383229608071,
+     "isa22": 397497275202
+    },
+    {
+     "year_report": 2023,
+     "length_report": 2,
+     "public_date": "2023-08-29T00:00:00",
+     "isa8": -1028566971432,
+     "isa16": 1701886953766,
+     "isa19": -254062113973,
+     "isa20": 1447824839793,
+     "isa22": 1460042613098
+    },
+    {
+     "year_report": 2023,
+     "length_report": 3,
+     "public_date": "2023-10-27T00:00:00",
+     "isa8": -855978191830,
+     "isa16": 2174230121892,
+     "isa19": -173867037560,
+     "isa20": 2000363084332,
+     "isa22": 2004745086782
+    },
+    {
+     "year_report": 2023,
+     "length_report": 4,
+     "public_date": "2024-01-30T00:00:00",
+     "isa8": -710943681004,
+     "isa16": 3384568877748,
+     "isa19": -415598094863,
+     "isa20": 2968970782885,
+     "isa22": 2972779359274
+    },
+    {
+     "year_report": 2024,
+     "length_report": 1,
+     "public_date": "2024-04-25T00:00:00",
+     "isa8": -635618987620,
+     "isa16": 3261215356873,
+     "isa19": -392032754401,
+     "isa20": 2869182602472,
+     "isa22": 2870588692991
+    },
+    {
+     "year_report": 2024,
+     "length_report": 2,
+     "public_date": "2024-08-30T00:00:00",
+     "isa8": -564134360513,
+     "isa16": 3733225669765,
+     "isa19": -413650951220,
+     "isa20": 3319574718545,
+     "isa22": 3319263141862
+    },
+    {
+     "year_report": 2024,
+     "length_report": 3,
+     "public_date": "2024-10-30T00:00:00",
+     "isa8": -525114798901,
+     "isa16": 3412385133844,
+     "isa19": -390713148941,
+     "isa20": 3021671984903,
+     "isa22": 3022946632050
+    },
+    {
+     "year_report": 2024,
+     "length_report": 4,
+     "public_date": "2025-03-27T00:00:00",
+     "isa8": -562492663846,
+     "isa16": 3286676100696,
+     "isa19": -477081785345,
+     "isa20": 2809594315351,
+     "isa22": 2808645369171
+    },
+    {
+     "year_report": 2025,
+     "length_report": 1,
+     "public_date": "2025-04-29T00:00:00",
+     "isa8": -627024360692,
+     "isa16": 3839765349020,
+     "isa19": -489959932936,
+     "isa20": 3349805416084,
+     "isa22": 3344284694388
+    },
+    {
+     "year_report": 2025,
+     "length_report": 2,
+     "public_date": "2025-08-29T00:00:00",
+     "isa8": -439112631420,
+     "isa16": 4972383493663,
+     "isa19": -707859388131,
+     "isa20": 4264524105532,
+     "isa22": 4256487211764
+    },
+    {
+     "year_report": 2025,
+     "length_report": 3,
+     "public_date": "2025-10-29T00:00:00",
+     "isa8": -812194101705,
+     "isa16": 4628313172434,
+     "isa19": -616060855711,
+     "isa20": 4012252316723,
+     "isa22": 3988318474539
+    },
+    {
+     "year_report": 2025,
+     "length_report": 4,
+     "public_date": "2026-03-30T00:00:00",
+     "isa8": -1236524775157,
+     "isa16": 4600129962763,
+     "isa19": -711780229496,
+     "isa20": 3888349733267,
+     "isa22": 3864083625532
+    }
+   ],
+   "events": [
+    {
+     "id": "6708f3f50ec61045ab800015",
+     "ticker": "HPG",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Stock dividend ratio 20.0%",
+     "exright_date": "2020-07-29T00:00:00",
+     "record_date": "2020-07-30T00:00:00",
+     "exercise_ratio": 0.2
+    },
+    {
+     "id": "6708f3f60ec61045ab800254",
+     "ticker": "HPG",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Stock dividend ratio 35.0%",
+     "exright_date": "2021-05-31T00:00:00",
+     "record_date": "2021-06-01T00:00:00",
+     "exercise_ratio": 0.35
+    },
+    {
+     "id": "6708f3f70ec61045ab800755",
+     "ticker": "HPG",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Stock dividend ratio 30.0%",
+     "exright_date": "2022-06-17T00:00:00",
+     "record_date": "2022-06-20T00:00:00",
+     "exercise_ratio": 0.3
+    },
+    {
+     "id": "6708f3f80ec61045ab800ab1",
+     "ticker": "HPG",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Bonus Issue ratio 10.0%",
+     "exright_date": "2024-05-23T00:00:00",
+     "record_date": "2024-05-24T00:00:00",
+     "exercise_ratio": 0.1
+    },
+    {
+     "id": "681956ee86e9541d8ab43edf",
+     "ticker": "HPG",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Stock dividend ratio 20.0%",
+     "exright_date": "2025-06-26T00:00:00",
+     "record_date": "2025-06-27T00:00:00",
+     "exercise_ratio": 0.2
+    },
+    {
+     "id": "69eab80f9a7ad236002b1866",
+     "ticker": "HPG",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Stock dividend ratio 10.0%",
+     "exright_date": "2026-05-25T00:00:00",
+     "record_date": "2026-05-26T00:00:00",
+     "exercise_ratio": 0.1
+    }
+   ]
+  },
+  "FPT": {
+   "BALANCE_SHEET": [
+    {
+     "year_report": 2021,
+     "length_report": 1,
+     "public_date": "2021-04-23T00:00:00",
+     "bsa2": 5162685900519,
+     "bsa56": 14804786460957,
+     "bsa71": 1674335919096,
+     "bsa78": 19730300427822,
+     "bsa80": 7839874860000
+    },
+    {
+     "year_report": 2021,
+     "length_report": 2,
+     "public_date": "2021-08-25T00:00:00",
+     "bsa2": 4978881337221,
+     "bsa56": 15361627338629,
+     "bsa71": 1800034282871,
+     "bsa78": 20057528192945,
+     "bsa80": 9075516490000
+    },
+    {
+     "year_report": 2021,
+     "length_report": 3,
+     "public_date": "2021-10-25T00:00:00",
+     "bsa2": 5446784083688,
+     "bsa56": 15943319237854,
+     "bsa71": 1818552251255,
+     "bsa78": 20324133210432,
+     "bsa80": 9075516490000
+    },
+    {
+     "year_report": 2021,
+     "length_report": 4,
+     "public_date": "2022-01-25T00:00:00",
+     "bsa2": 5417845274047,
+     "bsa56": 17799441187777,
+     "bsa71": 2296308494046,
+     "bsa78": 21420176642404,
+     "bsa80": 9075516490000
+    },
+    {
+     "year_report": 2022,
+     "length_report": 1,
+     "public_date": "2022-04-22T00:00:00",
+     "bsa2": 4825840656865,
+     "bsa56": 20476429866972,
+     "bsa71": 2228486463502,
+     "bsa78": 22959401841586,
+     "bsa80": 9075516490000
+    },
+    {
+     "year_report": 2022,
+     "length_report": 2,
+     "public_date": "2022-08-30T00:00:00",
+     "bsa2": 5219950154604,
+     "bsa56": 19720103859650,
+     "bsa71": 2142433707042,
+     "bsa78": 23411673147375,
+     "bsa80": 10970265720000
+    },
+    {
+     "year_report": 2022,
+     "length_report": 3,
+     "public_date": "2022-10-25T00:00:00",
+     "bsa2": 3737291803926,
+     "bsa56": 16248169308008,
+     "bsa71": 2082516102387,
+     "bsa78": 24055768329616,
+     "bsa80": 10970265720000
+    },
+    {
+     "year_report": 2022,
+     "length_report": 4,
+     "public_date": "2023-01-19T00:00:00",
+     "bsa2": 6440177174268,
+     "bsa56": 10904344845014,
+     "bsa71": 1477830333990,
+     "bsa78": 25342980745741,
+     "bsa80": 10970265720000
+    },
+    {
+     "year_report": 2023,
+     "length_report": 1,
+     "public_date": "2023-04-20T00:00:00",
+     "bsa2": 3289424451229,
+     "bsa56": 12043373564413,
+     "bsa71": 312845373321,
+     "bsa78": 27061179213990,
+     "bsa80": 10970265720000
+    },
+    {
+     "year_report": 2023,
+     "length_report": 2,
+     "public_date": "2023-08-15T00:00:00",
+     "bsa2": 6236475101406,
+     "bsa56": 19307278156994,
+     "bsa71": 214538478651,
+     "bsa78": 28595327883064,
+     "bsa80": 11043316220000
+    },
+    {
+     "year_report": 2023,
+     "length_report": 3,
+     "public_date": "2023-10-19T00:00:00",
+     "bsa2": 7153625069795,
+     "bsa56": 18937892531470,
+     "bsa71": 172070230363,
+     "bsa78": 28405655629698,
+     "bsa80": 12699688750000
+    },
+    {
+     "year_report": 2023,
+     "length_report": 4,
+     "public_date": "2024-01-25T00:00:00",
+     "bsa2": 8279156683221,
+     "bsa56": 13837894474107,
+     "bsa71": 208074996962,
+     "bsa78": 29948354954414,
+     "bsa80": 12699688750000
+    },
+    {
+     "year_report": 2024,
+     "length_report": 1,
+     "public_date": "2024-04-23T00:00:00",
+     "bsa2": 6341457504996,
+     "bsa56": 15984086694338,
+     "bsa71": 525148987126,
+     "bsa78": 31727101031164,
+     "bsa80": 12699688750000
+    },
+    {
+     "year_report": 2024,
+     "length_report": 2,
+     "public_date": "2024-08-21T00:00:00",
+     "bsa2": 6836262549195,
+     "bsa56": 16024050830233,
+     "bsa71": 478494331122,
+     "bsa78": 32736443248309,
+     "bsa80": 14604480660000
+    },
+    {
+     "year_report": 2024,
+     "length_report": 3,
+     "public_date": "2024-10-24T00:00:00",
+     "bsa2": 7935632407357,
+     "bsa56": 14167809581083,
+     "bsa71": 478259485405,
+     "bsa78": 35364184226425,
+     "bsa80": 14604480660000
+    },
+    {
+     "year_report": 2024,
+     "length_report": 4,
+     "public_date": "2025-03-15T00:00:00",
+     "bsa2": 9315440438884,
+     "bsa56": 14446238451323,
+     "bsa71": 501115537075,
+     "bsa78": 35727540104800,
+     "bsa80": 14710691830000
+    },
+    {
+     "year_report": 2025,
+     "length_report": 1,
+     "public_date": "2025-04-23T00:00:00",
+     "bsa2": 6755645214252,
+     "bsa56": 18320209599285,
+     "bsa71": 987681080191,
+     "bsa78": 37896654696942,
+     "bsa80": 14710691830000
+    },
+    {
+     "year_report": 2025,
+     "length_report": 2,
+     "public_date": "2025-08-21T00:00:00",
+     "bsa2": 10019630995136,
+     "bsa56": 20297311111107,
+     "bsa71": 2739611909827,
+     "bsa78": 39872783325655,
+     "bsa80": 14813301220000
+    },
+    {
+     "year_report": 2025,
+     "length_report": 3,
+     "public_date": "2025-10-24T00:00:00",
+     "bsa2": 9853512731370,
+     "bsa56": 16906417104678,
+     "bsa71": 2681435422290,
+     "bsa78": 42830523910473,
+     "bsa80": 17035071210000
+    },
+    {
+     "year_report": 2025,
+     "length_report": 4,
+     "public_date": "2026-03-20T00:00:00",
+     "bsa2": 10522105729992,
+     "bsa56": 19169697497955,
+     "bsa71": 1903789988184,
+     "bsa78": 43748040747539,
+     "bsa80": 17035071210000
+    }
+   ],
+   "INCOME_STATEMENT": [
+    {
+     "year_report": 2021,
+     "length_report": 1,
+     "public_date": "2021-04-23T00:00:00",
+     "isa8": -99817213604,
+     "isa16": 1396751211337,
+     "isa19": -246048587833,
+     "isa20": 1150702623504,
+     "isa22": 906142681183
+    },
+    {
+     "year_report": 2021,
+     "length_report": 2,
+     "public_date": "2021-08-25T00:00:00",
+     "isa8": -124530447801,
+     "isa16": 1539464518474,
+     "isa19": -279798068582,
+     "isa20": 1259666449892,
+     "isa22": 1000031075983
+    },
+    {
+     "year_report": 2021,
+     "length_report": 3,
+     "public_date": "2021-10-25T00:00:00",
+     "isa8": -120148949616,
+     "isa16": 1638572771884,
+     "isa19": -263957696466,
+     "isa20": 1374615075418,
+     "isa22": 1124838737907
+    },
+    {
+     "year_report": 2021,
+     "length_report": 4,
+     "public_date": "2022-01-25T00:00:00",
+     "isa8": -138051289994,
+     "isa16": 1760402225467,
+     "isa19": -200587540578,
+     "isa20": 1559814684889,
+     "isa22": 1301522104628
+    },
+    {
+     "year_report": 2022,
+     "length_report": 1,
+     "public_date": "2022-04-22T00:00:00",
+     "isa8": -145819741163,
+     "isa16": 1779047846680,
+     "isa19": -240489732206,
+     "isa20": 1538558114474,
+     "isa22": 1238879424986
+    },
+    {
+     "year_report": 2022,
+     "length_report": 2,
+     "public_date": "2022-08-30T00:00:00",
+     "isa8": -176780202333,
+     "isa16": 1857844626387,
+     "isa19": -296270335002,
+     "isa20": 1561574291385,
+     "isa22": 1250820478762
+    },
+    {
+     "year_report": 2022,
+     "length_report": 3,
+     "public_date": "2022-10-25T00:00:00",
+     "isa8": -166542329315,
+     "isa16": 2028024819924,
+     "isa19": -272027358335,
+     "isa20": 1755997461589,
+     "isa22": 1453716280969
+    },
+    {
+     "year_report": 2022,
+     "length_report": 4,
+     "public_date": "2023-01-19T00:00:00",
+     "isa8": -156583283497,
+     "isa16": 1989028630914,
+     "isa19": -369136662806,
+     "isa20": 1619891968108,
+     "isa22": 1351601105816
+    },
+    {
+     "year_report": 2023,
+     "length_report": 1,
+     "public_date": "2023-04-20T00:00:00",
+     "isa8": -147985668274,
+     "isa16": 2120643647098,
+     "isa19": -310844193204,
+     "isa20": 1809799453894,
+     "isa22": 1493562580890
+    },
+    {
+     "year_report": 2023,
+     "length_report": 2,
+     "public_date": "2023-08-15T00:00:00",
+     "isa8": -212364005360,
+     "isa16": 2218132633347,
+     "isa19": -362550377711,
+     "isa20": 1855582255636,
+     "isa22": 1509219531243
+    },
+    {
+     "year_report": 2023,
+     "length_report": 3,
+     "public_date": "2023-10-19T00:00:00",
+     "isa8": -265654864395,
+     "isa16": 2429150459859,
+     "isa19": -353281103834,
+     "isa20": 2075869356025,
+     "isa22": 1739340360244
+    },
+    {
+     "year_report": 2023,
+     "length_report": 4,
+     "public_date": "2024-01-25T00:00:00",
+     "isa8": -206644073232,
+     "isa16": 2435092799591,
+     "isa19": -383852028610,
+     "isa20": 2051240770981,
+     "isa22": 1728399961335
+    },
+    {
+     "year_report": 2024,
+     "length_report": 1,
+     "public_date": "2024-04-23T00:00:00",
+     "isa8": -137833720086,
+     "isa16": 2533582054552,
+     "isa19": -373316764910,
+     "isa20": 2160265289642,
+     "isa22": 1798030863528
+    },
+    {
+     "year_report": 2024,
+     "length_report": 2,
+     "public_date": "2024-08-21T00:00:00",
+     "isa8": -150125422101,
+     "isa16": 2668968551824,
+     "isa19": -381255417040,
+     "isa20": 2287713134784,
+     "isa22": 1875158768537
+    },
+    {
+     "year_report": 2024,
+     "length_report": 3,
+     "public_date": "2024-10-24T00:00:00",
+     "isa8": -128825950601,
+     "isa16": 2908620633374,
+     "isa19": -430023010874,
+     "isa20": 2478597622500,
+     "isa22": 2088852212408
+    },
+    {
+     "year_report": 2024,
+     "length_report": 4,
+     "public_date": "2025-03-15T00:00:00",
+     "isa8": -134854268998,
+     "isa16": 2958495178069,
+     "isa19": -457648694551,
+     "isa20": 2500846483518,
+     "isa22": 2094725967705
+    },
+    {
+     "year_report": 2025,
+     "length_report": 1,
+     "public_date": "2025-04-23T00:00:00",
+     "isa8": -152389538333,
+     "isa16": 3024693510849,
+     "isa19": -429136030540,
+     "isa20": 2595557480309,
+     "isa22": 2174301386525
+    },
+    {
+     "year_report": 2025,
+     "length_report": 2,
+     "public_date": "2025-08-21T00:00:00",
+     "isa8": -216761295705,
+     "isa16": 3141032584460,
+     "isa19": -400761183782,
+     "isa20": 2740271400678,
+     "isa22": 2257462588123
+    },
+    {
+     "year_report": 2025,
+     "length_report": 3,
+     "public_date": "2025-10-24T00:00:00",
+     "isa8": -233582914481,
+     "isa16": 3374738598090,
+     "isa19": -473192845440,
+     "isa20": 2901545752650,
+     "isa22": 2434841434732
+    },
+    {
+     "year_report": 2025,
+     "length_report": 4,
+     "public_date": "2026-03-20T00:00:00",
+     "isa8": -207025852637,
+     "isa16": 3503168140397,
+     "isa19": -508203323301,
+     "isa20": 2994964817096,
+     "isa22": 2509522220120
+    }
+   ],
+   "events": [
+    {
+     "id": "6708f3f50ec61045ab7fff0f",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP",
+     "exright_date": "2020-03-26T00:00:00",
+     "record_date": "2020-03-26T00:00:00",
+     "exercise_ratio": 0
+    },
+    {
+     "id": "6708f3f50ec61045ab7fff32",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Stock dividend ratio 15.0%",
+     "exright_date": "2020-05-13T00:00:00",
+     "record_date": "2020-05-14T00:00:00",
+     "exercise_ratio": 0.15
+    },
+    {
+     "id": "6708f3f50ec61045ab8001f4",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP",
+     "exright_date": "2021-04-07T00:00:00",
+     "record_date": "2021-04-07T00:00:00",
+     "exercise_ratio": 0
+    },
+    {
+     "id": "6708f3f50ec61045ab7fff33",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP",
+     "exright_date": "2021-04-07T00:00:00",
+     "record_date": "2021-04-07T00:00:00",
+     "exercise_ratio": 0
+    },
+    {
+     "id": "6708f3f50ec61045ab800214",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Stock dividend ratio 15.0%",
+     "exright_date": "2021-06-01T00:00:00",
+     "record_date": "2021-06-02T00:00:00",
+     "exercise_ratio": 0.15
+    },
+    {
+     "id": "6708f3f70ec61045ab800684",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP",
+     "exright_date": "2022-05-10T00:00:00",
+     "record_date": "2022-05-10T00:00:00",
+     "exercise_ratio": 0
+    },
+    {
+     "id": "6708f3f70ec61045ab800683",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP",
+     "exright_date": "2022-05-10T00:00:00",
+     "record_date": "2022-05-10T00:00:00",
+     "exercise_ratio": 0
+    },
+    {
+     "id": "6708f3f70ec61045ab80059c",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Stock dividend ratio 20.0%",
+     "exright_date": "2022-06-13T00:00:00",
+     "record_date": "2022-06-14T00:00:00",
+     "exercise_ratio": 0.2
+    },
+    {
+     "id": "6708f3f70ec61045ab80087a",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP",
+     "exright_date": "2023-05-08T00:00:00",
+     "record_date": "2023-05-08T00:00:00",
+     "exercise_ratio": 0
+    },
+    {
+     "id": "6708f3f70ec61045ab800879",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP",
+     "exright_date": "2023-05-08T00:00:00",
+     "record_date": "2023-05-08T00:00:00",
+     "exercise_ratio": 0
+    },
+    {
+     "id": "6708f3f70ec61045ab80089b",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Stock dividend ratio 15.0%",
+     "exright_date": "2023-07-05T00:00:00",
+     "record_date": "2023-07-06T00:00:00",
+     "exercise_ratio": 0.15
+    },
+    {
+     "id": "6708f3f80ec61045ab800aaf",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Bonus Issue ratio 15.0%",
+     "exright_date": "2024-06-12T00:00:00",
+     "record_date": "2024-06-13T00:00:00",
+     "exercise_ratio": 0.15
+    },
+    {
+     "id": "6708f3f80ec61045ab800c4c",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP ratio 0.2%",
+     "exright_date": "2024-10-09T00:00:00",
+     "record_date": "2024-10-09T00:00:00",
+     "exercise_ratio": 0.00227
+    },
+    {
+     "id": "6708f3f80ec61045ab800a6e",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP ratio 0.5%",
+     "exright_date": "2024-10-09T00:00:00",
+     "record_date": "2024-10-09T00:00:00",
+     "exercise_ratio": 0.00499
+    },
+    {
+     "id": "6802ed4ed2606e49d1ead8b0",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP ratio 0.2%",
+     "exright_date": "2025-05-07T00:00:00",
+     "record_date": "2025-05-07T00:00:00",
+     "exercise_ratio": 0.00225
+    },
+    {
+     "id": "6802ed4ed2606e49d1ead8af",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP ratio 0.5%",
+     "exright_date": "2025-05-07T00:00:00",
+     "record_date": "2025-05-07T00:00:00",
+     "exercise_ratio": 0.00472
+    },
+    {
+     "id": "6802ed4ed2606e49d1ead8b1",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Bonus Issue ratio 15.0%",
+     "exright_date": "2025-07-21T00:00:00",
+     "record_date": "2025-07-22T00:00:00",
+     "exercise_ratio": 0.15
+    },
+    {
+     "id": "6a309747e56b40f0536c38e0",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP ratio 0.1%",
+     "exright_date": "2026-06-24T00:00:00",
+     "record_date": "2026-06-24T00:00:00",
+     "exercise_ratio": 0.00135
+    },
+    {
+     "id": "69e6c30a9a7ad2360023b0c2",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - ESOP ratio 0.5%",
+     "exright_date": "2026-06-24T00:00:00",
+     "record_date": "2026-06-24T00:00:00",
+     "exercise_ratio": 0.00499
+    },
+    {
+     "id": "69e6c30a9a7ad2360023b0c1",
+     "ticker": "FPT",
+     "event_code": "ISS",
+     "event_title_en": "Share Issue - Bonus Issue ratio 10.0%",
+     "exright_date": "2026-09-21T00:00:00",
+     "record_date": "2026-09-22T00:00:00",
+     "exercise_ratio": 0.1
+    }
+   ]
+  }
+ }
+}

@@ -46,18 +46,18 @@
       "options": [
         {
           "id": "4a593b3028",
-          "text": "5 người"
+          "text": "Mục tiêu ngày nhỏ và cụ thể nên dễ bắt tay làm, dễ theo dõi"
         },
         {
           "id": "37eb9bea19",
-          "text": "20 người"
+          "text": "Để cuối tháng không phải báo cáo kết quả"
         },
         {
           "id": "b5bab8c9ba",
-          "text": "1 người"
+          "text": "Để mỗi ngày làm ít hơn mức mục tiêu tháng cần"
         }
       ],
-      "prompt": "Muốn tiếp cận 100 người mỗi tháng với 20 ngày làm việc, mỗi ngày cần tiếp cận bao nhiêu người?"
+      "prompt": "Vì sao nên chia mục tiêu tháng thành mục tiêu ngày?"
     }
   ],
   "salt": "4efa52894e1915d11f884baf222462afc8ae8842954cbd18d25793b19eed8735"

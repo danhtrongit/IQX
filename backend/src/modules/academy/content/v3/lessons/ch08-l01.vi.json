@@ -278,96 +278,70 @@
       "value_labels": "all"
     },
     "c8l1-rep": {
-      "items": [
-        {
-          "model": {
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "line",
-            "series": [
-              {
-                "name": "Tăng trưởng YoY",
-                "tone": "p1",
-                "values": [
-                  15.3235,
-                  13.125,
-                  12.1618,
-                  12.9779,
-                  9.0588,
-                  9.7721,
-                  15.4044,
-                  10.1912
-                ]
-              }
-            ],
-            "unit": "%",
-            "value_labels": "none"
-          },
-          "title": "Tăng trưởng YoY (%)"
+      "alt": "Tăng trưởng doanh thu YoY: 10,2%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng YoY",
+            "v": [
+              15.3235,
+              13.125,
+              12.1618,
+              12.9779,
+              9.0588,
+              9.7721,
+              15.4044,
+              10.1912
+            ]
+          }
+        ],
+        "name": "Tăng trưởng doanh thu YoY",
+        "sub": {
+          "series": [
+            {
+              "name": "Quý này",
+              "v": [
+                1345.313,
+                1551.5037,
+                1308.8815,
+                1450.3928,
+                1467.2053,
+                1703.1097,
+                1510.473,
+                1598.1874
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                1166.5653,
+                1371.4524,
+                1166.986,
+                1283.8188,
+                1345.313,
+                1551.5037,
+                1308.8815,
+                1450.3928
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
         },
-        {
-          "model": {
-            "caption_tone": "price",
-            "caption_value": "10,2%",
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "grouped",
-            "series": [
-              {
-                "name": "Quý này",
-                "tone": "p1",
-                "values": [
-                  1345.313,
-                  1551.5037,
-                  1308.8815,
-                  1450.3928,
-                  1467.2053,
-                  1703.1097,
-                  1510.473,
-                  1598.1874
-                ]
-              },
-              {
-                "name": "Cùng kỳ năm trước",
-                "tone": "p5",
-                "values": [
-                  1166.5653,
-                  1371.4524,
-                  1166.986,
-                  1283.8188,
-                  1345.313,
-                  1551.5037,
-                  1308.8815,
-                  1450.3928
-                ]
-              }
-            ],
-            "unit": "tỷ đồng",
-            "value_labels": "none"
-          },
-          "title": "Thành phần (tỷ đồng)"
-        }
-      ],
-      "kind": "compare",
-      "layout": "stack"
+        "unit": "%"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -462,7 +436,6 @@
       "blocks": [
         {
           "chart_id": "c8l1-rep",
-          "table_toggle": true,
           "title": "Tăng trưởng doanh thu YoY",
           "type": "chart"
         },

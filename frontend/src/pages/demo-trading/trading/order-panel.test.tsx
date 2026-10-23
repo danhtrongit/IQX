@@ -43,7 +43,7 @@ vi.mock("sonner", () => ({ toast: mocks.toast }))
 
 const account = {
   id: "acc-1", user_id: "u", status: "active", initial_cash_vnd: 100_000_000, cash_available_vnd: 100_000_000,
-  cash_reserved_vnd: 0, cash_pending_vnd: 0, total_cash_vnd: 100_000_000, activated_at: "", reset_at: null, created_at: "",
+  cash_reserved_vnd: 0, cash_pending_vnd: 0, total_cash_vnd: 100_000_000, net_deposited_cash_vnd: 100_000_000, activated_at: "", reset_at: null, created_at: "",
 }
 
 function portfolioWith(sellable: number) {
@@ -160,7 +160,7 @@ describe("OrderPanel (plain manual order form)", () => {
 
   it("shows the learning shortcut when the Demo account has no capital, and never a NaN return", async () => {
     const onNavigate = vi.fn()
-    mocks.account = { ...account, cash_available_vnd: 0, total_cash_vnd: 0 }
+    mocks.account = { ...account, cash_available_vnd: 0, total_cash_vnd: 0, net_deposited_cash_vnd: 0 }
     mocks.portfolio = { ...portfolioWith(0), account: mocks.account, nav_vnd: 0 }
     const { user } = renderPanel(onNavigate)
     expect(screen.getByText("Học bài để nhận vốn: 1 bài = 100 xu = 1.000.000đ")).toBeTruthy()
@@ -168,5 +168,29 @@ describe("OrderPanel (plain manual order form)", () => {
     expect(screen.getByText(/0\.00%/)).toBeTruthy()
     await user.click(screen.getByRole("button", { name: "Vào Học viện" }))
     expect(onNavigate).toHaveBeenCalledWith("academy")
+  })
+
+  it("FB-12: hết tiền vì đã mua cổ phiếu thì không nhắc học để nhận vốn", () => {
+    mocks.account = { ...account, cash_available_vnd: 0, total_cash_vnd: 0 }
+    mocks.portfolio = { ...portfolioWith(100), account: mocks.account }
+    renderPanel(vi.fn())
+    expect(screen.queryByTestId("demo-no-capital")).toBeNull()
+  })
+
+  it("FB-12: tiền mặt 0 nhưng đã từng nạp vốn thì không nhắc học để nhận vốn", () => {
+    mocks.account = { ...account, cash_available_vnd: 0, total_cash_vnd: 0, net_deposited_cash_vnd: 5_000_000 }
+    mocks.portfolio = { ...portfolioWith(0), account: mocks.account }
+    renderPanel(vi.fn())
+    expect(screen.queryByTestId("demo-no-capital")).toBeNull()
+  })
+
+  it("FB-12: mở tài khoản báo bắt đầu với 0đ, không hứa VND ảo", async () => {
+    mocks.account = null
+    mocks.activate.mockImplementation((_: unknown, options: { onSuccess: (created: unknown) => void }) =>
+      options.onSuccess({ ...account, cash_available_vnd: 0 }),
+    )
+    const { user } = renderPanel()
+    await user.click(screen.getByRole("button", { name: "Mở tài khoản Demo Trading" }))
+    expect(mocks.toast.success).toHaveBeenCalledWith("Tài khoản Demo bắt đầu với 0đ. Đổi xu sang tiền để có vốn.")
   })
 })

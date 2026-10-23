@@ -5,10 +5,13 @@ import type { FlashbackRoundStatus } from './flashback.constants.js';
 import type {
   FlashbackBar,
   FlashbackEntryRow,
+  FlashbackEntrySignal,
   FlashbackIndicatorInstance,
   FlashbackLeaderboardEntry,
   FlashbackLotRow,
   FlashbackOrderRow,
+  FlashbackRewardHoldRow,
+  FlashbackRewardHoldStatus,
   FlashbackRoundRow,
 } from './flashback.types.js';
 
@@ -47,6 +50,8 @@ export interface NewFlashbackRound {
   readonly bars: readonly FlashbackBar[];
   readonly scheduledOpenAt: Date;
   readonly fallbackLevel: number;
+  /** Nguồn và đơn vị giá (FB-04), chỉ server. */
+  readonly priceSource?: string | null;
 }
 
 /** Lượt chơi mới. */
@@ -57,6 +62,25 @@ export interface NewFlashbackEntry {
   readonly firstJoin: boolean;
   readonly cash: bigint;
   readonly initialCash: bigint;
+  /** Mã thiết bị do trình duyệt sinh (FB-07), chỉ server. */
+  readonly deviceId?: string | null;
+  /** Địa chỉ IP lúc tham gia (FB-07), chỉ server. */
+  readonly joinIp?: string | null;
+}
+
+/** Thưởng sẽ giữ lại chờ duyệt (FB-07). */
+export interface NewFlashbackRewardHold {
+  readonly roundId: string;
+  readonly userId: string;
+  readonly entryId: string;
+  readonly amount: number;
+  readonly reason: string;
+}
+
+/** Điều kiện nhận thưởng của một tài khoản (spec v1.1 §2.9). */
+export interface FlashbackPlayerEligibility {
+  readonly phoneVerified: boolean;
+  readonly accountCreatedAt: Date;
 }
 
 /** Lệnh mới. */
@@ -117,8 +141,11 @@ export abstract class FlashbackRepository {
     symbol: string,
     limit: number,
   ): Promise<{ start: string; end: string }[]>;
-  /** Ngày thật của 120 nến biểu đồ của các đề gần đây của một mã. */
-  abstract roundChartDates(db: SqlClient, symbol: string, limit: number): Promise<string[][]>;
+  /**
+   * Ngày thật của 120 nến biểu đồ của MỌI đề cùng mã (FB-11e: không giới hạn số đề, vì BoSung
+   * §6.3 cấm nới điều kiện không chồng giai đoạn).
+   */
+  abstract roundChartDates(db: SqlClient, symbol: string): Promise<string[][]>;
   /** Các đề đang ở một trạng thái (dùng cho job). */
   abstract roundsByStatus(db: SqlClient, status: FlashbackRoundStatus): Promise<FlashbackRoundRow[]>;
   /** Tăng bước chơi khi bước hiện tại vẫn là `fromStep` (chống gọi lại). */
@@ -135,6 +162,13 @@ export abstract class FlashbackRepository {
   ): Promise<FlashbackLeaderboardEntry[]>;
   /** Thành viên nhóm của người dùng (theo trưởng nhóm); rỗng khi không có quan hệ. */
   abstract teamMemberIds(db: SqlClient, userId: string): Promise<string[]>;
+  /** Dấu hiệu thiết bị, IP lúc tham gia và số điện thoại của các lượt chơi trong một đề (FB-07). */
+  abstract entrySignals(db: SqlClient, roundId: string): Promise<FlashbackEntrySignal[]>;
+  /** Điều kiện nhận thưởng của một tài khoản; null khi không tìm thấy. */
+  abstract playerEligibility(
+    db: SqlClient,
+    userId: string,
+  ): Promise<FlashbackPlayerEligibility | null>;
 
   // ------------------------------------------------------------- lượt chơi
   abstract entryByRoundUser(
@@ -198,6 +232,24 @@ export abstract class FlashbackRepository {
   /** Ghi một dòng ledger xu; trả về false khi unique_key đã tồn tại. */
   abstract appendLedger(tx: SqlClient, entry: FlashbackLedgerEntry): Promise<boolean>;
 
+  // ------------------------------------------------------- thưởng đang giữ
+  /** Ghi một khoản thưởng đang giữ; trả về false khi (round, user) đã có. */
+  abstract insertRewardHold(tx: SqlClient, input: NewFlashbackRewardHold): Promise<boolean>;
+  abstract listRewardHolds(
+    db: SqlClient,
+    filter: { status?: FlashbackRewardHoldStatus; roundId?: string; limit: number },
+  ): Promise<FlashbackRewardHoldRow[]>;
+  /** Đọc và khoá một khoản đang giữ (`for update`) để duyệt. */
+  abstract lockRewardHold(tx: SqlClient, id: string): Promise<FlashbackRewardHoldRow | null>;
+  /** Chuyển một khoản đang giữ sang `released` hoặc `voided`; chỉ đổi khi còn `held`. */
+  abstract decideRewardHold(
+    tx: SqlClient,
+    id: string,
+    status: Exclude<FlashbackRewardHoldStatus, 'held'>,
+    decidedBy: string,
+    decidedAt: Date,
+  ): Promise<boolean>;
+
   // -------------------------------------------------------------- cấu hình
   abstract getSetting(db: SqlClient, key: string): Promise<unknown>;
   abstract setSetting(tx: SqlClient, key: string, value: unknown): Promise<void>;
@@ -224,33 +276,26 @@ export abstract class FlashbackRepository {
 
   // ------------------------------------------------------------------ VN30
   abstract listCurrentVn30(db: SqlClient): Promise<string[]>;
-  abstract replaceVn30(
+  /**
+   * Đồng bộ rổ VN30 hiện hành (FB-05): mã rời rổ được đặt `effective_to = at`, mã mới vào được
+   * thêm với `effective_from = at`, mã giữ nguyên không đổi.
+   */
+  abstract syncVn30(
     tx: SqlClient,
     symbols: readonly string[],
-    effectiveFrom: Date,
-  ): Promise<void>;
+    at: Date,
+  ): Promise<{ added: string[]; removed: string[] }>;
 
   // -------------------------------------------------------------- khoá job
-  async tryAcquireJobLock(_db: SqlClient): Promise<boolean> {
+  /**
+   * Khoá phiên của tác vụ (FB-02). `client` PHẢI là kết nối riêng giữ suốt lần chạy
+   * (`DatabaseService.withDedicatedClient`): lấy và nhả khoá trên cùng một kết nối.
+   */
+  async tryAcquireJobLock(_client: SqlClient): Promise<boolean> {
     return true;
   }
 
-  async releaseJobLock(_db: SqlClient): Promise<void> {}
-
-  async withJobLock<T>(
-    dbOrFn: SqlClient | (() => Promise<T>),
-    maybeFn?: () => Promise<T>,
-  ): Promise<{ ran: boolean; result?: T }> {
-    const fn = typeof dbOrFn === 'function' ? dbOrFn : maybeFn!;
-    const db = typeof dbOrFn === 'function' ? ({} as SqlClient) : dbOrFn;
-    const locked = await this.tryAcquireJobLock(db);
-    if (!locked) return { ran: false };
-    try {
-      return { ran: true, result: await fn() };
-    } finally {
-      await this.releaseJobLock(db);
-    }
-  }
+  async releaseJobLock(_client: SqlClient): Promise<void> {}
 }
 
 /** Mức độ cảnh báo (spec v1.2 §6.1). */
@@ -338,6 +383,8 @@ const mapRound = (row: Row): FlashbackRoundRow => ({
   opensAt: row.opens_at ? toDate(row.opens_at) : null,
   closesAt: row.closes_at ? toDate(row.closes_at) : null,
   fallbackLevel: toInt(row.fallback_level, 'fallback_level'),
+  priceSource:
+    row.price_source === null || row.price_source === undefined ? null : String(row.price_source),
   createdAt: toDate(row.created_at),
   updatedAt: toDate(row.updated_at),
 });
@@ -390,7 +437,10 @@ const mapOrder = (row: Row): FlashbackOrderRow => ({
 });
 
 const ROUND_COLUMNS = `id, round_no, status, symbol, start_date, warmup_bars, bars,
-  scheduled_open_at, opens_at, closes_at, fallback_level, created_at, updated_at`;
+  scheduled_open_at, opens_at, closes_at, fallback_level, price_source, created_at, updated_at`;
+
+/** Khoá phiên của tác vụ Flashback (pg_advisory_lock). */
+const FLASHBACK_JOB_LOCK_KEY = 78291042;
 
 const ENTRY_COLUMNS = `id, round_id, user_id, joined_at, fee_xu, first_join, indicator_params,
   step, cash, initial_cash, finished_at, final_nav, pnl_pct, max_drawdown, rank, reward_xu, status`;
@@ -451,8 +501,9 @@ export class PgFlashbackRepository extends FlashbackRepository {
     try {
       const rows = await tx.query<Row>(
         `insert into flashback_rounds
-           (round_no, status, symbol, start_date, warmup_bars, bars, scheduled_open_at, fallback_level)
-         values ($1, 'ready', $2, $3, $4::jsonb, $5::jsonb, $6, $7)
+           (round_no, status, symbol, start_date, warmup_bars, bars, scheduled_open_at,
+            fallback_level, price_source)
+         values ($1, 'ready', $2, $3, $4::jsonb, $5::jsonb, $6, $7, $8)
          on conflict do nothing
          returning ${ROUND_COLUMNS}`,
         [
@@ -463,6 +514,7 @@ export class PgFlashbackRepository extends FlashbackRepository {
           JSON.stringify(input.bars),
           input.scheduledOpenAt,
           input.fallbackLevel,
+          input.priceSource ?? null,
         ],
       );
       return rows[0] ? mapRound(rows[0]) : null;
@@ -534,14 +586,20 @@ export class PgFlashbackRepository extends FlashbackRepository {
       .filter((row) => row.start !== 'null' && row.end !== 'null');
   }
 
-  async roundChartDates(db: SqlClient, symbol: string, limit: number): Promise<string[][]> {
-    const rows = await db.query<{ bars: unknown }>(
-      `select bars from flashback_rounds where symbol = $1 order by round_no desc limit $2`,
-      [symbol, limit],
+  async roundChartDates(db: SqlClient, symbol: string): Promise<string[][]> {
+    const rows = await db.query<{ dates: unknown }>(
+      `select coalesce(
+                (select array_agg(b->>'d') from jsonb_array_elements(r.bars) b),
+                '{}'::text[]
+              ) as dates
+         from flashback_rounds r
+        where r.symbol = $1
+        order by r.round_no desc`,
+      [symbol],
     );
     return rows.map((row) =>
-      toBars(row.bars)
-        .map((bar) => bar.d)
+      (Array.isArray(row.dates) ? row.dates : [])
+        .map((date) => String(date ?? ''))
         .filter((date) => date.length > 0),
     );
   }
@@ -579,6 +637,7 @@ export class PgFlashbackRepository extends FlashbackRepository {
               e.step, e.cash, e.initial_cash, e.finished_at, e.final_nav, e.pnl_pct, e.max_drawdown,
               e.rank, e.reward_xu, e.status,
               coalesce(u.username, u.email) as username,
+              u.username as display_name,
               u.phone_verified_at, u.created_at as account_created_at,
               coalesce(u.phone_e164, u.phone_number) as phone_e164
          from flashback_entries e
@@ -590,6 +649,10 @@ export class PgFlashbackRepository extends FlashbackRepository {
     return rows.map((row) => ({
       ...mapEntry(row),
       username: String(row.username ?? ''),
+      displayName:
+        row.display_name === null || row.display_name === undefined || row.display_name === ''
+          ? null
+          : String(row.display_name),
       phoneVerified:
         row.phone_verified_at !== null && row.phone_verified_at !== undefined,
       accountCreatedAt: toDate(row.account_created_at),
@@ -614,6 +677,44 @@ export class PgFlashbackRepository extends FlashbackRepository {
       [userId],
     );
     return rows.map((row) => row.id);
+  }
+
+  async entrySignals(db: SqlClient, roundId: string): Promise<FlashbackEntrySignal[]> {
+    const rows = await db.query<Row>(
+      `select e.id::text as entry_id, e.user_id::text as user_id, e.device_id, e.join_ip,
+              coalesce(u.username, u.email) as username,
+              coalesce(u.phone_e164, u.phone_number) as phone
+         from flashback_entries e
+         join users u on u.id = e.user_id
+        where e.round_id = $1
+        order by e.joined_at, e.id`,
+      [roundId],
+    );
+    const text = (value: unknown): string | null => {
+      const trimmed = value === null || value === undefined ? '' : String(value).trim();
+      return trimmed.length > 0 ? trimmed : null;
+    };
+    return rows.map((row) => ({
+      entryId: String(row.entry_id),
+      userId: String(row.user_id),
+      username: String(row.username ?? ''),
+      deviceId: text(row.device_id),
+      joinIp: text(row.join_ip),
+      phone: text(row.phone),
+    }));
+  }
+
+  async playerEligibility(db: SqlClient, userId: string): Promise<FlashbackPlayerEligibility | null> {
+    const rows = await db.query<Row>(
+      `select phone_verified_at, created_at from users where id = $1 limit 1`,
+      [userId],
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      phoneVerified: row.phone_verified_at !== null && row.phone_verified_at !== undefined,
+      accountCreatedAt: toDate(row.created_at),
+    };
   }
 
   async entryByRoundUser(
@@ -651,8 +752,9 @@ export class PgFlashbackRepository extends FlashbackRepository {
   ): Promise<FlashbackEntryRow | null> {
     const rows = await tx.query<Row>(
       `insert into flashback_entries
-         (round_id, user_id, fee_xu, first_join, cash, initial_cash, indicator_params, step, status)
-       values ($1, $2, $3, $4, $5, $6, '[]'::jsonb, 0, 'playing')
+         (round_id, user_id, fee_xu, first_join, cash, initial_cash, indicator_params, step, status,
+          device_id, join_ip)
+       values ($1, $2, $3, $4, $5, $6, '[]'::jsonb, 0, 'playing', $7, $8)
        on conflict (round_id, user_id) do nothing
        returning ${ENTRY_COLUMNS}`,
       [
@@ -662,6 +764,8 @@ export class PgFlashbackRepository extends FlashbackRepository {
         input.firstJoin,
         input.cash.toString(),
         input.initialCash.toString(),
+        input.deviceId ? input.deviceId.slice(0, 64) : null,
+        input.joinIp ? input.joinIp.slice(0, 64) : null,
       ],
     );
     return rows[0] ? mapEntry(rows[0]) : null;
@@ -901,6 +1005,54 @@ export class PgFlashbackRepository extends FlashbackRepository {
     return rows.length > 0;
   }
 
+  async insertRewardHold(tx: SqlClient, input: NewFlashbackRewardHold): Promise<boolean> {
+    const rows = await tx.query<Row>(
+      `insert into flashback_reward_holds (round_id, user_id, entry_id, amount, reason, status)
+       values ($1, $2, $3, $4, $5, 'held')
+       on conflict (round_id, user_id) do nothing
+       returning id`,
+      [input.roundId, input.userId, input.entryId, input.amount, input.reason],
+    );
+    return rows.length > 0;
+  }
+
+  async listRewardHolds(
+    db: SqlClient,
+    filter: { status?: FlashbackRewardHoldStatus; roundId?: string; limit: number },
+  ): Promise<FlashbackRewardHoldRow[]> {
+    const rows = await db.query<Row>(
+      `${HOLD_SELECT}
+        where ($1::text is null or h.status = $1)
+          and ($2::uuid is null or h.round_id = $2::uuid)
+        order by h.created_at desc, h.id
+        limit $3`,
+      [filter.status ?? null, filter.roundId ?? null, filter.limit],
+    );
+    return rows.map(mapHold);
+  }
+
+  async lockRewardHold(tx: SqlClient, id: string): Promise<FlashbackRewardHoldRow | null> {
+    const rows = await tx.query<Row>(`${HOLD_SELECT} where h.id = $1 for update of h`, [id]);
+    return rows[0] ? mapHold(rows[0]) : null;
+  }
+
+  async decideRewardHold(
+    tx: SqlClient,
+    id: string,
+    status: Exclude<FlashbackRewardHoldStatus, 'held'>,
+    decidedBy: string,
+    decidedAt: Date,
+  ): Promise<boolean> {
+    const rows = await tx.query<Row>(
+      `update flashback_reward_holds
+          set status = $2, decided_by = $3, decided_at = $4
+        where id = $1 and status = 'held'
+        returning id`,
+      [id, status, decidedBy, decidedAt],
+    );
+    return rows.length > 0;
+  }
+
   async getSetting(db: SqlClient, key: string): Promise<unknown> {
     const rows = await db.query<{ value: unknown }>(
       `select value from flashback_settings where key = $1 limit 1`,
@@ -978,41 +1130,69 @@ export class PgFlashbackRepository extends FlashbackRepository {
     return rows.map((row) => row.symbol);
   }
 
-  async replaceVn30(
+  async syncVn30(
     tx: SqlClient,
     symbols: readonly string[],
-    effectiveFrom: Date,
-  ): Promise<void> {
-    await tx.query(
-      `update vn30_constituents set effective_to = $1 where effective_to is null`,
-      [effectiveFrom],
+    at: Date,
+  ): Promise<{ added: string[]; removed: string[] }> {
+    // Khoá các dòng hiện hành để hai lần tạo đề song song không ghi đè lẫn nhau.
+    const current = await tx.query<{ symbol: string }>(
+      `select symbol from vn30_constituents where effective_to is null for update`,
     );
-    for (const symbol of symbols) {
+    const stored = new Set(current.map((row) => row.symbol));
+    const next = new Set(symbols.map((symbol) => symbol.trim().toUpperCase()).filter(Boolean));
+    const removed = [...stored].filter((symbol) => !next.has(symbol)).sort();
+    const added = [...next].filter((symbol) => !stored.has(symbol)).sort();
+    if (removed.length > 0) {
+      await tx.query(
+        `update vn30_constituents set effective_to = $1
+          where effective_to is null and symbol = any($2::text[])`,
+        [at, removed],
+      );
+    }
+    for (const symbol of added) {
       await tx.query(
         `insert into vn30_constituents (symbol, effective_from) values ($1, $2)
          on conflict (symbol, effective_from) do nothing`,
-        [symbol, effectiveFrom],
+        [symbol, at],
       );
     }
+    return { added, removed };
   }
 
-  override async tryAcquireJobLock(db: SqlClient = this.database): Promise<boolean> {
-    const rows = await db.query<{ locked: boolean }>(
-      `select pg_try_advisory_lock(78291042) as locked`,
+  override async tryAcquireJobLock(client: SqlClient): Promise<boolean> {
+    const rows = await client.query<{ locked: boolean }>(
+      `select pg_try_advisory_lock($1) as locked`,
+      [FLASHBACK_JOB_LOCK_KEY],
     );
     return rows[0]?.locked === true;
   }
 
-  override async releaseJobLock(db: SqlClient = this.database): Promise<void> {
-    await db.query(`select pg_advisory_unlock(78291042)`);
-  }
-
-  override async withJobLock<T>(
-    dbOrFn: SqlClient | (() => Promise<T>),
-    maybeFn?: () => Promise<T>,
-  ): Promise<{ ran: boolean; result?: T }> {
-    const fn = typeof dbOrFn === 'function' ? dbOrFn : maybeFn!;
-    const db = typeof dbOrFn === 'function' ? this.database : dbOrFn;
-    return super.withJobLock(db, fn);
+  override async releaseJobLock(client: SqlClient): Promise<void> {
+    await client.query(`select pg_advisory_unlock($1)`, [FLASHBACK_JOB_LOCK_KEY]);
   }
 }
+
+const HOLD_SELECT = `select h.id::text as id, h.round_id::text as round_id, r.round_no,
+         h.user_id::text as user_id, coalesce(u.username, u.email) as username,
+         h.entry_id::text as entry_id, h.amount, h.reason, h.status,
+         h.decided_by::text as decided_by, h.decided_at, h.created_at
+    from flashback_reward_holds h
+    join flashback_rounds r on r.id = h.round_id
+    join users u on u.id = h.user_id`;
+
+const mapHold = (row: Row): FlashbackRewardHoldRow => ({
+  id: String(row.id),
+  roundId: String(row.round_id),
+  roundNo: toInt(row.round_no, 'round_no'),
+  userId: String(row.user_id),
+  username: String(row.username ?? ''),
+  entryId: row.entry_id === null || row.entry_id === undefined ? null : String(row.entry_id),
+  amount: toInt(row.amount, 'amount'),
+  reason: String(row.reason ?? ''),
+  status: String(row.status) as FlashbackRewardHoldStatus,
+  decidedBy:
+    row.decided_by === null || row.decided_by === undefined ? null : String(row.decided_by),
+  decidedAt: row.decided_at ? toDate(row.decided_at) : null,
+  createdAt: toDate(row.created_at),
+});

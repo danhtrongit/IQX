@@ -66,6 +66,8 @@ export type FlashbackContextValue = {
   join: () => void
   joinBusy: boolean
   joinError: string | null
+  /** "xu" khi server trả 402 XU_INSUFFICIENT (hiện nút sang Học viện), "other" cho lỗi khác. */
+  joinErrorKind: "xu" | "other" | null
   nextSession: () => void
   nextBusy: boolean
   finish: () => void

@@ -195,110 +195,83 @@
       "value_labels": "all"
     },
     "c10l7-rep": {
-      "items": [
-        {
-          "model": {
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "line",
-            "series": [
-              {
-                "name": "CCC",
-                "tone": "p1",
-                "values": [
-                  63.9412,
-                  71.2941,
-                  50.5,
-                  52.6176,
-                  53.9706,
-                  61.3824,
-                  45.2353,
-                  47.1471
-                ]
-              }
-            ],
-            "unit": "ngày",
-            "value_labels": "none"
-          },
-          "title": "CCC (ngày)"
+      "alt": "Cash Conversion Cycle: 47 ngày",
+      "chart": {
+        "kind": "C",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "CCC",
+            "v": [
+              63.9412,
+              71.2941,
+              50.5,
+              52.6176,
+              53.9706,
+              61.3824,
+              45.2353,
+              47.1471
+            ]
+          }
+        ],
+        "name": "Cash Conversion Cycle",
+        "sub": {
+          "series": [
+            {
+              "name": "Ngày tồn kho",
+              "v": [
+                69.6782,
+                79.7104,
+                59.0464,
+                62.9629,
+                65.26,
+                74.5134,
+                58.4275,
+                61.6711
+              ]
+            },
+            {
+              "name": "Ngày thu tiền",
+              "v": [
+                44.3936,
+                48.3431,
+                39.4772,
+                40.6966,
+                41.846,
+                47.256,
+                37.8313,
+                39.7718
+              ]
+            },
+            {
+              "name": "Ngày trả tiền",
+              "v": [
+                50.1206,
+                56.7638,
+                48.0333,
+                51.036,
+                53.1356,
+                60.3839,
+                51.0135,
+                54.2934
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "ngày"
         },
-        {
-          "model": {
-            "caption_tone": "price",
-            "caption_value": "47 ngày",
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "grouped",
-            "series": [
-              {
-                "name": "Ngày tồn kho",
-                "tone": "p1",
-                "values": [
-                  69.6782,
-                  79.7104,
-                  59.0464,
-                  62.9629,
-                  65.26,
-                  74.5134,
-                  58.4275,
-                  61.6711
-                ]
-              },
-              {
-                "name": "Ngày thu tiền",
-                "tone": "p5",
-                "values": [
-                  44.3936,
-                  48.3431,
-                  39.4772,
-                  40.6966,
-                  41.846,
-                  47.256,
-                  37.8313,
-                  39.7718
-                ]
-              },
-              {
-                "name": "Ngày trả tiền",
-                "tone": "pos",
-                "values": [
-                  50.1206,
-                  56.7638,
-                  48.0333,
-                  51.036,
-                  53.1356,
-                  60.3839,
-                  51.0135,
-                  54.2934
-                ]
-              }
-            ],
-            "unit": "ngày",
-            "value_labels": "none"
-          },
-          "title": "Thành phần (ngày)"
-        }
-      ],
-      "kind": "compare",
-      "layout": "stack"
+        "unit": "ngày"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -361,7 +334,6 @@
       "blocks": [
         {
           "chart_id": "c10l7-rep",
-          "table_toggle": true,
           "title": "Cash Conversion Cycle",
           "type": "chart"
         },

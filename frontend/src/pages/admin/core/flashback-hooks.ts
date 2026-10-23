@@ -10,10 +10,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import {
   fetchFlashbackAlerts,
   fetchFlashbackPauseStatus,
+  fetchFlashbackRewardHolds,
   fetchFlashbackRounds,
+  fetchFlashbackSettings,
   fetchFlashbackSuspects,
+  releaseFlashbackRewardHold,
   revealFlashbackRound,
   setFlashbackPaused,
+  voidFlashbackRewardHold,
 } from "./flashback-api"
 
 export const flashbackKeys = {
@@ -21,6 +25,8 @@ export const flashbackKeys = {
   alerts: ["admin", "flashback", "alerts"] as const,
   suspects: ["admin", "flashback", "suspects"] as const,
   pause: ["admin", "flashback", "pause"] as const,
+  rewardHolds: ["admin", "flashback", "reward-holds"] as const,
+  settings: ["admin", "flashback", "settings"] as const,
 }
 
 export function useFlashbackRounds() {
@@ -47,7 +53,38 @@ export function useFlashbackSuspects() {
   })
 }
 
-/** Flashback đang tạm dừng hay không, theo máy chủ. */
+/** Thưởng đang tạm giữ chờ duyệt. */
+export function useFlashbackRewardHolds() {
+  return useQuery({
+    queryKey: flashbackKeys.rewardHolds,
+    queryFn: ({ signal }) => fetchFlashbackRewardHolds("held", signal),
+    staleTime: 30_000,
+  })
+}
+
+/** Tham số vận hành chỉ đọc. */
+export function useFlashbackSettings() {
+  return useQuery({
+    queryKey: flashbackKeys.settings,
+    queryFn: ({ signal }) => fetchFlashbackSettings(signal),
+    staleTime: 5 * 60_000,
+  })
+}
+
+/** Trả hoặc huỷ một khoản thưởng đang giữ; làm mới danh sách giữ và bảng đề. */
+export function useDecideRewardHold() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, action }: { id: string; action: "release" | "void" }) =>
+      action === "release" ? releaseFlashbackRewardHold(id) : voidFlashbackRewardHold(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: flashbackKeys.rewardHolds })
+      void queryClient.invalidateQueries({ queryKey: flashbackKeys.rounds })
+    },
+  })
+}
+
+/** Flashback đang tạm dừng hay không, theo máy chủ, kèm quyền quản trị cao nhất. */
 export function useFlashbackPauseStatus() {
   return useQuery({
     queryKey: flashbackKeys.pause,

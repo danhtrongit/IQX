@@ -357,66 +357,33 @@
     },
     "c9l4-rep": {
       "alt": "EPS Stability: 24,4%",
-      "kind": "series_panels",
-      "marks": [],
-      "panels": [
-        {
-          "band": {
-            "lower": [
-              795.7035,
-              795.7035,
-              795.7035,
-              795.7035,
-              795.7035
-            ],
-            "tone": "p1",
-            "upper": [
-              1308.25,
-              1308.25,
-              1308.25,
-              1308.25,
-              1308.25
-            ]
-          },
-          "bounds": [
-            0,
-            1600.5582
-          ],
-          "levels": [
-            {
-              "label": "Bình quân 1051.9767",
-              "role": "avg",
-              "value": 1051.9767
-            }
-          ],
-          "series": [
-            {
-              "name": "Giá trị",
-              "role": "p1",
-              "values": [
-                737.2093,
-                1131.3953,
-                793.0233,
-                1169.186,
-                1429.0698
-              ],
-              "width": 2
-            }
-          ],
-          "title": ""
-        }
-      ],
-      "x": {
-        "end": 4,
-        "start": 0,
-        "ticks": [
+      "chart": {
+        "hero": 24.3611,
+        "kind": "E1",
+        "labels": [
           "2021",
           "2022",
           "2023",
           "2024",
           "2025"
-        ]
-      }
+        ],
+        "main": [
+          {
+            "name": "EPS năm",
+            "v": [
+              737.2093,
+              1131.3953,
+              793.0233,
+              1169.186,
+              1429.0698
+            ]
+          }
+        ],
+        "mainUnit": "đồng/CP",
+        "name": "EPS Stability",
+        "unit": "%"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -479,7 +446,6 @@
       "blocks": [
         {
           "chart_id": "c9l4-rep",
-          "table_toggle": true,
           "title": "EPS Stability",
           "type": "chart"
         },

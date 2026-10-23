@@ -85,6 +85,8 @@ export const dashboardCatalogSchema = z.array(
     items: z.array(
       z.object({
         name: dashboardChartNameSchema,
+        /** Khuôn biểu đồ (spec §9): biết trước khuôn cố định theo năm để hiện ô số kỳ ngay (DB-05e). */
+        kind: z.enum(DASHBOARD_CHART_KINDS),
         na_for_bank: z.boolean(),
       }),
     ),
@@ -120,6 +122,8 @@ export const dashboardChartSchema = z.object({
   status: z.enum(METRIC_STATUSES),
   /** Lý do biểu đồ trống (chỉ tiêu chưa có nguồn dữ liệu, chưa đủ lịch sử…). */
   note: z.string().optional(),
+  /** Chú giải định nghĩa hiện cùng chú thích, ví dụ "Tiền gồm đầu tư tài chính ngắn hạn" (DB-06). */
+  legend_note: z.string().optional(),
   q: dashboardSeriesSchema.optional(),
   y: dashboardSeriesSchema.optional(),
   labels: z.array(z.string()).optional(),

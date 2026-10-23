@@ -79,6 +79,7 @@
       "prompt": "Vì sao ROIC dùng EBIT thay vì lợi nhuận sau thuế?"
     },
     {
+      "chart_id": "c10l3-rep",
       "correct_option_id": "772e42a598",
       "id": "ch10-l03-q05",
       "options": [

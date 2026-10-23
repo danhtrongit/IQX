@@ -1,4 +1,4 @@
-import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   DEMO_CASH_MIN_EXCHANGE,
@@ -25,6 +25,12 @@ const nextKey = (label = 'econ') => `${label}-${Date.now()}-${(keyCounter += 1)}
 /** The switch that makes the Premium redemption require a verified phone number. */
 const PHONE_FLAG = 'PREMIUM_XU_REDEEM_PHONE_VERIFIED_ONLY';
 const originalPhoneFlag = process.env[PHONE_FLAG];
+
+// The rule is ON by default (spec 22-10 §1.14). Most tests here exercise other rules, so they
+// start with it off and the phone tests turn it on (or leave it unset) explicitly.
+beforeEach(() => {
+  process.env[PHONE_FLAG] = 'false';
+});
 
 afterEach(() => {
   if (originalPhoneFlag === undefined) delete process.env[PHONE_FLAG];
@@ -385,6 +391,19 @@ describe.each(harnessFactories)('xu economy: shop, evolution, premium and exchan
     );
     expect(otherAmount).toMatchObject({ status: 409, code: 'IDEMPOTENCY_KEY_REUSED' });
     await expectLedgerConsistent(h, userId, 900);
+  });
+
+  it('requires a verified phone by default when the flag is unset', async () => {
+    delete process.env[PHONE_FLAG];
+    const userId = await h.newUser();
+    await fundLessons(h, userId, 30);
+    const refused = await rejectedWith(
+      h.shop.purchasePremium(userId, {
+        expected_price_xu: PREMIUM_PRICE_XU,
+        idempotency_key: nextKey('premium'),
+      }),
+    );
+    expect(refused).toMatchObject({ status: 403, code: 'PHONE_NOT_VERIFIED' });
   });
 
   it('only lets a phone-verified account redeem Premium for xu when the rule is on', async () => {

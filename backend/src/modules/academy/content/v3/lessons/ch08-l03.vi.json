@@ -99,96 +99,70 @@
       "value_labels": "all"
     },
     "c8l3-rep": {
-      "items": [
-        {
-          "model": {
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "line",
-            "series": [
-              {
-                "name": "Tăng trưởng YoY",
-                "tone": "p1",
-                "values": [
-                  37.0956,
-                  39.9632,
-                  12.2794,
-                  21.6912,
-                  26.5441,
-                  27.1691,
-                  39.3382,
-                  20.5515
-                ]
-              }
-            ],
-            "unit": "%",
-            "value_labels": "none"
-          },
-          "title": "Tăng trưởng YoY (%)"
+      "alt": "Tăng trưởng EPS YoY: 20,6%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng YoY",
+            "v": [
+              37.0956,
+              39.9632,
+              12.2794,
+              21.6912,
+              26.5441,
+              27.1691,
+              39.3382,
+              20.5515
+            ]
+          }
+        ],
+        "name": "Tăng trưởng EPS YoY",
+        "sub": {
+          "series": [
+            {
+              "name": "EPS quý này",
+              "v": [
+                285.7549,
+                321.494,
+                303.5158,
+                355.0735,
+                361.632,
+                408.8631,
+                422.9531,
+                428.0569
+              ]
+            },
+            {
+              "name": "EPS cùng kỳ",
+              "v": [
+                208.4363,
+                229.6939,
+                270.3426,
+                291.7467,
+                285.7549,
+                321.494,
+                303.5158,
+                355.0735
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "đồng/CP"
         },
-        {
-          "model": {
-            "caption_tone": "price",
-            "caption_value": "20,6%",
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "grouped",
-            "series": [
-              {
-                "name": "EPS quý này",
-                "tone": "p1",
-                "values": [
-                  285.7549,
-                  321.494,
-                  303.5158,
-                  355.0735,
-                  361.632,
-                  408.8631,
-                  422.9531,
-                  428.0569
-                ]
-              },
-              {
-                "name": "EPS cùng kỳ",
-                "tone": "p5",
-                "values": [
-                  208.4363,
-                  229.6939,
-                  270.3426,
-                  291.7467,
-                  285.7549,
-                  321.494,
-                  303.5158,
-                  355.0735
-                ]
-              }
-            ],
-            "unit": "đồng/CP",
-            "value_labels": "none"
-          },
-          "title": "Thành phần (đồng/CP)"
-        }
-      ],
-      "kind": "compare",
-      "layout": "stack"
+        "unit": "%"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -249,7 +223,6 @@
       "blocks": [
         {
           "chart_id": "c8l3-rep",
-          "table_toggle": true,
           "title": "Tăng trưởng EPS YoY",
           "type": "chart"
         },

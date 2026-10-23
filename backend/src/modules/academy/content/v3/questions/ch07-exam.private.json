@@ -312,18 +312,18 @@
       "options": [
         {
           "id": "90815b7c30",
-          "text": "−20"
+          "text": "Cùng ý nghĩa nhưng thang âm: quá mua gần 0, quá bán gần −100"
         },
         {
           "id": "588f2a97c1",
-          "text": "−80"
+          "text": "Cùng thang 0 đến 100 và giống hệt Stochastic"
         },
         {
           "id": "1fc07e5925",
-          "text": "+80"
+          "text": "Ngược ý nghĩa: gần 0 là vùng quá bán"
         }
       ],
-      "prompt": "Mốc 80 của Stochastic tương ứng mốc nào của Williams %R?"
+      "prompt": "Williams %R khác Stochastic thế nào về thang đo?"
     },
     {
       "correct_option_id": "6c91c98dc0",

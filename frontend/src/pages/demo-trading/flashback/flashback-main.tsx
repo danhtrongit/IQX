@@ -171,6 +171,7 @@ export function FlashbackMain({ onNavigate }: { onNavigate: (panel: string) => v
             now={now}
             busy={game.joinBusy}
             error={game.joinError}
+            showAcademy={game.joinErrorKind === "xu"}
             onJoin={game.join}
             onEnterAcademy={() => onNavigate("academy")}
           />
@@ -191,10 +192,26 @@ export function FlashbackMain({ onNavigate }: { onNavigate: (panel: string) => v
 
       {/* Thanh cố định đáy trên điện thoại: Mua · Bán · Phiên tiếp */}
       <div className="fixed inset-x-0 bottom-0 z-20 hidden items-center gap-2 border-t border-border bg-card/95 px-3 py-2 backdrop-blur max-[900px]:flex">
-        <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => openOrder("buy")}>
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="flex-1"
+          data-testid="flashback-buy-mobile"
+          disabled={!joined || finished}
+          onClick={() => openOrder("buy")}
+        >
           Mua
         </Button>
-        <Button type="button" variant="outline" size="lg" className="flex-1" onClick={() => openOrder("sell")}>
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="flex-1"
+          data-testid="flashback-sell-mobile"
+          disabled={!joined || finished}
+          onClick={() => openOrder("sell")}
+        >
           Bán
         </Button>
         <Button
@@ -281,6 +298,7 @@ function JoinCard({
   now,
   busy,
   error,
+  showAcademy,
   onJoin,
   onEnterAcademy,
 }: {
@@ -292,9 +310,12 @@ function JoinCard({
   now: number
   busy: boolean
   error: string | null
+  showAcademy: boolean
   onJoin: () => void
   onEnterAcademy: () => void
 }) {
+  // Phí 0 ở lần thứ hai: phương án miễn phí của `flashback_settings.entry_fee_xu` (spec 22-10 §1.14).
+  const free = firstJoinFree || feeXu <= 0
   return (
     <div className="absolute inset-0 z-10 grid place-items-center rounded-lg bg-background/85 p-4" data-testid="join-card">
       <div className="w-full max-w-[420px] space-y-3 rounded-lg border border-border bg-card p-4">
@@ -309,7 +330,10 @@ function JoinCard({
         <Row label="Dữ liệu" value="60 phiên lịch sử, chơi 60 phiên" />
         <Row label="Vốn" value={formatMoney(10_000_000)} />
         <Row label="Thời gian" value={`Đóng sau ${countdownText(closesAt, now)}`} />
-        <Row label="Phí tham gia" value={firstJoinFree ? "Miễn phí (lần đầu tham gia)" : `${formatNumber(feeXu)} xu`} />
+        <Row
+          label="Phí tham gia"
+          value={firstJoinFree ? "Miễn phí (lần đầu tham gia)" : free ? "Miễn phí" : `${formatNumber(feeXu)} xu`}
+        />
         <div className="space-y-1 rounded-md border border-border bg-muted/40 p-2.5">
           {rewardTable
             .filter((row) => (row.reward_xu ?? row.xu ?? 0) > 0)
@@ -332,11 +356,13 @@ function JoinCard({
         </div>
         {error ? <p role="alert" className="text-xs text-destructive">{error}</p> : null}
         <Button type="button" className="w-full" onClick={onJoin} disabled={busy}>
-          {firstJoinFree ? "Tham gia miễn phí" : `Tham gia · ${formatNumber(feeXu)} xu`}
+          {free ? "Tham gia miễn phí" : `Tham gia · ${formatNumber(feeXu)} xu`}
         </Button>
-        <Button type="button" variant="ghost" size="sm" className="w-full" onClick={onEnterAcademy}>
-          Học thêm bài để có xu
-        </Button>
+        {showAcademy || !free ? (
+          <Button type="button" variant="ghost" size="sm" className="w-full" onClick={onEnterAcademy}>
+            Học thêm bài để có xu
+          </Button>
+        ) : null}
       </div>
     </div>
   )

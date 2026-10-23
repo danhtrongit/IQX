@@ -53,41 +53,32 @@
       "value_labels": "all"
     },
     "c8l6-rep": {
-      "caption_tone": "price",
-      "caption_value": "8,1%",
-      "kind": "category",
-      "labels": [
-        "2022",
-        "2023",
-        "2024",
-        "2025"
-      ],
-      "mode": "grouped",
-      "series": [
-        {
-          "name": "EPS",
-          "tone": "p1",
-          "values": [
-            1131.6187,
-            793.1446,
-            1169.3382,
-            1429.0845
-          ]
-        },
-        {
-          "dash": true,
-          "name": "Theo CAGR",
-          "tone": "warn",
-          "values": [
-            1131.9767,
-            1223.5465,
-            1322.093,
-            1429.3605
-          ]
-        }
-      ],
-      "unit": "đồng/CP",
-      "value_labels": "none"
+      "alt": "EPS CAGR 3Y: 8,1%",
+      "chart": {
+        "hero": 8.0901,
+        "kind": "D",
+        "labels": [
+          "2022",
+          "2023",
+          "2024",
+          "2025"
+        ],
+        "main": [
+          {
+            "name": "EPS",
+            "v": [
+              1131.6187,
+              793.1446,
+              1169.3382,
+              1429.0845
+            ]
+          }
+        ],
+        "mainUnit": "đồng/CP",
+        "name": "EPS CAGR 3Y",
+        "unit": "%"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -154,7 +145,6 @@
       "blocks": [
         {
           "chart_id": "c8l6-rep",
-          "table_toggle": true,
           "title": "EPS CAGR 3Y",
           "type": "chart"
         },

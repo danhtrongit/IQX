@@ -1,14 +1,13 @@
 import type { PointerEvent as ReactPointerEvent } from "react"
 
-import { linePath } from "@/pages/academy/charts/chart-math"
-
-import { axisIndexes, barPath, niceScale } from "./geometry"
+import { BAND_COLOR, MAIN_COLOR, NEGATIVE_COLOR, REFERENCE_COLOR, SERIES_COLORS } from "./figure-data"
+import { axisIndexes, barPath, linePath, niceScale } from "./geometry"
 
 /** Một đường của tấm vẽ. */
 export type PanelLine = {
   name: string
   values: (number | null)[]
-  /** Màu chuỗi (token `--chart-*`). */
+  /** Màu chuỗi (token `--s1`, `--s2`, `--s3`, `--ref-line`). */
   color: string
   /** Nét đứt, dùng cho đường tham chiếu. */
   dash?: string
@@ -44,7 +43,7 @@ export type PanelProps = {
   formatLabel?: (label: string) => string
   /** Vị trí được ghi nhãn; mặc định tính theo độ rộng (spec §5.4). */
   labelIndexes?: number[]
-  /** Tấng trên của một biểu đồ hai tầng không ghi nhãn trục ngang. */
+  /** Tầng trên của một biểu đồ hai tầng không ghi nhãn trục ngang. */
   axis?: boolean
   ariaLabel: string
   hoverIndex: number | null
@@ -61,7 +60,7 @@ function isNumber(value: number | null | undefined): value is number {
 }
 
 /**
- * Tấm vẽ của một biểu đồ dashboard: lưới, trục giá trị, đường, cột, dải và
+ * Tấm vẽ của một biểu đồ chỉ tiêu: lưới, trục giá trị, đường, cột, dải và
  * đường tham chiếu trên cùng một hệ toạ độ. Kỳ không tính được để trống:
  * đường đứt đoạn, không vẽ số 0 thay (spec §10).
  */
@@ -126,7 +125,7 @@ export function Panel({
     : x
 
   const tickStep = scale.ticks.length > 1 ? Math.abs(scale.ticks[1] - scale.ticks[0]) : 1
-  const tickDigits = tickStep >= 1 ? 0 : Math.min(2, Math.ceil(-Math.log10(tickStep)))
+  const tickDigits = tickStep >= 1 ? 0 : Math.min(2, Math.ceil(-Math.log10(tickStep) - 1e-9))
   const tickFormat = new Intl.NumberFormat("vi-VN", {
     minimumFractionDigits: tickDigits,
     maximumFractionDigits: tickDigits,
@@ -136,7 +135,7 @@ export function Panel({
   const barCount = bars ? (bars.type === "stacked" ? 1 : bars.series.length) : 0
   const barWidth = barCount > 0 ? Math.min(24, (slot * 0.72 - (barCount - 1) * 2) / barCount) : 0
 
-  function handlePointerMove(event: ReactPointerEvent<SVGRectElement>) {
+  function handlePointer(event: ReactPointerEvent<SVGRectElement>) {
     const svg = event.currentTarget.ownerSVGElement
     if (!svg) return
     const rect = svg.getBoundingClientRect()
@@ -177,7 +176,7 @@ export function Panel({
             x={PADDING_LEFT - 6}
             y={y(tick) + 3}
             textAnchor="end"
-            className="fill-academy-subtle text-[10.5px] tabular-nums"
+            className="fill-text-secondary text-[10.5px] tabular-nums"
           >
             {tickFormat.format(tick)}
           </text>
@@ -201,7 +200,7 @@ export function Panel({
           width={innerWidth}
           y={y(band[1])}
           height={Math.max(0, y(band[0]) - y(band[1]))}
-          className="fill-chart-1/10"
+          fill={BAND_COLOR}
         />
       )}
 
@@ -213,7 +212,7 @@ export function Panel({
           y2={y(reference)}
           strokeWidth={1}
           strokeDasharray="4 4"
-          className="stroke-chart-5"
+          stroke={REFERENCE_COLOR}
         />
       )}
 
@@ -235,22 +234,26 @@ export function Panel({
             const boxHeight = Math.max(1, Math.abs(to - from) - (stacked && seriesIndex > 0 ? 2 : 0))
             const offset = stacked
               ? x(index) - barWidth / 2
-              : x(index) - (bars.series.length * barWidth + (bars.series.length - 1) * 2) / 2 +
+              : x(index) -
+                (bars.series.length * barWidth + (bars.series.length - 1) * 2) / 2 +
                 seriesIndex * (barWidth + 2)
             const color = bars.signed
               ? value < 0
-                ? "var(--price-down)"
-                : "var(--chart-1)"
-              : seriesIndex === 0
-                ? "var(--chart-1)"
-                : seriesIndex === 1
-                  ? "#d95926"
-                  : "#199e70"
+                ? NEGATIVE_COLOR
+                : MAIN_COLOR
+              : SERIES_COLORS[seriesIndex % SERIES_COLORS.length]
             const faded = bars.faded?.(index) === true
             return (
               <path
                 key={`${series.name}-${index}`}
-                d={barPath(offset, boxTop, barWidth, boxHeight, value >= 0, !stacked || seriesIndex === bars.series.length - 1)}
+                d={barPath(
+                  offset,
+                  boxTop,
+                  barWidth,
+                  boxHeight,
+                  value >= 0,
+                  !stacked || seriesIndex === bars.series.length - 1,
+                )}
                 fill={color}
                 opacity={faded ? 0.45 : 1}
               />
@@ -293,7 +296,7 @@ export function Panel({
             x={xAt(index)}
             y={height - 5}
             textAnchor="middle"
-            className="fill-academy-subtle text-[10.5px] tabular-nums"
+            className="fill-text-secondary text-[10.5px] tabular-nums"
           >
             {formatLabel ? formatLabel(labels[index]) : labels[index]}
           </text>
@@ -301,12 +304,13 @@ export function Panel({
 
       {hoverIndex !== null && hoverIndex >= 0 && hoverIndex < count && (
         <line
+          data-hover-line=""
           x1={xAt(hoverIndex)}
           x2={xAt(hoverIndex)}
           y1={PADDING_TOP}
           y2={PADDING_TOP + innerHeight}
           strokeWidth={1}
-          className="stroke-chart-5"
+          stroke={REFERENCE_COLOR}
         />
       )}
 
@@ -316,8 +320,11 @@ export function Panel({
         width={innerWidth}
         height={height}
         fill="transparent"
-        onPointerMove={handlePointerMove}
-        onPointerLeave={() => onHover(null, 0)}
+        onPointerDown={handlePointer}
+        onPointerMove={handlePointer}
+        onPointerLeave={(event) => {
+          if (event.pointerType !== "touch") onHover(null, 0)
+        }}
       />
     </svg>
   )

@@ -65,20 +65,21 @@
       "options": [
         {
           "id": "8ded99bd88",
-          "text": "Thấp hơn ban đầu"
+          "text": "CAGR tính theo lãi kép nên phản ánh đúng mức tăng thực giữa mốc đầu và mốc cuối"
         },
         {
           "id": "7648f76366",
-          "text": "Bằng đúng ban đầu"
+          "text": "CAGR bỏ qua năm đầu và năm cuối"
         },
         {
           "id": "452f63bb7f",
-          "text": "Cao hơn ban đầu"
+          "text": "CAGR luôn lớn hơn trung bình cộng"
         }
       ],
-      "prompt": "Tăng 50% rồi giảm 50% thì kết quả thế nào so với ban đầu?"
+      "prompt": "Vì sao CAGR khác trung bình cộng các mức tăng trưởng từng năm?"
     },
     {
+      "chart_id": "c8l4-rep",
       "correct_option_id": "f7201e5f87",
       "id": "ch08-l04-q05",
       "options": [

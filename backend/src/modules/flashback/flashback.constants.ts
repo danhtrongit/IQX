@@ -16,7 +16,10 @@ export const FLASHBACK_ROUND_STATUSES = [
 
 export type FlashbackRoundStatus = (typeof FLASHBACK_ROUND_STATUSES)[number];
 
-/** Phí tham gia từ lần thứ hai trở đi (xu). Lần đầu của tài khoản được miễn phí. */
+/**
+ * Phí tham gia mặc định từ lần thứ hai trở đi (xu). Lần đầu của tài khoản được miễn phí.
+ * Phí thật đọc từ `flashback_settings.config.entry_fee_xu` (spec 22-10 §1.14: 0 = miễn phí).
+ */
 export const FLASHBACK_JOIN_FEE_XU = 100;
 
 /** Phí 0,15% mỗi chiều (mua và bán). */
@@ -118,7 +121,45 @@ export const FLASHBACK_DEFAULT_SETTINGS = {
   min_liquidity_vnd: Number(FLASHBACK_MIN_LIQUIDITY_VND),
   min_daily_volatility: FLASHBACK_MIN_DAILY_VOLATILITY,
   max_start_attempts: FLASHBACK_MAX_START_ATTEMPTS,
+  entry_fee_xu: FLASHBACK_JOIN_FEE_XU,
 } as const;
+
+/** Đề mở trễ không quá chừng này so với `scheduled_open_at` vẫn coi là mở đúng giờ (FB-01). */
+export const FLASHBACK_ON_TIME_GRACE_MS = 5 * 60_000;
+
+/**
+ * Biên độ giá HOSE theo ngày (FB-11f). Đã đối chiếu trên nến VCI của 10 mã VN30: tới hết
+ * 12/2012 không phiên nào vượt 5%, từ 24/01/2013 có nhiều phiên 6-7%. Mốc đổi ±5% -> ±7% là
+ * 15/01/2013.
+ */
+export const FLASHBACK_HOSE_BAND_CHANGE_DATE = '2013-01-15';
+
+/** Sai số làm tròn cộng thêm vào biên độ khi kiểm tra bước nhảy giá (0,5%). */
+export const FLASHBACK_BAND_TOLERANCE = 0.005;
+
+/** Biên độ giá HOSE áp dụng cho phiên `date` (YYYY-MM-DD). */
+export function flashbackHosePriceBand(date: string): number {
+  return date < FLASHBACK_HOSE_BAND_CHANGE_DATE ? 0.05 : 0.07;
+}
+
+/** Số ngày tài khoản phải có để được nhận thưởng (spec v1.1 §2.9). */
+export const FLASHBACK_REWARD_MIN_ACCOUNT_DAYS = 7;
+
+/** Điều kiện nhận thưởng (spec v1.1 §2.9): đã xác thực số điện thoại và tạo đủ 7 ngày. */
+export function flashbackRewardEligible(
+  info: { readonly phoneVerified: boolean; readonly accountCreatedAt: Date } | null | undefined,
+  now: Date,
+): boolean {
+  if (!info || !info.phoneVerified) return false;
+  return (
+    info.accountCreatedAt.getTime() <= now.getTime() - FLASHBACK_REWARD_MIN_ACCOUNT_DAYS * 86_400_000
+  );
+}
+
+/** Khoá ledger của thưởng một người trong một đề (dùng chung cho trả tự động và duyệt tay). */
+export function flashbackRewardLedgerKey(roundId: string, userId: string): string {
+  return `flashback_reward:${roundId}:${userId}`;
+}
 
 /** Cờ tạm dừng Flashback (spec v1.2 §7): dừng mở đề mới, đề đang mở vẫn chạy. */
 export const FLASHBACK_PAUSED_KEY = 'paused';

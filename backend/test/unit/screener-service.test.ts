@@ -386,13 +386,33 @@ describe('mapWithConcurrency', () => {
 });
 
 describe('ScreenerService.metrics', () => {
-  it('lists the 42 registry metrics with learned flags, readiness and the period policy', async () => {
+  it('HV-03: a legacy grant keeps the 9 lesson-less metrics visible and learned', async () => {
+    const lessonless = ['fcf_yoy', 'accrual', 'dividend_yield', 'buyback_yield'];
+    const { service: svc } = service(
+      UNIVERSE,
+      fakeVci({ revenue: {} }).vci,
+      lessonless.map((id) => `metric:${id}`),
+    );
+    const metrics = await svc.metrics(USER);
+    expect(metrics.map((m) => m.id)).toEqual(expect.arrayContaining(lessonless));
+    expect(metrics.find((m) => m.id === 'fcf_yoy')).toMatchObject({
+      learned: true,
+      lesson_id: null,
+    });
+    expect(metrics.find((m) => m.id === 'payout_ratio')).toBeUndefined();
+    expect(metrics).toHaveLength(37);
+  });
+
+  it('lists the 33 lesson-backed registry metrics with learned flags, readiness and the period policy', async () => {
     const { service: svc } = service(UNIVERSE, fakeVci({ revenue: {} }).vci, [
       'metric:roe',
       'lesson:ch03-l01',
+      'metric:dividend_yield', // legacy grant keeps this lesson-less metric visible
     ]);
     const metrics = await svc.metrics(USER);
-    expect(metrics).toHaveLength(42);
+    expect(metrics).toHaveLength(34);
+    // HV-03: the 9 metrics without a lesson are hidden from learners.
+    expect(metrics.find((m) => m.id === 'fcf_yoy')).toBeUndefined();
     expect(metrics.find((m) => m.id === 'roe')).toMatchObject({
       learned: true,
       supported: true,
@@ -430,7 +450,7 @@ describe('ScreenerService.metrics', () => {
     const dividend = metrics.find((m) => m.id === 'dividend_yield')!;
     expect(dividend).toMatchObject({ supported: false, readiness: 'data_unavailable' });
     expect(dividend.unsupported_reason).toBeTruthy();
-    expect(metrics.find((m) => m.id === 'roic')?.readiness).toBe('definition_pending');
+    expect(metrics.find((m) => m.id === 'roic')?.readiness).toBe('ready');
     expect(metrics.every((m) => m.allowed_periods.some((p) => p.id === m.default_period))).toBe(
       true,
     );
@@ -646,7 +666,7 @@ describe('ScreenerService.run', () => {
     const fake = fakeVci({ revenue: {} });
     const { service: svc } = service(UNIVERSE, fake.vci, [
       'metric:dividend_yield',
-      'metric:roic',
+      'metric:payout_ratio',
       'metric:roe',
     ]);
     const error = await svc
@@ -663,7 +683,7 @@ describe('ScreenerService.run', () => {
               api_unit: 'ratio',
             },
           ],
-          columns: [{ metric_id: 'roic', period: 'ttm' }],
+          columns: [{ metric_id: 'payout_ratio', period: 'ttm' }],
         }),
         NOW,
       )
@@ -673,7 +693,7 @@ describe('ScreenerService.run', () => {
       code: 'METRIC_NOT_READY',
       details: [
         { metric_id: 'dividend_yield', readiness: 'data_unavailable' },
-        { metric_id: 'roic', readiness: 'definition_pending' },
+        { metric_id: 'payout_ratio', readiness: 'data_unavailable' },
       ],
     });
     expect(fake.statementCalls).toEqual([]);

@@ -27,18 +27,18 @@
       "options": [
         {
           "id": "8553d6f7f0",
-          "text": "100%"
+          "text": "Vì phần lãi được tính trên số vốn đã nhỏ đi sau khi lỗ"
         },
         {
           "id": "a3e77958b0",
-          "text": "50%"
+          "text": "Vì khi lãi luôn phải trừ thêm một nửa phí"
         },
         {
           "id": "8597ff3e54",
-          "text": "25%"
+          "text": "Vì lãi và lỗ luôn được tính trên cùng một số vốn"
         }
       ],
-      "prompt": "Lỗ 50% cần lãi bao nhiêu để hòa vốn?"
+      "prompt": "Vì sao lỗ một nửa thì phải lãi nhiều hơn một nửa mới hòa vốn?"
     },
     {
       "correct_option_id": "db21e78364",

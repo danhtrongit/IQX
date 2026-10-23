@@ -8,6 +8,8 @@
 import { useCallback, useMemo, useState } from "react"
 import { toast } from "sonner"
 
+import { ApiError } from "@/lib/api"
+
 import type { FlashbackIndicatorParams } from "./flashback-api"
 import type { ChartIndicator, FlashbackContextValue, FlashbackPanelTab, LocalIndicator } from "./flashback-context"
 import { computeIndicator } from "./flashback-indicators"
@@ -25,8 +27,28 @@ import {
   useJoinRound,
   useNextSession,
   usePlaceOrder,
+  useReloadFlashback,
   useSaveIndicators,
 } from "./use-flashback"
+
+/** Lỗi tham gia đề (spec 22-10 FB-11b). */
+export type FlashbackJoinErrorKind = "xu" | "other"
+
+/** Câu báo lỗi tham gia theo loại lỗi. */
+export const FLASHBACK_JOIN_ERROR_TEXT: Record<FlashbackJoinErrorKind, string> = {
+  xu: "Chưa đủ xu, học thêm bài để có xu",
+  other: "Không tham gia được, thử lại",
+}
+
+/** 409 của server: đề đã tới giờ đóng hoặc trạng thái đề đã đổi (FB-06), cần tải lại đề. */
+export function isRoundChangedError(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 409
+}
+
+/** Loại lỗi tham gia: chỉ 402 `XU_INSUFFICIENT` là thiếu xu. */
+export function joinErrorKind(error: unknown): FlashbackJoinErrorKind {
+  return error instanceof ApiError && error.status === 402 && error.code === "XU_INSUFFICIENT" ? "xu" : "other"
+}
 
 export function useFlashbackController(): FlashbackContextValue {
   const current = useFlashbackCurrent()
@@ -35,6 +57,8 @@ export function useFlashbackController(): FlashbackContextValue {
   const order = usePlaceOrder()
   const finish = useFinishRound()
   const save = useSaveIndicators()
+  const reload = useReloadFlashback()
+  const [joinFailure, setJoinFailure] = useState<FlashbackJoinErrorKind | null>(null)
 
   const round = current.data
   const entry = round?.my_entry ?? null
@@ -167,25 +191,53 @@ export function useFlashbackController(): FlashbackContextValue {
           setQty("")
           toast.success(side === "buy" ? `Đã mua ${formatNumber(qtyNumber)} cp` : `Đã bán ${formatNumber(qtyNumber)} cp`)
         },
-        onError: () => toast.error("Không đặt được lệnh. Thử lại."),
+        onError: (error) => {
+          if (roundChanged(error)) return
+          toast.error("Không đặt được lệnh. Thử lại.")
+        },
       },
     )
   }
 
+  /** Đề đã tới giờ đóng (409): tải lại đề, không báo lỗi thao tác. */
+  function roundChanged(error: unknown): boolean {
+    if (!isRoundChangedError(error)) return false
+    reload()
+    toast.info("Đề đã tới giờ đóng. Đang tải lại đề.")
+    return true
+  }
+
   function joinRound() {
+    setJoinFailure(null)
     join.mutate(undefined, {
-      onError: () => toast.error("Chưa tham gia được đề. Bạn có thể chưa đủ xu."),
+      onError: (error) => {
+        if (isRoundChangedError(error)) {
+          reload()
+          return
+        }
+        setJoinFailure(joinErrorKind(error))
+      },
     })
   }
 
   function nextSession() {
     if (!entry) return
-    next.mutate(entry.id, { onError: () => toast.error("Chưa mở được phiên tiếp theo.") })
+    next.mutate(entry.id, {
+      onError: (error) => {
+        if (roundChanged(error)) return
+        toast.error("Chưa mở được phiên tiếp theo.")
+      },
+    })
   }
 
   function finishRound() {
     if (!entry) return
-    finish.mutate(entry.id, { onError: () => toast.error("Chưa chốt được kết quả.") })
+    finish.mutate(entry.id, {
+      onError: (error) => {
+        if (roundChanged(error)) return
+        toast.error("Chưa chốt được kết quả.")
+      },
+    })
   }
 
   return {
@@ -215,7 +267,8 @@ export function useFlashbackController(): FlashbackContextValue {
     submitOrder,
     join: joinRound,
     joinBusy: join.isPending,
-    joinError: join.isError ? "Chưa đủ xu, học thêm bài để có xu" : null,
+    joinError: joinFailure ? FLASHBACK_JOIN_ERROR_TEXT[joinFailure] : null,
+    joinErrorKind: joinFailure,
     nextSession,
     nextBusy: next.isPending,
     finish: finishRound,

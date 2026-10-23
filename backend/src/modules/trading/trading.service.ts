@@ -67,6 +67,9 @@ function accountResponse(account: TradingAccount) {
     cash_available_vnd: safeMoney(account.cashAvailableVnd),
     cash_reserved_vnd: safeMoney(account.cashReservedVnd),
     cash_pending_vnd: safeMoney(account.cashPendingVnd),
+    // Vốn nạp ròng (đổi xu sang tiền trừ đổi ngược): trình duyệt dùng để phân biệt "chưa có vốn"
+    // với "đã mua hết bằng tiền" (spec 22-10 FB-12).
+    net_deposited_cash_vnd: safeMoney(account.netDepositedCashVnd),
     total_cash_vnd: safeMoney(
       account.cashAvailableVnd + account.cashReservedVnd + account.cashPendingVnd,
     ),

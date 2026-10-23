@@ -28,6 +28,7 @@ function portfolio(
       cash_reserved_vnd: 0,
       cash_pending_vnd: 0,
       total_cash_vnd: 50_000_000,
+      net_deposited_cash_vnd: 100_000_000,
       activated_at: "2026-01-01T00:00:00Z",
       reset_at: null,
       created_at: "2026-01-01T00:00:00Z",

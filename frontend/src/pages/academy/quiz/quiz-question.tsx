@@ -17,6 +17,7 @@ import {
   type ItemResponse,
   type SubmitResult,
 } from "../api"
+import { ChartBlock } from "../blocks/chart-block"
 import { invalidateAfterSubmit } from "../queries"
 import { scrollReaderTo } from "../scroll"
 import { markAttemptDone } from "../view-state"
@@ -140,6 +141,9 @@ export function QuizQuestion({
   }
 
   if (!question) return null
+  // HV-02: a chart-reading question shows the lesson's own chart above the prompt (answers never travel).
+  const charts = item.kind === "chapter_exam" ? undefined : item.charts
+  const chartId = question.chart_id && charts?.[question.chart_id] ? question.chart_id : null
 
   return (
     <section ref={cardRef} aria-labelledby="quiz-question-heading" className="rounded-lg border border-border bg-card p-4 sm:p-6">
@@ -171,6 +175,11 @@ export function QuizQuestion({
       </ol>
       {resumed && index > 0 && <p className="mt-3 text-xs text-academy-subtle">Đã khôi phục lượt làm bài đang dở.</p>}
 
+      {chartId && charts && (
+        <div data-quiz-chart={chartId} className="mt-4">
+          <ChartBlock block={{ type: "chart", chart_id: chartId, title: "Biểu đồ đại diện" }} charts={charts} />
+        </div>
+      )}
       <h3
         id="quiz-question-heading"
         ref={headingRef}

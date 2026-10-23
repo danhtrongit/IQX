@@ -79,6 +79,7 @@
       "prompt": "Hai doanh nghiệp cùng ROE 18%, doanh nghiệp nào thường bền vững hơn?"
     },
     {
+      "chart_id": "c10l1-rep",
       "correct_option_id": "964d58b127",
       "id": "ch10-l01-q05",
       "options": [

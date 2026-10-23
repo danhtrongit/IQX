@@ -79,6 +79,7 @@
       "prompt": "Khi tỷ lệ CFO / LNST thấp, nên kiểm tra khoản mục nào trước?"
     },
     {
+      "chart_id": "c12l2-rep",
       "correct_option_id": "53ffdbbeae",
       "id": "ch12-l02-q05",
       "options": [

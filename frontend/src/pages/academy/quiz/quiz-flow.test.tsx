@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import { resolve } from "node:path"
 import { screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -224,6 +226,20 @@ describe("quiz: score-only result", () => {
     expect((await screen.findByLabelText("Điểm 5 trên 5")).textContent).toBe("5/5")
     expect(screen.getByText("Đã mở chỉ tiêu ROE")).toBeTruthy()
     expect(screen.queryByText(/Đã mở chỉ báo/)).toBeNull()
+  })
+
+  it("HV-02: a chart-reading question draws the lesson's representative chart above the prompt", async () => {
+    const file = resolve(process.cwd(), "../backend/src/modules/academy/content/v3/lessons/ch10-l01.vi.json")
+    const charts = { "c10l1-rep": (JSON.parse(readFileSync(file, "utf8")) as { charts: Record<string, never> }).charts["c10l1-rep"] }
+    install({ completed: keysBefore("ch10-l01"), lessons: { "ch10-l01": { charts } } })
+    const user = userEvent.setup()
+    await openItem("ch10-l01", "Bài học 10.1")
+    await start(user)
+    expect(document.querySelector('[data-quiz-chart="c10l1-rep"] figure[data-chart-id="c10l1-rep"]')).toBeTruthy()
+    await user.click(option("A"))
+    await user.click(next())
+    await screen.findByRole("heading", { level: 3, name: /^Câu hỏi 2 / })
+    expect(document.querySelector("[data-quiz-chart]")).toBeNull()
   })
 
   it("an exam: Bài thi Chương c label, 20 questions, Đã hoàn thành Chương c, no coin toast", async () => {

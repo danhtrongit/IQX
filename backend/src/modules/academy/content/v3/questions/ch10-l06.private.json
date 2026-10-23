@@ -79,6 +79,7 @@
       "prompt": "Mô hình kinh doanh nào thường có vòng quay tài sản thấp?"
     },
     {
+      "chart_id": "c10l6-rep",
       "correct_option_id": "6e1ca7761a",
       "id": "ch10-l06-q05",
       "options": [

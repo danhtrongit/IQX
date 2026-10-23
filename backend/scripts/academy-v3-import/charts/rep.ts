@@ -6,223 +6,220 @@
  * `c{chapter}l{lesson}-rep` và một registry riêng (`REPRESENTATIVE_BUILDERS`), tách khỏi
  * `CHART_BUILDERS` vốn phải khớp với `id` của svg trong bản mẫu.
  *
- * Số liệu lấy từ `rep-data.ts`, đọc ra từ chính hình SVG của bản mẫu.
+ * Mỗi biểu đồ ra kind `fundamental`: đúng mô hình một thẻ của Dashboard phân tích (spec Dashboard
+ * §9, §11; spec cập nhật 22-10 DB-02), để Học viện và Dashboard vẽ bằng cùng một bộ khuôn. Số liệu
+ * doanh nghiệp mẫu lấy từ `rep-data.ts` (đọc ra từ chính hình SVG của bản mẫu); các giá trị tóm tắt
+ * (CAGR, độ lệch chuẩn, số năm dương liên tục) tính lại ở đây và phải khớp số lớn của bản mẫu.
  */
-import type { ChartModel, ChartTone } from '../../../src/modules/academy/content/v3/schema.js';
-import type { Builder, Category, Model } from './kit.js';
+import type { Builder, Model } from './kit.js';
+import { meanSd, r4 } from './fund.js';
 import { REPRESENTATIVE_DATA } from './rep-data.js';
-import type { RepBarTone, RepresentativeData } from './rep-data.js';
-import { fmtNum, meanBandChart, meanSd, r4, S1, S2, S3, GD, UP, DN, P3 } from './fund.js';
+import type { RepresentativeData } from './rep-data.js';
 
-/** Số điểm vượt quá mức mà nhãn trục ngang rút gọn được thì dùng `series_panels`. */
-const MAX_LABELS = 32;
+type Fundamental = Model<'fundamental'>;
+type FundamentalChart = Fundamental['chart'];
 
-const BAR_TONE_MAP: Record<RepBarTone, ChartTone> = {
-  S1,
-  S2,
-  S3,
+/** Chuỗi dài hơn mức này là chuỗi định giá theo ngày (khuôn F). */
+const MAX_PERIODS = 32;
+
+/** Ngày giao dịch đầu tiên của chuỗi định giá mẫu: các mốc 07/23 … 01/26 của bản mẫu rơi đúng vào ngày làm việc. */
+const DAILY_START = '2023-07-03';
+
+/** Ba chỉ tiêu tăng trưởng YoY của Chương 8 so kỳ này với cùng kỳ năm trước (khuôn A). */
+const GROWTH_IDS: Readonly<Record<string, true>> = {
+  'c8l1-rep': true,
+  'c8l2-rep': true,
+  'c8l3-rep': true,
 };
 
-/** Trung vị của dãy số. */
-function medianOf(a: readonly number[]): number {
-  const b = [...a].sort((p, q) => p - q);
-  const k = b.length >> 1;
-  return b.length % 2 ? (b[k] as number) : ((b[k - 1] as number) + (b[k] as number)) / 2;
+/**
+ * Định nghĩa phải giống hệt thẻ Dashboard (spec cập nhật 22-10 DB-06): tên đường chính và ghi chú dưới
+ * chú giải. Bản mẫu ghi gọn hơn, nên phần này đè lên số liệu đọc từ SVG.
+ */
+const DASHBOARD_WORDING: Readonly<Record<string, { mainName?: string; legendNote?: string }>> = {
+  'c10l1-rep': { mainName: 'ROE (4 quý, cổ đông công ty mẹ)' },
+  'c11l4-rep': { legendNote: 'Tiền gồm đầu tư tài chính ngắn hạn' },
+};
+
+/** "4,9 điểm %" -> { value: 4.9, unit: "điểm %" }. */
+function parseHeadline(headline: string): { value: number; unit: string } {
+  const match = /^(-?[\d.]+(?:,\d+)?)\s*(.*)$/.exec(headline.trim());
+  if (!match) throw new Error(`headline ${headline} is not a number`);
+  const value = Number((match[1] as string).replace(/\./g, '').replace(',', '.'));
+  return { value, unit: (match[2] as string).trim() };
 }
 
-/** Đường chỉ tiêu: `category` mode 'line' (nhãn trục ngang là các kỳ). */
-function lineModel(d: RepresentativeData, opts: { showCaption?: boolean } = {}): Category {
-  const values = d.line ?? [];
-  const hasNegative = values.some((v) => v < 0);
-  return {
-    kind: 'category',
-    mode: 'line',
-    labels: d.labels.length === values.length ? [...d.labels] : d.labels.map((_, i) => String(i + 1)),
-    unit: d.unit ?? '',
-    series: [{ name: d.lineName ?? d.metric, values: [...values], tone: S1 }],
-    value_labels: 'none',
-    ...(d.threshold
-      ? { threshold: { value: d.threshold.value, label: d.threshold.label } }
-      : hasNegative
-        ? { threshold: { value: 0, label: '0' } }
-        : {}),
-    ...(opts.showCaption !== false
-      ? { caption_value: d.headline, caption_tone: 'price' as const }
-      : {}),
-  } as Category;
+/** Kiểm tra giá trị tính lại khớp số lớn của bản mẫu sau khi làm tròn như bản mẫu. */
+function expectHeadline(
+  id: string,
+  computed: number,
+  headline: { value: number },
+  decimals: number,
+): void {
+  const rounded = Number(computed.toFixed(decimals));
+  if (Math.abs(rounded - headline.value) > 1e-9)
+    throw new Error(
+      `${id}: computed ${computed} does not round to the mockup headline ${headline.value}`,
+    );
 }
 
-/** Khung cột thành phần phía dưới của 19 biểu đồ Chương 8, 10, 11, 12. */
-function subBarModel(d: RepresentativeData): Category {
+/** Ngày làm việc (thứ 2 đến thứ 6) liên tiếp từ `start`. */
+function tradingDays(start: string, count: number): string[] {
+  const out: string[] = [];
+  const day = new Date(`${start}T00:00:00Z`);
+  while (out.length < count) {
+    const weekday = day.getUTCDay();
+    if (weekday !== 0 && weekday !== 6) out.push(day.toISOString().slice(0, 10));
+    day.setUTCDate(day.getUTCDate() + 1);
+  }
+  return out;
+}
+
+function decimalsOf(unit: string): number {
+  if (unit === '%' || unit === 'điểm %') return 1;
+  if (unit === 'lần') return 2;
+  return 0;
+}
+
+function series(name: string, values: readonly number[]): { name: string; v: number[] } {
+  return { name, v: [...values] };
+}
+
+/** Khuôn A, B, C: đường chỉ tiêu ở tầng trên, cột thành phần ở tầng dưới. */
+function bandedChart(id: string, d: RepresentativeData): FundamentalChart {
   const sub = d.sub!;
   return {
-    kind: 'category',
-    mode: sub.mode,
-    labels: [...d.labels],
-    unit: sub.unit,
-    series: sub.series.map((s) => ({
-      name: s.name,
-      values: [...s.values],
-      tone: BAR_TONE_MAP[s.tone],
-    })),
-    value_labels: 'none',
-    caption_value: d.headline,
-    caption_tone: 'price',
-  } as Category;
-}
-
-/** Biểu đồ CAGR (c8l4-rep..c8l6-rep): cột thường niên màu xanh S1 + đường đứt nét Theo CAGR trên cùng biểu đồ. */
-function cagrModel(d: RepresentativeData): Category {
-  const bars = d.bar ?? [];
-  const line = d.line ?? [];
-  return {
-    kind: 'category',
-    mode: 'grouped',
-    labels: [...d.labels],
+    name: d.metric,
+    kind: GROWTH_IDS[id] ? 'A' : sub.unit === 'ngày' ? 'C' : 'B',
     unit: d.unit ?? '',
-    series: [
-      {
-        name: d.barName ?? d.metric,
-        values: [...bars],
-        tone: S1,
-      },
-      {
-        name: d.lineName ?? 'Theo CAGR',
-        values: [...line],
-        tone: GD,
-        dash: true,
-      },
-    ],
-    value_labels: 'none',
-    caption_value: d.headline,
-    caption_tone: 'price',
-  } as Category;
+    labels: [...d.labels],
+    main: [series(d.lineName ?? d.metric, d.line!)],
+    sub: {
+      unit: sub.unit,
+      type: sub.mode,
+      series: sub.series.map((s) => series(s.name, s.values)),
+    },
+  };
 }
 
-/** Cột chuỗi năm dương liên tiếp (c9l1-rep, c12l5-rep): dương S1, âm DN, cột dương trước năm lỗ tô mờ (neutral). */
-function barModel(d: RepresentativeData): Category {
-  const values = d.bar ?? [];
-  const fadedBefore = d.fadedBefore ?? 0;
-  const perBarTones =
-    fadedBefore > 0
-      ? values.map((v, i) => (v < 0 ? DN : i < fadedBefore ? ('neutral' as const) : S1))
-      : undefined;
+/** Khuôn D: cột giá trị năm, `hero` = CAGR % tính từ năm đầu tới năm cuối. */
+function cagrChart(id: string, d: RepresentativeData): FundamentalChart {
+  const bars = d.bar!;
+  const first = bars[0] as number;
+  const last = bars[bars.length - 1] as number;
+  const cagr = ((last / first) ** (1 / (bars.length - 1)) - 1) * 100;
+  const headline = parseHeadline(d.headline);
+  expectHeadline(id, cagr, headline, 1);
   return {
-    kind: 'category',
-    mode: 'grouped',
-    labels: d.labels.length === values.length ? [...d.labels] : d.labels.map((_, i) => String(i + 1)),
-    unit: d.unit ?? '',
-    series: [
-      {
-        name: d.metric,
-        values: [...values],
-        tone_by_sign: { pos: S1, neg: DN },
-        ...(perBarTones ? { per_bar_tones: perBarTones } : {}),
-      },
-    ],
-    value_labels: 'none',
-    caption_value: d.headline,
-    caption_tone: 'price',
-  } as Category;
+    name: d.metric,
+    kind: 'D',
+    unit: headline.unit,
+    labels: [...d.labels],
+    main: [series(d.barName ?? d.metric, bars)],
+    mainUnit: d.unit ?? '',
+    hero: r4(cagr),
+  };
 }
 
-/** Biểu đồ độ ổn định 5 năm (c9l2-rep..c9l5-rep): đường chỉ tiêu + đường đứt nét Bình quân + dải Bình quân ± độ lệch chuẩn. */
-function stabilityModel(d: RepresentativeData): Model<'series_panels'> {
-  const values = d.line ?? [];
-  const { m, d: sd } = meanSd(values);
-  const lo = Math.min(0, ...values, m - sd);
-  const hi = Math.max(...values, m + sd);
-  const pad = (hi - lo) * 0.12 || 1;
-  return meanBandChart({
-    labels: d.labels,
-    values,
-    lo: r4(lo >= 0 && lo - pad < 0 ? 0 : lo - pad),
-    hi: r4(hi + pad),
-    step: r4((hi - lo) / 4),
-    alt: `${d.metric}: ${d.headline}`,
-  });
+/** Khuôn E2: cột LNST/FCF năm, `hero` = số năm của chuỗi dương liên tục gần nhất. */
+function streakChart(id: string, d: RepresentativeData): FundamentalChart {
+  const bars = d.bar!;
+  let streak = 0;
+  for (let i = bars.length - 1; i >= 0 && (bars[i] as number) > 0; i -= 1) streak += 1;
+  const headline = parseHeadline(d.headline);
+  expectHeadline(id, streak, headline, 0);
+  if (d.fadedBefore !== undefined && d.fadedBefore !== bars.length - streak)
+    throw new Error(
+      `${id}: fadedBefore ${d.fadedBefore} differs from the streak start ${bars.length - streak}`,
+    );
+  return {
+    name: d.metric,
+    kind: 'E2',
+    unit: headline.unit,
+    labels: [...d.labels],
+    main: [series(d.metric, bars)],
+    mainUnit: d.unit ?? '',
+    hero: streak,
+  };
 }
 
 /**
- * Chuỗi dài (hàng trăm điểm, c13l1..c13l3, c13l5, c13l6): `series_panels` với nhãn trục ngang rút gọn,
- * kèm đường đứt nét Trung vị 3 năm và dải Trung vị ± độ lệch chuẩn.
+ * Khuôn E1: đường giá trị năm, bình quân và bình quân ± độ lệch chuẩn do bộ khuôn vẽ. `hero` là độ
+ * lệch chuẩn (điểm %) hoặc hệ số biến thiên (%, khi đơn vị của chuỗi không phải %).
  */
-function denseModel(d: RepresentativeData): Model<'series_panels'> {
-  const values = d.line ?? [];
-  const n = values.length;
-  const ticks = new Array<string>(n).fill('');
-  if (d.labelAt && d.labels.length === d.labelAt.length) {
-    d.labelAt.forEach((index, k) => {
-      const label = d.labels[k];
-      if (label !== undefined && index >= 0 && index < n) ticks[index] = label;
-    });
-  } else {
-    d.labels.forEach((label, k) => {
-      const index = n === 1 ? 0 : Math.round((k * (n - 1)) / Math.max(1, d.labels.length - 1));
-      if (label) ticks[index] = label;
-    });
-  }
-  const median = medianOf(values);
-  const { d: sd } = meanSd(values);
-  const dec = d.unit === 'lần' ? 2 : 1;
+function stabilityChart(id: string, d: RepresentativeData): FundamentalChart {
+  const values = d.line!;
+  const { m, d: sd } = meanSd(values);
+  const headline = parseHeadline(d.headline);
+  const hero = headline.unit === '%' && d.unit !== '%' ? (sd / Math.abs(m)) * 100 : sd;
+  expectHeadline(id, hero, headline, 1);
   return {
-    kind: 'series_panels',
-    x: { start: 0, end: n - 1, ticks },
-    marks: [],
-    panels: [
-      {
-        title: d.unit ? `${d.metric} (${d.unit})` : d.metric,
-        series: [{ name: d.metric, role: S1, width: 2, values: [...values] }],
-        levels: [
-          {
-            value: r4(median),
-            role: 'avg',
-            label: `Trung vị 3 năm ${fmtNum(median, dec)}`,
-          },
-        ],
-        zones: [
-          {
-            from: r4(median - sd),
-            to: r4(median + sd),
-            tone: 'neutral',
-            label: 'Trung vị ± độ lệch chuẩn',
-          },
-        ],
-      },
-    ],
-    alt: `${d.metric}: ${d.headline}`,
-  } as Model<'series_panels'>;
+    name: d.metric,
+    kind: 'E1',
+    unit: headline.unit,
+    labels: [...d.labels],
+    main: [series(d.lineName ?? d.metric, values)],
+    mainUnit: d.unit ?? '',
+    hero: r4(hero),
+  };
 }
 
-/** Một biểu đồ đại diện: dựng đúng khuôn của từng nhóm chỉ tiêu trong Chương 8-13. */
-function buildRepresentative(d: RepresentativeData): ChartModel {
-  if (d.sub && d.line) {
-    return {
-      kind: 'compare',
-      layout: 'stack',
-      items: [
-        {
-          title: d.unit ? `${d.lineName ?? d.metric} (${d.unit})` : (d.lineName ?? d.metric),
-          model: lineModel(d, { showCaption: false }),
-        },
-        {
-          title: d.sub.unit ? `Thành phần (${d.sub.unit})` : 'Thành phần',
-          model: subBarModel(d),
-        },
-      ],
-    } as Model<'compare'>;
-  }
-  if (d.line && d.bar) return cagrModel(d);
-  if (d.bar) return barModel(d);
-  if (!d.line) throw new Error('representative chart has no data');
-  if (d.meanBand) return stabilityModel(d);
-  if (d.line.length > MAX_LABELS) return denseModel(d);
-  return lineModel(d);
+/** Khuôn F: chuỗi định giá theo ngày giao dịch; trung vị và dải do bộ khuôn tính trên cả giai đoạn. */
+function dailyChart(id: string, d: RepresentativeData): FundamentalChart {
+  const values = d.line!;
+  const dates = tradingDays(DAILY_START, values.length);
+  // Các mốc trục của bản mẫu (07/23, 01/24, …) phải rơi vào đúng tháng của ngày tại vị trí đó.
+  (d.labelAt ?? []).forEach((index, k) => {
+    const label = d.labels[k] as string;
+    const date = dates[index] as string;
+    if (`${date.slice(5, 7)}/${date.slice(2, 4)}` !== label)
+      throw new Error(`${id}: tick ${label} at ${index} falls on ${date}`);
+  });
+  const headline = parseHeadline(d.headline);
+  expectHeadline(id, values[values.length - 1] as number, headline, decimalsOf(d.unit ?? ''));
+  return {
+    name: d.metric,
+    kind: 'F',
+    unit: d.unit ?? '',
+    labels: dates,
+    main: [series(d.metric, values)],
+  };
+}
+
+/** Khuôn F2: PEG cuối kỳ có điểm tròn và đường tham chiếu PEG = 1. */
+function pegChart(d: RepresentativeData): FundamentalChart {
+  return {
+    name: d.metric,
+    kind: 'F2',
+    unit: d.unit ?? '',
+    labels: [...d.labels],
+    main: [series(d.lineName ?? d.metric, d.line!)],
+    ref: d.threshold!.value,
+  };
+}
+
+/** Một biểu đồ đại diện: dựng đúng khuôn Dashboard của chỉ tiêu đó. */
+function chartOf(id: string, d: RepresentativeData): FundamentalChart {
+  if (d.sub && d.line) return bandedChart(id, d);
+  if (d.line && d.bar) return cagrChart(id, d);
+  if (d.bar) return streakChart(id, d);
+  if (!d.line) throw new Error(`${id}: representative chart has no data`);
+  if (d.meanBand) return stabilityChart(id, d);
+  if (d.threshold) return pegChart(d);
+  if (d.line.length > MAX_PERIODS) return dailyChart(id, d);
+  throw new Error(`${id}: no dashboard template for this representative chart`);
+}
+
+function buildRepresentative(id: string, d: RepresentativeData): Fundamental {
+  const chart = chartOf(id, d);
+  const wording = DASHBOARD_WORDING[id];
+  const first = chart.main[0];
+  if (wording?.mainName && first) chart.main[0] = { ...first, name: wording.mainName };
+  if (wording?.legendNote) chart.legendNote = wording.legendNote;
+  return { kind: 'fundamental', chart, alt: `${d.metric}: ${d.headline}` };
 }
 
 /** Registry riêng cho biểu đồ đại diện (id `c{chapter}l{lesson}-rep`). */
 export const REPRESENTATIVE_BUILDERS: Readonly<Record<string, Builder>> = Object.fromEntries(
-  Object.entries(REPRESENTATIVE_DATA).map(([id, d]) => [id, () => buildRepresentative(d)]),
+  Object.entries(REPRESENTATIVE_DATA).map(([id, d]) => [id, () => buildRepresentative(id, d)]),
 );
-
-export { GD, UP, P3 };

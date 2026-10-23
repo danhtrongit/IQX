@@ -90,13 +90,13 @@ describe('fundamental registry period policy (Strategy spec §7.3, Appendix A.3)
   it('readiness matches what the repository can really compute', () => {
     const notReady = registry.filter((metric) => metric.readiness !== 'ready').map((m) => m.id);
     expect(notReady.sort()).toEqual(Object.keys(UNSUPPORTED_METRICS).sort());
-    expect(byId.get('roic')?.readiness).toBe('definition_pending');
-    expect(byId.get('roic_stability')?.readiness).toBe('definition_pending');
+    // DB-01: adjusted EPS (share events) and ROIC (tax rate policy) are computed now.
+    for (const id of ['roic', 'roic_stability', 'eps_yoy', 'eps_cagr3', 'eps_growth_stability', 'peg'])
+      expect(byId.get(id as never)?.readiness).toBe('ready');
     expect(byId.get('dividend_yield')?.readiness).toBe('data_unavailable');
-    expect(byId.get('eps_yoy')?.readiness).toBe('data_unavailable');
-    expect(notReadyMetrics(['roe', 'roic', 'dividend_yield', 'roic'])).toEqual([
-      { metric_id: 'roic', readiness: 'definition_pending' },
+    expect(notReadyMetrics(['roe', 'roic', 'dividend_yield', 'payout_ratio'])).toEqual([
       { metric_id: 'dividend_yield', readiness: 'data_unavailable' },
+      { metric_id: 'payout_ratio', readiness: 'data_unavailable' },
     ]);
   });
 

@@ -44,7 +44,9 @@ import {
   type ScreenerRunHeader,
   type ScreenerRunInput,
 } from './screener.schemas.js';
+import { shareEventsFromVci, withShareHistory, type ShareEvent } from './screener.shares.js';
 import {
+  EPS_METRICS,
   evaluateScreenerMetric,
   normalizeVciStatements,
   PRICE_METRICS,
@@ -185,24 +187,28 @@ export class ScreenerService {
 
   async metrics(userId: string): Promise<ScreenerMetricView[]> {
     const granted = await this.grants.grantedCapabilities(userId);
-    return loadFundamentalRegistry().map((metric) => ({
-      id: metric.id,
-      name: metric.name,
-      lesson_id: metric.lesson_id,
-      unit: metric.unit,
-      api_unit: metric.api_unit,
-      period: metric.period,
-      default_period: metric.default_period,
-      allowed_periods: metric.allowed_periods.map((id) => ({
-        id,
-        label: screenerPeriodLabel(metric.id, id),
-      })),
-      readiness: metric.readiness,
-      applicability: metric.applicability,
-      operators: [...metric.operators],
-      learned: granted.has(`metric:${metric.id}`),
-      ...metricSupport(metric.id),
-    }));
+    // HV-03: metrics without a lesson can never be unlocked by learning; only holders of the legacy
+    // `fundamental:*` grant (granted here as `metric:<id>`) still see them.
+    return loadFundamentalRegistry()
+      .filter((metric) => metric.lesson_id !== null || granted.has(`metric:${metric.id}`))
+      .map((metric) => ({
+        id: metric.id,
+        name: metric.name,
+        lesson_id: metric.lesson_id,
+        unit: metric.unit,
+        api_unit: metric.api_unit,
+        period: metric.period,
+        default_period: metric.default_period,
+        allowed_periods: metric.allowed_periods.map((id) => ({
+          id,
+          label: screenerPeriodLabel(metric.id, id),
+        })),
+        readiness: metric.readiness,
+        applicability: metric.applicability,
+        operators: [...metric.operators],
+        learned: granted.has(`metric:${metric.id}`),
+        ...metricSupport(metric.id),
+      }));
   }
 
   async run(userId: string, input: ScreenerRunInput, now = new Date()): Promise<ScreenerRunData> {
@@ -391,6 +397,8 @@ export class ScreenerService {
       this.logger.warn(`Screener statements unavailable for ${symbol}: ${errorText(error)}`);
       return this.providerFailure(specs);
     }
+    if (specs.some((spec) => EPS_METRICS.has(spec.metric_id) || spec.metric_id === 'pe'))
+      statements = withShareHistory(statements, await this.shareEvents(symbol, now));
     const market: MarketInputs = {
       price,
       shares: needsMarket ? await this.shares(symbol) : null,
@@ -415,6 +423,17 @@ export class ScreenerService {
       cash_flow: cash!.data,
     };
     return normalizeVciStatements(sections, now);
+  }
+
+  /** Split/bonus share events (VCI `/v1/events` ISS); null when the source fails. */
+  private async shareEvents(symbol: string, now: Date): Promise<ShareEvent[] | null> {
+    try {
+      const events = await this.vci.fetchShareEvents(symbol);
+      return shareEventsFromVci(events.data, now);
+    } catch (error) {
+      this.logger.warn(`Screener share events unavailable for ${symbol}: ${errorText(error)}`);
+      return null;
+    }
   }
 
   /** Shares on VCI's current market-cap basis (latest statistics-financial row). */

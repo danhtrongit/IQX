@@ -68,8 +68,25 @@ export const flashbackPauseBodySchema = z.strictObject({
   paused: z.boolean(),
 });
 
-/** Định danh lượt chơi. */
-export const flashbackEntryParamSchema = z.object({ id: z.uuid() });
+/** Định danh lượt chơi, đề hoặc khoản thưởng đang giữ. */
+export const flashbackIdParamSchema = z.uuid();
+
+/** Thân tham gia đề: mã thiết bị do trình duyệt sinh (FB-07), không bắt buộc. */
+export const flashbackJoinBodySchema = z
+  .strictObject({
+    device_id: z
+      .string()
+      .trim()
+      .regex(/^[A-Za-z0-9_-]{8,64}$/)
+      .optional(),
+  })
+  .default({});
+export type FlashbackJoinBody = z.infer<typeof flashbackJoinBodySchema>;
+
+/** Truy vấn danh sách thưởng đang giữ. */
+export const flashbackRewardHoldsQuerySchema = z.object({
+  status: z.enum(['held', 'released', 'voided']).optional(),
+});
 
 const barSchema = z.object({
   session: z.number(),
@@ -139,13 +156,24 @@ const finishResponseSchema = z.object({
   max_drawdown_percent: z.number(),
   rank: z.number().nullable(),
   reward_xu: z.number(),
+  reward_eligible: z.boolean(),
   status: z.literal('finished'),
+});
+
+const leaderboardRowSchema = z.object({
+  rank: z.number(),
+  username: z.string(),
+  pnl_pct: z.number().nullable(),
+  is_me: z.boolean(),
+  /** Chỉ có ở dòng của chính mình (FB-10). */
+  step: z.number().optional(),
+  status: z.enum(['playing', 'finished']).optional(),
 });
 
 const leaderboardResponseSchema = z.object({
   scope: z.enum(['all', 'team']),
-  rows: z.array(z.looseObject({})),
-  me: z.looseObject({}).nullable(),
+  rows: z.array(leaderboardRowSchema),
+  me: leaderboardRowSchema.nullable(),
   total_players: z.number(),
 });
 
@@ -169,6 +197,7 @@ const adminRoundSchema = z.object({
   player_count: z.number(),
   total_fee_xu: z.number(),
   total_reward_xu: z.number(),
+  held_reward_xu: z.number(),
   fallback_level: z.number(),
   symbol: z.string().nullable().optional(),
   start_date: z.string().nullable().optional(),
@@ -206,6 +235,46 @@ const adminSuspectsResponseSchema = z.object({
 
 const adminPauseResponseSchema = z.object({ paused: z.boolean() });
 
+const adminPauseStatusResponseSchema = z.object({
+  paused: z.boolean(),
+  /** Người đang xem có trong `SUPER_ADMIN_USER_IDS` (FB-08). */
+  super_admin: z.boolean(),
+});
+
+const adminRewardHoldSchema = z.object({
+  id: z.string(),
+  round_id: z.string(),
+  round_no: z.number(),
+  user_id: z.string(),
+  username: z.string(),
+  amount: z.number(),
+  reason: z.string(),
+  status: z.enum(['held', 'released', 'voided']),
+  decided_by: z.string().nullable(),
+  decided_at: z.string().nullable(),
+  created_at: z.string(),
+});
+
+const adminRewardHoldsResponseSchema = z.object({ holds: z.array(adminRewardHoldSchema) });
+
+const adminSettingsResponseSchema = z.object({
+  settings: z.array(
+    z.object({
+      key: z.string(),
+      label: z.string(),
+      value: z.union([z.string(), z.number()]),
+      default_value: z.union([z.string(), z.number()]),
+    }),
+  ),
+});
+
+const adminRevealResponseSchema = z.object({
+  round_no: z.number(),
+  symbol: z.string(),
+  start_date: z.string(),
+  session_range: z.string(),
+});
+
 @ApiTags('Flashback')
 @Controller('api/v2/flashback')
 export class FlashbackController {
@@ -222,8 +291,15 @@ export class FlashbackController {
   @HttpCode(200)
   @ApiOperation({ operationId: 'flashbackJoin', summary: 'Tham gia đề hiện tại' })
   @ApiOkResponse({ schema: openapi(joinResponseSchema) })
-  async join(@CurrentUser() user: AuthenticatedUser) {
-    return this.flashback.join(user.id);
+  async join(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: FastifyRequest,
+    @Body({ schema: flashbackJoinBodySchema }) body: FlashbackJoinBody,
+  ) {
+    return this.flashback.join(user.id, {
+      deviceId: body?.device_id ?? null,
+      ip: request.ip ?? null,
+    });
   }
 
   @Get('current/leaderboard')
@@ -231,7 +307,8 @@ export class FlashbackController {
   @ApiOkResponse({ schema: openapi(leaderboardResponseSchema) })
   async leaderboard(
     @CurrentUser() user: AuthenticatedUser,
-    @Query() query: z.infer<typeof flashbackLeaderboardQuerySchema>,
+    @Query({ schema: flashbackLeaderboardQuerySchema })
+    query: z.infer<typeof flashbackLeaderboardQuerySchema>,
   ) {
     return this.flashback.leaderboard(user.id, query.scope ?? 'all');
   }
@@ -249,9 +326,9 @@ export class FlashbackController {
   @ApiOkResponse({ schema: openapi(nextResponseSchema) })
   async next(
     @CurrentUser() user: AuthenticatedUser,
-    @Param() params: z.infer<typeof flashbackEntryParamSchema>,
+    @Param('id', { schema: flashbackIdParamSchema }) id: string,
   ) {
-    return this.flashback.next(user.id, params.id);
+    return this.flashback.next(user.id, id);
   }
 
   @Post('entries/:id/orders')
@@ -260,10 +337,10 @@ export class FlashbackController {
   @ApiOkResponse({ schema: openapi(orderResponseSchema) })
   async placeOrder(
     @CurrentUser() user: AuthenticatedUser,
-    @Param() params: z.infer<typeof flashbackEntryParamSchema>,
-    @Body() body: FlashbackOrderBody,
+    @Param('id', { schema: flashbackIdParamSchema }) id: string,
+    @Body({ schema: flashbackOrderBodySchema }) body: FlashbackOrderBody,
   ) {
-    return this.flashback.placeOrder(user.id, params.id, {
+    return this.flashback.placeOrder(user.id, id, {
       side: body.side,
       qty: body.qty,
       idempotencyKey: body.idempotency_key ?? null,
@@ -276,9 +353,9 @@ export class FlashbackController {
   @ApiOkResponse({ schema: openapi(finishResponseSchema) })
   async finish(
     @CurrentUser() user: AuthenticatedUser,
-    @Param() params: z.infer<typeof flashbackEntryParamSchema>,
+    @Param('id', { schema: flashbackIdParamSchema }) id: string,
   ) {
-    return this.flashback.finish(user.id, params.id);
+    return this.flashback.finish(user.id, id);
   }
 
   @Put('entries/:id/indicators')
@@ -286,10 +363,10 @@ export class FlashbackController {
   @ApiOkResponse({ schema: openapi(saveIndicatorsResponseSchema) })
   async saveIndicators(
     @CurrentUser() user: AuthenticatedUser,
-    @Param() params: z.infer<typeof flashbackEntryParamSchema>,
-    @Body() body: FlashbackIndicatorsBody,
+    @Param('id', { schema: flashbackIdParamSchema }) id: string,
+    @Body({ schema: flashbackIndicatorsBodySchema }) body: FlashbackIndicatorsBody,
   ) {
-    return this.flashback.saveIndicatorParams(user.id, params.id, body.indicators);
+    return this.flashback.saveIndicatorParams(user.id, id, body.indicators);
   }
 }
 
@@ -326,28 +403,85 @@ export class FlashbackAdminController {
     operationId: 'flashbackAdminPauseStatus',
     summary: 'Trạng thái tạm dừng Flashback',
   })
-  @ApiOkResponse({ schema: openapi(adminPauseResponseSchema) })
-  async pauseStatus() {
-    return { paused: await this.admin.paused() };
+  @ApiOkResponse({ schema: openapi(adminPauseStatusResponseSchema) })
+  async pauseStatus(@CurrentUser() user: AuthenticatedUser) {
+    return { paused: await this.admin.paused(), super_admin: this.admin.isSuperAdmin(user.id) };
   }
 
   @Post('pause')
   @HttpCode(200)
-  @ApiOperation({ operationId: 'flashbackAdminPause', summary: 'Tạm dừng Flashback' })
+  @ApiOperation({
+    operationId: 'flashbackAdminPause',
+    summary: 'Tạm dừng Flashback (chỉ quản trị viên cao nhất)',
+  })
   @ApiOkResponse({ schema: openapi(adminPauseResponseSchema) })
-  async pause(@Body() body: z.infer<typeof flashbackPauseBodySchema>) {
-    return this.admin.setPaused(body.paused);
+  async pause(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: FastifyRequest,
+    @Body({ schema: flashbackPauseBodySchema }) body: z.infer<typeof flashbackPauseBodySchema>,
+  ) {
+    return this.admin.setPaused(body.paused, auditContext(user, request));
+  }
+
+  @Get('settings')
+  @ApiOperation({
+    operationId: 'flashbackAdminSettings',
+    summary: 'Tham số vận hành Flashback (chỉ đọc)',
+  })
+  @ApiOkResponse({ schema: openapi(adminSettingsResponseSchema) })
+  async settings() {
+    return { settings: await this.admin.settings() };
+  }
+
+  @Get('reward-holds')
+  @ApiOperation({
+    operationId: 'flashbackAdminRewardHolds',
+    summary: 'Thưởng đang giữ của tài khoản bị đánh dấu',
+  })
+  @ApiOkResponse({ schema: openapi(adminRewardHoldsResponseSchema) })
+  async rewardHolds(
+    @Query({ schema: flashbackRewardHoldsQuerySchema })
+    query: z.infer<typeof flashbackRewardHoldsQuerySchema>,
+  ) {
+    return { holds: await this.admin.rewardHolds(query.status) };
+  }
+
+  @Post('reward-holds/:id/release')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'flashbackAdminReleaseRewardHold', summary: 'Trả thưởng đang giữ' })
+  @ApiOkResponse({ schema: openapi(adminRewardHoldSchema) })
+  async releaseRewardHold(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: FastifyRequest,
+    @Param('id', { schema: flashbackIdParamSchema }) id: string,
+  ) {
+    return this.admin.releaseRewardHold(id, auditContext(user, request));
+  }
+
+  @Post('reward-holds/:id/void')
+  @HttpCode(200)
+  @ApiOperation({ operationId: 'flashbackAdminVoidRewardHold', summary: 'Huỷ thưởng đang giữ' })
+  @ApiOkResponse({ schema: openapi(adminRewardHoldSchema) })
+  async voidRewardHold(
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() request: FastifyRequest,
+    @Param('id', { schema: flashbackIdParamSchema }) id: string,
+  ) {
+    return this.admin.voidRewardHold(id, auditContext(user, request));
   }
 
   @Get('rounds/:id/reveal')
-  @ApiOperation({ operationId: 'flashbackAdminReveal', summary: 'Xem mã của đề đã đóng' })
-  @ApiOkResponse({ schema: openapi(z.looseObject({})) })
+  @ApiOperation({
+    operationId: 'flashbackAdminReveal',
+    summary: 'Xem mã của đề đã đóng (chỉ quản trị viên cao nhất)',
+  })
+  @ApiOkResponse({ schema: openapi(adminRevealResponseSchema) })
   async reveal(
     @CurrentUser() user: AuthenticatedUser,
     @Req() request: FastifyRequest,
-    @Param() params: z.infer<typeof flashbackEntryParamSchema>,
+    @Param('id', { schema: flashbackIdParamSchema }) id: string,
   ) {
-    return this.admin.reveal(params.id, auditContext(user, request), {
+    return this.admin.reveal(id, auditContext(user, request), {
       ip: request.ip ?? null,
       userAgent: request.headers['user-agent'] ?? null,
       requestId: typeof request.id === 'string' ? request.id : null,

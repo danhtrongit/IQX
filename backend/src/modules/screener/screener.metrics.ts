@@ -20,26 +20,33 @@
  *    lower bound (`lower_bound: true`).
  *
  * SUPPORT MATRIX (data source: VCI IQ financial statements years+quarters, VCI statistics-
- * financial share count, VCI price board; universe from the `symbols` directory table):
+ * financial share count, VCI `/v1/events` ISS share events, VCI price board; universe from the
+ * `symbols` directory table):
  *
- *  supported — revenue_yoy, profit_yoy, gross_margin, net_margin, roe, roa, debt_equity,
- *    net_debt_ebitda, current_ratio, interest_coverage, cfo_margin, cfo_profit, fcf_margin,
- *    fcf_yoy, capex_revenue, accrual, pe, pb, ps, ev_ebitda, fcf_yield, revenue_cagr3,
- *    profit_cagr3, asset_turnover, ccc, working_cap_turnover, revenue_growth_stability,
- *    net_margin_stability, fcf_positive_streak, profit_positive_streak, buyback_yield.
+ *  supported — revenue_yoy, profit_yoy, eps_yoy, gross_margin, net_margin, roe, roa, roic,
+ *    debt_equity, net_debt_ebitda, current_ratio, interest_coverage, cfo_margin, cfo_profit,
+ *    fcf_margin, fcf_yoy, capex_revenue, accrual, pe, pb, ps, ev_ebitda, peg, fcf_yield,
+ *    revenue_cagr3, profit_cagr3, eps_cagr3, asset_turnover, ccc, working_cap_turnover,
+ *    revenue_growth_stability, eps_growth_stability, net_margin_stability, roic_stability,
+ *    fcf_positive_streak, profit_positive_streak, buyback_yield.
  *  documented variants —
- *    pe: EPS TTM = LNST cổ đông công ty mẹ TTM / số cổ phiếu cơ sở vốn hóa hiện tại (VCI
- *        numberOfSharesMktCap) so price and EPS share one share basis; reported per-quarter EPS
- *        is not adjusted for later bonus/split events and is never summed across bases.
+ *    EPS (eps_yoy, eps_cagr3, eps_growth_stability, peg, pe): EPS quý = LNST cổ đông công ty mẹ
+ *        quý / số cổ phiếu bình quân (đầu + cuối quý) đã điều chỉnh hồi tố theo chia tách/thưởng/
+ *        cổ tức bằng cổ phiếu (VCI `/v1/events` ISS); số cổ phiếu cuối quý = vốn góp / 10.000đ.
+ *        EPS 4 quý / năm = tổng EPS quý. Không lấy được lịch sử sự kiện thì EPS trả `missing`.
+ *        P/E = giá / EPS 4 quý điều chỉnh (giá đã điều chỉnh, cùng gốc hiện tại).
+ *    roic: NOPAT = EBIT × (1 − thuế suất hiệu dụng 4 quý/năm = thuế TNDN / LNTT, kẹp [0; 0,5],
+ *        LNTT ≤ 0 thì 20%); vốn đầu tư = VCSH + nợ vay − tiền và tương đương tiền, bình quân đầu
+ *        và cuối kỳ. roic_stability = độ lệch chuẩn 3 ROIC năm.
+ *    peg: P/E / tăng trưởng EPS 4 quý so với cùng kỳ (điểm %); trống khi tăng trưởng < 5% hoặc
+ *        P/E không dương (Dashboard spec §10).
  *    net debt / EV: eligible cash = tiền và tương đương tiền + đầu tư ngắn hạn.
  *    EBIT = LNTT + chi phí lãi vay; EBITDA = EBIT + khấu hao (+ phân bổ lợi thế thương mại).
  *    buyback_yield: (tiền chi mua lại/trả vốn góp − tiền thu phát hành cổ phiếu) TTM / vốn hóa.
  *    price: last matched price, or reference price when the session has no match yet.
- *  unsupported (supported:false, status `missing`) — eps_yoy, eps_cagr3, eps_growth_stability,
- *    peg (no split/bonus-adjusted EPS history), roic, roic_stability (no normalized tax-rate
- *    policy / operating-cash classification), dividend_yield, payout_ratio, dividend_cagr3,
- *    shareholder_yield (no per-share cash-dividend events by ex-date), share_count_yoy (no
- *    split/bonus event history to adjust the base share count).
+ *  unsupported (supported:false, status `missing`) — dividend_yield, payout_ratio,
+ *    dividend_cagr3, shareholder_yield (no per-share cash-dividend events by ex-date),
+ *    share_count_yoy (no treasury-share line to state the outstanding share count).
  */
 import { fundamentalMetric, type ScreenerMetricId } from './screener.registry.js';
 
@@ -93,24 +100,16 @@ export const METRIC_REASONS = {
   priceUnavailable: 'Chưa có giá giao dịch hợp lệ',
   sharesUnavailable: 'Chưa có số cổ phiếu lưu hành',
   noReport: 'Chưa có báo cáo của kỳ cần dùng',
+  lowEpsGrowth: 'Tăng trưởng EPS dưới 5% — PEG không có ý nghĩa',
+  shareHistoryUnavailable: 'Chưa có lịch sử số cổ phiếu đã điều chỉnh tách/thưởng',
 } as const;
 
-const EPS_ADJUSTMENT =
-  'Nguồn dữ liệu hiện tại chỉ có EPS báo cáo, chưa điều chỉnh tách/thưởng cổ phiếu; không ghép hai EPS khác cơ sở.';
-const ROIC_INPUTS =
-  'Chưa có thuế suất chuẩn hóa và phân loại tiền phục vụ hoạt động; không tự ước lượng NOPAT/vốn đầu tư.';
 const DIVIDEND_EVENTS =
   'Chưa có nguồn cổ tức tiền mặt mỗi cổ phiếu theo ngày giao dịch không hưởng quyền đã điều chỉnh.';
 const SHARE_EVENTS =
   'Chưa có hồ sơ sự kiện tách/gộp/thưởng cổ phiếu để điều chỉnh số cổ phiếu cùng kỳ.';
 
 export const UNSUPPORTED_METRICS: Readonly<Partial<Record<ScreenerMetricId, string>>> = {
-  eps_yoy: EPS_ADJUSTMENT,
-  eps_cagr3: EPS_ADJUSTMENT,
-  eps_growth_stability: EPS_ADJUSTMENT,
-  peg: `${EPS_ADJUSTMENT} PEG cần tăng trưởng EPS YoY.`,
-  roic: ROIC_INPUTS,
-  roic_stability: ROIC_INPUTS,
   dividend_yield: DIVIDEND_EVENTS,
   payout_ratio: DIVIDEND_EVENTS,
   dividend_cagr3: DIVIDEND_EVENTS,
@@ -142,6 +141,8 @@ export const METRIC_REASON_CODES: Readonly<Record<keyof typeof METRIC_REASONS, s
   priceUnavailable: 'price_unavailable',
   sharesUnavailable: 'shares_unavailable',
   noReport: 'no_report',
+  lowEpsGrowth: 'low_eps_growth',
+  shareHistoryUnavailable: 'share_history_unavailable',
 };
 
 export function reasonCode(status: MetricStatus, reason: string | undefined): string | undefined {
@@ -237,6 +238,9 @@ export const METRIC_ARG_UNITS: Readonly<
 
 type Arg = number | null | undefined;
 
+/** PEG is empty below this EPS growth (API ratio: 0.05 = 5%). */
+export const PEG_MIN_EPS_GROWTH = 0.05;
+
 const isFiniteNumber = (value: Arg): value is number =>
   typeof value === 'number' && Number.isFinite(value);
 
@@ -313,8 +317,10 @@ export function calculateMetric(id: ScreenerMetricId, args: readonly Arg[]): Met
     return ok(x / y - 1);
   }
   if (id === 'peg') {
-    // PEG = P/E ÷ EPS growth in percentage points; growth arrives as an API ratio.
+    // PEG = P/E ÷ EPS growth in percentage points; growth arrives as an API ratio. Below 5% the
+    // ratio explodes and says nothing (Dashboard spec §10), so it stays empty.
     if (x <= 0 || y <= 0) return insufficientBase(METRIC_REASONS.nonPositiveDenominator);
+    if (y < PEG_MIN_EPS_GROWTH) return insufficientBase(METRIC_REASONS.lowEpsGrowth);
     return ok(x / (y * 100));
   }
   if (id === 'interest_coverage' && y === 0) return notApplicable(METRIC_REASONS.noInterestExpense);

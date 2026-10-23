@@ -4,6 +4,11 @@
  * Mọi quyết định quan trọng đều do server tự tính: giá khớp lấy từ nến của phiên hiện tại,
  * phí/thuế tính bằng `roundBasisPoints` giống module trading, lượt chơi chỉ tồn tại một lần
  * mỗi đề (ràng buộc unique) và mọi ghi đều nằm trong một transaction.
+ *
+ * Bản 22-10: chỉ kết thúc được ở phiên 60 (FB-03), mọi thao tác chặn khi đề đã tới giờ đóng
+ * (FB-06), bảng xếp hạng không lộ `user_id` và phiên của người khác (FB-10), thưởng tạm tính xét
+ * điều kiện nhận thưởng (FB-11a), "Mua tối đa" dùng chung công thức số nguyên với trình duyệt
+ * (FB-11d) và phí tham gia đọc từ `flashback_settings` (§1.14).
  */
 
 import {
@@ -21,14 +26,15 @@ import { ACADEMY_GRANTS, type AcademyGrantsPort } from '../academy/academy.ports
 import { DatabaseService } from '../../platform/database/database.service.js';
 import { roundBasisPoints } from '../trading/trading.service.js';
 import {
+  FLASHBACK_CONFIG_KEY,
   FLASHBACK_FEE_BPS,
   FLASHBACK_HISTORY_SESSIONS,
   FLASHBACK_INITIAL_CASH_VND,
-  FLASHBACK_JOIN_FEE_XU,
   FLASHBACK_PLAY_SESSIONS,
   FLASHBACK_REWARD_TABLE,
   FLASHBACK_SETTLEMENT_SESSIONS,
   FLASHBACK_TAX_BPS,
+  flashbackRewardEligible,
   flashbackRewardForRank,
 } from './flashback.constants.js';
 import {
@@ -40,6 +46,7 @@ import {
   type FlashbackIndicatorMeta,
 } from './flashback.indicators.js';
 import { FLASHBACK_REPOSITORY, FlashbackRepository } from './flashback.repository.js';
+import { readFlashbackConfig } from './flashback.round-builder.js';
 import type {
   FlashbackBar,
   FlashbackEntryRow,
@@ -120,6 +127,8 @@ export interface FlashbackEntryView {
   readonly final_nav: string | null;
   readonly rank: number | null;
   readonly reward_xu: number;
+  /** Tài khoản đủ điều kiện nhận thưởng (xác thực số điện thoại và tạo đủ 7 ngày). */
+  readonly reward_eligible: boolean;
   readonly indicator_params: readonly FlashbackIndicatorInstance[];
   readonly positions: readonly FlashbackPositionView[];
   readonly orders: readonly FlashbackOrderView[];
@@ -188,6 +197,8 @@ export interface FlashbackFinishResult {
   readonly max_drawdown_percent: number;
   readonly rank: number | null;
   readonly reward_xu: number;
+  /** Tài khoản đủ điều kiện nhận thưởng; false thì `reward_xu` bằng 0 (FB-11a). */
+  readonly reward_eligible: boolean;
   readonly status: 'finished';
 }
 
@@ -199,17 +210,26 @@ export interface FlashbackLeaderboardView {
   readonly total_players: number;
 }
 
+/**
+ * Một dòng bảng xếp hạng (FB-10, v1.1 §2.9): chỉ hạng, tên đăng nhập, lãi lỗ và `is_me`.
+ * Riêng dòng của chính mình có thêm phiên đang chơi và trạng thái.
+ */
 export interface FlashbackLeaderboardRowView {
   readonly rank: number;
-  readonly user_id: string;
   readonly username: string;
   readonly pnl_pct: number | null;
-  readonly pnl_percent: number | null;
-  readonly max_drawdown: number | null;
-  readonly status: 'playing' | 'finished';
-  readonly step: number;
-  readonly reward_xu: number;
   readonly is_me: boolean;
+  readonly step?: number;
+  readonly status?: 'playing' | 'finished';
+}
+
+/** Tên hiển thị khi tài khoản chưa đặt tên đăng nhập (không bao giờ dùng email). */
+export const FLASHBACK_ANONYMOUS_NAME = 'Người chơi ẩn danh';
+
+/** Ngữ cảnh thiết bị lúc tham gia (FB-07). */
+export interface FlashbackJoinContext {
+  readonly deviceId?: string | null;
+  readonly ip?: string | null;
 }
 
 /** Nến biểu đồ tại một bước chơi: bước 0 là nến lịch sử cuối cùng. */
@@ -235,22 +255,23 @@ function toPublicBar(bar: FlashbackBar, session: number): FlashbackPublicBar {
   };
 }
 
-/** Lượng cổ phiếu lớn nhất mua được với số tiền mặt hiện có (cùng công thức với lệnh mua). */
+/**
+ * Lượng cổ phiếu lớn nhất mua được với số tiền mặt hiện có (FB-11d).
+ *
+ * Công thức số nguyên dùng chung với trình duyệt (`flashback-model.ts`):
+ * `floor(cash × 10000 / (price × (10000 + phí)))`, rồi chỉnh ±1 theo phí làm tròn của lệnh mua
+ * (`roundBasisPoints`) để luôn khớp đúng với kiểm tra tiền khi đặt lệnh.
+ */
 export function maxBuyQty(cash: bigint, price: bigint): number {
   if (price <= 0n || cash <= 0n) return 0;
-  const affordable = (qty: number): boolean => {
-    const amount = price * BigInt(qty);
+  const affordable = (qty: bigint): boolean => {
+    const amount = price * qty;
     return amount + roundBasisPoints(amount, FLASHBACK_FEE_BPS) <= cash;
   };
-  // Tìm nhị phân trên khoảng [0, 1 tỷ] vì chi phí tăng đơn điệu theo số lượng.
-  let low = 0;
-  let high = 1_000_000_000;
-  while (low < high) {
-    const middle = Math.floor((low + high + 1) / 2);
-    if (affordable(middle)) low = middle;
-    else high = middle - 1;
-  }
-  return low;
+  let qty = (cash * 10_000n) / (price * (10_000n + BigInt(FLASHBACK_FEE_BPS)));
+  while (qty > 0n && !affordable(qty)) qty -= 1n;
+  while (affordable(qty + 1n)) qty += 1n;
+  return Number(qty);
 }
 
 /** Đường vốn tài sản theo từng bước để tính sụt giảm lớn nhất. */
@@ -306,6 +327,7 @@ export class FlashbackService {
     const playerCount = await this.repository.countEntriesByRound(this.database, round.id);
     const priorEntries = await this.repository.countEntriesByUser(this.database, userId);
     const firstJoinFree = priorEntries === 0 || entry?.firstJoin === true;
+    const entryFee = await this.entryFeeXu();
 
     const bars: FlashbackPublicBar[] = round.bars
       .slice(0, FLASHBACK_HISTORY_SESSIONS)
@@ -322,7 +344,7 @@ export class FlashbackService {
       round_no: round.roundNo,
       closes_at: (round.closesAt ?? round.scheduledOpenAt).toISOString(),
       player_count: playerCount,
-      fee_xu: firstJoinFree ? 0 : FLASHBACK_JOIN_FEE_XU,
+      fee_xu: firstJoinFree ? 0 : entryFee,
       first_join_free: firstJoinFree,
       reward_table: FLASHBACK_REWARD_TABLE.map((tier) => ({
         from_rank: tier.fromRank,
@@ -402,23 +424,25 @@ export class FlashbackService {
 
   // ------------------------------------------------------------------ chơi
 
-  async join(userId: string): Promise<FlashbackJoinResult> {
+  async join(userId: string, context: FlashbackJoinContext = {}): Promise<FlashbackJoinResult> {
     const round = await this.repository.openRound(this.database);
     if (!round)
       throw conflict('FLASHBACK_NO_OPEN_ROUND', 'Hiện không có đề Flashback nào đang mở.');
+    this.assertRoundPlayable(round);
+    const entryFee = await this.entryFeeXu();
     const entry = await this.database.transaction(async (tx) => {
       const existing = await this.repository.entryByRoundUser(tx, round.id, userId);
       if (existing)
         throw conflict('FLASHBACK_ALREADY_JOINED', 'Bạn đã tham gia đề này rồi.');
       const priorEntries = await this.repository.countEntriesByUser(tx, userId);
       const firstJoin = priorEntries === 0;
-      const fee = firstJoin ? 0 : FLASHBACK_JOIN_FEE_XU;
+      const fee = firstJoin ? 0 : entryFee;
       if (fee > 0) {
         const wallet = await this.repository.lockWallet(tx, userId);
         if (wallet.balance < fee)
           throw paymentRequired(
             'XU_INSUFFICIENT',
-            'Không đủ xu. Cần 100 xu để tham gia đề tiếp theo.',
+            `Không đủ xu. Cần ${fee.toLocaleString('vi-VN')} xu để tham gia đề tiếp theo.`,
           );
         const seq = wallet.lastSeq + 1;
         const balanceAfter = wallet.balance - fee;
@@ -443,6 +467,8 @@ export class FlashbackService {
         firstJoin,
         cash: FLASHBACK_INITIAL_CASH_VND,
         initialCash: FLASHBACK_INITIAL_CASH_VND,
+        deviceId: context.deviceId ?? null,
+        joinIp: context.ip ?? null,
       });
       if (!created)
         throw conflict('FLASHBACK_ALREADY_JOINED', 'Bạn đã tham gia đề này rồi.');
@@ -465,10 +491,11 @@ export class FlashbackService {
         throw notFound('FLASHBACK_ENTRY_NOT_FOUND', 'Không tìm thấy lượt chơi.');
       if (entry.status !== 'playing')
         throw conflict('FLASHBACK_ALREADY_FINISHED', 'Lượt chơi đã kết thúc.');
-      if (entry.step >= FLASHBACK_PLAY_SESSIONS)
-        throw conflict('FLASHBACK_COMPLETE', 'Bạn đã chơi đủ 60 phiên.');
       const round = await this.repository.roundById(tx, entry.roundId);
       if (!round) throw notFound('FLASHBACK_ROUND_NOT_FOUND', 'Không tìm thấy đề.');
+      this.assertRoundPlayable(round);
+      if (entry.step >= FLASHBACK_PLAY_SESSIONS)
+        throw conflict('FLASHBACK_COMPLETE', 'Bạn đã chơi đủ 60 phiên.');
       const step = entry.step + 1;
       const advanced = await this.repository.advanceEntryStep(tx, entry.id, entry.step, step);
       if (!advanced)
@@ -513,8 +540,7 @@ export class FlashbackService {
         throw conflict('FLASHBACK_ALREADY_FINISHED', 'Lượt chơi đã kết thúc.');
       const round = await this.repository.roundById(tx, entry.roundId);
       if (!round) throw notFound('FLASHBACK_ROUND_NOT_FOUND', 'Không tìm thấy đề.');
-      if (round.status !== 'open')
-        throw conflict('FLASHBACK_ROUND_NOT_OPEN', 'Đề đã đóng, không nhận lệnh nữa.');
+      this.assertRoundPlayable(round);
       if (input.idempotencyKey) {
         const replay = await this.repository.orderByIdempotencyKey(
           tx,
@@ -636,6 +662,14 @@ export class FlashbackService {
       }
       const round = await this.repository.roundById(tx, entry.roundId);
       if (!round) throw notFound('FLASHBACK_ROUND_NOT_FOUND', 'Không tìm thấy đề.');
+      this.assertRoundPlayable(round);
+      // Chỉ kết thúc được ở phiên 60 (FB-03): kết thúc sớm sẽ lộ giá đóng cửa phiên 60.
+      // Đề tới giờ đóng thì tác vụ tự kết thúc các lượt còn dở (bước 2).
+      if (entry.step < FLASHBACK_PLAY_SESSIONS)
+        throw conflict(
+          'FLASHBACK_NOT_AT_END',
+          'Chỉ kết thúc được khi đã chơi đủ 60 phiên.',
+        );
       const lots = await this.repository.lotsByEntry(tx, entry.id);
       const holdings = lots.reduce((sum, lot) => sum + lot.qty, 0);
       const orders = await this.repository.ordersByEntry(tx, entry.id);
@@ -656,9 +690,10 @@ export class FlashbackService {
 
     const rank =
       result.entry.rank ?? (await this.provisionalRank(result.round, result.entry));
+    const eligible = await this.rewardEligible(userId);
     const rewardXu =
       result.round.status === 'open' && result.entry.rank === null
-        ? rank !== null
+        ? rank !== null && eligible
           ? flashbackRewardForRank(rank)
           : 0
         : result.entry.rewardXu;
@@ -671,6 +706,7 @@ export class FlashbackService {
       max_drawdown_percent: (result.entry.maxDrawdown ?? 0) * 100,
       rank,
       reward_xu: rewardXu,
+      reward_eligible: eligible,
       status: 'finished',
     };
   }
@@ -721,18 +757,17 @@ export class FlashbackService {
         if (leftDone !== rightDone) return leftDone - rightDone;
         return left.entry.joinedAt.getTime() - right.entry.joinedAt.getTime();
       })
-      .map((row, index) => ({
-        rank: index + 1,
-        user_id: row.entry.userId,
-        username: row.entry.username,
-        pnl_pct: row.pnlPct,
-        pnl_percent: row.pnlPct === null ? null : row.pnlPct * 100,
-        max_drawdown: row.drawdown,
-        status: row.entry.status,
-        step: row.entry.step,
-        reward_xu: row.entry.rewardXu,
-        is_me: row.entry.userId === userId,
-      }));
+      .map((row, index): FlashbackLeaderboardRowView => {
+        const isMe = row.entry.userId === userId;
+        const base = {
+          rank: index + 1,
+          username: row.entry.displayName ?? FLASHBACK_ANONYMOUS_NAME,
+          pnl_pct: row.pnlPct,
+          is_me: isMe,
+        };
+        // Phiên đang chơi và trạng thái chỉ có ở dòng của chính mình (FB-10).
+        return isMe ? { ...base, step: row.entry.step, status: row.entry.status } : base;
+      });
 
     const top = rows.slice(0, 10);
     const me = rows.find((row) => row.is_me) ?? null;
@@ -740,6 +775,29 @@ export class FlashbackService {
   }
 
   // ------------------------------------------------------------------ nội bộ
+
+  /**
+   * Đề còn nhận thao tác (FB-06): đang `open` và chưa tới `closes_at`. Từ giờ đóng tới lần chạy
+   * kế tiếp của tác vụ, mọi thao tác trả 409 `FLASHBACK_ROUND_CLOSED`.
+   */
+  private assertRoundPlayable(round: FlashbackRoundRow): void {
+    const closed =
+      round.status !== 'open' ||
+      (round.closesAt !== null && this.clock.now().getTime() >= round.closesAt.getTime());
+    if (closed)
+      throw conflict('FLASHBACK_ROUND_CLOSED', 'Đề đã tới giờ đóng, không nhận thao tác nữa.');
+  }
+
+  /** Phí tham gia từ lần thứ hai, đọc từ `flashback_settings.config.entry_fee_xu`. */
+  private async entryFeeXu(): Promise<number> {
+    const stored = await this.repository.getSetting(this.database, FLASHBACK_CONFIG_KEY);
+    return readFlashbackConfig(stored).entryFeeXu;
+  }
+
+  private async rewardEligible(userId: string): Promise<boolean> {
+    const info = await this.repository.playerEligibility(this.database, userId);
+    return flashbackRewardEligible(info, this.clock.now());
+  }
 
   private orderView(order: FlashbackOrderRow): FlashbackOrderView {
     return {
@@ -784,9 +842,10 @@ export class FlashbackService {
         : Number(totalAssets - entry.initialCash) / Number(entry.initialCash);
     let rank = entry.rank;
     let rewardXu = entry.rewardXu;
+    const eligible = await this.rewardEligible(entry.userId);
     if (entry.status === 'finished' && rank === null) {
       rank = await this.provisionalRank(round, entry);
-      if (round.status === 'open' && rank !== null) {
+      if (round.status === 'open' && rank !== null && eligible) {
         rewardXu = flashbackRewardForRank(rank);
       }
     }
@@ -806,6 +865,7 @@ export class FlashbackService {
       final_nav: entry.finalNav === null ? null : entry.finalNav.toString(),
       rank,
       reward_xu: rewardXu,
+      reward_eligible: eligible,
       indicator_params: entry.indicatorParams,
       positions,
       orders: orders.map((order) => this.orderView(order)),

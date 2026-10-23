@@ -1,4 +1,4 @@
-import { cleanup, render } from "@testing-library/react"
+import { cleanup, render, within } from "@testing-library/react"
 import { afterEach, describe, expect, it } from "vitest"
 
 import { BlockRenderer } from "../blocks/block-renderer"
@@ -636,11 +636,56 @@ describe("real content: scale labels", () => {
   }
 })
 
+const representatives = lessons.flatMap((lesson) =>
+  Object.entries(lesson.charts)
+    .filter(([, chart]) => chart.kind === "fundamental")
+    .map(([id]) => [lesson.id, id] as const)
+)
+
+describe("real content: representative charts use the shared Dashboard renderer (DB-02)", () => {
+  it("all 33 representative charts of Chương 8-13 are fundamental models", () => {
+    expect(representatives.map(([, id]) => id)).toHaveLength(33)
+    expect(representatives.every(([, id]) => id.endsWith("-rep"))).toBe(true)
+  })
+
+  for (const width of [358, 760]) {
+    it.each(representatives)(
+      `%s %s draws with the shared renderer inside ${width}px`,
+      (lessonId, chartId) => {
+        const { container } = renderLesson(lessonById(lessonId), width)
+        const figure = container.querySelector(
+          `[data-chart-id="${chartId}"]`
+        ) as HTMLElement
+        expect(figure.querySelector("[data-fundamental-chart]")).not.toBeNull()
+        expect(figure.querySelectorAll('svg[role="img"]').length).toBeGreaterThan(0)
+        // The shared renderer brings its own legend and "Bảng số" toggle.
+        expect(within(figure).getByRole("button", { name: "Bảng số" })).toBeTruthy()
+        expect(figure.querySelector("li")).not.toBeNull()
+        expect(figure.textContent).not.toContain("Xem bảng số liệu")
+        expect(svgOverflows(figure, width)).toEqual([])
+      }
+    )
+  }
+
+  it("the ROE chart of ch10-l01 is the Dashboard's kind B: line with markers over the bars of LNST 4 quý", () => {
+    const { container } = renderLesson(lessonById("ch10-l01"), 760)
+    const figure = container.querySelector('[data-chart-id="c10l1-rep"]') as HTMLElement
+    expect(figure.querySelector('[data-fundamental-chart="B"]')).not.toBeNull()
+    const svgs = figure.querySelectorAll('svg[role="img"]')
+    expect(svgs).toHaveLength(2)
+    expect(svgs[0]?.querySelectorAll("circle")).toHaveLength(8)
+    expect(texts(svgs[1] as SVGSVGElement)).toContain("Q2/26")
+    expect(
+      [...figure.querySelectorAll("li")].map((item) => item.textContent)
+    ).toEqual(["ROE (4 quý, cổ đông công ty mẹ)", "LNST 4 quý"])
+  })
+})
+
 describe("real content: v3.3 chart models", () => {
   it("a compare chart with layout 'stack' draws its two leaves one under the other", () => {
-    const { container } = renderLesson(lessonById("ch08-l01"), 760)
+    const { container } = renderLesson(lessonById("ch12-l03"), 760)
     const compare = container.querySelector(
-      '[data-chart-id="c8l1-rep"]'
+      '[data-chart-id="c12l3-g3"]'
     ) as HTMLElement
     expect(compare).not.toBeNull()
     const figures = compare.querySelectorAll("figure")

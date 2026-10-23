@@ -78,14 +78,13 @@ export function demoExchangeLedgerKey(userId: string, idempotencyKey: string): s
 }
 
 /**
- * The platform has no phone-verification flow yet (`users.phone_verified_at` is never set),
- * so the "only phone-verified accounts may redeem Premium with xu" rule is opt-in by
- * configuration. It is off by default; turning it on makes the flag authoritative.
+ * "Only phone-verified accounts may redeem Premium with xu" (spec 22-10 §1.14). On by default;
+ * only an explicit `false`/`0` in `PREMIUM_XU_REDEEM_PHONE_VERIFIED_ONLY` turns it off.
  */
 export function premiumRedeemPhoneVerifiedOnly(): boolean {
-  const raw = process.env.PREMIUM_XU_REDEEM_PHONE_VERIFIED_ONLY;
-  if (raw === undefined || raw === '') return false;
-  return raw === 'true' || raw === '1';
+  const raw = process.env.PREMIUM_XU_REDEEM_PHONE_VERIFIED_ONLY?.trim().toLowerCase();
+  if (raw === undefined || raw === '') return true;
+  return !(raw === 'false' || raw === '0');
 }
 
 type OwnedView = { mascot_id: MascotId; source: MascotOwnershipSource; acquired_at: string | null };

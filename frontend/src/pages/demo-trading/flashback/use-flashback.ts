@@ -68,7 +68,18 @@ export function useFlashbackIndicators(enabled: boolean) {
   })
 }
 
-/** Tham gia đề: lần đầu miễn phí, từ lần hai trừ 100 xu. */
+/** Tải lại đề hiện tại và bảng xếp hạng (khi server báo đề đã tới giờ đóng). */
+export function useReloadFlashback() {
+  const queryClient = useQueryClient()
+  const { user } = useAuth()
+  const userId = user?.id ?? NO_USER
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: flashbackKeys.current(userId) })
+    void queryClient.invalidateQueries({ queryKey: ["flashback", "leaderboard", userId] })
+  }
+}
+
+/** Tham gia đề: lần đầu miễn phí, từ lần hai trừ phí cấu hình (mặc định 100 xu). */
 export function useJoinRound() {
   const queryClient = useQueryClient()
   const { user } = useAuth()
@@ -78,7 +89,7 @@ export function useJoinRound() {
     onSuccess: (result) => {
       void queryClient.invalidateQueries({ queryKey: flashbackKeys.current(userId) })
       void queryClient.invalidateQueries({ queryKey: ["shop"] })
-      toast.success(result.first_join ? "Đã tham gia miễn phí" : `Đã tham gia · −${result.fee_xu} xu`)
+      toast.success(result.fee_xu > 0 ? `Đã tham gia · −${result.fee_xu} xu` : "Đã tham gia miễn phí")
     },
   })
 }

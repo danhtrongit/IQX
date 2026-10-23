@@ -351,6 +351,6 @@ export function hasDataTable(model: ChartModel): boolean {
 }
 
 /** Accessible name of a model: its own alt text, else the given fallback (block title or chart id). */
-export function chartLabel(model: LeafChartModel | { kind: "compare" }, fallback: string): string {
+export function chartLabel(model: ChartModel | LeafChartModel, fallback: string): string {
   return ("alt" in model && model.alt) || fallback
 }

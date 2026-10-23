@@ -92,96 +92,70 @@
       "value_labels": "all"
     },
     "c10l6-rep": {
-      "items": [
-        {
-          "model": {
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "line",
-            "series": [
-              {
-                "name": "Vòng quay tài sản (4 quý)",
-                "tone": "p1",
-                "values": [
-                  1.0952,
-                  1.0914,
-                  1.0528,
-                  1.0521,
-                  1.0649,
-                  1.0485,
-                  1.0238,
-                  1.0152
-                ]
-              }
-            ],
-            "unit": "lần",
-            "value_labels": "none"
-          },
-          "title": "Vòng quay tài sản (4 quý) (lần)"
+      "alt": "Asset Turnover: 1,02 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Vòng quay tài sản (4 quý)",
+            "v": [
+              1.0952,
+              1.0914,
+              1.0528,
+              1.0521,
+              1.0649,
+              1.0485,
+              1.0238,
+              1.0152
+            ]
+          }
+        ],
+        "name": "Asset Turnover",
+        "sub": {
+          "series": [
+            {
+              "name": "Doanh thu 4 quý",
+              "v": [
+                5167.5702,
+                5347.6216,
+                5489.517,
+                5656.0911,
+                5777.9833,
+                5929.5893,
+                6131.1808,
+                6278.9753
+              ]
+            },
+            {
+              "name": "Tài sản bình quân",
+              "v": [
+                4718.2019,
+                4899.9142,
+                5213.9917,
+                5375.9838,
+                5425.9599,
+                5655.4739,
+                5988.6096,
+                6184.8324
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
         },
-        {
-          "model": {
-            "caption_tone": "price",
-            "caption_value": "1,02 lần",
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "grouped",
-            "series": [
-              {
-                "name": "Doanh thu 4 quý",
-                "tone": "p1",
-                "values": [
-                  5167.5702,
-                  5347.6216,
-                  5489.517,
-                  5656.0911,
-                  5777.9833,
-                  5929.5893,
-                  6131.1808,
-                  6278.9753
-                ]
-              },
-              {
-                "name": "Tài sản bình quân",
-                "tone": "p5",
-                "values": [
-                  4718.2019,
-                  4899.9142,
-                  5213.9917,
-                  5375.9838,
-                  5425.9599,
-                  5655.4739,
-                  5988.6096,
-                  6184.8324
-                ]
-              }
-            ],
-            "unit": "tỷ đồng",
-            "value_labels": "none"
-          },
-          "title": "Thành phần (tỷ đồng)"
-        }
-      ],
-      "kind": "compare",
-      "layout": "stack"
+        "unit": "lần"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -245,7 +219,6 @@
       "blocks": [
         {
           "chart_id": "c10l6-rep",
-          "table_toggle": true,
           "title": "Asset Turnover",
           "type": "chart"
         },

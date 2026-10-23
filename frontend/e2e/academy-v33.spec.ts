@@ -145,4 +145,35 @@ test.describe("Học viện v3.3 on the real backend", () => {
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
     expect(overflow).toBeLessThanOrEqual(0)
   })
+
+  test("passing ch06-l01 opens EMA in the Flashback indicator box and ch10-l01 opens ROE in the screener", async ({ page, request }) => {
+    const session = await register(request)
+    const api = client(request, session)
+    const hasIndicator = async (id: string) =>
+      (await api.get<{ indicators: { id: string }[] }>("/flashback/indicators")).body.indicators.some((indicator) => indicator.id === id)
+    const roe = async () =>
+      (await api.get<{ id: string; learned: boolean }[]>("/strategy/screener/metrics")).body.find((metric) => metric.id === "roe")
+
+    await passUntil(api, "ch06-l01")
+    expect(await hasIndicator("ema")).toBe(false)
+    await signIn(page, session)
+    await page.goto("/demo-trading?view=academy&lesson=ch06-l01")
+    await page.getByRole("button", { name: "Làm bài kiểm tra" }).click()
+    const correct = correctOf("ch06-l01")
+    for (let index = 0; index < correct.size; index += 1) {
+      const radio = page.locator('input[type="radio"]').first()
+      await expect(radio).toBeVisible()
+      const questionId = (await radio.getAttribute("name"))!.replace(/^quiz-/, "")
+      await page.locator(`input[type="radio"][value="${correct.get(questionId)}"]`).check()
+      await page.getByRole("button", { name: index < correct.size - 1 ? "Câu tiếp theo" : "Nộp bài" }).click()
+    }
+    await expect(page.getByText("Đã mở chỉ báo EMA")).toBeVisible()
+    expect(await hasIndicator("ema")).toBe(true)
+
+    await passUntil(api, "ch10-l01")
+    expect((await roe())?.learned).toBe(false)
+    const catalog = (await api.get<Catalog>("/academy/catalog")).body
+    await passViaApi(api, catalog.catalog_version, "ch10-l01", false)
+    expect((await roe())?.learned).toBe(true)
+  })
 })

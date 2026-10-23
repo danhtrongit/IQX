@@ -8,6 +8,13 @@ import { Inject, Injectable, Logger, UnprocessableEntityException } from '@nestj
 import { finite } from '../financials/financials.calculations.js';
 import { MarketDataService, VciMarketProvider } from '../market-data/index.js';
 import {
+  sharesAt,
+  shareEventsFromVci,
+  withShareHistory,
+  type ShareEvent,
+} from '../screener/screener.shares.js';
+import {
+  availableDate,
   evaluateScreenerMetric,
   normalizeVciStatements,
   type NormalizedStatements,
@@ -54,6 +61,35 @@ export const DASHBOARD_DEFAULT_SETTINGS: DashboardSettings = {
 export const DASHBOARD_MAX_VALUATION_YEARS = 10;
 
 const VN_DAY_MS = 86_400_000;
+
+/**
+ * Đơn vị giá của từng nguồn nến: VND dchart trả nghìn đồng, VCI trả đồng. Cả hai trả giá đã điều
+ * chỉnh về gốc hiện tại (đã kiểm tra trên dữ liệu thật quanh các ngày GDKHQ thưởng cổ phiếu), cùng
+ * gốc với EPS và số cổ phiếu điều chỉnh của `withShareHistory`.
+ */
+const PRICE_UNIT_VND: Readonly<Record<string, number>> = { VND: 1000, VCI: 1 };
+
+/** Giá cuối phiên dùng cho PEG không được cũ hơn 10 ngày so với ngày cuối kỳ. */
+const PEG_PRICE_MAX_GAP_DAYS = 10;
+
+type DailyPrice = { date: string; close: number };
+
+/** Giá đóng cửa của phiên cuối cùng không sau `date` (null khi không có phiên nào gần đó). */
+export function closeOnOrBefore(prices: readonly DailyPrice[], date: string): number | null {
+  let low = 0;
+  let high = prices.length - 1;
+  let found = -1;
+  while (low <= high) {
+    const mid = (low + high) >> 1;
+    if (prices[mid]!.date <= date) {
+      found = mid;
+      low = mid + 1;
+    } else high = mid - 1;
+  }
+  if (found < 0) return null;
+  const gap = (Date.parse(`${date}T00:00:00Z`) - Date.parse(`${prices[found]!.date}T00:00:00Z`)) / VN_DAY_MS;
+  return gap <= PEG_PRICE_MAX_GAP_DAYS ? prices[found]!.close : null;
+}
 
 /** Một báo cáo dùng được từ ngày VN kế tiếp ngày công bố (quy tắc của Bộ lọc). */
 const usableFrom = (published: string): string =>
@@ -130,6 +166,7 @@ export class DashboardService {
       group: group.group,
       items: group.items.map((item) => ({
         name: item.name,
+        kind: item.kind,
         na_for_bank: !appliesToBank(item.metric_id),
       })),
     }));
@@ -145,10 +182,16 @@ export class DashboardService {
   ): Promise<DashboardFundamentalResponse> {
     const sym = symbol.toUpperCase();
     const specs = this.resolveCharts(query.charts);
-    const statements = await this.statements(sym, new Date());
+    const now = new Date();
+    const [raw, events] = await Promise.all([this.statements(sym, now), this.shareEvents(sym, now)]);
+    const statements = withShareHistory(raw, events);
+    const prices = specs.some((spec) => spec.metric_id === 'peg')
+      ? await this.dailyPrices(sym, undefined, now)
+      : [];
     const context = {
       statements: annualStatements(statements),
       market: { price: null, shares: null },
+      priceAt: (date: string) => closeOnOrBefore(prices, date),
     };
     const charts: DashboardFundamentalResponse['charts'] = {};
     for (const spec of specs) {
@@ -171,9 +214,15 @@ export class DashboardService {
     const sym = symbol.toUpperCase();
     const specs = this.resolveValuationCharts(query.charts);
     const now = new Date();
-    const statements = await this.statements(sym, now);
-    const prices = await this.dailyPrices(sym, query.from, now);
-    const shares = await this.shares(sym);
+    const [raw, events, prices] = await Promise.all([
+      this.statements(sym, now),
+      this.shareEvents(sym, now),
+      this.dailyPrices(sym, query.from, now),
+    ]);
+    const statements = withShareHistory(raw, events);
+    // Point-in-time share count (DB-03); without the event history, the current share count.
+    const current = events === null ? await this.shares(sym) : null;
+    const shares = (date: string) => (events === null ? current : sharesAt(statements.quarters, date));
     const charts: DashboardValuationResponse['charts'] = {};
     for (const spec of specs) {
       if (statements.financial && !appliesToBank(spec.metric_id)) {
@@ -241,6 +290,19 @@ export class DashboardService {
     return normalizeVciStatements(sections, now);
   }
 
+  /** Sự kiện tách/thưởng cổ phiếu (VCI `/v1/events` ISS); null khi nguồn lỗi. */
+  private async shareEvents(symbol: string, now: Date): Promise<ShareEvent[] | null> {
+    try {
+      const events = await this.vci.fetchShareEvents(symbol);
+      return shareEventsFromVci(events.data, now);
+    } catch (error) {
+      this.logger.warn(
+        `Dashboard share events unavailable for ${symbol}: ${error instanceof Error ? error.message : String(error)}`,
+      );
+      return null;
+    }
+  }
+
   /** Số cổ phiếu theo cơ sở vốn hoá hiện tại của VCI (cùng nguồn với Bộ lọc). */
   private async shares(symbol: string): Promise<number | null> {
     try {
@@ -256,12 +318,12 @@ export class DashboardService {
     }
   }
 
-  /** Giá đóng cửa theo ngày giao dịch, tối đa 10 năm. */
+  /** Giá đóng cửa đã điều chỉnh (đồng) theo ngày giao dịch, tối đa 10 năm. */
   private async dailyPrices(
     symbol: string,
     from: string | undefined,
     now: Date,
-  ): Promise<{ date: string; close: number }[]> {
+  ): Promise<DailyPrice[]> {
     const earliest = new Date(now);
     earliest.setUTCFullYear(earliest.getUTCFullYear() - DASHBOARD_MAX_VALUATION_YEARS);
     const requested = from ? new Date(`${from}T00:00:00Z`) : earliest;
@@ -271,53 +333,60 @@ export class DashboardService {
       end: now.toISOString().slice(0, 10),
       interval: '1D',
     });
-    const prices: { date: string; close: number }[] = [];
+    const unit = PRICE_UNIT_VND[response.meta.source.toUpperCase()] ?? 1;
+    const prices: DailyPrice[] = [];
     for (const row of response.data) {
       const date = tradingDate(row.time);
       const close = finite(row.close);
       if (!date || close === undefined || close <= 0) continue;
-      prices.push({ date, close });
+      prices.push({ date, close: close * unit });
     }
     prices.sort((left, right) => left.date.localeCompare(right.date));
     return prices;
   }
 
   /**
-   * Một chuỗi định giá: tại mỗi ngày, giá trị tính trên báo cáo quý gần nhất đã công bố tại ngày đó.
+   * Một chuỗi định giá: tại mỗi ngày, giá trị tính trên báo cáo quý gần nhất đã công bố tại ngày đó
+   * (quý chưa có ngày công bố coi như công bố 45 ngày sau ngày kết thúc quý — DB-04), với giá đã
+   * điều chỉnh và số cổ phiếu đã điều chỉnh tại chính ngày đó (DB-03).
    */
   private valuationSeries(
     spec: DashboardChartSpec,
     statements: NormalizedStatements,
-    prices: { date: string; close: number }[],
-    shares: number | null,
+    prices: readonly DailyPrice[],
+    shares: (date: string) => number | null,
   ): DashboardValuationChart {
-    const availability = statements.quarters.map((quarter, index) => ({
-      index,
-      from: quarter.published_at ? usableFrom(quarter.published_at) : null,
-    }));
+    const ordinal = (index: number) => {
+      const quarter = statements.quarters[index]!;
+      return quarter.year * 4 + (quarter.quarter ?? 1);
+    };
+    // Quarters in the order they became usable; the latest period wins among the usable ones.
+    const availability = statements.quarters
+      .map((quarter, index) => ({ index, from: usableFrom(availableDate(quarter)) }))
+      .sort((left, right) => left.from.localeCompare(right.from));
     const sliced = new Map<number, NormalizedStatements>();
     const values: (number | null)[] = [];
     let pointer = 0;
+    let latest: number | null = null;
     for (const price of prices) {
-      while (pointer < availability.length) {
-        const candidate = availability[pointer]!;
-        if (candidate.from === null || candidate.from <= price.date) break;
+      while (pointer < availability.length && availability[pointer]!.from <= price.date) {
+        const candidate = availability[pointer]!.index;
+        if (latest === null || ordinal(candidate) > ordinal(latest)) latest = candidate;
         pointer += 1;
       }
-      if (pointer >= availability.length) {
+      if (latest === null) {
         values.push(null);
         continue;
       }
-      const index = availability[pointer]!.index;
-      let view = sliced.get(index);
+      let view = sliced.get(latest);
       if (!view) {
-        view = sliceQuarters(statements, index);
-        sliced.set(index, view);
+        view = sliceQuarters(statements, latest);
+        sliced.set(latest, view);
       }
       const result = evaluateScreenerMetric(
         spec.metric_id,
         view,
-        { price: price.close, shares },
+        { price: price.close, shares: shares(price.date) },
         'ttm',
       );
       values.push(result.status === 'ok' ? displayValue(spec.metric_id, result.value) : null);

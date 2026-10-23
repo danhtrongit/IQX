@@ -40,6 +40,8 @@ export interface FlashbackRoundRow {
   readonly opensAt: Date | null;
   readonly closesAt: Date | null;
   readonly fallbackLevel: number;
+  /** Chỉ server: nguồn và đơn vị giá của nến (FB-04); null với đề cũ. */
+  readonly priceSource: string | null;
   readonly createdAt: Date;
   /** Lúc đề chuyển trạng thái gần nhất (dùng để cảnh báo đề closed quá 1 giờ chưa paid). */
   readonly updatedAt: Date;
@@ -68,10 +70,42 @@ export interface FlashbackEntryRow {
 
 /** Bản ghi lượt chơi kèm thông tin người chơi (dùng cho bảng xếp hạng). */
 export interface FlashbackLeaderboardEntry extends FlashbackEntryRow {
+  /** Tên dùng cho quản trị (tên đăng nhập, thiếu thì email). Không gửi cho người chơi. */
   readonly username: string;
+  /** Tên đăng nhập hiển thị cho người chơi khác; null khi tài khoản chưa đặt tên đăng nhập. */
+  readonly displayName: string | null;
   readonly phoneVerified: boolean;
   readonly accountCreatedAt: Date;
   readonly phoneE164?: string | null;
+}
+
+/** Dấu hiệu nhận diện tài khoản phụ của một lượt chơi (FB-07, chỉ server). */
+export interface FlashbackEntrySignal {
+  readonly entryId: string;
+  readonly userId: string;
+  readonly username: string;
+  readonly deviceId: string | null;
+  readonly joinIp: string | null;
+  readonly phone: string | null;
+}
+
+/** Trạng thái một khoản thưởng đang giữ (FB-07). */
+export type FlashbackRewardHoldStatus = 'held' | 'released' | 'voided';
+
+/** Một khoản thưởng đang giữ để quản trị viên duyệt. */
+export interface FlashbackRewardHoldRow {
+  readonly id: string;
+  readonly roundId: string;
+  readonly roundNo: number;
+  readonly userId: string;
+  readonly username: string;
+  readonly entryId: string | null;
+  readonly amount: number;
+  readonly reason: string;
+  readonly status: FlashbackRewardHoldStatus;
+  readonly decidedBy: string | null;
+  readonly decidedAt: Date | null;
+  readonly createdAt: Date;
 }
 
 /** Bản ghi lô cổ phiếu đọc từ kho. */

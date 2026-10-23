@@ -1,5 +1,4 @@
-import { dailyAxis, meanOf, medianOf, stdDevOf, type ChartView } from "../model"
-
+import { dailyAxis, finiteValues, meanOf, medianOf, stdDevOf } from "./format"
 import {
   cagrPath,
   figureTooltip,
@@ -9,68 +8,77 @@ import {
   type HoverState,
 } from "./figure-data"
 import { Panel } from "./panel"
+import type { FundamentalChartData } from "./types"
+
+function PanelLabel({ children, spaced = false }: { children: string; spaced?: boolean }) {
+  return (
+    <p className={spaced ? "mt-2 mb-1 text-[11px] font-semibold text-text-secondary" : "mb-1 text-[11px] font-semibold text-text-secondary"}>
+      {children}
+    </p>
+  )
+}
 
 /**
- * Thân của một thẻ biểu đồ: vẽ theo khuôn của chỉ tiêu (spec §9) và hiện
- * hộp số liệu của kỳ đang rê chuột.
+ * Thân của một biểu đồ chỉ tiêu: vẽ theo khuôn (spec §9) và hiện hộp số liệu
+ * của kỳ đang rê chuột hoặc đang chạm.
  */
 export function ChartFigure({
-  view,
+  chart,
   width,
   hover,
   onHover,
 }: {
-  view: ChartView
+  chart: FundamentalChartData
   width: number
   hover: HoverState | null
   onHover: (hover: HoverState | null) => void
 }) {
-  const main = view.main[0]
-  const unit = view.unit
-  const mainUnit = view.mainUnit ?? unit
-  const tooltip = hover === null ? null : figureTooltip(view, hover.index)
-  const axis = view.kind === "F" ? dailyAxis(view.labels) : undefined
+  const main = chart.main[0]
+  const unit = chart.unit
+  const mainUnit = chart.mainUnit ?? unit
+  const tooltip = hover === null ? null : figureTooltip(chart, hover.index)
 
   const panelProps = {
     width,
-    labels: view.labels,
-    ariaLabel: view.name,
+    labels: chart.labels,
+    ariaLabel: chart.name,
     hoverIndex: hover?.index ?? null,
     onHover: (index: number | null, x: number) => onHover(index === null ? null : { index, x }),
   }
 
   let drawing
-  if (view.kind === "A" || view.kind === "B" || view.kind === "C") {
+  if (chart.kind === "A" || chart.kind === "B" || chart.kind === "C") {
     const hasNegative = (main?.v ?? []).some((value) => typeof value === "number" && value < 0)
     drawing = (
       <>
-        <p className="mb-1 text-[11px] font-semibold text-academy-subtle">{unit}</p>
+        <PanelLabel>{unit}</PanelLabel>
         <Panel
           {...panelProps}
           height={150}
           axis={false}
-          zero={view.kind === "A" && hasNegative}
+          zero={chart.kind === "A" && hasNegative}
           lines={main ? [{ name: main.name, values: main.v, color: MAIN_COLOR, markers: true }] : []}
         />
-        {view.sub && (
+        {chart.sub && (
           <>
-            <p className="mt-2 mb-1 text-[11px] font-semibold text-academy-subtle">{view.sub.unit}</p>
+            <PanelLabel spaced>{chart.sub.unit}</PanelLabel>
             <Panel
               {...panelProps}
+              ariaLabel={`${chart.name} · thành phần`}
               height={96}
               bars={{
-                type: view.sub.type,
-                series: view.sub.series.map((series) => ({ name: series.name, values: series.v })),
+                type: chart.sub.type,
+                series: chart.sub.series.map((series) => ({ name: series.name, values: series.v })),
               }}
             />
           </>
         )}
       </>
     )
-  } else if (view.kind === "D") {
+  } else if (chart.kind === "D") {
     drawing = (
       <>
-        <p className="mb-1 text-[11px] font-semibold text-academy-subtle">{mainUnit}</p>
+        <PanelLabel>{mainUnit}</PanelLabel>
         <Panel
           {...panelProps}
           height={200}
@@ -78,7 +86,7 @@ export function ChartFigure({
           lines={[
             {
               name: "Đường tăng đều theo CAGR",
-              values: cagrPath(main?.v ?? [], view.hero),
+              values: cagrPath(main?.v ?? [], chart.hero),
               color: REFERENCE_COLOR,
               dash: "5 4",
             },
@@ -86,15 +94,13 @@ export function ChartFigure({
         />
       </>
     )
-  } else if (view.kind === "E1") {
-    const values = (main?.v ?? []).filter(
-      (value): value is number => typeof value === "number" && Number.isFinite(value),
-    )
+  } else if (chart.kind === "E1") {
+    const values = finiteValues(main?.v ?? [])
     const mean = meanOf(values)
     const deviation = stdDevOf(values)
     drawing = (
       <>
-        <p className="mb-1 text-[11px] font-semibold text-academy-subtle">{mainUnit}</p>
+        <PanelLabel>{mainUnit}</PanelLabel>
         <Panel
           {...panelProps}
           height={200}
@@ -104,11 +110,11 @@ export function ChartFigure({
         />
       </>
     )
-  } else if (view.kind === "E2") {
-    const start = streakStart(main?.v ?? [], view.hero)
+  } else if (chart.kind === "E2") {
+    const start = streakStart(main?.v ?? [], chart.hero)
     drawing = (
       <>
-        <p className="mb-1 text-[11px] font-semibold text-academy-subtle">{mainUnit}</p>
+        <PanelLabel>{mainUnit}</PanelLabel>
         <Panel
           {...panelProps}
           height={200}
@@ -121,36 +127,35 @@ export function ChartFigure({
         />
       </>
     )
-  } else if (view.kind === "F2") {
+  } else if (chart.kind === "F2") {
     drawing = (
       <>
-        <p className="mb-1 text-[11px] font-semibold text-academy-subtle">{unit}</p>
+        <PanelLabel>{unit}</PanelLabel>
         <Panel
           {...panelProps}
           height={200}
           zero
-          reference={view.reference}
+          reference={chart.ref}
           lines={main ? [{ name: main.name, values: main.v, color: MAIN_COLOR, markers: true }] : []}
         />
       </>
     )
   } else {
-    const values = (main?.v ?? []).filter(
-      (value): value is number => typeof value === "number" && Number.isFinite(value),
-    )
+    const values = finiteValues(main?.v ?? [])
     const median = medianOf(values)
     const deviation = stdDevOf(values)
+    const axis = dailyAxis(chart.labels)
     drawing = (
       <>
-        <p className="mb-1 text-[11px] font-semibold text-academy-subtle">{unit}</p>
+        <PanelLabel>{unit}</PanelLabel>
         <Panel
           {...panelProps}
           height={200}
           xLine
           band={[median - deviation, median + deviation]}
           reference={median}
-          formatLabel={axis?.format}
-          labelIndexes={axis?.indexes}
+          formatLabel={axis.format}
+          labelIndexes={axis.indexes}
           lines={main ? [{ name: main.name, values: main.v, color: MAIN_COLOR }] : []}
         />
       </>
@@ -169,7 +174,7 @@ export function ChartFigure({
           <p className="mb-1 font-semibold">{tooltip.title}</p>
           {tooltip.rows.map(([name, value]) => (
             <div key={name} className="flex items-baseline justify-between gap-3">
-              <span className="text-academy-subtle">{name}</span>
+              <span className="text-text-secondary">{name}</span>
               <span className="tabular-nums">{value}</span>
             </div>
           ))}

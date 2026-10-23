@@ -42,7 +42,7 @@ function ContentTabBar() {
   return (
     <div className="flex shrink-0 items-stretch border-b border-border bg-card">
       <TabsList variant="line" aria-label="Nội dung demo trading" className="group-data-horizontal/tabs:h-11 min-w-0 flex-1 justify-start overflow-x-auto overflow-y-hidden rounded-none bg-card px-3 py-0 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-4">
-        {CONTENT_TABS.map((tab) => <TabsTrigger key={tab.id} value={tab.id} onFocus={(event) => event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" })} className="h-full flex-none rounded-none px-3 text-xs font-semibold focus-visible:ring-inset group-data-horizontal/tabs:after:bottom-0">{tab.label}</TabsTrigger>)}
+        {CONTENT_TABS.map((tab) => <TabsTrigger key={tab.id} value={tab.id} onFocus={(event) => event.currentTarget.scrollIntoView({ block: "nearest", inline: "nearest" })} className="h-full flex-none rounded-none px-3 text-xs font-semibold text-text-secondary hover:text-foreground focus-visible:ring-inset data-active:text-foreground dark:text-text-secondary dark:hover:text-foreground dark:data-active:text-foreground group-data-horizontal/tabs:after:bottom-0">{tab.label}</TabsTrigger>)}
       </TabsList>
       <div className="flex shrink-0 items-center pr-2"><WorkspacePanelToggle /></div>
     </div>

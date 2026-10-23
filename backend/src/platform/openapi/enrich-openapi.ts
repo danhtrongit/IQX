@@ -1414,6 +1414,7 @@ function localResponseSchemas(): Record<string, SchemaObject> {
       cash_available_vnd: integer(),
       cash_reserved_vnd: integer(),
       cash_pending_vnd: integer(),
+      net_deposited_cash_vnd: integer(),
       total_cash_vnd: integer(),
       activated_at: dateTime(),
       reset_at: nullable(dateTime()),

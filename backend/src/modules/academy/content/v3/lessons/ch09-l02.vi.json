@@ -514,66 +514,33 @@
     },
     "c9l2-rep": {
       "alt": "Revenue Growth Stability: 4,9 điểm %",
-      "kind": "series_panels",
-      "marks": [],
-      "panels": [
-        {
-          "band": {
-            "lower": [
-              7.6043,
-              7.6043,
-              7.6043,
-              7.6043,
-              7.6043
-            ],
-            "tone": "p1",
-            "upper": [
-              17.4422,
-              17.4422,
-              17.4422,
-              17.4422,
-              17.4422
-            ]
-          },
-          "bounds": [
-            0,
-            19.5352
-          ],
-          "levels": [
-            {
-              "label": "Bình quân 12.5232",
-              "role": "avg",
-              "value": 12.5232
-            }
-          ],
-          "series": [
-            {
-              "name": "Giá trị",
-              "role": "p1",
-              "values": [
-                16.6744,
-                17,
-                3.7093,
-                14.3488,
-                10.8837
-              ],
-              "width": 2
-            }
-          ],
-          "title": ""
-        }
-      ],
-      "x": {
-        "end": 4,
-        "start": 0,
-        "ticks": [
+      "chart": {
+        "hero": 4.9189,
+        "kind": "E1",
+        "labels": [
           "2021",
           "2022",
           "2023",
           "2024",
           "2025"
-        ]
-      }
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng doanh thu năm",
+            "v": [
+              16.6744,
+              17,
+              3.7093,
+              14.3488,
+              10.8837
+            ]
+          }
+        ],
+        "mainUnit": "%",
+        "name": "Revenue Growth Stability",
+        "unit": "điểm %"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -641,7 +608,6 @@
       "blocks": [
         {
           "chart_id": "c9l2-rep",
-          "table_toggle": true,
           "title": "Revenue Growth Stability",
           "type": "chart"
         },

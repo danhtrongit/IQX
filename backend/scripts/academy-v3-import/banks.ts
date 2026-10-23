@@ -30,11 +30,25 @@ export function ensureSalts(salts: Record<string, string>, ids: readonly string[
   return added;
 }
 
+/**
+ * Sửa câu hỏi sau khi trích từ bản mẫu (overrides/questions.json), theo id câu hỏi: viết lại câu tính toán
+ * thành câu khái niệm (v3.3) và gắn `chart_id` cho câu đọc biểu đồ đại diện. Id phương án giữ theo vị trí
+ * trong bản mẫu nên không đổi khi sửa chữ.
+ */
+export interface QuestionOverride {
+  prompt?: string;
+  options?: [string, string, string];
+  correct?: number;
+  chart_id?: string;
+}
+
 export function buildBank(
   norm: TextNormalizer,
   row: CatalogRow,
   item: MockItem,
   salt: string,
+  overrides: Record<string, QuestionOverride> = {},
+  used: Set<string> = new Set(),
 ): BankFile {
   const chapter = Number(row.id.slice(2, 4));
   const want = questionCountFor(chapter, row.kind);
@@ -46,20 +60,25 @@ export function buildBank(
     format: 'iqx-academy-bank-v3',
     item_id: row.id,
     salt,
-    questions: item.q.map(([prompt, options, correct], k) => {
+    questions: item.q.map(([sourcePrompt, sourceOptions, sourceCorrect], k) => {
       const id = `${row.id}-q${String(k + 1).padStart(2, '0')}`;
+      const fix = overrides[id];
+      if (fix) used.add(id);
+      const options = fix?.options ?? sourceOptions;
+      const correct = fix?.correct ?? sourceCorrect;
       if (options.length !== 3) throw new Error(`${id}: ${options.length} options`);
       if (!Number.isInteger(correct) || correct < 0 || correct > 2)
         throw new Error(`${id}: correct index ${correct}`);
       const opts = options.map((text, j) => ({
         id: optionId(salt, id, j),
-        text: norm.plain(text),
+        text: fix?.options ? text : norm.plain(text),
       }));
       return {
         id,
-        prompt: norm.plain(prompt),
+        prompt: fix?.prompt ?? norm.plain(sourcePrompt),
         options: opts,
         correct_option_id: (opts[correct] as { id: string }).id,
+        ...(fix?.chart_id ? { chart_id: fix.chart_id } : {}),
       };
     }),
   };

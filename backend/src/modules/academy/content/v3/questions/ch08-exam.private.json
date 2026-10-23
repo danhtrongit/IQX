@@ -236,18 +236,18 @@
       "options": [
         {
           "id": "1d2e0472b6",
-          "text": "Đúng bằng 20%"
+          "text": "Tăng trưởng bằng nhau"
         },
         {
           "id": "62736d0729",
-          "text": "Ít hơn 20%"
+          "text": "EPS tăng ít hơn LNST"
         },
         {
           "id": "780eb1485c",
-          "text": "Nhiều hơn 20%"
+          "text": "EPS tăng nhiều hơn LNST"
         }
       ],
-      "prompt": "LNST tăng 20%, số cổ phiếu không đổi. EPS tăng bao nhiêu?"
+      "prompt": "Số cổ phiếu không đổi thì EPS và LNST tăng trưởng thế nào so với nhau?"
     },
     {
       "correct_option_id": "8108182ee4",
@@ -331,18 +331,18 @@
       "options": [
         {
           "id": "d63894ef81",
-          "text": "3 bước"
+          "text": "Tốc độ tăng trưởng bình quân mỗi năm theo lãi kép giữa hai mốc đầu và cuối"
         },
         {
           "id": "3f25522a43",
-          "text": "4 bước"
+          "text": "Tổng mức tăng trưởng cộng dồn của cả ba năm"
         },
         {
           "id": "db858b647f",
-          "text": "2 bước"
+          "text": "Tăng trưởng của riêng năm cuối"
         }
       ],
-      "prompt": "CAGR 3 năm từ 2022 đến 2025 gồm bao nhiêu bước tăng trưởng?"
+      "prompt": "CAGR 3 năm phản ánh điều gì?"
     },
     {
       "correct_option_id": "19690f461c",
@@ -445,18 +445,18 @@
       "options": [
         {
           "id": "f79ef192fb",
-          "text": "Nhiều hơn 30%"
+          "text": "Vì cùng một mức tăng được chia cho kỳ gốc nhỏ nên ra tỷ lệ lớn"
         },
         {
           "id": "dce405da61",
-          "text": "Đúng 30%"
+          "text": "Vì kỳ gốc thấp làm LNST kỳ này tăng thật"
         },
         {
           "id": "d2803f5dbe",
-          "text": "Ít hơn 30%"
+          "text": "Vì tăng trưởng luôn được tính trên kỳ hiện tại"
         }
       ],
-      "prompt": "LNST giảm 30% thì cần tăng bao nhiêu để về lại mức cũ?"
+      "prompt": "Vì sao kỳ gốc có LNST thấp làm tốc độ tăng trưởng bị phóng đại?"
     },
     {
       "correct_option_id": "1bd75bb0b2",

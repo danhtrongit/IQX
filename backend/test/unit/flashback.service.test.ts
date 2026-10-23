@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { DatabaseService, type SqlClient } from '../../src/platform/database/database.service.js';
 import type { AcademyGrantsPort } from '../../src/modules/academy/academy.ports.js';
+import type { AuthenticatedUser } from '../../src/modules/auth/auth.types.js';
 import {
   FLASHBACK_INITIAL_CASH_VND,
   FLASHBACK_JOIN_FEE_XU,
@@ -32,14 +33,17 @@ import {
 import type {
   FlashbackBar,
   FlashbackEntryRow,
+  FlashbackEntrySignal,
   FlashbackIndicatorInstance,
   FlashbackLeaderboardEntry,
   FlashbackLotRow,
   FlashbackOrderRow,
+  FlashbackRewardHoldRow,
   FlashbackRoundRow,
 } from '../../src/modules/flashback/flashback.types.js';
 
 const USER = 'user-1';
+const SUPER_ADMIN = '7a1d4f0e-4c55-4a51-9f6e-0c5b3d8b2a10';
 const OTHER_USER = 'user-2';
 const NOW = new Date('2026-01-05T12:00:00.000Z');
 
@@ -88,6 +92,7 @@ function buildRound(): FlashbackRoundRow {
     opensAt: NOW,
     closesAt: new Date(NOW.getTime() + 48 * 3_600_000),
     fallbackLevel: 0,
+    priceSource: null,
     createdAt: NOW,
     updatedAt: NOW,
   };
@@ -130,6 +135,10 @@ interface FakeState {
   recentSymbols: string[];
   recentLimitCalls: number[];
   phones: Record<string, string>;
+  devices: Record<string, string>;
+  ips: Record<string, string>;
+  ineligible: string[];
+  holds: FlashbackRewardHoldRow[];
 }
 
 function createFake(state: Partial<FakeState> = {}) {
@@ -147,6 +156,10 @@ function createFake(state: Partial<FakeState> = {}) {
     recentSymbols: [],
     recentLimitCalls: [],
     phones: {},
+    devices: {},
+    ips: {},
+    ineligible: [],
+    holds: [],
     ...state,
   };
   let lotSeq = 0;
@@ -263,6 +276,7 @@ function createFake(state: Partial<FakeState> = {}) {
           (item): FlashbackLeaderboardEntry => ({
             ...item,
             username: item.userId,
+            displayName: item.userId,
             phoneVerified: true,
             accountCreatedAt: new Date(NOW.getTime() - 30 * 86_400_000),
             phoneE164: data.phones[item.userId] ?? null,
@@ -279,6 +293,66 @@ function createFake(state: Partial<FakeState> = {}) {
     },
     teamMemberIds: async (_db: SqlClient, userId: string) =>
       data.teamMembers.includes(userId) ? data.teamMembers : [],
+    entrySignals: async (_db: SqlClient, roundId: string): Promise<FlashbackEntrySignal[]> =>
+      data.entries
+        .filter((item) => item.roundId === roundId)
+        .map((item) => ({
+          entryId: item.id,
+          userId: item.userId,
+          username: item.userId,
+          deviceId: data.devices[item.userId] ?? null,
+          joinIp: data.ips[item.userId] ?? null,
+          phone: data.phones[item.userId] ?? null,
+        })),
+    playerEligibility: async (_db: SqlClient, userId: string) =>
+      data.ineligible.includes(userId)
+        ? { phoneVerified: false, accountCreatedAt: NOW }
+        : { phoneVerified: true, accountCreatedAt: new Date(NOW.getTime() - 30 * 86_400_000) },
+    insertRewardHold: async (
+      _tx: SqlClient,
+      input: { roundId: string; userId: string; entryId: string; amount: number; reason: string },
+    ) => {
+      if (data.holds.some((h) => h.roundId === input.roundId && h.userId === input.userId))
+        return false;
+      data.holds.push({
+        id: `hold-${data.holds.length + 1}`,
+        roundId: input.roundId,
+        roundNo: 1,
+        userId: input.userId,
+        username: input.userId,
+        entryId: input.entryId,
+        amount: input.amount,
+        reason: input.reason,
+        status: 'held',
+        decidedBy: null,
+        decidedAt: null,
+        createdAt: NOW,
+      });
+      return true;
+    },
+    listRewardHolds: async (
+      _db: SqlClient,
+      filter: { status?: string; roundId?: string },
+    ) =>
+      data.holds.filter(
+        (h) =>
+          (!filter.status || h.status === filter.status) &&
+          (!filter.roundId || h.roundId === filter.roundId),
+      ),
+    lockRewardHold: async (_tx: SqlClient, id: string) =>
+      data.holds.find((h) => h.id === id) ?? null,
+    decideRewardHold: async (
+      _tx: SqlClient,
+      id: string,
+      status: FlashbackRewardHoldRow['status'],
+      decidedBy: string,
+      decidedAt: Date,
+    ) => {
+      const index = data.holds.findIndex((h) => h.id === id && h.status === 'held');
+      if (index < 0) return false;
+      data.holds[index] = { ...data.holds[index]!, status, decidedBy, decidedAt };
+      return true;
+    },
     lotsByEntry: async (_db: SqlClient, entryId: string) =>
       data.lots.filter((lot) => lot.entryId === entryId && lot.qty > 0),
     insertLot: async (
@@ -375,12 +449,19 @@ function createFake(state: Partial<FakeState> = {}) {
     listJobLog: async () => data.jobLog,
     hasRecentAlert: async () => false,
     listCurrentVn30: async () => data.vn30,
-    replaceVn30: async () => undefined,
+    syncVn30: async (_tx: SqlClient, symbols: readonly string[]) => {
+      const removed = data.vn30.filter((symbol) => !symbols.includes(symbol));
+      const added = symbols.filter((symbol) => !data.vn30.includes(symbol));
+      data.vn30 = [...symbols];
+      return { added, removed };
+    },
   } as unknown as FlashbackRepository;
 
   const database = {
     query: async () => [],
     transaction: async (operation: (tx: SqlClient) => Promise<unknown>) =>
+      operation({ query: async () => [] } as unknown as SqlClient),
+    withDedicatedClient: async (operation: (client: SqlClient) => Promise<unknown>) =>
       operation({ query: async () => [] } as unknown as SqlClient),
   } as unknown as DatabaseService;
 
@@ -391,7 +472,7 @@ function createFake(state: Partial<FakeState> = {}) {
   const clock: FlashbackClock = { now: () => NOW };
 
   const service = new FlashbackService(database, repository, grants, clock);
-  const admin = new FlashbackAdminService(database, repository);
+  const admin = new FlashbackAdminService(database, repository, [SUPER_ADMIN]);
   const adminController = new FlashbackAdminController(admin);
   return { service, admin, adminController, data, repository, database };
 }
@@ -538,9 +619,13 @@ describe('FlashbackService', () => {
       }),
     );
     const board = await service.leaderboard(USER, 'all');
-    expect(board.rows.map((row) => row.user_id)).toEqual(['user-1', 'user-b', 'user-a']);
+    expect(board.rows.map((row) => row.username)).toEqual(['user-1', 'user-b', 'user-a']);
     expect(board.rows.map((row) => row.rank)).toEqual([1, 2, 3]);
-    expect(board.me?.user_id).toBe(USER);
+    expect(board.me?.is_me).toBe(true);
+    // FB-10: không có user_id; phiên và trạng thái chỉ có ở dòng của mình.
+    expect(JSON.stringify(board)).not.toContain('user_id');
+    expect(Object.keys(board.rows[1]!).sort()).toEqual(['is_me', 'pnl_pct', 'rank', 'username']);
+    expect(board.me).toMatchObject({ step: 0, status: 'finished' });
   });
 
   it('trả bảng xếp hạng nhóm rỗng khi người dùng không có nhóm', async () => {
@@ -634,7 +719,7 @@ describe('FlashbackService', () => {
 
   it('chốt kết quả bằng thời điểm của đồng hồ đã cấu hình', async () => {
     const { service, data } = createFake();
-    data.entries.push(buildEntry());
+    data.entries.push(buildEntry({ step: 60 }));
     await service.finish(USER, 'entry-1');
     expect(data.entries[0]?.finishedAt?.toISOString()).toBe(NOW.toISOString());
     expect(FLASHBACK_CLOCK).toBeDefined();
@@ -785,10 +870,14 @@ describe('FlashbackAdminService', () => {
 
     await expect(
       admin.revealRound('round-1', { adminId: 'tl-1', actorRole: 'team_lead', role: 'team_lead' }),
-    ).rejects.toMatchObject({ response: { code: 'INSUFFICIENT_ROLE' } });
+    ).rejects.toMatchObject({ response: { code: 'SUPER_ADMIN_REQUIRED' } });
+    // FB-08: vai trò admin thường không đủ, phải có trong SUPER_ADMIN_USER_IDS.
+    await expect(
+      admin.revealRound('round-1', { adminId: 'admin-1', actorRole: 'admin', role: 'admin' }),
+    ).rejects.toMatchObject({ response: { code: 'SUPER_ADMIN_REQUIRED' } });
 
     const revealed = await admin.revealRound('round-1', {
-      adminId: 'admin-1',
+      adminId: SUPER_ADMIN.toUpperCase(),
       actorRole: 'admin',
       role: 'admin',
       ip: '127.0.0.1',
@@ -819,16 +908,32 @@ describe('FlashbackAdminService', () => {
     ]);
   });
 
-  it('đọc và ghi trạng thái tạm dừng', async () => {
+  it('đọc và ghi trạng thái tạm dừng, chỉ quản trị viên cao nhất được bấm', async () => {
     const { admin } = createFake();
+    const audit = (adminId: string) => ({
+      adminId,
+      actorRole: 'admin' as const,
+      ip: null,
+      userAgent: null,
+      requestId: null,
+    });
     expect(await admin.paused()).toBe(false);
-    expect(await admin.setPaused(true)).toEqual({ paused: true });
+    await expect(admin.setPaused(true, audit('admin-1'))).rejects.toMatchObject({
+      response: { code: 'SUPER_ADMIN_REQUIRED' },
+    });
+    expect(await admin.paused()).toBe(false);
+    expect(await admin.setPaused(true, audit(SUPER_ADMIN))).toEqual({ paused: true });
     expect(await admin.paused()).toBe(true);
   });
 
-  it('endpoint trạng thái tạm dừng trả về paused', async () => {
+  it('endpoint trạng thái tạm dừng trả về paused và super_admin', async () => {
     const { adminController } = createFake();
-    expect(await adminController.pauseStatus()).toEqual({ paused: false });
+    expect(
+      await adminController.pauseStatus({ id: 'admin-1' } as unknown as AuthenticatedUser),
+    ).toEqual({ paused: false, super_admin: false });
+    expect(
+      await adminController.pauseStatus({ id: SUPER_ADMIN } as unknown as AuthenticatedUser),
+    ).toEqual({ paused: false, super_admin: true });
   });
 
   it('trả mức độ của cảnh báo kèm nhãn tiếng Việt', async () => {

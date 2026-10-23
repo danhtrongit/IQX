@@ -154,96 +154,71 @@
       ]
     },
     "c11l4-rep": {
-      "items": [
-        {
-          "model": {
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "line",
-            "series": [
-              {
-                "name": "Nợ ròng / EBITDA",
-                "tone": "p1",
-                "values": [
-                  0.6197,
-                  0.6294,
-                  0.5082,
-                  0.4835,
-                  0.4674,
-                  0.4694,
-                  0.4079,
-                  0.3941
-                ]
-              }
-            ],
-            "unit": "lần",
-            "value_labels": "none"
-          },
-          "title": "Nợ ròng / EBITDA (lần)"
+      "alt": "Net Debt / EBITDA: 0,39 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "legendNote": "Tiền gồm đầu tư tài chính ngắn hạn",
+        "main": [
+          {
+            "name": "Nợ ròng / EBITDA",
+            "v": [
+              0.6197,
+              0.6294,
+              0.5082,
+              0.4835,
+              0.4674,
+              0.4694,
+              0.4079,
+              0.3941
+            ]
+          }
+        ],
+        "name": "Net Debt / EBITDA",
+        "sub": {
+          "series": [
+            {
+              "name": "Nợ ròng",
+              "v": [
+                448.4559,
+                479.5493,
+                400.3769,
+                400.3769,
+                408.51,
+                434.6711,
+                400.3769,
+                400.3769
+              ]
+            },
+            {
+              "name": "EBITDA 4 quý",
+              "v": [
+                723.5031,
+                761.9636,
+                787.7215,
+                828.0423,
+                873.7794,
+                926.1564,
+                981.2326,
+                1015.616
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
         },
-        {
-          "model": {
-            "caption_tone": "price",
-            "caption_value": "0,39 lần",
-            "kind": "category",
-            "labels": [
-              "Q3/24",
-              "Q4/24",
-              "Q1/25",
-              "Q2/25",
-              "Q3/25",
-              "Q4/25",
-              "Q1/26",
-              "Q2/26"
-            ],
-            "mode": "grouped",
-            "series": [
-              {
-                "name": "Nợ ròng",
-                "tone": "p1",
-                "values": [
-                  448.4559,
-                  479.5493,
-                  400.3769,
-                  400.3769,
-                  408.51,
-                  434.6711,
-                  400.3769,
-                  400.3769
-                ]
-              },
-              {
-                "name": "EBITDA 4 quý",
-                "tone": "p5",
-                "values": [
-                  723.5031,
-                  761.9636,
-                  787.7215,
-                  828.0423,
-                  873.7794,
-                  926.1564,
-                  981.2326,
-                  1015.616
-                ]
-              }
-            ],
-            "unit": "tỷ đồng",
-            "value_labels": "none"
-          },
-          "title": "Thành phần (tỷ đồng)"
-        }
-      ],
-      "kind": "compare",
-      "layout": "stack"
+        "unit": "lần"
+      },
+      "kind": "fundamental"
     }
   },
   "format": "iqx-academy-lesson-v3",
@@ -327,7 +302,6 @@
       "blocks": [
         {
           "chart_id": "c11l4-rep",
-          "table_toggle": true,
           "title": "Net Debt / EBITDA",
           "type": "chart"
         },
@@ -512,7 +486,7 @@
     }
   ],
   "summary": [
-    "<b>Nợ ròng = nợ vay − tiền</b>. <b>EBITDA = EBIT + khấu hao</b>, lấy tổng 4 quý.",
+    "<b>Nợ ròng = nợ vay − tiền và đầu tư tài chính ngắn hạn</b>. <b>EBITDA = EBIT + khấu hao</b>, lấy tổng 4 quý.",
     "Chỉ tiêu cho biết cần khoảng <b>bao nhiêu năm EBITDA</b> để trả hết nợ ròng.",
     "<b>Nợ ròng âm</b> nghĩa là tiền nhiều hơn nợ vay, rủi ro nợ rất thấp.",
     "<b>Dưới 2 lần</b> là thấp, <b>trên 4 lần</b> là cao. Mức hợp lý khác nhau theo ngành."
