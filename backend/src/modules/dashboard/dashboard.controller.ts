@@ -6,7 +6,7 @@ import { Body, Controller, Get, Param, Put, Query, UseGuards } from '@nestjs/com
 import { ApiOkResponse, ApiOperation, ApiTags, type SchemaObject } from '@nestjs/swagger';
 import { z } from 'zod';
 
-import { ApiAuthGuard, CurrentUser, type AuthenticatedUser } from '../auth/index.js';
+import { ApiAuthGuard, CurrentUser, Public, type AuthenticatedUser } from '../auth/index.js';
 import { symbolSchema } from '../market-data/market-data.schemas.js';
 import {
   dashboardCatalogSchema,
@@ -63,6 +63,7 @@ export class DashboardSettingsController {
  * nhập xem được bộ mặc định (spec cập nhật 22-10 §3.7); chỉ lưu thiết lập mới cần đăng nhập.
  */
 @ApiTags('Dashboard phân tích')
+@Public()
 @Controller('api/v2')
 export class DashboardDataController {
   constructor(private readonly dashboard: DashboardService) {}
