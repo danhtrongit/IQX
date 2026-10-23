@@ -12866,6 +12866,7 @@ export type TradingAccountResponse = {
   created_at: string;
   id: string;
   initial_cash_vnd: number;
+  net_deposited_cash_vnd: number;
   reset_at: string | null;
   status: string;
   total_cash_vnd: number;
@@ -30056,6 +30057,7 @@ export type FlashbackAdminPauseStatusError =
 export type FlashbackAdminPauseStatusResponses = {
   200: {
     paused: boolean;
+    super_admin: boolean;
   };
 };
 
@@ -30063,7 +30065,9 @@ export type FlashbackAdminPauseStatusResponse =
   FlashbackAdminPauseStatusResponses[keyof FlashbackAdminPauseStatusResponses];
 
 export type FlashbackAdminPauseData = {
-  body?: never;
+  body: {
+    paused: boolean;
+  };
   path?: never;
   query?: never;
   url: "/api/v2/admin/flashback/pause";
@@ -30108,6 +30112,182 @@ export type FlashbackAdminPauseResponses = {
 export type FlashbackAdminPauseResponse =
   FlashbackAdminPauseResponses[keyof FlashbackAdminPauseResponses];
 
+export type FlashbackAdminRewardHoldsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    status?: "held" | "released" | "voided";
+  };
+  url: "/api/v2/admin/flashback/reward-holds";
+};
+
+export type FlashbackAdminRewardHoldsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminRewardHoldsError =
+  FlashbackAdminRewardHoldsErrors[keyof FlashbackAdminRewardHoldsErrors];
+
+export type FlashbackAdminRewardHoldsResponses = {
+  200: {
+    holds: Array<{
+      amount: number;
+      created_at: string;
+      decided_at: string | null;
+      decided_by: string | null;
+      id: string;
+      reason: string;
+      round_id: string;
+      round_no: number;
+      status: "held" | "released" | "voided";
+      user_id: string;
+      username: string;
+    }>;
+  };
+};
+
+export type FlashbackAdminRewardHoldsResponse =
+  FlashbackAdminRewardHoldsResponses[keyof FlashbackAdminRewardHoldsResponses];
+
+export type FlashbackAdminReleaseRewardHoldData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/flashback/reward-holds/{id}/release";
+};
+
+export type FlashbackAdminReleaseRewardHoldErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminReleaseRewardHoldError =
+  FlashbackAdminReleaseRewardHoldErrors[keyof FlashbackAdminReleaseRewardHoldErrors];
+
+export type FlashbackAdminReleaseRewardHoldResponses = {
+  200: {
+    amount: number;
+    created_at: string;
+    decided_at: string | null;
+    decided_by: string | null;
+    id: string;
+    reason: string;
+    round_id: string;
+    round_no: number;
+    status: "held" | "released" | "voided";
+    user_id: string;
+    username: string;
+  };
+};
+
+export type FlashbackAdminReleaseRewardHoldResponse =
+  FlashbackAdminReleaseRewardHoldResponses[keyof FlashbackAdminReleaseRewardHoldResponses];
+
+export type FlashbackAdminVoidRewardHoldData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/flashback/reward-holds/{id}/void";
+};
+
+export type FlashbackAdminVoidRewardHoldErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminVoidRewardHoldError =
+  FlashbackAdminVoidRewardHoldErrors[keyof FlashbackAdminVoidRewardHoldErrors];
+
+export type FlashbackAdminVoidRewardHoldResponses = {
+  200: {
+    amount: number;
+    created_at: string;
+    decided_at: string | null;
+    decided_by: string | null;
+    id: string;
+    reason: string;
+    round_id: string;
+    round_no: number;
+    status: "held" | "released" | "voided";
+    user_id: string;
+    username: string;
+  };
+};
+
+export type FlashbackAdminVoidRewardHoldResponse =
+  FlashbackAdminVoidRewardHoldResponses[keyof FlashbackAdminVoidRewardHoldResponses];
+
 export type FlashbackAdminRoundsData = {
   body?: never;
   path?: never;
@@ -30150,6 +30330,7 @@ export type FlashbackAdminRoundsResponses = {
     rounds: Array<{
       closes_at: string | null;
       fallback_level: number;
+      held_reward_xu: number;
       id: string;
       opens_at: string | null;
       player_count: number;
@@ -30169,7 +30350,9 @@ export type FlashbackAdminRoundsResponse =
 
 export type FlashbackAdminRevealData = {
   body?: never;
-  path?: never;
+  path: {
+    id: string;
+  };
   query?: never;
   url: "/api/v2/admin/flashback/rounds/{id}/reveal";
 };
@@ -30206,12 +30389,66 @@ export type FlashbackAdminRevealError =
 
 export type FlashbackAdminRevealResponses = {
   200: {
-    [key: string]: unknown;
+    round_no: number;
+    session_range: string;
+    start_date: string;
+    symbol: string;
   };
 };
 
 export type FlashbackAdminRevealResponse =
   FlashbackAdminRevealResponses[keyof FlashbackAdminRevealResponses];
+
+export type FlashbackAdminSettingsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/settings";
+};
+
+export type FlashbackAdminSettingsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminSettingsError =
+  FlashbackAdminSettingsErrors[keyof FlashbackAdminSettingsErrors];
+
+export type FlashbackAdminSettingsResponses = {
+  200: {
+    settings: Array<{
+      default_value: string | number;
+      key: string;
+      label: string;
+      value: string | number;
+    }>;
+  };
+};
+
+export type FlashbackAdminSettingsResponse =
+  FlashbackAdminSettingsResponses[keyof FlashbackAdminSettingsResponses];
 
 export type FlashbackAdminSuspectsData = {
   body?: never;
@@ -40627,7 +40864,9 @@ export type FlashbackCurrentResponse =
   FlashbackCurrentResponses[keyof FlashbackCurrentResponses];
 
 export type FlashbackJoinData = {
-  body?: never;
+  body: {
+    device_id?: string;
+  };
   path?: never;
   query?: never;
   url: "/api/v2/flashback/current/join";
@@ -40675,7 +40914,9 @@ export type FlashbackJoinResponse =
 export type FlashbackLeaderboardData = {
   body?: never;
   path?: never;
-  query?: never;
+  query?: {
+    scope?: "all" | "team";
+  };
   url: "/api/v2/flashback/current/leaderboard";
 };
 
@@ -40708,10 +40949,20 @@ export type FlashbackLeaderboardError =
 export type FlashbackLeaderboardResponses = {
   200: {
     me: {
-      [key: string]: unknown;
+      is_me: boolean;
+      pnl_pct: number | null;
+      rank: number;
+      status?: "playing" | "finished";
+      step?: number;
+      username: string;
     } | null;
     rows: Array<{
-      [key: string]: unknown;
+      is_me: boolean;
+      pnl_pct: number | null;
+      rank: number;
+      status?: "playing" | "finished";
+      step?: number;
+      username: string;
     }>;
     scope: "all" | "team";
     total_players: number;
@@ -40723,7 +40974,9 @@ export type FlashbackLeaderboardResponse =
 
 export type FlashbackFinishData = {
   body?: never;
-  path?: never;
+  path: {
+    id: string;
+  };
   query?: never;
   url: "/api/v2/flashback/entries/{id}/finish";
 };
@@ -40763,6 +41016,7 @@ export type FlashbackFinishResponses = {
     pnl_pct: number;
     pnl_percent: number;
     rank: number | null;
+    reward_eligible: boolean;
     reward_xu: number;
     status: "finished";
   };
@@ -40772,8 +41026,22 @@ export type FlashbackFinishResponse =
   FlashbackFinishResponses[keyof FlashbackFinishResponses];
 
 export type FlashbackSaveIndicatorsData = {
-  body?: never;
-  path?: never;
+  body: {
+    indicators: Array<{
+      id: string;
+      params: {
+        [key: string]:
+          | number
+          | {
+              lower: number;
+              upper: number;
+            };
+      };
+    }>;
+  };
+  path: {
+    id: string;
+  };
   query?: never;
   url: "/api/v2/flashback/entries/{id}/indicators";
 };
@@ -40819,7 +41087,9 @@ export type FlashbackSaveIndicatorsResponse =
 
 export type FlashbackNextData = {
   body?: never;
-  path?: never;
+  path: {
+    id: string;
+  };
   query?: never;
   url: "/api/v2/flashback/entries/{id}/next";
 };
@@ -40873,8 +41143,14 @@ export type FlashbackNextResponse =
   FlashbackNextResponses[keyof FlashbackNextResponses];
 
 export type FlashbackPlaceOrderData = {
-  body?: never;
-  path?: never;
+  body: {
+    idempotency_key?: string;
+    qty: number;
+    side: "buy" | "sell";
+  };
+  path: {
+    id: string;
+  };
   query?: never;
   url: "/api/v2/flashback/entries/{id}/orders";
 };
