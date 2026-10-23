@@ -116,8 +116,6 @@ const SETTING_LABELS: Record<keyof typeof FLASHBACK_DEFAULT_SETTINGS, string> = 
   play_sessions: 'Số phiên chơi',
   min_liquidity_vnd: 'Thanh khoản bình quân tối thiểu (đồng/phiên)',
   min_daily_volatility: 'Độ biến động ngày tối thiểu',
-  min_max_profit: 'Lợi nhuận tối đa của đề, cận dưới',
-  max_max_profit: 'Lợi nhuận tối đa của đề, cận trên',
   max_start_attempts: 'Số lần thử ngày bắt đầu mỗi mã',
   entry_fee_xu: 'Phí tham gia từ lần thứ hai (xu)',
 };

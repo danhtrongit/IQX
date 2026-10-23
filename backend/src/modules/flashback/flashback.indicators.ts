@@ -100,11 +100,7 @@ const FLASHBACK_LESSON_CATALOG: Readonly<
 /** Sai số cho phép khi kiểm tra giá trị nằm đúng bước nhảy. */
 const STEP_TOLERANCE = 1e-6;
 
-function sideOf(
-  entry: RegistryEntry,
-  side: 'buy' | 'sell',
-  field: RegistryField,
-): FlashbackParamSide {
+function sideOf(entry: RegistryEntry, side: 'buy' | 'sell', field: RegistryField): FlashbackParamSide {
   const override = entry[side].field_overrides?.[field.key];
   return {
     min: override?.min ?? field.min,

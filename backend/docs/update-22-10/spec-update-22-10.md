@@ -351,18 +351,6 @@ Học viện phải giải thích cùng định nghĩa ở bài ROE (ch10-l01) v
 
 ---
 
-### FB-13 · Lợi nhuận tối đa của đề (bổ sung 2026-10-23)
-
-Chủ sản phẩm yêu cầu: đề hiện tại cho lợi nhuận tối đa quá cao. Thêm điều kiện hợp lệ cho giai đoạn (BoSung §4.3):
-
-| Điều kiện | Ngưỡng |
-|---|---|
-| Lợi nhuận tối đa | Người chơi biết trước giá, đặt lệnh theo đúng luật (khớp giá đóng cửa, phí 0,15% hai chiều, thuế 0,1% khi bán, T+2, nhiều lệnh mỗi phiên, từ Phiên 0 tới Phiên 60, cổ phiếu còn giữ tính theo giá đóng cửa Phiên 60) đạt từ **20% tới 40%** |
-
-- Tính bằng quy hoạch động `flashbackMaxProfit` trong `flashback.round-builder.ts`. Tham số `min_max_profit`, `max_max_profit` trong `flashback_settings.config`.
-- Không nới ở mức dự phòng nào (§6.3).
-- Đo trên dữ liệu thật 8 mã VN30: khoảng 32% số giai đoạn đạt cả điều kiện cũ và điều kiện này. Trung vị lợi nhuận tối đa trước khi lọc là 41%.
-
 ## 4. Kiểm thử bổ sung
 
 | Mã | Ưu tiên | Kiểm thử | Ở đâu |

@@ -65,12 +65,7 @@ function chiSquare(observed: readonly number[], expected: readonly number[]): nu
 
 describe('QA-02 tạo 1.000 đề', () => {
   it('phân bố mã gần đều, năm bắt đầu trải đều, không lặp mã trong 10 đề, không chồng giai đoạn', async () => {
-    // Nến giả không mô phỏng lợi nhuận tối đa; khoảng lợi nhuận có test riêng (flashback.max-profit).
-    const config = readFlashbackConfig({
-      earliest_start_date: '1985-01-01',
-      min_max_profit: -1,
-      max_max_profit: 1e9,
-    });
+    const config = readFlashbackConfig({ earliest_start_date: '1985-01-01' });
     const calendar = weekdays('1983-01-03', '2025-12-31');
     const symbols = Array.from({ length: 30 }, (_, index) => `Q${String(index).padStart(2, '0')}`);
     const data = new Map(symbols.map((symbol, index) => [symbol, series(calendar, 100 + index)]));

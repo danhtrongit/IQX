@@ -147,10 +147,7 @@ export abstract class FlashbackRepository {
    */
   abstract roundChartDates(db: SqlClient, symbol: string): Promise<string[][]>;
   /** Các đề đang ở một trạng thái (dùng cho job). */
-  abstract roundsByStatus(
-    db: SqlClient,
-    status: FlashbackRoundStatus,
-  ): Promise<FlashbackRoundRow[]>;
+  abstract roundsByStatus(db: SqlClient, status: FlashbackRoundStatus): Promise<FlashbackRoundRow[]>;
   /** Tăng bước chơi khi bước hiện tại vẫn là `fromStep` (chống gọi lại). */
   abstract advanceEntryStep(
     tx: SqlClient,
@@ -159,7 +156,10 @@ export abstract class FlashbackRepository {
     toStep: number,
   ): Promise<FlashbackEntryRow | null>;
   /** Lượt chơi của một đề kèm thông tin người chơi (tên, điều kiện nhận thưởng). */
-  abstract leaderboardEntries(db: SqlClient, roundId: string): Promise<FlashbackLeaderboardEntry[]>;
+  abstract leaderboardEntries(
+    db: SqlClient,
+    roundId: string,
+  ): Promise<FlashbackLeaderboardEntry[]>;
   /** Thành viên nhóm của người dùng (theo trưởng nhóm); rỗng khi không có quan hệ. */
   abstract teamMemberIds(db: SqlClient, userId: string): Promise<string[]>;
   /** Dấu hiệu thiết bị, IP lúc tham gia và số điện thoại của các lượt chơi trong một đề (FB-07). */
@@ -179,11 +179,7 @@ export abstract class FlashbackRepository {
   abstract entryById(db: SqlClient, id: string): Promise<FlashbackEntryRow | null>;
   abstract countEntriesByUser(db: SqlClient, userId: string): Promise<number>;
   abstract insertEntry(tx: SqlClient, input: NewFlashbackEntry): Promise<FlashbackEntryRow | null>;
-  abstract updateEntryStep(
-    tx: SqlClient,
-    id: string,
-    step: number,
-  ): Promise<FlashbackEntryRow | null>;
+  abstract updateEntryStep(tx: SqlClient, id: string, step: number): Promise<FlashbackEntryRow | null>;
   abstract updateEntryCash(
     tx: SqlClient,
     id: string,
@@ -335,7 +331,8 @@ const toBigInt = (value: unknown, field: string): bigint => {
   return BigInt(text);
 };
 
-const toDate = (value: unknown): Date => (value instanceof Date ? value : new Date(String(value)));
+const toDate = (value: unknown): Date =>
+  value instanceof Date ? value : new Date(String(value));
 
 const toBars = (value: unknown): FlashbackBar[] => {
   if (!Array.isArray(value)) return [];
@@ -404,13 +401,12 @@ const mapEntry = (row: Row): FlashbackEntryRow => ({
   cash: toBigInt(row.cash, 'cash'),
   initialCash: toBigInt(row.initial_cash, 'initial_cash'),
   finishedAt: row.finished_at ? toDate(row.finished_at) : null,
-  finalNav:
-    row.final_nav === null || row.final_nav === undefined
-      ? null
-      : toBigInt(row.final_nav, 'final_nav'),
+  finalNav: row.final_nav === null || row.final_nav === undefined ? null : toBigInt(row.final_nav, 'final_nav'),
   pnlPct: row.pnl_pct === null || row.pnl_pct === undefined ? null : Number(row.pnl_pct),
   maxDrawdown:
-    row.max_drawdown === null || row.max_drawdown === undefined ? null : Number(row.max_drawdown),
+    row.max_drawdown === null || row.max_drawdown === undefined
+      ? null
+      : Number(row.max_drawdown),
   rank: row.rank === null || row.rank === undefined ? null : toInt(row.rank, 'rank'),
   rewardXu: toInt(row.reward_xu, 'reward_xu'),
   status: String(row.status) as 'playing' | 'finished',
@@ -498,7 +494,10 @@ export class PgFlashbackRepository extends FlashbackRepository {
     return toInt(rows[0]?.next ?? '0', 'round_no') + 1;
   }
 
-  async insertRound(tx: SqlClient, input: NewFlashbackRound): Promise<FlashbackRoundRow | null> {
+  async insertRound(
+    tx: SqlClient,
+    input: NewFlashbackRound,
+  ): Promise<FlashbackRoundRow | null> {
     try {
       const rows = await tx.query<Row>(
         `insert into flashback_rounds
@@ -605,7 +604,10 @@ export class PgFlashbackRepository extends FlashbackRepository {
     );
   }
 
-  async roundsByStatus(db: SqlClient, status: FlashbackRoundStatus): Promise<FlashbackRoundRow[]> {
+  async roundsByStatus(
+    db: SqlClient,
+    status: FlashbackRoundStatus,
+  ): Promise<FlashbackRoundRow[]> {
     const rows = await db.query<Row>(
       `select ${ROUND_COLUMNS} from flashback_rounds where status = $1 order by round_no`,
       [status],
@@ -626,7 +628,10 @@ export class PgFlashbackRepository extends FlashbackRepository {
     return rows[0] ? mapEntry(rows[0]) : null;
   }
 
-  async leaderboardEntries(db: SqlClient, roundId: string): Promise<FlashbackLeaderboardEntry[]> {
+  async leaderboardEntries(
+    db: SqlClient,
+    roundId: string,
+  ): Promise<FlashbackLeaderboardEntry[]> {
     const rows = await db.query<Row>(
       `select e.id, e.round_id, e.user_id, e.joined_at, e.fee_xu, e.first_join, e.indicator_params,
               e.step, e.cash, e.initial_cash, e.finished_at, e.final_nav, e.pnl_pct, e.max_drawdown,
@@ -648,7 +653,8 @@ export class PgFlashbackRepository extends FlashbackRepository {
         row.display_name === null || row.display_name === undefined || row.display_name === ''
           ? null
           : String(row.display_name),
-      phoneVerified: row.phone_verified_at !== null && row.phone_verified_at !== undefined,
+      phoneVerified:
+        row.phone_verified_at !== null && row.phone_verified_at !== undefined,
       accountCreatedAt: toDate(row.account_created_at),
       phoneE164:
         row.phone_e164 === null || row.phone_e164 === undefined ? null : String(row.phone_e164),
@@ -698,10 +704,7 @@ export class PgFlashbackRepository extends FlashbackRepository {
     }));
   }
 
-  async playerEligibility(
-    db: SqlClient,
-    userId: string,
-  ): Promise<FlashbackPlayerEligibility | null> {
+  async playerEligibility(db: SqlClient, userId: string): Promise<FlashbackPlayerEligibility | null> {
     const rows = await db.query<Row>(
       `select phone_verified_at, created_at from users where id = $1 limit 1`,
       [userId],
@@ -743,7 +746,10 @@ export class PgFlashbackRepository extends FlashbackRepository {
     return toInt(rows[0]?.total ?? '0', 'total');
   }
 
-  async insertEntry(tx: SqlClient, input: NewFlashbackEntry): Promise<FlashbackEntryRow | null> {
+  async insertEntry(
+    tx: SqlClient,
+    input: NewFlashbackEntry,
+  ): Promise<FlashbackEntryRow | null> {
     const rows = await tx.query<Row>(
       `insert into flashback_entries
          (round_id, user_id, fee_xu, first_join, cash, initial_cash, indicator_params, step, status,
@@ -811,7 +817,13 @@ export class PgFlashbackRepository extends FlashbackRepository {
           set status = 'finished', finished_at = $2, final_nav = $3, pnl_pct = $4, max_drawdown = $5
         where id = $1 and status = 'playing'
         returning ${ENTRY_COLUMNS}`,
-      [id, result.finishedAt, result.finalNav.toString(), result.pnlPct, result.maxDrawdown],
+      [
+        id,
+        result.finishedAt,
+        result.finalNav.toString(),
+        result.pnlPct,
+        result.maxDrawdown,
+      ],
     );
     return rows[0] ? mapEntry(rows[0]) : null;
   }
@@ -872,7 +884,13 @@ export class PgFlashbackRepository extends FlashbackRepository {
       `insert into flashback_lots (entry_id, qty, price, step, sellable_step)
        values ($1, $2, $3, $4, $5)
        returning ${LOT_COLUMNS}`,
-      [input.entryId, input.qty, input.price.toString(), input.step, input.sellableStep],
+      [
+        input.entryId,
+        input.qty,
+        input.price.toString(),
+        input.step,
+        input.sellableStep,
+      ],
     );
     if (!rows[0]) throw new Error('Flashback lot insert returned no row');
     return mapLot(rows[0]);
@@ -886,7 +904,10 @@ export class PgFlashbackRepository extends FlashbackRepository {
     return rows.length > 0;
   }
 
-  async insertOrder(tx: SqlClient, input: NewFlashbackOrder): Promise<FlashbackOrderRow | null> {
+  async insertOrder(
+    tx: SqlClient,
+    input: NewFlashbackOrder,
+  ): Promise<FlashbackOrderRow | null> {
     const rows = await tx.query<Row>(
       `insert into flashback_orders
          (entry_id, side, qty, price, step, amount, fee, tax, idempotency_key)
@@ -951,7 +972,12 @@ export class PgFlashbackRepository extends FlashbackRepository {
     };
   }
 
-  async saveWallet(tx: SqlClient, userId: string, balance: number, lastSeq: number): Promise<void> {
+  async saveWallet(
+    tx: SqlClient,
+    userId: string,
+    balance: number,
+    lastSeq: number,
+  ): Promise<void> {
     await tx.query(
       `update coin_wallets set balance = $2, last_seq = $3, updated_at = now() where user_id = $1`,
       [userId, balance, lastSeq],
