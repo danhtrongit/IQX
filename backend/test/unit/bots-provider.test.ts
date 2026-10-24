@@ -74,6 +74,8 @@ function fixture(
     barSource as never,
     restrictions as never,
   );
+  // Retries run without pauses (the fake timers would never fire them).
+  provider.retryDelaysMs = [0, 0];
   return { database, barSource, restrictions, provider };
 }
 
@@ -271,5 +273,36 @@ describe('BotMarketSnapshotProvider (universe + held positions, no Hunt)', () =>
     await expect(
       provider.buildSnapshot(SESSION, { openSymbols: [], universeSymbols: ['AAA'] }),
     ).rejects.toMatchObject({ response: { code: 'BOT_FEE_RULES_MISSING' } });
+  });
+
+  it('P-retry asks VCI again for symbols that came back without the session bar (issue #2)', async () => {
+    afterClose();
+    const { provider, barSource } = fixture({ barsBySymbol: { HELD: bars(), GONE: bars() } });
+    barSource.dailyBarsThrough
+      .mockResolvedValueOnce(new Map([['GONE', bars(25, { endDate: '2026-01-01' })]]))
+      .mockResolvedValueOnce(new Map([['HELD', bars()]]));
+
+    const result = await provider.buildSnapshot(SESSION, { openSymbols: ['HELD', 'GONE'] });
+
+    expect(barSource.dailyBarsThrough).toHaveBeenNthCalledWith(2, ['GONE', 'HELD'], 25, SESSION, {
+      fresh: true,
+    });
+    expect(barSource.dailyBarsThrough).toHaveBeenNthCalledWith(3, ['GONE'], 25, SESSION, {
+      fresh: true,
+    });
+    expect(result.symbols.HELD).toMatchObject({ close_is_official: true, close_vnd: '10024' });
+    expect(result.symbols.GONE).toMatchObject({ close_is_official: true });
+    expect(result.issues).toEqual([]);
+  });
+
+  it('P-retry gives up after the configured retries and reports the gap', async () => {
+    afterClose();
+    const { provider, barSource } = fixture({ barsBySymbol: {} });
+
+    const result = await provider.buildSnapshot(SESSION, { openSymbols: ['HELD'] });
+
+    expect(barSource.dailyBarsThrough).toHaveBeenCalledTimes(3);
+    expect(result.symbols.HELD?.close_is_official).toBe(false);
+    expect(result.issues.map((row) => row.code)).toContain('missing_official_close');
   });
 });

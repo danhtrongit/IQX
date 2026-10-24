@@ -41,10 +41,16 @@ export class MarketHuntDataSource implements HuntDataSource {
     return this.dailyBarsThrough(symbols, candleCount, new Date().toISOString().slice(0, 10));
   }
 
+  /**
+   * Daily bars of each symbol up to `end`. A symbol whose request fails or comes back empty is
+   * left out of the map; empty results are never cached, so a later call asks VCI again.
+   * `fresh` skips the cache read (a retry of symbols that came back incomplete).
+   */
   async dailyBarsThrough(
     symbols: readonly string[],
     candleCount: number,
     end: string,
+    options: { fresh?: boolean } = {},
   ): Promise<Map<string, HuntBar[]>> {
     const normalized = [
       ...new Set(symbols.map((symbol) => symbol.trim().toUpperCase()).filter(Boolean)),
@@ -54,7 +60,7 @@ export class MarketHuntDataSource implements HuntDataSource {
     const pairs = await mapLimit(normalized, 8, async (symbol): Promise<[string, HuntBar[]]> => {
       const key = `${symbol}:${candleCount}:${end}`;
       const cached = this.barsCache.get(key);
-      if (cached && cached.expiresAt > Date.now()) return [symbol, cached.value];
+      if (!options.fresh && cached && cached.expiresAt > Date.now()) return [symbol, cached.value];
       if (breaker.open) return [symbol, []];
       try {
         const response = await this.market.getOhlcv(symbol, {
@@ -97,7 +103,7 @@ export class MarketHuntDataSource implements HuntDataSource {
         const value = [...byDate.values()]
           .sort((left, right) => left.time.localeCompare(right.time))
           .slice(-candleCount);
-        this.barsCache.set(key, { value, expiresAt: Date.now() + 15 * 60_000 });
+        if (value.length) this.barsCache.set(key, { value, expiresAt: Date.now() + 15 * 60_000 });
         breaker.success();
         return [symbol, value];
       } catch (error) {

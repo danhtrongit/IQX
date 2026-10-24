@@ -4,6 +4,7 @@ import { DatabaseService } from '../../platform/database/database.service.js';
 import { canonicalHash } from '../bots/bot.domain.js';
 import { BOT_TRADABLE_SYMBOL_SQL } from '../bots/bot.tradability.js';
 import type { BotIssue, BotMarketSnapshotInput, BotSnapshotProvider } from '../bots/bot.types.js';
+import type { HuntBar } from '../journey/cap5/cap5.types.js';
 import { MarketDataService } from '../market-data/market-data.service.js';
 import { HoseRestrictedSecuritiesProvider } from './hose-restricted-securities.provider.js';
 import {
@@ -18,6 +19,11 @@ import { MarketHuntDataSource } from './market-hunt-data-source.js';
 /** 20 sessions feed the average traded value; a few extra tolerate suspended days. */
 const BAR_COUNT = 25;
 const LIQUIDITY_SESSIONS = 20;
+/**
+ * Pauses before asking VCI again for symbols that came back without bars or without the
+ * session's bar. A short VCI outage on 23/10/2026 dropped five held/universe symbols from a run.
+ */
+export const BOT_BAR_RETRY_DELAYS_MS: readonly number[] = [3_000, 10_000];
 
 function issue(code: string, detail: string, symbol: string | null = null): BotIssue {
   return { code, detail, symbol };
@@ -38,6 +44,8 @@ function normalize(symbols: readonly string[] | undefined): string[] {
 @Injectable()
 export class BotMarketSnapshotProvider implements BotSnapshotProvider {
   private readonly logger = new Logger(BotMarketSnapshotProvider.name);
+  /** Overridable in tests. */
+  retryDelaysMs: readonly number[] = BOT_BAR_RETRY_DELAYS_MS;
 
   constructor(
     private readonly database: DatabaseService,
@@ -86,10 +94,8 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
         : [],
     );
 
-    const barsMap: Awaited<ReturnType<MarketHuntDataSource['dailyBarsThrough']>> = requested.length
-      ? await this.bars.dailyBarsThrough(requested, BAR_COUNT, tradingDate)
-      : new Map();
     const completedSession = isCompletedVietnamSession(tradingDate, observedAt);
+    const barsMap = await this.fetchBars(requested, tradingDate, completedSession);
     const symbols: BotMarketSnapshotInput['symbols'] = {};
     const gaps: Record<string, string> = {};
     for (const symbol of requested) {
@@ -239,5 +245,36 @@ export class BotMarketSnapshotProvider implements BotSnapshotProvider {
     base.data_version = `bot-v1:${tradingDate}:${contentHash.slice(0, 16)}`;
     base.snapshot_hash = canonicalHash(base);
     return base;
+  }
+
+  /**
+   * Bars of every requested symbol. Symbols with no bars, or without the session's bar once
+   * the session has closed, are asked for again (bypassing the cache) after each pause in
+   * `retryDelaysMs`; a retry only ever replaces what it improves.
+   */
+  private async fetchBars(
+    requested: readonly string[],
+    tradingDate: string,
+    completedSession: boolean,
+  ): Promise<Map<string, HuntBar[]>> {
+    if (!requested.length) return new Map();
+    const barsMap = await this.bars.dailyBarsThrough(requested, BAR_COUNT, tradingDate);
+    const incomplete = (symbol: string): boolean => {
+      const latest = barsMap.get(symbol)?.at(-1);
+      return !latest || (completedSession && latest.time !== tradingDate);
+    };
+    for (const delay of this.retryDelaysMs) {
+      const missing = requested.filter(incomplete);
+      if (!missing.length) break;
+      if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
+      const retried = await this.bars.dailyBarsThrough(missing, BAR_COUNT, tradingDate, {
+        fresh: true,
+      });
+      for (const [symbol, symbolBars] of retried) {
+        const before = barsMap.get(symbol)?.at(-1)?.time ?? '';
+        if ((symbolBars.at(-1)?.time ?? '') >= before) barsMap.set(symbol, symbolBars);
+      }
+    }
+    return barsMap;
   }
 }

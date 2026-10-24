@@ -43,6 +43,38 @@ describe('MarketHuntDataSource', () => {
     ]);
   });
 
+  it('never caches an empty answer and lets `fresh` bypass the cache (issue #2)', async () => {
+    const row = {
+      time: '2026-01-02',
+      open: 10,
+      high: 12,
+      low: 9,
+      close: 11,
+      volume: 100,
+      value: 2,
+    };
+    const market = {
+      getOhlcv: vi
+        .fn()
+        .mockResolvedValueOnce(envelope([]))
+        .mockResolvedValueOnce(envelope([row]))
+        .mockResolvedValueOnce(envelope([{ ...row, close: 12 }])),
+    };
+    const source = new MarketHuntDataSource(market as never, { current: vi.fn() } as never);
+
+    expect((await source.dailyBarsThrough(['AAA'], 21, '2026-01-02')).has('AAA')).toBe(false);
+    expect((await source.dailyBarsThrough(['AAA'], 21, '2026-01-02')).get('AAA')?.[0]?.close).toBe(
+      11,
+    );
+    // Cached now; only `fresh` reaches VCI again.
+    expect((await source.dailyBarsThrough(['AAA'], 21, '2026-01-02')).get('AAA')?.[0]?.close).toBe(
+      11,
+    );
+    const fresh = await source.dailyBarsThrough(['AAA'], 21, '2026-01-02', { fresh: true });
+    expect(fresh.get('AAA')?.[0]?.close).toBe(12);
+    expect(market.getOhlcv).toHaveBeenCalledTimes(3);
+  });
+
   it('returns null only when every VCI flow request fails and omits incomplete symbols', async () => {
     const market = {
       foreignTrade: vi.fn(async (symbol: string) => {
