@@ -87,7 +87,7 @@ export async function memberPerformance(
                   + coalesce(r.cash_vnd, 0) + coalesce(pos.value_vnd, 0)
                   - a.net_deposited_cash_vnd)::numeric
                   * 100 / a.net_deposited_cash_vnd, 2)::text
-              else 0 end as pnl_pct,
+              else '0' end as pnl_pct,
               (select max(o.created_at) from virtual_orders o where o.account_id = a.id)
                 as last_activity_at
          from virtual_trading_accounts a

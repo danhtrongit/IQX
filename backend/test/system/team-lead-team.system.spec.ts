@@ -433,7 +433,7 @@ describe('system acceptance: team lead area (team/*)', () => {
       academy: {
         started: true,
         completed: 2,
-        total: 43,
+        total: 87,
         all_done: false,
         current_lesson: { lesson_id: 'ch01-l02', kind: 'lesson' },
       },
@@ -443,7 +443,7 @@ describe('system acceptance: team lead area (team/*)', () => {
     expect(second).toMatchObject({
       demo_trading: { activated: false, pnl_pct: null },
       bot: { activated: false, pnl_pct: null, as_of: null },
-      academy: { started: false, completed: 0, total: 43, current_lesson: null, all_done: false },
+      academy: { started: false, completed: 0, total: 87, current_lesson: null, all_done: false },
     });
     // §7.6: no money value anywhere in the list.
     expect(keysOf(page).filter((key) => key.endsWith('_vnd'))).toEqual([]);
@@ -522,11 +522,13 @@ describe('system acceptance: team lead area (team/*)', () => {
       expect.arrayContaining([expect.objectContaining({ amount_vnd: 99_000, status: 'paid' })]),
     );
 
-    // Published chapters only (1-5); x / 43 counts required lessons; one exam row per chapter.
-    expect(view.academy.chapters.map((chapter) => chapter.no)).toEqual([1, 2, 3, 4, 5]);
-    expect(view.academy.total).toBe(43);
+    // Published chapters only (1-13); x / 87 counts required lessons; one exam row per chapter.
+    expect(view.academy.chapters.map((chapter) => chapter.no)).toEqual([
+      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
+    ]);
+    expect(view.academy.total).toBe(87);
     expect(view.academy.completed).toBe(2);
-    expect(view.academy.chapter_exams).toEqual({ total: 5, passed: 0 });
+    expect(view.academy.chapter_exams).toEqual({ total: 13, passed: 0 });
     expect(view.academy.current_lesson?.lesson_id).toBe('ch01-l02');
     const chapter1 = view.academy.chapters[0];
     expect(chapter1).toMatchObject({ total: 10, completed: 1, exam_passed: false });
