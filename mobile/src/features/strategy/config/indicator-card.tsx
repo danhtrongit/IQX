@@ -10,7 +10,9 @@ import {
   paramError,
   parseParamText,
   ruleLine,
+  ruleOpLabel,
   withOp,
+  withRuleEnabled,
   withSideEnabled,
 } from './model';
 import type { IndicatorConfig, RegistryIndicator, Side } from './types';
@@ -121,19 +123,27 @@ export function IndicatorCard({ indicator: ind, value, learned, expanded, dirty,
                           />
                         );
                       })}
-                      {s.rules.map((r) => (
+                      {s.rules.map((r, idx) => (
                         <View key={r.id} style={{ gap: spacing.xs }}>
+                          {r.enabled !== undefined ? (
+                            <SwitchRow
+                              label={`Điều kiện ${idx + 1}`}
+                              value={r.enabled !== false}
+                              testID={`strategy-library-rule-${ind.id}-${side}-${r.id}`}
+                              onValueChange={(on) => onChange(withRuleEnabled(value, side, r.id, on))}
+                            />
+                          ) : null}
                           <Text variant="caption" color="mutedForeground">{ruleLine(r, ind, side)}</Text>
                           {r.allowed_ops && r.allowed_ops.length > 1 ? (
-                            <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+                            <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
                               {r.allowed_ops.map((op) => (
                                 <Button
                                   key={op}
-                                  title={op}
+                                  title={ruleOpLabel(op)}
                                   size="sm"
                                   variant={r.op === op ? 'primary' : 'outline'}
                                   fullWidth={false}
-                                  testID={`strategy-library-op-${ind.id}-${side}-${r.id}-${op === '>' ? 'gt' : op === '<' ? 'lt' : op === '>=' ? 'gte' : 'lte'}`}
+                                  testID={`strategy-library-op-${ind.id}-${side}-${r.id}-${op === '>' ? 'gt' : op === '<' ? 'lt' : op === '>=' ? 'gte' : op === '<=' ? 'lte' : op}`}
                                   onPress={() => onChange(withOp(value, side, r.id, op))}
                                 />
                               ))}

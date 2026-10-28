@@ -145,11 +145,22 @@ function computeIndicatorWarmup(
   return maxWindow;
 }
 
+const FLASHBACK_EXCLUDED_FIELDS: Readonly<Record<string, ReadonlySet<string>>> = {
+  ma: new Set(['fast', 'slow', 'trend_period']),
+  ema: new Set(['fast', 'slow', 'trend_period']),
+  dmi: new Set(['level']),
+  obv: new Set(['breakout_period']),
+};
+
 function buildCatalog(): FlashbackIndicatorMeta[] {
   return loadTechnicalRegistry()
     .filter((entry) => entry.availability === 'ohlcv')
     .map((entry) => {
-      const params: FlashbackIndicatorParamMeta[] = entry.fields.map((field) => {
+      const excluded = FLASHBACK_EXCLUDED_FIELDS[entry.id];
+      const fields = excluded
+        ? entry.fields.filter((field) => !excluded.has(field.key))
+        : entry.fields;
+      const params: FlashbackIndicatorParamMeta[] = fields.map((field) => {
         const buySide = sideOf(entry, 'buy', field);
         const sellSide = sideOf(entry, 'sell', field);
         const differs =
@@ -171,6 +182,7 @@ function buildCatalog(): FlashbackIndicatorMeta[] {
           upper: differs ? upper : null,
         };
       });
+      const paramKeys = new Set(params.map((item) => item.key));
       const warmup = computeIndicatorWarmup(entry.id, params, {});
       const lessonInfo = FLASHBACK_LESSON_CATALOG[entry.id];
       return {
@@ -179,11 +191,13 @@ function buildCatalog(): FlashbackIndicatorMeta[] {
         chapter: lessonInfo?.chapter ?? entry.chapter,
         lesson_id: lessonInfo?.lesson_id ?? entry.lesson_id,
         params,
-        cross_fields: (entry.validation?.cross_fields ?? []).map((rule) => ({
-          left: rule.left,
-          op: rule.op,
-          right: rule.right,
-        })),
+        cross_fields: (entry.validation?.cross_fields ?? [])
+          .filter((rule) => paramKeys.has(rule.left) && paramKeys.has(rule.right))
+          .map((rule) => ({
+            left: rule.left,
+            op: rule.op,
+            right: rule.right,
+          })),
         warmup_sessions: warmup,
       };
     })

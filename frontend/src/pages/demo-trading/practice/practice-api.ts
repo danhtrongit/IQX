@@ -10,7 +10,21 @@ import { requestOperation } from "@/lib/contract-client"
 import type { ApiResponseFor } from "@/lib/contract-types"
 
 export type Side = "buy" | "sell"
-export type PracticeOp = ">" | "<" | "∈" | "∉"
+export type PracticeOp =
+  | ">"
+  | "<"
+  | "∈"
+  | "∉"
+  | "cross_up"
+  | "cross_down"
+  | "reenter_lower"
+  | "reenter_upper"
+  | "break_upper"
+  | "break_lower"
+  | "cross_up_middle"
+  | "cross_down_middle"
+  | "break_high"
+  | "break_low"
 
 export type PracticeState = ApiResponseFor<"GET /api/v2/practice/{indicatorId}/state">
 export type PracticeConfig = PracticeState["draft"]

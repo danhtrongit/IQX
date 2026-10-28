@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils"
 import { HOLD_MAX, HOLD_MIN, PRACTICE_TOTAL, type PracticeFormField, type PracticeFormRule, type Side } from "./practice-api"
 import { PracticeFailureNotice } from "./practice-failure"
 import { usePractice } from "./practice-context"
-import { SIDES, SIDE_LABEL, ruleSideLabels, formatInt } from "./practice-model"
+import { SIDES, SIDE_LABEL, ruleOpLabel, ruleSideLabels, formatInt } from "./practice-model"
 import { useExitPractice } from "./practice-nav"
 
 const pad2 = (value: number) => String(value).padStart(2, "0")
@@ -40,24 +40,46 @@ function ParamField({
         {field.label}
       </label>
       <div className="relative">
-        <Input
-          id={id}
-          type="number"
-          inputMode={field.type === "integer" ? "numeric" : "decimal"}
-          min={field.min}
-          max={field.max}
-          step={field.step}
-          value={value}
-          disabled={disabled}
-          aria-invalid={error ? true : undefined}
-          aria-describedby={error ? hintId : undefined}
-          data-side={side}
-          data-param={field.key}
-          className={cn("h-9 tabular-nums", field.unit && "pr-14")}
-          onChange={(event) => onChange(event.target.value)}
-        />
-        {field.unit && (
-          <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-[11px] text-muted-foreground">{field.unit}</span>
+        {field.options && field.options.length > 0 ? (
+          <select
+            id={id}
+            value={value}
+            disabled={disabled}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? hintId : undefined}
+            data-side={side}
+            data-param={field.key}
+            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm tabular-nums outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60"
+            onChange={(event) => onChange(event.target.value)}
+          >
+            {field.options.map((opt) => (
+              <option key={opt} value={String(opt)}>
+                {opt}{field.unit ? ` ${field.unit}` : ""}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <>
+            <Input
+              id={id}
+              type="number"
+              inputMode={field.type === "integer" ? "numeric" : "decimal"}
+              min={field.min}
+              max={field.max}
+              step={field.step}
+              value={value}
+              disabled={disabled}
+              aria-invalid={error ? true : undefined}
+              aria-describedby={error ? hintId : undefined}
+              data-side={side}
+              data-param={field.key}
+              className={cn("h-9 tabular-nums", field.unit && "pr-14")}
+              onChange={(event) => onChange(event.target.value)}
+            />
+            {field.unit && (
+              <span className="pointer-events-none absolute inset-y-0 right-2.5 flex items-center text-[11px] text-muted-foreground">{field.unit}</span>
+            )}
+          </>
         )}
       </div>
       {error && (
@@ -75,19 +97,35 @@ function RuleRow({
   left,
   right,
   op,
+  ruleEnabled,
   disabled,
   onOp,
+  onRuleEnabled,
 }: {
   index: number
   rule: PracticeFormRule
   left: string
   right: string
   op: string
+  ruleEnabled?: boolean
   disabled: boolean
   onOp: (op: PracticeFormRule["allowed_ops"][number]) => void
+  onRuleEnabled?: (enabled: boolean) => void
 }) {
   return (
     <li data-rule-id={rule.rule_id}>
+      {ruleEnabled !== undefined && onRuleEnabled && (
+        <label className="flex items-center gap-2 bg-muted/30 px-3 py-1 text-[11px] font-medium text-muted-foreground">
+          <input
+            type="checkbox"
+            aria-label={`Bật điều kiện ${index + 1}`}
+            checked={ruleEnabled}
+            disabled={disabled}
+            onChange={(event) => onRuleEnabled(event.target.checked)}
+          />
+          <span>Điều kiện {index + 1}</span>
+        </label>
+      )}
       {rule.kind === "cross" && <span className="mb-1 block text-[11px] font-medium text-muted-foreground">Giao cắt giữa hai phiên</span>}
       <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-2.5 text-xs">
         <span className="break-words">{left}</span>
@@ -96,11 +134,11 @@ function RuleRow({
           value={op}
           disabled={disabled}
           onChange={(event) => onOp(event.target.value as PracticeFormRule["allowed_ops"][number])}
-          className="h-8 rounded-sm border border-input bg-background px-2 text-sm font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60"
+          className="h-8 rounded-sm border border-input bg-background px-2 text-xs font-semibold outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-60"
         >
           {rule.allowed_ops.map((allowed) => (
             <option key={allowed} value={allowed}>
-              {allowed}
+              {ruleOpLabel(allowed)}
             </option>
           ))}
         </select>
@@ -216,8 +254,18 @@ function Editor() {
                 left={labels.left}
                 right={labels.right}
                 op={sideForm.ops[rule.rule_id] ?? rule.default_op}
+                ruleEnabled={
+                  rule.default_enabled !== undefined || sideForm.rules_enabled?.[rule.rule_id] !== undefined
+                    ? (sideForm.rules_enabled?.[rule.rule_id] ?? rule.default_enabled ?? true)
+                    : undefined
+                }
                 disabled={disabled}
                 onOp={(op) => practice.editOp(side, rule.rule_id, op)}
+                onRuleEnabled={
+                  practice.editRuleEnabled
+                    ? (checked) => practice.editRuleEnabled?.(side, rule.rule_id, checked)
+                    : undefined
+                }
               />
             )
           })}

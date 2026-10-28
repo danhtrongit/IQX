@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import { buildRegistry } from "../test-support"
-import { operandLabel, ruleLine } from "./labels"
+import { operandLabel, ruleLine, ruleOpLabel } from "./labels"
 import { activeConditions, effectiveText } from "./summary"
 import { templateConfig } from "./draft"
 import type { SharedConfig } from "./types"
@@ -34,6 +34,16 @@ describe("rule labels", () => {
   it("never prints a raw key or a blank for a half-typed param", () => {
     const rsi = get("rsi")
     expect(operandLabel({ kind: "param", key: "level" }, rsi, { level: undefined })).toBe("—")
+  })
+
+  it("formats Spec V2 operators and offset_param trend lookback in Vietnamese", () => {
+    const ma = get("ma")
+    expect(operandLabel({ kind: "series", key: "trend", offset_param: "trend_period" }, ma, { trend_period: 20 })).toBe(
+      "so với tại t − 20",
+    )
+    expect(ruleOpLabel("cross_up")).toBe("cắt lên")
+    expect(ruleOpLabel("reenter_lower")).toBe("Từ ngoài Dải dưới đi vào trong dải")
+    expect(ruleOpLabel("break_high")).toBe("vượt đỉnh")
   })
 })
 
@@ -68,6 +78,17 @@ describe("readable conditions of the effective config", () => {
     const config = configWith((value) => { value.indicators.rsi!.buy.enabled = true })
     expect(activeConditions(config, "buy", registry)).toEqual([])
     expect(activeConditions(undefined, "buy", registry)).toEqual([])
+  })
+
+  it("omits disabled sub-rules and hides a side when all its sub-rules are disabled", () => {
+    const config = configWith((value) => {
+      value.indicators.rsi!.master_enabled = true
+      value.indicators.rsi!.buy.enabled = true
+      value.indicators.rsi!.buy.rules[1]!.enabled = false
+    })
+    expect(activeConditions(config, "buy", registry)[0]!.rules).toEqual(["RSI phiên trước < 30"])
+    config.indicators.rsi!.buy.rules[0]!.enabled = false
+    expect(activeConditions(config, "buy", registry)).toEqual([])
   })
 })
 

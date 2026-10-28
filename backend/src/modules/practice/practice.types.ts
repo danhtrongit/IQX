@@ -1,10 +1,11 @@
-import type { CompareOp, Operand, RuleOp, Side, Tri } from '../quant/v2/index.js';
+import type { Operand, RuleOp, Side, Tri } from '../quant/v2/index.js';
 
 /** One side of a practice config. `ops` maps stable registry rule ids to the chosen operator. */
 export type PracticeSideInput = {
   enabled: boolean;
   params: Record<string, number>;
   ops: Record<string, RuleOp>;
+  rules_enabled?: Record<string, boolean>;
 };
 
 export type PracticeConfig = {
@@ -137,11 +138,13 @@ export type PracticeFormField = {
   max: number;
   step: number;
   unit: string;
+  options?: number[];
 };
 
 export type PracticeFormRule = {
   rule_id: string;
   kind: 'compare' | 'cross' | 'membership';
+  default_enabled?: boolean;
   default_op: RuleOp;
   allowed_ops: RuleOp[];
   /** Operand labels at the registry default params (the client re-labels with its own params). */
@@ -157,6 +160,6 @@ export type PracticeForm = {
   indicator_id: string;
   buy: PracticeFormSide;
   sell: PracticeFormSide;
-  cross_fields: Array<{ left: string; op: CompareOp; right: string }>;
+  cross_fields: Array<{ left: string; op: '<' | '>'; right: string }>;
   defaults: PracticeConfig;
 };

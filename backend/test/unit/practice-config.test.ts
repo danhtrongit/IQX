@@ -108,11 +108,11 @@ describe('practice config validation against the registry', () => {
       mutate(config);
       return validatePracticeConfig(entry, config, { requireBuy: true });
     };
-    // RSI: Buy level 10-49 and Sell level 51-90 (different domains per side)
-    expect(errors('rsi', (c) => (c.buy.params.level = 50))).not.toEqual([]);
-    expect(errors('rsi', (c) => (c.buy.params.level = 49))).toEqual([]);
-    expect(errors('rsi', (c) => (c.sell.params.level = 50))).not.toEqual([]);
-    expect(errors('rsi', (c) => (c.sell.params.level = 51))).toEqual([]);
+    // RSI: Buy and Sell level 0-100
+    expect(errors('rsi', (c) => (c.buy.params.level = -1))).not.toEqual([]);
+    expect(errors('rsi', (c) => (c.buy.params.level = 50))).toEqual([]);
+    expect(errors('rsi', (c) => (c.sell.params.level = 101))).not.toEqual([]);
+    expect(errors('rsi', (c) => (c.sell.params.level = 50))).toEqual([]);
     // fast < slow for MACD and MA Cross
     expect(errors('macd', (c) => (c.buy.params.fast = 30))).not.toEqual([]);
     expect(errors('ma_cross', (c) => (c.sell.params.fast = 60))).not.toEqual([]);
@@ -132,14 +132,14 @@ describe('practice config validation against the registry', () => {
   it('validates operators per stable rule id', () => {
     const entry = practiceEntry('bollinger')!;
     const config = defaultPracticeConfig(entry);
-    expect(config.buy.ops).toEqual({ r1: '<', r2: '∈', r3: '>' });
-    config.buy.ops = { r1: '>', r2: '∉', r3: '<' };
+    expect(config.buy.ops).toEqual({ r1: 'reenter_lower', r2: '>', r3: '<' });
+    config.buy.ops = { r1: 'break_lower', r2: '<', r3: '>' };
     expect(validatePracticeConfig(entry, config, { requireBuy: true })).toEqual([]);
     for (const bad of [
-      { r1: '∈', r2: '∈', r3: '>' },
-      { r1: '<', r2: '>', r3: '>' },
-      { r1: '<', r2: '∈' },
-      { r1: '<', r2: '∈', r3: '>', r4: '>' },
+      { r1: '∈', r2: '>', r3: '<' },
+      { r1: 'reenter_lower', r2: '∈', r3: '<' },
+      { r1: 'reenter_lower', r2: '>' },
+      { r1: 'reenter_lower', r2: '>', r3: '<', r4: '>' },
     ]) {
       config.buy.ops = bad as never;
       expect(validatePracticeConfig(entry, config, { requireBuy: true })).not.toEqual([]);
@@ -195,8 +195,8 @@ describe('practice form descriptor (no Premium registry call needed)', () => {
   it('exposes effective per-side domains, rule templates and the registry defaults', () => {
     const rsi = practiceForm(practiceEntry('rsi')!);
     const level = (side: 'buy' | 'sell') => rsi[side].fields.find((f) => f.key === 'level')!;
-    expect([level('buy').min, level('buy').max]).toEqual([10, 49]);
-    expect([level('sell').min, level('sell').max]).toEqual([51, 90]);
+    expect([level('buy').min, level('buy').max]).toEqual([0, 100]);
+    expect([level('sell').min, level('sell').max]).toEqual([0, 100]);
     expect(rsi.buy.rules.map((r) => [r.rule_id, r.default_op, r.allowed_ops])).toEqual([
       ['r1', '<', ['>', '<']],
       ['r2', '>', ['>', '<']],
@@ -206,7 +206,18 @@ describe('practice form descriptor (no Premium registry call needed)', () => {
       { left: 'fast', op: '<', right: 'slow' },
     ]);
     const bollinger = practiceForm(practiceEntry('bollinger')!);
-    expect(bollinger.buy.rules[1]).toMatchObject({ kind: 'membership', allowed_ops: ['∈', '∉'] });
+    expect(bollinger.buy.rules[0]).toMatchObject({
+      kind: 'compare',
+      default_op: 'reenter_lower',
+      allowed_ops: [
+        'reenter_lower',
+        'reenter_upper',
+        'break_upper',
+        'break_lower',
+        'cross_up_middle',
+        'cross_down_middle',
+      ],
+    });
     for (const id of PRACTICE_INDICATOR_IDS) {
       const form = practiceForm(practiceEntry(id)!);
       expect(form.buy.fields.length).toBeGreaterThan(0);

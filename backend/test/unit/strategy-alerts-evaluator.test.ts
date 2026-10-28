@@ -23,7 +23,7 @@ const USER = '00000000-0000-4000-8000-0000000000a1';
 const USER_2 = '00000000-0000-4000-8000-0000000000b2';
 const day = (i: number): string => new Date(Date.UTC(2026, 0, 1 + i)).toISOString().slice(0, 10);
 
-/** Buy: close > SMA(buyPeriod); Sell: close < SMA(sellPeriod). */
+/** Buy: close crosses above SMA(buyPeriod); Sell: close crosses below SMA(sellPeriod). */
 function maConfig(buyPeriod = 5, sellPeriod = 5, sides: Side[] = ['buy', 'sell']): SharedConfig {
   const config = defaultConfig();
   const ma = config.indicators.ma as IndicatorConfig;
@@ -50,8 +50,8 @@ const records = (closes: readonly number[]): OhlcvRecord[] =>
  * day10 true (and MA(5) sell true only on day9).
  */
 const S1 = [10, 10, 10, 10, 10, 10, 12, 13, 14, 9, 15];
-/** A downtrend with a bounce on day10: close > SMA(5) (buy) and close < SMA(10) (sell). */
-const BOTH = [20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 14];
+/** On day10 (close 17 -> 15): close crosses above SMA(5) (17.4 -> 12.4) and below SMA(10) (15.7 -> 16.2). */
+const BOTH = [10, 15, 15, 15, 15, 40, 10, 10, 10, 17, 15];
 const FLAT = Array.from({ length: 11 }, () => 10);
 
 class FakeMarket implements QuantMarketDataProvider {
@@ -364,7 +364,7 @@ describe('StrategyAlertEvaluator — durability, pause and data readiness', () =
         definition_hash: 'd'.repeat(64),
       },
     });
-    await env.evaluator.evaluateSession(day(8), at(9));
+    await env.evaluator.evaluateSession(day(10), at(9));
     expect(env.store.events.map((event) => [event.alert_version, event.alert_name])).toEqual(
       expect.arrayContaining([
         [1, 'Tên cũ'],

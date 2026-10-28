@@ -1,4 +1,5 @@
 import type { SqlClient } from '../../platform/database/index.js';
+import type { RuleOp } from '../quant/v2/index.js';
 
 export const BOT_SNAPSHOT_PROVIDER = Symbol('BOT_SNAPSHOT_PROVIDER');
 /** Injection token of the buy-universe resolver port (see {@link BotUniversePort}). */
@@ -111,7 +112,7 @@ export type BotConditionRuleEvidence = {
   id: string;
   indicator: string;
   side: 'buy' | 'sell';
-  op: '>' | '<' | '∈' | '∉';
+  op: RuleOp;
   lhs: number | null;
   rhs: number | null;
   rhs_lower?: number | null;

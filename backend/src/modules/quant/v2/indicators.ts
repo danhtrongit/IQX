@@ -186,12 +186,22 @@ function calcAny(id: string, params: Record<string, number>, bars: readonly Bar[
       o.value = ratioIndex(gain, loss);
       break;
     }
-    case 'ma':
-      o.value = sma(close, p('period'));
+    case 'ma': {
+      const value = sma(close, p('period'));
+      o.value = value;
+      o.fast = isFiniteNumber(params.fast) ? sma(close, p('fast')) : value;
+      o.slow = isFiniteNumber(params.slow) ? sma(close, p('slow')) : value;
+      o.trend = isFiniteNumber(params.trend_period) ? sma(close, p('trend_period')) : value;
       break;
-    case 'ema':
-      o.value = ema(close, p('period'));
+    }
+    case 'ema': {
+      const value = ema(close, p('period'));
+      o.value = value;
+      o.fast = isFiniteNumber(params.fast) ? ema(close, p('fast')) : value;
+      o.slow = isFiniteNumber(params.slow) ? ema(close, p('slow')) : value;
+      o.trend = isFiniteNumber(params.trend_period) ? ema(close, p('trend_period')) : value;
       break;
+    }
     case 'macd': {
       const value = zip(ema(close, p('fast')), ema(close, p('slow')), (x, y) => x - y);
       const signal = ema(value, p('signal'));
@@ -263,16 +273,17 @@ function calcAny(id: string, params: Record<string, number>, bars: readonly Bar[
       const atr = wilder(trueRange(b), period);
       const plus = div(wilder(plusDm, period), atr, 100);
       const minus = div(wilder(minusDm, period), atr, 100);
+      const dx = zip(plus, minus, (x, y) =>
+        x + y === 0 ? 0 : (100 * Math.abs(x - y)) / (x + y),
+      );
+      const adx = wilder(dx, period);
       o.plus = plus;
       o.minus = minus;
+      o.dx = dx;
       if (id === 'adx') {
-        // ADX is a retired indicator: the current DMI exposes only +DI/−DI (Bot spec §9.1).
-        const dx = zip(plus, minus, (x, y) =>
-          x + y === 0 ? 0 : (100 * Math.abs(x - y)) / (x + y),
-        );
-        o.dx = dx;
-        o.value = wilder(dx, period);
+        o.value = adx;
       } else {
+        o.adx = adx;
         o.value = plus;
       }
       break;
@@ -325,6 +336,11 @@ function calcAny(id: string, params: Record<string, number>, bars: readonly Bar[
       }
       o.value = value;
       o.baseline = sma(value, p('baseline'));
+      const breakoutPeriod = isFiniteNumber(params.breakout_period)
+        ? p('breakout_period')
+        : p('baseline');
+      o.upper = rolling(value, breakoutPeriod, maxOf, 1);
+      o.lower = rolling(value, breakoutPeriod, minOf, 1);
       break;
     }
     case 'mfi': {

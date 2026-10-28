@@ -100,8 +100,10 @@ export function plotSpec(indicatorId: string, params: Record<string, number>): P
         lines: [
           { key: 'plus', label: '+DI' },
           { key: 'minus', label: '−DI' },
+          { key: 'adx', label: 'ADX' },
         ],
         nonnegative: true,
+        threshold_levels: level,
       };
     case 'stochastic':
       return {

@@ -89,7 +89,7 @@ describe('legacy shared-config mapping (35 -> 16 indicators)', () => {
       rsi.buy.params.period = 21;
       rsi.sell.enabled = false;
       rsi.sell.params.level = 80;
-      indicators.bollinger!.buy.rules[1]!.op = '∉';
+      indicators.bollinger!.buy.rules[1]!.op = '<';
     });
     const { config, review, validation_errors } = mapped(document);
     expect(config).toMatchObject({
@@ -101,7 +101,7 @@ describe('legacy shared-config mapping (35 -> 16 indicators)', () => {
     expect(config.indicators.rsi).toEqual(document.indicators.rsi);
     expect(config.indicators.rsi!.buy.params.period).toBe(21);
     expect(config.indicators.rsi!.sell.params.level).toBe(80);
-    expect(config.indicators.bollinger!.buy.rules[1]!.op).toBe('∉');
+    expect(config.indicators.bollinger!.buy.rules[1]!.op).toBe('<');
     // Removed indicators are not carried into the current shape.
     expect(Object.keys(config.indicators).some((id) => id === 'atr' || id === 'psar')).toBe(false);
     expect(validation_errors).toEqual([]);

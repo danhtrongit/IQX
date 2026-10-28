@@ -3,21 +3,42 @@
  * `iqx-rules-3.0`). One saved configuration per account is shared by the Bot and
  * the full Backtest; this tool is the only place that edits it.
  */
-export type CompareOp = ">" | "<"
+export type CompareOp =
+  | ">"
+  | "<"
+  | "cross_up"
+  | "cross_down"
+  | "reenter_lower"
+  | "reenter_upper"
+  | "break_upper"
+  | "break_lower"
+  | "cross_up_middle"
+  | "cross_down_middle"
+  | "break_high"
+  | "break_low"
 export type MembershipOp = "∈" | "∉"
 export type RuleOp = CompareOp | MembershipOp
 export type Side = "buy" | "sell"
 
 export type Operand =
-  | { kind: "series"; key: string; offset?: number }
+  | { kind: "series"; key: string; offset?: number; offset_param?: string }
   | { kind: "param"; key: string }
   | { kind: "constant"; value: number }
 
 export type Rule =
-  | { id: string; kind: "compare" | "cross"; lhs: Operand; op: CompareOp; rhs: Operand; allowed_ops: CompareOp[] }
+  | {
+      id: string
+      kind: "compare" | "cross"
+      enabled?: boolean
+      lhs: Operand
+      op: CompareOp
+      rhs: Operand
+      allowed_ops: CompareOp[]
+    }
   | {
       id: string
       kind: "membership"
+      enabled?: boolean
       lhs: Operand
       op: MembershipOp
       rhs: { kind?: "interval"; lower: Operand; upper: Operand; bounds?: "open" }
@@ -85,6 +106,7 @@ export type RegistryField = {
   unit: string
   api_scale: number
   wire_unit: string
+  options?: readonly number[]
 }
 
 export type RegistrySide = SideConfig & { field_overrides?: Record<string, Partial<RegistryField>> }

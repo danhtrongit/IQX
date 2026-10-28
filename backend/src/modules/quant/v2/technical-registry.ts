@@ -18,7 +18,20 @@ const TECHNICAL_REGISTRY_PATH = join(REGISTRY_DIRECTORY, 'technical-registry.jso
 /** The 19 removed indicators; read-only history, never offered or validated as current. */
 const LEGACY_REGISTRY_PATH = join(REGISTRY_DIRECTORY, 'legacy-technical-registry.json');
 
-const compareOp = z.enum(['>', '<']);
+const compareOp = z.enum([
+  '>',
+  '<',
+  'cross_up',
+  'cross_down',
+  'reenter_lower',
+  'reenter_upper',
+  'break_upper',
+  'break_lower',
+  'cross_up_middle',
+  'cross_down_middle',
+  'break_high',
+  'break_low',
+]);
 const membershipOp = z.enum(['∈', '∉']);
 
 /** Offsets only look back (0 = current bar, -1 = previous bar); look-ahead is rejected. */
@@ -26,6 +39,7 @@ const seriesOperand = z.strictObject({
   kind: z.literal('series'),
   key: z.string().min(1),
   offset: z.number().int().max(0).optional(),
+  offset_param: z.string().min(1).optional(),
 });
 const paramOperand = z.strictObject({ kind: z.literal('param'), key: z.string().min(1) });
 const constantOperand = z.strictObject({ kind: z.literal('constant'), value: z.number() });
@@ -34,6 +48,7 @@ const operand = z.discriminatedUnion('kind', [seriesOperand, paramOperand, const
 const compareRule = z.strictObject({
   id: z.string().min(1),
   kind: z.enum(['compare', 'cross']),
+  enabled: z.boolean().optional(),
   lhs: operand,
   op: compareOp,
   rhs: operand,
@@ -42,6 +57,7 @@ const compareRule = z.strictObject({
 const membershipRule = z.strictObject({
   id: z.string().min(1),
   kind: z.literal('membership'),
+  enabled: z.boolean().optional(),
   lhs: operand,
   op: membershipOp,
   rhs: z.strictObject({
@@ -64,6 +80,7 @@ const field = z.strictObject({
   unit: z.string(),
   api_scale: z.number(),
   wire_unit: z.string(),
+  options: z.array(z.number()).min(1).optional(),
 });
 
 const side = z.strictObject({
@@ -74,7 +91,7 @@ const side = z.strictObject({
 });
 
 const validation = z.looseObject({
-  cross_fields: z.array(z.strictObject({ left: z.string(), op: compareOp, right: z.string() })),
+  cross_fields: z.array(z.strictObject({ left: z.string(), op: z.enum(['<', '>']), right: z.string() })),
 });
 
 function entrySchema<V extends string>(ruleVersion: V) {

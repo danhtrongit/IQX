@@ -161,8 +161,22 @@ describe('same-session close and next-session open profiles (B04-B09)', () => {
     const fixtureBars = bars(
       fixtureCloses,
       fixtureCloses.map((close, i) => close + (i % 2 === 0 ? 2 : -2)),
-    );
-    const fixtureConfig = maConfig(5, 5);
+    ).map((bar, i) => ({
+      ...bar,
+      volume: i === 0 ? 1000 : Math.abs(fixtureCloses[i]! - fixtureCloses[i - 1]!) * 1000,
+    }));
+    const fixtureConfig = (() => {
+      const c = defaultConfig();
+      const obv = c.indicators.obv as IndicatorConfig;
+      obv.master_enabled = true;
+      obv.buy.enabled = true;
+      obv.sell.enabled = true;
+      obv.buy.params.baseline = 5;
+      obv.sell.params.baseline = 5;
+      obv.buy.rules[0]!.op = '>';
+      obv.sell.rules[0]!.op = '<';
+      return c;
+    })();
     const options: Partial<RunOptions> = {
       ...NO_FEE,
       execution: 'next_open',

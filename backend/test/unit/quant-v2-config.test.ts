@@ -90,7 +90,7 @@ describe('quant v2 validateConfig', () => {
     if (lhs?.kind === 'series') lhs.offset = 1;
     expect(validateConfig(c).length).toBeGreaterThan(0);
     c = defaultConfig();
-    indicator(c, 'rsi').sell.params.level = 30;
+    indicator(c, 'rsi').sell.params.level = 101;
     expect(paths(c)).toEqual(['indicators.rsi.sell.params.level']);
   });
 
@@ -222,10 +222,12 @@ describe('quant v2 validateConfig', () => {
     expect(validateConfig(ok)).toEqual([]);
   });
 
-  it('allows only op changes within allowed_ops; operands and rule count are frozen', () => {
+  it('allows only op and enabled changes within allowed_ops; operands and rule count are frozen', () => {
     const allowed = defaultConfig();
     indicator(allowed, 'ma').buy.rules[0]!.op = '<';
-    indicator(allowed, 'bollinger').sell.rules[1]!.op = '∉';
+    indicator(allowed, 'ma').buy.rules[1]!.enabled = true;
+    indicator(allowed, 'bollinger').sell.rules[0]!.op = 'break_upper';
+    indicator(allowed, 'bollinger').sell.rules[1]!.op = '>';
     expect(validateConfig(allowed)).toEqual([]);
     const reordered = defaultConfig();
     const rule = indicator(reordered, 'ma').buy.rules[0]!;

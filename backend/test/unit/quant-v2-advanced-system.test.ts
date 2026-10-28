@@ -282,13 +282,26 @@ describe('quant v2 advanced — cooldown and sizing (Chapters 16–17)', () => {
   ];
 
   it('ch16-l06: sold at session 10 with cooldown 2 → earliest re-buy at session 13', () => {
+    const macdBuy = defaultConfig();
+    const macd = indicator(macdBuy, 'macd');
+    macd.master_enabled = true;
+    macd.buy.enabled = true;
+    macd.buy.params = { fast: 2, slow: 5, signal: 2 };
+    macd.buy.rules[0]!.enabled = false;
+    macd.buy.rules[1]!.enabled = true;
     // max_holding 5: bought @100 at session 5, sold @105 at the close of session 10 → cash 105,000.
-    const without = run([one(rising)], { exits: { max_holding: 5 } });
+    const without = run([one(rising)], { exits: { max_holding: 5 } }, {}, HAND, macdBuy);
     expect(without.trades[0]?.exit_date).toBe(dateAt(10));
     expect(
       without.ledger.filter((e) => e.kind === 'order_filled' && e.side === 'buy')[1]?.date,
     ).toBe(dateAt(11));
-    const cooled = run([one(rising)], { exits: { max_holding: 5 }, cooldown_bars: 2 });
+    const cooled = run(
+      [one(rising)],
+      { exits: { max_holding: 5 }, cooldown_bars: 2 },
+      {},
+      HAND,
+      macdBuy,
+    );
     const rebuy = cooled.ledger.filter((e) => e.kind === 'order_filled' && e.side === 'buy')[1];
     // Re-buy @108: floor(105,000 / 10,800) = 9 lots = 900 shares, cash 7,800.
     expect(rebuy).toMatchObject({ date: dateAt(13), qty: 900, price: 108 });

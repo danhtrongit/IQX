@@ -4,7 +4,22 @@ import { PRACTICE_CASE_COUNT } from './practice.constants.js';
 
 /** Practice API contracts. No schema here carries a symbol, a company name or a calendar date. */
 
-const ruleOpSchema = z.enum(['>', '<', '∈', '∉']);
+const ruleOpSchema = z.enum([
+  '>',
+  '<',
+  'cross_up',
+  'cross_down',
+  'reenter_lower',
+  'reenter_upper',
+  'break_upper',
+  'break_lower',
+  'cross_up_middle',
+  'cross_down_middle',
+  'break_high',
+  'break_low',
+  '∈',
+  '∉',
+]);
 const keySchema = z.string().min(1).max(32);
 
 export const indicatorIdParamSchema = z.string().regex(/^[a-z][a-z0-9_]{0,31}$/);
@@ -19,6 +34,12 @@ const sideInputSchema = z.strictObject({
   ops: z.record(keySchema, ruleOpSchema).refine((value) => Object.keys(value).length <= 8, {
     message: 'Quá nhiều điều kiện.',
   }),
+  rules_enabled: z
+    .record(keySchema, z.boolean())
+    .refine((value) => Object.keys(value).length <= 8, {
+      message: 'Quá nhiều điều kiện.',
+    })
+    .optional(),
 });
 
 /** Both sides + max holding time. Ranges are validated against the registry by the service. */
@@ -145,6 +166,7 @@ const operandSchema = z.discriminatedUnion('kind', [
     kind: z.literal('series'),
     key: z.string(),
     offset: z.number().int().optional(),
+    offset_param: z.string().optional(),
   }),
   z.strictObject({ kind: z.literal('param'), key: z.string() }),
   z.strictObject({ kind: z.literal('constant'), value: z.number() }),
@@ -160,12 +182,14 @@ const formSideSchema = z.strictObject({
       max: z.number(),
       step: z.number(),
       unit: z.string(),
+      options: z.array(z.number()).optional(),
     }),
   ),
   rules: z.array(
     z.strictObject({
       rule_id: z.string(),
       kind: z.enum(['compare', 'cross', 'membership']),
+      default_enabled: z.boolean().optional(),
       default_op: ruleOpSchema,
       allowed_ops: z.array(ruleOpSchema),
       left_label: z.string(),

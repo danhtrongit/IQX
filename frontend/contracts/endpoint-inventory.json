@@ -2484,6 +2484,17 @@
       "classification": "test-only"
     },
     {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 40,
+      "callee": "get",
+      "raw": "ma",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
       "file": "src/pages/demo-trading/insights/api.ts",
       "line": 104,
       "callee": "getOrNull",
@@ -2705,7 +2716,7 @@
     },
     {
       "file": "src/pages/demo-trading/practice/practice-api.ts",
-      "line": 54,
+      "line": 68,
       "callee": "requestOperation",
       "raw": "GET /api/v2/practice/{indicatorId}/state",
       "method": "GET",
@@ -2718,7 +2729,7 @@
     },
     {
       "file": "src/pages/demo-trading/practice/practice-api.ts",
-      "line": 58,
+      "line": 72,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/practice/{indicatorId}/draft",
       "method": "PUT",
@@ -2731,7 +2742,7 @@
     },
     {
       "file": "src/pages/demo-trading/practice/practice-api.ts",
-      "line": 69,
+      "line": 83,
       "callee": "requestOperation",
       "raw": "POST /api/v2/practice/{indicatorId}/preview",
       "method": "POST",
@@ -2744,7 +2755,7 @@
     },
     {
       "file": "src/pages/demo-trading/practice/practice-api.ts",
-      "line": 76,
+      "line": 90,
       "callee": "requestOperation",
       "raw": "POST /api/v2/practice/{indicatorId}/runs",
       "method": "POST",
@@ -2757,7 +2768,7 @@
     },
     {
       "file": "src/pages/demo-trading/practice/practice-api.ts",
-      "line": 80,
+      "line": 94,
       "callee": "requestOperation",
       "raw": "GET /api/v2/practice/runs/{runId}",
       "method": "GET",
@@ -2770,7 +2781,7 @@
     },
     {
       "file": "src/pages/demo-trading/practice/practice-api.ts",
-      "line": 84,
+      "line": 98,
       "callee": "requestOperation",
       "raw": "POST /api/v2/practice/{indicatorId}/next",
       "method": "POST",
@@ -2783,7 +2794,7 @@
     },
     {
       "file": "src/pages/demo-trading/practice/practice-api.ts",
-      "line": 91,
+      "line": 105,
       "callee": "requestOperation",
       "raw": "GET /api/v2/practice/{indicatorId}/history",
       "method": "GET",
@@ -4035,6 +4046,17 @@
       "line": 35,
       "callee": "get",
       "raw": "rsi",
+      "method": "GET",
+      "route": null,
+      "matchedOperation": null,
+      "matchedOperations": [],
+      "classification": "test-only"
+    },
+    {
+      "file": "src/pages/demo-trading/bot/config/labels.test.ts",
+      "line": 40,
+      "callee": "get",
+      "raw": "ma",
       "method": "GET",
       "route": null,
       "matchedOperation": null,

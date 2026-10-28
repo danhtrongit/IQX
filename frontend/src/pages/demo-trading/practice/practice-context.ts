@@ -49,6 +49,7 @@ export type PracticeContextValue = {
   editEnabled: (side: Side, enabled: boolean) => void
   editParam: (side: Side, key: string, text: string) => void
   editOp: (side: Side, ruleId: string, op: PracticeOp) => void
+  editRuleEnabled?: (side: Side, ruleId: string, enabled: boolean) => void
   editHold: (text: string) => void
   resetSide: () => void
 

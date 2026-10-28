@@ -10,6 +10,8 @@ function valueLabel(indicatorId: string, params: Record<string, number>, fallbac
       return `SMA ${formatNumber(params.period ?? Number.NaN)}`;
     case 'ema':
       return `EMA ${formatNumber(params.period ?? Number.NaN)}`;
+    case 'bollinger':
+      return 'Độ rộng Bollinger';
     case 'stochastic':
       return '%K';
     case 'cmf':
@@ -39,8 +41,13 @@ export function operandLabel(
     return `${value === undefined ? operand.key : formatNumber(value)}${unit ? ` ${unit}` : ''}`;
   }
   if (operand.kind === 'constant') return String(operand.value);
-  const suffix = operand.offset === -1 ? ' phiên trước' : '';
   const p = (key: string): string => formatNumber(params[key] ?? Number.NaN);
+  const suffix =
+    operand.offset === -1
+      ? ' phiên trước'
+      : operand.offset_param
+        ? ` cách ${p(operand.offset_param)} phiên`
+        : '';
   const labels: Record<string, string> = {
     close: 'Giá đóng cửa',
     volume: 'Khối lượng',
@@ -49,11 +56,13 @@ export function operandLabel(
     histogram: 'Histogram',
     plus: '+DI',
     minus: '−DI',
-    fast: `SMA ${p('fast')}`,
-    slow: `SMA ${p('slow')}`,
-    upper: 'Dải trên',
+    adx: 'ADX',
+    fast: entry.id === 'ema' ? `EMA ${p('fast')}` : `SMA ${p('fast')}`,
+    slow: entry.id === 'ema' ? `EMA ${p('slow')}` : `SMA ${p('slow')}`,
+    trend: entry.id === 'ema' ? `EMA ${p('trend_period')}` : `SMA ${p('trend_period')}`,
+    upper: entry.id === 'obv' ? `Đỉnh ${p('breakout_period')} phiên` : 'Dải trên',
     middle: 'Đường giữa',
-    lower: 'Dải dưới',
+    lower: entry.id === 'obv' ? `Đáy ${p('breakout_period')} phiên` : 'Dải dưới',
     baseline: `SMA ${p('baseline')} của OBV`,
     threshold: `${p('mult')} × TB ${p('lookback')} phiên`,
   };
@@ -72,6 +81,21 @@ export function ruleLabels(
       left,
       right: `(${operandLabel(rule.rhs.lower, entry, params)}; ${operandLabel(rule.rhs.upper, entry, params)})`,
     };
+  }
+  if (entry.id === 'bollinger' && rule.id === 'r1') {
+    const rightByOp: Record<string, string> = {
+      reenter_lower: 'Dải dưới',
+      break_lower: 'Dải dưới',
+      reenter_upper: 'Dải trên',
+      break_upper: 'Dải trên',
+      cross_up_middle: 'Đường giữa',
+      cross_down_middle: 'Đường giữa',
+    };
+    return { left, right: rightByOp[rule.op] ?? 'Dải Bollinger' };
+  }
+  if (entry.id === 'obv' && rule.id === 'r2') {
+    const n = formatNumber(params.breakout_period ?? 20);
+    return { left, right: rule.op === 'break_low' ? `Đáy ${n} phiên` : `Đỉnh ${n} phiên` };
   }
   return { left, right: operandLabel(rule.rhs, entry, params) };
 }

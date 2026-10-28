@@ -60,12 +60,20 @@ export function defaultPracticeConfig(entry: RegistryEntry): PracticeConfig {
 }
 
 /** Template rules of one side with the chosen operators applied (operands never change). */
-function rulesWithOps(entry: RegistryEntry, side: Side, ops: Record<string, RuleOp>): Rule[] {
+function rulesWithOps(
+  entry: RegistryEntry,
+  side: Side,
+  ops: Record<string, RuleOp>,
+  rulesEnabled?: Record<string, boolean>,
+): Rule[] {
   return entry[side].rules.map((rule) => {
     const chosen = ops[rule.id];
     const allowed: readonly string[] = rule.allowed_ops;
+    const enabled =
+      rulesEnabled?.[rule.id] !== undefined ? rulesEnabled[rule.id] : rule.enabled;
     return {
       ...rule,
+      ...(enabled !== undefined ? { enabled } : {}),
       op: chosen !== undefined && allowed.includes(chosen) ? chosen : rule.op,
     } as Rule;
   });
@@ -80,7 +88,7 @@ export function toSideConfig(
   return {
     enabled: input.enabled,
     params: { ...input.params },
-    rules: rulesWithOps(entry, side, input.ops),
+    rules: rulesWithOps(entry, side, input.ops, input.rules_enabled),
   };
 }
 
@@ -124,6 +132,21 @@ export function validatePracticeConfig(
         });
       }
     }
+    if (input.rules_enabled !== undefined) {
+      for (const [id, enabledVal] of Object.entries(input.rules_enabled)) {
+        if (!knownIds.has(id)) {
+          errors.push({
+            path: `${side}.rules_enabled.${id}`,
+            message: `${SIDE_LABEL[side]}: điều kiện không tồn tại.`,
+          });
+        } else if (typeof enabledVal !== 'boolean') {
+          errors.push({
+            path: `${side}.rules_enabled.${id}`,
+            message: `${SIDE_LABEL[side]}: trạng thái điều kiện không hợp lệ.`,
+          });
+        }
+      }
+    }
     for (const rule of templateRules) {
       const chosen = input.ops[rule.id];
       const allowed: readonly string[] = rule.allowed_ops;
@@ -142,7 +165,7 @@ export function validatePracticeConfig(
     sides[side] = {
       enabled: input.enabled,
       params: input.params,
-      rules: rulesWithOps(entry, side, input.ops),
+      rules: rulesWithOps(entry, side, input.ops, input.rules_enabled),
     };
   }
 
@@ -173,6 +196,13 @@ export function normalizePracticeConfig(
 ): PracticeConfig {
   const side = (name: Side): PracticeSideInput => {
     const input = config[name];
+    const hasCustomRulesEnabled =
+      input.rules_enabled !== undefined &&
+      entry[name].rules.some(
+        (rule) =>
+          input.rules_enabled?.[rule.id] !== undefined &&
+          input.rules_enabled[rule.id] !== (rule.enabled ?? true),
+      );
     return {
       enabled: input.enabled,
       params: Object.fromEntries(
@@ -181,6 +211,16 @@ export function normalizePracticeConfig(
       ops: Object.fromEntries(
         entry[name].rules.map((rule) => [rule.id, input.ops[rule.id] ?? rule.op]),
       ) as Record<string, RuleOp>,
+      ...(hasCustomRulesEnabled
+        ? {
+            rules_enabled: Object.fromEntries(
+              entry[name].rules.map((rule) => [
+                rule.id,
+                input.rules_enabled?.[rule.id] ?? (rule.enabled ?? true),
+              ]),
+            ),
+          }
+        : {}),
     };
   };
   return { buy: side('buy'), sell: side('sell'), hold_max_sessions: config.hold_max_sessions };
@@ -204,6 +244,7 @@ export function practiceForm(entry: RegistryEntry): PracticeForm {
         max: effective.max,
         step: effective.step,
         unit: effective.unit,
+        ...(effective.options ? { options: [...effective.options] } : {}),
       };
     }),
     rules: entry[name].rules.map((rule) => {
@@ -211,6 +252,7 @@ export function practiceForm(entry: RegistryEntry): PracticeForm {
       return {
         rule_id: rule.id,
         kind: rule.kind,
+        ...(rule.enabled !== undefined ? { default_enabled: rule.enabled } : {}),
         default_op: rule.op,
         allowed_ops: [...rule.allowed_ops] as RuleOp[],
         left_label: labels.left,

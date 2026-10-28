@@ -11,6 +11,7 @@ import {
   formatMoneyVnd,
   formatRatioPercent,
   formatSignedMoney,
+  ruleOpLabel,
   sessionLabel,
   toneOf,
   type TradeRowView,
@@ -31,7 +32,7 @@ function valueText(rule: PracticeRuleEvidence): string {
   const lower = numberOf(rule["rhs_lower"])
   const upper = numberOf(rule["rhs_upper"])
   const right = rule.kind === "membership" ? `(${formatDec(lower)}; ${formatDec(upper)})` : formatDec(rule.rhs)
-  return `${formatDec(rule.lhs)} ${rule.op} ${right}`
+  return `${formatDec(rule.lhs)} ${ruleOpLabel(rule.op)} ${right}`
 }
 
 function ResultTag({ rule }: { rule: PracticeRuleEvidence }) {
@@ -75,7 +76,7 @@ function EvidenceGroup({ title, tone, evidence, side, spec }: { title: string; t
                 <li key={rule.rule_id} className="flex items-center justify-between gap-3 rounded-md border border-border bg-card/60 px-3 py-2 text-xs" data-rule={rule.rule_id}>
                   <div className="min-w-0 space-y-0.5">
                     <span className="block text-[11px] text-muted-foreground">
-                      {rule.left_label} {rule.op} {rule.right_label}
+                      {rule.left_label} {ruleOpLabel(rule.op)} {rule.right_label}
                     </span>
                     <b className="block font-semibold tabular-nums">
                       {rule.kind === "cross" ? "Giao cắt: " : ""}

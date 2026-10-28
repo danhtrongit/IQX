@@ -1,4 +1,4 @@
-import { operandLabel } from "@/pages/demo-trading/bot/config/labels"
+import { operandLabel, ruleOpLabel } from "@/pages/demo-trading/bot/config/labels"
 import type { TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
 
 import { resultText } from "./evidence"
@@ -77,7 +77,7 @@ export function EvidenceTable({
                   <strong className="block tabular-nums">{rule.missing ? "Thiếu dữ liệu" : fmtNumber(rule.lhs, 4)}</strong>
                   {rule.previous_lhs != null && <small className="block text-muted-foreground">Phiên trước: {fmtNumber(rule.previous_lhs, 4)}</small>}
                 </td>
-                <td className="px-3 py-2 text-center text-base font-bold text-primary">{rule.op}</td>
+                <td className="px-3 py-2 text-center text-xs font-bold text-primary">{ruleOpLabel(rule.op)}</td>
                 <td className="px-3 py-2">
                   {labels.right}
                   <strong className="block tabular-nums">

@@ -321,7 +321,7 @@ describe('SharedConfigService', () => {
       );
     }
     const withCross = response.indicators.filter((item) => item.validation.cross_fields.length > 0);
-    expect(withCross.map((item) => item.id).sort()).toEqual(['ma_cross', 'macd']);
+    expect(withCross.map((item) => item.id).sort()).toEqual(['ema', 'ma', 'ma_cross', 'macd']);
     for (const item of withCross) {
       expect(item.validation.cross_fields).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
     }

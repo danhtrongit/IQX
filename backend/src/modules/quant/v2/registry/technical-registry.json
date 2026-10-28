@@ -20,10 +20,11 @@
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
-            "offset": -1
+            "offset": 0
           },
           "op": "<",
           "rhs": {
@@ -38,6 +39,7 @@
         {
           "id": "r2",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -57,8 +59,8 @@
       ],
       "field_overrides": {
         "level": {
-          "min": 10,
-          "max": 49,
+          "min": 0,
+          "max": 100,
           "label": "Ngưỡng quá bán"
         }
       }
@@ -73,10 +75,11 @@
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
-            "offset": -1
+            "offset": 0
           },
           "op": ">",
           "rhs": {
@@ -91,6 +94,7 @@
         {
           "id": "r2",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -110,8 +114,8 @@
       ],
       "field_overrides": {
         "level": {
-          "min": 51,
-          "max": 90,
+          "min": 0,
+          "max": 100,
           "label": "Ngưỡng quá mua"
         }
       }
@@ -142,8 +146,8 @@
         "key": "level",
         "label": "Ngưỡng RSI",
         "type": "number",
-        "min": 10,
-        "max": 90,
+        "min": 0,
+        "max": 100,
         "step": 1,
         "unit": "",
         "api_scale": 1,
@@ -183,6 +187,29 @@
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "cross_up",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [
+            "cross_up",
+            "cross_down",
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "enabled": false,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -190,9 +217,28 @@
           },
           "op": ">",
           "rhs": {
+            "kind": "constant",
+            "value": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
             "kind": "series",
-            "key": "signal",
+            "key": "histogram",
             "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "histogram",
+            "offset": -1
           },
           "allowed_ops": [
             ">",
@@ -212,6 +258,29 @@
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "cross_down",
+          "rhs": {
+            "kind": "series",
+            "key": "signal",
+            "offset": 0
+          },
+          "allowed_ops": [
+            "cross_up",
+            "cross_down",
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "enabled": false,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -219,9 +288,28 @@
           },
           "op": "<",
           "rhs": {
+            "kind": "constant",
+            "value": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
             "kind": "series",
-            "key": "signal",
+            "key": "histogram",
             "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "histogram",
+            "offset": -1
           },
           "allowed_ops": [
             ">",
@@ -306,12 +394,16 @@
     "buy": {
       "enabled": false,
       "params": {
-        "period": 20
+        "period": 20,
+        "fast": 10,
+        "slow": 20,
+        "trend_period": 20
       },
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
@@ -327,18 +419,62 @@
             ">",
             "<"
           ]
+        },
+        {
+          "id": "r2",
+          "kind": "cross",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "fast",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "slow",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "trend",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "trend",
+            "offset_param": "trend_period"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
     "sell": {
       "enabled": false,
       "params": {
-        "period": 20
+        "period": 20,
+        "fast": 10,
+        "slow": 20,
+        "trend_period": 20
       },
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
@@ -349,6 +485,46 @@
             "kind": "series",
             "key": "value",
             "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "cross",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "fast",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "slow",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "trend",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "trend",
+            "offset_param": "trend_period"
           },
           "allowed_ops": [
             ">",
@@ -377,13 +553,84 @@
         "step": 1,
         "unit": "phiên",
         "api_scale": 1,
-        "wire_unit": "phiên"
+        "wire_unit": "phiên",
+        "options": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ]
+      },
+      {
+        "key": "fast",
+        "label": "Chu kỳ SMA nhanh",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên",
+        "options": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ]
+      },
+      {
+        "key": "slow",
+        "label": "Chu kỳ SMA chậm",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên",
+        "options": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ]
+      },
+      {
+        "key": "trend_period",
+        "label": "Chu kỳ xu hướng SMA",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên",
+        "options": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ]
       }
     ],
     "availability": "ohlcv",
     "rule_version": "iqx-rules-3.0",
     "validation": {
-      "cross_fields": [],
+      "cross_fields": [
+        {
+          "left": "fast",
+          "op": "<",
+          "right": "slow"
+        }
+      ],
       "finite_required": true,
       "reject_unknown_keys": true,
       "membership": "open_interval; complement_on_valid_only",
@@ -412,53 +659,31 @@
         {
           "id": "r1",
           "kind": "compare",
-          "lhs": {
-            "kind": "series",
-            "key": "close",
-            "offset": -1
-          },
-          "op": "<",
-          "rhs": {
-            "kind": "series",
-            "key": "lower",
-            "offset": -1
-          },
-          "allowed_ops": [
-            ">",
-            "<"
-          ]
-        },
-        {
-          "id": "r2",
-          "kind": "membership",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
             "offset": 0
           },
-          "op": "∈",
+          "op": "reenter_lower",
           "rhs": {
-            "kind": "interval",
-            "lower": {
-              "kind": "series",
-              "key": "lower",
-              "offset": 0
-            },
-            "upper": {
-              "kind": "series",
-              "key": "upper",
-              "offset": 0
-            },
-            "bounds": "open"
+            "kind": "series",
+            "key": "middle",
+            "offset": 0
           },
           "allowed_ops": [
-            "∈",
-            "∉"
+            "reenter_lower",
+            "reenter_upper",
+            "break_upper",
+            "break_lower",
+            "cross_up_middle",
+            "cross_down_middle"
           ]
         },
         {
-          "id": "r3",
+          "id": "r2",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
@@ -468,6 +693,26 @@
           "rhs": {
             "kind": "series",
             "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "enabled": true,
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
             "offset": -1
           },
           "allowed_ops": [
@@ -487,53 +732,31 @@
         {
           "id": "r1",
           "kind": "compare",
-          "lhs": {
-            "kind": "series",
-            "key": "close",
-            "offset": -1
-          },
-          "op": ">",
-          "rhs": {
-            "kind": "series",
-            "key": "upper",
-            "offset": -1
-          },
-          "allowed_ops": [
-            ">",
-            "<"
-          ]
-        },
-        {
-          "id": "r2",
-          "kind": "membership",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
             "offset": 0
           },
-          "op": "∈",
+          "op": "reenter_upper",
           "rhs": {
-            "kind": "interval",
-            "lower": {
-              "kind": "series",
-              "key": "lower",
-              "offset": 0
-            },
-            "upper": {
-              "kind": "series",
-              "key": "upper",
-              "offset": 0
-            },
-            "bounds": "open"
+            "kind": "series",
+            "key": "middle",
+            "offset": 0
           },
           "allowed_ops": [
-            "∈",
-            "∉"
+            "reenter_lower",
+            "reenter_upper",
+            "break_upper",
+            "break_lower",
+            "cross_up_middle",
+            "cross_down_middle"
           ]
         },
         {
-          "id": "r3",
+          "id": "r2",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
@@ -543,6 +766,26 @@
           "rhs": {
             "kind": "series",
             "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "enabled": true,
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "value",
             "offset": -1
           },
           "allowed_ops": [
@@ -761,12 +1004,16 @@
     "buy": {
       "enabled": false,
       "params": {
-        "period": 20
+        "period": 20,
+        "fast": 10,
+        "slow": 20,
+        "trend_period": 20
       },
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
@@ -782,18 +1029,62 @@
             ">",
             "<"
           ]
+        },
+        {
+          "id": "r2",
+          "kind": "cross",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "fast",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "slow",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "trend",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "trend",
+            "offset_param": "trend_period"
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
         }
       ]
     },
     "sell": {
       "enabled": false,
       "params": {
-        "period": 20
+        "period": 20,
+        "fast": 10,
+        "slow": 20,
+        "trend_period": 20
       },
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
@@ -804,6 +1095,46 @@
             "kind": "series",
             "key": "value",
             "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "cross",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "fast",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "slow",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r3",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "trend",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "trend",
+            "offset_param": "trend_period"
           },
           "allowed_ops": [
             ">",
@@ -833,12 +1164,51 @@
         "unit": "phiên",
         "api_scale": 1,
         "wire_unit": "phiên"
+      },
+      {
+        "key": "fast",
+        "label": "Chu kỳ EMA nhanh",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "slow",
+        "label": "Chu kỳ EMA chậm",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "trend_period",
+        "label": "Chu kỳ xu hướng EMA",
+        "type": "integer",
+        "min": 5,
+        "max": 200,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
       }
     ],
     "availability": "ohlcv",
     "rule_version": "iqx-rules-3.0",
     "validation": {
-      "cross_fields": [],
+      "cross_fields": [
+        {
+          "left": "fast",
+          "op": "<",
+          "right": "slow"
+        }
+      ],
       "finite_required": true,
       "reject_unknown_keys": true,
       "membership": "open_interval; complement_on_valid_only",
@@ -867,6 +1237,7 @@
         {
           "id": "r1",
           "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "fast",
@@ -895,6 +1266,7 @@
         {
           "id": "r1",
           "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "fast",
@@ -929,22 +1301,38 @@
         "label": "Chu kỳ SMA nhanh",
         "type": "integer",
         "min": 5,
-        "max": 100,
+        "max": 200,
         "step": 1,
         "unit": "phiên",
         "api_scale": 1,
-        "wire_unit": "phiên"
+        "wire_unit": "phiên",
+        "options": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ]
       },
       {
         "key": "slow",
         "label": "Chu kỳ SMA chậm",
         "type": "integer",
-        "min": 10,
-        "max": 250,
+        "min": 5,
+        "max": 200,
         "step": 1,
         "unit": "phiên",
         "api_scale": 1,
-        "wire_unit": "phiên"
+        "wire_unit": "phiên",
+        "options": [
+          5,
+          10,
+          20,
+          50,
+          100,
+          200
+        ]
       }
     ],
     "availability": "ohlcv",
@@ -978,22 +1366,45 @@
     "buy": {
       "enabled": false,
       "params": {
-        "period": 14
+        "period": 14,
+        "level": 25
       },
       "rules": [
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "plus",
             "offset": 0
           },
-          "op": ">",
+          "op": "cross_up",
           "rhs": {
             "kind": "series",
             "key": "minus",
             "offset": 0
+          },
+          "allowed_ops": [
+            "cross_up",
+            "cross_down",
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "adx",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
           },
           "allowed_ops": [
             ">",
@@ -1005,22 +1416,45 @@
     "sell": {
       "enabled": false,
       "params": {
-        "period": 14
+        "period": 14,
+        "level": 25
       },
       "rules": [
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "plus",
             "offset": 0
           },
-          "op": "<",
+          "op": "cross_down",
           "rhs": {
             "kind": "series",
             "key": "minus",
             "offset": 0
+          },
+          "allowed_ops": [
+            "cross_up",
+            "cross_down",
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "adx",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "param",
+            "key": "level"
           },
           "allowed_ops": [
             ">",
@@ -1050,6 +1484,17 @@
         "unit": "phiên",
         "api_scale": 1,
         "wire_unit": "phiên"
+      },
+      {
+        "key": "level",
+        "label": "Ngưỡng ADX",
+        "type": "number",
+        "min": 0,
+        "max": 100,
+        "step": 0.1,
+        "unit": "",
+        "api_scale": 1,
+        "wire_unit": "indicator_points"
       }
     ],
     "availability": "ohlcv",
@@ -1086,6 +1531,7 @@
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1103,7 +1549,8 @@
         },
         {
           "id": "r2",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1134,6 +1581,7 @@
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1151,7 +1599,8 @@
         },
         {
           "id": "r2",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1257,25 +1706,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
-          "lhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
-          },
-          "op": "<",
-          "rhs": {
-            "kind": "param",
-            "key": "level"
-          },
-          "allowed_ops": [
-            ">",
-            "<"
-          ]
-        },
-        {
-          "id": "r2",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1283,9 +1715,8 @@
           },
           "op": ">",
           "rhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
+            "kind": "param",
+            "key": "level"
           },
           "allowed_ops": [
             ">",
@@ -1303,25 +1734,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
-          "lhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
-          },
-          "op": ">",
-          "rhs": {
-            "kind": "param",
-            "key": "level"
-          },
-          "allowed_ops": [
-            ">",
-            "<"
-          ]
-        },
-        {
-          "id": "r2",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1329,9 +1743,8 @@
           },
           "op": "<",
           "rhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
+            "kind": "param",
+            "key": "level"
           },
           "allowed_ops": [
             ">",
@@ -1399,26 +1812,50 @@
     "buy": {
       "enabled": false,
       "params": {
-        "baseline": 20
+        "baseline": 20,
+        "breakout_period": 20
       },
       "rules": [
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
             "offset": 0
           },
-          "op": ">",
+          "op": "cross_up",
           "rhs": {
             "kind": "series",
             "key": "baseline",
             "offset": 0
           },
           "allowed_ops": [
+            "cross_up",
+            "cross_down",
             ">",
             "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "break_high",
+          "rhs": {
+            "kind": "series",
+            "key": "upper",
+            "offset": 0
+          },
+          "allowed_ops": [
+            "break_high",
+            "break_low"
           ]
         }
       ]
@@ -1426,26 +1863,50 @@
     "sell": {
       "enabled": false,
       "params": {
-        "baseline": 20
+        "baseline": 20,
+        "breakout_period": 20
       },
       "rules": [
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
             "offset": 0
           },
-          "op": "<",
+          "op": "cross_down",
           "rhs": {
             "kind": "series",
             "key": "baseline",
             "offset": 0
           },
           "allowed_ops": [
+            "cross_up",
+            "cross_down",
             ">",
             "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "enabled": false,
+          "lhs": {
+            "kind": "series",
+            "key": "value",
+            "offset": 0
+          },
+          "op": "break_low",
+          "rhs": {
+            "kind": "series",
+            "key": "lower",
+            "offset": 0
+          },
+          "allowed_ops": [
+            "break_high",
+            "break_low"
           ]
         }
       ]
@@ -1467,6 +1928,17 @@
         "type": "integer",
         "min": 5,
         "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "breakout_period",
+        "label": "Số phiên OBV",
+        "type": "integer",
+        "min": 2,
+        "max": 252,
         "step": 1,
         "unit": "phiên",
         "api_scale": 1,
@@ -1504,25 +1976,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
-          "lhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
-          },
-          "op": "<",
-          "rhs": {
-            "kind": "param",
-            "key": "level"
-          },
-          "allowed_ops": [
-            ">",
-            "<"
-          ]
-        },
-        {
-          "id": "r2",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1530,9 +1985,8 @@
           },
           "op": ">",
           "rhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
+            "kind": "param",
+            "key": "level"
           },
           "allowed_ops": [
             ">",
@@ -1550,25 +2004,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
-          "lhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
-          },
-          "op": ">",
-          "rhs": {
-            "kind": "param",
-            "key": "level"
-          },
-          "allowed_ops": [
-            ">",
-            "<"
-          ]
-        },
-        {
-          "id": "r2",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1576,9 +2013,8 @@
           },
           "op": "<",
           "rhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
+            "kind": "param",
+            "key": "level"
           },
           "allowed_ops": [
             ">",
@@ -1652,7 +2088,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1679,7 +2116,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1762,6 +2200,7 @@
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
@@ -1789,6 +2228,7 @@
         {
           "id": "r1",
           "kind": "compare",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "close",
@@ -1861,7 +2301,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1888,7 +2329,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1933,7 +2375,7 @@
         "label": "Ngưỡng ROC",
         "type": "number",
         "min": -100,
-        "max": 100,
+        "max": 10000,
         "step": 0.1,
         "unit": "%",
         "api_scale": 1,
@@ -1971,25 +2413,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
-          "lhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
-          },
-          "op": "<",
-          "rhs": {
-            "kind": "param",
-            "key": "level"
-          },
-          "allowed_ops": [
-            ">",
-            "<"
-          ]
-        },
-        {
-          "id": "r2",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -1997,9 +2422,8 @@
           },
           "op": ">",
           "rhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
+            "kind": "param",
+            "key": "level"
           },
           "allowed_ops": [
             ">",
@@ -2017,25 +2441,8 @@
       "rules": [
         {
           "id": "r1",
-          "kind": "compare",
-          "lhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
-          },
-          "op": ">",
-          "rhs": {
-            "kind": "param",
-            "key": "level"
-          },
-          "allowed_ops": [
-            ">",
-            "<"
-          ]
-        },
-        {
-          "id": "r2",
-          "kind": "compare",
+          "kind": "cross",
+          "enabled": true,
           "lhs": {
             "kind": "series",
             "key": "value",
@@ -2043,9 +2450,8 @@
           },
           "op": "<",
           "rhs": {
-            "kind": "series",
-            "key": "value",
-            "offset": -1
+            "kind": "param",
+            "key": "level"
           },
           "allowed_ops": [
             ">",

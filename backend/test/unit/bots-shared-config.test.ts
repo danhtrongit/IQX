@@ -586,7 +586,16 @@ function history(trend: Trend) {
   return Array.from({ length }, (_, index) => {
     const date = new Date(end);
     date.setUTCDate(end.getUTCDate() - (length - 1 - index));
-    let close = trend === 'down' ? 30_000 - index * 100 : 10_000 + index * 100;
+    let close =
+      trend === 'down'
+        ? index === length - 1
+          ? 15_000
+          : 20_000
+        : trend === 'up'
+          ? index === length - 1
+            ? 25_000
+            : 20_000
+          : 10_000 + index * 100;
     if (trend === 'drop' && index === length - 1) close = 5_000;
     return {
       time: date.toISOString().slice(0, 10),

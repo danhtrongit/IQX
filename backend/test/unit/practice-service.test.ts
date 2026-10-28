@@ -240,12 +240,12 @@ describe('practice start: validation and locking', () => {
       ['hold > 1000', { ...base, hold_max_sessions: 1001 }],
       ['period below domain', { ...base, buy: { ...base.buy, params: { period: 4, level: 30 } } }],
       [
-        'buy level outside 10..49',
-        { ...base, buy: { ...base.buy, params: { period: 14, level: 60 } } },
+        'buy level outside 0..100',
+        { ...base, buy: { ...base.buy, params: { period: 14, level: -1 } } },
       ],
       [
-        'sell level outside 51..90',
-        { ...base, sell: { ...base.sell, params: { period: 14, level: 40 } } },
+        'sell level outside 0..100',
+        { ...base, sell: { ...base.sell, params: { period: 14, level: 101 } } },
       ],
       ['bad step', { ...base, buy: { ...base.buy, params: { period: 14.5, level: 30 } } }],
       ['unknown param', { ...base, buy: { ...base.buy, params: { period: 14, level: 30, x: 1 } } }],
@@ -745,7 +745,7 @@ describe('practice data hiding', () => {
     const loaded = await data.load(symbol);
     const { observationStart, firstTest } = loaded.calendar;
     const preview = await service.preview(USER, 'ma_cross', {
-      buy_params: { fast: 100, slow: 250 },
+      buy_params: { fast: 100, slow: 200 },
       sell_params: { fast: 5, slow: 10 },
     });
     const { chart } = preview;

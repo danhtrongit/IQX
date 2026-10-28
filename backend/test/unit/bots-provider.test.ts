@@ -303,6 +303,6 @@ describe('BotMarketSnapshotProvider (universe + held positions, no Hunt)', () =>
 
     expect(barSource.dailyBarsThrough).toHaveBeenCalledTimes(3);
     expect(result.symbols.HELD?.close_is_official).toBe(false);
-    expect(result.issues.map((row) => row.code)).toContain('missing_official_close');
+    expect(result.issues?.map((row) => row.code)).toContain('missing_official_close');
   });
 });

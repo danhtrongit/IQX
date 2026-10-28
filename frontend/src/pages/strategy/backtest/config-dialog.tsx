@@ -23,7 +23,7 @@ import {
   sideFields,
   type IndicatorDraft,
 } from "@/pages/demo-trading/bot/config/draft"
-import { CROSS_LABEL, numericParams, operandLabel } from "@/pages/demo-trading/bot/config/labels"
+import { CROSS_LABEL, numericParams, operandLabel, ruleOpLabel } from "@/pages/demo-trading/bot/config/labels"
 import { effectiveText } from "@/pages/demo-trading/bot/config/summary"
 import type { RuleOp, Side, TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
 import type { BotConfigController } from "@/pages/demo-trading/bot/config/use-bot-config"
@@ -194,20 +194,39 @@ export function ConfigDialog({
                     <div key={field.key} className="min-w-0 space-y-1.5">
                       <Label htmlFor={inputId} className="text-xs font-medium text-muted-foreground">{field.label}</Label>
                       <div className="relative">
-                        <Input
-                          id={inputId}
-                          type="number"
-                          inputMode="decimal"
-                          min={field.min}
-                          max={field.max}
-                          step={field.step}
-                          value={sideDraft.params[field.key] ?? ""}
-                          aria-invalid={error ? true : undefined}
-                          aria-describedby={hintId}
-                          className={cn("h-9 tabular-nums", field.unit && "pr-14")}
-                          onChange={(event) => updateSide(item, { params: { ...sideDraft.params, [field.key]: event.target.value } })}
-                        />
-                        {field.unit && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[11px] text-muted-foreground">{field.unit}</span>}
+                        {field.options && field.options.length > 0 ? (
+                          <select
+                            id={inputId}
+                            value={sideDraft.params[field.key] ?? ""}
+                            aria-invalid={error ? true : undefined}
+                            aria-describedby={hintId}
+                            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm tabular-nums focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+                            onChange={(event) => updateSide(item, { params: { ...sideDraft.params, [field.key]: event.target.value } })}
+                          >
+                            {field.options.map((opt) => (
+                              <option key={opt} value={String(opt)}>
+                                {opt}{field.unit ? ` ${field.unit}` : ""}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <>
+                            <Input
+                              id={inputId}
+                              type="number"
+                              inputMode="decimal"
+                              min={field.min}
+                              max={field.max}
+                              step={field.step}
+                              value={sideDraft.params[field.key] ?? ""}
+                              aria-invalid={error ? true : undefined}
+                              aria-describedby={hintId}
+                              className={cn("h-9 tabular-nums", field.unit && "pr-14")}
+                              onChange={(event) => updateSide(item, { params: { ...sideDraft.params, [field.key]: event.target.value } })}
+                            />
+                            {field.unit && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[11px] text-muted-foreground">{field.unit}</span>}
+                          </>
+                        )}
                       </div>
                       <p id={hintId} className={cn("text-[11px] leading-4", error ? "text-destructive" : "text-muted-foreground")}>
                         {error ?? `Từ ${field.min} đến ${field.max}, bước ${field.step}`}
@@ -222,16 +241,31 @@ export function ConfigDialog({
                 <ul className="divide-y divide-border overflow-hidden rounded-md border border-border bg-background/40">
                   {base.config[item].rules.map((rule, index) => (
                     <li key={rule.id}>
+                      {rule.enabled !== undefined && (
+                        <label className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
+                          <input
+                            type="checkbox"
+                            aria-label={`Bật điều kiện ${index + 1} (${SIDE_LABEL[item]})`}
+                            checked={sideDraft.rules_enabled?.[rule.id] ?? rule.enabled !== false}
+                            onChange={(event) =>
+                              updateSide(item, {
+                                rules_enabled: { ...sideDraft.rules_enabled, [rule.id]: event.target.checked },
+                              })
+                            }
+                          />
+                          <span>Điều kiện {index + 1}</span>
+                        </label>
+                      )}
                       {rule.kind === "cross" && <span className="block bg-muted/60 px-3 py-1.5 text-[11px] text-muted-foreground">{CROSS_LABEL}</span>}
-                      <div className="grid grid-cols-[minmax(0,1fr)_3.25rem_minmax(0,1fr)] items-center gap-2 px-3 py-3 text-xs leading-5">
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-3 text-xs leading-5">
                         <span className="min-w-0 break-words">{operandLabel(rule.lhs, indicator, params)}</span>
                         <select
                           aria-label={`Dấu điều kiện ${index + 1} (${SIDE_LABEL[item]})`}
-                          className="h-8 w-full rounded-sm border border-border bg-secondary text-center text-base font-bold text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+                          className="h-8 min-w-13 rounded-sm border border-border bg-secondary px-2 text-center text-xs font-bold text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                           value={sideDraft.ops[rule.id] ?? rule.op}
                           onChange={(event) => updateSide(item, { ops: { ...sideDraft.ops, [rule.id]: event.target.value as RuleOp } })}
                         >
-                          {(rule.allowed_ops as RuleOp[]).map((op) => <option key={op} value={op}>{op}</option>)}
+                          {(rule.allowed_ops as RuleOp[]).map((op) => <option key={op} value={op}>{ruleOpLabel(op)}</option>)}
                         </select>
                         <span className="min-w-0 text-right break-words">{operandLabel(rule.rhs, indicator, params)}</span>
                       </div>

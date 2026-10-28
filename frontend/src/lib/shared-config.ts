@@ -11,18 +11,46 @@
  */
 import { api as sharedApi, ApiError } from "@/lib/api"
 
-export type CompareOp = ">" | "<"
+export type CompareOp =
+  | ">"
+  | "<"
+  | "cross_up"
+  | "cross_down"
+  | "reenter_lower"
+  | "reenter_upper"
+  | "break_upper"
+  | "break_lower"
+  | "cross_up_middle"
+  | "cross_down_middle"
+  | "break_high"
+  | "break_low"
 export type MembershipOp = "∈" | "∉"
 export type RuleOp = CompareOp | MembershipOp
 
 export type Operand =
-  | { kind: "series"; key: string; offset?: number }
+  | { kind: "series"; key: string; offset?: number; offset_param?: string }
   | { kind: "param"; key: string }
   | { kind: "constant"; value: number }
 
 export type Rule =
-  | { id: string; kind: "compare" | "cross"; lhs: Operand; op: CompareOp; rhs: Operand; allowed_ops: CompareOp[] }
-  | { id: string; kind: "membership"; lhs: Operand; op: MembershipOp; rhs: { lower: Operand; upper: Operand }; allowed_ops: MembershipOp[] }
+  | {
+      id: string
+      kind: "compare" | "cross"
+      enabled?: boolean
+      lhs: Operand
+      op: CompareOp
+      rhs: Operand
+      allowed_ops: CompareOp[]
+    }
+  | {
+      id: string
+      kind: "membership"
+      enabled?: boolean
+      lhs: Operand
+      op: MembershipOp
+      rhs: { lower: Operand; upper: Operand }
+      allowed_ops: MembershipOp[]
+    }
 
 export type SideConfig = { enabled: boolean; params: Record<string, number>; rules: Rule[] }
 export type IndicatorConfig = { master_enabled: boolean; buy: SideConfig; sell: SideConfig }
@@ -118,6 +146,7 @@ export type RegistryField = {
   unit: string
   api_scale: number
   wire_unit: string
+  options?: readonly number[]
 }
 
 export type RegistrySide = SideConfig & { field_overrides?: Record<string, Partial<RegistryField>> }

@@ -1,10 +1,11 @@
 export type Side = 'buy' | 'sell';
 export type Op = '>' | '<' | '>=' | '<=';
 
-export type Operand = { kind: string; key?: string; offset?: number; value?: number };
+export type Operand = { kind: string; key?: string; offset?: number; offset_param?: string; value?: number };
 export type Rule = {
   id: string;
   kind: string;
+  enabled?: boolean;
   lhs: Operand;
   rhs: Operand;
   op: string;
@@ -21,6 +22,7 @@ export type RegistryField = {
   unit?: string;
   api_scale?: number;
   wire_unit?: string;
+  options?: number[];
 };
 
 export type FieldOverride = { label?: string; min?: number; max?: number; step?: number };

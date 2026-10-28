@@ -40531,10 +40531,6 @@ export type DashboardCatalogErrors = {
    */
   400: ApiErrorV2;
   /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
-  /**
    * Request validation failed
    */
   422: ApiErrorV2;
@@ -41288,10 +41284,6 @@ export type DashboardFundamentalErrors = {
    * Bad request
    */
   400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
   /**
    * Request validation failed
    */
@@ -45507,20 +45499,54 @@ export type PracticeGetRunResponses = {
       buy: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
       hold_max_sessions: number;
       sell: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
     };
@@ -45590,7 +45616,21 @@ export type PracticeGetRunResponses = {
               left_label: string;
               lhs: number | null;
               missing: boolean;
-              op: ">" | "<" | "∈" | "∉";
+              op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
               result: boolean | null;
               rhs: number | null;
               right_label: string;
@@ -45629,7 +45669,21 @@ export type PracticeGetRunResponses = {
               left_label: string;
               lhs: number | null;
               missing: boolean;
-              op: ">" | "<" | "∈" | "∉";
+              op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
               result: boolean | null;
               rhs: number | null;
               right_label: string;
@@ -45681,20 +45735,54 @@ export type PracticeSaveDraftData = {
       buy: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
       hold_max_sessions: number;
       sell: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
     };
@@ -45739,20 +45827,54 @@ export type PracticeSaveDraftResponses = {
       buy: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
       hold_max_sessions: number;
       sell: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
     };
@@ -45817,20 +45939,54 @@ export type PracticeHistoryResponses = {
         buy: {
           enabled: boolean;
           ops: {
-            [key: string]: ">" | "<" | "∈" | "∉";
+            [key: string]:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
           };
           params: {
             [key: string]: number;
+          };
+          rules_enabled?: {
+            [key: string]: boolean;
           };
         };
         hold_max_sessions: number;
         sell: {
           enabled: boolean;
           ops: {
-            [key: string]: ">" | "<" | "∈" | "∉";
+            [key: string]:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
           };
           params: {
             [key: string]: number;
+          };
+          rules_enabled?: {
+            [key: string]: boolean;
           };
         };
       };
@@ -45928,20 +46084,54 @@ export type PracticeNextResponses = {
       buy: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
       hold_max_sessions: number;
       sell: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
     };
@@ -45953,13 +46143,44 @@ export type PracticeNextResponses = {
           label: string;
           max: number;
           min: number;
+          options?: Array<number>;
           step: number;
           type: "integer" | "number";
           unit: string;
         }>;
         rules: Array<{
-          allowed_ops: Array<">" | "<" | "∈" | "∉">;
-          default_op: ">" | "<" | "∈" | "∉";
+          allowed_ops: Array<
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉"
+          >;
+          default_enabled?: boolean;
+          default_op:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
           kind: "compare" | "cross" | "membership";
           left_label: string;
           lhs:
@@ -45967,6 +46188,7 @@ export type PracticeNextResponses = {
                 key: string;
                 kind: "series";
                 offset?: number;
+                offset_param?: string;
               }
             | {
                 key: string;
@@ -45981,6 +46203,7 @@ export type PracticeNextResponses = {
                 key: string;
                 kind: "series";
                 offset?: number;
+                offset_param?: string;
               }
             | {
                 key: string;
@@ -45996,6 +46219,7 @@ export type PracticeNextResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -46010,6 +46234,7 @@ export type PracticeNextResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -46033,20 +46258,54 @@ export type PracticeNextResponses = {
         buy: {
           enabled: boolean;
           ops: {
-            [key: string]: ">" | "<" | "∈" | "∉";
+            [key: string]:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
           };
           params: {
             [key: string]: number;
+          };
+          rules_enabled?: {
+            [key: string]: boolean;
           };
         };
         hold_max_sessions: number;
         sell: {
           enabled: boolean;
           ops: {
-            [key: string]: ">" | "<" | "∈" | "∉";
+            [key: string]:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
           };
           params: {
             [key: string]: number;
+          };
+          rules_enabled?: {
+            [key: string]: boolean;
           };
         };
       };
@@ -46057,13 +46316,44 @@ export type PracticeNextResponses = {
           label: string;
           max: number;
           min: number;
+          options?: Array<number>;
           step: number;
           type: "integer" | "number";
           unit: string;
         }>;
         rules: Array<{
-          allowed_ops: Array<">" | "<" | "∈" | "∉">;
-          default_op: ">" | "<" | "∈" | "∉";
+          allowed_ops: Array<
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉"
+          >;
+          default_enabled?: boolean;
+          default_op:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
           kind: "compare" | "cross" | "membership";
           left_label: string;
           lhs:
@@ -46071,6 +46361,7 @@ export type PracticeNextResponses = {
                 key: string;
                 kind: "series";
                 offset?: number;
+                offset_param?: string;
               }
             | {
                 key: string;
@@ -46085,6 +46376,7 @@ export type PracticeNextResponses = {
                 key: string;
                 kind: "series";
                 offset?: number;
+                offset_param?: string;
               }
             | {
                 key: string;
@@ -46100,6 +46392,7 @@ export type PracticeNextResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -46114,6 +46407,7 @@ export type PracticeNextResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -46283,20 +46577,54 @@ export type PracticeStartRunData = {
       buy: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
       hold_max_sessions: number;
       sell: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
     };
@@ -46395,20 +46723,54 @@ export type PracticeStartRunResponses = {
       buy: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
       hold_max_sessions: number;
       sell: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
     };
@@ -46478,7 +46840,21 @@ export type PracticeStartRunResponses = {
               left_label: string;
               lhs: number | null;
               missing: boolean;
-              op: ">" | "<" | "∈" | "∉";
+              op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
               result: boolean | null;
               rhs: number | null;
               right_label: string;
@@ -46517,7 +46893,21 @@ export type PracticeStartRunResponses = {
               left_label: string;
               lhs: number | null;
               missing: boolean;
-              op: ">" | "<" | "∈" | "∉";
+              op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
               result: boolean | null;
               rhs: number | null;
               right_label: string;
@@ -46625,20 +47015,54 @@ export type PracticeStateResponses = {
       buy: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
       hold_max_sessions: number;
       sell: {
         enabled: boolean;
         ops: {
-          [key: string]: ">" | "<" | "∈" | "∉";
+          [key: string]:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
         };
         params: {
           [key: string]: number;
+        };
+        rules_enabled?: {
+          [key: string]: boolean;
         };
       };
     };
@@ -46650,13 +47074,44 @@ export type PracticeStateResponses = {
           label: string;
           max: number;
           min: number;
+          options?: Array<number>;
           step: number;
           type: "integer" | "number";
           unit: string;
         }>;
         rules: Array<{
-          allowed_ops: Array<">" | "<" | "∈" | "∉">;
-          default_op: ">" | "<" | "∈" | "∉";
+          allowed_ops: Array<
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉"
+          >;
+          default_enabled?: boolean;
+          default_op:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
           kind: "compare" | "cross" | "membership";
           left_label: string;
           lhs:
@@ -46664,6 +47119,7 @@ export type PracticeStateResponses = {
                 key: string;
                 kind: "series";
                 offset?: number;
+                offset_param?: string;
               }
             | {
                 key: string;
@@ -46678,6 +47134,7 @@ export type PracticeStateResponses = {
                 key: string;
                 kind: "series";
                 offset?: number;
+                offset_param?: string;
               }
             | {
                 key: string;
@@ -46693,6 +47150,7 @@ export type PracticeStateResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -46707,6 +47165,7 @@ export type PracticeStateResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -46730,20 +47189,54 @@ export type PracticeStateResponses = {
         buy: {
           enabled: boolean;
           ops: {
-            [key: string]: ">" | "<" | "∈" | "∉";
+            [key: string]:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
           };
           params: {
             [key: string]: number;
+          };
+          rules_enabled?: {
+            [key: string]: boolean;
           };
         };
         hold_max_sessions: number;
         sell: {
           enabled: boolean;
           ops: {
-            [key: string]: ">" | "<" | "∈" | "∉";
+            [key: string]:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
           };
           params: {
             [key: string]: number;
+          };
+          rules_enabled?: {
+            [key: string]: boolean;
           };
         };
       };
@@ -46754,13 +47247,44 @@ export type PracticeStateResponses = {
           label: string;
           max: number;
           min: number;
+          options?: Array<number>;
           step: number;
           type: "integer" | "number";
           unit: string;
         }>;
         rules: Array<{
-          allowed_ops: Array<">" | "<" | "∈" | "∉">;
-          default_op: ">" | "<" | "∈" | "∉";
+          allowed_ops: Array<
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉"
+          >;
+          default_enabled?: boolean;
+          default_op:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
           kind: "compare" | "cross" | "membership";
           left_label: string;
           lhs:
@@ -46768,6 +47292,7 @@ export type PracticeStateResponses = {
                 key: string;
                 kind: "series";
                 offset?: number;
+                offset_param?: string;
               }
             | {
                 key: string;
@@ -46782,6 +47307,7 @@ export type PracticeStateResponses = {
                 key: string;
                 kind: "series";
                 offset?: number;
+                offset_param?: string;
               }
             | {
                 key: string;
@@ -46797,6 +47323,7 @@ export type PracticeStateResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -46811,6 +47338,7 @@ export type PracticeStateResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -51665,6 +52193,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
             label?: string;
             max?: number;
             min?: number;
+            options?: Array<number>;
             step?: number;
             type?: "integer" | "number";
             unit?: string;
@@ -51676,7 +52205,21 @@ export type StrategyConfigTechnicalRegistryResponses = {
         };
         rules: Array<
           | {
-              allowed_ops: Array<">" | "<">;
+              allowed_ops: Array<
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+              >;
+              enabled?: boolean;
               id: string;
               kind: "compare" | "cross";
               lhs:
@@ -51684,6 +52227,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
                     key: string;
                     kind: "series";
                     offset?: number;
+                    offset_param?: string;
                   }
                 | {
                     key: string;
@@ -51693,12 +52237,25 @@ export type StrategyConfigTechnicalRegistryResponses = {
                     kind: "constant";
                     value: number;
                   };
-              op: ">" | "<";
+              op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low";
               rhs:
                 | {
                     key: string;
                     kind: "series";
                     offset?: number;
+                    offset_param?: string;
                   }
                 | {
                     key: string;
@@ -51711,6 +52268,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
             }
           | {
               allowed_ops: Array<"∈" | "∉">;
+              enabled?: boolean;
               id: string;
               kind: "membership";
               lhs:
@@ -51718,6 +52276,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
                     key: string;
                     kind: "series";
                     offset?: number;
+                    offset_param?: string;
                   }
                 | {
                     key: string;
@@ -51736,6 +52295,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -51750,6 +52310,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -51771,6 +52332,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
         label: string;
         max: number;
         min: number;
+        options?: Array<number>;
         step: number;
         type: "integer" | "number";
         unit: string;
@@ -51790,6 +52352,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
             label?: string;
             max?: number;
             min?: number;
+            options?: Array<number>;
             step?: number;
             type?: "integer" | "number";
             unit?: string;
@@ -51801,7 +52364,21 @@ export type StrategyConfigTechnicalRegistryResponses = {
         };
         rules: Array<
           | {
-              allowed_ops: Array<">" | "<">;
+              allowed_ops: Array<
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+              >;
+              enabled?: boolean;
               id: string;
               kind: "compare" | "cross";
               lhs:
@@ -51809,6 +52386,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
                     key: string;
                     kind: "series";
                     offset?: number;
+                    offset_param?: string;
                   }
                 | {
                     key: string;
@@ -51818,12 +52396,25 @@ export type StrategyConfigTechnicalRegistryResponses = {
                     kind: "constant";
                     value: number;
                   };
-              op: ">" | "<";
+              op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low";
               rhs:
                 | {
                     key: string;
                     kind: "series";
                     offset?: number;
+                    offset_param?: string;
                   }
                 | {
                     key: string;
@@ -51836,6 +52427,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
             }
           | {
               allowed_ops: Array<"∈" | "∉">;
+              enabled?: boolean;
               id: string;
               kind: "membership";
               lhs:
@@ -51843,6 +52435,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
                     key: string;
                     kind: "series";
                     offset?: number;
+                    offset_param?: string;
                   }
                 | {
                     key: string;
@@ -51861,6 +52454,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -51875,6 +52469,7 @@ export type StrategyConfigTechnicalRegistryResponses = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -51891,7 +52486,19 @@ export type StrategyConfigTechnicalRegistryResponses = {
       validation: {
         cross_fields: Array<{
           left: string;
-          op: ">" | "<";
+          op:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low";
           right: string;
         }>;
       };
@@ -53434,7 +54041,21 @@ export type StrategyConfigGetSharedConfigResponses = {
             };
             rules: Array<
               | {
-                  allowed_ops: Array<">" | "<">;
+                  allowed_ops: Array<
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low"
+                  >;
+                  enabled?: boolean;
                   id: string;
                   kind: "compare" | "cross";
                   lhs:
@@ -53442,6 +54063,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -53451,12 +54073,25 @@ export type StrategyConfigGetSharedConfigResponses = {
                         kind: "constant";
                         value: number;
                       };
-                  op: ">" | "<";
+                  op:
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low";
                   rhs:
                     | {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -53469,6 +54104,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                 }
               | {
                   allowed_ops: Array<"∈" | "∉">;
+                  enabled?: boolean;
                   id: string;
                   kind: "membership";
                   lhs:
@@ -53476,6 +54112,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -53494,6 +54131,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53508,6 +54146,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53529,7 +54168,21 @@ export type StrategyConfigGetSharedConfigResponses = {
             };
             rules: Array<
               | {
-                  allowed_ops: Array<">" | "<">;
+                  allowed_ops: Array<
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low"
+                  >;
+                  enabled?: boolean;
                   id: string;
                   kind: "compare" | "cross";
                   lhs:
@@ -53537,6 +54190,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -53546,12 +54200,25 @@ export type StrategyConfigGetSharedConfigResponses = {
                         kind: "constant";
                         value: number;
                       };
-                  op: ">" | "<";
+                  op:
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low";
                   rhs:
                     | {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -53564,6 +54231,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                 }
               | {
                   allowed_ops: Array<"∈" | "∉">;
+                  enabled?: boolean;
                   id: string;
                   kind: "membership";
                   lhs:
@@ -53571,6 +54239,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -53589,6 +54258,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53603,6 +54273,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53634,7 +54305,21 @@ export type StrategyConfigGetSharedConfigResponses = {
               };
               rules: Array<
                 | {
-                    allowed_ops: Array<">" | "<">;
+                    allowed_ops: Array<
+                      | ">"
+                      | "<"
+                      | "cross_up"
+                      | "cross_down"
+                      | "reenter_lower"
+                      | "reenter_upper"
+                      | "break_upper"
+                      | "break_lower"
+                      | "cross_up_middle"
+                      | "cross_down_middle"
+                      | "break_high"
+                      | "break_low"
+                    >;
+                    enabled?: boolean;
                     id: string;
                     kind: "compare" | "cross";
                     lhs:
@@ -53642,6 +54327,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53651,12 +54337,25 @@ export type StrategyConfigGetSharedConfigResponses = {
                           kind: "constant";
                           value: number;
                         };
-                    op: ">" | "<";
+                    op:
+                      | ">"
+                      | "<"
+                      | "cross_up"
+                      | "cross_down"
+                      | "reenter_lower"
+                      | "reenter_upper"
+                      | "break_upper"
+                      | "break_lower"
+                      | "cross_up_middle"
+                      | "cross_down_middle"
+                      | "break_high"
+                      | "break_low";
                     rhs:
                       | {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53669,6 +54368,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                   }
                 | {
                     allowed_ops: Array<"∈" | "∉">;
+                    enabled?: boolean;
                     id: string;
                     kind: "membership";
                     lhs:
@@ -53676,6 +54376,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53694,6 +54395,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                             key: string;
                             kind: "series";
                             offset?: number;
+                            offset_param?: string;
                           }
                         | {
                             key: string;
@@ -53708,6 +54410,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                             key: string;
                             kind: "series";
                             offset?: number;
+                            offset_param?: string;
                           }
                         | {
                             key: string;
@@ -53729,7 +54432,21 @@ export type StrategyConfigGetSharedConfigResponses = {
               };
               rules: Array<
                 | {
-                    allowed_ops: Array<">" | "<">;
+                    allowed_ops: Array<
+                      | ">"
+                      | "<"
+                      | "cross_up"
+                      | "cross_down"
+                      | "reenter_lower"
+                      | "reenter_upper"
+                      | "break_upper"
+                      | "break_lower"
+                      | "cross_up_middle"
+                      | "cross_down_middle"
+                      | "break_high"
+                      | "break_low"
+                    >;
+                    enabled?: boolean;
                     id: string;
                     kind: "compare" | "cross";
                     lhs:
@@ -53737,6 +54454,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53746,12 +54464,25 @@ export type StrategyConfigGetSharedConfigResponses = {
                           kind: "constant";
                           value: number;
                         };
-                    op: ">" | "<";
+                    op:
+                      | ">"
+                      | "<"
+                      | "cross_up"
+                      | "cross_down"
+                      | "reenter_lower"
+                      | "reenter_upper"
+                      | "break_upper"
+                      | "break_lower"
+                      | "cross_up_middle"
+                      | "cross_down_middle"
+                      | "break_high"
+                      | "break_low";
                     rhs:
                       | {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53764,6 +54495,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                   }
                 | {
                     allowed_ops: Array<"∈" | "∉">;
+                    enabled?: boolean;
                     id: string;
                     kind: "membership";
                     lhs:
@@ -53771,6 +54503,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -53789,6 +54522,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                             key: string;
                             kind: "series";
                             offset?: number;
+                            offset_param?: string;
                           }
                         | {
                             key: string;
@@ -53803,6 +54537,7 @@ export type StrategyConfigGetSharedConfigResponses = {
                             key: string;
                             kind: "series";
                             offset?: number;
+                            offset_param?: string;
                           }
                         | {
                             key: string;
@@ -53881,7 +54616,21 @@ export type StrategyConfigPatchSharedConfigData = {
           };
           rules: Array<
             | {
-                allowed_ops: Array<">" | "<">;
+                allowed_ops: Array<
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low"
+                >;
+                enabled?: boolean;
                 id: string;
                 kind: "compare" | "cross";
                 lhs:
@@ -53889,6 +54638,7 @@ export type StrategyConfigPatchSharedConfigData = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -53898,12 +54648,25 @@ export type StrategyConfigPatchSharedConfigData = {
                       kind: "constant";
                       value: number;
                     };
-                op: ">" | "<";
+                op:
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low";
                 rhs:
                   | {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -53916,6 +54679,7 @@ export type StrategyConfigPatchSharedConfigData = {
               }
             | {
                 allowed_ops: Array<"∈" | "∉">;
+                enabled?: boolean;
                 id: string;
                 kind: "membership";
                 lhs:
@@ -53923,6 +54687,7 @@ export type StrategyConfigPatchSharedConfigData = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -53941,6 +54706,7 @@ export type StrategyConfigPatchSharedConfigData = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -53955,6 +54721,7 @@ export type StrategyConfigPatchSharedConfigData = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -53976,7 +54743,21 @@ export type StrategyConfigPatchSharedConfigData = {
           };
           rules: Array<
             | {
-                allowed_ops: Array<">" | "<">;
+                allowed_ops: Array<
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low"
+                >;
+                enabled?: boolean;
                 id: string;
                 kind: "compare" | "cross";
                 lhs:
@@ -53984,6 +54765,7 @@ export type StrategyConfigPatchSharedConfigData = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -53993,12 +54775,25 @@ export type StrategyConfigPatchSharedConfigData = {
                       kind: "constant";
                       value: number;
                     };
-                op: ">" | "<";
+                op:
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low";
                 rhs:
                   | {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -54011,6 +54806,7 @@ export type StrategyConfigPatchSharedConfigData = {
               }
             | {
                 allowed_ops: Array<"∈" | "∉">;
+                enabled?: boolean;
                 id: string;
                 kind: "membership";
                 lhs:
@@ -54018,6 +54814,7 @@ export type StrategyConfigPatchSharedConfigData = {
                       key: string;
                       kind: "series";
                       offset?: number;
+                      offset_param?: string;
                     }
                   | {
                       key: string;
@@ -54036,6 +54833,7 @@ export type StrategyConfigPatchSharedConfigData = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -54050,6 +54848,7 @@ export type StrategyConfigPatchSharedConfigData = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -54113,7 +54912,21 @@ export type StrategyConfigPatchSharedConfigResponses = {
             };
             rules: Array<
               | {
-                  allowed_ops: Array<">" | "<">;
+                  allowed_ops: Array<
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low"
+                  >;
+                  enabled?: boolean;
                   id: string;
                   kind: "compare" | "cross";
                   lhs:
@@ -54121,6 +54934,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -54130,12 +54944,25 @@ export type StrategyConfigPatchSharedConfigResponses = {
                         kind: "constant";
                         value: number;
                       };
-                  op: ">" | "<";
+                  op:
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low";
                   rhs:
                     | {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -54148,6 +54975,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                 }
               | {
                   allowed_ops: Array<"∈" | "∉">;
+                  enabled?: boolean;
                   id: string;
                   kind: "membership";
                   lhs:
@@ -54155,6 +54983,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -54173,6 +55002,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -54187,6 +55017,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -54208,7 +55039,21 @@ export type StrategyConfigPatchSharedConfigResponses = {
             };
             rules: Array<
               | {
-                  allowed_ops: Array<">" | "<">;
+                  allowed_ops: Array<
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low"
+                  >;
+                  enabled?: boolean;
                   id: string;
                   kind: "compare" | "cross";
                   lhs:
@@ -54216,6 +55061,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -54225,12 +55071,25 @@ export type StrategyConfigPatchSharedConfigResponses = {
                         kind: "constant";
                         value: number;
                       };
-                  op: ">" | "<";
+                  op:
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low";
                   rhs:
                     | {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -54243,6 +55102,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                 }
               | {
                   allowed_ops: Array<"∈" | "∉">;
+                  enabled?: boolean;
                   id: string;
                   kind: "membership";
                   lhs:
@@ -54250,6 +55110,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                         key: string;
                         kind: "series";
                         offset?: number;
+                        offset_param?: string;
                       }
                     | {
                         key: string;
@@ -54268,6 +55129,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -54282,6 +55144,7 @@ export type StrategyConfigPatchSharedConfigResponses = {
                           key: string;
                           kind: "series";
                           offset?: number;
+                          offset_param?: string;
                         }
                       | {
                           key: string;
@@ -55312,10 +56175,6 @@ export type DashboardValuationErrors = {
    * Bad request
    */
   400: ApiErrorV2;
-  /**
-   * Authentication required
-   */
-  401: ApiErrorV2;
   /**
    * Request validation failed
    */

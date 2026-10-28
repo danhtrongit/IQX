@@ -75,12 +75,14 @@ export function activeConditions(config: SharedConfig | undefined, side: Side, i
     const saved = config.indicators[indicator.id]
     if (!saved?.master_enabled || !saved[side].enabled) return []
     const sideConfig = saved[side]
+    const activeRules = sideConfig.rules.filter((rule) => rule.enabled !== false)
+    if (activeRules.length === 0) return []
     const params = indicator.fields.flatMap((field) => {
       const meta = sideField(indicator, side, field.key)
       const value = sideConfig.params[field.key]
       return meta && value !== undefined ? [`${meta.label} ${formatNum(value)}${meta.unit ? ` ${meta.unit}` : ""}`] : []
     })
-    const rules = sideConfig.rules.map((rule) => {
+    const rules = activeRules.map((rule) => {
       const line = ruleLine(rule, rule.op, indicator, sideConfig.params)
       return rule.kind === "cross" ? `${CROSS_LABEL}: ${line}` : line
     })

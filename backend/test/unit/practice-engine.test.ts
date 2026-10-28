@@ -12,6 +12,7 @@ import {
   simulate,
   type SimulationInput,
 } from '../../src/modules/practice/practice.engine.js';
+import type { CompareRule } from '../../src/modules/quant/v2/index.js';
 import { makeBars } from './practice-fixtures.js';
 
 const WARM = 30; // observation + warmup bars before the first test session
@@ -31,21 +32,25 @@ function maInput(
     profile?: SimulationInput['profile'];
   } = {},
 ): SimulationInput {
+  const buy = toSideConfig(entry, 'buy', {
+    enabled: options.buy?.enabled ?? true,
+    params: { period: options.buy?.period ?? 5 },
+    ops: { r1: '>' },
+  });
+  const sell = toSideConfig(entry, 'sell', {
+    enabled: options.sell?.enabled ?? true,
+    params: { period: options.sell?.period ?? 5 },
+    ops: { r1: '<' },
+  });
+  buy.rules[0] = { ...buy.rules[0]!, kind: 'compare' } as CompareRule;
+  sell.rules[0] = { ...sell.rules[0]!, kind: 'compare' } as CompareRule;
   return {
     entry,
     bars: makeBars(closes, options.openOf ? { openOf: options.openOf } : {}),
     firstTestIndex: WARM,
     lastTestIndex: closes.length - 1,
-    buy: toSideConfig(entry, 'buy', {
-      enabled: options.buy?.enabled ?? true,
-      params: { period: options.buy?.period ?? 5 },
-      ops: { r1: '>' },
-    }),
-    sell: toSideConfig(entry, 'sell', {
-      enabled: options.sell?.enabled ?? true,
-      params: { period: options.sell?.period ?? 5 },
-      ops: { r1: '<' },
-    }),
+    buy,
+    sell,
     holdMaxSessions: options.hold ?? 60,
     ...(options.profile ? { profile: options.profile } : {}),
   };

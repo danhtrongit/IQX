@@ -72,11 +72,28 @@ export type LegacyRemovedIndicatorId = (typeof LEGACY_REMOVED_INDICATOR_IDS)[num
 /** Three-valued logic: true, false, or unknown (missing data). */
 export type Tri = boolean | null;
 
-export type CompareOp = '>' | '<';
+export type CompareOp =
+  | '>'
+  | '<'
+  | 'cross_up'
+  | 'cross_down'
+  | 'reenter_lower'
+  | 'reenter_upper'
+  | 'break_upper'
+  | 'break_lower'
+  | 'cross_up_middle'
+  | 'cross_down_middle'
+  | 'break_high'
+  | 'break_low';
 export type MembershipOp = '∈' | '∉';
 export type RuleOp = CompareOp | MembershipOp;
 
-export type SeriesOperand = { kind: 'series'; key: string; offset?: number };
+export type SeriesOperand = {
+  kind: 'series';
+  key: string;
+  offset?: number;
+  offset_param?: string;
+};
 export type ParamOperand = { kind: 'param'; key: string };
 export type ConstantOperand = { kind: 'constant'; value: number };
 export type Operand = SeriesOperand | ParamOperand | ConstantOperand;
@@ -84,6 +101,7 @@ export type Operand = SeriesOperand | ParamOperand | ConstantOperand;
 export type CompareRule = {
   id: string;
   kind: 'compare' | 'cross';
+  enabled?: boolean;
   lhs: Operand;
   op: CompareOp;
   rhs: Operand;
@@ -92,6 +110,7 @@ export type CompareRule = {
 export type MembershipRule = {
   id: string;
   kind: 'membership';
+  enabled?: boolean;
   lhs: Operand;
   op: MembershipOp;
   /** Registry templates carry `kind: 'interval'` and `bounds: 'open'` (strict on both ends). */
@@ -160,6 +179,7 @@ export type RegistryField = {
   unit: string;
   api_scale: number;
   wire_unit: string;
+  options?: number[];
 };
 
 export type RegistrySide = {
@@ -169,7 +189,7 @@ export type RegistrySide = {
   field_overrides?: Record<string, Partial<RegistryField>>;
 };
 
-export type RegistryCrossField = { left: string; op: CompareOp; right: string };
+export type RegistryCrossField = { left: string; op: '<' | '>'; right: string };
 
 /** Registry `validation` block; `cross_fields` are enforced by `validateConfig`. */
 export type RegistryValidation = { cross_fields: RegistryCrossField[]; [extra: string]: unknown };

@@ -322,6 +322,17 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
       edit((current) => ({ ...current, [target]: { ...current[target], ops: { ...current[target].ops, [ruleId]: op } } })),
     [edit],
   )
+  const editRuleEnabled = useCallback(
+    (target: Side, ruleId: string, ruleEnabled: boolean) =>
+      edit((current) => ({
+        ...current,
+        [target]: {
+          ...current[target],
+          rules_enabled: { ...current[target].rules_enabled, [ruleId]: ruleEnabled },
+        },
+      })),
+    [edit],
+  )
   const editHold = useCallback((text: string) => edit((current) => ({ ...current, hold: text })), [edit])
   const resetSide = useCallback(() => {
     if (spec) edit((current) => resetSideForm(current, spec, side))
@@ -485,6 +496,7 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
       editEnabled,
       editParam,
       editOp,
+      editRuleEnabled,
       editHold,
       resetSide,
       preview: previewQuery.data ?? null,
@@ -525,6 +537,7 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
     editEnabled,
     editParam,
     editOp,
+    editRuleEnabled,
     editHold,
     resetSide,
     previewQuery.data,

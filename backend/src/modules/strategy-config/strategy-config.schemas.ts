@@ -2,7 +2,20 @@ import { z } from 'zod';
 
 import { RULE_VERSION, SCHEMA_VERSION } from '../quant/v2/types.js';
 
-const compareOpSchema = z.enum(['>', '<']);
+const compareOpSchema = z.enum([
+  '>',
+  '<',
+  'cross_up',
+  'cross_down',
+  'reenter_lower',
+  'reenter_upper',
+  'break_upper',
+  'break_lower',
+  'cross_up_middle',
+  'cross_down_middle',
+  'break_high',
+  'break_low',
+]);
 const membershipOpSchema = z.enum(['∈', '∉']);
 
 const operandSchema = z.discriminatedUnion('kind', [
@@ -10,6 +23,7 @@ const operandSchema = z.discriminatedUnion('kind', [
     kind: z.literal('series'),
     key: z.string().min(1).max(64),
     offset: z.number().int().optional(),
+    offset_param: z.string().min(1).max(64).optional(),
   }),
   z.strictObject({ kind: z.literal('param'), key: z.string().min(1).max(64) }),
   z.strictObject({ kind: z.literal('constant'), value: z.number() }),
@@ -18,15 +32,17 @@ const operandSchema = z.discriminatedUnion('kind', [
 const compareRuleSchema = z.strictObject({
   id: z.string().min(1).max(32),
   kind: z.enum(['compare', 'cross']),
+  enabled: z.boolean().optional(),
   lhs: operandSchema,
   op: compareOpSchema,
   rhs: operandSchema,
-  allowed_ops: z.array(compareOpSchema).min(1).max(2),
+  allowed_ops: z.array(compareOpSchema).min(1).max(8),
 });
 
 const membershipRuleSchema = z.strictObject({
   id: z.string().min(1).max(32),
   kind: z.literal('membership'),
+  enabled: z.boolean().optional(),
   lhs: operandSchema,
   op: membershipOpSchema,
   rhs: z.strictObject({
@@ -170,6 +186,7 @@ const registryFieldSchema = z.object({
   unit: z.string(),
   api_scale: z.number(),
   wire_unit: z.string(),
+  options: z.array(z.number()).optional(),
 });
 
 const registryCrossFieldSchema = z.object({

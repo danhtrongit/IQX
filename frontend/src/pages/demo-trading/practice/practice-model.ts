@@ -58,6 +58,7 @@ export type SideFormState = {
   /** Raw text of every parameter input (so "" and "1." can be typed). */
   params: Record<string, string>
   ops: Record<string, PracticeOp>
+  rules_enabled?: Record<string, boolean>
 }
 export type PracticeFormState = { buy: SideFormState; sell: SideFormState; hold: string }
 
@@ -65,6 +66,7 @@ const sideToForm = (side: PracticeSideConfig): SideFormState => ({
   enabled: side.enabled,
   params: Object.fromEntries(Object.entries(side.params).map(([key, value]) => [key, String(value)])),
   ops: { ...side.ops },
+  ...(side.rules_enabled ? { rules_enabled: { ...side.rules_enabled } } : {}),
 })
 
 export const toFormState = (config: PracticeConfig): PracticeFormState => ({
@@ -89,7 +91,12 @@ function sideToConfig(side: SideFormState, fields: readonly PracticeFormField[])
     if (value === null) return null
     params[field.key] = value
   }
-  return { enabled: side.enabled, params, ops: { ...side.ops } }
+  return {
+    enabled: side.enabled,
+    params,
+    ops: { ...side.ops },
+    ...(side.rules_enabled ? { rules_enabled: { ...side.rules_enabled } } : {}),
+  }
 }
 
 /** Params of one side as numbers, or null while any input is empty/not numeric. */
@@ -112,6 +119,9 @@ export function configSignature(config: PracticeConfig): string {
     enabled: value.enabled,
     params: Object.fromEntries(Object.entries(value.params).sort(([a], [b]) => a.localeCompare(b))),
     ops: Object.fromEntries(Object.entries(value.ops).sort(([a], [b]) => a.localeCompare(b))),
+    ...(value.rules_enabled
+      ? { rules_enabled: Object.fromEntries(Object.entries(value.rules_enabled).sort(([a], [b]) => a.localeCompare(b))) }
+      : {}),
   })
   return JSON.stringify({ buy: side(config.buy), sell: side(config.sell), hold: config.hold_max_sessions })
 }
@@ -119,7 +129,15 @@ export function configSignature(config: PracticeConfig): string {
 /** "Mặc định": only the params and operators of this side; `enabled`, the other side and the hold time stay. */
 export function resetSide(form: PracticeFormState, spec: PracticeForm, side: Side): PracticeFormState {
   const defaults = toFormState(spec.defaults)
-  return { ...form, [side]: { enabled: form[side].enabled, params: defaults[side].params, ops: defaults[side].ops } }
+  return {
+    ...form,
+    [side]: {
+      enabled: form[side].enabled,
+      params: defaults[side].params,
+      ops: defaults[side].ops,
+      ...(defaults[side].rules_enabled ? { rules_enabled: defaults[side].rules_enabled } : {}),
+    },
+  }
 }
 
 // ---------------------------------------------------------------- validation
@@ -227,6 +245,9 @@ export function operandLabel(
     return `${p(operand.key)}${unit ? ` ${unit}` : ""}`
   }
   if (operand.kind === "constant") return String(operand.value)
+  if ("offset_param" in operand && operand.offset_param) {
+    return `so với tại t − ${p(operand.offset_param)}`
+  }
   const suffix = operand.offset === -1 ? " phiên trước" : ""
   const valueLabel = ((): string => {
     switch (indicator.id) {
@@ -254,15 +275,44 @@ export function operandLabel(
     histogram: "Histogram",
     plus: "+DI",
     minus: "−DI",
-    fast: `SMA ${p("fast")}`,
-    slow: `SMA ${p("slow")}`,
-    upper: "Dải trên",
+    adx: "ADX",
+    fast: indicator.id === "ema" ? `EMA ${p("fast")}` : `SMA ${p("fast")}`,
+    slow: indicator.id === "ema" ? `EMA ${p("slow")}` : `SMA ${p("slow")}`,
+    trend: indicator.id === "ema" ? `EMA ${p("trend_period")}` : `SMA ${p("trend_period")}`,
+    upper:
+      indicator.id === "obv"
+        ? `Đỉnh ${p("breakout_period")} phiên của OBV`
+        : indicator.id === "donchian"
+          ? `Đỉnh ${p("period")} phiên trước`
+          : "Dải trên",
     middle: "Đường giữa",
-    lower: "Dải dưới",
+    lower:
+      indicator.id === "obv"
+        ? `Đáy ${p("breakout_period")} phiên của OBV`
+        : indicator.id === "donchian"
+          ? `Đáy ${p("period")} phiên trước`
+          : "Dải dưới",
     baseline: `SMA ${p("baseline")} của OBV`,
     threshold: `${p("mult")} × TB ${p("lookback")} phiên`,
   }
   return `${labels[operand.key] ?? operand.key}${suffix}`
+}
+
+const NAMED_OP_LABELS: Record<string, string> = {
+  cross_up: "cắt lên",
+  cross_down: "cắt xuống",
+  reenter_lower: "Từ ngoài Dải dưới đi vào trong dải",
+  reenter_upper: "Từ ngoài Dải trên đi vào trong dải",
+  break_upper: "Vượt lên ngoài Dải trên",
+  break_lower: "Phá xuống ngoài Dải dưới",
+  cross_up_middle: "Cắt lên Đường giữa",
+  cross_down_middle: "Cắt xuống Đường giữa",
+  break_high: "vượt đỉnh",
+  break_low: "phá đáy",
+}
+
+export function ruleOpLabel(op: string): string {
+  return NAMED_OP_LABELS[op] ?? op
 }
 
 export function ruleSideLabels(

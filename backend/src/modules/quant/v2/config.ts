@@ -149,11 +149,23 @@ function validateRules(
       errors.push({ path: rulePath, message: `${entry.id}: điều kiện không hợp lệ.` });
       return;
     }
+    if (rule.enabled !== undefined && typeof rule.enabled !== 'boolean') {
+      errors.push({
+        path: `${rulePath}.enabled`,
+        message: `${entry.id}: trạng thái điều kiện không hợp lệ.`,
+      });
+    }
     const allowed: readonly string[] = template.allowed_ops;
     if (typeof rule.op !== 'string' || !allowed.includes(rule.op)) {
       errors.push({ path: `${rulePath}.op`, message: `${entry.id}: toán tử không hợp lệ.` });
     }
-    if (canonicalJson({ ...rule, op: template.op }) !== canonicalJson(template)) {
+    const normalizedRule: Record<string, unknown> = { ...rule, op: template.op };
+    if (template.enabled !== undefined) {
+      normalizedRule.enabled = template.enabled;
+    } else {
+      delete normalizedRule.enabled;
+    }
+    if (canonicalJson(normalizedRule) !== canonicalJson(template)) {
       errors.push({
         path: rulePath,
         message: `${entry.id}: không được sửa operand của điều kiện.`,

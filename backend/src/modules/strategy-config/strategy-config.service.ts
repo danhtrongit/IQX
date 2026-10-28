@@ -63,6 +63,77 @@ const UNREADABLE_REVIEW: LegacyConfigReview = {
   needs_review: true,
 };
 
+const NEW_DEFAULT_PARAM_KEYS = new Set([
+  'fast',
+  'slow',
+  'trend_period',
+  'breakout_period',
+  'level',
+]);
+
+function normalizeIndicatorSide(
+  storedSide: IndicatorConfig['buy'],
+  templateSide: RegistryEntry['buy'],
+): IndicatorConfig['buy'] {
+  if (!storedSide || typeof storedSide !== 'object') return storedSide;
+  const params = { ...storedSide.params };
+  for (const [k, v] of Object.entries(templateSide.params)) {
+    if (params[k] === undefined && NEW_DEFAULT_PARAM_KEYS.has(k)) {
+      params[k] = v;
+    }
+  }
+  const sameTemplate =
+    Array.isArray(storedSide.rules) &&
+    storedSide.rules.length === templateSide.rules.length &&
+    templateSide.rules.every((tpl, idx) => {
+      const r = storedSide.rules[idx];
+      if (!r || typeof r !== 'object') return false;
+      const norm: Record<string, unknown> = { ...r, op: tpl.op };
+      if (tpl.enabled !== undefined) norm.enabled = tpl.enabled;
+      else delete norm.enabled;
+      return canonicalJson(norm) === canonicalJson(tpl);
+    });
+  if (sameTemplate) {
+    return { ...storedSide, params };
+  }
+  const rules = templateSide.rules.map((tpl) => {
+    const existing = Array.isArray(storedSide.rules)
+      ? storedSide.rules.find((r) => r?.id === tpl.id)
+      : undefined;
+    const allowed: readonly string[] = tpl.allowed_ops;
+    const op =
+      existing && typeof existing.op === 'string' && allowed.includes(existing.op)
+        ? existing.op
+        : tpl.op;
+    const enabled =
+      existing && typeof existing.enabled === 'boolean' ? existing.enabled : tpl.enabled;
+    return {
+      ...structuredClone(tpl),
+      op,
+      ...(enabled !== undefined ? { enabled } : {}),
+    } as typeof tpl;
+  });
+  return { ...storedSide, params, rules };
+}
+
+function normalizeStoredIndicators(
+  config: SharedConfig,
+  registry: readonly RegistryEntry[],
+): SharedConfig {
+  if (!config?.indicators || typeof config.indicators !== 'object') return config;
+  const indicators: Record<string, IndicatorConfig> = { ...config.indicators };
+  for (const entry of registry) {
+    const item = indicators[entry.id];
+    if (!item || typeof item !== 'object') continue;
+    indicators[entry.id] = {
+      ...item,
+      buy: normalizeIndicatorSide(item.buy, entry.buy),
+      sell: normalizeIndicatorSide(item.sell, entry.sell),
+    };
+  }
+  return { ...config, indicators };
+}
+
 /**
  * Reads a stored config document. A current (`iqx-rules-3.0`) document is returned as is; a
  * historical 35-indicator document is mapped to the 16-indicator shape together with its review
@@ -73,9 +144,14 @@ export function readStoredConfig(
   stored: unknown,
   registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
 ): StoredConfigView {
-  if (!isLegacyConfig(stored)) return { config: stored as SharedConfig, legacy: null };
+  if (!isLegacyConfig(stored))
+    return { config: normalizeStoredIndicators(stored as SharedConfig, registry), legacy: null };
   const mapped = mapLegacyConfig(stored, registry);
-  if (mapped.ok) return { config: mapped.mapping.config, legacy: mapped.mapping.review };
+  if (mapped.ok)
+    return {
+      config: normalizeStoredIndicators(mapped.mapping.config, registry),
+      legacy: mapped.mapping.review,
+    };
   return { config: defaultConfig(registry), legacy: UNREADABLE_REVIEW };
 }
 

@@ -115,7 +115,18 @@ function evaluateSide(
       rules: [],
     };
   }
-  const rules: RuleEvidenceRow[] = config.rules.map((rule) => {
+  const enabledRules = config.rules.filter((rule) => rule.enabled !== false);
+  if (!enabledRules.length) {
+    return {
+      side,
+      signal_session: signalSession,
+      enabled: true,
+      result: false,
+      params: { ...config.params },
+      rules: [],
+    };
+  }
+  const rules: RuleEvidenceRow[] = enabledRules.map((rule) => {
     const evidence = evaluateRuleWithEvidence(rule, series, config.params, index);
     const labels = ruleLabels(rule, entry, config.params);
     return {
@@ -126,10 +137,10 @@ function evaluateSide(
       right_label: labels.right,
       lhs: round6(evidence.lhs),
       rhs: round6(evidence.rhs),
-      ...(rule.kind === 'membership'
+      ...(evidence.rhs_lower !== undefined || evidence.rhs_upper !== undefined
         ? { rhs_lower: round6(evidence.rhs_lower), rhs_upper: round6(evidence.rhs_upper) }
         : {}),
-      ...(rule.kind === 'cross'
+      ...(evidence.previous_lhs !== undefined || evidence.previous_rhs !== undefined
         ? {
             previous_lhs: round6(evidence.previous_lhs),
             previous_rhs: round6(evidence.previous_rhs),

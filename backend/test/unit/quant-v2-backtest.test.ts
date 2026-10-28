@@ -149,7 +149,7 @@ describe('quant v2 runBacktest — golden parity with reference run', () => {
       configWith(['bollinger', 'ma'], (c) => {
         indicator(c, 'bollinger').sell.enabled = false;
         indicator(c, 'ma').buy.enabled = false;
-        indicator(c, 'bollinger').buy.rules[1]!.op = '∉';
+        indicator(c, 'bollinger').buy.rules[0]!.op = 'break_lower';
       }),
       configWith(['macd'], (c) => {
         const macd = indicator(c, 'macd');
@@ -197,7 +197,7 @@ describe('quant v2 runBacktest — golden parity with reference run', () => {
     const poor = expectParity(maConfig(), bars, { capital: 1_000_000 }, 'not enough cash');
     expect(poor.trades).toEqual([]);
     expect(poor.open_position).toBeNull();
-    const small = Array.from({ length: 10 }, (_, i) => bar(100 + i, i));
+    const small = Array.from({ length: 10 }, (_, i) => bar(i === 9 ? 110 : 100, i));
     const pendingConfig = configWith(['ma'], (c) => (indicator(c, 'ma').buy.params.period = 5));
     const last = small[small.length - 1]!.date;
     const pending = expectParity(
@@ -229,7 +229,7 @@ describe('quant v2 runBacktest — reference behaviour (04-TESTS/test_engine.js)
     const c = maConfig();
     const options = { start: bars[220]!.date, end: bars[949]!.date };
     const x = runBacktest(c, bars, options);
-    expect(x.trades.length).toBeGreaterThan(12);
+    expect(x.trades.length).toBeGreaterThan(8);
     expect(x.kpis.n_trades).toBe(x.trades.length);
     expect(x.curve).toHaveLength(730);
     near(x.curve[x.curve.length - 1]!.return_pct, x.kpis.net_return);

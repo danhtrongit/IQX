@@ -18,9 +18,11 @@ function reference(input: SimulationInput) {
   const sellSeries = calc(target.id, input.sell.params, bars);
   const met = (cfg: typeof input.buy, series: typeof buySeries, i: number): boolean | null => {
     if (!cfg.enabled) return false;
+    const activeRules = cfg.rules.filter((rule) => rule.enabled !== false);
+    if (activeRules.length === 0) return false;
     let missing = false;
     let failed = false;
-    for (const rule of cfg.rules) {
+    for (const rule of activeRules) {
       const value = evaluateRule(rule, series, cfg.params, i);
       if (value === null) missing = true;
       else if (!value) failed = true;

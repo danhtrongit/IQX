@@ -250,17 +250,20 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
     near(calc('rsi', { period: 5 }, closes([16, 15, 14, 13, 12, 11, 10])).value![5], 0);
   });
 
-  it('MACD = EMA fast − EMA slow, Signal = EMA of MACD, Histogram = MACD − Signal; a state, not a cross (I02)', () => {
+  it('MACD = EMA fast − EMA slow, Signal = EMA of MACD, Histogram = MACD − Signal (I02)', () => {
     const series = calc('macd', { fast: 2, slow: 5, signal: 2 }, closes([1, 2, 3, 4, 5, 6, 7]));
     near(series.value![4], 1.5);
     near(series.signal![5], 1.5);
     near(series.histogram![5], 0);
     const buy = ruleOf('macd', 'buy', 'r1');
     expect(buy.kind).toBe('compare');
-    expect(evaluateRule(buy, series, { fast: 2, slow: 5, signal: 2 }, 5)).toBe(false); // 1.5 > 1.5
+    expect(buy.op).toBe('cross_up');
+    expect(evaluateRule(buy, series, { fast: 2, slow: 5, signal: 2 }, 5)).toBeNull(); // signal[4] is null
+    expect(evaluateRule(buy, series, { fast: 2, slow: 5, signal: 2 }, 6)).toBe(false);
+    expect(evaluateRule({ ...buy, op: '>' } as Rule, series, { fast: 2, slow: 5, signal: 2 }, 5)).toBe(false); // 1.5 > 1.5
   });
 
-  it('Bollinger uses the population deviation (/N) and the open interval, including T (I04, C12)', () => {
+  it('Bollinger uses the population deviation (/N) and the 6 band actions, including T (I04, C12)', () => {
     const data = closes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     const series = calc('bollinger', { period: 10, k: 2 }, data);
     near(series.middle![9], 5.5);
@@ -268,16 +271,20 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
     near(series.upper![9], 5.5 + 2 * Math.sqrt(8.25));
     near(series.lower![9], 5.5 - 2 * Math.sqrt(8.25));
     expect(series.upper![8]).toBeNull();
-    const inside = ruleOf('bollinger', 'buy', 'r2');
-    expect(evaluateRule(inside, series, {}, 9)).toBe(true);
-    expect(evaluateRule({ ...inside, op: '∉' } as Rule, series, {}, 9)).toBe(false);
-    // C12: lower=10, upper=20, close=10 -> ∈ false, ∉ true; a missing band leaves both unknown.
-    const band: SeriesMap = { close: [10], lower: [10], upper: [20] };
-    expect(evaluateRule(inside, band, {}, 0)).toBe(false);
-    expect(evaluateRule({ ...inside, op: '∉' } as Rule, band, {}, 0)).toBe(true);
-    const missing: SeriesMap = { close: [10], lower: [null], upper: [20] };
-    expect(evaluateRule(inside, missing, {}, 0)).toBeNull();
-    expect(evaluateRule({ ...inside, op: '∉' } as Rule, missing, {}, 0)).toBeNull();
+    const r1 = ruleOf('bollinger', 'buy', 'r1');
+    const r2 = ruleOf('bollinger', 'buy', 'r2');
+    expect(evaluateRule(r2, series, {}, 9)).toBe(true);
+    // Test reenter_lower and break_upper on synthetic band series:
+    const reenterBand: SeriesMap = {
+      close: [9, 12],
+      lower: [10, 10],
+      middle: [15, 15],
+      upper: [20, 20],
+    };
+    expect(evaluateRule(r1, reenterBand, {}, 1)).toBe(true);
+    expect(evaluateRule({ ...r1, op: 'reenter_upper' } as Rule, reenterBand, {}, 1)).toBe(false);
+    const missing: SeriesMap = { close: [9, 12], lower: [null, 10], middle: [15, 15], upper: [20, 20] };
+    expect(evaluateRule(r1, missing, {}, 1)).toBeNull();
   });
 
   it('Volume threshold = mult × mean of the N sessions BEFORE T, T excluded (I05)', () => {
@@ -316,13 +323,14 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
     expect(sma.slow![8]).toBeNull();
   });
 
-  it('DMI: Wilder 1/N on +DM, −DM and TR; only +DI/−DI, no ADX (I08)', () => {
+  it('DMI: Wilder 1/N on +DM, −DM, TR and DX/ADX (I08)', () => {
     const data = [0, 1, 2, 3, 4, 5].map((i) => ohlc(i, 11 + i, 9 + i, 10 + i));
     const series = calc('dmi', { period: 5 }, data);
     near(series.plus![5], 50);
     near(series.minus![5], 0);
     expect(series.plus![4]).toBeNull();
-    expect(series).not.toHaveProperty('dx');
+    expect(series).toHaveProperty('dx');
+    expect(series).toHaveProperty('adx');
     expect(series.value).toEqual(series.plus);
     const down = calc(
       'dmi',
@@ -440,5 +448,99 @@ describe('documented differences between the engine and the Bot SPEC §9.1 refer
     const series = calc('bollinger', { period: 5, k: 2 }, closes([10, 11, 12, 13, 14]));
     expect(series.middle![4]).toBe(12);
     expect(series.value![4]).not.toBe(series.middle![4]);
+  });
+});
+
+describe('SPEC V2 indicator conditions & rule filtering parity', () => {
+  it('returns false (NO_SIGNAL) when an enabled side has all sub-rules disabled', () => {
+    const data = closes(Array.from({ length: 30 }, (_, i) => 100 + i));
+    const ma = defaultConfig().indicators.ma!;
+    const sideAllOff = {
+      ...ma.buy,
+      enabled: true,
+      rules: ma.buy.rules.map((r) => ({ ...r, enabled: false })),
+    };
+    expect(indicatorSideSignals('ma', sideAllOff, data).every((v) => v === false)).toBe(true);
+  });
+
+  it('evaluates SMA/EMA r3 trend lookback t - N via offset_param: trend_period', () => {
+    const r3 = { ...ruleOf('ma', 'buy', 'r3'), enabled: true };
+    const series: SeriesMap = { trend: [10, 11, 12, 13, 14, 15] };
+    expect(evaluateRule(r3, series, { trend_period: 3 }, 4)).toBe(true); // 14 > 11
+    expect(evaluateRule(r3, series, { trend_period: 5 }, 4)).toBeNull(); // 4 - 5 < 0
+    expect(evaluateRule({ ...r3, op: '<' } as Rule, series, { trend_period: 3 }, 4)).toBe(false);
+  });
+
+  it('evaluates all 6 Bollinger Band action operators on r1', () => {
+    const base = ruleOf('bollinger', 'buy', 'r1');
+    const op = (o: string) => ({ ...base, op: o }) as Rule;
+    expect(
+      evaluateRule(op('reenter_lower'), { close: [9, 11], lower: [10, 10], middle: [15, 15], upper: [20, 20] }, {}, 1),
+    ).toBe(true);
+    expect(
+      evaluateRule(op('reenter_upper'), { close: [21, 19], lower: [10, 10], middle: [15, 15], upper: [20, 20] }, {}, 1),
+    ).toBe(true);
+    expect(
+      evaluateRule(op('break_upper'), { close: [19, 21], lower: [10, 10], middle: [15, 15], upper: [20, 20] }, {}, 1),
+    ).toBe(true);
+    expect(
+      evaluateRule(op('break_lower'), { close: [11, 9], lower: [10, 10], middle: [15, 15], upper: [20, 20] }, {}, 1),
+    ).toBe(true);
+    expect(
+      evaluateRule(
+        op('cross_up_middle'),
+        { close: [15, 16], lower: [10, 10], middle: [15, 15], upper: [20, 20] },
+        {},
+        1,
+      ),
+    ).toBe(true);
+    expect(
+      evaluateRule(
+        op('cross_down_middle'),
+        { close: [15, 14], lower: [10, 10], middle: [15, 15], upper: [20, 20] },
+        {},
+        1,
+      ),
+    ).toBe(true);
+  });
+
+  it('evaluates OBV r1 (cross_up/cross_down/>/<) and r2 (break_high/break_low over t-N..t-1)', () => {
+    const data = closes([10, 11, 12, 13, 14, 15, 16]).map((bar, i) => ({
+      ...bar,
+      volume: [100, 100, 100, 100, 100, 100, 500][i]!,
+    }));
+    const series = calc('obv', { baseline: 5, breakout_period: 5 }, data);
+    expect(series.upper![6]).toBe(500); // max of OBV[1..5] = [100, 200, 300, 400, 500]
+    expect(series.value![6]).toBe(1000);
+    const r2Buy = { ...ruleOf('obv', 'buy', 'r2'), enabled: true };
+    const r2Sell = { ...ruleOf('obv', 'sell', 'r2'), enabled: true };
+    expect(evaluateRule(r2Buy, series, { baseline: 5, breakout_period: 5 }, 6)).toBe(true);
+    expect(evaluateRule(r2Sell, series, { baseline: 5, breakout_period: 5 }, 6)).toBe(false);
+  });
+
+  it('evaluates DMI r1 (+DI/-DI cross or compare) and r2 (ADX vs level)', () => {
+    const r1 = ruleOf('dmi', 'buy', 'r1');
+    const r2 = ruleOf('dmi', 'buy', 'r2');
+    const series: SeriesMap = { plus: [20, 25], minus: [22, 20], adx: [18, 22] };
+    expect(evaluateRule(r1, series, { period: 14, level: 20 }, 1)).toBe(true); // +DI crossed above -DI
+    expect(evaluateRule(r2, series, { period: 14, level: 20 }, 1)).toBe(true); // ADX 22 > 20
+    expect(evaluateRule(r2, series, { period: 14, level: 25 }, 1)).toBe(false);
+  });
+
+  it('evaluates RSI r1 at t (offset 0) and r2 at t vs t-1, Stochastic r2 cross, and single-rule oscillators', () => {
+    const rsiR1 = ruleOf('rsi', 'buy', 'r1');
+    const rsiR2 = { ...ruleOf('rsi', 'buy', 'r2'), enabled: true };
+    expect(evaluateRule(rsiR1, { value: [35, 28] }, { period: 14, level: 30 }, 1)).toBe(true);
+    expect(evaluateRule(rsiR2, { value: [25, 28] }, { period: 14, level: 30 }, 1)).toBe(true);
+
+    const stochR2 = ruleOf('stochastic', 'buy', 'r2');
+    expect(stochR2.kind).toBe('cross');
+    expect(evaluateRule(stochR2, { value: [18, 22], signal: [20, 20] }, {}, 1)).toBe(true);
+
+    for (const id of ['cci', 'mfi', 'roc', 'williams_r', 'cmf'] as const) {
+      const r1 = ruleOf(id, 'buy', 'r1');
+      expect(r1.kind, id).toBe('cross');
+      expect(evaluateRule(r1, { value: [-10, 10] }, { level: 0 }, 1), id).toBe(true);
+    }
   });
 });

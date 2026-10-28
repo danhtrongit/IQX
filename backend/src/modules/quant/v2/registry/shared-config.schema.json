@@ -42,8 +42,8 @@
                     },
                     "level": {
                       "type": "number",
-                      "minimum": 10,
-                      "maximum": 49,
+                      "minimum": 0,
+                      "maximum": 100,
                       "multipleOf": 1
                     }
                   },
@@ -65,11 +65,14 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "value",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
@@ -109,6 +112,9 @@
                         },
                         "kind": {
                           "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -177,8 +183,8 @@
                     },
                     "level": {
                       "type": "number",
-                      "minimum": 51,
-                      "maximum": 90,
+                      "minimum": 0,
+                      "maximum": 100,
                       "multipleOf": 1
                     }
                   },
@@ -200,11 +206,14 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "value",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
@@ -244,6 +253,9 @@
                         },
                         "kind": {
                           "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -356,6 +368,9 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
@@ -368,6 +383,107 @@
                             "kind": "series",
                             "key": "signal",
                             "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            "cross_up",
+                            "cross_down",
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            "cross_up",
+                            "cross_down",
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "constant",
+                            "value": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r3"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "histogram",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "histogram",
+                            "offset": -1
                           }
                         },
                         "allowed_ops": {
@@ -394,8 +510,8 @@
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 3,
+                  "maxItems": 3
                 }
               },
               "required": [
@@ -453,6 +569,9 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
@@ -465,6 +584,107 @@
                             "kind": "series",
                             "key": "signal",
                             "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            "cross_up",
+                            "cross_down",
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            "cross_up",
+                            "cross_down",
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "constant",
+                            "value": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r3"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "histogram",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "histogram",
+                            "offset": -1
                           }
                         },
                         "allowed_ops": {
@@ -491,8 +711,8 @@
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 3,
+                  "maxItems": 3
                 }
               },
               "required": [
@@ -531,10 +751,31 @@
                       "minimum": 5,
                       "maximum": 200,
                       "multipleOf": 1
+                    },
+                    "fast": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
+                    },
+                    "slow": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
+                    },
+                    "trend_period": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
                     }
                   },
                   "required": [
-                    "period"
+                    "period",
+                    "fast",
+                    "slow",
+                    "trend_period"
                   ]
                 },
                 "rules": {
@@ -548,7 +789,10 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -585,11 +829,109 @@
                         "allowed_ops",
                         "op"
                       ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "fast",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "slow",
+                            "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r3"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "trend",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "trend",
+                            "offset_param": "trend_period"
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 3,
+                  "maxItems": 3
                 }
               },
               "required": [
@@ -614,10 +956,31 @@
                       "minimum": 5,
                       "maximum": 200,
                       "multipleOf": 1
+                    },
+                    "fast": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
+                    },
+                    "slow": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
+                    },
+                    "trend_period": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
                     }
                   },
                   "required": [
-                    "period"
+                    "period",
+                    "fast",
+                    "slow",
+                    "trend_period"
                   ]
                 },
                 "rules": {
@@ -631,7 +994,10 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -668,11 +1034,109 @@
                         "allowed_ops",
                         "op"
                       ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "fast",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "slow",
+                            "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r3"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "trend",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "trend",
+                            "offset_param": "trend_period"
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 3,
+                  "maxItems": 3
                 }
               },
               "required": [
@@ -737,30 +1201,41 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "close",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
                           "const": {
                             "kind": "series",
-                            "key": "lower",
-                            "offset": -1
+                            "key": "middle",
+                            "offset": 0
                           }
                         },
                         "allowed_ops": {
                           "const": [
-                            ">",
-                            "<"
+                            "reenter_lower",
+                            "reenter_upper",
+                            "break_upper",
+                            "break_lower",
+                            "cross_up_middle",
+                            "cross_down_middle"
                           ]
                         },
                         "op": {
                           "enum": [
-                            ">",
-                            "<"
+                            "reenter_lower",
+                            "reenter_upper",
+                            "break_upper",
+                            "break_lower",
+                            "cross_up_middle",
+                            "cross_down_middle"
                           ]
                         }
                       },
@@ -781,7 +1256,10 @@
                           "const": "r2"
                         },
                         "kind": {
-                          "const": "membership"
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -792,30 +1270,21 @@
                         },
                         "rhs": {
                           "const": {
-                            "kind": "interval",
-                            "lower": {
-                              "kind": "series",
-                              "key": "lower",
-                              "offset": 0
-                            },
-                            "upper": {
-                              "kind": "series",
-                              "key": "upper",
-                              "offset": 0
-                            },
-                            "bounds": "open"
+                            "kind": "series",
+                            "key": "close",
+                            "offset": -1
                           }
                         },
                         "allowed_ops": {
                           "const": [
-                            "∈",
-                            "∉"
+                            ">",
+                            "<"
                           ]
                         },
                         "op": {
                           "enum": [
-                            "∈",
-                            "∉"
+                            ">",
+                            "<"
                           ]
                         }
                       },
@@ -838,17 +1307,20 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
-                            "key": "close",
+                            "key": "value",
                             "offset": 0
                           }
                         },
                         "rhs": {
                           "const": {
                             "kind": "series",
-                            "key": "close",
+                            "key": "value",
                             "offset": -1
                           }
                         },
@@ -928,30 +1400,41 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "close",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
                           "const": {
                             "kind": "series",
-                            "key": "upper",
-                            "offset": -1
+                            "key": "middle",
+                            "offset": 0
                           }
                         },
                         "allowed_ops": {
                           "const": [
-                            ">",
-                            "<"
+                            "reenter_lower",
+                            "reenter_upper",
+                            "break_upper",
+                            "break_lower",
+                            "cross_up_middle",
+                            "cross_down_middle"
                           ]
                         },
                         "op": {
                           "enum": [
-                            ">",
-                            "<"
+                            "reenter_lower",
+                            "reenter_upper",
+                            "break_upper",
+                            "break_lower",
+                            "cross_up_middle",
+                            "cross_down_middle"
                           ]
                         }
                       },
@@ -972,7 +1455,10 @@
                           "const": "r2"
                         },
                         "kind": {
-                          "const": "membership"
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -983,30 +1469,21 @@
                         },
                         "rhs": {
                           "const": {
-                            "kind": "interval",
-                            "lower": {
-                              "kind": "series",
-                              "key": "lower",
-                              "offset": 0
-                            },
-                            "upper": {
-                              "kind": "series",
-                              "key": "upper",
-                              "offset": 0
-                            },
-                            "bounds": "open"
+                            "kind": "series",
+                            "key": "close",
+                            "offset": -1
                           }
                         },
                         "allowed_ops": {
                           "const": [
-                            "∈",
-                            "∉"
+                            ">",
+                            "<"
                           ]
                         },
                         "op": {
                           "enum": [
-                            "∈",
-                            "∉"
+                            ">",
+                            "<"
                           ]
                         }
                       },
@@ -1029,17 +1506,20 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
-                            "key": "close",
+                            "key": "value",
                             "offset": 0
                           }
                         },
                         "rhs": {
                           "const": {
                             "kind": "series",
-                            "key": "close",
+                            "key": "value",
                             "offset": -1
                           }
                         },
@@ -1393,10 +1873,31 @@
                       "minimum": 5,
                       "maximum": 200,
                       "multipleOf": 1
+                    },
+                    "fast": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
+                    },
+                    "slow": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
+                    },
+                    "trend_period": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
                     }
                   },
                   "required": [
-                    "period"
+                    "period",
+                    "fast",
+                    "slow",
+                    "trend_period"
                   ]
                 },
                 "rules": {
@@ -1410,7 +1911,10 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -1447,11 +1951,109 @@
                         "allowed_ops",
                         "op"
                       ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "fast",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "slow",
+                            "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r3"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "trend",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "trend",
+                            "offset_param": "trend_period"
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 3,
+                  "maxItems": 3
                 }
               },
               "required": [
@@ -1476,10 +2078,31 @@
                       "minimum": 5,
                       "maximum": 200,
                       "multipleOf": 1
+                    },
+                    "fast": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
+                    },
+                    "slow": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
+                    },
+                    "trend_period": {
+                      "type": "integer",
+                      "minimum": 5,
+                      "maximum": 200,
+                      "multipleOf": 1
                     }
                   },
                   "required": [
-                    "period"
+                    "period",
+                    "fast",
+                    "slow",
+                    "trend_period"
                   ]
                 },
                 "rules": {
@@ -1493,7 +2116,10 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -1530,11 +2156,109 @@
                         "allowed_ops",
                         "op"
                       ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "fast",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "slow",
+                            "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r3"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "trend",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "trend",
+                            "offset_param": "trend_period"
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 3,
+                  "maxItems": 3
                 }
               },
               "required": [
@@ -1571,13 +2295,13 @@
                     "fast": {
                       "type": "integer",
                       "minimum": 5,
-                      "maximum": 100,
+                      "maximum": 200,
                       "multipleOf": 1
                     },
                     "slow": {
                       "type": "integer",
-                      "minimum": 10,
-                      "maximum": 250,
+                      "minimum": 5,
+                      "maximum": 200,
                       "multipleOf": 1
                     }
                   },
@@ -1598,6 +2322,9 @@
                         },
                         "kind": {
                           "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -1661,13 +2388,13 @@
                     "fast": {
                       "type": "integer",
                       "minimum": 5,
-                      "maximum": 100,
+                      "maximum": 200,
                       "multipleOf": 1
                     },
                     "slow": {
                       "type": "integer",
-                      "minimum": 10,
-                      "maximum": 250,
+                      "minimum": 5,
+                      "maximum": 200,
                       "multipleOf": 1
                     }
                   },
@@ -1688,6 +2415,9 @@
                         },
                         "kind": {
                           "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -1767,10 +2497,17 @@
                       "minimum": 5,
                       "maximum": 50,
                       "multipleOf": 1
+                    },
+                    "level": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "multipleOf": 0.1
                     }
                   },
                   "required": [
-                    "period"
+                    "period",
+                    "level"
                   ]
                 },
                 "rules": {
@@ -1786,6 +2523,9 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
@@ -1798,6 +2538,58 @@
                             "kind": "series",
                             "key": "minus",
                             "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            "cross_up",
+                            "cross_down",
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            "cross_up",
+                            "cross_down",
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "adx",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "param",
+                            "key": "level"
                           }
                         },
                         "allowed_ops": {
@@ -1824,8 +2616,8 @@
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 2,
+                  "maxItems": 2
                 }
               },
               "required": [
@@ -1850,10 +2642,17 @@
                       "minimum": 5,
                       "maximum": 50,
                       "multipleOf": 1
+                    },
+                    "level": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 100,
+                      "multipleOf": 0.1
                     }
                   },
                   "required": [
-                    "period"
+                    "period",
+                    "level"
                   ]
                 },
                 "rules": {
@@ -1869,6 +2668,9 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
@@ -1881,6 +2683,58 @@
                             "kind": "series",
                             "key": "minus",
                             "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            "cross_up",
+                            "cross_down",
+                            ">",
+                            "<"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            "cross_up",
+                            "cross_down",
+                            ">",
+                            "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "adx",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "param",
+                            "key": "level"
                           }
                         },
                         "allowed_ops": {
@@ -1907,8 +2761,8 @@
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 2,
+                  "maxItems": 2
                 }
               },
               "required": [
@@ -1987,6 +2841,9 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
@@ -2030,7 +2887,10 @@
                           "const": "r2"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -2136,6 +2996,9 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
@@ -2179,7 +3042,10 @@
                           "const": "r2"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -2283,13 +3149,16 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "value",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
@@ -2319,57 +3188,11 @@
                         "allowed_ops",
                         "op"
                       ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
+                  "minItems": 1,
+                  "maxItems": 1
                 }
               },
               "required": [
@@ -2418,13 +3241,16 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "value",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
@@ -2454,57 +3280,11 @@
                         "allowed_ops",
                         "op"
                       ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
+                  "minItems": 1,
+                  "maxItems": 1
                 }
               },
               "required": [
@@ -2543,10 +3323,17 @@
                       "minimum": 5,
                       "maximum": 100,
                       "multipleOf": 1
+                    },
+                    "breakout_period": {
+                      "type": "integer",
+                      "minimum": 2,
+                      "maximum": 252,
+                      "multipleOf": 1
                     }
                   },
                   "required": [
-                    "baseline"
+                    "baseline",
+                    "breakout_period"
                   ]
                 },
                 "rules": {
@@ -2561,6 +3348,9 @@
                         },
                         "kind": {
                           "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -2578,14 +3368,67 @@
                         },
                         "allowed_ops": {
                           "const": [
+                            "cross_up",
+                            "cross_down",
                             ">",
                             "<"
                           ]
                         },
                         "op": {
                           "enum": [
+                            "cross_up",
+                            "cross_down",
                             ">",
                             "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "upper",
+                            "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            "break_high",
+                            "break_low"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            "break_high",
+                            "break_low"
                           ]
                         }
                       },
@@ -2600,8 +3443,8 @@
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 2,
+                  "maxItems": 2
                 }
               },
               "required": [
@@ -2626,10 +3469,17 @@
                       "minimum": 5,
                       "maximum": 100,
                       "multipleOf": 1
+                    },
+                    "breakout_period": {
+                      "type": "integer",
+                      "minimum": 2,
+                      "maximum": 252,
+                      "multipleOf": 1
                     }
                   },
                   "required": [
-                    "baseline"
+                    "baseline",
+                    "breakout_period"
                   ]
                 },
                 "rules": {
@@ -2644,6 +3494,9 @@
                         },
                         "kind": {
                           "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -2661,14 +3514,67 @@
                         },
                         "allowed_ops": {
                           "const": [
+                            "cross_up",
+                            "cross_down",
                             ">",
                             "<"
                           ]
                         },
                         "op": {
                           "enum": [
+                            "cross_up",
+                            "cross_down",
                             ">",
                             "<"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "kind",
+                        "lhs",
+                        "rhs",
+                        "allowed_ops",
+                        "op"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "id": {
+                          "const": "r2"
+                        },
+                        "kind": {
+                          "const": "compare"
+                        },
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "lhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "value",
+                            "offset": 0
+                          }
+                        },
+                        "rhs": {
+                          "const": {
+                            "kind": "series",
+                            "key": "lower",
+                            "offset": 0
+                          }
+                        },
+                        "allowed_ops": {
+                          "const": [
+                            "break_high",
+                            "break_low"
+                          ]
+                        },
+                        "op": {
+                          "enum": [
+                            "break_high",
+                            "break_low"
                           ]
                         }
                       },
@@ -2683,8 +3589,8 @@
                     }
                   ],
                   "items": false,
-                  "minItems": 1,
-                  "maxItems": 1
+                  "minItems": 2,
+                  "maxItems": 2
                 }
               },
               "required": [
@@ -2747,13 +3653,16 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "value",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
@@ -2783,57 +3692,11 @@
                         "allowed_ops",
                         "op"
                       ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
+                  "minItems": 1,
+                  "maxItems": 1
                 }
               },
               "required": [
@@ -2882,13 +3745,16 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "value",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
@@ -2918,57 +3784,11 @@
                         "allowed_ops",
                         "op"
                       ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
+                  "minItems": 1,
+                  "maxItems": 1
                 }
               },
               "required": [
@@ -3031,7 +3851,10 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -3120,7 +3943,10 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -3218,6 +4044,9 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
@@ -3301,6 +4130,9 @@
                         "kind": {
                           "const": "compare"
                         },
+                        "enabled": {
+                          "type": "boolean"
+                        },
                         "lhs": {
                           "const": {
                             "kind": "series",
@@ -3383,7 +4215,7 @@
                     "level": {
                       "type": "number",
                       "minimum": -100,
-                      "maximum": 100,
+                      "maximum": 10000,
                       "multipleOf": 0.1
                     }
                   },
@@ -3403,7 +4235,10 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -3472,7 +4307,7 @@
                     "level": {
                       "type": "number",
                       "minimum": -100,
-                      "maximum": 100,
+                      "maximum": 10000,
                       "multipleOf": 0.1
                     }
                   },
@@ -3492,7 +4327,10 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
@@ -3595,13 +4433,16 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "value",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
@@ -3631,57 +4472,11 @@
                         "allowed_ops",
                         "op"
                       ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
+                  "minItems": 1,
+                  "maxItems": 1
                 }
               },
               "required": [
@@ -3730,13 +4525,16 @@
                           "const": "r1"
                         },
                         "kind": {
-                          "const": "compare"
+                          "const": "cross"
+                        },
+                        "enabled": {
+                          "type": "boolean"
                         },
                         "lhs": {
                           "const": {
                             "kind": "series",
                             "key": "value",
-                            "offset": -1
+                            "offset": 0
                           }
                         },
                         "rhs": {
@@ -3766,57 +4564,11 @@
                         "allowed_ops",
                         "op"
                       ]
-                    },
-                    {
-                      "type": "object",
-                      "additionalProperties": false,
-                      "properties": {
-                        "id": {
-                          "const": "r2"
-                        },
-                        "kind": {
-                          "const": "compare"
-                        },
-                        "lhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": 0
-                          }
-                        },
-                        "rhs": {
-                          "const": {
-                            "kind": "series",
-                            "key": "value",
-                            "offset": -1
-                          }
-                        },
-                        "allowed_ops": {
-                          "const": [
-                            ">",
-                            "<"
-                          ]
-                        },
-                        "op": {
-                          "enum": [
-                            ">",
-                            "<"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "kind",
-                        "lhs",
-                        "rhs",
-                        "allowed_ops",
-                        "op"
-                      ]
                     }
                   ],
                   "items": false,
-                  "minItems": 2,
-                  "maxItems": 2
+                  "minItems": 1,
+                  "maxItems": 1
                 }
               },
               "required": [
@@ -3862,8 +4614,5 @@
     "revision",
     "rule_version",
     "indicators"
-  ],
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:iqx:shared-config:2.0",
-  "title": "IQX shared indicator configuration"
+  ]
 }

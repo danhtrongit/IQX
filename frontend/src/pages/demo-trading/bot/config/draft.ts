@@ -21,7 +21,12 @@ import type {
 export const SIDES: readonly Side[] = ["buy", "sell"]
 export const SIDE_LABEL: Record<Side, string> = { buy: "Mua", sell: "Bán" }
 
-export type DraftSide = { enabled: boolean; params: Record<string, string>; ops: Record<string, RuleOp> }
+export type DraftSide = {
+  enabled: boolean
+  params: Record<string, string>
+  ops: Record<string, RuleOp>
+  rules_enabled?: Record<string, boolean>
+}
 export type IndicatorDraft = Record<Side, DraftSide>
 
 /** A side's field metadata: the base field merged with that side's override. */
@@ -57,6 +62,7 @@ function draftSide(config: SideConfig): DraftSide {
     enabled: config.enabled,
     params: Object.fromEntries(Object.entries(config.params).map(([key, value]) => [key, String(value)])),
     ops: Object.fromEntries(config.rules.map((rule) => [rule.id, rule.op])),
+    rules_enabled: Object.fromEntries(config.rules.map((rule) => [rule.id, rule.enabled !== false])),
   }
 }
 
@@ -71,7 +77,15 @@ export function createDraft(config: IndicatorConfig): IndicatorDraft {
  */
 export function resetDraftSide(draft: IndicatorDraft, indicator: TechnicalIndicator, side: Side): IndicatorDraft {
   const defaults = draftSide(templateSide(indicator, side))
-  return { ...draft, [side]: { ...draft[side], params: defaults.params, ops: defaults.ops } }
+  return {
+    ...draft,
+    [side]: {
+      ...draft[side],
+      params: defaults.params,
+      ops: defaults.ops,
+      rules_enabled: defaults.rules_enabled,
+    },
+  }
 }
 
 export function isDraftDirty(initial: IndicatorDraft, draft: IndicatorDraft): boolean {
@@ -91,6 +105,12 @@ function rebaseSide(draft: DraftSide, oldBase: DraftSide, newBase: DraftSide): D
         const op = pick(draft.ops[key], oldBase.ops[key], newBase.ops[key])
         return op ? [[key, op] as const] : []
       }),
+    ),
+    rules_enabled: Object.fromEntries(
+      [...opKeys].map((key) => [
+        key,
+        pick(draft.rules_enabled?.[key], oldBase.rules_enabled?.[key], newBase.rules_enabled?.[key]) ?? true,
+      ]),
     ),
   }
 }
@@ -179,16 +199,20 @@ export function hasDraftErrors(errors: DraftErrors): boolean {
 
 /* ── Build the PATCH record ─────────────────────────────────────────────── */
 
-function applyOp(rule: Rule, op: RuleOp | undefined): Rule {
-  if (!op || !(rule.allowed_ops as RuleOp[]).includes(op)) return rule
-  return { ...rule, op } as Rule
+function applyRule(rule: Rule, op: RuleOp | undefined, enabled: boolean | undefined): Rule {
+  const nextOp = op && (rule.allowed_ops as RuleOp[]).includes(op) ? op : rule.op
+  const next = { ...rule, op: nextOp } as Rule
+  if (enabled !== undefined && (rule.enabled !== undefined || enabled !== true)) {
+    next.enabled = enabled
+  }
+  return next
 }
 
 function buildSide(saved: SideConfig, draft: DraftSide): SideConfig {
   return {
     enabled: draft.enabled,
     params: Object.fromEntries(Object.entries(draft.params).map(([key, text]) => [key, Number(text)])),
-    rules: saved.rules.map((rule) => applyOp(rule, draft.ops[rule.id])),
+    rules: saved.rules.map((rule) => applyRule(rule, draft.ops[rule.id], draft.rules_enabled?.[rule.id])),
   }
 }
 

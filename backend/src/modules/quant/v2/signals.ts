@@ -18,9 +18,11 @@ export function indicatorSideSignals(
   sideConfig: SideConfig,
   bars: readonly Bar[],
 ): Tri[] {
+  const enabledRules = sideConfig.rules.filter((rule) => rule.enabled !== false);
+  if (!enabledRules.length) return bars.map(() => false);
   const series = calc(indicatorId, sideConfig.params, bars);
   return bars.map((_, i) =>
-    and3(sideConfig.rules.map((rule) => evaluateRule(rule, series, sideConfig.params, i))),
+    and3(enabledRules.map((rule) => evaluateRule(rule, series, sideConfig.params, i))),
   );
 }
 
@@ -70,9 +72,15 @@ export function sideSignalsWithEvidence(
   );
   return bars.map((_, i) => {
     const rules: TracedRuleEvaluation[] = [];
+    let anyEmptySide = false;
     for (const { id, sideConfig } of active) {
       const series = seriesByIndicator.get(id)!;
-      for (const rule of sideConfig.rules) {
+      const enabledRules = sideConfig.rules.filter((rule) => rule.enabled !== false);
+      if (!enabledRules.length) {
+        anyEmptySide = true;
+        continue;
+      }
+      for (const rule of enabledRules) {
         rules.push({
           id: rule.id,
           indicator: id,
@@ -83,7 +91,7 @@ export function sideSignalsWithEvidence(
       }
     }
     return {
-      result: and3(rules.map((rule) => rule.result)),
+      result: anyEmptySide || !rules.length ? false : and3(rules.map((rule) => rule.result)),
       active_indicator_ids: [...activeIds],
       rules,
     };

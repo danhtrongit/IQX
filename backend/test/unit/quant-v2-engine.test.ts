@@ -91,7 +91,9 @@ describe('quant v2 technical registry', () => {
     const cross = Object.fromEntries(registry.map((r) => [r.id, r.validation?.cross_fields ?? []]));
     expect(cross.macd).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
     expect(cross.ma_cross).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
-    expect(Object.values(cross).flat()).toHaveLength(2);
+    expect(cross.ma).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
+    expect(cross.ema).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
+    expect(Object.values(cross).flat()).toHaveLength(4);
     // step<max belonged to the removed PSAR.
     expect(legacyRegistry.find((r) => r.id === 'psar')?.validation?.cross_fields).toEqual([
       { left: 'step', op: '<', right: 'max' },
@@ -121,16 +123,11 @@ describe('quant v2 technical registry', () => {
  * `value` mirroring +DI.
  */
 function referenceCalc(id: string, params: Record<string, number>, data: readonly Bar[]) {
-  const series = reference.calc(
+  return reference.calc(
     id,
     { ...params },
     data.map((x) => ({ ...x })),
   );
-  if (id !== 'dmi') return series;
-  const copy: SeriesMap = { ...series };
-  delete copy.dx;
-  copy.value = series.plus ?? [];
-  return copy;
 }
 
 describe('quant v2 calc — golden parity with the reference engine', () => {
@@ -195,10 +192,10 @@ describe('quant v2 calc — golden parity with the reference engine', () => {
     );
   });
 
-  it('DMI exposes +DI/−DI only (no ADX/DX series)', () => {
+  it('DMI exposes +DI/−DI and ADX/DX series', () => {
     const series = calc('dmi', { period: 14 }, bars);
     expect(Object.keys(series).sort()).toEqual(
-      ['close', 'high', 'index', 'low', 'minus', 'plus', 'value', 'volume'].sort(),
+      ['adx', 'close', 'dx', 'high', 'index', 'low', 'minus', 'plus', 'value', 'volume'].sort(),
     );
     expect(series.value).toEqual(series.plus);
   });

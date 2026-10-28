@@ -148,7 +148,12 @@ describe('practice API contracts', () => {
     expect(page1).toMatchObject({ total: 7, page: 1, page_size: 3 });
     expect(page1.items.map((item) => item.ordinal)).toEqual([7, 6, 5]);
     expect(page3.items.map((item) => item.ordinal)).toEqual([1]);
-    expect(page1.items[0]!.config.buy.params).toEqual({ period: 20 });
+    expect(page1.items[0]!.config.buy.params).toEqual({
+      period: 20,
+      fast: 10,
+      slow: 20,
+      trend_period: 20,
+    });
     expect(page1.items[0]!.kpis).toMatchObject({ buy_count: expect.any(Number) });
     expect((await service.history(USER, 'ma', { page: 9, page_size: 3 })).items).toEqual([]);
   });

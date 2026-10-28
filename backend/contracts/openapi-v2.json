@@ -104036,16 +104036,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -104077,16 +104067,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "The 33 analysis charts in their 6 groups, with the chart shape and the bank not-applicable flag",
         "tags": [
           "Dashboard phân tích"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -106296,16 +106282,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -106337,16 +106313,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Chart data of one symbol: 20 quarters and 10 years per chart, na for the charts a bank does not have",
         "tags": [
           "Dashboard phân tích"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -115603,6 +115575,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -115613,6 +115595,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -115638,6 +115626,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -115648,6 +115646,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -115985,6 +115989,16 @@
                                               "enum": [
                                                 ">",
                                                 "<",
+                                                "cross_up",
+                                                "cross_down",
+                                                "reenter_lower",
+                                                "reenter_upper",
+                                                "break_upper",
+                                                "break_lower",
+                                                "cross_up_middle",
+                                                "cross_down_middle",
+                                                "break_high",
+                                                "break_low",
                                                 "∈",
                                                 "∉"
                                               ],
@@ -116170,6 +116184,16 @@
                                               "enum": [
                                                 ">",
                                                 "<",
+                                                "cross_up",
+                                                "cross_down",
+                                                "reenter_lower",
+                                                "reenter_upper",
+                                                "break_upper",
+                                                "break_lower",
+                                                "cross_up_middle",
+                                                "cross_down_middle",
+                                                "break_high",
+                                                "break_low",
                                                 "∈",
                                                 "∉"
                                               ],
@@ -116517,6 +116541,16 @@
                               "enum": [
                                 ">",
                                 "<",
+                                "cross_up",
+                                "cross_down",
+                                "reenter_lower",
+                                "reenter_upper",
+                                "break_upper",
+                                "break_lower",
+                                "cross_up_middle",
+                                "cross_down_middle",
+                                "break_high",
+                                "break_low",
                                 "∈",
                                 "∉"
                               ],
@@ -116527,6 +116561,12 @@
                           "params": {
                             "additionalProperties": {
                               "type": "number"
+                            },
+                            "type": "object"
+                          },
+                          "rules_enabled": {
+                            "additionalProperties": {
+                              "type": "boolean"
                             },
                             "type": "object"
                           }
@@ -116552,6 +116592,16 @@
                               "enum": [
                                 ">",
                                 "<",
+                                "cross_up",
+                                "cross_down",
+                                "reenter_lower",
+                                "reenter_upper",
+                                "break_upper",
+                                "break_lower",
+                                "cross_up_middle",
+                                "cross_down_middle",
+                                "break_high",
+                                "break_low",
                                 "∈",
                                 "∉"
                               ],
@@ -116562,6 +116612,12 @@
                           "params": {
                             "additionalProperties": {
                               "type": "number"
+                            },
+                            "type": "object"
+                          },
+                          "rules_enabled": {
+                            "additionalProperties": {
+                              "type": "boolean"
                             },
                             "type": "object"
                           }
@@ -116618,6 +116674,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -116628,6 +116694,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -116653,6 +116725,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -116663,6 +116745,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -116865,6 +116953,16 @@
                                       "enum": [
                                         ">",
                                         "<",
+                                        "cross_up",
+                                        "cross_down",
+                                        "reenter_lower",
+                                        "reenter_upper",
+                                        "break_upper",
+                                        "break_lower",
+                                        "cross_up_middle",
+                                        "cross_down_middle",
+                                        "break_high",
+                                        "break_low",
                                         "∈",
                                         "∉"
                                       ],
@@ -116875,6 +116973,12 @@
                                   "params": {
                                     "additionalProperties": {
                                       "type": "number"
+                                    },
+                                    "type": "object"
+                                  },
+                                  "rules_enabled": {
+                                    "additionalProperties": {
+                                      "type": "boolean"
                                     },
                                     "type": "object"
                                   }
@@ -116900,6 +117004,16 @@
                                       "enum": [
                                         ">",
                                         "<",
+                                        "cross_up",
+                                        "cross_down",
+                                        "reenter_lower",
+                                        "reenter_upper",
+                                        "break_upper",
+                                        "break_lower",
+                                        "cross_up_middle",
+                                        "cross_down_middle",
+                                        "break_high",
+                                        "break_low",
                                         "∈",
                                         "∉"
                                       ],
@@ -116910,6 +117024,12 @@
                                   "params": {
                                     "additionalProperties": {
                                       "type": "number"
+                                    },
+                                    "type": "object"
+                                  },
+                                  "rules_enabled": {
+                                    "additionalProperties": {
+                                      "type": "boolean"
                                     },
                                     "type": "object"
                                   }
@@ -117294,6 +117414,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -117304,6 +117434,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -117329,6 +117465,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -117339,6 +117485,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -117385,6 +117537,12 @@
                                   "min": {
                                     "type": "number"
                                   },
+                                  "options": {
+                                    "items": {
+                                      "type": "number"
+                                    },
+                                    "type": "array"
+                                  },
                                   "step": {
                                     "type": "number"
                                   },
@@ -117421,6 +117579,16 @@
                                       "enum": [
                                         ">",
                                         "<",
+                                        "cross_up",
+                                        "cross_down",
+                                        "reenter_lower",
+                                        "reenter_upper",
+                                        "break_upper",
+                                        "break_lower",
+                                        "cross_up_middle",
+                                        "cross_down_middle",
+                                        "break_high",
+                                        "break_low",
                                         "∈",
                                         "∉"
                                       ],
@@ -117428,10 +117596,23 @@
                                     },
                                     "type": "array"
                                   },
+                                  "default_enabled": {
+                                    "type": "boolean"
+                                  },
                                   "default_op": {
                                     "enum": [
                                       ">",
                                       "<",
+                                      "cross_up",
+                                      "cross_down",
+                                      "reenter_lower",
+                                      "reenter_upper",
+                                      "break_upper",
+                                      "break_lower",
+                                      "cross_up_middle",
+                                      "cross_down_middle",
+                                      "break_high",
+                                      "break_low",
                                       "∈",
                                       "∉"
                                     ],
@@ -117466,6 +117647,9 @@
                                             "maximum": 9007199254740991,
                                             "minimum": -9007199254740991,
                                             "type": "integer"
+                                          },
+                                          "offset_param": {
+                                            "type": "string"
                                           }
                                         },
                                         "required": [
@@ -117534,6 +117718,9 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -117603,6 +117790,9 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -117669,6 +117859,9 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -117795,6 +117988,16 @@
                                     "enum": [
                                       ">",
                                       "<",
+                                      "cross_up",
+                                      "cross_down",
+                                      "reenter_lower",
+                                      "reenter_upper",
+                                      "break_upper",
+                                      "break_lower",
+                                      "cross_up_middle",
+                                      "cross_down_middle",
+                                      "break_high",
+                                      "break_low",
                                       "∈",
                                       "∉"
                                     ],
@@ -117805,6 +118008,12 @@
                                 "params": {
                                   "additionalProperties": {
                                     "type": "number"
+                                  },
+                                  "type": "object"
+                                },
+                                "rules_enabled": {
+                                  "additionalProperties": {
+                                    "type": "boolean"
                                   },
                                   "type": "object"
                                 }
@@ -117830,6 +118039,16 @@
                                     "enum": [
                                       ">",
                                       "<",
+                                      "cross_up",
+                                      "cross_down",
+                                      "reenter_lower",
+                                      "reenter_upper",
+                                      "break_upper",
+                                      "break_lower",
+                                      "cross_up_middle",
+                                      "cross_down_middle",
+                                      "break_high",
+                                      "break_low",
                                       "∈",
                                       "∉"
                                     ],
@@ -117840,6 +118059,12 @@
                                 "params": {
                                   "additionalProperties": {
                                     "type": "number"
+                                  },
+                                  "type": "object"
+                                },
+                                "rules_enabled": {
+                                  "additionalProperties": {
+                                    "type": "boolean"
                                   },
                                   "type": "object"
                                 }
@@ -117881,6 +118106,12 @@
                                   "min": {
                                     "type": "number"
                                   },
+                                  "options": {
+                                    "items": {
+                                      "type": "number"
+                                    },
+                                    "type": "array"
+                                  },
                                   "step": {
                                     "type": "number"
                                   },
@@ -117917,6 +118148,16 @@
                                       "enum": [
                                         ">",
                                         "<",
+                                        "cross_up",
+                                        "cross_down",
+                                        "reenter_lower",
+                                        "reenter_upper",
+                                        "break_upper",
+                                        "break_lower",
+                                        "cross_up_middle",
+                                        "cross_down_middle",
+                                        "break_high",
+                                        "break_low",
                                         "∈",
                                         "∉"
                                       ],
@@ -117924,10 +118165,23 @@
                                     },
                                     "type": "array"
                                   },
+                                  "default_enabled": {
+                                    "type": "boolean"
+                                  },
                                   "default_op": {
                                     "enum": [
                                       ">",
                                       "<",
+                                      "cross_up",
+                                      "cross_down",
+                                      "reenter_lower",
+                                      "reenter_upper",
+                                      "break_upper",
+                                      "break_lower",
+                                      "cross_up_middle",
+                                      "cross_down_middle",
+                                      "break_high",
+                                      "break_low",
                                       "∈",
                                       "∉"
                                     ],
@@ -117962,6 +118216,9 @@
                                             "maximum": 9007199254740991,
                                             "minimum": -9007199254740991,
                                             "type": "integer"
+                                          },
+                                          "offset_param": {
+                                            "type": "string"
                                           }
                                         },
                                         "required": [
@@ -118030,6 +118287,9 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -118099,6 +118359,9 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -118165,6 +118428,9 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -118986,6 +119252,16 @@
                               "enum": [
                                 ">",
                                 "<",
+                                "cross_up",
+                                "cross_down",
+                                "reenter_lower",
+                                "reenter_upper",
+                                "break_upper",
+                                "break_lower",
+                                "cross_up_middle",
+                                "cross_down_middle",
+                                "break_high",
+                                "break_low",
                                 "∈",
                                 "∉"
                               ],
@@ -118996,6 +119272,12 @@
                           "params": {
                             "additionalProperties": {
                               "type": "number"
+                            },
+                            "type": "object"
+                          },
+                          "rules_enabled": {
+                            "additionalProperties": {
+                              "type": "boolean"
                             },
                             "type": "object"
                           }
@@ -119021,6 +119303,16 @@
                               "enum": [
                                 ">",
                                 "<",
+                                "cross_up",
+                                "cross_down",
+                                "reenter_lower",
+                                "reenter_upper",
+                                "break_upper",
+                                "break_lower",
+                                "cross_up_middle",
+                                "cross_down_middle",
+                                "break_high",
+                                "break_low",
                                 "∈",
                                 "∉"
                               ],
@@ -119031,6 +119323,12 @@
                           "params": {
                             "additionalProperties": {
                               "type": "number"
+                            },
+                            "type": "object"
+                          },
+                          "rules_enabled": {
+                            "additionalProperties": {
+                              "type": "boolean"
                             },
                             "type": "object"
                           }
@@ -119384,6 +119682,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -119394,6 +119702,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -119419,6 +119733,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -119429,6 +119753,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -119766,6 +120096,16 @@
                                               "enum": [
                                                 ">",
                                                 "<",
+                                                "cross_up",
+                                                "cross_down",
+                                                "reenter_lower",
+                                                "reenter_upper",
+                                                "break_upper",
+                                                "break_lower",
+                                                "cross_up_middle",
+                                                "cross_down_middle",
+                                                "break_high",
+                                                "break_low",
                                                 "∈",
                                                 "∉"
                                               ],
@@ -119951,6 +120291,16 @@
                                               "enum": [
                                                 ">",
                                                 "<",
+                                                "cross_up",
+                                                "cross_down",
+                                                "reenter_lower",
+                                                "reenter_upper",
+                                                "break_upper",
+                                                "break_lower",
+                                                "cross_up_middle",
+                                                "cross_down_middle",
+                                                "break_high",
+                                                "break_low",
                                                 "∈",
                                                 "∉"
                                               ],
@@ -120411,6 +120761,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -120421,6 +120781,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -120446,6 +120812,16 @@
                                 "enum": [
                                   ">",
                                   "<",
+                                  "cross_up",
+                                  "cross_down",
+                                  "reenter_lower",
+                                  "reenter_upper",
+                                  "break_upper",
+                                  "break_lower",
+                                  "cross_up_middle",
+                                  "cross_down_middle",
+                                  "break_high",
+                                  "break_low",
                                   "∈",
                                   "∉"
                                 ],
@@ -120456,6 +120832,12 @@
                             "params": {
                               "additionalProperties": {
                                 "type": "number"
+                              },
+                              "type": "object"
+                            },
+                            "rules_enabled": {
+                              "additionalProperties": {
+                                "type": "boolean"
                               },
                               "type": "object"
                             }
@@ -120502,6 +120884,12 @@
                                   "min": {
                                     "type": "number"
                                   },
+                                  "options": {
+                                    "items": {
+                                      "type": "number"
+                                    },
+                                    "type": "array"
+                                  },
                                   "step": {
                                     "type": "number"
                                   },
@@ -120538,6 +120926,16 @@
                                       "enum": [
                                         ">",
                                         "<",
+                                        "cross_up",
+                                        "cross_down",
+                                        "reenter_lower",
+                                        "reenter_upper",
+                                        "break_upper",
+                                        "break_lower",
+                                        "cross_up_middle",
+                                        "cross_down_middle",
+                                        "break_high",
+                                        "break_low",
                                         "∈",
                                         "∉"
                                       ],
@@ -120545,10 +120943,23 @@
                                     },
                                     "type": "array"
                                   },
+                                  "default_enabled": {
+                                    "type": "boolean"
+                                  },
                                   "default_op": {
                                     "enum": [
                                       ">",
                                       "<",
+                                      "cross_up",
+                                      "cross_down",
+                                      "reenter_lower",
+                                      "reenter_upper",
+                                      "break_upper",
+                                      "break_lower",
+                                      "cross_up_middle",
+                                      "cross_down_middle",
+                                      "break_high",
+                                      "break_low",
                                       "∈",
                                       "∉"
                                     ],
@@ -120583,6 +120994,9 @@
                                             "maximum": 9007199254740991,
                                             "minimum": -9007199254740991,
                                             "type": "integer"
+                                          },
+                                          "offset_param": {
+                                            "type": "string"
                                           }
                                         },
                                         "required": [
@@ -120651,6 +121065,9 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -120720,6 +121137,9 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -120786,6 +121206,9 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -120912,6 +121335,16 @@
                                     "enum": [
                                       ">",
                                       "<",
+                                      "cross_up",
+                                      "cross_down",
+                                      "reenter_lower",
+                                      "reenter_upper",
+                                      "break_upper",
+                                      "break_lower",
+                                      "cross_up_middle",
+                                      "cross_down_middle",
+                                      "break_high",
+                                      "break_low",
                                       "∈",
                                       "∉"
                                     ],
@@ -120922,6 +121355,12 @@
                                 "params": {
                                   "additionalProperties": {
                                     "type": "number"
+                                  },
+                                  "type": "object"
+                                },
+                                "rules_enabled": {
+                                  "additionalProperties": {
+                                    "type": "boolean"
                                   },
                                   "type": "object"
                                 }
@@ -120947,6 +121386,16 @@
                                     "enum": [
                                       ">",
                                       "<",
+                                      "cross_up",
+                                      "cross_down",
+                                      "reenter_lower",
+                                      "reenter_upper",
+                                      "break_upper",
+                                      "break_lower",
+                                      "cross_up_middle",
+                                      "cross_down_middle",
+                                      "break_high",
+                                      "break_low",
                                       "∈",
                                       "∉"
                                     ],
@@ -120957,6 +121406,12 @@
                                 "params": {
                                   "additionalProperties": {
                                     "type": "number"
+                                  },
+                                  "type": "object"
+                                },
+                                "rules_enabled": {
+                                  "additionalProperties": {
+                                    "type": "boolean"
                                   },
                                   "type": "object"
                                 }
@@ -120998,6 +121453,12 @@
                                   "min": {
                                     "type": "number"
                                   },
+                                  "options": {
+                                    "items": {
+                                      "type": "number"
+                                    },
+                                    "type": "array"
+                                  },
                                   "step": {
                                     "type": "number"
                                   },
@@ -121034,6 +121495,16 @@
                                       "enum": [
                                         ">",
                                         "<",
+                                        "cross_up",
+                                        "cross_down",
+                                        "reenter_lower",
+                                        "reenter_upper",
+                                        "break_upper",
+                                        "break_lower",
+                                        "cross_up_middle",
+                                        "cross_down_middle",
+                                        "break_high",
+                                        "break_low",
                                         "∈",
                                         "∉"
                                       ],
@@ -121041,10 +121512,23 @@
                                     },
                                     "type": "array"
                                   },
+                                  "default_enabled": {
+                                    "type": "boolean"
+                                  },
                                   "default_op": {
                                     "enum": [
                                       ">",
                                       "<",
+                                      "cross_up",
+                                      "cross_down",
+                                      "reenter_lower",
+                                      "reenter_upper",
+                                      "break_upper",
+                                      "break_lower",
+                                      "cross_up_middle",
+                                      "cross_down_middle",
+                                      "break_high",
+                                      "break_low",
                                       "∈",
                                       "∉"
                                     ],
@@ -121079,6 +121563,9 @@
                                             "maximum": 9007199254740991,
                                             "minimum": -9007199254740991,
                                             "type": "integer"
+                                          },
+                                          "offset_param": {
+                                            "type": "string"
                                           }
                                         },
                                         "required": [
@@ -121147,6 +121634,9 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -121216,6 +121706,9 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -121282,6 +121775,9 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -138689,6 +139185,12 @@
                                     "min": {
                                       "type": "number"
                                     },
+                                    "options": {
+                                      "items": {
+                                        "type": "number"
+                                      },
+                                      "type": "array"
+                                    },
                                     "step": {
                                       "type": "number"
                                     },
@@ -138726,13 +139228,26 @@
                                           "items": {
                                             "enum": [
                                               ">",
-                                              "<"
+                                              "<",
+                                              "cross_up",
+                                              "cross_down",
+                                              "reenter_lower",
+                                              "reenter_upper",
+                                              "break_upper",
+                                              "break_lower",
+                                              "cross_up_middle",
+                                              "cross_down_middle",
+                                              "break_high",
+                                              "break_low"
                                             ],
                                             "type": "string"
                                           },
-                                          "maxItems": 2,
+                                          "maxItems": 8,
                                           "minItems": 1,
                                           "type": "array"
+                                        },
+                                        "enabled": {
+                                          "type": "boolean"
                                         },
                                         "id": {
                                           "maxLength": 32,
@@ -138766,6 +139281,11 @@
                                                   "maximum": 9007199254740991,
                                                   "minimum": -9007199254740991,
                                                   "type": "integer"
+                                                },
+                                                "offset_param": {
+                                                  "maxLength": 64,
+                                                  "minLength": 1,
+                                                  "type": "string"
                                                 }
                                               },
                                               "required": [
@@ -138819,7 +139339,17 @@
                                         "op": {
                                           "enum": [
                                             ">",
-                                            "<"
+                                            "<",
+                                            "cross_up",
+                                            "cross_down",
+                                            "reenter_lower",
+                                            "reenter_upper",
+                                            "break_upper",
+                                            "break_lower",
+                                            "cross_up_middle",
+                                            "cross_down_middle",
+                                            "break_high",
+                                            "break_low"
                                           ],
                                           "type": "string"
                                         },
@@ -138843,6 +139373,11 @@
                                                   "maximum": 9007199254740991,
                                                   "minimum": -9007199254740991,
                                                   "type": "integer"
+                                                },
+                                                "offset_param": {
+                                                  "maxLength": 64,
+                                                  "minLength": 1,
+                                                  "type": "string"
                                                 }
                                               },
                                               "required": [
@@ -138919,6 +139454,9 @@
                                           "minItems": 1,
                                           "type": "array"
                                         },
+                                        "enabled": {
+                                          "type": "boolean"
+                                        },
                                         "id": {
                                           "maxLength": 32,
                                           "minLength": 1,
@@ -138950,6 +139488,11 @@
                                                   "maximum": 9007199254740991,
                                                   "minimum": -9007199254740991,
                                                   "type": "integer"
+                                                },
+                                                "offset_param": {
+                                                  "maxLength": 64,
+                                                  "minLength": 1,
+                                                  "type": "string"
                                                 }
                                               },
                                               "required": [
@@ -139042,6 +139585,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -139112,6 +139660,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -139223,6 +139776,12 @@
                                 "min": {
                                   "type": "number"
                                 },
+                                "options": {
+                                  "items": {
+                                    "type": "number"
+                                  },
+                                  "type": "array"
+                                },
                                 "step": {
                                   "type": "number"
                                 },
@@ -139296,6 +139855,12 @@
                                     "min": {
                                       "type": "number"
                                     },
+                                    "options": {
+                                      "items": {
+                                        "type": "number"
+                                      },
+                                      "type": "array"
+                                    },
                                     "step": {
                                       "type": "number"
                                     },
@@ -139333,13 +139898,26 @@
                                           "items": {
                                             "enum": [
                                               ">",
-                                              "<"
+                                              "<",
+                                              "cross_up",
+                                              "cross_down",
+                                              "reenter_lower",
+                                              "reenter_upper",
+                                              "break_upper",
+                                              "break_lower",
+                                              "cross_up_middle",
+                                              "cross_down_middle",
+                                              "break_high",
+                                              "break_low"
                                             ],
                                             "type": "string"
                                           },
-                                          "maxItems": 2,
+                                          "maxItems": 8,
                                           "minItems": 1,
                                           "type": "array"
+                                        },
+                                        "enabled": {
+                                          "type": "boolean"
                                         },
                                         "id": {
                                           "maxLength": 32,
@@ -139373,6 +139951,11 @@
                                                   "maximum": 9007199254740991,
                                                   "minimum": -9007199254740991,
                                                   "type": "integer"
+                                                },
+                                                "offset_param": {
+                                                  "maxLength": 64,
+                                                  "minLength": 1,
+                                                  "type": "string"
                                                 }
                                               },
                                               "required": [
@@ -139426,7 +140009,17 @@
                                         "op": {
                                           "enum": [
                                             ">",
-                                            "<"
+                                            "<",
+                                            "cross_up",
+                                            "cross_down",
+                                            "reenter_lower",
+                                            "reenter_upper",
+                                            "break_upper",
+                                            "break_lower",
+                                            "cross_up_middle",
+                                            "cross_down_middle",
+                                            "break_high",
+                                            "break_low"
                                           ],
                                           "type": "string"
                                         },
@@ -139450,6 +140043,11 @@
                                                   "maximum": 9007199254740991,
                                                   "minimum": -9007199254740991,
                                                   "type": "integer"
+                                                },
+                                                "offset_param": {
+                                                  "maxLength": 64,
+                                                  "minLength": 1,
+                                                  "type": "string"
                                                 }
                                               },
                                               "required": [
@@ -139526,6 +140124,9 @@
                                           "minItems": 1,
                                           "type": "array"
                                         },
+                                        "enabled": {
+                                          "type": "boolean"
+                                        },
                                         "id": {
                                           "maxLength": 32,
                                           "minLength": 1,
@@ -139557,6 +140158,11 @@
                                                   "maximum": 9007199254740991,
                                                   "minimum": -9007199254740991,
                                                   "type": "integer"
+                                                },
+                                                "offset_param": {
+                                                  "maxLength": 64,
+                                                  "minLength": 1,
+                                                  "type": "string"
                                                 }
                                               },
                                               "required": [
@@ -139649,6 +140255,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -139719,6 +140330,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -139812,7 +140428,17 @@
                                     "op": {
                                       "enum": [
                                         ">",
-                                        "<"
+                                        "<",
+                                        "cross_up",
+                                        "cross_down",
+                                        "reenter_lower",
+                                        "reenter_upper",
+                                        "break_upper",
+                                        "break_lower",
+                                        "cross_up_middle",
+                                        "cross_down_middle",
+                                        "break_high",
+                                        "break_low"
                                       ],
                                       "type": "string"
                                     },
@@ -143662,13 +144288,26 @@
                                               "items": {
                                                 "enum": [
                                                   ">",
-                                                  "<"
+                                                  "<",
+                                                  "cross_up",
+                                                  "cross_down",
+                                                  "reenter_lower",
+                                                  "reenter_upper",
+                                                  "break_upper",
+                                                  "break_lower",
+                                                  "cross_up_middle",
+                                                  "cross_down_middle",
+                                                  "break_high",
+                                                  "break_low"
                                                 ],
                                                 "type": "string"
                                               },
-                                              "maxItems": 2,
+                                              "maxItems": 8,
                                               "minItems": 1,
                                               "type": "array"
+                                            },
+                                            "enabled": {
+                                              "type": "boolean"
                                             },
                                             "id": {
                                               "maxLength": 32,
@@ -143702,6 +144341,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -143755,7 +144399,17 @@
                                             "op": {
                                               "enum": [
                                                 ">",
-                                                "<"
+                                                "<",
+                                                "cross_up",
+                                                "cross_down",
+                                                "reenter_lower",
+                                                "reenter_upper",
+                                                "break_upper",
+                                                "break_lower",
+                                                "cross_up_middle",
+                                                "cross_down_middle",
+                                                "break_high",
+                                                "break_low"
                                               ],
                                               "type": "string"
                                             },
@@ -143779,6 +144433,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -143855,6 +144514,9 @@
                                               "minItems": 1,
                                               "type": "array"
                                             },
+                                            "enabled": {
+                                              "type": "boolean"
+                                            },
                                             "id": {
                                               "maxLength": 32,
                                               "minLength": 1,
@@ -143886,6 +144548,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -143978,6 +144645,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -144048,6 +144720,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -144154,13 +144831,26 @@
                                               "items": {
                                                 "enum": [
                                                   ">",
-                                                  "<"
+                                                  "<",
+                                                  "cross_up",
+                                                  "cross_down",
+                                                  "reenter_lower",
+                                                  "reenter_upper",
+                                                  "break_upper",
+                                                  "break_lower",
+                                                  "cross_up_middle",
+                                                  "cross_down_middle",
+                                                  "break_high",
+                                                  "break_low"
                                                 ],
                                                 "type": "string"
                                               },
-                                              "maxItems": 2,
+                                              "maxItems": 8,
                                               "minItems": 1,
                                               "type": "array"
+                                            },
+                                            "enabled": {
+                                              "type": "boolean"
                                             },
                                             "id": {
                                               "maxLength": 32,
@@ -144194,6 +144884,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -144247,7 +144942,17 @@
                                             "op": {
                                               "enum": [
                                                 ">",
-                                                "<"
+                                                "<",
+                                                "cross_up",
+                                                "cross_down",
+                                                "reenter_lower",
+                                                "reenter_upper",
+                                                "break_upper",
+                                                "break_lower",
+                                                "cross_up_middle",
+                                                "cross_down_middle",
+                                                "break_high",
+                                                "break_low"
                                               ],
                                               "type": "string"
                                             },
@@ -144271,6 +144976,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -144347,6 +145057,9 @@
                                               "minItems": 1,
                                               "type": "array"
                                             },
+                                            "enabled": {
+                                              "type": "boolean"
+                                            },
                                             "id": {
                                               "maxLength": 32,
                                               "minLength": 1,
@@ -144378,6 +145091,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -144470,6 +145188,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -144540,6 +145263,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -144693,13 +145421,26 @@
                                                   "items": {
                                                     "enum": [
                                                       ">",
-                                                      "<"
+                                                      "<",
+                                                      "cross_up",
+                                                      "cross_down",
+                                                      "reenter_lower",
+                                                      "reenter_upper",
+                                                      "break_upper",
+                                                      "break_lower",
+                                                      "cross_up_middle",
+                                                      "cross_down_middle",
+                                                      "break_high",
+                                                      "break_low"
                                                     ],
                                                     "type": "string"
                                                   },
-                                                  "maxItems": 2,
+                                                  "maxItems": 8,
                                                   "minItems": 1,
                                                   "type": "array"
+                                                },
+                                                "enabled": {
+                                                  "type": "boolean"
                                                 },
                                                 "id": {
                                                   "maxLength": 32,
@@ -144733,6 +145474,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -144786,7 +145532,17 @@
                                                 "op": {
                                                   "enum": [
                                                     ">",
-                                                    "<"
+                                                    "<",
+                                                    "cross_up",
+                                                    "cross_down",
+                                                    "reenter_lower",
+                                                    "reenter_upper",
+                                                    "break_upper",
+                                                    "break_lower",
+                                                    "cross_up_middle",
+                                                    "cross_down_middle",
+                                                    "break_high",
+                                                    "break_low"
                                                   ],
                                                   "type": "string"
                                                 },
@@ -144810,6 +145566,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -144886,6 +145647,9 @@
                                                   "minItems": 1,
                                                   "type": "array"
                                                 },
+                                                "enabled": {
+                                                  "type": "boolean"
+                                                },
                                                 "id": {
                                                   "maxLength": 32,
                                                   "minLength": 1,
@@ -144917,6 +145681,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -145009,6 +145778,11 @@
                                                               "maximum": 9007199254740991,
                                                               "minimum": -9007199254740991,
                                                               "type": "integer"
+                                                            },
+                                                            "offset_param": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
                                                             }
                                                           },
                                                           "required": [
@@ -145079,6 +145853,11 @@
                                                               "maximum": 9007199254740991,
                                                               "minimum": -9007199254740991,
                                                               "type": "integer"
+                                                            },
+                                                            "offset_param": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
                                                             }
                                                           },
                                                           "required": [
@@ -145185,13 +145964,26 @@
                                                   "items": {
                                                     "enum": [
                                                       ">",
-                                                      "<"
+                                                      "<",
+                                                      "cross_up",
+                                                      "cross_down",
+                                                      "reenter_lower",
+                                                      "reenter_upper",
+                                                      "break_upper",
+                                                      "break_lower",
+                                                      "cross_up_middle",
+                                                      "cross_down_middle",
+                                                      "break_high",
+                                                      "break_low"
                                                     ],
                                                     "type": "string"
                                                   },
-                                                  "maxItems": 2,
+                                                  "maxItems": 8,
                                                   "minItems": 1,
                                                   "type": "array"
+                                                },
+                                                "enabled": {
+                                                  "type": "boolean"
                                                 },
                                                 "id": {
                                                   "maxLength": 32,
@@ -145225,6 +146017,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -145278,7 +146075,17 @@
                                                 "op": {
                                                   "enum": [
                                                     ">",
-                                                    "<"
+                                                    "<",
+                                                    "cross_up",
+                                                    "cross_down",
+                                                    "reenter_lower",
+                                                    "reenter_upper",
+                                                    "break_upper",
+                                                    "break_lower",
+                                                    "cross_up_middle",
+                                                    "cross_down_middle",
+                                                    "break_high",
+                                                    "break_low"
                                                   ],
                                                   "type": "string"
                                                 },
@@ -145302,6 +146109,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -145378,6 +146190,9 @@
                                                   "minItems": 1,
                                                   "type": "array"
                                                 },
+                                                "enabled": {
+                                                  "type": "boolean"
+                                                },
                                                 "id": {
                                                   "maxLength": 32,
                                                   "minLength": 1,
@@ -145409,6 +146224,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -145501,6 +146321,11 @@
                                                               "maximum": 9007199254740991,
                                                               "minimum": -9007199254740991,
                                                               "type": "integer"
+                                                            },
+                                                            "offset_param": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
                                                             }
                                                           },
                                                           "required": [
@@ -145571,6 +146396,11 @@
                                                               "maximum": 9007199254740991,
                                                               "minimum": -9007199254740991,
                                                               "type": "integer"
+                                                            },
+                                                            "offset_param": {
+                                                              "maxLength": 64,
+                                                              "minLength": 1,
+                                                              "type": "string"
                                                             }
                                                           },
                                                           "required": [
@@ -146044,13 +146874,26 @@
                                         "items": {
                                           "enum": [
                                             ">",
-                                            "<"
+                                            "<",
+                                            "cross_up",
+                                            "cross_down",
+                                            "reenter_lower",
+                                            "reenter_upper",
+                                            "break_upper",
+                                            "break_lower",
+                                            "cross_up_middle",
+                                            "cross_down_middle",
+                                            "break_high",
+                                            "break_low"
                                           ],
                                           "type": "string"
                                         },
-                                        "maxItems": 2,
+                                        "maxItems": 8,
                                         "minItems": 1,
                                         "type": "array"
+                                      },
+                                      "enabled": {
+                                        "type": "boolean"
                                       },
                                       "id": {
                                         "maxLength": 32,
@@ -146084,6 +146927,11 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "maxLength": 64,
+                                                "minLength": 1,
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -146137,7 +146985,17 @@
                                       "op": {
                                         "enum": [
                                           ">",
-                                          "<"
+                                          "<",
+                                          "cross_up",
+                                          "cross_down",
+                                          "reenter_lower",
+                                          "reenter_upper",
+                                          "break_upper",
+                                          "break_lower",
+                                          "cross_up_middle",
+                                          "cross_down_middle",
+                                          "break_high",
+                                          "break_low"
                                         ],
                                         "type": "string"
                                       },
@@ -146161,6 +147019,11 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "maxLength": 64,
+                                                "minLength": 1,
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -146237,6 +147100,9 @@
                                         "minItems": 1,
                                         "type": "array"
                                       },
+                                      "enabled": {
+                                        "type": "boolean"
+                                      },
                                       "id": {
                                         "maxLength": 32,
                                         "minLength": 1,
@@ -146268,6 +147134,11 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "maxLength": 64,
+                                                "minLength": 1,
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -146360,6 +147231,11 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "maxLength": 64,
+                                                    "minLength": 1,
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -146430,6 +147306,11 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "maxLength": 64,
+                                                    "minLength": 1,
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -146536,13 +147417,26 @@
                                         "items": {
                                           "enum": [
                                             ">",
-                                            "<"
+                                            "<",
+                                            "cross_up",
+                                            "cross_down",
+                                            "reenter_lower",
+                                            "reenter_upper",
+                                            "break_upper",
+                                            "break_lower",
+                                            "cross_up_middle",
+                                            "cross_down_middle",
+                                            "break_high",
+                                            "break_low"
                                           ],
                                           "type": "string"
                                         },
-                                        "maxItems": 2,
+                                        "maxItems": 8,
                                         "minItems": 1,
                                         "type": "array"
+                                      },
+                                      "enabled": {
+                                        "type": "boolean"
                                       },
                                       "id": {
                                         "maxLength": 32,
@@ -146576,6 +147470,11 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "maxLength": 64,
+                                                "minLength": 1,
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -146629,7 +147528,17 @@
                                       "op": {
                                         "enum": [
                                           ">",
-                                          "<"
+                                          "<",
+                                          "cross_up",
+                                          "cross_down",
+                                          "reenter_lower",
+                                          "reenter_upper",
+                                          "break_upper",
+                                          "break_lower",
+                                          "cross_up_middle",
+                                          "cross_down_middle",
+                                          "break_high",
+                                          "break_low"
                                         ],
                                         "type": "string"
                                       },
@@ -146653,6 +147562,11 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "maxLength": 64,
+                                                "minLength": 1,
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -146729,6 +147643,9 @@
                                         "minItems": 1,
                                         "type": "array"
                                       },
+                                      "enabled": {
+                                        "type": "boolean"
+                                      },
                                       "id": {
                                         "maxLength": 32,
                                         "minLength": 1,
@@ -146760,6 +147677,11 @@
                                                 "maximum": 9007199254740991,
                                                 "minimum": -9007199254740991,
                                                 "type": "integer"
+                                              },
+                                              "offset_param": {
+                                                "maxLength": 64,
+                                                "minLength": 1,
+                                                "type": "string"
                                               }
                                             },
                                             "required": [
@@ -146852,6 +147774,11 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "maxLength": 64,
+                                                    "minLength": 1,
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -146922,6 +147849,11 @@
                                                     "maximum": 9007199254740991,
                                                     "minimum": -9007199254740991,
                                                     "type": "integer"
+                                                  },
+                                                  "offset_param": {
+                                                    "maxLength": 64,
+                                                    "minLength": 1,
+                                                    "type": "string"
                                                   }
                                                 },
                                                 "required": [
@@ -147061,13 +147993,26 @@
                                               "items": {
                                                 "enum": [
                                                   ">",
-                                                  "<"
+                                                  "<",
+                                                  "cross_up",
+                                                  "cross_down",
+                                                  "reenter_lower",
+                                                  "reenter_upper",
+                                                  "break_upper",
+                                                  "break_lower",
+                                                  "cross_up_middle",
+                                                  "cross_down_middle",
+                                                  "break_high",
+                                                  "break_low"
                                                 ],
                                                 "type": "string"
                                               },
-                                              "maxItems": 2,
+                                              "maxItems": 8,
                                               "minItems": 1,
                                               "type": "array"
+                                            },
+                                            "enabled": {
+                                              "type": "boolean"
                                             },
                                             "id": {
                                               "maxLength": 32,
@@ -147101,6 +148046,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -147154,7 +148104,17 @@
                                             "op": {
                                               "enum": [
                                                 ">",
-                                                "<"
+                                                "<",
+                                                "cross_up",
+                                                "cross_down",
+                                                "reenter_lower",
+                                                "reenter_upper",
+                                                "break_upper",
+                                                "break_lower",
+                                                "cross_up_middle",
+                                                "cross_down_middle",
+                                                "break_high",
+                                                "break_low"
                                               ],
                                               "type": "string"
                                             },
@@ -147178,6 +148138,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -147254,6 +148219,9 @@
                                               "minItems": 1,
                                               "type": "array"
                                             },
+                                            "enabled": {
+                                              "type": "boolean"
+                                            },
                                             "id": {
                                               "maxLength": 32,
                                               "minLength": 1,
@@ -147285,6 +148253,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -147377,6 +148350,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -147447,6 +148425,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -147553,13 +148536,26 @@
                                               "items": {
                                                 "enum": [
                                                   ">",
-                                                  "<"
+                                                  "<",
+                                                  "cross_up",
+                                                  "cross_down",
+                                                  "reenter_lower",
+                                                  "reenter_upper",
+                                                  "break_upper",
+                                                  "break_lower",
+                                                  "cross_up_middle",
+                                                  "cross_down_middle",
+                                                  "break_high",
+                                                  "break_low"
                                                 ],
                                                 "type": "string"
                                               },
-                                              "maxItems": 2,
+                                              "maxItems": 8,
                                               "minItems": 1,
                                               "type": "array"
+                                            },
+                                            "enabled": {
+                                              "type": "boolean"
                                             },
                                             "id": {
                                               "maxLength": 32,
@@ -147593,6 +148589,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -147646,7 +148647,17 @@
                                             "op": {
                                               "enum": [
                                                 ">",
-                                                "<"
+                                                "<",
+                                                "cross_up",
+                                                "cross_down",
+                                                "reenter_lower",
+                                                "reenter_upper",
+                                                "break_upper",
+                                                "break_lower",
+                                                "cross_up_middle",
+                                                "cross_down_middle",
+                                                "break_high",
+                                                "break_low"
                                               ],
                                               "type": "string"
                                             },
@@ -147670,6 +148681,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -147746,6 +148762,9 @@
                                               "minItems": 1,
                                               "type": "array"
                                             },
+                                            "enabled": {
+                                              "type": "boolean"
+                                            },
                                             "id": {
                                               "maxLength": 32,
                                               "minLength": 1,
@@ -147777,6 +148796,11 @@
                                                       "maximum": 9007199254740991,
                                                       "minimum": -9007199254740991,
                                                       "type": "integer"
+                                                    },
+                                                    "offset_param": {
+                                                      "maxLength": 64,
+                                                      "minLength": 1,
+                                                      "type": "string"
                                                     }
                                                   },
                                                   "required": [
@@ -147869,6 +148893,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -147939,6 +148968,11 @@
                                                           "maximum": 9007199254740991,
                                                           "minimum": -9007199254740991,
                                                           "type": "integer"
+                                                        },
+                                                        "offset_param": {
+                                                          "maxLength": 64,
+                                                          "minLength": 1,
+                                                          "type": "string"
                                                         }
                                                       },
                                                       "required": [
@@ -151172,16 +152206,6 @@
             },
             "description": "Bad request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ApiErrorV2"
-                }
-              }
-            },
-            "description": "Authentication required"
-          },
           "422": {
             "content": {
               "application/json": {
@@ -151213,16 +152237,12 @@
             "description": "Service temporarily unavailable"
           }
         },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
+        "security": [],
         "summary": "Daily valuation series of one symbol, using the report published at that date",
         "tags": [
           "Dashboard phân tích"
         ],
-        "x-auth-level": "authenticated",
+        "x-auth-level": "public",
         "x-response-schema-status": "explicit"
       }
     },
@@ -154104,10 +155124,10 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 586,
+    "authenticatedOperations": 583,
     "noContentResponses": 18,
     "operations": 789,
-    "publicOperations": 203,
+    "publicOperations": 206,
     "responseSchemas": 771,
     "untypedResponses": 0
   }

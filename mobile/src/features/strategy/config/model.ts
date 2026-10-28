@@ -88,9 +88,9 @@ export function sideOf(cfg: IndicatorConfig | undefined, side: Side): SideConfig
   return cfg?.[side];
 }
 
-/** A side is "used" only if master and the side are both on. */
+/** A side is "used" only if master and the side are both on and at least one rule is enabled. */
 export function isSideUsed(cfg: IndicatorConfig | undefined, side: Side): boolean {
-  return !!cfg && cfg.master_enabled && !!cfg[side]?.enabled;
+  return !!cfg && cfg.master_enabled && !!cfg[side]?.enabled && cfg[side].rules.some((r) => r.enabled !== false);
 }
 
 export function usedCount(config: Draft | Record<string, IndicatorConfig>, side: Side): number {
@@ -200,13 +200,39 @@ export function withOp(cfg: IndicatorConfig, side: Side, ruleId: string, op: str
   next[side].rules = next[side].rules.map((r) => (r.id === ruleId ? { ...r, op } : r));
   return next;
 }
+export function withRuleEnabled(cfg: IndicatorConfig, side: Side, ruleId: string, enabled: boolean): IndicatorConfig {
+  const next = cloneIndicator(cfg);
+  next[side].rules = next[side].rules.map((r) => (r.id === ruleId ? { ...r, enabled } : r));
+  return next;
+}
+
+const NAMED_OP_LABELS: Record<string, string> = {
+  cross_up: 'cắt lên',
+  cross_down: 'cắt xuống',
+  reenter_lower: 'Từ ngoài Dải dưới đi vào trong dải',
+  reenter_upper: 'Từ ngoài Dải trên đi vào trong dải',
+  break_upper: 'Vượt lên ngoài Dải trên',
+  break_lower: 'Phá xuống ngoài Dải dưới',
+  cross_up_middle: 'Cắt lên Đường giữa',
+  cross_down_middle: 'Cắt xuống Đường giữa',
+  break_high: 'vượt đỉnh',
+  break_low: 'phá đáy',
+};
+
+export function ruleOpLabel(op: string): string {
+  return NAMED_OP_LABELS[op] ?? op;
+}
 
 function operandLabel(o: Operand, ind: RegistryIndicator, side: Side): string {
   if (o.kind === 'param') {
     const f = ind.fields.find((x) => x.key === o.key);
     return f ? (ind[side].field_overrides?.[f.key]?.label ?? f.label) : (o.key ?? '—');
   }
-  if (o.kind === 'const' || o.kind === 'number') return String(o.value ?? '—');
+  if (o.kind === 'const' || o.kind === 'constant' || o.kind === 'number') return String(o.value ?? '—');
+  if (o.offset_param) {
+    const f = ind.fields.find((x) => x.key === o.offset_param);
+    return `so với tại t − ${f ? f.label : o.offset_param}`;
+  }
   const base = o.key && o.key !== 'value' ? `${ind.name} ${o.key}` : ind.name;
   if (o.offset === -1) return `${base} (phiên trước)`;
   if (o.offset != null && o.offset < -1) return `${base} (${-o.offset} phiên trước)`;
@@ -214,7 +240,7 @@ function operandLabel(o: Operand, ind: RegistryIndicator, side: Side): string {
 }
 
 export function ruleLine(rule: Rule, ind: RegistryIndicator, side: Side): string {
-  return `${operandLabel(rule.lhs, ind, side)} ${rule.op} ${operandLabel(rule.rhs, ind, side)}`;
+  return `${operandLabel(rule.lhs, ind, side)} ${ruleOpLabel(rule.op)} ${operandLabel(rule.rhs, ind, side)}`;
 }
 
 /** Group catalogue indicators by chapter (ascending), keeping registry order within a chapter. */

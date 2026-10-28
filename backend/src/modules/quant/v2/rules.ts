@@ -23,7 +23,13 @@ function operandValue(
   i: number,
 ): number | null {
   if (x.kind === 'series') {
-    const j = i + (x.offset || 0);
+    let offset = x.offset || 0;
+    if (x.offset_param) {
+      const paramOffset = p[x.offset_param];
+      if (!isFiniteNumber(paramOffset) || paramOffset <= 0) return null;
+      offset = -Math.round(paramOffset);
+    }
+    const j = i + offset;
     const series = s[x.key];
     return j >= 0 && series ? (series[j] ?? null) : null;
   }
@@ -32,7 +38,7 @@ function operandValue(
   return null;
 }
 
-function finiteOrNull(value: number | null): ResolvedValue {
+function finiteOrNull(value: number | null | undefined): ResolvedValue {
   return isFiniteNumber(value) ? value : null;
 }
 
@@ -50,16 +56,72 @@ export function evaluateRule(
     const inside = l > lo && l < hi;
     return rule.op === '∈' ? inside : rule.op === '∉' ? !inside : null;
   }
+  if (rule.op === 'reenter_lower' || rule.op === 'reenter_upper') {
+    const lo = series.lower?.[i] ?? null;
+    const hi = series.upper?.[i] ?? null;
+    const prevL = operandValue(rule.lhs, series, params, i - 1);
+    const prevBound =
+      rule.op === 'reenter_lower' ? (series.lower?.[i - 1] ?? null) : (series.upper?.[i - 1] ?? null);
+    if (
+      !isFiniteNumber(l) ||
+      !isFiniteNumber(lo) ||
+      !isFiniteNumber(hi) ||
+      !isFiniteNumber(prevL) ||
+      !isFiniteNumber(prevBound) ||
+      lo > hi
+    ) {
+      return null;
+    }
+    const insideNow = l >= lo && l <= hi;
+    const outsidePrev = rule.op === 'reenter_lower' ? prevL < prevBound : prevL > prevBound;
+    return outsidePrev && insideNow;
+  }
+  if (
+    rule.op === 'break_upper' ||
+    rule.op === 'break_lower' ||
+    rule.op === 'cross_up_middle' ||
+    rule.op === 'cross_down_middle'
+  ) {
+    const targetKey =
+      rule.op === 'break_upper'
+        ? 'upper'
+        : rule.op === 'break_lower'
+          ? 'lower'
+          : 'middle';
+    const r = series[targetKey]?.[i] ?? null;
+    const prevL = operandValue(rule.lhs, series, params, i - 1);
+    const prevR = series[targetKey]?.[i - 1] ?? null;
+    if (
+      !isFiniteNumber(l) ||
+      !isFiniteNumber(r) ||
+      !isFiniteNumber(prevL) ||
+      !isFiniteNumber(prevR)
+    ) {
+      return null;
+    }
+    const isUp = rule.op === 'break_upper' || rule.op === 'cross_up_middle';
+    return isUp ? l > r && prevL <= prevR : l < r && prevL >= prevR;
+  }
+  if (rule.op === 'break_high' || rule.op === 'break_low') {
+    const targetKey = rule.op === 'break_high' ? 'upper' : 'lower';
+    const seriesVal = series[targetKey]?.[i];
+    const r = isFiniteNumber(seriesVal) ? seriesVal : operandValue(rule.rhs, series, params, i);
+    if (!isFiniteNumber(l) || !isFiniteNumber(r)) return null;
+    return rule.op === 'break_high' ? l > r : l < r;
+  }
   const r = operandValue(rule.rhs, series, params, i);
   if (!isFiniteNumber(l) || !isFiniteNumber(r)) return null;
-  const now = rule.op === '>' ? l > r : rule.op === '<' ? l < r : null;
+  const isCrossOp = rule.op === 'cross_up' || rule.op === 'cross_down' || rule.kind === 'cross';
+  const isUp = rule.op === '>' || rule.op === 'cross_up';
+  const isDown = rule.op === '<' || rule.op === 'cross_down';
+  const now = isUp ? l > r : isDown ? l < r : null;
   if (now === null) return null;
-  if (rule.kind === 'cross') {
+  if (isCrossOp) {
     // A cross needs both previous values even when today's comparison is false.
     const previousL = operandValue(rule.lhs, series, params, i - 1);
     const previousR = operandValue(rule.rhs, series, params, i - 1);
     if (!isFiniteNumber(previousL) || !isFiniteNumber(previousR)) return null;
-    return now && (rule.op === '>' ? previousL <= previousR : previousL >= previousR);
+    return now && (isUp ? previousL <= previousR : previousL >= previousR);
   }
   return now;
 }
@@ -85,8 +147,64 @@ export function evaluateRuleWithEvidence(
       missing: lhs === null || lower === null || upper === null,
     };
   }
+  if (rule.op === 'reenter_lower' || rule.op === 'reenter_upper') {
+    const lower = finiteOrNull(series.lower?.[i]);
+    const upper = finiteOrNull(series.upper?.[i]);
+    const previousLhs = finiteOrNull(operandValue(rule.lhs, series, params, i - 1));
+    const previousRhs = finiteOrNull(
+      rule.op === 'reenter_lower' ? series.lower?.[i - 1] : series.upper?.[i - 1],
+    );
+    return {
+      lhs,
+      rhs: rule.op === 'reenter_lower' ? lower : upper,
+      rhs_lower: lower,
+      rhs_upper: upper,
+      result,
+      missing:
+        lhs === null ||
+        lower === null ||
+        upper === null ||
+        previousLhs === null ||
+        previousRhs === null,
+      previous_lhs: previousLhs,
+      previous_rhs: previousRhs,
+    };
+  }
+  if (
+    rule.op === 'break_upper' ||
+    rule.op === 'break_lower' ||
+    rule.op === 'cross_up_middle' ||
+    rule.op === 'cross_down_middle'
+  ) {
+    const targetKey =
+      rule.op === 'break_upper'
+        ? 'upper'
+        : rule.op === 'break_lower'
+          ? 'lower'
+          : 'middle';
+    const rhs = finiteOrNull(series[targetKey]?.[i]);
+    const previousLhs = finiteOrNull(operandValue(rule.lhs, series, params, i - 1));
+    const previousRhs = finiteOrNull(series[targetKey]?.[i - 1]);
+    return {
+      lhs,
+      rhs,
+      result,
+      missing: lhs === null || rhs === null || previousLhs === null || previousRhs === null,
+      previous_lhs: previousLhs,
+      previous_rhs: previousRhs,
+    };
+  }
+  if (rule.op === 'break_high' || rule.op === 'break_low') {
+    const targetKey = rule.op === 'break_high' ? 'upper' : 'lower';
+    const seriesVal = series[targetKey]?.[i];
+    const rhs = finiteOrNull(
+      isFiniteNumber(seriesVal) ? seriesVal : operandValue(rule.rhs, series, params, i),
+    );
+    return { lhs, rhs, result, missing: lhs === null || rhs === null };
+  }
   const rhs = finiteOrNull(operandValue(rule.rhs, series, params, i));
-  if (rule.kind !== 'cross') {
+  const isCrossOp = rule.op === 'cross_up' || rule.op === 'cross_down' || rule.kind === 'cross';
+  if (!isCrossOp) {
     return { lhs, rhs, result, missing: lhs === null || rhs === null };
   }
   const previousLhs = finiteOrNull(operandValue(rule.lhs, series, params, i - 1));

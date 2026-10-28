@@ -255,7 +255,7 @@ export function verifyRuleReceipt(
   };
 }
 
-/** Registry indicators whose master and `side` switches are both ON. */
+/** Registry indicators whose master and `side` switches are both ON (with at least one enabled rule). */
 export function activeSideIndicators(
   config: SharedConfig,
   side: Side,
@@ -263,7 +263,11 @@ export function activeSideIndicators(
 ): RegistryEntry[] {
   return registry.filter((entry) => {
     const item = config.indicators[entry.id];
-    return Boolean(item?.master_enabled && item[side].enabled);
+    return Boolean(
+      item?.master_enabled &&
+        item[side].enabled &&
+        item[side].rules.some((rule) => rule.enabled !== false),
+    );
   });
 }
 
@@ -339,13 +343,15 @@ export function missingSideSignalEvidence(
     active_indicator_ids: active.map((entry) => entry.id),
     rules: active.flatMap((entry) => {
       const sideConfig = config.indicators[entry.id]![side];
-      return sideConfig.rules.map((rule) => ({
-        id: rule.id,
-        indicator: entry.id,
-        side,
-        op: rule.op,
-        ...evaluateRuleWithEvidence(rule, {}, sideConfig.params, 0),
-      }));
+      return sideConfig.rules
+        .filter((rule) => rule.enabled !== false)
+        .map((rule) => ({
+          id: rule.id,
+          indicator: entry.id,
+          side,
+          op: rule.op,
+          ...evaluateRuleWithEvidence(rule, {}, sideConfig.params, 0),
+        }));
     }),
   };
 }
