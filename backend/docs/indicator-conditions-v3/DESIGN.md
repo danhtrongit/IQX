@@ -8,7 +8,8 @@ Implementation plan for `IQX_CHI_BAO_SPEC.md` (SPEC V3). Content standard per ro
 2. **Strategy alerts: auto re-pin.** The migration appends a new `strategy_alert_versions` row pinned to the user's migrated shared-config revision (new defaults), keeping the alert's enabled/paused state, schedule and other fields. Applies to alerts sourced from a shared-config revision AND alerts sourced from a backtest run snapshot (old config cannot be evaluated; re-pin to the migrated revision). No notification. Old versions/events stay untouched (history).
 3. **NO_SIGNAL across indicators:** keep each product's current multi-indicator combination (spec §0.2). Only the per-indicator result is unified (`no_signal` everywhere). Do NOT change how Bot / Backtest / Alerts combine indicators.
 4. **Volume:** unchanged. Keeps its params+rules shape and its form; migration copies it verbatim.
-5. Scope defaults accepted: legacy 38-factor engine / STRATEGY_TEMPLATES / legacy market alerts out of scope; "Đặt lại" keeps current per-tab behaviour; server keeps enforcing decimal step multiples.
+5. **Mobile is paused:** slice K (mobile) is out of scope; do not edit `mobile/`.
+6. Scope defaults accepted: legacy 38-factor engine / STRATEGY_TEMPLATES / legacy market alerts out of scope; "Đặt lại" keeps current per-tab behaviour; server keeps enforcing decimal step multiples.
 
 ---
 
