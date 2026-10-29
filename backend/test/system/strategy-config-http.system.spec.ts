@@ -1,7 +1,12 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { ACADEMY_GRANTS } from '../../src/modules/academy/academy.ports.js';
-import { defaultConfig, type IndicatorConfig } from '../../src/modules/quant/v2/index.js';
+import {
+  defaultConfig,
+  type IndicatorConfig,
+  type ParamsSideConfig,
+  type RowSideConfig,
+} from '../../src/modules/quant/v2/index.js';
 import {
   authHeader,
   registerAndLogin,
@@ -13,8 +18,9 @@ type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-ex
 
 /**
  * The shared-config HTTP surface through the real guards and the API exception filter: the
- * config in force while a newer revision is pending, `cross_fields` in the registry, and the
- * 409 / 422 extras reaching the client in `error.details`.
+ * config in force while a newer revision is pending, the condition rows in the registry, the
+ * 409 / 422 extras reaching the client in `error.details`, and SPEC V3 §6 (old format refused,
+ * outdated revision read as the new defaults, saving resumes a Bot paused by the upgrade).
  */
 describe('system acceptance: shared-config effective read and error details (HTTP)', () => {
   let stack: SystemStack;
@@ -60,6 +66,9 @@ describe('system acceptance: shared-config effective read and error details (HTT
     return value;
   }
 
+  /** Condition rows of a tab of a row-based indicator. */
+  const rows = (side: IndicatorConfig['buy']) => (side as RowSideConfig).rules;
+
   it('E01 returns the config in force in `effective` while a newer revision is pending', async () => {
     const empty = (await get('/api/v2/strategy/shared-config')).json() as Json;
     expect(empty).toMatchObject({ saved_revision: 0, effective_revision: null, effective: null });
@@ -92,7 +101,8 @@ describe('system acceptance: shared-config effective read and error details (HTT
       saved_revision: 2,
       effective_revision: 1,
       status: 'pending',
-      effective: { revision: 1, effective_session: '2020-01-02', legacy: null },
+      outdated: false,
+      effective: { revision: 1, effective_session: '2020-01-02', outdated: false, legacy: null },
     });
     expect(state.config.indicators.macd.master_enabled).toBe(true); // what the form edits
     expect(state.effective.config.indicators.macd.master_enabled).toBe(false); // what the Bot uses
@@ -114,32 +124,37 @@ describe('system acceptance: shared-config effective read and error details (HTT
     });
   });
 
-  it('E03 CONFIG_INVALID lists every error as { path, message } in error.details', async () => {
+  it('E03 CONFIG_INVALID lists every per-row error (path, message, side, row) in error.details', async () => {
     const invalid = await patch({
       expected_revision: 2,
       idempotency_key: 'http-config-key-0004',
       indicators: {
         rsi: indicator('rsi', (value) => {
-          value.buy.params.period = 999;
+          rows(value.buy)[1]!.period = 999;
         }),
         macd: indicator('macd', (value) => {
-          value.buy.params.fast = 26;
-          value.buy.params.slow = 12; // violates fast < slow
+          rows(value.sell)[0]!.fast = 26;
+          rows(value.sell)[0]!.slow = 12; // violates fast < slow, on the Bán tab
         }),
       },
     });
     expect(invalid.statusCode).toBe(422);
     const { error } = invalid.json() as { error: { code: string; details: Json[] } };
     expect(error.code).toBe('CONFIG_INVALID');
-    expect(error.details.map((detail) => detail.path)).toEqual(
-      expect.arrayContaining([
-        'indicators.rsi.buy.params.period',
-        'indicators.macd.buy.params.fast',
-      ]),
-    );
-    for (const detail of error.details) {
-      expect(typeof detail.message).toBe('string');
-    }
+    expect(error.details).toEqual([
+      {
+        path: 'indicators.rsi.buy.rules.1.period',
+        message: 'Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.',
+        side: 'buy',
+        row: 2,
+      },
+      {
+        path: 'indicators.macd.sell.rules.0.fast',
+        message: 'Bán · dòng 1: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.',
+        side: 'sell',
+        row: 1,
+      },
+    ]);
 
     const unknown = await patch({
       expected_revision: 2,
@@ -154,17 +169,152 @@ describe('system acceptance: shared-config effective read and error details (HTT
     expect(((await get('/api/v2/strategy/shared-config')).json() as Json).saved_revision).toBe(2);
   });
 
-  it('E04 the registry exposes validation.cross_fields for macd and ma_cross', async () => {
+  it('E04 the registry exposes the condition rows of the 15 and the params model of Volume', async () => {
     const response = await get('/api/v2/strategy/registry/technical');
     expect(response.statusCode).toBe(200);
-    const indicators = (response.json() as { indicators: Json[] }).indicators;
-    const crossFields = Object.fromEntries(
-      indicators.map((item) => [item.id, item.validation.cross_fields]),
+    const body = response.json() as { rule_version: string; indicators: Json[] };
+    expect(body.rule_version).toBe('iqx-rules-4.0');
+    expect(body.indicators).toHaveLength(16);
+    const byId = new Map(body.indicators.map((item) => [item.id as string, item]));
+    expect(body.indicators.filter((item) => item.model === 'rows')).toHaveLength(15);
+    expect(byId.get('rsi')!.rows).toEqual([
+      expect.objectContaining({
+        id: 'rsi.level',
+        sentence: 'RSI {period} {op} {threshold}',
+        default_enabled: true,
+        constraints: [],
+        buy: { period: 14, op: '<', threshold: 30 },
+        sell: { period: 14, op: '>', threshold: 70 },
+      }),
+      expect.objectContaining({ id: 'rsi.trend', sentence: 'RSI {period} xu hướng {dir}' }),
+    ]);
+    expect(byId.get('macd')!.rows[0].constraints).toEqual([
+      { left: 'fast', op: '<', right: 'slow' },
+    ]);
+    expect(byId.get('ma')!.rows[0].fields).toContainEqual(
+      expect.objectContaining({ key: 'period', options: [5, 10, 20, 50, 100, 200] }),
     );
-    expect(crossFields.macd).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
-    expect(crossFields.ma_cross).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
-    expect(crossFields.rsi).toEqual([]);
-    expect(Object.keys(crossFields)).toHaveLength(16);
+    expect(byId.get('rsi')).not.toHaveProperty('fields');
+    expect(byId.get('volume')).toMatchObject({
+      model: 'legacy_params',
+      validation: { cross_fields: [] },
+    });
+    const volume = defaultConfig().indicators.volume!.buy as ParamsSideConfig;
+    expect(byId.get('volume')!.buy.params).toEqual(volume.params);
+  });
+
+  it('E06 refuses the old side-level params format of the 15 with 422 (never mapped)', async () => {
+    const old = await patch({
+      expected_revision: 2,
+      idempotency_key: 'http-config-key-0006',
+      indicators: {
+        rsi: {
+          master_enabled: true,
+          buy: { enabled: true, params: { period: 14, level: 30 }, rules: [] },
+          sell: { enabled: false, params: { period: 14, level: 70 }, rules: [] },
+        },
+      },
+    });
+    expect(old.statusCode).toBe(422);
+    expect(old.json().error).toMatchObject({
+      code: 'VALIDATION_ERROR',
+      details: [
+        {
+          path: ['indicators', 'rsi'],
+          message:
+            'Định dạng điều kiện cũ không còn được hỗ trợ. Tải lại để dùng mẫu điều kiện mới.',
+        },
+      ],
+    });
+    expect(((await get('/api/v2/strategy/shared-config')).json() as Json).saved_revision).toBe(2);
+  });
+
+  it('E07 reads an outdated revision as the V3 defaults; saving resumes the paused Bot', async () => {
+    const owner = await registerAndLogin(stack.app, 'shared-config-v3');
+    const as = (method: 'GET' | 'PATCH', url: string, payload?: Json) =>
+      stack.app.inject({ method, url, headers: authHeader(owner.accessToken), payload });
+    // A SPEC V2 (`iqx-rules-3.0`) document as the migration would find it, in force since 2020.
+    const v2 = {
+      schema_version: '2.0',
+      revision: 1,
+      rule_version: 'iqx-rules-3.0',
+      indicators: {
+        rsi: {
+          master_enabled: true,
+          buy: { enabled: true, params: { period: 9, level: 25 }, rules: [] },
+          sell: { enabled: false, params: { period: 9, level: 75 }, rules: [] },
+        },
+      },
+    };
+    await stack.query(
+      `insert into shared_config_revisions
+         (user_id, revision, schema_version, rule_version, calculation_version, config,
+          config_hash, patch, requested_at, actor_id, idempotency_key)
+       values ($1, 1, '2.0', 'iqx-rules-3.0', 'iqx-ta-2.0', $2::jsonb, $3, '{}'::jsonb, now(),
+               $1, 'seeded-v2-0001')`,
+      [owner.id, JSON.stringify(v2), 'b'.repeat(64)],
+    );
+    await stack.query(
+      `insert into effective_config_sessions (user_id, revision, effective_session, status)
+       values ($1, 1, '2020-01-02', 'effective')`,
+      [owner.id],
+    );
+    await stack.query(
+      `insert into bot_config_pauses (user_id, reason, paused_revision)
+       values ($1, 'indicator_conditions_v3', 1)`,
+      [owner.id],
+    );
+
+    const state = (await as('GET', '/api/v2/strategy/shared-config')).json() as Json;
+    expect(state).toMatchObject({
+      saved_revision: 1,
+      outdated: true,
+      config_hash: 'b'.repeat(64),
+      legacy: { from_rule_version: 'iqx-rules-3.0', reset: true, needs_review: true },
+      effective: { revision: 1, outdated: true },
+    });
+    expect(state.config.rule_version).toBe('iqx-rules-4.0');
+    expect(state.config.indicators.rsi).toEqual({
+      ...defaultConfig().indicators.rsi,
+      master_enabled: true,
+      buy: { ...defaultConfig().indicators.rsi!.buy, enabled: true },
+    });
+    const listed = (await as('GET', '/api/v2/strategy/shared-config/revisions')).json() as Json[];
+    expect(listed).toMatchObject([{ revision: 1, legacy: true, outdated: true }]);
+
+    const saved = await as('PATCH', '/api/v2/strategy/shared-config', {
+      expected_revision: 1,
+      idempotency_key: 'http-config-v3-0001',
+      indicators: { rsi: state.config.indicators.rsi },
+    });
+    expect(saved.statusCode).toBe(200);
+    expect(saved.json()).toMatchObject({ revision: 2 });
+    const pauses = await stack.query<{ resume_revision: number; resumed_at: Date | null }>(
+      'select resume_revision, resumed_at from bot_config_pauses where user_id = $1',
+      [owner.id],
+    );
+    expect(pauses).toHaveLength(1);
+    expect(pauses[0]!.resume_revision).toBe(2);
+    expect(pauses[0]!.resumed_at).not.toBeNull();
+    const after = (await as('GET', '/api/v2/strategy/shared-config')).json() as Json;
+    expect(after).toMatchObject({ saved_revision: 2, outdated: false, legacy: null });
+
+    // A later save never moves the resolved pause.
+    await as('PATCH', '/api/v2/strategy/shared-config', {
+      expected_revision: 2,
+      idempotency_key: 'http-config-v3-0002',
+      indicators: {
+        rsi: {
+          ...state.config.indicators.rsi,
+          sell: { ...state.config.indicators.rsi.sell, enabled: true },
+        },
+      },
+    });
+    const still = await stack.query<{ resume_revision: number }>(
+      'select resume_revision from bot_config_pauses where user_id = $1',
+      [owner.id],
+    );
+    expect(still[0]!.resume_revision).toBe(2);
   });
 
   it('E05 keeps the Premium and feature guards as they were', async () => {

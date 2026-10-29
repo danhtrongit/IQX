@@ -12,11 +12,14 @@ import {
   configHash,
   defaultConfig,
   runBacktest,
+  sideSignals,
   type Bar,
+  type ConditionRow,
   type IndicatorConfig,
   type Kpis,
   type OpenPosition,
   type ParamPath,
+  type RowSideConfig,
   type RunOptions,
   type SharedConfig,
 } from '../../src/modules/quant/v2/index.js';
@@ -29,11 +32,18 @@ import {
 } from '../fixtures/bot-v2/reference.js';
 
 /**
- * Parity with the spec reference `assets/research.js` (copied verbatim to
- * test/fixtures/bot-v2/research.reference.cjs). The reference resolves its
- * core engine through `globalThis.IQXEngine`, which engine.reference.cjs sets.
+ * Parity with the spec reference `assets/research.js` (copied to
+ * test/fixtures/bot-v2/research.reference.cjs; it addresses row fields since iqx-rules-4.0).
+ * The reference resolves its core engine through `globalThis.IQXEngine`; the row conditions are
+ * evaluated by the engine under test and the reference ledger runs on those signals.
  */
-type ReferenceGrid = { indicator: string; side: 'buy' | 'sell'; key: string; values: number[] };
+type ReferenceGrid = {
+  indicator: string;
+  side: 'buy' | 'sell';
+  key: string;
+  rule?: string;
+  values: number[];
+};
 type ReferenceSnapshot = ReferenceRunResult['snapshot'];
 type ReferenceResearch = {
   sensitivity(
@@ -77,7 +87,14 @@ type ReferenceResearch = {
   };
 };
 
-(globalThis as { IQXEngine?: unknown }).IQXEngine = reference;
+(globalThis as { IQXEngine?: unknown }).IQXEngine = {
+  ...reference,
+  run: (config: SharedConfig, registry: never, data: Bar[], opts: Partial<RunOptions>) =>
+    reference.run(config, registry, data, opts, {
+      buy: sideSignals(config, data, 'buy'),
+      sell: sideSignals(config, data, 'sell'),
+    }),
+};
 const research = createRequire(import.meta.url)(
   '../fixtures/bot-v2/research.reference.cjs',
 ) as ReferenceResearch;
@@ -91,18 +108,28 @@ function indicator(config: SharedConfig, id: string): IndicatorConfig {
   return item;
 }
 
-/** Research UI reference setup: MA master ON, buy period = first grid value, sell period 30. */
-function maConfig(buyPeriod = 20, sellPeriod = 30): SharedConfig {
+const priceCross = (item: IndicatorConfig, side: 'buy' | 'sell'): ConditionRow =>
+  (item[side] as RowSideConfig).rules[0]!;
+
+/** Research UI reference setup: MA master ON, buy period = first grid value, sell period 50. */
+function maConfig(buyPeriod = 20, sellPeriod = 50): SharedConfig {
   const c = defaultConfig();
   indicator(c, 'ma').master_enabled = true;
   indicator(c, 'ma').buy.enabled = true;
   indicator(c, 'ma').sell.enabled = true;
-  indicator(c, 'ma').buy.params.period = buyPeriod;
-  indicator(c, 'ma').sell.params.period = sellPeriod;
+  priceCross(indicator(c, 'ma'), 'buy').period = buyPeriod;
+  priceCross(indicator(c, 'ma'), 'sell').period = sellPeriod;
   return c;
 }
 
-const path: ParamPath = { indicator: 'ma', side: 'buy', key: 'period' };
+const path: ParamPath = { indicator: 'ma', side: 'buy', rule: 'ma.price_cross', key: 'period' };
+const referenceGrid = (values: number[]): ReferenceGrid => ({
+  indicator: 'ma',
+  side: 'buy',
+  rule: 'ma.price_cross',
+  key: 'period',
+  values,
+});
 const options = (): Partial<RunOptions> => ({
   start: bars[220]?.date ?? '',
   end: bars[bars.length - 1]?.date ?? '',
@@ -122,14 +149,15 @@ const comparable = (r: { [k: string]: unknown }) => ({
 describe('quant v2 advanced — sensitivity', () => {
   it('matches the reference sweep KPIs and snapshots for every value', () => {
     const config = deepFreeze(maConfig(10));
-    const values = [10, 20, 30, 50];
+    const values = [10, 20, 50, 100];
     const ours = sensitivity(config, bars, options(), { path, values });
-    const ref = research.sensitivity(clone(config), rawRegistry, clone(bars), options(), {
-      indicator: 'ma',
-      side: 'buy',
-      key: 'period',
-      values,
-    });
+    const ref = research.sensitivity(
+      clone(config),
+      rawRegistry,
+      clone(bars),
+      options(),
+      referenceGrid(values),
+    );
     expect(ours.type).toBe('sensitivity');
     expect(ours.policy).toBe('whole_region_no_best_pick');
     expect(ours.candidates).toHaveLength(values.length);
@@ -147,7 +175,7 @@ describe('quant v2 advanced — sensitivity', () => {
     });
     // Each candidate hash is the hash of the base config with only that value replaced.
     const expected = maConfig(10);
-    indicator(expected, 'ma').buy.params.period = 30;
+    priceCross(indicator(expected, 'ma'), 'buy').period = 50;
     expect(ours.candidates[2]?.config_hash).toBe(configHash(expected));
     expect(ours.base_config_hash).toBe(configHash(maConfig(10)));
     // The KPIs equal an ordinary single run of the candidate.
@@ -157,25 +185,28 @@ describe('quant v2 advanced — sensitivity', () => {
 
   it('reports invalid candidates (type, domain, step, cross-field) without aborting the sweep', () => {
     const config = deepFreeze(maConfig());
-    // MA period: integer 5..200 step 1 → 4 (domain), 20.5 (type/step) and 201 are rejected.
-    const out = sensitivity(config, bars, options(), { path, values: [4, 20.5, 201, 25] });
-    expect(out.candidates.map((c) => c.ok)).toEqual([false, false, false, true]);
-    for (const c of out.candidates.slice(0, 3)) {
+    // SMA period: preset 5, 10, 20, 50, 100, 200 → 4, 20.5, 201 and 25 are rejected.
+    const out = sensitivity(config, bars, options(), { path, values: [4, 20.5, 201, 25, 50] });
+    expect(out.candidates.map((c) => c.ok)).toEqual([false, false, false, false, true]);
+    expect(out.candidates[3]?.errors[0]?.message).toBe(
+      'Mua · dòng 1: Chu kỳ SMA chỉ chọn 5, 10, 20, 50, 100, 200.',
+    );
+    for (const c of out.candidates.slice(0, 4)) {
       expect(c.kpis).toBeNull();
       expect(c.n_trades).toBeNull();
       expect(typeof c.error).toBe('string');
       expect(c.errors.length).toBeGreaterThan(0);
       expect(c.config_hash).toMatch(/^[0-9a-f]{64}$/);
     }
-    expect(out.candidates[3]?.n_trades).toBeGreaterThanOrEqual(0);
+    expect(out.candidates[4]?.n_trades).toBeGreaterThanOrEqual(0);
 
     // ma_cross requires fast < slow: sweeping fast past slow is rejected per candidate.
     const cross = defaultConfig();
     indicator(cross, 'ma_cross').master_enabled = true;
     indicator(cross, 'ma_cross').buy.enabled = true;
-    const slow = indicator(cross, 'ma_cross').buy.params.slow ?? 0;
+    const slow = (indicator(cross, 'ma_cross').buy as RowSideConfig).rules[0]!.slow as number;
     const crossOut = sensitivity(cross, bars, options(), {
-      path: { indicator: 'ma_cross', side: 'buy', key: 'fast' },
+      path: { indicator: 'ma_cross', side: 'buy', rule: 'ma_cross.cross', key: 'fast' },
       values: [5, slow],
     });
     expect(crossOut.candidates.map((c) => c.ok)).toEqual([true, false]);
@@ -194,12 +225,17 @@ describe('quant v2 advanced — sensitivity', () => {
     expect(() => sensitivity(config, bars, options(), { path, values: [] })).toThrow(
       /Lưới cần 1–100 giá trị/,
     );
-    expect(() =>
-      sensitivity(config, bars, options(), {
-        path: { indicator: 'ma', side: 'buy', key: 'nope' },
-        values: [10],
-      }),
-    ).toThrow(/Đường tham số không hợp lệ/);
+    for (const bad of [
+      { indicator: 'ma', side: 'buy', rule: 'ma.price_cross', key: 'nope' },
+      { indicator: 'ma', side: 'buy', key: 'period' },
+      { indicator: 'ma', side: 'buy', rule: 'ma.price_cross', key: 'op' },
+      { indicator: 'ma', side: 'buy', rule: 'rsi.level', key: 'period' },
+      { indicator: 'volume', side: 'buy', rule: 'r1', key: 'lookback' },
+    ] as ParamPath[]) {
+      expect(() => sensitivity(config, bars, options(), { path: bad, values: [10] })).toThrow(
+        /Đường tham số không hợp lệ/,
+      );
+    }
     expect(() =>
       sensitivity(config, bars, options(), {
         path: { indicator: 'unknown', side: 'buy', key: 'period' },
@@ -258,7 +294,7 @@ describe('quant v2 advanced — out of sample', () => {
 });
 
 describe('quant v2 advanced — walk forward', () => {
-  const values = [10, 20, 30, 50];
+  const values = [10, 20, 50, 100];
   const spec = {
     path,
     values,
@@ -277,7 +313,7 @@ describe('quant v2 advanced — walk forward', () => {
       rawRegistry,
       clone(bars),
       options(),
-      { indicator: 'ma', side: 'buy', key: 'period', values },
+      referenceGrid(values),
       { trainBars: 250, testBars: 100, minTrades: 1 },
     );
     expect(ours.policy).toBe(ref.policy);

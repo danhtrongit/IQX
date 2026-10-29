@@ -9,10 +9,15 @@ import {
   calc,
   calcLegacy,
   canonicalJson,
+  createSeriesCache,
   defaultConfig,
+  defaultRows,
   evalTree,
+  evaluateIndicatorSideSeries,
+  evaluateRow,
   evaluateRule,
   indicatorSideSignals,
+  isRowsEntry,
   loadLegacyTechnicalRegistry,
   loadTechnicalRegistry,
   parseLegacyTechnicalRegistry,
@@ -20,7 +25,12 @@ import {
   sideSignals,
   type Bar,
   type CompareRule,
+  type ConditionRow,
   type MembershipRule,
+  type ParamsSideConfig,
+  type RegistryEntry,
+  type RowSideConfig,
+  type SeriesCache,
   type SeriesMap,
   type SharedConfig,
   type Side,
@@ -61,6 +71,44 @@ const bar = (close: number, i: number, extra: Partial<Bar> = {}): Bar => ({
   ...extra,
 });
 
+/**
+ * The calc requests (indicator id + full params) of one side: every row of a row-based indicator
+ * asks for its own params (SPEC V3 §1.2); Volume asks for its side params.
+ */
+function calcRequests(
+  entry: RegistryEntry,
+  side: Side,
+  rows?: ConditionRow[],
+): Array<{ id: string; params: Record<string, number> }> {
+  if (!isRowsEntry(entry)) return [{ id: entry.id, params: { ...entry[side].params } }];
+  const seen = new Map<string, { id: string; params: Record<string, number> }>();
+  const recorder: SeriesCache = {
+    bars: [],
+    series(id, params) {
+      seen.set(`${id}:${canonicalJson(params)}`, { id, params: { ...params } });
+      return {};
+    },
+    close: () => [],
+  };
+  for (const row of rows ?? defaultRows(entry, side)) evaluateRow(row, recorder, 0);
+  return [...seen.values()];
+}
+
+/** Rows of one side with every numeric field at its domain bound (presets: first/last option). */
+function boundRows(entry: RegistryEntry, side: Side, bound: 'min' | 'max'): ConditionRow[] {
+  if (!isRowsEntry(entry)) return [];
+  return defaultRows(entry, side).map((row) => {
+    const definition = entry.rows.find((d) => d.id === row.id)!;
+    const next: ConditionRow = { ...row };
+    for (const field of definition.fields) {
+      if (field.type === 'enum') continue;
+      const options = field.options;
+      next[field.key] = options ? options[bound === 'min' ? 0 : options.length - 1]! : field[bound];
+    }
+    return next;
+  });
+}
+
 describe('quant v2 technical registry', () => {
   it('loads exactly the 16 validated, frozen entries identical to the raw JSON', () => {
     expect(registry).toHaveLength(16);
@@ -78,7 +126,7 @@ describe('quant v2 technical registry', () => {
     );
     expect(loadLegacyTechnicalRegistry()).toBe(legacyRegistry);
     expect(legacyRegistry.every((r) => r.rule_version === 'iqx-rules-2.0')).toBe(true);
-    expect(registry.every((r) => r.rule_version === 'iqx-rules-3.0')).toBe(true);
+    expect(registry.every((r) => r.rule_version === 'iqx-rules-4.0')).toBe(true);
     const current = new Set(registry.map((r) => r.id));
     expect(legacyRegistry.some((r) => current.has(r.id))).toBe(false);
     // A legacy document is not accepted as the current registry, nor the reverse.
@@ -87,33 +135,54 @@ describe('quant v2 technical registry', () => {
     expect(() => parseTechnicalRegistry([...registry, legacyRegistry[0]])).toThrow();
   });
 
-  it('carries the fast<slow cross-field constraints of the 16', () => {
-    const cross = Object.fromEntries(registry.map((r) => [r.id, r.validation?.cross_fields ?? []]));
-    expect(cross.macd).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
-    expect(cross.ma_cross).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
-    expect(cross.ma).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
-    expect(cross.ema).toEqual([{ left: 'fast', op: '<', right: 'slow' }]);
-    expect(Object.values(cross).flat()).toHaveLength(4);
+  it('carries the fast<slow constraints on the SPEC V3 rows', () => {
+    const constrained = registry.flatMap((r) =>
+      isRowsEntry(r) ? r.rows.filter((row) => row.constraints.length) : [],
+    );
+    expect(constrained.map((row) => [row.id, row.constraints])).toEqual(
+      ['macd.signal', 'macd.zero', 'macd.hist', 'ma.ma_cross', 'ema.ma_cross', 'ma_cross.cross'].map(
+        (id) => [id, [{ left: 'fast', op: '<', right: 'slow' }]],
+      ),
+    );
+    const volume = registry.find((r) => r.id === 'volume');
+    expect(volume?.model === 'legacy_params' && volume.validation?.cross_fields).toEqual([]);
     // step<max belonged to the removed PSAR.
     expect(legacyRegistry.find((r) => r.id === 'psar')?.validation?.cross_fields).toEqual([
       { left: 'step', op: '<', right: 'max' },
     ]);
   });
 
-  it('rejects malformed registries (look-ahead offset, duplicate id, unknown op, wrong id set)', () => {
-    const clone = (): unknown[] => JSON.parse(JSON.stringify(rawRegistry)) as unknown[];
-    const lookAhead = clone() as Array<{ buy: { rules: Array<{ lhs: { offset?: number } }> } }>;
-    const firstRule = lookAhead[0]?.buy.rules[0];
-    if (firstRule) firstRule.lhs.offset = 1;
+  it('rejects malformed registries (look-ahead offset, duplicate id, unknown op, wrong rows, wrong id set)', () => {
+    type Raw = Record<string, unknown> & {
+      id: string;
+      buy: { rules: Array<{ lhs: { offset?: number }; op: string }> };
+      sell: { rules: Array<{ op: string }> };
+      rows: Array<Record<string, unknown> & { buy: Record<string, unknown> }>;
+    };
+    const clone = (): Raw[] => JSON.parse(JSON.stringify(rawRegistry)) as Raw[];
+    const find = (raw: Raw[], id: string): Raw => raw.find((e) => e.id === id)!;
+    const lookAhead = clone();
+    find(lookAhead, 'volume').buy.rules[0]!.lhs.offset = 1;
     expect(() => parseTechnicalRegistry(lookAhead)).toThrow();
     const duplicated = clone();
-    duplicated.push(duplicated[0]);
+    duplicated.push(duplicated[0]!);
     expect(() => parseTechnicalRegistry(duplicated)).toThrow();
-    const badOp = clone() as Array<{ sell: { rules: Array<{ op: string }> } }>;
-    const sellRule = badOp[1]?.sell.rules[0];
-    if (sellRule) sellRule.op = '>=';
+    const badOp = clone();
+    find(badOp, 'volume').sell.rules[0]!.op = '>=';
     expect(() => parseTechnicalRegistry(badOp)).toThrow();
     expect(() => parseTechnicalRegistry(clone().slice(1))).toThrow(/exactly 16/);
+    const badRowId = clone();
+    find(badRowId, 'rsi').rows[1]!.id = 'rsi.previous';
+    expect(() => parseTechnicalRegistry(badRowId)).toThrow(/rows must be exactly/);
+    const badDefault = clone();
+    find(badDefault, 'ma').rows[0]!.buy.period = 30;
+    expect(() => parseTechnicalRegistry(badDefault)).toThrow(/default outside/);
+    const badSentence = clone();
+    find(badSentence, 'cci').rows[0]!.sentence = 'CCI {period} {op}';
+    expect(() => parseTechnicalRegistry(badSentence)).toThrow(/placeholders/);
+    const badModel = clone();
+    find(badModel, 'volume').model = 'rows';
+    expect(() => parseTechnicalRegistry(badModel)).toThrow();
   });
 });
 
@@ -139,15 +208,16 @@ describe('quant v2 calc — golden parity with the reference engine', () => {
     ['empty', []],
   ];
   for (const [label, data] of datasets) {
-    it(`matches every registry id and side on ${label} bars`, () => {
+    it(`matches every registry id and every row's params on ${label} bars`, () => {
       for (const entry of registry) {
         for (const side of SIDES) {
-          const params = entry[side].params;
-          expectDeepClose(
-            calc(entry.id, params, data),
-            referenceCalc(entry.id, params, data),
-            `${entry.id}.${side}`,
-          );
+          for (const { id, params } of calcRequests(entry, side)) {
+            expectDeepClose(
+              calc(id, params, data),
+              referenceCalc(id, params, data),
+              `${entry.id}.${side}.${canonicalJson(params)}`,
+            );
+          }
         }
       }
     });
@@ -168,16 +238,24 @@ describe('quant v2 calc — golden parity with the reference engine', () => {
     });
   }
 
-  it('matches non-default params (boundaries of the registry ranges)', () => {
+  it('matches non-default params (boundaries of the row and Volume ranges)', () => {
     for (const entry of registry) {
       for (const bound of ['min', 'max'] as const) {
-        const params: Record<string, number> = {};
-        for (const field of entry.fields) params[field.key] = field[bound];
-        expectDeepClose(
-          calc(entry.id, params, bars),
-          referenceCalc(entry.id, params, bars),
-          `${entry.id}.${bound}`,
-        );
+        const requests = isRowsEntry(entry)
+          ? calcRequests(entry, 'buy', boundRows(entry, 'buy', bound))
+          : [
+              {
+                id: entry.id,
+                params: Object.fromEntries(entry.fields.map((f) => [f.key, f[bound]])),
+              },
+            ];
+        for (const { id, params } of requests) {
+          expectDeepClose(
+            calc(id, params, bars),
+            referenceCalc(id, params, bars),
+            `${entry.id}.${bound}.${canonicalJson(params)}`,
+          );
+        }
       }
     }
   });
@@ -215,21 +293,38 @@ describe('quant v2 calc — golden parity with the reference engine', () => {
   it('is prefix-invariant and produces values for every indicator (no look-ahead)', () => {
     for (const entry of registry) {
       for (const side of SIDES) {
-        const full = calc(entry.id, entry[side].params, bars);
-        const prefix = calc(entry.id, entry[side].params, bars.slice(0, 800));
-        expect(
-          Object.values(full).some((s) => s.slice(400).some(Number.isFinite)),
-          entry.id,
-        ).toBe(true);
-        for (const key of Object.keys(prefix)) {
-          expect(full[key]?.slice(0, 800), `${entry.id} ${key}`).toEqual(prefix[key]);
+        for (const { id, params } of calcRequests(entry, side)) {
+          const full = calc(id, params, bars);
+          const prefix = calc(id, params, bars.slice(0, 800));
+          expect(
+            Object.values(full).some((s) => s.slice(400).some(Number.isFinite)),
+            entry.id,
+          ).toBe(true);
+          for (const key of Object.keys(prefix)) {
+            expect(full[key]?.slice(0, 800), `${entry.id} ${key}`).toEqual(prefix[key]);
+          }
         }
       }
     }
   });
 
-  it('every series a rule reads is produced by calc', () => {
+  it('every series a row reads is produced by calc (defaults resolve on warmed-up bars)', () => {
+    const cache = createSeriesCache(bars);
     for (const entry of registry) {
+      if (!isRowsEntry(entry)) continue;
+      for (const side of SIDES) {
+        for (const row of defaultRows(entry, side)) {
+          const evaluation = evaluateRow(row, cache, 900);
+          expect(evaluation.missing, `${row.id}.${side}`).toBe(false);
+          expect(typeof evaluation.result, `${row.id}.${side}`).toBe('boolean');
+        }
+      }
+    }
+  });
+
+  it('every series a Volume rule reads is produced by calc', () => {
+    for (const entry of registry) {
+      if (isRowsEntry(entry)) continue;
       for (const side of SIDES) {
         const series = calc(entry.id, entry[side].params, bars);
         for (const rule of entry[side].rules) {
@@ -352,10 +447,12 @@ const WORKED: Record<string, () => number | null> = {
       calcAny('ema', { period: 9 }, closes([...Array.from({ length: 9 }, () => 100), 110])).value,
     ),
   ma_cross: () => {
-    const template = registry.find((r) => r.id === 'ma_cross')?.buy.rules[0];
-    if (!template) return null;
+    const entry = registry.find((r) => r.id === 'ma_cross');
+    if (!entry || !isRowsEntry(entry)) return null;
+    const row = defaultRows(entry, 'buy')[0]!;
     const series: SeriesMap = { fast: [-2, 1, 3, -1], slow: [0, 0, 0, 0] };
-    return [0, 1, 2, 3].filter((i) => evaluateRule(template, series, {}, i) === true).length;
+    const cache: SeriesCache = { bars: [], series: () => series, close: () => [] };
+    return [0, 1, 2, 3].filter((i) => evaluateRow(row, cache, i).result === true).length;
   },
   dmi: () =>
     lastOf(
@@ -724,8 +821,9 @@ describe('quant v2 rules — three-valued logic', () => {
     ).toBe(true);
   });
 
-  it('matches the reference evaluateRule/and3/evalTree on every registry rule and bar', () => {
+  it('matches the reference evaluateRule/and3/evalTree on every Volume rule and bar', () => {
     for (const entry of registry) {
+      if (isRowsEntry(entry)) continue;
       for (const side of SIDES) {
         const params = entry[side].params;
         const series = calc(entry.id, params, defective);
@@ -776,7 +874,7 @@ describe('quant v2 rules — three-valued logic', () => {
   });
 });
 
-describe('quant v2 sideSignals — parity and independence', () => {
+describe('quant v2 sideSignals — shared evaluator and independence', () => {
   const configWith = (ids: string[], mutate?: (c: SharedConfig) => void): SharedConfig => {
     const c = defaultConfig();
     for (const id of ids) {
@@ -791,8 +889,10 @@ describe('quant v2 sideSignals — parity and independence', () => {
     mutate?.(c);
     return c;
   };
+  const rowOf = (c: SharedConfig, id: string, side: Side, index = 0): ConditionRow =>
+    (c.indicators[id]![side] as RowSideConfig).rules[index]!;
 
-  it('matches the reference for every single indicator and for multi-indicator AND', () => {
+  it('ANDs the per-indicator evaluations for every single indicator and for multi-indicator configs', () => {
     const cases: string[][] = [
       ...registry.map((r) => [r.id]),
       ['ma', 'rsi'],
@@ -804,62 +904,58 @@ describe('quant v2 sideSignals — parity and independence', () => {
       const c = deepFreeze(configWith(ids));
       for (const side of SIDES) {
         for (const data of [bars, contextless, defective]) {
-          expect(sideSignals(c, data, side), `${ids.join('+')}.${side}`).toEqual(
-            reference.sideSignals(c, rawRegistry, [...data], side),
+          const perIndicator = ids.map((id) =>
+            evaluateIndicatorSideSeries(id, c.indicators[id]![side], data).map((e) =>
+              e.status === 'no_signal' ? false : e.result,
+            ),
           );
+          const expected = data.map((_, i) => and3(perIndicator.map((s) => s[i] ?? null)));
+          expect(sideSignals(c, data, side), `${ids.join('+')}.${side}`).toEqual(expected);
         }
       }
     }
   });
 
-  it('no active indicator → all false; sides use their own params', () => {
-    const c = configWith(['ma'], (x) => {
-      const ma = x.indicators.ma;
-      if (ma) ma.sell.params.period = 30;
-    });
+  it('Volume (params + rules) still matches the reference sideSignals', () => {
+    const volumeRegistry = rawRegistry.filter((e) => e.id === 'volume');
+    const c = deepFreeze(configWith(['volume']));
+    const volumeOnly = { ...c, indicators: { volume: c.indicators.volume! } };
+    for (const side of SIDES)
+      for (const data of [bars, defective])
+        expect(sideSignals(c, data, side)).toEqual(
+          reference.sideSignals(volumeOnly, volumeRegistry, [...data], side),
+        );
+  });
+
+  it('no active indicator → all false; sides use their own rows', () => {
+    const c = configWith(['ma'], (x) => (rowOf(x, 'ma', 'sell').period = 50));
     const sell = sideSignals(c, bars, 'sell');
     const changed = configWith(['ma'], (x) => {
-      const ma = x.indicators.ma;
-      if (ma) {
-        ma.sell.params.period = 30;
-        ma.buy.params.period = 50;
-      }
+      rowOf(x, 'ma', 'sell').period = 50;
+      rowOf(x, 'ma', 'buy').period = 100;
     });
     expect(sideSignals(changed, bars, 'sell')).toEqual(sell);
     const off = configWith([]);
     expect(sideSignals(off, bars, 'buy').every((v) => v === false)).toBe(true);
     expect(sideSignals(off, bars, 'sell').every((v) => v === false)).toBe(true);
-    const sellOff = configWith(['ma'], (x) => {
-      const ma = x.indicators.ma;
-      if (ma) ma.sell.enabled = false;
-    });
+    const sellOff = configWith(['ma'], (x) => (x.indicators.ma!.sell.enabled = false));
     expect(sideSignals(sellOff, bars, 'sell').every((v) => v === false)).toBe(true);
-    const ma = c.indicators.ma;
-    if (!ma) throw new Error('ma');
-    expect(indicatorSideSignals('ma', ma.sell, bars)).toEqual(sell);
+    expect(indicatorSideSignals('ma', c.indicators.ma!.sell, bars)).toEqual(sell);
   });
 
-  it('B05 the same indicator with different per-side params yields independent series', () => {
-    const c = configWith(['rsi']);
-    const rsi = c.indicators.rsi!;
-    const buy = indicatorSideSignals(
-      'rsi',
-      { ...rsi.buy, params: { period: 12, level: 30 } },
-      bars,
-    );
-    const sell = indicatorSideSignals(
-      'rsi',
-      { ...rsi.sell, params: { period: 10, level: 75 } },
-      bars,
-    );
+  it('B05 the same indicator with different per-side rows yields independent series', () => {
+    const c = configWith(['rsi'], (x) => {
+      Object.assign(rowOf(x, 'rsi', 'buy'), { period: 12, threshold: 30 });
+      Object.assign(rowOf(x, 'rsi', 'sell'), { period: 10, threshold: 75 });
+    });
+    const buy = indicatorSideSignals('rsi', c.indicators.rsi!.buy, bars);
+    const sell = indicatorSideSignals('rsi', c.indicators.rsi!.sell, bars);
     expect(buy).not.toEqual(sell);
-    // Changing one side's params never alters the other side's series.
-    expect(
-      indicatorSideSignals('rsi', { ...rsi.buy, params: { period: 12, level: 30 } }, bars),
-    ).toEqual(buy);
-    expect(
-      indicatorSideSignals('rsi', { ...rsi.sell, params: { period: 21, level: 70 } }, bars),
-    ).not.toEqual(sell);
+    // Changing one side's rows never alters the other side's series.
+    const edited = structuredClone(c);
+    rowOf(edited, 'rsi', 'sell').period = 21;
+    expect(indicatorSideSignals('rsi', edited.indicators.rsi!.buy, bars)).toEqual(buy);
+    expect(indicatorSideSignals('rsi', edited.indicators.rsi!.sell, bars)).not.toEqual(sell);
   });
 
   it('B06 sideSignals ANDs every active indicator: one false dominates, no majority vote', () => {
@@ -890,20 +986,22 @@ describe('quant v2 sideSignals — parity and independence', () => {
       rhs: { kind: 'constant', value: 2 },
       allowed_ops: ['>', '<'],
     };
-    const side = { enabled: true, params: { period: 20 }, rules: [trueRule, falseRule] };
-    expect(indicatorSideSignals('ma', side, bars).every((value) => value === false)).toBe(true);
+    const side: ParamsSideConfig = {
+      enabled: true,
+      params: { lookback: 20, mult: 1 },
+      rules: [trueRule, falseRule],
+    };
+    expect(indicatorSideSignals('volume', side, bars).every((value) => value === false)).toBe(
+      true,
+    );
   });
 
   it('B09 missing data on one Buy indicator makes Buy not-true while an unaffected Sell side is independent', () => {
-    const c = defaultConfig();
     // Buy needs a 200-session SMA but only 120 sessions exist; Sell uses its own 20-session SMA.
-    const ma = c.indicators.ma!;
-    ma.master_enabled = true;
-    ma.buy.enabled = true;
-    ma.buy.params.period = 200;
-    ma.sell.enabled = true;
-    ma.sell.params.period = 20;
-
+    const c = configWith(['ma'], (x) => {
+      rowOf(x, 'ma', 'buy').period = 200;
+      rowOf(x, 'ma', 'sell').period = 20;
+    });
     const short = bars.slice(0, 120);
     const buy = sideSignals(c, short, 'buy');
     expect(buy.every((value) => value !== true)).toBe(true);

@@ -17,7 +17,13 @@ import {
 import type { Environment } from '../../src/platform/config/environment.js';
 import type { DatabaseService } from '../../src/platform/database/index.js';
 import type { QuantMarketDataProvider } from '../../src/modules/quant/quant.types.js';
-import { configHash, defaultConfig, type SharedConfig } from '../../src/modules/quant/v2/index.js';
+import {
+  configHash,
+  defaultConfig,
+  rowDefinition,
+  type RowSideConfig,
+  type SharedConfig,
+} from '../../src/modules/quant/v2/index.js';
 import type {
   EffectiveSharedConfig,
   SharedConfigReaderPort,
@@ -55,6 +61,8 @@ class FakeBotDatabase {
   executedSql: string[] = [];
   /** Holidays of the active trading config; null = no verified calendar (nav-row fallback). */
   holidays: string[] | null = null;
+  /** `bot_config_pauses` row of the user (indicator-conditions V3 upgrade); null = none. */
+  configPause: Row | null = null;
 
   constructor(positions: Row[]) {
     this.positions = positions.map((row) => ({ ...row }));
@@ -129,6 +137,9 @@ class FakeBotDatabase {
   }
 
   private handle(sql: string, v: readonly unknown[]): Row[] {
+    if (sql.includes('from bot_config_pauses where user_id = $1')) {
+      return this.configPause ? [{ ...this.configPause }] : [];
+    }
     if (sql.startsWith('select id from bot_instances where user_id = $1')) {
       return this.instanceId ? [{ id: this.instanceId }] : [];
     }
@@ -619,6 +630,18 @@ function marketData(trends: Record<string, Trend>): QuantMarketDataProvider {
   } as unknown as QuantMarketDataProvider;
 }
 
+/**
+ * Sets the first row's operator. On a row whose operator is a crossing only (SMA/EMA/MA Cross,
+ * CCI…), the shorthand `>` / `<` means `cross_up` / `cross_down`.
+ */
+function setFirstRowOp(side: RowSideConfig, op: string): void {
+  const row = side.rules[0];
+  if (!row) return;
+  const field = rowDefinition(row.id)?.fields.find((item) => item.key === 'op');
+  const allowed = field?.type === 'enum' ? field.options.map((option) => option.value) : [];
+  row.op = allowed.includes(op) ? op : op === '>' ? 'cross_up' : op === '<' ? 'cross_down' : op;
+}
+
 function academyConfig(
   options: {
     buy?: string[];
@@ -637,12 +660,8 @@ function academyConfig(
     item.master_enabled = true;
     item.buy.enabled = buy.has(id);
     item.sell.enabled = sell.has(id);
-    if (options.buyOps?.[id] && item.buy.rules[0]) {
-      item.buy.rules[0].op = options.buyOps[id] as never;
-    }
-    if (options.sellOps?.[id] && item.sell.rules[0]) {
-      item.sell.rules[0].op = options.sellOps[id] as never;
-    }
+    if (options.buyOps?.[id]) setFirstRowOp(item.buy as RowSideConfig, options.buyOps[id]);
+    if (options.sellOps?.[id]) setFirstRowOp(item.sell as RowSideConfig, options.sellOps[id]);
   }
   return { ...config, revision: options.revision ?? 3 };
 }
@@ -657,6 +676,7 @@ type AcademyReader = SharedConfigReaderPort & {
     config_hash: string;
     registry_version: string;
     granted_indicators: string[];
+    outdated: boolean;
   }>;
 };
 
@@ -706,6 +726,7 @@ function reader(
         config_hash: hash,
         registry_version: 'iqx-ta-2.0',
         granted_indicators: grants,
+        outdated: false,
       });
     }),
     effectiveFor: vi.fn(() => {
@@ -909,6 +930,7 @@ describe('Bot account initialisation (workspace ensure)', () => {
       succeeded: 1,
       failed: 0,
       skippedNotSession: 0,
+      skippedPaused: 0,
     });
     expect(db.executedSql.some((sql) => sql.includes('cap6_progress'))).toBe(false);
     expect(db.executedSql.some((sql) => sql.startsWith('insert into bot_accounts'))).toBe(false);
@@ -2170,5 +2192,172 @@ describe('BotService: read models', () => {
     });
     expect(journal.items.every((item) => item.reason_label)).toBe(true);
     expect(journal.items.map((item) => item.reason_code)).toContain('academy_buy_not_met');
+  });
+});
+
+describe('BotService: indicator conditions V3 pause and outdated config', () => {
+  const pause = (resumeRevision: number | null): Row => ({
+    reason: 'indicator_conditions_v3',
+    paused_at: '2026-09-20T12:00:00.000Z',
+    paused_revision: 3,
+    resume_revision: resumeRevision,
+    resumed_at: resumeRevision === null ? null : '2026-09-21T09:00:00.000Z',
+  });
+
+  const service = (db: FakeBotDatabase, configReader: AcademyReader) =>
+    new BotService(
+      db as unknown as DatabaseService,
+      provider(marketSnapshot({ symbols: { AAA: member(), HOLD: held('19500') } })),
+      configReader,
+      marketData({ AAA: 'up', HOLD: 'down' }),
+      universePort(verifiedUniverse(['AAA'])),
+      undefined,
+      newBuysConfig(true),
+    );
+
+  it('V01 an unresolved pause skips the session silently: nothing is written or traded', async () => {
+    const db = new FakeBotDatabase([position()]);
+    db.cash = '98000000';
+    db.configPause = pause(null);
+    const configReader = reader(academyConfig({ buy: ['ma'], sell: ['ma'] }));
+    const bot = service(db, configReader);
+
+    await expect(bot.runAccountSession(USER, SESSION)).rejects.toMatchObject({
+      name: 'BotConfigPaused',
+    });
+    expect(db.receipts).toEqual([]);
+    expect(db.snapshots).toEqual([]);
+    expect(db.decisions).toEqual([]);
+    expect(db.executions).toEqual([]);
+    expect(db.nav).toEqual([]);
+    expect(db.ledger).toEqual([]);
+    expect(db.cash).toBe('98000000');
+    expect(db.positions).toMatchObject([{ symbol: 'HOLD', status: 'open', qty_open: 100 }]);
+    // No revision saved after the pause: the effective config is not even read.
+    expect(configReader.effectiveFor).not.toHaveBeenCalled();
+  });
+
+  it('V02 the scheduled batch counts a paused Bot as skipped, never as failed', async () => {
+    const db = new FakeBotDatabase([]);
+    db.configPause = pause(null);
+    const batch = await service(db, reader(academyConfig({ buy: ['ma'] }))).runScheduledSession(
+      SESSION,
+    );
+    expect(batch).toEqual({
+      initialized: 0,
+      processed: 0,
+      succeeded: 0,
+      failed: 0,
+      skippedNotSession: 0,
+      skippedPaused: 1,
+    });
+    expect(db.receipts).toEqual([]);
+  });
+
+  it('V03 the Bot resumes only from the session where the revision saved after the pause is effective', async () => {
+    const pending = new FakeBotDatabase([]);
+    pending.configPause = pause(4);
+    await expect(
+      service(pending, reader(academyConfig({ buy: ['ma'], revision: 3 }))).runAccountSession(
+        USER,
+        SESSION,
+      ),
+    ).rejects.toMatchObject({ name: 'BotConfigPaused' });
+    expect(pending.receipts).toEqual([]);
+
+    const resumed = new FakeBotDatabase([]);
+    resumed.configPause = pause(4);
+    const run = await runBot({
+      db: resumed,
+      config: academyConfig({ buy: ['ma'], revision: 4 }),
+      trends: { AAA: 'up' },
+    });
+    expect(run.result.status).toBe('succeeded');
+    expect(executions(resumed, 'buy')).toHaveLength(1);
+  });
+
+  it('V04 the overview reads "Tạm dừng" while the pause is unresolved', async () => {
+    const config = academyConfig({ buy: ['ma'], sell: ['ma'], revision: 3 });
+    for (const [resume, state, label, active] of [
+      [null, 'paused', 'Tạm dừng', false],
+      [4, 'paused', 'Tạm dừng', false],
+      [3, 'buy_and_sell', 'Đã bật Mua và Bán', true],
+    ] as const) {
+      const db = new FakeBotDatabase([]);
+      db.configPause = pause(resume);
+      const overview = (await new BotService(
+        db as unknown as DatabaseService,
+        undefined,
+        reader(config),
+      ).overview(USER)) as { conditions: Record<string, unknown> };
+      expect(overview.conditions).toMatchObject({
+        state,
+        state_label: label,
+        has_active_buy: active,
+        has_active_sell: active,
+      });
+    }
+  });
+
+  it('V05 an outdated effective revision blocks both sides as config_outdated, never evaluated', async () => {
+    // The reader serves an outdated revision as the V3 defaults with the user's switches; its
+    // stored hash is the old document's, so it can never be re-derived from `config`.
+    const config = academyConfig({ buy: ['ma'], sell: ['ma'] });
+    const configReader = reader(config, {
+      hash: 'a'.repeat(64),
+      effectiveExtra: { outdated: true },
+    });
+    const run = await runBot({
+      configReader,
+      positions: [position()],
+      snapshot: marketSnapshot({ symbols: { AAA: member(), HOLD: held('19500') } }),
+      trends: { AAA: 'up', HOLD: 'down' },
+    });
+    expect(run.db.executions).toEqual([]);
+    expect(decisions(run.db, 'config_outdated').length).toBeGreaterThan(0);
+    expect(decisions(run.db, 'academy_buy')).toEqual([]);
+    expect(run.result.issues.map((issue) => issue.code)).toContain('config_outdated');
+
+    const overview = (await run.service.overview(USER)) as {
+      conditions: { state: string; errors: Record<string, { reason: string } | null> };
+    };
+    expect(overview.conditions.state).toBe('error');
+    expect(overview.conditions.errors.buy?.reason).toBe('config_outdated');
+    expect(overview.conditions.errors.sell?.reason).toBe('config_outdated');
+  });
+
+  it('V06 row evidence carries each row its own values and operator', async () => {
+    const config = academyConfig({ buy: ['ma'] });
+    const row = (config.indicators.ma!.buy as RowSideConfig).rules[0]!;
+    row.period = 10;
+    const run = await runBot({ config, trends: { AAA: 'up' } });
+    const snapshot = decisions(run.db, 'academy_buy')[0]?.condition_snapshot as {
+      rules: Array<Record<string, unknown>>;
+    };
+    expect(snapshot.rules).toEqual([
+      expect.objectContaining({
+        id: 'ma.price_cross',
+        indicator: 'ma',
+        side: 'buy',
+        op: 'cross_up',
+        result: true,
+        missing: false,
+        values: { op: 'cross_up', period: 10 },
+      }),
+    ]);
+  });
+
+  it('V07 missing bars keep every enabled row missing, with its own values', async () => {
+    const config = academyConfig({ buy: ['rsi'] });
+    const run = await runBot({ config, trends: { AAA: 'stale' } });
+    const snapshot = decisions(run.db, 'academy_condition_missing')[0]?.condition_snapshot as {
+      rules: Array<Record<string, unknown>>;
+    };
+    expect(snapshot.rules.map((rule) => [rule.id, rule.result, rule.missing, rule.values])).toEqual(
+      [
+        ['rsi.level', null, true, { period: 14, op: '<', threshold: 30 }],
+        ['rsi.trend', null, true, { period: 14, dir: 'up' }],
+      ],
+    );
   });
 });

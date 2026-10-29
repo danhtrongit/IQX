@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import type { RuleOp } from '../quant/v2/index.js';
+
 /** Longest requested range (inclusive days), same bound as the legacy backtest. */
 const MAX_RANGE_DAYS = 3653;
 
@@ -14,6 +16,14 @@ const symbol = z
 const paramPathSchema = z.strictObject({
   indicator: z.string().regex(/^[a-z0-9_]{1,64}$/),
   side: z.enum(['buy', 'sell']),
+  /**
+   * Condition row of a row-based indicator (`ma.price_cross`) whose numeric field `key` is swept;
+   * absent for Volume, whose `key` is a side param. The engine rejects a path it cannot find.
+   */
+  rule: z
+    .string()
+    .regex(/^[a-z0-9_]{1,64}\.[a-z0-9_]{1,64}$/)
+    .optional(),
   key: z.string().min(1).max(64),
 });
 const gridValuesSchema = z.array(z.number().finite()).min(1).max(100);
@@ -216,11 +226,43 @@ const openPositionSchema = z.object({
   unrealized_pnl: z.number(),
 });
 
-const ruleEvidenceSchema = z.object({
+/**
+ * Every operator an evidence row can report: the comparison/cross ops and Bollinger/OBV actions of
+ * the condition rows (`iqx-rules-4.0`) plus the membership ops of runs stored before. The type
+ * check below fails the build when the engine gains an operator that is not listed here.
+ */
+const RULE_EVIDENCE_OPS = [
+  '>',
+  '<',
+  'cross_up',
+  'cross_down',
+  'reenter_lower',
+  'reenter_upper',
+  'break_upper',
+  'break_lower',
+  'cross_up_middle',
+  'cross_down_middle',
+  'break_high',
+  'break_low',
+  '∈',
+  '∉',
+] as const satisfies readonly RuleOp[];
+const _everyRuleOpListed: Exclude<RuleOp, (typeof RULE_EVIDENCE_OPS)[number]> extends never
+  ? true
+  : never = true;
+
+/**
+ * One evaluated condition row. Runs stored before `iqx-rules-4.0` keep their evidence as it was
+ * written (`id` = registry rule id `r1`, `op` = `>` `<` `∈` `∉` or a Bollinger action, no
+ * `values`); this shape accepts both.
+ */
+export const ruleEvidenceSchema = z.object({
+  /** Row id (`rsi.level`); `r1`/`r2`… on runs stored before `iqx-rules-4.0`. */
   id: z.string(),
   indicator: z.string(),
   side: z.enum(['buy', 'sell']),
-  op: z.enum(['>', '<', '∈', '∉']),
+  /** The row's `op`, its `action` (Bollinger/OBV), or `>`/`<` for a direction (lên/tăng/mở rộng). */
+  op: z.enum(RULE_EVIDENCE_OPS),
   lhs: z.number().nullable(),
   rhs: z.number().nullable(),
   rhs_lower: z.number().nullable().optional(),
@@ -230,6 +272,8 @@ const ruleEvidenceSchema = z.object({
   missing: z.boolean(),
   previous_lhs: z.number().nullable().optional(),
   previous_rhs: z.number().nullable().optional(),
+  /** The row's own stored values (periods, threshold, op…); absent on runs stored before V3. */
+  values: z.record(z.string(), z.union([z.number(), z.string()])).optional(),
 });
 
 const conditionEvidenceSchema = z.object({

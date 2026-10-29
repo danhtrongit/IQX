@@ -19,8 +19,12 @@ import type {
 } from '../../../src/modules/quant/v2/index.js';
 
 /**
- * Typed handle on the spec reference engine (bot-v2 assets/engine.js copied
- * verbatim to engine.reference.cjs; only an eslint-disable header was added).
+ * Typed handle on the spec reference engine (bot-v2 assets/engine.js copied to
+ * engine.reference.cjs; an eslint-disable header was added and `run` accepts precomputed
+ * signals). The reference rule model (`evaluateRule`, `sideSignals`, `validateConfig`,
+ * `defaultConfig`) predates `iqx-rules-4.0`: it is retired for the 15 row-based indicators and
+ * only remains an oracle for formulas (`calc`), Kleene logic, Volume rules and the ledger (`run`
+ * with signals).
  */
 export type ReferenceRunResult = {
   schema_version: string;
@@ -54,6 +58,7 @@ export type ReferenceEngine = {
     registry: RegistryEntry[],
     bars: Bar[],
     options?: Partial<RunOptions>,
+    signals?: { buy: Tri[]; sell: Tri[] },
   ): ReferenceRunResult;
   syntheticBars(n?: number): Bar[];
 };

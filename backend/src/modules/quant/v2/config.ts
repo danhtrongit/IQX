@@ -1,3 +1,6 @@
+import { defaultConfigV4 } from './conditions/defaults.js';
+import { isRowsEntry } from './conditions/definitions.js';
+import { validateSideRows } from './conditions/validate.js';
 import { canonicalJson } from './hash.js';
 import { isFiniteNumber } from './indicators.js';
 import { loadTechnicalRegistry } from './technical-registry.js';
@@ -5,14 +8,12 @@ import {
   RULE_VERSION,
   SCHEMA_VERSION,
   type EngineValidationError,
-  type IndicatorConfig,
+  type ParamsRegistryEntry,
   type RegistryEntry,
   type RegistryField,
   type Side,
   type SharedConfig,
 } from './types.js';
-
-const jsonCopy = <T>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
 
 const SIDES: readonly Side[] = ['buy', 'sell'];
 const SIDE_LABEL: Record<Side, string> = { buy: 'Mua', sell: 'Bán' };
@@ -31,35 +32,22 @@ const STEP_TOLERANCE = 1e-6;
 /** Capability id that unlocks enabling an indicator (CONTRACTS §2). */
 export const indicatorCapability = (indicatorId: string): string => `indicator:${indicatorId}`;
 
-/** Every registry indicator, master OFF, sides/params/rules copied from the registry templates. */
+/**
+ * Every registry indicator, master and both tabs OFF: the 15 row-based indicators with the
+ * SPEC V3 §3 row defaults, Volume with its registry params + rules. Same as `defaultConfigV4`.
+ */
 export function defaultConfig(
   registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
 ): SharedConfig {
-  const indicators: Record<string, IndicatorConfig> = {};
-  for (const entry of registry) {
-    indicators[entry.id] = {
-      master_enabled: false,
-      buy: {
-        enabled: entry.buy.enabled,
-        params: jsonCopy(entry.buy.params),
-        rules: jsonCopy(entry.buy.rules),
-      },
-      sell: {
-        enabled: entry.sell.enabled,
-        params: jsonCopy(entry.sell.params),
-        rules: jsonCopy(entry.sell.rules),
-      },
-    };
-  }
-  return { schema_version: SCHEMA_VERSION, revision: 1, rule_version: RULE_VERSION, indicators };
+  return defaultConfigV4(registry);
 }
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   value !== null && typeof value === 'object' && !Array.isArray(value);
 
-/** Registry field with the side-specific `field_overrides` applied. */
+/** Registry field (params-based entry, i.e. Volume) with the side-specific `field_overrides` applied. */
 export function effectiveField(
-  entry: RegistryEntry,
+  entry: ParamsRegistryEntry,
   side: Side,
   field: RegistryField,
 ): RegistryField {
@@ -75,7 +63,7 @@ function hasGrant(grants: ReadonlySet<string> | readonly string[], capability: s
 }
 
 function validateParams(
-  entry: RegistryEntry,
+  entry: ParamsRegistryEntry,
   side: Side,
   params: unknown,
   path: string,
@@ -131,7 +119,7 @@ function validateParams(
 }
 
 function validateRules(
-  entry: RegistryEntry,
+  entry: ParamsRegistryEntry,
   side: Side,
   rules: unknown,
   path: string,
@@ -181,6 +169,10 @@ function validateSide(
   path: string,
   errors: EngineValidationError[],
 ): void {
+  if (isRowsEntry(entry)) {
+    errors.push(...validateSideRows(entry, side, value, path));
+    return;
+  }
   if (!isRecord(value) || typeof value.enabled !== 'boolean') {
     errors.push({ path, message: `${entry.id}: thiếu cấu hình ${SIDE_LABEL[side]}.` });
     return;
@@ -194,9 +186,11 @@ function validateSide(
 }
 
 /**
- * Validate a shared config against `shared-config.schema.json` and the registry
- * templates. With `grants`, enabling an indicator (master ON) additionally
- * requires the learned capability `indicator:<id>`. Returns [] when valid.
+ * Validate a shared config (schema 3.0, `iqx-rules-4.0`) against the registry: row-based
+ * indicators per SPEC V3 §4 (`validateSideRows`, both tabs, disabled rows included), Volume
+ * against its params + rule templates. An outdated document (side `params` on a row-based
+ * indicator, old versions) is rejected, never mapped. With `grants`, enabling an indicator
+ * (master ON) additionally requires the learned capability `indicator:<id>`. Returns [] when valid.
  */
 export function validateConfig(
   config: unknown,

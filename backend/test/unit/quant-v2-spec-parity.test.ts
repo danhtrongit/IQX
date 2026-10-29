@@ -6,43 +6,46 @@ import {
   CURRENT_INDICATOR_IDS,
   calc,
   canonicalJson,
+  createSeriesCache,
   defaultConfig,
-  evaluateRule,
+  defaultRows,
+  evaluateRow,
   indicatorSideSignals,
+  isRowsEntry,
   loadTechnicalRegistry,
   type Bar,
+  type ConditionRow,
+  type ParamsSideConfig,
   type RegistryEntry,
-  type Rule,
+  type RowSideConfig,
+  type SeriesCache,
   type SeriesMap,
+  type Side,
 } from '../../src/modules/quant/v2/index.js';
 import { academyV3Fixture } from './academy-v3-fixture.js';
 
 /**
- * Bot SPEC §9.1 (calculation variants) and Appendix B (registry) against the IQX engine.
+ * Bot SPEC §9.1 (calculation variants) and the registry against the IQX engine.
  * Cases I01..I16 are the acceptance fixtures of Bot SPEC §16-I; the registry is compared with
- * the approved `registryData` (16 indicators).
+ * the approved v4 golden (`iqx-rules-4.0`: SPEC V3 rows for 15 indicators, Volume unchanged).
  */
 const registry = loadTechnicalRegistry();
 const here = dirname(fileURLToPath(import.meta.url));
 
-type SpecEntry = {
+type GoldenEntry = {
   id: string;
   name: string;
   chapter: number;
-  lesson_id: string;
-  /** Học viện v3.3 chapter (4, 6 or 7). */
-  new_chapter: number;
-  /** Học viện v3.3 lesson id. */
-  new_lesson_id: string | null;
+  lesson_id: string | null;
+  legacy_chapter: number;
+  legacy_lesson_id: string;
   family: string;
-  buy: unknown;
-  sell: unknown;
-  fields: unknown;
-  validation: unknown;
+  model: string;
+  [key: string]: unknown;
 };
-const spec = JSON.parse(
-  readFileSync(join(here, 'fixtures/bot-registry-spec-16.json'), 'utf8'),
-) as SpecEntry[];
+const golden = JSON.parse(
+  readFileSync(join(here, 'fixtures/registry-v4.golden.json'), 'utf8'),
+) as GoldenEntry[];
 
 function entry(id: string): RegistryEntry {
   const found = registry.find((item) => item.id === id);
@@ -50,11 +53,21 @@ function entry(id: string): RegistryEntry {
   return found;
 }
 
-const ruleOf = (id: string, side: 'buy' | 'sell', ruleId: string): Rule => {
-  const rule = entry(id)[side].rules.find((item) => item.id === ruleId);
-  if (!rule) throw new Error(`${id}.${side}.${ruleId}`);
-  return rule;
-};
+/** Default row of a tab (SPEC V3 §3) with overrides. */
+function rowOf(rowId: string, side: Side = 'buy', overrides: Record<string, unknown> = {}): ConditionRow {
+  const owner = entry(rowId.slice(0, rowId.indexOf('.')));
+  if (!isRowsEntry(owner)) throw new Error(rowId);
+  const found = defaultRows(owner, side).find((r) => r.id === rowId);
+  if (!found) throw new Error(rowId);
+  return { ...found, ...overrides } as ConditionRow;
+}
+
+/** Series cache serving fixed series for any params (formula-independent operator checks). */
+const fixedCache = (series: SeriesMap, close: Array<number | null> = []): SeriesCache => ({
+  bars: [],
+  series: () => series,
+  close: () => close,
+});
 
 /** Valid OHLCV bar; `open` defaults to the close. */
 const ohlc = (
@@ -82,37 +95,33 @@ const near = (actual: number | null | undefined, expected: number, tolerance = 1
   expect(Math.abs((actual as number) - expected)).toBeLessThanOrEqual(tolerance);
 };
 
-describe('registry matches the approved 16-indicator registryData', () => {
+describe('registry matches the approved v4 golden (iqx-rules-4.0)', () => {
   it('has the same ids and order', () => {
-    expect(spec.map((item) => item.id)).toEqual([...CURRENT_INDICATOR_IDS]);
-    expect(registry.map((item) => item.id)).toEqual(spec.map((item) => item.id));
+    expect(golden.map((item) => item.id)).toEqual([...CURRENT_INDICATOR_IDS]);
+    expect(registry.map((item) => item.id)).toEqual(golden.map((item) => item.id));
   });
 
-  for (const specEntry of spec) {
-    it(`${specEntry.id}: params, domains, steps, rules, allowed_ops, overrides and validation equal the spec`, () => {
-      const actual = entry(specEntry.id);
-      expect(canonicalJson(actual.buy)).toBe(canonicalJson(specEntry.buy));
-      expect(canonicalJson(actual.sell)).toBe(canonicalJson(specEntry.sell));
-      expect(canonicalJson(actual.fields)).toBe(canonicalJson(specEntry.fields));
-      expect(canonicalJson(actual.validation)).toBe(canonicalJson(specEntry.validation));
-      expect(actual.name).toBe(specEntry.name);
-      expect(actual.family).toBe(specEntry.family);
+  for (const goldenEntry of golden) {
+    it(`${goldenEntry.id}: rows (or Volume params, rules and fields) equal the golden`, () => {
+      const actual = entry(goldenEntry.id) as unknown as Record<string, unknown>;
+      for (const key of ['model', 'rows', 'buy', 'sell', 'fields', 'validation'])
+        expect(canonicalJson(actual[key]), key).toBe(canonicalJson(goldenEntry[key]));
+      expect(actual.name).toBe(goldenEntry.name);
+      expect(actual.family).toBe(goldenEntry.family);
     });
 
-    it(`${specEntry.id}: lesson_id/chapter are the NEW ones; legacy position kept apart; both sides default OFF`, () => {
-      const actual = entry(specEntry.id);
-      expect(actual.chapter).toBe(specEntry.new_chapter);
-      expect(actual.lesson_id).toBe(specEntry.new_lesson_id);
-      expect(actual.legacy_chapter).toBe(specEntry.chapter);
-      expect(actual.legacy_lesson_id).toBe(specEntry.lesson_id);
-      expect(actual.buy.enabled).toBe(false);
-      expect(actual.sell.enabled).toBe(false);
+    it(`${goldenEntry.id}: lesson_id/chapter are the NEW ones; legacy position kept apart`, () => {
+      const actual = entry(goldenEntry.id);
+      expect(actual.chapter).toBe(goldenEntry.chapter);
+      expect(actual.lesson_id).toBe(goldenEntry.lesson_id);
+      expect(actual.legacy_chapter).toBe(goldenEntry.legacy_chapter);
+      expect(actual.legacy_lesson_id).toBe(goldenEntry.legacy_lesson_id);
       // Per-indicator metadata of the repo is kept for the 16.
       expect(typeof actual.formula).toBe('string');
       expect(typeof actual.seed_and_missing).toBe('string');
       expect(actual.worked_fixture).toBeTruthy();
       expect(actual.calculation_version).toBe('iqx-ta-2.0');
-      expect(actual.rule_version).toBe('iqx-rules-3.0');
+      expect(actual.rule_version).toBe('iqx-rules-4.0');
     });
   }
 
@@ -162,58 +171,6 @@ describe('registry matches the approved 16-indicator registryData', () => {
   });
 });
 
-describe('shared-config.schema.json follows the 16-indicator registry', () => {
-  type Obj = { [key: string]: unknown };
-  const obj = (value: unknown): Obj => value as Obj;
-  const schema = obj(
-    JSON.parse(
-      readFileSync(
-        join(here, '../../src/modules/quant/v2/registry/shared-config.schema.json'),
-        'utf8',
-      ),
-    ),
-  );
-  const rootProperties = obj(schema.properties);
-  const indicators = obj(rootProperties.indicators);
-  const indicatorProperties = obj(indicators.properties);
-
-  it('requires exactly the 16 indicators, additionalProperties false, current rule version', () => {
-    expect(Object.keys(indicatorProperties)).toEqual([...CURRENT_INDICATOR_IDS]);
-    expect(indicators.required).toEqual([...CURRENT_INDICATOR_IDS]);
-    expect(indicators.additionalProperties).toBe(false);
-    expect(rootProperties.rule_version).toEqual({ const: 'iqx-rules-3.0' });
-    expect(rootProperties.schema_version).toEqual({ const: '2.0' });
-  });
-
-  for (const item of registry) {
-    it(`${item.id}: param domains, steps and rule operators per side equal the registry`, () => {
-      for (const side of ['buy', 'sell'] as const) {
-        const node = obj(obj(obj(indicatorProperties[item.id]).properties)[side]);
-        const nodeProperties = obj(node.properties);
-        const params = obj(obj(nodeProperties.params).properties);
-        expect(Object.keys(params).sort()).toEqual(item.fields.map((f) => f.key).sort());
-        for (const field of item.fields) {
-          const effective = { ...field, ...item[side].field_overrides?.[field.key] };
-          expect(params[field.key], `${side}.${field.key}`).toMatchObject({
-            type: field.type,
-            minimum: effective.min,
-            maximum: effective.max,
-            multipleOf: effective.step,
-          });
-        }
-        const rules = obj(nodeProperties.rules).prefixItems as Obj[];
-        expect(rules).toHaveLength(item[side].rules.length);
-        item[side].rules.forEach((rule, index) => {
-          const ruleProperties = obj(rules[index]!.properties);
-          expect(obj(ruleProperties.id).const).toBe(rule.id);
-          expect(obj(ruleProperties.allowed_ops).const).toEqual(rule.allowed_ops);
-          expect(obj(ruleProperties.op).enum).toEqual(rule.allowed_ops);
-        });
-      }
-    });
-  }
-});
-
 describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
   it('SMA includes T and needs N valid closes (I03)', () => {
     const series = calc('ma', { period: 5 }, closes([1, 2, 3, 4, 5, 6, 7])).value!;
@@ -255,12 +212,12 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
     near(series.value![4], 1.5);
     near(series.signal![5], 1.5);
     near(series.histogram![5], 0);
-    const buy = ruleOf('macd', 'buy', 'r1');
-    expect(buy.kind).toBe('compare');
+    const cache = createSeriesCache(closes([1, 2, 3, 4, 5, 6, 7]));
+    const buy = rowOf('macd.signal', 'buy', { fast: 2, slow: 5, signal: 2 });
     expect(buy.op).toBe('cross_up');
-    expect(evaluateRule(buy, series, { fast: 2, slow: 5, signal: 2 }, 5)).toBeNull(); // signal[4] is null
-    expect(evaluateRule(buy, series, { fast: 2, slow: 5, signal: 2 }, 6)).toBe(false);
-    expect(evaluateRule({ ...buy, op: '>' } as Rule, series, { fast: 2, slow: 5, signal: 2 }, 5)).toBe(false); // 1.5 > 1.5
+    expect(evaluateRow(buy, cache, 5).result).toBeNull(); // signal[4] is null
+    expect(evaluateRow(buy, cache, 6).result).toBe(false);
+    expect(evaluateRow({ ...buy, op: '>' }, cache, 5).result).toBe(false); // 1.5 > 1.5
   });
 
   it('Bollinger uses the population deviation (/N) and the 6 band actions, including T (I04, C12)', () => {
@@ -271,20 +228,14 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
     near(series.upper![9], 5.5 + 2 * Math.sqrt(8.25));
     near(series.lower![9], 5.5 - 2 * Math.sqrt(8.25));
     expect(series.upper![8]).toBeNull();
-    const r1 = ruleOf('bollinger', 'buy', 'r1');
-    const r2 = ruleOf('bollinger', 'buy', 'r2');
-    expect(evaluateRule(r2, series, {}, 9)).toBe(true);
-    // Test reenter_lower and break_upper on synthetic band series:
-    const reenterBand: SeriesMap = {
-      close: [9, 12],
-      lower: [10, 10],
-      middle: [15, 15],
-      upper: [20, 20],
-    };
-    expect(evaluateRule(r1, reenterBand, {}, 1)).toBe(true);
-    expect(evaluateRule({ ...r1, op: 'reenter_upper' } as Rule, reenterBand, {}, 1)).toBe(false);
-    const missing: SeriesMap = { close: [9, 12], lower: [null, 10], middle: [15, 15], upper: [20, 20] };
-    expect(evaluateRule(r1, missing, {}, 1)).toBeNull();
+    expect(evaluateRow(rowOf('bollinger.price_dir'), createSeriesCache(data), 9).result).toBe(true);
+    // Reenter from below on synthetic band series:
+    const band: SeriesMap = { lower: [10, 10], middle: [15, 15], upper: [20, 20] };
+    const r1 = rowOf('bollinger.price_action');
+    expect(evaluateRow(r1, fixedCache(band, [9, 12]), 1).result).toBe(true);
+    expect(evaluateRow({ ...r1, action: 'reenter_upper' }, fixedCache(band, [9, 12]), 1).result).toBe(false);
+    const missing: SeriesMap = { ...band, lower: [null, 10] };
+    expect(evaluateRow(r1, fixedCache(missing, [9, 12]), 1).result).toBeNull();
   });
 
   it('Volume threshold = mult × mean of the N sessions BEFORE T, T excluded (I05)', () => {
@@ -296,7 +247,11 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
     expect(series.threshold![5]).toBe(300); // not 416.67
     expect(series.threshold![4]).toBeNull();
     const config = defaultConfig().indicators.volume!;
-    const buy = { ...config.buy, enabled: true, params: { lookback: 5, mult: 1 } };
+    const buy: ParamsSideConfig = {
+      ...(config.buy as ParamsSideConfig),
+      enabled: true,
+      params: { lookback: 5, mult: 1 },
+    };
     expect(indicatorSideSignals('volume', buy, data)[5]).toBe(true); // V 1000 > 300 and price up
     // A volume spike on T never raises its own threshold.
     const spike = data.map((bar, i) => (i === 5 ? { ...bar, volume: 1_000_000 } : bar));
@@ -304,15 +259,15 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
   });
 
   it('MA Cross is an event between T-1 and T, with a missing prior value unknown (I07)', () => {
-    const buy = ruleOf('ma_cross', 'buy', 'r1');
-    const sell = ruleOf('ma_cross', 'sell', 'r1');
-    expect(buy.kind).toBe('cross');
-    const series: SeriesMap = { fast: [2, 2, 3, 4], slow: [2, 2, 2, 2] };
-    expect([1, 2, 3].map((i) => evaluateRule(buy, series, {}, i))).toEqual([false, true, false]);
-    const down: SeriesMap = { fast: [2, 2, 1, 0], slow: [2, 2, 2, 2] };
-    expect([1, 2, 3].map((i) => evaluateRule(sell, down, {}, i))).toEqual([false, true, false]);
-    expect(evaluateRule(buy, series, {}, 0)).toBeNull();
-    expect(evaluateRule(buy, { fast: [null, 3], slow: [2, 2] }, {}, 1)).toBeNull();
+    const buy = rowOf('ma_cross.cross');
+    const sell = rowOf('ma_cross.cross', 'sell');
+    expect([buy.op, sell.op]).toEqual(['cross_up', 'cross_down']);
+    const up = fixedCache({ fast: [2, 2, 3, 4], slow: [2, 2, 2, 2] });
+    expect([1, 2, 3].map((i) => evaluateRow(buy, up, i).result)).toEqual([false, true, false]);
+    const down = fixedCache({ fast: [2, 2, 1, 0], slow: [2, 2, 2, 2] });
+    expect([1, 2, 3].map((i) => evaluateRow(sell, down, i).result)).toEqual([false, true, false]);
+    expect(evaluateRow(buy, up, 0).result).toBeNull();
+    expect(evaluateRow(buy, fixedCache({ fast: [null, 3], slow: [2, 2] }), 1).result).toBeNull();
     // Equal before then above is a cross-up (≤ then >); calc feeds two independent SMAs.
     const sma = calc(
       'ma_cross',
@@ -402,8 +357,9 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
     expect(series.upper![5]).toBe(14);
     expect(series.lower![5]).toBe(6);
     expect(series.upper![4]).toBeNull();
-    expect(evaluateRule(ruleOf('donchian', 'buy', 'r1'), series, { period: 5 }, 5)).toBe(true);
-    expect(evaluateRule(ruleOf('donchian', 'sell', 'r1'), series, { period: 5 }, 5)).toBe(false);
+    const cache = createSeriesCache(data);
+    expect(evaluateRow(rowOf('donchian.break', 'buy', { period: 5 }), cache, 5).result).toBe(true);
+    expect(evaluateRow(rowOf('donchian.break', 'sell', { period: 5 }), cache, 5).result).toBe(false);
   });
 
   it('ROC is a percentage (20, not 0.2 or 2000); a non-positive base is missing (I15)', () => {
@@ -451,60 +407,26 @@ describe('documented differences between the engine and the Bot SPEC §9.1 refer
   });
 });
 
-describe('SPEC V2 indicator conditions & rule filtering parity', () => {
-  it('returns false (NO_SIGNAL) when an enabled side has all sub-rules disabled', () => {
+describe('SPEC V3 rule filtering (details in indicator-conditions-v3.test.ts)', () => {
+  it('returns false through indicatorSideSignals when an enabled side has all rows disabled', () => {
     const data = closes(Array.from({ length: 30 }, (_, i) => 100 + i));
-    const ma = defaultConfig().indicators.ma!;
-    const sideAllOff = {
-      ...ma.buy,
+    const ma = defaultConfig().indicators.ma!.buy as RowSideConfig;
+    const sideAllOff: RowSideConfig = {
       enabled: true,
-      rules: ma.buy.rules.map((r) => ({ ...r, enabled: false })),
+      rules: ma.rules.map((r) => ({ ...r, enabled: false })),
     };
     expect(indicatorSideSignals('ma', sideAllOff, data).every((v) => v === false)).toBe(true);
   });
 
-  it('evaluates SMA/EMA r3 trend lookback t - N via offset_param: trend_period', () => {
-    const r3 = { ...ruleOf('ma', 'buy', 'r3'), enabled: true };
-    const series: SeriesMap = { trend: [10, 11, 12, 13, 14, 15] };
-    expect(evaluateRule(r3, series, { trend_period: 3 }, 4)).toBe(true); // 14 > 11
-    expect(evaluateRule(r3, series, { trend_period: 5 }, 4)).toBeNull(); // 4 - 5 < 0
-    expect(evaluateRule({ ...r3, op: '<' } as Rule, series, { trend_period: 3 }, 4)).toBe(false);
+  it('evaluates SMA trend at t vs t - N with N the row period', () => {
+    const r3 = rowOf('ma.trend', 'buy', { period: 3, enabled: true });
+    const trend = fixedCache({ value: [10, 11, 12, 13, 14, 15] });
+    expect(evaluateRow(r3, trend, 4).result).toBe(true); // 14 > 11
+    expect(evaluateRow({ ...r3, period: 5 }, trend, 4).result).toBeNull(); // 4 - 5 < 0
+    expect(evaluateRow({ ...r3, dir: 'down' }, trend, 4).result).toBe(false);
   });
 
-  it('evaluates all 6 Bollinger Band action operators on r1', () => {
-    const base = ruleOf('bollinger', 'buy', 'r1');
-    const op = (o: string) => ({ ...base, op: o }) as Rule;
-    expect(
-      evaluateRule(op('reenter_lower'), { close: [9, 11], lower: [10, 10], middle: [15, 15], upper: [20, 20] }, {}, 1),
-    ).toBe(true);
-    expect(
-      evaluateRule(op('reenter_upper'), { close: [21, 19], lower: [10, 10], middle: [15, 15], upper: [20, 20] }, {}, 1),
-    ).toBe(true);
-    expect(
-      evaluateRule(op('break_upper'), { close: [19, 21], lower: [10, 10], middle: [15, 15], upper: [20, 20] }, {}, 1),
-    ).toBe(true);
-    expect(
-      evaluateRule(op('break_lower'), { close: [11, 9], lower: [10, 10], middle: [15, 15], upper: [20, 20] }, {}, 1),
-    ).toBe(true);
-    expect(
-      evaluateRule(
-        op('cross_up_middle'),
-        { close: [15, 16], lower: [10, 10], middle: [15, 15], upper: [20, 20] },
-        {},
-        1,
-      ),
-    ).toBe(true);
-    expect(
-      evaluateRule(
-        op('cross_down_middle'),
-        { close: [15, 14], lower: [10, 10], middle: [15, 15], upper: [20, 20] },
-        {},
-        1,
-      ),
-    ).toBe(true);
-  });
-
-  it('evaluates OBV r1 (cross_up/cross_down/>/<) and r2 (break_high/break_low over t-N..t-1)', () => {
+  it('evaluates OBV breakout over t-N..t-1 on real series', () => {
     const data = closes([10, 11, 12, 13, 14, 15, 16]).map((bar, i) => ({
       ...bar,
       volume: [100, 100, 100, 100, 100, 100, 500][i]!,
@@ -512,35 +434,8 @@ describe('SPEC V2 indicator conditions & rule filtering parity', () => {
     const series = calc('obv', { baseline: 5, breakout_period: 5 }, data);
     expect(series.upper![6]).toBe(500); // max of OBV[1..5] = [100, 200, 300, 400, 500]
     expect(series.value![6]).toBe(1000);
-    const r2Buy = { ...ruleOf('obv', 'buy', 'r2'), enabled: true };
-    const r2Sell = { ...ruleOf('obv', 'sell', 'r2'), enabled: true };
-    expect(evaluateRule(r2Buy, series, { baseline: 5, breakout_period: 5 }, 6)).toBe(true);
-    expect(evaluateRule(r2Sell, series, { baseline: 5, breakout_period: 5 }, 6)).toBe(false);
-  });
-
-  it('evaluates DMI r1 (+DI/-DI cross or compare) and r2 (ADX vs level)', () => {
-    const r1 = ruleOf('dmi', 'buy', 'r1');
-    const r2 = ruleOf('dmi', 'buy', 'r2');
-    const series: SeriesMap = { plus: [20, 25], minus: [22, 20], adx: [18, 22] };
-    expect(evaluateRule(r1, series, { period: 14, level: 20 }, 1)).toBe(true); // +DI crossed above -DI
-    expect(evaluateRule(r2, series, { period: 14, level: 20 }, 1)).toBe(true); // ADX 22 > 20
-    expect(evaluateRule(r2, series, { period: 14, level: 25 }, 1)).toBe(false);
-  });
-
-  it('evaluates RSI r1 at t (offset 0) and r2 at t vs t-1, Stochastic r2 cross, and single-rule oscillators', () => {
-    const rsiR1 = ruleOf('rsi', 'buy', 'r1');
-    const rsiR2 = { ...ruleOf('rsi', 'buy', 'r2'), enabled: true };
-    expect(evaluateRule(rsiR1, { value: [35, 28] }, { period: 14, level: 30 }, 1)).toBe(true);
-    expect(evaluateRule(rsiR2, { value: [25, 28] }, { period: 14, level: 30 }, 1)).toBe(true);
-
-    const stochR2 = ruleOf('stochastic', 'buy', 'r2');
-    expect(stochR2.kind).toBe('cross');
-    expect(evaluateRule(stochR2, { value: [18, 22], signal: [20, 20] }, {}, 1)).toBe(true);
-
-    for (const id of ['cci', 'mfi', 'roc', 'williams_r', 'cmf'] as const) {
-      const r1 = ruleOf(id, 'buy', 'r1');
-      expect(r1.kind, id).toBe('cross');
-      expect(evaluateRule(r1, { value: [-10, 10] }, { level: 0 }, 1), id).toBe(true);
-    }
+    const cache = createSeriesCache(data);
+    expect(evaluateRow(rowOf('obv.breakout', 'buy', { period: 5 }), cache, 6).result).toBe(true);
+    expect(evaluateRow(rowOf('obv.breakout', 'sell', { period: 5 }), cache, 6).result).toBe(false);
   });
 });

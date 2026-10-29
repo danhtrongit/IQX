@@ -1,4 +1,5 @@
 import { runBacktest } from '../backtest.js';
+import { isParamsSide } from '../conditions/evaluate.js';
 import { validateConfig } from '../config.js';
 import { EngineRunError } from '../errors.js';
 import { canonicalJson, configHash, sha256Hex } from '../hash.js';
@@ -20,8 +21,8 @@ import { AdvancedEngineError } from './errors.js';
  * Chapter 2 research runs (ADVANCED-CAPABILITIES §1–§3), ported from the spec
  * reference `assets/research.js` (sensitivity / outsideSample / walkForward).
  * Every candidate is a deep copy of the immutable base config with exactly one
- * parameter replaced; nothing here writes the shared config or picks a "best"
- * configuration for the user.
+ * parameter replaced (a numeric field of one condition row, or a Volume side param);
+ * nothing here writes the shared config or picks a "best" configuration for the user.
  */
 
 /** Reference cap on candidates per sweep; production limits must follow real infrastructure. */
@@ -168,25 +169,53 @@ function assertGrid(values: unknown): asserts values is number[] {
   }
 }
 
+type ParamSlot = { owner: Record<string, unknown>; key: string };
+
+/**
+ * The numeric slot a path addresses: `rule` + a numeric field of that row (row-based
+ * indicators), or a side param of a params-based indicator (Volume, no `rule`).
+ */
+function paramSlot(
+  config: SharedConfig,
+  path: ParamPath,
+  registry: readonly RegistryEntry[],
+): ParamSlot | null {
+  const entry = registry.find((e) => e.id === path?.indicator);
+  const sideOk = path?.side === 'buy' || path?.side === 'sell';
+  const side = sideOk ? config.indicators?.[path.indicator]?.[path.side] : undefined;
+  if (!entry || !side || typeof path.key !== 'string') return null;
+  if (entry.model === 'rows') {
+    const definition = entry.rows.find((row) => row.id === path.rule);
+    const field = definition?.fields.find((f) => f.key === path.key);
+    if (!field || field.type === 'enum' || isParamsSide(side)) return null;
+    const row = side.rules.find((item) => item.id === path.rule);
+    return row ? { owner: row, key: path.key } : null;
+  }
+  if (path.rule !== undefined || !entry.fields.some((f) => f.key === path.key)) return null;
+  return isParamsSide(side) ? { owner: side.params, key: path.key } : null;
+}
+
 function assertPath(
   config: SharedConfig,
   path: ParamPath,
   registry: readonly RegistryEntry[],
 ): void {
-  const entry = registry.find((e) => e.id === path?.indicator);
-  const sideOk = path?.side === 'buy' || path?.side === 'sell';
-  const params = sideOk ? config.indicators?.[path.indicator]?.[path.side]?.params : undefined;
-  if (!entry || !sideOk || !entry.fields.some((f) => f.key === path.key) || !params) {
+  if (!paramSlot(config, path, registry)) {
     throw new AdvancedEngineError('PATH_INVALID', 'Đường tham số không hợp lệ.');
   }
 }
 
 /** Deep copy of `config` with exactly one parameter replaced. */
-function withParam(config: SharedConfig, path: ParamPath, value: number): SharedConfig {
+function withParam(
+  config: SharedConfig,
+  path: ParamPath,
+  value: number,
+  registry: readonly RegistryEntry[],
+): SharedConfig {
   const candidate = jsonCopy(config);
-  const item = candidate.indicators[path.indicator];
-  if (!item) throw new AdvancedEngineError('PATH_INVALID', 'Đường tham số không hợp lệ.');
-  item[path.side].params[path.key] = value;
+  const slot = paramSlot(candidate, path, registry);
+  if (!slot) throw new AdvancedEngineError('PATH_INVALID', 'Đường tham số không hợp lệ.');
+  slot.owner[slot.key] = value;
   return candidate;
 }
 
@@ -254,7 +283,15 @@ function sweep(
   barsHash: string,
 ): CandidateRun[] {
   return values.map((value, index) =>
-    runCandidate(index, withParam(config, path, value), value, bars, options, registry, barsHash),
+    runCandidate(
+      index,
+      withParam(config, path, value, registry),
+      value,
+      bars,
+      options,
+      registry,
+      barsHash,
+    ),
   );
 }
 
@@ -488,7 +525,7 @@ export function walkForward(
       continue;
     }
     const chosenRun = runs[chosen.index];
-    const testConfig = withParam(base, spec.path, chosen.value);
+    const testConfig = withParam(base, spec.path, chosen.value, registry);
     const test = runBacktest(
       testConfig,
       bars.slice(0, testEndIndex + 1),

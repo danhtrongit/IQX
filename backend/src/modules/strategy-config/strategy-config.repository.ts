@@ -55,6 +55,11 @@ export interface SharedConfigStore {
   /** Inserts the revision and returns its server `saved_at`. */
   insertRevision(revision: NewRevision): Promise<{ saved_at: Date }>;
   insertEffectiveSession(session: NewEffectiveSession): Promise<void>;
+  /**
+   * Marks the owner's unresolved config pause (SPEC V3 §6.2, `bot_config_pauses`) as resumed by
+   * this saved revision; a no-op without one. Runs inside the save transaction.
+   */
+  resumeConfigPause(userId: string, revision: number): Promise<void>;
   /** Holidays of the active trading calendar row, or null when no row is active. */
   activeCalendar(): Promise<{ holidays: unknown } | null>;
 }
@@ -162,6 +167,14 @@ export class SharedConfigSqlStore implements SharedConfigStore {
       `insert into effective_config_sessions (user_id, revision, effective_session, status, computed_at)
        values ($1, $2, $3::date, $4, now())`,
       [session.user_id, session.revision, session.effective_session, session.status],
+    );
+  }
+
+  async resumeConfigPause(userId: string, revision: number) {
+    await this.client.query(
+      `update bot_config_pauses set resume_revision = $2, resumed_at = now()
+        where user_id = $1 and resume_revision is null`,
+      [userId, revision],
     );
   }
 

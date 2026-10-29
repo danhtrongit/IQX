@@ -11,6 +11,7 @@ import {
   type Bar,
   type IndicatorConfig,
   type RunOptions,
+  type RowSideConfig,
   type RunResult,
   type SharedConfig,
 } from '../../src/modules/quant/v2/index.js';
@@ -43,8 +44,8 @@ function maConfig(buyPeriod: number, sellPeriod: number, sell = true): SharedCon
   ma.master_enabled = true;
   ma.buy.enabled = true;
   ma.sell.enabled = sell;
-  ma.buy.params.period = buyPeriod;
-  ma.sell.params.period = sellPeriod;
+  (ma.buy as RowSideConfig).rules[0]!.period = buyPeriod;
+  (ma.sell as RowSideConfig).rules[0]!.period = sellPeriod;
   return config;
 }
 
@@ -171,10 +172,8 @@ describe('same-session close and next-session open profiles (B04-B09)', () => {
       obv.master_enabled = true;
       obv.buy.enabled = true;
       obv.sell.enabled = true;
-      obv.buy.params.baseline = 5;
-      obv.sell.params.baseline = 5;
-      obv.buy.rules[0]!.op = '>';
-      obv.sell.rules[0]!.op = '<';
+      Object.assign((obv.buy as RowSideConfig).rules[0]!, { period: 5, op: '>' });
+      Object.assign((obv.sell as RowSideConfig).rules[0]!, { period: 5, op: '<' });
       return c;
     })();
     const options: Partial<RunOptions> = {
@@ -423,7 +422,7 @@ describe('B11-B18 ledger, KPIs and chart contract', () => {
 describe('B20 / B07 history and missing sessions', () => {
   it('B20 the view and the evidence cover every closed trade, not a page of them', () => {
     const closes = Array.from({ length: 800 }, (_, i) => 100 + 20 * Math.sin(i / 3));
-    const config = maConfig(5, 8);
+    const config = maConfig(5, 10);
     const data = bars(closes);
     const result = runBacktest(config, data, { ...NO_FEE, execution: 'same_close', capital: 1e9 });
     expect(result.trades.length).toBeGreaterThan(30);

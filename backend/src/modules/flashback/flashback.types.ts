@@ -23,7 +23,7 @@ export interface PublicFlashbackBar {
 /** Một chỉ báo đã lưu trong lượt chơi. */
 export interface FlashbackIndicatorInstance {
   readonly id: string;
-  /** Tham số theo đúng key của registry; giá trị có thể là số hoặc cặp ngưỡng dưới/trên. */
+  /** Tham số theo đúng key của danh mục Flashback; giá trị là số hoặc cặp ngưỡng dưới/trên. */
   readonly params: Record<string, number | { lower: number; upper: number }>;
 }
 

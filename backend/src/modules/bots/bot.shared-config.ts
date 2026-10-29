@@ -1,6 +1,7 @@
 import {
   configHash,
-  evaluateRuleWithEvidence,
+  createSeriesCache,
+  evaluateIndicatorSide,
   loadTechnicalRegistry,
   sideSignals,
   sideSignalsWithEvidence,
@@ -10,6 +11,7 @@ import {
   type SharedConfig,
   type Side,
   type SideSignalsEvidence,
+  type TracedRuleEvaluation,
   type Tri,
 } from '../quant/v2/index.js';
 import {
@@ -265,8 +267,8 @@ export function activeSideIndicators(
     const item = config.indicators[entry.id];
     return Boolean(
       item?.master_enabled &&
-        item[side].enabled &&
-        item[side].rules.some((rule) => rule.enabled !== false),
+      item[side].enabled &&
+      item[side].rules.some((rule) => rule.enabled !== false),
     );
   });
 }
@@ -341,19 +343,32 @@ export function missingSideSignalEvidence(
   return {
     result: null,
     active_indicator_ids: active.map((entry) => entry.id),
-    rules: active.flatMap((entry) => {
-      const sideConfig = config.indicators[entry.id]![side];
-      return sideConfig.rules
-        .filter((rule) => rule.enabled !== false)
-        .map((rule) => ({
-          id: rule.id,
-          indicator: entry.id,
-          side,
-          op: rule.op,
-          ...evaluateRuleWithEvidence(rule, {}, sideConfig.params, 0),
-        }));
-    }),
+    rules: unavailableSideRules(
+      config,
+      active.map((entry) => entry.id),
+      side,
+    ),
   };
+}
+
+/**
+ * Enabled rows of the given indicators evaluated without any bar, through the shared
+ * evaluator: every row is `missing` with its own operator and stored values, and a fixed
+ * threshold still shows as `rhs` (SPEC V3 §2: missing data is NO_SIGNAL, never false).
+ */
+export function unavailableSideRules(
+  config: SharedConfig,
+  indicatorIds: readonly string[],
+  side: Side,
+): TracedRuleEvaluation[] {
+  const empty = createSeriesCache([]);
+  return indicatorIds.flatMap((id) => {
+    const sideConfig = config.indicators[id]?.[side];
+    if (!sideConfig) return [];
+    return evaluateIndicatorSide(id, { ...sideConfig, enabled: true }, empty, 0).rows.map(
+      (row) => ({ ...row, indicator: id, side }),
+    );
+  });
 }
 
 export function conditionSnapshot(
@@ -427,6 +442,7 @@ export function sharedConfigBuyBlock(
   | 'no_active_buy_conditions'
   | 'config_invalid_or_unauthorized'
   | 'legacy_needs_review'
+  | 'config_outdated'
   | 'academy_buy_not_met'
   | 'academy_condition_missing'
   | null {

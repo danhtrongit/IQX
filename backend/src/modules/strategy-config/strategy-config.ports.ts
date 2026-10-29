@@ -12,26 +12,34 @@ export const SHARED_CONFIG_READER = Symbol('SHARED_CONFIG_READER');
 export type EffectiveSharedConfig = {
   revision: number;
   /**
-   * Always the current 16-indicator shape (`iqx-rules-3.0`). For a historical revision this is
-   * the mapping of the stored document, so `configHash(config)` differs from `config_hash`
-   * (the hash of the stored document, kept for receipts); check `legacy` first.
+   * Always the current shape (`iqx-rules-4.0`). For an outdated revision (`outdated: true`) this
+   * is the SPEC V3 reset of the stored document (defaults + the user's switches), so
+   * `configHash(config)` differs from `config_hash` (the hash of the stored document, kept for
+   * receipts).
    */
   config: SharedConfig;
   config_hash: string;
   /** First valid session (Asia/Ho_Chi_Minh) strictly after the save date. */
   effective_session: string;
   /**
-   * null for a current revision. For a historical (35-indicator) revision a side with
-   * `legacy_needs_review` must be blocked, never traded on the remaining rules.
+   * true when the stored document is not in the current format (`iqx-rules-3.0`, `iqx-rules-2.0`
+   * or unreadable). Its conditions were never mapped (SPEC V3 §6.1.5): never trade on it.
+   */
+  outdated?: boolean;
+  /**
+   * null for a current revision. For an outdated revision both sides are `legacy_needs_review`
+   * (`reset: true`), so a caller that only knows the review still blocks it.
    */
   legacy?: LegacyConfigReview | null;
 };
 
 export type GetRevisionOptions = {
   /**
-   * A revision whose removed indicators were ON is refused with 422
-   * LEGACY_CONFIG_NEEDS_REVIEW unless the caller handles `legacy` itself (the Bot does).
+   * An outdated revision is refused with 422 CONFIG_FORMAT_OUTDATED (Backtest create, Alert
+   * source) unless the caller handles `outdated` itself (Bot pins and history).
    */
+  allowOutdated?: boolean;
+  /** @deprecated Same as `allowOutdated` (the pre-V3 name, kept for existing callers). */
   allowLegacyReview?: boolean;
 };
 
@@ -51,6 +59,7 @@ export interface SharedConfigReaderPort {
     config: SharedConfig;
     config_hash: string;
     saved_at: string;
+    outdated?: boolean;
     legacy?: LegacyConfigReview | null;
   } | null>;
 }

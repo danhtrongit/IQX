@@ -1,0 +1,1711 @@
+[
+  {
+    "id": "rsi",
+    "name": "RSI",
+    "chapter": 4,
+    "lesson_id": "ch04-l06",
+    "legacy_chapter": 1,
+    "legacy_lesson_id": "ch01-l01",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "rsi.level",
+        "sentence": "RSI {period} {op} {threshold}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ RSI",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Dấu so sánh",
+            "type": "enum",
+            "options": [
+              {
+                "value": ">",
+                "label": ">"
+              },
+              {
+                "value": "<",
+                "label": "<"
+              }
+            ]
+          },
+          {
+            "key": "threshold",
+            "label": "Ngưỡng RSI",
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "period": 14,
+          "op": "<",
+          "threshold": 30
+        },
+        "sell": {
+          "period": 14,
+          "op": ">",
+          "threshold": 70
+        }
+      },
+      {
+        "id": "rsi.trend",
+        "sentence": "RSI {period} xu hướng {dir}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ RSI",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "dir",
+            "label": "Xu hướng RSI",
+            "type": "enum",
+            "options": [
+              {
+                "value": "up",
+                "label": "lên"
+              },
+              {
+                "value": "down",
+                "label": "xuống"
+              }
+            ]
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "period": 14,
+          "dir": "up"
+        },
+        "sell": {
+          "period": 14,
+          "dir": "down"
+        }
+      }
+    ]
+  },
+  {
+    "id": "macd",
+    "name": "MACD",
+    "chapter": 4,
+    "lesson_id": "ch04-l07",
+    "legacy_chapter": 1,
+    "legacy_lesson_id": "ch01-l02",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "macd.signal",
+        "sentence": "MACD {fast} / {slow} {op} Signal {signal}",
+        "fields": [
+          {
+            "key": "fast",
+            "label": "Chu kỳ EMA nhanh",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "slow",
+            "label": "Chu kỳ EMA chậm",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Quan hệ MACD với Signal",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "cắt lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "cắt xuống"
+              },
+              {
+                "value": ">",
+                "label": ">"
+              },
+              {
+                "value": "<",
+                "label": "<"
+              }
+            ]
+          },
+          {
+            "key": "signal",
+            "label": "Chu kỳ Signal",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          }
+        ],
+        "constraints": [
+          {
+            "left": "fast",
+            "op": "<",
+            "right": "slow"
+          }
+        ],
+        "default_enabled": true,
+        "buy": {
+          "fast": 12,
+          "slow": 26,
+          "op": "cross_up",
+          "signal": 9
+        },
+        "sell": {
+          "fast": 12,
+          "slow": 26,
+          "op": "cross_down",
+          "signal": 9
+        }
+      },
+      {
+        "id": "macd.zero",
+        "sentence": "MACD {fast} / {slow} {op} 0",
+        "fields": [
+          {
+            "key": "fast",
+            "label": "Chu kỳ EMA nhanh",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "slow",
+            "label": "Chu kỳ EMA chậm",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Quan hệ với 0",
+            "type": "enum",
+            "options": [
+              {
+                "value": ">",
+                "label": ">"
+              },
+              {
+                "value": "<",
+                "label": "<"
+              }
+            ]
+          }
+        ],
+        "constraints": [
+          {
+            "left": "fast",
+            "op": "<",
+            "right": "slow"
+          }
+        ],
+        "default_enabled": false,
+        "buy": {
+          "fast": 12,
+          "slow": 26,
+          "op": ">"
+        },
+        "sell": {
+          "fast": 12,
+          "slow": 26,
+          "op": "<"
+        }
+      },
+      {
+        "id": "macd.hist",
+        "sentence": "Histogram MACD {fast} / {slow} / {signal} {dir} so với phiên trước",
+        "fields": [
+          {
+            "key": "fast",
+            "label": "Chu kỳ EMA nhanh",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "slow",
+            "label": "Chu kỳ EMA chậm",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "signal",
+            "label": "Chu kỳ Signal",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "dir",
+            "label": "Biến động Histogram",
+            "type": "enum",
+            "options": [
+              {
+                "value": "up",
+                "label": "tăng"
+              },
+              {
+                "value": "down",
+                "label": "giảm"
+              }
+            ]
+          }
+        ],
+        "constraints": [
+          {
+            "left": "fast",
+            "op": "<",
+            "right": "slow"
+          }
+        ],
+        "default_enabled": false,
+        "buy": {
+          "fast": 12,
+          "slow": 26,
+          "signal": 9,
+          "dir": "up"
+        },
+        "sell": {
+          "fast": 12,
+          "slow": 26,
+          "signal": 9,
+          "dir": "down"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ma",
+    "name": "MA / SMA",
+    "chapter": 4,
+    "lesson_id": "ch04-l05",
+    "legacy_chapter": 1,
+    "legacy_lesson_id": "ch01-l03",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "ma.price_cross",
+        "sentence": "Giá cắt {op} SMA {period}",
+        "fields": [
+          {
+            "key": "op",
+            "label": "Hướng cắt",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "xuống"
+              }
+            ]
+          },
+          {
+            "key": "period",
+            "label": "Chu kỳ SMA",
+            "type": "integer",
+            "min": 5,
+            "max": 200,
+            "step": 1,
+            "options": [
+              5,
+              10,
+              20,
+              50,
+              100,
+              200
+            ]
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "op": "cross_up",
+          "period": 20
+        },
+        "sell": {
+          "op": "cross_down",
+          "period": 20
+        }
+      },
+      {
+        "id": "ma.ma_cross",
+        "sentence": "SMA {fast} cắt {op} SMA {slow}",
+        "fields": [
+          {
+            "key": "fast",
+            "label": "Chu kỳ SMA nhanh",
+            "type": "integer",
+            "min": 5,
+            "max": 200,
+            "step": 1,
+            "options": [
+              5,
+              10,
+              20,
+              50,
+              100,
+              200
+            ]
+          },
+          {
+            "key": "op",
+            "label": "Hướng giao cắt",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "xuống"
+              }
+            ]
+          },
+          {
+            "key": "slow",
+            "label": "Chu kỳ SMA chậm",
+            "type": "integer",
+            "min": 5,
+            "max": 200,
+            "step": 1,
+            "options": [
+              5,
+              10,
+              20,
+              50,
+              100,
+              200
+            ]
+          }
+        ],
+        "constraints": [
+          {
+            "left": "fast",
+            "op": "<",
+            "right": "slow"
+          }
+        ],
+        "default_enabled": false,
+        "buy": {
+          "fast": 10,
+          "op": "cross_up",
+          "slow": 20
+        },
+        "sell": {
+          "fast": 10,
+          "op": "cross_down",
+          "slow": 20
+        }
+      },
+      {
+        "id": "ma.trend",
+        "sentence": "SMA {period} xu hướng {dir}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ SMA",
+            "type": "integer",
+            "min": 5,
+            "max": 200,
+            "step": 1,
+            "options": [
+              5,
+              10,
+              20,
+              50,
+              100,
+              200
+            ]
+          },
+          {
+            "key": "dir",
+            "label": "Xu hướng SMA",
+            "type": "enum",
+            "options": [
+              {
+                "value": "up",
+                "label": "lên"
+              },
+              {
+                "value": "down",
+                "label": "xuống"
+              }
+            ]
+          }
+        ],
+        "constraints": [],
+        "default_enabled": false,
+        "buy": {
+          "period": 20,
+          "dir": "up"
+        },
+        "sell": {
+          "period": 20,
+          "dir": "down"
+        }
+      }
+    ]
+  },
+  {
+    "id": "bollinger",
+    "name": "Bollinger Bands",
+    "chapter": 4,
+    "lesson_id": "ch04-l08",
+    "legacy_chapter": 1,
+    "legacy_lesson_id": "ch01-l04",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "bollinger.price_action",
+        "sentence": "Giá đóng cửa {action} Bollinger {period} hệ số {mult}",
+        "fields": [
+          {
+            "key": "action",
+            "label": "Hành động giá với Bollinger",
+            "type": "enum",
+            "options": [
+              {
+                "value": "reenter_lower",
+                "label": "quay vào dải từ dưới"
+              },
+              {
+                "value": "reenter_upper",
+                "label": "quay vào dải từ trên"
+              },
+              {
+                "value": "break_upper",
+                "label": "vượt dải trên"
+              },
+              {
+                "value": "break_lower",
+                "label": "phá dải dưới"
+              },
+              {
+                "value": "cross_up_middle",
+                "label": "cắt lên dải giữa"
+              },
+              {
+                "value": "cross_down_middle",
+                "label": "cắt xuống dải giữa"
+              }
+            ]
+          },
+          {
+            "key": "period",
+            "label": "Chu kỳ Bollinger",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "mult",
+            "label": "Hệ số độ lệch chuẩn",
+            "type": "number",
+            "min": 1,
+            "max": 3.5,
+            "step": 0.1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "action": "reenter_lower",
+          "period": 20,
+          "mult": 2
+        },
+        "sell": {
+          "action": "reenter_upper",
+          "period": 20,
+          "mult": 2
+        }
+      },
+      {
+        "id": "bollinger.price_dir",
+        "sentence": "Giá đóng cửa {dir} so với phiên trước",
+        "fields": [
+          {
+            "key": "dir",
+            "label": "Biến động giá",
+            "type": "enum",
+            "options": [
+              {
+                "value": "up",
+                "label": "tăng"
+              },
+              {
+                "value": "down",
+                "label": "giảm"
+              }
+            ]
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "dir": "up"
+        },
+        "sell": {
+          "dir": "down"
+        }
+      },
+      {
+        "id": "bollinger.width",
+        "sentence": "Độ rộng Bollinger {period} hệ số {mult} {dir}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ Bollinger",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "mult",
+            "label": "Hệ số độ lệch chuẩn",
+            "type": "number",
+            "min": 1,
+            "max": 3.5,
+            "step": 0.1
+          },
+          {
+            "key": "dir",
+            "label": "Biến động độ rộng dải",
+            "type": "enum",
+            "options": [
+              {
+                "value": "widen",
+                "label": "mở rộng"
+              },
+              {
+                "value": "narrow",
+                "label": "thu hẹp"
+              }
+            ]
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "period": 20,
+          "mult": 2,
+          "dir": "narrow"
+        },
+        "sell": {
+          "period": 20,
+          "mult": 2,
+          "dir": "widen"
+        }
+      }
+    ]
+  },
+  {
+    "id": "volume",
+    "name": "Khối lượng",
+    "chapter": 4,
+    "lesson_id": "ch04-l04",
+    "legacy_chapter": 1,
+    "legacy_lesson_id": "ch01-l05",
+    "family": "state",
+    "model": "legacy_params",
+    "buy": {
+      "enabled": false,
+      "params": {
+        "lookback": 20,
+        "mult": 1
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "volume",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "threshold",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "sell": {
+      "enabled": false,
+      "params": {
+        "lookback": 20,
+        "mult": 1
+      },
+      "rules": [
+        {
+          "id": "r1",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": 0
+          },
+          "op": "<",
+          "rhs": {
+            "kind": "series",
+            "key": "close",
+            "offset": -1
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        },
+        {
+          "id": "r2",
+          "kind": "compare",
+          "lhs": {
+            "kind": "series",
+            "key": "volume",
+            "offset": 0
+          },
+          "op": ">",
+          "rhs": {
+            "kind": "series",
+            "key": "threshold",
+            "offset": 0
+          },
+          "allowed_ops": [
+            ">",
+            "<"
+          ]
+        }
+      ]
+    },
+    "fields": [
+      {
+        "key": "lookback",
+        "label": "Số phiên tham chiếu",
+        "type": "integer",
+        "min": 5,
+        "max": 100,
+        "step": 1,
+        "unit": "phiên",
+        "api_scale": 1,
+        "wire_unit": "phiên"
+      },
+      {
+        "key": "mult",
+        "label": "Hệ số khối lượng",
+        "type": "number",
+        "min": 0.5,
+        "max": 3,
+        "step": 0.1,
+        "unit": "lần",
+        "api_scale": 1,
+        "wire_unit": "lần"
+      }
+    ],
+    "validation": {
+      "cross_fields": [],
+      "finite_required": true,
+      "reject_unknown_keys": true,
+      "membership": "open_interval; complement_on_valid_only",
+      "bollinger_impossible_direction": null
+    }
+  },
+  {
+    "id": "ema",
+    "name": "EMA",
+    "chapter": 6,
+    "lesson_id": "ch06-l01",
+    "legacy_chapter": 5,
+    "legacy_lesson_id": "ch05-l01",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "ema.price_cross",
+        "sentence": "Giá cắt {op} EMA {period}",
+        "fields": [
+          {
+            "key": "op",
+            "label": "Hướng cắt",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "xuống"
+              }
+            ]
+          },
+          {
+            "key": "period",
+            "label": "Chu kỳ EMA",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "op": "cross_up",
+          "period": 20
+        },
+        "sell": {
+          "op": "cross_down",
+          "period": 20
+        }
+      },
+      {
+        "id": "ema.ma_cross",
+        "sentence": "EMA {fast} cắt {op} EMA {slow}",
+        "fields": [
+          {
+            "key": "fast",
+            "label": "Chu kỳ EMA nhanh",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Hướng giao cắt",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "xuống"
+              }
+            ]
+          },
+          {
+            "key": "slow",
+            "label": "Chu kỳ EMA chậm",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          }
+        ],
+        "constraints": [
+          {
+            "left": "fast",
+            "op": "<",
+            "right": "slow"
+          }
+        ],
+        "default_enabled": false,
+        "buy": {
+          "fast": 10,
+          "op": "cross_up",
+          "slow": 20
+        },
+        "sell": {
+          "fast": 10,
+          "op": "cross_down",
+          "slow": 20
+        }
+      },
+      {
+        "id": "ema.trend",
+        "sentence": "EMA {period} xu hướng {dir}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ EMA",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "dir",
+            "label": "Xu hướng EMA",
+            "type": "enum",
+            "options": [
+              {
+                "value": "up",
+                "label": "lên"
+              },
+              {
+                "value": "down",
+                "label": "xuống"
+              }
+            ]
+          }
+        ],
+        "constraints": [],
+        "default_enabled": false,
+        "buy": {
+          "period": 20,
+          "dir": "up"
+        },
+        "sell": {
+          "period": 20,
+          "dir": "down"
+        }
+      }
+    ]
+  },
+  {
+    "id": "ma_cross",
+    "name": "MA Cross",
+    "chapter": 6,
+    "lesson_id": "ch06-l02",
+    "legacy_chapter": 5,
+    "legacy_lesson_id": "ch05-l02",
+    "family": "event",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "ma_cross.cross",
+        "sentence": "SMA {fast} cắt {op} SMA {slow}",
+        "fields": [
+          {
+            "key": "fast",
+            "label": "Chu kỳ SMA nhanh",
+            "type": "integer",
+            "min": 5,
+            "max": 200,
+            "step": 1,
+            "options": [
+              5,
+              10,
+              20,
+              50,
+              100,
+              200
+            ]
+          },
+          {
+            "key": "op",
+            "label": "Hướng giao cắt",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "xuống"
+              }
+            ]
+          },
+          {
+            "key": "slow",
+            "label": "Chu kỳ SMA chậm",
+            "type": "integer",
+            "min": 5,
+            "max": 200,
+            "step": 1,
+            "options": [
+              5,
+              10,
+              20,
+              50,
+              100,
+              200
+            ]
+          }
+        ],
+        "constraints": [
+          {
+            "left": "fast",
+            "op": "<",
+            "right": "slow"
+          }
+        ],
+        "default_enabled": true,
+        "buy": {
+          "fast": 20,
+          "op": "cross_up",
+          "slow": 50
+        },
+        "sell": {
+          "fast": 20,
+          "op": "cross_down",
+          "slow": 50
+        }
+      }
+    ]
+  },
+  {
+    "id": "dmi",
+    "name": "DMI",
+    "chapter": 6,
+    "lesson_id": "ch06-l03",
+    "legacy_chapter": 5,
+    "legacy_lesson_id": "ch05-l03",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "dmi.di",
+        "sentence": "DMI {period} : +DI {op} −DI",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ DMI",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Quan hệ +DI với −DI",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "cắt lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "cắt xuống"
+              },
+              {
+                "value": ">",
+                "label": ">"
+              },
+              {
+                "value": "<",
+                "label": "<"
+              }
+            ]
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "period": 14,
+          "op": "cross_up"
+        },
+        "sell": {
+          "period": 14,
+          "op": "cross_down"
+        }
+      },
+      {
+        "id": "dmi.adx",
+        "sentence": "ADX {period} {op} {threshold}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ ADX",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Dấu ADX",
+            "type": "enum",
+            "options": [
+              {
+                "value": ">",
+                "label": ">"
+              },
+              {
+                "value": "<",
+                "label": "<"
+              }
+            ]
+          },
+          {
+            "key": "threshold",
+            "label": "Ngưỡng ADX",
+            "type": "number",
+            "min": 0,
+            "max": 100,
+            "step": 0.1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": false,
+        "buy": {
+          "period": 14,
+          "op": ">",
+          "threshold": 25
+        },
+        "sell": {
+          "period": 14,
+          "op": ">",
+          "threshold": 25
+        }
+      }
+    ]
+  },
+  {
+    "id": "stochastic",
+    "name": "Stochastic",
+    "chapter": 7,
+    "lesson_id": "ch07-l01",
+    "legacy_chapter": 5,
+    "legacy_lesson_id": "ch05-l05",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "stochastic.level",
+        "sentence": "%K {k} làm mượt {smooth} {op} {threshold}",
+        "fields": [
+          {
+            "key": "k",
+            "label": "Chu kỳ %K",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "smooth",
+            "label": "Làm mượt %K",
+            "type": "integer",
+            "min": 1,
+            "max": 10,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Dấu so sánh",
+            "type": "enum",
+            "options": [
+              {
+                "value": ">",
+                "label": ">"
+              },
+              {
+                "value": "<",
+                "label": "<"
+              }
+            ]
+          },
+          {
+            "key": "threshold",
+            "label": "Ngưỡng Stochastic",
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "k": 14,
+          "smooth": 3,
+          "op": "<",
+          "threshold": 20
+        },
+        "sell": {
+          "k": 14,
+          "smooth": 3,
+          "op": ">",
+          "threshold": 80
+        }
+      },
+      {
+        "id": "stochastic.kd_cross",
+        "sentence": "%K {k} làm mượt {smooth} {op} %D {d}",
+        "fields": [
+          {
+            "key": "k",
+            "label": "Chu kỳ %K",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "smooth",
+            "label": "Làm mượt %K",
+            "type": "integer",
+            "min": 1,
+            "max": 10,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Giao cắt Stochastic",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "cắt lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "cắt xuống"
+              }
+            ]
+          },
+          {
+            "key": "d",
+            "label": "Chu kỳ %D",
+            "type": "integer",
+            "min": 1,
+            "max": 20,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "k": 14,
+          "smooth": 3,
+          "op": "cross_up",
+          "d": 3
+        },
+        "sell": {
+          "k": 14,
+          "smooth": 3,
+          "op": "cross_down",
+          "d": 3
+        }
+      }
+    ]
+  },
+  {
+    "id": "cci",
+    "name": "CCI",
+    "chapter": 7,
+    "lesson_id": "ch07-l02",
+    "legacy_chapter": 5,
+    "legacy_lesson_id": "ch05-l06",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "cci.cross",
+        "sentence": "CCI {period} {op} {threshold}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ CCI",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Hướng giao cắt CCI",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "cắt lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "cắt xuống"
+              }
+            ]
+          },
+          {
+            "key": "threshold",
+            "label": "Ngưỡng CCI",
+            "type": "integer",
+            "min": -300,
+            "max": 300,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "period": 20,
+          "op": "cross_up",
+          "threshold": -100
+        },
+        "sell": {
+          "period": 20,
+          "op": "cross_down",
+          "threshold": 100
+        }
+      }
+    ]
+  },
+  {
+    "id": "obv",
+    "name": "OBV",
+    "chapter": 7,
+    "lesson_id": "ch07-l05",
+    "legacy_chapter": 7,
+    "legacy_lesson_id": "ch07-l04",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "obv.sma",
+        "sentence": "OBV {op} SMA {period} của OBV",
+        "fields": [
+          {
+            "key": "op",
+            "label": "Quan hệ OBV",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "cắt lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "cắt xuống"
+              },
+              {
+                "value": ">",
+                "label": ">"
+              },
+              {
+                "value": "<",
+                "label": "<"
+              }
+            ]
+          },
+          {
+            "key": "period",
+            "label": "Chu kỳ SMA của OBV",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "op": "cross_up",
+          "period": 20
+        },
+        "sell": {
+          "op": "cross_down",
+          "period": 20
+        }
+      },
+      {
+        "id": "obv.breakout",
+        "sentence": "OBV {action} {period} phiên",
+        "fields": [
+          {
+            "key": "action",
+            "label": "Hướng phá vỡ OBV",
+            "type": "enum",
+            "options": [
+              {
+                "value": "break_high",
+                "label": "vượt đỉnh"
+              },
+              {
+                "value": "break_low",
+                "label": "phá đáy"
+              }
+            ]
+          },
+          {
+            "key": "period",
+            "label": "Số phiên OBV",
+            "type": "integer",
+            "min": 2,
+            "max": 252,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": false,
+        "buy": {
+          "action": "break_high",
+          "period": 20
+        },
+        "sell": {
+          "action": "break_low",
+          "period": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "mfi",
+    "name": "MFI",
+    "chapter": 7,
+    "lesson_id": "ch07-l06",
+    "legacy_chapter": 7,
+    "legacy_lesson_id": "ch07-l05",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "mfi.cross",
+        "sentence": "MFI {period} {op} {threshold}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ MFI",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Hướng giao cắt MFI",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "cắt lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "cắt xuống"
+              }
+            ]
+          },
+          {
+            "key": "threshold",
+            "label": "Ngưỡng MFI",
+            "type": "integer",
+            "min": 0,
+            "max": 100,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "period": 14,
+          "op": "cross_up",
+          "threshold": 20
+        },
+        "sell": {
+          "period": 14,
+          "op": "cross_down",
+          "threshold": 80
+        }
+      }
+    ]
+  },
+  {
+    "id": "cmf",
+    "name": "Chaikin Money Flow",
+    "chapter": 7,
+    "lesson_id": "ch07-l07",
+    "legacy_chapter": 7,
+    "legacy_lesson_id": "ch07-l06",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "cmf.cross",
+        "sentence": "CMF {period} {op} {threshold}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ CMF",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Hướng giao cắt CMF",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "cắt lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "cắt xuống"
+              }
+            ]
+          },
+          {
+            "key": "threshold",
+            "label": "Ngưỡng CMF",
+            "type": "number",
+            "min": -1,
+            "max": 1,
+            "step": 0.01
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "period": 20,
+          "op": "cross_up",
+          "threshold": 0
+        },
+        "sell": {
+          "period": 20,
+          "op": "cross_down",
+          "threshold": 0
+        }
+      }
+    ]
+  },
+  {
+    "id": "donchian",
+    "name": "Donchian Channel",
+    "chapter": 6,
+    "lesson_id": "ch06-l04",
+    "legacy_chapter": 11,
+    "legacy_lesson_id": "ch11-l01",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "donchian.break",
+        "sentence": "Giá đóng cửa {op} dải {band} Donchian {period}",
+        "fields": [
+          {
+            "key": "op",
+            "label": "Dấu so sánh",
+            "type": "enum",
+            "options": [
+              {
+                "value": ">",
+                "label": ">"
+              },
+              {
+                "value": "<",
+                "label": "<"
+              }
+            ]
+          },
+          {
+            "key": "band",
+            "label": "Dải Donchian",
+            "type": "enum",
+            "options": [
+              {
+                "value": "upper",
+                "label": "trên"
+              },
+              {
+                "value": "lower",
+                "label": "dưới"
+              }
+            ]
+          },
+          {
+            "key": "period",
+            "label": "Chu kỳ Donchian",
+            "type": "integer",
+            "min": 2,
+            "max": 252,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "op": ">",
+          "band": "upper",
+          "period": 20
+        },
+        "sell": {
+          "op": "<",
+          "band": "lower",
+          "period": 20
+        }
+      }
+    ]
+  },
+  {
+    "id": "roc",
+    "name": "ROC",
+    "chapter": 7,
+    "lesson_id": "ch07-l03",
+    "legacy_chapter": 11,
+    "legacy_lesson_id": "ch11-l04",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "roc.cross",
+        "sentence": "ROC {period} {op} {threshold} %",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ ROC",
+            "type": "integer",
+            "min": 2,
+            "max": 252,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Hướng giao cắt ROC",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "cắt lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "cắt xuống"
+              }
+            ]
+          },
+          {
+            "key": "threshold",
+            "label": "Ngưỡng ROC (%)",
+            "type": "number",
+            "min": -100,
+            "max": 10000,
+            "step": 0.1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "period": 20,
+          "op": "cross_up",
+          "threshold": 5
+        },
+        "sell": {
+          "period": 20,
+          "op": "cross_down",
+          "threshold": -5
+        }
+      }
+    ]
+  },
+  {
+    "id": "williams_r",
+    "name": "Williams %R",
+    "chapter": 7,
+    "lesson_id": "ch07-l04",
+    "legacy_chapter": 11,
+    "legacy_lesson_id": "ch11-l05",
+    "family": "state",
+    "model": "rows",
+    "rows": [
+      {
+        "id": "williams_r.cross",
+        "sentence": "Williams %R {period} {op} {threshold}",
+        "fields": [
+          {
+            "key": "period",
+            "label": "Chu kỳ Williams %R",
+            "type": "integer",
+            "min": 2,
+            "max": 200,
+            "step": 1
+          },
+          {
+            "key": "op",
+            "label": "Hướng giao cắt Williams",
+            "type": "enum",
+            "options": [
+              {
+                "value": "cross_up",
+                "label": "cắt lên"
+              },
+              {
+                "value": "cross_down",
+                "label": "cắt xuống"
+              }
+            ]
+          },
+          {
+            "key": "threshold",
+            "label": "Ngưỡng Williams %R",
+            "type": "integer",
+            "min": -100,
+            "max": 0,
+            "step": 1
+          }
+        ],
+        "constraints": [],
+        "default_enabled": true,
+        "buy": {
+          "period": 14,
+          "op": "cross_up",
+          "threshold": -80
+        },
+        "sell": {
+          "period": 14,
+          "op": "cross_down",
+          "threshold": -20
+        }
+      }
+    ]
+  }
+]

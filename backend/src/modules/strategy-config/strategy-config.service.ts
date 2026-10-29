@@ -15,9 +15,12 @@ import {
   configHash,
   defaultConfig,
   indicatorCapability,
+  isCurrentFormat,
   isLegacyConfig,
+  isRowsEntry,
   loadTechnicalRegistry,
-  mapLegacyConfig,
+  removedIndicatorIds,
+  resetToCurrentFormat,
   validateConfig,
   type IndicatorConfig,
   type LegacyConfigReview,
@@ -50,109 +53,56 @@ import type {
   TechnicalRegistryResponse,
 } from './strategy-config.schemas.js';
 
-/** A stored revision read through the current 16-indicator contract. */
-export type StoredConfigView = { config: SharedConfig; legacy: LegacyConfigReview | null };
-
-const UNREADABLE_REVIEW: LegacyConfigReview = {
-  from_rule_version: 'unknown',
-  legacy: true,
-  removed_indicators: [],
-  defaulted_indicators: [],
-  buy: { status: 'legacy_needs_review', indicators: [] },
-  sell: { status: 'legacy_needs_review', indicators: [] },
-  needs_review: true,
+/**
+ * A stored revision read through the current contract (`iqx-rules-4.0`). `outdated` documents
+ * are read as the SPEC V3 reset (defaults + switches) and carry a review that blocks both sides.
+ */
+export type StoredConfigView = {
+  config: SharedConfig;
+  outdated: boolean;
+  legacy: LegacyConfigReview | null;
 };
 
-const NEW_DEFAULT_PARAM_KEYS = new Set([
-  'fast',
-  'slow',
-  'trend_period',
-  'breakout_period',
-  'level',
-]);
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  value !== null && typeof value === 'object' && !Array.isArray(value);
 
-function normalizeIndicatorSide(
-  storedSide: IndicatorConfig['buy'],
-  templateSide: RegistryEntry['buy'],
-): IndicatorConfig['buy'] {
-  if (!storedSide || typeof storedSide !== 'object') return storedSide;
-  const params = { ...storedSide.params };
-  for (const [k, v] of Object.entries(templateSide.params)) {
-    if (params[k] === undefined && NEW_DEFAULT_PARAM_KEYS.has(k)) {
-      params[k] = v;
-    }
-  }
-  const sameTemplate =
-    Array.isArray(storedSide.rules) &&
-    storedSide.rules.length === templateSide.rules.length &&
-    templateSide.rules.every((tpl, idx) => {
-      const r = storedSide.rules[idx];
-      if (!r || typeof r !== 'object') return false;
-      const norm: Record<string, unknown> = { ...r, op: tpl.op };
-      if (tpl.enabled !== undefined) norm.enabled = tpl.enabled;
-      else delete norm.enabled;
-      return canonicalJson(norm) === canonicalJson(tpl);
-    });
-  if (sameTemplate) {
-    return { ...storedSide, params };
-  }
-  const rules = templateSide.rules.map((tpl) => {
-    const existing = Array.isArray(storedSide.rules)
-      ? storedSide.rules.find((r) => r?.id === tpl.id)
-      : undefined;
-    const allowed: readonly string[] = tpl.allowed_ops;
-    const op =
-      existing && typeof existing.op === 'string' && allowed.includes(existing.op)
-        ? existing.op
-        : tpl.op;
-    const enabled =
-      existing && typeof existing.enabled === 'boolean' ? existing.enabled : tpl.enabled;
-    return {
-      ...structuredClone(tpl),
-      op,
-      ...(enabled !== undefined ? { enabled } : {}),
-    } as typeof tpl;
-  });
-  return { ...storedSide, params, rules };
-}
-
-function normalizeStoredIndicators(
-  config: SharedConfig,
-  registry: readonly RegistryEntry[],
-): SharedConfig {
-  if (!config?.indicators || typeof config.indicators !== 'object') return config;
-  const indicators: Record<string, IndicatorConfig> = { ...config.indicators };
-  for (const entry of registry) {
-    const item = indicators[entry.id];
-    if (!item || typeof item !== 'object') continue;
-    indicators[entry.id] = {
-      ...item,
-      buy: normalizeIndicatorSide(item.buy, entry.buy),
-      sell: normalizeIndicatorSide(item.sell, entry.sell),
-    };
-  }
-  return { ...config, indicators };
+/** Review of an outdated document: conditions reset, both sides blocked until the user saves. */
+function outdatedReview(stored: unknown, registry: readonly RegistryEntry[]): LegacyConfigReview {
+  const indicators = isRecord(stored) && isRecord(stored.indicators) ? stored.indicators : {};
+  const removed = removedIndicatorIds(indicators);
+  return {
+    from_rule_version:
+      isRecord(stored) && typeof stored.rule_version === 'string' ? stored.rule_version : 'unknown',
+    legacy: true,
+    reset: true,
+    removed_indicators: removed,
+    defaulted_indicators: registry
+      .filter((entry) => indicators[entry.id] === undefined)
+      .map((entry) => entry.id),
+    buy: { status: 'legacy_needs_review', indicators: removed },
+    sell: { status: 'legacy_needs_review', indicators: removed },
+    needs_review: true,
+  };
 }
 
 /**
- * Reads a stored config document. A current (`iqx-rules-3.0`) document is returned as is; a
- * historical 35-indicator document is mapped to the 16-indicator shape together with its review
- * (see `mapLegacyConfig`). A document that cannot be mapped is never trusted: it reads as the
- * registry default with both sides flagged `legacy_needs_review`.
+ * Reads a stored config document (SPEC V3 §6.1.5). A current-format document (`iqx-rules-4.0`)
+ * is returned as is. Any other document (`iqx-rules-3.0`, `iqx-rules-2.0`, unreadable) is never
+ * mapped: it reads as the SPEC V3 defaults keeping only the switches (`master_enabled`,
+ * `buy.enabled`, `sell.enabled`) of the current indicators, Volume copied verbatim when valid
+ * (`resetToCurrentFormat`), with `outdated: true`.
  */
 export function readStoredConfig(
   stored: unknown,
   registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
 ): StoredConfigView {
-  if (!isLegacyConfig(stored))
-    return { config: normalizeStoredIndicators(stored as SharedConfig, registry), legacy: null };
-  const mapped = mapLegacyConfig(stored, registry);
-  if (mapped.ok)
-    return {
-      config: normalizeStoredIndicators(mapped.mapping.config, registry),
-      legacy: mapped.mapping.review,
-    };
-  return { config: defaultConfig(registry), legacy: UNREADABLE_REVIEW };
+  if (isCurrentFormat(stored, registry))
+    return { config: stored as SharedConfig, outdated: false, legacy: null };
+  return {
+    config: resetToCurrentFormat(stored, registry),
+    outdated: true,
+    legacy: outdatedReview(stored, registry),
+  };
 }
 
 const isOn = (indicator: IndicatorConfig | undefined): boolean =>
@@ -166,8 +116,8 @@ const bothSidesOff = (indicator: IndicatorConfig): boolean =>
  * - master ON with both children OFF is normalised to master OFF when the saved master was ON
  *   (the user switched both children off) and rejected with 422 SIDE_REQUIRED when the saved
  *   master was OFF (turning master on needs a chosen side; nothing is auto-enabled);
- * - master OFF keeps child enabled/params/rules; params edits never flip master.
- * Each side is copied independently: Buy params are never reused for Sell.
+ * - master OFF keeps child enabled/rows; row edits never flip master.
+ * Each side is copied independently: Buy rows are never reused for Sell.
  */
 export function mergeIndicatorPatch(
   base: SharedConfig,
@@ -217,20 +167,41 @@ export class SharedConfigService implements SharedConfigReaderPort {
     return {
       calculation_version: CALCULATION_VERSION,
       rule_version: RULE_VERSION,
-      indicators: this.registry().map((entry) => ({
-        id: entry.id,
-        name: entry.name,
-        chapter: entry.chapter,
-        lesson_id: entry.lesson_id,
-        family: entry.family,
-        formula: entry.formula,
-        availability: entry.availability,
-        fields: structuredClone(entry.fields),
-        validation: { cross_fields: structuredClone(entry.validation?.cross_fields ?? []) },
-        buy: structuredClone(entry.buy),
-        sell: structuredClone(entry.sell),
-        learned: grants.has(indicatorCapability(entry.id)),
-      })),
+      indicators: this.registry().map((entry) => {
+        const base = {
+          id: entry.id,
+          name: entry.name,
+          chapter: entry.chapter,
+          lesson_id: entry.lesson_id,
+          family: entry.family,
+          formula: entry.formula,
+          availability: entry.availability,
+          learned: grants.has(indicatorCapability(entry.id)),
+        };
+        if (isRowsEntry(entry)) {
+          return {
+            ...base,
+            model: 'rows' as const,
+            rows: entry.rows.map((row) => ({
+              id: row.id,
+              sentence: row.sentence,
+              fields: structuredClone(row.fields),
+              constraints: structuredClone(row.constraints),
+              default_enabled: row.default_enabled,
+              buy: { ...row.buy },
+              sell: { ...row.sell },
+            })),
+          };
+        }
+        return {
+          ...base,
+          model: 'legacy_params' as const,
+          fields: structuredClone(entry.fields),
+          validation: { cross_fields: structuredClone(entry.validation?.cross_fields ?? []) },
+          buy: structuredClone(entry.buy),
+          sell: structuredClone(entry.sell),
+        };
+      }),
     };
   }
 
@@ -246,7 +217,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
     const config = stored?.config ?? defaultConfig(this.registry());
     // The config in force can be an older revision than the latest saved one (a newer save is
     // pending until its effective session), so it is returned in full, read through the same
-    // legacy mapping as the saved one.
+    // reader as the saved one.
     let inForce: EffectiveSharedConfigView | null = null;
     if (effective?.effective_session) {
       const view =
@@ -258,6 +229,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
         effective_session: effective.effective_session,
         config_hash: effective.config_hash,
         config: view.config,
+        outdated: view.outdated,
         legacy: view.legacy,
       };
     }
@@ -273,6 +245,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
       granted_indicators: this.registry()
         .map((entry) => entry.id)
         .filter((id) => grants.has(indicatorCapability(id))),
+      outdated: stored?.outdated ?? false,
       legacy: stored?.legacy ?? null,
       effective: inForce,
     };
@@ -287,7 +260,8 @@ export class SharedConfigService implements SharedConfigReaderPort {
       config_hash: row.config_hash,
       effective_session: row.effective_session,
       status: this.status(row, now),
-      legacy: isLegacyConfig(row.config),
+      legacy: isLegacyConfig(row.config, this.registry()),
+      outdated: !isCurrentFormat(row.config, this.registry()),
     }));
   }
 
@@ -329,7 +303,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
         });
       }
 
-      // A historical (35-indicator) revision is the base through its 16-indicator mapping; the new
+      // An outdated revision is the base through its SPEC V3 reset (defaults + switches); the new
       // revision is saved in the current shape and `before_hash` keeps the stored document's hash.
       const base = latest
         ? readStoredConfig(latest.config, registry).config
@@ -378,6 +352,9 @@ export class SharedConfigService implements SharedConfigReaderPort {
         effective_session: effectiveSession,
         status,
       });
+      // SPEC V3 §6.2: saving the config resumes a Bot paused by the upgrade, from the session
+      // this revision becomes effective.
+      await store.resumeConfigPause(userId, revision);
       return { revision, config, config_hash: hash, effective_session: effectiveSession, status };
     });
   }
@@ -391,6 +368,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
       config: stored.config,
       config_hash: row.config_hash,
       effective_session: row.effective_session,
+      outdated: stored.outdated,
       legacy: stored.legacy,
     };
   }
@@ -399,14 +377,15 @@ export class SharedConfigService implements SharedConfigReaderPort {
     const row = await this.repository.store().revision(userId, revision);
     if (!row) return null;
     const stored = readStoredConfig(row.config, this.registry());
-    if (stored.legacy?.needs_review && options.allowLegacyReview !== true) {
-      // Never hand out a mapping that silently omits an ON rule of a removed indicator.
+    if (stored.outdated && options.allowOutdated !== true && options.allowLegacyReview !== true) {
+      // SPEC V3 §6.1.5: an outdated revision is never run or pinned (its conditions are not
+      // mapped); Backtest and Alerts ask the user to save the config in the new format.
       throw new UnprocessableEntityException({
-        code: 'LEGACY_CONFIG_NEEDS_REVIEW',
+        code: 'CONFIG_FORMAT_OUTDATED',
         message:
-          'Phiên bản cấu hình cũ dùng chỉ báo đã bỏ khỏi danh mục. Hãy kiểm tra và lưu cấu hình mới.',
+          'Phiên bản cấu hình này dùng định dạng điều kiện cũ. Hãy lưu lại cấu hình theo mẫu điều kiện mới.',
         revision: row.revision,
-        legacy: stored.legacy,
+        details: [{ field: 'revision', revision: row.revision }],
       });
     }
     return {
@@ -414,6 +393,7 @@ export class SharedConfigService implements SharedConfigReaderPort {
       config: stored.config,
       config_hash: row.config_hash,
       saved_at: row.saved_at.toISOString(),
+      outdated: stored.outdated,
       legacy: stored.legacy,
     };
   }

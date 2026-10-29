@@ -1,18 +1,18 @@
 /**
  * Metadata và kiểm tra tham số chỉ báo của Flashback.
  *
- * Nguồn duy nhất là registry kỹ thuật của Bot (`technical-registry.json`) để Flashback và Bot
- * dùng cùng tên tham số, cùng miền giá trị, cùng bước nhảy và cùng quy tắc kiểm tra chéo
- * (spec Flashback v1.1 §2.7). Không có registry riêng cho Flashback.
+ * Danh mục là bảng tĩnh, đóng băng, chốt theo registry kỹ thuật của Bot tại thời điểm ra spec
+ * Flashback v1.1 §2.7 (registry v16). Flashback chỉ vẽ chỉ báo lên biểu đồ để người chơi tự đọc,
+ * không có điều kiện Mua/Bán, nên không đọc registry của Bot: registry đổi hình (spec chỉ báo V3,
+ * tham số theo từng dòng điều kiện) thì tên tham số, miền giá trị, bước nhảy và quy tắc kiểm tra
+ * chéo đã lưu trong `flashback_entries.indicator_params` vẫn phải giữ nguyên. Muốn đổi danh mục
+ * này phải sửa bảng ở đây và cập nhật `flashback.indicators.test.ts`.
  */
-
-import { loadTechnicalRegistry } from '../quant/v2/technical-registry.js';
-import type { RegistryEntry, RegistryField } from '../quant/v2/types.js';
 
 /** Giá trị một tham số: số đơn hoặc cặp ngưỡng dưới/trên (chỉ báo có hai ngưỡng). */
 export type FlashbackIndicatorParamValue = number | { lower: number; upper: number };
 
-/** Bộ tham số của một chỉ báo, theo đúng key của registry. */
+/** Bộ tham số của một chỉ báo, theo đúng key của danh mục. */
 export type FlashbackIndicatorParams = Record<string, FlashbackIndicatorParamValue>;
 
 /** Một chỉ báo được chọn trong lượt chơi. */
@@ -38,7 +38,7 @@ export interface FlashbackIndicatorParamMeta {
   readonly max: number;
   readonly step: number;
   readonly unit: string;
-  /** Mặc định lấy từ phía Mua của registry. */
+  /** Mặc định (lấy theo ngưỡng dưới khi phía Mua và phía Bán khác nhau). */
   readonly default: number;
   /** Ngưỡng dưới khi phía Mua và phía Bán khác nhau (ví dụ RSI). */
   readonly lower: FlashbackParamSide | null;
@@ -75,40 +75,8 @@ const WINDOW_FIELD_KEYS: Record<string, true> = {
   d: true,
 };
 
-/** Thứ tự bài học của 16 chỉ báo trong danh mục Học viện v3.3 (spec Flashback v1.1 §2.7). */
-const FLASHBACK_LESSON_CATALOG: Readonly<
-  Record<string, { readonly chapter: number; readonly lesson_id: string; readonly order: number }>
-> = {
-  volume: { chapter: 4, lesson_id: 'ch04-l04', order: 1 },
-  ma: { chapter: 4, lesson_id: 'ch04-l05', order: 2 },
-  rsi: { chapter: 4, lesson_id: 'ch04-l06', order: 3 },
-  macd: { chapter: 4, lesson_id: 'ch04-l07', order: 4 },
-  bollinger: { chapter: 4, lesson_id: 'ch04-l08', order: 5 },
-  ema: { chapter: 6, lesson_id: 'ch06-l01', order: 6 },
-  ma_cross: { chapter: 6, lesson_id: 'ch06-l02', order: 7 },
-  dmi: { chapter: 6, lesson_id: 'ch06-l03', order: 8 },
-  donchian: { chapter: 6, lesson_id: 'ch06-l04', order: 9 },
-  stochastic: { chapter: 7, lesson_id: 'ch07-l01', order: 10 },
-  cci: { chapter: 7, lesson_id: 'ch07-l02', order: 11 },
-  roc: { chapter: 7, lesson_id: 'ch07-l03', order: 12 },
-  williams_r: { chapter: 7, lesson_id: 'ch07-l04', order: 13 },
-  obv: { chapter: 7, lesson_id: 'ch07-l05', order: 14 },
-  mfi: { chapter: 7, lesson_id: 'ch07-l06', order: 15 },
-  cmf: { chapter: 7, lesson_id: 'ch07-l07', order: 16 },
-};
-
 /** Sai số cho phép khi kiểm tra giá trị nằm đúng bước nhảy. */
 const STEP_TOLERANCE = 1e-6;
-
-function sideOf(entry: RegistryEntry, side: 'buy' | 'sell', field: RegistryField): FlashbackParamSide {
-  const override = entry[side].field_overrides?.[field.key];
-  return {
-    min: override?.min ?? field.min,
-    max: override?.max ?? field.max,
-    default: entry[side].params[field.key] ?? field.min,
-    label: override?.label ?? field.label,
-  };
-}
 
 function computeIndicatorWarmup(
   id: string,
@@ -145,80 +113,542 @@ function computeIndicatorWarmup(
   return maxWindow;
 }
 
-const FLASHBACK_EXCLUDED_FIELDS: Readonly<Record<string, ReadonlySet<string>>> = {
-  ma: new Set(['fast', 'slow', 'trend_period']),
-  ema: new Set(['fast', 'slow', 'trend_period']),
-  dmi: new Set(['level']),
-  obv: new Set(['breakout_period']),
-};
+/**
+ * Bảng chỉ báo, đã sắp theo thứ tự bài học của 16 chỉ báo trong danh mục Học viện v3.3
+ * (spec Flashback v1.1 §2.7). `warmup_sessions` không nằm trong bảng mà tính từ chính các tham số
+ * này khi dựng danh mục.
+ */
+const FLASHBACK_INDICATOR_TABLE: readonly Omit<FlashbackIndicatorMeta, 'warmup_sessions'>[] = [
+  {
+    id: 'volume',
+    name: 'Khối lượng',
+    chapter: 4,
+    lesson_id: 'ch04-l04',
+    params: [
+      {
+        key: 'lookback',
+        label: 'Số phiên tham chiếu',
+        type: 'integer',
+        min: 5,
+        max: 100,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'mult',
+        label: 'Hệ số khối lượng',
+        type: 'number',
+        min: 0.5,
+        max: 3,
+        step: 0.1,
+        unit: 'lần',
+        default: 1,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'ma',
+    name: 'MA / SMA',
+    chapter: 4,
+    lesson_id: 'ch04-l05',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ SMA',
+        type: 'integer',
+        min: 5,
+        max: 200,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'rsi',
+    name: 'RSI',
+    chapter: 4,
+    lesson_id: 'ch04-l06',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ RSI',
+        type: 'integer',
+        min: 5,
+        max: 50,
+        step: 1,
+        unit: 'phiên',
+        default: 14,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'level',
+        label: 'Ngưỡng RSI',
+        type: 'number',
+        min: 0,
+        max: 100,
+        step: 1,
+        unit: '',
+        default: 30,
+        lower: { min: 0, max: 100, default: 30, label: 'Ngưỡng quá bán' },
+        upper: { min: 0, max: 100, default: 70, label: 'Ngưỡng quá mua' },
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'macd',
+    name: 'MACD',
+    chapter: 4,
+    lesson_id: 'ch04-l07',
+    params: [
+      {
+        key: 'fast',
+        label: 'Chu kỳ EMA nhanh',
+        type: 'integer',
+        min: 2,
+        max: 50,
+        step: 1,
+        unit: 'phiên',
+        default: 12,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'slow',
+        label: 'Chu kỳ EMA chậm',
+        type: 'integer',
+        min: 5,
+        max: 100,
+        step: 1,
+        unit: 'phiên',
+        default: 26,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'signal',
+        label: 'Chu kỳ đường tín hiệu',
+        type: 'integer',
+        min: 2,
+        max: 30,
+        step: 1,
+        unit: 'phiên',
+        default: 9,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [{ left: 'fast', op: '<', right: 'slow' }],
+  },
+  {
+    id: 'bollinger',
+    name: 'Bollinger Bands',
+    chapter: 4,
+    lesson_id: 'ch04-l08',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ Bollinger',
+        type: 'integer',
+        min: 10,
+        max: 100,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'k',
+        label: 'Hệ số dải',
+        type: 'number',
+        min: 1,
+        max: 3.5,
+        step: 0.1,
+        unit: '',
+        default: 2,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'ema',
+    name: 'EMA',
+    chapter: 6,
+    lesson_id: 'ch06-l01',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ EMA',
+        type: 'integer',
+        min: 5,
+        max: 200,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'ma_cross',
+    name: 'MA Cross',
+    chapter: 6,
+    lesson_id: 'ch06-l02',
+    params: [
+      {
+        key: 'fast',
+        label: 'Chu kỳ SMA nhanh',
+        type: 'integer',
+        min: 5,
+        max: 200,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'slow',
+        label: 'Chu kỳ SMA chậm',
+        type: 'integer',
+        min: 5,
+        max: 200,
+        step: 1,
+        unit: 'phiên',
+        default: 50,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [{ left: 'fast', op: '<', right: 'slow' }],
+  },
+  {
+    id: 'dmi',
+    name: 'DMI',
+    chapter: 6,
+    lesson_id: 'ch06-l03',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ DMI',
+        type: 'integer',
+        min: 5,
+        max: 50,
+        step: 1,
+        unit: 'phiên',
+        default: 14,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'donchian',
+    name: 'Donchian Channel',
+    chapter: 6,
+    lesson_id: 'ch06-l04',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ Donchian',
+        type: 'integer',
+        min: 5,
+        max: 252,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'stochastic',
+    name: 'Stochastic',
+    chapter: 7,
+    lesson_id: 'ch07-l01',
+    params: [
+      {
+        key: 'k',
+        label: 'Chu kỳ %K',
+        type: 'integer',
+        min: 5,
+        max: 50,
+        step: 1,
+        unit: 'phiên',
+        default: 14,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'd',
+        label: 'Chu kỳ %D',
+        type: 'integer',
+        min: 2,
+        max: 20,
+        step: 1,
+        unit: 'phiên',
+        default: 3,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'smooth',
+        label: 'Chu kỳ trung bình %K',
+        type: 'integer',
+        min: 1,
+        max: 10,
+        step: 1,
+        unit: 'phiên',
+        default: 3,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'level',
+        label: 'Ngưỡng %K',
+        type: 'number',
+        min: 0,
+        max: 100,
+        step: 1,
+        unit: '',
+        default: 20,
+        lower: { min: 0, max: 100, default: 20, label: 'Ngưỡng %K' },
+        upper: { min: 0, max: 100, default: 80, label: 'Ngưỡng %K' },
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'cci',
+    name: 'CCI',
+    chapter: 7,
+    lesson_id: 'ch07-l02',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ CCI',
+        type: 'integer',
+        min: 5,
+        max: 100,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'level',
+        label: 'Ngưỡng CCI',
+        type: 'number',
+        min: -300,
+        max: 300,
+        step: 1,
+        unit: '',
+        default: -100,
+        lower: { min: -300, max: 300, default: -100, label: 'Ngưỡng CCI' },
+        upper: { min: -300, max: 300, default: 100, label: 'Ngưỡng CCI' },
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'roc',
+    name: 'ROC',
+    chapter: 7,
+    lesson_id: 'ch07-l03',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ ROC',
+        type: 'integer',
+        min: 2,
+        max: 252,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'level',
+        label: 'Ngưỡng ROC',
+        type: 'number',
+        min: -100,
+        max: 10000,
+        step: 0.1,
+        unit: '%',
+        default: -5,
+        lower: { min: -100, max: 10000, default: -5, label: 'Ngưỡng ROC' },
+        upper: { min: -100, max: 10000, default: 5, label: 'Ngưỡng ROC' },
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'williams_r',
+    name: 'Williams %R',
+    chapter: 7,
+    lesson_id: 'ch07-l04',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ Williams %R',
+        type: 'integer',
+        min: 5,
+        max: 100,
+        step: 1,
+        unit: 'phiên',
+        default: 14,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'level',
+        label: 'Ngưỡng Williams %R',
+        type: 'number',
+        min: -100,
+        max: 0,
+        step: 1,
+        unit: '',
+        default: -80,
+        lower: { min: -100, max: 0, default: -80, label: 'Ngưỡng Williams %R' },
+        upper: { min: -100, max: 0, default: -20, label: 'Ngưỡng Williams %R' },
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'obv',
+    name: 'OBV',
+    chapter: 7,
+    lesson_id: 'ch07-l05',
+    params: [
+      {
+        key: 'baseline',
+        label: 'Chu kỳ SMA của OBV',
+        type: 'integer',
+        min: 5,
+        max: 100,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'mfi',
+    name: 'MFI',
+    chapter: 7,
+    lesson_id: 'ch07-l06',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ MFI',
+        type: 'integer',
+        min: 5,
+        max: 50,
+        step: 1,
+        unit: 'phiên',
+        default: 14,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'level',
+        label: 'Ngưỡng MFI',
+        type: 'number',
+        min: 0,
+        max: 100,
+        step: 1,
+        unit: '',
+        default: 20,
+        lower: { min: 0, max: 100, default: 20, label: 'Ngưỡng MFI' },
+        upper: { min: 0, max: 100, default: 80, label: 'Ngưỡng MFI' },
+      },
+    ],
+    cross_fields: [],
+  },
+  {
+    id: 'cmf',
+    name: 'Chaikin Money Flow',
+    chapter: 7,
+    lesson_id: 'ch07-l07',
+    params: [
+      {
+        key: 'period',
+        label: 'Chu kỳ CMF',
+        type: 'integer',
+        min: 5,
+        max: 100,
+        step: 1,
+        unit: 'phiên',
+        default: 20,
+        lower: null,
+        upper: null,
+      },
+      {
+        key: 'level',
+        label: 'Ngưỡng CMF',
+        type: 'number',
+        min: -1,
+        max: 1,
+        step: 0.01,
+        unit: '',
+        default: 0,
+        lower: null,
+        upper: null,
+      },
+    ],
+    cross_fields: [],
+  },
+];
 
-function buildCatalog(): FlashbackIndicatorMeta[] {
-  return loadTechnicalRegistry()
-    .filter((entry) => entry.availability === 'ohlcv')
-    .map((entry) => {
-      const excluded = FLASHBACK_EXCLUDED_FIELDS[entry.id];
-      const fields = excluded
-        ? entry.fields.filter((field) => !excluded.has(field.key))
-        : entry.fields;
-      const params: FlashbackIndicatorParamMeta[] = fields.map((field) => {
-        const buySide = sideOf(entry, 'buy', field);
-        const sellSide = sideOf(entry, 'sell', field);
-        const differs =
-          buySide.min !== sellSide.min ||
-          buySide.max !== sellSide.max ||
-          buySide.default !== sellSide.default;
-        const [lower, upper] =
-          buySide.default <= sellSide.default ? [buySide, sellSide] : [sellSide, buySide];
-        return {
-          key: field.key,
-          label: field.label,
-          type: field.type,
-          min: field.min,
-          max: field.max,
-          step: field.step,
-          unit: field.unit,
-          default: lower.default,
-          lower: differs ? lower : null,
-          upper: differs ? upper : null,
-        };
-      });
-      const paramKeys = new Set(params.map((item) => item.key));
-      const warmup = computeIndicatorWarmup(entry.id, params, {});
-      const lessonInfo = FLASHBACK_LESSON_CATALOG[entry.id];
-      return {
-        id: entry.id,
-        name: entry.name,
-        chapter: lessonInfo?.chapter ?? entry.chapter,
-        lesson_id: lessonInfo?.lesson_id ?? entry.lesson_id,
-        params,
-        cross_fields: (entry.validation?.cross_fields ?? [])
-          .filter((rule) => paramKeys.has(rule.left) && paramKeys.has(rule.right))
-          .map((rule) => ({
-            left: rule.left,
-            op: rule.op,
-            right: rule.right,
-          })),
-        warmup_sessions: warmup,
-      };
-    })
-    .sort((left, right) => {
-      const leftOrder = FLASHBACK_LESSON_CATALOG[left.id]?.order ?? 999;
-      const rightOrder = FLASHBACK_LESSON_CATALOG[right.id]?.order ?? 999;
-      if (leftOrder !== rightOrder) return leftOrder - rightOrder;
-      return (left.lesson_id ?? '').localeCompare(right.lesson_id ?? '');
-    });
+function deepFreeze<T>(value: T): T {
+  if (typeof value === 'object' && value !== null && !Object.isFrozen(value)) {
+    Object.freeze(value);
+    for (const child of Object.values(value)) deepFreeze(child);
+  }
+  return value;
 }
 
-let catalog: readonly FlashbackIndicatorMeta[] | undefined;
-
-/** Toàn bộ chỉ báo lấy được từ registry (chưa lọc theo quyền của người dùng). */
-export function flashbackIndicatorCatalog(): readonly FlashbackIndicatorMeta[] {
-  catalog ??= buildCatalog();
-  return catalog;
+function buildCatalog(): readonly FlashbackIndicatorMeta[] {
+  return deepFreeze(
+    FLASHBACK_INDICATOR_TABLE.map((entry) => ({
+      ...entry,
+      warmup_sessions: computeIndicatorWarmup(entry.id, entry.params, {}),
+    })),
+  );
 }
 
-/** Danh mục 16 chỉ báo đã sắp theo thứ tự bài học (spec v1.1 §2.7). */
+/** Danh mục 16 chỉ báo đã sắp theo thứ tự bài học (spec v1.1 §2.7), đóng băng sâu. */
 export const FLASHBACK_INDICATORS: readonly FlashbackIndicatorMeta[] = buildCatalog();
+
+/** Toàn bộ chỉ báo của danh mục (chưa lọc theo quyền của người dùng). */
+export function flashbackIndicatorCatalog(): readonly FlashbackIndicatorMeta[] {
+  return FLASHBACK_INDICATORS;
+}
 
 /** Metadata của một chỉ báo theo id. */
 export function flashbackIndicatorMeta(id: string): FlashbackIndicatorMeta | undefined {
@@ -273,7 +703,7 @@ function checkValue(
 }
 
 /**
- * Kiểm tra một bộ tham số theo registry: key phải có trong registry, giá trị phải nằm đúng
+ * Kiểm tra một bộ tham số theo danh mục: key phải có trong danh mục, giá trị phải nằm đúng
  * miền và đúng bước nhảy, và phải thoả các quy tắc kiểm tra chéo (ví dụ MACD fast < slow).
  * Trả về thông báo lỗi tiếng Việt hoặc `null` khi hợp lệ.
  */

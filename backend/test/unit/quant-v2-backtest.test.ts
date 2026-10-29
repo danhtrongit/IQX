@@ -9,9 +9,12 @@ import {
   defaultConfig,
   loadTechnicalRegistry,
   runBacktest,
+  sideSignals,
   type Bar,
+  type ConditionRow,
   type IndicatorConfig,
   type RunOptions,
+  type RowSideConfig,
   type RunResult,
   type SharedConfig,
 } from '../../src/modules/quant/v2/index.js';
@@ -47,9 +50,19 @@ function configWith(ids: string[], mutate?: (c: SharedConfig) => void): SharedCo
   return c;
 }
 
-/** Reference test helper `ma()`: MA master ON, sell period 30. */
+/** Row `index` of one tab of a row-based indicator. */
+const rowOf = (item: IndicatorConfig, side: 'buy' | 'sell', index = 0): ConditionRow =>
+  (item[side] as RowSideConfig).rules[index]!;
+
+/** Reference test helper `ma()`: MA master ON, sell price-cross period 50 (SMA preset). */
 const maConfig = (): SharedConfig =>
-  configWith(['ma'], (c) => (indicator(c, 'ma').sell.params.period = 30));
+  configWith(['ma'], (c) => (rowOf(indicator(c, 'ma'), 'sell').period = 50));
+
+/** Signals of the engine under test; the reference only replays its ledger on them. */
+const signalsOf = (config: SharedConfig, data: readonly Bar[]) => ({
+  buy: sideSignals(config, data, 'buy'),
+  sell: sideSignals(config, data, 'sell'),
+});
 
 const comparable = (r: RunResult | ReferenceRunResult) => ({
   snapshot: r.snapshot,
@@ -70,7 +83,13 @@ function expectParity(
 ) {
   const frozenConfig = deepFreeze(clone(config));
   const ours = runBacktest(frozenConfig, data, options);
-  const theirs = reference.run(clone(config), rawRegistry, [...data], { ...options });
+  const theirs = reference.run(
+    clone(config),
+    rawRegistry,
+    [...data],
+    { ...options },
+    signalsOf(config, data),
+  );
   expectDeepClose(comparable(ours), comparable(theirs), label);
   return ours;
 }
@@ -94,9 +113,9 @@ describe('quant v2 runBacktest — golden parity with reference run', () => {
 
   it('default config (no buy) is rejected by both engines with the same message', () => {
     expect(() => runBacktest(defaultConfig(), bars)).toThrow('Cần ít nhất một điều kiện Mua.');
-    expect(() => reference.run(defaultConfig(), rawRegistry, [...bars])).toThrow(
-      'Cần ít nhất một điều kiện Mua.',
-    );
+    expect(() =>
+      reference.run(defaultConfig(), rawRegistry, [...bars], {}, signalsOf(defaultConfig(), bars)),
+    ).toThrow('Cần ít nhất một điều kiện Mua.');
     try {
       runBacktest(defaultConfig(), bars);
     } catch (error) {
@@ -137,24 +156,25 @@ describe('quant v2 runBacktest — golden parity with reference run', () => {
     }
   });
 
-  it('non-default params, edited operators and buy-only/sell-only sides match', () => {
+  it('non-default row values, edited operators and buy-only/sell-only sides match', () => {
     const configs: SharedConfig[] = [
       maConfig(),
       configWith(['rsi'], (c) => {
         const rsi = indicator(c, 'rsi');
-        rsi.buy.params.level = 45;
-        rsi.sell.params.level = 55;
-        rsi.buy.rules[1]!.op = '<';
+        rowOf(rsi, 'buy').threshold = 45;
+        rowOf(rsi, 'sell').threshold = 55;
+        rowOf(rsi, 'buy', 1).dir = 'down';
+        rowOf(rsi, 'buy', 1).period = 9;
       }),
       configWith(['bollinger', 'ma'], (c) => {
         indicator(c, 'bollinger').sell.enabled = false;
         indicator(c, 'ma').buy.enabled = false;
-        indicator(c, 'bollinger').buy.rules[0]!.op = 'break_lower';
+        rowOf(indicator(c, 'bollinger'), 'buy').action = 'break_lower';
       }),
       configWith(['macd'], (c) => {
         const macd = indicator(c, 'macd');
-        macd.buy.params = { fast: 5, slow: 35, signal: 5 };
-        macd.sell.params = { fast: 8, slow: 21, signal: 3 };
+        Object.assign(rowOf(macd, 'buy'), { fast: 5, slow: 35, signal: 5 });
+        Object.assign(rowOf(macd, 'sell'), { fast: 8, slow: 21, signal: 3 });
       }),
     ];
     configs.forEach((c, i) => {
@@ -198,7 +218,7 @@ describe('quant v2 runBacktest — golden parity with reference run', () => {
     expect(poor.trades).toEqual([]);
     expect(poor.open_position).toBeNull();
     const small = Array.from({ length: 10 }, (_, i) => bar(i === 9 ? 110 : 100, i));
-    const pendingConfig = configWith(['ma'], (c) => (indicator(c, 'ma').buy.params.period = 5));
+    const pendingConfig = configWith(['ma'], (c) => (rowOf(indicator(c, 'ma'), 'buy').period = 5));
     const last = small[small.length - 1]!.date;
     const pending = expectParity(
       pendingConfig,
@@ -229,7 +249,7 @@ describe('quant v2 runBacktest — reference behaviour (04-TESTS/test_engine.js)
     const c = maConfig();
     const options = { start: bars[220]!.date, end: bars[949]!.date };
     const x = runBacktest(c, bars, options);
-    expect(x.trades.length).toBeGreaterThan(8);
+    expect(x.trades.length).toBeGreaterThan(5);
     expect(x.kpis.n_trades).toBe(x.trades.length);
     expect(x.curve).toHaveLength(730);
     near(x.curve[x.curve.length - 1]!.return_pct, x.kpis.net_return);
@@ -240,11 +260,11 @@ describe('quant v2 runBacktest — reference behaviour (04-TESTS/test_engine.js)
       value: 100_000_000,
       phase: 'before_first_execution',
     });
-    indicator(c, 'ma').buy.params.period = 50;
-    expect(indicator(x.snapshot.config, 'ma').buy.params.period).toBe(20);
+    rowOf(indicator(c, 'ma'), 'buy').period = 50;
+    expect(rowOf(indicator(x.snapshot.config, 'ma'), 'buy').period).toBe(20);
     expect(runBacktest(maConfig(), bars, options)).toEqual(x);
     expect(x).toMatchObject({
-      schema_version: '2.0',
+      schema_version: '3.0',
       engine_version: ENGINE_VERSION,
       calculation_version: CALCULATION_VERSION,
       rule_version: RULE_VERSION,
@@ -290,7 +310,7 @@ describe('quant v2 runBacktest — reference behaviour (04-TESTS/test_engine.js)
   });
 
   it('rejects empty buy, invalid data, invalid options, empty range and invalid config', () => {
-    const c = configWith(['ma'], (cfg) => (indicator(cfg, 'ma').buy.params.period = 5));
+    const c = configWith(['ma'], (cfg) => (rowOf(indicator(cfg, 'ma'), 'buy').period = 5));
     const small = Array.from({ length: 10 }, (_, i) => bar(100 + i, i));
     const code = (fn: () => unknown): string | undefined => {
       try {
@@ -313,9 +333,11 @@ describe('quant v2 runBacktest — reference behaviour (04-TESTS/test_engine.js)
       code(() => runBacktest(c, small, { execution: 'close' as RunOptions['execution'] })),
     ).toBe('INVALID_OPTIONS');
     const invalid = clone(c);
-    indicator(invalid, 'ma').buy.params.period = 1;
+    rowOf(indicator(invalid, 'ma'), 'buy').period = 1;
     expect(code(() => runBacktest(invalid, small))).toBe('CONFIG_INVALID');
-    expect(() => reference.run(clone(c), rawRegistry, [small[1]!, small[0]!])).toThrow();
+    expect(() =>
+      reference.run(clone(c), rawRegistry, [small[1]!, small[0]!], {}, signalsOf(c, small)),
+    ).toThrow();
   });
 
   it('buy & hold uses the last close of the range, not the maximum', () => {

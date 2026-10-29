@@ -77,7 +77,11 @@ describe('Bot policy iqx-bot-v1.0 OpenAPI contract', () => {
     });
     expect(properties(document, 'BotConditions').state).toEqual({
       type: 'string',
-      enum: ['waiting_for_conditions', 'buy_only', 'sell_only', 'buy_and_sell', 'error'],
+      enum: ['waiting_for_conditions', 'buy_only', 'sell_only', 'buy_and_sell', 'error', 'paused'],
+    });
+    expect(properties(document, 'BotSideBlock').reason).toEqual({
+      type: 'string',
+      enum: ['config_invalid_or_unauthorized', 'legacy_needs_review', 'config_outdated'],
     });
     expect(schema(document, 'BotConditions').required).toEqual(
       expect.arrayContaining([

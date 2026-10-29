@@ -1607,7 +1607,7 @@ function localResponseSchemas(): Record<string, SchemaObject> {
     BotSideBlock: object({
       reason: {
         type: 'string',
-        enum: ['config_invalid_or_unauthorized', 'legacy_needs_review'],
+        enum: ['config_invalid_or_unauthorized', 'legacy_needs_review', 'config_outdated'],
       },
       detail: string(),
       indicator_ids: array(string()),
@@ -1620,7 +1620,14 @@ function localResponseSchemas(): Record<string, SchemaObject> {
     BotConditions: object({
       state: {
         type: 'string',
-        enum: ['waiting_for_conditions', 'buy_only', 'sell_only', 'buy_and_sell', 'error'],
+        enum: [
+          'waiting_for_conditions',
+          'buy_only',
+          'sell_only',
+          'buy_and_sell',
+          'error',
+          'paused',
+        ],
       },
       state_label: string(),
       has_active_buy: boolean(),

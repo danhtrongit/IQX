@@ -138,8 +138,19 @@ describe('Bot history OpenAPI contract', () => {
     const registry = responseSchema(
       document.paths['/api/v2/strategy/registry/technical']!.get as OperationObject,
     );
+    // SPEC V3: the 15 row indicators carry per-row `constraints` (fast < slow); only Volume
+    // keeps side params with `validation.cross_fields`.
     const indicator = (registry.properties!.indicators as SchemaObject).items as SchemaObject;
-    expect(Object.keys(indicator.properties!)).toContain('validation');
-    expect(JSON.stringify(indicator.properties!.validation)).toContain('cross_fields');
+    const variants = (indicator.oneOf ?? []) as SchemaObject[];
+    const byModel = (model: string) =>
+      variants.find((variant) =>
+        JSON.stringify(variant.properties?.model ?? {}).includes(`"${model}"`),
+      );
+    const rows = byModel('rows');
+    const params = byModel('legacy_params');
+    expect(Object.keys(rows?.properties ?? {})).toContain('rows');
+    expect(JSON.stringify(rows?.properties?.rows)).toContain('constraints');
+    expect(Object.keys(params?.properties ?? {})).toContain('validation');
+    expect(JSON.stringify(params?.properties?.validation)).toContain('cross_fields');
   });
 });

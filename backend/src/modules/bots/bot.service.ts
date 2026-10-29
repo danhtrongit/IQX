@@ -23,6 +23,7 @@ import {
   loadTechnicalRegistry,
   sideSignalsWithEvidence,
   type Bar,
+  type RowValues,
   type SharedConfig,
 } from '../quant/v2/index.js';
 import {
@@ -50,9 +51,12 @@ import { loadTradingCalendar, openHoldingSessions } from './bot-holding.js';
 import {
   blockedGate,
   gateConfigSides,
+  isOutdatedRevision,
+  outdatedGate,
   readLegacyReview,
   type ConfigGate,
 } from './bot.config-gate.js';
+import { configPauseUnresolved, readConfigPause } from './bot.config-pause.js';
 import {
   activeSideIndicators,
   BOT_SHARED_CONFIG_MARKET_SYMBOL,
@@ -61,6 +65,7 @@ import {
   needsMarketContext,
   parseSharedConfigSignals,
   sharedConfigBuySymbols,
+  unavailableSideRules,
   verifyRuleReceipt,
   type BotSharedConfigPin,
 } from './bot.shared-config.js';
@@ -116,6 +121,14 @@ type ConfigResolution = {
   gate: ConfigGate | null;
 };
 
+/** The session of a Bot paused by the indicator-conditions V3 upgrade (SPEC V3 §6.2). */
+class BotConfigPausedError extends Error {
+  constructor() {
+    super('Bot đang tạm dừng: cần lưu cấu hình điều kiện mới');
+    this.name = 'BotConfigPaused';
+  }
+}
+
 /** Upper bound of capture retries when state changes between resolution and capture. */
 const MAX_CAPTURE_ATTEMPTS = 3;
 
@@ -124,12 +137,13 @@ type SideVerdict =
   | { state: 'inactive'; reason: string }
   | {
       state: 'blocked';
-      reason: 'config_invalid_or_unauthorized' | 'legacy_needs_review';
+      reason: BotSideBlock['reason'];
       detail: string;
     };
 
+/** `paused`: silent pause of the indicator-conditions V3 upgrade, until a new config is effective. */
 type BotConfigState =
-  'waiting_for_conditions' | 'buy_only' | 'sell_only' | 'buy_and_sell' | 'error';
+  'waiting_for_conditions' | 'buy_only' | 'sell_only' | 'buy_and_sell' | 'error' | 'paused';
 
 const CONFIG_STATE_LABELS: Record<BotConfigState, string> = {
   waiting_for_conditions: 'Chờ thiết lập điều kiện',
@@ -137,6 +151,7 @@ const CONFIG_STATE_LABELS: Record<BotConfigState, string> = {
   sell_only: 'Chỉ xét điều kiện Bán',
   buy_and_sell: 'Đã bật Mua và Bán',
   error: 'Lỗi cấu hình hoặc quyền',
+  paused: 'Tạm dừng',
 };
 
 type ConditionRule = {
@@ -150,6 +165,10 @@ type ConditionRule = {
   rhs_upper?: number | null;
   result: boolean | null;
   missing: boolean;
+  previous_lhs?: number | null;
+  previous_rhs?: number | null;
+  /** The row's own stored values (Volume: its side params). */
+  values?: RowValues;
 };
 
 type ConditionSnapshot = {
@@ -244,15 +263,6 @@ function dedupeIssues(rows: readonly BotIssue[]): BotIssue[] {
 
 function json(value: unknown): string {
   return JSON.stringify(value);
-}
-
-function configuredOperand(
-  operand: { kind: string; key?: string; value?: number },
-  params: Readonly<Record<string, number>>,
-): number | null {
-  if (operand.kind === 'param') return params[operand.key ?? ''] ?? null;
-  if (operand.kind === 'constant') return operand.value ?? null;
-  return null;
 }
 
 function rankTuple(candidate: Candidate): [string, string, string] {
@@ -489,6 +499,7 @@ export class BotService {
       succeeded: 0,
       failed: 0,
       skippedNotSession: 0,
+      skippedPaused: 0,
     };
 
     const owners = await this.database.query<{ user_id: string }>(
@@ -504,7 +515,12 @@ export class BotService {
         result.processed += 1;
         if (run.status === 'succeeded') result.succeeded += 1;
         else result.failed += 1;
-      } catch {
+      } catch (error) {
+        // A Bot paused by the indicator-conditions V3 upgrade is skipped, not a failure.
+        if (error instanceof BotConfigPausedError) {
+          result.skippedPaused += 1;
+          continue;
+        }
         result.processed += 1;
         result.failed += 1;
       }
@@ -541,6 +557,8 @@ export class BotService {
       const context = await this.instanceAccount(this.database, userId);
       if (!context) throw new Error('Bot chưa được khởi tạo');
       if (context.account_status !== 'active') throw new Error('Tài khoản Bot đang tạm dừng');
+      // Paused like a suspended account: no receipt, signal, order or NAV row is written.
+      if (await this.configPaused(userId, tradingDate)) throw new BotConfigPausedError();
       this.assertActivated(context, tradingDate);
       const openSymbols = (
         await this.database.query<{ symbol: string }>(
@@ -635,6 +653,20 @@ export class BotService {
     throw new Error('Bot session could not be captured on a consistent state');
   }
 
+  /**
+   * SPEC V3 §6.2: the Bot is paused while its `bot_config_pauses` row is unresolved for the
+   * session, i.e. no revision was saved after the pause or the one saved is not effective yet.
+   */
+  private async configPaused(userId: string, tradingDate: string): Promise<boolean> {
+    const pause = await readConfigPause(this.database, userId);
+    if (!pause) return false;
+    if (pause.resume_revision === null) return true;
+    const effective = await this.sharedConfigReader.effectiveFor(userId, tradingDate);
+    const revision =
+      effective && effective.effective_session <= tradingDate ? effective.revision : null;
+    return configPauseUnresolved(pause, revision);
+  }
+
   /** An unverifiable universe never falls back to another source: the run simply cannot buy. */
   private async resolveUniverse(userId: string, tradingDate: string): Promise<ResolvedBotUniverse> {
     const unavailable = (reason: string): ResolvedBotUniverse => ({
@@ -684,6 +716,9 @@ export class BotService {
         return { effective: null, grants, invalid: false, detail: null, gate: null };
       }
       const registry = loadTechnicalRegistry();
+      // An outdated revision (before iqx-rules-4.0) is never evaluated: both sides stop with
+      // `config_outdated` until the user saves the new form (SPEC V3 §6.1.5).
+      const outdated = isOutdatedRevision(effective);
       // A historical (legacy-registry) revision is served as its 16-indicator mapping, so its
       // stored-document hash cannot equal the mapped config hash; the reader verified it.
       const drift =
@@ -691,14 +726,16 @@ export class BotService {
         (!effective.legacy?.legacy && configHash(effective.config) !== effective.config_hash);
       // Each side is judged on its own: an invalid, unauthorized or legacy participant
       // stops that whole side with a reason; it is never dropped from the AND.
-      const gate = drift
-        ? blockedGate('Revision hoặc hash cấu hình không khớp')
-        : gateConfigSides(
-            effective.config,
-            new Set(grants),
-            registry,
-            readLegacyReview(effective.config, effective, current),
-          );
+      const gate = outdated
+        ? outdatedGate()
+        : drift
+          ? blockedGate('Revision hoặc hash cấu hình không khớp')
+          : gateConfigSides(
+              effective.config,
+              new Set(grants),
+              registry,
+              readLegacyReview(effective.config, effective, current),
+            );
       return { effective, grants, invalid: false, detail: null, gate };
     } catch (error) {
       return {
@@ -721,12 +758,16 @@ export class BotService {
       effective?.revision === pin.revision
         ? effective
         : await this.sharedConfigReader.getRevision(userId, pin.revision, {
-            allowLegacyReview: true,
+            allowOutdated: true,
           });
+    // An outdated revision is served as the new defaults (its stored hash is kept for the pin);
+    // it is only pinned for the receipt, never evaluated (both sides are `config_outdated`).
     if (
       !source ||
       source.config_hash !== pin.config_hash ||
-      (!source.legacy?.legacy && configHash(source.config) !== pin.config_hash)
+      (!source.legacy?.legacy &&
+        !isOutdatedRevision(source) &&
+        configHash(source.config) !== pin.config_hash)
     ) {
       const error = new Error('Pinned shared config is unavailable');
       error.name = 'SharedConfigUnavailable';
@@ -792,7 +833,9 @@ export class BotService {
     const registry = loadTechnicalRegistry();
     const sides =
       knownGate ??
-      gateConfigSides(config, new Set(grants), registry, readLegacyReview(config, effective));
+      (isOutdatedRevision(effective)
+        ? outdatedGate()
+        : gateConfigSides(config, new Set(grants), registry, readLegacyReview(config, effective)));
     const buyEntries =
       sides.buy.status === 'active' ? activeSideIndicators(config, 'buy', registry) : [];
     const sellEntries =
@@ -822,35 +865,16 @@ export class BotService {
       if (!marketSymbol) return history.bars;
       return history.bars.map((bar) => ({ ...bar, market: marketClose.get(bar.date) ?? null }));
     };
-    const fallbackEvidence = (side: 'buy' | 'sell'): ConditionSnapshot => {
-      const entries = side === 'buy' ? buyEntries : sellEntries;
-      return {
-        buy_active_ids: buyEntries.map((entry) => entry.id),
-        sell_active_ids: sellEntries.map((entry) => entry.id),
-        rules: entries.flatMap((entry) =>
-          config.indicators[entry.id]![side].rules.map((rule) => {
-            const params = config.indicators[entry.id]![side].params;
-            const rhs = rule.kind === 'membership' ? null : configuredOperand(rule.rhs, params);
-            return {
-              id: rule.id,
-              indicator: entry.id,
-              side,
-              op: rule.op,
-              lhs: configuredOperand(rule.lhs, params),
-              rhs,
-              ...(rule.kind === 'membership'
-                ? {
-                    rhs_lower: configuredOperand(rule.rhs.lower, params),
-                    rhs_upper: configuredOperand(rule.rhs.upper, params),
-                  }
-                : {}),
-              result: null,
-              missing: true,
-            };
-          }),
-        ),
-      };
-    };
+    // No bar for the session: every enabled row of the side is missing, with its own values.
+    const fallbackEvidence = (side: 'buy' | 'sell'): ConditionSnapshot => ({
+      buy_active_ids: buyEntries.map((entry) => entry.id),
+      sell_active_ids: sellEntries.map((entry) => entry.id),
+      rules: unavailableSideRules(
+        config,
+        (side === 'buy' ? buyEntries : sellEntries).map((entry) => entry.id),
+        side,
+      ),
+    });
     const evaluate = (symbol: string, side: 'buy' | 'sell') => {
       const bars = barsFor(symbol);
       if (!bars?.length || bars.at(-1)?.date !== tradingDate) {
@@ -2159,29 +2183,39 @@ export class BotService {
       const current = await this.sharedConfigReader.current(userId);
       const effective = current.effective_revision
         ? await this.sharedConfigReader.getRevision(userId, current.effective_revision, {
-            allowLegacyReview: true,
+            allowOutdated: true,
           })
         : null;
       const registry = loadTechnicalRegistry();
       const grants = new Set(current.granted_indicators.map(indicatorCapability));
+      const outdated = isOutdatedRevision(effective);
       const drift =
         effective !== null &&
         (effective.revision !== current.effective_revision ||
           (!effective.legacy?.legacy && configHash(effective.config) !== effective.config_hash));
       const gate: ConfigGate | null = effective
-        ? drift
-          ? blockedGate('Revision hoặc hash cấu hình không khớp')
-          : gateConfigSides(
-              effective.config,
-              grants,
-              registry,
-              readLegacyReview(effective.config, effective, current),
-            )
+        ? outdated
+          ? outdatedGate()
+          : drift
+            ? blockedGate('Revision hoặc hash cấu hình không khớp')
+            : gateConfigSides(
+                effective.config,
+                grants,
+                registry,
+                readLegacyReview(effective.config, effective, current),
+              )
         : null;
       const buy = gate?.buy.status ?? 'inactive';
       const sell = gate?.sell.status ?? 'inactive';
+      // SPEC V3 §6.2: "Tạm dừng" until a config saved after the upgrade is effective; the
+      // sides below still describe the effective config, but nothing trades meanwhile.
+      const paused = configPauseUnresolved(
+        await readConfigPause(this.database, userId),
+        current.effective_revision,
+      );
       let state: BotConfigState = 'waiting_for_conditions';
-      if (buy === 'blocked' || sell === 'blocked') state = 'error';
+      if (paused) state = 'paused';
+      else if (buy === 'blocked' || sell === 'blocked') state = 'error';
       else if (buy === 'active' && sell === 'active') state = 'buy_and_sell';
       else if (buy === 'active') state = 'buy_only';
       else if (sell === 'active') state = 'sell_only';
@@ -2189,8 +2223,8 @@ export class BotService {
       return {
         state,
         state_label: CONFIG_STATE_LABELS[state],
-        has_active_buy: buy === 'active',
-        has_active_sell: sell === 'active',
+        has_active_buy: !paused && buy === 'active',
+        has_active_sell: !paused && sell === 'active',
         buy_condition_count: gate?.buy.status === 'active' ? gate.buy.indicator_ids.length : 0,
         sell_condition_count: gate?.sell.status === 'active' ? gate.sell.indicator_ids.length : 0,
         buy_status: buy,

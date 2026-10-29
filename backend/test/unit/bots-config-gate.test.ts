@@ -3,9 +3,19 @@ import { describe, expect, it } from 'vitest';
 import {
   blockedGate,
   gateConfigSides,
+  isOutdatedRevision,
+  outdatedGate,
   readLegacyReview,
 } from '../../src/modules/bots/bot.config-gate.js';
-import { defaultConfig, type SharedConfig } from '../../src/modules/quant/v2/index.js';
+import {
+  botHasActiveConditions,
+  configPauseUnresolved,
+} from '../../src/modules/bots/bot.config-pause.js';
+import {
+  defaultConfig,
+  type RowSideConfig,
+  type SharedConfig,
+} from '../../src/modules/quant/v2/index.js';
 
 function config(buy: string[], sell: string[]): SharedConfig {
   const base = defaultConfig();
@@ -72,10 +82,22 @@ describe('config side gate (E_buy / E_sell)', () => {
     expect(gate.buy).toMatchObject({ status: 'active', indicator_ids: ['ma'] });
   });
 
-  it('G07 structural errors of a participating side are explicit', () => {
+  it('G07 a row error of a participating side is explicit, with its row message', () => {
     const cfg = config(['ma'], []);
-    cfg.indicators.ma!.buy.params = { period: -4 };
+    (cfg.indicators.ma!.buy as RowSideConfig).rules[0]!.period = 7;
     const gate = gateConfigSides(cfg, granted('ma'));
+    expect(gate.buy).toMatchObject({
+      status: 'blocked',
+      block: { reason: 'config_invalid_or_unauthorized', indicator_ids: ['ma'] },
+    });
+    expect(gate.buy.block?.detail).toContain('Mua · dòng 1:');
+    expect(gate.sell.status).toBe('inactive');
+  });
+
+  it('G07b an old side-level params tab is rejected, never mapped', () => {
+    const cfg = config(['rsi'], []);
+    (cfg.indicators.rsi!.buy as unknown as Record<string, unknown>).params = { period: 14 };
+    const gate = gateConfigSides(cfg, granted('rsi'));
     expect(gate.buy).toMatchObject({
       status: 'blocked',
       block: { reason: 'config_invalid_or_unauthorized' },
@@ -155,5 +177,69 @@ describe('config side gate (E_buy / E_sell)', () => {
     const gate = blockedGate('không đọc được');
     expect(gate.buy).toMatchObject({ status: 'blocked', block: { detail: 'không đọc được' } });
     expect(gate.sell.block?.reason).toBe('config_invalid_or_unauthorized');
+  });
+
+  it('G12 an outdated revision blocks both sides as config_outdated, never evaluated', () => {
+    const gate = outdatedGate();
+    for (const side of ['buy', 'sell'] as const) {
+      expect(gate[side]).toMatchObject({
+        status: 'blocked',
+        indicator_ids: [],
+        block: { reason: 'config_outdated', indicator_ids: [] },
+      });
+    }
+    expect(gate.buy.block).not.toBe(gate.sell.block);
+  });
+
+  it('G13 outdated = flagged by the reader or an older schema/rule version', () => {
+    const current = config(['ma'], []);
+    expect(isOutdatedRevision(null)).toBe(false);
+    expect(isOutdatedRevision({ config: current })).toBe(false);
+    expect(isOutdatedRevision({ config: current, outdated: true } as { config: unknown })).toBe(
+      true,
+    );
+    expect(isOutdatedRevision({ config: { ...current, rule_version: 'iqx-rules-3.0' } })).toBe(
+      true,
+    );
+    expect(isOutdatedRevision({ config: { ...current, schema_version: '2.0' } })).toBe(true);
+    expect(isOutdatedRevision({ config: null })).toBe(true);
+    // A broken current-version document is invalid (G07b), not outdated.
+    const broken = structuredClone(current);
+    (broken.indicators.ma!.buy as unknown as Record<string, unknown>).params = { period: 20 };
+    expect(isOutdatedRevision({ config: broken })).toBe(false);
+  });
+});
+
+describe('indicator conditions V3 Bot pause', () => {
+  it('P01 the pause holds until a revision saved after it is effective', () => {
+    expect(configPauseUnresolved(null, 4)).toBe(false);
+    expect(configPauseUnresolved({ resume_revision: null }, 9)).toBe(true);
+    expect(configPauseUnresolved({ resume_revision: 5 }, null)).toBe(true);
+    expect(configPauseUnresolved({ resume_revision: 5 }, 4)).toBe(true);
+    expect(configPauseUnresolved({ resume_revision: 5 }, 5)).toBe(false);
+    expect(configPauseUnresolved({ resume_revision: 5 }, 6)).toBe(false);
+  });
+
+  it('P02 "Bot đang chạy" needs master ON + side ON + a rule ON in the old document', () => {
+    const doc = (rules: unknown[], sideEnabled = true, master = true) => ({
+      schema_version: '2.0',
+      rule_version: 'iqx-rules-3.0',
+      indicators: {
+        rsi: {
+          master_enabled: master,
+          buy: { enabled: sideEnabled, params: { period: 14 }, rules },
+          sell: { enabled: false, params: { period: 14 }, rules: [{ id: 'r1', enabled: true }] },
+        },
+      },
+    });
+    expect(botHasActiveConditions(doc([{ id: 'r1', enabled: true }]))).toBe(true);
+    // A rule without `enabled` (iqx-rules-2.0) counts as ON.
+    expect(botHasActiveConditions(doc([{ id: 'r1' }]))).toBe(true);
+    expect(botHasActiveConditions(doc([{ id: 'r1', enabled: false }]))).toBe(false);
+    expect(botHasActiveConditions(doc([]))).toBe(false);
+    expect(botHasActiveConditions(doc([{ id: 'r1' }], false))).toBe(false);
+    expect(botHasActiveConditions(doc([{ id: 'r1' }], true, false))).toBe(false);
+    expect(botHasActiveConditions(null)).toBe(false);
+    expect(botHasActiveConditions({ indicators: [] })).toBe(false);
   });
 });

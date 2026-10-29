@@ -16,6 +16,7 @@ import {
   runBacktest,
   type Bar,
   type IndicatorConfig,
+  type RowSideConfig,
   type RunOptions,
   type SharedConfig,
 } from '../../src/modules/quant/v2/index.js';
@@ -70,8 +71,8 @@ function maConfig(sell = false): SharedConfig {
   const ma = indicator(c, 'ma');
   ma.master_enabled = true;
   ma.buy.enabled = true;
-  ma.buy.params.period = 5;
-  ma.sell.params.period = 5;
+  (ma.buy as RowSideConfig).rules[0]!.period = 5;
+  (ma.sell as RowSideConfig).rules[0]!.period = 5;
   ma.sell.enabled = sell;
   return c;
 }
@@ -98,7 +99,7 @@ describe('quant v2 advanced — runSystem parity with the single run', () => {
     indicator(c, 'ma').master_enabled = true;
     indicator(c, 'ma').buy.enabled = true;
     indicator(c, 'ma').sell.enabled = true;
-    indicator(c, 'ma').sell.params.period = 30;
+    (indicator(c, 'ma').sell as RowSideConfig).rules[0]!.period = 50;
     return c;
   };
 
@@ -286,9 +287,9 @@ describe('quant v2 advanced — cooldown and sizing (Chapters 16–17)', () => {
     const macd = indicator(macdBuy, 'macd');
     macd.master_enabled = true;
     macd.buy.enabled = true;
-    macd.buy.params = { fast: 2, slow: 5, signal: 2 };
-    macd.buy.rules[0]!.enabled = false;
-    macd.buy.rules[1]!.enabled = true;
+    const macdRows = (macd.buy as RowSideConfig).rules;
+    macdRows[0]!.enabled = false;
+    Object.assign(macdRows[1]!, { enabled: true, fast: 2, slow: 5 });
     // max_holding 5: bought @100 at session 5, sold @105 at the close of session 10 → cash 105,000.
     const without = run([one(rising)], { exits: { max_holding: 5 } }, {}, HAND, macdBuy);
     expect(without.trades[0]?.exit_date).toBe(dateAt(10));
@@ -577,8 +578,7 @@ describe('quant v2 advanced — logic groups in a system run', () => {
     roc.master_enabled = true;
     roc.buy.enabled = true;
     roc.sell.enabled = false;
-    roc.buy.params.period = 2;
-    roc.buy.params.level = 50; // never reached → AND blocks every buy
+    Object.assign((roc.buy as RowSideConfig).rules[0]!, { period: 2, threshold: 50 }); // never reached → AND blocks every buy
     const rows: Ohlc[] = [...ENTRY, flat(101), flat(102)];
     expect(run([one(rows)], {}, {}, HAND, both).positions_open).toEqual([]);
     const viaOr = run(

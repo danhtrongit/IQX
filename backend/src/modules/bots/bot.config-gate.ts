@@ -1,5 +1,7 @@
 import {
   loadTechnicalRegistry,
+  RULE_VERSION,
+  SCHEMA_VERSION,
   validateConfig,
   type RegistryEntry,
   type SharedConfig,
@@ -197,5 +199,35 @@ export function blockedGate(detail: string): ConfigGate {
   return {
     buy: { status: 'blocked', indicator_ids: [], block },
     sell: { status: 'blocked', indicator_ids: [], block: { ...block } },
+  };
+}
+
+/**
+ * true when a shared-config revision read for the Bot is in a format before `iqx-rules-4.0`
+ * (SPEC V3 §6.1.5): the reader flags it `outdated` (and serves the new defaults), or the
+ * document still carries an older schema or rule version. Such a revision is never evaluated.
+ * A current-version document with a broken structure is not outdated: `validateConfig` blocks
+ * its sides as `config_invalid_or_unauthorized`.
+ */
+export function isOutdatedRevision(source: { config: unknown } | null | undefined): boolean {
+  if (!source) return false;
+  if ((source as { outdated?: unknown }).outdated === true) return true;
+  const config = source.config as { schema_version?: unknown; rule_version?: unknown } | null;
+  return config?.schema_version !== SCHEMA_VERSION || config?.rule_version !== RULE_VERSION;
+}
+
+/**
+ * Gate of an outdated effective revision: both sides are blocked with `config_outdated`. This is
+ * the safety net between the code deploy and the V3 data migration; saving the new form resumes.
+ */
+export function outdatedGate(): ConfigGate {
+  const block = (): BotSideBlock => ({
+    reason: 'config_outdated',
+    detail: 'Cấu hình điều kiện kiểu cũ không còn được dùng; hãy lưu lại cấu hình theo mẫu mới.',
+    indicator_ids: [],
+  });
+  return {
+    buy: { status: 'blocked', indicator_ids: [], block: block() },
+    sell: { status: 'blocked', indicator_ids: [], block: block() },
   };
 }

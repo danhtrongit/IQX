@@ -1,5 +1,5 @@
 import type { SqlClient } from '../../platform/database/index.js';
-import type { RuleOp } from '../quant/v2/index.js';
+import type { RowValues, RuleOp } from '../quant/v2/index.js';
 
 export const BOT_SNAPSHOT_PROVIDER = Symbol('BOT_SNAPSHOT_PROVIDER');
 /** Injection token of the buy-universe resolver port (see {@link BotUniversePort}). */
@@ -103,7 +103,11 @@ export type BotMarketSnapshotInput = {
 export type BotSideStatus = 'active' | 'inactive' | 'blocked';
 
 export type BotSideBlock = {
-  reason: 'config_invalid_or_unauthorized' | 'legacy_needs_review';
+  /**
+   * `config_outdated`: the effective revision is in a format before `iqx-rules-4.0` (SPEC V3
+   * §6.1.5); it is never evaluated, the user saves the new default form instead.
+   */
+  reason: 'config_invalid_or_unauthorized' | 'legacy_needs_review' | 'config_outdated';
   detail: string;
   indicator_ids: string[];
 };
@@ -121,6 +125,8 @@ export type BotConditionRuleEvidence = {
   missing: boolean;
   previous_lhs?: number | null;
   previous_rhs?: number | null;
+  /** The row's own stored values (periods, threshold, op…); Volume: its side params. */
+  values?: RowValues;
 };
 
 export type BotConditionSnapshot = {
@@ -189,6 +195,8 @@ export type BotBatchResult = {
   succeeded: number;
   failed: number;
   skippedNotSession: number;
+  /** Accounts skipped while their Bot is paused by the indicator-conditions V3 upgrade. */
+  skippedPaused: number;
 };
 
 export type BotAccountRow = {
