@@ -1,0 +1,212 @@
+<!doctype html>
+<!-- IQX DEMO ONLY: Reference for buy/sell rule fields; do NOT use as replacement for iqx.vn design, layout or app. v2: mọi chu kỳ và ngưỡng nằm trong từng dòng điều kiện; RSI dòng 2 là xu hướng lên/xuống -->
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>IQX | Thiết lập Bot · 15 chỉ báo kỹ thuật</title>
+<style>
+:root{--navy:#10253e;--ink:#242e3b;--muted:#647286;--border:#dae2ec;--blue:#0867d9;--blue-soft:#eaf3ff;--green:#168049;--green-soft:#e6f4ed;--red:#ce3039;--red-soft:#fef0f0;--canvas:#f2f5f9;--white:#fff;--shadow:0 14px 50px rgba(15,35,66,.07);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:var(--ink)}
+*{box-sizing:border-box}body{margin:0;background:var(--canvas);min-width:320px}button,input,select{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #91bff9;outline-offset:2px}.app{max-width:1450px;margin:0 auto;padding:28px 25px 40px}
+.app-header{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:23px}.brand{display:flex;align-items:center;gap:13px}.brand-mark{height:48px;min-width:60px;padding:0 11px;display:grid;place-items:center;background:var(--navy);color:#fff;border-radius:11px;font-size:23px;font-weight:900;letter-spacing:-1.5px}.brand-copy strong{display:block;color:var(--navy);font-size:21px;letter-spacing:-.55px}.brand-copy span{display:block;color:var(--muted);font-size:13px;margin-top:3px}.header-actions{display:flex;align-items:center;gap:10px}.summary-pill{padding:9px 13px;border:1px solid #d9e5f5;border-radius:9px;background:#fff;font-size:12px;font-weight:750;color:#45607e;white-space:nowrap}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 395px;gap:19px;align-items:start}.panel{background:#fff;border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}.left-panel{min-height:700px}.pane-header{padding:24px 27px 20px;border-bottom:1px solid var(--border)}.eyebrow{font-size:11px;letter-spacing:1.35px;text-transform:uppercase;color:#7490af;font-weight:800;margin-bottom:7px}.pane-header h1{font-size:23px;letter-spacing:-.55px;margin:0 0 7px;color:#1c2c42}.pane-header p{font-size:13px;color:var(--muted);line-height:1.55;margin:0;max-width:720px}.editor{padding:22px 27px 26px}.top-status{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px}.top-status .statuscopy{font-size:13px;color:var(--muted)}.status-chip{font-size:11px;padding:5px 9px;border-radius:30px;background:#e9eff7;color:#61738a;font-weight:800;white-space:nowrap}.status-chip.on{color:#067143;background:#e3f4eb}.tabs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}.tab{border-radius:7px;background:#f0f2f5;border:1px solid #d5dce5;color:#646b75;min-height:49px;font-weight:750;font-size:14px}.tab.buy.active{border-color:#8dccac;background:#e4f1e9;color:var(--green);box-shadow:0 2px 5px #152e2310}.tab.sell.active{border-color:#ec9c9d;background:#fdebec;color:var(--red);box-shadow:0 2px 5px #68272b10}
+.enable-line{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:15px;font-weight:700;padding-bottom:18px;border-bottom:1px solid var(--border)}.switch{position:relative;display:inline-flex;align-items:center;width:42px;height:24px;flex-shrink:0;cursor:pointer}.switch input{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer;margin:0;z-index:1}.switch .track{width:42px;height:24px;background:#cfd5dd;border-radius:30px;display:block;transition:.18s}.switch .track:after{position:absolute;content:"";width:18px;height:18px;top:3px;left:3px;border-radius:50%;background:white;box-shadow:0 1px 2px #2234;transition:.18s}.switch input:checked+.track{background:var(--blue)}.switch input:checked+.track:after{transform:translateX(18px)}.switch input:disabled+.track{opacity:.4}
+.params{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;margin:22px 0 25px}.params:empty{display:none}.field{display:flex;flex-direction:column;gap:8px;min-width:0}.field label{font-size:13px;font-weight:680;color:#586574}.field input{height:44px;padding:0 12px;border:1px solid #cbd5e2;border-radius:7px;font-size:16px;color:#263348;background:#fff;width:100%;font-variant-numeric:tabular-nums}.mini-label{font-size:11px;color:#8490a0;margin-top:2px}.condition-label{text-transform:uppercase;letter-spacing:.65px;font-size:11px;color:#6f7d8d;font-weight:850;margin:21px 0 11px}.rule-list{display:grid;gap:10px}.rule{display:flex;gap:14px;align-items:center;justify-content:space-between;padding:15px 15px 15px 14px;border:1px solid #dce4ed;border-radius:8px;min-height:74px;background:#fff}.rule.off{background:#fafbfd}.rule.off .sentence{opacity:.58}.rule:not(.off).buy{border-color:#b7dec8}.rule:not(.off).sell{border-color:#edc3c5}.sentence{display:flex;align-items:center;gap:9px;flex-wrap:wrap;min-width:0;font-size:15px;font-weight:650;line-height:1.4}.rule-no{display:grid;place-items:center;flex-shrink:0;width:24px;height:24px;border-radius:6px;background:#f0f3f7;color:#728093;font-size:11px;font-weight:850;margin-right:2px}.rule:not(.off).buy .rule-no{background:#e5f6ed;color:#15824b}.rule:not(.off).sell .rule-no{background:#feedef;color:#c72d37}.token{white-space:nowrap}.sentence select,.sentence input{border:1px solid #d6dee9;color:#0c579f;background:#f4f7fb;border-radius:6px;min-height:39px;padding:0 10px;font-weight:750;font-size:13px}.sentence select{padding-right:24px;max-width:225px}.sentence input{width:79px;background:#fff;color:#24344c;text-align:center;font-variant-numeric:tabular-nums}.sentence input.wide{width:88px}.rule .switch{margin-left:auto}.rule-count{color:#7990a6;font-size:12px;margin-top:15px}.error{color:#bf2739;font-size:13px;line-height:1.4;margin-top:11px;min-height:0}.foot{border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:13px;flex-wrap:wrap;padding:17px 27px 19px;background:#fcfdff}.foot-actions{display:flex;gap:9px}.btn{border-radius:7px;padding:10px 14px;font-size:13px;font-weight:730;border:1px solid #d6dfe9;background:#f4f6f9;color:#344152;min-height:39px}.btn:hover{filter:brightness(.98)}.btn.primary{background:var(--blue);color:white;border-color:var(--blue)}.btn.secondary{background:white}.dirty{font-size:12px;font-weight:750;color:#a66e12}.saved{color:#168049}.foot-info{font-size:12px;color:#78879a}.explain{border-top:1px solid var(--border);margin-top:8px;padding:14px 27px 18px;color:#78859a;font-size:12px;line-height:1.6;background:#fbfcfe}
+.sidepanel{max-height:calc(100vh - 115px);min-height:620px;display:flex;flex-direction:column}.side-head{padding:19px 16px 13px;border-bottom:1px solid var(--border)}.side-head-top{display:flex;justify-content:space-between;align-items:center;gap:10px}.side-head h2{font-size:16px;margin:0;color:#1b304c}.side-head .count{font-size:12px;color:#7290a5;font-weight:700}.search{display:flex;align-items:center;margin-top:14px;border:1px solid #d5e0eb;border-radius:7px;background:#fff;padding:0 10px;gap:7px;color:#7c93a9}.search svg{flex-shrink:0}.search input{outline:0;border:0;height:36px;min-width:0;width:100%;font-size:13px;color:#2f4053}.search input:focus{outline:0}.indicator-list{padding:10px;overflow:auto;flex:1;scrollbar-width:thin;scrollbar-color:#c9d5e6 transparent}.indicator-card{border:1px solid #b8d6ff;border-radius:7px;padding:12px 12px 11px;margin-bottom:8px;background:#fff;transition:border-color .13s,background .13s}.indicator-card.selected{background:#f2f7ff;border-color:#468ae9;box-shadow:inset 3px 0 0 var(--blue)}.indicator-card.pending{border-color:#e3e8ee;background:#fafbfd}.card-top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;font-weight:740;color:#14233a;margin-bottom:9px}.card-top .opened{color:#8996a7;font-size:10px;font-weight:600;white-space:nowrap}.card-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px}.card-actions{display:flex;gap:6px}.card-btn{min-height:30px;padding:0 10px;border:1px solid #d9dfe8;border-radius:4px;font-size:11px;font-weight:680;background:#f2f4f7;color:#25364a}.card-btn.learn{background:#0769e2;border-color:#0769e2;color:white}.card-btn.config:hover{border-color:#6ca0e6;background:#e9f2ff}.card-btn.selected-btn{background:#e7f1ff;color:#0758b6;border-color:#a8caff}.card-btn:disabled{opacity:.45;cursor:not-allowed}.side-bottom{border-top:1px solid var(--border);padding:13px 15px;background:#fafbfd;display:flex;align-items:center;justify-content:space-between;gap:12px}.note{font-size:11px;color:#8795a7}.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(18px);background:#17314f;color:#fff;padding:11px 18px;border-radius:9px;box-shadow:0 8px 35px #152b4d36;font-size:13px;font-weight:650;opacity:0;pointer-events:none;transition:.2s;z-index:50;max-width:calc(100% - 32px)}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.modal-backdrop{position:fixed;inset:0;background:#0e1e30a1;display:grid;place-items:center;padding:18px;z-index:80}.modal-backdrop[hidden]{display:none}.modal-box{background:#fff;border-radius:13px;width:min(440px,100%);padding:23px 25px;box-shadow:0 20px 60px #0003}.modal-box h3{margin:0 0 10px;font-size:20px}.modal-box p{font-size:14px;line-height:1.65;color:#5e7084}.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:19px}
+@media(max-width:1150px){.workspace{grid-template-columns:minmax(0,1fr) 350px}.app{padding:18px 14px 30px}.editor,.pane-header{padding-left:21px;padding-right:21px}.foot{padding-left:21px;padding-right:21px}}@media(max-width:850px){.workspace{grid-template-columns:1fr}.sidepanel{max-height:none;min-height:0}.indicator-list{max-height:350px}.left-panel{min-height:0}.workspace .left-panel{order:1}.workspace .sidepanel{order:2}.app-header{align-items:flex-start}.header-actions{flex-wrap:wrap;justify-content:flex-end}}@media(max-width:520px){.app{padding:10px 8px 25px}.brand-mark{height:42px;min-width:52px;font-size:20px}.brand-copy strong{font-size:17px}.brand-copy span{font-size:11px}.summary-pill{display:none}.pane-header{padding:18px 14px}.pane-header h1{font-size:20px}.editor{padding:16px 12px 19px}.params{gap:10px}.rule{padding:11px 9px;gap:8px}.sentence{font-size:13px;gap:6px}.sentence select,.sentence input{font-size:12px;min-height:35px;padding-left:6px}.sentence select{padding-right:18px;max-width:170px}.sentence input{width:68px}.sentence input.wide{width:76px}.rule-no{display:none}.foot{padding:13px 12px}.explain{padding:12px 14px}.tabs{gap:8px}.tab{font-size:13px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="app-header">
+    <div class="brand"><div class="brand-mark">IQX</div><div class="brand-copy"><strong>Thiết lập chiến lược Bot</strong><span>Bảng điều khiển điều kiện kỹ thuật · Bản mẫu giao diện</span></div></div>
+    <div class="header-actions"><span class="summary-pill">15 chỉ báo đã chốt</span><button class="btn secondary" id="exportBtn" type="button">↓ Xuất cấu hình JSON</button></div>
+  </header>
+  <main class="workspace">
+    <section class="panel left-panel" aria-label="Khung cấu hình chỉ báo">
+      <header class="pane-header"><div class="eyebrow" id="selectedCategory">ĐỘNG LƯỢNG</div><h1 id="editorTitle">Cấu hình Bot · RSI</h1><p>Dựa trên bản đồ lưu #8. Mua và Bán độc lập nhau. Cấu hình đã lưu dùng chung với Backtest; Bot chỉ dùng bản có hiệu lực từ phiên giao dịch kế tiếp.</p></header>
+      <div class="editor">
+        <div class="top-status"><span class="statuscopy" id="indicatorStatus">Chỉ báo đang bật cho Bot.</span><span class="status-chip on" id="globalChip">ĐANG BẬT</span></div>
+        <div class="tabs" role="tablist" aria-label="Chọn điều kiện mua bán"><button id="buyTab" class="tab buy active" type="button" role="tab" aria-selected="true">Điều kiện Mua</button><button id="sellTab" class="tab sell" type="button" role="tab" aria-selected="false">Điều kiện Bán</button></div>
+        <div class="enable-line"><span id="masterLabel">Sử dụng điều kiện Mua</span><label class="switch"><input type="checkbox" role="switch" id="sideEnable" aria-label="Bật tắt điều kiện mua bán"><span class="track"></span></label></div>
+        <div class="params" id="params"></div><div class="condition-label">Điều kiện</div><div class="rule-list" id="rules"></div><div class="rule-count" id="ruleCount"></div><div class="error" id="error" role="alert"></div>
+      </div>
+      <footer class="foot"><button id="resetBtn" class="btn" type="button">Đặt lại</button><div class="foot-actions"><span id="dirtyText" class="foot-info">Đã lưu</span><button id="cancelBtn" class="btn" type="button">Hủy</button><button id="saveBtn" class="btn primary" type="button">Lưu</button></div></footer>
+      <div class="explain">Đây là giao diện HTML mô phỏng, lưu cấu hình trên trình duyệt của bạn; chưa kết nối với Bot hoặc Backtest trực tiếp của iqx.vn.</div>
+    </section>
+    <aside class="panel sidepanel" aria-label="Danh sách chỉ báo">
+      <div class="side-head"><div class="side-head-top"><h2>Danh sách chỉ báo</h2><span class="count" id="counter">15 chỉ báo</span></div><label class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="searchInput" type="search" placeholder="Tìm chỉ báo..." aria-label="Tìm chỉ báo"></label></div>
+      <div class="indicator-list" id="indicatorList"></div>
+      <div class="side-bottom"><span class="note">Đã chốt: 15 · Chờ thiết lập: Khối lượng</span><button class="btn" type="button" id="scrollSelected">Xem đang chọn</button></div>
+    </aside>
+  </main>
+</div>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<div class="modal-backdrop" id="learnModal" hidden><div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><h3 id="modalTitle">Luyện tập</h3><p id="modalCopy">Chế độ luyện tập chưa kết nối.</p><div class="modal-actions"><button type="button" class="btn" id="modalClose">Đóng</button><button type="button" class="btn primary" id="modalConfig">Mở cấu hình</button></div></div></div>
+<script>
+'use strict';
+/* Mỗi dòng điều kiện tự chứa toàn bộ chu kỳ và ngưỡng của nó. Không có ô thông số chung bên ngoài. */
+const PRESETS=[5,10,20,50,100,200];
+const META=[
+{id:'rsi',name:'RSI',group:'Động lượng'},
+{id:'macd',name:'MACD',group:'Động lượng'},
+{id:'sma',name:'MA / SMA',group:'Đường trung bình'},
+{id:'bb',name:'Bollinger Bands',group:'Biến động'},
+{id:'ema',name:'EMA',group:'Đường trung bình'},
+{id:'cross',name:'MA Cross',group:'Đường trung bình'},
+{id:'dmi',name:'DMI + ADX',group:'Xu hướng'},
+{id:'donchian',name:'Donchian Channel',group:'Kênh giá'},
+{id:'stoch',name:'Stochastic',group:'Động lượng'},
+{id:'cci',name:'CCI',group:'Động lượng'},
+{id:'mfi',name:'MFI',group:'Dòng tiền'},
+{id:'roc',name:'ROC',group:'Động lượng'},
+{id:'willr',name:'Williams %R',group:'Động lượng'},
+{id:'obv',name:'OBV',group:'Khối lượng'},
+{id:'cmf',name:'Chaikin Money Flow',group:'Dòng tiền'},
+];
+/* Khai báo phần tử của câu điều kiện */
+const T=s=>({t:s});                                         // chữ cố định
+const S=(k,opts,a)=>({k,sel:opts,a});                         // ô chọn
+const P=(k,a)=>({k,sel:PRESETS,a,preset:1});                  // chu kỳ chuẩn SMA
+const N=(k,min,max,step,a,w)=>({k,min,max,step,a,w});         // ô nhập số
+const CROSS=[['cắt lên','cắt lên'],['cắt xuống','cắt xuống']];
+const UPDN=[['cắt lên','lên'],['cắt xuống','xuống']];
+const CMP=['>','<'];
+const ALL=['cắt lên','cắt xuống','>','<'];
+const per=(k,a,min=2,max=200)=>N(k,min,max,1,a);
+/* RULES[id] = mảng dòng; mỗi dòng: {parts, buy:{...mặc định}, sell:{...}, on:[mua,bán], pairs:[[nhanh,chậm]]} */
+const RULES={
+ sma:[
+  {parts:[T('Giá cắt'),S('op',UPDN,'Hướng cắt'),T('SMA'),P('period','Chu kỳ SMA')],buy:{op:'cắt lên',period:20},sell:{op:'cắt xuống',period:20},on:1},
+  {parts:[T('SMA'),P('fast','Chu kỳ SMA nhanh'),T('cắt'),S('op',UPDN,'Hướng giao cắt'),T('SMA'),P('slow','Chu kỳ SMA chậm')],buy:{fast:10,slow:20,op:'cắt lên'},sell:{fast:10,slow:20,op:'cắt xuống'},on:0,pairs:[['fast','slow']]},
+  {parts:[T('SMA'),P('period','Chu kỳ SMA'),T('xu hướng'),S('dir',['lên','xuống'],'Xu hướng SMA')],buy:{period:20,dir:'lên'},sell:{period:20,dir:'xuống'},on:0}],
+ ema:[
+  {parts:[T('Giá cắt'),S('op',UPDN,'Hướng cắt'),T('EMA'),per('period','Chu kỳ EMA')],buy:{op:'cắt lên',period:20},sell:{op:'cắt xuống',period:20},on:1},
+  {parts:[T('EMA'),per('fast','Chu kỳ EMA nhanh'),T('cắt'),S('op',UPDN,'Hướng giao cắt'),T('EMA'),per('slow','Chu kỳ EMA chậm')],buy:{fast:10,slow:20,op:'cắt lên'},sell:{fast:10,slow:20,op:'cắt xuống'},on:0,pairs:[['fast','slow']]},
+  {parts:[T('EMA'),per('period','Chu kỳ EMA'),T('xu hướng'),S('dir',['lên','xuống'],'Xu hướng EMA')],buy:{period:20,dir:'lên'},sell:{period:20,dir:'xuống'},on:0}],
+ cross:[
+  {parts:[T('SMA'),P('fast','Chu kỳ SMA nhanh'),T('cắt'),S('op',UPDN,'Hướng giao cắt'),T('SMA'),P('slow','Chu kỳ SMA chậm')],buy:{fast:20,slow:50,op:'cắt lên'},sell:{fast:20,slow:50,op:'cắt xuống'},on:1,pairs:[['fast','slow']]}],
+ rsi:[
+  {parts:[T('RSI'),per('period','Chu kỳ RSI'),S('op',CMP,'Dấu so sánh'),N('threshold',0,100,1,'Ngưỡng RSI')],buy:{period:14,op:'<',threshold:30},sell:{period:14,op:'>',threshold:70},on:1},
+  {parts:[T('RSI'),per('period','Chu kỳ RSI'),T('xu hướng'),S('dir',['lên','xuống'],'Xu hướng RSI')],buy:{period:14,dir:'lên'},sell:{period:14,dir:'xuống'},on:1}],
+ macd:[
+  {parts:[T('MACD'),per('fast','Chu kỳ EMA nhanh'),T('/'),per('slow','Chu kỳ EMA chậm'),S('op',ALL,'Quan hệ MACD với Signal'),T('Signal'),per('signal','Chu kỳ Signal')],buy:{fast:12,slow:26,signal:9,op:'cắt lên'},sell:{fast:12,slow:26,signal:9,op:'cắt xuống'},on:1,pairs:[['fast','slow']]},
+  {parts:[T('MACD'),per('fast','Chu kỳ EMA nhanh'),T('/'),per('slow','Chu kỳ EMA chậm'),S('op',CMP,'Quan hệ với 0'),T('0')],buy:{fast:12,slow:26,op:'>'},sell:{fast:12,slow:26,op:'<'},on:0,pairs:[['fast','slow']]},
+  {parts:[T('Histogram MACD'),per('fast','Chu kỳ EMA nhanh'),T('/'),per('slow','Chu kỳ EMA chậm'),T('/'),per('signal','Chu kỳ Signal'),S('dir',['tăng','giảm'],'Biến động Histogram'),T('so với phiên trước')],buy:{fast:12,slow:26,signal:9,dir:'tăng'},sell:{fast:12,slow:26,signal:9,dir:'giảm'},on:0,pairs:[['fast','slow']]}],
+ stoch:[
+  {parts:[T('%K'),per('k','Chu kỳ %K'),T('làm mượt'),N('smooth',1,10,1,'Làm mượt %K'),S('op',CMP,'Dấu so sánh'),N('threshold',0,100,1,'Ngưỡng Stochastic')],buy:{k:14,smooth:3,op:'<',threshold:20},sell:{k:14,smooth:3,op:'>',threshold:80},on:1},
+  {parts:[T('%K'),per('k','Chu kỳ %K'),T('làm mượt'),N('smooth',1,10,1,'Làm mượt %K'),S('op',CROSS,'Giao cắt Stochastic'),T('%D'),N('d',1,20,1,'Chu kỳ %D')],buy:{k:14,smooth:3,d:3,op:'cắt lên'},sell:{k:14,smooth:3,d:3,op:'cắt xuống'},on:1}],
+ cci:[{parts:[T('CCI'),per('period','Chu kỳ CCI'),S('op',CROSS,'Hướng giao cắt CCI'),N('threshold',-300,300,1,'Ngưỡng CCI',1)],buy:{period:20,op:'cắt lên',threshold:-100},sell:{period:20,op:'cắt xuống',threshold:100},on:1}],
+ mfi:[{parts:[T('MFI'),per('period','Chu kỳ MFI'),S('op',CROSS,'Hướng giao cắt MFI'),N('threshold',0,100,1,'Ngưỡng MFI')],buy:{period:14,op:'cắt lên',threshold:20},sell:{period:14,op:'cắt xuống',threshold:80},on:1}],
+ roc:[{parts:[T('ROC'),per('period','Chu kỳ ROC',2,252),S('op',CROSS,'Hướng giao cắt ROC'),N('threshold',-100,10000,.1,'Ngưỡng ROC (%)',1),T('%')],buy:{period:20,op:'cắt lên',threshold:5},sell:{period:20,op:'cắt xuống',threshold:-5},on:1}],
+ willr:[{parts:[T('Williams %R'),per('period','Chu kỳ Williams %R'),S('op',CROSS,'Hướng giao cắt Williams'),N('threshold',-100,0,1,'Ngưỡng Williams %R')],buy:{period:14,op:'cắt lên',threshold:-80},sell:{period:14,op:'cắt xuống',threshold:-20},on:1}],
+ bb:[
+  {parts:[T('Giá đóng cửa'),S('action',['quay vào dải từ dưới','quay vào dải từ trên','vượt dải trên','phá dải dưới','cắt lên dải giữa','cắt xuống dải giữa'],'Hành động giá với Bollinger'),T('Bollinger'),per('period','Chu kỳ Bollinger'),T('hệ số'),N('mult',1,3.5,.1,'Hệ số độ lệch chuẩn')],buy:{action:'quay vào dải từ dưới',period:20,mult:2},sell:{action:'quay vào dải từ trên',period:20,mult:2},on:1},
+  {parts:[T('Giá đóng cửa'),S('dir',['tăng','giảm'],'Biến động giá'),T('so với phiên trước')],buy:{dir:'tăng'},sell:{dir:'giảm'},on:1},
+  {parts:[T('Độ rộng Bollinger'),per('period','Chu kỳ Bollinger'),T('hệ số'),N('mult',1,3.5,.1,'Hệ số độ lệch chuẩn'),S('dir',['mở rộng','thu hẹp'],'Biến động độ rộng dải')],buy:{period:20,mult:2,dir:'thu hẹp'},sell:{period:20,mult:2,dir:'mở rộng'},on:1}],
+ donchian:[{parts:[T('Giá đóng cửa'),S('op',CMP,'Dấu so sánh'),T('dải'),S('band',['trên','dưới'],'Dải Donchian'),T('Donchian'),per('period','Chu kỳ Donchian',2,252)],buy:{op:'>',band:'trên',period:20},sell:{op:'<',band:'dưới',period:20},on:1}],
+ dmi:[
+  {parts:[T('DMI'),per('period','Chu kỳ DMI'),T(':'),T('+DI'),S('op',ALL,'Quan hệ +DI với −DI'),T('−DI')],buy:{op:'cắt lên',period:14},sell:{op:'cắt xuống',period:14},on:1},
+  {parts:[T('ADX'),per('period','Chu kỳ ADX'),S('op',CMP,'Dấu ADX'),N('threshold',0,100,.1,'Ngưỡng ADX')],buy:{period:14,op:'>',threshold:25},sell:{period:14,op:'>',threshold:25},on:0}],
+ obv:[
+  {parts:[T('OBV'),S('op',ALL,'Quan hệ OBV'),T('SMA'),per('period','Chu kỳ SMA của OBV'),T('của OBV')],buy:{op:'cắt lên',period:20},sell:{op:'cắt xuống',period:20},on:1},
+  {parts:[T('OBV'),S('action',['vượt đỉnh','phá đáy'],'Hướng phá vỡ OBV'),per('period','Số phiên OBV',2,252),T('phiên')],buy:{action:'vượt đỉnh',period:20},sell:{action:'phá đáy',period:20},on:0}],
+ cmf:[{parts:[T('CMF'),per('period','Chu kỳ CMF'),S('op',CROSS,'Hướng giao cắt CMF'),N('threshold',-1,1,.01,'Ngưỡng CMF')],buy:{period:20,op:'cắt lên',threshold:0},sell:{period:20,op:'cắt xuống',threshold:0},on:1}],
+};
+const clone=x=>JSON.parse(JSON.stringify(x));
+const makeSide=(id,side)=>({enabled:true,rules:RULES[id].map(r=>Object.assign({enabled:!!r.on},clone(r[side])))});
+function defaults(){return Object.fromEntries(META.map(x=>[x.id,{active:x.id==='rsi'||x.id==='sma',buy:makeSide(x.id,'buy'),sell:makeSide(x.id,'sell')}]));}
+const KEY='iqx_bot_indicator_panels_v2';
+/* Chỉ đọc lại bản lưu cùng định dạng mới. Bản lưu kiểu cũ bị bỏ, dùng mặc định mới. */
+const shapeOk=(id,s)=>s&&Array.isArray(s.rules)&&s.rules.length===RULES[id].length&&s.rules.every((r,i)=>RULES[id][i].parts.every(p=>p.t!=null||p.k in r));
+let saved=defaults();try{let old=JSON.parse(localStorage.getItem(KEY));if(old&&typeof old==='object'){for(let m of META){if(shapeOk(m.id,old[m.id]?.buy)&&shapeOk(m.id,old[m.id]?.sell))saved[m.id]=old[m.id];}}}catch(e){}
+let draft=clone(saved);let selected='rsi',side='buy',filter='';
+const $=id=>document.getElementById(id);
+const safe=t=>String(t).replace(/[&<>"']/g,s=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[s]));
+const choices=(opts,v)=>opts.map(o=>{let [value,label]=Array.isArray(o)?o:[o,o];return `<option value="${safe(value)}" ${String(value)===String(v)?'selected':''}>${safe(label)}</option>`;}).join('');
+function makeRule(id,r,i){
+ return RULES[id][i].parts.map(p=>{
+  if(p.t!=null)return `<span class="token">${safe(p.t)}</span>`;
+  const f=`rules.${i}.${p.k}`;
+  if(p.sel)return `<select aria-label="${safe(p.a)}" title="${safe(p.a)}" data-field="${f}">${choices(p.sel,r[p.k])}</select>`;
+  return `<input class="${p.w?'wide':''}" aria-label="${safe(p.a)}" title="${safe(p.a)}" data-field="${f}" inputmode="decimal" type="number" min="${p.min}" max="${p.max}" step="${p.step}" value="${safe(r[p.k])}">`;
+ }).join(' ');
+}
+function changed(){return JSON.stringify(draft[selected])!==JSON.stringify(saved[selected]);}
+function showEditor(){
+ const meta=META.find(m=>m.id===selected),rec=draft[selected],current=rec[side];
+ $('selectedCategory').textContent=meta.group.toUpperCase();$('editorTitle').textContent='Cấu hình Bot · '+meta.name;
+ $('indicatorStatus').textContent=rec.active?'Chỉ báo đang bật cho Bot.':'Chỉ báo đang tắt: lưu tham số không tự bật chỉ báo.';
+ $('globalChip').textContent=rec.active?'ĐANG BẬT':'ĐANG TẮT';$('globalChip').className='status-chip'+(rec.active?' on':'');
+ for(let t of ['buy','sell']){$(t+'Tab').classList.toggle('active',side===t);$(t+'Tab').setAttribute('aria-selected',side===t?'true':'false');}
+ $('masterLabel').textContent='Sử dụng điều kiện '+(side==='buy'?'Mua':'Bán');$('sideEnable').checked=current.enabled;
+ $('params').innerHTML='';
+ $('rules').innerHTML=current.rules.map((r,i)=>`<div class="rule ${r.enabled?'':'off'} ${side}"><div class="sentence"><span class="rule-no">${String(i+1).padStart(2,'0')}</span>${makeRule(selected,r,i)}</div><label class="switch"><input data-field="rules.${i}.enabled" type="checkbox" role="switch" ${r.enabled?'checked':''} aria-label="${r.enabled?'Tắt':'Bật'} điều kiện ${i+1}"><span class="track"></span></label></div>`).join('');
+ $('ruleCount').textContent=`${current.rules.filter(x=>x.enabled).length}/${current.rules.length} điều kiện được bật${current.rules.length>1?' · Các điều kiện đang bật phải đồng thời thỏa mãn':''}`;
+ $('dirtyText').textContent=changed()?'Chưa lưu thay đổi':'Đã lưu';$('dirtyText').className=changed()?'dirty':'foot-info saved';$('error').textContent='';
+}
+function renderList(){
+ const query=filter.trim().toLocaleLowerCase('vi');
+ const list=META.filter(x=>x.name.toLocaleLowerCase('vi').includes(query));
+ $('counter').textContent=`${list.length}/15 chỉ báo`;
+ const pending=`<div class="indicator-card pending"><div class="card-top"><span>Khối lượng</span><span class="opened">Chưa chốt</span></div><div class="card-bottom"><div class="card-actions"><button type="button" class="card-btn learn" disabled>Luyện tập</button><button type="button" class="card-btn config" disabled>Cấu hình</button></div><label class="switch"><input type="checkbox" disabled aria-label="Khối lượng chưa cấu hình"><span class="track"></span></label></div></div>`;
+ let html='';
+ for(let x of list){
+  const active=draft[x.id].active;
+  html+=`<div id="card-${x.id}" class="indicator-card ${x.id===selected?'selected':''}"><div class="card-top"><span>${safe(x.name)}</span><span class="opened">Đã mở</span></div><div class="card-bottom"><div class="card-actions"><button type="button" class="card-btn learn" data-action="learn" data-id="${x.id}">Luyện tập</button><button type="button" class="card-btn config ${x.id===selected?'selected-btn':''}" data-action="config" data-id="${x.id}">Cấu hình</button></div><label class="switch"><input type="checkbox" role="switch" data-action="active" data-id="${x.id}" ${active?'checked':''} aria-label="${active?'Tắt':'Bật'} ${safe(x.name)}"><span class="track"></span></label></div></div>`;
+  if(x.id==='bb'&&!query)html+=pending;
+ }
+ if(query&&'khối lượng'.includes(query))html+=pending;
+ $('indicatorList').innerHTML=html;
+}
+function setProp(obj,path,val){let ps=path.split('.');let p=obj;for(let i=0;i<ps.length-1;i++)p=p[ps[i]];p[ps.at(-1)]=val;}
+function persist(){try{localStorage.setItem(KEY,JSON.stringify(saved));return true}catch(e){return false}}
+function notify(s){let el=$('toast');el.textContent=s;el.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove('show'),3100)}
+function isNum(v,min,max,step){const n=Number(v);if(v===''||v==null||!Number.isFinite(n)||n<min||n>max)return false;if(step===1&&!Number.isInteger(n))return false;return true;}
+function validateSides(rec,id){
+ for(let ss of ['buy','sell']){
+  const c=rec[ss],nm=ss==='buy'?'Mua':'Bán';
+  for(let i=0;i<c.rules.length;i++){
+   const r=c.rules[i],def=RULES[id][i];
+   for(let p of def.parts){
+    if(p.t!=null||p.sel&&!p.preset)continue;
+    if(p.preset){if(!PRESETS.includes(Number(r[p.k])))return `${nm} · dòng ${i+1}: ${p.a} chỉ chọn 5, 10, 20, 50, 100, 200.`;continue}
+    if(!isNum(r[p.k],p.min,p.max,p.step))return `${nm} · dòng ${i+1}: ${p.a} phải từ ${p.min} đến ${p.max}${p.step===1?', số nguyên':''}.`;
+   }
+   for(let [a,b] of def.pairs||[])if(Number(r[a])>=Number(r[b]))return `${nm} · dòng ${i+1}: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.`;
+  }
+ }
+ return '';
+}
+function scrollToEditor(){if(window.innerWidth<=850)document.querySelector('.left-panel').scrollIntoView({behavior:'smooth',block:'start'});}
+$('indicatorList').addEventListener('click',e=>{
+ const b=e.target.closest('button[data-action]');if(!b)return;
+ const id=b.dataset.id;if(b.dataset.action==='config'){selected=id;side='buy';showEditor();renderList();scrollToEditor()}
+ if(b.dataset.action==='learn'){$('modalTitle').textContent='Luyện tập · '+META.find(m=>m.id===id).name;$('modalCopy').textContent='Tính năng Luyện tập trong file mẫu chỉ là vị trí giao diện. Chưa kết nối hệ thống bài tập của iqx.vn. Bạn có thể chuyển sang Cấu hình để xem và chỉnh toàn bộ điều kiện đã chốt.';$('learnModal').dataset.id=id;$('learnModal').hidden=false}
+});
+$('indicatorList').addEventListener('change',e=>{if(e.target.dataset.action==='active'){let id=e.target.dataset.id;draft[id].active=e.target.checked;saved[id].active=e.target.checked;persist();renderList();if(id===selected)showEditor();notify((e.target.checked?'Đã bật ':'Đã tắt ')+META.find(m=>m.id===id).name+' trong bản mẫu.')}});
+$('searchInput').addEventListener('input',e=>{filter=e.target.value;renderList()});
+$('buyTab').addEventListener('click',()=>{side='buy';showEditor()});$('sellTab').addEventListener('click',()=>{side='sell';showEditor()});
+$('sideEnable').addEventListener('change',e=>{draft[selected][side].enabled=e.target.checked;showEditor()});
+function editorInput(e){let input=e.target.closest('[data-field]');if(!input)return;const field=input.dataset.field;
+ let val=input.type==='checkbox'?input.checked:input.value;
+ if(input.tagName==='SELECT'&&PRESETS.map(String).includes(val)&&/(period|fast|slow)$/.test(field))val=Number(val);
+ if(input.type==='number')val=input.value===''?'':Number(input.value);
+ setProp(draft[selected][side],field,val);
+ if(input.type==='checkbox'||input.tagName==='SELECT')showEditor();else{let dirty=changed();$('dirtyText').textContent=dirty?'Chưa lưu thay đổi':'Đã lưu';$('dirtyText').className=dirty?'dirty':'foot-info saved';$('error').textContent=''}
+}
+$('rules').addEventListener('change',editorInput);
+$('rules').addEventListener('input',e=>{if(e.target.type==='number')editorInput(e)});
+$('saveBtn').addEventListener('click',()=>{let error=validateSides(draft[selected],selected);if(error){$('error').textContent=error;notify('Vui lòng kiểm tra lại thông số.');return}saved[selected]=clone(draft[selected]);let ok=persist();showEditor();renderList();notify(ok?'Đã lưu cấu hình '+META.find(x=>x.id===selected).name+'.':'Đã lưu trong phiên hiện tại, nhưng trình duyệt chặn lưu lâu dài.');});
+$('cancelBtn').addEventListener('click',()=>{draft[selected]=clone(saved[selected]);showEditor();renderList();notify('Đã hủy thay đổi chưa lưu.');});
+$('resetBtn').addEventListener('click',()=>{let d=defaults();d[selected].active=draft[selected].active;draft[selected]=clone(d[selected]);showEditor();renderList();notify('Đã đặt lại mặc định. Nhấn Lưu để xác nhận.');});
+$('scrollSelected').addEventListener('click',()=>{filter='';$('searchInput').value='';renderList();$('card-'+selected)?.scrollIntoView({behavior:'smooth',block:'nearest'});});
+$('exportBtn').addEventListener('click',()=>{
+ let blob=new Blob([JSON.stringify({version:'2.0',source:'IQX HTML demo',note:'Cấu hình bản mẫu đã lưu, không phải giao dịch thực tế',indicators:saved},null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='IQX_Bot_15_Chi_Bao_Cau_Hinh.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);notify('Đã xuất cấu hình JSON đã lưu.');});
+$('modalClose').addEventListener('click',()=>{$('learnModal').hidden=true});$('modalConfig').addEventListener('click',()=>{selected=$('learnModal').dataset.id;side='buy';$('learnModal').hidden=true;showEditor();renderList();scrollToEditor()});$('learnModal').addEventListener('click',e=>{if(e.target===$('learnModal'))$('learnModal').hidden=true});document.addEventListener('keydown',e=>{if(e.key==='Escape')$('learnModal').hidden=true});
+renderList();showEditor();
+
+</script>
+</body>
+</html>
