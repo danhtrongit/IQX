@@ -3,7 +3,7 @@ import { ArrowDown, ArrowUp, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { CROSS_LABEL, operandLabel, ruleOpLabel } from "@/pages/demo-trading/bot/config/labels"
 import { activeConditions } from "@/pages/demo-trading/bot/config/summary"
-import type { SharedConfig, Side, TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
+import { isParamsSide, type SharedConfig, type Side, type TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
 
 import { isSideUsed } from "./sides"
 
@@ -52,7 +52,7 @@ export function SidePanel({
           used.map((indicator) => {
             const saved = config?.indicators[indicator.id]?.[side]
             const summary = summaries.get(indicator.id)
-            const params = Object.fromEntries(Object.entries(saved?.params ?? {}))
+            const params = saved && isParamsSide(saved) ? saved.params : {}
             return (
               <article key={indicator.id} data-testid={`card-${side}-${indicator.id}`} className="overflow-hidden rounded-md border border-border bg-background/40">
                 <div className="flex items-start justify-between gap-2 p-3">
@@ -77,16 +77,20 @@ export function SidePanel({
                   </div>
                 </div>
                 <ul className="divide-y divide-border border-t border-border">
-                  {(saved?.rules ?? []).filter((rule) => rule.enabled !== false).map((rule) => (
-                    <li key={rule.id}>
-                      {rule.kind === "cross" && <span className="block bg-muted/50 px-3 py-1 text-[11px] text-muted-foreground">{CROSS_LABEL}</span>}
-                      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-2 text-xs">
-                        <span className="min-w-0 break-words">{operandLabel(rule.lhs, indicator, params)}</span>
-                        <span className="px-1 text-center text-xs font-bold text-primary" aria-label={`Dấu ${rule.op}`}>{ruleOpLabel(rule.op)}</span>
-                        <span className="min-w-0 text-right break-words">{operandLabel(rule.rhs, indicator, params)}</span>
-                      </div>
-                    </li>
-                  ))}
+                  {saved && !isParamsSide(saved)
+                    ? (summary?.rules ?? []).map((line, index) => (
+                        <li key={`${indicator.id}-${index}`} className="px-3 py-2 text-xs break-words">{line}</li>
+                      ))
+                    : (saved?.rules ?? []).filter((rule) => rule.enabled !== false).map((rule) => (
+                        <li key={rule.id}>
+                          {rule.kind === "cross" && <span className="block bg-muted/50 px-3 py-1 text-[11px] text-muted-foreground">{CROSS_LABEL}</span>}
+                          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-2 text-xs">
+                            <span className="min-w-0 break-words">{operandLabel(rule.lhs, indicator, params)}</span>
+                            <span className="px-1 text-center text-xs font-bold text-primary" aria-label={`Dấu ${rule.op}`}>{ruleOpLabel(rule.op)}</span>
+                            <span className="min-w-0 text-right break-words">{operandLabel(rule.rhs, indicator, params)}</span>
+                          </div>
+                        </li>
+                      ))}
                 </ul>
               </article>
             )

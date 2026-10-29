@@ -9,10 +9,22 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Switch } from "@/components/ui/switch"
 import { useWorkspaceFrame } from "@/components/layout/workspace-frame-context"
 import { cn } from "@/lib/utils"
-import { HOLD_MAX, HOLD_MIN, PRACTICE_TOTAL, type PracticeFormField, type PracticeFormRule, type Side } from "./practice-api"
+import { ConditionRows, type FlaggedField } from "@/pages/demo-trading/bot/config/condition-rows"
+import {
+  HOLD_MAX,
+  HOLD_MIN,
+  PRACTICE_TOTAL,
+  isRowsForm,
+  type PracticeForm,
+  type PracticeFormField,
+  type PracticeFormRule,
+  type PracticeParamsForm,
+  type PracticeRowsForm,
+  type Side,
+} from "./practice-api"
 import { PracticeFailureNotice } from "./practice-failure"
 import { usePractice } from "./practice-context"
-import { SIDES, SIDE_LABEL, ruleOpLabel, ruleSideLabels, formatInt } from "./practice-model"
+import { SIDES, SIDE_LABEL, formatInt, legacySideEntries, ruleOpLabel, ruleSideLabels } from "./practice-model"
 import { useExitPractice } from "./practice-nav"
 
 const pad2 = (value: number) => String(value).padStart(2, "0")
@@ -158,14 +170,140 @@ function DraftStatusLine() {
   )
 }
 
-function Editor() {
+/** Heading of the condition block, shared by the three ways a tab can be shown. */
+function ConditionsHeading() {
+  return <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">Điều kiện</p>
+}
+
+/**
+ * Row-based indicators (SPEC V3): the rows of the open tab, each a sentence with its own values and
+ * its own switch. There is no shared parameter block. A locked run shows the same sentences as text.
+ */
+function RowsConditions({ spec }: { spec: PracticeRowsForm }) {
   const practice = usePractice()
-  const holdId = useId()
-  const { form, spec, validation, locked, side, setSide, indicatorId, indicatorName } = practice
-  if (!form || !spec || !validation) return null
+  const { form, validation, locked, side } = practice
+  if (!form || !validation) return null
+  const sideForm = form[side]
+  const issues = locked ? [] : validation.issues.filter((issue) => issue.side === side && issue.row !== undefined)
+  const invalid = issues.flatMap((issue): FlaggedField[] => (issue.row !== undefined && issue.field ? [{ row: issue.row, field: issue.field }] : []))
+  const messages = [...new Set(issues.map((issue) => issue.message))]
+  const noneOn = sideForm.enabled && sideForm.rows.every((row) => !row.enabled)
+  return (
+    <div>
+      <ConditionsHeading />
+      <ConditionRows
+        definitions={spec.rows}
+        side={side}
+        rows={sideForm.rows}
+        mode={locked ? "read" : "edit"}
+        onRowChange={(index, row) => practice.editRow(side, index, row)}
+        invalid={invalid}
+        messages={messages}
+        idPrefix="practice"
+      />
+      {noneOn && (
+        <p className="mt-2 text-[11px] leading-snug text-muted-foreground" data-testid="no-rows-on">
+          {side === "buy"
+            ? "Chưa bật điều kiện Mua nào nên lượt này sẽ không có lệnh Mua."
+            : "Chưa bật điều kiện Bán nào nên lượt chỉ thoát khi hết thời gian giữ tối đa."}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/** Volume (SPEC V3 owner decision 4): its side-level params and rule operators, as before. */
+function ParamsConditions({ spec }: { spec: PracticeParamsForm }) {
+  const practice = usePractice()
+  const { form, validation, locked, side, indicatorId, indicatorName } = practice
+  if (!form || !validation) return null
   const sideSpec = spec[side]
   const sideForm = form[side]
   const indicator = { id: indicatorId, name: indicatorName }
+  const disabled = locked
+  return (
+    <>
+      <div className="grid grid-cols-2 gap-3">
+        {sideSpec.fields.map((field) => (
+          <ParamField
+            key={`${side}-${field.key}`}
+            side={side}
+            field={field}
+            value={sideForm.params[field.key] ?? ""}
+            error={locked ? undefined : validation.byPath[`${side}.params.${field.key}`]}
+            disabled={disabled}
+            onChange={(text) => practice.editParam(side, field.key, text)}
+          />
+        ))}
+      </div>
+
+      <div>
+        <ConditionsHeading />
+        <ul className="divide-y divide-border rounded-md border border-border bg-card/50">
+          {sideSpec.rules.map((rule, index) => {
+            const labels = ruleSideLabels(rule, indicator, sideSpec.fields, sideForm.params)
+            return (
+              <RuleRow
+                key={rule.rule_id}
+                index={index}
+                rule={rule}
+                left={labels.left}
+                right={labels.right}
+                op={sideForm.ops[rule.rule_id] ?? rule.default_op}
+                ruleEnabled={
+                  rule.default_enabled !== undefined || sideForm.rules_enabled?.[rule.rule_id] !== undefined
+                    ? (sideForm.rules_enabled?.[rule.rule_id] ?? rule.default_enabled ?? true)
+                    : undefined
+                }
+                disabled={disabled}
+                onOp={(op) => practice.editOp(side, rule.rule_id, op)}
+                onRuleEnabled={
+                  practice.editRuleEnabled
+                    ? (checked) => practice.editRuleEnabled?.(side, rule.rule_id, checked)
+                    : undefined
+                }
+              />
+            )
+          })}
+        </ul>
+      </div>
+    </>
+  )
+}
+
+/**
+ * A run locked before SPEC V3 under an indicator that now has condition rows: its config is in the
+ * old format (one set of params for the side), which has no rows to show. It is listed as it was
+ * locked; the run, its chart and its trades stay viewable and unchanged.
+ */
+function LegacyConditions({ spec }: { spec: PracticeForm }) {
+  const { form, side, indicatorId } = usePractice()
+  if (!form) return null
+  const entries = legacySideEntries(indicatorId, spec, side, form[side])
+  return (
+    <div data-testid="legacy-conditions">
+      <ConditionsHeading />
+      <p className="mb-2 text-[11px] leading-snug text-muted-foreground">
+        Lượt này khóa theo định dạng điều kiện cũ, với một bộ tham số chung cho cả phía. Kết quả được giữ nguyên.
+      </p>
+      <dl className="divide-y divide-border rounded-md border border-border bg-card/50">
+        {entries.map((entry, index) => (
+          <div key={`${index}-${entry.label}`} className="flex justify-between gap-3 px-3 py-2 text-xs">
+            <dt className="min-w-0 text-muted-foreground">{entry.label}</dt>
+            <dd className="font-medium tabular-nums">{entry.value}</dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  )
+}
+
+function Editor() {
+  const practice = usePractice()
+  const holdId = useId()
+  const { form, spec, validation, locked, side, setSide, indicatorName, outdatedRun } = practice
+  if (!form || !spec || !validation) return null
+  const sideForm = form[side]
   const disabled = locked
   const holdError = validation.holdError
   return (
@@ -184,6 +322,12 @@ function Editor() {
           </Button>
         )}
       </div>
+
+      {outdatedRun && !locked && (
+        <p role="status" data-testid="outdated-run" className="rounded-md border border-border bg-muted/40 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+          {outdatedRun.message}
+        </p>
+      )}
 
       <div role="group" aria-label="Phía điều kiện đang chỉnh" className="grid grid-cols-2 gap-2">
         {SIDES.map((item) => (
@@ -227,50 +371,11 @@ function Editor() {
         <p className="-mt-2 text-[11px] text-muted-foreground">Bán tắt: lượt chỉ thoát khi hết thời gian giữ tối đa.</p>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        {sideSpec.fields.map((field) => (
-          <ParamField
-            key={`${side}-${field.key}`}
-            side={side}
-            field={field}
-            value={sideForm.params[field.key] ?? ""}
-            error={locked ? undefined : validation.byPath[`${side}.params.${field.key}`]}
-            disabled={disabled}
-            onChange={(text) => practice.editParam(side, field.key, text)}
-          />
-        ))}
-      </div>
-
-      <div>
-        <p className="mb-1.5 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">Điều kiện</p>
-        <ul className="divide-y divide-border rounded-md border border-border bg-card/50">
-          {sideSpec.rules.map((rule, index) => {
-            const labels = ruleSideLabels(rule, indicator, sideSpec.fields, sideForm.params)
-            return (
-              <RuleRow
-                key={rule.rule_id}
-                index={index}
-                rule={rule}
-                left={labels.left}
-                right={labels.right}
-                op={sideForm.ops[rule.rule_id] ?? rule.default_op}
-                ruleEnabled={
-                  rule.default_enabled !== undefined || sideForm.rules_enabled?.[rule.rule_id] !== undefined
-                    ? (sideForm.rules_enabled?.[rule.rule_id] ?? rule.default_enabled ?? true)
-                    : undefined
-                }
-                disabled={disabled}
-                onOp={(op) => practice.editOp(side, rule.rule_id, op)}
-                onRuleEnabled={
-                  practice.editRuleEnabled
-                    ? (checked) => practice.editRuleEnabled?.(side, rule.rule_id, checked)
-                    : undefined
-                }
-              />
-            )
-          })}
-        </ul>
-      </div>
+      {isRowsForm(spec) ? (
+        form.model === "rows" ? <RowsConditions spec={spec} /> : <LegacyConditions spec={spec} />
+      ) : (
+        <ParamsConditions spec={spec} />
+      )}
 
       <div className="space-y-1 border-t border-border pt-3">
         <label htmlFor={holdId} className="block text-xs font-medium text-muted-foreground">

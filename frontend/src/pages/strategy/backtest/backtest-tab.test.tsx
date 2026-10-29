@@ -318,6 +318,36 @@ describe("shared configuration", () => {
     expect(screen.getByTestId("panel-buy").textContent).not.toContain("RSI")
   })
 
+  it("shows each used indicator's enabled rows as sentences, and edits them per row in the dialog", async () => {
+    const user = userEvent.setup()
+    await renderTab()
+    const card = within(screen.getByTestId("panel-buy")).getByTestId("card-buy-macd")
+    expect(within(card).getAllByRole("listitem").map((item) => item.textContent)).toEqual(["MACD 12 / 26 cắt lên Signal 9"])
+
+    await user.click(within(card).getByRole("button", { name: /Chỉnh MACD/ }))
+    const dialog = await screen.findByRole("dialog", { name: "Cấu hình chung · MACD" })
+    expect(within(within(dialog).getByRole("list", { name: "Điều kiện Mua" })).getAllByRole("listitem")).toHaveLength(3)
+    const signal = within(dialog).getByLabelText("Chu kỳ Signal (dòng 1, Mua)")
+    await user.clear(signal)
+    await user.type(signal, "1")
+    expect(within(dialog).getByTestId("row-errors-buy").textContent).toBe("Mua · dòng 1: Chu kỳ Signal phải từ 2 đến 200, số nguyên.")
+    expect(within(dialog).getByRole("button", { name: "Lưu" }).hasAttribute("disabled")).toBe(true)
+    await user.type(signal, "2")
+    await user.click(within(dialog).getByRole("switch", { name: "Bật điều kiện 3 (Mua)" }))
+    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+    await waitFor(() => expect(patches()).toHaveLength(1))
+    const sent = patches()[0]!.body as { indicators: Record<string, { buy: { rules: Record<string, unknown>[] } }> }
+    expect(sent.indicators.macd!.buy.rules).toEqual([
+      { id: "macd.signal", enabled: true, fast: 12, slow: 26, op: "cross_up", signal: 12 },
+      { id: "macd.zero", enabled: false, fast: 12, slow: 26, op: ">" },
+      { id: "macd.hist", enabled: true, fast: 12, slow: 26, signal: 9, dir: "up" },
+    ])
+    await waitFor(() => expect(within(screen.getByTestId("card-buy-macd")).getAllByRole("listitem").map((item) => item.textContent)).toEqual([
+      "MACD 12 / 26 cắt lên Signal 12",
+      "Histogram MACD 12 / 26 / 9 tăng so với phiên trước",
+    ]))
+  })
+
   it("adds nothing when the dialog is cancelled, and asks before throwing a changed draft away", async () => {
     const user = userEvent.setup()
     await renderTab()
@@ -328,13 +358,13 @@ describe("shared configuration", () => {
 
     await user.click(screen.getByRole("button", { name: "Thêm RSI vào Mua" }))
     const again = await screen.findByRole("dialog", { name: "Cấu hình chung · RSI" })
-    const period = within(again).getByLabelText("Chu kỳ RSI")
+    const period = within(again).getByLabelText("Chu kỳ RSI (dòng 1, Mua)")
     await user.clear(period)
     await user.type(period, "20")
     await user.keyboard("{Escape}")
     expect(await screen.findByRole("dialog", { name: "Bỏ thay đổi chưa lưu?" })).toBeTruthy()
     await user.click(screen.getByRole("button", { name: "Tiếp tục chỉnh sửa" }))
-    expect((within(again).getByLabelText("Chu kỳ RSI") as HTMLInputElement).value).toBe("20")
+    expect((within(again).getByLabelText("Chu kỳ RSI (dòng 1, Mua)") as HTMLInputElement).value).toBe("20")
     await user.click(within(again).getByRole("button", { name: "Hủy" }))
     await user.click(await screen.findByRole("button", { name: "Bỏ thay đổi" }))
     expect(patches()).toHaveLength(0)
@@ -350,8 +380,8 @@ describe("shared configuration", () => {
     expect(patches()).toHaveLength(0)
     await user.click(within(confirm).getByRole("button", { name: "Bỏ và lưu" }))
     await waitFor(() => expect(patches()).toHaveLength(1))
-    const sent = patches()[0]!.body as { indicators: Record<string, { master_enabled: boolean; buy: { enabled: boolean; params: Record<string, number> }; sell: { enabled: boolean } }> }
-    expect(sent.indicators.macd).toMatchObject({ master_enabled: true, buy: { enabled: false, params: { fast: 12, slow: 26, signal: 9 } }, sell: { enabled: true } })
+    const sent = patches()[0]!.body as { indicators: Record<string, { master_enabled: boolean; buy: { enabled: boolean; rules: unknown[] }; sell: { enabled: boolean } }> }
+    expect(sent.indicators.macd).toMatchObject({ master_enabled: true, buy: { enabled: false, rules: [{ id: "macd.signal", fast: 12, slow: 26, signal: 9 }, {}, {}] }, sell: { enabled: true } })
     await waitFor(() => expect(screen.getByTestId("panel-buy").textContent).not.toContain("MACD"))
     expect(screen.getByTestId("panel-sell").textContent).toContain("MACD")
   })

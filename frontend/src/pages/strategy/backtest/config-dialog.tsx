@@ -1,14 +1,14 @@
 import { useId, useMemo, useState } from "react"
-import { RefreshCw } from "lucide-react"
+import { RefreshCw, TriangleAlert } from "lucide-react"
 import { toast } from "sonner"
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { fieldErrorFor, type ConfigFieldError } from "@/pages/demo-trading/bot/config/api"
+import { isShownInSide, sideOfError, type ConfigFieldError } from "@/pages/demo-trading/bot/config/api"
+import { ConditionSideEditor } from "@/pages/demo-trading/bot/config/condition-side"
 import {
   buildIndicatorConfig,
   createDraft,
@@ -17,15 +17,14 @@ import {
   isDraftDirty,
   rebaseDraft,
   resetDraftSide,
+  sameIndicatorConfig,
   savedIndicatorConfig,
   SIDE_LABEL,
   SIDES,
-  sideFields,
   type IndicatorDraft,
 } from "@/pages/demo-trading/bot/config/draft"
-import { CROSS_LABEL, numericParams, operandLabel, ruleOpLabel } from "@/pages/demo-trading/bot/config/labels"
 import { effectiveText } from "@/pages/demo-trading/bot/config/summary"
-import type { RuleOp, Side, TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
+import type { Side, TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
 import type { BotConfigController } from "@/pages/demo-trading/bot/config/use-bot-config"
 import { cn } from "@/lib/utils"
 
@@ -41,8 +40,9 @@ const TAB_STYLE: Record<Side, string> = {
 /**
  * Per-indicator Mua/Bán form of the Backtest. There is ONE saved configuration: saving here changes
  * what the Bot uses too (from its effective session), so the dialog says so. Until Lưu, everything is
- * a draft: Hủy/Escape ask before discarding, Đặt lại only resets the open tab's params and operators,
- * and a 409 keeps the draft and offers a reload that keeps what the user changed.
+ * a draft: Hủy/Escape ask before discarding, Đặt lại only resets the open tab's condition rows, both
+ * tabs are validated before Lưu (SPEC V3 §4), and a 409 keeps the draft and offers a reload that
+ * keeps what the user changed.
  */
 export function ConfigDialog({
   indicator,
@@ -85,8 +85,8 @@ export function ConfigDialog({
   async function submit() {
     setServerErrors([])
     setServerMessage(null)
-    const next = buildIndicatorConfig(base.config, draft, adding)
-    if (JSON.stringify(next) === JSON.stringify(base.config)) {
+    const next = buildIndicatorConfig(indicator, base.config, draft, adding)
+    if (sameIndicatorConfig(base.config, next)) {
       toast.info("Không có thay đổi để lưu.")
       onClose()
       return
@@ -102,7 +102,12 @@ export function ConfigDialog({
       setConflict({ reloaded: false, currentRevision: outcome.currentRevision })
       return
     }
-    if (outcome.reason === "invalid") setServerErrors(outcome.errors)
+    if (outcome.reason === "invalid") {
+      setServerErrors(outcome.errors)
+      // The messages sit under their rows: open the tab that has them.
+      const failing = outcome.errors.map(sideOfError).filter((target): target is Side => target !== null)
+      if (failing.length > 0 && !failing.includes(side)) setSide(failing[0] as Side)
+    }
     setServerMessage(outcome.message)
   }
 
@@ -120,7 +125,10 @@ export function ConfigDialog({
     }
   }
 
-  const generalErrors = serverErrors.filter((error) => !SIDES.some((item) => sideFields(indicator, item).some((field) => fieldErrorFor([error], item, field.key))))
+  const generalErrors = serverErrors.filter((error) => error.message !== serverMessage && !SIDES.some((item) => isShownInSide(error, indicator, item)))
+  const sideHasError = (target: Side) =>
+    errors[target].rows.length > 0 || Object.keys(errors[target].fields).length > 0 || serverErrors.some((error) => sideOfError(error) === target)
+  const dismissServerErrors = (match: (error: ConfigFieldError) => boolean) => setServerErrors((previous) => previous.filter((error) => !match(error)))
 
   return (
     <DialogShell
@@ -168,14 +176,18 @@ export function ConfigDialog({
           {SIDES.map((item) => (
             <TabsTrigger key={item} value={item} className={cn("min-h-9 rounded-md border border-border bg-input/30 text-xs font-semibold text-muted-foreground", TAB_STYLE[item])}>
               Điều kiện {SIDE_LABEL[item]}
+              {sideHasError(item) && (
+                <>
+                  <TriangleAlert aria-hidden="true" className="size-3.5 text-destructive" />
+                  <span className="sr-only"> (có lỗi)</span>
+                </>
+              )}
             </TabsTrigger>
           ))}
         </TabsList>
         {SIDES.map((item) => {
           const sideDraft = draft[item]
-          const params = numericParams(sideDraft.params)
           const switchId = `${baseId}-${item}-enabled`
-          const sideErrors = errors[item]
           const label = `Sử dụng điều kiện ${SIDE_LABEL[item]}`
           return (
             <TabsContent key={item} value={item} className="space-y-4">
@@ -185,94 +197,17 @@ export function ConfigDialog({
               </div>
               {!sideDraft.enabled && <p className="-mt-2 text-xs text-muted-foreground">Phía này đang tắt. Tham số và dấu vẫn được giữ.</p>}
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {sideFields(indicator, item).map((field) => {
-                  const inputId = `${baseId}-${item}-${field.key}`
-                  const hintId = `${inputId}-hint`
-                  const error = sideErrors.fields[field.key] ?? fieldErrorFor(serverErrors, item, field.key)
-                  return (
-                    <div key={field.key} className="min-w-0 space-y-1.5">
-                      <Label htmlFor={inputId} className="text-xs font-medium text-muted-foreground">{field.label}</Label>
-                      <div className="relative">
-                        {field.options && field.options.length > 0 ? (
-                          <select
-                            id={inputId}
-                            value={sideDraft.params[field.key] ?? ""}
-                            aria-invalid={error ? true : undefined}
-                            aria-describedby={hintId}
-                            className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm tabular-nums focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                            onChange={(event) => updateSide(item, { params: { ...sideDraft.params, [field.key]: event.target.value } })}
-                          >
-                            {field.options.map((opt) => (
-                              <option key={opt} value={String(opt)}>
-                                {opt}{field.unit ? ` ${field.unit}` : ""}
-                              </option>
-                            ))}
-                          </select>
-                        ) : (
-                          <>
-                            <Input
-                              id={inputId}
-                              type="number"
-                              inputMode="decimal"
-                              min={field.min}
-                              max={field.max}
-                              step={field.step}
-                              value={sideDraft.params[field.key] ?? ""}
-                              aria-invalid={error ? true : undefined}
-                              aria-describedby={hintId}
-                              className={cn("h-9 tabular-nums", field.unit && "pr-14")}
-                              onChange={(event) => updateSide(item, { params: { ...sideDraft.params, [field.key]: event.target.value } })}
-                            />
-                            {field.unit && <span aria-hidden="true" className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[11px] text-muted-foreground">{field.unit}</span>}
-                          </>
-                        )}
-                      </div>
-                      <p id={hintId} className={cn("text-[11px] leading-4", error ? "text-destructive" : "text-muted-foreground")}>
-                        {error ?? `Từ ${field.min} đến ${field.max}, bước ${field.step}`}
-                      </p>
-                    </div>
-                  )
-                })}
-              </div>
-
-              <div className="space-y-2">
-                <h3 className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">Điều kiện</h3>
-                <ul className="divide-y divide-border overflow-hidden rounded-md border border-border bg-background/40">
-                  {base.config[item].rules.map((rule, index) => (
-                    <li key={rule.id}>
-                      {rule.enabled !== undefined && (
-                        <label className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
-                          <input
-                            type="checkbox"
-                            aria-label={`Bật điều kiện ${index + 1} (${SIDE_LABEL[item]})`}
-                            checked={sideDraft.rules_enabled?.[rule.id] ?? rule.enabled !== false}
-                            onChange={(event) =>
-                              updateSide(item, {
-                                rules_enabled: { ...sideDraft.rules_enabled, [rule.id]: event.target.checked },
-                              })
-                            }
-                          />
-                          <span>Điều kiện {index + 1}</span>
-                        </label>
-                      )}
-                      {rule.kind === "cross" && <span className="block bg-muted/60 px-3 py-1.5 text-[11px] text-muted-foreground">{CROSS_LABEL}</span>}
-                      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-3 text-xs leading-5">
-                        <span className="min-w-0 break-words">{operandLabel(rule.lhs, indicator, params)}</span>
-                        <select
-                          aria-label={`Dấu điều kiện ${index + 1} (${SIDE_LABEL[item]})`}
-                          className="h-8 min-w-13 rounded-sm border border-border bg-secondary px-2 text-center text-xs font-bold text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                          value={sideDraft.ops[rule.id] ?? rule.op}
-                          onChange={(event) => updateSide(item, { ops: { ...sideDraft.ops, [rule.id]: event.target.value as RuleOp } })}
-                        >
-                          {(rule.allowed_ops as RuleOp[]).map((op) => <option key={op} value={op}>{ruleOpLabel(op)}</option>)}
-                        </select>
-                        <span className="min-w-0 text-right break-words">{operandLabel(rule.rhs, indicator, params)}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <ConditionSideEditor
+                indicator={indicator}
+                side={item}
+                draft={sideDraft}
+                saved={base.config}
+                errors={errors[item]}
+                serverErrors={serverErrors}
+                idPrefix={baseId}
+                onChange={(patch) => updateSide(item, patch)}
+                dismissServerErrors={dismissServerErrors}
+              />
             </TabsContent>
           )
         })}

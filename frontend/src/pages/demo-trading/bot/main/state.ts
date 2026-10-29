@@ -10,6 +10,8 @@ const STATE_LABEL: Record<BotConfigState, string> = {
   sell_only: "Chỉ xét điều kiện Bán",
   buy_and_sell: "Đã bật Mua và Bán",
   error: "Lỗi cấu hình hoặc quyền",
+  // SPEC V3 §6.2: silent pause of the indicator-conditions upgrade, until a newly saved config counts.
+  paused: "Tạm dừng",
 }
 
 const STATE_TONE: Record<BotConfigState, ChipTone> = {
@@ -18,17 +20,24 @@ const STATE_TONE: Record<BotConfigState, ChipTone> = {
   sell_only: "info",
   buy_and_sell: "good",
   error: "danger",
+  paused: "muted",
 }
 
-export type SideBlock = { side: "buy" | "sell"; detail: string; indicatorIds: string[] }
+export type SideBlock = {
+  side: "buy" | "sell"
+  /** `config_outdated`: the config in force is in a format before SPEC V3 and is not used until a new save counts. */
+  reason: NonNullable<BotConditions["errors"]["buy"]>["reason"]
+  detail: string
+  indicatorIds: string[]
+}
 
-/** The side errors of the effective config (permissions, validity, legacy review). */
+/** The side errors of the effective config (permissions, validity, legacy review, outdated format). */
 export function sideBlocks(conditions: BotConditions | null | undefined): SideBlock[] {
   const errors = conditions?.errors
   if (!errors) return []
   return (["buy", "sell"] as const).flatMap((side) => {
     const block = errors[side]
-    return block ? [{ side, detail: block.detail, indicatorIds: block.indicator_ids }] : []
+    return block ? [{ side, reason: block.reason, detail: block.detail, indicatorIds: block.indicator_ids }] : []
   })
 }
 

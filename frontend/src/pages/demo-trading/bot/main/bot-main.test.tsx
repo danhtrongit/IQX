@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { renderBot, stubBrowser } from "../test-render"
-import { createFakeApi, createWorld, type World } from "../test-support"
+import { createFakeApi, createWorld, rowsOf, type World } from "../test-support"
 import type { BotConditions, BotPosition } from "../types"
 import { BotMain } from "./bot-main"
 
@@ -99,10 +99,34 @@ describe("Bot main", () => {
     ["sell_only", "Chỉ xét điều kiện Bán"],
     ["buy_and_sell", "Đã bật Mua và Bán"],
     ["error", "Lỗi cấu hình hoặc quyền"],
+    ["paused", "Tạm dừng"],
   ] as const)("shows the config state chip for %s", async (state, label) => {
     world.conditions = conditions({ state })
     await renderMain()
     expect(screen.getByTestId("bot-state-chip").textContent).toBe(label)
+  })
+
+  it("a Bot paused by the conditions upgrade reads «Tạm dừng»; after a save it also shows the pending chip", async () => {
+    world.conditions = conditions({
+      state: "paused", state_label: "Tạm dừng", saved_revision: 5, effective_revision: 4, config_status: "pending",
+      pending: { revision: 5, effective_session: "2026-10-09", status: "pending" },
+    })
+    await renderMain()
+    const chip = screen.getByTestId("bot-state-chip")
+    expect(chip.textContent).toBe("Tạm dừng")
+    expect(chip.className).toMatch(/text-muted-foreground/)
+    expect(screen.getByText("Cấu hình chờ hiệu lực")).toBeTruthy()
+    expect(screen.queryByRole("alert")).toBeNull()
+  })
+
+  it("an outdated config in force is explained in the cards without an error alert", async () => {
+    const block = { reason: "config_outdated" as const, detail: "Cấu hình điều kiện kiểu cũ không còn được dùng; hãy lưu lại cấu hình theo mẫu mới.", indicator_ids: [] }
+    world.conditions = conditions({ state: "paused", buy_status: "blocked", sell_status: "blocked", errors: { buy: block, sell: block } })
+    await renderMain()
+    const buy = screen.getByRole("region", { name: "ĐIỀU KIỆN MUA" })
+    expect(within(buy).getByText(block.detail)).toBeTruthy()
+    expect(within(buy).queryByRole("alert")).toBeNull()
+    expect(within(buy).queryByText(/đang bị chặn/)).toBeNull()
   })
 
   it("explains a config error and blocks the affected side's card", async () => {
@@ -121,7 +145,8 @@ describe("Bot main", () => {
     world.effectiveRevision = 2
     world.indicators.rsi!.master_enabled = true
     world.indicators.rsi!.buy.enabled = true
-    world.indicators.rsi!.buy.params = { period: 10, level: 25 }
+    rowsOf(world.indicators.rsi!, "buy").rules[0]!.period = 10
+    rowsOf(world.indicators.rsi!, "buy").rules[0]!.threshold = 25
     world.indicators.macd!.master_enabled = true
     world.indicators.macd!.sell.enabled = true
     world.conditions = conditions({ state: "buy_and_sell", has_active_buy: true, has_active_sell: true, buy_condition_count: 1, sell_condition_count: 1, buy_status: "active", sell_status: "active", saved_revision: 2, effective_revision: 2, config_status: "effective" })
@@ -130,12 +155,11 @@ describe("Bot main", () => {
     const buy = await screen.findByRole("region", { name: "ĐIỀU KIỆN MUA" })
     expect(within(buy).getByText("AND")).toBeTruthy()
     expect(await within(buy).findByText("RSI")).toBeTruthy()
-    expect(within(buy).getByText(/Chu kỳ RSI 10 phiên · Ngưỡng quá bán 25/)).toBeTruthy()
-    expect(within(buy).getByText("RSI phiên trước < 25")).toBeTruthy()
-    expect(within(buy).getByText("RSI > RSI phiên trước")).toBeTruthy()
+    expect(within(buy).getByText("RSI 10 < 25")).toBeTruthy()
+    expect(within(buy).getByText("RSI 14 xu hướng lên")).toBeTruthy()
     const sell = screen.getByRole("region", { name: "ĐIỀU KIỆN BÁN" })
     expect(within(sell).getByText("MACD")).toBeTruthy()
-    expect(within(sell).getByText("MACD < Đường tín hiệu")).toBeTruthy()
+    expect(within(sell).getByText("MACD 12 / 26 cắt xuống Signal 9")).toBeTruthy()
     expect(screen.queryByText(/Chưa có điều kiện hiệu lực/)).toBeNull()
     // Nothing is waiting, so no "chờ hiệu lực" block.
     expect(screen.queryByText(/Chờ hiệu lực/)).toBeNull()
@@ -146,7 +170,7 @@ describe("Bot main", () => {
     function pendingWorld(edit: (saved: World["indicators"]) => void) {
       world.indicators.rsi!.master_enabled = true
       world.indicators.rsi!.buy.enabled = true
-      world.indicators.rsi!.buy.params = { period: 14, level: 25 }
+      rowsOf(world.indicators.rsi!, "buy").rules[0]!.threshold = 25
       world.indicators.macd!.master_enabled = true
       world.indicators.macd!.sell.enabled = true
       world.effectiveIndicators = structuredClone(world.indicators)
@@ -164,7 +188,7 @@ describe("Bot main", () => {
 
     it("shows the conditions in force, then the pending revision apart under «Chờ hiệu lực từ phiên …»", async () => {
       pendingWorld((saved) => {
-        saved.rsi!.buy.params = { period: 14, level: 20 }
+        rowsOf(saved.rsi!, "buy").rules[0]!.threshold = 20
         saved.macd!.sell.enabled = false
         saved.macd!.master_enabled = false
       })
@@ -175,16 +199,16 @@ describe("Bot main", () => {
 
       const buy = screen.getByRole("region", { name: "ĐIỀU KIỆN MUA" })
       const buyInForce = await within(buy).findByRole("list", { name: "ĐIỀU KIỆN MUA đang hiệu lực" })
-      expect(within(buyInForce).getByText("RSI phiên trước < 25")).toBeTruthy()
-      expect(within(buyInForce).queryByText("RSI phiên trước < 20")).toBeNull()
+      expect(within(buyInForce).getByText("RSI 14 < 25")).toBeTruthy()
+      expect(within(buyInForce).queryByText("RSI 14 < 20")).toBeNull()
       expect(within(buy).getByText("Đang hiệu lực · bản 4")).toBeTruthy()
       expect(within(buy).getByText("Chờ hiệu lực từ phiên 09/10/2026 · bản 5")).toBeTruthy()
       const buyPending = within(buy).getByRole("list", { name: "ĐIỀU KIỆN MUA chờ hiệu lực" })
-      expect(within(buyPending).getByText("RSI phiên trước < 20")).toBeTruthy()
+      expect(within(buyPending).getByText("RSI 14 < 20")).toBeTruthy()
 
       // The Sell side lost its only condition in the pending revision; the effective one is still listed.
       const sell = screen.getByRole("region", { name: "ĐIỀU KIỆN BÁN" })
-      expect(within(within(sell).getByRole("list", { name: "ĐIỀU KIỆN BÁN đang hiệu lực" })).getByText("MACD < Đường tín hiệu")).toBeTruthy()
+      expect(within(within(sell).getByRole("list", { name: "ĐIỀU KIỆN BÁN đang hiệu lực" })).getByText("MACD 12 / 26 cắt xuống Signal 9")).toBeTruthy()
       expect(within(sell).getByText("Chờ hiệu lực từ phiên 09/10/2026 · bản 5")).toBeTruthy()
       expect(within(sell).getByText("Không còn điều kiện nào được bật ở phía này.")).toBeTruthy()
       expect(within(sell).queryByRole("list", { name: "ĐIỀU KIỆN BÁN chờ hiệu lực" })).toBeNull()
@@ -192,7 +216,7 @@ describe("Bot main", () => {
 
     it("lists a pending block only on the side where the saved revision differs", async () => {
       pendingWorld((saved) => {
-        saved.macd!.sell.params = { fast: 8, slow: 21, signal: 5 }
+        rowsOf(saved.macd!, "sell").rules[0]!.fast = 8
       })
       await renderMain()
       const sell = await screen.findByRole("region", { name: "ĐIỀU KIỆN BÁN" })

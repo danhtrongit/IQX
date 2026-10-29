@@ -1,5 +1,6 @@
 import { createContext, useContext } from "react"
 
+import type { DraftRow } from "@/pages/demo-trading/bot/config/draft"
 import type {
   PracticeChart,
   PracticeConfig,
@@ -18,7 +19,7 @@ export type DraftStatus = "idle" | "saving" | "saved" | "error"
 
 /**
  * Where the screen is, derived from the server state, the displayed run and the replay.
- *  - ready: nothing started for this case, the form is editable
+ *  - ready: nothing started for this case (or only an unfinished run locked before SPEC V3), the form is editable
  *  - starting: the start request is in flight (form already locked)
  *  - computing / failed: a locked run without a result yet (retry keeps the same config)
  *  - replaying: result available, replay running or paused
@@ -47,6 +48,9 @@ export type PracticeContextValue = {
   locked: boolean
   draftStatus: DraftStatus
   editEnabled: (side: Side, enabled: boolean) => void
+  /** Replaces one condition row of a row-based indicator; the other rows and the other tab are untouched. */
+  editRow: (side: Side, index: number, row: DraftRow) => void
+  /** Volume: a side-level param, an operator and a rule switch. */
   editParam: (side: Side, key: string, text: string) => void
   editOp: (side: Side, ruleId: string, op: PracticeOp) => void
   editRuleEnabled?: (side: Side, ruleId: string, enabled: boolean) => void
@@ -63,6 +67,11 @@ export type PracticeContextValue = {
   runFailure: PracticeFailure | null
   chart: PracticeChart | null
   lockedConfig: PracticeConfig | null
+  /**
+   * A run of this case was locked before SPEC V3 and never finished: it cannot be computed or
+   * retried, and Start replaces it. The form is editable and shows the new defaults.
+   */
+  outdatedRun: { message: string } | null
 
   start: () => Promise<boolean>
   retryStart: () => Promise<boolean>

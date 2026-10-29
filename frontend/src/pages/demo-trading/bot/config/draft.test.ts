@@ -1,128 +1,165 @@
 import { describe, expect, it } from "vitest"
 
-import { buildRegistry } from "../test-support"
+import { buildRegistry, rowsIndicator, rowsOf } from "../test-support"
 import {
   buildIndicatorConfig,
   createDraft,
-  crossFieldsOf,
   draftErrors,
   hasDraftErrors,
   isDraftDirty,
   paramError,
   rebaseDraft,
   resetDraftSide,
+  sameIndicatorConfig,
+  savedIndicatorConfig,
   sideField,
   sideFields,
   templateConfig,
+  updateDraftRow,
+  type IndicatorDraft,
 } from "./draft"
 import { masterToggleIntent } from "./master"
-import type { TechnicalIndicator } from "./types"
+import type { IndicatorConfig, ParamsIndicator, SharedConfigState } from "./types"
 
 const registry = buildRegistry()
-const get = (id: string) => registry.find((entry) => entry.id === id)!
-const rsi = get("rsi")
-/** A registry response from before `validation` was published. */
-const withoutValidation = (indicator: TechnicalIndicator): TechnicalIndicator => ({ ...indicator, validation: undefined })
+const rsi = rowsIndicator("rsi", registry)
+const volume = registry.find((entry) => entry.id === "volume") as ParamsIndicator
 
-describe("registry field domains", () => {
-  it("merges the side override into the field (RSI level is 10-49 to buy and 51-90 to sell)", () => {
-    expect(sideField(rsi, "buy", "level")).toMatchObject({ min: 10, max: 49, label: "Ngưỡng quá bán" })
-    expect(sideField(rsi, "sell", "level")).toMatchObject({ min: 51, max: 90, label: "Ngưỡng quá mua" })
-    expect(sideFields(rsi, "buy").map((field) => field.key)).toEqual(["period", "level"])
+/** Set one value of one row of one tab, the way the form does. */
+function edit(draft: IndicatorDraft, side: "buy" | "sell", index: number, key: string, value: string): IndicatorDraft {
+  const row = draft[side].rows[index]!
+  return updateDraftRow(draft, side, index, { ...row, values: { ...row.values, [key]: value } })
+}
+
+describe("registry defaults", () => {
+  it("are one row per registry condition with its own values and switch; the tab and the master are OFF", () => {
+    const config = templateConfig(rsi)
+    expect(config.master_enabled).toBe(false)
+    expect(rowsOf(config, "buy")).toEqual({
+      enabled: false,
+      rules: [
+        { id: "rsi.level", enabled: true, period: 14, op: "<", threshold: 30 },
+        { id: "rsi.trend", enabled: true, period: 14, dir: "up" },
+      ],
+    })
+    expect(rowsOf(config, "sell").rules[0]).toEqual({ id: "rsi.level", enabled: true, period: 14, op: ">", threshold: 70 })
   })
 
-  it("validates range, integer-ness and step from the registry", () => {
-    const level = sideField(rsi, "buy", "level")!
-    expect(paramError(level, "30")).toBeNull()
-    expect(paramError(level, "50")).toMatch(/từ 10 đến 49/)
-    expect(paramError(level, "9")).toMatch(/từ 10 đến 49/)
-    expect(paramError(level, "30.5")).toMatch(/số nguyên/)
-    expect(paramError(level, "")).toMatch(/bắt buộc/)
-    const k = sideField(get("bollinger"), "buy", "k")!
-    expect(paramError(k, "2")).toBeNull()
-    expect(paramError(k, "2.1")).toBeNull()
-    expect(paramError(k, "2.15")).toMatch(/bước 0,1/)
+  it("keep Volume's params and rule templates", () => {
+    const config = templateConfig(volume)
+    expect(config.buy).toMatchObject({ enabled: false, params: { lookback: 20, mult: 1 } })
+    expect(sideFields(volume, "buy").map((field) => field.key)).toEqual(["lookback", "mult"])
+    expect(sideFields(rsi, "buy")).toEqual([])
   })
 
-  it("enforces the registry's published cross_fields (fast < slow) and names the left field", () => {
-    for (const id of ["macd", "ma_cross"]) {
-      const indicator = get(id)
-      expect(indicator.validation?.cross_fields).toEqual([{ left: "fast", op: "<", right: "slow" }])
-      const draft = createDraft(templateConfig(indicator))
+  it("never maps a saved tab in an older format: it reads as the default rows, keeping only the switches", () => {
+    const old = { master_enabled: true, buy: { enabled: true, params: { period: 9, level: 25 }, rules: [] }, sell: { enabled: false, params: {}, rules: [] } }
+    const state = { config: { indicators: { rsi: old } } } as unknown as SharedConfigState
+    const read = savedIndicatorConfig(state, rsi)
+    expect(read.master_enabled).toBe(true)
+    expect(rowsOf(read, "buy")).toEqual({ ...rowsOf(templateConfig(rsi), "buy"), enabled: true })
+    expect(rowsOf(read, "sell").enabled).toBe(false)
+  })
+})
+
+describe("draft values", () => {
+  it("round-trip exactly, negatives and decimals included (CMF -0.05, CCI -100, Williams -80, ROC 5)", () => {
+    const cases: [string, number, string, number][] = [
+      ["cmf", 0, "threshold", -0.05],
+      ["cci", 0, "threshold", -100],
+      ["williams_r", 0, "threshold", -80],
+      ["roc", 0, "threshold", 5],
+      ["bollinger", 0, "mult", 2.5],
+    ]
+    for (const [id, index, key, value] of cases) {
+      const indicator = rowsIndicator(id, registry)
+      const saved = templateConfig(indicator)
+      let draft = createDraft(saved)
+      draft = edit(draft, "buy", index, key, String(value))
+      expect(draft.buy.rows[index]!.values[key]).toBe(String(value))
       expect(hasDraftErrors(draftErrors(indicator, draft))).toBe(false)
-      draft.buy.params.fast = draft.buy.params.slow
-      const errors = draftErrors(indicator, draft)
-      expect(Object.keys(errors.buy.fields)).toEqual(["fast"])
-      expect(errors.buy.fields.fast).toMatch(/phải nhỏ hơn chu kỳ/)
-      expect(errors.sell.fields).toEqual({})
+      const built = buildIndicatorConfig(indicator, saved, draft, false)
+      expect(rowsOf(built, "buy").rules[index]![key]).toBe(value)
+      // Read back (as after a reload): the same text again.
+      expect(createDraft(built).buy.rows[index]!.values[key]).toBe(String(value))
     }
-    const macd = get("macd")
-    const draft = createDraft(templateConfig(macd))
-    draft.sell.params.fast = draft.sell.params.slow
-    expect(draftErrors(macd, draft).sell.fields.fast).toBe("Chu kỳ EMA nhanh phải nhỏ hơn chu kỳ EMA chậm.")
   })
 
-  it("follows the published constraint, including a `>` operator and any pair of fields", () => {
-    const base = get("macd")
-    const indicator = { ...base, validation: { cross_fields: [{ left: "slow", op: ">" as const, right: "signal" }] } }
-    const draft = createDraft(templateConfig(indicator))
-    expect(hasDraftErrors(draftErrors(indicator, draft))).toBe(false)
-    // fast >= slow is fine now: the published rule is slow > signal.
-    draft.buy.params.fast = "40"
-    draft.buy.params.slow = "20"
-    expect(hasDraftErrors(draftErrors(indicator, draft))).toBe(false)
-    draft.buy.params.slow = "9"
-    draft.buy.params.signal = "9"
-    expect(draftErrors(indicator, draft).buy.fields.slow).toBe("Chu kỳ EMA chậm phải lớn hơn chu kỳ đường tín hiệu.")
+  it("keep enum codes as codes (cross_up), never their labels", () => {
+    const cci = rowsIndicator("cci", registry)
+    const draft = createDraft(templateConfig(cci))
+    expect(draft.buy.rows[0]!.values).toEqual({ period: "20", op: "cross_up", threshold: "-100" })
   })
 
-  it("an empty published list means no cross-field rule, not the built-in fallback", () => {
-    const indicator = { ...get("macd"), validation: { cross_fields: [] } }
-    const draft = createDraft(templateConfig(indicator))
-    draft.buy.params.fast = draft.buy.params.slow
-    expect(hasDraftErrors(draftErrors(indicator, draft))).toBe(false)
-    expect(crossFieldsOf(indicator)).toEqual([])
+  it("editing one row never changes another row or the other tab", () => {
+    const saved = templateConfig(rsi)
+    const draft = edit(createDraft(saved), "buy", 0, "period", "9")
+    expect(draft.buy.rows[0]!.values.period).toBe("9")
+    expect(draft.buy.rows[1]!.values.period).toBe("14")
+    expect(draft.sell).toEqual(createDraft(saved).sell)
+    const built = buildIndicatorConfig(rsi, saved, draft, false)
+    expect(rowsOf(built, "buy").rules.map((row) => row.period)).toEqual([9, 14])
+    expect(rowsOf(built, "sell").rules.map((row) => row.period)).toEqual([14, 14])
+  })
+})
+
+describe("validation (SPEC V3 §4)", () => {
+  it("checks both tabs and every row, on or off, with the server's messages, never repairing the value", () => {
+    const macd = rowsIndicator("macd", registry)
+    let draft = createDraft(templateConfig(macd))
+    draft = edit(draft, "buy", 1, "fast", "30") // row 2 is OFF by default
+    draft = edit(draft, "sell", 0, "signal", "1")
+    const errors = draftErrors(macd, draft)
+    expect(errors.buy.rows.map((error) => error.message)).toEqual(["Mua · dòng 2: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm."])
+    expect(errors.buy.rows[0]).toMatchObject({ row: 2, field: "fast", path: "indicators.macd.buy.rules.1.fast" })
+    expect(errors.sell.rows.map((error) => error.message)).toEqual(["Bán · dòng 1: Chu kỳ Signal phải từ 2 đến 200, số nguyên."])
+    expect(hasDraftErrors(errors)).toBe(true)
+    expect(draft.buy.rows[1]!.values.fast).toBe("30")
   })
 
-  it("falls back to fast < slow for MACD and MA Cross only when the registry does not publish validation", () => {
-    for (const id of ["macd", "ma_cross"]) {
-      const indicator = withoutValidation(get(id))
-      expect(crossFieldsOf(indicator)).toEqual([{ left: "fast", op: "<", right: "slow" }])
-      const draft = createDraft(templateConfig(indicator))
-      draft.buy.params.fast = draft.buy.params.slow
-      expect(draftErrors(indicator, draft).buy.fields.fast).toMatch(/phải nhỏ hơn/)
-    }
-    expect(crossFieldsOf(withoutValidation(get("rsi")))).toEqual([])
+  it("reports empty, out-of-range, non-integer and off-list values", () => {
+    const ma = rowsIndicator("ma", registry)
+    const draft = edit(createDraft(templateConfig(ma)), "buy", 0, "period", "7")
+    expect(draftErrors(ma, draft).buy.rows[0]!.message).toBe("Mua · dòng 1: Chu kỳ SMA chỉ chọn 5, 10, 20, 50, 100, 200.")
+
+    const empty = edit(createDraft(templateConfig(rsi)), "buy", 1, "period", "")
+    expect(draftErrors(rsi, empty).buy.rows[0]!.message).toBe("Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.")
+    const decimal = edit(createDraft(templateConfig(rsi)), "sell", 0, "threshold", "70.5")
+    expect(draftErrors(rsi, decimal).sell.rows[0]!.message).toBe("Bán · dòng 1: Ngưỡng RSI phải từ 0 đến 100, số nguyên.")
+
+    const cmf = rowsIndicator("cmf", registry)
+    const outside = edit(createDraft(templateConfig(cmf)), "buy", 0, "threshold", "-1.5")
+    expect(draftErrors(cmf, outside).buy.rows[0]!.message).toBe("Mua · dòng 1: Ngưỡng CMF phải từ -1 đến 1.")
   })
 
-  it("does not judge a cross-field rule while one of its fields has an error of its own", () => {
-    const indicator = get("macd")
-    const draft = createDraft(templateConfig(indicator))
-    draft.buy.params.slow = ""
-    expect(Object.keys(draftErrors(indicator, draft).buy.fields)).toEqual(["slow"])
+  it("keeps Volume's param validation", () => {
+    const mult = sideField(volume, "buy", "mult")!
+    expect(paramError(mult, "1.5")).toBeNull()
+    expect(paramError(mult, "")).toMatch(/bắt buộc/)
+    const draft = createDraft(templateConfig(volume))
+    draft.buy.params.lookback = "1"
+    expect(Object.keys(draftErrors(volume, draft).buy.fields)).toEqual(["lookback"])
   })
 })
 
 describe("Đặt lại", () => {
-  it("restores only the open side's params and operators to the registry defaults and keeps ON/OFF and the other side", () => {
+  it("restores only the open tab's rows to the registry defaults and keeps its ON/OFF and the other tab", () => {
     const saved = templateConfig(rsi)
     saved.buy.enabled = true
-    saved.buy.params = { period: 21, level: 25 }
-    saved.buy.rules = saved.buy.rules.map((rule) => ({ ...rule, op: "<" }) as typeof rule)
-    saved.sell.params = { period: 9, level: 80 }
-    const draft = createDraft(saved)
-    draft.sell.enabled = true
+    let draft = createDraft(saved)
+    draft = edit(draft, "buy", 0, "threshold", "25")
+    draft = updateDraftRow(draft, "buy", 1, { ...draft.buy.rows[1]!, enabled: false })
+    draft = edit(draft, "sell", 0, "threshold", "85")
 
     const reset = resetDraftSide(draft, rsi, "buy")
-    expect(reset.buy.params).toEqual({ period: "14", level: "30" })
-    expect(reset.buy.ops).toEqual({ r1: "<", r2: ">" })
+    expect(reset.buy.rows).toEqual(createDraft(templateConfig(rsi)).buy.rows)
     expect(reset.buy.enabled).toBe(true)
     expect(reset.sell).toEqual(draft.sell)
   })
 })
 
 describe("building the PATCH record", () => {
-  const withSides = (buy: boolean, sell: boolean, master: boolean) => {
+  const withSides = (buy: boolean, sell: boolean, master: boolean): IndicatorConfig => {
     const config = templateConfig(rsi)
     config.master_enabled = master
     config.buy.enabled = buy
@@ -134,60 +171,66 @@ describe("building the PATCH record", () => {
     const saved = withSides(true, false, true)
     const draft = createDraft(saved)
     draft.buy.enabled = false
-    expect(buildIndicatorConfig(saved, draft, false).master_enabled).toBe(false)
-    expect(buildIndicatorConfig(saved, draft, true).master_enabled).toBe(false)
+    expect(buildIndicatorConfig(rsi, saved, draft, false).master_enabled).toBe(false)
+    expect(buildIndicatorConfig(rsi, saved, draft, true).master_enabled).toBe(false)
   })
 
   it("never turns the master on from editing alone, only when opened from the master switch with a side ON", () => {
     const saved = withSides(false, false, false)
     const draft = createDraft(saved)
     draft.buy.enabled = true
-    expect(buildIndicatorConfig(saved, draft, false).master_enabled).toBe(false)
-    expect(buildIndicatorConfig(saved, draft, true).master_enabled).toBe(true)
+    expect(buildIndicatorConfig(rsi, saved, draft, false).master_enabled).toBe(false)
+    expect(buildIndicatorConfig(rsi, saved, draft, true).master_enabled).toBe(true)
   })
 
-  it("keeps a master that is ON and sends each side's own params and operators", () => {
+  it("sends every row with its id, switch and own values", () => {
     const saved = withSides(true, true, true)
-    const draft = createDraft(saved)
-    draft.buy.params.period = "10"
-    draft.sell.ops.r2 = ">"
-    const built = buildIndicatorConfig(saved, draft, false)
+    let draft = createDraft(saved)
+    draft = updateDraftRow(draft, "sell", 1, { ...draft.sell.rows[1]!, enabled: false, values: { period: "9", dir: "up" } })
+    const built = buildIndicatorConfig(rsi, saved, draft, false)
     expect(built.master_enabled).toBe(true)
-    expect(built.buy.params).toEqual({ period: 10, level: 30 })
-    expect(built.sell.params).toEqual({ period: 14, level: 70 })
-    expect(built.sell.rules.find((rule) => rule.id === "r2")?.op).toBe(">")
-    expect(built.buy.rules.find((rule) => rule.id === "r2")?.op).toBe(">")
+    expect(rowsOf(built, "sell").rules).toEqual([
+      { id: "rsi.level", enabled: true, period: 14, op: ">", threshold: 70 },
+      { id: "rsi.trend", enabled: false, period: 9, dir: "up" },
+    ])
+    expect(rowsOf(built, "buy").rules).toEqual(rowsOf(saved, "buy").rules)
   })
 
-  it("ignores an operator that is not in the rule's allowed set", () => {
-    const saved = templateConfig(get("bollinger"))
+  it("Volume keeps its params and ignores an operator outside the rule's allowed set", () => {
+    const saved = templateConfig(volume)
     const draft = createDraft(saved)
+    draft.buy.params.mult = "1.5"
     draft.buy.ops.r1 = "∈"
-    expect(buildIndicatorConfig(saved, draft, false).buy.rules[0]?.op).toBe("<")
+    const built = buildIndicatorConfig(volume, saved, draft, false)
+    expect(built.buy).toMatchObject({ params: { lookback: 20, mult: 1.5 }, rules: [{ id: "r1", op: ">" }, { id: "r2", op: ">" }] })
+  })
+
+  it("is unchanged when only the stored key order differs", () => {
+    const saved = templateConfig(rsi)
+    const reordered = { ...saved, buy: { rules: rowsOf(saved, "buy").rules.map((row) => Object.fromEntries(Object.entries(row).reverse())), enabled: false } } as IndicatorConfig
+    expect(sameIndicatorConfig(reordered, buildIndicatorConfig(rsi, reordered, createDraft(reordered), false))).toBe(true)
   })
 })
 
 describe("dirty and rebase", () => {
   it("is dirty only when something differs from the saved config", () => {
     const saved = templateConfig(rsi)
-    const draft = createDraft(saved)
-    expect(isDraftDirty(createDraft(saved), draft)).toBe(false)
-    draft.buy.params.level = "31"
-    expect(isDraftDirty(createDraft(saved), draft)).toBe(true)
+    expect(isDraftDirty(createDraft(saved), createDraft(saved))).toBe(false)
+    expect(isDraftDirty(createDraft(saved), edit(createDraft(saved), "buy", 0, "threshold", "31"))).toBe(true)
   })
 
   it("after a conflict keeps what the user changed and takes everything else from the newer config", () => {
     const base = templateConfig(rsi)
     const newer = templateConfig(rsi)
-    newer.sell.params = { period: 14, level: 85 }
-    newer.buy.params = { period: 14, level: 40 }
-    const draft = createDraft(base)
-    draft.buy.params.level = "35"
+    rowsOf(newer, "sell").rules[0]!.threshold = 85
+    rowsOf(newer, "buy").rules[0]!.threshold = 40
+    rowsOf(newer, "buy").rules[1]!.period = 21
+    const draft = edit(createDraft(base), "buy", 0, "threshold", "35")
 
     const rebased = rebaseDraft(draft, base, newer)
-    expect(rebased.buy.params.level).toBe("35")
-    expect(rebased.sell.params.level).toBe("85")
-    expect(rebased.buy.params.period).toBe("14")
+    expect(rebased.buy.rows[0]!.values.threshold).toBe("35")
+    expect(rebased.buy.rows[1]!.values.period).toBe("21")
+    expect(rebased.sell.rows[0]!.values.threshold).toBe("85")
   })
 })
 
@@ -198,13 +241,11 @@ describe("master switch rules", () => {
   }
 
   it("OFF keeps the children", () => {
-    const intent = masterToggleIntent(config(true, true, false))
-    expect(intent).toEqual({ kind: "save", config: config(false, true, false) })
+    expect(masterToggleIntent(config(true, true, false))).toEqual({ kind: "save", config: config(false, true, false) })
   })
 
   it("ON with a side already ON keeps it and does not enable the other side", () => {
-    const intent = masterToggleIntent(config(false, false, true))
-    expect(intent).toEqual({ kind: "save", config: config(true, false, true) })
+    expect(masterToggleIntent(config(false, false, true))).toEqual({ kind: "save", config: config(true, false, true) })
   })
 
   it("ON with both sides OFF opens the configuration instead of activating", () => {

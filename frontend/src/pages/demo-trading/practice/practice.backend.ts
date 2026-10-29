@@ -1,14 +1,15 @@
 /**
- * In-memory stand-in for the /api/v2/practice routes used by the tests and the screenshot script:
- * it follows the controller rules that matter to the UI (locked config after start, idempotent start
- * and next, revision conflicts, one step at a time, 30 cases and no wrap).
+ * In-memory stand-in for the /api/v2/practice routes used by the tests: it follows the controller
+ * rules that matter to the UI (locked config after start, idempotent start and next, revision
+ * conflicts, one step at a time, 30 cases and no wrap, a draft in the wrong shape refused, a run
+ * locked before SPEC V3 that never finished replaced by a new start).
  */
 import { ApiError } from "@/lib/api"
-import type { PracticeConfig, PracticeRun, PracticeState } from "./practice-api"
-import { CASE_ID, briefOf, makeChart, makeHistory, makeRun, makeState, type TradePlan } from "./practice.fixtures"
+import type { PracticeConfig, PracticeRowConfig, PracticeRun, PracticeState } from "./practice-api"
+import { CASE_ID, OUTDATED_RUN_ERROR, briefOf, makeChart, makeHistory, makeRun, makeState, type TradePlan } from "./practice.fixtures"
 
 type Call = { method: string; path: string; body: unknown }
-type Failure = { status: number; code: string; message: string }
+type Failure = { status: number; code: string; message: string; details?: unknown }
 
 export type FakeBackend = {
   state: PracticeState
@@ -29,12 +30,38 @@ const caseIdFor = (ordinal: number) => (ordinal === 1 ? CASE_ID : `00000000-0000
 const runIdFor = (ordinal: number) => `00000000-0000-4000-9000-${String(ordinal).padStart(12, "0")}`
 
 const fail = (failure: Failure): never => {
-  throw new ApiError(failure.message, failure.status, { code: failure.code })
+  throw new ApiError(failure.message, failure.status, { code: failure.code, details: failure.details })
 }
 
-export function createBackend(options: { state?: Partial<PracticeState>; runs?: PracticeRun[] } = {}): FakeBackend {
+type PreviewBody = {
+  buy_rows?: PracticeRowConfig[]
+  sell_rows?: PracticeRowConfig[]
+  buy_params?: Record<string, number>
+  sell_params?: Record<string, number>
+}
+
+/** The saved draft with the rows / params of a preview applied on top; the tab switches are the draft's. */
+function previewSide(current: PracticeConfig["buy"], rows: PracticeRowConfig[] | undefined, params: Record<string, number> | undefined): PracticeConfig["buy"] {
+  if (rows) {
+    if (!("rules" in current)) fail({ status: 422, code: "PRACTICE_CONFIG_INVALID", message: "Chỉ báo này dùng tham số chung của từng phía, không có điều kiện theo dòng." })
+    return { ...(current as { enabled: boolean }), rules: rows }
+  }
+  if (params) {
+    if ("rules" in current) fail({ status: 422, code: "PRACTICE_CONFIG_INVALID", message: "Chỉ báo này dùng điều kiện theo dòng, không có tham số chung của một phía." })
+    return { ...(current as PracticeConfig["buy"] & { params: Record<string, number> }), params }
+  }
+  return current
+}
+
+/** A draft has the shape of the indicator's form (rows or params), as the server's draft save requires. */
+function hasFormShape(state: PracticeState, draft: PracticeConfig): boolean {
+  const rowsForm = state.form.model === "rows"
+  return (["buy", "sell"] as const).every((side) => ("rules" in draft[side]) === rowsForm)
+}
+
+export function createBackend(options: { state?: Partial<PracticeState>; runs?: PracticeRun[]; indicatorId?: string } = {}): FakeBackend {
   const backend: FakeBackend = {
-    state: makeState(options.state),
+    state: makeState(options.state, options.indicatorId),
     runs: new Map((options.runs ?? []).map((run) => [run.run_id, run])),
     calls: [],
     startFailures: [],
@@ -47,20 +74,26 @@ export function createBackend(options: { state?: Partial<PracticeState>; runs?: 
   }
   const idempotentRuns = new Map<string, string>()
   const advanceKeys = new Map<string, number>()
+  /** A run locked before SPEC V3 that never finished: it does not lock the draft and a new start replaces it. */
+  const outdated = () => backend.state.current_run?.error?.code === OUTDATED_RUN_ERROR.code
 
   const lockRun = (config: PracticeConfig, status: "succeeded" | "failed", key: string): PracticeRun => {
     const state = backend.state
+    const indicatorId = state.indicator.id
     const run: PracticeRun =
       status === "succeeded"
-        ? makeRun({ runId: runIdFor(state.ordinal), ordinal: state.ordinal, caseId: state.case.case_id, config, plan: backend.plan, valuation: backend.valuation })
+        ? makeRun({ indicatorId, runId: runIdFor(state.ordinal), ordinal: state.ordinal, caseId: state.case.case_id, config, plan: backend.plan, valuation: backend.valuation })
         : {
-            ...makeRun({ runId: runIdFor(state.ordinal), ordinal: state.ordinal, caseId: state.case.case_id, config, test: 5 }),
+            ...makeRun({ indicatorId, runId: runIdFor(state.ordinal), ordinal: state.ordinal, caseId: state.case.case_id, config, test: 5 }),
             status: "failed",
             result: null,
             chart: null,
             completed_at: null,
             error: { code: "PRACTICE_COMPUTE_FAILED", message: "Không tính được kết quả lượt này. Lượt vẫn được giữ để thử lại." },
           }
+    // A new start replaces the unfinished run of the same case (only a run locked before SPEC V3 can be replaced).
+    const replaced = state.current_run && state.current_run.run_id !== run.run_id && outdated() ? state.current_run.run_id : null
+    if (replaced) backend.runs.delete(replaced)
     backend.runs.set(run.run_id, run)
     idempotentRuns.set(key, run.run_id)
     const others = state.runs.filter((item) => item.ordinal !== run.ordinal)
@@ -98,7 +131,10 @@ export function createBackend(options: { state?: Partial<PracticeState>; runs?: 
     }
     if (tail === "draft" && method === "PUT") {
       const input = body as { expected_revision: number; draft: PracticeConfig }
-      if (backend.state.current_run) fail({ status: 409, code: "PRACTICE_RUN_LOCKED", message: "Cấu hình đã khóa sau khi bắt đầu lượt này." })
+      if (backend.state.current_run && !outdated()) fail({ status: 409, code: "PRACTICE_RUN_LOCKED", message: "Cấu hình đã khóa sau khi bắt đầu lượt này." })
+      if (!hasFormShape(backend.state, input.draft)) {
+        fail({ status: 422, code: "PRACTICE_CONFIG_INVALID", message: "Định dạng điều kiện cũ không còn được hỗ trợ. Tải lại để dùng mẫu điều kiện mới." })
+      }
       if (input.expected_revision !== backend.state.draft_revision) {
         fail({ status: 409, code: "DRAFT_REVISION_CONFLICT", message: "Bản nháp đã được lưu ở nơi khác." })
       }
@@ -106,16 +142,18 @@ export function createBackend(options: { state?: Partial<PracticeState>; runs?: 
       return { draft: input.draft, draft_revision: backend.state.draft_revision, validation: { valid: true, errors: [] } }
     }
     if (tail === "preview") {
-      const input = body as { buy_params?: Record<string, number>; sell_params?: Record<string, number> }
+      const input = body as PreviewBody
+      const draft = backend.state.draft
+      const config = {
+        buy: previewSide(draft.buy, input.buy_rows, input.buy_params),
+        sell: previewSide(draft.sell, input.sell_rows, input.sell_params),
+        hold_max_sessions: draft.hold_max_sessions,
+      } as PracticeConfig
       return {
         ordinal: backend.state.ordinal,
         case_id: backend.state.case.case_id,
         window_bars: 130,
-        chart: makeChart({
-          indicatorId: "rsi",
-          test: 0,
-          params: { buy: input.buy_params ?? backend.state.draft.buy.params, sell: input.sell_params ?? backend.state.draft.sell.params },
-        }),
+        chart: makeChart({ indicatorId: backend.state.indicator.id, test: 0, config }),
         data_notes: [],
       }
     }

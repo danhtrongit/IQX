@@ -22,11 +22,17 @@ function previousText(event: AlertEvent): string {
   return `${event.previous_valid_result ? "Đã thỏa" : "Chưa thỏa"}${session}`
 }
 
-/** One recorded signal: the values, operators and params exactly as stored at that session. */
+/** One recorded signal: the values, operators and row values exactly as stored at that session. */
 function EventDetail({ event, indicators, onClose }: { event: AlertEvent; indicators: readonly TechnicalIndicator[]; onClose: () => void }) {
   const detail = useAlertDetail(event.alert_id)
   const version = detail.data?.versions.find((item) => item.version === event.alert_version)
   const bar = event.evidence.bar
+  // Events recorded before SPEC V3 kept one param set per indicator; newer ones keep each row's
+  // own values on the row (shown in the conditions table), so there is no shared list to show.
+  const indicatorParams = event.evidence.indicator_params
+  const storedParams = indicatorParams
+    ? event.evidence.indicator_ids.map((id) => ({ id, params: Object.entries(indicatorParams[id] ?? {}) })).filter((item) => item.params.length > 0)
+    : []
   return (
     <DialogShell
       title={`${event.symbol} · Thỏa điều kiện ${event.side_label}`}
@@ -60,13 +66,12 @@ function EventDetail({ event, indicators, onClose }: { event: AlertEvent; indica
           </div>
         )}
       </dl>
-      {event.evidence.indicator_ids.length > 0 && (
+      {storedParams.length > 0 && (
         <div className="space-y-1 text-xs">
           <h3 className="text-[10.5px] font-semibold tracking-wide text-muted-foreground uppercase">Tham số đã dùng</h3>
           <ul className="space-y-0.5">
-            {event.evidence.indicator_ids.map((id) => {
+            {storedParams.map(({ id, params }) => {
               const name = indicators.find((item) => item.id === id)?.name ?? id.toUpperCase()
-              const params = Object.entries(event.evidence.indicator_params[id] ?? {})
               return (
                 <li key={id}><strong>{name}</strong>{params.length ? `: ${params.map(([key, value]) => `${key} ${fmtNumber(value)}`).join(" · ")}` : ""}</li>
               )
@@ -74,7 +79,7 @@ function EventDetail({ event, indicators, onClose }: { event: AlertEvent; indica
           </ul>
         </div>
       )}
-      <EvidenceTable rules={event.evidence.rules} indicators={indicators} paramsFor={(rule) => event.evidence.indicator_params[rule.indicator]} label="Điều kiện tại phiên tín hiệu" />
+      <EvidenceTable rules={event.evidence.rules} indicators={indicators} paramsFor={(rule) => indicatorParams?.[rule.indicator]} label="Điều kiện tại phiên tín hiệu" />
     </DialogShell>
   )
 }

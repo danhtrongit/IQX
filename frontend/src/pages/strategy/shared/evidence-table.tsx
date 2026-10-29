@@ -1,5 +1,5 @@
-import { operandLabel, ruleOpLabel } from "@/pages/demo-trading/bot/config/labels"
-import type { TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
+import { operandLabel, ruleOpLabel, rowSentence } from "@/pages/demo-trading/bot/config/labels"
+import { isRowsIndicator, type TechnicalIndicator } from "@/pages/demo-trading/bot/config/types"
 
 import { resultText } from "./evidence"
 import { fmtNumber } from "./format"
@@ -20,21 +20,42 @@ export type RuleEvidence = {
   missing: boolean
   previous_lhs?: number | null
   previous_rhs?: number | null
+  /** The row's own values when it was evaluated (SPEC V3 rows; Volume: its params). Absent on older evidence. */
+  values?: Record<string, number | string>
 }
 
-/** Operand names come from the registry rule with the same id; the numbers are the recorded ones. */
-function labelsOf(
-  rule: RuleEvidence,
-  indicators: readonly TechnicalIndicator[],
-  params: Record<string, number> | undefined,
-): { name: string; left: string; right: string } {
+type Labels = { name: string; condition: string | null; left: string; right: string }
+
+const GENERIC = { left: "Vế trái", right: "Vế phải" }
+
+/**
+ * Names of one recorded rule, version-aware:
+ * - a condition row (`rsi.level`) recorded with its `values` reads as the row sentence with
+ *   those values (`RSI 14 < 30`), never with today's settings;
+ * - a Volume rule reads its operands from the registry template with the recorded params;
+ * - older evidence (rule ids `r1`…, recorded before SPEC V3) keeps what it stored: the indicator,
+ *   the operator and the numbers, with the params it was evaluated with when they were kept.
+ *   It is never relabelled through today's rows.
+ */
+function labelsOf(rule: RuleEvidence, indicators: readonly TechnicalIndicator[], params: Record<string, number> | undefined): Labels {
   const indicator = indicators.find((item) => item.id === rule.indicator)
-  const definition = indicator?.[rule.side].rules.find((item) => item.id === rule.id)
-  if (!indicator || !definition) return { name: rule.indicator.toUpperCase(), left: "Vế trái", right: "Vế phải" }
+  const name = indicator?.name ?? rule.indicator.toUpperCase()
+  if (indicator && isRowsIndicator(indicator)) {
+    const definition = indicator.rows.find((row) => row.id === rule.id)
+    if (definition && rule.values) return { name, condition: rowSentence(definition, rule.values), ...GENERIC }
+  } else if (indicator) {
+    const definition = indicator[rule.side].rules.find((item) => item.id === rule.id)
+    const recorded = (rule.values as Record<string, number> | undefined) ?? params
+    if (definition && recorded) {
+      return { name, condition: null, left: operandLabel(definition.lhs, indicator, recorded), right: operandLabel(definition.rhs, indicator, recorded) }
+    }
+  }
+  const stored = rule.values ?? params
+  const entries = stored ? Object.entries(stored) : []
   return {
-    name: indicator.name,
-    left: operandLabel(definition.lhs, indicator, params ?? {}),
-    right: operandLabel(definition.rhs, indicator, params ?? {}),
+    name,
+    condition: entries.length > 0 ? `Tham số: ${entries.map(([key, value]) => `${key} ${typeof value === "number" ? fmtNumber(value) : value}`).join(" · ")}` : null,
+    ...GENERIC,
   }
 }
 
@@ -50,7 +71,8 @@ export function EvidenceTable({
 }: {
   rules: readonly RuleEvidence[]
   indicators: readonly TechnicalIndicator[]
-  paramsFor: (rule: RuleEvidence) => Record<string, number> | undefined
+  /** Params an older run or event recorded per indicator (before rows carried their own `values`). */
+  paramsFor?: (rule: RuleEvidence) => Record<string, number> | undefined
   label: string
 }) {
   return (
@@ -67,11 +89,14 @@ export function EvidenceTable({
         </thead>
         <tbody className="divide-y divide-border">
           {rules.map((rule) => {
-            const labels = labelsOf(rule, indicators, paramsFor(rule))
+            const labels = labelsOf(rule, indicators, paramsFor?.(rule))
             const interval = rule.op === "∈" || rule.op === "∉"
             return (
               <tr key={`${rule.indicator}-${rule.side}-${rule.id}`} className="align-top">
-                <td className="px-3 py-2 font-medium">{labels.name}</td>
+                <td className="px-3 py-2 font-medium">
+                  {labels.name}
+                  {labels.condition && <small className="block font-normal text-muted-foreground" data-testid="evidence-condition">{labels.condition}</small>}
+                </td>
                 <td className="px-3 py-2">
                   {labels.left}
                   <strong className="block tabular-nums">{rule.missing ? "Thiếu dữ liệu" : fmtNumber(rule.lhs, 4)}</strong>

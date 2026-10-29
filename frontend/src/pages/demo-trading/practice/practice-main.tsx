@@ -20,9 +20,11 @@ const pad2 = (value: number) => String(value).padStart(2, "0")
 const PAN_STEP = 20
 
 function Legend() {
-  const { chart, side, setSide, previewFetching, phase } = usePractice()
+  const { chart, side, setSide, previewFetching, phase, form } = usePractice()
   const plot = chart?.plot[side]
   const items = plot ? legendItems(plot) : []
+  // Condition rows each carry their own values; Volume and runs locked before SPEC V3 have one set per side.
+  const rowsModel = form?.model === "rows"
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 px-3 pb-2 text-[11px] min-[520px]:px-4" data-testid="practice-legend">
       <div role="group" aria-label="Phía điều kiện hiển thị trên biểu đồ" className="inline-flex overflow-hidden rounded-sm border border-border">
@@ -43,7 +45,7 @@ function Legend() {
         ))}
       </div>
       <span className="text-muted-foreground" data-testid="legend-side">
-        Tham số phía {SIDE_LABEL[side]}
+        {rowsModel ? "Điều kiện" : "Tham số"} phía {SIDE_LABEL[side]}
       </span>
       {items.map((item) => (
         <span key={item.key} className="inline-flex items-center gap-1.5 text-muted-foreground">
@@ -355,13 +357,21 @@ export function PracticeMain() {
       </ScrollArea>
 
       {spec && (
-        <TradeDetailDialog row={detailRow} spec={spec} indicatorName={indicatorName} onClose={() => setDetailOrdinal(null)} onFocusSession={focusSession} />
+        <TradeDetailDialog
+          row={detailRow}
+          spec={spec}
+          indicatorId={indicatorId}
+          indicatorName={indicatorName}
+          onClose={() => setDetailOrdinal(null)}
+          onFocusSession={focusSession}
+        />
       )}
       <PracticeHistoryDialog
         open={historyOpen}
         onOpenChange={setHistoryOpen}
         indicatorId={indicatorId}
         indicatorName={indicatorName}
+        spec={spec}
         currentRunId={state?.current_run?.run_id ?? null}
         onView={(id) => practice.viewRun(id === state?.current_run?.run_id ? null : id)}
       />

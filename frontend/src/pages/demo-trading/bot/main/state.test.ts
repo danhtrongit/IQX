@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 
 import type { BotConditions } from "../types"
-import { configStateChip, pendingConfigNote } from "./state"
+import { configStateChip, pendingConfigNote, sideBlocks } from "./state"
 
 function conditions(partial: Partial<BotConditions> = {}): BotConditions {
   return {
@@ -18,6 +18,7 @@ describe("config state chip", () => {
     ["sell_only", "Chỉ xét điều kiện Bán", "info"],
     ["buy_and_sell", "Đã bật Mua và Bán", "good"],
     ["error", "Lỗi cấu hình hoặc quyền", "danger"],
+    ["paused", "Tạm dừng", "muted"],
   ] as const)("maps %s to its label and tone", (state, label, tone) => {
     expect(configStateChip(conditions({ state }))).toMatchObject({ label, tone })
   })
@@ -28,6 +29,12 @@ describe("config state chip", () => {
       errors: { buy: { reason: "config_invalid_or_unauthorized", detail: "Chỉ báo RSI chưa được cấp quyền", indicator_ids: ["rsi"] }, sell: null },
     }))
     expect(chip.detail).toBe("Mua: Chỉ báo RSI chưa được cấp quyền")
+  })
+
+  it("keeps the reason of each blocked side (an outdated config is not a user error)", () => {
+    const block = { reason: "config_outdated" as const, detail: "Cấu hình điều kiện kiểu cũ không còn được dùng; hãy lưu lại cấu hình theo mẫu mới.", indicator_ids: [] }
+    expect(sideBlocks(conditions({ state: "paused", errors: { buy: block, sell: null } }))).toEqual([{ side: "buy", reason: "config_outdated", detail: block.detail, indicatorIds: [] }])
+    expect(configStateChip(conditions({ state: "paused", errors: { buy: block, sell: null } }))).toMatchObject({ label: "Tạm dừng", tone: "muted", detail: `Mua: ${block.detail}` })
   })
 
   it("does not read an unknown state as waiting, and has a muted chip without conditions", () => {

@@ -1,7 +1,6 @@
 /**
- * Fakes shared by the Bot tests: a registry of the 16 indicators (real shape, simplified
- * rules except for the interesting ones) and a stateful in-memory fake of the v2 routes the
- * Bot tool calls. Not imported by production code.
+ * Fakes shared by the Bot tests: the real registry of the 16 indicators (SPEC V3 rows) and a
+ * stateful in-memory fake of the v2 routes the Bot tool calls. Not imported by production code.
  */
 import type {
   BotConditions,
@@ -14,7 +13,18 @@ import type {
   UniverseRequest,
   UniverseState,
 } from "./types"
-import type { CrossField, IndicatorConfig, RegistryField, Rule, SharedConfigState, TechnicalIndicator, TechnicalRegistry } from "./config/types"
+import { templateConfig } from "./config/draft"
+import type {
+  CrossField,
+  IndicatorConfig,
+  RegistryField,
+  RegistrySide,
+  RowSideConfig,
+  RowsIndicator,
+  SharedConfigState,
+  TechnicalIndicator,
+  TechnicalRegistry,
+} from "./config/types"
 
 export class FakeApiError extends Error {
   status: number
@@ -31,88 +41,59 @@ export class FakeApiError extends Error {
 
 /* ── Registry ───────────────────────────────────────────────────────────── */
 
-const field = (key: string, label: string, min: number, max: number, step = 1, unit = "phiên", type: RegistryField["type"] = "integer"): RegistryField => ({
-  key, label, type, min, max, step, unit, api_scale: 1, wire_unit: unit,
-})
-const series = (key: string, offset = 0) => ({ kind: "series" as const, key, offset })
-const compare = (id: string, lhs: ReturnType<typeof series> | { kind: "param"; key: string }, op: ">" | "<", rhs: ReturnType<typeof series> | { kind: "param"; key: string }): Rule => ({
-  id, kind: "compare", lhs, op, rhs, allowed_ops: [">", "<"],
-})
+/**
+ * The real server registry (`quant/v2/registry/technical-registry.json`): the 15 row-based
+ * indicators with their SPEC V3 rows, and Volume with its params and rule templates. Only the
+ * chapters and lesson ids below are the fake's own, so the panel tests do not move with the
+ * Học viện catalog.
+ */
+const SERVER_REGISTRY = Object.values(
+  import.meta.glob("../../../../../backend/src/modules/quant/v2/registry/technical-registry.json", { eager: true, import: "default" }),
+)[0] as Array<Record<string, unknown> & { id: string; model: "rows" | "legacy_params" }>
 
-type IndicatorOptions = {
-  family?: "state" | "event"
-  /** Published `validation.cross_fields`; none when omitted (as for most indicators). */
-  crossFields?: CrossField[]
-  buyOverrides?: Record<string, Partial<RegistryField>>
-  sellOverrides?: Record<string, Partial<RegistryField>>
-  sellParams?: Record<string, number>
+/** id → [chapter, lesson number or null] */
+const LESSONS: Record<string, [number, number | null]> = {
+  rsi: [4, 6], macd: [4, 7], ma: [4, 5], bollinger: [4, 8], volume: [4, 4],
+  ema: [7, null], ma_cross: [7, null], dmi: [7, null], stochastic: [8, null], cci: [8, null],
+  obv: [8, null], mfi: [8, null], cmf: [8, null], donchian: [7, null], roc: [8, null], williams_r: [8, null],
 }
 
-function indicator(
-  id: string, name: string, chapter: number, lessonNumber: number | null,
-  fields: RegistryField[], params: Record<string, number>,
-  buyRules: Rule[], sellRules: Rule[],
-  options: IndicatorOptions = {},
-): TechnicalIndicator {
-  return {
-    id, name, chapter, lesson_id: lessonNumber === null ? null : `ch${String(chapter).padStart(2, "0")}-l${String(lessonNumber).padStart(2, "0")}`,
-    family: options.family ?? "state", formula: "", availability: "ohlcv", fields, learned: false,
-    validation: { cross_fields: options.crossFields ?? [] },
-    buy: { enabled: false, params: { ...params }, rules: buyRules, ...(options.buyOverrides ? { field_overrides: options.buyOverrides } : {}) },
-    sell: { enabled: false, params: { ...(options.sellParams ?? params) }, rules: sellRules, ...(options.sellOverrides ? { field_overrides: options.sellOverrides } : {}) },
-  }
-}
-
-const simple = (id: string, name: string, chapter: number, lessonNumber: number | null) =>
-  indicator(id, name, chapter, lessonNumber, [field("period", "Chu kỳ", 5, 100)], { period: 20 },
-    [compare("r1", series("close"), ">", series("value"))], [compare("r1", series("close"), "<", series("value"))])
-
+/** The registry as `GET /strategy/registry/technical` serves it (same projection as the server). */
 export function buildRegistry(): TechnicalIndicator[] {
-  const bollingerBuy: Rule[] = [
-    compare("r1", series("close", -1), "<", series("lower", -1)),
-    { id: "r2", kind: "membership", lhs: series("close"), op: "∈", rhs: { kind: "interval", lower: series("lower"), upper: series("upper"), bounds: "open" }, allowed_ops: ["∈", "∉"] },
-    compare("r3", series("close"), ">", series("close", -1)),
-  ]
-  const bollingerSell: Rule[] = [
-    compare("r1", series("close", -1), ">", series("upper", -1)),
-    { id: "r2", kind: "membership", lhs: series("close"), op: "∈", rhs: { kind: "interval", lower: series("lower"), upper: series("upper"), bounds: "open" }, allowed_ops: ["∈", "∉"] },
-    compare("r3", series("close"), "<", series("close", -1)),
-  ]
-  return [
-    indicator("rsi", "RSI", 4, 6, [field("period", "Chu kỳ RSI", 5, 50), field("level", "Ngưỡng RSI", 10, 90, 1, "")], { period: 14, level: 30 },
-      [compare("r1", series("value", -1), "<", { kind: "param", key: "level" }), compare("r2", series("value"), ">", series("value", -1))],
-      [compare("r1", series("value", -1), ">", { kind: "param", key: "level" }), compare("r2", series("value"), "<", series("value", -1))],
-      { sellParams: { period: 14, level: 70 }, buyOverrides: { level: { label: "Ngưỡng quá bán", min: 10, max: 49 } }, sellOverrides: { level: { label: "Ngưỡng quá mua", min: 51, max: 90 } } }),
-    indicator("macd", "MACD", 4, 7, [field("fast", "Chu kỳ EMA nhanh", 2, 50), field("slow", "Chu kỳ EMA chậm", 5, 100), field("signal", "Chu kỳ đường tín hiệu", 2, 30)], { fast: 12, slow: 26, signal: 9 },
-      [compare("r1", series("value"), ">", series("signal"))], [compare("r1", series("value"), "<", series("signal"))],
-      { crossFields: [{ left: "fast", op: "<", right: "slow" }] }),
-    indicator("ma", "MA / SMA", 4, 5, [field("period", "Chu kỳ SMA", 5, 200)], { period: 20 },
-      [compare("r1", series("close"), ">", series("value"))], [compare("r1", series("close"), "<", series("value"))]),
-    indicator("bollinger", "Bollinger Bands", 4, 8, [field("period", "Chu kỳ Bollinger", 10, 100), field("k", "Hệ số dải", 1, 3.5, 0.1, "", "number")], { period: 20, k: 2 }, bollingerBuy, bollingerSell),
-    indicator("volume", "Khối lượng", 4, 4, [field("lookback", "Số phiên tham chiếu", 5, 100), field("mult", "Hệ số khối lượng", 0.5, 3, 0.1, "lần", "number")], { lookback: 20, mult: 1 },
-      [compare("r1", series("close"), ">", series("close", -1)), compare("r2", series("volume"), ">", series("threshold"))],
-      [compare("r1", series("close"), "<", series("close", -1)), compare("r2", series("volume"), ">", series("threshold"))]),
-    simple("ema", "EMA", 7, null),
-    indicator("ma_cross", "MA Cross", 7, null, [field("fast", "Chu kỳ SMA nhanh", 5, 100), field("slow", "Chu kỳ SMA chậm", 10, 250)], { fast: 20, slow: 50 },
-      [{ id: "r1", kind: "cross", lhs: series("fast"), op: ">", rhs: series("slow"), allowed_ops: [">", "<"] }],
-      [{ id: "r1", kind: "cross", lhs: series("fast"), op: "<", rhs: series("slow"), allowed_ops: [">", "<"] }],
-      { family: "event", crossFields: [{ left: "fast", op: "<", right: "slow" }] }),
-    simple("dmi", "DMI", 7, null),
-    simple("stochastic", "Stochastic", 8, null),
-    simple("cci", "CCI", 8, null),
-    simple("obv", "OBV", 8, null),
-    simple("mfi", "MFI", 8, null),
-    simple("cmf", "Chaikin Money Flow", 8, null),
-    simple("donchian", "Donchian Channel", 7, null),
-    simple("roc", "ROC", 8, null),
-    simple("williams_r", "Williams %R", 8, null),
-  ]
+  return SERVER_REGISTRY.map((entry) => {
+    const [chapter, lessonNumber] = LESSONS[entry.id] ?? [4, null]
+    const base = {
+      id: entry.id, name: entry.name as string, chapter,
+      lesson_id: lessonNumber === null ? null : `ch${String(chapter).padStart(2, "0")}-l${String(lessonNumber).padStart(2, "0")}`,
+      family: entry.family as "state" | "event", formula: "", availability: "ohlcv" as const, learned: false,
+    }
+    if (entry.model === "rows") return structuredClone({ ...base, model: "rows" as const, rows: entry.rows as RowsIndicator["rows"] })
+    return structuredClone({
+      ...base, model: "legacy_params" as const, fields: entry.fields as RegistryField[],
+      validation: { cross_fields: ((entry.validation as { cross_fields?: CrossField[] } | undefined)?.cross_fields ?? []) },
+      buy: entry.buy as RegistrySide, sell: entry.sell as RegistrySide,
+    })
+  })
+}
+
+/** One indicator of `buildRegistry()` by id, narrowed to the rows model. */
+export function rowsIndicator(id: string, registry: readonly TechnicalIndicator[] = buildRegistry()): RowsIndicator {
+  const found = registry.find((entry) => entry.id === id)
+  if (!found || found.model !== "rows") throw new Error(`no row indicator ${id}`)
+  return found
+}
+
+/** A row-based tab of the world (`world.indicators.rsi.buy`) with its rows typed. */
+export function rowsOf(config: IndicatorConfig, side: "buy" | "sell"): RowSideConfig {
+  const value = config[side]
+  if ("params" in value) throw new Error("not a row-based side")
+  return value
 }
 
 export function registryFor(granted: readonly string[]): TechnicalRegistry {
   return {
     calculation_version: "iqx-ta-2.0",
-    rule_version: "iqx-rules-3.0",
+    rule_version: "iqx-rules-4.0",
     indicators: buildRegistry().map((entry) => ({ ...entry, learned: granted.includes(entry.id) })),
   }
 }
@@ -134,6 +115,8 @@ export type World = {
   effectiveIndicators: Record<string, IndicatorConfig> | null
   /** Leave `effective` out of the shared-config response, as a backend from before it existed would. */
   omitEffective: boolean
+  /** The latest saved revision is in a format before SPEC V3 (`outdated: true`). */
+  outdated: boolean
   universe: UniverseState
   lists: SavedList[]
   positions: BotPosition[]
@@ -192,17 +175,11 @@ export function savedList(id: string, name: string, tickers: string[], options: 
 
 export function createWorld(partial: Partial<World> = {}): World {
   const registry = buildRegistry()
-  const indicators = Object.fromEntries(
-    registry.map((entry) => [entry.id, {
-      master_enabled: false,
-      buy: { enabled: entry.buy.enabled, params: { ...entry.buy.params }, rules: structuredClone(entry.buy.rules) },
-      sell: { enabled: entry.sell.enabled, params: { ...entry.sell.params }, rules: structuredClone(entry.sell.rules) },
-    } satisfies IndicatorConfig]),
-  )
+  const indicators = Object.fromEntries(registry.map((entry) => [entry.id, structuredClone(templateConfig(entry))]))
   return {
     granted: ["rsi", "macd", "ma", "bollinger", "volume"],
     savedRevision: 0, effectiveRevision: null, effectiveSession: null, status: "pending",
-    indicators, effectiveIndicators: null, omitEffective: false, universe: universeState(), lists: [], positions: [],
+    indicators, effectiveIndicators: null, omitEffective: false, outdated: false, universe: universeState(), lists: [], positions: [],
     trades: [], sessions: [], decisions: {}, conditions: null, invalidSymbols: null, newBuysEnabled: true,
     override: {}, calls: [], ...partial,
   }
@@ -246,11 +223,12 @@ function sharedConfig(world: World): SharedConfigState {
     effective_revision: inForce,
     effective_session: world.effectiveSession,
     status: world.status,
-    config: { schema_version: "3.0", revision: world.savedRevision, rule_version: "iqx-rules-3.0", indicators: world.indicators },
+    config: { schema_version: "3.0", revision: world.savedRevision, rule_version: "iqx-rules-4.0", indicators: world.indicators },
     config_hash: contentHash(world.indicators),
     registry_version: "iqx-ta-2.0",
     granted_indicators: world.granted,
-    legacy: null,
+    outdated: world.outdated,
+    legacy: world.outdated ? { needs_review: true } : null,
   }
   if (world.omitEffective) return state
   return {
@@ -261,7 +239,8 @@ function sharedConfig(world: World): SharedConfigState {
           revision: inForce,
           effective_session: "2026-10-01",
           config_hash: contentHash(world.effectiveIndicators ?? world.indicators),
-          config: { schema_version: "3.0", revision: inForce, rule_version: "iqx-rules-3.0", indicators: world.effectiveIndicators ?? world.indicators },
+          config: { schema_version: "3.0", revision: inForce, rule_version: "iqx-rules-4.0", indicators: world.effectiveIndicators ?? world.indicators },
+          outdated: false,
           legacy: null,
         },
   }

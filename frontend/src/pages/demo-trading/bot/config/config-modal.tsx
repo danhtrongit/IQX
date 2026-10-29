@@ -5,14 +5,14 @@ import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 
 import { ConfirmDialog } from "../confirm-dialog"
-import { fieldErrorFor, ruleErrorsFor, sideOfError, type ConfigFieldError } from "./api"
+import { isShownInSide, sideOfError, type ConfigFieldError } from "./api"
+import { ConditionSideEditor } from "./condition-side"
 import {
   buildIndicatorConfig,
   createDraft,
@@ -21,15 +21,14 @@ import {
   isDraftDirty,
   rebaseDraft,
   resetDraftSide,
+  sameIndicatorConfig,
   savedIndicatorConfig,
   SIDE_LABEL,
   SIDES,
-  sideFields,
   type IndicatorDraft,
 } from "./draft"
-import { CROSS_LABEL, numericParams, operandLabel, ruleOpLabel } from "./labels"
 import { effectiveText } from "./summary"
-import type { RuleOp, Side, TechnicalIndicator } from "./types"
+import type { Side, TechnicalIndicator } from "./types"
 import type { BotConfigController } from "./use-bot-config"
 
 type Conflict = { reloaded: boolean; currentRevision: number | null }
@@ -43,8 +42,9 @@ const TAB_STYLE: Record<Side, string> = {
 /**
  * Per-indicator Buy/Sell configuration. The form is a draft until Lưu:
  * Hủy / Escape / outside click ask before throwing a changed draft away, Đặt lại resets
- * only the open tab's params and operators to the registry defaults, and a 409 keeps the
- * draft and offers a reload that merges the newer saved values with the user's edits.
+ * only the open tab's condition rows to the registry defaults, and a 409 keeps the draft and
+ * offers a reload that merges the newer saved values with the user's edits. Both tabs are
+ * validated before Lưu (SPEC V3 §4); nothing the user typed is corrected.
  */
 export function ConfigModal({
   indicator,
@@ -91,8 +91,8 @@ export function ConfigModal({
   async function submit() {
     setServerErrors([])
     setServerMessage(null)
-    const next = buildIndicatorConfig(base.config, draft, activate)
-    if (JSON.stringify(next) === JSON.stringify(base.config)) {
+    const next = buildIndicatorConfig(indicator, base.config, draft, activate)
+    if (sameIndicatorConfig(base.config, next)) {
       toast.info("Không có thay đổi để lưu.")
       onClose()
       return
@@ -132,14 +132,11 @@ export function ConfigModal({
   }
 
   const sideSwitchLabel = (target: Side) => `Sử dụng điều kiện ${SIDE_LABEL[target]}`
-  // A server message shown under its field or its rules is not repeated in the general list.
-  const generalErrors = serverErrors.filter(
-    (error) =>
-      error.message !== serverMessage &&
-      !SIDES.some((item) => ruleErrorsFor([error], item).length > 0 || sideFields(indicator, item).some((field) => fieldErrorFor([error], item, field.key))),
-  )
+  // A server message shown under its rows or its field is not repeated in the general list.
+  const generalErrors = serverErrors.filter((error) => error.message !== serverMessage && !SIDES.some((item) => isShownInSide(error, indicator, item)))
   const sideHasError = (target: Side) =>
-    Object.keys(errors[target].fields).length > 0 || serverErrors.some((error) => sideOfError(error) === target)
+    errors[target].rows.length > 0 || Object.keys(errors[target].fields).length > 0 || serverErrors.some((error) => sideOfError(error) === target)
+  const dismissServerErrors = (match: (error: ConfigFieldError) => boolean) => setServerErrors((previous) => previous.filter((error) => !match(error)))
   const masterNote = activate
     ? "Chọn phía muốn dùng. Lưu với ít nhất một phía bật sẽ bật chỉ báo cho Bot; Hủy thì chỉ báo vẫn tắt."
     : base.config.master_enabled
@@ -210,9 +207,7 @@ export function ConfigModal({
             </TabsList>
             {SIDES.map((item) => {
               const sideDraft = draft[item]
-              const params = numericParams(sideDraft.params)
               const switchId = `${baseId}-${item}-enabled`
-              const sideErrors = errors[item]
               return (
                 <TabsContent key={item} value={item} className="space-y-4">
                   <div className="flex items-center justify-between gap-3 border-b border-border pb-4">
@@ -228,112 +223,17 @@ export function ConfigModal({
                     <p className="-mt-2 text-xs text-muted-foreground">Phía này đang tắt. Tham số và dấu vẫn được giữ.</p>
                   )}
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {sideFields(indicator, item).map((field) => {
-                      const inputId = `${baseId}-${item}-${field.key}`
-                      const hintId = `${inputId}-hint`
-                      const error = sideErrors.fields[field.key] ?? fieldErrorFor(serverErrors, item, field.key)
-                      return (
-                        <div key={field.key} className="min-w-0 space-y-1.5">
-                          <Label htmlFor={inputId} className="text-xs font-medium text-muted-foreground">{field.label}</Label>
-                          <div className="relative">
-                            {field.options && field.options.length > 0 ? (
-                              <select
-                                id={inputId}
-                                value={sideDraft.params[field.key] ?? ""}
-                                aria-invalid={error ? true : undefined}
-                                aria-describedby={hintId}
-                                className="h-9 w-full rounded-md border border-input bg-transparent px-3 text-sm tabular-nums focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                                onChange={(event) => {
-                                  updateSide(item, { params: { ...sideDraft.params, [field.key]: event.target.value } })
-                                  setServerErrors((previous) => previous.filter((entry) => !fieldErrorFor([entry], item, field.key)))
-                                }}
-                              >
-                                {field.options.map((opt) => (
-                                  <option key={opt} value={String(opt)}>
-                                    {opt}{field.unit ? ` ${field.unit}` : ""}
-                                  </option>
-                                ))}
-                              </select>
-                            ) : (
-                              <>
-                                <Input
-                                  id={inputId}
-                                  type="number"
-                                  inputMode="decimal"
-                                  min={field.min}
-                                  max={field.max}
-                                  step={field.step}
-                                  value={sideDraft.params[field.key] ?? ""}
-                                  aria-invalid={error ? true : undefined}
-                                  aria-describedby={hintId}
-                                  className={cn("h-9 tabular-nums", field.unit && "pr-14")}
-                                  onChange={(event) => {
-                                    updateSide(item, { params: { ...sideDraft.params, [field.key]: event.target.value } })
-                                    // The server message was about the old value.
-                                    setServerErrors((previous) => previous.filter((entry) => !fieldErrorFor([entry], item, field.key)))
-                                  }}
-                                />
-                                {field.unit && (
-                                  <span aria-hidden="true" className="pointer-events-none absolute top-1/2 right-2.5 -translate-y-1/2 text-[11px] text-muted-foreground">
-                                    {field.unit}
-                                  </span>
-                                )}
-                              </>
-                            )}
-                          </div>
-                          <p id={hintId} className={cn("text-[11px] leading-4", error ? "text-destructive" : "text-muted-foreground")}>
-                            {error ?? `Từ ${field.min} đến ${field.max}, bước ${field.step}`}
-                          </p>
-                        </div>
-                      )
-                    })}
-                  </div>
-
-                  <div className="space-y-2">
-                    <h3 className="text-[11px] font-semibold tracking-wide text-muted-foreground uppercase">Điều kiện</h3>
-                    <ul className="divide-y divide-border overflow-hidden rounded-md border border-border bg-background/40">
-                      {base.config[item].rules.map((rule, index) => (
-                        <li key={rule.id}>
-                          {rule.enabled !== undefined && (
-                            <label className="flex items-center gap-2 bg-muted/30 px-3 py-1.5 text-[11px] font-medium text-muted-foreground">
-                              <input
-                                type="checkbox"
-                                aria-label={`Bật điều kiện ${index + 1} (${SIDE_LABEL[item]})`}
-                                checked={sideDraft.rules_enabled?.[rule.id] ?? rule.enabled !== false}
-                                onChange={(event) =>
-                                  updateSide(item, {
-                                    rules_enabled: { ...sideDraft.rules_enabled, [rule.id]: event.target.checked },
-                                  })
-                                }
-                              />
-                              <span>Điều kiện {index + 1}</span>
-                            </label>
-                          )}
-                          {rule.kind === "cross" && (
-                            <span className="block bg-muted/60 px-3 py-1.5 text-[11px] text-muted-foreground">{CROSS_LABEL}</span>
-                          )}
-                          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 px-3 py-3 text-xs leading-5">
-                            <span className="min-w-0 break-words">{operandLabel(rule.lhs, indicator, params)}</span>
-                            <select
-                              aria-label={`Dấu điều kiện ${index + 1} (${SIDE_LABEL[item]})`}
-                              className="h-8 min-w-13 rounded-sm border border-border bg-secondary px-2 text-center text-xs font-bold text-primary focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
-                              value={sideDraft.ops[rule.id] ?? rule.op}
-                              onChange={(event) => updateSide(item, { ops: { ...sideDraft.ops, [rule.id]: event.target.value as RuleOp } })}
-                            >
-                              {(rule.allowed_ops as RuleOp[]).map((op) => <option key={op} value={op}>{ruleOpLabel(op)}</option>)}
-                            </select>
-                            <span className="min-w-0 text-right break-words">{operandLabel(rule.rhs, indicator, params)}</span>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                    {ruleErrorsFor(serverErrors, item).length > 0 && (
-                      <ul className="list-disc pl-5 text-xs text-destructive" role="alert">
-                        {ruleErrorsFor(serverErrors, item).map((error) => <li key={`${error.path}-${error.message}`}>{error.message}</li>)}
-                      </ul>
-                    )}
-                  </div>
+                  <ConditionSideEditor
+                    indicator={indicator}
+                    side={item}
+                    draft={sideDraft}
+                    saved={base.config}
+                    errors={errors[item]}
+                    serverErrors={serverErrors}
+                    idPrefix={baseId}
+                    onChange={(patch) => updateSide(item, patch)}
+                    dismissServerErrors={dismissServerErrors}
+                  />
                 </TabsContent>
               )
             })}

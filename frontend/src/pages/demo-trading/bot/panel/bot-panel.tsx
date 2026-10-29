@@ -95,9 +95,9 @@ export function BotPanel() {
         <PanelState title="Không tải được chỉ báo" description={config.errorMessage ?? undefined} action={{ label: "Thử lại", onClick: config.retry }} />
       )}
 
-      {ready && config.state?.legacy?.needs_review && (
+      {ready && (config.state?.outdated || config.state?.legacy?.needs_review) && (
         <p role="status" className="rounded-md border border-price-ref/40 bg-price-ref/10 p-2.5 text-xs leading-5 text-price-ref">
-          Cấu hình đã lưu trước đây dùng chỉ báo không còn trong danh mục. Hãy kiểm tra từng chỉ báo và lưu lại cấu hình mới; Bot không giao dịch theo cấu hình cũ.
+          Cấu hình đã lưu trước đây theo mẫu điều kiện cũ. Các điều kiện đang hiện là mặc định của mẫu mới; hãy kiểm tra từng chỉ báo và bấm Lưu. Bot không giao dịch theo cấu hình cũ.
         </p>
       )}
 

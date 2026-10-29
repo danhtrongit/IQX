@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
 import { LoaderCircle } from "lucide-react"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { cn } from "@/lib/utils"
-import { classifyPracticeError, fetchPracticeHistory, practiceKeys, type PracticeProfile } from "./practice-api"
+import { classifyPracticeError, fetchPracticeHistory, practiceKeys, type PracticeForm, type PracticeProfile } from "./practice-api"
 import { PracticeFailureNotice } from "./practice-failure"
-import { TONE_CLASS, configSummary, formatDec, formatRatioPercent, toneOf } from "./practice-model"
+import { TONE_CLASS, configSummary, formatDec, formatRatioPercent, isLegacyFor, toneOf } from "./practice-model"
 
 const pad2 = (value: number) => String(value).padStart(2, "0")
 
@@ -16,6 +17,7 @@ export function PracticeHistoryDialog({
   onOpenChange,
   indicatorId,
   indicatorName,
+  spec,
   currentRunId,
   onView,
 }: {
@@ -23,6 +25,8 @@ export function PracticeHistoryDialog({
   onOpenChange: (open: boolean) => void
   indicatorId: string
   indicatorName: string
+  /** The indicator's form: it turns a locked row config into its sentences. */
+  spec: PracticeForm | null
   currentRunId: string | null
   onView: (runId: string) => void
 }) {
@@ -55,9 +59,12 @@ export function PracticeHistoryDialog({
             return (
               <li key={item.run_id} className="flex items-center justify-between gap-3 rounded-md border border-border bg-card/60 px-3 py-2.5" data-history-ordinal={item.ordinal}>
                 <div className="min-w-0 space-y-0.5">
-                  <h3 className="text-sm font-semibold">Lượt {pad2(item.ordinal)}</h3>
+                  <h3 className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                    Lượt {pad2(item.ordinal)}
+                    {isLegacyFor(item.config, spec) && <Badge variant="outline">Định dạng cũ</Badge>}
+                  </h3>
                   <p className="text-[11px] leading-snug break-words text-muted-foreground">
-                    {configSummary(item.config)}
+                    {configSummary(item.config, spec)}
                     <br />
                     Giữ tối đa {item.config.hold_max_sessions} phiên · {item.kpis ? `${item.kpis.buy_count} lần Mua` : "Chưa có kết quả"}
                   </p>

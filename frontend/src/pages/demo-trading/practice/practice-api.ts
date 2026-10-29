@@ -7,7 +7,7 @@
  */
 import { ApiError } from "@/lib/api"
 import { requestOperation } from "@/lib/contract-client"
-import type { ApiResponseFor } from "@/lib/contract-types"
+import type { ApiRequestFor, ApiResponseFor } from "@/lib/contract-types"
 
 export type Side = "buy" | "sell"
 export type PracticeOp =
@@ -27,26 +27,53 @@ export type PracticeOp =
   | "break_low"
 
 export type PracticeState = ApiResponseFor<"GET /api/v2/practice/{indicatorId}/state">
+
+/**
+ * A practice config has one of two shapes (SPEC V3): condition rows for the 15 row-based
+ * indicators (`buy.rules`), or side-level params and operators for Volume and for runs locked
+ * before SPEC V3 (`buy.params` / `buy.ops`). The form descriptor and every stored config follow
+ * the same split.
+ */
 export type PracticeConfig = PracticeState["draft"]
-export type PracticeSideConfig = PracticeConfig["buy"]
+export type PracticeRowsConfig = Extract<PracticeConfig, { buy: { rules: unknown } }>
+export type PracticeParamsConfig = Extract<PracticeConfig, { buy: { params: unknown } }>
+export type PracticeRowConfig = PracticeRowsConfig["buy"]["rules"][number]
+export type PracticeParamsSideConfig = PracticeParamsConfig["buy"]
+
 export type PracticeForm = PracticeState["form"]
-export type PracticeFormSide = PracticeForm["buy"]
+export type PracticeRowsForm = Extract<PracticeForm, { model: "rows" }>
+export type PracticeParamsForm = Extract<PracticeForm, { model: "legacy_params" }>
+export type PracticeFormSide = PracticeParamsForm["buy"]
 export type PracticeFormField = PracticeFormSide["fields"][number]
 export type PracticeFormRule = PracticeFormSide["rules"][number]
 export type PracticeOperand = PracticeFormRule["lhs"]
 export type PracticeRunBrief = PracticeState["runs"][number]
 export type PracticeProfile = PracticeState["profile"]
 
+export const isRowsConfig = (config: PracticeConfig): config is PracticeRowsConfig => "rules" in config.buy
+export const isParamsConfig = (config: PracticeConfig): config is PracticeParamsConfig => "params" in config.buy
+export const isRowsForm = (form: PracticeForm): form is PracticeRowsForm => form.model === "rows"
+export const isParamsForm = (form: PracticeForm): form is PracticeParamsForm => form.model === "legacy_params"
+
+/**
+ * Error code of a run that was locked in the format before SPEC V3 and never finished: it cannot
+ * be computed or retried, and a new start for the same case replaces it.
+ */
+export const OUTDATED_RUN_CODE = "PRACTICE_CONFIG_OUTDATED"
+
 export type PracticeRun = ApiResponseFor<"GET /api/v2/practice/runs/{runId}">
 export type PracticeResult = NonNullable<PracticeRun["result"]>
 export type PracticeChart = NonNullable<PracticeRun["chart"]>
 export type PracticePlot = PracticeChart["plot"]["buy"]
 export type PracticeTrade = PracticeResult["trades"][number]
+export type PracticeSell = NonNullable<PracticeTrade["sell"]>
 export type PracticeEvent = PracticeResult["events"][number]
 export type PracticeEvidence = PracticeTrade["buy"]["evidence"]
 export type PracticeRuleEvidence = PracticeEvidence["rules"][number]
 
 export type PracticePreview = ApiResponseFor<"POST /api/v2/practice/{indicatorId}/preview">
+/** `buy_rows` / `sell_rows` for row-based indicators, `buy_params` / `sell_params` for Volume. */
+export type PracticePreviewBody = ApiRequestFor<"POST /api/v2/practice/{indicatorId}/preview">["body"]
 export type PracticeHistory = ApiResponseFor<"GET /api/v2/practice/{indicatorId}/history">
 export type PracticeHistoryItem = PracticeHistory["items"][number]
 export type PracticeDraftSaved = ApiResponseFor<"PUT /api/v2/practice/{indicatorId}/draft">
@@ -75,12 +102,8 @@ export function savePracticeDraft(indicatorId: string, expectedRevision: number,
   })
 }
 
-export function fetchPracticePreview(
-  indicatorId: string,
-  params: { buy_params?: Record<string, number>; sell_params?: Record<string, number> },
-  signal?: AbortSignal,
-): Promise<PracticePreview> {
-  return requestOperation("POST /api/v2/practice/{indicatorId}/preview", { path: { indicatorId }, body: params }, { signal })
+export function fetchPracticePreview(indicatorId: string, body: PracticePreviewBody, signal?: AbortSignal): Promise<PracticePreview> {
+  return requestOperation("POST /api/v2/practice/{indicatorId}/preview", { path: { indicatorId }, body }, { signal })
 }
 
 export function startPracticeRun(

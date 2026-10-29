@@ -3,24 +3,29 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { PracticeChartView } from "./practice-chart"
-import { makeChart, makeRun } from "./practice.fixtures"
+import type { PracticeConfig } from "./practice-api"
+import { defaultConfig, legacyRsiConfig, makeChart, makeRun, rowsConfig, volumeConfig } from "./practice.fixtures"
 
 beforeEach(() => {
   vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} })
 })
 
-const renderChart = (indicatorId: string, side: "buy" | "sell" = "buy") => {
-  const chart = makeChart({ indicatorId, test: 0 })
+const renderChart = (indicatorId: string, side: "buy" | "sell" = "buy", config?: PracticeConfig) => {
+  const chart = makeChart({ indicatorId, test: 0, config: config ?? defaultConfig(indicatorId) })
   return render(<PracticeChartView chart={chart} side={side} revealed={0} windowBars={130} panEnd={null} events={[]} paneTitle={indicatorId.toUpperCase()} />)
 }
 
+const seriesOf = (root: Element) => [...root.querySelectorAll("path[data-series]")].map((node) => node.getAttribute("data-series"))
+
 describe("PracticeChartView panels per indicator", () => {
-  it("RSI: price pane + a 0-100 indicator pane with its line, threshold and reference level", () => {
+  it("RSI: price pane + a 0-100 indicator pane with its row line, threshold and reference level", () => {
     renderChart("rsi")
     const chart = screen.getByTestId("practice-chart")
     expect(within(chart).getByTestId("chart-pane-price")).toBeTruthy()
     const pane = within(chart).getByTestId("chart-pane-indicator")
-    expect(pane.querySelector('path[data-series="value"]')?.getAttribute("d")).toMatch(/^M/)
+    const line = pane.querySelector('path[data-series="rsi.level.value"]')
+    expect(line?.getAttribute("d")).toMatch(/^M/)
+    expect(line?.getAttribute("data-row")).toBe("rsi.level")
     expect(pane.querySelector('[data-level="threshold"]')).not.toBeNull()
     expect(pane.querySelector('[data-level="reference"]')).not.toBeNull()
     expect(pane.textContent).toContain("Ngưỡng 30")
@@ -28,37 +33,114 @@ describe("PracticeChartView panels per indicator", () => {
     expect(pane.textContent).toContain("RSI")
   })
 
-  it("MACD: MACD and signal lines with histogram bars", () => {
-    renderChart("macd")
-    const pane = screen.getByTestId("chart-pane-indicator")
-    expect(pane.querySelector('path[data-series="value"]')).not.toBeNull()
-    expect(pane.querySelector('path[data-series="signal"]')).not.toBeNull()
+  it("MACD: MACD and signal lines of the signal row, and the bars only when the histogram row is on", () => {
+    const { unmount } = renderChart("macd")
+    let pane = screen.getByTestId("chart-pane-indicator")
+    expect(pane.querySelector('path[data-series="macd.signal.value"]')?.getAttribute("data-row")).toBe("macd.signal")
+    expect(pane.querySelector('path[data-series="macd.signal.signal"]')?.getAttribute("data-row")).toBe("macd.signal")
+    expect(pane.querySelectorAll('rect[data-bar="histogram"]')).toHaveLength(0)
+    unmount()
+    renderChart(
+      "macd",
+      "buy",
+      rowsConfig("macd", (config) => {
+        config.buy.rules[2] = { ...config.buy.rules[2]!, enabled: true }
+      }),
+    )
+    pane = screen.getByTestId("chart-pane-indicator")
     expect(pane.querySelectorAll('rect[data-bar="histogram"]').length).toBeGreaterThan(10)
+    expect(seriesOf(pane)).toEqual(["macd.signal.value", "macd.signal.signal"])
   })
 
-  it("Bollinger: three overlay lines on the price pane and no extra indicator pane", () => {
+  it("Bollinger: three overlay lines of its row on the price pane and no extra indicator pane", () => {
     renderChart("bollinger")
     const price = screen.getByTestId("chart-pane-price")
-    for (const key of ["upper", "middle", "lower"]) expect(price.querySelector(`path[data-series="${key}"]`)).not.toBeNull()
+    for (const key of ["upper", "middle", "lower"]) {
+      const line = price.querySelector(`path[data-series="bollinger.price_action.${key}"]`)
+      expect(line, key).not.toBeNull()
+      expect(line?.getAttribute("data-row")).toBe("bollinger.price_action")
+    }
     expect(screen.queryByTestId("chart-pane-indicator")).toBeNull()
   })
 
-  it("Volume: volume bars and the threshold line in an indicator pane", () => {
-    renderChart("volume")
-    const pane = screen.getByTestId("chart-pane-indicator")
-    expect(pane.querySelectorAll('rect[data-bar="volume"]').length).toBeGreaterThan(10)
-    expect(pane.querySelector('path[data-series="threshold"]')).not.toBeNull()
+  it("MA Cross: two overlay lines on the price pane, one per moving average", () => {
+    renderChart("ma_cross")
+    expect(seriesOf(screen.getByTestId("chart-pane-price"))).toEqual(["ma_cross.cross.fast", "ma_cross.cross.slow"])
+    expect(screen.queryByTestId("chart-pane-indicator")).toBeNull()
   })
 
-  it("uses the params of the side shown: Bán draws its own series and labels", () => {
-    const chart = makeChart({ indicatorId: "rsi", test: 0, params: { buy: { period: 10, level: 30 }, sell: { period: 21, level: 70 } } })
+  it("Volume keeps its plain keys: volume bars and the threshold line, belonging to no condition row", () => {
+    renderChart("volume", "buy", volumeConfig())
+    const pane = screen.getByTestId("chart-pane-indicator")
+    expect(pane.querySelectorAll('rect[data-bar="volume"]').length).toBeGreaterThan(10)
+    const line = pane.querySelector('path[data-series="threshold"]')
+    expect(line).not.toBeNull()
+    expect(line?.hasAttribute("data-row")).toBe(false)
+  })
+
+  it("a run locked before SPEC V3 is drawn with its plain keys", () => {
+    renderChart("rsi", "buy", legacyRsiConfig())
+    const pane = screen.getByTestId("chart-pane-indicator")
+    const line = pane.querySelector('path[data-series="value"]')
+    expect(line?.getAttribute("d")).toMatch(/^M/)
+    expect(line?.hasAttribute("data-row")).toBe(false)
+    expect(pane.textContent).toContain("Ngưỡng 30")
+  })
+
+  it("shows the rows of the side shown: Bán draws its own series and labels", () => {
+    const config = rowsConfig("rsi", (value) => {
+      value.buy.rules[0] = { ...value.buy.rules[0]!, period: 10 }
+      value.sell.rules[0] = { ...value.sell.rules[0]!, period: 21 }
+    })
+    const chart = makeChart({ indicatorId: "rsi", test: 0, config })
     const { rerender } = render(<PracticeChartView chart={chart} side="buy" revealed={0} windowBars={130} panEnd={null} events={[]} paneTitle="RSI" />)
-    const buyPath = screen.getByTestId("chart-pane-indicator").querySelector('path[data-series="value"]')?.getAttribute("d")
+    const buyPath = screen.getByTestId("chart-pane-indicator").querySelector('path[data-series="rsi.level.value"]')?.getAttribute("d")
     expect(screen.getByTestId("chart-pane-indicator").textContent).toContain("Ngưỡng 30")
     rerender(<PracticeChartView chart={chart} side="sell" revealed={0} windowBars={130} panEnd={null} events={[]} paneTitle="RSI" />)
-    const sellPath = screen.getByTestId("chart-pane-indicator").querySelector('path[data-series="value"]')?.getAttribute("d")
+    const sellPath = screen.getByTestId("chart-pane-indicator").querySelector('path[data-series="rsi.level.value"]')?.getAttribute("d")
     expect(sellPath).not.toBe(buyPath)
     expect(screen.getByTestId("chart-pane-indicator").textContent).toContain("Ngưỡng 70")
+  })
+})
+
+describe("PracticeChartView overlays keyed by row", () => {
+  const twoPeriods = rowsConfig("rsi", (config) => {
+    config.buy.rules[1] = { ...config.buy.rules[1]!, period: 9 }
+  })
+
+  it("two rows with their own RSI periods draw two lines, each tagged with its row, in different colours", () => {
+    renderChart("rsi", "buy", twoPeriods)
+    const pane = screen.getByTestId("chart-pane-indicator")
+    const level = pane.querySelector('path[data-series="rsi.level.value"]')
+    const trend = pane.querySelector('path[data-series="rsi.trend.value"]')
+    expect(level?.getAttribute("data-row")).toBe("rsi.level")
+    expect(trend?.getAttribute("data-row")).toBe("rsi.trend")
+    expect(level?.getAttribute("d")).not.toBe(trend?.getAttribute("d"))
+    expect(level?.getAttribute("style")).not.toBe(trend?.getAttribute("style"))
+  })
+
+  it("a row switched off draws nothing", () => {
+    const config = rowsConfig("rsi", (value) => {
+      value.buy.rules[0] = { ...value.buy.rules[0]!, enabled: false }
+      value.buy.rules[1] = { ...value.buy.rules[1]!, period: 9 }
+    })
+    renderChart("rsi", "buy", config)
+    expect(seriesOf(screen.getByTestId("chart-pane-indicator"))).toEqual(["rsi.trend.value"])
+  })
+
+  it("two rows that need the very same line draw it once", () => {
+    renderChart("rsi")
+    expect(seriesOf(screen.getByTestId("chart-pane-indicator"))).toEqual(["rsi.level.value"])
+  })
+
+  it("the tooltip names each line of the side once, with the value at the hovered session", () => {
+    renderChart("rsi", "buy", twoPeriods)
+    const group = screen.getByRole("group", { name: /Biểu đồ nến/ })
+    group.focus()
+    fireEvent.keyDown(group, { key: "ArrowLeft" })
+    const tooltip = screen.getByTestId("practice-chart-tooltip")
+    expect(within(tooltip).getAllByText("RSI 14")).toHaveLength(1)
+    expect(within(tooltip).getAllByText("RSI 9")).toHaveLength(1)
   })
 })
 
@@ -82,6 +164,26 @@ describe("PracticeChartView content", () => {
     }
     expect(at(0).at(-1)).toBe("Phiên 0")
     expect(at(30).at(-1)).toBe("Phiên 30")
+  })
+
+  it("never lets a later bar reach the line or the tooltip of an earlier session", () => {
+    const run = makeRun()
+    const chart = structuredClone(run.chart!)
+    // A spike on the last bar of the run, long after the session being viewed.
+    const last = chart.bars.close.length - 1
+    chart.bars.close[last] = 9_999_999
+    chart.series.buy["rsi.level.value"]![last] = 99.99
+    render(<PracticeChartView chart={chart} side="buy" revealed={10} windowBars={130} panEnd={null} events={[]} paneTitle="RSI" />)
+    const line = screen.getByTestId("chart-pane-indicator").querySelector('path[data-series="rsi.level.value"]')
+    expect(line?.getAttribute("d")).not.toContain("NaN")
+    const group = screen.getByRole("group", { name: /Biểu đồ nến/ })
+    group.focus()
+    fireEvent.keyDown(group, { key: "ArrowRight" })
+    fireEvent.keyDown(group, { key: "ArrowRight" })
+    const tooltip = screen.getByTestId("practice-chart-tooltip")
+    expect(tooltip.textContent).toMatch(/Phiên 10/)
+    expect(tooltip.textContent).not.toContain("9.999.999")
+    expect(tooltip.textContent).not.toContain("99,99")
   })
 
   it("shows M/B arrows with trade numbers for the revealed trades and reports the click", async () => {

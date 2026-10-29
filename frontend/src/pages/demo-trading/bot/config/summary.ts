@@ -1,7 +1,7 @@
 import { formatDate, formatNum } from "../format"
 import { sideField } from "./draft"
-import { CROSS_LABEL, ruleLine } from "./labels"
-import type { Side, SharedConfig, SharedConfigState, TechnicalIndicator } from "./types"
+import { CROSS_LABEL, ruleLine, rowSentence } from "./labels"
+import { isParamsSide, isRowsIndicator, type Side, type SharedConfig, type SharedConfigState, type TechnicalIndicator } from "./types"
 
 /**
  * When a saved revision starts to count, in the words of Bot SPEC §6.3/§7.4:
@@ -62,19 +62,29 @@ export function pendingStartText(pending: Pick<PendingConfig, "session" | "calen
 export type ConditionItem = {
   id: string
   name: string
-  /** `Chu kỳ RSI 14` style parameter chips. */
+  /** Volume only: `Số phiên tham chiếu 20 phiên` style parameter chips (rows carry their own values). */
   params: string[]
-  /** Rule lines with the operator in use, `Giao cắt giữa hai phiên: ` already prefixed. */
+  /** The enabled conditions: row sentences with their values (`RSI 14 < 30`); Volume rule lines. */
   rules: string[]
 }
 
-/** Indicators with master ON and the given side ON, in registry order, in readable form. */
+/** Indicators with master ON, the given side ON and at least one enabled condition, in registry order, in readable form. */
 export function activeConditions(config: SharedConfig | undefined, side: Side, indicators: readonly TechnicalIndicator[]): ConditionItem[] {
   if (!config) return []
   return indicators.flatMap((indicator): ConditionItem[] => {
     const saved = config.indicators[indicator.id]
-    if (!saved?.master_enabled || !saved[side].enabled) return []
+    if (!saved?.master_enabled || !saved[side]?.enabled) return []
     const sideConfig = saved[side]
+    if (isRowsIndicator(indicator)) {
+      if (isParamsSide(sideConfig)) return []
+      const rules = sideConfig.rules.flatMap((row) => {
+        if (row.enabled === false) return []
+        const definition = indicator.rows.find((item) => item.id === row.id)
+        return [definition ? rowSentence(definition, row) : row.id]
+      })
+      return rules.length > 0 ? [{ id: indicator.id, name: indicator.name, params: [], rules }] : []
+    }
+    if (!isParamsSide(sideConfig)) return []
     const activeRules = sideConfig.rules.filter((rule) => rule.enabled !== false)
     if (activeRules.length === 0) return []
     const params = indicator.fields.flatMap((field) => {

@@ -42,7 +42,10 @@ export function tradesPageFromRun(run: RunResponse): TradesPage | undefined {
 
 type SideParams = Record<string, number>
 
-/** Params of one indicator side as pinned in the run's own config snapshot. */
+/**
+ * Side-level params of one indicator as pinned in the run's own config snapshot: Volume, and every
+ * indicator of a run made before SPEC V3. Condition rows keep their own values in the evidence.
+ */
 export function snapshotParams(config: Record<string, unknown> | undefined, indicatorId: string, side: "buy" | "sell"): SideParams | undefined {
   const indicators = config?.indicators
   if (!indicators || typeof indicators !== "object") return undefined

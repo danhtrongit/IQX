@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { BotPanel } from "../panel/bot-panel"
 import { renderBot, stubBrowser } from "../test-render"
-import { callsTo, createFakeApi, createWorld, FakeApiError, type World } from "../test-support"
+import { callsTo, createFakeApi, createWorld, FakeApiError, rowsOf, type World } from "../test-support"
 
 const mocks = vi.hoisted(() => ({ api: vi.fn(), toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }))
 
@@ -28,7 +28,9 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllGlobals())
 
-type Patch = { expected_revision: number; idempotency_key: string; indicators: Record<string, { master_enabled: boolean; buy: { enabled: boolean; params: Record<string, number>; rules: { id: string; op: string }[] }; sell: { enabled: boolean; params: Record<string, number>; rules: { id: string; op: string }[] } }> }
+type PatchRow = { id: string; enabled: boolean; [field: string]: string | number | boolean }
+type PatchSide = { enabled: boolean; rules: PatchRow[]; params?: Record<string, number> }
+type Patch = { expected_revision: number; idempotency_key: string; indicators: Record<string, { master_enabled: boolean; buy: PatchSide; sell: PatchSide }> }
 const patches = () => callsTo(world, "PATCH", "/strategy/shared-config")
 const lastPatch = () => patches().at(-1)!.body as unknown as Patch
 
@@ -39,13 +41,14 @@ async function openConfig(user: ReturnType<typeof userEvent.setup>, name = "RSI"
   return screen.findByRole("dialog", { name: new RegExp(`Cấu hình Bot · ${name}`) })
 }
 const input = (label: string) => screen.getByLabelText(label) as HTMLInputElement
+const saveButton = (dialog: HTMLElement) => within(dialog).getByRole("button", { name: "Lưu" }) as HTMLButtonElement
 async function setValue(user: ReturnType<typeof userEvent.setup>, label: string, value: string) {
   await user.clear(input(label))
   await user.type(input(label), value)
 }
 
 describe("config modal layout", () => {
-  it("has MUA/BÁN tabs, a side switch, registry-bounded inputs, operator selects and a note about Backtest", async () => {
+  it("has MUA/BÁN tabs, a side switch and the RSI rows as sentences with their own inputs, no shared param block", async () => {
     const user = userEvent.setup()
     const dialog = await openConfig(user)
 
@@ -54,58 +57,66 @@ describe("config modal layout", () => {
     expect(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }).getAttribute("aria-checked")).toBe("false")
     expect(dialog.textContent).toMatch(/dùng chung với Backtest/)
 
-    const level = input("Ngưỡng quá bán")
-    expect([level.min, level.max, level.step]).toEqual(["10", "49", "1"])
-    expect(input("Chu kỳ RSI")).toMatchObject({ min: "5", max: "50", step: "1" })
-
-    const operators = within(dialog).getAllByRole("combobox")
-    expect(operators.map((select) => (select as HTMLSelectElement).value)).toEqual(["<", ">"])
-    expect(within(operators[0]!).getAllByRole("option").map((option) => option.textContent)).toEqual([">", "<"])
-    expect(dialog.textContent).toMatch(/RSI phiên trước/)
+    const rows = within(within(dialog).getByRole("list", { name: "Điều kiện Mua" })).getAllByRole("listitem")
+    expect(rows).toHaveLength(2)
+    expect(input("Chu kỳ RSI (dòng 1, Mua)").value).toBe("14")
+    expect(input("Ngưỡng RSI (dòng 1, Mua)").value).toBe("30")
+    const op = input("Dấu so sánh (dòng 1, Mua)") as unknown as HTMLSelectElement
+    expect([...op.options].map((option) => option.textContent)).toEqual([">", "<"])
+    expect(op.value).toBe("<")
+    expect(input("Chu kỳ RSI (dòng 2, Mua)").value).toBe("14")
+    expect(rows[1]!.textContent).toMatch(/xu hướng/)
+    expect(dialog.textContent).not.toMatch(/phiên trước/)
+    expect(within(dialog).getByTestId("row-count-buy").textContent).toBe("2/2 điều kiện được bật · Các điều kiện đang bật phải đồng thời thỏa mãn")
+    // Nothing outside the rows: no "Từ … đến …" hint of the old param grid.
+    expect(dialog.textContent).not.toMatch(/Từ \d+ đến/)
 
     await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Bán" }))
-    const sellLevel = input("Ngưỡng quá mua")
-    expect([sellLevel.min, sellLevel.max, sellLevel.value]).toEqual(["51", "90", "70"])
+    expect(input("Ngưỡng RSI (dòng 1, Bán)").value).toBe("70")
   })
 
-  it("shows the interval operator of Bollinger and the cross label of MA Cross", async () => {
+  it("keeps the param grid and rule templates of Volume", async () => {
+    const user = userEvent.setup()
+    const dialog = await openConfig(user, "Khối lượng")
+    expect(input("Số phiên tham chiếu")).toMatchObject({ min: "5", max: "100", value: "20" })
+    expect(dialog.textContent).toMatch(/Khối lượng><1 × TB 20 phiên/)
+    expect(within(dialog).queryByRole("list", { name: "Điều kiện Mua" })).toBeNull()
+  })
+
+  it("shows the saved rows of MA Cross with preset period selects", async () => {
     world.granted.push("ma_cross")
     const user = userEvent.setup()
-    let dialog = await openConfig(user, "Bollinger Bands")
-    const selects = within(dialog).getAllByRole("combobox") as HTMLSelectElement[]
-    expect(selects.map((select) => select.value)).toEqual(["<", "∈", ">"])
-    expect(within(selects[1]!).getAllByRole("option").map((option) => option.textContent)).toEqual(["∈", "∉"])
-    expect(dialog.textContent).toMatch(/Dải Bollinger/)
-    await user.click(within(dialog).getByRole("button", { name: "Hủy" }))
-    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
-
-    await user.click(within(screen.getByRole("article", { name: "MA Cross" })).getByRole("button", { name: /Cấu hình/ }))
-    dialog = await screen.findByRole("dialog", { name: /MA Cross/ })
-    expect(dialog.textContent).toMatch(/Giao cắt giữa hai phiên/)
-    expect(dialog.textContent).toMatch(/SMA 20/)
+    const dialog = await openConfig(user, "MA Cross")
+    const fast = input("Chu kỳ SMA nhanh (dòng 1, Mua)") as unknown as HTMLSelectElement
+    expect(fast.tagName).toBe("SELECT")
+    expect([...fast.options].map((option) => option.value)).toEqual(["5", "10", "20", "50", "100", "200"])
+    expect(fast.value).toBe("20")
+    expect(dialog.textContent).toMatch(/cắt/)
   })
 })
 
 describe("Đặt lại, Hủy and validation", () => {
-  it("Đặt lại restores only the open tab's params and operators to the registry defaults and keeps its ON/OFF and the other tab", async () => {
+  it("Đặt lại restores only the open tab's rows to the registry defaults and keeps its ON/OFF and the other tab", async () => {
     const user = userEvent.setup()
     const dialog = await openConfig(user)
 
     await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
-    await setValue(user, "Chu kỳ RSI", "30")
-    await setValue(user, "Ngưỡng quá bán", "40")
-    await user.selectOptions(within(dialog).getAllByRole("combobox")[0]!, ">")
+    await setValue(user, "Chu kỳ RSI (dòng 1, Mua)", "30")
+    await setValue(user, "Ngưỡng RSI (dòng 1, Mua)", "40")
+    await user.selectOptions(input("Dấu so sánh (dòng 1, Mua)"), ">")
+    await user.click(within(dialog).getByRole("switch", { name: "Bật điều kiện 2 (Mua)" }))
     await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Bán" }))
-    await setValue(user, "Ngưỡng quá mua", "85")
+    await setValue(user, "Ngưỡng RSI (dòng 1, Bán)", "85")
     await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Mua" }))
 
     await user.click(within(dialog).getByRole("button", { name: "Đặt lại" }))
-    expect(input("Chu kỳ RSI").value).toBe("14")
-    expect(input("Ngưỡng quá bán").value).toBe("30")
-    expect((within(dialog).getAllByRole("combobox")[0] as HTMLSelectElement).value).toBe("<")
+    expect(input("Chu kỳ RSI (dòng 1, Mua)").value).toBe("14")
+    expect(input("Ngưỡng RSI (dòng 1, Mua)").value).toBe("30")
+    expect(input("Dấu so sánh (dòng 1, Mua)").value).toBe("<")
+    expect(within(dialog).getByRole("switch", { name: "Bật điều kiện 2 (Mua)" }).getAttribute("aria-checked")).toBe("true")
     expect(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }).getAttribute("aria-checked")).toBe("true")
     await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Bán" }))
-    expect(input("Ngưỡng quá mua").value).toBe("85")
+    expect(input("Ngưỡng RSI (dòng 1, Bán)").value).toBe("85")
     expect(patches()).toHaveLength(0)
   })
 
@@ -119,77 +130,120 @@ describe("Đặt lại, Hủy and validation", () => {
   it("asks before discarding a changed draft; refusing keeps the draft, confirming throws it away without saving", async () => {
     const user = userEvent.setup()
     const dialog = await openConfig(user)
-    await setValue(user, "Ngưỡng quá bán", "40")
+    await setValue(user, "Ngưỡng RSI (dòng 1, Mua)", "40")
 
     await user.click(within(dialog).getByRole("button", { name: "Hủy" }))
     const confirm = await screen.findByRole("dialog", { name: "Bỏ thay đổi chưa lưu?" })
     await user.click(within(confirm).getByRole("button", { name: "Tiếp tục chỉnh sửa" }))
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Bỏ thay đổi chưa lưu?" })).toBeNull())
-    expect(input("Ngưỡng quá bán").value).toBe("40")
+    expect(input("Ngưỡng RSI (dòng 1, Mua)").value).toBe("40")
 
     await user.keyboard("{Escape}")
     await screen.findByRole("dialog", { name: "Bỏ thay đổi chưa lưu?" })
     // Escape on the confirmation only answers "no": the config and its draft stay.
     await user.keyboard("{Escape}")
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Bỏ thay đổi chưa lưu?" })).toBeNull())
-    expect(input("Ngưỡng quá bán").value).toBe("40")
+    expect(input("Ngưỡng RSI (dòng 1, Mua)").value).toBe("40")
     await user.keyboard("{Escape}")
     await user.click(within(await screen.findByRole("dialog", { name: "Bỏ thay đổi chưa lưu?" })).getByRole("button", { name: "Bỏ thay đổi" }))
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
     expect(patches()).toHaveLength(0)
   })
 
-  it("blocks Lưu for a value outside the registry domain and explains it", async () => {
+  it("blocks Lưu with the SPEC V3 message under the rows, never corrects the value, and unblocks once fixed", async () => {
     const user = userEvent.setup()
     const dialog = await openConfig(user)
-    await setValue(user, "Ngưỡng quá bán", "60")
-    expect(within(dialog).getByText(/Ngưỡng quá bán: nhập số nguyên từ 10 đến 49/)).toBeTruthy()
-    expect((within(dialog).getByRole("button", { name: "Lưu" }) as HTMLButtonElement).disabled).toBe(true)
-    await setValue(user, "Ngưỡng quá bán", "35")
-    expect((within(dialog).getByRole("button", { name: "Lưu" }) as HTMLButtonElement).disabled).toBe(false)
+    await setValue(user, "Ngưỡng RSI (dòng 1, Mua)", "130")
+    expect(within(dialog).getByTestId("row-errors-buy").textContent).toBe("Mua · dòng 1: Ngưỡng RSI phải từ 0 đến 100, số nguyên.")
+    expect(input("Ngưỡng RSI (dòng 1, Mua)").getAttribute("aria-invalid")).toBe("true")
+    expect(input("Ngưỡng RSI (dòng 1, Mua)").value).toBe("130")
+    expect(saveButton(dialog).disabled).toBe(true)
+    await setValue(user, "Ngưỡng RSI (dòng 1, Mua)", "35")
+    expect(within(dialog).queryByTestId("row-errors-buy")).toBeNull()
+    expect(saveButton(dialog).disabled).toBe(false)
+  })
+
+  it("checks both tabs: an error on Bán blocks Lưu from Mua and flags the Bán tab, including a row that is off", async () => {
+    const user = userEvent.setup()
+    const dialog = await openConfig(user, "MACD")
+    await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Bán" }))
+    // MACD row 2 is OFF by default and is still validated.
+    await setValue(user, "Chu kỳ EMA nhanh (dòng 2, Bán)", "30")
+    expect(within(dialog).getByTestId("row-errors-sell").textContent).toBe("Bán · dòng 2: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.")
+    await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Mua" }))
+    expect(within(dialog).getByRole("tab", { name: /Điều kiện Bán/ }).textContent).toMatch(/có lỗi/)
+    expect(within(dialog).getByRole("tab", { name: "Điều kiện Mua" })).toBeTruthy()
+    expect(saveButton(dialog).disabled).toBe(true)
   })
 })
 
 describe("Lưu", () => {
-  it("PATCHes only this indicator with expected_revision and an idempotency key, then reports the saved revision and session", async () => {
+  it("PATCHes only this indicator, every row with its own values, with expected_revision and an idempotency key", async () => {
     world.savedRevision = 6
     const user = userEvent.setup()
     const dialog = await openConfig(user)
     await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
-    await setValue(user, "Ngưỡng quá bán", "25")
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+    await setValue(user, "Ngưỡng RSI (dòng 1, Mua)", "25")
+    await setValue(user, "Chu kỳ RSI (dòng 2, Mua)", "9")
+    await user.click(saveButton(dialog))
 
     await waitFor(() => expect(patches()).toHaveLength(1))
     const body = lastPatch()
     expect(body.expected_revision).toBe(6)
     expect(body.idempotency_key.length).toBeGreaterThanOrEqual(8)
     expect(Object.keys(body.indicators)).toEqual(["rsi"])
-    expect(body.indicators.rsi).toMatchObject({ master_enabled: false, buy: { enabled: true, params: { period: 14, level: 25 } }, sell: { enabled: false, params: { level: 70 } } })
+    expect(body.indicators.rsi).toEqual({
+      master_enabled: false,
+      buy: { enabled: true, rules: [{ id: "rsi.level", enabled: true, period: 14, op: "<", threshold: 25 }, { id: "rsi.trend", enabled: true, period: 9, dir: "up" }] },
+      sell: { enabled: false, rules: [{ id: "rsi.level", enabled: true, period: 14, op: ">", threshold: 70 }, { id: "rsi.trend", enabled: true, period: 14, dir: "down" }] },
+    })
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
     expect(mocks.toast.success).toHaveBeenCalledWith("Đã lưu cấu hình RSI (bản 7). Có hiệu lực từ phiên 09/10/2026.")
   })
 
-  it("editing numbers while the master is OFF does not turn the master on", async () => {
+  it.each([
+    ["Chaikin Money Flow", "cmf", "Ngưỡng CMF", "-0.05", -0.05],
+    ["CCI", "cci", "Ngưỡng CCI", "-100", -100],
+    ["Williams %R", "williams_r", "Ngưỡng Williams %R", "-80", -80],
+    ["ROC", "roc", "Ngưỡng ROC (%)", "5", 5],
+  ])("saves and reloads %s %s exactly", async (name, id, label, typed, stored) => {
+    world.granted.push(id)
+    const user = userEvent.setup()
+    let dialog = await openConfig(user, name)
+    await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Bán" }))
+    await setValue(user, `${label} (dòng 1, Bán)`, typed)
+    await user.click(saveButton(dialog))
+    await waitFor(() => expect(patches()).toHaveLength(1))
+    expect(rowsOf(lastPatch().indicators[id] as never, "sell").rules[0]!.threshold).toBe(stored)
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+
+    await user.click(within(screen.getByRole("article", { name })).getByRole("button", { name: /Cấu hình/ }))
+    dialog = await screen.findByRole("dialog", { name: new RegExp(`Cấu hình Bot · ${name.replace(/[%()]/g, ".")}`) })
+    await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Bán" }))
+    expect(input(`${label} (dòng 1, Bán)`).value).toBe(typed)
+  })
+
+  it("editing values while the master is OFF does not turn the master on", async () => {
     world.indicators.rsi!.buy.enabled = true
     const user = userEvent.setup()
     const dialog = await openConfig(user)
-    await setValue(user, "Chu kỳ RSI", "21")
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+    await setValue(user, "Chu kỳ RSI (dòng 1, Mua)", "21")
+    await user.click(saveButton(dialog))
     await waitFor(() => expect(patches()).toHaveLength(1))
-    expect(lastPatch().indicators.rsi).toMatchObject({ master_enabled: false, buy: { enabled: true, params: { period: 21 } } })
+    expect(lastPatch().indicators.rsi).toMatchObject({ master_enabled: false, buy: { enabled: true, rules: [{ period: 21 }, { period: 14 }] } })
   })
 
-  it("saving with both sides OFF turns the master OFF and keeps the params", async () => {
+  it("saving with both sides OFF turns the master OFF and keeps the rows", async () => {
     world.indicators.rsi!.master_enabled = true
     world.indicators.rsi!.buy.enabled = true
-    world.indicators.rsi!.buy.params = { period: 21, level: 25 }
+    rowsOf(world.indicators.rsi!, "buy").rules[0]!.threshold = 25
     const user = userEvent.setup()
     const dialog = await openConfig(user)
     await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
     expect(dialog.textContent).toMatch(/Cả hai phía đều tắt: sau khi lưu, chỉ báo sẽ tắt/)
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+    await user.click(saveButton(dialog))
     await waitFor(() => expect(patches()).toHaveLength(1))
-    expect(lastPatch().indicators.rsi).toMatchObject({ master_enabled: false, buy: { enabled: false, params: { period: 21, level: 25 } } })
+    expect(lastPatch().indicators.rsi).toMatchObject({ master_enabled: false, buy: { enabled: false, rules: [{ threshold: 25 }, {}] } })
   })
 
   it("opened from the master switch, saving with a side ON turns the master ON", async () => {
@@ -199,7 +253,7 @@ describe("Lưu", () => {
     await user.click(within(article).getByRole("switch", { name: "Bật RSI cho Bot" }))
     const dialog = await screen.findByRole("dialog", { name: /Cấu hình Bot · RSI/ })
     await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+    await user.click(saveButton(dialog))
     await waitFor(() => expect(patches()).toHaveLength(1))
     expect(lastPatch().indicators.rsi).toMatchObject({ master_enabled: true, buy: { enabled: true }, sell: { enabled: false } })
   })
@@ -210,66 +264,54 @@ describe("Lưu", () => {
     const article = await screen.findByRole("article", { name: "RSI" })
     await user.click(within(article).getByRole("switch", { name: "Bật RSI cho Bot" }))
     const dialog = await screen.findByRole("dialog", { name: /Cấu hình Bot · RSI/ })
-    await setValue(user, "Chu kỳ RSI", "20")
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+    await setValue(user, "Chu kỳ RSI (dòng 1, Mua)", "20")
+    await user.click(saveButton(dialog))
     await waitFor(() => expect(patches()).toHaveLength(1))
     expect(lastPatch().indicators.rsi).toMatchObject({ master_enabled: false, buy: { enabled: false } })
   })
 
-  it("shows the server's refusal and keeps the draft when the save is invalid", async () => {
-    world.override["PATCH /strategy/shared-config"] = () => {
-      throw new FakeApiError("Cấu hình không hợp lệ.", 422, { code: "CONFIG_INVALID", details: [{ path: "indicators.rsi.buy.params.level", message: "Ngưỡng không hợp lệ" }] })
-    }
+  it("says so and sends nothing when nothing changed", async () => {
+    world.indicators.rsi!.buy.enabled = true
     const user = userEvent.setup()
     const dialog = await openConfig(user)
-    await setValue(user, "Ngưỡng quá bán", "25")
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
-    expect(await within(dialog).findByText("Ngưỡng không hợp lệ")).toBeTruthy()
-    expect(within(dialog).getByText("Cấu hình không hợp lệ.")).toBeTruthy()
-    expect(input("Ngưỡng quá bán").value).toBe("25")
+    await setValue(user, "Chu kỳ RSI (dòng 1, Mua)", "14")
+    await user.click(saveButton(dialog))
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    expect(mocks.toast.info).toHaveBeenCalledWith("Không có thay đổi để lưu.")
+    expect(patches()).toHaveLength(0)
   })
 
-  describe("field-level errors from the API", () => {
-    it("422 CONFIG_INVALID on the other tab: opens that tab, flags it, puts the message under the field and clears it when the field is edited", async () => {
+  describe("errors from the API", () => {
+    it("422 on a row of the other tab: opens that tab, flags it, puts the message under the rows on its field and clears it when the row is edited", async () => {
       world.override["PATCH /strategy/shared-config"] = () => {
         throw new FakeApiError("Cấu hình không hợp lệ.", 422, {
           code: "CONFIG_INVALID",
-          details: [{ path: "indicators.rsi.sell.params.level", message: "rsi Bán: Ngưỡng quá mua phải trong khoảng 51–90." }],
+          details: [{ path: "indicators.rsi.sell.rules.1.period", message: "Bán · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên." }],
         })
       }
       const user = userEvent.setup()
       const dialog = await openConfig(user)
       await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
-      await setValue(user, "Ngưỡng quá bán", "25")
-      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      await setValue(user, "Ngưỡng RSI (dòng 1, Mua)", "25")
+      await user.click(saveButton(dialog))
 
       const sellTab = await within(dialog).findByRole("tab", { name: /Điều kiện Bán/ })
       await waitFor(() => expect(sellTab.getAttribute("aria-selected")).toBe("true"))
       expect(sellTab.textContent).toMatch(/có lỗi/)
-      expect(within(dialog).getByRole("tab", { name: "Điều kiện Mua" })).toBeTruthy()
-      expect(within(dialog).getByText("rsi Bán: Ngưỡng quá mua phải trong khoảng 51–90.")).toBeTruthy()
-      expect(input("Ngưỡng quá mua").getAttribute("aria-invalid")).toBe("true")
+      expect(within(dialog).getByTestId("row-errors-sell").textContent).toBe("Bán · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.")
+      expect(within(dialog).getAllByText("Bán · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.")).toHaveLength(1)
+      expect(input("Chu kỳ RSI (dòng 2, Bán)").getAttribute("aria-invalid")).toBe("true")
+      expect(input("Chu kỳ RSI (dòng 1, Bán)").getAttribute("aria-invalid")).toBeNull()
       expect(within(dialog).getByText("Cấu hình không hợp lệ.")).toBeTruthy()
 
-      await setValue(user, "Ngưỡng quá mua", "80")
-      expect(within(dialog).queryByText(/phải trong khoảng 51–90/)).toBeNull()
-      expect(input("Ngưỡng quá mua").getAttribute("aria-invalid")).toBeNull()
-    })
-
-    it("422 on a cross-field rule names the left field of the pair", async () => {
-      world.override["PATCH /strategy/shared-config"] = () => {
-        throw new FakeApiError("Cấu hình không hợp lệ.", 422, {
-          code: "CONFIG_INVALID",
-          details: [{ path: "indicators.macd.buy.params.fast", message: "macd Mua: Chu kỳ EMA nhanh phải nhỏ hơn Chu kỳ EMA chậm." }],
-        })
-      }
-      const user = userEvent.setup()
-      const dialog = await openConfig(user, "MACD")
-      await setValue(user, "Chu kỳ EMA nhanh", "13")
-      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
-      expect(await within(dialog).findByText("macd Mua: Chu kỳ EMA nhanh phải nhỏ hơn Chu kỳ EMA chậm.")).toBeTruthy()
-      expect(input("Chu kỳ EMA nhanh").getAttribute("aria-invalid")).toBe("true")
-      expect(input("Chu kỳ EMA chậm").getAttribute("aria-invalid")).toBeNull()
+      // Editing another row keeps it; editing that row clears it.
+      await setValue(user, "Chu kỳ RSI (dòng 1, Bán)", "15")
+      expect(input("Chu kỳ RSI (dòng 2, Bán)").getAttribute("aria-invalid")).toBe("true")
+      await setValue(user, "Chu kỳ RSI (dòng 2, Bán)", "20")
+      expect(within(dialog).queryByTestId("row-errors-sell")).toBeNull()
+      expect(input("Chu kỳ RSI (dòng 2, Bán)").getAttribute("aria-invalid")).toBeNull()
+      await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Mua" }))
+      expect(input("Ngưỡng RSI (dòng 1, Mua)").value).toBe("25")
     })
 
     it("422 SIDE_REQUIRED shows its message once and keeps the draft", async () => {
@@ -279,11 +321,11 @@ describe("Lưu", () => {
       }
       const user = userEvent.setup()
       const dialog = await openConfig(user)
-      await setValue(user, "Chu kỳ RSI", "20")
-      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      await setValue(user, "Chu kỳ RSI (dòng 1, Mua)", "20")
+      await user.click(saveButton(dialog))
       await within(dialog).findByText(message)
       expect(within(dialog).getAllByText(message)).toHaveLength(1)
-      expect(input("Chu kỳ RSI").value).toBe("20")
+      expect(input("Chu kỳ RSI (dòng 1, Mua)").value).toBe("20")
     })
 
     it("403 CAPABILITY_LOCKED names the indicator whose quiz is missing", async () => {
@@ -296,23 +338,8 @@ describe("Lưu", () => {
       const user = userEvent.setup()
       const dialog = await openConfig(user)
       await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
-      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      await user.click(saveButton(dialog))
       expect(await within(dialog).findByText("Đạt bài kiểm tra của bài học chỉ báo RSI để bật.")).toBeTruthy()
-    })
-
-    it("blocks Lưu for MACD fast >= slow with the registry's cross-field message, flags the tab and clears when fixed", async () => {
-      const user = userEvent.setup()
-      const dialog = await openConfig(user, "MACD")
-      await setValue(user, "Chu kỳ EMA nhanh", "30")
-      expect(within(dialog).getByText("Chu kỳ EMA nhanh phải nhỏ hơn chu kỳ EMA chậm.")).toBeTruthy()
-      expect(input("Chu kỳ EMA nhanh").getAttribute("aria-invalid")).toBe("true")
-      expect((within(dialog).getByRole("button", { name: "Lưu" }) as HTMLButtonElement).disabled).toBe(true)
-      expect(within(dialog).getByRole("tab", { name: /Điều kiện Mua/ }).textContent).toMatch(/có lỗi/)
-      expect(within(dialog).getByRole("tab", { name: "Điều kiện Bán" })).toBeTruthy()
-
-      await setValue(user, "Chu kỳ EMA nhanh", "10")
-      expect(within(dialog).queryByText(/phải nhỏ hơn/)).toBeNull()
-      expect((within(dialog).getByRole("button", { name: "Lưu" }) as HTMLButtonElement).disabled).toBe(false)
     })
   })
 
@@ -321,9 +348,9 @@ describe("Lưu", () => {
       world.savedRevision = 2
       const user = userEvent.setup()
       const dialog = await openConfig(user)
-      await setValue(user, "Ngưỡng quá bán", "25")
+      await setValue(user, "Ngưỡng RSI (dòng 1, Mua)", "25")
       world.savedRevision = 5
-      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      await user.click(saveButton(dialog))
       expect(await within(dialog).findByText(/Bản mới nhất là #5, bản nháp của bạn dựa trên #2/)).toBeTruthy()
     })
 
@@ -331,28 +358,28 @@ describe("Lưu", () => {
       world.savedRevision = 2
       const user = userEvent.setup()
       const dialog = await openConfig(user)
-      await setValue(user, "Ngưỡng quá bán", "25")
+      await setValue(user, "Ngưỡng RSI (dòng 1, Mua)", "25")
 
-      // Another tab saves first: a new revision with a different Sell level.
+      // Another tab saves first: a new revision with a different Bán threshold.
       world.savedRevision = 3
-      world.indicators.rsi!.sell.params = { period: 14, level: 85 }
+      rowsOf(world.indicators.rsi!, "sell").rules[0]!.threshold = 85
 
-      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      await user.click(saveButton(dialog))
       expect(await within(dialog).findByText("Cấu hình đã thay đổi ở nơi khác")).toBeTruthy()
-      expect(input("Ngưỡng quá bán").value).toBe("25")
-      expect((within(dialog).getByRole("button", { name: "Lưu" }) as HTMLButtonElement).disabled).toBe(true)
+      expect(input("Ngưỡng RSI (dòng 1, Mua)").value).toBe("25")
+      expect(saveButton(dialog).disabled).toBe(true)
       expect(patches()).toHaveLength(1)
 
       await user.click(within(dialog).getByRole("button", { name: "Tải lại" }))
       expect(await within(dialog).findByText(/Đã tải bản #3/)).toBeTruthy()
-      expect(input("Ngưỡng quá bán").value).toBe("25")
+      expect(input("Ngưỡng RSI (dòng 1, Mua)").value).toBe("25")
       await user.click(within(dialog).getByRole("tab", { name: "Điều kiện Bán" }))
-      expect(input("Ngưỡng quá mua").value).toBe("85")
+      expect(input("Ngưỡng RSI (dòng 1, Bán)").value).toBe("85")
 
-      await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+      await user.click(saveButton(dialog))
       await waitFor(() => expect(patches()).toHaveLength(2))
       expect(lastPatch().expected_revision).toBe(3)
-      expect(lastPatch().indicators.rsi).toMatchObject({ buy: { params: { level: 25 } }, sell: { params: { level: 85 } } })
+      expect(lastPatch().indicators.rsi).toMatchObject({ buy: { rules: [{ threshold: 25 }, {}] }, sell: { rules: [{ threshold: 85 }, {}] } })
     })
   })
 
@@ -368,12 +395,20 @@ describe("Lưu", () => {
     })
     const user = userEvent.setup()
     const dialog = await openConfig(user)
-    await setValue(user, "Ngưỡng quá bán", "25")
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+    await setValue(user, "Ngưỡng RSI (dòng 1, Mua)", "25")
+    await user.click(saveButton(dialog))
     expect(await within(dialog).findByText("Mất kết nối")).toBeTruthy()
-    await user.click(within(dialog).getByRole("button", { name: "Lưu" }))
+    await user.click(saveButton(dialog))
     await waitFor(() => expect(patches()).toHaveLength(2))
     const [first, second] = patches().map((call) => (call.body as unknown as Patch).idempotency_key)
     expect(second).toBe(first)
+  })
+})
+
+describe("outdated saved config", () => {
+  it("says the saved conditions were in the old format and are now the new defaults", async () => {
+    world.outdated = true
+    renderBot(<BotPanel />)
+    expect((await screen.findByText(/mẫu điều kiện cũ/)).textContent).toMatch(/mặc định của mẫu mới/)
   })
 })

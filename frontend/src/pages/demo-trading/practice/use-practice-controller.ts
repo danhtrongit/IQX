@@ -2,8 +2,10 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { ApiError } from "@/lib/api"
+import type { DraftRow } from "@/pages/demo-trading/bot/config/draft"
 import type { DraftStatus, PracticeContextValue, PracticePhase } from "./practice-context"
 import {
+  OUTDATED_RUN_CODE,
   PRACTICE_INDICATORS,
   classifyPracticeError,
   fetchPracticePreview,
@@ -17,14 +19,15 @@ import {
   type PracticeConfig,
   type PracticeFailure,
   type PracticeOp,
+  type PracticePreviewBody,
   type PracticeRun,
   type PracticeState,
   type Side,
 } from "./practice-api"
 import {
   configSignature,
+  previewBodyOf,
   resetSide as resetSideForm,
-  sideParams,
   toConfig,
   toFormState,
   validatePracticeForm,
@@ -43,8 +46,6 @@ const DRAFT_DEBOUNCE_MS = 700
 const PREVIEW_DEBOUNCE_MS = 450
 /** How long the primary actions stay disarmed after the phase changed. */
 export const ACTION_ARM_MS = 500
-
-type PreviewParams = { buy_params: Record<string, number>; sell_params: Record<string, number> }
 
 type Saver = {
   timer: ReturnType<typeof setTimeout> | null
@@ -109,7 +110,7 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
     setSeedKey(caseKey)
     setSeedRevision(state.draft_revision)
     setDirty(false)
-    setForm(toFormState(state.draft))
+    setForm(toFormState(state.draft, state.form))
   }
 
   // ------------------------------------------------------------------ draft autosave
@@ -223,7 +224,12 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
   // A start result only belongs to the screen while it is the run of the case being shown.
   const startedRun = startedRaw && startedRaw.indicator_id === indicatorId && state?.case.case_id === startedRaw.case_id ? startedRaw : null
 
-  const currentBrief = state?.current_run ?? null
+  // A run locked before SPEC V3 that never finished cannot be computed or retried: the case is
+  // ready to start again with the new conditions, so that run is neither displayed nor current.
+  const outdatedCode = state?.current_run?.error?.code
+  const outdatedMessage = state?.current_run?.error?.message
+  const outdatedRun = useMemo(() => (outdatedCode === OUTDATED_RUN_CODE ? { message: outdatedMessage ?? "" } : null), [outdatedCode, outdatedMessage])
+  const currentBrief = outdatedRun ? null : (state?.current_run ?? null)
   const currentRunId = currentBrief?.run_id ?? startedRun?.run_id ?? null
   const displayedRunId = viewRunId ?? currentRunId
   const viewingPast = viewRunId !== null && viewRunId !== currentRunId
@@ -277,20 +283,20 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
   const replayDone = succeeded && attachedRunId === run?.run_id && attachedDone
 
   // ------------------------------------------------------------------ preview (observation window only)
-  const shownForm = useMemo(() => (lockedConfig ? toFormState(lockedConfig) : form), [lockedConfig, form])
+  const shownForm = useMemo(() => (lockedConfig ? toFormState(lockedConfig, spec) : form), [lockedConfig, spec, form])
   const validation = useMemo(() => (shownForm && spec ? validatePracticeForm(shownForm, spec) : null), [shownForm, spec])
+  // Only what the chart draws has to be valid: the rows that are ON of both tabs (Volume: its params).
   const previewKey = useMemo(() => {
-    if (!shownForm || !spec || !validation?.paramsValid) return ""
-    const buy = sideParams(shownForm.buy, spec.buy.fields)
-    const sell = sideParams(shownForm.sell, spec.sell.fields)
-    return buy && sell ? JSON.stringify({ buy_params: buy, sell_params: sell }) : ""
+    if (!shownForm || !spec || !validation?.previewReady) return ""
+    const body = previewBodyOf(shownForm, spec)
+    return body ? JSON.stringify(body) : ""
   }, [shownForm, spec, validation])
   const debouncedPreviewKey = useDebouncedValue(previewKey, PREVIEW_DEBOUNCE_MS)
-  const previewParams = useMemo(() => (debouncedPreviewKey ? (JSON.parse(debouncedPreviewKey) as PreviewParams) : null), [debouncedPreviewKey])
+  const previewBody = useMemo(() => (debouncedPreviewKey ? (JSON.parse(debouncedPreviewKey) as PracticePreviewBody) : null), [debouncedPreviewKey])
   const previewQuery = useQuery({
     queryKey: practiceKeys.preview(id, state?.case.case_id ?? "", debouncedPreviewKey),
-    queryFn: ({ signal }) => fetchPracticePreview(id, previewParams ?? { buy_params: {}, sell_params: {} }, signal),
-    enabled: enabled && !!state && previewParams !== null && !succeeded && viewRunId === null,
+    queryFn: ({ signal }) => fetchPracticePreview(id, previewBody ?? {}, signal),
+    enabled: enabled && !!state && previewBody !== null && !succeeded && viewRunId === null,
     placeholderData: keepPreviousData,
     staleTime: 10 * 60_000,
     refetchOnWindowFocus: false,
@@ -310,6 +316,11 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
   )
   const editEnabled = useCallback(
     (target: Side, value: boolean) => edit((current) => ({ ...current, [target]: { ...current[target], enabled: value } })),
+    [edit],
+  )
+  const editRow = useCallback(
+    (target: Side, index: number, row: DraftRow) =>
+      edit((current) => ({ ...current, [target]: { ...current[target], rows: current[target].rows.map((item, at) => (at === index ? row : item)) } })),
     [edit],
   )
   const editParam = useCallback(
@@ -494,6 +505,7 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
       locked,
       draftStatus,
       editEnabled,
+      editRow,
       editParam,
       editOp,
       editRuleEnabled,
@@ -507,6 +519,7 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
       runFailure,
       chart,
       lockedConfig,
+      outdatedRun,
       start,
       retryStart,
       startPending: startMutation.isPending,
@@ -535,6 +548,7 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
     locked,
     draftStatus,
     editEnabled,
+    editRow,
     editParam,
     editOp,
     editRuleEnabled,
@@ -548,6 +562,7 @@ export function usePracticeController(indicatorId: string | null): PracticeConte
     runFailure,
     chart,
     lockedConfig,
+    outdatedRun,
     start,
     retryStart,
     startMutation.isPending,

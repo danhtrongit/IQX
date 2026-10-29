@@ -63,7 +63,10 @@ function SideCard({
         <span className="rounded-sm border border-border bg-muted/50 px-1.5 py-0.5 text-[10px] font-semibold text-muted-foreground">AND</span>
       </div>
 
-      {block ? (
+      {block?.reason === "config_outdated" ? (
+        // Not a user error: the old-format config is simply not used until the new form is saved.
+        <p className="text-xs leading-5 text-muted-foreground" data-testid={`outdated-${side}`}>{block.detail}</p>
+      ) : block ? (
         <p role="alert" className="flex items-start gap-1.5 text-xs leading-5 text-destructive">
           <TriangleAlert aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
           <span>Phía {side === "buy" ? "Mua" : "Bán"} đang bị chặn: {block.detail}</span>

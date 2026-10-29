@@ -1,10 +1,13 @@
 import { api, ApiError } from "@/lib/api"
 
 import { currentRevisionOf, newIdempotencyKey } from "../api"
+import { sideFields } from "./draft"
 import type {
   IndicatorConfig,
   SaveSharedConfigResult,
   SharedConfigState,
+  Side,
+  TechnicalIndicator,
   TechnicalRegistry,
 } from "./types"
 
@@ -106,7 +109,12 @@ export function fieldErrorFor(errors: ConfigFieldError[], side: "buy" | "sell", 
   return errors.find((error) => error.path === suffix || error.path.endsWith(`.${suffix}`))?.message ?? null
 }
 
-/** Server errors that belong to the rules (operators) of one side (path `…<side>.rules…`). */
+/** A server error that a tab of the form already shows (a condition row, a Volume param or a Volume rule). */
+export function isShownInSide(error: ConfigFieldError, indicator: TechnicalIndicator, side: Side): boolean {
+  return ruleErrorsFor([error], side).length > 0 || sideFields(indicator, side).some((field) => !!fieldErrorFor([error], side, field.key))
+}
+
+/** Server errors that belong to the rows of one side (path `…<side>.rules…`, e.g. `indicators.rsi.buy.rules.1.period`). */
 export function ruleErrorsFor(errors: ConfigFieldError[], side: "buy" | "sell"): ConfigFieldError[] {
   return errors.filter((error) => sideOfError(error) === side && /(?:^|\.)(?:buy|sell)\.rules(?:\.|$)/.test(error.path))
 }

@@ -87,7 +87,7 @@ export function eventView(partial: Partial<AlertEventView> = {}): AlertEventView
     evaluated_at: T0,
     data_version: "vci-2026-10-07",
     config_hash: "a".repeat(64),
-    rule_version: "iqx-rules-3.0",
+    rule_version: "iqx-rules-4.0",
     calculation_version: "iqx-ta-2.0",
     previous_valid_result: false,
     previous_valid_session: "2026-10-06",
@@ -96,11 +96,22 @@ export function eventView(partial: Partial<AlertEventView> = {}): AlertEventView
       session: "2026-10-07",
       bar: { date: "2026-10-07", open: 27000, high: 27800, low: 26900, close: 27650, volume: 12_500_000 },
       indicator_ids: ["macd"],
-      indicator_params: { macd: { fast: 12, slow: 26, signal: 9 } },
-      rules: [{ id: "r1", indicator: "macd", side: "buy", op: ">", lhs: 0.42, rhs: 0.31, result: true, missing: false }],
+      rules: [{
+        id: "macd.signal", indicator: "macd", side: "buy", op: "cross_up", lhs: 0.42, rhs: 0.31, previous_lhs: 0.2, previous_rhs: 0.3, result: true, missing: false,
+        values: { fast: 12, slow: 26, op: "cross_up", signal: 9 },
+      }],
     },
     ...partial,
   }
+}
+
+/** Evidence of an event recorded before SPEC V3: rule ids `r1`…, one param set per indicator. */
+export const LEGACY_EVIDENCE: AlertEventView["evidence"] = {
+  session: "2026-10-07",
+  bar: { date: "2026-10-07", open: 27000, high: 27800, low: 26900, close: 27650, volume: 12_500_000 },
+  indicator_ids: ["macd"],
+  indicator_params: { macd: { fast: 12, slow: 26, signal: 9 } },
+  rules: [{ id: "r1", indicator: "macd", side: "buy", op: ">", lhs: 0.42, rhs: 0.31, result: true, missing: false }],
 }
 
 /* ── Backtest ───────────────────────────────────────────────────────────── */
@@ -306,7 +317,7 @@ export function createStrategyWorld(partial: Partial<StrategyWorld> = {}): Strat
     effectiveSession: "2026-10-09",
     status: "pending",
     alerts: [], events: [],
-    revisions: [3, 2, 1].map((revision) => ({ revision, saved_at: T0, config_hash: `h${revision}`, effective_session: "2026-10-09", status: "effective" as const, legacy: false })),
+    revisions: [3, 2, 1].map((revision) => ({ revision, saved_at: T0, config_hash: `h${revision}`, effective_session: "2026-10-09", status: "effective" as const, legacy: false, outdated: false })),
     runs: [], runResponses: new Map(), nextTrades: 3, nextOpen: false, nextPending: false, marketAvailable: true,
     metrics: metricsFixture(), screenerRuns: new Map(), filters: [], snapshots: [], extraCompanies: 0, runDelay: () => 0, runCount: 0,
     ...partial,

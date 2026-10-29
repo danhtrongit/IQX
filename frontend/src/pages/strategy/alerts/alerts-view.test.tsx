@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { renderBot as render, stubBrowser } from "../../demo-trading/bot/test-render"
 import { callsTo, savedList } from "../../demo-trading/bot/test-support"
-import { alertView, createStrategyApi, createStrategyWorld, eventView, FakeApiError, LIST_ID, T0, type StrategyWorld } from "../test-support"
+import { alertView, createStrategyApi, createStrategyWorld, eventView, FakeApiError, LEGACY_EVIDENCE, LIST_ID, T0, type StrategyWorld } from "../test-support"
 import { AlertsView } from "./alerts-view"
 
 const mocks = vi.hoisted(() => ({ api: vi.fn(), toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }))
@@ -333,24 +333,43 @@ describe("signal history", () => {
     expect(rows.every((row) => (row.textContent ?? "").includes("Thỏa điều kiện Bán"))).toBe(true)
   })
 
-  it("opens the recorded evidence: values, operator, params and the pinned config of that version", async () => {
+  it("opens the recorded evidence: the row sentence with its own recorded values, the numbers and the pinned config", async () => {
     const user = userEvent.setup()
     await renderView()
     await user.click((await screen.findAllByRole("button", { name: /Xem điều kiện HPG/ }))[0]!)
     const dialog = await screen.findByRole("dialog", { name: /HPG · Thỏa điều kiện Mua/ })
     expect(dialog.textContent).toMatch(/Tín hiệu mới: trước đó chưa thỏa điều kiện/)
     expect(dialog.textContent).toMatch(/không phải lệnh và không phải giao dịch của Bot/)
-    expect(dialog.textContent).toMatch(/fast 12 · slow 26 · signal 9/)
     expect(dialog.textContent).toMatch(/Mở 27\.000 · Cao 27\.800 · Thấp 26\.900 · Đóng 27\.650/)
+    // No shared param list any more: each row carries its own values.
+    expect(dialog.textContent).not.toMatch(/Tham số đã dùng/)
     const table = within(dialog).getByRole("table", { name: "Điều kiện tại phiên tín hiệu" })
     const row = within(table).getAllByRole("row")[1]!
     expect(row.textContent).toContain("MACD")
+    expect(within(row).getByTestId("evidence-condition").textContent).toBe("MACD 12 / 26 cắt lên Signal 9")
     expect(row.textContent).toContain("0,42")
-    expect(row.textContent).toContain("Đường tín hiệu")
-    expect(row.textContent).toContain(">")
+    expect(row.textContent).toContain("cắt lên")
     expect(row.textContent).toContain("0,31")
+    expect(row.textContent).toContain("Phiên trước: 0,2")
     expect(row.textContent).toContain("Đạt")
     await waitFor(() => expect(dialog.textContent).toMatch(/Bản 3 · Cảnh báo v1/))
+  })
+
+  it("keeps an event recorded before SPEC V3 viewable with what it stored: its params, operator and numbers", async () => {
+    world.events = [eventView({ rule_version: "iqx-rules-3.0", evidence: LEGACY_EVIDENCE })]
+    const user = userEvent.setup()
+    await renderView()
+    await user.click((await screen.findAllByRole("button", { name: /Xem điều kiện HPG/ }))[0]!)
+    const dialog = await screen.findByRole("dialog", { name: /HPG · Thỏa điều kiện Mua/ })
+    expect(dialog.textContent).toMatch(/Tham số đã dùng/)
+    expect(dialog.textContent).toMatch(/fast 12 · slow 26 · signal 9/)
+    const row = within(within(dialog).getByRole("table", { name: "Điều kiện tại phiên tín hiệu" })).getAllByRole("row")[1]!
+    expect(row.textContent).toContain("MACD")
+    expect(row.textContent).toContain("Vế trái")
+    expect(row.textContent).toContain(">")
+    expect(row.textContent).toContain("0,42")
+    expect(row.textContent).toContain("0,31")
+    expect(row.textContent).not.toContain("Signal 9")
   })
 
   it("keeps the name and evidence recorded at emission after the alert is renamed", async () => {

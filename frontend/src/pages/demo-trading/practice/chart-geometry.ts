@@ -6,7 +6,8 @@
 import type { PracticeChart, PracticeEvent, PracticePlot, Side } from "./practice-api"
 import { formatDec } from "./practice-model"
 
-export type LinePath = { key: string; label: string; d: string; color: string; dash: string | null }
+/** `rowId` is the condition row that introduced the line (`rsi.level` for `rsi.level.value`); null for a plain key. */
+export type LinePath = { key: string; rowId: string | null; label: string; d: string; color: string; dash: string | null }
 export type CandleShape = { x: number; high: number; low: number; bodyTop: number; bodyHeight: number; up: boolean }
 export type BarShape = { x: number; y: number; height: number; positive: boolean }
 export type TickShape = { y: number; label: string }
@@ -72,26 +73,53 @@ export function compactNumber(value: number): string {
 }
 
 type LineStyle = { color: string; dash: string | null }
-const LINE_STYLE: Record<string, LineStyle> = {
-  value: { color: "var(--chart-1)", dash: null },
-  signal: { color: "var(--chart-2)", dash: null },
-  fast: { color: "var(--chart-1)", dash: null },
-  slow: { color: "var(--chart-2)", dash: null },
-  upper: { color: "var(--chart-1)", dash: null },
-  lower: { color: "var(--chart-2)", dash: null },
+
+/**
+ * Lines of a row-based indicator are keyed by the row that introduced them, `<row id>.<line>`
+ * (`rsi.level.value`, `ma.ma_cross.fast`, `macd.signal.signal`), so one side can draw the same
+ * kind of line several times (RSI 14 for one row, RSI 9 for another). The name is the part after
+ * the last dot; a plain key (Volume's `threshold`, a run locked before SPEC V3) is its own name.
+ */
+export const lineName = (key: string): string => key.slice(key.lastIndexOf(".") + 1)
+export function lineRowId(key: string): string | null {
+  const at = key.lastIndexOf(".")
+  return at > 0 ? key.slice(0, at) : null
+}
+
+/** Lines that keep their own look wherever they sit: guide lines and the +DI / −DI pair. */
+const FIXED_STYLE: Record<string, LineStyle> = {
   middle: { color: "var(--muted-foreground)", dash: "4 3" },
-  baseline: { color: "var(--chart-2)", dash: null },
   threshold: { color: "var(--chart-2)", dash: "4 3" },
   plus: { color: "var(--price-up)", dash: null },
   minus: { color: "var(--price-down)", dash: null },
 }
-export const lineStyleOf = (key: string): LineStyle => LINE_STYLE[key] ?? { color: "var(--chart-1)", dash: null }
+/** Every other line takes the next colour, in the order the side lists them: two lines never share one. */
+const SERIES_COLORS = ["var(--chart-1)", "var(--chart-2)", "var(--chart-6)", "var(--chart-7)", "var(--chart-8)", "var(--chart-5)"]
+
+/** Look of each line of a plot, by key. */
+export function lineStyles(lines: ReadonlyArray<{ key: string }>): Map<string, LineStyle> {
+  const styles = new Map<string, LineStyle>()
+  let slot = 0
+  for (const line of lines) {
+    const fixed = FIXED_STYLE[lineName(line.key)]
+    if (fixed) {
+      styles.set(line.key, fixed)
+      continue
+    }
+    styles.set(line.key, { color: SERIES_COLORS[slot % SERIES_COLORS.length] ?? "var(--chart-1)", dash: null })
+    slot += 1
+  }
+  return styles
+}
+
+const DEFAULT_STYLE: LineStyle = { color: "var(--chart-1)", dash: null }
 
 export type LegendItem = { key: string; label: string; color: string; dash: string | null }
 
 /** Legend entries of one side: the plotted lines first, then histogram / volume. */
 export function legendItems(plot: PracticePlot): LegendItem[] {
-  const items: LegendItem[] = plot.lines.map((line) => ({ key: line.key, label: line.label, ...lineStyleOf(line.key) }))
+  const styles = lineStyles(plot.lines)
+  const items: LegendItem[] = plot.lines.map((line) => ({ key: line.key, label: line.label, ...(styles.get(line.key) ?? DEFAULT_STYLE) }))
   if (plot.histogram_key) items.push({ key: plot.histogram_key, label: "Histogram", color: "var(--price-up)", dash: null })
   if (plot.volume_key) items.push({ key: plot.volume_key, label: "Khối lượng", color: "var(--muted-foreground)", dash: null })
   return items
@@ -186,14 +214,15 @@ export function computeLayout(input: LayoutInput): ChartLayout {
     })
   }
   const priceTicks = niceTicks(plo, phi).map((value) => ({ y: py(value), label: compactNumber(value) }))
-  const priceLines: LinePath[] = plot.overlay
-    ? plot.lines.map((line) => ({
-        key: line.key,
-        label: line.label,
-        d: linePath(seriesOf(chart, side, line.key), start, end, x, py),
-        ...lineStyleOf(line.key),
-      }))
-    : []
+  const styles = lineStyles(plot.lines)
+  const lineOf = (line: { key: string; label: string }, scale: (value: number) => number): LinePath => ({
+    key: line.key,
+    rowId: lineRowId(line.key),
+    label: line.label,
+    d: linePath(seriesOf(chart, side, line.key), start, end, x, scale),
+    ...(styles.get(line.key) ?? DEFAULT_STYLE),
+  })
+  const priceLines: LinePath[] = plot.overlay ? plot.lines.map((line) => lineOf(line, py)) : []
 
   // Indicator pane (separate scale), only for non-overlay indicators.
   let indTicks: TickShape[] = []
@@ -244,12 +273,7 @@ export function computeLayout(input: LayoutInput): ChartLayout {
         })
       }
     }
-    indLines = plot.lines.map((line) => ({
-      key: line.key,
-      label: line.label,
-      d: linePath(seriesOf(chart, side, line.key), start, end, x, iy),
-      ...lineStyleOf(line.key),
-    }))
+    indLines = plot.lines.map((line) => lineOf(line, iy))
   }
 
   const tickCount = compact ? 3 : 5

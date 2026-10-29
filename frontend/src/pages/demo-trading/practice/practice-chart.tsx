@@ -54,6 +54,7 @@ const ChartBody = memo(function ChartBody({ layout, paneTitle, onMarker }: BodyP
           <path
             key={line.key}
             data-series={line.key}
+            data-row={line.rowId ?? undefined}
             d={line.d}
             fill="none"
             strokeWidth={1.5}
@@ -148,6 +149,7 @@ const ChartBody = memo(function ChartBody({ layout, paneTitle, onMarker }: BodyP
             <path
               key={line.key}
               data-series={line.key}
+              data-row={line.rowId ?? undefined}
               d={line.d}
               fill="none"
               strokeWidth={1.5}
@@ -180,20 +182,21 @@ export type PracticeChartViewProps = {
   className?: string
 }
 
-type TooltipRow = { name: string; value: string }
+/** `key` is unique per row even when two lines carry the same label. */
+type TooltipRow = { key: string; name: string; value: string }
 
 function tooltipRows(chart: PracticeChart, side: Side, index: number): TooltipRow[] {
   const price = (key: "open" | "high" | "low" | "close") => formatInt(chart.bars[key][index])
   const rows: TooltipRow[] = [
-    { name: "Mở cửa", value: price("open") },
-    { name: "Cao nhất", value: price("high") },
-    { name: "Thấp nhất", value: price("low") },
-    { name: "Đóng cửa", value: price("close") },
+    { key: "open", name: "Mở cửa", value: price("open") },
+    { key: "high", name: "Cao nhất", value: price("high") },
+    { key: "low", name: "Thấp nhất", value: price("low") },
+    { key: "close", name: "Đóng cửa", value: price("close") },
   ]
   const plot = chart.plot[side]
-  for (const line of plot.lines) rows.push({ name: line.label, value: formatDec(chart.series[side][line.key]?.[index]) })
-  if (plot.histogram_key) rows.push({ name: "Histogram", value: formatDec(chart.series[side][plot.histogram_key]?.[index]) })
-  if (plot.volume_key) rows.push({ name: "Khối lượng", value: formatInt(chart.series[side][plot.volume_key]?.[index] ?? chart.bars.volume[index]) })
+  for (const line of plot.lines) rows.push({ key: `line:${line.key}`, name: line.label, value: formatDec(chart.series[side][line.key]?.[index]) })
+  if (plot.histogram_key) rows.push({ key: `bar:${plot.histogram_key}`, name: "Histogram", value: formatDec(chart.series[side][plot.histogram_key]?.[index]) })
+  if (plot.volume_key) rows.push({ key: `bar:${plot.volume_key}`, name: "Khối lượng", value: formatInt(chart.series[side][plot.volume_key]?.[index] ?? chart.bars.volume[index]) })
   return rows
 }
 
@@ -271,7 +274,7 @@ export function PracticeChartView({ chart, side, revealed, windowBars, panEnd, e
         >
           <strong className="mb-1 block text-xs">{sessionLabel(hoverSession)}</strong>
           {rows.map((row) => (
-            <div key={row.name} className="flex justify-between gap-4 tabular-nums">
+            <div key={row.key} className="flex justify-between gap-4 tabular-nums">
               <span className="text-muted-foreground">{row.name}</span>
               <b className="font-semibold">{row.value}</b>
             </div>

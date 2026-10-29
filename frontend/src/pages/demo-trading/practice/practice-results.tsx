@@ -45,7 +45,8 @@ export function PracticeKpis({ frame, valuationMissing }: { frame: PracticeFrame
 function TradeRow({ row, indicatorName, onOpen }: { row: TradeRowView; indicatorName: string; onOpen: (ordinal: number) => void }) {
   const { trade } = row
   const tone = toneOf(row.pnlVnd)
-  const reason = trade.sell?.reason === "max_holding" ? "Hết thời gian giữ" : `Điều kiện ${indicatorName}`
+  // The reason of the sell comes with the displayed frame: a position still held has none yet.
+  const reason = row.sell?.reason === "max_holding" ? "Hết thời gian giữ" : `Điều kiện ${indicatorName}`
   return (
     <tr
       className="cursor-pointer border-t border-border/70 transition-colors hover:bg-muted/60"
