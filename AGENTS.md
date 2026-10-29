@@ -1,5 +1,5 @@
 # AGENTS.md — IQX
 
 - **Luôn tìm cách đẩy nhanh tiến độ.**
-- **Dùng Sonnet cho task nhẹ**, không cần suy luận nhiều; task khó dùng model mạnh.
+- **Chọn model cho subtask/subagent:** mặc định dùng Sonnet với effort `xhigh` hoặc `max`; chỉ dùng Opus (effort `medium` hoặc `high`) khi task thực sự khó.
 - **Luôn gộp và xoá nhánh sau khi xong:** merge vào `main`, push, xoá nhánh.
