@@ -3,20 +3,38 @@ import { beforeAll, describe, expect, it } from 'vitest';
 
 import type { AcademyGrantsPort } from '../../src/modules/academy/academy.ports.js';
 import {
+  OUTDATED_FORMAT_MESSAGE,
+  OUTDATED_RUN_ERROR,
   defaultPracticeConfig,
   practiceEntry,
 } from '../../src/modules/practice/practice.config.js';
-import { PRACTICE_INDICATOR_IDS } from '../../src/modules/practice/practice.constants.js';
-import { PracticeDataError } from '../../src/modules/practice/practice.data.js';
+import {
+  PRACTICE_ENGINE_VERSION,
+  PRACTICE_INDICATOR_IDS,
+} from '../../src/modules/practice/practice.constants.js';
+import {
+  PracticeDataError,
+  type LoadedCase,
+  type PracticeCaseDataPort,
+} from '../../src/modules/practice/practice.data.js';
+import type { RunRow } from '../../src/modules/practice/practice.repository.js';
+import type { PracticeConfigInput } from '../../src/modules/practice/practice.schemas.js';
 import { PracticeService } from '../../src/modules/practice/practice.service.js';
 import { loadPracticeSet } from '../../src/modules/practice/practice.set.js';
-import type { PracticeConfigInput } from '../../src/modules/practice/practice.schemas.js';
+import type {
+  PracticeParamsConfig,
+  PracticeRowsConfig,
+} from '../../src/modules/practice/practice.types.js';
+import { RULE_VERSION, type Side } from '../../src/modules/quant/v2/index.js';
 import {
   FakeDataPort,
   MemoryPracticeStore,
   OTHER_USER,
   USER,
+  addPreV3Run,
   newKey,
+  preV3Config,
+  tradingRsiConfig,
 } from './practice-fixtures.js';
 
 const set = loadPracticeSet();
@@ -32,10 +50,21 @@ function build(grantsByUser: Record<string, readonly string[]> = { [USER]: ALL_G
     grantedCapabilities: async (userId) => new Set(grantsByUser[userId] ?? []),
   };
   const service = new PracticeService(store, grants, data, set);
-  return { store, data, service };
+  return { store, data, grants, service };
 }
 
-const rsiConfig = (): PracticeConfigInput => defaultPracticeConfig(practiceEntry('rsi')!);
+/** Default rows of an indicator as a fresh, editable config. */
+const rowsConfig = (id: string): PracticeRowsConfig =>
+  structuredClone(defaultPracticeConfig(practiceEntry(id)!) as PracticeRowsConfig);
+const rsiConfig = (): PracticeRowsConfig => rowsConfig('rsi');
+const volumeConfig = (): PracticeParamsConfig =>
+  structuredClone(defaultPracticeConfig(practiceEntry('volume')!) as PracticeParamsConfig);
+
+/** The draft of a state as rows (asserts the shape instead of casting blindly). */
+function asRows(config: PracticeConfigInput): PracticeRowsConfig {
+  if (!('rules' in config.buy) || !('rules' in config.sell)) throw new Error('expected rows');
+  return structuredClone(config) as PracticeRowsConfig;
+}
 
 async function startCurrent(
   service: PracticeService,
@@ -63,6 +92,15 @@ async function rejection(promise: Promise<unknown>): Promise<{ status: number; c
   throw new Error('expected the call to be rejected');
 }
 
+async function rejectionBody(promise: Promise<unknown>): Promise<Record<string, unknown>> {
+  try {
+    await promise;
+  } catch (error) {
+    return (error as { getResponse: () => Record<string, unknown> }).getResponse();
+  }
+  throw new Error('expected the call to be rejected');
+}
+
 describe('practice permutation', () => {
   it('stores 30 distinct cases once per (user, indicator, set) and never reshuffles', async () => {
     const { store, service } = build();
@@ -77,10 +115,13 @@ describe('practice permutation', () => {
     expect(new Set(order.map((row) => row.symbol))).toEqual(new Set(set.symbols));
     expect(new Set(order.map((row) => row.case_id)).size).toBe(30);
 
-    // reload, device change, params change and draft saves leave the stored order untouched
+    // reload, device change, row changes and draft saves leave the stored order untouched
     const before = JSON.stringify(order);
     await service.state(USER, 'rsi');
-    await service.preview(USER, 'rsi', { buy_params: { period: 10, level: 25 } });
+    const rows = asRows(first.draft).buy.rules.map((row) => ({ ...row }));
+    rows[0]!.period = 10;
+    rows[0]!.threshold = 25;
+    await service.preview(USER, 'rsi', { buy_rows: rows });
     await service.saveDraft(USER, 'rsi', {
       expected_revision: first.draft_revision,
       draft: { ...first.draft, hold_max_sessions: 30 },
@@ -100,7 +141,7 @@ describe('practice permutation', () => {
     expect(store.caseRows).toHaveLength(30);
   });
 
-  it('keeps indicators and users independent (no shared progress or params)', async () => {
+  it('keeps indicators and users independent (no shared progress or rows)', async () => {
     const { store, service } = build({ [USER]: ALL_GRANTS, [OTHER_USER]: ALL_GRANTS });
     await service.state(USER, 'rsi');
     await service.state(USER, 'macd');
@@ -158,7 +199,7 @@ describe('practice grants and indicator whitelist', () => {
     const calls: Array<() => Promise<unknown>> = [
       () => service.state(USER, 'rsi'),
       () => service.saveDraft(USER, 'rsi', { expected_revision: 1, draft: rsiConfig() }),
-      () => service.preview(USER, 'rsi', { buy_params: { period: 14, level: 30 } }),
+      () => service.preview(USER, 'rsi', { buy_rows: rsiConfig().buy.rules }),
       () =>
         service.startRun(USER, 'rsi', {
           idempotency_key: newKey(),
@@ -228,30 +269,64 @@ describe('practice grants and indicator whitelist', () => {
   });
 });
 
+describe('practice state and form descriptor', () => {
+  it('embeds the registry rows in the form and starts from the V3 defaults', async () => {
+    const { service } = build();
+    const state = await service.state(USER, 'macd');
+    expect(state.form.model).toBe('rows');
+    if (state.form.model !== 'rows') throw new Error('unreachable');
+    expect(state.form.rows.map((row) => row.id)).toEqual(['macd.signal', 'macd.zero', 'macd.hist']);
+    expect(state.form.defaults).toEqual(defaultPracticeConfig(practiceEntry('macd')!));
+    expect(state.draft).toEqual(state.form.defaults);
+    expect(state.draft_revision).toBe(1);
+    expect(state.validation).toEqual({ valid: true, errors: [] });
+    expect(state).toMatchObject({ status: 'ready', can_start: true, can_retry: false });
+    // Volume keeps its params form
+    const volume = await service.state(USER, 'volume');
+    expect(volume.form.model).toBe('legacy_params');
+    expect(volume.draft).toEqual(volumeConfig());
+  });
+});
+
 describe('practice start: validation and locking', () => {
   it('rejects invalid input without consuming the case', async () => {
     const { store, service } = build();
     const state = await service.state(USER, 'rsi');
-    const base = state.draft;
+    const edit = (mutate: (config: PracticeRowsConfig) => void): PracticeRowsConfig => {
+      const config = asRows(state.draft);
+      mutate(config);
+      return config;
+    };
     const invalid: Array<[string, PracticeConfigInput]> = [
-      ['buy off', { ...base, buy: { ...base.buy, enabled: false } }],
-      ['hold 0', { ...base, hold_max_sessions: 0 }],
-      ['hold decimal', { ...base, hold_max_sessions: 12.5 }],
-      ['hold > 1000', { ...base, hold_max_sessions: 1001 }],
-      ['period below domain', { ...base, buy: { ...base.buy, params: { period: 4, level: 30 } } }],
+      ['buy off', edit((c) => (c.buy.enabled = false))],
+      ['hold 0', edit((c) => (c.hold_max_sessions = 0))],
+      ['hold decimal', edit((c) => (c.hold_max_sessions = 12.5))],
+      ['hold > 1000', edit((c) => (c.hold_max_sessions = 1001))],
+      ['period below domain', edit((c) => (c.buy.rules[0]!.period = 4 - 3))],
+      ['buy threshold outside 0..100', edit((c) => (c.buy.rules[0]!.threshold = -1))],
+      ['sell threshold outside 0..100', edit((c) => (c.sell.rules[0]!.threshold = 101))],
+      ['bad step', edit((c) => (c.buy.rules[0]!.period = 14.5))],
+      ['unknown field', edit((c) => ((c.buy.rules[0] as Record<string, unknown>).level = 30))],
+      ['bad operator code', edit((c) => (c.buy.rules[0]!.op = '∈'))],
+      ['bad direction code', edit((c) => (c.sell.rules[1]!.dir = 'sideways'))],
+      ['row switch not boolean', edit((c) => (c.buy.rules[0]!.enabled = 'yes' as never))],
       [
-        'buy level outside 0..100',
-        { ...base, buy: { ...base.buy, params: { period: 14, level: -1 } } },
+        'invalid value in a disabled row',
+        edit((c) => {
+          c.sell.rules[1]!.enabled = false;
+          c.sell.rules[1]!.period = 1;
+        }),
       ],
+      ['missing row', edit((c) => c.buy.rules.pop())],
+      ['reordered rows', edit((c) => c.sell.rules.reverse())],
       [
-        'sell level outside 0..100',
-        { ...base, sell: { ...base.sell, params: { period: 14, level: 101 } } },
+        'pre-V3 shape (params + ops)',
+        {
+          buy: { enabled: true, params: { period: 14, level: 30 }, ops: { r1: '<', r2: '>' } },
+          sell: { enabled: true, params: { period: 14, level: 70 }, ops: { r1: '>', r2: '<' } },
+          hold_max_sessions: 60,
+        },
       ],
-      ['bad step', { ...base, buy: { ...base.buy, params: { period: 14.5, level: 30 } } }],
-      ['unknown param', { ...base, buy: { ...base.buy, params: { period: 14, level: 30, x: 1 } } }],
-      ['bad operator', { ...base, buy: { ...base.buy, ops: { r1: '∈', r2: '>' } } }],
-      ['missing rule', { ...base, buy: { ...base.buy, ops: { r1: '<' } } }],
-      ['unknown rule', { ...base, buy: { ...base.buy, ops: { ...base.buy.ops, r9: '>' } } }],
     ];
     for (const [label, config] of invalid) {
       const result = await rejection(
@@ -272,24 +347,55 @@ describe('practice start: validation and locking', () => {
     expect(after.can_start).toBe(true);
   });
 
-  it('allows Buy only: a disabled Sell side still runs and exits on time', async () => {
+  it('answers with the row message, tab and row number, and the first message as the summary', async () => {
     const { service } = build();
     const state = await service.state(USER, 'rsi');
-    const config = {
-      ...state.draft,
-      sell: { ...state.draft.sell, enabled: false },
-      hold_max_sessions: 15,
-    };
-    const run = await service.startRun(USER, 'rsi', {
-      idempotency_key: newKey(),
-      ordinal: 1,
-      case_id: state.case.case_id,
-      config,
-    });
+    const config = asRows(state.draft);
+    config.sell.rules[1]!.period = 1;
+    config.buy.rules[0]!.threshold = 101;
+    const body = await rejectionBody(
+      service.startRun(USER, 'rsi', {
+        idempotency_key: newKey(),
+        ordinal: 1,
+        case_id: state.case.case_id,
+        config,
+      }),
+    );
+    expect(body.code).toBe('PRACTICE_CONFIG_INVALID');
+    expect(body.message).toBe('Mua · dòng 1: Ngưỡng RSI phải từ 0 đến 100, số nguyên.');
+    expect(body.details).toEqual([
+      {
+        path: 'buy.rules.0.threshold',
+        message: 'Mua · dòng 1: Ngưỡng RSI phải từ 0 đến 100, số nguyên.',
+        side: 'buy',
+        row: 1,
+      },
+      {
+        path: 'sell.rules.1.period',
+        message: 'Bán · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.',
+        side: 'sell',
+        row: 2,
+      },
+    ]);
+  });
+
+  it('allows Buy only: a disabled Sell tab still runs and exits on time', async () => {
+    const { service } = build();
+    const config = tradingRsiConfig(15);
+    config.sell.enabled = false;
+    const { run } = await startCurrent(service, { config });
     expect(run.status).toBe('succeeded');
-    for (const trade of run.result!.trades.filter((item) => item.status === 'closed')) {
+    const closed = run.result!.trades.filter((item) => item.status === 'closed');
+    expect(closed.length).toBeGreaterThan(3);
+    for (const trade of closed) {
       expect(trade.sell!.reason).toBe('max_holding');
       expect(trade.holding_sessions).toBe(15);
+      expect(trade.sell!.evidence).toMatchObject({
+        enabled: false,
+        status: 'no_signal',
+        reason: 'side_off',
+        result: null,
+      });
     }
   });
 
@@ -313,10 +419,9 @@ describe('practice start: validation and locking', () => {
   it('locks the config at start: another config for the same case is refused', async () => {
     const { store, service } = build();
     const { state, run } = await startCurrent(service);
-    const changed = {
-      ...state.draft,
-      buy: { ...state.draft.buy, params: { period: 10, level: 25 } },
-    };
+    const changed = asRows(state.draft);
+    changed.buy.rules[0]!.period = 10;
+    changed.buy.rules[0]!.threshold = 25;
     const result = await rejection(
       service.startRun(USER, 'rsi', {
         idempotency_key: newKey(),
@@ -327,7 +432,11 @@ describe('practice start: validation and locking', () => {
     );
     expect(result).toEqual({ status: 409, code: 'PRACTICE_RUN_LOCKED' });
     expect(store.runRows).toHaveLength(1);
-    expect(store.runRows[0]!.config.buy.params).toEqual(run.config.buy.params);
+    expect(store.runRows[0]!.config).toEqual(run.config);
+    expect(asRows(store.runRows[0]!.config as PracticeConfigInput).buy.rules[0]).toMatchObject({
+      period: 14,
+      threshold: 30,
+    });
     // the draft cannot be edited under a locked run either
     expect(
       await rejection(service.saveDraft(USER, 'rsi', { expected_revision: 1, draft: changed })),
@@ -425,6 +534,7 @@ describe('practice start: idempotency and concurrency', () => {
       can_start: false,
       can_retry: true,
       can_next: false,
+      current_run: { status: 'failed', error: { code: 'PRACTICE_COMPUTE_FAILED' } },
     });
     // a failed run is never marked done and never lets the player skip ahead
     expect(
@@ -496,11 +606,10 @@ describe('practice next', () => {
     const { service } = build();
     const first = await service.state(USER, 'rsi');
     // the config that was started (not an older saved draft) is what carries over
-    const started = {
-      ...first.draft,
-      buy: { ...first.draft.buy, params: { period: 9, level: 28 } },
-      hold_max_sessions: 33,
-    };
+    const started = asRows(first.draft);
+    started.buy.rules[0]!.period = 9;
+    started.buy.rules[0]!.threshold = 28;
+    started.hold_max_sessions = 33;
     const { state } = await startCurrent(service, { config: started });
     const next = await service.next(USER, 'rsi', { expected_cursor: 1, idempotency_key: newKey() });
     expect(next.draft).toEqual(started);
@@ -526,17 +635,73 @@ describe('practice next', () => {
   });
 });
 
+describe('practice draft', () => {
+  it('stores an invalid draft and reports the row errors, but never a pre-V3 shape', async () => {
+    const { store, service } = build();
+    const state = await service.state(USER, 'rsi');
+    const draft = asRows(state.draft);
+    draft.buy.rules[0]!.period = 1;
+    const saved = await service.saveDraft(USER, 'rsi', {
+      expected_revision: state.draft_revision,
+      draft,
+    });
+    expect(saved.draft_revision).toBe(2);
+    expect(saved.validation).toEqual({
+      valid: false,
+      errors: [
+        {
+          path: 'buy.rules.0.period',
+          message: 'Mua · dòng 1: Chu kỳ RSI phải từ 2 đến 200, số nguyên.',
+          side: 'buy',
+          row: 1,
+        },
+      ],
+    });
+    expect(store.progressRows[0]!.draft).toEqual(draft);
+    // a stale client still sending params + ops is refused and nothing is stored
+    const body = await rejectionBody(
+      service.saveDraft(USER, 'rsi', { expected_revision: 2, draft: preV3Config({ hold: 60 }) }),
+    );
+    expect(body).toMatchObject({
+      code: 'PRACTICE_CONFIG_INVALID',
+      message: OUTDATED_FORMAT_MESSAGE,
+    });
+    expect(store.progressRows[0]!.draft).toEqual(draft);
+    expect(store.progressRows[0]!.draft_revision).toBe(2);
+  });
+
+  it('rejects the draft of the other model for an indicator', async () => {
+    const { service } = build();
+    const state = await service.state(USER, 'volume');
+    expect(
+      await rejection(
+        service.saveDraft(USER, 'volume', {
+          expected_revision: state.draft_revision,
+          draft: rsiConfig(),
+        }),
+      ),
+    ).toEqual({ status: 422, code: 'PRACTICE_CONFIG_INVALID' });
+  });
+});
+
 describe('practice run results', () => {
   it('stores an immutable result with locked versions, evidence and a comment', async () => {
     const { store, service } = build();
-    const { run } = await startCurrent(service);
+    // both Buy rows on; the first one is always true so every case trades whatever its order
+    const config = tradingRsiConfig();
+    config.buy.rules[1]!.enabled = true;
+    const { run } = await startCurrent(service, { config });
     expect(run.versions).toMatchObject({
       set_version: set.set_version,
       profile_version: 'mini-profile-v1',
       calculation_version: 'iqx-ta-2.0',
+      rule_version: RULE_VERSION,
+      engine_version: PRACTICE_ENGINE_VERSION,
       execution_version: set.versions.execution,
       comment_version: set.versions.comment,
     });
+    expect(PRACTICE_ENGINE_VERSION).toBe('practice-engine-2');
+    expect(RULE_VERSION).toBe('iqx-rules-4.0');
     expect(run.versions.data_version).toMatch(/^[a-f0-9]{64}$/);
     const result = run.result!;
     expect(result.kpis.capital_initial).toBe(100_000_000);
@@ -548,9 +713,21 @@ describe('practice run results', () => {
     expect(result.nav).toHaveLength(result.last_session);
     expect(run.chart!.first_session).toBeLessThan(0);
     expect(run.chart!.last_session).toBe(result.last_session);
+    expect(result.trades.length).toBeGreaterThan(0);
     for (const trade of result.trades) {
-      expect(trade.buy.evidence.rules.length).toBeGreaterThan(0);
-      expect(trade.buy.evidence.params).toEqual(run.config.buy.params);
+      expect(trade.buy.evidence.rules.map((rule) => rule.rule_id)).toEqual([
+        'rsi.level',
+        'rsi.trend',
+      ]);
+      expect(trade.buy.evidence.params).toEqual({});
+      expect(trade.buy.evidence.rules[0]).toMatchObject({
+        label: 'RSI 14 > 0',
+        values: { period: 14, op: '>', threshold: 0 },
+      });
+      expect(trade.buy.evidence.rules[1]).toMatchObject({
+        label: 'RSI 14 xu hướng lên',
+        values: { period: 14, dir: 'up' },
+      });
     }
     // reading the run later returns the very same stored result, not a recomputation
     const again = await service.getRun(USER, run.run_id);
@@ -565,24 +742,45 @@ describe('practice run results', () => {
     });
   });
 
-  it('computes each side with its own params', async () => {
+  it('computes each row with its own periods and thresholds', async () => {
     const { service } = build();
-    const state = await service.state(USER, 'rsi');
-    const config: PracticeConfigInput = {
-      ...state.draft,
-      buy: { ...state.draft.buy, params: { period: 7, level: 35 } },
-      sell: { ...state.draft.sell, params: { period: 21, level: 65 } },
-    };
+    // every row on, and the first row of each tab always true: every case trades both ways
+    const config = tradingRsiConfig();
+    Object.assign(config.buy.rules[0]!, { period: 7 });
+    Object.assign(config.buy.rules[1]!, { enabled: true, period: 21 });
+    Object.assign(config.sell.rules[0]!, { period: 28 });
+    Object.assign(config.sell.rules[1]!, { enabled: true });
     const { run } = await startCurrent(service, { config });
-    expect(run.chart!.plot.buy.lines[0]!.label).toBe('RSI 7');
-    expect(run.chart!.plot.sell.lines[0]!.label).toBe('RSI 21');
-    expect(run.chart!.plot.buy.threshold_levels).toEqual([35]);
-    expect(run.chart!.plot.sell.threshold_levels).toEqual([65]);
-    expect(run.chart!.series.buy.value).not.toEqual(run.chart!.series.sell.value);
+    const { plot, series } = run.chart!;
+    expect(plot.buy.lines).toEqual([
+      { key: 'rsi.level.value', label: 'RSI 7' },
+      { key: 'rsi.trend.value', label: 'RSI 21' },
+    ]);
+    expect(plot.sell.lines).toEqual([
+      { key: 'rsi.level.value', label: 'RSI 28' },
+      { key: 'rsi.trend.value', label: 'RSI 14' },
+    ]);
+    expect(plot.buy.threshold_levels).toEqual([0]);
+    expect(plot.sell.threshold_levels).toEqual([100]);
+    expect(Object.keys(series.buy).sort()).toEqual(['rsi.level.value', 'rsi.trend.value']);
+    expect(series.buy['rsi.level.value']).not.toEqual(series.buy['rsi.trend.value']);
+    expect(series.buy['rsi.level.value']).not.toEqual(series.sell['rsi.level.value']);
+    const closed = run.result!.trades.filter((trade) => trade.status === 'closed');
+    expect(closed.length).toBeGreaterThan(3);
     for (const trade of run.result!.trades) {
-      expect(trade.buy.evidence.params).toEqual({ period: 7, level: 35 });
-      if (trade.sell) expect(trade.sell.evidence.params).toEqual({ period: 21, level: 65 });
+      expect(trade.buy.evidence.rules.map((rule) => rule.values)).toEqual([
+        { period: 7, op: '>', threshold: 0 },
+        { period: 21, dir: 'up' },
+      ]);
     }
+    for (const trade of closed) {
+      if (trade.sell!.reason !== 'indicator') continue;
+      expect(trade.sell!.evidence.rules.map((rule) => rule.label)).toEqual([
+        'RSI 28 < 100',
+        'RSI 14 xu hướng xuống',
+      ]);
+    }
+    expect(closed.some((trade) => trade.sell!.reason === 'indicator')).toBe(true);
   });
 
   it('runs every one of the 16 indicators with its own algorithm', async () => {
@@ -592,6 +790,7 @@ describe('practice run results', () => {
       expect(run.status, id).toBe('succeeded');
       const { plot, series } = run.chart!;
       for (const side of ['buy', 'sell'] as const) {
+        expect(plot[side].lines.length, `${id}.${side} lines`).toBeGreaterThan(0);
         for (const line of plot[side].lines) {
           const values = series[side][line.key]!;
           expect(values, `${id}.${side}.${line.key}`).toHaveLength(run.chart!.bars.close.length);
@@ -607,6 +806,144 @@ describe('practice run results', () => {
       }
     }
   }, 60_000);
+
+  it('draws per-row keys for row-based indicators and the legacy keys for Volume', async () => {
+    const { service } = build();
+    const rsi = (await startCurrent(service, { indicator: 'rsi' })).run.chart!;
+    expect(Object.keys(rsi.series.buy)).toEqual(['rsi.level.value']);
+    const volume = (await startCurrent(service, { indicator: 'volume' })).run.chart!;
+    expect(Object.keys(volume.series.buy).sort()).toEqual(['threshold', 'volume']);
+    expect(volume.plot.buy.volume_key).toBe('volume');
+  });
+});
+
+describe('practice Volume keeps its params model', () => {
+  it('starts with the registry params and operators and records the Volume rules', async () => {
+    const { service } = build();
+    const { run } = await startCurrent(service, { indicator: 'volume' });
+    expect(run.status).toBe('succeeded');
+    expect(run.config).toEqual(volumeConfig());
+    expect(run.result!.trades.length).toBeGreaterThan(0);
+    for (const trade of run.result!.trades) {
+      expect(trade.buy.evidence.params).toEqual({ lookback: 20, mult: 1 });
+      expect(trade.buy.evidence.rules.map((rule) => rule.rule_id)).toEqual(['r1', 'r2']);
+    }
+  });
+
+  it('keeps rules_enabled from the request to the locked run (it used to be dropped)', async () => {
+    const { store, service } = build();
+    const state = await service.state(USER, 'volume');
+    const config = structuredClone(state.draft) as PracticeParamsConfig;
+    config.buy.rules_enabled = { r1: false };
+    // the draft keeps it
+    const saved = await service.saveDraft(USER, 'volume', {
+      expected_revision: state.draft_revision,
+      draft: config,
+    });
+    expect((saved.draft as PracticeParamsConfig).buy.rules_enabled).toEqual({ r1: false });
+    const run = await service.startRun(USER, 'volume', {
+      idempotency_key: 'volume-key-0001',
+      ordinal: 1,
+      case_id: state.case.case_id,
+      config,
+    });
+    // locked with both switches spelled out, so the run is reproducible
+    expect((run.config as PracticeParamsConfig).buy.rules_enabled).toEqual({ r1: false, r2: true });
+    expect(store.runRows[0]!.config).toEqual(run.config);
+    // only the enabled rule is evaluated and recorded
+    expect(run.result!.trades.length).toBeGreaterThan(0);
+    for (const trade of run.result!.trades) {
+      expect(trade.buy.evidence.rules.map((rule) => rule.rule_id)).toEqual(['r2']);
+    }
+    // another switch is another intent: the same key cannot be reused for it
+    const other = structuredClone(config);
+    other.buy.rules_enabled = { r1: true };
+    expect(
+      await rejection(
+        service.startRun(USER, 'volume', {
+          idempotency_key: 'volume-key-0001',
+          ordinal: 1,
+          case_id: state.case.case_id,
+          config: other,
+        }),
+      ),
+    ).toEqual({ status: 409, code: 'IDEMPOTENCY_KEY_REUSED' });
+  });
+});
+
+describe('practice preview', () => {
+  it('rejects invalid rows and applies the requested tab only', async () => {
+    const { service } = build();
+    const state = await service.state(USER, 'rsi');
+    const rows = asRows(state.draft).buy.rules;
+    const bad = rows.map((row) => ({ ...row }));
+    bad[0]!.period = 1;
+    const body = await rejectionBody(service.preview(USER, 'rsi', { buy_rows: bad }));
+    expect(body).toMatchObject({
+      code: 'PRACTICE_CONFIG_INVALID',
+      message: 'Mua · dòng 1: Chu kỳ RSI phải từ 2 đến 200, số nguyên.',
+    });
+    // a half-edited DISABLED row does not block the chart
+    const disabled = rows.map((row) => ({ ...row }));
+    disabled[1]!.enabled = false;
+    disabled[1]!.period = 1;
+    expect(
+      (await service.preview(USER, 'rsi', { buy_rows: disabled })).chart.plot.buy.lines,
+    ).toEqual([{ key: 'rsi.level.value', label: 'RSI 14' }]);
+
+    const a = rows.map((row) => ({ ...row }));
+    a[0]!.period = 10;
+    const b = rows.map((row) => ({ ...row }));
+    b[0]!.period = 20;
+    const previewA = await service.preview(USER, 'rsi', { buy_rows: a });
+    const previewB = await service.preview(USER, 'rsi', { buy_rows: b });
+    expect(previewA.chart.plot.buy.lines[0]!.label).toBe('RSI 10');
+    expect(previewB.chart.plot.buy.lines[0]!.label).toBe('RSI 20');
+    expect(previewA.chart.series.buy['rsi.level.value']).not.toEqual(
+      previewB.chart.series.buy['rsi.level.value'],
+    );
+    // the unspecified tab keeps the saved draft
+    expect(previewA.chart.plot.sell.lines[0]!.label).toBe('RSI 14');
+    // ... including the draft's own row values
+    expect(previewA.chart.plot.sell.threshold_levels).toEqual([70]);
+  });
+
+  it('refuses the wrong model for the indicator', async () => {
+    const { service } = build();
+    expect(
+      await rejection(service.preview(USER, 'rsi', { buy_params: { period: 14, level: 30 } })),
+    ).toEqual({ status: 422, code: 'PRACTICE_CONFIG_INVALID' });
+    expect(
+      await rejection(service.preview(USER, 'volume', { buy_rows: rsiConfig().buy.rules })),
+    ).toEqual({ status: 422, code: 'PRACTICE_CONFIG_INVALID' });
+    // Volume keeps its params preview
+    const ok = await service.preview(USER, 'volume', { sell_params: { lookback: 30, mult: 1.5 } });
+    expect(ok.chart.plot.sell.lines).toEqual([{ key: 'threshold', label: '1.5 × TB 30' }]);
+    expect(
+      await rejection(service.preview(USER, 'volume', { buy_params: { lookback: 3, mult: 1 } })),
+    ).toEqual({ status: 422, code: 'PRACTICE_CONFIG_INVALID' });
+  });
+
+  it('shows what the locked run will plot: the same rows give the same observation series', async () => {
+    const { service } = build();
+    const state = await service.state(USER, 'macd');
+    const config = asRows(state.draft);
+    Object.assign(config.buy.rules[0]!, { fast: 8, slow: 21, signal: 5 });
+    config.buy.rules[2]!.enabled = true;
+    const preview = await service.preview(USER, 'macd', {
+      buy_rows: config.buy.rules,
+      sell_rows: config.sell.rules,
+    });
+    const { run } = await startCurrent(service, { indicator: 'macd', config });
+    const observed = preview.chart.bars.close.length;
+    for (const side of ['buy', 'sell'] as const) {
+      expect(run.chart!.plot[side]).toEqual(preview.chart.plot[side]);
+      for (const [key, values] of Object.entries(preview.chart.series[side])) {
+        expect(run.chart!.series[side][key]!.slice(0, observed), `${side}.${key}`).toEqual(values);
+      }
+    }
+    expect(run.chart!.bars.close.slice(0, observed)).toEqual(preview.chart.bars.close);
+  });
 });
 
 describe('practice data hiding', () => {
@@ -665,10 +1002,14 @@ describe('practice data hiding', () => {
     const dates = data.allDates(symbol);
 
     const list = await service.listIndicators(USER);
-    const preview = await service.preview(USER, 'rsi', { buy_params: { period: 10, level: 25 } });
+    const rows = asRows(state.draft).buy.rules.map((row) => ({ ...row }));
+    rows[0]!.period = 10;
+    rows[0]!.threshold = 25;
+    const preview = await service.preview(USER, 'rsi', { buy_rows: rows });
+    // a config that trades on every case, so trades, evidence and labels are scanned too
     const draft = await service.saveDraft(USER, 'rsi', {
       expected_revision: 1,
-      draft: state.draft,
+      draft: tradingRsiConfig(),
     });
     const run = await service.startRun(USER, 'rsi', {
       idempotency_key: newKey(),
@@ -676,12 +1017,17 @@ describe('practice data hiding', () => {
       case_id: state.case.case_id,
       config: draft.draft,
     });
+    expect(run.result!.trades.length).toBeGreaterThan(3);
     const reread = await service.getRun(USER, run.run_id);
     const afterState = await service.state(USER, 'rsi');
     const history = await service.history(USER, 'rsi', { page: 1, page_size: 10 });
     for (const payload of [list, state, preview, draft, run, reread, afterState, history]) {
       assertNoLeak(stripTimestamps(payload), dates);
       assertNoSetIdentity(payload);
+    }
+    // every indicator's form (embedded registry rows) is free of identity too
+    for (const id of PRACTICE_INDICATOR_IDS) {
+      assertNoSetIdentity((await service.state(USER, id)).form);
     }
     // the set label is opaque: it names neither the index nor the observation period
     expect(run.versions.set_version).toMatch(/^[a-z0-9-]+$/);
@@ -715,7 +1061,9 @@ describe('practice data hiding', () => {
 
     const { data, service } = build();
     await capture(service.state(USER, 'nope'));
-    await capture(service.preview(USER, 'rsi', { buy_params: { period: 3, level: 30 } }));
+    const bad = rsiConfig().buy.rules.map((row) => ({ ...row }));
+    bad[0]!.period = 1;
+    await capture(service.preview(USER, 'rsi', { buy_rows: bad }));
     const state = await service.state(USER, 'rsi');
     await capture(
       service.startRun(USER, 'rsi', {
@@ -744,9 +1092,13 @@ describe('practice data hiding', () => {
     const symbol = store.caseRows.find((row) => row.case_id === state.case.case_id)!.symbol;
     const loaded = await data.load(symbol);
     const { observationStart, firstTest } = loaded.calendar;
+    const buyRows = asRows(state.draft).buy.rules.map((row) => ({ ...row }));
+    Object.assign(buyRows[0]!, { fast: 100, slow: 200 });
+    const sellRows = asRows(state.draft).sell.rules.map((row) => ({ ...row }));
+    Object.assign(sellRows[0]!, { fast: 5, slow: 10 });
     const preview = await service.preview(USER, 'ma_cross', {
-      buy_params: { fast: 100, slow: 200 },
-      sell_params: { fast: 5, slow: 10 },
+      buy_rows: buyRows,
+      sell_rows: sellRows,
     });
     const { chart } = preview;
     const observed = firstTest - observationStart;
@@ -757,26 +1109,307 @@ describe('practice data hiding', () => {
     expect(chart.bars.close).toEqual(
       loaded.calendar.bars.slice(observationStart, firstTest).map((bar) => bar.close),
     );
-    // warmup history is deeper than the 130-bar view and feeds the 250-session average
-    expect(chart.series.buy.slow).toHaveLength(observed);
-    expect(chart.series.buy.slow?.every((value) => value !== null)).toBe(true);
-    expect(chart.series.buy.fast?.every((value) => value !== null)).toBe(true);
+    // warmup history is deeper than the 130-bar view and feeds the 200-session average
+    expect(chart.series.buy['ma_cross.cross.slow']).toHaveLength(observed);
+    expect(chart.series.buy['ma_cross.cross.slow']?.every((value) => value !== null)).toBe(true);
+    expect(chart.series.buy['ma_cross.cross.fast']?.every((value) => value !== null)).toBe(true);
+    expect(chart.plot.buy.lines.map((line) => line.label)).toEqual(['SMA 100', 'SMA 200']);
+    expect(chart.plot.sell.lines.map((line) => line.label)).toEqual(['SMA 5', 'SMA 10']);
     expect(preview.window_bars).toBe(130);
     // a not-yet-started case exposes no result
     expect((await service.state(USER, 'ma_cross')).current_run).toBeNull();
   });
+});
 
-  it('rejects invalid preview params and applies the requested side params only', async () => {
-    const { service } = build();
+describe('practice no look-ahead in the preview (SPEC V3 §5)', () => {
+  /** Serves the same bars, but every session from the first test day on is replaced by garbage. */
+  class PoisonedFuturePort implements PracticeCaseDataPort {
+    constructor(private readonly inner: FakeDataPort) {}
+    async load(symbol: string): Promise<LoadedCase> {
+      const loaded = await this.inner.load(symbol);
+      const { firstTest } = loaded.calendar;
+      return {
+        ...loaded,
+        calendar: {
+          ...loaded.calendar,
+          bars: loaded.calendar.bars.map((bar, index) =>
+            index >= firstTest
+              ? { ...bar, open: 3, high: 9_000_000, low: 2, close: 4_000_000, volume: 11 }
+              : bar,
+          ),
+        },
+      };
+    }
+  }
+
+  it('is byte-identical whether or not the test window exists, for every indicator', async () => {
+    const { store, data, grants, service } = build();
+    const poisoned = new PracticeService(store, grants, new PoisonedFuturePort(data), set);
+    for (const id of PRACTICE_INDICATOR_IDS) {
+      const state = await service.state(USER, id);
+      let body;
+      if (state.form.model === 'rows') {
+        // every row on, so every line of the indicator is drawn
+        const config = asRows(state.draft);
+        for (const side of ['buy', 'sell'] as Side[]) {
+          for (const row of config[side].rules) row.enabled = true;
+        }
+        body = { buy_rows: config.buy.rules, sell_rows: config.sell.rules };
+      } else {
+        body = { buy_params: { lookback: 30, mult: 1.5 } };
+      }
+      const real = await service.preview(USER, id, body);
+      const faked = await poisoned.preview(USER, id, body);
+      expect(faked, id).toEqual(real);
+      // sanity: the garbage really differs from the true future on the server side
+      const symbol = store.caseRows.find((row) => row.case_id === state.case.case_id)!.symbol;
+      const trueBars = (await data.load(symbol)).calendar;
+      const fakeBars = (await new PoisonedFuturePort(data).load(symbol)).calendar;
+      expect(fakeBars.bars[fakeBars.firstTest]!.close).not.toBe(
+        trueBars.bars[trueBars.firstTest]!.close,
+      );
+    }
+  }, 60_000);
+});
+
+describe('practice data written before SPEC V3 (§6.1, §6.3)', () => {
+  const oldConfig = preV3Config();
+
+  it('reads a pre-V3 draft as the V3 defaults with the switches and the holding time kept', async () => {
+    const { store, service } = build();
+    await service.state(USER, 'rsi');
+    store.progressRows[0]!.draft = preV3Config({ buy: false, hold: 33 });
+    const state = await service.state(USER, 'rsi');
+    const defaults = rsiConfig();
+    expect(state.draft).toEqual({
+      buy: { ...defaults.buy, enabled: false },
+      sell: defaults.sell,
+      hold_max_sessions: 33,
+    });
+    expect(state.validation.valid).toBe(false); // Mua is off: Start needs it
+    expect(state.validation.errors).toEqual([
+      { path: 'buy.enabled', message: 'Bật điều kiện Mua để bắt đầu.' },
+    ]);
+    // reading never rewrites the stored row ...
+    expect(store.progressRows[0]!.draft).toEqual(preV3Config({ buy: false, hold: 33 }));
+    expect(store.progressRows[0]!.draft_revision).toBe(1);
+    // ... the next save does
+    const turnedOn = asRows(state.draft);
+    turnedOn.buy.enabled = true;
+    const saved = await service.saveDraft(USER, 'rsi', {
+      expected_revision: state.draft_revision,
+      draft: turnedOn,
+    });
+    expect(saved.draft_revision).toBe(2);
+    expect(store.progressRows[0]!.draft).toEqual({
+      buy: defaults.buy,
+      sell: defaults.sell,
+      hold_max_sessions: 33,
+    });
+  });
+
+  it('starts from a pre-V3 draft with the V3 defaults the state shows', async () => {
+    const { store, service } = build();
+    await service.state(USER, 'macd');
+    store.progressRows[0]!.draft = preV3Config({ hold: 25 });
+    const { run, state } = await startCurrent(service, { indicator: 'macd' });
+    expect(state.draft.hold_max_sessions).toBe(25);
+    expect(run.status).toBe('succeeded');
+    expect(run.config).toEqual({ ...rowsConfig('macd'), hold_max_sessions: 25 });
+    // the started config is now the (current-format) draft
+    expect(store.progressRows[0]!.draft).toEqual(run.config);
+  });
+
+  it('refuses a pre-V3 config sent by a stale tab, without consuming the case', async () => {
+    const { store, service } = build();
+    const state = await service.state(USER, 'rsi');
+    const body = await rejectionBody(
+      service.startRun(USER, 'rsi', {
+        idempotency_key: newKey(),
+        ordinal: 1,
+        case_id: state.case.case_id,
+        config: oldConfig,
+      }),
+    );
+    expect(body).toMatchObject({
+      code: 'PRACTICE_CONFIG_INVALID',
+      message: OUTDATED_FORMAT_MESSAGE,
+    });
+    expect(body.details).toEqual([
+      { path: 'buy', message: OUTDATED_FORMAT_MESSAGE, side: 'buy' },
+      { path: 'sell', message: OUTDATED_FORMAT_MESSAGE, side: 'sell' },
+    ]);
+    expect(store.runRows).toHaveLength(0);
+  });
+
+  it.each(['computing', 'failed'] as const)(
+    'fails a %s run locked in the old format with a clear error, and lets the case start again',
+    async (status) => {
+      const { store, service } = build();
+      const state = await service.state(USER, 'rsi');
+      const old = addPreV3Run(store, state.case.case_id, status);
+
+      // state: failed with the outdated error, not retryable, startable
+      const view = await service.state(USER, 'rsi');
+      expect(view.status).toBe('failed');
+      expect(view.current_run).toMatchObject({
+        run_id: old.id,
+        status: 'failed',
+        error: OUTDATED_RUN_ERROR,
+      });
+      expect(view.runs[0]).toMatchObject({ status: 'failed', error: OUTDATED_RUN_ERROR });
+      expect(view).toMatchObject({ can_retry: false, can_start: true, can_next: false });
+      expect(view.draft).toEqual(rsiConfig());
+
+      // the run itself reads as failed with the same error and no result
+      const read = await service.getRun(USER, old.id);
+      expect(read).toMatchObject({
+        status: 'failed',
+        error: OUTDATED_RUN_ERROR,
+        result: null,
+        chart: null,
+      });
+      expect(read.config).toEqual(oldConfig); // its frozen config is shown as it was
+      expect(OUTDATED_RUN_ERROR.message).toMatch(/định dạng điều kiện cũ/);
+
+      // it cannot be skipped or retried with its own key
+      expect(
+        await rejection(
+          service.next(USER, 'rsi', { expected_cursor: 1, idempotency_key: newKey() }),
+        ),
+      ).toEqual({ status: 409, code: 'PRACTICE_RUN_NOT_COMPLETED' });
+      expect(
+        await rejection(
+          service.startRun(USER, 'rsi', {
+            idempotency_key: 'old-run-key-0001',
+            ordinal: 1,
+            case_id: state.case.case_id,
+            config: view.draft,
+          }),
+        ),
+      ).toEqual({ status: 409, code: 'IDEMPOTENCY_KEY_REUSED' });
+      expect(store.runRows).toHaveLength(1);
+
+      // the form is not locked by it: the draft can still be edited
+      const saved = await service.saveDraft(USER, 'rsi', {
+        expected_revision: view.draft_revision,
+        draft: { ...view.draft, hold_max_sessions: 21 },
+      });
+      expect(saved.validation.valid).toBe(true);
+
+      // a new start replaces it
+      const run = await service.startRun(USER, 'rsi', {
+        idempotency_key: newKey(),
+        ordinal: 1,
+        case_id: state.case.case_id,
+        config: saved.draft,
+      });
+      expect(run.status).toBe('succeeded');
+      expect(run.run_id).not.toBe(old.id);
+      expect(run.versions).toMatchObject({
+        engine_version: PRACTICE_ENGINE_VERSION,
+        rule_version: RULE_VERSION,
+      });
+      expect(store.runRows.map((row) => row.id)).toEqual([run.run_id]);
+      const done = await service.state(USER, 'rsi');
+      expect(done).toMatchObject({ status: 'completed', can_next: true, can_start: false });
+      expect(
+        (await service.next(USER, 'rsi', { expected_cursor: 1, idempotency_key: newKey() }))
+          .ordinal,
+      ).toBe(2);
+    },
+  );
+
+  it('settles an outdated unfinished run if it ever reaches the computation', async () => {
+    const { store, service } = build();
+    const state = await service.state(USER, 'rsi');
+    const old = addPreV3Run(store, state.case.case_id, 'computing');
+    const finalize = (
+      service as unknown as {
+        finalize: (entry: unknown, run: RunRow) => Promise<unknown>;
+      }
+    ).finalize.bind(service);
+    await expect(finalize(practiceEntry('rsi'), old)).rejects.toMatchObject({
+      status: 409,
+      response: { code: 'PRACTICE_CONFIG_OUTDATED' },
+    });
+    expect(store.runRows[0]).toMatchObject({ status: 'failed', error: OUTDATED_RUN_ERROR });
+    expect(store.runRows[0]!.attempts).toBe(1);
+  });
+
+  it('leaves a succeeded run of the old format exactly as it was', async () => {
+    const { store, service } = build();
+    const state = await service.state(USER, 'rsi');
+    const result = {
+      first_session: 1,
+      last_session: 3,
+      kpis: { buy_count: 0 },
+      trades: [],
+      events: [],
+      pending_orders: [],
+      missed_buys: [],
+      nav: [100_000_000, 100_000_000, 100_000_000],
+      comment: { status: 'unavailable', rule_id: 'x', version: 'v', text: null, values: {} },
+      data_notes: [],
+    };
+    const chart = {
+      first_session: -2,
+      last_session: 3,
+      last_observed_session: 0,
+      bars: { open: [], high: [], low: [], close: [], volume: [] },
+      series: { buy: { value: [] }, sell: { value: [] } },
+      plot: { buy: {}, sell: {} },
+    };
+    const old = addPreV3Run(store, state.case.case_id, 'succeeded', {
+      summary: {
+        total_return: 0,
+        buy_count: 0,
+        closed_trade_count: 0,
+        open_position: false,
+        comment_rule_id: 'x',
+      },
+      result,
+      chart,
+      completed_at: new Date('2026-10-01T00:05:00Z'),
+      attempts: 1,
+    });
+    const before = JSON.stringify(store.runRows[0]);
+
+    const read = await service.getRun(USER, old.id);
+    expect(read).toMatchObject({
+      status: 'succeeded',
+      config: oldConfig,
+      error: null,
+      result,
+      chart,
+      versions: { engine_version: 'practice-engine-1', rule_version: 'iqx-rules-3.0' },
+    });
+    const view = await service.state(USER, 'rsi');
+    expect(view).toMatchObject({
+      status: 'completed',
+      can_next: true,
+      can_retry: false,
+      can_start: false,
+      completed_count: 1,
+    });
+    expect(view.current_run).toMatchObject({ status: 'succeeded', error: null });
+    const history = await service.history(USER, 'rsi', { page: 1, page_size: 10 });
+    expect(history.items.map((item) => [item.ordinal, item.config])).toEqual([[1, oldConfig]]);
+    expect(history.items[0]!.versions.engine_version).toBe('practice-engine-1');
+    // a new start cannot touch it, and the player moves on normally
     expect(
-      await rejection(service.preview(USER, 'rsi', { buy_params: { period: 3, level: 30 } })),
-    ).toEqual({ status: 422, code: 'PRACTICE_CONFIG_INVALID' });
-    const a = await service.preview(USER, 'rsi', { buy_params: { period: 10, level: 30 } });
-    const b = await service.preview(USER, 'rsi', { buy_params: { period: 20, level: 30 } });
-    expect(a.chart.plot.buy.lines[0]!.label).toBe('RSI 10');
-    expect(b.chart.plot.buy.lines[0]!.label).toBe('RSI 20');
-    expect(a.chart.series.buy.value).not.toEqual(b.chart.series.buy.value);
-    // the unspecified side keeps the saved draft params
-    expect(a.chart.plot.sell.lines[0]!.label).toBe('RSI 14');
+      await rejection(
+        service.startRun(USER, 'rsi', {
+          idempotency_key: newKey(),
+          ordinal: 1,
+          case_id: state.case.case_id,
+          config: view.draft,
+        }),
+      ),
+    ).toEqual({ status: 409, code: 'PRACTICE_RUN_LOCKED' });
+    expect(
+      (await service.next(USER, 'rsi', { expected_cursor: 1, idempotency_key: newKey() })).ordinal,
+    ).toBe(2);
+    expect(JSON.stringify(store.runRows[0])).toBe(before);
   });
 });

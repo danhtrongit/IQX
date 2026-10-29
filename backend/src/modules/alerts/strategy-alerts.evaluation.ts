@@ -1,8 +1,13 @@
 import {
   canonicalJson,
+  isCurrentFormat,
+  loadTechnicalRegistry,
   sha256Hex,
   sideSignalsWithEvidence,
+  validateConfig,
   type Bar,
+  type IndicatorConfig,
+  type RegistryEntry,
   type SharedConfig,
   type Side,
   type TracedRuleEvaluation,
@@ -14,7 +19,11 @@ import {
  * SQL store and the tests share one definition of the transition table.
  *
  * Three-valued results (true / false / unknown) come from the 16-indicator v2 engine
- * (`sideSignalsWithEvidence`): missing or insufficient data is `null`, never false.
+ * (`sideSignalsWithEvidence`, i.e. the evaluator shared with Bot, Backtest and Luyện tập):
+ * missing or insufficient data is `null`, never false. Every condition row is evaluated with its
+ * own periods and threshold (SPEC V3 §1.2); the evidence carries one entry per evaluated row
+ * with the row's stored `values`. Several indicators combine exactly as before V3: an active
+ * indicator without an enabled row (NO_SIGNAL) keeps the side false.
  */
 
 /** Messages are condition matches, never trades: "Bot đã mua/bán" is never used. */
@@ -164,10 +173,15 @@ export type SideEvaluation = {
   rules: TracedRuleEvaluation[];
 };
 
-/** Indicators that decide `side` in a config: master ON and the side ON. */
+/**
+ * Indicators that decide `side` in a config: master ON and the side ON. Reads only the three
+ * switches, so it also works on the pinned configs of older versions (history views) and never
+ * throws on a document of another shape.
+ */
 export function activeIndicatorIds(config: SharedConfig, side: Side): string[] {
-  return Object.entries(config.indicators)
-    .filter(([, item]) => item.master_enabled === true && item[side].enabled === true)
+  const indicators: Record<string, IndicatorConfig | undefined> = config?.indicators ?? {};
+  return Object.entries(indicators)
+    .filter(([, item]) => item?.master_enabled === true && item[side]?.enabled === true)
     .map(([id]) => id)
     .sort();
 }
@@ -197,6 +211,28 @@ export function evaluateSide(
     indicator_ids: evidence.active_indicator_ids,
     rules: evidence.rules,
   };
+}
+
+/**
+ * Why a pinned config cannot be evaluated, or null when it can:
+ *  - `outdated`: not in the current format. A version pinned before SPEC V3 (`iqx-rules-3.0`,
+ *    `iqx-rules-2.0`, side-level `params`) is never mapped to the row conditions (§6.1.5); the
+ *    migration re-pins such alerts to a migrated revision.
+ *  - `invalid`: current format, but a value fails the registry validation.
+ * Never throws, whatever the stored document looks like.
+ */
+export type PinnedConfigProblem = 'outdated' | 'invalid';
+
+export function pinnedConfigProblem(
+  config: unknown,
+  registry: readonly RegistryEntry[] = loadTechnicalRegistry(),
+): PinnedConfigProblem | null {
+  try {
+    if (!isCurrentFormat(config, registry)) return 'outdated';
+    return validateConfig(config, registry).length > 0 ? 'invalid' : null;
+  } catch {
+    return 'invalid';
+  }
 }
 
 /** Version of the daily bars an evaluation used (full OHLCV series up to the session). */

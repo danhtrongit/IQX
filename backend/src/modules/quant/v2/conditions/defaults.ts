@@ -40,7 +40,11 @@ export function defaultSide(entry: RegistryEntry, side: Side): SideConfig {
 
 /** Default config of one indicator, master OFF. */
 export function defaultIndicatorConfig(entry: RegistryEntry): IndicatorConfig {
-  return { master_enabled: false, buy: defaultSide(entry, 'buy'), sell: defaultSide(entry, 'sell') };
+  return {
+    master_enabled: false,
+    buy: defaultSide(entry, 'buy'),
+    sell: defaultSide(entry, 'sell'),
+  };
 }
 
 /** Every registry indicator, master and both tabs OFF, rows at their SPEC V3 §3 defaults. */

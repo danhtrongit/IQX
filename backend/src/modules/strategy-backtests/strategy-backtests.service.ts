@@ -237,6 +237,19 @@ const unprocessable = (code: string, message: string, errors: EngineValidationEr
     ...(errors.length ? { details: errors } : {}),
   });
 
+/**
+ * 422 for a revision saved before SPEC V3 (§6.1.5): its conditions are never mapped to the row
+ * conditions, so no run can start from it. Same body as the shared-config reader's refusal.
+ */
+const configFormatOutdated = (revision: number) =>
+  new UnprocessableEntityException({
+    code: 'CONFIG_FORMAT_OUTDATED',
+    message:
+      'Phiên bản cấu hình này dùng định dạng điều kiện cũ. Hãy lưu lại cấu hình theo mẫu điều kiện mới.',
+    revision,
+    details: [{ field: 'revision', revision }],
+  });
+
 const historyNotFound = (message: string) =>
   new NotFoundException({ code: 'MARKET_HISTORY_NOT_FOUND', message });
 
@@ -316,12 +329,16 @@ export class StrategyBacktestsService {
         'Chưa có dữ liệu thành phần rổ cổ phiếu theo thời điểm lịch sử; hãy nhập danh sách mã cụ thể.',
       );
 
+    // The reader refuses an outdated revision with 422 CONFIG_FORMAT_OUTDATED (thrown here, before
+    // anything is stored: the client saves the config in the new format and retries). The check
+    // below keeps a reader that hands one back from running a backtest on its reset document.
     const revision = await this.reader.getRevision(userId, request.shared_revision);
     if (!revision)
       throw new NotFoundException({
         code: 'REVISION_NOT_FOUND',
         message: 'Không tìm thấy phiên bản cấu hình đã lưu.',
       });
+    if (revision.outdated === true) throw configFormatOutdated(revision.revision);
 
     const grants = this.grantsLoader(userId);
     await this.assertCapabilities(this.requestedCapabilities(request, null), grants);

@@ -1,27 +1,67 @@
-import type { Operand, RuleOp, Side, Tri } from '../quant/v2/index.js';
+import type {
+  NoSignalReason,
+  Operand,
+  RowDefinition,
+  RowSideConfig,
+  RuleOp,
+  Side,
+  Tri,
+} from '../quant/v2/index.js';
 
-/** One side of a practice config. `ops` maps stable registry rule ids to the chosen operator. */
-export type PracticeSideInput = {
+/**
+ * Side of a row-based indicator (the 15 indicators, SPEC V3 §1.4): the tab switch and one
+ * self-contained condition row per registry row (own periods, threshold and operator).
+ */
+export type PracticeRowsSide = RowSideConfig;
+
+/**
+ * Side of a params-based indicator (Volume, unchanged by SPEC V3): side-level params and the
+ * operator chosen per stable registry rule id. A config in this shape for a row-based
+ * indicator is the pre-V3 format and is never mapped (SPEC V3 §6.1.5).
+ */
+export type PracticeParamsSide = {
   enabled: boolean;
   params: Record<string, number>;
   ops: Record<string, RuleOp>;
   rules_enabled?: Record<string, boolean>;
 };
 
-export type PracticeConfig = {
-  buy: PracticeSideInput;
-  sell: PracticeSideInput;
+export type PracticeSideInput = PracticeRowsSide | PracticeParamsSide;
+
+export type PracticeRowsConfig = {
+  buy: PracticeRowsSide;
+  sell: PracticeRowsSide;
   hold_max_sessions: number;
 };
 
-export type PracticeValidationError = { path: string; message: string };
+export type PracticeParamsConfig = {
+  buy: PracticeParamsSide;
+  sell: PracticeParamsSide;
+  hold_max_sessions: number;
+};
+
+/** Practice config of one indicator: rows (15 indicators) or params + operators (Volume). */
+export type PracticeConfig = PracticeRowsConfig | PracticeParamsConfig;
+
+export type PracticeValidationError = {
+  path: string;
+  message: string;
+  /** Row validation: the tab and the 1-based row number of the error. */
+  side?: Side;
+  row?: number;
+};
 
 export type RuleEvidenceRow = {
+  /** Row id (`rsi.level`); Volume and runs locked before SPEC V3 carry `r1`, `r2`. */
   rule_id: string;
   kind: 'compare' | 'cross' | 'membership';
   op: RuleOp;
   left_label: string;
   right_label: string;
+  /** Registry sentence of the row with the values it ran with (`RSI 14 < 30`). Absent on older runs. */
+  label?: string;
+  /** The row's own stored values (periods, threshold, operator code). Absent on older runs. */
+  values?: Record<string, number | string>;
   lhs: number | null;
   rhs: number | null;
   rhs_lower?: number | null;
@@ -39,7 +79,12 @@ export type DecisionEvidence = {
   /** Session index (Phiên 1 = first test session) of the close where the decision was made. */
   signal_session: number;
   enabled: boolean;
+  /** `null` when there is no signal (`status = no_signal`) or a needed value is missing. */
   result: Tri;
+  /** `no_signal` when the tab is off or no row is enabled (SPEC V3 §1.3). Absent on older runs. */
+  status?: 'ok' | 'no_signal';
+  reason?: NoSignalReason | null;
+  /** Volume: the side params. Row-based indicators carry their values on each rule. */
   params: Record<string, number>;
   rules: RuleEvidenceRow[];
 };
@@ -156,10 +201,26 @@ export type PracticeFormRule = {
 
 export type PracticeFormSide = { fields: PracticeFormField[]; rules: PracticeFormRule[] };
 
-export type PracticeForm = {
+/**
+ * Form of a row-based indicator: the registry rows themselves (sentence with `{field}`
+ * placeholders, fields with ranges/options, constraints, default switch and default values per
+ * tab). The client renders the two tabs from `rows` and needs no other registry call.
+ */
+export type PracticeRowsForm = {
+  model: 'rows';
+  indicator_id: string;
+  rows: RowDefinition[];
+  defaults: PracticeRowsConfig;
+};
+
+/** Form of a params-based indicator (Volume): effective field domains and rule templates. */
+export type PracticeParamsForm = {
+  model: 'legacy_params';
   indicator_id: string;
   buy: PracticeFormSide;
   sell: PracticeFormSide;
   cross_fields: Array<{ left: string; op: '<' | '>'; right: string }>;
-  defaults: PracticeConfig;
+  defaults: PracticeParamsConfig;
 };
+
+export type PracticeForm = PracticeRowsForm | PracticeParamsForm;

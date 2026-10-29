@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { ACADEMY_GRANTS } from '../../src/modules/academy/academy.ports.js';
@@ -14,7 +16,7 @@ import {
   IndexMembershipProvider,
   MarketHuntDataSource,
 } from '../../src/modules/market-integration/index.js';
-import { defaultConfig } from '../../src/modules/quant/v2/index.js';
+import { defaultConfig, type RowSideConfig } from '../../src/modules/quant/v2/index.js';
 import { SharedConfigService } from '../../src/modules/strategy-config/strategy-config.service.js';
 import { nextCalendarDate } from '../../src/modules/strategy-config/strategy-config.calendar.js';
 import {
@@ -94,15 +96,23 @@ describe('system acceptance: Bot policy iqx-bot-v1.0 on a real ledger', () => {
   }
 
   /** Master ON `ma` with both sides: Buy when rising, Sell when falling. */
-  async function saveMaConfig(userId: string, suffix: string) {
+  function maConfig() {
     const ma = structuredClone(defaultConfig().indicators.ma!);
     ma.master_enabled = true;
     ma.buy.enabled = true;
     ma.sell.enabled = true;
+    // The fixture history is a steady trend (no price cross): judge it by the SMA trend row.
+    for (const side of [ma.buy, ma.sell] as RowSideConfig[]) {
+      side.rules = side.rules.map((row) => ({ ...row, enabled: row.id === 'ma.trend' }));
+    }
+    return ma;
+  }
+
+  async function saveMaConfig(userId: string, suffix: string) {
     const saved = await stack.app.get(SharedConfigService).save(userId, {
       expected_revision: 0,
       idempotency_key: `bot-policy-config-${suffix}`,
-      indicators: { ma },
+      indicators: { ma: maConfig() },
     });
     if (!saved.effective_session) throw new Error('System calendar did not produce a session');
     return saved;
@@ -500,6 +510,99 @@ describe('system acceptance: Bot policy iqx-bot-v1.0 on a real ledger', () => {
       [user.id],
     );
     expect(limit).toEqual([{ n: 1 }]);
+  });
+
+  it('P01 a Bot paused by the V3 upgrade skips silently until a config saved after it is effective', async () => {
+    const user = await newUser('policy-v3-pause');
+    const first = await saveMaConfig(user.id, 'policy-v3-pause');
+    const entry = allocate(first.effective_session!);
+    await storeVn30(entry, ['VCB']);
+    trends.set(`VCB:${entry}`, 'up');
+    closes.set(`VCB:${entry}`, 20_000);
+    setDay(entry);
+    await stack.query(
+      `insert into bot_config_pauses (user_id, reason, paused_revision)
+       values ($1, 'indicator_conditions_v3', $2)`,
+      [user.id, first.revision],
+    );
+    const bots = stack.app.get(BotService);
+    const headers = authHeader(user.accessToken);
+
+    // Unresolved: the session is skipped like a suspended account; nothing is written.
+    await expect(bots.runAccountSession(user.id, entry, provider())).rejects.toThrow(
+      'Bot đang tạm dừng',
+    );
+    expect(await countRows(user.id)).toEqual([{ ledger: 1, executions: 0, runs: 0 }]);
+    setDay(session);
+    const paused = await stack.app.inject({ method: 'GET', url: '/api/v2/bot', headers });
+    expect(paused.statusCode, paused.body).toBe(200);
+    expect(paused.json()).toMatchObject({
+      conditions: {
+        state: 'paused',
+        state_label: 'Tạm dừng',
+        has_active_buy: false,
+        has_active_sell: false,
+      },
+    });
+
+    // Saving the shared config resumes the Bot from the session where that revision is effective.
+    const resumed = await stack.app.get(SharedConfigService).save(user.id, {
+      expected_revision: first.revision,
+      idempotency_key: 'bot-policy-config-policy-v3-pause-resume',
+      indicators: { ma: maConfig() },
+    });
+    expect(
+      await stack.query(
+        `select paused_revision, resume_revision, resumed_at is not null as resumed
+           from bot_config_pauses where user_id = $1`,
+        [user.id],
+      ),
+    ).toEqual([
+      { paused_revision: first.revision, resume_revision: resumed.revision, resumed: true },
+    ]);
+    const next = allocate(resumed.effective_session!);
+    await storeVn30(next, ['VCB']);
+    trends.set(`VCB:${next}`, 'up');
+    closes.set(`VCB:${next}`, 20_000);
+    setDay(next);
+
+    const run = await bots.runAccountSession(user.id, next, provider());
+    setDay(session);
+
+    expect(run).toMatchObject({ status: 'succeeded', buyCount: 1, sellCount: 0 });
+    expect(await countRows(user.id)).toEqual([{ ledger: 2, executions: 1, runs: 1 }]);
+  });
+
+  it('P02 migration 0032 re-runs without changing a backup row or a pause', async () => {
+    const sql = readFileSync(
+      new URL('../../migrations/0032_indicator_conditions_v3.sql', import.meta.url),
+      'utf8',
+    );
+    const counts = () =>
+      stack.query(
+        `select
+           (select count(*)::int from backup_v3_shared_config_revisions) as revisions,
+           (select count(*)::int from backup_v3_effective_config_sessions) as sessions,
+           (select count(*)::int from backup_v3_practice_progress) as drafts,
+           (select count(*)::int from backup_v3_strategy_alerts) as alerts,
+           (select count(*)::int from backup_v3_strategy_alert_versions) as versions,
+           (select count(*)::int from bot_config_pauses) as pauses`,
+      );
+    await stack.query(sql);
+    const before = await counts();
+    // Backups taken by the first run keep their value; new rows are added only once.
+    const live = await stack.query<{ n: number }>(
+      'select count(*)::int as n from shared_config_revisions',
+    );
+    expect(before[0]).toMatchObject({ revisions: live[0]!.n });
+    await stack.query(sql);
+    expect(await counts()).toEqual(before);
+    await expect(
+      stack.query(
+        `insert into bot_config_pauses (user_id, reason)
+         select id, 'other' from users limit 1`,
+      ),
+    ).rejects.toThrow();
   });
 
   it('M01 the VN30 membership job stores today once, refuses past sessions and never rewrites', async () => {

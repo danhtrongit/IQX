@@ -9,7 +9,7 @@ import {
 } from '../../src/modules/bots/index.js';
 import { MarketDataService } from '../../src/modules/market-data/market-data.service.js';
 import { HoseRestrictedSecuritiesProvider } from '../../src/modules/market-integration/index.js';
-import { defaultConfig } from '../../src/modules/quant/v2/index.js';
+import { defaultConfig, type RowSideConfig } from '../../src/modules/quant/v2/index.js';
 import { nextCalendarDate } from '../../src/modules/strategy-config/strategy-config.calendar.js';
 import { SharedConfigService } from '../../src/modules/strategy-config/strategy-config.service.js';
 import { registerAndLogin, startSystemStack, type SystemStack } from './system-stack.js';
@@ -128,6 +128,10 @@ describe('system acceptance: Bot history reads a real buy-then-sell run', () => 
     ma.master_enabled = true;
     ma.buy.enabled = true;
     ma.sell.enabled = true;
+    // The fixture history is a steady trend (no price cross): judge it by the SMA trend row.
+    for (const side of [ma.buy, ma.sell] as RowSideConfig[]) {
+      side.rules = side.rules.map((row) => ({ ...row, enabled: row.id === 'ma.trend' }));
+    }
     const saved = await stack.app.get(SharedConfigService).save(user.id, {
       expected_revision: 0,
       idempotency_key: 'history-run-config-0001',

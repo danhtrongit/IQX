@@ -2817,7 +2817,8 @@ export type BotConditions = {
     | "buy_only"
     | "sell_only"
     | "buy_and_sell"
-    | "error";
+    | "error"
+    | "paused";
   state_label: string;
 };
 
@@ -2954,7 +2955,10 @@ export type BotRunStatus = {
 export type BotSideBlock = {
   detail: string;
   indicator_ids: Array<string>;
-  reason: "config_invalid_or_unauthorized" | "legacy_needs_review";
+  reason:
+    | "config_invalid_or_unauthorized"
+    | "legacy_needs_review"
+    | "config_outdated";
 };
 
 export type BotStatus = {
@@ -45495,61 +45499,81 @@ export type PracticeGetRunResponses = {
       };
     } | null;
     completed_at: string | null;
-    config: {
-      buy: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
+    config:
+      | {
+          buy: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+        }
+      | {
+          buy: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
         };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-      hold_max_sessions: number;
-      sell: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-        };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-    };
     error: {
       code: string;
       message: string;
@@ -45610,9 +45634,11 @@ export type PracticeGetRunResponses = {
             params: {
               [key: string]: number;
             };
+            reason?: "indicator_off" | "side_off" | "no_rows";
             result: boolean | null;
             rules: Array<{
               kind: "compare" | "cross" | "membership";
+              label?: string;
               left_label: string;
               lhs: number | null;
               missing: boolean;
@@ -45635,10 +45661,14 @@ export type PracticeGetRunResponses = {
               rhs: number | null;
               right_label: string;
               rule_id: string;
+              values?: {
+                [key: string]: number | string;
+              };
               [key: string]: unknown;
             }>;
             side: "buy" | "sell";
             signal_session: number;
+            status?: "ok" | "no_signal";
           };
           fee: number;
           price: number;
@@ -45663,9 +45693,11 @@ export type PracticeGetRunResponses = {
             params: {
               [key: string]: number;
             };
+            reason?: "indicator_off" | "side_off" | "no_rows";
             result: boolean | null;
             rules: Array<{
               kind: "compare" | "cross" | "membership";
+              label?: string;
               left_label: string;
               lhs: number | null;
               missing: boolean;
@@ -45688,10 +45720,14 @@ export type PracticeGetRunResponses = {
               rhs: number | null;
               right_label: string;
               rule_id: string;
+              values?: {
+                [key: string]: number | string;
+              };
               [key: string]: unknown;
             }>;
             side: "buy" | "sell";
             signal_session: number;
+            status?: "ok" | "no_signal";
           };
           fee: number;
           indicator_met: boolean;
@@ -45731,61 +45767,81 @@ export type PracticeGetRunResponse =
 
 export type PracticeSaveDraftData = {
   body: {
-    draft: {
-      buy: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
+    draft:
+      | {
+          buy: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+        }
+      | {
+          buy: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
         };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-      hold_max_sessions: number;
-      sell: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-        };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-    };
     expected_revision: number;
   };
   path: {
@@ -45823,66 +45879,88 @@ export type PracticeSaveDraftError =
 
 export type PracticeSaveDraftResponses = {
   200: {
-    draft: {
-      buy: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
+    draft:
+      | {
+          buy: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+        }
+      | {
+          buy: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
         };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-      hold_max_sessions: number;
-      sell: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-        };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-    };
     draft_revision: number;
     validation: {
       errors: Array<{
         message: string;
         path: string;
+        row?: number;
+        side?: "buy" | "sell";
       }>;
       valid: boolean;
     };
@@ -45935,61 +46013,81 @@ export type PracticeHistoryResponses = {
     items: Array<{
       case_id: string;
       completed_at: string | null;
-      config: {
-        buy: {
-          enabled: boolean;
-          ops: {
-            [key: string]:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
+      config:
+        | {
+            buy: {
+              enabled: boolean;
+              rules: Array<{
+                enabled: boolean;
+                id: string;
+                [key: string]: number | string | boolean | boolean | string;
+              }>;
+            };
+            hold_max_sessions: number;
+            sell: {
+              enabled: boolean;
+              rules: Array<{
+                enabled: boolean;
+                id: string;
+                [key: string]: number | string | boolean | boolean | string;
+              }>;
+            };
+          }
+        | {
+            buy: {
+              enabled: boolean;
+              ops: {
+                [key: string]:
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low"
+                  | "∈"
+                  | "∉";
+              };
+              params: {
+                [key: string]: number;
+              };
+              rules_enabled?: {
+                [key: string]: boolean;
+              };
+            };
+            hold_max_sessions: number;
+            sell: {
+              enabled: boolean;
+              ops: {
+                [key: string]:
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low"
+                  | "∈"
+                  | "∉";
+              };
+              params: {
+                [key: string]: number;
+              };
+              rules_enabled?: {
+                [key: string]: boolean;
+              };
+            };
           };
-          params: {
-            [key: string]: number;
-          };
-          rules_enabled?: {
-            [key: string]: boolean;
-          };
-        };
-        hold_max_sessions: number;
-        sell: {
-          enabled: boolean;
-          ops: {
-            [key: string]:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-          };
-          params: {
-            [key: string]: number;
-          };
-          rules_enabled?: {
-            [key: string]: boolean;
-          };
-        };
-      };
       kpis: {
         buy_count: number;
         closed_trade_count: number;
@@ -46069,6 +46167,10 @@ export type PracticeNextResponses = {
     completed_count: number;
     current_run: {
       case_id: string;
+      error: {
+        code: string;
+        message: string;
+      } | null;
       ordinal: number;
       run_id: string;
       status: "computing" | "succeeded" | "failed";
@@ -46080,349 +46182,430 @@ export type PracticeNextResponses = {
         total_return: number | null;
       } | null;
     } | null;
-    draft: {
-      buy: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
+    draft:
+      | {
+          buy: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+        }
+      | {
+          buy: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
         };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-      hold_max_sessions: number;
-      sell: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-        };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-    };
     draft_revision: number;
-    form: {
-      buy: {
-        fields: Array<{
-          key: string;
-          label: string;
-          max: number;
-          min: number;
-          options?: Array<number>;
-          step: number;
-          type: "integer" | "number";
-          unit: string;
-        }>;
-        rules: Array<{
-          allowed_ops: Array<
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉"
-          >;
-          default_enabled?: boolean;
-          default_op:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-          kind: "compare" | "cross" | "membership";
-          left_label: string;
-          lhs:
-            | {
-                key: string;
-                kind: "series";
-                offset?: number;
-                offset_param?: string;
-              }
-            | {
-                key: string;
-                kind: "param";
-              }
-            | {
-                kind: "constant";
-                value: number;
-              };
-          rhs:
-            | {
-                key: string;
-                kind: "series";
-                offset?: number;
-                offset_param?: string;
-              }
-            | {
-                key: string;
-                kind: "param";
-              }
-            | {
-                kind: "constant";
-                value: number;
-              }
-            | {
-                lower:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-                upper:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-              };
-          right_label: string;
-          rule_id: string;
-        }>;
-      };
-      cross_fields: Array<{
-        left: string;
-        op: ">" | "<";
-        right: string;
-      }>;
-      defaults: {
-        buy: {
-          enabled: boolean;
-          ops: {
-            [key: string]:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
+    form:
+      | {
+          defaults: {
+            buy: {
+              enabled: boolean;
+              rules: Array<{
+                enabled: boolean;
+                id: string;
+                [key: string]: number | string | boolean | boolean | string;
+              }>;
+            };
+            hold_max_sessions: number;
+            sell: {
+              enabled: boolean;
+              rules: Array<{
+                enabled: boolean;
+                id: string;
+                [key: string]: number | string | boolean | boolean | string;
+              }>;
+            };
           };
-          params: {
-            [key: string]: number;
+          indicator_id: string;
+          model: "rows";
+          rows: Array<{
+            buy: {
+              [key: string]: number | string;
+            };
+            constraints: Array<{
+              left: string;
+              op: "<";
+              right: string;
+            }>;
+            default_enabled: boolean;
+            fields: Array<
+              | {
+                  key: string;
+                  label: string;
+                  max: number;
+                  min: number;
+                  options?: Array<number>;
+                  step: number;
+                  type: "integer" | "number";
+                }
+              | {
+                  key: string;
+                  label: string;
+                  options: Array<{
+                    label: string;
+                    value: string;
+                  }>;
+                  type: "enum";
+                }
+            >;
+            id: string;
+            sell: {
+              [key: string]: number | string;
+            };
+            sentence: string;
+          }>;
+        }
+      | {
+          buy: {
+            fields: Array<{
+              key: string;
+              label: string;
+              max: number;
+              min: number;
+              options?: Array<number>;
+              step: number;
+              type: "integer" | "number";
+              unit: string;
+            }>;
+            rules: Array<{
+              allowed_ops: Array<
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉"
+              >;
+              default_enabled?: boolean;
+              default_op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                    offset_param?: string;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+              rhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                    offset_param?: string;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  }
+                | {
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  };
+              right_label: string;
+              rule_id: string;
+            }>;
           };
-          rules_enabled?: {
-            [key: string]: boolean;
+          cross_fields: Array<{
+            left: string;
+            op: ">" | "<";
+            right: string;
+          }>;
+          defaults: {
+            buy: {
+              enabled: boolean;
+              ops: {
+                [key: string]:
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low"
+                  | "∈"
+                  | "∉";
+              };
+              params: {
+                [key: string]: number;
+              };
+              rules_enabled?: {
+                [key: string]: boolean;
+              };
+            };
+            hold_max_sessions: number;
+            sell: {
+              enabled: boolean;
+              ops: {
+                [key: string]:
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low"
+                  | "∈"
+                  | "∉";
+              };
+              params: {
+                [key: string]: number;
+              };
+              rules_enabled?: {
+                [key: string]: boolean;
+              };
+            };
+          };
+          indicator_id: string;
+          model: "legacy_params";
+          sell: {
+            fields: Array<{
+              key: string;
+              label: string;
+              max: number;
+              min: number;
+              options?: Array<number>;
+              step: number;
+              type: "integer" | "number";
+              unit: string;
+            }>;
+            rules: Array<{
+              allowed_ops: Array<
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉"
+              >;
+              default_enabled?: boolean;
+              default_op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                    offset_param?: string;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+              rhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                    offset_param?: string;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  }
+                | {
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  };
+              right_label: string;
+              rule_id: string;
+            }>;
           };
         };
-        hold_max_sessions: number;
-        sell: {
-          enabled: boolean;
-          ops: {
-            [key: string]:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-          };
-          params: {
-            [key: string]: number;
-          };
-          rules_enabled?: {
-            [key: string]: boolean;
-          };
-        };
-      };
-      indicator_id: string;
-      sell: {
-        fields: Array<{
-          key: string;
-          label: string;
-          max: number;
-          min: number;
-          options?: Array<number>;
-          step: number;
-          type: "integer" | "number";
-          unit: string;
-        }>;
-        rules: Array<{
-          allowed_ops: Array<
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉"
-          >;
-          default_enabled?: boolean;
-          default_op:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-          kind: "compare" | "cross" | "membership";
-          left_label: string;
-          lhs:
-            | {
-                key: string;
-                kind: "series";
-                offset?: number;
-                offset_param?: string;
-              }
-            | {
-                key: string;
-                kind: "param";
-              }
-            | {
-                kind: "constant";
-                value: number;
-              };
-          rhs:
-            | {
-                key: string;
-                kind: "series";
-                offset?: number;
-                offset_param?: string;
-              }
-            | {
-                key: string;
-                kind: "param";
-              }
-            | {
-                kind: "constant";
-                value: number;
-              }
-            | {
-                lower:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-                upper:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-              };
-          right_label: string;
-          rule_id: string;
-        }>;
-      };
-    };
     indicator: {
       id: string;
       name: string;
@@ -46439,6 +46622,10 @@ export type PracticeNextResponses = {
     };
     runs: Array<{
       case_id: string;
+      error: {
+        code: string;
+        message: string;
+      } | null;
       ordinal: number;
       run_id: string;
       status: "computing" | "succeeded" | "failed";
@@ -46457,6 +46644,8 @@ export type PracticeNextResponses = {
       errors: Array<{
         message: string;
         path: string;
+        row?: number;
+        side?: "buy" | "sell";
       }>;
       valid: boolean;
     };
@@ -46471,9 +46660,19 @@ export type PracticePreviewData = {
     buy_params?: {
       [key: string]: number;
     };
+    buy_rows?: Array<{
+      enabled: boolean;
+      id: string;
+      [key: string]: number | string | boolean | boolean | string;
+    }>;
     sell_params?: {
       [key: string]: number;
     };
+    sell_rows?: Array<{
+      enabled: boolean;
+      id: string;
+      [key: string]: number | string | boolean | boolean | string;
+    }>;
   };
   path: {
     indicatorId: string;
@@ -46573,61 +46772,81 @@ export type PracticePreviewResponse =
 export type PracticeStartRunData = {
   body: {
     case_id: string;
-    config: {
-      buy: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
+    config:
+      | {
+          buy: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+        }
+      | {
+          buy: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
         };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-      hold_max_sessions: number;
-      sell: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-        };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-    };
     idempotency_key: string;
     ordinal: number;
   };
@@ -46719,61 +46938,81 @@ export type PracticeStartRunResponses = {
       };
     } | null;
     completed_at: string | null;
-    config: {
-      buy: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
+    config:
+      | {
+          buy: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+        }
+      | {
+          buy: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
         };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-      hold_max_sessions: number;
-      sell: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-        };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-    };
     error: {
       code: string;
       message: string;
@@ -46834,9 +47073,11 @@ export type PracticeStartRunResponses = {
             params: {
               [key: string]: number;
             };
+            reason?: "indicator_off" | "side_off" | "no_rows";
             result: boolean | null;
             rules: Array<{
               kind: "compare" | "cross" | "membership";
+              label?: string;
               left_label: string;
               lhs: number | null;
               missing: boolean;
@@ -46859,10 +47100,14 @@ export type PracticeStartRunResponses = {
               rhs: number | null;
               right_label: string;
               rule_id: string;
+              values?: {
+                [key: string]: number | string;
+              };
               [key: string]: unknown;
             }>;
             side: "buy" | "sell";
             signal_session: number;
+            status?: "ok" | "no_signal";
           };
           fee: number;
           price: number;
@@ -46887,9 +47132,11 @@ export type PracticeStartRunResponses = {
             params: {
               [key: string]: number;
             };
+            reason?: "indicator_off" | "side_off" | "no_rows";
             result: boolean | null;
             rules: Array<{
               kind: "compare" | "cross" | "membership";
+              label?: string;
               left_label: string;
               lhs: number | null;
               missing: boolean;
@@ -46912,10 +47159,14 @@ export type PracticeStartRunResponses = {
               rhs: number | null;
               right_label: string;
               rule_id: string;
+              values?: {
+                [key: string]: number | string;
+              };
               [key: string]: unknown;
             }>;
             side: "buy" | "sell";
             signal_session: number;
+            status?: "ok" | "no_signal";
           };
           fee: number;
           indicator_met: boolean;
@@ -47000,6 +47251,10 @@ export type PracticeStateResponses = {
     completed_count: number;
     current_run: {
       case_id: string;
+      error: {
+        code: string;
+        message: string;
+      } | null;
       ordinal: number;
       run_id: string;
       status: "computing" | "succeeded" | "failed";
@@ -47011,349 +47266,430 @@ export type PracticeStateResponses = {
         total_return: number | null;
       } | null;
     } | null;
-    draft: {
-      buy: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
+    draft:
+      | {
+          buy: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | boolean | string;
+            }>;
+          };
+        }
+      | {
+          buy: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
+          hold_max_sessions: number;
+          sell: {
+            enabled: boolean;
+            ops: {
+              [key: string]:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules_enabled?: {
+              [key: string]: boolean;
+            };
+          };
         };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-      hold_max_sessions: number;
-      sell: {
-        enabled: boolean;
-        ops: {
-          [key: string]:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-        };
-        params: {
-          [key: string]: number;
-        };
-        rules_enabled?: {
-          [key: string]: boolean;
-        };
-      };
-    };
     draft_revision: number;
-    form: {
-      buy: {
-        fields: Array<{
-          key: string;
-          label: string;
-          max: number;
-          min: number;
-          options?: Array<number>;
-          step: number;
-          type: "integer" | "number";
-          unit: string;
-        }>;
-        rules: Array<{
-          allowed_ops: Array<
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉"
-          >;
-          default_enabled?: boolean;
-          default_op:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-          kind: "compare" | "cross" | "membership";
-          left_label: string;
-          lhs:
-            | {
-                key: string;
-                kind: "series";
-                offset?: number;
-                offset_param?: string;
-              }
-            | {
-                key: string;
-                kind: "param";
-              }
-            | {
-                kind: "constant";
-                value: number;
-              };
-          rhs:
-            | {
-                key: string;
-                kind: "series";
-                offset?: number;
-                offset_param?: string;
-              }
-            | {
-                key: string;
-                kind: "param";
-              }
-            | {
-                kind: "constant";
-                value: number;
-              }
-            | {
-                lower:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-                upper:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-              };
-          right_label: string;
-          rule_id: string;
-        }>;
-      };
-      cross_fields: Array<{
-        left: string;
-        op: ">" | "<";
-        right: string;
-      }>;
-      defaults: {
-        buy: {
-          enabled: boolean;
-          ops: {
-            [key: string]:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
+    form:
+      | {
+          defaults: {
+            buy: {
+              enabled: boolean;
+              rules: Array<{
+                enabled: boolean;
+                id: string;
+                [key: string]: number | string | boolean | boolean | string;
+              }>;
+            };
+            hold_max_sessions: number;
+            sell: {
+              enabled: boolean;
+              rules: Array<{
+                enabled: boolean;
+                id: string;
+                [key: string]: number | string | boolean | boolean | string;
+              }>;
+            };
           };
-          params: {
-            [key: string]: number;
+          indicator_id: string;
+          model: "rows";
+          rows: Array<{
+            buy: {
+              [key: string]: number | string;
+            };
+            constraints: Array<{
+              left: string;
+              op: "<";
+              right: string;
+            }>;
+            default_enabled: boolean;
+            fields: Array<
+              | {
+                  key: string;
+                  label: string;
+                  max: number;
+                  min: number;
+                  options?: Array<number>;
+                  step: number;
+                  type: "integer" | "number";
+                }
+              | {
+                  key: string;
+                  label: string;
+                  options: Array<{
+                    label: string;
+                    value: string;
+                  }>;
+                  type: "enum";
+                }
+            >;
+            id: string;
+            sell: {
+              [key: string]: number | string;
+            };
+            sentence: string;
+          }>;
+        }
+      | {
+          buy: {
+            fields: Array<{
+              key: string;
+              label: string;
+              max: number;
+              min: number;
+              options?: Array<number>;
+              step: number;
+              type: "integer" | "number";
+              unit: string;
+            }>;
+            rules: Array<{
+              allowed_ops: Array<
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉"
+              >;
+              default_enabled?: boolean;
+              default_op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                    offset_param?: string;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+              rhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                    offset_param?: string;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  }
+                | {
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  };
+              right_label: string;
+              rule_id: string;
+            }>;
           };
-          rules_enabled?: {
-            [key: string]: boolean;
+          cross_fields: Array<{
+            left: string;
+            op: ">" | "<";
+            right: string;
+          }>;
+          defaults: {
+            buy: {
+              enabled: boolean;
+              ops: {
+                [key: string]:
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low"
+                  | "∈"
+                  | "∉";
+              };
+              params: {
+                [key: string]: number;
+              };
+              rules_enabled?: {
+                [key: string]: boolean;
+              };
+            };
+            hold_max_sessions: number;
+            sell: {
+              enabled: boolean;
+              ops: {
+                [key: string]:
+                  | ">"
+                  | "<"
+                  | "cross_up"
+                  | "cross_down"
+                  | "reenter_lower"
+                  | "reenter_upper"
+                  | "break_upper"
+                  | "break_lower"
+                  | "cross_up_middle"
+                  | "cross_down_middle"
+                  | "break_high"
+                  | "break_low"
+                  | "∈"
+                  | "∉";
+              };
+              params: {
+                [key: string]: number;
+              };
+              rules_enabled?: {
+                [key: string]: boolean;
+              };
+            };
+          };
+          indicator_id: string;
+          model: "legacy_params";
+          sell: {
+            fields: Array<{
+              key: string;
+              label: string;
+              max: number;
+              min: number;
+              options?: Array<number>;
+              step: number;
+              type: "integer" | "number";
+              unit: string;
+            }>;
+            rules: Array<{
+              allowed_ops: Array<
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉"
+              >;
+              default_enabled?: boolean;
+              default_op:
+                | ">"
+                | "<"
+                | "cross_up"
+                | "cross_down"
+                | "reenter_lower"
+                | "reenter_upper"
+                | "break_upper"
+                | "break_lower"
+                | "cross_up_middle"
+                | "cross_down_middle"
+                | "break_high"
+                | "break_low"
+                | "∈"
+                | "∉";
+              kind: "compare" | "cross" | "membership";
+              left_label: string;
+              lhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                    offset_param?: string;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  };
+              rhs:
+                | {
+                    key: string;
+                    kind: "series";
+                    offset?: number;
+                    offset_param?: string;
+                  }
+                | {
+                    key: string;
+                    kind: "param";
+                  }
+                | {
+                    kind: "constant";
+                    value: number;
+                  }
+                | {
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  };
+              right_label: string;
+              rule_id: string;
+            }>;
           };
         };
-        hold_max_sessions: number;
-        sell: {
-          enabled: boolean;
-          ops: {
-            [key: string]:
-              | ">"
-              | "<"
-              | "cross_up"
-              | "cross_down"
-              | "reenter_lower"
-              | "reenter_upper"
-              | "break_upper"
-              | "break_lower"
-              | "cross_up_middle"
-              | "cross_down_middle"
-              | "break_high"
-              | "break_low"
-              | "∈"
-              | "∉";
-          };
-          params: {
-            [key: string]: number;
-          };
-          rules_enabled?: {
-            [key: string]: boolean;
-          };
-        };
-      };
-      indicator_id: string;
-      sell: {
-        fields: Array<{
-          key: string;
-          label: string;
-          max: number;
-          min: number;
-          options?: Array<number>;
-          step: number;
-          type: "integer" | "number";
-          unit: string;
-        }>;
-        rules: Array<{
-          allowed_ops: Array<
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉"
-          >;
-          default_enabled?: boolean;
-          default_op:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low"
-            | "∈"
-            | "∉";
-          kind: "compare" | "cross" | "membership";
-          left_label: string;
-          lhs:
-            | {
-                key: string;
-                kind: "series";
-                offset?: number;
-                offset_param?: string;
-              }
-            | {
-                key: string;
-                kind: "param";
-              }
-            | {
-                kind: "constant";
-                value: number;
-              };
-          rhs:
-            | {
-                key: string;
-                kind: "series";
-                offset?: number;
-                offset_param?: string;
-              }
-            | {
-                key: string;
-                kind: "param";
-              }
-            | {
-                kind: "constant";
-                value: number;
-              }
-            | {
-                lower:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-                upper:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-              };
-          right_label: string;
-          rule_id: string;
-        }>;
-      };
-    };
     indicator: {
       id: string;
       name: string;
@@ -47370,6 +47706,10 @@ export type PracticeStateResponses = {
     };
     runs: Array<{
       case_id: string;
+      error: {
+        code: string;
+        message: string;
+      } | null;
       ordinal: number;
       run_id: string;
       status: "computing" | "succeeded" | "failed";
@@ -47388,6 +47728,8 @@ export type PracticeStateResponses = {
       errors: Array<{
         message: string;
         path: string;
+        row?: number;
+        side?: "buy" | "sell";
       }>;
       valid: boolean;
     };
@@ -48793,7 +49135,7 @@ export type StrategyAlertEventsListResponses = {
           volume: number;
         } | null;
         indicator_ids: Array<string>;
-        indicator_params: {
+        indicator_params?: {
           [key: string]: {
             [key: string]: number;
           };
@@ -48811,6 +49153,9 @@ export type StrategyAlertEventsListResponses = {
           rhs_lower?: number | null;
           rhs_upper?: number | null;
           side: "buy" | "sell";
+          values?: {
+            [key: string]: number | string;
+          };
         }>;
         session: string;
       };
@@ -48894,7 +49239,7 @@ export type StrategyAlertEventGetResponses = {
         volume: number;
       } | null;
       indicator_ids: Array<string>;
-      indicator_params: {
+      indicator_params?: {
         [key: string]: {
           [key: string]: number;
         };
@@ -48912,6 +49257,9 @@ export type StrategyAlertEventGetResponses = {
         rhs_lower?: number | null;
         rhs_upper?: number | null;
         side: "buy" | "sell";
+        values?: {
+          [key: string]: number | string;
+        };
       }>;
       session: string;
     };
@@ -49518,6 +49866,7 @@ export type StrategyBacktestsCreateData = {
           path: {
             indicator: string;
             key: string;
+            rule?: string;
             side: "buy" | "sell";
           };
           values: Array<number>;
@@ -49533,6 +49882,7 @@ export type StrategyBacktestsCreateData = {
           path: {
             indicator: string;
             key: string;
+            rule?: string;
             side: "buy" | "sell";
           };
           step_bars: number;
@@ -49720,7 +50070,21 @@ export type StrategyBacktestsCreateResponses = {
             indicator: string;
             lhs: number | null;
             missing: boolean;
-            op: ">" | "<" | "∈" | "∉";
+            op:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
             previous_lhs?: number | null;
             previous_rhs?: number | null;
             result: boolean | null;
@@ -49728,6 +50092,9 @@ export type StrategyBacktestsCreateResponses = {
             rhs_lower?: number | null;
             rhs_upper?: number | null;
             side: "buy" | "sell";
+            values?: {
+              [key: string]: number | string;
+            };
           }>;
         } | null;
         index: number;
@@ -49748,7 +50115,21 @@ export type StrategyBacktestsCreateResponses = {
             indicator: string;
             lhs: number | null;
             missing: boolean;
-            op: ">" | "<" | "∈" | "∉";
+            op:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
             previous_lhs?: number | null;
             previous_rhs?: number | null;
             result: boolean | null;
@@ -49756,6 +50137,9 @@ export type StrategyBacktestsCreateResponses = {
             rhs_lower?: number | null;
             rhs_upper?: number | null;
             side: "buy" | "sell";
+            values?: {
+              [key: string]: number | string;
+            };
           }>;
         } | null;
         note: string;
@@ -49900,7 +50284,21 @@ export type StrategyBacktestsCreateResponses = {
             indicator: string;
             lhs: number | null;
             missing: boolean;
-            op: ">" | "<" | "∈" | "∉";
+            op:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
             previous_lhs?: number | null;
             previous_rhs?: number | null;
             result: boolean | null;
@@ -49908,6 +50306,9 @@ export type StrategyBacktestsCreateResponses = {
             rhs_lower?: number | null;
             rhs_upper?: number | null;
             side: "buy" | "sell";
+            values?: {
+              [key: string]: number | string;
+            };
           }>;
         } | null;
         entry_date: string;
@@ -49922,7 +50323,21 @@ export type StrategyBacktestsCreateResponses = {
             indicator: string;
             lhs: number | null;
             missing: boolean;
-            op: ">" | "<" | "∈" | "∉";
+            op:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
             previous_lhs?: number | null;
             previous_rhs?: number | null;
             result: boolean | null;
@@ -49930,6 +50345,9 @@ export type StrategyBacktestsCreateResponses = {
             rhs_lower?: number | null;
             rhs_upper?: number | null;
             side: "buy" | "sell";
+            values?: {
+              [key: string]: number | string;
+            };
           }>;
         } | null;
         exit_date: string;
@@ -50260,7 +50678,21 @@ export type StrategyBacktestsGetResponses = {
             indicator: string;
             lhs: number | null;
             missing: boolean;
-            op: ">" | "<" | "∈" | "∉";
+            op:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
             previous_lhs?: number | null;
             previous_rhs?: number | null;
             result: boolean | null;
@@ -50268,6 +50700,9 @@ export type StrategyBacktestsGetResponses = {
             rhs_lower?: number | null;
             rhs_upper?: number | null;
             side: "buy" | "sell";
+            values?: {
+              [key: string]: number | string;
+            };
           }>;
         } | null;
         index: number;
@@ -50288,7 +50723,21 @@ export type StrategyBacktestsGetResponses = {
             indicator: string;
             lhs: number | null;
             missing: boolean;
-            op: ">" | "<" | "∈" | "∉";
+            op:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
             previous_lhs?: number | null;
             previous_rhs?: number | null;
             result: boolean | null;
@@ -50296,6 +50745,9 @@ export type StrategyBacktestsGetResponses = {
             rhs_lower?: number | null;
             rhs_upper?: number | null;
             side: "buy" | "sell";
+            values?: {
+              [key: string]: number | string;
+            };
           }>;
         } | null;
         note: string;
@@ -50440,7 +50892,21 @@ export type StrategyBacktestsGetResponses = {
             indicator: string;
             lhs: number | null;
             missing: boolean;
-            op: ">" | "<" | "∈" | "∉";
+            op:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
             previous_lhs?: number | null;
             previous_rhs?: number | null;
             result: boolean | null;
@@ -50448,6 +50914,9 @@ export type StrategyBacktestsGetResponses = {
             rhs_lower?: number | null;
             rhs_upper?: number | null;
             side: "buy" | "sell";
+            values?: {
+              [key: string]: number | string;
+            };
           }>;
         } | null;
         entry_date: string;
@@ -50462,7 +50931,21 @@ export type StrategyBacktestsGetResponses = {
             indicator: string;
             lhs: number | null;
             missing: boolean;
-            op: ">" | "<" | "∈" | "∉";
+            op:
+              | ">"
+              | "<"
+              | "cross_up"
+              | "cross_down"
+              | "reenter_lower"
+              | "reenter_upper"
+              | "break_upper"
+              | "break_lower"
+              | "cross_up_middle"
+              | "cross_down_middle"
+              | "break_high"
+              | "break_low"
+              | "∈"
+              | "∉";
             previous_lhs?: number | null;
             previous_rhs?: number | null;
             result: boolean | null;
@@ -50470,6 +50953,9 @@ export type StrategyBacktestsGetResponses = {
             rhs_lower?: number | null;
             rhs_upper?: number | null;
             side: "buy" | "sell";
+            values?: {
+              [key: string]: number | string;
+            };
           }>;
         } | null;
         exit_date: string;
@@ -50723,7 +51209,21 @@ export type StrategyBacktestsTradesResponses = {
           indicator: string;
           lhs: number | null;
           missing: boolean;
-          op: ">" | "<" | "∈" | "∉";
+          op:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
           previous_lhs?: number | null;
           previous_rhs?: number | null;
           result: boolean | null;
@@ -50731,6 +51231,9 @@ export type StrategyBacktestsTradesResponses = {
           rhs_lower?: number | null;
           rhs_upper?: number | null;
           side: "buy" | "sell";
+          values?: {
+            [key: string]: number | string;
+          };
         }>;
       } | null;
       entry_date: string;
@@ -50745,7 +51248,21 @@ export type StrategyBacktestsTradesResponses = {
           indicator: string;
           lhs: number | null;
           missing: boolean;
-          op: ">" | "<" | "∈" | "∉";
+          op:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
           previous_lhs?: number | null;
           previous_rhs?: number | null;
           result: boolean | null;
@@ -50753,6 +51270,9 @@ export type StrategyBacktestsTradesResponses = {
           rhs_lower?: number | null;
           rhs_upper?: number | null;
           side: "buy" | "sell";
+          values?: {
+            [key: string]: number | string;
+          };
         }>;
       } | null;
       exit_date: string;
@@ -50781,7 +51301,21 @@ export type StrategyBacktestsTradesResponses = {
           indicator: string;
           lhs: number | null;
           missing: boolean;
-          op: ">" | "<" | "∈" | "∉";
+          op:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
           previous_lhs?: number | null;
           previous_rhs?: number | null;
           result: boolean | null;
@@ -50789,6 +51323,9 @@ export type StrategyBacktestsTradesResponses = {
           rhs_lower?: number | null;
           rhs_upper?: number | null;
           side: "buy" | "sell";
+          values?: {
+            [key: string]: number | string;
+          };
         }>;
       } | null;
       index: number;
@@ -50809,7 +51346,21 @@ export type StrategyBacktestsTradesResponses = {
           indicator: string;
           lhs: number | null;
           missing: boolean;
-          op: ">" | "<" | "∈" | "∉";
+          op:
+            | ">"
+            | "<"
+            | "cross_up"
+            | "cross_down"
+            | "reenter_lower"
+            | "reenter_upper"
+            | "break_upper"
+            | "break_lower"
+            | "cross_up_middle"
+            | "cross_down_middle"
+            | "break_high"
+            | "break_low"
+            | "∈"
+            | "∉";
           previous_lhs?: number | null;
           previous_rhs?: number | null;
           result: boolean | null;
@@ -50817,6 +51368,9 @@ export type StrategyBacktestsTradesResponses = {
           rhs_lower?: number | null;
           rhs_upper?: number | null;
           side: "buy" | "sell";
+          values?: {
+            [key: string]: number | string;
+          };
         }>;
       } | null;
       note: string;
@@ -52182,61 +52736,359 @@ export type StrategyConfigTechnicalRegistryError =
 export type StrategyConfigTechnicalRegistryResponses = {
   200: {
     calculation_version: string;
-    indicators: Array<{
-      availability: "ohlcv" | "needs_history_context";
-      buy: {
-        enabled: boolean;
-        field_overrides?: {
-          [key: string]: {
-            api_scale?: number;
-            key?: string;
-            label?: string;
-            max?: number;
-            min?: number;
-            options?: Array<number>;
-            step?: number;
-            type?: "integer" | "number";
-            unit?: string;
-            wire_unit?: string;
-          };
-        };
-        params: {
-          [key: string]: number;
-        };
-        rules: Array<
-          | {
-              allowed_ops: Array<
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-              >;
-              enabled?: boolean;
-              id: string;
-              kind: "compare" | "cross";
-              lhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
+    indicators: Array<
+      | {
+          availability: "ohlcv" | "needs_history_context";
+          chapter: number;
+          family: "state" | "event";
+          formula: string;
+          id: string;
+          learned: boolean;
+          lesson_id: string | null;
+          model: "rows";
+          name: string;
+          rows: Array<{
+            buy: {
+              [key: string]: number | string;
+            };
+            constraints: Array<{
+              left: string;
+              op: "<";
+              right: string;
+            }>;
+            default_enabled: boolean;
+            fields: Array<
+              | {
+                  key: string;
+                  label: string;
+                  max: number;
+                  min: number;
+                  options?: Array<number>;
+                  step: number;
+                  type: "integer" | "number";
+                }
+              | {
+                  key: string;
+                  label: string;
+                  options: Array<{
+                    label: string;
+                    value: string;
+                  }>;
+                  type: "enum";
+                }
+            >;
+            id: string;
+            sell: {
+              [key: string]: number | string;
+            };
+            sentence: string;
+          }>;
+        }
+      | {
+          availability: "ohlcv" | "needs_history_context";
+          buy: {
+            enabled: boolean;
+            field_overrides?: {
+              [key: string]: {
+                api_scale?: number;
+                key?: string;
+                label?: string;
+                max?: number;
+                min?: number;
+                options?: Array<number>;
+                step?: number;
+                type?: "integer" | "number";
+                unit?: string;
+                wire_unit?: string;
+              };
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules: Array<
+              | {
+                  allowed_ops: Array<
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low"
+                  >;
+                  enabled?: boolean;
+                  id: string;
+                  kind: "compare" | "cross";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                        offset_param?: string;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op:
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low";
+                  rhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                        offset_param?: string;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                }
+              | {
+                  allowed_ops: Array<"∈" | "∉">;
+                  enabled?: boolean;
+                  id: string;
+                  kind: "membership";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                        offset_param?: string;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: "∈" | "∉";
+                  rhs: {
+                    bounds?: "open";
+                    kind?: "interval";
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
                   };
+                }
+            >;
+          };
+          chapter: number;
+          family: "state" | "event";
+          fields: Array<{
+            api_scale: number;
+            key: string;
+            label: string;
+            max: number;
+            min: number;
+            options?: Array<number>;
+            step: number;
+            type: "integer" | "number";
+            unit: string;
+            wire_unit: string;
+          }>;
+          formula: string;
+          id: string;
+          learned: boolean;
+          lesson_id: string | null;
+          model: "legacy_params";
+          name: string;
+          sell: {
+            enabled: boolean;
+            field_overrides?: {
+              [key: string]: {
+                api_scale?: number;
+                key?: string;
+                label?: string;
+                max?: number;
+                min?: number;
+                options?: Array<number>;
+                step?: number;
+                type?: "integer" | "number";
+                unit?: string;
+                wire_unit?: string;
+              };
+            };
+            params: {
+              [key: string]: number;
+            };
+            rules: Array<
+              | {
+                  allowed_ops: Array<
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low"
+                  >;
+                  enabled?: boolean;
+                  id: string;
+                  kind: "compare" | "cross";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                        offset_param?: string;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op:
+                    | ">"
+                    | "<"
+                    | "cross_up"
+                    | "cross_down"
+                    | "reenter_lower"
+                    | "reenter_upper"
+                    | "break_upper"
+                    | "break_lower"
+                    | "cross_up_middle"
+                    | "cross_down_middle"
+                    | "break_high"
+                    | "break_low";
+                  rhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                        offset_param?: string;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                }
+              | {
+                  allowed_ops: Array<"∈" | "∉">;
+                  enabled?: boolean;
+                  id: string;
+                  kind: "membership";
+                  lhs:
+                    | {
+                        key: string;
+                        kind: "series";
+                        offset?: number;
+                        offset_param?: string;
+                      }
+                    | {
+                        key: string;
+                        kind: "param";
+                      }
+                    | {
+                        kind: "constant";
+                        value: number;
+                      };
+                  op: "∈" | "∉";
+                  rhs: {
+                    bounds?: "open";
+                    kind?: "interval";
+                    lower:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    upper:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  };
+                }
+            >;
+          };
+          validation: {
+            cross_fields: Array<{
+              left: string;
               op:
                 | ">"
                 | "<"
@@ -52250,259 +53102,11 @@ export type StrategyConfigTechnicalRegistryResponses = {
                 | "cross_down_middle"
                 | "break_high"
                 | "break_low";
-              rhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  };
-            }
-          | {
-              allowed_ops: Array<"∈" | "∉">;
-              enabled?: boolean;
-              id: string;
-              kind: "membership";
-              lhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  };
-              op: "∈" | "∉";
-              rhs: {
-                bounds?: "open";
-                kind?: "interval";
-                lower:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-                upper:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-              };
-            }
-        >;
-      };
-      chapter: number;
-      family: "state" | "event";
-      fields: Array<{
-        api_scale: number;
-        key: string;
-        label: string;
-        max: number;
-        min: number;
-        options?: Array<number>;
-        step: number;
-        type: "integer" | "number";
-        unit: string;
-        wire_unit: string;
-      }>;
-      formula: string;
-      id: string;
-      learned: boolean;
-      lesson_id: string | null;
-      name: string;
-      sell: {
-        enabled: boolean;
-        field_overrides?: {
-          [key: string]: {
-            api_scale?: number;
-            key?: string;
-            label?: string;
-            max?: number;
-            min?: number;
-            options?: Array<number>;
-            step?: number;
-            type?: "integer" | "number";
-            unit?: string;
-            wire_unit?: string;
+              right: string;
+            }>;
           };
-        };
-        params: {
-          [key: string]: number;
-        };
-        rules: Array<
-          | {
-              allowed_ops: Array<
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low"
-              >;
-              enabled?: boolean;
-              id: string;
-              kind: "compare" | "cross";
-              lhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  };
-              op:
-                | ">"
-                | "<"
-                | "cross_up"
-                | "cross_down"
-                | "reenter_lower"
-                | "reenter_upper"
-                | "break_upper"
-                | "break_lower"
-                | "cross_up_middle"
-                | "cross_down_middle"
-                | "break_high"
-                | "break_low";
-              rhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  };
-            }
-          | {
-              allowed_ops: Array<"∈" | "∉">;
-              enabled?: boolean;
-              id: string;
-              kind: "membership";
-              lhs:
-                | {
-                    key: string;
-                    kind: "series";
-                    offset?: number;
-                    offset_param?: string;
-                  }
-                | {
-                    key: string;
-                    kind: "param";
-                  }
-                | {
-                    kind: "constant";
-                    value: number;
-                  };
-              op: "∈" | "∉";
-              rhs: {
-                bounds?: "open";
-                kind?: "interval";
-                lower:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-                upper:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-              };
-            }
-        >;
-      };
-      validation: {
-        cross_fields: Array<{
-          left: string;
-          op:
-            | ">"
-            | "<"
-            | "cross_up"
-            | "cross_down"
-            | "reenter_lower"
-            | "reenter_upper"
-            | "break_upper"
-            | "break_lower"
-            | "cross_up_middle"
-            | "cross_down_middle"
-            | "break_high"
-            | "break_low";
-          right: string;
-        }>;
-      };
-    }>;
+        }
+    >;
     rule_version: string;
   };
 };
@@ -54034,528 +54638,564 @@ export type StrategyConfigGetSharedConfigResponses = {
     config: {
       indicators: {
         [key: string]: {
-          buy: {
-            enabled: boolean;
-            params: {
-              [key: string]: number;
-            };
-            rules: Array<
-              | {
-                  allowed_ops: Array<
-                    | ">"
-                    | "<"
-                    | "cross_up"
-                    | "cross_down"
-                    | "reenter_lower"
-                    | "reenter_upper"
-                    | "break_upper"
-                    | "break_lower"
-                    | "cross_up_middle"
-                    | "cross_down_middle"
-                    | "break_high"
-                    | "break_low"
-                  >;
-                  enabled?: boolean;
+          buy:
+            | {
+                enabled: boolean;
+                rules: Array<{
+                  enabled: boolean;
                   id: string;
-                  kind: "compare" | "cross";
-                  lhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
+                  [key: string]: number | string | boolean | boolean | string;
+                }>;
+              }
+            | {
+                enabled: boolean;
+                params: {
+                  [key: string]: number;
+                };
+                rules: Array<
+                  | {
+                      allowed_ops: Array<
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low"
+                      >;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "compare" | "cross";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op:
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low";
+                      rhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    }
+                  | {
+                      allowed_ops: Array<"∈" | "∉">;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "membership";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op: "∈" | "∉";
+                      rhs: {
+                        bounds?: "open";
+                        kind?: "interval";
+                        lower:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        upper:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
                       };
-                  op:
-                    | ">"
-                    | "<"
-                    | "cross_up"
-                    | "cross_down"
-                    | "reenter_lower"
-                    | "reenter_upper"
-                    | "break_upper"
-                    | "break_lower"
-                    | "cross_up_middle"
-                    | "cross_down_middle"
-                    | "break_high"
-                    | "break_low";
-                  rhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                }
-              | {
-                  allowed_ops: Array<"∈" | "∉">;
-                  enabled?: boolean;
-                  id: string;
-                  kind: "membership";
-                  lhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                  op: "∈" | "∉";
-                  rhs: {
-                    bounds?: "open";
-                    kind?: "interval";
-                    lower:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    upper:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  };
-                }
-            >;
-          };
+                    }
+                >;
+              };
           master_enabled: boolean;
-          sell: {
-            enabled: boolean;
-            params: {
-              [key: string]: number;
-            };
-            rules: Array<
-              | {
-                  allowed_ops: Array<
-                    | ">"
-                    | "<"
-                    | "cross_up"
-                    | "cross_down"
-                    | "reenter_lower"
-                    | "reenter_upper"
-                    | "break_upper"
-                    | "break_lower"
-                    | "cross_up_middle"
-                    | "cross_down_middle"
-                    | "break_high"
-                    | "break_low"
-                  >;
-                  enabled?: boolean;
+          sell:
+            | {
+                enabled: boolean;
+                rules: Array<{
+                  enabled: boolean;
                   id: string;
-                  kind: "compare" | "cross";
-                  lhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
+                  [key: string]: number | string | boolean | boolean | string;
+                }>;
+              }
+            | {
+                enabled: boolean;
+                params: {
+                  [key: string]: number;
+                };
+                rules: Array<
+                  | {
+                      allowed_ops: Array<
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low"
+                      >;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "compare" | "cross";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op:
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low";
+                      rhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    }
+                  | {
+                      allowed_ops: Array<"∈" | "∉">;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "membership";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op: "∈" | "∉";
+                      rhs: {
+                        bounds?: "open";
+                        kind?: "interval";
+                        lower:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        upper:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
                       };
-                  op:
-                    | ">"
-                    | "<"
-                    | "cross_up"
-                    | "cross_down"
-                    | "reenter_lower"
-                    | "reenter_upper"
-                    | "break_upper"
-                    | "break_lower"
-                    | "cross_up_middle"
-                    | "cross_down_middle"
-                    | "break_high"
-                    | "break_low";
-                  rhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                }
-              | {
-                  allowed_ops: Array<"∈" | "∉">;
-                  enabled?: boolean;
-                  id: string;
-                  kind: "membership";
-                  lhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                  op: "∈" | "∉";
-                  rhs: {
-                    bounds?: "open";
-                    kind?: "interval";
-                    lower:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    upper:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  };
-                }
-            >;
-          };
+                    }
+                >;
+              };
         };
       };
       revision: number;
-      rule_version: "iqx-rules-3.0";
-      schema_version: "2.0";
+      rule_version: "iqx-rules-4.0";
+      schema_version: "3.0";
     };
     config_hash: string;
     effective?: {
       config: {
         indicators: {
           [key: string]: {
-            buy: {
-              enabled: boolean;
-              params: {
-                [key: string]: number;
-              };
-              rules: Array<
-                | {
-                    allowed_ops: Array<
-                      | ">"
-                      | "<"
-                      | "cross_up"
-                      | "cross_down"
-                      | "reenter_lower"
-                      | "reenter_upper"
-                      | "break_upper"
-                      | "break_lower"
-                      | "cross_up_middle"
-                      | "cross_down_middle"
-                      | "break_high"
-                      | "break_low"
-                    >;
-                    enabled?: boolean;
+            buy:
+              | {
+                  enabled: boolean;
+                  rules: Array<{
+                    enabled: boolean;
                     id: string;
-                    kind: "compare" | "cross";
-                    lhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
+                    [key: string]: number | string | boolean | boolean | string;
+                  }>;
+                }
+              | {
+                  enabled: boolean;
+                  params: {
+                    [key: string]: number;
+                  };
+                  rules: Array<
+                    | {
+                        allowed_ops: Array<
+                          | ">"
+                          | "<"
+                          | "cross_up"
+                          | "cross_down"
+                          | "reenter_lower"
+                          | "reenter_upper"
+                          | "break_upper"
+                          | "break_lower"
+                          | "cross_up_middle"
+                          | "cross_down_middle"
+                          | "break_high"
+                          | "break_low"
+                        >;
+                        enabled?: boolean;
+                        id: string;
+                        kind: "compare" | "cross";
+                        lhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        op:
+                          | ">"
+                          | "<"
+                          | "cross_up"
+                          | "cross_down"
+                          | "reenter_lower"
+                          | "reenter_upper"
+                          | "break_upper"
+                          | "break_lower"
+                          | "cross_up_middle"
+                          | "cross_down_middle"
+                          | "break_high"
+                          | "break_low";
+                        rhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                      }
+                    | {
+                        allowed_ops: Array<"∈" | "∉">;
+                        enabled?: boolean;
+                        id: string;
+                        kind: "membership";
+                        lhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        op: "∈" | "∉";
+                        rhs: {
+                          bounds?: "open";
+                          kind?: "interval";
+                          lower:
+                            | {
+                                key: string;
+                                kind: "series";
+                                offset?: number;
+                                offset_param?: string;
+                              }
+                            | {
+                                key: string;
+                                kind: "param";
+                              }
+                            | {
+                                kind: "constant";
+                                value: number;
+                              };
+                          upper:
+                            | {
+                                key: string;
+                                kind: "series";
+                                offset?: number;
+                                offset_param?: string;
+                              }
+                            | {
+                                key: string;
+                                kind: "param";
+                              }
+                            | {
+                                kind: "constant";
+                                value: number;
+                              };
                         };
-                    op:
-                      | ">"
-                      | "<"
-                      | "cross_up"
-                      | "cross_down"
-                      | "reenter_lower"
-                      | "reenter_upper"
-                      | "break_upper"
-                      | "break_lower"
-                      | "cross_up_middle"
-                      | "cross_down_middle"
-                      | "break_high"
-                      | "break_low";
-                    rhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  }
-                | {
-                    allowed_ops: Array<"∈" | "∉">;
-                    enabled?: boolean;
-                    id: string;
-                    kind: "membership";
-                    lhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    op: "∈" | "∉";
-                    rhs: {
-                      bounds?: "open";
-                      kind?: "interval";
-                      lower:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                      upper:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                    };
-                  }
-              >;
-            };
+                      }
+                  >;
+                };
             master_enabled: boolean;
-            sell: {
-              enabled: boolean;
-              params: {
-                [key: string]: number;
-              };
-              rules: Array<
-                | {
-                    allowed_ops: Array<
-                      | ">"
-                      | "<"
-                      | "cross_up"
-                      | "cross_down"
-                      | "reenter_lower"
-                      | "reenter_upper"
-                      | "break_upper"
-                      | "break_lower"
-                      | "cross_up_middle"
-                      | "cross_down_middle"
-                      | "break_high"
-                      | "break_low"
-                    >;
-                    enabled?: boolean;
+            sell:
+              | {
+                  enabled: boolean;
+                  rules: Array<{
+                    enabled: boolean;
                     id: string;
-                    kind: "compare" | "cross";
-                    lhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
+                    [key: string]: number | string | boolean | boolean | string;
+                  }>;
+                }
+              | {
+                  enabled: boolean;
+                  params: {
+                    [key: string]: number;
+                  };
+                  rules: Array<
+                    | {
+                        allowed_ops: Array<
+                          | ">"
+                          | "<"
+                          | "cross_up"
+                          | "cross_down"
+                          | "reenter_lower"
+                          | "reenter_upper"
+                          | "break_upper"
+                          | "break_lower"
+                          | "cross_up_middle"
+                          | "cross_down_middle"
+                          | "break_high"
+                          | "break_low"
+                        >;
+                        enabled?: boolean;
+                        id: string;
+                        kind: "compare" | "cross";
+                        lhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        op:
+                          | ">"
+                          | "<"
+                          | "cross_up"
+                          | "cross_down"
+                          | "reenter_lower"
+                          | "reenter_upper"
+                          | "break_upper"
+                          | "break_lower"
+                          | "cross_up_middle"
+                          | "cross_down_middle"
+                          | "break_high"
+                          | "break_low";
+                        rhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                      }
+                    | {
+                        allowed_ops: Array<"∈" | "∉">;
+                        enabled?: boolean;
+                        id: string;
+                        kind: "membership";
+                        lhs:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        op: "∈" | "∉";
+                        rhs: {
+                          bounds?: "open";
+                          kind?: "interval";
+                          lower:
+                            | {
+                                key: string;
+                                kind: "series";
+                                offset?: number;
+                                offset_param?: string;
+                              }
+                            | {
+                                key: string;
+                                kind: "param";
+                              }
+                            | {
+                                kind: "constant";
+                                value: number;
+                              };
+                          upper:
+                            | {
+                                key: string;
+                                kind: "series";
+                                offset?: number;
+                                offset_param?: string;
+                              }
+                            | {
+                                key: string;
+                                kind: "param";
+                              }
+                            | {
+                                kind: "constant";
+                                value: number;
+                              };
                         };
-                    op:
-                      | ">"
-                      | "<"
-                      | "cross_up"
-                      | "cross_down"
-                      | "reenter_lower"
-                      | "reenter_upper"
-                      | "break_upper"
-                      | "break_lower"
-                      | "cross_up_middle"
-                      | "cross_down_middle"
-                      | "break_high"
-                      | "break_low";
-                    rhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  }
-                | {
-                    allowed_ops: Array<"∈" | "∉">;
-                    enabled?: boolean;
-                    id: string;
-                    kind: "membership";
-                    lhs:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    op: "∈" | "∉";
-                    rhs: {
-                      bounds?: "open";
-                      kind?: "interval";
-                      lower:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                      upper:
-                        | {
-                            key: string;
-                            kind: "series";
-                            offset?: number;
-                            offset_param?: string;
-                          }
-                        | {
-                            key: string;
-                            kind: "param";
-                          }
-                        | {
-                            kind: "constant";
-                            value: number;
-                          };
-                    };
-                  }
-              >;
-            };
+                      }
+                  >;
+                };
           };
         };
         revision: number;
-        rule_version: "iqx-rules-3.0";
-        schema_version: "2.0";
+        rule_version: "iqx-rules-4.0";
+        schema_version: "3.0";
       };
       config_hash: string;
       effective_session: string;
@@ -54569,11 +55209,13 @@ export type StrategyConfigGetSharedConfigResponses = {
         legacy: boolean;
         needs_review: boolean;
         removed_indicators: Array<string>;
+        reset: boolean;
         sell: {
           indicators: Array<string>;
           status: "ok" | "legacy_needs_review";
         };
       } | null;
+      outdated: boolean;
       revision: number;
     } | null;
     effective_revision: number | null;
@@ -54589,11 +55231,13 @@ export type StrategyConfigGetSharedConfigResponses = {
       legacy: boolean;
       needs_review: boolean;
       removed_indicators: Array<string>;
+      reset: boolean;
       sell: {
         indicators: Array<string>;
         status: "ok" | "legacy_needs_review";
       };
     } | null;
+    outdated: boolean;
     registry_version: string;
     saved_revision: number;
     status: "pending" | "effective" | "calendar_unavailable";
@@ -54609,259 +55253,277 @@ export type StrategyConfigPatchSharedConfigData = {
     idempotency_key: string;
     indicators: {
       [key: string]: {
-        buy: {
-          enabled: boolean;
-          params: {
-            [key: string]: number;
-          };
-          rules: Array<
-            | {
-                allowed_ops: Array<
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low"
-                >;
-                enabled?: boolean;
+        buy:
+          | {
+              enabled: boolean;
+              rules: Array<{
+                enabled: boolean;
                 id: string;
-                kind: "compare" | "cross";
-                lhs:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
+                [key: string]: number | string | boolean | boolean | string;
+              }>;
+            }
+          | {
+              enabled: boolean;
+              params: {
+                [key: string]: number;
+              };
+              rules: Array<
+                | {
+                    allowed_ops: Array<
+                      | ">"
+                      | "<"
+                      | "cross_up"
+                      | "cross_down"
+                      | "reenter_lower"
+                      | "reenter_upper"
+                      | "break_upper"
+                      | "break_lower"
+                      | "cross_up_middle"
+                      | "cross_down_middle"
+                      | "break_high"
+                      | "break_low"
+                    >;
+                    enabled?: boolean;
+                    id: string;
+                    kind: "compare" | "cross";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op:
+                      | ">"
+                      | "<"
+                      | "cross_up"
+                      | "cross_down"
+                      | "reenter_lower"
+                      | "reenter_upper"
+                      | "break_upper"
+                      | "break_lower"
+                      | "cross_up_middle"
+                      | "cross_down_middle"
+                      | "break_high"
+                      | "break_low";
+                    rhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  }
+                | {
+                    allowed_ops: Array<"∈" | "∉">;
+                    enabled?: boolean;
+                    id: string;
+                    kind: "membership";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: "∈" | "∉";
+                    rhs: {
+                      bounds?: "open";
+                      kind?: "interval";
+                      lower:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      upper:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
                     };
-                op:
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low";
-                rhs:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-              }
-            | {
-                allowed_ops: Array<"∈" | "∉">;
-                enabled?: boolean;
-                id: string;
-                kind: "membership";
-                lhs:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-                op: "∈" | "∉";
-                rhs: {
-                  bounds?: "open";
-                  kind?: "interval";
-                  lower:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                  upper:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                };
-              }
-          >;
-        };
+                  }
+              >;
+            };
         master_enabled: boolean;
-        sell: {
-          enabled: boolean;
-          params: {
-            [key: string]: number;
-          };
-          rules: Array<
-            | {
-                allowed_ops: Array<
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low"
-                >;
-                enabled?: boolean;
+        sell:
+          | {
+              enabled: boolean;
+              rules: Array<{
+                enabled: boolean;
                 id: string;
-                kind: "compare" | "cross";
-                lhs:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
+                [key: string]: number | string | boolean | boolean | string;
+              }>;
+            }
+          | {
+              enabled: boolean;
+              params: {
+                [key: string]: number;
+              };
+              rules: Array<
+                | {
+                    allowed_ops: Array<
+                      | ">"
+                      | "<"
+                      | "cross_up"
+                      | "cross_down"
+                      | "reenter_lower"
+                      | "reenter_upper"
+                      | "break_upper"
+                      | "break_lower"
+                      | "cross_up_middle"
+                      | "cross_down_middle"
+                      | "break_high"
+                      | "break_low"
+                    >;
+                    enabled?: boolean;
+                    id: string;
+                    kind: "compare" | "cross";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op:
+                      | ">"
+                      | "<"
+                      | "cross_up"
+                      | "cross_down"
+                      | "reenter_lower"
+                      | "reenter_upper"
+                      | "break_upper"
+                      | "break_lower"
+                      | "cross_up_middle"
+                      | "cross_down_middle"
+                      | "break_high"
+                      | "break_low";
+                    rhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                  }
+                | {
+                    allowed_ops: Array<"∈" | "∉">;
+                    enabled?: boolean;
+                    id: string;
+                    kind: "membership";
+                    lhs:
+                      | {
+                          key: string;
+                          kind: "series";
+                          offset?: number;
+                          offset_param?: string;
+                        }
+                      | {
+                          key: string;
+                          kind: "param";
+                        }
+                      | {
+                          kind: "constant";
+                          value: number;
+                        };
+                    op: "∈" | "∉";
+                    rhs: {
+                      bounds?: "open";
+                      kind?: "interval";
+                      lower:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      upper:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
                     };
-                op:
-                  | ">"
-                  | "<"
-                  | "cross_up"
-                  | "cross_down"
-                  | "reenter_lower"
-                  | "reenter_upper"
-                  | "break_upper"
-                  | "break_lower"
-                  | "cross_up_middle"
-                  | "cross_down_middle"
-                  | "break_high"
-                  | "break_low";
-                rhs:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-              }
-            | {
-                allowed_ops: Array<"∈" | "∉">;
-                enabled?: boolean;
-                id: string;
-                kind: "membership";
-                lhs:
-                  | {
-                      key: string;
-                      kind: "series";
-                      offset?: number;
-                      offset_param?: string;
-                    }
-                  | {
-                      key: string;
-                      kind: "param";
-                    }
-                  | {
-                      kind: "constant";
-                      value: number;
-                    };
-                op: "∈" | "∉";
-                rhs: {
-                  bounds?: "open";
-                  kind?: "interval";
-                  lower:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                  upper:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                };
-              }
-          >;
-        };
+                  }
+              >;
+            };
       };
     };
   };
@@ -54905,264 +55567,282 @@ export type StrategyConfigPatchSharedConfigResponses = {
     config: {
       indicators: {
         [key: string]: {
-          buy: {
-            enabled: boolean;
-            params: {
-              [key: string]: number;
-            };
-            rules: Array<
-              | {
-                  allowed_ops: Array<
-                    | ">"
-                    | "<"
-                    | "cross_up"
-                    | "cross_down"
-                    | "reenter_lower"
-                    | "reenter_upper"
-                    | "break_upper"
-                    | "break_lower"
-                    | "cross_up_middle"
-                    | "cross_down_middle"
-                    | "break_high"
-                    | "break_low"
-                  >;
-                  enabled?: boolean;
+          buy:
+            | {
+                enabled: boolean;
+                rules: Array<{
+                  enabled: boolean;
                   id: string;
-                  kind: "compare" | "cross";
-                  lhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
+                  [key: string]: number | string | boolean | boolean | string;
+                }>;
+              }
+            | {
+                enabled: boolean;
+                params: {
+                  [key: string]: number;
+                };
+                rules: Array<
+                  | {
+                      allowed_ops: Array<
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low"
+                      >;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "compare" | "cross";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op:
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low";
+                      rhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    }
+                  | {
+                      allowed_ops: Array<"∈" | "∉">;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "membership";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op: "∈" | "∉";
+                      rhs: {
+                        bounds?: "open";
+                        kind?: "interval";
+                        lower:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        upper:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
                       };
-                  op:
-                    | ">"
-                    | "<"
-                    | "cross_up"
-                    | "cross_down"
-                    | "reenter_lower"
-                    | "reenter_upper"
-                    | "break_upper"
-                    | "break_lower"
-                    | "cross_up_middle"
-                    | "cross_down_middle"
-                    | "break_high"
-                    | "break_low";
-                  rhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                }
-              | {
-                  allowed_ops: Array<"∈" | "∉">;
-                  enabled?: boolean;
-                  id: string;
-                  kind: "membership";
-                  lhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                  op: "∈" | "∉";
-                  rhs: {
-                    bounds?: "open";
-                    kind?: "interval";
-                    lower:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    upper:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  };
-                }
-            >;
-          };
+                    }
+                >;
+              };
           master_enabled: boolean;
-          sell: {
-            enabled: boolean;
-            params: {
-              [key: string]: number;
-            };
-            rules: Array<
-              | {
-                  allowed_ops: Array<
-                    | ">"
-                    | "<"
-                    | "cross_up"
-                    | "cross_down"
-                    | "reenter_lower"
-                    | "reenter_upper"
-                    | "break_upper"
-                    | "break_lower"
-                    | "cross_up_middle"
-                    | "cross_down_middle"
-                    | "break_high"
-                    | "break_low"
-                  >;
-                  enabled?: boolean;
+          sell:
+            | {
+                enabled: boolean;
+                rules: Array<{
+                  enabled: boolean;
                   id: string;
-                  kind: "compare" | "cross";
-                  lhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
+                  [key: string]: number | string | boolean | boolean | string;
+                }>;
+              }
+            | {
+                enabled: boolean;
+                params: {
+                  [key: string]: number;
+                };
+                rules: Array<
+                  | {
+                      allowed_ops: Array<
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low"
+                      >;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "compare" | "cross";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op:
+                        | ">"
+                        | "<"
+                        | "cross_up"
+                        | "cross_down"
+                        | "reenter_lower"
+                        | "reenter_upper"
+                        | "break_upper"
+                        | "break_lower"
+                        | "cross_up_middle"
+                        | "cross_down_middle"
+                        | "break_high"
+                        | "break_low";
+                      rhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                    }
+                  | {
+                      allowed_ops: Array<"∈" | "∉">;
+                      enabled?: boolean;
+                      id: string;
+                      kind: "membership";
+                      lhs:
+                        | {
+                            key: string;
+                            kind: "series";
+                            offset?: number;
+                            offset_param?: string;
+                          }
+                        | {
+                            key: string;
+                            kind: "param";
+                          }
+                        | {
+                            kind: "constant";
+                            value: number;
+                          };
+                      op: "∈" | "∉";
+                      rhs: {
+                        bounds?: "open";
+                        kind?: "interval";
+                        lower:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
+                        upper:
+                          | {
+                              key: string;
+                              kind: "series";
+                              offset?: number;
+                              offset_param?: string;
+                            }
+                          | {
+                              key: string;
+                              kind: "param";
+                            }
+                          | {
+                              kind: "constant";
+                              value: number;
+                            };
                       };
-                  op:
-                    | ">"
-                    | "<"
-                    | "cross_up"
-                    | "cross_down"
-                    | "reenter_lower"
-                    | "reenter_upper"
-                    | "break_upper"
-                    | "break_lower"
-                    | "cross_up_middle"
-                    | "cross_down_middle"
-                    | "break_high"
-                    | "break_low";
-                  rhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                }
-              | {
-                  allowed_ops: Array<"∈" | "∉">;
-                  enabled?: boolean;
-                  id: string;
-                  kind: "membership";
-                  lhs:
-                    | {
-                        key: string;
-                        kind: "series";
-                        offset?: number;
-                        offset_param?: string;
-                      }
-                    | {
-                        key: string;
-                        kind: "param";
-                      }
-                    | {
-                        kind: "constant";
-                        value: number;
-                      };
-                  op: "∈" | "∉";
-                  rhs: {
-                    bounds?: "open";
-                    kind?: "interval";
-                    lower:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                    upper:
-                      | {
-                          key: string;
-                          kind: "series";
-                          offset?: number;
-                          offset_param?: string;
-                        }
-                      | {
-                          key: string;
-                          kind: "param";
-                        }
-                      | {
-                          kind: "constant";
-                          value: number;
-                        };
-                  };
-                }
-            >;
-          };
+                    }
+                >;
+              };
         };
       };
       revision: number;
-      rule_version: "iqx-rules-3.0";
-      schema_version: "2.0";
+      rule_version: "iqx-rules-4.0";
+      schema_version: "3.0";
     };
     config_hash: string;
     effective_session: string | null;
@@ -55218,6 +55898,7 @@ export type StrategyConfigListRevisionsResponses = {
     config_hash: string;
     effective_session: string | null;
     legacy: boolean;
+    outdated: boolean;
     revision: number;
     saved_at: string;
     status: "pending" | "effective" | "calendar_unavailable";

@@ -10,28 +10,40 @@ import type {
   QuantMarketDataProvider,
 } from '../../src/modules/quant/quant.types.js';
 import {
+  RULE_VERSION,
+  SCHEMA_VERSION,
   configHash,
   defaultConfig,
+  type ConditionRow,
   type IndicatorConfig,
+  type RowSideConfig,
   type SharedConfig,
   type Side,
 } from '../../src/modules/quant/v2/index.js';
 import type { NewVersionInput } from '../../src/modules/alerts/strategy-alerts.store.js';
 import { MemoryAlertStore } from './helpers/strategy-alerts-memory.js';
+import { preV3Config } from './helpers/strategy-pre-v3.js';
 
 const USER = '00000000-0000-4000-8000-0000000000a1';
 const USER_2 = '00000000-0000-4000-8000-0000000000b2';
 const day = (i: number): string => new Date(Date.UTC(2026, 0, 1 + i)).toISOString().slice(0, 10);
 
-/** Buy: close crosses above SMA(buyPeriod); Sell: close crosses below SMA(sellPeriod). */
+/** Row 1 of an MA tab: `ma.price_cross`. */
+const priceCross = (config: SharedConfig, side: Side): ConditionRow =>
+  ((config.indicators.ma as IndicatorConfig)[side] as RowSideConfig).rules[0]!;
+
+/**
+ * Buy: close crosses above SMA(buyPeriod); Sell: close crosses below SMA(sellPeriod)
+ * (row `ma.price_cross`; the period is an SMA preset: 5, 10, 20, 50, 100, 200).
+ */
 function maConfig(buyPeriod = 5, sellPeriod = 5, sides: Side[] = ['buy', 'sell']): SharedConfig {
   const config = defaultConfig();
   const ma = config.indicators.ma as IndicatorConfig;
   ma.master_enabled = true;
   ma.buy.enabled = sides.includes('buy');
   ma.sell.enabled = sides.includes('sell');
-  ma.buy.params.period = buyPeriod;
-  ma.sell.params.period = sellPeriod;
+  priceCross(config, 'buy').period = buyPeriod;
+  priceCross(config, 'sell').period = sellPeriod;
   return config;
 }
 
@@ -90,12 +102,12 @@ function setup() {
   const seed = async (options: {
     userId?: string;
     name?: string;
-    config?: SharedConfig;
+    config?: unknown;
     symbols?: string[];
     sides?: Side[];
     enabled?: boolean;
   }) => {
-    const config = options.config ?? maConfig();
+    const config = ('config' in options ? options.config : maConfig()) as SharedConfig;
     const symbols = options.symbols ?? ['FPT'];
     const sides = options.sides ?? ['buy'];
     const hash = configHash(config);
@@ -108,8 +120,8 @@ function setup() {
       },
       config,
       config_hash: hash,
-      schema_version: '2.0',
-      rule_version: 'iqx-rules-3.0',
+      schema_version: SCHEMA_VERSION,
+      rule_version: RULE_VERSION,
       calculation_version: 'iqx-ta-2.0',
       scope: { kind: 'symbols' },
       symbols,
@@ -170,7 +182,7 @@ describe('StrategyAlertEvaluator — end-of-session transitions', () => {
       message: 'Thỏa điều kiện Mua',
       previous_valid_result: null,
       previous_valid_session: null,
-      rule_version: 'iqx-rules-3.0',
+      rule_version: RULE_VERSION,
       calculation_version: 'iqx-ta-2.0',
       config_hash: configHash(maConfig()),
     });
@@ -244,7 +256,7 @@ describe('StrategyAlertEvaluator — end-of-session transitions', () => {
     expect(new Set(env.store.events.map((event) => event.id)).size).toBe(2);
   });
 
-  it('records the values, operators and params the verdict used, and the bar of the session', async () => {
+  it('records, per evaluated row, the values and operator the verdict used, and the bar of the session', async () => {
     await env.seed({});
     await env.evaluator.evaluateSession(day(6), at(9));
     const event = env.store.events[0]!;
@@ -252,13 +264,57 @@ describe('StrategyAlertEvaluator — end-of-session transitions', () => {
       session: day(6),
       bar: { date: day(6), close: 12 },
       indicator_ids: ['ma'],
-      indicator_params: { ma: { period: 5 } },
     });
-    const rule = (event.evidence.rules as Array<Record<string, unknown>>)[0]!;
-    expect(rule).toMatchObject({ indicator: 'ma', side: 'buy', op: '>', lhs: 12, result: true });
+    // The row's own values replace the per-indicator `indicator_params` of events before SPEC V3.
+    expect(event.evidence).not.toHaveProperty('indicator_params');
+    const rules = event.evidence.rules as Array<Record<string, unknown>>;
+    expect(rules).toHaveLength(1);
+    const rule = rules[0]!;
+    expect(rule).toMatchObject({
+      id: 'ma.price_cross',
+      indicator: 'ma',
+      side: 'buy',
+      op: 'cross_up',
+      lhs: 12,
+      result: true,
+      missing: false,
+      values: { op: 'cross_up', period: 5 },
+    });
     expect(rule.rhs).toBeCloseTo(10.4, 12);
     expect(event.data_version).toMatch(/^[a-f0-9]{64}$/);
     expect(event.evaluated_at).toEqual(at(9));
+  });
+
+  it('records one evidence entry per enabled row, each with its own periods', async () => {
+    const config = maConfig(5, 5, ['buy']);
+    const rows = ((config.indicators.ma as IndicatorConfig).buy as RowSideConfig).rules;
+    Object.assign(
+      rows.find((row) => row.id === 'ma.trend')!,
+      {
+        enabled: true,
+        period: 10,
+        dir: 'up',
+      },
+    );
+    // 24 flat sessions, then a jump: the price crosses up SMA 5 and SMA 10 turns up on the last one.
+    const closes = [...Array<number>(24).fill(10), 12];
+    env.market.series.set('FPT', records(closes));
+    env.market.series.set('VNINDEX', records(closes));
+    await env.seed({ config });
+    const summary = await env.evaluator.evaluateSession(day(24), at(9));
+    expect(summary).toMatchObject({
+      events_created: 1,
+      results: { true: 1, false: 0, unknown: 0 },
+    });
+    const rules = env.store.events[0]!.evidence.rules as Array<Record<string, unknown>>;
+    expect(rules.map((rule) => [rule.id, rule.result])).toEqual([
+      ['ma.price_cross', true],
+      ['ma.trend', true],
+    ]);
+    expect(rules.map((rule) => rule.values)).toEqual([
+      { op: 'cross_up', period: 5 },
+      { period: 10, dir: 'up' },
+    ]);
   });
 
   it('never looks past the session: later bars in the feed do not change the verdict or data version', async () => {
@@ -353,8 +409,8 @@ describe('StrategyAlertEvaluator — durability, pause and data readiness', () =
     await env.store.update(USER, id, {
       version: {
         source: next.source,
-        config: maConfig(6, 6),
-        config_hash: configHash(maConfig(6, 6)),
+        config: maConfig(10, 10),
+        config_hash: configHash(maConfig(10, 10)),
         schema_version: next.schema_version,
         rule_version: next.rule_version,
         calculation_version: next.calculation_version,
@@ -434,11 +490,112 @@ describe('StrategyAlertEvaluator — durability, pause and data readiness', () =
 
   it('an invalid pinned config is unknown (config_invalid), never a verdict', async () => {
     const broken = maConfig();
-    (broken.indicators.ma as IndicatorConfig).buy.params.period = 1;
+    priceCross(broken, 'buy').period = 7; // not an SMA preset
     await env.seed({ config: broken });
     await env.evaluator.evaluateSession(day(6), at(9));
     expect([...env.store.states.values()][0]!.last_reason).toBe('config_invalid');
     expect(env.store.events).toHaveLength(0);
+  });
+
+  describe('a version pinned to a config the engine cannot evaluate', () => {
+    const blockedStates = () => [...env.store.states.values()];
+
+    it('pre-V3 (iqx-rules-3.0, side-level params): no verdict, no event, no crash', async () => {
+      const id = await env.seed({ config: preV3Config(), sides: ['buy', 'sell'] });
+      const summary = await env.evaluator.evaluateSession(day(6), at(9));
+      expect(summary).toMatchObject({
+        pairs_due: 2,
+        pairs_evaluated: 2,
+        results: { true: 0, false: 0, unknown: 2 },
+        events_created: 0,
+        errors: 0,
+      });
+      expect(
+        blockedStates().map((state) => [state.side, state.last_result, state.last_reason]),
+      ).toEqual(
+        expect.arrayContaining([
+          ['buy', 'unknown', 'config_invalid'],
+          ['sell', 'unknown', 'config_invalid'],
+        ]),
+      );
+      expect(env.store.events).toHaveLength(0);
+      // The alert reads as blocked until it is re-pinned (`config_error` in the service view).
+      const [row] = await env.store.stateSummaries([id]);
+      expect(row).toMatchObject({ blocked_count: 2 });
+    });
+
+    it('does not depend on the account holding the grants, and keeps being retried per session', async () => {
+      await env.seed({ config: preV3Config() });
+      env.setGrants([]);
+      await env.evaluator.evaluateSession(day(6), at(9));
+      expect(blockedStates()[0]).toMatchObject({ last_reason: 'config_invalid' });
+      await env.evaluator.evaluateSession(day(7), at(9));
+      expect(blockedStates()[0]).toMatchObject({
+        last_session: day(7),
+        last_reason: 'config_invalid',
+      });
+      expect(env.store.events).toHaveLength(0);
+    });
+
+    it('a malformed stored document is the same: unknown, config_invalid, never an exception', async () => {
+      for (const garbage of [{}, { indicators: null }, { indicators: { ma: null } }, null, 'x']) {
+        const fresh = setup();
+        await fresh.seed({ config: garbage });
+        const summary = await fresh.evaluator.evaluateSession(day(6), at(9));
+        expect(summary, JSON.stringify(garbage)).toMatchObject({ pairs_evaluated: 1, errors: 0 });
+        expect([...fresh.store.states.values()][0], JSON.stringify(garbage)).toMatchObject({
+          last_result: 'unknown',
+          last_reason: 'config_invalid',
+        });
+        expect(fresh.store.events).toHaveLength(0);
+      }
+    });
+
+    it('does not stop the other alerts: they are judged in the same run', async () => {
+      await env.seed({ userId: USER, name: 'Cũ', config: preV3Config() });
+      await env.seed({ userId: USER_2, name: 'Mới' });
+      const summary = await env.evaluator.evaluateSession(day(6), at(9));
+      expect(summary).toMatchObject({
+        alerts: 2,
+        pairs_evaluated: 2,
+        results: { true: 1, false: 0, unknown: 1 },
+        events_created: 1,
+        errors: 0,
+      });
+      expect(env.store.events.map((event) => event.user_id)).toEqual([USER_2]);
+    });
+
+    it('is judged normally again once the alert is re-pinned to a current config', async () => {
+      const id = await env.seed({ config: preV3Config() });
+      await env.evaluator.evaluateSession(day(6), at(9));
+      expect(env.store.events).toHaveLength(0);
+      const first = env.store.versionRows[0]!;
+      const config = maConfig();
+      await env.store.update(USER, id, {
+        version: {
+          source: first.source,
+          config,
+          config_hash: configHash(config),
+          schema_version: SCHEMA_VERSION,
+          rule_version: RULE_VERSION,
+          calculation_version: first.calculation_version,
+          scope: first.scope,
+          symbols: first.symbols,
+          sides: first.sides,
+          definition_hash: 'e'.repeat(64),
+        },
+      });
+      // Version 2 starts a fresh observation of day 6: the condition holds.
+      const summary = await env.evaluator.evaluateSession(day(6), at(10));
+      expect(summary).toMatchObject({
+        results: { true: 1, false: 0, unknown: 0 },
+        events_created: 1,
+      });
+      expect(env.store.events[0]).toMatchObject({
+        alert_version: 2,
+        event_kind: 'first_observation',
+      });
+    });
   });
 
   it('keeps accounts apart: each owner gets only their own events', async () => {

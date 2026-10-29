@@ -1,11 +1,13 @@
 import {
-  and3,
-  calc,
-  evaluateRuleWithEvidence,
+  createSeriesCache,
+  evaluateIndicatorSide,
+  isParamsSide,
+  isRowsEntry,
   validBar,
   type Bar,
   type RegistryEntry,
-  type SeriesMap,
+  type RowEvaluation,
+  type SeriesCache,
   type Side,
   type SideConfig,
 } from '../quant/v2/index.js';
@@ -15,7 +17,7 @@ import {
   MINI_ENGINE_PROFILE,
   type EngineProfile,
 } from './practice.constants.js';
-import { ruleLabels } from './practice.labels.js';
+import { rowLabel, rowOperandLabels, ruleLabels } from './practice.labels.js';
 import type {
   ChartEvent,
   DecisionEvidence,
@@ -38,6 +40,10 @@ import type {
  * - no forced liquidation: an open position is valued at the last valid close, and orders created
  *   at the last session stay pending (they are never filled outside the test window);
  * - missing indicator data never fills an order, and never disables the time exit.
+ *
+ * The indicator decision at a close is `evaluateIndicatorSide` of the shared engine (SPEC V3): the
+ * same function Bot, Backtest and Strategy alerts call. It reads bars `<= i` only, so a decision
+ * never depends on a later bar (SPEC V3 §5).
  */
 
 export type PracticeEngineErrorCode =
@@ -54,7 +60,7 @@ export class PracticeEngineError extends Error {
 }
 
 export type SimulationInput = {
-  entry: Pick<RegistryEntry, 'id' | 'name' | 'fields'>;
+  entry: RegistryEntry;
   /** Full chronological history (warmup + observation + test); indices are global. */
   bars: readonly Bar[];
   /** Global index of the first test session (Phiên 1). */
@@ -65,6 +71,11 @@ export type SimulationInput = {
   sell: SideConfig;
   holdMaxSessions: number;
   profile?: EngineProfile;
+  /**
+   * Memoised indicator series over exactly `bars`. The caller shares it with `buildChart` so a
+   * series used by the engine and drawn on the chart is computed once; built here when absent.
+   */
+  cache?: SeriesCache;
 };
 
 export type SimulationOutput = {
@@ -76,8 +87,6 @@ export type SimulationOutput = {
   /** Portfolio value at each test session close (index 0 = Phiên 1). */
   nav: number[];
   kpis: PracticeKpis;
-  /** Full-length (global index) indicator series of each side, from the locked params. */
-  series: Record<Side, SeriesMap>;
 };
 
 const round6 = (value: number | null | undefined): number | null =>
@@ -97,66 +106,75 @@ export function maxLotQty(cash: number, price: number, profile: EngineProfile): 
   return Math.max(0, qty);
 }
 
-function evaluateSide(
-  entry: SimulationInput['entry'],
+/** Evidence row of one evaluated condition row (or Volume rule), numbers rounded like the rest. */
+function evidenceRow(
+  entry: RegistryEntry,
+  config: SideConfig,
+  row: RowEvaluation,
+): RuleEvidenceRow {
+  const numbers = {
+    lhs: round6(row.lhs),
+    rhs: round6(row.rhs),
+    ...(row.rhs_lower !== undefined || row.rhs_upper !== undefined
+      ? { rhs_lower: round6(row.rhs_lower), rhs_upper: round6(row.rhs_upper) }
+      : {}),
+    ...(row.previous_lhs !== undefined || row.previous_rhs !== undefined
+      ? { previous_lhs: round6(row.previous_lhs), previous_rhs: round6(row.previous_rhs) }
+      : {}),
+    result: row.result,
+    missing: row.missing,
+  };
+  if (isRowsEntry(entry)) {
+    const definition = entry.rows.find((item) => item.id === row.id);
+    const operands = rowOperandLabels(row.id, row.values);
+    return {
+      rule_id: row.id,
+      kind: row.previous_lhs !== undefined || row.previous_rhs !== undefined ? 'cross' : 'compare',
+      op: row.op,
+      left_label: operands.left,
+      right_label: operands.right,
+      ...(definition ? { label: rowLabel(definition, row.values) } : {}),
+      values: { ...row.values },
+      ...numbers,
+    };
+  }
+  const rule = isParamsSide(config) ? config.rules.find((item) => item.id === row.id) : undefined;
+  if (!rule) throw new PracticeEngineError('INVARIANT', 'Điều kiện không có trong cấu hình.');
+  const labels = ruleLabels(rule, entry, isParamsSide(config) ? config.params : {});
+  return {
+    rule_id: row.id,
+    kind: rule.kind,
+    op: rule.op,
+    left_label: labels.left,
+    right_label: labels.right,
+    ...numbers,
+  };
+}
+
+/**
+ * Decision of one side at the close of bar `index`: the shared evaluator's verdict plus the
+ * evidence rows it used (enabled rows only). A tab that is off, or on with no enabled row, is
+ * `no_signal` (result `null`), which never opens or closes a position. Exported for the tests
+ * that pin the evidence of every registry row.
+ */
+export function evaluateSide(
+  entry: RegistryEntry,
   side: Side,
   config: SideConfig,
-  series: SeriesMap,
+  cache: SeriesCache,
   index: number,
   signalSession: number,
 ): DecisionEvidence {
-  if (!config.enabled) {
-    return {
-      side,
-      signal_session: signalSession,
-      enabled: false,
-      result: false,
-      params: { ...config.params },
-      rules: [],
-    };
-  }
-  const enabledRules = config.rules.filter((rule) => rule.enabled !== false);
-  if (!enabledRules.length) {
-    return {
-      side,
-      signal_session: signalSession,
-      enabled: true,
-      result: false,
-      params: { ...config.params },
-      rules: [],
-    };
-  }
-  const rules: RuleEvidenceRow[] = enabledRules.map((rule) => {
-    const evidence = evaluateRuleWithEvidence(rule, series, config.params, index);
-    const labels = ruleLabels(rule, entry, config.params);
-    return {
-      rule_id: rule.id,
-      kind: rule.kind,
-      op: rule.op,
-      left_label: labels.left,
-      right_label: labels.right,
-      lhs: round6(evidence.lhs),
-      rhs: round6(evidence.rhs),
-      ...(evidence.rhs_lower !== undefined || evidence.rhs_upper !== undefined
-        ? { rhs_lower: round6(evidence.rhs_lower), rhs_upper: round6(evidence.rhs_upper) }
-        : {}),
-      ...(evidence.previous_lhs !== undefined || evidence.previous_rhs !== undefined
-        ? {
-            previous_lhs: round6(evidence.previous_lhs),
-            previous_rhs: round6(evidence.previous_rhs),
-          }
-        : {}),
-      result: evidence.result,
-      missing: evidence.missing,
-    };
-  });
+  const evaluation = evaluateIndicatorSide(entry.id, config, cache, index);
   return {
     side,
     signal_session: signalSession,
-    enabled: true,
-    result: and3(rules.map((row) => row.result)),
-    params: { ...config.params },
-    rules,
+    enabled: config.enabled,
+    result: evaluation.result,
+    status: evaluation.status,
+    reason: evaluation.reason,
+    params: isParamsSide(config) ? { ...config.params } : {},
+    rules: evaluation.rows.map((row) => evidenceRow(entry, config, row)),
   };
 }
 
@@ -199,11 +217,18 @@ export function simulate(input: SimulationInput): SimulationOutput {
     throw new PracticeEngineError('NO_TEST_DATA', 'Không có phiên hợp lệ trong khoảng kiểm thử.');
   }
 
-  const buySeries = calc(entry.id, input.buy.params, bars);
-  const sellSeries =
-    JSON.stringify(input.sell.params) === JSON.stringify(input.buy.params)
-      ? buySeries
-      : calc(entry.id, input.sell.params, bars);
+  for (const config of [input.buy, input.sell]) {
+    if (isRowsEntry(entry) === isParamsSide(config)) {
+      throw new PracticeEngineError(
+        'INVARIANT',
+        'Cấu hình không khớp mô hình điều kiện của chỉ báo.',
+      );
+    }
+  }
+  if (input.cache !== undefined && input.cache.bars !== bars) {
+    throw new PracticeEngineError('INVARIANT', 'Bộ nhớ chỉ báo không khớp dữ liệu giá.');
+  }
+  const cache = input.cache ?? createSeriesCache(bars);
   const session = (index: number): number => index - first + 1;
 
   let cash = profile.capital;
@@ -311,7 +336,7 @@ export function simulate(input: SimulationInput): SimulationOutput {
     if (usable) {
       lastValidIndex = i;
       if (position) {
-        const sellEvidence = evaluateSide(entry, 'sell', input.sell, sellSeries, i, session(i));
+        const sellEvidence = evaluateSide(entry, 'sell', input.sell, cache, i, session(i));
         const held: number = i - position.entryIndex + 1;
         const timeDue: boolean = held >= hold;
         const indicatorMet: boolean = sellEvidence.result === true;
@@ -326,7 +351,7 @@ export function simulate(input: SimulationInput): SimulationOutput {
           };
         }
       } else {
-        const buyEvidence = evaluateSide(entry, 'buy', input.buy, buySeries, i, session(i));
+        const buyEvidence = evaluateSide(entry, 'buy', input.buy, cache, i, session(i));
         if (buyEvidence.result === true) {
           pending = { side: 'buy', signalIndex: i, evidence: buyEvidence };
         }
@@ -418,6 +443,5 @@ export function simulate(input: SimulationInput): SimulationOutput {
       open_position: finalOpen !== null,
       insufficient_cash_buys: missed.length,
     },
-    series: { buy: buySeries, sell: sellSeries },
   };
 }

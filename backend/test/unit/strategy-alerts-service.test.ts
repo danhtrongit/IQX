@@ -15,6 +15,9 @@ import { StrategyAlertsEnabledGuard } from '../../src/modules/alerts/strategy-al
 import { StrategyAlertsController } from '../../src/modules/alerts/strategy-alerts.controller.js';
 import {
   strategyAlertCreateSchema,
+  strategyAlertDetailSchema,
+  strategyAlertEventListSchema,
+  strategyAlertListSchema,
   strategyAlertUpdateSchema,
   type StrategyAlertCreateInput,
 } from '../../src/modules/alerts/strategy-alerts.schemas.js';
@@ -22,29 +25,39 @@ import { StrategyAlertsService } from '../../src/modules/alerts/strategy-alerts.
 import { MAX_ALERTS_PER_USER } from '../../src/modules/alerts/strategy-alerts.store.js';
 import { ApiAuthGuard, PremiumGuard } from '../../src/modules/auth/index.js';
 import {
+  RULE_VERSION,
+  SCHEMA_VERSION,
   configHash,
   defaultConfig,
+  type ConditionRow,
   type IndicatorConfig,
+  type RowSideConfig,
   type SharedConfig,
+  type Side,
 } from '../../src/modules/quant/v2/index.js';
 import type { SharedConfigReaderPort } from '../../src/modules/strategy-config/strategy-config.ports.js';
 import type { Environment } from '../../src/platform/config/environment.js';
 import { MemoryAlertStore } from './helpers/strategy-alerts-memory.js';
+import { preV3Config, preV3EvidenceRule } from './helpers/strategy-pre-v3.js';
 
 const OWNER = '00000000-0000-4000-8000-0000000000a1';
 const OTHER = '00000000-0000-4000-8000-0000000000b2';
 const SAVED_AT = '2026-01-02T03:00:00.000Z';
 
 const indicator = (config: SharedConfig, id: string): IndicatorConfig => config.indicators[id]!;
+/** The condition rows of one tab of a row-based indicator, in registry order. */
+const rowsOf = (config: SharedConfig, id: string, side: Side): ConditionRow[] =>
+  (indicator(config, id)[side] as RowSideConfig).rules;
 
+/** MA master ON; row 1 `ma.price_cross` with the SMA preset `period` on each enabled tab. */
 function maConfig(options: { buy?: boolean; sell?: boolean; period?: number } = {}): SharedConfig {
   const config = defaultConfig();
   const ma = indicator(config, 'ma');
   ma.master_enabled = true;
   ma.buy.enabled = options.buy ?? true;
   ma.sell.enabled = options.sell ?? true;
-  ma.buy.params.period = options.period ?? 5;
-  ma.sell.params.period = options.period ?? 5;
+  rowsOf(config, 'ma', 'buy')[0]!.period = options.period ?? 5;
+  rowsOf(config, 'ma', 'sell')[0]!.period = options.period ?? 5;
   return config;
 }
 
@@ -54,9 +67,12 @@ function rsiConfig(): SharedConfig {
   rsi.master_enabled = true;
   rsi.buy.enabled = true;
   rsi.sell.enabled = true;
-  rsi.buy.params.period = 10;
+  rowsOf(config, 'rsi', 'buy')[0]!.period = 10;
   return config;
 }
+
+const OUTDATED_REVISION_MESSAGE =
+  'Phiên bản cấu hình này dùng định dạng điều kiện cũ. Hãy lưu lại cấu hình theo mẫu điều kiện mới.';
 
 function setup() {
   const store = new MemoryAlertStore();
@@ -67,13 +83,26 @@ function setup() {
     effectiveFor: () => Promise.resolve(null),
     getRevision: (userId, revision) => {
       reads.push(`${userId}:${revision}`);
+      // The real reader refuses a revision saved before SPEC V3 (§6.1.5)...
       if (revision === 99)
         return Promise.reject(
           new UnprocessableEntityException({
-            code: 'LEGACY_CONFIG_NEEDS_REVIEW',
-            message: 'legacy',
+            code: 'CONFIG_FORMAT_OUTDATED',
+            message: OUTDATED_REVISION_MESSAGE,
+            revision,
+            details: [{ field: 'revision', revision }],
           }),
         );
+      // ...and a reader that hands one back flags it `outdated` (its config is the reset document).
+      if (revision === 98)
+        return Promise.resolve({
+          revision,
+          config: maConfig(),
+          config_hash: 'f'.repeat(64),
+          saved_at: SAVED_AT,
+          outdated: true,
+          legacy: null,
+        });
       const config = revisions.get(`${userId}:${revision}`);
       return Promise.resolve(
         config
@@ -133,7 +162,7 @@ describe('StrategyAlertsService.create', () => {
         symbols: ['FPT', 'VNM'],
         scope: { kind: 'symbols' },
         source: { kind: 'shared_config', revision: 3, saved_at: SAVED_AT },
-        rule_version: 'iqx-rules-3.0',
+        rule_version: RULE_VERSION,
         calculation_version: 'iqx-ta-2.0',
         config_hash: configHash(maConfig()),
         sides_detail: {
@@ -220,7 +249,7 @@ describe('StrategyAlertsService.create', () => {
 
   it('keeps the Mua and Bán rules, operators and series of the pinned config untouched (N06)', async () => {
     const config = maConfig();
-    indicator(config, 'ma').buy.rules[0]!.op = '<';
+    rowsOf(config, 'ma', 'buy')[0]!.op = 'cross_down';
     env.revisions.set(`${OWNER}:5`, config);
     await env.service.create(OWNER, create({ source: { kind: 'shared_config', revision: 5 } }));
     expect(env.store.versionRows[0]!.config).toEqual(config);
@@ -327,22 +356,75 @@ describe('StrategyAlertsService.create', () => {
     expect(env.store.alerts.size).toBe(0);
   });
 
-  it('refuses a legacy revision that needs review instead of pinning a partial snapshot', async () => {
+  it('refuses a revision saved before SPEC V3 with 422 CONFIG_FORMAT_OUTDATED instead of pinning it', async () => {
+    for (const revision of [99, 98]) {
+      const error = await failure(
+        env.service.create(OWNER, create({ source: { kind: 'shared_config', revision } })),
+      );
+      expect(error.getStatus(), `revision ${revision}`).toBe(422);
+      expect(error.getResponse(), `revision ${revision}`).toMatchObject({
+        code: 'CONFIG_FORMAT_OUTDATED',
+        message: OUTDATED_REVISION_MESSAGE,
+        details: [{ field: 'revision', revision }],
+      });
+    }
+    // The source preview says the same, before anything is saved.
+    const preview = await failure(
+      env.service.previewSource(OWNER, { kind: 'shared_config', revision: 98 }),
+    );
+    expect(preview.getResponse()).toMatchObject({ code: 'CONFIG_FORMAT_OUTDATED' });
+    expect(env.store.alerts.size).toBe(0);
+    expect(env.store.versionRows).toHaveLength(0);
+  });
+
+  it('refuses a backtest run stored before SPEC V3: its old snapshot is never pinned', async () => {
+    const runId = randomUUID();
+    env.store.runs.set(runId, {
+      user_id: OWNER,
+      id: runId,
+      shared_revision: 2,
+      symbol: 'FPT',
+      start: '2025-01-01',
+      end: '2025-12-31',
+      created_at: new Date('2025-12-31T00:00:00Z'),
+      config: preV3Config(2) as unknown as SharedConfig,
+    });
     const error = await failure(
-      env.service.create(OWNER, create({ source: { kind: 'shared_config', revision: 99 } })),
+      env.service.create(
+        OWNER,
+        create({
+          source: { kind: 'backtest_run', run_id: runId },
+          scope: { kind: 'symbols', symbols: ['FPT'] },
+        }),
+      ),
     );
     expect(error.getStatus()).toBe(422);
-    expect(error.getResponse()).toMatchObject({ code: 'LEGACY_CONFIG_NEEDS_REVIEW' });
+    expect(error.getResponse()).toMatchObject({
+      code: 'CONFIG_FORMAT_OUTDATED',
+      message:
+        'Kết quả backtest này dùng định dạng điều kiện cũ nên không thể tạo cảnh báo. Hãy chọn một phiên bản cấu hình mới hoặc chạy lại backtest.',
+      details: [{ field: 'run_id', run_id: runId }],
+    });
+    expect(env.store.alerts.size).toBe(0);
   });
 
   it('rejects an invalid pinned config and requires at least one side', async () => {
     const broken = maConfig();
-    indicator(broken, 'ma').buy.params.period = 1; // below the registry minimum
+    rowsOf(broken, 'ma', 'buy')[0]!.period = 7; // not an SMA preset
     env.revisions.set(`${OWNER}:6`, broken);
     const error = await failure(
       env.service.create(OWNER, create({ source: { kind: 'shared_config', revision: 6 } })),
     );
-    expect(error.getResponse()).toMatchObject({ code: 'CONFIG_INVALID' });
+    expect(error.getStatus()).toBe(422);
+    expect(error.getResponse()).toMatchObject({
+      code: 'CONFIG_INVALID',
+      details: [
+        {
+          path: 'indicators.ma.buy.rules.0.period',
+          message: 'Mua · dòng 1: Chu kỳ SMA chỉ chọn 5, 10, 20, 50, 100, 200.',
+        },
+      ],
+    });
     expect(strategyAlertCreateSchema.safeParse({ ...create(), sides: [] }).success).toBe(false);
   });
 
@@ -512,6 +594,206 @@ describe('StrategyAlertsService.update', () => {
     await expect(env.service.getEvent(OTHER, history.items[0]!.id)).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+});
+
+describe('alerts and events written before SPEC V3 (history stays as it was written)', () => {
+  let env: ReturnType<typeof setup>;
+  let alertId: string;
+  const legacyConfig = preV3Config(1) as unknown as SharedConfig;
+  const asJson = (value: unknown): unknown => JSON.parse(JSON.stringify(value)) as unknown;
+
+  /** An alert created before the upgrade: pinned to a V2 snapshot, with one event in the old shape. */
+  beforeEach(async () => {
+    env = setup();
+    env.revisions.set(`${OWNER}:3`, maConfig());
+    const hash = configHash(legacyConfig);
+    const created = await env.store.create({
+      user_id: OWNER,
+      name: 'Cảnh báo cũ',
+      enabled: true,
+      version: {
+        source: {
+          kind: 'shared_config',
+          revision: 1,
+          saved_at: '2025-12-01T00:00:00.000Z',
+          stored_config_hash: hash,
+        },
+        config: legacyConfig,
+        config_hash: hash,
+        schema_version: '2.0',
+        rule_version: 'iqx-rules-3.0',
+        calculation_version: 'iqx-ta-2.0',
+        scope: { kind: 'symbols' },
+        symbols: ['FPT'],
+        sides: ['buy'],
+        definition_hash: 'c'.repeat(64),
+      },
+      idempotency_key: null,
+      request_hash: 'h'.repeat(64),
+    });
+    alertId = created.id;
+    env.store.events.push({
+      id: randomUUID(),
+      user_id: OWNER,
+      alert_id: alertId,
+      alert_version: 1,
+      alert_name: 'Cảnh báo cũ',
+      symbol: 'FPT',
+      side: 'buy',
+      signal_session: '2026-01-05',
+      event_kind: 'first_observation',
+      message: 'Thỏa điều kiện Mua',
+      evaluated_at: new Date('2026-01-05T09:00:00Z'),
+      data_version: 'a'.repeat(64),
+      config_hash: hash,
+      rule_version: 'iqx-rules-3.0',
+      calculation_version: 'iqx-ta-2.0',
+      previous_valid_result: null,
+      previous_valid_session: null,
+      evidence: {
+        session: '2026-01-05',
+        bar: { date: '2026-01-05', open: 100, high: 106, low: 99, close: 105.5, volume: 1000 },
+        indicator_ids: ['ma'],
+        indicator_params: { ma: { period: 20, fast: 10, slow: 20, trend_period: 20 } },
+        rules: [preV3EvidenceRule('buy')],
+      },
+      created_at: new Date('2026-01-05T09:00:01Z'),
+    });
+  });
+
+  it('reads the alert and its immutable old version without evaluating or mapping them', async () => {
+    const alert = await env.service.get(OWNER, alertId);
+    expect(alert).toMatchObject({
+      name: 'Cảnh báo cũ',
+      current_version: 1,
+      version: {
+        schema_version: '2.0',
+        rule_version: 'iqx-rules-3.0',
+        config_hash: configHash(legacyConfig),
+      },
+    });
+    // Which tabs the old snapshot switched ON is still readable (it never throws on the old shape).
+    expect(alert.version.sides_detail.buy).toMatchObject({ watched: true, indicator_ids: ['ma'] });
+    expect(strategyAlertDetailSchema.safeParse(asJson(alert)).success).toBe(true);
+    const { items } = await env.service.list(OWNER);
+    expect(items.map((item) => item.id)).toEqual([alertId]);
+    expect(strategyAlertListSchema.safeParse(asJson({ items })).success).toBe(true);
+    expect(env.store.versionRows[0]!.config).toEqual(legacyConfig);
+  });
+
+  it('keeps the old event as it was written next to events with row evidence', async () => {
+    // A current event: one entry per evaluated row, the row values instead of `indicator_params`.
+    env.store.events.push({
+      ...env.store.events[0]!,
+      id: randomUUID(),
+      alert_version: 2,
+      signal_session: '2026-02-03',
+      event_kind: 'new_signal',
+      rule_version: RULE_VERSION,
+      evidence: {
+        session: '2026-02-03',
+        bar: null,
+        indicator_ids: ['ma'],
+        rules: [
+          {
+            id: 'ma.price_cross',
+            indicator: 'ma',
+            side: 'buy',
+            op: 'cross_up',
+            lhs: 12,
+            rhs: 10.4,
+            result: true,
+            missing: false,
+            previous_lhs: 10,
+            previous_rhs: 10,
+            values: { op: 'cross_up', period: 5 },
+          },
+        ],
+      },
+    });
+    const history = await env.service.listEvents(OWNER, { offset: 0, limit: 50 });
+    expect(history.total).toBe(2);
+    const bySession = new Map(history.items.map((item) => [item.signal_session, item]));
+    expect(bySession.get('2026-01-05')).toMatchObject({
+      rule_version: 'iqx-rules-3.0',
+      evidence: {
+        indicator_params: { ma: { period: 20, fast: 10, slow: 20, trend_period: 20 } },
+        rules: [preV3EvidenceRule('buy')],
+      },
+    });
+    expect(bySession.get('2026-01-05')!.evidence.rules[0]).not.toHaveProperty('values');
+    expect(bySession.get('2026-02-03')).toMatchObject({
+      rule_version: RULE_VERSION,
+      evidence: { rules: [{ id: 'ma.price_cross', values: { op: 'cross_up', period: 5 } }] },
+    });
+    expect(bySession.get('2026-02-03')!.evidence).not.toHaveProperty('indicator_params');
+    expect(strategyAlertEventListSchema.safeParse(asJson(history)).success).toBe(true);
+    const one = await env.service.getEvent(OWNER, history.items[0]!.id);
+    expect(one.id).toBe(history.items[0]!.id);
+  });
+
+  it('renaming and pausing keep working; editing the scope or sides asks for a current source', async () => {
+    await expect(
+      env.service.update(OWNER, alertId, { name: 'Đổi tên', source: { kind: 'keep' } }),
+    ).resolves.toMatchObject({ name: 'Đổi tên', current_version: 1 });
+    await expect(env.service.update(OWNER, alertId, { enabled: false })).resolves.toMatchObject({
+      status: 'paused',
+    });
+    await env.service.update(OWNER, alertId, { enabled: true });
+
+    const error = await failure(env.service.update(OWNER, alertId, { sides: ['buy', 'sell'] }));
+    expect(error.getStatus()).toBe(422);
+    expect(error.getResponse()).toMatchObject({
+      code: 'CONFIG_FORMAT_OUTDATED',
+      message:
+        'Cảnh báo đang ghim cấu hình điều kiện cũ. Hãy chọn lại nguồn cấu hình theo mẫu điều kiện mới.',
+      details: [{ field: 'source' }],
+    });
+    expect(env.store.versionRows).toHaveLength(1);
+  });
+
+  it('choosing a current source pins a new version; version 1 stays untouched as evidence', async () => {
+    const moved = await env.service.update(OWNER, alertId, {
+      source: { kind: 'shared_config', revision: 3 },
+    });
+    expect(moved.current_version).toBe(2);
+    expect(moved.version).toMatchObject({
+      version: 2,
+      schema_version: SCHEMA_VERSION,
+      rule_version: RULE_VERSION,
+      config_hash: configHash(maConfig()),
+      sides_detail: { buy: { valid: true, watched: true, indicator_ids: ['ma'] } },
+    });
+    expect(moved.versions.map((item) => item.version)).toEqual([2, 1]);
+    expect(env.store.versionRows[0]).toMatchObject({
+      version: 1,
+      config: legacyConfig,
+      rule_version: 'iqx-rules-3.0',
+    });
+    // The old event still points at version 1 and its own snapshot.
+    const history = await env.service.listEvents(OWNER, { offset: 0, limit: 50 });
+    expect(history.items[0]).toMatchObject({ alert_version: 1, rule_version: 'iqx-rules-3.0' });
+  });
+
+  it('shows config_error once the evaluation found the pinned version unusable', async () => {
+    env.store.states.set(`${alertId}:1:FPT:buy`, {
+      alert_id: alertId,
+      version: 1,
+      symbol: 'FPT',
+      side: 'buy',
+      epoch: 1,
+      last_valid_result: null,
+      last_valid_session: null,
+      last_result: 'unknown',
+      last_session: '2026-01-06',
+      last_reason: 'config_invalid',
+      attempts: 1,
+      last_evaluated_at: new Date('2026-01-06T09:00:00Z'),
+    });
+    const alert = await env.service.get(OWNER, alertId);
+    expect(alert.status).toBe('config_error');
+    expect(alert.last_check).toMatchObject({ blocked: 1, unknown: 1, pairs_checked: 1 });
   });
 });
 

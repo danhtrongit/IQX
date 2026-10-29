@@ -158,6 +158,12 @@ export interface PracticeStore {
   completeRun(runId: string, completion: RunCompletion): Promise<RunRow | null>;
   /** Keeps the reservation: marks the run failed with an error for a later retry. */
   failRun(runId: string, error: StoredError): Promise<RunRow | null>;
+  /**
+   * Removes a run of this progress that never finished (`computing|failed`), so its case can be
+   * started again. Only used for a run locked in the pre-V3 condition format (its frozen config
+   * can no longer be read); a `succeeded` run is never removed. Returns whether a row was removed.
+   */
+  discardUnfinishedRun(progressId: string, runId: string): Promise<boolean>;
   runHeaders(progressId: string): Promise<RunHeader[]>;
   historyPage(
     progressId: string,
@@ -423,6 +429,16 @@ export class PracticeSqlStore implements PracticeStore {
       [runId, JSON.stringify(error)],
     );
     return rows[0] ?? null;
+  }
+
+  async discardUnfinishedRun(progressId: string, runId: string) {
+    const rows = await this.client.query<{ id: string }>(
+      `delete from practice_runs
+       where id = $1 and progress_id = $2 and status in ('computing', 'failed')
+       returning id`,
+      [runId, progressId],
+    );
+    return rows.length === 1;
   }
 
   runHeaders(progressId: string) {

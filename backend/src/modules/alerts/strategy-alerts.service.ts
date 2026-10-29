@@ -14,6 +14,7 @@ import {
   canonicalJson,
   configHash,
   indicatorCapability,
+  isCurrentFormat,
   loadTechnicalRegistry,
   sha256Hex,
   validateConfig,
@@ -60,6 +61,14 @@ const unprocessable = (code: string, message: string, details?: unknown[]) =>
 
 const alertNotFound = () =>
   new NotFoundException({ code: 'ALERT_NOT_FOUND', message: 'Không tìm thấy cảnh báo' });
+
+/**
+ * 422 for a config that is not in the current format (SPEC V3 §6.1.5): its conditions are never
+ * mapped, so it can be neither pinned nor edited. Same code as the shared-config reader's, so the
+ * client handles one error for a revision, a run snapshot or a kept version.
+ */
+const configFormatOutdated = (message: string, details?: unknown[]) =>
+  unprocessable('CONFIG_FORMAT_OUTDATED', message, details);
 
 type SidesDetail = Record<Side, { valid: boolean; watched: boolean; indicator_ids: string[] }>;
 
@@ -210,14 +219,19 @@ export class StrategyAlertsService {
 
   private async resolveSource(userId: string, source: AlertSourceInput): Promise<Resolved> {
     if (source.kind === 'shared_config') {
-      // Throws 422 LEGACY_CONFIG_NEEDS_REVIEW for a historical revision whose removed indicators
-      // were ON: such a revision is never pinned (nothing is silently dropped from the AND).
+      // The reader throws 422 CONFIG_FORMAT_OUTDATED for a revision saved before SPEC V3: its
+      // conditions are not mapped to the row conditions, so it is never pinned.
       const revision = await this.reader.getRevision(userId, source.revision);
       if (!revision)
         throw new NotFoundException({
           code: 'REVISION_NOT_FOUND',
           message: 'Không tìm thấy phiên bản cấu hình đã lưu.',
         });
+      if (revision.outdated === true)
+        throw configFormatOutdated(
+          'Phiên bản cấu hình này dùng định dạng điều kiện cũ. Hãy lưu lại cấu hình theo mẫu điều kiện mới.',
+          [{ field: 'revision', revision: revision.revision }],
+        );
       return {
         source: {
           kind: 'shared_config',
@@ -226,7 +240,7 @@ export class StrategyAlertsService {
           stored_config_hash: revision.config_hash,
         },
         config: revision.config,
-        config_hash: revision.legacy?.legacy ? configHash(revision.config) : revision.config_hash,
+        config_hash: revision.config_hash,
         suggested_symbol: null,
       };
     }
@@ -238,6 +252,13 @@ export class StrategyAlertsService {
       });
     if (!run.config)
       throw unprocessable('RUN_CONFIG_UNAVAILABLE', 'Kết quả backtest này không lưu cấu hình.');
+    // A run stored before SPEC V3 keeps its old-format snapshot (history stays viewable) but
+    // cannot be evaluated: pin a current revision instead.
+    if (!isCurrentFormat(run.config, loadTechnicalRegistry()))
+      throw configFormatOutdated(
+        'Kết quả backtest này dùng định dạng điều kiện cũ nên không thể tạo cảnh báo. Hãy chọn một phiên bản cấu hình mới hoặc chạy lại backtest.',
+        [{ field: 'run_id', run_id: run.id }],
+      );
     return {
       source: {
         kind: 'backtest_run',
@@ -280,7 +301,15 @@ export class StrategyAlertsService {
       hash = resolved.config_hash;
     }
 
-    const errors = validateConfig(config, loadTechnicalRegistry());
+    const registry = loadTechnicalRegistry();
+    // A kept version can still hold a pre-V3 snapshot (until the migration re-pins it): editing
+    // its scope or sides then asks for a new source instead of failing validation field by field.
+    if (!isCurrentFormat(config, registry))
+      throw configFormatOutdated(
+        'Cảnh báo đang ghim cấu hình điều kiện cũ. Hãy chọn lại nguồn cấu hình theo mẫu điều kiện mới.',
+        [{ field: 'source' }],
+      );
+    const errors = validateConfig(config, registry);
     if (errors.length)
       throw unprocessable(
         'CONFIG_INVALID',

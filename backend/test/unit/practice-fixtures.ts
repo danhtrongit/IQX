@@ -24,7 +24,15 @@ import type {
   StoredError,
   SymbolDataRow,
 } from '../../src/modules/practice/practice.repository.js';
-import type { PracticeConfig } from '../../src/modules/practice/practice.types.js';
+import {
+  defaultPracticeConfig,
+  practiceEntry,
+} from '../../src/modules/practice/practice.config.js';
+import type {
+  PracticeConfig,
+  PracticeParamsConfig,
+  PracticeRowsConfig,
+} from '../../src/modules/practice/practice.types.js';
 import { loadPracticeSet, type PracticeSet } from '../../src/modules/practice/practice.set.js';
 
 /** Bars from closes: open = previous close (gap-free), wicks 1% around the body. */
@@ -353,6 +361,17 @@ export class MemoryPracticeStore implements PracticeStoreProvider, PracticeStore
     return clone(row);
   }
 
+  async discardUnfinishedRun(progressId: string, runId: string) {
+    await Promise.resolve();
+    // Mirrors `delete ... where status in ('computing', 'failed')`: a completed run is never removed.
+    const index = this.runRows.findIndex(
+      (r) => r.id === runId && r.progress_id === progressId && r.status !== 'succeeded',
+    );
+    if (index < 0) return false;
+    this.runRows.splice(index, 1);
+    return true;
+  }
+
   async runHeaders(progressId: string): Promise<RunHeader[]> {
     await Promise.resolve();
     return this.runRows
@@ -377,3 +396,89 @@ export const USER = '00000000-0000-4000-8000-000000000001';
 export const OTHER_USER = '00000000-0000-4000-8000-000000000002';
 
 export const newKey = (): string => `key-${randomUUID()}`;
+
+/**
+ * A condition config in the format written before SPEC V3 (`params` + `ops` per tab, no rows).
+ * It is what drafts and locked runs of the row-based indicators still hold after the deploy.
+ */
+export const preV3Config = (
+  options: { buy?: boolean; sell?: boolean; hold?: number } = {},
+): PracticeParamsConfig => ({
+  buy: {
+    enabled: options.buy ?? true,
+    params: { period: 10, level: 25 },
+    ops: { r1: '<', r2: '>' },
+  },
+  sell: {
+    enabled: options.sell ?? true,
+    params: { period: 10, level: 75 },
+    ops: { r1: '>', r2: '<' },
+  },
+  hold_max_sessions: options.hold ?? 40,
+});
+
+/**
+ * Adds a run of an existing case that was locked in the pre-V3 format (RSI, `iqx-rules-3.0`,
+ * `practice-engine-1`), the way the database holds it after the deploy.
+ */
+export function addPreV3Run(
+  store: MemoryPracticeStore,
+  caseId: string,
+  status: 'computing' | 'failed' | 'succeeded',
+  overrides: Partial<RunRow> = {},
+): RunRow {
+  const set = loadPracticeSet();
+  const caseRow = store.caseRows.find((row) => row.case_id === caseId);
+  if (!caseRow) throw new Error('unknown case');
+  const config = preV3Config();
+  const row: RunRow = {
+    id: '00000000-0000-4000-8000-0000000000d1',
+    progress_id: caseRow.progress_id,
+    user_id: USER,
+    indicator_id: 'rsi',
+    set_version: set.set_version,
+    ordinal: caseRow.ordinal,
+    case_id: caseId,
+    status,
+    config,
+    config_hash: 'a'.repeat(64),
+    hold_max_sessions: config.hold_max_sessions,
+    idempotency_key: 'old-run-key-0001',
+    request_hash: 'b'.repeat(64),
+    data_version: 'c'.repeat(64),
+    profile_version: 'mini-profile-v1',
+    calculation_version: 'iqx-ta-2.0',
+    rule_version: 'iqx-rules-3.0',
+    engine_version: 'practice-engine-1',
+    execution_version: set.versions.execution,
+    comment_version: set.versions.comment,
+    summary: null,
+    error:
+      status === 'failed' ? { code: 'PRACTICE_COMPUTE_FAILED', message: 'Không tính được.' } : null,
+    attempts: status === 'computing' ? 0 : 1,
+    created_at: new Date('2026-10-01T00:00:00Z'),
+    completed_at: null,
+    result: null,
+    chart: null,
+    ...overrides,
+  };
+  store.runRows.push(row);
+  return row;
+}
+
+/**
+ * RSI rows that trade on every case: buy while RSI > 0, sell while RSI < 100 (one row per tab).
+ * The registry defaults (RSI < 30 / RSI > 70, plus the trend row) trade on only some of the 30
+ * symbols and the case order is random, so a test that needs trades cannot rely on them.
+ */
+export function tradingRsiConfig(hold = 10): PracticeRowsConfig {
+  const config = structuredClone(
+    defaultPracticeConfig(practiceEntry('rsi')!) as PracticeRowsConfig,
+  );
+  Object.assign(config.buy.rules[0]!, { op: '>', threshold: 0 });
+  Object.assign(config.sell.rules[0]!, { op: '<', threshold: 100 });
+  config.buy.rules[1]!.enabled = false;
+  config.sell.rules[1]!.enabled = false;
+  config.hold_max_sessions = hold;
+  return config;
+}

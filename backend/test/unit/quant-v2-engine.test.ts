@@ -140,9 +140,14 @@ describe('quant v2 technical registry', () => {
       isRowsEntry(r) ? r.rows.filter((row) => row.constraints.length) : [],
     );
     expect(constrained.map((row) => [row.id, row.constraints])).toEqual(
-      ['macd.signal', 'macd.zero', 'macd.hist', 'ma.ma_cross', 'ema.ma_cross', 'ma_cross.cross'].map(
-        (id) => [id, [{ left: 'fast', op: '<', right: 'slow' }]],
-      ),
+      [
+        'macd.signal',
+        'macd.zero',
+        'macd.hist',
+        'ma.ma_cross',
+        'ema.ma_cross',
+        'ma_cross.cross',
+      ].map((id) => [id, [{ left: 'fast', op: '<', right: 'slow' }]]),
     );
     const volume = registry.find((r) => r.id === 'volume');
     expect(volume?.model === 'legacy_params' && volume.validation?.cross_fields).toEqual([]);
@@ -991,9 +996,7 @@ describe('quant v2 sideSignals — shared evaluator and independence', () => {
       params: { lookback: 20, mult: 1 },
       rules: [trueRule, falseRule],
     };
-    expect(indicatorSideSignals('volume', side, bars).every((value) => value === false)).toBe(
-      true,
-    );
+    expect(indicatorSideSignals('volume', side, bars).every((value) => value === false)).toBe(true);
   });
 
   it('B09 missing data on one Buy indicator makes Buy not-true while an unaffected Sell side is independent', () => {

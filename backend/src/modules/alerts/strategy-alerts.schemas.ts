@@ -227,10 +227,16 @@ export const strategyAlertSourcePreviewResponseSchema = z.object({
   suggested_symbol: z.string().nullable(),
 });
 
+/**
+ * One evaluated condition row. `id` is the stable row id (`rsi.level`) and `values` the row's own
+ * stored values (periods, threshold, op…) since `iqx-rules-4.0`; events written before keep
+ * their registry rule ids (`r1`) and carry no `values`.
+ */
 const ruleEvidence = z.object({
   id: z.string(),
   indicator: z.string(),
   side: side,
+  /** The row's `op`, its `action` (Bollinger/OBV) or `>`/`<` for a direction (lên/tăng/mở rộng). */
   op: z.string(),
   lhs: z.number().nullable(),
   rhs: z.number().nullable(),
@@ -240,6 +246,7 @@ const ruleEvidence = z.object({
   missing: z.boolean(),
   previous_lhs: z.number().nullable().optional(),
   previous_rhs: z.number().nullable().optional(),
+  values: z.record(z.string(), z.union([z.number(), z.string()])).optional(),
 });
 
 export const strategyAlertEventSchema = z.object({
@@ -264,7 +271,11 @@ export const strategyAlertEventSchema = z.object({
   calculation_version: z.string(),
   previous_valid_result: z.boolean().nullable(),
   previous_valid_session: z.string().nullable(),
-  /** Values, operators and indicator params exactly as evaluated at the signal session. */
+  /**
+   * Values and operators exactly as evaluated at the signal session: one `rules` entry per
+   * evaluated row, with the row's own `values`. Events stored before `iqx-rules-4.0` stay as they
+   * were written (`indicator_params` per indicator, rule ids `r1`…).
+   */
   evidence: z.object({
     session: z.string(),
     bar: z
@@ -278,7 +289,8 @@ export const strategyAlertEventSchema = z.object({
       })
       .nullable(),
     indicator_ids: z.array(z.string()),
-    indicator_params: z.record(z.string(), z.record(z.string(), z.number())),
+    /** Events before `iqx-rules-4.0` only; newer events carry the params in `rules[].values`. */
+    indicator_params: z.record(z.string(), z.record(z.string(), z.number())).optional(),
     rules: z.array(ruleEvidence),
   }),
   created_at: timestamp,

@@ -92,7 +92,9 @@ const side = z.strictObject({
 });
 
 const validation = z.looseObject({
-  cross_fields: z.array(z.strictObject({ left: z.string(), op: z.enum(['<', '>']), right: z.string() })),
+  cross_fields: z.array(
+    z.strictObject({ left: z.string(), op: z.enum(['<', '>']), right: z.string() }),
+  ),
 });
 
 const commonEntryShape = {
@@ -158,9 +160,7 @@ const rowEnumField = z.strictObject({
   key: z.string().min(1),
   label: z.string().min(1),
   type: z.literal('enum'),
-  options: z
-    .array(z.strictObject({ value: z.string().min(1), label: z.string().min(1) }))
-    .min(1),
+  options: z.array(z.strictObject({ value: z.string().min(1), label: z.string().min(1) })).min(1),
 });
 const rowValues = z.record(z.string(), z.union([z.number(), z.string()]));
 const rowDefinition = z.strictObject({

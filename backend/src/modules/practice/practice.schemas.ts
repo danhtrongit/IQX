@@ -25,7 +25,23 @@ const keySchema = z.string().min(1).max(32);
 export const indicatorIdParamSchema = z.string().regex(/^[a-z][a-z0-9_]{0,31}$/);
 export const runIdParamSchema = z.uuid();
 
-const sideInputSchema = z.strictObject({
+/**
+ * One condition row (SPEC V3 §1.4): stable `id`, own switch and own values (numbers, enum codes).
+ * Field keys, ranges, options and fast < slow are checked by the shared validator, so a 422
+ * carries the per-row Vietnamese message and path.
+ */
+const conditionRowSchema = z
+  .object({ id: z.string().min(1).max(64), enabled: z.boolean() })
+  .catchall(z.union([z.number(), z.string().max(32), z.boolean()]));
+
+/** Tab of a row-based indicator (the 15 indicators): the rows, no side-level params. */
+const rowsSideInputSchema = z.strictObject({
+  enabled: z.boolean(),
+  rules: z.array(conditionRowSchema).max(8),
+});
+
+/** Tab of Volume (params-based, unchanged by SPEC V3). */
+const paramsSideInputSchema = z.strictObject({
   enabled: z.boolean(),
   params: z.record(keySchema, z.number()).refine((value) => Object.keys(value).length <= 8, {
     message: 'Quá nhiều tham số.',
@@ -42,12 +58,26 @@ const sideInputSchema = z.strictObject({
     .optional(),
 });
 
-/** Both sides + max holding time. Ranges are validated against the registry by the service. */
-export const practiceConfigSchema = z.strictObject({
-  buy: sideInputSchema,
-  sell: sideInputSchema,
+/** Row-based indicators: `{buy: {enabled, rules}, sell: {enabled, rules}, hold_max_sessions}`. */
+export const practiceRowsConfigSchema = z.strictObject({
+  buy: rowsSideInputSchema,
+  sell: rowsSideInputSchema,
   hold_max_sessions: z.number(),
 });
+
+/** Volume: `{buy: {enabled, params, ops, rules_enabled?}, sell: ..., hold_max_sessions}`. */
+export const practiceParamsConfigSchema = z.strictObject({
+  buy: paramsSideInputSchema,
+  sell: paramsSideInputSchema,
+  hold_max_sessions: z.number(),
+});
+
+/**
+ * Both sides + max holding time. Which of the two shapes an indicator uses is decided by its
+ * registry model (`form.model`); the other shape is the pre-V3 format and is rejected by the
+ * service (never mapped). Ranges are validated against the registry by the service.
+ */
+export const practiceConfigSchema = z.union([practiceRowsConfigSchema, practiceParamsConfigSchema]);
 export type PracticeConfigInput = z.infer<typeof practiceConfigSchema>;
 
 export const draftBodySchema = z.strictObject({
@@ -56,14 +86,26 @@ export const draftBodySchema = z.strictObject({
 });
 export type DraftBody = z.infer<typeof draftBodySchema>;
 
+/**
+ * Candidate conditions of one or both tabs, for the observation-window chart only (nothing is
+ * saved). Row-based indicators send `buy_rows` / `sell_rows` (all rows of the tab, registry
+ * order); Volume sends `buy_params` / `sell_params`. A tab that is not sent uses the saved draft.
+ */
 export const previewBodySchema = z
   .strictObject({
+    buy_rows: z.array(conditionRowSchema).max(8).optional(),
+    sell_rows: z.array(conditionRowSchema).max(8).optional(),
     buy_params: z.record(keySchema, z.number()).optional(),
     sell_params: z.record(keySchema, z.number()).optional(),
   })
-  .refine((body) => body.buy_params !== undefined || body.sell_params !== undefined, {
-    message: 'Cần tham số của ít nhất một phía.',
-  });
+  .refine(
+    (body) =>
+      body.buy_rows !== undefined ||
+      body.sell_rows !== undefined ||
+      body.buy_params !== undefined ||
+      body.sell_params !== undefined,
+    { message: 'Cần điều kiện hoặc tham số của ít nhất một phía.' },
+  );
 export type PreviewBody = z.infer<typeof previewBodySchema>;
 
 export const startRunBodySchema = z.strictObject({
@@ -91,7 +133,15 @@ export type HistoryQuery = z.infer<typeof historyQuerySchema>;
 
 const validationSchema = z.strictObject({
   valid: z.boolean(),
-  errors: z.array(z.strictObject({ path: z.string(), message: z.string() })),
+  errors: z.array(
+    z.strictObject({
+      path: z.string(),
+      message: z.string(),
+      /** Row validation: the tab and the 1-based row number the message is about. */
+      side: z.enum(['buy', 'sell']).optional(),
+      row: z.number().int().optional(),
+    }),
+  ),
 });
 
 const profileSchema = z.looseObject({
@@ -113,15 +163,21 @@ const runKpiSummarySchema = z.strictObject({
   comment_rule_id: z.string().nullable(),
 });
 
+const storedErrorSchema = z.strictObject({ code: z.string(), message: z.string() });
+
 const runBriefSchema = z.strictObject({
   run_id: z.uuid(),
   ordinal: z.number().int(),
   case_id: z.uuid(),
   status: runStatusSchema,
   summary: runKpiSummarySchema.nullable(),
+  /**
+   * Why a run is `failed` (null otherwise). A run locked in the pre-V3 condition format that
+   * never finished is `failed` with code `PRACTICE_CONFIG_OUTDATED`: it cannot be retried, and a
+   * new start for the same case replaces it.
+   */
+  error: storedErrorSchema.nullable(),
 });
-
-const storedErrorSchema = z.strictObject({ code: z.string(), message: z.string() });
 
 const versionsSchema = z.strictObject({
   set_version: z.string(),
@@ -172,7 +228,7 @@ const operandSchema = z.discriminatedUnion('kind', [
   z.strictObject({ kind: z.literal('constant'), value: z.number() }),
 ]);
 
-const formSideSchema = z.strictObject({
+const paramsFormSideSchema = z.strictObject({
   fields: z.array(
     z.strictObject({
       key: z.string(),
@@ -200,16 +256,65 @@ const formSideSchema = z.strictObject({
   ),
 });
 
-/** Field domains, rule templates and registry defaults (no Premium registry call needed). */
-export const formSchema = z.strictObject({
+/** Numeric input of a condition row; `options` restricts it to a fixed list (SMA presets). */
+const rowNumberFieldSchema = z.strictObject({
+  key: z.string(),
+  label: z.string(),
+  type: z.enum(['integer', 'number']),
+  min: z.number(),
+  max: z.number(),
+  step: z.number(),
+  options: z.array(z.number()).optional(),
+});
+
+/** Select input of a condition row: stable `value` codes with their Vietnamese `label`. */
+const rowEnumFieldSchema = z.strictObject({
+  key: z.string(),
+  label: z.string(),
+  type: z.literal('enum'),
+  options: z.array(z.strictObject({ value: z.string(), label: z.string() })),
+});
+
+const rowValuesSchema = z.record(z.string(), z.union([z.number(), z.string()]));
+
+/** One registry row (SPEC V3 §3), embedded in the form as the strategy registry returns it. */
+const rowDefinitionSchema = z.strictObject({
+  id: z.string(),
+  /** Text with `{field}` placeholders in `fields` order, e.g. `RSI {period} {op} {threshold}`. */
+  sentence: z.string(),
+  fields: z.array(z.union([rowNumberFieldSchema, rowEnumFieldSchema])),
+  /** `left < right` between two numeric fields of the row (fast < slow). */
+  constraints: z.array(z.strictObject({ left: z.string(), op: z.literal('<'), right: z.string() })),
+  default_enabled: z.boolean(),
+  buy: rowValuesSchema,
+  sell: rowValuesSchema,
+});
+
+/**
+ * Row-based indicators (15): the registry rows themselves and the V3 defaults. The client renders
+ * both tabs from `rows` and needs no other registry call.
+ */
+const rowsFormSchema = z.strictObject({
+  model: z.literal('rows'),
   indicator_id: z.string(),
-  buy: formSideSchema,
-  sell: formSideSchema,
+  rows: z.array(rowDefinitionSchema),
+  defaults: practiceRowsConfigSchema,
+});
+
+/** Volume: effective field domains, rule templates and registry defaults. */
+const paramsFormSchema = z.strictObject({
+  model: z.literal('legacy_params'),
+  indicator_id: z.string(),
+  buy: paramsFormSideSchema,
+  sell: paramsFormSideSchema,
   cross_fields: z.array(
     z.strictObject({ left: z.string(), op: z.enum(['>', '<']), right: z.string() }),
   ),
-  defaults: practiceConfigSchema,
+  defaults: practiceParamsConfigSchema,
 });
+
+/** Form descriptor of an indicator (no Premium registry call needed); `model` tells the shape. */
+export const formSchema = z.discriminatedUnion('model', [rowsFormSchema, paramsFormSchema]);
 
 export const stateResponseSchema = z.strictObject({
   set_version: z.string(),
@@ -279,11 +384,16 @@ export const previewResponseSchema = z.strictObject({
 });
 
 const ruleEvidenceSchema = z.looseObject({
+  /** Row id (`rsi.level`); Volume and runs locked before SPEC V3 carry `r1`, `r2`. */
   rule_id: z.string(),
   kind: z.enum(['compare', 'cross', 'membership']),
   op: ruleOpSchema,
   left_label: z.string(),
   right_label: z.string(),
+  /** Registry sentence with the row's values (`RSI 14 < 30`); absent on older runs and Volume. */
+  label: z.string().optional(),
+  /** The row's own stored values; absent on older runs and Volume. */
+  values: rowValuesSchema.optional(),
   lhs: z.number().nullable(),
   rhs: z.number().nullable(),
   result: z.boolean().nullable(),
@@ -294,7 +404,12 @@ const decisionEvidenceSchema = z.strictObject({
   side: z.enum(['buy', 'sell']),
   signal_session: z.number().int(),
   enabled: z.boolean(),
+  /** null = `no_signal` (tab off / no enabled row) or missing data. */
   result: z.boolean().nullable(),
+  /** Absent on runs locked before SPEC V3. */
+  status: z.enum(['ok', 'no_signal']).optional(),
+  reason: z.enum(['indicator_off', 'side_off', 'no_rows']).nullable().optional(),
+  /** Volume: the side params. Row-based indicators carry their values on each rule. */
   params: z.record(z.string(), z.number()),
   rules: z.array(ruleEvidenceSchema),
 });

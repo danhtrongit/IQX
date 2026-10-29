@@ -35,8 +35,12 @@ export const HOLD_MAX_DEFAULT = 60;
 export const HOLD_MAX_MIN = 1;
 export const HOLD_MAX_MAX = 1_000;
 
-/** Engine / API versions stored on every run. */
-export const PRACTICE_ENGINE_VERSION = 'practice-engine-1';
+/**
+ * Engine / API versions stored on every run. `practice-engine-2` = indicator conditions V3 (SPEC V3,
+ * rule_version `iqx-rules-4.0`): per-row conditions through the shared evaluator and per-row chart
+ * series. Runs locked before it carry `practice-engine-1`.
+ */
+export const PRACTICE_ENGINE_VERSION = 'practice-engine-2';
 
 /**
  * Execution profile `mini-profile-v1` (SPEC §11.1). Fee/lot values are the sample values of the

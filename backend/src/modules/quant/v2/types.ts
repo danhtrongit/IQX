@@ -31,7 +31,10 @@ export const LEGACY_RULE_VERSION = 'iqx-rules-2.0' as const;
  * `iqx-rules-2.0`: 35 indicators). They are only used to recognise an outdated document,
  * never to map its conditions (SPEC V3 §6.1.5): an outdated document is reset to defaults.
  */
-export const HISTORICAL_RULE_VERSIONS = Object.freeze(['iqx-rules-3.0', LEGACY_RULE_VERSION] as const);
+export const HISTORICAL_RULE_VERSIONS = Object.freeze([
+  'iqx-rules-3.0',
+  LEGACY_RULE_VERSION,
+] as const);
 export const ENGINE_VERSION = 'iqx-engine-2.0' as const;
 /** CAGR uses 252/N sessions, matching the legacy engine convention. */
 export const FORMULA_VERSION = 'iqx-kpi-2.0' as const;
@@ -218,7 +221,11 @@ export type SideSignalsEvidence = {
 export type RowValues = Record<string, number | string>;
 
 /** One stored condition row of a row-based indicator: its stable id, switch and own values. */
-export type ConditionRow = { id: string; enabled: boolean; [field: string]: number | string | boolean };
+export type ConditionRow = {
+  id: string;
+  enabled: boolean;
+  [field: string]: number | string | boolean;
+};
 
 /** Side of a row-based indicator (SPEC V3 §1.4): no side-level params. */
 export type RowSideConfig = { enabled: boolean; rules: ConditionRow[] };

@@ -12,16 +12,48 @@ import {
   simulate,
   type SimulationInput,
 } from '../../src/modules/practice/practice.engine.js';
-import type { CompareRule } from '../../src/modules/quant/v2/index.js';
+import type { PracticeRowsConfig } from '../../src/modules/practice/practice.types.js';
+import {
+  isRowsEntry,
+  type RowsRegistryEntry,
+  type Side,
+} from '../../src/modules/quant/v2/index.js';
 import { makeBars } from './practice-fixtures.js';
 
 const WARM = 30; // observation + warmup bars before the first test session
-const entry = practiceEntry('ma')!;
+const rowsEntry = (id: string): RowsRegistryEntry => {
+  const entry = practiceEntry(id);
+  if (!entry || !isRowsEntry(entry)) throw new Error(`${id} is not row-based`);
+  return entry;
+};
+const entry = rowsEntry('ma');
 
 /** Global bar index of session s (Phiên 1 = first test session). */
 const at = (session: number): number => WARM - 1 + session;
 
 type SideOptions = { enabled?: boolean; period?: number };
+
+/**
+ * One tab of the SMA indicator that only runs the "SMA trend" row: Mua when the SMA rises against
+ * `period` sessions earlier, Bán when it falls. Price-cross and MA-cross rows are off.
+ */
+function trendSide(side: Side, options: SideOptions) {
+  const config = defaultPracticeConfig(entry) as PracticeRowsConfig;
+  return toSideConfig(entry, side, {
+    enabled: options.enabled ?? true,
+    rules: config[side].rules.map((row) =>
+      row.id === 'ma.trend'
+        ? {
+            ...row,
+            enabled: true,
+            period: options.period ?? 5,
+            dir: side === 'buy' ? 'up' : 'down',
+          }
+        : { ...row, enabled: false },
+    ),
+  });
+}
+
 function maInput(
   closes: readonly number[],
   options: {
@@ -32,34 +64,22 @@ function maInput(
     profile?: SimulationInput['profile'];
   } = {},
 ): SimulationInput {
-  const buy = toSideConfig(entry, 'buy', {
-    enabled: options.buy?.enabled ?? true,
-    params: { period: options.buy?.period ?? 5 },
-    ops: { r1: '>' },
-  });
-  const sell = toSideConfig(entry, 'sell', {
-    enabled: options.sell?.enabled ?? true,
-    params: { period: options.sell?.period ?? 5 },
-    ops: { r1: '<' },
-  });
-  buy.rules[0] = { ...buy.rules[0]!, kind: 'compare' } as CompareRule;
-  sell.rules[0] = { ...sell.rules[0]!, kind: 'compare' } as CompareRule;
   return {
     entry,
     bars: makeBars(closes, options.openOf ? { openOf: options.openOf } : {}),
     firstTestIndex: WARM,
     lastTestIndex: closes.length - 1,
-    buy,
-    sell,
+    buy: trendSide('buy', options.buy ?? {}),
+    sell: trendSide('sell', options.sell ?? {}),
     holdMaxSessions: options.hold ?? 60,
     ...(options.profile ? { profile: options.profile } : {}),
   };
 }
 
 /**
- * Flat 100 through session `jump - 1`, a jump at the close of session `jump` (Close > SMA5 turns
- * true there), then +1 per session: the buy condition stays true and the sell condition
- * (Close < SMA5) never is. `length` is the number of test sessions.
+ * Flat 100 through session `jump - 1`, a jump at the close of session `jump` (the SMA5 trend turns
+ * up there), then +1 per session: the buy condition stays true and the sell condition (SMA5 falling)
+ * never is. `length` is the number of test sessions.
  */
 function risingAfter(jump: number, length: number): number[] {
   const closes: number[] = new Array(WARM + length).fill(100);
@@ -82,7 +102,7 @@ describe('practice engine: next-open timing and flat start', () => {
 
   it('starts flat: a signal on the last observation session never fills at test session 1', () => {
     const closes: number[] = new Array(WARM + 20).fill(100);
-    closes[WARM - 1] = 120; // last observation close: Close > SMA5 is already true
+    closes[WARM - 1] = 120; // last observation close: the SMA5 trend is already up
     for (let s = 1; s <= 20; s++) closes[at(s)] = 121 + s;
     const out = simulate(maInput(closes));
     expect(out.trades[0]!.buy.signal_session).toBe(1);
@@ -173,7 +193,7 @@ describe('practice engine: sell reasons', () => {
   });
 
   it('missing sell-indicator data does not disable the time exit', () => {
-    // SMA200 needs 200 bars; only 105 exist, so the sell rule is unknown on every session.
+    // SMA200 trend needs 400 bars; only 105 exist, so the sell row is unknown on every session.
     const out = simulate(maInput(risingAfter(9, 75), { hold: 10, sell: { period: 200 } }));
     const trade = out.trades[0]!;
     expect(trade.sell!.reason).toBe('max_holding');
@@ -309,14 +329,19 @@ describe('practice engine: end of the window', () => {
 });
 
 describe('practice engine: evidence', () => {
-  it('stores params, operands, operator and rule result at T-1/T for every decision', () => {
-    const rsi = practiceEntry('rsi')!;
-    const defaults = defaultPracticeConfig(rsi);
-    // Oversold dip then recovery: RSI < 30 on T-1 and rising on T.
+  const rsi = rowsEntry('rsi');
+  // Oversold dip then recovery: RSI < 30 on T and above its value 14 sessions earlier.
+  const dipAndRecovery = (): number[] => {
     const closes: number[] = [];
     for (let i = 0; i < 60; i++) closes.push(100 + (i % 2));
     for (let i = 0; i < 30; i++) closes.push(100 - i * 1.5);
     for (let i = 0; i < 60; i++) closes.push(55 + i * 0.7);
+    return closes;
+  };
+
+  it('stores every enabled row with its own values, sentence, operands and result', () => {
+    const defaults = defaultPracticeConfig(rsi) as PracticeRowsConfig;
+    const closes = dipAndRecovery();
     const out = simulate({
       entry: rsi,
       bars: makeBars(closes),
@@ -329,13 +354,110 @@ describe('practice engine: evidence', () => {
     const first = out.trades[0]!;
     expect(first).toBeDefined();
     const evidence = first.buy.evidence;
-    expect(evidence.params).toEqual({ period: 14, level: 30 });
-    expect(evidence.rules.map((rule) => rule.rule_id)).toEqual(['r1', 'r2']);
-    expect(evidence.rules[0]).toMatchObject({ op: '<', result: true, right_label: '30' });
-    expect(evidence.rules[0]!.lhs).toBeLessThan(30);
-    expect(evidence.rules[1]).toMatchObject({ op: '>', result: true });
-    expect(evidence.rules[1]!.lhs!).toBeGreaterThan(evidence.rules[1]!.rhs!);
+    // Row-based indicators have no side-level params: every row carries its own values.
+    expect(evidence.params).toEqual({});
+    expect(evidence.enabled).toBe(true);
+    expect(evidence.status).toBe('ok');
+    expect(evidence.reason).toBeNull();
+    expect(evidence.result).toBe(true);
+    expect(evidence.rules.map((rule) => rule.rule_id)).toEqual(['rsi.level', 'rsi.trend']);
+    const [level, trend] = evidence.rules;
+    expect(level).toMatchObject({
+      kind: 'compare',
+      op: '<',
+      label: 'RSI 14 < 30',
+      values: { period: 14, op: '<', threshold: 30 },
+      left_label: 'RSI 14',
+      right_label: '30',
+      rhs: 30,
+      result: true,
+      missing: false,
+    });
+    expect(level!.lhs).toBeLessThan(30);
+    expect(trend).toMatchObject({
+      kind: 'compare',
+      op: '>',
+      label: 'RSI 14 xu hướng lên',
+      values: { period: 14, dir: 'up' },
+      left_label: 'RSI 14',
+      right_label: 'RSI 14 cách 14 phiên',
+      result: true,
+      missing: false,
+    });
+    expect(trend!.lhs!).toBeGreaterThan(trend!.rhs!);
     expect(evidence.signal_session).toBe(first.buy.signal_session);
+  });
+
+  it('keeps the old rule evidence of Volume: side params and r1 / r2 with their labels', () => {
+    const volume = practiceEntry('volume')!;
+    const defaults = defaultPracticeConfig(volume);
+    const bars = makeBars(
+      Array.from({ length: 200 }, (_, i) => 100 + (i % 7) * 3 + (i > 120 ? (i - 120) * 0.2 : 0)),
+    ).map((bar, i) => ({ ...bar, volume: i % 9 === 0 ? 50_000 : 1_000 }));
+    const out = simulate({
+      entry: volume,
+      bars,
+      firstTestIndex: 60,
+      lastTestIndex: bars.length - 1,
+      buy: toSideConfig(volume, 'buy', defaults.buy),
+      sell: toSideConfig(volume, 'sell', defaults.sell),
+      holdMaxSessions: 10,
+    });
+    const first = out.trades[0]!;
+    expect(first).toBeDefined();
+    expect(first.buy.evidence.params).toEqual({ lookback: 20, mult: 1 });
+    expect(first.buy.evidence.rules.map((rule) => rule.rule_id)).toEqual(['r1', 'r2']);
+    expect(first.buy.evidence.rules[0]).toMatchObject({
+      kind: 'compare',
+      op: '>',
+      left_label: 'Giá đóng cửa',
+      right_label: 'Giá đóng cửa phiên trước',
+    });
+    expect(first.buy.evidence.rules[1]).toMatchObject({
+      left_label: 'Khối lượng',
+      right_label: '1 × TB 20 phiên',
+    });
+    // Volume rules keep the pre-V3 shape: no sentence, no per-row values
+    expect(first.buy.evidence.rules[0]).not.toHaveProperty('label');
+    expect(first.buy.evidence.rules[0]).not.toHaveProperty('values');
+  });
+
+  it('records a cross row with the previous bar values', () => {
+    const closes = risingAfter(9, 30);
+    const out = simulate(maInput(closes));
+    expect(out.trades[0]!.buy.evidence.rules[0]).toMatchObject({
+      rule_id: 'ma.trend',
+      kind: 'compare',
+      label: 'SMA 5 xu hướng lên',
+    });
+    const cross = defaultPracticeConfig(entry) as PracticeRowsConfig;
+    cross.buy.rules[0]!.enabled = true; // price crosses up SMA 20
+    cross.buy.rules[2]!.enabled = false;
+    const flatThenJump = new Array<number>(WARM + 30).fill(100);
+    for (let s = 9; s <= 30; s++) flatThenJump[at(s)] = 130;
+    const crossed = simulate({
+      entry,
+      bars: makeBars(flatThenJump),
+      firstTestIndex: WARM,
+      lastTestIndex: flatThenJump.length - 1,
+      buy: toSideConfig(entry, 'buy', cross.buy),
+      sell: toSideConfig(entry, 'sell', { ...cross.sell, enabled: false }),
+      holdMaxSessions: 5,
+    });
+    const evidence = crossed.trades[0]!.buy.evidence;
+    expect(evidence.signal_session).toBe(9);
+    expect(evidence.rules[0]).toMatchObject({
+      rule_id: 'ma.price_cross',
+      kind: 'cross',
+      op: 'cross_up',
+      label: 'Giá cắt lên SMA 20',
+      left_label: 'Giá đóng cửa',
+      right_label: 'SMA 20',
+      lhs: 130,
+      previous_lhs: 100,
+      result: true,
+    });
+    expect(evidence.rules[0]!.previous_rhs).toBe(100);
   });
 });
 

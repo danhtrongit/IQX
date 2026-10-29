@@ -92,7 +92,12 @@ const missingEvidence = (op: CompareOp): Evidence => ({
 });
 
 /** `X op Y` where op is `>`, `<`, `cross_up` or `cross_down`; Y is a line or a fixed threshold. */
-function relation(op: string, x: Series | undefined, y: Series | number | undefined, i: number): Evidence {
+function relation(
+  op: string,
+  x: Series | undefined,
+  y: Series | number | undefined,
+  i: number,
+): Evidence {
   const yAt = (j: number): ResolvedValue =>
     typeof y === 'number' ? (isFiniteNumber(y) ? y : null) : at(y, j);
   if (op === '>' || op === '<') {
@@ -119,7 +124,12 @@ function relation(op: string, x: Series | undefined, y: Series | number | undefi
 }
 
 /** `X[t]` vs `X[t-lag]`: rising (`>`) or falling (`<`). Trend rows pass lag = N, others 1. */
-function versusLag(rising: boolean | null, x: Series | undefined, lag: number, i: number): Evidence {
+function versusLag(
+  rising: boolean | null,
+  x: Series | undefined,
+  lag: number,
+  i: number,
+): Evidence {
   const op: CompareOp = rising === false ? '<' : '>';
   if (rising === null || !Number.isInteger(lag) || lag < 1) return missingEvidence(op);
   const lhs = at(x, i);
@@ -409,5 +419,7 @@ export function evaluateIndicatorSideSeries(
   const cache = Array.isArray(barsOrCache)
     ? createSeriesCache(barsOrCache as readonly Bar[])
     : (barsOrCache as SeriesCache);
-  return cache.bars.map((_, i) => evaluateIndicatorSide(indicatorId, side, cache, i, masterEnabled));
+  return cache.bars.map((_, i) =>
+    evaluateIndicatorSide(indicatorId, side, cache, i, masterEnabled),
+  );
 }

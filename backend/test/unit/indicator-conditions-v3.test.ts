@@ -51,7 +51,10 @@ const indicatorOfRow = (rowId: string): string => rowId.slice(0, rowId.indexOf('
 type Series = Array<number | null>;
 
 /** A cache that serves fixed series per indicator + params, failing on any other request. */
-function stubCache(table: Record<string, SeriesMap>, close: Series = []): SeriesCache & {
+function stubCache(
+  table: Record<string, SeriesMap>,
+  close: Series = [],
+): SeriesCache & {
   requested: string[];
 } {
   const requested: string[] = [];
@@ -71,13 +74,18 @@ function stubCache(table: Record<string, SeriesMap>, close: Series = []): Series
 const key = (id: string, params: Record<string, number>) => `${id}:${canonicalJson(params)}`;
 
 /** Default row of a tab with overrides (registry defaults are the SPEC V3 §3 defaults). */
-function row(rowId: string, side: Side = 'buy', overrides: Record<string, unknown> = {}): ConditionRow {
+function row(
+  rowId: string,
+  side: Side = 'buy',
+  overrides: Record<string, unknown> = {},
+): ConditionRow {
   const found = defaultRows(rowsEntry(indicatorOfRow(rowId)), side).find((r) => r.id === rowId);
   if (!found) throw new Error(rowId);
   return { ...found, ...overrides } as ConditionRow;
 }
 
-const result = (r: ConditionRow, cache: SeriesCache, i: number): Tri => evaluateRow(r, cache, i).result;
+const result = (r: ConditionRow, cache: SeriesCache, i: number): Tri =>
+  evaluateRow(r, cache, i).result;
 
 /** Valid OHLCV bar with a date that increases with `i`. */
 const ohlc = (i: number, high: number, low: number, close: number, volume = 100): Bar => ({
@@ -93,14 +101,34 @@ const closes = (values: number[]): Bar[] => values.map((c, i) => ohlc(i, c + 1, 
 const synthetic = deepFreeze(reference.syntheticBars(320));
 
 describe('SPEC V3 §3 definitions (registry v4 = IQX_CHI_BAO_MAU.html)', () => {
-  const SPEC_ORDER = ['ma', 'ema', 'ma_cross', 'rsi', 'macd', 'stochastic', 'cci', 'mfi', 'roc', 'williams_r', 'bollinger', 'donchian', 'dmi', 'obv', 'cmf'];
+  const SPEC_ORDER = [
+    'ma',
+    'ema',
+    'ma_cross',
+    'rsi',
+    'macd',
+    'stochastic',
+    'cci',
+    'mfi',
+    'roc',
+    'williams_r',
+    'bollinger',
+    'donchian',
+    'dmi',
+    'obv',
+    'cmf',
+  ];
 
   it('has 15 row-based indicators with 3·3·1·2·3·2·1·1·1·1·3·1·2·2·1 rows (27) and stable ids', () => {
     expect([...CONDITION_INDICATOR_IDS].sort()).toEqual([...SPEC_ORDER].sort());
-    expect(SPEC_ORDER.map((id) => rowsEntry(id).rows.length)).toEqual([3, 3, 1, 2, 3, 2, 1, 1, 1, 1, 3, 1, 2, 2, 1]);
+    expect(SPEC_ORDER.map((id) => rowsEntry(id).rows.length)).toEqual([
+      3, 3, 1, 2, 3, 2, 1, 1, 1, 1, 3, 1, 2, 2, 1,
+    ]);
     const ids = SPEC_ORDER.flatMap((id) => rowsEntry(id).rows.map((r) => r.id));
     expect(ids).toHaveLength(27);
-    expect(ids).toEqual(SPEC_ORDER.flatMap((id) => [...CONDITION_ROW_IDS[id as keyof typeof CONDITION_ROW_IDS]]));
+    expect(ids).toEqual(
+      SPEC_ORDER.flatMap((id) => [...CONDITION_ROW_IDS[id as keyof typeof CONDITION_ROW_IDS]]),
+    );
     expect(registry.find((e) => e.id === 'volume')?.model).toBe('legacy_params');
     for (const entry of registry) expect(entry.rule_version).toBe(RULE_VERSION);
     expect(RULE_VERSION).toBe('iqx-rules-4.0');
@@ -126,7 +154,11 @@ describe('SPEC V3 §3 definitions (registry v4 = IQX_CHI_BAO_MAU.html)', () => {
         false,
       ],
       'stochastic.level': ['%K 14 làm mượt 3 < 20', '%K 14 làm mượt 3 > 80', true],
-      'stochastic.kd_cross': ['%K 14 làm mượt 3 cắt lên %D 3', '%K 14 làm mượt 3 cắt xuống %D 3', true],
+      'stochastic.kd_cross': [
+        '%K 14 làm mượt 3 cắt lên %D 3',
+        '%K 14 làm mượt 3 cắt xuống %D 3',
+        true,
+      ],
       'cci.cross': ['CCI 20 cắt lên -100', 'CCI 20 cắt xuống 100', true],
       'mfi.cross': ['MFI 14 cắt lên 20', 'MFI 14 cắt xuống 80', true],
       'roc.cross': ['ROC 20 cắt lên 5 %', 'ROC 20 cắt xuống -5 %', true],
@@ -136,9 +168,21 @@ describe('SPEC V3 §3 definitions (registry v4 = IQX_CHI_BAO_MAU.html)', () => {
         'Giá đóng cửa quay vào dải từ trên Bollinger 20 hệ số 2',
         true,
       ],
-      'bollinger.price_dir': ['Giá đóng cửa tăng so với phiên trước', 'Giá đóng cửa giảm so với phiên trước', true],
-      'bollinger.width': ['Độ rộng Bollinger 20 hệ số 2 thu hẹp', 'Độ rộng Bollinger 20 hệ số 2 mở rộng', true],
-      'donchian.break': ['Giá đóng cửa > dải trên Donchian 20', 'Giá đóng cửa < dải dưới Donchian 20', true],
+      'bollinger.price_dir': [
+        'Giá đóng cửa tăng so với phiên trước',
+        'Giá đóng cửa giảm so với phiên trước',
+        true,
+      ],
+      'bollinger.width': [
+        'Độ rộng Bollinger 20 hệ số 2 thu hẹp',
+        'Độ rộng Bollinger 20 hệ số 2 mở rộng',
+        true,
+      ],
+      'donchian.break': [
+        'Giá đóng cửa > dải trên Donchian 20',
+        'Giá đóng cửa < dải dưới Donchian 20',
+        true,
+      ],
       'dmi.di': ['DMI 14 : +DI cắt lên −DI', 'DMI 14 : +DI cắt xuống −DI', true],
       'dmi.adx': ['ADX 14 > 25', 'ADX 14 > 25', false],
       'obv.sma': ['OBV cắt lên SMA 20 của OBV', 'OBV cắt xuống SMA 20 của OBV', true],
@@ -167,24 +211,67 @@ describe('SPEC V3 §3 definitions (registry v4 = IQX_CHI_BAO_MAU.html)', () => {
       if (field.type !== 'enum') throw new Error(rowId);
       return field.options.map((o) => [o.value, o.label]);
     };
-    const updown = [['cross_up', 'lên'], ['cross_down', 'xuống']];
-    const cross = [['cross_up', 'cắt lên'], ['cross_down', 'cắt xuống']];
-    const compare = [['>', '>'], ['<', '<']];
+    const updown = [
+      ['cross_up', 'lên'],
+      ['cross_down', 'xuống'],
+    ];
+    const cross = [
+      ['cross_up', 'cắt lên'],
+      ['cross_down', 'cắt xuống'],
+    ];
+    const compare = [
+      ['>', '>'],
+      ['<', '<'],
+    ];
     const all = [...cross, ...compare];
-    for (const id of ['ma.price_cross', 'ma.ma_cross', 'ema.price_cross', 'ema.ma_cross', 'ma_cross.cross'])
+    for (const id of [
+      'ma.price_cross',
+      'ma.ma_cross',
+      'ema.price_cross',
+      'ema.ma_cross',
+      'ma_cross.cross',
+    ])
       expect(ops(id), id).toEqual(updown);
     for (const id of ['rsi.level', 'stochastic.level', 'macd.zero', 'donchian.break', 'dmi.adx'])
       expect(ops(id), id).toEqual(compare);
-    for (const id of ['stochastic.kd_cross', 'cci.cross', 'mfi.cross', 'roc.cross', 'williams_r.cross', 'cmf.cross'])
+    for (const id of [
+      'stochastic.kd_cross',
+      'cci.cross',
+      'mfi.cross',
+      'roc.cross',
+      'williams_r.cross',
+      'cmf.cross',
+    ])
       expect(ops(id), id).toEqual(cross);
     for (const id of ['macd.signal', 'dmi.di', 'obv.sma']) expect(ops(id), id).toEqual(all);
-    expect(ops('rsi.trend', 'dir')).toEqual([['up', 'lên'], ['down', 'xuống']]);
-    expect(ops('ma.trend', 'dir')).toEqual([['up', 'lên'], ['down', 'xuống']]);
-    expect(ops('macd.hist', 'dir')).toEqual([['up', 'tăng'], ['down', 'giảm']]);
-    expect(ops('bollinger.price_dir', 'dir')).toEqual([['up', 'tăng'], ['down', 'giảm']]);
-    expect(ops('bollinger.width', 'dir')).toEqual([['widen', 'mở rộng'], ['narrow', 'thu hẹp']]);
-    expect(ops('donchian.break', 'band')).toEqual([['upper', 'trên'], ['lower', 'dưới']]);
-    expect(ops('obv.breakout', 'action')).toEqual([['break_high', 'vượt đỉnh'], ['break_low', 'phá đáy']]);
+    expect(ops('rsi.trend', 'dir')).toEqual([
+      ['up', 'lên'],
+      ['down', 'xuống'],
+    ]);
+    expect(ops('ma.trend', 'dir')).toEqual([
+      ['up', 'lên'],
+      ['down', 'xuống'],
+    ]);
+    expect(ops('macd.hist', 'dir')).toEqual([
+      ['up', 'tăng'],
+      ['down', 'giảm'],
+    ]);
+    expect(ops('bollinger.price_dir', 'dir')).toEqual([
+      ['up', 'tăng'],
+      ['down', 'giảm'],
+    ]);
+    expect(ops('bollinger.width', 'dir')).toEqual([
+      ['widen', 'mở rộng'],
+      ['narrow', 'thu hẹp'],
+    ]);
+    expect(ops('donchian.break', 'band')).toEqual([
+      ['upper', 'trên'],
+      ['lower', 'dưới'],
+    ]);
+    expect(ops('obv.breakout', 'action')).toEqual([
+      ['break_high', 'vượt đỉnh'],
+      ['break_low', 'phá đáy'],
+    ]);
     expect(ops('bollinger.price_action', 'action').map(([, label]) => label)).toEqual([
       'quay vào dải từ dưới',
       'quay vào dải từ trên',
@@ -202,30 +289,79 @@ describe('SPEC V3 §3 definitions (registry v4 = IQX_CHI_BAO_MAU.html)', () => {
     const config = defaultConfigV4();
     for (const id of CONDITION_INDICATOR_IDS) {
       for (const side of ['buy', 'sell'] as const) {
-        expect(Object.keys(config.indicators[id]![side]).sort(), `${id}.${side}`).toEqual(['enabled', 'rules']);
+        expect(Object.keys(config.indicators[id]![side]).sort(), `${id}.${side}`).toEqual([
+          'enabled',
+          'rules',
+        ]);
       }
     }
     const field = (rowId: string, fieldKey: string) =>
-      rowsEntry(indicatorOfRow(rowId)).rows.find((r) => r.id === rowId)!.fields.find((f) => f.key === fieldKey)!;
+      rowsEntry(indicatorOfRow(rowId))
+        .rows.find((r) => r.id === rowId)!
+        .fields.find((f) => f.key === fieldKey)!;
     const PRESETS = [5, 10, 20, 50, 100, 200];
-    for (const [rowId, keys] of [['ma.price_cross', ['period']], ['ma.ma_cross', ['fast', 'slow']], ['ma.trend', ['period']], ['ma_cross.cross', ['fast', 'slow']]] as const)
-      for (const k of keys) expect(field(rowId, k)).toMatchObject({ type: 'integer', options: PRESETS });
-    expect(field('ema.price_cross', 'period')).toMatchObject({ type: 'integer', min: 2, max: 200, step: 1 });
+    for (const [rowId, keys] of [
+      ['ma.price_cross', ['period']],
+      ['ma.ma_cross', ['fast', 'slow']],
+      ['ma.trend', ['period']],
+      ['ma_cross.cross', ['fast', 'slow']],
+    ] as const)
+      for (const k of keys)
+        expect(field(rowId, k)).toMatchObject({ type: 'integer', options: PRESETS });
+    expect(field('ema.price_cross', 'period')).toMatchObject({
+      type: 'integer',
+      min: 2,
+      max: 200,
+      step: 1,
+    });
     expect(field('ema.price_cross', 'period')).not.toHaveProperty('options');
     expect(field('rsi.level', 'threshold')).toMatchObject({ type: 'integer', min: 0, max: 100 });
     expect(field('stochastic.level', 'smooth')).toMatchObject({ type: 'integer', min: 1, max: 10 });
     expect(field('stochastic.kd_cross', 'd')).toMatchObject({ type: 'integer', min: 1, max: 20 });
     expect(field('cci.cross', 'threshold')).toMatchObject({ type: 'integer', min: -300, max: 300 });
     expect(field('roc.cross', 'period')).toMatchObject({ type: 'integer', min: 2, max: 252 });
-    expect(field('roc.cross', 'threshold')).toMatchObject({ type: 'number', min: -100, max: 10000, step: 0.1 });
-    expect(field('williams_r.cross', 'threshold')).toMatchObject({ type: 'integer', min: -100, max: 0 });
-    expect(field('bollinger.price_action', 'mult')).toMatchObject({ type: 'number', min: 1, max: 3.5, step: 0.1 });
+    expect(field('roc.cross', 'threshold')).toMatchObject({
+      type: 'number',
+      min: -100,
+      max: 10000,
+      step: 0.1,
+    });
+    expect(field('williams_r.cross', 'threshold')).toMatchObject({
+      type: 'integer',
+      min: -100,
+      max: 0,
+    });
+    expect(field('bollinger.price_action', 'mult')).toMatchObject({
+      type: 'number',
+      min: 1,
+      max: 3.5,
+      step: 0.1,
+    });
     expect(field('donchian.break', 'period')).toMatchObject({ type: 'integer', min: 2, max: 252 });
-    expect(field('dmi.adx', 'threshold')).toMatchObject({ type: 'number', min: 0, max: 100, step: 0.1 });
+    expect(field('dmi.adx', 'threshold')).toMatchObject({
+      type: 'number',
+      min: 0,
+      max: 100,
+      step: 0.1,
+    });
     expect(field('obv.breakout', 'period')).toMatchObject({ type: 'integer', min: 2, max: 252 });
-    expect(field('cmf.cross', 'threshold')).toMatchObject({ type: 'number', min: -1, max: 1, step: 0.01 });
-    const fastSlow = registry.flatMap((e) => (isRowsEntry(e) ? e.rows : [])).filter((r) => r.constraints.length);
-    expect(fastSlow.map((r) => r.id)).toEqual(['macd.signal', 'macd.zero', 'macd.hist', 'ma.ma_cross', 'ema.ma_cross', 'ma_cross.cross']);
+    expect(field('cmf.cross', 'threshold')).toMatchObject({
+      type: 'number',
+      min: -1,
+      max: 1,
+      step: 0.01,
+    });
+    const fastSlow = registry
+      .flatMap((e) => (isRowsEntry(e) ? e.rows : []))
+      .filter((r) => r.constraints.length);
+    expect(fastSlow.map((r) => r.id)).toEqual([
+      'macd.signal',
+      'macd.zero',
+      'macd.hist',
+      'ma.ma_cross',
+      'ema.ma_cross',
+      'ma_cross.cross',
+    ]);
   });
 
   it('defaults: master and both tabs OFF, rows at the §3 defaults, valid, and a fresh copy each time', () => {
@@ -234,7 +370,11 @@ describe('SPEC V3 §3 definitions (registry v4 = IQX_CHI_BAO_MAU.html)', () => {
     expect(validateConfig(config)).toEqual([]);
     expect(isCurrentFormat(config)).toBe(true);
     for (const item of Object.values(config.indicators)) {
-      expect([item.master_enabled, item.buy.enabled, item.sell.enabled]).toEqual([false, false, false]);
+      expect([item.master_enabled, item.buy.enabled, item.sell.enabled]).toEqual([
+        false,
+        false,
+        false,
+      ]);
     }
     expect(config.indicators.rsi!.buy.rules).toEqual([
       { id: 'rsi.level', enabled: true, period: 14, op: '<', threshold: 30 },
@@ -270,11 +410,26 @@ describe('SPEC V3 §2 operators and §7.2 cases', () => {
     // X: 10 → 12; Y: 11 → 13. X[t-1] <= Y[t-1] but X[t] < Y[t]: no cross. With Y[t] against X[t-1]
     // (12 vs 11) a wrong engine would see one.
     const macd = key('macd', { fast: 12, slow: 26, signal: 9 });
-    expect(result(row('macd.signal'), stubCache({ [macd]: { value: [10, 12], signal: [11, 13] } }), 1)).toBe(false);
+    expect(
+      result(row('macd.signal'), stubCache({ [macd]: { value: [10, 12], signal: [11, 13] } }), 1),
+    ).toBe(false);
     // X: 10 → 12; Y: 9 → 11.5: X was already above, so no cross up even though X[t] > Y[t].
-    expect(result(row('macd.signal'), stubCache({ [macd]: { value: [10, 12], signal: [9, 11.5] } }), 1)).toBe(false);
-    const evidence = evaluateRow(row('macd.signal'), stubCache({ [macd]: { value: [10, 12], signal: [11, 11.5] } }), 1);
-    expect(evidence).toMatchObject({ result: true, lhs: 12, rhs: 11.5, previous_lhs: 10, previous_rhs: 11, op: 'cross_up' });
+    expect(
+      result(row('macd.signal'), stubCache({ [macd]: { value: [10, 12], signal: [9, 11.5] } }), 1),
+    ).toBe(false);
+    const evidence = evaluateRow(
+      row('macd.signal'),
+      stubCache({ [macd]: { value: [10, 12], signal: [11, 11.5] } }),
+      1,
+    );
+    expect(evidence).toMatchObject({
+      result: true,
+      lhs: 12,
+      rhs: 11.5,
+      previous_lhs: 10,
+      previous_rhs: 11,
+      op: 'cross_up',
+    });
   });
 
   it('MFI cross up 20: 15 → 23 true, 23 → 25 false', () => {
@@ -291,12 +446,16 @@ describe('SPEC V3 §2 operators and §7.2 cases', () => {
 
   it('ROC cross down -5 (percent): -3 → -6 true', () => {
     const roc = key('roc', { period: 20 });
-    expect(result(row('roc.cross', 'sell'), stubCache({ [roc]: { value: [-3, -6] } }), 1)).toBe(true);
+    expect(result(row('roc.cross', 'sell'), stubCache({ [roc]: { value: [-3, -6] } }), 1)).toBe(
+      true,
+    );
   });
 
   it('Williams %R cross up -80: -85 → -75 true', () => {
     const w = key('williams_r', { period: 14 });
-    expect(result(row('williams_r.cross'), stubCache({ [w]: { value: [-85, -75] } }), 1)).toBe(true);
+    expect(result(row('williams_r.cross'), stubCache({ [w]: { value: [-85, -75] } }), 1)).toBe(
+      true,
+    );
   });
 
   it('RSI trend N=14: RSI14[t]=48 vs RSI14[t-14]=41 is up; without RSI14[t-14] it is NO_SIGNAL', () => {
@@ -357,10 +516,23 @@ describe('SPEC V3 §2 operators and §7.2 cases', () => {
 
   it('Stochastic Mua (both rows on): Kprev 15, Dprev 17, K 19, D 18 → true; K 23 → false (row 1)', () => {
     const level = key('stochastic', { k: 14, smooth: 3, d: 3 });
-    const side: RowSideConfig = { enabled: true, rules: [row('stochastic.level'), row('stochastic.kd_cross')] };
-    const yes = evaluateIndicatorSide('stochastic', side, stubCache({ [level]: { value: [15, 19], signal: [17, 18] } }), 1);
+    const side: RowSideConfig = {
+      enabled: true,
+      rules: [row('stochastic.level'), row('stochastic.kd_cross')],
+    };
+    const yes = evaluateIndicatorSide(
+      'stochastic',
+      side,
+      stubCache({ [level]: { value: [15, 19], signal: [17, 18] } }),
+      1,
+    );
     expect(yes).toMatchObject({ status: 'ok', result: true });
-    const no = evaluateIndicatorSide('stochastic', side, stubCache({ [level]: { value: [15, 23], signal: [17, 18] } }), 1);
+    const no = evaluateIndicatorSide(
+      'stochastic',
+      side,
+      stubCache({ [level]: { value: [15, 23], signal: [17, 18] } }),
+      1,
+    );
     expect(no.result).toBe(false);
     expect(no.rows.map((r) => r.result)).toEqual([false, true]);
   });
@@ -369,8 +541,14 @@ describe('SPEC V3 §2 operators and §7.2 cases', () => {
     const dmi = key('dmi', { period: 14 });
     const cache = stubCache({ [dmi]: { plus: [18, 26], minus: [24, 22], adx: [20, 21] } });
     const off: RowSideConfig = { enabled: true, rules: [row('dmi.di'), row('dmi.adx')] };
-    expect(evaluateIndicatorSide('dmi', off, cache, 1)).toMatchObject({ status: 'ok', result: true });
-    const on: RowSideConfig = { enabled: true, rules: [row('dmi.di'), row('dmi.adx', 'buy', { enabled: true })] };
+    expect(evaluateIndicatorSide('dmi', off, cache, 1)).toMatchObject({
+      status: 'ok',
+      result: true,
+    });
+    const on: RowSideConfig = {
+      enabled: true,
+      rules: [row('dmi.di'), row('dmi.adx', 'buy', { enabled: true })],
+    };
     expect(evaluateIndicatorSide('dmi', on, cache, 1).result).toBe(false);
   });
 
@@ -390,7 +568,10 @@ describe('SPEC V3 §2 operators and §7.2 cases', () => {
     const widened = evaluateRow(widen, stubCache({ [bb]: bands([0.08, 0.09]) }), 1);
     expect(widened.lhs).toBeCloseTo(0.09, 12);
     expect(widened.rhs).toBeCloseTo(0.08, 12);
-    expect(evaluateRow(widen, stubCache({ [bb]: bands([0.08, 0.09], 0) }), 1)).toMatchObject({ result: null, missing: true });
+    expect(evaluateRow(widen, stubCache({ [bb]: bands([0.08, 0.09], 0) }), 1)).toMatchObject({
+      result: null,
+      missing: true,
+    });
   });
 
   it('Donchian 20: max High of the 20 previous sessions 100, Close[T] 103, High[T] 105 → true', () => {
@@ -399,7 +580,9 @@ describe('SPEC V3 §2 operators and §7.2 cases', () => {
     const evidence = evaluateRow(row('donchian.break'), createSeriesCache(data), 20);
     expect(evidence).toMatchObject({ result: true, lhs: 103, rhs: 100 });
     // Bar T is excluded from the extreme: High[T] = 105 never becomes the band.
-    expect(evaluateRow(row('donchian.break', 'buy', { period: 21 }), createSeriesCache(data), 20).result).toBeNull();
+    expect(
+      evaluateRow(row('donchian.break', 'buy', { period: 21 }), createSeriesCache(data), 20).result,
+    ).toBeNull();
   });
 
   it('no enabled row / tab off / indicator off → NO_SIGNAL (result null)', () => {
@@ -407,16 +590,34 @@ describe('SPEC V3 §2 operators and §7.2 cases', () => {
     const side = defaultConfigV4().indicators.rsi!.buy as RowSideConfig;
     const on = { ...side, enabled: true };
     expect(evaluateIndicatorSide('rsi', on, cache, 100).status).toBe('ok');
-    expect(evaluateIndicatorSide('rsi', { ...on, rules: on.rules.map((r) => ({ ...r, enabled: false })) }, cache, 100)).toEqual({
+    expect(
+      evaluateIndicatorSide(
+        'rsi',
+        { ...on, rules: on.rules.map((r) => ({ ...r, enabled: false })) },
+        cache,
+        100,
+      ),
+    ).toEqual({
       indicator: 'rsi',
       status: 'no_signal',
       reason: 'no_rows',
       result: null,
       rows: [],
     });
-    expect(evaluateIndicatorSide('rsi', { ...on, enabled: false }, cache, 100)).toMatchObject({ status: 'no_signal', reason: 'side_off', result: null });
-    expect(evaluateIndicatorSide('rsi', on, cache, 100, false)).toMatchObject({ status: 'no_signal', reason: 'indicator_off', result: null });
-    expect(evaluateIndicatorSide('rsi', undefined, cache, 100)).toMatchObject({ status: 'no_signal', reason: 'side_off' });
+    expect(evaluateIndicatorSide('rsi', { ...on, enabled: false }, cache, 100)).toMatchObject({
+      status: 'no_signal',
+      reason: 'side_off',
+      result: null,
+    });
+    expect(evaluateIndicatorSide('rsi', on, cache, 100, false)).toMatchObject({
+      status: 'no_signal',
+      reason: 'indicator_off',
+      result: null,
+    });
+    expect(evaluateIndicatorSide('rsi', undefined, cache, 100)).toMatchObject({
+      status: 'no_signal',
+      reason: 'side_off',
+    });
   });
 
   it('Kleene AND of the enabled rows: any false → false, else any unknown → unknown', () => {
@@ -424,9 +625,13 @@ describe('SPEC V3 §2 operators and §7.2 cases', () => {
     const value: Series = new Array(15).fill(20);
     value[0] = null; // trend row unknown at 14
     const side: RowSideConfig = { enabled: true, rules: [row('rsi.level'), row('rsi.trend')] };
-    expect(evaluateIndicatorSide('rsi', side, stubCache({ [rsi]: { value } }), 14).result).toBeNull();
+    expect(
+      evaluateIndicatorSide('rsi', side, stubCache({ [rsi]: { value } }), 14).result,
+    ).toBeNull();
     value[14] = 35; // level row false (35 < 30 is false)
-    expect(evaluateIndicatorSide('rsi', side, stubCache({ [rsi]: { value } }), 14).result).toBe(false);
+    expect(evaluateIndicatorSide('rsi', side, stubCache({ [rsi]: { value } }), 14).result).toBe(
+      false,
+    );
   });
 });
 
@@ -439,73 +644,200 @@ describe('SPEC V3 §3 every row: true, false and NO_SIGNAL', () => {
     i: number;
   };
   const cases: Record<string, { yes: Case; no: Case; missing: Case }> = {};
-  const add = (id: string, yes: Case, no: Case, missing: Case) => (cases[id] = { yes, no, missing });
+  const add = (id: string, yes: Case, no: Case, missing: Case) =>
+    (cases[id] = { yes, no, missing });
   const ma20 = key('ma', { period: 20 });
   const ma10 = key('ma', { period: 10 });
   const ema20 = key('ema', { period: 20 });
   const ema10 = key('ema', { period: 10 });
 
-  add('ma.price_cross',
-    { row: row('ma.price_cross'), table: { [ma20]: { value: [100, 100] } }, close: [99, 101], i: 1 },
-    { row: row('ma.price_cross'), table: { [ma20]: { value: [100, 100] } }, close: [101, 102], i: 1 },
-    { row: row('ma.price_cross'), table: { [ma20]: { value: [null, 100] } }, close: [99, 101], i: 1 });
-  add('ma.ma_cross',
-    { row: row('ma.ma_cross'), table: { [ma10]: { value: [99, 101] }, [ma20]: { value: [100, 100] } }, i: 1 },
-    { row: row('ma.ma_cross', 'sell'), table: { [ma10]: { value: [99, 101] }, [ma20]: { value: [100, 100] } }, i: 1 },
-    { row: row('ma.ma_cross'), table: { [ma10]: { value: [99, 101] }, [ma20]: { value: [null, 100] } }, i: 1 });
-  add('ma.trend',
-    { row: row('ma.trend'), table: { [ma20]: { value: [...new Array(20).fill(100), 101] } }, i: 20 },
-    { row: row('ma.trend', 'sell'), table: { [ma20]: { value: [...new Array(20).fill(100), 101] } }, i: 20 },
-    { row: row('ma.trend'), table: { [ma20]: { value: [...new Array(20).fill(100), 101] } }, i: 19 });
-  add('ema.price_cross',
-    { row: row('ema.price_cross', 'sell'), table: { [ema20]: { value: [100, 100] } }, close: [100, 99], i: 1 },
-    { row: row('ema.price_cross', 'sell'), table: { [ema20]: { value: [100, 100] } }, close: [99, 98], i: 1 },
-    { row: row('ema.price_cross'), table: { [ema20]: { value: [100, 100] } }, close: [null, 101], i: 1 });
-  add('ema.ma_cross',
-    { row: row('ema.ma_cross'), table: { [ema10]: { value: [100, 101] }, [ema20]: { value: [100, 100.5] } }, i: 1 },
-    { row: row('ema.ma_cross'), table: { [ema10]: { value: [100, 100] }, [ema20]: { value: [100, 100] } }, i: 1 },
-    { row: row('ema.ma_cross'), table: { [ema10]: { value: [100, 101] }, [ema20]: { value: [100, 100.5] } }, i: 0 });
-  add('ema.trend',
-    { row: row('ema.trend', 'buy', { period: 2 }), table: { [key('ema', { period: 2 })]: { value: [5, 9, 6] } }, i: 2 },
-    { row: row('ema.trend', 'buy', { period: 2 }), table: { [key('ema', { period: 2 })]: { value: [6, 9, 6] } }, i: 2 },
-    { row: row('ema.trend', 'buy', { period: 2 }), table: { [key('ema', { period: 2 })]: { value: [null, 9, 6] } }, i: 2 });
+  add(
+    'ma.price_cross',
+    {
+      row: row('ma.price_cross'),
+      table: { [ma20]: { value: [100, 100] } },
+      close: [99, 101],
+      i: 1,
+    },
+    {
+      row: row('ma.price_cross'),
+      table: { [ma20]: { value: [100, 100] } },
+      close: [101, 102],
+      i: 1,
+    },
+    {
+      row: row('ma.price_cross'),
+      table: { [ma20]: { value: [null, 100] } },
+      close: [99, 101],
+      i: 1,
+    },
+  );
+  add(
+    'ma.ma_cross',
+    {
+      row: row('ma.ma_cross'),
+      table: { [ma10]: { value: [99, 101] }, [ma20]: { value: [100, 100] } },
+      i: 1,
+    },
+    {
+      row: row('ma.ma_cross', 'sell'),
+      table: { [ma10]: { value: [99, 101] }, [ma20]: { value: [100, 100] } },
+      i: 1,
+    },
+    {
+      row: row('ma.ma_cross'),
+      table: { [ma10]: { value: [99, 101] }, [ma20]: { value: [null, 100] } },
+      i: 1,
+    },
+  );
+  add(
+    'ma.trend',
+    {
+      row: row('ma.trend'),
+      table: { [ma20]: { value: [...new Array(20).fill(100), 101] } },
+      i: 20,
+    },
+    {
+      row: row('ma.trend', 'sell'),
+      table: { [ma20]: { value: [...new Array(20).fill(100), 101] } },
+      i: 20,
+    },
+    {
+      row: row('ma.trend'),
+      table: { [ma20]: { value: [...new Array(20).fill(100), 101] } },
+      i: 19,
+    },
+  );
+  add(
+    'ema.price_cross',
+    {
+      row: row('ema.price_cross', 'sell'),
+      table: { [ema20]: { value: [100, 100] } },
+      close: [100, 99],
+      i: 1,
+    },
+    {
+      row: row('ema.price_cross', 'sell'),
+      table: { [ema20]: { value: [100, 100] } },
+      close: [99, 98],
+      i: 1,
+    },
+    {
+      row: row('ema.price_cross'),
+      table: { [ema20]: { value: [100, 100] } },
+      close: [null, 101],
+      i: 1,
+    },
+  );
+  add(
+    'ema.ma_cross',
+    {
+      row: row('ema.ma_cross'),
+      table: { [ema10]: { value: [100, 101] }, [ema20]: { value: [100, 100.5] } },
+      i: 1,
+    },
+    {
+      row: row('ema.ma_cross'),
+      table: { [ema10]: { value: [100, 100] }, [ema20]: { value: [100, 100] } },
+      i: 1,
+    },
+    {
+      row: row('ema.ma_cross'),
+      table: { [ema10]: { value: [100, 101] }, [ema20]: { value: [100, 100.5] } },
+      i: 0,
+    },
+  );
+  add(
+    'ema.trend',
+    {
+      row: row('ema.trend', 'buy', { period: 2 }),
+      table: { [key('ema', { period: 2 })]: { value: [5, 9, 6] } },
+      i: 2,
+    },
+    {
+      row: row('ema.trend', 'buy', { period: 2 }),
+      table: { [key('ema', { period: 2 })]: { value: [6, 9, 6] } },
+      i: 2,
+    },
+    {
+      row: row('ema.trend', 'buy', { period: 2 }),
+      table: { [key('ema', { period: 2 })]: { value: [null, 9, 6] } },
+      i: 2,
+    },
+  );
   const mc = key('ma_cross', { fast: 20, slow: 50 });
-  add('ma_cross.cross',
+  add(
+    'ma_cross.cross',
     { row: row('ma_cross.cross'), table: { [mc]: { fast: [10, 12], slow: [10, 11] } }, i: 1 },
     { row: row('ma_cross.cross'), table: { [mc]: { fast: [12, 13], slow: [10, 11] } }, i: 1 },
-    { row: row('ma_cross.cross'), table: { [mc]: { fast: [10, 12], slow: [10, null] } }, i: 1 });
+    { row: row('ma_cross.cross'), table: { [mc]: { fast: [10, 12], slow: [10, null] } }, i: 1 },
+  );
   const rsi = key('rsi', { period: 14 });
-  add('rsi.level',
+  add(
+    'rsi.level',
     { row: row('rsi.level'), table: { [rsi]: { value: [29.9] } }, i: 0 },
     { row: row('rsi.level'), table: { [rsi]: { value: [30] } }, i: 0 },
-    { row: row('rsi.level'), table: { [rsi]: { value: [null] } }, i: 0 });
+    { row: row('rsi.level'), table: { [rsi]: { value: [null] } }, i: 0 },
+  );
   const trendSeries = [...new Array(14).fill(50), 40];
-  add('rsi.trend',
+  add(
+    'rsi.trend',
     { row: row('rsi.trend', 'sell'), table: { [rsi]: { value: trendSeries } }, i: 14 },
     { row: row('rsi.trend'), table: { [rsi]: { value: trendSeries } }, i: 14 },
-    { row: row('rsi.trend'), table: { [rsi]: { value: trendSeries } }, i: 13 });
+    { row: row('rsi.trend'), table: { [rsi]: { value: trendSeries } }, i: 13 },
+  );
   const macd = key('macd', { fast: 12, slow: 26, signal: 9 });
-  add('macd.signal',
-    { row: row('macd.signal', 'buy', { op: '>' }), table: { [macd]: { value: [0, 2], signal: [1, 1] } }, i: 1 },
-    { row: row('macd.signal', 'buy', { op: '<' }), table: { [macd]: { value: [0, 2], signal: [1, 1] } }, i: 1 },
-    { row: row('macd.signal'), table: { [macd]: { value: [0, 2], signal: [null, 1] } }, i: 1 });
-  add('macd.zero',
+  add(
+    'macd.signal',
+    {
+      row: row('macd.signal', 'buy', { op: '>' }),
+      table: { [macd]: { value: [0, 2], signal: [1, 1] } },
+      i: 1,
+    },
+    {
+      row: row('macd.signal', 'buy', { op: '<' }),
+      table: { [macd]: { value: [0, 2], signal: [1, 1] } },
+      i: 1,
+    },
+    { row: row('macd.signal'), table: { [macd]: { value: [0, 2], signal: [null, 1] } }, i: 1 },
+  );
+  add(
+    'macd.zero',
     { row: row('macd.zero'), table: { [macd]: { value: [0.5] } }, i: 0 },
     { row: row('macd.zero'), table: { [macd]: { value: [0] } }, i: 0 },
-    { row: row('macd.zero'), table: { [macd]: { value: [null] } }, i: 0 });
-  add('macd.hist',
+    { row: row('macd.zero'), table: { [macd]: { value: [null] } }, i: 0 },
+  );
+  add(
+    'macd.hist',
     { row: row('macd.hist'), table: { [macd]: { histogram: [-1, -0.5] } }, i: 1 },
     { row: row('macd.hist', 'sell'), table: { [macd]: { histogram: [-1, -0.5] } }, i: 1 },
-    { row: row('macd.hist'), table: { [macd]: { histogram: [null, -0.5] } }, i: 1 });
+    { row: row('macd.hist'), table: { [macd]: { histogram: [null, -0.5] } }, i: 1 },
+  );
   const stoch = key('stochastic', { k: 14, smooth: 3, d: 3 });
-  add('stochastic.level',
+  add(
+    'stochastic.level',
     { row: row('stochastic.level', 'sell'), table: { [stoch]: { value: [85] } }, i: 0 },
     { row: row('stochastic.level', 'sell'), table: { [stoch]: { value: [80] } }, i: 0 },
-    { row: row('stochastic.level'), table: { [stoch]: { value: [null] } }, i: 0 });
-  add('stochastic.kd_cross',
-    { row: row('stochastic.kd_cross', 'sell'), table: { [stoch]: { value: [50, 40], signal: [45, 45] } }, i: 1 },
-    { row: row('stochastic.kd_cross', 'sell'), table: { [stoch]: { value: [44, 40], signal: [45, 45] } }, i: 1 },
-    { row: row('stochastic.kd_cross'), table: { [stoch]: { value: [50, 40], signal: [45, 45] } }, i: 0 });
+    { row: row('stochastic.level'), table: { [stoch]: { value: [null] } }, i: 0 },
+  );
+  add(
+    'stochastic.kd_cross',
+    {
+      row: row('stochastic.kd_cross', 'sell'),
+      table: { [stoch]: { value: [50, 40], signal: [45, 45] } },
+      i: 1,
+    },
+    {
+      row: row('stochastic.kd_cross', 'sell'),
+      table: { [stoch]: { value: [44, 40], signal: [45, 45] } },
+      i: 1,
+    },
+    {
+      row: row('stochastic.kd_cross'),
+      table: { [stoch]: { value: [50, 40], signal: [45, 45] } },
+      i: 0,
+    },
+  );
   for (const [id, period, yes, no, side] of [
     ['cci.cross', 20, [-101, -99], [-99, -98], 'buy'],
     ['mfi.cross', 14, [81, 79], [79, 75], 'sell'],
@@ -514,49 +846,119 @@ describe('SPEC V3 §3 every row: true, false and NO_SIGNAL', () => {
     ['cmf.cross', 20, [0.01, -0.02], [-0.01, -0.02], 'sell'],
   ] as const) {
     const k = key(indicatorOfRow(id), { period });
-    add(id,
+    add(
+      id,
       { row: row(id, side), table: { [k]: { value: [...yes] } }, i: 1 },
       { row: row(id, side), table: { [k]: { value: [...no] } }, i: 1 },
-      { row: row(id, side), table: { [k]: { value: [null, yes[1]] } }, i: 1 });
+      { row: row(id, side), table: { [k]: { value: [null, yes[1]] } }, i: 1 },
+    );
   }
   const bb = key('bollinger', { period: 20, k: 2 });
   const band = { lower: [95, 95], middle: [100, 100], upper: [105, 105] };
-  add('bollinger.price_action',
+  add(
+    'bollinger.price_action',
     { row: row('bollinger.price_action'), table: { [bb]: band }, close: [94, 96], i: 1 },
     { row: row('bollinger.price_action'), table: { [bb]: band }, close: [96, 97], i: 1 },
-    { row: row('bollinger.price_action'), table: { [bb]: { ...band, lower: [null, 95] } }, close: [94, 96], i: 1 });
-  add('bollinger.price_dir',
+    {
+      row: row('bollinger.price_action'),
+      table: { [bb]: { ...band, lower: [null, 95] } },
+      close: [94, 96],
+      i: 1,
+    },
+  );
+  add(
+    'bollinger.price_dir',
     { row: row('bollinger.price_dir'), table: {}, close: [10, 11], i: 1 },
     { row: row('bollinger.price_dir'), table: {}, close: [10, 10], i: 1 },
-    { row: row('bollinger.price_dir'), table: {}, close: [10, 11], i: 0 });
-  add('bollinger.width',
-    { row: row('bollinger.width'), table: { [bb]: { lower: [90, 95], middle: [100, 100], upper: [110, 105] } }, i: 1 },
-    { row: row('bollinger.width'), table: { [bb]: { lower: [95, 90], middle: [100, 100], upper: [105, 110] } }, i: 1 },
-    { row: row('bollinger.width'), table: { [bb]: { lower: [90, 95], middle: [null, 100], upper: [110, 105] } }, i: 1 });
+    { row: row('bollinger.price_dir'), table: {}, close: [10, 11], i: 0 },
+  );
+  add(
+    'bollinger.width',
+    {
+      row: row('bollinger.width'),
+      table: { [bb]: { lower: [90, 95], middle: [100, 100], upper: [110, 105] } },
+      i: 1,
+    },
+    {
+      row: row('bollinger.width'),
+      table: { [bb]: { lower: [95, 90], middle: [100, 100], upper: [105, 110] } },
+      i: 1,
+    },
+    {
+      row: row('bollinger.width'),
+      table: { [bb]: { lower: [90, 95], middle: [null, 100], upper: [110, 105] } },
+      i: 1,
+    },
+  );
   const don = key('donchian', { period: 20 });
-  add('donchian.break',
-    { row: row('donchian.break', 'buy', { op: '<', band: 'lower' }), table: { [don]: { upper: [110], lower: [90] } }, close: [89], i: 0 },
-    { row: row('donchian.break', 'buy', { op: '<', band: 'upper' }), table: { [don]: { upper: [110], lower: [90] } }, close: [111], i: 0 },
-    { row: row('donchian.break'), table: { [don]: { upper: [null], lower: [90] } }, close: [111], i: 0 });
+  add(
+    'donchian.break',
+    {
+      row: row('donchian.break', 'buy', { op: '<', band: 'lower' }),
+      table: { [don]: { upper: [110], lower: [90] } },
+      close: [89],
+      i: 0,
+    },
+    {
+      row: row('donchian.break', 'buy', { op: '<', band: 'upper' }),
+      table: { [don]: { upper: [110], lower: [90] } },
+      close: [111],
+      i: 0,
+    },
+    {
+      row: row('donchian.break'),
+      table: { [don]: { upper: [null], lower: [90] } },
+      close: [111],
+      i: 0,
+    },
+  );
   const dmi = key('dmi', { period: 14 });
-  add('dmi.di',
-    { row: row('dmi.di', 'sell', { op: '<' }), table: { [dmi]: { plus: [20], minus: [25] } }, i: 0 },
+  add(
+    'dmi.di',
+    {
+      row: row('dmi.di', 'sell', { op: '<' }),
+      table: { [dmi]: { plus: [20], minus: [25] } },
+      i: 0,
+    },
     { row: row('dmi.di', 'sell'), table: { [dmi]: { plus: [20, 20], minus: [25, 26] } }, i: 1 },
-    { row: row('dmi.di'), table: { [dmi]: { plus: [null, 26], minus: [24, 22] } }, i: 1 });
-  add('dmi.adx',
+    { row: row('dmi.di'), table: { [dmi]: { plus: [null, 26], minus: [24, 22] } }, i: 1 },
+  );
+  add(
+    'dmi.adx',
     { row: row('dmi.adx', 'buy', { enabled: true }), table: { [dmi]: { adx: [25.1] } }, i: 0 },
     { row: row('dmi.adx', 'buy', { enabled: true }), table: { [dmi]: { adx: [25] } }, i: 0 },
-    { row: row('dmi.adx', 'buy', { enabled: true }), table: { [dmi]: { adx: [null] } }, i: 0 });
+    { row: row('dmi.adx', 'buy', { enabled: true }), table: { [dmi]: { adx: [null] } }, i: 0 },
+  );
   const obv = key('obv', { baseline: 20 });
-  add('obv.sma',
+  add(
+    'obv.sma',
     { row: row('obv.sma'), table: { [obv]: { value: [100, 300], baseline: [200, 200] } }, i: 1 },
-    { row: row('obv.sma', 'buy', { op: '<' }), table: { [obv]: { value: [100, 300], baseline: [200, 200] } }, i: 1 },
-    { row: row('obv.sma'), table: { [obv]: { value: [100, 300], baseline: [200, null] } }, i: 1 });
+    {
+      row: row('obv.sma', 'buy', { op: '<' }),
+      table: { [obv]: { value: [100, 300], baseline: [200, 200] } },
+      i: 1,
+    },
+    { row: row('obv.sma'), table: { [obv]: { value: [100, 300], baseline: [200, null] } }, i: 1 },
+  );
   const breakoutKey = key('obv', { baseline: 20, breakout_period: 20 });
-  add('obv.breakout',
-    { row: row('obv.breakout', 'sell'), table: { [breakoutKey]: { value: [-501], upper: [800], lower: [-500] } }, i: 0 },
-    { row: row('obv.breakout'), table: { [breakoutKey]: { value: [800], upper: [800], lower: [-500] } }, i: 0 },
-    { row: row('obv.breakout'), table: { [breakoutKey]: { value: [900], upper: [null], lower: [-500] } }, i: 0 });
+  add(
+    'obv.breakout',
+    {
+      row: row('obv.breakout', 'sell'),
+      table: { [breakoutKey]: { value: [-501], upper: [800], lower: [-500] } },
+      i: 0,
+    },
+    {
+      row: row('obv.breakout'),
+      table: { [breakoutKey]: { value: [800], upper: [800], lower: [-500] } },
+      i: 0,
+    },
+    {
+      row: row('obv.breakout'),
+      table: { [breakoutKey]: { value: [900], upper: [null], lower: [-500] } },
+      i: 0,
+    },
+  );
 
   it('covers all 27 rows', () => {
     expect(Object.keys(cases).sort()).toEqual(Object.values(CONDITION_ROW_IDS).flat().sort());
@@ -571,7 +973,9 @@ describe('SPEC V3 §3 every row: true, false and NO_SIGNAL', () => {
       const unknown = run(missing);
       expect(unknown.result, 'missing case').toBeNull();
       expect(unknown.missing).toBe(true);
-      expect(run(yes).values).toEqual(Object.fromEntries(Object.entries(yes.row).filter(([k]) => k !== 'id' && k !== 'enabled')));
+      expect(run(yes).values).toEqual(
+        Object.fromEntries(Object.entries(yes.row).filter(([k]) => k !== 'id' && k !== 'enabled')),
+      );
     });
   }
 
@@ -630,7 +1034,8 @@ describe('SPEC V3 §4 validation (server re-checks the form rules)', () => {
 
   it('accepts every default tab and the spec round-trip values (-0.05, -100, -80, 5)', () => {
     for (const id of CONDITION_INDICATOR_IDS)
-      for (const side of ['buy', 'sell'] as const) expect(messages(id, side, sideOf(id, side))).toEqual([]);
+      for (const side of ['buy', 'sell'] as const)
+        expect(messages(id, side, sideOf(id, side))).toEqual([]);
     const cmf = sideOf('cmf');
     cmf.rules[0]!.threshold = -0.05;
     expect(messages('cmf', 'buy', cmf)).toEqual([]);
@@ -643,20 +1048,35 @@ describe('SPEC V3 §4 validation (server re-checks the form rules)', () => {
     const rsi = sideOf('rsi');
     rsi.rules[1]!.period = 1;
     expect(messages('rsi', 'buy', rsi)).toEqual([
-      ['indicators.rsi.buy.rules.1.period', 'Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.'],
+      [
+        'indicators.rsi.buy.rules.1.period',
+        'Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.',
+      ],
     ]);
     rsi.rules[1]!.period = 14.5;
-    expect(messages('rsi', 'buy', rsi)[0]![1]).toBe('Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.');
+    expect(messages('rsi', 'buy', rsi)[0]![1]).toBe(
+      'Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.',
+    );
     rsi.rules[1]!.period = '14' as unknown as number;
-    expect(messages('rsi', 'buy', rsi)[0]![1]).toBe('Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.');
+    expect(messages('rsi', 'buy', rsi)[0]![1]).toBe(
+      'Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.',
+    );
     delete (rsi.rules[1] as Record<string, unknown>).period;
-    expect(messages('rsi', 'buy', rsi)[0]![1]).toBe('Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.');
+    expect(messages('rsi', 'buy', rsi)[0]![1]).toBe(
+      'Mua · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.',
+    );
     const cases: Array<[string, number, string, number, string]> = [
       ['bollinger', 0, 'mult', 4, 'Bán · dòng 1: Hệ số độ lệch chuẩn phải từ 1 đến 3.5.'],
       ['roc', 0, 'threshold', -101, 'Bán · dòng 1: Ngưỡng ROC (%) phải từ -100 đến 10000.'],
       ['cmf', 0, 'threshold', 2, 'Bán · dòng 1: Ngưỡng CMF phải từ -1 đến 1.'],
       ['dmi', 1, 'threshold', 101, 'Bán · dòng 2: Ngưỡng ADX phải từ 0 đến 100.'],
-      ['williams_r', 0, 'threshold', 1, 'Bán · dòng 1: Ngưỡng Williams %R phải từ -100 đến 0, số nguyên.'],
+      [
+        'williams_r',
+        0,
+        'threshold',
+        1,
+        'Bán · dòng 1: Ngưỡng Williams %R phải từ -100 đến 0, số nguyên.',
+      ],
       ['cci', 0, 'threshold', -100.5, 'Bán · dòng 1: Ngưỡng CCI phải từ -300 đến 300, số nguyên.'],
       ['stochastic', 1, 'd', 21, 'Bán · dòng 2: Chu kỳ %D phải từ 1 đến 20, số nguyên.'],
       ['stochastic', 0, 'smooth', 0, 'Bán · dòng 1: Làm mượt %K phải từ 1 đến 10, số nguyên.'],
@@ -678,12 +1098,18 @@ describe('SPEC V3 §4 validation (server re-checks the form rules)', () => {
     const ma = sideOf('ma');
     ma.rules[0]!.period = 7;
     expect(messages('ma', 'buy', ma)).toEqual([
-      ['indicators.ma.buy.rules.0.period', 'Mua · dòng 1: Chu kỳ SMA chỉ chọn 5, 10, 20, 50, 100, 200.'],
+      [
+        'indicators.ma.buy.rules.0.period',
+        'Mua · dòng 1: Chu kỳ SMA chỉ chọn 5, 10, 20, 50, 100, 200.',
+      ],
     ]);
     const cross = sideOf('ma_cross', 'sell');
     cross.rules[0]!.slow = 60;
     expect(messages('ma_cross', 'sell', cross)).toEqual([
-      ['indicators.ma_cross.sell.rules.0.slow', 'Bán · dòng 1: Chu kỳ SMA chậm chỉ chọn 5, 10, 20, 50, 100, 200.'],
+      [
+        'indicators.ma_cross.sell.rules.0.slow',
+        'Bán · dòng 1: Chu kỳ SMA chậm chỉ chọn 5, 10, 20, 50, 100, 200.',
+      ],
     ]);
     // EMA is a free integer input, not a preset.
     const ema = sideOf('ema');
@@ -695,17 +1121,25 @@ describe('SPEC V3 §4 validation (server re-checks the form rules)', () => {
     const fastSlow = 'chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.';
     const ma = sideOf('ma');
     ma.rules[1]!.fast = 20;
-    expect(messages('ma', 'buy', ma)).toEqual([['indicators.ma.buy.rules.1.fast', `Mua · dòng 2: ${fastSlow}`]]);
+    expect(messages('ma', 'buy', ma)).toEqual([
+      ['indicators.ma.buy.rules.1.fast', `Mua · dòng 2: ${fastSlow}`],
+    ]);
     const ema = sideOf('ema', 'sell');
     ema.rules[1]!.fast = 30;
-    expect(messages('ema', 'sell', ema)).toEqual([['indicators.ema.sell.rules.1.fast', `Bán · dòng 2: ${fastSlow}`]]);
+    expect(messages('ema', 'sell', ema)).toEqual([
+      ['indicators.ema.sell.rules.1.fast', `Bán · dòng 2: ${fastSlow}`],
+    ]);
     const cross = sideOf('ma_cross');
     cross.rules[0]!.fast = 50;
-    expect(messages('ma_cross', 'buy', cross)).toEqual([['indicators.ma_cross.buy.rules.0.fast', `Mua · dòng 1: ${fastSlow}`]]);
+    expect(messages('ma_cross', 'buy', cross)).toEqual([
+      ['indicators.ma_cross.buy.rules.0.fast', `Mua · dòng 1: ${fastSlow}`],
+    ]);
     for (const index of [0, 1, 2]) {
       const macd = sideOf('macd');
       macd.rules[index]!.fast = 26;
-      expect(messages('macd', 'buy', macd)).toEqual([[`indicators.macd.buy.rules.${index}.fast`, `Mua · dòng ${index + 1}: ${fastSlow}`]]);
+      expect(messages('macd', 'buy', macd)).toEqual([
+        [`indicators.macd.buy.rules.${index}.fast`, `Mua · dòng ${index + 1}: ${fastSlow}`],
+      ]);
     }
   });
 
@@ -713,7 +1147,10 @@ describe('SPEC V3 §4 validation (server re-checks the form rules)', () => {
     const bb = sideOf('bollinger');
     bb.rules[0]!.mult = 2.35;
     expect(messages('bollinger', 'buy', bb)).toEqual([
-      ['indicators.bollinger.buy.rules.0.mult', 'Mua · dòng 1: Hệ số độ lệch chuẩn phải theo bước 0.1.'],
+      [
+        'indicators.bollinger.buy.rules.0.mult',
+        'Mua · dòng 1: Hệ số độ lệch chuẩn phải theo bước 0.1.',
+      ],
     ]);
   });
 
@@ -725,20 +1162,34 @@ describe('SPEC V3 §4 validation (server re-checks the form rules)', () => {
     (rsi.buy as RowSideConfig).rules[0]!.threshold = 101;
     const frozen = deepFreeze(structuredClone(config));
     expect(validateConfig(frozen).map((e) => [e.path, e.message, e.side, e.row])).toEqual([
-      ['indicators.rsi.buy.rules.0.threshold', 'Mua · dòng 1: Ngưỡng RSI phải từ 0 đến 100, số nguyên.', 'buy', 1],
-      ['indicators.rsi.sell.rules.1.period', 'Bán · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.', 'sell', 2],
+      [
+        'indicators.rsi.buy.rules.0.threshold',
+        'Mua · dòng 1: Ngưỡng RSI phải từ 0 đến 100, số nguyên.',
+        'buy',
+        1,
+      ],
+      [
+        'indicators.rsi.sell.rules.1.period',
+        'Bán · dòng 2: Chu kỳ RSI phải từ 2 đến 200, số nguyên.',
+        'sell',
+        2,
+      ],
     ]);
   });
 
   it('rejects unknown keys, unknown enum codes, wrong row ids/count and the old side-level format', () => {
     const cci = sideOf('cci');
     cci.rules[0]!.op = '>';
-    expect(messages('cci', 'buy', cci)).toEqual([['indicators.cci.buy.rules.0.op', 'Mua · dòng 1: Hướng giao cắt CCI không hợp lệ.']]);
+    expect(messages('cci', 'buy', cci)).toEqual([
+      ['indicators.cci.buy.rules.0.op', 'Mua · dòng 1: Hướng giao cắt CCI không hợp lệ.'],
+    ]);
     cci.rules[0]!.op = 'cắt lên';
     expect(messages('cci', 'buy', cci)).toHaveLength(1);
     const rsi = sideOf('rsi');
     rsi.rules[0]!.extra = 1;
-    expect(messages('rsi', 'buy', rsi)).toEqual([['indicators.rsi.buy.rules.0.extra', 'Mua · dòng 1: trường không hợp lệ extra.']]);
+    expect(messages('rsi', 'buy', rsi)).toEqual([
+      ['indicators.rsi.buy.rules.0.extra', 'Mua · dòng 1: trường không hợp lệ extra.'],
+    ]);
     const swapped = sideOf('rsi');
     swapped.rules.reverse();
     expect(messages('rsi', 'buy', swapped).map(([path]) => path)).toEqual([
@@ -747,27 +1198,47 @@ describe('SPEC V3 §4 validation (server re-checks the form rules)', () => {
     ]);
     const short = sideOf('rsi');
     short.rules.pop();
-    expect(messages('rsi', 'buy', short)).toEqual([['indicators.rsi.buy.rules', 'RSI Mua: sai số dòng điều kiện.']]);
+    expect(messages('rsi', 'buy', short)).toEqual([
+      ['indicators.rsi.buy.rules', 'RSI Mua: sai số dòng điều kiện.'],
+    ]);
     const enabled = sideOf('rsi');
     enabled.rules[0]!.enabled = 'yes' as unknown as boolean;
-    expect(messages('rsi', 'buy', enabled)).toEqual([['indicators.rsi.buy.rules.0.enabled', 'Mua · dòng 1: trạng thái điều kiện không hợp lệ.']]);
+    expect(messages('rsi', 'buy', enabled)).toEqual([
+      ['indicators.rsi.buy.rules.0.enabled', 'Mua · dòng 1: trạng thái điều kiện không hợp lệ.'],
+    ]);
     // V2 shape: side-level params + r1/r2 rules.
-    const v2 = { enabled: true, params: { period: 14, level: 30 }, rules: [{ id: 'r1', op: '<' }, { id: 'r2', op: '>' }] };
+    const v2 = {
+      enabled: true,
+      params: { period: 14, level: 30 },
+      rules: [
+        { id: 'r1', op: '<' },
+        { id: 'r2', op: '>' },
+      ],
+    };
     const errors = messages('rsi', 'buy', v2);
-    expect(errors[0]).toEqual(['indicators.rsi.buy.params', 'RSI Mua: trường không hợp lệ params.']);
+    expect(errors[0]).toEqual([
+      'indicators.rsi.buy.params',
+      'RSI Mua: trường không hợp lệ params.',
+    ]);
     expect(errors.length).toBeGreaterThan(1);
   });
 
   it('validateConfig rejects outdated documents (versions, V2 sides) and keeps the master rule', () => {
     const config = defaultConfigV4();
-    expect(validateConfig({ ...config, rule_version: 'iqx-rules-3.0' }).map((e) => e.path)).toEqual(['rule_version']);
-    expect(validateConfig({ ...config, schema_version: '2.0' }).map((e) => e.path)).toEqual(['schema_version']);
+    expect(validateConfig({ ...config, rule_version: 'iqx-rules-3.0' }).map((e) => e.path)).toEqual(
+      ['rule_version'],
+    );
+    expect(validateConfig({ ...config, schema_version: '2.0' }).map((e) => e.path)).toEqual([
+      'schema_version',
+    ]);
     const on = structuredClone(config);
     on.indicators.rsi!.master_enabled = true;
     expect(validateConfig(on).map((e) => e.message)).toEqual(['rsi: chưa chọn Mua hoặc Bán.']);
     on.indicators.rsi!.buy.enabled = true;
     expect(validateConfig(on)).toEqual([]);
-    expect(validateConfig(on, registry, [])).toEqual([{ path: 'indicators.rsi.master_enabled', message: 'Chỉ báo chưa mở: rsi.' }]);
+    expect(validateConfig(on, registry, [])).toEqual([
+      { path: 'indicators.rsi.master_enabled', message: 'Chỉ báo chưa mở: rsi.' },
+    ]);
   });
 });
 
@@ -783,8 +1254,16 @@ describe('format detection and the SPEC V3 §6 reset', () => {
           id,
           {
             master_enabled: false,
-            buy: { enabled: false, params: { period: 9 }, rules: [{ id: 'r1', kind: 'compare', op: '>' }] },
-            sell: { enabled: false, params: { period: 9 }, rules: [{ id: 'r1', kind: 'compare', op: '<' }] },
+            buy: {
+              enabled: false,
+              params: { period: 9 },
+              rules: [{ id: 'r1', kind: 'compare', op: '>' }],
+            },
+            sell: {
+              enabled: false,
+              params: { period: 9 },
+              rules: [{ id: 'r1', kind: 'compare', op: '<' }],
+            },
           },
         ]),
       ),
@@ -805,7 +1284,11 @@ describe('format detection and the SPEC V3 §6 reset', () => {
   it('isCurrentFormat: current documents only (versions + row structure)', () => {
     expect(isCurrentFormat(defaultConfigV4())).toBe(true);
     expect(isCurrentFormat(v2Document())).toBe(false);
-    const relabelled = { ...v2Document(), schema_version: SCHEMA_VERSION, rule_version: RULE_VERSION };
+    const relabelled = {
+      ...v2Document(),
+      schema_version: SCHEMA_VERSION,
+      rule_version: RULE_VERSION,
+    };
     expect(isCurrentFormat(relabelled)).toBe(false);
     expect(isCurrentFormat(null)).toBe(false);
   });
@@ -856,7 +1339,13 @@ describe('products share one evaluator: combinations unchanged, no look-ahead', 
         variants.push({ id, side });
         const fast = structuredClone(side);
         for (const r of fast.rules) {
-          if (typeof r.period === 'number' && !rowsEntry(id).rows.find((d) => d.id === r.id)!.fields.find((f) => f.key === 'period' && f.type !== 'enum' && f.options)) r.period = 5;
+          if (
+            typeof r.period === 'number' &&
+            !rowsEntry(id)
+              .rows.find((d) => d.id === r.id)!
+              .fields.find((f) => f.key === 'period' && f.type !== 'enum' && f.options)
+          )
+            r.period = 5;
         }
         variants.push({ id, side: fast });
       }
@@ -885,14 +1374,18 @@ describe('products share one evaluator: combinations unchanged, no look-ahead', 
     expect(sideSignals(config, data.slice(0, T + 1), 'buy')[T]).toBe(false);
     expect(sideSignalsWithEvidence(config, data, 'buy')[T]!.result).toBe(false);
     expect(sideSignalsWithEvidence(config, data, 'buy')[T + 1]!.result).toBe(true);
-    expect(evaluateIndicatorSide('ma', ma, createSeriesCache(data.slice(0, T + 1)), T).result).toBe(false);
+    expect(evaluateIndicatorSide('ma', ma, createSeriesCache(data.slice(0, T + 1)), T).result).toBe(
+      false,
+    );
   });
 
   it('sideSignals: AND across active indicators; an active indicator without enabled rows keeps the side false', () => {
     const config = enable(defaultConfigV4(), ['ma', 'rsi']);
     const cache = createSeriesCache(synthetic);
     const expected = synthetic.map((_, i) => {
-      const values = ['ma', 'rsi'].map((id) => evaluateIndicatorSide(id, config.indicators[id]!.buy, cache, i).result);
+      const values = ['ma', 'rsi'].map(
+        (id) => evaluateIndicatorSide(id, config.indicators[id]!.buy, cache, i).result,
+      );
       return values.includes(false) ? false : values.includes(null) ? null : true;
     });
     expect(sideSignals(config, synthetic, 'buy')).toEqual(expected);

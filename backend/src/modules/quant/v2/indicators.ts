@@ -6,7 +6,7 @@ import { CURRENT_INDICATOR_IDS, type Bar, type SeriesMap } from './types.js';
  * the golden tests can compare series bit-for-bit; do not "optimise" rolling
  * windows into running sums.
  *
- * `calc` serves only the 16 indicators of the current registry (`iqx-rules-3.0`).
+ * `calc` serves only the 16 indicators of the current registry (`iqx-rules-4.0`).
  * `calcLegacy` additionally computes the 19 retired indicators so historical receipts can
  * still be read and re-verified; nothing may offer them as current.
  */

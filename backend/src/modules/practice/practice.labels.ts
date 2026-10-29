@@ -1,38 +1,120 @@
-import type { Operand, RegistryEntry, Rule } from '../quant/v2/index.js';
+import {
+  renderRowSentence,
+  type Operand,
+  type ParamsRegistryEntry,
+  type RowDefinition,
+  type RowValues,
+  type Rule,
+} from '../quant/v2/index.js';
 
 const formatNumber = (value: number): string =>
   Number.isInteger(value) ? String(value) : String(Math.round(value * 100) / 100);
 
-/** Display name of the main (`value`) series of an indicator, as the approved HTML labels it. */
-function valueLabel(indicatorId: string, params: Record<string, number>, fallback: string): string {
-  switch (indicatorId) {
-    case 'ma':
-      return `SMA ${formatNumber(params.period ?? Number.NaN)}`;
-    case 'ema':
-      return `EMA ${formatNumber(params.period ?? Number.NaN)}`;
-    case 'bollinger':
-      return 'Độ rộng Bollinger';
-    case 'stochastic':
-      return '%K';
-    case 'cmf':
-      return 'CMF';
-    case 'williams_r':
-      return 'Williams %R';
-    case 'volume':
-      return 'Khối lượng';
-    default:
-      return fallback;
-  }
-}
+// ------------------------------------------------------------------ condition rows (SPEC V3)
 
 /**
- * Vietnamese label of one rule operand using the params of the side being evaluated
- * (port of the reference `operandLabel`). Labels contain only indicator/period/threshold text —
- * never a symbol, company or date.
+ * Sentence of a registry row with the values it ran with, e.g. `RSI 14 < 30` or
+ * `Giá cắt lên SMA 20`. The text comes from the registry row definition (the same sentence the
+ * forms render), so a locked run keeps the wording of the registry it was started with.
+ */
+export const rowLabel = (definition: RowDefinition, values: Readonly<RowValues>): string =>
+  renderRowSentence(definition, values);
+
+type OperandLabels = { left: string; right: string };
+
+const num = (values: Readonly<RowValues>, key: string): string => {
+  const value = values[key];
+  return typeof value === 'number' ? formatNumber(value) : '?';
+};
+
+const CLOSE = 'Giá đóng cửa';
+
+const BOLLINGER_RIGHT: Record<string, string> = {
+  reenter_lower: 'Dải dưới',
+  break_lower: 'Dải dưới',
+  reenter_upper: 'Dải trên',
+  break_upper: 'Dải trên',
+  cross_up_middle: 'Đường giữa',
+  cross_down_middle: 'Đường giữa',
+};
+
+/** Left (`lhs`) and right (`rhs`) operand of every row, labelled with the row's own values. */
+const ROW_OPERANDS: Record<string, (values: Readonly<RowValues>) => OperandLabels> = {
+  'ma.price_cross': (v) => ({ left: CLOSE, right: `SMA ${num(v, 'period')}` }),
+  'ma.ma_cross': (v) => ({ left: `SMA ${num(v, 'fast')}`, right: `SMA ${num(v, 'slow')}` }),
+  'ma.trend': (v) => ({
+    left: `SMA ${num(v, 'period')}`,
+    right: `SMA ${num(v, 'period')} cách ${num(v, 'period')} phiên`,
+  }),
+  'ema.price_cross': (v) => ({ left: CLOSE, right: `EMA ${num(v, 'period')}` }),
+  'ema.ma_cross': (v) => ({ left: `EMA ${num(v, 'fast')}`, right: `EMA ${num(v, 'slow')}` }),
+  'ema.trend': (v) => ({
+    left: `EMA ${num(v, 'period')}`,
+    right: `EMA ${num(v, 'period')} cách ${num(v, 'period')} phiên`,
+  }),
+  'ma_cross.cross': (v) => ({ left: `SMA ${num(v, 'fast')}`, right: `SMA ${num(v, 'slow')}` }),
+  'rsi.level': (v) => ({ left: `RSI ${num(v, 'period')}`, right: num(v, 'threshold') }),
+  'rsi.trend': (v) => ({
+    left: `RSI ${num(v, 'period')}`,
+    right: `RSI ${num(v, 'period')} cách ${num(v, 'period')} phiên`,
+  }),
+  'macd.signal': (v) => ({
+    left: `MACD ${num(v, 'fast')}/${num(v, 'slow')}`,
+    right: `Signal ${num(v, 'signal')}`,
+  }),
+  'macd.zero': (v) => ({ left: `MACD ${num(v, 'fast')}/${num(v, 'slow')}`, right: '0' }),
+  'macd.hist': (v) => ({
+    left: `Histogram ${num(v, 'fast')}/${num(v, 'slow')}/${num(v, 'signal')}`,
+    right: 'Histogram phiên trước',
+  }),
+  'stochastic.level': (v) => ({ left: `%K ${num(v, 'k')}`, right: num(v, 'threshold') }),
+  'stochastic.kd_cross': (v) => ({ left: `%K ${num(v, 'k')}`, right: `%D ${num(v, 'd')}` }),
+  'cci.cross': (v) => ({ left: `CCI ${num(v, 'period')}`, right: num(v, 'threshold') }),
+  'mfi.cross': (v) => ({ left: `MFI ${num(v, 'period')}`, right: num(v, 'threshold') }),
+  'roc.cross': (v) => ({ left: `ROC ${num(v, 'period')} (%)`, right: num(v, 'threshold') }),
+  'williams_r.cross': (v) => ({
+    left: `Williams %R ${num(v, 'period')}`,
+    right: num(v, 'threshold'),
+  }),
+  'cmf.cross': (v) => ({ left: `CMF ${num(v, 'period')}`, right: num(v, 'threshold') }),
+  'bollinger.price_action': (v) => ({
+    left: CLOSE,
+    right: BOLLINGER_RIGHT[String(v.action)] ?? 'Dải Bollinger',
+  }),
+  'bollinger.price_dir': () => ({ left: CLOSE, right: `${CLOSE} phiên trước` }),
+  'bollinger.width': (v) => ({
+    left: `Độ rộng Bollinger ${num(v, 'period')}`,
+    right: `Độ rộng Bollinger ${num(v, 'period')} phiên trước`,
+  }),
+  'donchian.break': (v) => ({
+    left: CLOSE,
+    right: `${v.band === 'lower' ? 'Dải dưới' : 'Dải trên'} Donchian ${num(v, 'period')}`,
+  }),
+  'dmi.di': () => ({ left: '+DI', right: '−DI' }),
+  'dmi.adx': (v) => ({ left: `ADX ${num(v, 'period')}`, right: num(v, 'threshold') }),
+  'obv.sma': (v) => ({ left: 'OBV', right: `SMA ${num(v, 'period')} của OBV` }),
+  'obv.breakout': (v) => ({
+    left: 'OBV',
+    right:
+      v.action === 'break_low' ? `Đáy ${num(v, 'period')} phiên` : `Đỉnh ${num(v, 'period')} phiên`,
+  }),
+};
+
+/** What the two numbers of a row's evidence are (`lhs` / `rhs`), using the row's own values. */
+export function rowOperandLabels(rowId: string, values: Readonly<RowValues>): OperandLabels {
+  return ROW_OPERANDS[rowId]?.(values) ?? { left: rowId, right: '—' };
+}
+
+// ------------------------------------------------------------------ Volume (params + rules)
+
+/**
+ * Vietnamese label of one rule operand of a params-based indicator (Volume) using the params of
+ * the side being evaluated. Labels contain only indicator/period/threshold text, never a symbol,
+ * company or date.
  */
 export function operandLabel(
   operand: Operand,
-  entry: Pick<RegistryEntry, 'id' | 'name' | 'fields'>,
+  entry: Pick<ParamsRegistryEntry, 'id' | 'name' | 'fields'>,
   params: Record<string, number>,
 ): string {
   if (operand.kind === 'param') {
@@ -42,37 +124,19 @@ export function operandLabel(
   }
   if (operand.kind === 'constant') return String(operand.value);
   const p = (key: string): string => formatNumber(params[key] ?? Number.NaN);
-  const suffix =
-    operand.offset === -1
-      ? ' phiên trước'
-      : operand.offset_param
-        ? ` cách ${p(operand.offset_param)} phiên`
-        : '';
   const labels: Record<string, string> = {
-    close: 'Giá đóng cửa',
+    close: CLOSE,
     volume: 'Khối lượng',
-    value: valueLabel(entry.id, params, entry.name),
-    signal: entry.id === 'stochastic' ? '%D' : 'Đường tín hiệu',
-    histogram: 'Histogram',
-    plus: '+DI',
-    minus: '−DI',
-    adx: 'ADX',
-    fast: entry.id === 'ema' ? `EMA ${p('fast')}` : `SMA ${p('fast')}`,
-    slow: entry.id === 'ema' ? `EMA ${p('slow')}` : `SMA ${p('slow')}`,
-    trend: entry.id === 'ema' ? `EMA ${p('trend_period')}` : `SMA ${p('trend_period')}`,
-    upper: entry.id === 'obv' ? `Đỉnh ${p('breakout_period')} phiên` : 'Dải trên',
-    middle: 'Đường giữa',
-    lower: entry.id === 'obv' ? `Đáy ${p('breakout_period')} phiên` : 'Dải dưới',
-    baseline: `SMA ${p('baseline')} của OBV`,
+    value: entry.name,
     threshold: `${p('mult')} × TB ${p('lookback')} phiên`,
   };
-  return `${labels[operand.key] ?? operand.key}${suffix}`;
+  return `${labels[operand.key] ?? operand.key}${operand.offset === -1 ? ' phiên trước' : ''}`;
 }
 
-/** Left/right labels of a rule (membership right side is the open interval of the band). */
+/** Left/right labels of a Volume rule (membership right side is the open interval of the band). */
 export function ruleLabels(
   rule: Rule,
-  entry: Pick<RegistryEntry, 'id' | 'name' | 'fields'>,
+  entry: Pick<ParamsRegistryEntry, 'id' | 'name' | 'fields'>,
   params: Record<string, number>,
 ): { left: string; right: string } {
   const left = operandLabel(rule.lhs, entry, params);
@@ -81,21 +145,6 @@ export function ruleLabels(
       left,
       right: `(${operandLabel(rule.rhs.lower, entry, params)}; ${operandLabel(rule.rhs.upper, entry, params)})`,
     };
-  }
-  if (entry.id === 'bollinger' && rule.id === 'r1') {
-    const rightByOp: Record<string, string> = {
-      reenter_lower: 'Dải dưới',
-      break_lower: 'Dải dưới',
-      reenter_upper: 'Dải trên',
-      break_upper: 'Dải trên',
-      cross_up_middle: 'Đường giữa',
-      cross_down_middle: 'Đường giữa',
-    };
-    return { left, right: rightByOp[rule.op] ?? 'Dải Bollinger' };
-  }
-  if (entry.id === 'obv' && rule.id === 'r2') {
-    const n = formatNumber(params.breakout_period ?? 20);
-    return { left, right: rule.op === 'break_low' ? `Đáy ${n} phiên` : `Đỉnh ${n} phiên` };
   }
   return { left, right: operandLabel(rule.rhs, entry, params) };
 }

@@ -15,7 +15,10 @@ import type {
  * format (`params`) are rejected.
  */
 
-export const SIDE_LABEL: Readonly<Record<Side, string>> = Object.freeze({ buy: 'Mua', sell: 'Bán' });
+export const SIDE_LABEL: Readonly<Record<Side, string>> = Object.freeze({
+  buy: 'Mua',
+  sell: 'Bán',
+});
 /** Step tolerance of the reference engine (`|(v-min)/step - round| ≤ 1e-6`). */
 const STEP_TOLERANCE = 1e-6;
 const SIDE_KEYS = new Set(['enabled', 'rules']);
@@ -34,8 +37,12 @@ export const rangeMessage = (side: Side, row: number, field: RowNumberField): st
   }.`;
 
 /** `Mua · dòng 1: Chu kỳ SMA chỉ chọn 5, 10, 20, 50, 100, 200.` */
-export const optionsMessage = (side: Side, row: number, label: string, options: readonly number[]): string =>
-  `${rowPrefix(side, row)}: ${label} chỉ chọn ${options.join(', ')}.`;
+export const optionsMessage = (
+  side: Side,
+  row: number,
+  label: string,
+  options: readonly number[],
+): string => `${rowPrefix(side, row)}: ${label} chỉ chọn ${options.join(', ')}.`;
 
 /** `Mua · dòng 1: chu kỳ nhanh phải nhỏ hơn chu kỳ chậm.` */
 export const fastSlowMessage = (side: Side, row: number): string =>
@@ -98,7 +105,12 @@ export function validateRow(
   }
   for (const key of Object.keys(value)) {
     if (!ROW_FIXED_KEYS.has(key) && !definition.fields.some((f) => f.key === key)) {
-      errors.push({ path: `${path}.${key}`, message: `${prefix}: trường không hợp lệ ${key}.`, side, row });
+      errors.push({
+        path: `${path}.${key}`,
+        message: `${prefix}: trường không hợp lệ ${key}.`,
+        side,
+        row,
+      });
     }
   }
   for (const field of definition.fields) {
@@ -109,7 +121,12 @@ export function validateRow(
     const left = value[constraint.left];
     const right = value[constraint.right];
     if (!isFiniteNumber(left) || !isFiniteNumber(right) || left < right) continue;
-    errors.push({ path: `${path}.${constraint.left}`, message: fastSlowMessage(side, row), side, row });
+    errors.push({
+      path: `${path}.${constraint.left}`,
+      message: fastSlowMessage(side, row),
+      side,
+      row,
+    });
   }
   return errors;
 }
@@ -142,7 +159,11 @@ export function validateSideRows(
   const rules = value.rules;
   const rulesPath = `${basePath}.rules`;
   if (!Array.isArray(rules) || rules.length !== entry.rows.length) {
-    errors.push({ path: rulesPath, message: `${entry.name} ${label}: sai số dòng điều kiện.`, side });
+    errors.push({
+      path: rulesPath,
+      message: `${entry.name} ${label}: sai số dòng điều kiện.`,
+      side,
+    });
     return errors;
   }
   entry.rows.forEach((definition, index) => {

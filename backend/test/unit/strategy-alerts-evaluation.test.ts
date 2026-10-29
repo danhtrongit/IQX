@@ -10,6 +10,7 @@ import {
   evaluateSide,
   isEodEvaluationDue,
   isPairDue,
+  pinnedConfigProblem,
   planEvaluation,
   signalMessage,
   transition,
@@ -17,11 +18,17 @@ import {
   type ValidState,
 } from '../../src/modules/alerts/strategy-alerts.evaluation.js';
 import {
+  RULE_VERSION,
+  SCHEMA_VERSION,
   defaultConfig,
   type Bar,
+  type ConditionRow,
   type IndicatorConfig,
+  type RowSideConfig,
   type SharedConfig,
+  type Side,
 } from '../../src/modules/quant/v2/index.js';
+import { preV3Config } from './helpers/strategy-pre-v3.js';
 
 const NONE: ValidState = { last_valid_result: null, last_valid_session: null };
 const TRUE_: ValidState = { last_valid_result: true, last_valid_session: '2026-01-05' };
@@ -222,14 +229,18 @@ describe('isEodEvaluationDue', () => {
   });
 });
 
-function maConfig(buy = true, sell = true): SharedConfig {
+/** Row 1 of an MA tab: `ma.price_cross` (Mua `cross_up`, Bán `cross_down` the SMA of `period`). */
+const priceCross = (config: SharedConfig, side: Side): ConditionRow =>
+  ((config.indicators.ma as IndicatorConfig)[side] as RowSideConfig).rules[0]!;
+
+function maConfig(buy = true, sell = true, period = 5): SharedConfig {
   const config = defaultConfig();
   const ma = config.indicators.ma as IndicatorConfig;
   ma.master_enabled = true;
   ma.buy.enabled = buy;
   ma.sell.enabled = sell;
-  ma.buy.params.period = 5;
-  ma.sell.params.period = 5;
+  priceCross(config, 'buy').period = period;
+  priceCross(config, 'sell').period = period;
   return config;
 }
 
@@ -250,15 +261,18 @@ describe('evaluateSide', () => {
     const buy = evaluateSide(maConfig(), rising, 'buy', day(5));
     expect(buy.result).toBe(true);
     expect(buy.indicator_ids).toEqual(['ma']);
+    // Evidence is one entry per evaluated row, with the row's own stored values.
+    expect(buy.rules).toHaveLength(1);
     expect(buy.rules[0]).toMatchObject({
-      id: 'r1',
+      id: 'ma.price_cross',
       indicator: 'ma',
       side: 'buy',
-      op: '>',
+      op: 'cross_up',
       lhs: 12,
       rhs: 10.4,
       result: true,
       missing: false,
+      values: { op: 'cross_up', period: 5 },
     });
     expect(evaluateSide(maConfig(), rising, 'sell', day(5)).result).toBe(false);
   });
@@ -287,15 +301,171 @@ describe('evaluateSide', () => {
   });
 
   it('uses the pinned config only: a changed MA period gives another verdict', () => {
-    const data = bars([10, 10, 10, 10, 10, 10.5, 10.4]);
-    const short = maConfig();
-    (short.indicators.ma as IndicatorConfig).buy.params.period = 5;
-    const long = maConfig();
-    (long.indicators.ma as IndicatorConfig).buy.params.period = 7;
-    expect(evaluateSide(short, data, 'buy', day(6)).result).not.toBeNull();
-    expect(evaluateSide(short, data, 'buy', day(6)).rules[0]?.rhs).not.toBe(
-      evaluateSide(long, data, 'buy', day(6)).rules[0]?.rhs,
-    );
+    // 12 sessions: both SMA 5 and SMA 10 are defined on the last bar, with different values.
+    const data = bars([10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10.5, 10.4]);
+    const short = evaluateSide(maConfig(true, true, 5), data, 'buy', day(11));
+    const long = evaluateSide(maConfig(true, true, 10), data, 'buy', day(11));
+    expect(short.result).not.toBeNull();
+    expect(long.result).not.toBeNull();
+    expect(short.rules[0]?.rhs).toBeCloseTo(10.18, 10);
+    expect(long.rules[0]?.rhs).toBeCloseTo(10.09, 10);
+    expect(short.rules[0]?.values).toMatchObject({ period: 5 });
+    expect(long.rules[0]?.values).toMatchObject({ period: 10 });
+  });
+
+  it('evaluates every enabled row with its own periods and combines them with AND (three-valued)', () => {
+    // Row 1 `Giá cắt lên SMA 5` and row 3 `SMA 10 xu hướng lên` (SMA 10 now vs 10 sessions ago).
+    const config = maConfig(true, false);
+    const rows = ((config.indicators.ma as IndicatorConfig).buy as RowSideConfig).rules;
+    const trend = rows.find((row) => row.id === 'ma.trend')!;
+    Object.assign(trend, { enabled: true, period: 10, dir: 'up' });
+    const last = (closes: number[]) => day(closes.length - 1);
+
+    const flatThenJump = [...Array<number>(24).fill(10), 12];
+    const both = evaluateSide(config, bars(flatThenJump), 'buy', last(flatThenJump));
+    expect(both.result).toBe(true);
+    expect(both.reason).toBeNull();
+    expect(both.indicator_ids).toEqual(['ma']);
+    expect(both.rules.map((rule) => [rule.id, rule.result])).toEqual([
+      ['ma.price_cross', true],
+      ['ma.trend', true],
+    ]);
+    expect(both.rules[0]?.values).toMatchObject({ period: 5 });
+    expect(both.rules[1]?.values).toMatchObject({ period: 10, dir: 'up' });
+
+    // One false row decides the side: price crosses up SMA 5 but SMA 10 is falling.
+    const fallingThenJump = [...Array.from({ length: 30 }, (_, i) => 50 - i), 40];
+    const mixed = evaluateSide(config, bars(fallingThenJump), 'buy', last(fallingThenJump));
+    expect(mixed.result).toBe(false);
+    expect(mixed.reason).toBeNull();
+    expect(mixed.rules.map((rule) => [rule.id, rule.result])).toEqual([
+      ['ma.price_cross', true],
+      ['ma.trend', false],
+    ]);
+
+    // Row 3 needs 20 sessions: with 7 bars the unknown row keeps the AND unknown, never false.
+    const short = [10, 10, 10, 10, 10, 10, 12];
+    const insufficient = evaluateSide(config, bars(short), 'buy', last(short));
+    expect(insufficient).toMatchObject({ result: null, reason: 'insufficient_or_missing_data' });
+    expect(insufficient.rules.find((rule) => rule.id === 'ma.trend')).toMatchObject({
+      result: null,
+      missing: true,
+    });
+  });
+
+  it('an active indicator with no enabled row keeps the side false (NO_SIGNAL is not a pass)', () => {
+    const config = maConfig(true, false);
+    const rows = ((config.indicators.ma as IndicatorConfig).buy as RowSideConfig).rules;
+    for (const row of rows) row.enabled = false;
+    const outcome = evaluateSide(config, bars([10, 10, 10, 10, 10, 12]), 'buy', day(5));
+    expect(outcome).toMatchObject({
+      result: false,
+      reason: null,
+      indicator_ids: ['ma'],
+      rules: [],
+    });
+  });
+
+  it('keeps the combination of several indicators: every active indicator must hold', () => {
+    const config = maConfig(true, false);
+    const rsi = config.indicators.rsi as IndicatorConfig;
+    rsi.master_enabled = true;
+    rsi.buy.enabled = true;
+    const closes = [10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 10, 12];
+    // MA holds (price crosses up SMA 5 on the last bar); RSI(14) has no history yet: unknown.
+    const outcome = evaluateSide(config, bars(closes), 'buy', day(11));
+    expect([...outcome.indicator_ids].sort()).toEqual(['ma', 'rsi']);
+    expect(outcome.rules.find((rule) => rule.id === 'ma.price_cross')?.result).toBe(true);
+    expect(
+      outcome.rules.filter((rule) => rule.indicator === 'rsi').every((rule) => rule.missing),
+    ).toBe(true);
+    expect(outcome.result).toBeNull();
+    expect(outcome.reason).toBe('insufficient_or_missing_data');
+  });
+});
+
+describe('activeIndicatorIds', () => {
+  it('lists indicators with the master and the side ON, sorted', () => {
+    const config = maConfig(true, false);
+    const rsi = config.indicators.rsi as IndicatorConfig;
+    rsi.master_enabled = true;
+    rsi.sell.enabled = true;
+    expect(activeIndicatorIds(config, 'buy')).toEqual(['ma']);
+    expect(activeIndicatorIds(config, 'sell')).toEqual(['rsi']);
+  });
+
+  it('reads the pinned configs of older versions without throwing on any shape', () => {
+    expect(activeIndicatorIds(preV3Config() as unknown as SharedConfig, 'buy')).toEqual(['ma']);
+    for (const garbage of [
+      null,
+      undefined,
+      7,
+      'x',
+      [],
+      {},
+      { indicators: null },
+      { indicators: { ma: null } },
+    ])
+      expect(
+        activeIndicatorIds(garbage as unknown as SharedConfig, 'buy'),
+        String(garbage),
+      ).toEqual([]);
+    expect(
+      activeIndicatorIds(
+        { indicators: { ma: { master_enabled: true } } } as unknown as SharedConfig,
+        'buy',
+      ),
+    ).toEqual([]);
+  });
+});
+
+describe('pinnedConfigProblem (a pinned version that cannot be evaluated)', () => {
+  it('is null for a valid current-format config', () => {
+    expect(pinnedConfigProblem(maConfig())).toBeNull();
+    expect(pinnedConfigProblem(defaultConfig())).toBeNull();
+  });
+
+  it('is "outdated" for a config pinned before SPEC V3 (side-level params, iqx-rules-3.0)', () => {
+    expect(pinnedConfigProblem(preV3Config())).toBe('outdated');
+    // The version stamps alone do not make a document current: rows must be in the new shape.
+    expect(
+      pinnedConfigProblem({
+        ...preV3Config(),
+        schema_version: SCHEMA_VERSION,
+        rule_version: RULE_VERSION,
+      }),
+    ).toBe('outdated');
+    expect(pinnedConfigProblem({ ...maConfig(), rule_version: 'iqx-rules-3.0' })).not.toBeNull();
+  });
+
+  it('is "invalid" for a current-format config with a value the registry refuses', () => {
+    const config = maConfig();
+    priceCross(config, 'buy').period = 7; // not an SMA preset
+    expect(pinnedConfigProblem(config)).toBe('invalid');
+  });
+
+  it('never throws, whatever the stored document looks like', () => {
+    const garbage: unknown[] = [
+      null,
+      undefined,
+      0,
+      'config',
+      [],
+      {},
+      { indicators: null },
+      { schema_version: SCHEMA_VERSION, rule_version: RULE_VERSION, indicators: null },
+      { schema_version: SCHEMA_VERSION, rule_version: RULE_VERSION, indicators: { ma: null } },
+      {
+        schema_version: SCHEMA_VERSION,
+        rule_version: RULE_VERSION,
+        indicators: { ma: { buy: 5 } },
+      },
+    ];
+    for (const document of garbage) {
+      const problem = pinnedConfigProblem(document);
+      expect(problem, JSON.stringify(document)).not.toBeNull();
+      expect(['outdated', 'invalid']).toContain(problem);
+    }
   });
 });
 

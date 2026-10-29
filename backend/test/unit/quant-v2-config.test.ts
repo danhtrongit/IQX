@@ -178,8 +178,22 @@ describe('quant v2 validateConfig', () => {
     const c = clone(defaultConfig());
     (c.indicators as Record<string, unknown>).rsi = {
       master_enabled: false,
-      buy: { enabled: false, params: { period: 14, level: 30 }, rules: [{ id: 'r1', op: '<' }, { id: 'r2', op: '>' }] },
-      sell: { enabled: false, params: { period: 14, level: 70 }, rules: [{ id: 'r1', op: '>' }, { id: 'r2', op: '<' }] },
+      buy: {
+        enabled: false,
+        params: { period: 14, level: 30 },
+        rules: [
+          { id: 'r1', op: '<' },
+          { id: 'r2', op: '>' },
+        ],
+      },
+      sell: {
+        enabled: false,
+        params: { period: 14, level: 70 },
+        rules: [
+          { id: 'r1', op: '>' },
+          { id: 'r2', op: '<' },
+        ],
+      },
     };
     const errorPaths = paths(c);
     expect(errorPaths).toContain('indicators.rsi.buy.params');
@@ -210,7 +224,10 @@ describe('quant v2 validateConfig', () => {
       ['indicators.ma.buy.rules.0.period', (c) => (rowOf(c, 'ma', 'buy').period = Number.NaN)],
       ['indicators.ma.buy.rules.0.period', (c) => delete rowOf(c, 'ma', 'buy').period],
       ['indicators.ma.buy.rules.0.foo', (c) => (rowOf(c, 'ma', 'buy').foo = 1)],
-      ['indicators.bollinger.sell.rules.0.mult', (c) => (rowOf(c, 'bollinger', 'sell').mult = 2.05)],
+      [
+        'indicators.bollinger.sell.rules.0.mult',
+        (c) => (rowOf(c, 'bollinger', 'sell').mult = 2.05),
+      ],
       ['indicators.roc.buy.rules.0.threshold', (c) => (rowOf(c, 'roc', 'buy').threshold = 5.55)],
       ['indicators.macd.buy.rules.0.fast', (c) => (rowOf(c, 'macd', 'buy').fast = 26)],
       ['indicators.macd.buy.rules.2.fast', (c) => (rowOf(c, 'macd', 'buy', 2).fast = 30)],
@@ -242,7 +259,9 @@ describe('quant v2 validateConfig', () => {
     rowOf(allowed, 'rsi', 'buy', 1).period = 9;
     expect(validateConfig(allowed)).toEqual([]);
     const reordered = defaultConfig();
-    (indicator(reordered, 'ma').buy as RowSideConfig).rules[0] = reverseKeys(rowOf(reordered, 'ma', 'buy'));
+    (indicator(reordered, 'ma').buy as RowSideConfig).rules[0] = reverseKeys(
+      rowOf(reordered, 'ma', 'buy'),
+    );
     expect(validateConfig(reordered)).toEqual([]);
     const cases: Array<[string, (c: SharedConfig) => void]> = [
       ['indicators.cci.buy.rules.0.op', (c) => (rowOf(c, 'cci', 'buy').op = '>')],
@@ -252,9 +271,18 @@ describe('quant v2 validateConfig', () => {
         'indicators.ma.buy.rules',
         (c) => (indicator(c, 'ma').buy as RowSideConfig).rules.push(clone(rowOf(c, 'ma', 'buy'))),
       ],
-      ['indicators.ma.buy.rules', (c) => ((indicator(c, 'ma').buy as { rules: unknown }).rules = {})],
-      ['indicators.volume.buy.rules.0', (c) => (volumeSide(c, 'buy').rules[0]!.rhs = { kind: 'constant', value: 1 })],
-      ['indicators.volume.buy.rules.0.op', (c) => ((volumeSide(c, 'buy').rules[0] as { op: string }).op = '>=')],
+      [
+        'indicators.ma.buy.rules',
+        (c) => ((indicator(c, 'ma').buy as { rules: unknown }).rules = {}),
+      ],
+      [
+        'indicators.volume.buy.rules.0',
+        (c) => (volumeSide(c, 'buy').rules[0]!.rhs = { kind: 'constant', value: 1 }),
+      ],
+      [
+        'indicators.volume.buy.rules.0.op',
+        (c) => ((volumeSide(c, 'buy').rules[0] as { op: string }).op = '>='),
+      ],
     ];
     for (const [path, mutate] of cases) {
       const c = defaultConfig();

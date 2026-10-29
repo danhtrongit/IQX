@@ -16,8 +16,8 @@ import { ACADEMY_GRANTS, type AcademyGrantsPort } from '../academy/academy.ports
 import {
   CALCULATION_VERSION,
   RULE_VERSION,
-  calc,
   canonicalJson,
+  createSeriesCache,
   indicatorCapability,
   sha256Hex,
   type RegistryEntry,
@@ -25,10 +25,16 @@ import {
 import { buildChart } from './practice.chart.js';
 import { buildComment } from './practice.comments.js';
 import {
+  OUTDATED_RUN_ERROR,
+  currentDraft,
   defaultPracticeConfig,
+  isCurrentPracticeConfig,
+  isOutdatedUnfinishedRun,
   normalizePracticeConfig,
+  outdatedFormatErrors,
   practiceEntry,
   practiceForm,
+  previewCandidate,
   toSideConfig,
   validatePracticeConfig,
 } from './practice.config.js';
@@ -72,7 +78,11 @@ import type {
   StateResponse,
 } from './practice.schemas.js';
 import { PRACTICE_SET, type PracticeSet } from './practice.set.js';
-import type { PracticeConfig, PracticeValidationError } from './practice.types.js';
+import type {
+  PracticeConfig,
+  PracticeParamsSide,
+  PracticeValidationError,
+} from './practice.types.js';
 
 type ErrorBody = { code: string; message: string; details?: PracticeValidationError[] };
 
@@ -95,20 +105,55 @@ const caseMismatch = () =>
 const iso = (value: Date | string): string =>
   value instanceof Date ? value.toISOString() : new Date(value).toISOString();
 
-const toConfig = (input: PracticeConfigInput): PracticeConfig => ({
-  buy: { enabled: input.buy.enabled, params: input.buy.params, ops: input.buy.ops },
-  sell: { enabled: input.sell.enabled, params: input.sell.params, ops: input.sell.ops },
-  hold_max_sessions: input.hold_max_sessions,
+type ParamsSideInput = Extract<PracticeConfigInput['buy'], { params: unknown }>;
+
+const toParamsSide = (side: ParamsSideInput): PracticeParamsSide => ({
+  enabled: side.enabled,
+  params: side.params,
+  ops: side.ops,
+  // `rules_enabled` is part of the config (Volume rule switches): dropping it here would lock a
+  // different config than the one validated and hashed.
+  ...(side.rules_enabled !== undefined ? { rules_enabled: side.rules_enabled } : {}),
 });
 
-const briefOf = (header: RunHeader) => ({
+/**
+ * The request body as a config. The schema accepts the two shapes (rows / params); which one an
+ * indicator needs is checked by `validatePracticeConfig`.
+ */
+const toConfig = (input: PracticeConfigInput): PracticeConfig => {
+  const { buy, sell, hold_max_sessions: holdMaxSessions } = input;
+  if ('rules' in buy && 'rules' in sell) {
+    return {
+      buy: { enabled: buy.enabled, rules: buy.rules },
+      sell: { enabled: sell.enabled, rules: sell.rules },
+      hold_max_sessions: holdMaxSessions,
+    };
+  }
+  if ('params' in buy && 'params' in sell) {
+    return {
+      buy: toParamsSide(buy),
+      sell: toParamsSide(sell),
+      hold_max_sessions: holdMaxSessions,
+    };
+  }
+  // A mixed body does not pass the schema; refuse it as the old format if it ever gets here.
+  throw configInvalid(outdatedFormatErrors());
+};
+
+type RunBrief = StateResponse['runs'][number];
+
+/**
+ * Brief of a run. A run locked in the pre-V3 format that never finished is shown as `failed`
+ * with `PRACTICE_CONFIG_OUTDATED`, whatever its stored status says.
+ */
+const briefOf = (header: RunHeader, outdated: boolean): RunBrief => ({
   run_id: header.id,
   ordinal: header.ordinal,
   case_id: header.case_id,
-  status: header.status,
-  summary: header.summary ? (header.summary as unknown as BriefSummary) : null,
+  status: outdated ? 'failed' : header.status,
+  summary: header.summary ? (header.summary as unknown as RunBrief['summary']) : null,
+  error: outdated ? { ...OUTDATED_RUN_ERROR } : header.status === 'failed' ? header.error : null,
 });
-type BriefSummary = StateResponse['runs'][number]['summary'];
 
 /**
  * Mini practice (Bot SPEC §10-§11): server-side permutation of 30 hidden cases per
@@ -191,10 +236,15 @@ export class PracticeService {
     const progress = await this.ensureProgress(userId, entry);
     const store = this.repository.store();
     // The form is locked from Start until "next": the draft cannot be edited under a locked run.
-    if (await store.runByOrdinal(progress.id, progress.cursor_ordinal)) {
+    // A run that never finished and is locked in the pre-V3 format does not lock it: that case
+    // is started again with the new conditions.
+    const locked = await store.runByOrdinal(progress.id, progress.cursor_ordinal);
+    if (locked && !isOutdatedUnfinishedRun(entry, locked)) {
       throw conflict('PRACTICE_RUN_LOCKED', 'Cấu hình đã khóa sau khi bắt đầu lượt này.');
     }
     const draft = toConfig(body.draft);
+    // A draft in the pre-V3 shape is never stored (SPEC V3 §6.1.5): the stale client reloads.
+    if (!isCurrentPracticeConfig(entry, draft)) throw configInvalid(outdatedFormatErrors());
     const updated = await store.updateDraft(progress.id, body.expected_revision, draft);
     if (!updated) {
       throw conflict(
@@ -214,27 +264,18 @@ export class PracticeService {
   async preview(userId: string, indicatorId: string, body: PreviewBody): Promise<PreviewResponse> {
     const entry = await this.authorize(userId, indicatorId);
     const progress = await this.ensureProgress(userId, entry);
-    const candidate: PracticeConfig = {
-      ...progress.draft,
-      buy: { ...progress.draft.buy, params: body.buy_params ?? progress.draft.buy.params },
-      sell: { ...progress.draft.sell, params: body.sell_params ?? progress.draft.sell.params },
-    };
-    const paramErrors = validatePracticeConfig(entry, candidate, { requireBuy: false }).filter(
-      (error) => error.path.includes('.params'),
+    const { candidate, errors } = previewCandidate(
+      entry,
+      currentDraft(entry, progress.draft),
+      body,
     );
-    if (paramErrors.length) throw configInvalid(paramErrors);
+    if (errors.length) throw configInvalid(errors);
 
     const reserved = await this.requireCase(progress);
     const loaded = await this.loadCase(reserved.symbol);
     const { calendar } = loaded;
     // Only warmup + observation bars are fed to the engine: no future bar can seed a value.
     const visibleBars = calendar.bars.slice(0, calendar.firstTest);
-    const buy = toSideConfig(entry, 'buy', candidate.buy);
-    const sell = toSideConfig(entry, 'sell', candidate.sell);
-    const series = {
-      buy: calc(entry.id, buy.params, visibleBars),
-      sell: calc(entry.id, sell.params, visibleBars),
-    };
     return {
       ordinal: reserved.ordinal,
       case_id: reserved.case_id,
@@ -244,8 +285,11 @@ export class PracticeService {
         calendar,
         from: calendar.observationStart,
         to: calendar.firstTest - 1,
-        series,
-        params: { buy: buy.params, sell: sell.params },
+        cache: createSeriesCache(visibleBars),
+        sides: {
+          buy: toSideConfig(entry, 'buy', candidate.buy),
+          sell: toSideConfig(entry, 'sell', candidate.sell),
+        },
       }),
       data_notes: [...loaded.notes],
     };
@@ -290,7 +334,16 @@ export class PracticeService {
       const locked = await tx.progress(userId, entry.id, this.set.set_version, { lock: true });
       if (!locked || locked.cursor_ordinal !== body.ordinal) throw caseMismatch();
       const existing = await tx.runByOrdinal(locked.id, body.ordinal);
-      if (existing) {
+      if (existing && isOutdatedUnfinishedRun(entry, existing)) {
+        // Locked in the pre-V3 format and never finished: its frozen config can no longer be
+        // computed, so this start replaces it. A finished run is never removed.
+        if (!(await tx.discardUnfinishedRun(locked.id, existing.id))) {
+          throw conflict('PRACTICE_RUN_LOCKED', 'Lượt này đã được bắt đầu.');
+        }
+        this.logger.warn(
+          `Practice run ${existing.id} (${existing.status}, pre-V3 conditions) replaced by a new start`,
+        );
+      } else if (existing) {
         this.assertSameRequest(existing, requestHash, body.idempotency_key);
         return existing;
       }
@@ -414,7 +467,7 @@ export class PracticeService {
         case_id: row.case_id,
         completed_at: row.completed_at ? iso(row.completed_at) : null,
         config: row.config,
-        kpis: row.summary ? (row.summary as unknown as BriefSummary) : null,
+        kpis: row.summary ? (row.summary as unknown as RunBrief['summary']) : null,
         versions: this.versions(row),
       })),
     };
@@ -505,15 +558,20 @@ export class PracticeService {
       this.requireCase(progress),
       store.runHeaders(progress.id),
     ]);
-    const current = headers.find((header) => header.ordinal === progress.cursor_ordinal) ?? null;
-    const validation = this.validation(entry, progress.draft);
+    // A draft stored in the pre-V3 shape reads as the V3 defaults (switches and hold kept); it is
+    // replaced by the next draft save.
+    const draft = currentDraft(entry, progress.draft);
+    const validation = this.validation(entry, draft);
     const cursor = progress.cursor_ordinal;
+    const briefs = headers.map((header) => briefOf(header, isOutdatedUnfinishedRun(entry, header)));
+    const currentBrief = briefs.find((brief) => brief.ordinal === cursor) ?? null;
+    const outdated = currentBrief?.error?.code === OUTDATED_RUN_ERROR.code;
     const status: StateResponse['status'] =
-      current === null
+      currentBrief === null
         ? 'ready'
-        : current.status === 'computing'
+        : currentBrief.status === 'computing'
           ? 'computing'
-          : current.status === 'failed'
+          : currentBrief.status === 'failed'
             ? 'failed'
             : cursor >= PRACTICE_CASE_COUNT
               ? 'set_completed'
@@ -525,15 +583,16 @@ export class PracticeService {
       ordinal: cursor,
       total: PRACTICE_CASE_COUNT,
       case: { case_id: reserved.case_id, ordinal: cursor, window_bars: this.set.window_bars },
-      draft: progress.draft,
+      draft,
       draft_revision: progress.draft_revision,
       validation,
-      current_run: current ? briefOf(current) : null,
-      can_start: current === null && validation.valid,
-      can_retry: current !== null && current.status !== 'succeeded',
-      can_next: current?.status === 'succeeded' && cursor < PRACTICE_CASE_COUNT,
+      current_run: currentBrief,
+      // An outdated unfinished run is replaced by a new start; it cannot be retried.
+      can_start: (currentBrief === null || outdated) && validation.valid,
+      can_retry: currentBrief !== null && !outdated && currentBrief.status !== 'succeeded',
+      can_next: currentBrief?.status === 'succeeded' && cursor < PRACTICE_CASE_COUNT,
       completed_count: headers.filter((header) => header.status === 'succeeded').length,
-      runs: headers.map(briefOf),
+      runs: briefs,
       profile: MINI_PROFILE_V1,
       form: practiceForm(entry),
     };
@@ -565,19 +624,21 @@ export class PracticeService {
 
   private view(row: RunRow): RunView {
     const done = row.status === 'succeeded';
+    const entry = practiceEntry(row.indicator_id);
+    const outdated = entry !== null && isOutdatedUnfinishedRun(entry, row);
     return {
       run_id: row.id,
       indicator_id: row.indicator_id,
       ordinal: row.ordinal,
       total: PRACTICE_CASE_COUNT,
       case_id: row.case_id,
-      status: row.status,
+      status: outdated ? 'failed' : row.status,
       config: row.config,
       versions: this.versions(row),
       locked_at: iso(row.created_at),
       completed_at: row.completed_at ? iso(row.completed_at) : null,
       attempts: row.attempts,
-      error: row.status === 'failed' ? row.error : null,
+      error: outdated ? { ...OUTDATED_RUN_ERROR } : row.status === 'failed' ? row.error : null,
       result: done ? (row.result as unknown as RunView['result']) : null,
       chart: done ? (row.chart as unknown as RunView['chart']) : null,
     };
@@ -590,6 +651,11 @@ export class PracticeService {
   private async finalize(entry: RegistryEntry, run: RunRow, loaded?: LoadedCase): Promise<RunView> {
     if (run.status === 'succeeded') return this.view(run);
     const store = this.repository.store();
+    if (isOutdatedUnfinishedRun(entry, run)) {
+      // The frozen pre-V3 config cannot be computed: fail it with a clear, permanent error.
+      await store.failRun(run.id, { ...OUTDATED_RUN_ERROR });
+      throw conflict(OUTDATED_RUN_ERROR.code, OUTDATED_RUN_ERROR.message);
+    }
     let data = loaded;
     if (!data) {
       const reserved = await store.caseAt(run.progress_id, run.ordinal);
@@ -628,6 +694,8 @@ export class PracticeService {
     const config = run.config;
     const buy = toSideConfig(entry, 'buy', config.buy);
     const sell = toSideConfig(entry, 'sell', config.sell);
+    // One memoised series set serves both the decisions and the chart.
+    const cache = createSeriesCache(calendar.bars);
     const outcome = simulate({
       entry,
       bars: calendar.bars,
@@ -636,6 +704,7 @@ export class PracticeService {
       buy,
       sell,
       holdMaxSessions: run.hold_max_sessions,
+      cache,
     });
     const comment = buildComment({
       kpis: outcome.kpis,
@@ -648,8 +717,8 @@ export class PracticeService {
       calendar,
       from: calendar.observationStart,
       to: calendar.lastTest,
-      series: outcome.series,
-      params: { buy: buy.params, sell: sell.params },
+      cache,
+      sides: { buy, sell },
     });
     return {
       summary: {

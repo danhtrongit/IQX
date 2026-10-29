@@ -95,7 +95,8 @@ export class PracticeController {
   @Put(':indicatorId/draft')
   @ApiOperation({
     operationId: 'practiceSaveDraft',
-    summary: 'Save the draft (both sides, params, operators, max holding) with expected_revision',
+    summary:
+      'Save the draft (condition rows of both tabs, or Volume params, plus max holding) with expected_revision',
   })
   @ApiOkResponse({ schema: openApi(draftResponseSchema) })
   saveDraft(
@@ -110,7 +111,8 @@ export class PracticeController {
   @HttpCode(200)
   @ApiOperation({
     operationId: 'practicePreview',
-    summary: 'Observation-window candles and indicator series for the given params (no future)',
+    summary:
+      'Observation-window candles and per-row indicator series for the given condition rows (no future)',
   })
   @ApiOkResponse({ schema: openApi(previewResponseSchema) })
   preview(

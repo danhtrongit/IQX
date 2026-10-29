@@ -54,7 +54,11 @@ function entry(id: string): RegistryEntry {
 }
 
 /** Default row of a tab (SPEC V3 §3) with overrides. */
-function rowOf(rowId: string, side: Side = 'buy', overrides: Record<string, unknown> = {}): ConditionRow {
+function rowOf(
+  rowId: string,
+  side: Side = 'buy',
+  overrides: Record<string, unknown> = {},
+): ConditionRow {
   const owner = entry(rowId.slice(0, rowId.indexOf('.')));
   if (!isRowsEntry(owner)) throw new Error(rowId);
   const found = defaultRows(owner, side).find((r) => r.id === rowId);
@@ -233,7 +237,9 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
     const band: SeriesMap = { lower: [10, 10], middle: [15, 15], upper: [20, 20] };
     const r1 = rowOf('bollinger.price_action');
     expect(evaluateRow(r1, fixedCache(band, [9, 12]), 1).result).toBe(true);
-    expect(evaluateRow({ ...r1, action: 'reenter_upper' }, fixedCache(band, [9, 12]), 1).result).toBe(false);
+    expect(
+      evaluateRow({ ...r1, action: 'reenter_upper' }, fixedCache(band, [9, 12]), 1).result,
+    ).toBe(false);
     const missing: SeriesMap = { ...band, lower: [null, 10] };
     expect(evaluateRow(r1, fixedCache(missing, [9, 12]), 1).result).toBeNull();
   });
@@ -359,7 +365,9 @@ describe('Bot SPEC §9.1 / §16-I calculation parity', () => {
     expect(series.upper![4]).toBeNull();
     const cache = createSeriesCache(data);
     expect(evaluateRow(rowOf('donchian.break', 'buy', { period: 5 }), cache, 5).result).toBe(true);
-    expect(evaluateRow(rowOf('donchian.break', 'sell', { period: 5 }), cache, 5).result).toBe(false);
+    expect(evaluateRow(rowOf('donchian.break', 'sell', { period: 5 }), cache, 5).result).toBe(
+      false,
+    );
   });
 
   it('ROC is a percentage (20, not 0.2 or 2000); a non-positive base is missing (I15)', () => {

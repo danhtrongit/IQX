@@ -110,7 +110,12 @@ export function resetToCurrentFormat(
 ): SharedConfig {
   const reset = defaultConfigV4(registry);
   const stored = isRecord(config) && isRecord(config.indicators) ? config.indicators : {};
-  if (isRecord(config) && typeof config.revision === 'number' && Number.isInteger(config.revision) && config.revision >= 1) {
+  if (
+    isRecord(config) &&
+    typeof config.revision === 'number' &&
+    Number.isInteger(config.revision) &&
+    config.revision >= 1
+  ) {
     reset.revision = config.revision;
   }
   for (const entry of registry) {
@@ -181,7 +186,9 @@ export function mapLegacyConfig(
     mapped = {
       schema_version: SCHEMA_VERSION,
       revision:
-        typeof config.revision === 'number' && Number.isInteger(config.revision) && config.revision >= 1
+        typeof config.revision === 'number' &&
+        Number.isInteger(config.revision) &&
+        config.revision >= 1
           ? config.revision
           : 1,
       rule_version: RULE_VERSION,

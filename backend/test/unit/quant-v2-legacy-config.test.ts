@@ -17,7 +17,11 @@ import {
 } from '../../src/modules/quant/v2/index.js';
 import { deepFreeze } from '../fixtures/bot-v2/reference.js';
 
-type OldSide = { enabled: boolean; params: Record<string, number>; rules: Array<Record<string, unknown>> };
+type OldSide = {
+  enabled: boolean;
+  params: Record<string, number>;
+  rules: Array<Record<string, unknown>>;
+};
 type OldIndicator = { master_enabled: boolean; buy: OldSide; sell: OldSide };
 type LegacyDocument = {
   schema_version: string;
@@ -100,7 +104,11 @@ describe('outdated shared configs are reset, never mapped (SPEC V3 §6.1)', () =
     expect(isLegacyConfig({ ...defaultConfig(), rule_version: 'iqx-rules-3.0' })).toBe(true);
     expect(isLegacyConfig({ ...defaultConfig(), schema_version: '2.0' })).toBe(true);
     expect(
-      isLegacyConfig({ ...legacyDocument(), schema_version: SCHEMA_VERSION, rule_version: RULE_VERSION }),
+      isLegacyConfig({
+        ...legacyDocument(),
+        schema_version: SCHEMA_VERSION,
+        rule_version: RULE_VERSION,
+      }),
     ).toBe(true);
     const extra = structuredClone(defaultConfig());
     extra.indicators.atr = structuredClone(extra.indicators.rsi!);
@@ -126,7 +134,11 @@ describe('outdated shared configs are reset, never mapped (SPEC V3 §6.1)', () =
         ruleVersion,
       );
       const { config, review, validation_errors } = mapped(document);
-      expect(config).toMatchObject({ schema_version: '3.0', rule_version: 'iqx-rules-4.0', revision: 7 });
+      expect(config).toMatchObject({
+        schema_version: '3.0',
+        rule_version: 'iqx-rules-4.0',
+        revision: 7,
+      });
       expect(Object.keys(config.indicators)).toEqual([...CURRENT_INDICATOR_IDS]);
       const defaults = defaultConfig();
       expect(config.indicators.rsi).toEqual({
@@ -141,7 +153,9 @@ describe('outdated shared configs are reset, never mapped (SPEC V3 §6.1)', () =
         sell: { ...defaults.indicators.macd!.sell, enabled: true },
       });
       // Removed indicators are not carried into the current shape.
-      expect(Object.keys(config.indicators).some((id) => id === 'atr' || id === 'psar')).toBe(false);
+      expect(Object.keys(config.indicators).some((id) => id === 'atr' || id === 'psar')).toBe(
+        false,
+      );
       expect(validation_errors).toEqual([]);
       expect(review).toMatchObject({
         from_rule_version: ruleVersion,

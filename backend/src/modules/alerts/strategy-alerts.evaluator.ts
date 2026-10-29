@@ -10,7 +10,6 @@ import {
   indicatorCapability,
   loadTechnicalRegistry,
   sha256Hex,
-  validateConfig,
   type Bar,
   type Side,
 } from '../quant/v2/index.js';
@@ -19,7 +18,9 @@ import {
   barsDataVersion,
   evaluateSide,
   isPairDue,
+  pinnedConfigProblem,
   type AlertStateRow,
+  type PinnedConfigProblem,
   type SideEvaluation,
 } from './strategy-alerts.evaluation.js';
 import { StrategyAlertsRepository } from './strategy-alerts.repository.js';
@@ -167,15 +168,12 @@ export class StrategyAlertEvaluator {
       return cached;
     };
     const registry = loadTechnicalRegistry();
-    const invalidConfig = new Map<string, boolean>();
-    const configInvalid = (target: EvaluationTarget): boolean => {
+    const configProblems = new Map<string, PinnedConfigProblem | null>();
+    const configProblem = (target: EvaluationTarget): PinnedConfigProblem | null => {
       const key = `${target.alert_id}:${target.version}`;
-      let invalid = invalidConfig.get(key);
-      if (invalid === undefined) {
-        invalid = validateConfig(target.config, registry).length > 0;
-        invalidConfig.set(key, invalid);
-      }
-      return invalid;
+      if (!configProblems.has(key))
+        configProblems.set(key, pinnedConfigProblem(target.config, registry));
+      return configProblems.get(key) ?? null;
     };
 
     const bySymbol = new Map<string, Pair[]>();
@@ -208,28 +206,36 @@ export class StrategyAlertEvaluator {
 
       for (const pair of pairs) {
         try {
-          const granted = await grantsOf(pair.target.user_id);
-          const locked = activeIndicatorIds(pair.target.config, pair.side).filter(
-            (id) => !granted.has(indicatorCapability(id)),
-          );
-          let evaluation: SideEvaluation;
-          if (configInvalid(pair.target))
-            evaluation = { result: null, reason: 'config_invalid', indicator_ids: [], rules: [] };
-          else if (locked.length)
-            evaluation = {
-              result: null,
-              reason: 'capability_locked',
-              indicator_ids: locked,
-              rules: [],
-            };
-          else if (fetchFailed || !bars)
-            evaluation = {
-              result: null,
-              reason: 'market_data_unavailable',
-              indicator_ids: [],
-              rules: [],
-            };
-          else evaluation = evaluateSide(pair.target.config, bars, pair.side, session);
+          // A version pinned before SPEC V3 (outdated format) or with an invalid value is never
+          // evaluated and never throws: no verdict, no event, `config_error` on the alert until it
+          // is re-pinned (the migration does that for outdated versions).
+          let evaluation: SideEvaluation = {
+            result: null,
+            reason: 'config_invalid',
+            indicator_ids: [],
+            rules: [],
+          };
+          if (configProblem(pair.target) === null) {
+            const granted = await grantsOf(pair.target.user_id);
+            const locked = activeIndicatorIds(pair.target.config, pair.side).filter(
+              (id) => !granted.has(indicatorCapability(id)),
+            );
+            if (locked.length)
+              evaluation = {
+                result: null,
+                reason: 'capability_locked',
+                indicator_ids: locked,
+                rules: [],
+              };
+            else if (fetchFailed || !bars)
+              evaluation = {
+                result: null,
+                reason: 'market_data_unavailable',
+                indicator_ids: [],
+                rules: [],
+              };
+            else evaluation = evaluateSide(pair.target.config, bars, pair.side, session);
+          }
 
           const lastBar = bars?.[bars.length - 1];
           const input: ApplyEvaluationInput = {
@@ -255,12 +261,9 @@ export class StrategyAlertEvaluator {
                     }
                   : null,
               indicator_ids: evaluation.indicator_ids,
-              indicator_params: Object.fromEntries(
-                evaluation.indicator_ids.flatMap((id) => {
-                  const item = pair.target.config.indicators[id];
-                  return item ? [[id, item[pair.side].params]] : [];
-                }),
-              ),
+              // One entry per evaluated row: its id, operator, resolved operands and the row's
+              // own stored `values` (periods, threshold, op…). Replaces the per-indicator
+              // `indicator_params` of events written before SPEC V3.
               rules: evaluation.rules,
               ...(evaluation.reason ? { reason: evaluation.reason } : {}),
             },

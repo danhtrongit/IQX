@@ -21,8 +21,11 @@ import {
   configHash,
   defaultConfig,
   type Bar,
+  type ConditionRow,
   type IndicatorConfig,
+  type RowSideConfig,
   type SharedConfig,
+  type Side,
 } from '../../src/modules/quant/v2/index.js';
 import { StrategyBacktestsEnabledGuard } from '../../src/modules/strategy-backtests/strategy-backtests-enabled.guard.js';
 import {
@@ -31,16 +34,29 @@ import {
   findCapabilityLock,
 } from '../../src/modules/strategy-backtests/strategy-backtests.capabilities.js';
 import { StrategyBacktestExecutor } from '../../src/modules/strategy-backtests/strategy-backtests.executor.js';
+import type { StrategyRunExtras } from '../../src/modules/strategy-backtests/strategy-backtests.presenter.js';
 import type {
   BacktestRunRecord,
   BacktestRunRow,
   BacktestRunSummaryRow,
   StrategyBacktestStore,
 } from '../../src/modules/strategy-backtests/strategy-backtests.repository.js';
-import { backtestRunBodySchema } from '../../src/modules/strategy-backtests/strategy-backtests.schemas.js';
+import {
+  backtestRunBodySchema,
+  backtestRunResponseSchema,
+  backtestTradesResponseSchema,
+  ruleEvidenceSchema,
+} from '../../src/modules/strategy-backtests/strategy-backtests.schemas.js';
 import { StrategyBacktestsService } from '../../src/modules/strategy-backtests/strategy-backtests.service.js';
 import type { SharedConfigReaderPort } from '../../src/modules/strategy-config/strategy-config.ports.js';
+import { SharedConfigService } from '../../src/modules/strategy-config/strategy-config.service.js';
+import type {
+  RevisionRow,
+  SharedConfigStore,
+  SharedConfigStoreProvider,
+} from '../../src/modules/strategy-config/strategy-config.repository.js';
 import { deepFreeze, reference } from '../fixtures/bot-v2/reference.js';
+import { preV3Config, preV3EvidenceRule } from './helpers/strategy-pre-v3.js';
 
 const OWNER = 'user-owner';
 const OTHER = 'user-other';
@@ -56,14 +72,32 @@ function indicator(config: SharedConfig, id: string): IndicatorConfig {
   return item;
 }
 
-/** MA master ON with buy period 20 / sell period 30 (same setup as the research parity tests). */
+/** The condition rows of one tab of a row-based indicator, in registry order. */
+const rowsOf = (config: SharedConfig, id: string, side: Side): ConditionRow[] =>
+  (indicator(config, id)[side] as RowSideConfig).rules;
+/** `ma.price_cross` of a tab (row 1: price crosses SMA N; Mua `cross_up`, Bán `cross_down`). */
+const priceCross = (config: SharedConfig, side: Side): ConditionRow =>
+  rowsOf(config, 'ma', side)[0]!;
+
+/** `ma.price_cross` row path of the research sweeps (SPEC V3: the row id plus a numeric field). */
+const PERIOD_PATH = {
+  indicator: 'ma',
+  side: 'buy',
+  rule: 'ma.price_cross',
+  key: 'period',
+} as const;
+
+/**
+ * MA master ON, row 1 of each tab: Mua price crosses up SMA 20, Bán price crosses down SMA 50
+ * (the SMA period is a preset: 5, 10, 20, 50, 100, 200).
+ */
 function maConfig(): SharedConfig {
   const config = defaultConfig();
   indicator(config, 'ma').master_enabled = true;
   indicator(config, 'ma').buy.enabled = true;
   indicator(config, 'ma').sell.enabled = true;
-  indicator(config, 'ma').buy.params.period = 20;
-  indicator(config, 'ma').sell.params.period = 30;
+  priceCross(config, 'buy').period = 20;
+  priceCross(config, 'sell').period = 50;
   return config;
 }
 
@@ -462,11 +496,7 @@ describe('StrategyBacktestsService', () => {
       service().create(
         OWNER,
         body({
-          research: {
-            kind: 'sensitivity',
-            path: { indicator: 'ma', side: 'buy', key: 'period' },
-            values: [10, 20],
-          },
+          research: { kind: 'sensitivity', path: PERIOD_PATH, values: [10, 20] },
         }),
       ),
     );
@@ -503,8 +533,8 @@ describe('StrategyBacktestsService', () => {
   it('returns every sensitivity candidate and never writes shared config', async () => {
     allowlist = ['sensitivity'];
     grants = new Set(['indicator:ma', 'lesson:ch02-l14']);
-    const values = [10, 20, 30, 50];
-    const path = { indicator: 'ma', side: 'buy', key: 'period' } as const;
+    const values = [10, 20, 50, 100];
+    const path = PERIOD_PATH;
     const run = await service().create(
       OWNER,
       body({ research: { kind: 'sensitivity', path, values } }),
@@ -525,7 +555,7 @@ describe('StrategyBacktestsService', () => {
     expect(research.candidates.every((candidate) => candidate.ok)).toBe(true);
     expect(run.snapshot?.research).toEqual({ kind: 'sensitivity', path, values });
     // Baseline stays the saved revision; the saved config is untouched and only read.
-    expect(indicator(run.snapshot!.config, 'ma').buy.params.period).toBe(20);
+    expect(priceCross(run.snapshot!.config, 'buy').period).toBe(20);
     expect(configHash(savedConfig)).toBe(run.snapshot?.config_hash);
     expect([...reader.accessed]).toEqual(['getRevision']);
   });
@@ -556,11 +586,7 @@ describe('StrategyBacktestsService', () => {
       OWNER,
       body({
         idempotency_key: 'run-key-0002',
-        research: {
-          kind: 'sensitivity',
-          path: { indicator: 'ma', side: 'buy', key: 'period' },
-          values: [10, 20],
-        },
+        research: { kind: 'sensitivity', path: PERIOD_PATH, values: [10, 20] },
       }),
     );
     expect(sweep.research_result?.type).toBe('sensitivity');
@@ -634,30 +660,107 @@ describe('StrategyBacktestsService', () => {
     expect(store.rows).toHaveLength(1);
   });
 
-  it('refuses a legacy_needs_review revision for a run (reader contract) and stores no run', async () => {
-    const legacyReader: SharedConfigReaderPort = {
-      effectiveFor: () => Promise.resolve(null),
-      getRevision: () =>
-        Promise.reject(
-          new UnprocessableEntityException({
-            code: 'LEGACY_CONFIG_NEEDS_REVIEW',
-            message: 'Phiên bản cấu hình cũ dùng chỉ báo đã bỏ khỏi danh mục.',
-          }),
-        ),
+  describe('a revision in the pre-V3 format (SPEC V3 §6.1.5: never mapped, never run)', () => {
+    const OUTDATED_MESSAGE =
+      'Phiên bản cấu hình này dùng định dạng điều kiện cũ. Hãy lưu lại cấu hình theo mẫu điều kiện mới.';
+
+    const serviceWith = (customReader: SharedConfigReaderPort) =>
+      new StrategyBacktestsService(
+        store,
+        customReader,
+        { grantedCapabilities: () => Promise.resolve(grants) } satisfies AcademyGrantsPort,
+        new StrategyBacktestExecutor(),
+        configService({ STRATEGY_ADVANCED_CAPABILITIES: allowlist }),
+        market,
+      );
+
+    const expectRefused = async (error: HttpException, revision: number) => {
+      expect(error.getStatus()).toBe(422);
+      expect(error.getResponse()).toMatchObject({
+        code: 'CONFIG_FORMAT_OUTDATED',
+        message: OUTDATED_MESSAGE,
+        revision,
+        details: [{ field: 'revision', revision }],
+      });
+      // Nothing ran and nothing was stored (not even a failed run): the client re-saves and retries.
+      expect(market.calls).toEqual([]);
+      expect(store.rows).toEqual([]);
+      await expect(serviceWith(reader.reader).list(OWNER, 20)).resolves.toEqual({ items: [] });
     };
-    const svc = new StrategyBacktestsService(
-      store,
-      legacyReader,
-      { grantedCapabilities: () => Promise.resolve(grants) } satisfies AcademyGrantsPort,
-      new StrategyBacktestExecutor(),
-      configService({ STRATEGY_ADVANCED_CAPABILITIES: allowlist }),
-      market,
-    );
-    const error = await rejection(svc.create(OWNER, body()));
-    expect(error.getStatus()).toBe(422);
-    expect(error.getResponse()).toMatchObject({ code: 'LEGACY_CONFIG_NEEDS_REVIEW' });
-    expect(market.calls).toEqual([]);
-    expect(store.rows).toEqual([]);
+
+    it('maps the reader refusal to 422 CONFIG_FORMAT_OUTDATED', async () => {
+      const refusing: SharedConfigReaderPort = {
+        effectiveFor: () => Promise.resolve(null),
+        getRevision: () =>
+          Promise.reject(
+            new UnprocessableEntityException({
+              code: 'CONFIG_FORMAT_OUTDATED',
+              message: OUTDATED_MESSAGE,
+              revision: 3,
+              details: [{ field: 'revision', revision: 3 }],
+            }),
+          ),
+      };
+      await expectRefused(await rejection(serviceWith(refusing).create(OWNER, body())), 3);
+    });
+
+    it('does not run on the reset document of an outdated revision the reader hands back', async () => {
+      // A reader asked to allow outdated revisions returns the SPEC V3 reset (defaults + switches).
+      const handingBack: SharedConfigReaderPort = {
+        effectiveFor: () => Promise.resolve(null),
+        getRevision: (_userId, revision) =>
+          Promise.resolve({
+            revision,
+            config: savedConfig,
+            config_hash: 'f'.repeat(64),
+            saved_at: SAVED_AT,
+            outdated: true,
+            legacy: null,
+          }),
+      };
+      await expectRefused(await rejection(serviceWith(handingBack).create(OWNER, body())), 3);
+    });
+
+    it('end to end with the real shared-config reader: a pre-V3 revision is refused, a current one runs', async () => {
+      const row = (revision: number, config: unknown): RevisionRow => ({
+        user_id: OWNER,
+        revision,
+        config: config as SharedConfig,
+        config_hash: configHash(config as SharedConfig),
+        before_hash: null,
+        patch: {},
+        requested_at: new Date(SAVED_AT),
+        saved_at: new Date(SAVED_AT),
+        actor_id: OWNER,
+        idempotency_key: `save-${revision}`,
+        effective_session: '2025-06-03',
+        session_status: 'effective',
+      });
+      const rows = [row(2, preV3Config(2)), row(3, maConfig())];
+      const sqlStore = {
+        revision: (userId: string, revision: number) =>
+          Promise.resolve(
+            rows.find((item) => item.user_id === userId && item.revision === revision) ?? null,
+          ),
+      } as unknown as SharedConfigStore;
+      const provider: SharedConfigStoreProvider = {
+        store: () => sqlStore,
+        transaction: (operation) => operation(sqlStore),
+      };
+      const real = new SharedConfigService(provider, {
+        grantedCapabilities: () => Promise.resolve(grants),
+      } satisfies AcademyGrantsPort);
+
+      const refused = await rejection(
+        serviceWith(real).create(OWNER, body({ shared_revision: 2 })),
+      );
+      await expectRefused(refused, 2);
+
+      const view = await serviceWith(real).create(OWNER, body({ shared_revision: 3 }));
+      expect(view).toMatchObject({ status: 'succeeded', shared_revision: 3 });
+      expect(view.snapshot?.versions.rule_version).toBe(RULE_VERSION);
+      expect(store.rows).toHaveLength(1);
+    });
   });
 
   it('exposes exactly the six KPIs, the counts, the chart contract and the full trade history', async () => {
@@ -695,8 +798,24 @@ describe('StrategyBacktestsService', () => {
     expect(trade.entry_total).toBeCloseTo(trade.qty * trade.entry_price * 1.0015, 6);
     expect(trade.exit_net).toBeCloseTo(trade.qty * trade.exit_price * (1 - 0.0025), 6);
     expect(trade.pnl).toBeCloseTo(trade.exit_net - trade.entry_total, 6);
-    expect(trade.entry_conditions?.rules[0]).toMatchObject({ indicator: 'ma', side: 'buy' });
-    expect(trade.exit_conditions?.rules[0]).toMatchObject({ indicator: 'ma', side: 'sell' });
+    // One evidence entry per evaluated row: the stable row id, the op and the row's own values.
+    expect(trade.entry_conditions?.rules[0]).toMatchObject({
+      id: 'ma.price_cross',
+      indicator: 'ma',
+      side: 'buy',
+      op: 'cross_up',
+      result: true,
+      missing: false,
+      values: { op: 'cross_up', period: 20 },
+    });
+    expect(trade.exit_conditions?.rules[0]).toMatchObject({
+      id: 'ma.price_cross',
+      indicator: 'ma',
+      side: 'sell',
+      op: 'cross_down',
+      result: true,
+      values: { op: 'cross_down', period: 50 },
+    });
     expect(run.snapshot?.simulation).toMatchObject({
       contract: 'iqx-strategy-backtest-1.0',
       execution: 'same_close',
@@ -772,6 +891,139 @@ describe('StrategyBacktestsService', () => {
     expect(reread.result?.kpis).toEqual(run.result?.kpis);
   });
 
+  it('evidence lists every evaluated row of every active indicator with its own values', async () => {
+    // Mua: RSI, two rows with their own periods (`RSI 14 < 50`, `RSI 9 xu hướng lên`);
+    // Bán: MA row 1 only (`Giá cắt xuống SMA 50`), so a trade exits on a different indicator.
+    const config = maConfig();
+    indicator(config, 'ma').buy.enabled = false;
+    const rsi = indicator(config, 'rsi');
+    rsi.master_enabled = true;
+    rsi.buy.enabled = true;
+    rsi.sell.enabled = false;
+    const [level, trend] = rowsOf(config, 'rsi', 'buy') as [ConditionRow, ConditionRow];
+    Object.assign(level, { period: 14, op: '<', threshold: 50 });
+    Object.assign(trend, { period: 9, dir: 'up' });
+    reader = fakeReader(
+      new Map([[`${OWNER}:3`, { config: deepFreeze(config), saved_at: SAVED_AT }]]),
+    );
+    grants = new Set(['indicator:ma', 'indicator:rsi']);
+
+    const run = await service().create(OWNER, body({ assumptions: { execution: 'same_close' } }));
+    const trade = run.result!.trades[0];
+    expect(trade).toBeDefined();
+
+    const entry = trade!.entry_conditions!;
+    expect(entry.indicator_ids).toEqual(['rsi']);
+    expect(entry.rules.map((rule) => rule.id)).toEqual(['rsi.level', 'rsi.trend']);
+    expect(entry.rules[0]).toMatchObject({
+      indicator: 'rsi',
+      side: 'buy',
+      op: '<',
+      rhs: 50,
+      result: true,
+      missing: false,
+      values: { period: 14, op: '<', threshold: 50 },
+    });
+    expect(entry.rules[1]).toMatchObject({
+      id: 'rsi.trend',
+      op: '>',
+      result: true,
+      values: { period: 9, dir: 'up' },
+    });
+
+    const exit = trade!.exit_conditions!;
+    expect(exit.indicator_ids).toEqual(['ma']);
+    expect(exit.rules.map((rule) => rule.id)).toEqual(['ma.price_cross']);
+    expect(exit.rules[0]).toMatchObject({
+      side: 'sell',
+      op: 'cross_down',
+      result: true,
+      values: { op: 'cross_down', period: 50 },
+    });
+  });
+
+  it('a sweep over a non-preset SMA period reports that candidate as invalid, in Vietnamese', async () => {
+    allowlist = ['sensitivity'];
+    grants = new Set(['indicator:ma', 'lesson:ch02-l14']);
+    const run = await service().create(
+      OWNER,
+      body({ research: { kind: 'sensitivity', path: PERIOD_PATH, values: [10, 30, 50] } }),
+    );
+    const research = run.research_result;
+    if (research?.type !== 'sensitivity') throw new Error('expected a sensitivity result');
+    expect(research.path).toEqual(PERIOD_PATH);
+    expect(research.candidates.map((candidate) => candidate.ok)).toEqual([true, false, true]);
+    expect(research.candidates[1]).toMatchObject({
+      value: 30,
+      kpis: null,
+      error: 'Mua · dòng 1: Chu kỳ SMA chỉ chọn 5, 10, 20, 50, 100, 200.',
+      errors: [
+        {
+          path: 'indicators.ma.buy.rules.0.period',
+          side: 'buy',
+          row: 1,
+          message: 'Mua · dòng 1: Chu kỳ SMA chỉ chọn 5, 10, 20, 50, 100, 200.',
+        },
+      ],
+    });
+    expect(run.status).toBe('succeeded');
+  });
+
+  it('walk-forward sweeps the same row field and stores the row path in the snapshot', async () => {
+    allowlist = ['walk_forward'];
+    grants = new Set(['indicator:ma', 'lesson:ch02-l16']);
+    const research = {
+      kind: 'walk_forward' as const,
+      path: PERIOD_PATH,
+      values: [10, 20, 50],
+      train_bars: 250,
+      test_bars: 100,
+      step_bars: 100,
+      criterion: 'net_return' as const,
+      min_trades: 0,
+    };
+    const run = await service().create(OWNER, body({ research }));
+    expect(run.kind).toBe('walk_forward');
+    expect(run.snapshot?.research).toEqual(research);
+    const result = run.research_result;
+    if (result?.type !== 'walk_forward_windows') throw new Error('expected walk-forward windows');
+    expect(result.path).toEqual(PERIOD_PATH);
+    expect(result.windows.length).toBeGreaterThan(0);
+    for (const window of result.windows)
+      expect(window.train_candidates.map((candidate) => candidate.value)).toEqual([10, 20, 50]);
+  });
+
+  it('refuses a research path the config cannot resolve with 422, not a crash', async () => {
+    allowlist = ['sensitivity'];
+    grants = new Set(['indicator:ma', 'lesson:ch02-l14']);
+    for (const path of [
+      { indicator: 'ma', side: 'buy', key: 'period' }, // row-based indicator without a row id
+      { indicator: 'ma', side: 'buy', rule: 'ma.price_cross', key: 'op' }, // not a numeric field
+      { indicator: 'ma', side: 'buy', rule: 'rsi.level', key: 'period' }, // row of another indicator
+    ]) {
+      const error = await rejection(
+        service().create(
+          OWNER,
+          body({
+            idempotency_key: randomUUID(),
+            research: { kind: 'sensitivity', path, values: [10] },
+          }),
+        ),
+      );
+      expect(error.getStatus()).toBe(422);
+      expect(error.getResponse()).toMatchObject({
+        code: 'PATH_INVALID',
+        message: expect.stringContaining('Đường tham số không hợp lệ') as unknown,
+      });
+    }
+    // Deterministic 422s are stored as failed runs (replaying a key returns the same failure).
+    expect(store.rows.map((row) => [row.status, row.error?.code])).toEqual([
+      ['failed', 'PATH_INVALID'],
+      ['failed', 'PATH_INVALID'],
+      ['failed', 'PATH_INVALID'],
+    ]);
+  });
+
   it('isolates list and get by owner', async () => {
     const svc = service();
     const run = await svc.create(OWNER, body());
@@ -798,6 +1050,77 @@ describe('StrategyBacktestsService', () => {
         error_code: null,
       },
     ]);
+  });
+
+  it('shows a run stored before SPEC V3 as it was written: old config, old evidence, same schemas', async () => {
+    const svc = service();
+    const current = await svc.create(OWNER, body({ assumptions: { execution: 'same_close' } }));
+    const asJson = (value: unknown): unknown => JSON.parse(JSON.stringify(value)) as unknown;
+    // A run of the current format satisfies the response schemas (row evidence with `values`).
+    expect(backtestRunResponseSchema.safeParse(asJson(current)).success).toBe(true);
+
+    // Rewrite the stored record to what `iqx-rules-3.0` kept: side-level params in the pinned
+    // config, and registry rule ids (`r1`) with `>` / `<` in the evidence, without `values`.
+    const legacy = preV3Config(3);
+    const legacyHash = configHash(legacy as unknown as SharedConfig);
+    const pin = (snapshot: Record<string, unknown>) => ({
+      ...snapshot,
+      config: legacy,
+      config_hash: legacyHash,
+      versions: {
+        ...(snapshot.versions as Record<string, unknown>),
+        schema_version: '2.0',
+        rule_version: 'iqx-rules-3.0',
+      },
+    });
+    const stored = store.rows[0]!;
+    const result = structuredClone(stored.result!) as {
+      snapshot: Record<string, unknown>;
+      strategy_extras: StrategyRunExtras;
+    };
+    result.snapshot = pin(result.snapshot);
+    result.strategy_extras.trade_evidence = result.strategy_extras.trade_evidence.map((item) => ({
+      number: item.number,
+      entry: { indicator_ids: ['ma'], rules: [preV3EvidenceRule('buy')] },
+      exit: { indicator_ids: ['ma'], rules: [preV3EvidenceRule('sell')] },
+    }));
+    stored.snapshot = pin(stored.snapshot!);
+    stored.result = result;
+    stored.config_hash = legacyHash;
+    stored.rule_version = 'iqx-rules-3.0';
+
+    const reread = await svc.get(OWNER, current.run_id);
+    expect(reread.status).toBe('succeeded');
+    expect(reread.snapshot?.config).toEqual(legacy);
+    expect(reread.snapshot?.versions.rule_version).toBe('iqx-rules-3.0');
+    expect(reread.result?.kpis).toEqual(current.result?.kpis);
+    expect(reread.result?.trades.length).toBe(current.result?.trades.length);
+    for (const trade of reread.result!.trades) {
+      expect(trade.entry_conditions).toEqual({
+        indicator_ids: ['ma'],
+        rules: [preV3EvidenceRule('buy')],
+      });
+      expect(trade.exit_conditions).toEqual({
+        indicator_ids: ['ma'],
+        rules: [preV3EvidenceRule('sell')],
+      });
+      expect(trade.entry_conditions!.rules[0]).not.toHaveProperty('values');
+    }
+    expect(backtestRunResponseSchema.safeParse(asJson(reread)).success).toBe(true);
+
+    const page = await svc.trades(OWNER, current.run_id, 0, 5);
+    expect(page.total).toBe(current.result!.trades.length);
+    expect(backtestTradesResponseSchema.safeParse(asJson(page)).success).toBe(true);
+
+    const { items } = await svc.list(OWNER, 5);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ run_id: current.run_id, config_hash: legacyHash });
+
+    // Replaying its idempotency key returns the stored run: it is never re-evaluated or migrated.
+    const replay = await svc.create(OWNER, body({ assumptions: { execution: 'same_close' } }));
+    expect(replay.run_id).toBe(current.run_id);
+    expect(replay.snapshot?.config).toEqual(legacy);
+    expect(store.rows).toHaveLength(1);
   });
 });
 
@@ -833,6 +1156,122 @@ describe('backtestRunBodySchema', () => {
         research: { kind: 'out_of_sample', split_date: '2000-01-03' },
       }).success,
     ).toBe(false);
+  });
+
+  describe('ParamPath (the swept field of a condition row)', () => {
+    const sweep = (
+      path: Record<string, unknown>,
+      kind: 'sensitivity' | 'walk_forward' = 'sensitivity',
+    ) =>
+      backtestRunBodySchema.safeParse({
+        idempotency_key: 'run-key-0001',
+        shared_revision: 3,
+        symbol: 'AAA',
+        start: START,
+        end: END,
+        research:
+          kind === 'sensitivity'
+            ? { kind, path, values: [10, 20] }
+            : {
+                kind,
+                path,
+                values: [10, 20],
+                train_bars: 250,
+                test_bars: 100,
+                step_bars: 100,
+                criterion: 'net_return',
+                min_trades: 0,
+              },
+      });
+
+    it('takes the row id next to the indicator, the side and the numeric field', () => {
+      for (const kind of ['sensitivity', 'walk_forward'] as const) {
+        const parsed = sweep(
+          { indicator: 'rsi', side: 'buy', rule: 'rsi.level', key: 'threshold' },
+          kind,
+        );
+        expect(parsed.success).toBe(true);
+        expect(parsed.data?.research).toMatchObject({
+          path: { indicator: 'rsi', side: 'buy', rule: 'rsi.level', key: 'threshold' },
+        });
+      }
+    });
+
+    it('keeps Volume (side-level params) addressable without a row id', () => {
+      const parsed = sweep({ indicator: 'volume', side: 'sell', key: 'period' });
+      expect(parsed.success).toBe(true);
+      expect(parsed.data?.research).toMatchObject({
+        path: { indicator: 'volume', side: 'sell', key: 'period' },
+      });
+    });
+
+    it('rejects a malformed row id and any other path key', () => {
+      for (const rule of ['level', 'RSI.level', 'rsi.level.extra', 'rsi.', '.level', '']) {
+        expect(
+          sweep({ indicator: 'rsi', side: 'buy', rule, key: 'threshold' }).success,
+          JSON.stringify(rule),
+        ).toBe(false);
+      }
+      expect(
+        sweep({ indicator: 'rsi', side: 'buy', rule: 'rsi.level', key: 'threshold', row: 1 })
+          .success,
+      ).toBe(false);
+      expect(sweep({ indicator: 'rsi', side: 'both', key: 'threshold' }).success).toBe(false);
+    });
+  });
+});
+
+describe('ruleEvidenceSchema', () => {
+  const row = {
+    id: 'bollinger.band_action',
+    indicator: 'bollinger',
+    side: 'buy',
+    op: 'reenter_lower',
+    lhs: 10.5,
+    rhs: 10.8,
+    result: true,
+    missing: false,
+    values: { period: 20, std: 2, action: 'reenter_lower' },
+  };
+
+  it('accepts every row operator of iqx-rules-4.0 with the row values', () => {
+    for (const op of [
+      '>',
+      '<',
+      'cross_up',
+      'cross_down',
+      'reenter_lower',
+      'reenter_upper',
+      'break_upper',
+      'break_lower',
+      'cross_up_middle',
+      'cross_down_middle',
+      'break_high',
+      'break_low',
+    ])
+      expect(ruleEvidenceSchema.safeParse({ ...row, op }).success, op).toBe(true);
+    expect(ruleEvidenceSchema.parse(row).values).toEqual(row.values);
+  });
+
+  it('still accepts evidence stored before SPEC V3 (r1…, membership ops, no values)', () => {
+    expect(ruleEvidenceSchema.safeParse(preV3EvidenceRule('buy')).success).toBe(true);
+    expect(ruleEvidenceSchema.safeParse(preV3EvidenceRule('sell')).success).toBe(true);
+    for (const op of ['∈', '∉'])
+      expect(
+        ruleEvidenceSchema.safeParse({
+          ...preV3EvidenceRule('buy'),
+          op,
+          rhs: null,
+          rhs_lower: 1,
+          rhs_upper: 2,
+        }).success,
+        op,
+      ).toBe(true);
+  });
+
+  it('rejects an operator the engine does not report', () => {
+    expect(ruleEvidenceSchema.safeParse({ ...row, op: 'between' }).success).toBe(false);
+    expect(ruleEvidenceSchema.safeParse({ ...row, values: { period: [20] } }).success).toBe(false);
   });
 });
 
