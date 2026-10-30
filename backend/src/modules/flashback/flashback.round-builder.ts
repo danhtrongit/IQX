@@ -155,6 +155,19 @@ export interface FlashbackRoundBuildResult {
   readonly priceSource: string;
 }
 
+/**
+ * Tuỳ chọn dựng giai đoạn. Đề v1 dùng mặc định (loại mã của các đề gần nhất, không chồng giai đoạn).
+ * Phòng chơi v2 (spec v2 §5) bỏ cả hai điều kiện đó và dùng bộ nhớ đệm để nút Bắt đầu phản hồi nhanh.
+ */
+export interface FlashbackBuildOptions {
+  /** Loại mã của các đề gần nhất ở mức 0 (BoSung §3.2). Mặc định: có. */
+  readonly excludeRecentSymbols?: boolean;
+  /** Không chồng giai đoạn với đề cũ cùng mã (BoSung §4.3). Mặc định: có. */
+  readonly avoidOverlap?: boolean;
+  /** Giữ rổ VN30, lịch giao dịch và nến trong bộ nhớ trong chừng này mili giây (0 = không giữ). */
+  readonly cacheMs?: number;
+}
+
 /** Không lấy được lịch giao dịch VNINDEX: bỏ lần tạo đề này và thử lại (FB-11h). */
 export class FlashbackCalendarUnavailableError extends Error {
   constructor(message: string) {
@@ -191,6 +204,8 @@ export class FlashbackRoundBuilder {
   private readonly logger = new Logger(FlashbackRoundBuilder.name);
   /** Rổ đã làm mới cho một lần tạo đề (cùng `now` cho các mức nới 0..3). */
   private poolCache: { at: number; pool: string[] } | null = null;
+  /** Bộ nhớ đệm của phòng chơi v2 (rổ, lịch, nến) theo thời điểm lấy. */
+  private readonly roomCache = new Map<string, { at: number; value: unknown }>();
 
   constructor(
     private readonly database: DatabaseService,
@@ -211,8 +226,10 @@ export class FlashbackRoundBuilder {
     now: Date,
     level: number,
     config: FlashbackConfig,
+    options: FlashbackBuildOptions = {},
   ): Promise<FlashbackRoundBuildResult | null> {
-    const pool = await this.currentPool(now);
+    const cacheMs = options.cacheMs ?? 0;
+    const pool = await this.cached(cacheMs, 'pool', now, () => this.currentPool(now));
     if (pool.length === 0) {
       this.logger.warn('Flashback: không lấy được danh sách VN30 hiện hành');
       return null;
@@ -223,7 +240,7 @@ export class FlashbackRoundBuilder {
     const excludeCount = config.roundsBeforeSymbolRepeat || FLASHBACK_ROUNDS_BEFORE_SYMBOL_REPEAT;
 
     let poolAfterExclude = [...pool];
-    if (level === 0) {
+    if (level === 0 && options.excludeRecentSymbols !== false) {
       const excluded10 = new Set(
         await this.repository.recentRoundSymbols(this.database, excludeCount),
       );
@@ -241,15 +258,21 @@ export class FlashbackRoundBuilder {
     const today = vietnamDate(now);
     const fetchFrom = flashbackFetchFrom(config);
     const latestPlayDate = subtractMonths(today, config.minMonthsAgo || FLASHBACK_MIN_MONTHS_AGO);
-    const calendar = await this.calendar(fetchFrom, today);
+    const calendar = await this.cached(cacheMs, `calendar:${fetchFrom}:${today}`, now, () =>
+      this.calendar(fetchFrom, today),
+    );
 
     for (const symbol of candidates) {
-      const series = await this.series(symbol, fetchFrom, today);
+      const series = await this.cached(cacheMs, `series:${symbol}:${fetchFrom}:${today}`, now, () =>
+        this.series(symbol, fetchFrom, today),
+      );
       if (!series || series.bars.length < total) continue;
       const bars = series.bars;
-      // Mọi đề cùng mã, không giới hạn số đề (FB-11e).
+      // Mọi đề cùng mã, không giới hạn số đề (FB-11e). Phòng chơi v2 bỏ điều kiện này.
       const usedDates = new Set(
-        (await this.repository.roundChartDates(this.database, symbol)).flat(),
+        options.avoidOverlap === false
+          ? []
+          : (await this.repository.roundChartDates(this.database, symbol)).flat(),
       );
       for (let attempt = 0; attempt < config.maxStartAttempts; attempt += 1) {
         const maxStart = bars.length - total;
@@ -281,6 +304,28 @@ export class FlashbackRoundBuilder {
       }
     }
     return null;
+  }
+
+  /**
+   * Đọc qua bộ nhớ đệm khi `cacheMs > 0`. Kết quả `null` (nguồn lỗi) hoặc rỗng không được giữ để lần sau
+   * thử lại. Lỗi ném ra cũng không được giữ.
+   */
+  private async cached<T>(
+    cacheMs: number,
+    key: string,
+    now: Date,
+    load: () => Promise<T>,
+  ): Promise<T> {
+    if (cacheMs <= 0) return load();
+    const hit = this.roomCache.get(key);
+    if (hit && now.getTime() - hit.at < cacheMs) return hit.value as T;
+    const value = await load();
+    const empty = Array.isArray(value) && value.length === 0;
+    if (value !== null && value !== undefined && !empty) {
+      if (this.roomCache.size > 200) this.roomCache.clear();
+      this.roomCache.set(key, { at: now.getTime(), value });
+    }
+    return value;
   }
 
   /** Nến của một mã; lỗi nguồn (kể cả sai đơn vị) thì bỏ mã đó trong lần tạo đề này. */

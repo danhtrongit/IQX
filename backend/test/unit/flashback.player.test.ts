@@ -4,7 +4,6 @@
 
 import { describe, expect, it } from 'vitest';
 
-import type { AcademyGrantsPort } from '../../src/modules/academy/academy.ports.js';
 import {
   FLASHBACK_CONFIG_KEY,
   FLASHBACK_FEE_BPS,
@@ -69,10 +68,7 @@ function setup(options: { settings?: Record<string, unknown> } = {}) {
   };
   state.wallets[ME] = { balance: 1_000, lastSeq: 0 };
   const repository = new MemoryFlashbackRepository(state, () => clock.at);
-  const grants = {
-    grantedCapabilities: async () => new Set<string>(),
-  } as unknown as AcademyGrantsPort;
-  const service = new FlashbackService(memoryDatabase(repository), repository, grants, {
+  const service = new FlashbackService(memoryDatabase(repository), repository, {
     now: () => clock.at,
   });
   return { clock, state, repository, service };
@@ -216,19 +212,16 @@ describe('§1.14 phí tham gia cấu hình được', () => {
     expect(state.ledger).toHaveLength(0);
   });
 
-  it('entry_fee_xu = 250: trừ 250 xu, thiếu xu thì báo đúng số', async () => {
+  it('spec v2: bỏ phí tham gia, kể cả khi cấu hình cũ còn entry_fee_xu = 250', async () => {
     const { service, state } = setup({
       settings: { [FLASHBACK_CONFIG_KEY]: { entry_fee_xu: 250 } },
     });
     state.entries.push({ ...(await prior(state)), roundId: 'round-old' });
     state.wallets[ME] = { balance: 200, lastSeq: 0 };
-    const error = await rejection(service.join(ME));
-    expect(error).toMatchObject({ status: 402, response: { code: 'XU_INSUFFICIENT' } });
-    expect(String(error.response.message)).toContain('250');
-    state.wallets[ME] = { balance: 300, lastSeq: 0 };
     const joined = await service.join(ME);
-    expect(joined.fee_xu).toBe(250);
-    expect(state.wallets[ME]!.balance).toBe(50);
+    expect(joined.fee_xu).toBe(0);
+    expect(state.wallets[ME]!.balance).toBe(200);
+    expect(state.ledger).toHaveLength(0);
   });
 });
 

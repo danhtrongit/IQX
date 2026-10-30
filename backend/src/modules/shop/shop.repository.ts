@@ -22,7 +22,10 @@ export type CoinLedgerKind =
   | 'demo_withdraw'
   | 'adjustment'
   | 'flashback_fee'
-  | 'flashback_reward';
+  | 'flashback_reward'
+  | 'flashback_stake'
+  | 'flashback_win'
+  | 'flashback_refund';
 
 export interface WalletState {
   readonly balance: number;

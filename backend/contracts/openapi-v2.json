@@ -35098,7 +35098,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 771 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 786 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -105913,6 +105913,4067 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/flashback/matches/{id}": {
+      "get": {
+        "operationId": "flashbackMatchGet",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ends_at": {
+                      "type": "string"
+                    },
+                    "history_bars": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "close": {
+                            "type": "number"
+                          },
+                          "high": {
+                            "type": "number"
+                          },
+                          "low": {
+                            "type": "number"
+                          },
+                          "open": {
+                            "type": "number"
+                          },
+                          "session": {
+                            "type": "number"
+                          },
+                          "volume": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "session",
+                          "open",
+                          "high",
+                          "low",
+                          "close",
+                          "volume"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "initial_cash": {
+                      "type": "string"
+                    },
+                    "match_id": {
+                      "type": "string"
+                    },
+                    "me": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "auto_finished": {
+                          "type": "boolean"
+                        },
+                        "cash": {
+                          "type": "string"
+                        },
+                        "finished": {
+                          "type": "boolean"
+                        },
+                        "holdings": {
+                          "type": "number"
+                        },
+                        "max_buy_qty": {
+                          "type": "number"
+                        },
+                        "orders": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "amount": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "fee": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "price": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "type": "number"
+                              },
+                              "side": {
+                                "enum": [
+                                  "buy",
+                                  "sell"
+                                ],
+                                "type": "string"
+                              },
+                              "step": {
+                                "type": "number"
+                              },
+                              "tax": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "side",
+                              "qty",
+                              "price",
+                              "step",
+                              "amount",
+                              "fee",
+                              "tax",
+                              "created_at"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "play_bars": {
+                          "type": "number"
+                        },
+                        "pnl_pct": {
+                          "type": "number"
+                        },
+                        "pnl_percent": {
+                          "type": "number"
+                        },
+                        "positions": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "pnl_pct": {
+                                "type": "number"
+                              },
+                              "price": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "type": "number"
+                              },
+                              "sellable_step": {
+                                "type": "number"
+                              },
+                              "sessions_left": {
+                                "type": "number"
+                              },
+                              "status": {
+                                "enum": [
+                                  "settled",
+                                  "pending"
+                                ],
+                                "type": "string"
+                              },
+                              "step": {
+                                "type": "number"
+                              },
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "qty",
+                              "price",
+                              "step",
+                              "sellable_step",
+                              "status",
+                              "sessions_left",
+                              "pnl_pct",
+                              "value"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "price": {
+                          "type": "string"
+                        },
+                        "sellable": {
+                          "type": "number"
+                        },
+                        "step": {
+                          "type": "number"
+                        },
+                        "total_assets": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "step",
+                        "play_bars",
+                        "cash",
+                        "holdings",
+                        "sellable",
+                        "price",
+                        "total_assets",
+                        "pnl_pct",
+                        "pnl_percent",
+                        "max_buy_qty",
+                        "finished",
+                        "auto_finished",
+                        "positions",
+                        "orders"
+                      ],
+                      "type": "object"
+                    },
+                    "minutes": {
+                      "type": "number"
+                    },
+                    "my_finished": {
+                      "type": "boolean"
+                    },
+                    "my_step": {
+                      "type": "number"
+                    },
+                    "play_bars": {
+                      "type": "number"
+                    },
+                    "played_bars": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "close": {
+                            "type": "number"
+                          },
+                          "high": {
+                            "type": "number"
+                          },
+                          "low": {
+                            "type": "number"
+                          },
+                          "open": {
+                            "type": "number"
+                          },
+                          "session": {
+                            "type": "number"
+                          },
+                          "volume": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "session",
+                          "open",
+                          "high",
+                          "low",
+                          "close",
+                          "volume"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "players": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "finished": {
+                            "type": "boolean"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "pnl_pct": {
+                            "type": "number"
+                          },
+                          "pnl_percent": {
+                            "type": "number"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "is_me",
+                          "finished",
+                          "pnl_pct",
+                          "pnl_percent"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "playing_count": {
+                      "type": "number"
+                    },
+                    "pot_xu": {
+                      "type": "number"
+                    },
+                    "remaining_ms": {
+                      "type": "number"
+                    },
+                    "room_id": {
+                      "type": "string"
+                    },
+                    "server_now": {
+                      "type": "string"
+                    },
+                    "stake_xu": {
+                      "type": "number"
+                    },
+                    "started_at": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "playing",
+                        "ended"
+                      ],
+                      "type": "string"
+                    },
+                    "view_bars": {
+                      "type": "number"
+                    },
+                    "warmup_bars": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "close": {
+                            "type": "number"
+                          },
+                          "high": {
+                            "type": "number"
+                          },
+                          "low": {
+                            "type": "number"
+                          },
+                          "open": {
+                            "type": "number"
+                          },
+                          "session": {
+                            "type": "number"
+                          },
+                          "volume": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "session",
+                          "open",
+                          "high",
+                          "low",
+                          "close",
+                          "volume"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "match_id",
+                    "room_id",
+                    "status",
+                    "started_at",
+                    "ends_at",
+                    "server_now",
+                    "remaining_ms",
+                    "my_step",
+                    "my_finished",
+                    "playing_count",
+                    "players",
+                    "view_bars",
+                    "play_bars",
+                    "minutes",
+                    "stake_xu",
+                    "pot_xu",
+                    "initial_cash",
+                    "warmup_bars",
+                    "history_bars",
+                    "played_bars",
+                    "me"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Dữ liệu ván của tôi (vào lại giữa ván)",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/matches/{id}/finish": {
+      "post": {
+        "operationId": "flashbackMatchFinish",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ended": {
+                      "type": "boolean"
+                    },
+                    "me": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "auto_finished": {
+                          "type": "boolean"
+                        },
+                        "cash": {
+                          "type": "string"
+                        },
+                        "finished": {
+                          "type": "boolean"
+                        },
+                        "holdings": {
+                          "type": "number"
+                        },
+                        "max_buy_qty": {
+                          "type": "number"
+                        },
+                        "orders": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "amount": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "fee": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "price": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "type": "number"
+                              },
+                              "side": {
+                                "enum": [
+                                  "buy",
+                                  "sell"
+                                ],
+                                "type": "string"
+                              },
+                              "step": {
+                                "type": "number"
+                              },
+                              "tax": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "side",
+                              "qty",
+                              "price",
+                              "step",
+                              "amount",
+                              "fee",
+                              "tax",
+                              "created_at"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "play_bars": {
+                          "type": "number"
+                        },
+                        "pnl_pct": {
+                          "type": "number"
+                        },
+                        "pnl_percent": {
+                          "type": "number"
+                        },
+                        "positions": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "pnl_pct": {
+                                "type": "number"
+                              },
+                              "price": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "type": "number"
+                              },
+                              "sellable_step": {
+                                "type": "number"
+                              },
+                              "sessions_left": {
+                                "type": "number"
+                              },
+                              "status": {
+                                "enum": [
+                                  "settled",
+                                  "pending"
+                                ],
+                                "type": "string"
+                              },
+                              "step": {
+                                "type": "number"
+                              },
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "qty",
+                              "price",
+                              "step",
+                              "sellable_step",
+                              "status",
+                              "sessions_left",
+                              "pnl_pct",
+                              "value"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "price": {
+                          "type": "string"
+                        },
+                        "sellable": {
+                          "type": "number"
+                        },
+                        "step": {
+                          "type": "number"
+                        },
+                        "total_assets": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "step",
+                        "play_bars",
+                        "cash",
+                        "holdings",
+                        "sellable",
+                        "price",
+                        "total_assets",
+                        "pnl_pct",
+                        "pnl_percent",
+                        "max_buy_qty",
+                        "finished",
+                        "auto_finished",
+                        "positions",
+                        "orders"
+                      ],
+                      "type": "object"
+                    },
+                    "playing_count": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "me",
+                    "ended",
+                    "playing_count"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Hoàn thành (ở phiên cuối)",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/matches/{id}/next": {
+      "post": {
+        "operationId": "flashbackMatchNext",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "bar": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "close": {
+                          "type": "number"
+                        },
+                        "high": {
+                          "type": "number"
+                        },
+                        "low": {
+                          "type": "number"
+                        },
+                        "open": {
+                          "type": "number"
+                        },
+                        "session": {
+                          "type": "number"
+                        },
+                        "volume": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "session",
+                        "open",
+                        "high",
+                        "low",
+                        "close",
+                        "volume"
+                      ],
+                      "type": "object"
+                    },
+                    "me": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "auto_finished": {
+                          "type": "boolean"
+                        },
+                        "cash": {
+                          "type": "string"
+                        },
+                        "finished": {
+                          "type": "boolean"
+                        },
+                        "holdings": {
+                          "type": "number"
+                        },
+                        "max_buy_qty": {
+                          "type": "number"
+                        },
+                        "orders": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "amount": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "fee": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "price": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "type": "number"
+                              },
+                              "side": {
+                                "enum": [
+                                  "buy",
+                                  "sell"
+                                ],
+                                "type": "string"
+                              },
+                              "step": {
+                                "type": "number"
+                              },
+                              "tax": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "side",
+                              "qty",
+                              "price",
+                              "step",
+                              "amount",
+                              "fee",
+                              "tax",
+                              "created_at"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "play_bars": {
+                          "type": "number"
+                        },
+                        "pnl_pct": {
+                          "type": "number"
+                        },
+                        "pnl_percent": {
+                          "type": "number"
+                        },
+                        "positions": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "pnl_pct": {
+                                "type": "number"
+                              },
+                              "price": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "type": "number"
+                              },
+                              "sellable_step": {
+                                "type": "number"
+                              },
+                              "sessions_left": {
+                                "type": "number"
+                              },
+                              "status": {
+                                "enum": [
+                                  "settled",
+                                  "pending"
+                                ],
+                                "type": "string"
+                              },
+                              "step": {
+                                "type": "number"
+                              },
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "qty",
+                              "price",
+                              "step",
+                              "sellable_step",
+                              "status",
+                              "sessions_left",
+                              "pnl_pct",
+                              "value"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "price": {
+                          "type": "string"
+                        },
+                        "sellable": {
+                          "type": "number"
+                        },
+                        "step": {
+                          "type": "number"
+                        },
+                        "total_assets": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "step",
+                        "play_bars",
+                        "cash",
+                        "holdings",
+                        "sellable",
+                        "price",
+                        "total_assets",
+                        "pnl_pct",
+                        "pnl_percent",
+                        "max_buy_qty",
+                        "finished",
+                        "auto_finished",
+                        "positions",
+                        "orders"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "bar",
+                    "me"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Phiên tiếp",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/matches/{id}/orders": {
+      "post": {
+        "operationId": "flashbackMatchOrder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "idempotency_key": {
+                    "maxLength": 128,
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "qty": {
+                    "maximum": 1000000000,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "side": {
+                    "enum": [
+                      "buy",
+                      "sell"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "side",
+                  "qty"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "me": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "auto_finished": {
+                          "type": "boolean"
+                        },
+                        "cash": {
+                          "type": "string"
+                        },
+                        "finished": {
+                          "type": "boolean"
+                        },
+                        "holdings": {
+                          "type": "number"
+                        },
+                        "max_buy_qty": {
+                          "type": "number"
+                        },
+                        "orders": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "amount": {
+                                "type": "string"
+                              },
+                              "created_at": {
+                                "type": "string"
+                              },
+                              "fee": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "price": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "type": "number"
+                              },
+                              "side": {
+                                "enum": [
+                                  "buy",
+                                  "sell"
+                                ],
+                                "type": "string"
+                              },
+                              "step": {
+                                "type": "number"
+                              },
+                              "tax": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "side",
+                              "qty",
+                              "price",
+                              "step",
+                              "amount",
+                              "fee",
+                              "tax",
+                              "created_at"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "play_bars": {
+                          "type": "number"
+                        },
+                        "pnl_pct": {
+                          "type": "number"
+                        },
+                        "pnl_percent": {
+                          "type": "number"
+                        },
+                        "positions": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "pnl_pct": {
+                                "type": "number"
+                              },
+                              "price": {
+                                "type": "string"
+                              },
+                              "qty": {
+                                "type": "number"
+                              },
+                              "sellable_step": {
+                                "type": "number"
+                              },
+                              "sessions_left": {
+                                "type": "number"
+                              },
+                              "status": {
+                                "enum": [
+                                  "settled",
+                                  "pending"
+                                ],
+                                "type": "string"
+                              },
+                              "step": {
+                                "type": "number"
+                              },
+                              "value": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "qty",
+                              "price",
+                              "step",
+                              "sellable_step",
+                              "status",
+                              "sessions_left",
+                              "pnl_pct",
+                              "value"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "price": {
+                          "type": "string"
+                        },
+                        "sellable": {
+                          "type": "number"
+                        },
+                        "step": {
+                          "type": "number"
+                        },
+                        "total_assets": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "step",
+                        "play_bars",
+                        "cash",
+                        "holdings",
+                        "sellable",
+                        "price",
+                        "total_assets",
+                        "pnl_pct",
+                        "pnl_percent",
+                        "max_buy_qty",
+                        "finished",
+                        "auto_finished",
+                        "positions",
+                        "orders"
+                      ],
+                      "type": "object"
+                    },
+                    "order": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "amount": {
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "fee": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "price": {
+                          "type": "string"
+                        },
+                        "qty": {
+                          "type": "number"
+                        },
+                        "side": {
+                          "enum": [
+                            "buy",
+                            "sell"
+                          ],
+                          "type": "string"
+                        },
+                        "step": {
+                          "type": "number"
+                        },
+                        "tax": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "side",
+                        "qty",
+                        "price",
+                        "step",
+                        "amount",
+                        "fee",
+                        "tax",
+                        "created_at"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "order",
+                    "me"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đặt lệnh mua hoặc bán",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/matches/{id}/result": {
+      "get": {
+        "operationId": "flashbackMatchResult",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "end_date": {
+                      "type": "string"
+                    },
+                    "end_reason": {
+                      "enum": [
+                        "all_finished",
+                        "timeout"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "match_id": {
+                      "type": "string"
+                    },
+                    "played_bars": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "close": {
+                            "type": "number"
+                          },
+                          "high": {
+                            "type": "number"
+                          },
+                          "low": {
+                            "type": "number"
+                          },
+                          "open": {
+                            "type": "number"
+                          },
+                          "session": {
+                            "type": "number"
+                          },
+                          "volume": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "session",
+                          "open",
+                          "high",
+                          "low",
+                          "close",
+                          "volume"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "pot_xu": {
+                      "type": "number"
+                    },
+                    "refund": {
+                      "type": "boolean"
+                    },
+                    "room_id": {
+                      "type": "string"
+                    },
+                    "rows": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "final_nav": {
+                            "type": "string"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "is_winner": {
+                            "type": "boolean"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "pnl_pct": {
+                            "type": "number"
+                          },
+                          "pnl_percent": {
+                            "type": "number"
+                          },
+                          "rank": {
+                            "type": "number"
+                          },
+                          "refund_xu": {
+                            "type": "number"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          },
+                          "win_xu": {
+                            "type": "number"
+                          },
+                          "xu_label": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "rank",
+                          "is_me",
+                          "is_winner",
+                          "pnl_pct",
+                          "pnl_percent",
+                          "final_nav",
+                          "win_xu",
+                          "refund_xu",
+                          "xu_label"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "solo": {
+                      "type": "boolean"
+                    },
+                    "stake_xu": {
+                      "type": "number"
+                    },
+                    "start_date": {
+                      "type": "string"
+                    },
+                    "symbol": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "match_id",
+                    "room_id",
+                    "title",
+                    "solo",
+                    "stake_xu",
+                    "pot_xu",
+                    "refund",
+                    "end_reason",
+                    "rows",
+                    "symbol",
+                    "start_date",
+                    "end_date",
+                    "played_bars"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Kết quả ván (sau khi kết thúc)",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/matches/{id}/state": {
+      "get": {
+        "operationId": "flashbackMatchState",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "ends_at": {
+                      "type": "string"
+                    },
+                    "match_id": {
+                      "type": "string"
+                    },
+                    "my_finished": {
+                      "type": "boolean"
+                    },
+                    "my_step": {
+                      "type": "number"
+                    },
+                    "players": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "finished": {
+                            "type": "boolean"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "pnl_pct": {
+                            "type": "number"
+                          },
+                          "pnl_percent": {
+                            "type": "number"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "is_me",
+                          "finished",
+                          "pnl_pct",
+                          "pnl_percent"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "playing_count": {
+                      "type": "number"
+                    },
+                    "remaining_ms": {
+                      "type": "number"
+                    },
+                    "room_id": {
+                      "type": "string"
+                    },
+                    "server_now": {
+                      "type": "string"
+                    },
+                    "started_at": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "playing",
+                        "ended"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "match_id",
+                    "room_id",
+                    "status",
+                    "started_at",
+                    "ends_at",
+                    "server_now",
+                    "remaining_ms",
+                    "my_step",
+                    "my_finished",
+                    "playing_count",
+                    "players"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đồng hồ và % từng người",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms": {
+      "get": {
+        "operationId": "flashbackRoomsList",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "waiting",
+                "playing"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "rooms": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "full": {
+                            "type": "boolean"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "locked": {
+                            "type": "boolean"
+                          },
+                          "max_players": {
+                            "type": "number"
+                          },
+                          "member_count": {
+                            "type": "number"
+                          },
+                          "minutes": {
+                            "type": "number"
+                          },
+                          "owner": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "avatar_url": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "name",
+                              "avatar_url"
+                            ],
+                            "type": "object"
+                          },
+                          "play_bars": {
+                            "type": "number"
+                          },
+                          "stake_xu": {
+                            "type": "number"
+                          },
+                          "status": {
+                            "enum": [
+                              "waiting",
+                              "playing"
+                            ],
+                            "type": "string"
+                          },
+                          "view_bars": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "locked",
+                          "owner",
+                          "view_bars",
+                          "play_bars",
+                          "minutes",
+                          "member_count",
+                          "max_players",
+                          "stake_xu",
+                          "status",
+                          "full",
+                          "created_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "rooms"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách phòng của sảnh",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      },
+      "post": {
+        "operationId": "flashbackRoomsCreate",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "default": {},
+                "properties": {
+                  "max_players": {
+                    "type": "number"
+                  },
+                  "minutes": {
+                    "type": "number"
+                  },
+                  "password": {
+                    "maxLength": 64,
+                    "nullable": true,
+                    "type": "string"
+                  },
+                  "play_bars": {
+                    "type": "number"
+                  },
+                  "stake_xu": {
+                    "nullable": true,
+                    "type": "number"
+                  },
+                  "view_bars": {
+                    "type": "number"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "auto_close_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "is_owner": {
+                      "type": "boolean"
+                    },
+                    "locked": {
+                      "type": "boolean"
+                    },
+                    "match": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "ends_at": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "joined": {
+                          "type": "boolean"
+                        },
+                        "started_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "playing",
+                            "ended"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "status",
+                        "started_at",
+                        "ends_at",
+                        "joined"
+                      ],
+                      "type": "object"
+                    },
+                    "max_players": {
+                      "type": "number"
+                    },
+                    "members": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "is_owner": {
+                            "type": "boolean"
+                          },
+                          "joined_at": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "is_owner",
+                          "is_me",
+                          "joined_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "minutes": {
+                      "type": "number"
+                    },
+                    "owner_id": {
+                      "type": "string"
+                    },
+                    "play_bars": {
+                      "type": "number"
+                    },
+                    "server_now": {
+                      "type": "string"
+                    },
+                    "stake_xu": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "waiting",
+                        "playing"
+                      ],
+                      "type": "string"
+                    },
+                    "view_bars": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "locked",
+                    "owner_id",
+                    "is_owner",
+                    "view_bars",
+                    "play_bars",
+                    "minutes",
+                    "max_players",
+                    "stake_xu",
+                    "status",
+                    "members",
+                    "match",
+                    "created_at",
+                    "auto_close_at",
+                    "server_now"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tạo phòng",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms/me": {
+      "get": {
+        "operationId": "flashbackRoomsMine",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "notice": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "room": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "auto_close_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "is_owner": {
+                          "type": "boolean"
+                        },
+                        "locked": {
+                          "type": "boolean"
+                        },
+                        "match": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "ends_at": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "joined": {
+                              "type": "boolean"
+                            },
+                            "started_at": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "enum": [
+                                "playing",
+                                "ended"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "status",
+                            "started_at",
+                            "ends_at",
+                            "joined"
+                          ],
+                          "type": "object"
+                        },
+                        "max_players": {
+                          "type": "number"
+                        },
+                        "members": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "avatar_url": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "is_me": {
+                                "type": "boolean"
+                              },
+                              "is_owner": {
+                                "type": "boolean"
+                              },
+                              "joined_at": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "user_id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "user_id",
+                              "name",
+                              "avatar_url",
+                              "is_owner",
+                              "is_me",
+                              "joined_at"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "minutes": {
+                          "type": "number"
+                        },
+                        "owner_id": {
+                          "type": "string"
+                        },
+                        "play_bars": {
+                          "type": "number"
+                        },
+                        "server_now": {
+                          "type": "string"
+                        },
+                        "stake_xu": {
+                          "type": "number"
+                        },
+                        "status": {
+                          "enum": [
+                            "waiting",
+                            "playing"
+                          ],
+                          "type": "string"
+                        },
+                        "view_bars": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "locked",
+                        "owner_id",
+                        "is_owner",
+                        "view_bars",
+                        "play_bars",
+                        "minutes",
+                        "max_players",
+                        "stake_xu",
+                        "status",
+                        "members",
+                        "match",
+                        "created_at",
+                        "auto_close_at",
+                        "server_now"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "room",
+                    "notice"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Phòng hiện tại của tôi (vào lại) và thông báo một lần",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms/random-join": {
+      "post": {
+        "operationId": "flashbackRoomsRandomJoin",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "auto_close_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "is_owner": {
+                      "type": "boolean"
+                    },
+                    "locked": {
+                      "type": "boolean"
+                    },
+                    "match": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "ends_at": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "joined": {
+                          "type": "boolean"
+                        },
+                        "started_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "playing",
+                            "ended"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "status",
+                        "started_at",
+                        "ends_at",
+                        "joined"
+                      ],
+                      "type": "object"
+                    },
+                    "max_players": {
+                      "type": "number"
+                    },
+                    "members": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "is_owner": {
+                            "type": "boolean"
+                          },
+                          "joined_at": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "is_owner",
+                          "is_me",
+                          "joined_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "minutes": {
+                      "type": "number"
+                    },
+                    "owner_id": {
+                      "type": "string"
+                    },
+                    "play_bars": {
+                      "type": "number"
+                    },
+                    "server_now": {
+                      "type": "string"
+                    },
+                    "stake_xu": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "waiting",
+                        "playing"
+                      ],
+                      "type": "string"
+                    },
+                    "view_bars": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "locked",
+                    "owner_id",
+                    "is_owner",
+                    "view_bars",
+                    "play_bars",
+                    "minutes",
+                    "max_players",
+                    "stake_xu",
+                    "status",
+                    "members",
+                    "match",
+                    "created_at",
+                    "auto_close_at",
+                    "server_now"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chơi phòng bất kỳ",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms/{code}": {
+      "get": {
+        "operationId": "flashbackRoomsGet",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "auto_close_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "is_owner": {
+                      "type": "boolean"
+                    },
+                    "locked": {
+                      "type": "boolean"
+                    },
+                    "match": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "ends_at": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "joined": {
+                          "type": "boolean"
+                        },
+                        "started_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "playing",
+                            "ended"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "status",
+                        "started_at",
+                        "ends_at",
+                        "joined"
+                      ],
+                      "type": "object"
+                    },
+                    "max_players": {
+                      "type": "number"
+                    },
+                    "members": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "is_owner": {
+                            "type": "boolean"
+                          },
+                          "joined_at": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "is_owner",
+                          "is_me",
+                          "joined_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "minutes": {
+                      "type": "number"
+                    },
+                    "owner_id": {
+                      "type": "string"
+                    },
+                    "play_bars": {
+                      "type": "number"
+                    },
+                    "server_now": {
+                      "type": "string"
+                    },
+                    "stake_xu": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "waiting",
+                        "playing"
+                      ],
+                      "type": "string"
+                    },
+                    "view_bars": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "locked",
+                    "owner_id",
+                    "is_owner",
+                    "view_bars",
+                    "play_bars",
+                    "minutes",
+                    "max_players",
+                    "stake_xu",
+                    "status",
+                    "members",
+                    "match",
+                    "created_at",
+                    "auto_close_at",
+                    "server_now"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Phòng chờ (chỉ thành viên)",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms/{code}/join": {
+      "post": {
+        "operationId": "flashbackRoomsJoin",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "default": {},
+                "properties": {
+                  "password": {
+                    "maxLength": 64,
+                    "nullable": true,
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "auto_close_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "is_owner": {
+                      "type": "boolean"
+                    },
+                    "locked": {
+                      "type": "boolean"
+                    },
+                    "match": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "ends_at": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "joined": {
+                          "type": "boolean"
+                        },
+                        "started_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "playing",
+                            "ended"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "status",
+                        "started_at",
+                        "ends_at",
+                        "joined"
+                      ],
+                      "type": "object"
+                    },
+                    "max_players": {
+                      "type": "number"
+                    },
+                    "members": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "is_owner": {
+                            "type": "boolean"
+                          },
+                          "joined_at": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "is_owner",
+                          "is_me",
+                          "joined_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "minutes": {
+                      "type": "number"
+                    },
+                    "owner_id": {
+                      "type": "string"
+                    },
+                    "play_bars": {
+                      "type": "number"
+                    },
+                    "server_now": {
+                      "type": "string"
+                    },
+                    "stake_xu": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "waiting",
+                        "playing"
+                      ],
+                      "type": "string"
+                    },
+                    "view_bars": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "locked",
+                    "owner_id",
+                    "is_owner",
+                    "view_bars",
+                    "play_bars",
+                    "minutes",
+                    "max_players",
+                    "stake_xu",
+                    "status",
+                    "members",
+                    "match",
+                    "created_at",
+                    "auto_close_at",
+                    "server_now"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Vào phòng bằng ID",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms/{code}/leave": {
+      "post": {
+        "operationId": "flashbackRoomsLeave",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "left": {
+                      "enum": [
+                        true
+                      ],
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "left"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Rời phòng",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms/{code}/replay": {
+      "post": {
+        "operationId": "flashbackRoomsReplay",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "auto_close_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "is_owner": {
+                      "type": "boolean"
+                    },
+                    "locked": {
+                      "type": "boolean"
+                    },
+                    "match": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "ends_at": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "joined": {
+                          "type": "boolean"
+                        },
+                        "started_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "playing",
+                            "ended"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "status",
+                        "started_at",
+                        "ends_at",
+                        "joined"
+                      ],
+                      "type": "object"
+                    },
+                    "max_players": {
+                      "type": "number"
+                    },
+                    "members": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "is_owner": {
+                            "type": "boolean"
+                          },
+                          "joined_at": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "is_owner",
+                          "is_me",
+                          "joined_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "minutes": {
+                      "type": "number"
+                    },
+                    "owner_id": {
+                      "type": "string"
+                    },
+                    "play_bars": {
+                      "type": "number"
+                    },
+                    "server_now": {
+                      "type": "string"
+                    },
+                    "stake_xu": {
+                      "type": "number"
+                    },
+                    "status": {
+                      "enum": [
+                        "waiting",
+                        "playing"
+                      ],
+                      "type": "string"
+                    },
+                    "view_bars": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "locked",
+                    "owner_id",
+                    "is_owner",
+                    "view_bars",
+                    "play_bars",
+                    "minutes",
+                    "max_players",
+                    "stake_xu",
+                    "status",
+                    "members",
+                    "match",
+                    "created_at",
+                    "auto_close_at",
+                    "server_now"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Chơi lại: đưa phòng về phòng chờ",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms/{code}/start": {
+      "post": {
+        "operationId": "flashbackRoomsStart",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "match": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "ends_at": {
+                          "type": "string"
+                        },
+                        "history_bars": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "close": {
+                                "type": "number"
+                              },
+                              "high": {
+                                "type": "number"
+                              },
+                              "low": {
+                                "type": "number"
+                              },
+                              "open": {
+                                "type": "number"
+                              },
+                              "session": {
+                                "type": "number"
+                              },
+                              "volume": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "session",
+                              "open",
+                              "high",
+                              "low",
+                              "close",
+                              "volume"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "initial_cash": {
+                          "type": "string"
+                        },
+                        "match_id": {
+                          "type": "string"
+                        },
+                        "me": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "auto_finished": {
+                              "type": "boolean"
+                            },
+                            "cash": {
+                              "type": "string"
+                            },
+                            "finished": {
+                              "type": "boolean"
+                            },
+                            "holdings": {
+                              "type": "number"
+                            },
+                            "max_buy_qty": {
+                              "type": "number"
+                            },
+                            "orders": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "amount": {
+                                    "type": "string"
+                                  },
+                                  "created_at": {
+                                    "type": "string"
+                                  },
+                                  "fee": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "type": "string"
+                                  },
+                                  "price": {
+                                    "type": "string"
+                                  },
+                                  "qty": {
+                                    "type": "number"
+                                  },
+                                  "side": {
+                                    "enum": [
+                                      "buy",
+                                      "sell"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "step": {
+                                    "type": "number"
+                                  },
+                                  "tax": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "id",
+                                  "side",
+                                  "qty",
+                                  "price",
+                                  "step",
+                                  "amount",
+                                  "fee",
+                                  "tax",
+                                  "created_at"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "play_bars": {
+                              "type": "number"
+                            },
+                            "pnl_pct": {
+                              "type": "number"
+                            },
+                            "pnl_percent": {
+                              "type": "number"
+                            },
+                            "positions": {
+                              "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "pnl_pct": {
+                                    "type": "number"
+                                  },
+                                  "price": {
+                                    "type": "string"
+                                  },
+                                  "qty": {
+                                    "type": "number"
+                                  },
+                                  "sellable_step": {
+                                    "type": "number"
+                                  },
+                                  "sessions_left": {
+                                    "type": "number"
+                                  },
+                                  "status": {
+                                    "enum": [
+                                      "settled",
+                                      "pending"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "step": {
+                                    "type": "number"
+                                  },
+                                  "value": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "qty",
+                                  "price",
+                                  "step",
+                                  "sellable_step",
+                                  "status",
+                                  "sessions_left",
+                                  "pnl_pct",
+                                  "value"
+                                ],
+                                "type": "object"
+                              },
+                              "type": "array"
+                            },
+                            "price": {
+                              "type": "string"
+                            },
+                            "sellable": {
+                              "type": "number"
+                            },
+                            "step": {
+                              "type": "number"
+                            },
+                            "total_assets": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "step",
+                            "play_bars",
+                            "cash",
+                            "holdings",
+                            "sellable",
+                            "price",
+                            "total_assets",
+                            "pnl_pct",
+                            "pnl_percent",
+                            "max_buy_qty",
+                            "finished",
+                            "auto_finished",
+                            "positions",
+                            "orders"
+                          ],
+                          "type": "object"
+                        },
+                        "minutes": {
+                          "type": "number"
+                        },
+                        "my_finished": {
+                          "type": "boolean"
+                        },
+                        "my_step": {
+                          "type": "number"
+                        },
+                        "play_bars": {
+                          "type": "number"
+                        },
+                        "played_bars": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "close": {
+                                "type": "number"
+                              },
+                              "high": {
+                                "type": "number"
+                              },
+                              "low": {
+                                "type": "number"
+                              },
+                              "open": {
+                                "type": "number"
+                              },
+                              "session": {
+                                "type": "number"
+                              },
+                              "volume": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "session",
+                              "open",
+                              "high",
+                              "low",
+                              "close",
+                              "volume"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "players": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "avatar_url": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "finished": {
+                                "type": "boolean"
+                              },
+                              "is_me": {
+                                "type": "boolean"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "pnl_pct": {
+                                "type": "number"
+                              },
+                              "pnl_percent": {
+                                "type": "number"
+                              },
+                              "user_id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "user_id",
+                              "name",
+                              "avatar_url",
+                              "is_me",
+                              "finished",
+                              "pnl_pct",
+                              "pnl_percent"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "playing_count": {
+                          "type": "number"
+                        },
+                        "pot_xu": {
+                          "type": "number"
+                        },
+                        "remaining_ms": {
+                          "type": "number"
+                        },
+                        "room_id": {
+                          "type": "string"
+                        },
+                        "server_now": {
+                          "type": "string"
+                        },
+                        "stake_xu": {
+                          "type": "number"
+                        },
+                        "started_at": {
+                          "type": "string"
+                        },
+                        "status": {
+                          "enum": [
+                            "playing",
+                            "ended"
+                          ],
+                          "type": "string"
+                        },
+                        "view_bars": {
+                          "type": "number"
+                        },
+                        "warmup_bars": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "close": {
+                                "type": "number"
+                              },
+                              "high": {
+                                "type": "number"
+                              },
+                              "low": {
+                                "type": "number"
+                              },
+                              "open": {
+                                "type": "number"
+                              },
+                              "session": {
+                                "type": "number"
+                              },
+                              "volume": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "session",
+                              "open",
+                              "high",
+                              "low",
+                              "close",
+                              "volume"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        }
+                      },
+                      "required": [
+                        "match_id",
+                        "room_id",
+                        "status",
+                        "started_at",
+                        "ends_at",
+                        "server_now",
+                        "remaining_ms",
+                        "my_step",
+                        "my_finished",
+                        "playing_count",
+                        "players",
+                        "view_bars",
+                        "play_bars",
+                        "minutes",
+                        "stake_xu",
+                        "pot_xu",
+                        "initial_cash",
+                        "warmup_bars",
+                        "history_bars",
+                        "played_bars",
+                        "me"
+                      ],
+                      "type": "object"
+                    },
+                    "removed": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "message": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "message"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "room": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "auto_close_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "is_owner": {
+                          "type": "boolean"
+                        },
+                        "locked": {
+                          "type": "boolean"
+                        },
+                        "match": {
+                          "additionalProperties": false,
+                          "nullable": true,
+                          "properties": {
+                            "ends_at": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "type": "string"
+                            },
+                            "joined": {
+                              "type": "boolean"
+                            },
+                            "started_at": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "enum": [
+                                "playing",
+                                "ended"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "status",
+                            "started_at",
+                            "ends_at",
+                            "joined"
+                          ],
+                          "type": "object"
+                        },
+                        "max_players": {
+                          "type": "number"
+                        },
+                        "members": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "avatar_url": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "is_me": {
+                                "type": "boolean"
+                              },
+                              "is_owner": {
+                                "type": "boolean"
+                              },
+                              "joined_at": {
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              },
+                              "user_id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "user_id",
+                              "name",
+                              "avatar_url",
+                              "is_owner",
+                              "is_me",
+                              "joined_at"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
+                        },
+                        "minutes": {
+                          "type": "number"
+                        },
+                        "owner_id": {
+                          "type": "string"
+                        },
+                        "play_bars": {
+                          "type": "number"
+                        },
+                        "server_now": {
+                          "type": "string"
+                        },
+                        "stake_xu": {
+                          "type": "number"
+                        },
+                        "status": {
+                          "enum": [
+                            "waiting",
+                            "playing"
+                          ],
+                          "type": "string"
+                        },
+                        "view_bars": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "locked",
+                        "owner_id",
+                        "is_owner",
+                        "view_bars",
+                        "play_bars",
+                        "minutes",
+                        "max_players",
+                        "stake_xu",
+                        "status",
+                        "members",
+                        "match",
+                        "created_at",
+                        "auto_close_at",
+                        "server_now"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "required": [
+                    "match",
+                    "room",
+                    "removed"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bắt đầu ván (chỉ chủ phòng)",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/fundamental/{symbol}": {
       "get": {
         "operationId": "dashboardFundamental",
@@ -125664,7 +129725,10 @@
                               "demo_withdraw",
                               "adjustment",
                               "flashback_fee",
-                              "flashback_reward"
+                              "flashback_reward",
+                              "flashback_stake",
+                              "flashback_win",
+                              "flashback_refund"
                             ],
                             "type": "string"
                           },
@@ -157955,11 +162019,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 583,
+    "authenticatedOperations": 598,
     "noContentResponses": 18,
-    "operations": 789,
+    "operations": 804,
     "publicOperations": 206,
-    "responseSchemas": 771,
+    "responseSchemas": 786,
     "untypedResponses": 0
   }
 }

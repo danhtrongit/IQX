@@ -136,6 +136,12 @@ export interface OperationMap {
   "GET /api/v2/flashback/current": { request: T.FlashbackCurrentData; response: T.FlashbackCurrentResponses[keyof T.FlashbackCurrentResponses] }
   "GET /api/v2/flashback/current/leaderboard": { request: T.FlashbackLeaderboardData; response: T.FlashbackLeaderboardResponses[keyof T.FlashbackLeaderboardResponses] }
   "GET /api/v2/flashback/indicators": { request: T.FlashbackIndicatorsData; response: T.FlashbackIndicatorsResponses[keyof T.FlashbackIndicatorsResponses] }
+  "GET /api/v2/flashback/matches/{id}": { request: T.FlashbackMatchGetData; response: T.FlashbackMatchGetResponses[keyof T.FlashbackMatchGetResponses] }
+  "GET /api/v2/flashback/matches/{id}/result": { request: T.FlashbackMatchResultData; response: T.FlashbackMatchResultResponses[keyof T.FlashbackMatchResultResponses] }
+  "GET /api/v2/flashback/matches/{id}/state": { request: T.FlashbackMatchStateData; response: T.FlashbackMatchStateResponses[keyof T.FlashbackMatchStateResponses] }
+  "GET /api/v2/flashback/rooms": { request: T.FlashbackRoomsListData; response: T.FlashbackRoomsListResponses[keyof T.FlashbackRoomsListResponses] }
+  "GET /api/v2/flashback/rooms/{code}": { request: T.FlashbackRoomsGetData; response: T.FlashbackRoomsGetResponses[keyof T.FlashbackRoomsGetResponses] }
+  "GET /api/v2/flashback/rooms/me": { request: T.FlashbackRoomsMineData; response: T.FlashbackRoomsMineResponses[keyof T.FlashbackRoomsMineResponses] }
   "GET /api/v2/fundamental/{symbol}": { request: T.DashboardFundamentalData; response: T.DashboardFundamentalResponses[keyof T.DashboardFundamentalResponses] }
   "GET /api/v2/health": { request: T.LegacyHealthGetApiV2HealthData; response: T.LegacyHealthGetApiV2HealthResponses[keyof T.LegacyHealthGetApiV2HealthResponses] }
   "GET /api/v2/instruments": { request: T.SearchInstrumentsV2Data; response: T.SearchInstrumentsV2Responses[keyof T.SearchInstrumentsV2Responses] }
@@ -390,6 +396,15 @@ export interface OperationMap {
   "POST /api/v2/flashback/entries/{id}/finish": { request: T.FlashbackFinishData; response: T.FlashbackFinishResponses[keyof T.FlashbackFinishResponses] }
   "POST /api/v2/flashback/entries/{id}/next": { request: T.FlashbackNextData; response: T.FlashbackNextResponses[keyof T.FlashbackNextResponses] }
   "POST /api/v2/flashback/entries/{id}/orders": { request: T.FlashbackPlaceOrderData; response: T.FlashbackPlaceOrderResponses[keyof T.FlashbackPlaceOrderResponses] }
+  "POST /api/v2/flashback/matches/{id}/finish": { request: T.FlashbackMatchFinishData; response: T.FlashbackMatchFinishResponses[keyof T.FlashbackMatchFinishResponses] }
+  "POST /api/v2/flashback/matches/{id}/next": { request: T.FlashbackMatchNextData; response: T.FlashbackMatchNextResponses[keyof T.FlashbackMatchNextResponses] }
+  "POST /api/v2/flashback/matches/{id}/orders": { request: T.FlashbackMatchOrderData; response: T.FlashbackMatchOrderResponses[keyof T.FlashbackMatchOrderResponses] }
+  "POST /api/v2/flashback/rooms": { request: T.FlashbackRoomsCreateData; response: T.FlashbackRoomsCreateResponses[keyof T.FlashbackRoomsCreateResponses] }
+  "POST /api/v2/flashback/rooms/{code}/join": { request: T.FlashbackRoomsJoinData; response: T.FlashbackRoomsJoinResponses[keyof T.FlashbackRoomsJoinResponses] }
+  "POST /api/v2/flashback/rooms/{code}/leave": { request: T.FlashbackRoomsLeaveData; response: T.FlashbackRoomsLeaveResponses[keyof T.FlashbackRoomsLeaveResponses] }
+  "POST /api/v2/flashback/rooms/{code}/replay": { request: T.FlashbackRoomsReplayData; response: T.FlashbackRoomsReplayResponses[keyof T.FlashbackRoomsReplayResponses] }
+  "POST /api/v2/flashback/rooms/{code}/start": { request: T.FlashbackRoomsStartData; response: T.FlashbackRoomsStartResponses[keyof T.FlashbackRoomsStartResponses] }
+  "POST /api/v2/flashback/rooms/random-join": { request: T.FlashbackRoomsRandomJoinData; response: T.FlashbackRoomsRandomJoinResponses[keyof T.FlashbackRoomsRandomJoinResponses] }
   "POST /api/v2/journey/assessments": { request: T.JourneyIdentityControllerSubmit1Data; response: T.JourneyIdentityControllerSubmit1Responses[keyof T.JourneyIdentityControllerSubmit1Responses] }
   "POST /api/v2/journey/assessments/{assessmentId}/reveal": { request: T.JourneyIdentityControllerReveal1Data; response: T.JourneyIdentityControllerReveal1Responses[keyof T.JourneyIdentityControllerReveal1Responses] }
   "POST /api/v2/journey/events": { request: T.JourneyEventControllerRecord1Data; response: T.JourneyEventControllerRecord1Responses[keyof T.JourneyEventControllerRecord1Responses] }
@@ -580,6 +595,12 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/flashback/current": { request: "FlashbackCurrentData", response: "FlashbackCurrentResponses" },
   "GET /api/v2/flashback/current/leaderboard": { request: "FlashbackLeaderboardData", response: "FlashbackLeaderboardResponses" },
   "GET /api/v2/flashback/indicators": { request: "FlashbackIndicatorsData", response: "FlashbackIndicatorsResponses" },
+  "GET /api/v2/flashback/matches/{id}": { request: "FlashbackMatchGetData", response: "FlashbackMatchGetResponses" },
+  "GET /api/v2/flashback/matches/{id}/result": { request: "FlashbackMatchResultData", response: "FlashbackMatchResultResponses" },
+  "GET /api/v2/flashback/matches/{id}/state": { request: "FlashbackMatchStateData", response: "FlashbackMatchStateResponses" },
+  "GET /api/v2/flashback/rooms": { request: "FlashbackRoomsListData", response: "FlashbackRoomsListResponses" },
+  "GET /api/v2/flashback/rooms/{code}": { request: "FlashbackRoomsGetData", response: "FlashbackRoomsGetResponses" },
+  "GET /api/v2/flashback/rooms/me": { request: "FlashbackRoomsMineData", response: "FlashbackRoomsMineResponses" },
   "GET /api/v2/fundamental/{symbol}": { request: "DashboardFundamentalData", response: "DashboardFundamentalResponses" },
   "GET /api/v2/health": { request: "LegacyHealthGetApiV2HealthData", response: "LegacyHealthGetApiV2HealthResponses" },
   "GET /api/v2/instruments": { request: "SearchInstrumentsV2Data", response: "SearchInstrumentsV2Responses" },
@@ -834,6 +855,15 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/flashback/entries/{id}/finish": { request: "FlashbackFinishData", response: "FlashbackFinishResponses" },
   "POST /api/v2/flashback/entries/{id}/next": { request: "FlashbackNextData", response: "FlashbackNextResponses" },
   "POST /api/v2/flashback/entries/{id}/orders": { request: "FlashbackPlaceOrderData", response: "FlashbackPlaceOrderResponses" },
+  "POST /api/v2/flashback/matches/{id}/finish": { request: "FlashbackMatchFinishData", response: "FlashbackMatchFinishResponses" },
+  "POST /api/v2/flashback/matches/{id}/next": { request: "FlashbackMatchNextData", response: "FlashbackMatchNextResponses" },
+  "POST /api/v2/flashback/matches/{id}/orders": { request: "FlashbackMatchOrderData", response: "FlashbackMatchOrderResponses" },
+  "POST /api/v2/flashback/rooms": { request: "FlashbackRoomsCreateData", response: "FlashbackRoomsCreateResponses" },
+  "POST /api/v2/flashback/rooms/{code}/join": { request: "FlashbackRoomsJoinData", response: "FlashbackRoomsJoinResponses" },
+  "POST /api/v2/flashback/rooms/{code}/leave": { request: "FlashbackRoomsLeaveData", response: "FlashbackRoomsLeaveResponses" },
+  "POST /api/v2/flashback/rooms/{code}/replay": { request: "FlashbackRoomsReplayData", response: "FlashbackRoomsReplayResponses" },
+  "POST /api/v2/flashback/rooms/{code}/start": { request: "FlashbackRoomsStartData", response: "FlashbackRoomsStartResponses" },
+  "POST /api/v2/flashback/rooms/random-join": { request: "FlashbackRoomsRandomJoinData", response: "FlashbackRoomsRandomJoinResponses" },
   "POST /api/v2/journey/assessments": { request: "JourneyIdentityControllerSubmit1Data", response: "JourneyIdentityControllerSubmit1Responses" },
   "POST /api/v2/journey/assessments/{assessmentId}/reveal": { request: "JourneyIdentityControllerReveal1Data", response: "JourneyIdentityControllerReveal1Responses" },
   "POST /api/v2/journey/events": { request: "JourneyEventControllerRecord1Data", response: "JourneyEventControllerRecord1Responses" },
