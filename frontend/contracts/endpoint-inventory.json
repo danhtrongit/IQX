@@ -2308,6 +2308,216 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 117,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/flashback/rooms",
+      "method": "GET",
+      "route": "/api/v2/flashback/rooms",
+      "matchedOperation": "GET /api/v2/flashback/rooms",
+      "matchedOperations": [
+        "GET /api/v2/flashback/rooms"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 122,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/flashback/rooms/me",
+      "method": "GET",
+      "route": "/api/v2/flashback/rooms/me",
+      "matchedOperation": "GET /api/v2/flashback/rooms/{code}",
+      "matchedOperations": [
+        "GET /api/v2/flashback/rooms/{code}",
+        "GET /api/v2/flashback/rooms/me"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 126,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/flashback/rooms/{code}",
+      "method": "GET",
+      "route": "/api/v2/flashback/rooms/{code}",
+      "matchedOperation": "GET /api/v2/flashback/rooms/{code}",
+      "matchedOperations": [
+        "GET /api/v2/flashback/rooms/{code}",
+        "GET /api/v2/flashback/rooms/me"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 130,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/rooms",
+      "method": "POST",
+      "route": "/api/v2/flashback/rooms",
+      "matchedOperation": "POST /api/v2/flashback/rooms",
+      "matchedOperations": [
+        "POST /api/v2/flashback/rooms"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 134,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/rooms/{code}/join",
+      "method": "POST",
+      "route": "/api/v2/flashback/rooms/{code}/join",
+      "matchedOperation": "POST /api/v2/flashback/rooms/{code}/join",
+      "matchedOperations": [
+        "POST /api/v2/flashback/rooms/{code}/join"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 141,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/rooms/random-join",
+      "method": "POST",
+      "route": "/api/v2/flashback/rooms/random-join",
+      "matchedOperation": "POST /api/v2/flashback/rooms/random-join",
+      "matchedOperations": [
+        "POST /api/v2/flashback/rooms/random-join"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 145,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/rooms/{code}/leave",
+      "method": "POST",
+      "route": "/api/v2/flashback/rooms/{code}/leave",
+      "matchedOperation": "POST /api/v2/flashback/rooms/{code}/leave",
+      "matchedOperations": [
+        "POST /api/v2/flashback/rooms/{code}/leave"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 149,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/rooms/{code}/start",
+      "method": "POST",
+      "route": "/api/v2/flashback/rooms/{code}/start",
+      "matchedOperation": "POST /api/v2/flashback/rooms/{code}/start",
+      "matchedOperations": [
+        "POST /api/v2/flashback/rooms/{code}/start"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 153,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/rooms/{code}/replay",
+      "method": "POST",
+      "route": "/api/v2/flashback/rooms/{code}/replay",
+      "matchedOperation": "POST /api/v2/flashback/rooms/{code}/replay",
+      "matchedOperations": [
+        "POST /api/v2/flashback/rooms/{code}/replay"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 159,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/flashback/matches/{id}",
+      "method": "GET",
+      "route": "/api/v2/flashback/matches/{id}",
+      "matchedOperation": "GET /api/v2/flashback/matches/{id}",
+      "matchedOperations": [
+        "GET /api/v2/flashback/matches/{id}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 163,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/flashback/matches/{id}/state",
+      "method": "GET",
+      "route": "/api/v2/flashback/matches/{id}/state",
+      "matchedOperation": "GET /api/v2/flashback/matches/{id}/state",
+      "matchedOperations": [
+        "GET /api/v2/flashback/matches/{id}/state"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 167,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/flashback/matches/{id}/result",
+      "method": "GET",
+      "route": "/api/v2/flashback/matches/{id}/result",
+      "matchedOperation": "GET /api/v2/flashback/matches/{id}/result",
+      "matchedOperations": [
+        "GET /api/v2/flashback/matches/{id}/result"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 171,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/matches/{id}/next",
+      "method": "POST",
+      "route": "/api/v2/flashback/matches/{id}/next",
+      "matchedOperation": "POST /api/v2/flashback/matches/{id}/next",
+      "matchedOperations": [
+        "POST /api/v2/flashback/matches/{id}/next"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 175,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/matches/{id}/orders",
+      "method": "POST",
+      "route": "/api/v2/flashback/matches/{id}/orders",
+      "matchedOperation": "POST /api/v2/flashback/matches/{id}/orders",
+      "matchedOperations": [
+        "POST /api/v2/flashback/matches/{id}/orders"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 179,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/matches/{id}/finish",
+      "method": "POST",
+      "route": "/api/v2/flashback/matches/{id}/finish",
+      "matchedOperation": "POST /api/v2/flashback/matches/{id}/finish",
+      "matchedOperations": [
+        "POST /api/v2/flashback/matches/{id}/finish"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 184,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/flashback/indicators",
+      "method": "GET",
+      "route": "/api/v2/flashback/indicators",
+      "matchedOperation": "GET /api/v2/flashback/indicators",
+      "matchedOperations": [
+        "GET /api/v2/flashback/indicators"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/demo-trading/insights/api.ts",
       "line": 104,
       "callee": "getOrNull",
@@ -3757,7 +3967,6 @@
     "GET /api/v2/cap8/progress",
     "GET /api/v2/flashback/current",
     "GET /api/v2/flashback/current/leaderboard",
-    "GET /api/v2/flashback/indicators",
     "GET /api/v2/health",
     "GET /api/v2/market-analysis/{type}",
     "GET /api/v2/market-data/company/{symbol}/bctc",

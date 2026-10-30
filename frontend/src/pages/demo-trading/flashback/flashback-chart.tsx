@@ -1,19 +1,21 @@
 /**
- * Biểu đồ nến của Flashback (spec v1.1 §2.5).
+ * Biểu đồ nến của Flashback v2 (spec v2 §6.2, §6.4).
  *
- * Trục ngang cố định đủ 120 phiên (60 lịch sử + 60 phiên chơi); phần chưa chơi được tôi tối và
- * đánh dấu "?", vạch "Bắt đầu" ngăn giữa lịch sử và phần chơi. Ô khối lượng luôn hiện ngay dưới
- * ô giá, các chỉ báo có ô riêng nằm dưới. Không có ngày thật, không có tên mã.
+ * Trục ngang đủ số phiên xem + số phiên chơi do chủ phòng chọn; phần chưa chơi được tôi tối và
+ * đánh dấu "?", vạch đứt ngăn giữa phần xem và phần chơi. Ô khối lượng luôn hiện ngay dưới ô giá,
+ * các chỉ báo có ô riêng nằm dưới. Không có ngày thật, không có tên mã.
  *
- * Chú giải kiểu TradingView nằm chồng lên biểu đồ: dòng của phiên đang xem (hoặc phiên đang
- * rê chuột) và dòng của mỗi chỉ báo, kèm ba nút Ẩn / Cài đặt / Xóa.
+ * Mỗi khung có dải đầu riêng cho dòng chú giải (tên, thông số, giá trị, nút Ẩn / Cài đặt / Xóa);
+ * đường vẽ nằm bên dưới dải này nên không đè lên chữ. Chiều cao các khung cố định, thêm chỉ báo
+ * thì biểu đồ dài thêm (xem `flashback-chart-layout.ts`).
  */
-import { useMemo, useState } from "react"
+import { memo, useMemo, useState } from "react"
 import { Eye, EyeOff, Settings2, Trash2 } from "lucide-react"
 
-import { useChartWidth } from "@/pages/academy/charts/use-chart-width"
 import { cn } from "@/lib/utils"
+import { useChartWidth } from "@/pages/academy/charts/use-chart-width"
 import type { FlashbackBar, FlashbackOrder } from "./flashback-api"
+import { LEGEND_ROW, NARROW_WIDTH, PANE_GAP, axisTicks, chartLayout, type PaneBox } from "./flashback-chart-layout"
 import type { ChartIndicator } from "./flashback-context"
 import { formatNumber, formatPercent, formatSignedPercent, sessionLabel } from "./flashback-model"
 
@@ -23,8 +25,8 @@ type Props = {
   bars: readonly FlashbackBar[]
   indicators: readonly ChartIndicator[]
   orders: readonly FlashbackOrder[]
-  historySessions: number
-  totalSlots: number
+  viewBars: number
+  playBars: number
   onToggle: (key: string) => void
   onSettings: (key: string) => void
   onRemove: (key: string) => void
@@ -32,13 +34,8 @@ type Props = {
 
 const PAD_LEFT = 6
 const PAD_RIGHT = 62
-const GAP = 10
-const HEIGHT = 360
-const PRICE_WEIGHT = 3.2
-const VOLUME_WEIGHT = 1
-const PANE_WEIGHT = 1.15
-
-type Pane = { key: string; y: number; h: number }
+/** Chỗ cho nhãn trục ngang dưới các vạch dọc. */
+const AXIS_PAD = 16
 
 const TONE_UP = "var(--price-up)"
 const TONE_DOWN = "var(--price-down)"
@@ -67,18 +64,38 @@ function linePath(
   return path
 }
 
-export function FlashbackChart({
+export const FlashbackChart = memo(function FlashbackChart({
   bars,
   indicators,
   orders,
-  historySessions,
-  totalSlots,
+  viewBars,
+  playBars,
   onToggle,
   onSettings,
   onRemove,
 }: Props) {
   const [measure, width] = useChartWidth()
   const [hover, setHover] = useState<number | null>(null)
+  const narrow = width < NARROW_WIDTH
+  const totalSlots = viewBars + playBars
+
+  const overlays = useMemo(() => indicators.filter((indicator) => indicator.plot.kind === "over"), [indicators])
+  const volumeIndicators = useMemo(() => indicators.filter((indicator) => indicator.plot.kind === "vol"), [indicators])
+  const ownPanes = useMemo(() => indicators.filter((indicator) => indicator.plot.kind === "pane"), [indicators])
+
+  const layout = useMemo(
+    () =>
+      chartLayout({
+        narrow,
+        overlayCount: overlays.length,
+        volumeCount: volumeIndicators.length,
+        indicatorKeys: ownPanes.map((indicator) => indicator.key),
+      }),
+    [narrow, overlays.length, volumeIndicators.length, ownPanes],
+  )
+  const height = layout.height
+  const pricePane = layout.panes[0]
+  const volumePane = layout.panes[1]
 
   const current = bars.length - 1
   const shown = hover != null && hover <= current ? hover : current
@@ -87,28 +104,6 @@ export function FlashbackChart({
   const candleWidth = Math.max(1.5, Math.min(9, slot * 0.62))
   const x = (index: number) => PAD_LEFT + slot * (index + 0.5)
 
-  const panes = useMemo(() => {
-    const ownPanes = indicators.filter((indicator) => indicator.plot.kind === "pane")
-    const list: { key: string; weight: number }[] = [
-      { key: "p", weight: PRICE_WEIGHT },
-      { key: "v", weight: VOLUME_WEIGHT },
-      ...ownPanes.map((indicator) => ({ key: `i${indicator.key}`, weight: PANE_WEIGHT })),
-    ]
-    const total = list.reduce((sum, pane) => sum + pane.weight, 0)
-    const available = HEIGHT - 18 - GAP * (list.length - 1)
-    const boxes: Pane[] = []
-    let top = 4
-    list.forEach((pane) => {
-      const height = (available * pane.weight) / total
-      boxes.push({ key: pane.key, y: top, h: height })
-      top += height + GAP
-    })
-    return boxes
-  }, [indicators])
-
-  const pricePane = panes.find((pane) => pane.key === "p") ?? { key: "p", y: 0, h: HEIGHT }
-  const volumePane = panes.find((pane) => pane.key === "v") ?? { key: "v", y: 0, h: 0 }
-
   const priceScale = useMemo(() => {
     let low = Number.POSITIVE_INFINITY
     let high = Number.NEGATIVE_INFINITY
@@ -116,8 +111,8 @@ export function FlashbackChart({
       low = Math.min(low, bars[index].low)
       high = Math.max(high, bars[index].high)
     }
-    indicators
-      .filter((indicator) => indicator.plot.kind === "over" && !indicator.hidden)
+    overlays
+      .filter((indicator) => !indicator.hidden)
       .forEach((indicator) => {
         indicator.plot.series.forEach((line) => {
           for (let index = 0; index <= current; index += 1) {
@@ -131,15 +126,15 @@ export function FlashbackChart({
     if (!Number.isFinite(low) || !Number.isFinite(high)) return { low: 0, high: 1 }
     const padding = (high - low) * 0.07 || high * 0.01 || 1
     return { low: low - padding, high: high + padding }
-  }, [bars, current, indicators])
+  }, [bars, current, overlays])
 
-  const priceY = (value: number) => pricePane.y + ((priceScale.high - value) / (priceScale.high - priceScale.low)) * pricePane.h
+  const priceY = (value: number) => pricePane.top + ((priceScale.high - value) / (priceScale.high - priceScale.low)) * pricePane.height
 
   const volumeMax = useMemo(() => {
     let max = 0
     for (let index = 0; index <= current; index += 1) max = Math.max(max, bars[index].volume)
-    indicators
-      .filter((indicator) => indicator.plot.kind === "vol" && !indicator.hidden)
+    volumeIndicators
+      .filter((indicator) => !indicator.hidden)
       .forEach((indicator) => {
         indicator.plot.series.forEach((line) => {
           for (let index = 0; index <= current; index += 1) {
@@ -150,20 +145,24 @@ export function FlashbackChart({
         })
       })
     return max || 1
-  }, [bars, current, indicators])
+  }, [bars, current, volumeIndicators])
 
-  const volumeY = (value: number) => volumePane.y + volumePane.h - (value / volumeMax) * volumePane.h
+  const volumeY = (value: number) => volumePane.top + volumePane.height - (value / volumeMax) * volumePane.height
 
-  const startX = PAD_LEFT + slot * historySessions
+  if (current < 0) return <div className="w-full" style={{ minHeight: height }} ref={measure} />
+
+  const plotBottom = height - AXIS_PAD
+  const startX = PAD_LEFT + slot * viewBars
   const futureX = PAD_LEFT + slot * (current + 1)
   const last = bars[shown]
   const previous = shown > 0 ? bars[shown - 1] : null
   const changePct = previous && previous.close > 0 ? ((last.close - previous.close) / previous.close) * 100 : 0
   const tone = last.close >= last.open ? TONE_UP : TONE_DOWN
+  const toneClass = tone === TONE_UP ? "text-price-up" : "text-price-down"
 
   const orderMarkers = orders
     .map((order) => {
-      const index = historySessions - 1 + order.step
+      const index = viewBars - 1 + order.step
       if (index < 0 || index > current) return null
       return { order, index }
     })
@@ -177,14 +176,22 @@ export function FlashbackChart({
     setHover(index >= 0 && index <= current ? index : null)
   }
 
+  const changeClass = changePct > 0 ? "text-price-up" : changePct < 0 ? "text-price-down" : "text-foreground"
+  const ohlc = (
+    <span className="text-academy-label">
+      O<b className={toneClass}>{formatNumber(last.open)}</b> H<b className={toneClass}>{formatNumber(last.high)}</b> L
+      <b className={toneClass}>{formatNumber(last.low)}</b> C<b className={toneClass}>{formatNumber(last.close)}</b>
+    </span>
+  )
+
   return (
-    <div className="relative min-h-[360px] w-full" ref={measure}>
+    <div className="relative w-full" ref={measure} style={{ height, minHeight: height }} data-chart-height={height} data-narrow={narrow}>
       <svg
         role="img"
         aria-label="Biểu đồ nến Flashback"
-        viewBox={`0 0 ${width} ${HEIGHT}`}
+        viewBox={`0 0 ${width} ${height}`}
         className="block w-full touch-pan-y"
-        style={{ height: HEIGHT }}
+        style={{ height }}
         onMouseMove={(event) => updateHover(event.clientX, event.currentTarget)}
         onMouseLeave={() => setHover(null)}
         onTouchStart={(event) => {
@@ -199,20 +206,20 @@ export function FlashbackChart({
         {/* Phần chưa chơi: tôi tối và đánh dấu "?" */}
         {current < totalSlots - 1 && (
           <>
-            <rect x={futureX} y={0} width={PAD_LEFT + plotWidth - futureX} height={HEIGHT - 16} fill={FUTURE_FILL} />
+            <rect x={futureX} y={0} width={PAD_LEFT + plotWidth - futureX} height={plotBottom} fill={FUTURE_FILL} />
             <text
               x={(futureX + PAD_LEFT + plotWidth) / 2}
-              y={pricePane.y + pricePane.h / 2}
+              y={pricePane.top + pricePane.height / 2}
               textAnchor="middle"
-              className="fill-muted-foreground text-[34px] font-extrabold"
+              className="fill-foreground text-[34px] font-extrabold opacity-20"
             >
               ?
             </text>
           </>
         )}
 
-        {/* Vạch "Bắt đầu" ngăn giữa lịch sử và phần chơi */}
-        <line x1={startX} x2={startX} y1={0} y2={HEIGHT - 16} stroke={GRID} strokeDasharray="4 4" />
+        {/* Vạch đứt ngăn giữa phần xem và phần chơi */}
+        <line x1={startX} x2={startX} y1={0} y2={plotBottom} stroke={GRID} strokeDasharray="4 4" />
 
         {/* Vạch dọc khi rê chuột hoặc chạm trên biểu đồ */}
         {hover !== null && hover <= current && (
@@ -221,14 +228,14 @@ export function FlashbackChart({
             x1={x(hover)}
             x2={x(hover)}
             y1={0}
-            y2={HEIGHT - 16}
+            y2={plotBottom}
             stroke={AXIS_TEXT}
             strokeDasharray="3 3"
             opacity={0.75}
           />
         )}
-        {panes.slice(1).map((pane) => (
-          <line key={pane.key} x1={PAD_LEFT} x2={width - PAD_RIGHT} y1={pane.y - GAP / 2} y2={pane.y - GAP / 2} stroke={GRID} />
+        {layout.panes.slice(1).map((pane) => (
+          <line key={pane.key} x1={PAD_LEFT} x2={width - PAD_RIGHT} y1={pane.legendTop - PANE_GAP / 2} y2={pane.legendTop - PANE_GAP / 2} stroke={GRID} />
         ))}
 
         {/* Lưới giá và nhãn ở trục phải */}
@@ -246,8 +253,8 @@ export function FlashbackChart({
         })}
 
         {/* Chỉ báo vẽ trên ô giá */}
-        {indicators
-          .filter((indicator) => indicator.plot.kind === "over" && !indicator.hidden)
+        {overlays
+          .filter((indicator) => !indicator.hidden)
           .map((indicator) => (
             <g key={indicator.key}>
               <IndicatorLines indicator={indicator} from={0} to={current} x={x} y={priceY} color={indicator.color} />
@@ -261,7 +268,7 @@ export function FlashbackChart({
           const top = priceY(Math.max(bar.open, bar.close))
           const bottom = priceY(Math.min(bar.open, bar.close))
           return (
-            <g key={bar.session} opacity={index < historySessions ? 0.75 : 1}>
+            <g key={bar.session} opacity={index < viewBars ? 0.75 : 1}>
               <line x1={x(index)} x2={x(index)} y1={priceY(bar.high)} y2={priceY(bar.low)} stroke={color} strokeWidth={1.2} />
               <rect x={x(index) - candleWidth / 2} y={top} width={candleWidth} height={Math.max(1.2, bottom - top)} fill={color} />
             </g>
@@ -281,12 +288,8 @@ export function FlashbackChart({
         })}
 
         {/* Giá đóng cửa hiện tại */}
-        {current >= 0 && (
-          <>
-            <line x1={PAD_LEFT} x2={PAD_LEFT + plotWidth} y1={priceY(bars[current].close)} y2={priceY(bars[current].close)} stroke="var(--chart-1)" strokeDasharray="2 3" />
-            <PriceTag x={width - PAD_RIGHT + 2} y={priceY(bars[current].close)} text={formatNumber(bars[current].close)} />
-          </>
-        )}
+        <line x1={PAD_LEFT} x2={PAD_LEFT + plotWidth} y1={priceY(bars[current].close)} y2={priceY(bars[current].close)} stroke="var(--chart-1)" strokeDasharray="2 3" />
+        <PriceTag x={width - PAD_RIGHT + 2} y={priceY(bars[current].close)} text={formatNumber(bars[current].close)} />
 
         {/* Ô khối lượng */}
         {bars.slice(0, current + 1).map((bar, index) => {
@@ -298,44 +301,42 @@ export function FlashbackChart({
               x={x(index) - candleWidth / 2}
               y={y}
               width={candleWidth}
-              height={volumePane.y + volumePane.h - y}
+              height={volumePane.top + volumePane.height - y}
               fill={color}
-              opacity={index < historySessions ? 0.45 : 0.7}
+              opacity={index < viewBars ? 0.45 : 0.7}
             />
           )
         })}
-        {indicators
-          .filter((indicator) => indicator.plot.kind === "vol" && !indicator.hidden)
+        {volumeIndicators
+          .filter((indicator) => !indicator.hidden)
           .map((indicator) => (
             <IndicatorLines key={indicator.key} indicator={indicator} from={0} to={current} x={x} y={volumeY} color={indicator.color} />
           ))}
 
         {/* Ô riêng của từng chỉ báo */}
-        {indicators
-          .filter((indicator) => indicator.plot.kind === "pane")
-          .map((indicator) => {
-            const pane = panes.find((candidate) => candidate.key === `i${indicator.key}`)
-            if (!pane) return null
-            return (
-              <IndicatorPane
-                key={indicator.key}
-                indicator={indicator}
-                pane={pane}
-                from={0}
-                to={current}
-                x={x}
-                right={width - PAD_RIGHT}
-                hidden={indicator.hidden}
-              />
-            )
-          })}
+        {ownPanes.map((indicator) => {
+          const pane = layout.panes.find((candidate) => candidate.key === `i${indicator.key}`)
+          if (!pane) return null
+          return (
+            <IndicatorPane
+              key={indicator.key}
+              indicator={indicator}
+              pane={pane}
+              from={0}
+              to={current}
+              x={x}
+              right={width - PAD_RIGHT}
+              hidden={indicator.hidden}
+            />
+          )
+        })}
 
         {/* Nhãn trục ngang: không có ngày thật */}
-        {axisTicks(historySessions, totalSlots, width < 600).map((tick) => (
+        {axisTicks(viewBars, playBars, narrow).map((tick) => (
           <text
             key={tick.index}
             x={x(tick.index)}
-            y={HEIGHT - 3}
+            y={height - 3}
             textAnchor={tick.anchor}
             className="fill-academy-label text-[10.5px]"
           >
@@ -344,74 +345,99 @@ export function FlashbackChart({
         ))}
       </svg>
 
-      {/* Chú giải kiểu TradingView */}
+      {/* Chú giải kiểu TradingView: mỗi khung một dải đầu riêng, nằm trên phần vẽ */}
       <div className="pointer-events-none absolute inset-0">
-        <div className="absolute left-2 right-16 flex flex-col items-start gap-0.5" style={{ top: pricePane.y }}>
-          <div className="pointer-events-auto flex flex-wrap items-center gap-x-2 rounded-sm px-1.5 py-0.5 text-[12.5px] tabular-nums hover:border hover:border-border">
-            <span className="font-bold text-foreground" data-testid="flashback-session">
-              {sessionLabel(shown, historySessions)}
-            </span>
-            <span className="text-academy-label">
-              O<b className={tone === TONE_UP ? "text-price-up" : "text-price-down"}>{formatNumber(last.open)}</b>{" "}
-              H<b className={tone === TONE_UP ? "text-price-up" : "text-price-down"}>{formatNumber(last.high)}</b>{" "}
-              L<b className={tone === TONE_UP ? "text-price-up" : "text-price-down"}>{formatNumber(last.low)}</b>{" "}
-              C<b className={tone === TONE_UP ? "text-price-up" : "text-price-down"}>{formatNumber(last.close)}</b>{" "}
-              <b className={changePct > 0 ? "text-price-up" : changePct < 0 ? "text-price-down" : "text-foreground"}>
-                {formatSignedPercent(changePct)}
-              </b>
-            </span>
-          </div>
-          {indicators
-            .filter((indicator) => indicator.plot.kind === "over")
-            .map((indicator) => (
-              <LegendRow
-                key={indicator.key}
-                indicator={indicator}
-                values={legendValues(indicator, shown)}
-                onToggle={onToggle}
-                onSettings={onSettings}
-                onRemove={onRemove}
-              />
-            ))}
-        </div>
+        <Legend pane={pricePane} name="price">
+          {narrow ? (
+            <>
+              <LegendLine>
+                <span className="font-bold text-foreground" data-testid="flashback-session">
+                  {sessionLabel(shown, viewBars)}
+                </span>
+                <b className={changeClass}>{formatSignedPercent(changePct)}</b>
+              </LegendLine>
+              <LegendLine>{ohlc}</LegendLine>
+            </>
+          ) : (
+            <LegendLine>
+              <span className="font-bold text-foreground" data-testid="flashback-session">
+                {sessionLabel(shown, viewBars)}
+              </span>
+              {ohlc}
+              <b className={changeClass}>{formatSignedPercent(changePct)}</b>
+            </LegendLine>
+          )}
+          {overlays.map((indicator) => (
+            <LegendRow
+              key={indicator.key}
+              indicator={indicator}
+              values={legendValues(indicator, shown)}
+              onToggle={onToggle}
+              onSettings={onSettings}
+              onRemove={onRemove}
+            />
+          ))}
+        </Legend>
 
-        <div className="absolute left-2 right-16 flex flex-col items-start gap-0.5" style={{ top: volumePane.y }}>
-          <div className="flex items-center gap-2 px-1.5 py-0.5 text-[12.5px] tabular-nums">
+        <Legend pane={volumePane} name="volume">
+          <LegendLine>
             <span className="font-bold text-foreground">Khối lượng</span>
-            <span className="font-semibold text-price-up">{formatNumber(last.volume)}</span>
-          </div>
-          {indicators
-            .filter((indicator) => indicator.plot.kind === "vol")
-            .map((indicator) => (
+            <span className={cn("font-semibold", toneClass)}>{formatNumber(last.volume)}</span>
+          </LegendLine>
+          {volumeIndicators.map((indicator) => (
+            <LegendRow
+              key={indicator.key}
+              indicator={indicator}
+              values={legendValues(indicator, shown)}
+              onToggle={onToggle}
+              onSettings={onSettings}
+              onRemove={onRemove}
+            />
+          ))}
+        </Legend>
+
+        {ownPanes.map((indicator) => {
+          const pane = layout.panes.find((candidate) => candidate.key === `i${indicator.key}`)
+          if (!pane) return null
+          return (
+            <Legend key={indicator.key} pane={pane} name="indicator">
               <LegendRow
-                key={indicator.key}
                 indicator={indicator}
                 values={legendValues(indicator, shown)}
                 onToggle={onToggle}
                 onSettings={onSettings}
                 onRemove={onRemove}
               />
-            ))}
-        </div>
-
-        {indicators
-          .filter((indicator) => indicator.plot.kind === "pane")
-          .map((indicator) => {
-            const pane = panes.find((candidate) => candidate.key === `i${indicator.key}`)
-            if (!pane) return null
-            return (
-              <div key={indicator.key} className="absolute left-2 right-16 flex flex-col items-start gap-0.5" style={{ top: pane.y }}>
-                <LegendRow
-                  indicator={indicator}
-                  values={legendValues(indicator, shown)}
-                  onToggle={onToggle}
-                  onSettings={onSettings}
-                  onRemove={onRemove}
-                />
-              </div>
-            )
-          })}
+            </Legend>
+          )
+        })}
       </div>
+    </div>
+  )
+})
+
+/** Dải đầu của một khung: đúng bằng chiều cao đã chừa trong bố cục. */
+function Legend({ pane, name, children }: { pane: PaneBox; name: string; children: React.ReactNode }) {
+  return (
+    <div
+      className="absolute right-16 left-2 flex flex-col items-start overflow-hidden"
+      style={{ top: pane.legendTop, height: pane.legendHeight }}
+      data-pane={name}
+      data-legend-height={pane.legendHeight}
+      data-plot-height={pane.height}
+    >
+      {children}
+    </div>
+  )
+}
+
+function LegendLine({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden rounded-sm px-1.5 text-[12.5px] leading-6 whitespace-nowrap tabular-nums"
+      style={{ height: LEGEND_ROW }}
+    >
+      {children}
     </div>
   )
 }
@@ -536,7 +562,7 @@ function IndicatorPane({
   hidden,
 }: {
   indicator: ChartIndicator
-  pane: Pane
+  pane: PaneBox
   from: number
   to: number
   x: (index: number) => number
@@ -568,7 +594,7 @@ function IndicatorPane({
     return { low: low - padding, high: high + padding }
   }, [indicator, from, to])
 
-  const y = (value: number) => pane.y + ((scale.high - value) / (scale.high - scale.low)) * pane.h
+  const y = (value: number) => pane.top + ((scale.high - value) / (scale.high - scale.low)) * pane.height
 
   const band = indicator.plot.levelBand
   const lowerValue = Array.isArray(band)
@@ -645,6 +671,9 @@ function indicatorValue(value: number | null): string {
   return Math.abs(value) >= 1000 ? formatNumber(value) : formatPercent(value)
 }
 
+const LEGEND_BUTTON =
+  "inline-flex size-6 shrink-0 items-center justify-center rounded-sm text-academy-label hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+
 function LegendRow({
   indicator,
   values,
@@ -661,31 +690,37 @@ function LegendRow({
   return (
     <div
       className={cn(
-        "pointer-events-auto flex max-w-full items-center gap-2 rounded-sm border border-transparent px-1.5 py-0.5 text-[12.5px] tabular-nums hover:border-border hover:bg-background/90",
+        "pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden rounded-sm px-1.5 text-[12.5px] whitespace-nowrap tabular-nums hover:bg-muted/60",
         indicator.hidden && "opacity-45",
       )}
+      style={{ height: LEGEND_ROW }}
+      data-legend-row={indicator.key}
     >
-      <span className="truncate font-bold text-foreground">{indicator.label}</span>
-      {values.map((value, idx) => {
-        const line = indicator.plot.series[idx]
-        const color = value.color ?? line?.color
-        return (
-          <span
-            key={value.key}
-            style={color ? { color } : undefined}
-            className={cn(
-              "font-semibold",
-              value.tone === "up" ? "text-price-up" : value.tone === "down" ? "text-price-down" : "text-academy-label",
-            )}
-          >
-            {indicatorValue(value.value)}
-          </span>
-        )
-      })}
-      <span className="flex items-center gap-0.5">
+      {/* Tên chỉ báo giữ nguyên chỗ để nhận ra được trên điện thoại; các giá trị co lại (có dấu ba chấm) trước, 3 nút luôn còn đủ. */}
+      <span className="max-w-[calc(100%-5.5rem)] min-w-0 shrink-0 truncate font-bold text-foreground">{indicator.label}</span>
+      <span className="min-w-0 truncate">
+        {values.map((value, idx) => {
+          const line = indicator.plot.series[idx]
+          const color = value.color ?? line?.color
+          return (
+            <span
+              key={value.key}
+              style={color ? { color } : undefined}
+              className={cn(
+                "font-semibold",
+                idx > 0 && "ml-2",
+                value.tone === "up" ? "text-price-up" : value.tone === "down" ? "text-price-down" : "text-academy-label",
+              )}
+            >
+              {indicatorValue(value.value)}
+            </span>
+          )
+        })}
+      </span>
+      <span className="flex shrink-0 items-center">
         <button
           type="button"
-          className="inline-flex size-6 items-center justify-center rounded-sm text-academy-label hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+          className={LEGEND_BUTTON}
           aria-label={indicator.hidden ? `Hiện ${indicator.label}` : `Ẩn ${indicator.label}`}
           title={indicator.hidden ? "Hiện" : "Ẩn"}
           onClick={() => onToggle(indicator.key)}
@@ -694,7 +729,7 @@ function LegendRow({
         </button>
         <button
           type="button"
-          className="inline-flex size-6 items-center justify-center rounded-sm text-academy-label hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+          className={LEGEND_BUTTON}
           aria-label={`Cài đặt ${indicator.label}`}
           title="Cài đặt"
           onClick={() => onSettings(indicator.key)}
@@ -703,7 +738,7 @@ function LegendRow({
         </button>
         <button
           type="button"
-          className="inline-flex size-6 items-center justify-center rounded-sm text-academy-label hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+          className={LEGEND_BUTTON}
           aria-label={`Xóa ${indicator.label}`}
           title="Xóa"
           onClick={() => onRemove(indicator.key)}
@@ -713,23 +748,4 @@ function LegendRow({
       </span>
     </div>
   )
-}
-
-/** Nhãn trục ngang: lịch sử, Phiên 1, Phiên 20, Phiên 40, Phiên 60. */
-function axisTicks(historySessions: number, totalSlots: number, narrow: boolean): { index: number; label: string; anchor: "start" | "middle" | "end" }[] {
-  const play = totalSlots - historySessions
-  const marks = narrow
-    ? [
-        { index: 0, label: "Lịch sử", anchor: "start" as const },
-        { index: historySessions, label: "Phiên 1", anchor: "middle" as const },
-        { index: totalSlots - 1, label: `Phiên ${play}`, anchor: "end" as const },
-      ]
-    : [
-        { index: 0, label: `Lịch sử ${historySessions} phiên`, anchor: "start" as const },
-        { index: historySessions, label: "Phiên 1", anchor: "middle" as const },
-        { index: historySessions + 19, label: "Phiên 20", anchor: "middle" as const },
-        { index: historySessions + 39, label: "Phiên 40", anchor: "middle" as const },
-        { index: totalSlots - 1, label: `Phiên ${play}`, anchor: "end" as const },
-      ]
-  return marks
 }

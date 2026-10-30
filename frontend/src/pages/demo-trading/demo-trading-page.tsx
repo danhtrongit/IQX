@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useLayoutEffect } from "react"
+import { lazy, Suspense, useCallback, useLayoutEffect, type ComponentProps } from "react"
 import { useLocation, useSearchParams } from "react-router"
 
 import { PanelState } from "@/components/layout/panel-state"
@@ -15,7 +15,7 @@ import { AcademyPanel } from "@/pages/academy/academy-panel"
 import { isMainTool, parseDemoContent, withDemoContent, type DemoContent, type DemoTab } from "./content-tabs-state"
 import { AnalysisDashboard } from "./analysis"
 import { BotMain, BotPanel } from "./bot"
-import { FlashbackMain, FlashbackPanel, FlashbackProvider } from "./flashback"
+import { FlashbackFrame, FlashbackMain, FlashbackPanel, FlashbackProvider } from "./flashback"
 import { HuntPanel } from "./insights/hunt-panel"
 import type { MascotId } from "./journey/types"
 import { NewsPanel } from "./market/news-panel"
@@ -88,7 +88,7 @@ function AcademySection({ toolId, label, practice, mascotId, onNavigate }: {
             ) : toolId === "shop" ? (
               <ShopMain onNavigate={onNavigate} />
             ) : toolId === "flashback" ? (
-              <FlashbackMain onNavigate={onNavigate} />
+              <FlashbackMain />
             ) : (
               <AcademyMain mascotId={mascotId} />
             )}
@@ -174,7 +174,7 @@ function DemoWorkspace() {
       case "patterns": return <PatternsPanel symbol={symbol} />
       case "bot": return <BotPanel />
       case "shop": return <ShopPanel onNavigate={navigatePanel} />
-      case "flashback": return <FlashbackPanel onNavigate={navigatePanel} />
+      case "flashback": return <FlashbackPanel />
       default: return <AcademyPanel />
     }
   }
@@ -190,31 +190,29 @@ function DemoWorkspace() {
       </ContentTabs>
     )
 
-  const frame = (
-    <WorkspaceFrame
-      // Switching sections starts each one afresh (on phones its panel layer starts closed).
-      key={section}
-      panelLabel={activeItem?.label ?? "Đặt lệnh"}
-      // A direct link to a tool opens its layer; a direct link to a lesson shows the lesson, and the
-      // header's section links keep the layer closed.
-      defaultPanelOpen={params.has("view") && navigationState?.workspaceSection !== true && !(activeId === "academy" && params.has("lesson"))}
-      revealKey={openRequested ? location.key : null}
-      collapsed={collapsed}
-      onCollapsedChange={onCollapsedChange}
-      rail={rail}
-      // HỌC VIỆN is long-form reading and Dashboard phân tích stacks vertically on phones (spec §2.2):
-      // on phones their tools sit in a horizontal bar at the top.
-      phoneRail={section === "academy" || content === "dashboard" ? "bar" : "column"}
-      main={main}
-      panel={panel()}
-    />
-  )
+  const frameProps: ComponentProps<typeof WorkspaceFrame> = {
+    panelLabel: activeItem?.label ?? "Đặt lệnh",
+    // A direct link to a tool opens its layer; a direct link to a lesson shows the lesson, and the
+    // header's section links keep the layer closed.
+    defaultPanelOpen: params.has("view") && navigationState?.workspaceSection !== true && !(activeId === "academy" && params.has("lesson")),
+    revealKey: openRequested ? location.key : null,
+    collapsed,
+    onCollapsedChange,
+    rail,
+    // HỌC VIỆN is long-form reading and Dashboard phân tích stacks vertically on phones (spec §2.2):
+    // on phones their tools sit in a horizontal bar at the top.
+    phoneRail: section === "academy" || content === "dashboard" ? "bar" : "column",
+    main,
+    panel: panel(),
+  }
+  // Switching sections starts each frame afresh (on phones its panel layer starts closed).
+  // Flashback: the main area and the panel share one match, and the lobby and waiting room have no panel.
+  const frame = activeId === "flashback"
+    ? <FlashbackProvider><FlashbackFrame key={section} {...frameProps} /></FlashbackProvider>
+    : <WorkspaceFrame key={section} {...frameProps} />
 
   return <>
-    <PracticeProvider indicatorId={practiceId}>
-      {/* Flashback: vùng chính và panel dùng chung một lượt chơi. */}
-      {activeId === "flashback" ? <FlashbackProvider>{frame}</FlashbackProvider> : frame}
-    </PracticeProvider>
+    <PracticeProvider indicatorId={practiceId}>{frame}</PracticeProvider>
     <TradingRuntime />
   </>
 }

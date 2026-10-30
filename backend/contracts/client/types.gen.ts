@@ -41271,6 +41271,1230 @@ export type FlashbackIndicatorsResponses = {
 export type FlashbackIndicatorsResponse =
   FlashbackIndicatorsResponses[keyof FlashbackIndicatorsResponses];
 
+export type FlashbackMatchGetData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/matches/{id}";
+};
+
+export type FlashbackMatchGetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMatchGetError =
+  FlashbackMatchGetErrors[keyof FlashbackMatchGetErrors];
+
+export type FlashbackMatchGetResponses = {
+  200: {
+    ends_at: string;
+    history_bars: Array<{
+      close: number;
+      high: number;
+      low: number;
+      open: number;
+      session: number;
+      volume: number;
+    }>;
+    initial_cash: string;
+    match_id: string;
+    me: {
+      auto_finished: boolean;
+      cash: string;
+      finished: boolean;
+      holdings: number;
+      max_buy_qty: number;
+      orders: Array<{
+        amount: string;
+        created_at: string;
+        fee: string;
+        id: string;
+        price: string;
+        qty: number;
+        side: "buy" | "sell";
+        step: number;
+        tax: string;
+      }>;
+      play_bars: number;
+      pnl_pct: number;
+      pnl_percent: number;
+      positions: Array<{
+        pnl_pct: number;
+        price: string;
+        qty: number;
+        sellable_step: number;
+        sessions_left: number;
+        status: "settled" | "pending";
+        step: number;
+        value: string;
+      }>;
+      price: string;
+      sellable: number;
+      step: number;
+      total_assets: string;
+    };
+    minutes: number;
+    my_finished: boolean;
+    my_step: number;
+    play_bars: number;
+    played_bars: Array<{
+      close: number;
+      high: number;
+      low: number;
+      open: number;
+      session: number;
+      volume: number;
+    }>;
+    players: Array<{
+      avatar_url: string | null;
+      finished: boolean;
+      is_me: boolean;
+      name: string;
+      pnl_pct: number;
+      pnl_percent: number;
+      user_id: string;
+    }>;
+    playing_count: number;
+    pot_xu: number;
+    remaining_ms: number;
+    room_id: string;
+    server_now: string;
+    stake_xu: number;
+    started_at: string;
+    status: "playing" | "ended";
+    view_bars: number;
+    warmup_bars: Array<{
+      close: number;
+      high: number;
+      low: number;
+      open: number;
+      session: number;
+      volume: number;
+    }>;
+  };
+};
+
+export type FlashbackMatchGetResponse =
+  FlashbackMatchGetResponses[keyof FlashbackMatchGetResponses];
+
+export type FlashbackMatchFinishData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/matches/{id}/finish";
+};
+
+export type FlashbackMatchFinishErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMatchFinishError =
+  FlashbackMatchFinishErrors[keyof FlashbackMatchFinishErrors];
+
+export type FlashbackMatchFinishResponses = {
+  200: {
+    ended: boolean;
+    me: {
+      auto_finished: boolean;
+      cash: string;
+      finished: boolean;
+      holdings: number;
+      max_buy_qty: number;
+      orders: Array<{
+        amount: string;
+        created_at: string;
+        fee: string;
+        id: string;
+        price: string;
+        qty: number;
+        side: "buy" | "sell";
+        step: number;
+        tax: string;
+      }>;
+      play_bars: number;
+      pnl_pct: number;
+      pnl_percent: number;
+      positions: Array<{
+        pnl_pct: number;
+        price: string;
+        qty: number;
+        sellable_step: number;
+        sessions_left: number;
+        status: "settled" | "pending";
+        step: number;
+        value: string;
+      }>;
+      price: string;
+      sellable: number;
+      step: number;
+      total_assets: string;
+    };
+    playing_count: number;
+  };
+};
+
+export type FlashbackMatchFinishResponse =
+  FlashbackMatchFinishResponses[keyof FlashbackMatchFinishResponses];
+
+export type FlashbackMatchNextData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/matches/{id}/next";
+};
+
+export type FlashbackMatchNextErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMatchNextError =
+  FlashbackMatchNextErrors[keyof FlashbackMatchNextErrors];
+
+export type FlashbackMatchNextResponses = {
+  200: {
+    bar: {
+      close: number;
+      high: number;
+      low: number;
+      open: number;
+      session: number;
+      volume: number;
+    };
+    me: {
+      auto_finished: boolean;
+      cash: string;
+      finished: boolean;
+      holdings: number;
+      max_buy_qty: number;
+      orders: Array<{
+        amount: string;
+        created_at: string;
+        fee: string;
+        id: string;
+        price: string;
+        qty: number;
+        side: "buy" | "sell";
+        step: number;
+        tax: string;
+      }>;
+      play_bars: number;
+      pnl_pct: number;
+      pnl_percent: number;
+      positions: Array<{
+        pnl_pct: number;
+        price: string;
+        qty: number;
+        sellable_step: number;
+        sessions_left: number;
+        status: "settled" | "pending";
+        step: number;
+        value: string;
+      }>;
+      price: string;
+      sellable: number;
+      step: number;
+      total_assets: string;
+    };
+  };
+};
+
+export type FlashbackMatchNextResponse =
+  FlashbackMatchNextResponses[keyof FlashbackMatchNextResponses];
+
+export type FlashbackMatchOrderData = {
+  body: {
+    idempotency_key?: string;
+    qty: number;
+    side: "buy" | "sell";
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/matches/{id}/orders";
+};
+
+export type FlashbackMatchOrderErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMatchOrderError =
+  FlashbackMatchOrderErrors[keyof FlashbackMatchOrderErrors];
+
+export type FlashbackMatchOrderResponses = {
+  200: {
+    me: {
+      auto_finished: boolean;
+      cash: string;
+      finished: boolean;
+      holdings: number;
+      max_buy_qty: number;
+      orders: Array<{
+        amount: string;
+        created_at: string;
+        fee: string;
+        id: string;
+        price: string;
+        qty: number;
+        side: "buy" | "sell";
+        step: number;
+        tax: string;
+      }>;
+      play_bars: number;
+      pnl_pct: number;
+      pnl_percent: number;
+      positions: Array<{
+        pnl_pct: number;
+        price: string;
+        qty: number;
+        sellable_step: number;
+        sessions_left: number;
+        status: "settled" | "pending";
+        step: number;
+        value: string;
+      }>;
+      price: string;
+      sellable: number;
+      step: number;
+      total_assets: string;
+    };
+    order: {
+      amount: string;
+      created_at: string;
+      fee: string;
+      id: string;
+      price: string;
+      qty: number;
+      side: "buy" | "sell";
+      step: number;
+      tax: string;
+    };
+  };
+};
+
+export type FlashbackMatchOrderResponse =
+  FlashbackMatchOrderResponses[keyof FlashbackMatchOrderResponses];
+
+export type FlashbackMatchResultData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/matches/{id}/result";
+};
+
+export type FlashbackMatchResultErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMatchResultError =
+  FlashbackMatchResultErrors[keyof FlashbackMatchResultErrors];
+
+export type FlashbackMatchResultResponses = {
+  200: {
+    end_date: string;
+    end_reason: "all_finished" | "timeout";
+    match_id: string;
+    played_bars: Array<{
+      close: number;
+      high: number;
+      low: number;
+      open: number;
+      session: number;
+      volume: number;
+    }>;
+    pot_xu: number;
+    refund: boolean;
+    room_id: string;
+    rows: Array<{
+      avatar_url: string | null;
+      final_nav: string;
+      is_me: boolean;
+      is_winner: boolean;
+      name: string;
+      pnl_pct: number;
+      pnl_percent: number;
+      rank: number;
+      refund_xu: number;
+      user_id: string;
+      win_xu: number;
+      xu_label: string | null;
+    }>;
+    solo: boolean;
+    stake_xu: number;
+    start_date: string;
+    symbol: string;
+    title: string;
+  };
+};
+
+export type FlashbackMatchResultResponse =
+  FlashbackMatchResultResponses[keyof FlashbackMatchResultResponses];
+
+export type FlashbackMatchStateData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/matches/{id}/state";
+};
+
+export type FlashbackMatchStateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMatchStateError =
+  FlashbackMatchStateErrors[keyof FlashbackMatchStateErrors];
+
+export type FlashbackMatchStateResponses = {
+  200: {
+    ends_at: string;
+    match_id: string;
+    my_finished: boolean;
+    my_step: number;
+    players: Array<{
+      avatar_url: string | null;
+      finished: boolean;
+      is_me: boolean;
+      name: string;
+      pnl_pct: number;
+      pnl_percent: number;
+      user_id: string;
+    }>;
+    playing_count: number;
+    remaining_ms: number;
+    room_id: string;
+    server_now: string;
+    started_at: string;
+    status: "playing" | "ended";
+  };
+};
+
+export type FlashbackMatchStateResponse =
+  FlashbackMatchStateResponses[keyof FlashbackMatchStateResponses];
+
+export type FlashbackRoomsListData = {
+  body?: never;
+  path?: never;
+  query?: {
+    status?: "all" | "waiting" | "playing";
+  };
+  url: "/api/v2/flashback/rooms";
+};
+
+export type FlashbackRoomsListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsListError =
+  FlashbackRoomsListErrors[keyof FlashbackRoomsListErrors];
+
+export type FlashbackRoomsListResponses = {
+  200: {
+    rooms: Array<{
+      created_at: string;
+      full: boolean;
+      id: string;
+      locked: boolean;
+      max_players: number;
+      member_count: number;
+      minutes: number;
+      owner: {
+        avatar_url: string | null;
+        name: string;
+      };
+      play_bars: number;
+      stake_xu: number;
+      status: "waiting" | "playing";
+      view_bars: number;
+    }>;
+  };
+};
+
+export type FlashbackRoomsListResponse =
+  FlashbackRoomsListResponses[keyof FlashbackRoomsListResponses];
+
+export type FlashbackRoomsCreateData = {
+  body: {
+    max_players?: number;
+    minutes?: number;
+    password?: string | null;
+    play_bars?: number;
+    stake_xu?: number | null;
+    view_bars?: number;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/rooms";
+};
+
+export type FlashbackRoomsCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsCreateError =
+  FlashbackRoomsCreateErrors[keyof FlashbackRoomsCreateErrors];
+
+export type FlashbackRoomsCreateResponses = {
+  200: {
+    auto_close_at: string | null;
+    created_at: string;
+    id: string;
+    is_owner: boolean;
+    locked: boolean;
+    match: {
+      ends_at: string;
+      id: string;
+      joined: boolean;
+      started_at: string;
+      status: "playing" | "ended";
+    } | null;
+    max_players: number;
+    members: Array<{
+      avatar_url: string | null;
+      is_me: boolean;
+      is_owner: boolean;
+      joined_at: string;
+      name: string;
+      user_id: string;
+    }>;
+    minutes: number;
+    owner_id: string;
+    play_bars: number;
+    server_now: string;
+    stake_xu: number;
+    status: "waiting" | "playing";
+    view_bars: number;
+  };
+};
+
+export type FlashbackRoomsCreateResponse =
+  FlashbackRoomsCreateResponses[keyof FlashbackRoomsCreateResponses];
+
+export type FlashbackRoomsMineData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/rooms/me";
+};
+
+export type FlashbackRoomsMineErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsMineError =
+  FlashbackRoomsMineErrors[keyof FlashbackRoomsMineErrors];
+
+export type FlashbackRoomsMineResponses = {
+  200: {
+    notice: string | null;
+    room: {
+      auto_close_at: string | null;
+      created_at: string;
+      id: string;
+      is_owner: boolean;
+      locked: boolean;
+      match: {
+        ends_at: string;
+        id: string;
+        joined: boolean;
+        started_at: string;
+        status: "playing" | "ended";
+      } | null;
+      max_players: number;
+      members: Array<{
+        avatar_url: string | null;
+        is_me: boolean;
+        is_owner: boolean;
+        joined_at: string;
+        name: string;
+        user_id: string;
+      }>;
+      minutes: number;
+      owner_id: string;
+      play_bars: number;
+      server_now: string;
+      stake_xu: number;
+      status: "waiting" | "playing";
+      view_bars: number;
+    } | null;
+  };
+};
+
+export type FlashbackRoomsMineResponse =
+  FlashbackRoomsMineResponses[keyof FlashbackRoomsMineResponses];
+
+export type FlashbackRoomsRandomJoinData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/rooms/random-join";
+};
+
+export type FlashbackRoomsRandomJoinErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsRandomJoinError =
+  FlashbackRoomsRandomJoinErrors[keyof FlashbackRoomsRandomJoinErrors];
+
+export type FlashbackRoomsRandomJoinResponses = {
+  200: {
+    auto_close_at: string | null;
+    created_at: string;
+    id: string;
+    is_owner: boolean;
+    locked: boolean;
+    match: {
+      ends_at: string;
+      id: string;
+      joined: boolean;
+      started_at: string;
+      status: "playing" | "ended";
+    } | null;
+    max_players: number;
+    members: Array<{
+      avatar_url: string | null;
+      is_me: boolean;
+      is_owner: boolean;
+      joined_at: string;
+      name: string;
+      user_id: string;
+    }>;
+    minutes: number;
+    owner_id: string;
+    play_bars: number;
+    server_now: string;
+    stake_xu: number;
+    status: "waiting" | "playing";
+    view_bars: number;
+  };
+};
+
+export type FlashbackRoomsRandomJoinResponse =
+  FlashbackRoomsRandomJoinResponses[keyof FlashbackRoomsRandomJoinResponses];
+
+export type FlashbackRoomsGetData = {
+  body?: never;
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}";
+};
+
+export type FlashbackRoomsGetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsGetError =
+  FlashbackRoomsGetErrors[keyof FlashbackRoomsGetErrors];
+
+export type FlashbackRoomsGetResponses = {
+  200: {
+    auto_close_at: string | null;
+    created_at: string;
+    id: string;
+    is_owner: boolean;
+    locked: boolean;
+    match: {
+      ends_at: string;
+      id: string;
+      joined: boolean;
+      started_at: string;
+      status: "playing" | "ended";
+    } | null;
+    max_players: number;
+    members: Array<{
+      avatar_url: string | null;
+      is_me: boolean;
+      is_owner: boolean;
+      joined_at: string;
+      name: string;
+      user_id: string;
+    }>;
+    minutes: number;
+    owner_id: string;
+    play_bars: number;
+    server_now: string;
+    stake_xu: number;
+    status: "waiting" | "playing";
+    view_bars: number;
+  };
+};
+
+export type FlashbackRoomsGetResponse =
+  FlashbackRoomsGetResponses[keyof FlashbackRoomsGetResponses];
+
+export type FlashbackRoomsJoinData = {
+  body: {
+    password?: string | null;
+  };
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/join";
+};
+
+export type FlashbackRoomsJoinErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsJoinError =
+  FlashbackRoomsJoinErrors[keyof FlashbackRoomsJoinErrors];
+
+export type FlashbackRoomsJoinResponses = {
+  200: {
+    auto_close_at: string | null;
+    created_at: string;
+    id: string;
+    is_owner: boolean;
+    locked: boolean;
+    match: {
+      ends_at: string;
+      id: string;
+      joined: boolean;
+      started_at: string;
+      status: "playing" | "ended";
+    } | null;
+    max_players: number;
+    members: Array<{
+      avatar_url: string | null;
+      is_me: boolean;
+      is_owner: boolean;
+      joined_at: string;
+      name: string;
+      user_id: string;
+    }>;
+    minutes: number;
+    owner_id: string;
+    play_bars: number;
+    server_now: string;
+    stake_xu: number;
+    status: "waiting" | "playing";
+    view_bars: number;
+  };
+};
+
+export type FlashbackRoomsJoinResponse =
+  FlashbackRoomsJoinResponses[keyof FlashbackRoomsJoinResponses];
+
+export type FlashbackRoomsLeaveData = {
+  body?: never;
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/leave";
+};
+
+export type FlashbackRoomsLeaveErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsLeaveError =
+  FlashbackRoomsLeaveErrors[keyof FlashbackRoomsLeaveErrors];
+
+export type FlashbackRoomsLeaveResponses = {
+  200: {
+    left: true;
+  };
+};
+
+export type FlashbackRoomsLeaveResponse =
+  FlashbackRoomsLeaveResponses[keyof FlashbackRoomsLeaveResponses];
+
+export type FlashbackRoomsReplayData = {
+  body?: never;
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/replay";
+};
+
+export type FlashbackRoomsReplayErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsReplayError =
+  FlashbackRoomsReplayErrors[keyof FlashbackRoomsReplayErrors];
+
+export type FlashbackRoomsReplayResponses = {
+  200: {
+    auto_close_at: string | null;
+    created_at: string;
+    id: string;
+    is_owner: boolean;
+    locked: boolean;
+    match: {
+      ends_at: string;
+      id: string;
+      joined: boolean;
+      started_at: string;
+      status: "playing" | "ended";
+    } | null;
+    max_players: number;
+    members: Array<{
+      avatar_url: string | null;
+      is_me: boolean;
+      is_owner: boolean;
+      joined_at: string;
+      name: string;
+      user_id: string;
+    }>;
+    minutes: number;
+    owner_id: string;
+    play_bars: number;
+    server_now: string;
+    stake_xu: number;
+    status: "waiting" | "playing";
+    view_bars: number;
+  };
+};
+
+export type FlashbackRoomsReplayResponse =
+  FlashbackRoomsReplayResponses[keyof FlashbackRoomsReplayResponses];
+
+export type FlashbackRoomsStartData = {
+  body?: never;
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/start";
+};
+
+export type FlashbackRoomsStartErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsStartError =
+  FlashbackRoomsStartErrors[keyof FlashbackRoomsStartErrors];
+
+export type FlashbackRoomsStartResponses = {
+  200: {
+    match: {
+      ends_at: string;
+      history_bars: Array<{
+        close: number;
+        high: number;
+        low: number;
+        open: number;
+        session: number;
+        volume: number;
+      }>;
+      initial_cash: string;
+      match_id: string;
+      me: {
+        auto_finished: boolean;
+        cash: string;
+        finished: boolean;
+        holdings: number;
+        max_buy_qty: number;
+        orders: Array<{
+          amount: string;
+          created_at: string;
+          fee: string;
+          id: string;
+          price: string;
+          qty: number;
+          side: "buy" | "sell";
+          step: number;
+          tax: string;
+        }>;
+        play_bars: number;
+        pnl_pct: number;
+        pnl_percent: number;
+        positions: Array<{
+          pnl_pct: number;
+          price: string;
+          qty: number;
+          sellable_step: number;
+          sessions_left: number;
+          status: "settled" | "pending";
+          step: number;
+          value: string;
+        }>;
+        price: string;
+        sellable: number;
+        step: number;
+        total_assets: string;
+      };
+      minutes: number;
+      my_finished: boolean;
+      my_step: number;
+      play_bars: number;
+      played_bars: Array<{
+        close: number;
+        high: number;
+        low: number;
+        open: number;
+        session: number;
+        volume: number;
+      }>;
+      players: Array<{
+        avatar_url: string | null;
+        finished: boolean;
+        is_me: boolean;
+        name: string;
+        pnl_pct: number;
+        pnl_percent: number;
+        user_id: string;
+      }>;
+      playing_count: number;
+      pot_xu: number;
+      remaining_ms: number;
+      room_id: string;
+      server_now: string;
+      stake_xu: number;
+      started_at: string;
+      status: "playing" | "ended";
+      view_bars: number;
+      warmup_bars: Array<{
+        close: number;
+        high: number;
+        low: number;
+        open: number;
+        session: number;
+        volume: number;
+      }>;
+    };
+    removed: Array<{
+      message: string;
+      name: string;
+      user_id: string;
+    }>;
+    room: {
+      auto_close_at: string | null;
+      created_at: string;
+      id: string;
+      is_owner: boolean;
+      locked: boolean;
+      match: {
+        ends_at: string;
+        id: string;
+        joined: boolean;
+        started_at: string;
+        status: "playing" | "ended";
+      } | null;
+      max_players: number;
+      members: Array<{
+        avatar_url: string | null;
+        is_me: boolean;
+        is_owner: boolean;
+        joined_at: string;
+        name: string;
+        user_id: string;
+      }>;
+      minutes: number;
+      owner_id: string;
+      play_bars: number;
+      server_now: string;
+      stake_xu: number;
+      status: "waiting" | "playing";
+      view_bars: number;
+    };
+  };
+};
+
+export type FlashbackRoomsStartResponse =
+  FlashbackRoomsStartResponses[keyof FlashbackRoomsStartResponses];
+
 export type DashboardFundamentalData = {
   body?: never;
   path: {
@@ -48420,7 +49644,10 @@ export type ListShopCoinLedgerResponses = {
         | "demo_withdraw"
         | "adjustment"
         | "flashback_fee"
-        | "flashback_reward";
+        | "flashback_reward"
+        | "flashback_stake"
+        | "flashback_win"
+        | "flashback_refund";
       label: {
         lesson_id: string | null;
         lesson_key: string | null;

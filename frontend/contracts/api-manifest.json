@@ -672,6 +672,36 @@
       "requestType": "FlashbackIndicatorsData",
       "responseType": "FlashbackIndicatorsResponses"
     },
+    "GET /api/v2/flashback/matches/{id}": {
+      "operationId": "flashbackMatchGet",
+      "requestType": "FlashbackMatchGetData",
+      "responseType": "FlashbackMatchGetResponses"
+    },
+    "GET /api/v2/flashback/matches/{id}/result": {
+      "operationId": "flashbackMatchResult",
+      "requestType": "FlashbackMatchResultData",
+      "responseType": "FlashbackMatchResultResponses"
+    },
+    "GET /api/v2/flashback/matches/{id}/state": {
+      "operationId": "flashbackMatchState",
+      "requestType": "FlashbackMatchStateData",
+      "responseType": "FlashbackMatchStateResponses"
+    },
+    "GET /api/v2/flashback/rooms": {
+      "operationId": "flashbackRoomsList",
+      "requestType": "FlashbackRoomsListData",
+      "responseType": "FlashbackRoomsListResponses"
+    },
+    "GET /api/v2/flashback/rooms/{code}": {
+      "operationId": "flashbackRoomsGet",
+      "requestType": "FlashbackRoomsGetData",
+      "responseType": "FlashbackRoomsGetResponses"
+    },
+    "GET /api/v2/flashback/rooms/me": {
+      "operationId": "flashbackRoomsMine",
+      "requestType": "FlashbackRoomsMineData",
+      "responseType": "FlashbackRoomsMineResponses"
+    },
     "GET /api/v2/fundamental/{symbol}": {
       "operationId": "dashboardFundamental",
       "requestType": "DashboardFundamentalData",
@@ -1941,6 +1971,51 @@
       "operationId": "flashbackPlaceOrder",
       "requestType": "FlashbackPlaceOrderData",
       "responseType": "FlashbackPlaceOrderResponses"
+    },
+    "POST /api/v2/flashback/matches/{id}/finish": {
+      "operationId": "flashbackMatchFinish",
+      "requestType": "FlashbackMatchFinishData",
+      "responseType": "FlashbackMatchFinishResponses"
+    },
+    "POST /api/v2/flashback/matches/{id}/next": {
+      "operationId": "flashbackMatchNext",
+      "requestType": "FlashbackMatchNextData",
+      "responseType": "FlashbackMatchNextResponses"
+    },
+    "POST /api/v2/flashback/matches/{id}/orders": {
+      "operationId": "flashbackMatchOrder",
+      "requestType": "FlashbackMatchOrderData",
+      "responseType": "FlashbackMatchOrderResponses"
+    },
+    "POST /api/v2/flashback/rooms": {
+      "operationId": "flashbackRoomsCreate",
+      "requestType": "FlashbackRoomsCreateData",
+      "responseType": "FlashbackRoomsCreateResponses"
+    },
+    "POST /api/v2/flashback/rooms/{code}/join": {
+      "operationId": "flashbackRoomsJoin",
+      "requestType": "FlashbackRoomsJoinData",
+      "responseType": "FlashbackRoomsJoinResponses"
+    },
+    "POST /api/v2/flashback/rooms/{code}/leave": {
+      "operationId": "flashbackRoomsLeave",
+      "requestType": "FlashbackRoomsLeaveData",
+      "responseType": "FlashbackRoomsLeaveResponses"
+    },
+    "POST /api/v2/flashback/rooms/{code}/replay": {
+      "operationId": "flashbackRoomsReplay",
+      "requestType": "FlashbackRoomsReplayData",
+      "responseType": "FlashbackRoomsReplayResponses"
+    },
+    "POST /api/v2/flashback/rooms/{code}/start": {
+      "operationId": "flashbackRoomsStart",
+      "requestType": "FlashbackRoomsStartData",
+      "responseType": "FlashbackRoomsStartResponses"
+    },
+    "POST /api/v2/flashback/rooms/random-join": {
+      "operationId": "flashbackRoomsRandomJoin",
+      "requestType": "FlashbackRoomsRandomJoinData",
+      "responseType": "FlashbackRoomsRandomJoinResponses"
     },
     "POST /api/v2/journey/assessments": {
       "operationId": "JourneyIdentityController_submit[1]",

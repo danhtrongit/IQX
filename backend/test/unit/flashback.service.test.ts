@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { DatabaseService, type SqlClient } from '../../src/platform/database/database.service.js';
-import type { AcademyGrantsPort } from '../../src/modules/academy/academy.ports.js';
 import type { AuthenticatedUser } from '../../src/modules/auth/auth.types.js';
 import {
   FLASHBACK_INITIAL_CASH_VND,
-  FLASHBACK_JOIN_FEE_XU,
 } from '../../src/modules/flashback/flashback.constants.js';
 import { FlashbackAdminService } from '../../src/modules/flashback/flashback-admin.service.js';
 import { FlashbackAdminController } from '../../src/modules/flashback/flashback.controller.js';
@@ -465,13 +463,10 @@ function createFake(state: Partial<FakeState> = {}) {
       operation({ query: async () => [] } as unknown as SqlClient),
   } as unknown as DatabaseService;
 
-  const grants = {
-    grantedCapabilities: async () => new Set<string>(['indicator:rsi', 'indicator:macd']),
-  } as unknown as AcademyGrantsPort;
 
   const clock: FlashbackClock = { now: () => NOW };
 
-  const service = new FlashbackService(database, repository, grants, clock);
+  const service = new FlashbackService(database, repository, clock);
   const admin = new FlashbackAdminService(database, repository, [SUPER_ADMIN]);
   const adminController = new FlashbackAdminController(admin);
   return { service, admin, adminController, data, repository, database };
@@ -487,25 +482,15 @@ describe('FlashbackService', () => {
     expect(data.ledger).toHaveLength(0);
   });
 
-  it('trừ 100 xu ở lần tham gia thứ hai', async () => {
-    const { service, data } = createFake();
-    data.entries.push(buildEntry({ id: 'entry-0', roundId: 'round-0' }));
-    const result = await service.join(USER);
-    expect(result.first_join).toBe(false);
-    expect(result.fee_xu).toBe(FLASHBACK_JOIN_FEE_XU);
-    expect(data.ledger).toHaveLength(1);
-    expect(data.ledger[0]?.kind).toBe('flashback_fee');
-    expect(data.ledger[0]?.delta).toBe(-FLASHBACK_JOIN_FEE_XU);
-    expect(data.wallet.balance).toBe(1_000 - FLASHBACK_JOIN_FEE_XU);
-  });
-
-  it('từ chối tham gia khi không đủ xu', async () => {
+  it('spec v2: không thu phí tham gia ở lần thứ hai và không cần xu', async () => {
     const { service, data } = createFake();
     data.entries.push(buildEntry({ id: 'entry-0', roundId: 'round-0' }));
     data.wallet.balance = 10;
-    await expect(service.join(USER)).rejects.toMatchObject({
-      response: { code: 'XU_INSUFFICIENT' },
-    });
+    const result = await service.join(USER);
+    expect(result.first_join).toBe(false);
+    expect(result.fee_xu).toBe(0);
+    expect(data.ledger).toHaveLength(0);
+    expect(data.wallet.balance).toBe(10);
   });
 
   it('từ chối tham gia lại cùng một đề', async () => {
@@ -636,18 +621,20 @@ describe('FlashbackService', () => {
     expect(board.me).toBeNull();
   });
 
-  it('chỉ trả các chỉ báo người dùng đã mở', async () => {
+  it('spec v2 §6.4: mở đủ 16 chỉ báo cho mọi người, không cần học', async () => {
     const { service } = createFake();
     const result = await service.listIndicators(USER);
-    expect(result.map((item) => item.id)).toEqual(['rsi', 'macd']);
+    expect(result).toHaveLength(16);
+    expect(result.map((item) => item.id)).toEqual(FLASHBACK_INDICATORS.map((item) => item.id));
   });
 
-  it('từ chối lưu chỉ báo chưa mở', async () => {
+  it('lưu được chỉ báo chưa học (không còn khoá theo Học viện)', async () => {
     const { service, data } = createFake();
     data.entries.push(buildEntry());
-    await expect(
-      service.saveIndicatorParams(USER, 'entry-1', [{ id: 'ma', params: { period: 20 } }]),
-    ).rejects.toMatchObject({ response: { code: 'FLASHBACK_INDICATOR_LOCKED' } });
+    const saved = await service.saveIndicatorParams(USER, 'entry-1', [
+      { id: 'ma', params: { period: 20 } },
+    ]);
+    expect(saved.indicators).toEqual([{ id: 'ma', params: { period: 20 } }]);
   });
 
   it('kiểm tra chéo tham số MACD (fast < slow)', async () => {

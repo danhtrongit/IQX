@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
+import { useState } from "react"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -44,6 +45,31 @@ function renderFrame(initialPanelOpen = false, url = "/demo-trading", phoneRail?
       },
     ],
     { initialEntries: [url] },
+  )
+  render(<RouterProvider router={router} />)
+  return { router, user: userEvent.setup() }
+}
+
+/** A frame whose panel can be left out and brought back from the main area. */
+function HiddenHarness({ initiallyHidden, defaultPanelOpen }: { initiallyHidden: boolean; defaultPanelOpen: boolean }) {
+  const [hidden, setHidden] = useState(initiallyHidden)
+  return (
+    <RailProvider>
+      <WorkspaceFrame
+        panelLabel="Bảng công cụ"
+        defaultPanelOpen={defaultPanelOpen}
+        panelHidden={hidden}
+        main={<div><button type="button" onClick={() => setHidden((value) => !value)}>Đổi panel</button><p>Nội dung chính</p></div>}
+        panel={<Panel />}
+      />
+    </RailProvider>
+  )
+}
+
+function renderHidden(initiallyHidden = true, defaultPanelOpen = false) {
+  const router = createMemoryRouter(
+    [{ path: "/demo-trading", handle: { chrome: demoChrome }, element: <HiddenHarness initiallyHidden={initiallyHidden} defaultPanelOpen={defaultPanelOpen} /> }],
+    { initialEntries: ["/demo-trading"] },
   )
   render(<RouterProvider router={router} />)
   return { router, user: userEvent.setup() }
@@ -367,5 +393,75 @@ describe("WorkspaceFrame with the phone tool bar", () => {
     setOverlay(false)
     await waitFor(() => expect(frame().getAttribute("data-rail")).toBe("column"))
     expect(rail().classList.contains("workspace-rail")).toBe(true)
+  })
+})
+
+describe("WorkspaceFrame without a panel (panelHidden)", () => {
+  it("leaves the panel out but keeps the rail with the active tool marked and controlling nothing", async () => {
+    renderHidden()
+    await screen.findByText("Nội dung chính")
+    expect(frame().getAttribute("data-panel-hidden")).toBe("true")
+    expect(panel().hasAttribute("inert")).toBe(true)
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("true")
+    expect(tool("Đặt lệnh").hasAttribute("aria-expanded")).toBe(false)
+    expect(tool("Đặt lệnh").hasAttribute("aria-controls")).toBe(false)
+    expect(tool("Danh mục").getAttribute("aria-pressed")).toBe("false")
+    // No tool controls a panel that is not there.
+    expect(tool("Danh mục").hasAttribute("aria-expanded")).toBe(false)
+    expect(tool("Danh mục").hasAttribute("aria-controls")).toBe(false)
+  })
+
+  it("a click on the active tool changes nothing; another tool is selected as usual", async () => {
+    const { user, router } = renderHidden()
+    await screen.findByText("Nội dung chính")
+    await user.click(tool("Đặt lệnh"))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("false")
+    expect(router.state.location.search).toBe("")
+    expect(tool("Đặt lệnh").getAttribute("aria-pressed")).toBe("true")
+
+    await user.click(tool("Danh mục"))
+    expect(router.state.location.search).toBe("?view=portfolio")
+  })
+
+  it("brings the panel back when it is no longer hidden, and a second click on the active tool then collapses it", async () => {
+    const { user } = renderHidden()
+    await screen.findByText("Nội dung chính")
+    await user.click(screen.getByRole("button", { name: "Đổi panel" }))
+    expect(frame().getAttribute("data-panel-hidden")).toBe("false")
+    expect(panel().hasAttribute("inert")).toBe(false)
+    expect(tool("Đặt lệnh").getAttribute("aria-expanded")).toBe("true")
+
+    await user.click(tool("Đặt lệnh"))
+    expect(frame().getAttribute("data-panel-collapsed")).toBe("true")
+  })
+
+  describe("as a layer (900px and below)", () => {
+    beforeEach(() => {
+      media.matches = true
+      Object.defineProperty(HTMLElement.prototype, "offsetParent", { configurable: true, get() { return this.parentNode } })
+    })
+    afterEach(() => {
+      delete (HTMLElement.prototype as { offsetParent?: unknown }).offsetParent
+    })
+
+    it("never opens the layer while hidden, even for a direct link, and does not pop up when the panel returns", async () => {
+      const { user } = renderHidden(true, true)
+      await screen.findByText("Nội dung chính")
+      expect(frame().getAttribute("data-panel-open")).toBe("false")
+
+      await user.click(tool("Danh mục"))
+      expect(frame().getAttribute("data-panel-open")).toBe("false")
+
+      await user.click(screen.getByRole("button", { name: "Đổi panel" }))
+      expect(frame().getAttribute("data-panel-hidden")).toBe("false")
+      expect(frame().getAttribute("data-panel-open")).toBe("false")
+    })
+
+    it("opens the layer from the rail once the panel is there", async () => {
+      const { user } = renderHidden(false, false)
+      await screen.findByText("Nội dung chính")
+      await user.click(tool("Danh mục"))
+      expect(frame().getAttribute("data-panel-open")).toBe("true")
+    })
   })
 })

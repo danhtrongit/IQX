@@ -151,10 +151,20 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
     },
     {
       name: 'flashback.round-cycle',
-      description: 'Vòng đời đề Flashback: đóng đề, chốt kết quả, trả thưởng, mở đề và tạo đề kế tiếp',
+      description:
+        'Flashback v1.x (đề chung 2 ngày): đã ngừng từ v2 Phòng chơi; chỉ bật lại bằng JOB_FLASHBACK_ROUND_CYCLE_ENABLED=true',
       everyMs: 60_000,
       tradingDay: false,
-      enabled: enabled('flashback.round-cycle'),
+      // Spec Flashback v2 thay đề tự động 2 ngày bằng phòng chơi: mặc định tắt (gỡ lịch khỏi queue).
+      enabled: enabled('flashback.round-cycle', false),
+    },
+    {
+      name: 'flashback.rooms-sweep',
+      description:
+        'Flashback v2 Phòng chơi: chốt ván hết giờ, trả xu, đóng phòng chờ quá 30 phút',
+      everyMs: 15_000,
+      tradingDay: false,
+      enabled: enabled('flashback.rooms-sweep'),
     },
   ];
 }

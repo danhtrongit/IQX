@@ -1,8 +1,9 @@
 /**
- * Hộp chỉ báo của Flashback (spec v1.1 §2.7), kiểu TradingView.
+ * Hộp chỉ báo của Flashback v2 (spec v2 §6.4), kiểu TradingView.
  *
- * - "Các chỉ báo": ô tìm kiếm và danh sách CHỈ CÁC CHỈ BÁO NGƯỜI DÙNG ĐÃ MỞ Ở HỌC VIỆN; bấm một
- *   chỉ báo sẽ thêm một instance mới với tham số mặc định rồi đóng hộp.
+ * - "Các chỉ báo": ô tìm kiếm và danh sách ĐỦ 16 CHỈ BÁO cho mọi người, không phụ thuộc tiến độ
+ *   Học viện; bấm một chỉ báo sẽ thêm một instance mới với tham số mặc định rồi đóng hộp. Có thể
+ *   thêm nhiều lần cùng một chỉ báo.
  * - "Cài đặt": tiêu đề là tên chỉ báo, tab "Đầu vào" liệt kê tham số với miền cho phép ngay
  *   dưới ô nhập; cuối hộp có "Mặc định" bên trái, "Hủy" và "OK" bên phải. Giá trị sai ràng buộc
  *   bị báo trong hộp và KHÔNG lưu.
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { FlashbackIndicatorMeta, FlashbackIndicatorParams } from "./flashback-api"
 import { defaultParams, validateParams } from "./flashback-indicators"
@@ -23,24 +25,52 @@ const rangeBoundFormat = new Intl.NumberFormat("vi-VN", { maximumFractionDigits:
 function formatRangeBound(value: number): string {
   return Number.isFinite(value) ? rangeBoundFormat.format(value) : "—"
 }
+
+/** "5 đến 200": miền cho phép của một ô nhập, không dùng dấu gạch. */
+function formatRange(min: number, max: number): string {
+  return `${formatRangeBound(min)} đến ${formatRangeBound(max)}`
+}
+
+/** Mô tả ngắn của từng chỉ báo, hiện bên phải tên trong hộp chọn. */
+const INDICATOR_DESCRIPTIONS: Record<string, string> = {
+  volume: "Ngưỡng khối lượng",
+  ma: "Đường trung bình (SMA)",
+  rsi: "Chỉ số sức mạnh tương đối",
+  macd: "Trung bình động hội tụ phân kỳ",
+  bollinger: "Dải Bollinger",
+  ema: "Đường trung bình hàm mũ",
+  ma_cross: "Giao cắt hai đường SMA",
+  dmi: "Chỉ báo định hướng (+DI, −DI)",
+  donchian: "Kênh giá Donchian",
+  stochastic: "Dao động ngẫu nhiên (%K, %D)",
+  cci: "Chỉ số kênh hàng hóa",
+  roc: "Tốc độ thay đổi giá (%)",
+  williams_r: "Williams %R",
+  obv: "Khối lượng cân bằng",
+  mfi: "Chỉ số dòng tiền",
+  cmf: "Dòng tiền Chaikin",
+}
+
 export function IndicatorPicker({
   open,
   onOpenChange,
   indicators,
+  loading,
   onPick,
-  onEnterAcademy,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   indicators: readonly FlashbackIndicatorMeta[]
+  loading: boolean
   onPick: (indicator: FlashbackIndicatorMeta) => void
-  onEnterAcademy: () => void
 }) {
   const [query, setQuery] = useState("")
   const filtered = useMemo(() => {
     const needle = query.trim().toLowerCase()
     if (!needle) return indicators
-    return indicators.filter((indicator) => `${indicator.name} ${indicator.id}`.toLowerCase().includes(needle))
+    return indicators.filter((indicator) =>
+      `${indicator.name} ${indicator.id} ${INDICATOR_DESCRIPTIONS[indicator.id] ?? ""}`.toLowerCase().includes(needle),
+    )
   }, [indicators, query])
 
   return (
@@ -57,12 +87,12 @@ export function IndicatorPicker({
           </Button>
         </div>
         <DialogDescription className="sr-only">
-          Danh sách chỉ báo bạn đã mở ở Học viện. Chọn một chỉ báo để thêm vào biểu đồ.
+          Danh sách 16 chỉ báo. Chọn một chỉ báo để thêm vào biểu đồ.
         </DialogDescription>
 
         <div className="border-b border-border px-4 py-3">
           <div className="relative">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-secondary" aria-hidden="true" />
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -74,17 +104,16 @@ export function IndicatorPicker({
         </div>
 
         <div className="max-h-[min(460px,60vh)] overflow-auto px-2 py-2">
-          {indicators.length === 0 ? (
-            <div className="space-y-3 px-3 py-6 text-center">
-              <p className="text-sm leading-6 text-foreground">
-                Bạn chưa mở chỉ báo nào. Học bài chỉ báo ở Học viện để mở.
-              </p>
-              <Button type="button" size="sm" onClick={() => { onOpenChange(false); onEnterAcademy() }}>
-                Đến Học viện
-              </Button>
+          {loading ? (
+            <div className="space-y-2 px-2 py-2" role="status" aria-label="Đang tải chỉ báo">
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-full" />
+              <Skeleton className="h-9 w-full" />
             </div>
+          ) : indicators.length === 0 ? (
+            <p className="px-3 py-6 text-center text-sm text-foreground">Chưa tải được danh sách chỉ báo</p>
           ) : filtered.length === 0 ? (
-            <p className="px-3 py-6 text-center text-xs text-muted-foreground">Không có chỉ báo phù hợp</p>
+            <p className="px-3 py-6 text-center text-sm text-foreground">Không có chỉ báo phù hợp</p>
           ) : (
             <ul className="m-0 list-none p-0">
               {filtered.map((indicator) => (
@@ -96,8 +125,8 @@ export function IndicatorPicker({
                   >
                     <span className="h-0.5 w-4 shrink-0 rounded-full bg-chart-1" aria-hidden="true" />
                     <span className="truncate">{indicator.name}</span>
-                    <span className="ml-auto shrink-0 text-[11px] font-normal text-muted-foreground">
-                      Chương {indicator.chapter}
+                    <span className="ml-auto shrink-0 text-[11px] font-normal text-text-secondary">
+                      {INDICATOR_DESCRIPTIONS[indicator.id] ?? ""}
                     </span>
                   </button>
                 </li>
@@ -207,8 +236,8 @@ export function IndicatorSettings({
                         className="text-right tabular-nums"
                       />
                     </div>
-                    <p className="text-right text-[11px] text-muted-foreground">
-                      {formatRangeBound(param.lower.min)} – {formatRangeBound(param.lower.max)}
+                    <p className="text-right text-[11px] text-text-secondary">
+                      {formatRange(param.lower.min, param.lower.max)}
                     </p>
                     <div className="grid grid-cols-[1fr_110px] items-center gap-x-3">
                       <Label htmlFor={`${param.key}-upper`} className="text-sm font-semibold">
@@ -226,8 +255,8 @@ export function IndicatorSettings({
                         className="text-right tabular-nums"
                       />
                     </div>
-                    <p className="text-right text-[11px] text-muted-foreground">
-                      {formatRangeBound(param.upper.min)} – {formatRangeBound(param.upper.max)}
+                    <p className="text-right text-[11px] text-text-secondary">
+                      {formatRange(param.upper.min, param.upper.max)}
                     </p>
                   </div>
                 )
@@ -250,8 +279,8 @@ export function IndicatorSettings({
                       className="text-right tabular-nums"
                     />
                   </div>
-                  <p className="text-right text-[11px] text-muted-foreground">
-                    {formatRangeBound(param.min)} – {formatRangeBound(param.max)}
+                  <p className="text-right text-[11px] text-text-secondary">
+                    {formatRange(param.min, param.max)}
                   </p>
                 </div>
               )

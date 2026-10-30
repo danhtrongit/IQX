@@ -146,7 +146,7 @@ test.describe("Học viện v3.3 on the real backend", () => {
     expect(overflow).toBeLessThanOrEqual(0)
   })
 
-  test("passing ch06-l01 opens EMA in the Flashback indicator box and ch10-l01 opens ROE in the screener", async ({ page, request }) => {
+  test("passing ch06-l01 announces the EMA unlock and ch10-l01 opens ROE in the screener", async ({ page, request }) => {
     const session = await register(request)
     const api = client(request, session)
     const hasIndicator = async (id: string) =>
@@ -155,7 +155,8 @@ test.describe("Học viện v3.3 on the real backend", () => {
       (await api.get<{ id: string; learned: boolean }[]>("/strategy/screener/metrics")).body.find((metric) => metric.id === "roe")
 
     await passUntil(api, "ch06-l01")
-    expect(await hasIndicator("ema")).toBe(false)
+    // Flashback v2 lists all 16 indicators for everyone: lessons no longer gate its indicator box.
+    expect(await hasIndicator("ema")).toBe(true)
     await signIn(page, session)
     await page.goto("/demo-trading?view=academy&lesson=ch06-l01")
     await page.getByRole("button", { name: "Làm bài kiểm tra" }).click()

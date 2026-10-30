@@ -14,7 +14,6 @@
 import {
   BadRequestException,
   ConflictException,
-  ForbiddenException,
   HttpException,
   Inject,
   Injectable,
@@ -22,11 +21,9 @@ import {
   UnprocessableEntityException,
 } from '@nestjs/common';
 
-import { ACADEMY_GRANTS, type AcademyGrantsPort } from '../academy/academy.ports.js';
 import { DatabaseService } from '../../platform/database/database.service.js';
 import { roundBasisPoints } from '../trading/trading.service.js';
 import {
-  FLASHBACK_CONFIG_KEY,
   FLASHBACK_FEE_BPS,
   FLASHBACK_HISTORY_SESSIONS,
   FLASHBACK_INITIAL_CASH_VND,
@@ -46,7 +43,6 @@ import {
   type FlashbackIndicatorMeta,
 } from './flashback.indicators.js';
 import { FLASHBACK_REPOSITORY, FlashbackRepository } from './flashback.repository.js';
-import { readFlashbackConfig } from './flashback.round-builder.js';
 import type {
   FlashbackBar,
   FlashbackEntryRow,
@@ -70,7 +66,6 @@ export const systemFlashbackClock: FlashbackClock = { now: () => new Date() };
 const badRequest = (code: string, message: string) => new BadRequestException({ code, message });
 const conflict = (code: string, message: string) => new ConflictException({ code, message });
 const notFound = (code: string, message: string) => new NotFoundException({ code, message });
-const forbidden = (code: string, message: string) => new ForbiddenException({ code, message });
 const invalid = (code: string, message: string) =>
   new UnprocessableEntityException({ code, message });
 const paymentRequired = (code: string, message: string) => new HttpException({ code, message }, 402);
@@ -313,7 +308,6 @@ export class FlashbackService {
     private readonly database: DatabaseService,
     @Inject(FLASHBACK_REPOSITORY)
     private readonly repository: FlashbackRepository,
-    @Inject(ACADEMY_GRANTS) private readonly grants: AcademyGrantsPort,
     @Inject(FLASHBACK_CLOCK) private readonly clock: FlashbackClock,
   ) {}
 
@@ -373,11 +367,9 @@ export class FlashbackService {
     return view;
   }
 
-  async listIndicators(userId: string): Promise<FlashbackIndicatorMeta[]> {
-    const granted = await this.grants.grantedCapabilities(userId);
-    return flashbackIndicatorCatalog()
-      .filter((meta) => granted.has(`indicator:${meta.id}`))
-      .map((meta) => ({ ...meta }));
+  /** Đủ 16 chỉ báo cho mọi người, không phụ thuộc tiến độ Học viện (spec v2 §6.4). */
+  async listIndicators(_userId?: string): Promise<FlashbackIndicatorMeta[]> {
+    return flashbackIndicatorCatalog().map((meta) => ({ ...meta }));
   }
 
   async saveIndicatorParams(
@@ -389,17 +381,11 @@ export class FlashbackService {
     indicators: readonly FlashbackIndicatorInstance[];
     warmup_required: number;
   }> {
-    const granted = await this.grants.grantedCapabilities(userId);
     const validated: FlashbackIndicatorInstance[] = [];
     for (const instance of indicators) {
       const meta = flashbackIndicatorMeta(instance.id);
       if (!meta)
         throw invalid('FLASHBACK_INDICATOR_UNKNOWN', `Không có chỉ báo "${instance.id}".`);
-      if (!granted.has(`indicator:${instance.id}`))
-        throw forbidden(
-          'FLASHBACK_INDICATOR_LOCKED',
-          `Chỉ báo ${meta.name} chưa được mở, không thể lưu tham số.`,
-        );
       const error = validateFlashbackIndicatorParams(meta, instance.params);
       if (error) throw invalid('FLASHBACK_INDICATOR_PARAMS_INVALID', error);
       validated.push({ id: instance.id, params: instance.params });
@@ -790,8 +776,8 @@ export class FlashbackService {
 
   /** Phí tham gia từ lần thứ hai, đọc từ `flashback_settings.config.entry_fee_xu`. */
   private async entryFeeXu(): Promise<number> {
-    const stored = await this.repository.getSetting(this.database, FLASHBACK_CONFIG_KEY);
-    return readFlashbackConfig(stored).entryFeeXu;
+    // Spec v2 (Phòng chơi): bỏ phí tham gia Flashback. Đề v1 còn mở (nếu có) không thu phí nữa.
+    return 0;
   }
 
   private async rewardEligible(userId: string): Promise<boolean> {
