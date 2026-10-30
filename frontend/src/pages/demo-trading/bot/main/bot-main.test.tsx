@@ -214,6 +214,22 @@ describe("Bot main", () => {
       expect(within(sell).queryByRole("list", { name: "ĐIỀU KIỆN BÁN chờ hiệu lực" })).toBeNull()
     })
 
+    it("an old-format revision in force still lists the pending side that reads the same as it", async () => {
+      // The server reads an old-format revision back as the new defaults, so its Sell side can equal
+      // the pending one; the card only says it is outdated, so the pending conditions must be listed.
+      pendingWorld((saved) => {
+        rowsOf(saved.rsi!, "buy").rules[0]!.threshold = 20
+      })
+      const block = { reason: "config_outdated" as const, detail: "Cấu hình điều kiện kiểu cũ không còn được dùng; hãy lưu lại cấu hình theo mẫu mới.", indicator_ids: [] }
+      world.conditions = { ...world.conditions!, state: "paused", buy_status: "blocked", sell_status: "blocked", errors: { buy: block, sell: block } }
+      await renderMain()
+      const sell = await screen.findByRole("region", { name: "ĐIỀU KIỆN BÁN" })
+      expect(within(sell).getByText(block.detail)).toBeTruthy()
+      const sellPending = await within(sell).findByRole("list", { name: "ĐIỀU KIỆN BÁN chờ hiệu lực" })
+      expect(within(sellPending).getByText("MACD 12 / 26 cắt xuống Signal 9")).toBeTruthy()
+      expect(within(sell).queryByRole("list", { name: "ĐIỀU KIỆN BÁN đang hiệu lực" })).toBeNull()
+    })
+
     it("lists a pending block only on the side where the saved revision differs", async () => {
       pendingWorld((saved) => {
         rowsOf(saved.macd!, "sell").rules[0]!.fast = 8

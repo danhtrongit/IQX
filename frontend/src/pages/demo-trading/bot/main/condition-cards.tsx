@@ -53,7 +53,10 @@ function SideCard({
   const pending = pendingConfigOf(config)
   const effectiveItems = effective ? activeConditions(effective.config, side, indicators) : []
   const pendingItems = pending ? activeConditions(pending.config, side, indicators) : []
-  const pendingDiffers = !!pending && JSON.stringify(pendingItems) !== JSON.stringify(effectiveItems)
+  // An old-format effective revision is read back as the new defaults, so it can equal the pending
+  // one; the card shows nothing of it though, so the pending conditions are compared to nothing.
+  const shownItems = block?.reason === "config_outdated" ? [] : effectiveItems
+  const pendingDiffers = !!pending && JSON.stringify(pendingItems) !== JSON.stringify(shownItems)
   const title = SIDE_TITLE[side]
 
   return (
