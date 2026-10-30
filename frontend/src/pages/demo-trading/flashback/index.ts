@@ -1,3 +1,4 @@
+export { FlashbackFrame } from "./flashback-frame"
 export { FlashbackMain } from "./flashback-main"
 export { FlashbackPanel } from "./flashback-panel"
 export { FlashbackProvider } from "./flashback-provider"

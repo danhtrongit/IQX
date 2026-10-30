@@ -373,7 +373,7 @@ export function computeIndicator(
         kind: "over",
         series: [
           { key: "f", values: sma(closes, fast) },
-          { key: "s", values: sma(closes, slow), color: "#f59e0b" },
+          { key: "s", values: sma(closes, slow), color: "var(--chart-6)" },
         ],
         cross: ["f", "s"],
       }
@@ -385,9 +385,9 @@ export function computeIndicator(
       return {
         kind: "over",
         series: [
-          { key: "u", values: bands.upper, color: "#38bdf8", band: { upper: "u", lower: "l" } },
-          { key: "l", values: bands.lower, color: "#38bdf8" },
-          { key: "m", values: bands.middle, color: "#60a5fa" },
+          { key: "u", values: bands.upper, color: "var(--chart-6)", band: { upper: "u", lower: "l" } },
+          { key: "l", values: bands.lower, color: "var(--chart-6)" },
+          { key: "m", values: bands.middle, color: "var(--chart-1)" },
         ],
       }
     }
@@ -426,7 +426,7 @@ export function computeIndicator(
         kind: "pane",
         series: [
           { key: "a", values: lines.macd },
-          { key: "s", values: lines.signal, color: "#f59e0b" },
+          { key: "s", values: lines.signal, color: "var(--chart-2)" },
           { key: "h", values: lines.histogram, histogram: true },
         ],
         zero: true,
@@ -437,8 +437,8 @@ export function computeIndicator(
       return {
         kind: "pane",
         series: [
-          { key: "p", values: lines.plus, color: "#19b37a" },
-          { key: "m", values: lines.minus, color: "#e24a4a" },
+          { key: "p", values: lines.plus, color: "var(--price-up)" },
+          { key: "m", values: lines.minus, color: "var(--price-down)" },
         ],
       }
     }
@@ -449,7 +449,7 @@ export function computeIndicator(
         kind: "pane",
         series: [
           { key: "k", values: lines.k },
-          { key: "d", values: lines.d, color: "#f59e0b" },
+          { key: "d", values: lines.d, color: "var(--chart-8)" },
         ],
         range: [0, 100],
         levels: level
@@ -512,7 +512,7 @@ export function computeIndicator(
         kind: "pane",
         series: [
           { key: "a", values: lines.obv },
-          { key: "b", values: lines.signal, color: "#f59e0b" },
+          { key: "b", values: lines.signal, color: "var(--chart-8)" },
         ],
       }
     }

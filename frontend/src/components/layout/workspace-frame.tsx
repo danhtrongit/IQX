@@ -66,6 +66,7 @@ export function WorkspaceFrame({
   onCollapsedChange,
   rail: railProp,
   phoneRail = "column",
+  panelHidden = false,
 }: {
   main: ReactNode
   panel: ReactNode
@@ -85,6 +86,11 @@ export function WorkspaceFrame({
    * above the main area so long-form content (a lesson) keeps the full width of the phone.
    */
   phoneRail?: "column" | "bar"
+  /**
+   * The tool has no panel to show for now (Flashback's lobby and waiting room use the whole width):
+   * the panel column and layer are left out, the rail stays and keeps the tool marked as current.
+   */
+  panelHidden?: boolean
 }) {
   const panelId = useId()
   const routeRail = useRouteRail()
@@ -102,6 +108,10 @@ export function WorkspaceFrame({
     setWasOverlay(overlay)
     setOpenState(false)
   }
+  if (panelHidden && openState) {
+    // A layer that was asked open while there was no panel must not pop up once the panel comes back.
+    setOpenState(false)
+  }
   const [seenRevealKey, setSeenRevealKey] = useState(revealKey)
   if (seenRevealKey !== revealKey) {
     setSeenRevealKey(revealKey)
@@ -109,9 +119,9 @@ export function WorkspaceFrame({
   }
   const [uncontrolledCollapsed, setUncontrolledCollapsed] = useState(false)
   const collapsedValue = controlledCollapsed ?? uncontrolledCollapsed
-  const open = overlay && openState
+  const open = overlay && openState && !panelHidden
   const collapsed = !overlay && collapsedValue
-  const panelShown = overlay ? open : !collapsed
+  const panelShown = !panelHidden && (overlay ? open : !collapsed)
   const railBar = overlay && phoneRail === "bar"
 
   const setCollapsed = useCallback((next: boolean) => {
@@ -170,6 +180,11 @@ export function WorkspaceFrame({
   }), [open, overlay, railBar, collapsed, panelId, panelLabel, setCollapsed, focusTrigger, focusClose])
 
   function selectRailItem(item: RailItem, button: HTMLElement) {
+    // The tool already in view has no panel to show or hide while the panel is left out.
+    if (panelHidden && item.affects === "sidebar" && item.id === rail.activeTool) {
+      button.focus()
+      return
+    }
     if (item.affects === "left") {
       // A main-area tool (Insight): entering it hides the panel; leaving it keeps the panel as it is.
       const entering = rail.mainToolId !== item.id
@@ -199,9 +214,9 @@ export function WorkspaceFrame({
   return (
     <WorkspaceFrameContext.Provider value={state}>
       <WorkspaceToggleRegistryContext.Provider value={setToggleElement}>
-        <div className="workspace-frame" data-panel-open={open} data-panel-collapsed={collapsed} data-rail={railBar ? "bar" : "column"} data-testid="workspace-frame">
+        <div className="workspace-frame" data-panel-open={open} data-panel-collapsed={collapsed} data-panel-hidden={panelHidden} data-rail={railBar ? "bar" : "column"} data-testid="workspace-frame">
           <main className="workspace-main flex min-h-0 min-w-0 flex-col overflow-hidden">
-            {railBar && <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} onSelect={selectRailItem} orientation="horizontal" />}
+            {railBar && <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} panelHidden={panelHidden} onSelect={selectRailItem} orientation="horizontal" />}
             {main}
           </main>
           <RightSidebar
@@ -213,7 +228,7 @@ export function WorkspaceFrame({
           >
             {panel}
           </RightSidebar>
-          {!railBar && <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} onSelect={selectRailItem} />}
+          {!railBar && <RailMenu rail={rail} panelId={panelId} panelShown={panelShown} panelHidden={panelHidden} onSelect={selectRailItem} />}
         </div>
       </WorkspaceToggleRegistryContext.Provider>
     </WorkspaceFrameContext.Provider>

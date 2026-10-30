@@ -97,6 +97,21 @@
   }
 }
 
+/* A tool with no panel for now (Flashback's lobby and waiting room): main takes the panel's width. */
+@media (min-width: 901px) {
+  .workspace-frame[data-panel-hidden="true"] {
+    grid-template-columns: minmax(0, 1fr) var(--ws-rail);
+  }
+
+  .workspace-frame[data-panel-hidden="true"] .workspace-rail {
+    grid-column: 2;
+  }
+}
+
+.workspace-frame[data-panel-hidden="true"] .workspace-panel {
+  display: none;
+}
+
 @media (max-width: 900px) {
   .workspace-frame {
     --ws-rail: 61px;

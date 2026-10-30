@@ -1,50 +1,112 @@
 /**
- * Spec 22-10 QA-06 (phần Flashback): ở độ rộng 390px màn Flashback không tràn ngang, chữ đủ
- * tương phản (không có chữ xám mờ) và thanh nút cố định ở đáy hiện đủ Mua · Bán · Phiên tiếp.
- * FB-11c: Mua và Bán ở đáy bị khoá khi chưa tham gia đề.
+ * Flashback v2 "Phòng chơi" ở 390px, cả giao diện tối và sáng: sảnh, hộp tạo phòng, phòng chờ và
+ * màn chơi đều không tràn ngang, chữ đủ tương phản (không có chữ xám mờ), và thanh nút cố định ở
+ * đáy màn chơi hiện đủ Mua, Bán, Phiên tiếp.
  *
  * Chạy với API giả lập (fixtures.ts) cộng các route Flashback bên dưới, không cần backend.
  */
 import type { Page, Route } from "@playwright/test"
 import { expect, seedMember, test } from "./fixtures"
 
-const MATCH_PRICE = 28_800
+const ROOM_ID = "482913"
+const MATCH_ID = "11111111-1111-4111-8111-111111111111"
+const PRICE = 28_800
+const VIEW_BARS = 60
+const PLAY_BARS = 30
 
 function bars(count: number, offset = 0) {
   return Array.from({ length: count }, (_, index) => {
-    const close = MATCH_PRICE - 400 + (index % 9) * 80
+    const close = PRICE - 400 + (index % 9) * 80
     return {
       session: offset + index,
       open: close - 60,
       high: close + 150,
       low: close - 180,
-      close: index === count - 1 && offset === 0 ? MATCH_PRICE : close,
+      close: offset === 0 && index === count - 1 ? PRICE : close,
       volume: 1_000_000 + index * 1_000,
     }
   })
 }
 
-function entry(step: number) {
+const member = (id: string, name: string, owner: boolean) => ({
+  avatar_url: null,
+  is_me: id === "member-1",
+  is_owner: owner,
+  joined_at: "2026-10-30T01:00:00.000Z",
+  name,
+  user_id: id,
+})
+
+function room(stage: "waiting" | "playing") {
   return {
-    id: "11111111-1111-4111-8111-111111111111",
-    step,
+    auto_close_at: null,
+    created_at: "2026-10-30T01:00:00.000Z",
+    id: ROOM_ID,
+    is_owner: true,
+    locked: false,
+    match:
+      stage === "playing"
+        ? { ends_at: "2026-10-30T01:10:00.000Z", id: MATCH_ID, joined: true, started_at: "2026-10-30T01:00:00.000Z", status: "playing" }
+        : null,
+    max_players: 4,
+    members: [member("member-1", "Nhà đầu tư thử nghiệm", true), member("member-2", "Minh", false)],
+    minutes: 10,
+    owner_id: "member-1",
+    play_bars: PLAY_BARS,
+    server_now: "2026-10-30T01:00:30.000Z",
+    stake_xu: 100,
+    status: stage,
+    view_bars: VIEW_BARS,
+  }
+}
+
+const players = [
+  { avatar_url: null, finished: false, is_me: true, name: "Nhà đầu tư thử nghiệm", pnl_pct: 0, pnl_percent: 0, user_id: "member-1" },
+  { avatar_url: null, finished: false, is_me: false, name: "Minh", pnl_pct: 0.021, pnl_percent: 2.1, user_id: "member-2" },
+]
+
+function me(step: number) {
+  return {
+    auto_finished: false,
     cash: "10000000",
+    finished: false,
     holdings: 0,
-    total_assets: "10000000",
+    max_buy_qty: 346,
+    orders: [],
+    play_bars: PLAY_BARS,
     pnl_pct: 0,
     pnl_percent: 0,
-    max_drawdown: 0,
-    max_drawdown_percent: 0,
-    status: "playing",
-    joined_at: "2026-10-22T13:00:00.000Z",
-    finished_at: null,
-    final_nav: null,
-    rank: null,
-    reward_xu: 0,
-    reward_eligible: true,
-    indicator_params: [],
     positions: [],
-    orders: [],
+    price: String(PRICE),
+    sellable: 0,
+    step,
+    total_assets: "10000000",
+  }
+}
+
+function snapshot(step: number) {
+  return {
+    ends_at: "2026-10-30T01:10:00.000Z",
+    history_bars: bars(VIEW_BARS),
+    initial_cash: "10000000",
+    match_id: MATCH_ID,
+    me: me(step),
+    minutes: 10,
+    my_finished: false,
+    my_step: step,
+    play_bars: PLAY_BARS,
+    played_bars: bars(step, VIEW_BARS),
+    players,
+    playing_count: 2,
+    pot_xu: 200,
+    remaining_ms: 420_000,
+    room_id: ROOM_ID,
+    server_now: "2026-10-30T01:00:30.000Z",
+    stake_xu: 100,
+    started_at: "2026-10-30T01:00:00.000Z",
+    status: "playing",
+    view_bars: VIEW_BARS,
+    warmup_bars: [],
   }
 }
 
@@ -52,51 +114,93 @@ async function json(route: Route, body: unknown, status = 200) {
   await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) })
 }
 
-/** Route Flashback giả: một đề đang mở, tham gia được một lần. */
+/** Route Flashback v2 giả: sảnh, tạo phòng, phòng chờ, bắt đầu rồi màn chơi. */
 async function mockFlashback(page: Page) {
-  let joined = false
+  let stage: "lobby" | "waiting" | "playing" = "lobby"
+  let step = 0
   await page.route("**/api/v2/flashback/**", async (route) => {
     const url = new URL(route.request().url())
     const path = url.pathname.replace(/^.*\/api\/v2/, "")
     const method = route.request().method()
-    if (path === "/flashback/current" && method === "GET") {
+    if (path === "/flashback/rooms/me") return json(route, { room: stage === "lobby" ? null : room(stage), notice: null })
+    if (path === "/flashback/rooms" && method === "GET") {
       return json(route, {
-        round_id: "22222222-2222-4222-8222-222222222222",
-        round_no: 7,
-        closes_at: new Date(Date.now() + 2 * 86_400_000).toISOString(),
-        player_count: 12,
-        fee_xu: 100,
-        first_join_free: true,
-        reward_table: [
-          { from_rank: 1, to_rank: 1, xu: 1_000 },
-          { from_rank: 2, to_rank: 3, xu: 500 },
-          { from_rank: 4, to_rank: 10, xu: 200 },
+        rooms: [
+          {
+            created_at: "2026-10-30T01:00:00.000Z",
+            full: false,
+            id: "111111",
+            locked: true,
+            max_players: 4,
+            member_count: 2,
+            minutes: 10,
+            owner: { avatar_url: null, name: "Minh Khoa" },
+            play_bars: 30,
+            stake_xu: 100,
+            status: "waiting",
+            view_bars: 60,
+          },
+          {
+            created_at: "2026-10-30T01:00:00.000Z",
+            full: false,
+            id: "222222",
+            locked: false,
+            max_players: 2,
+            member_count: 2,
+            minutes: 20,
+            owner: { avatar_url: null, name: "Ngọc Lan" },
+            play_bars: 45,
+            stake_xu: 0,
+            status: "playing",
+            view_bars: 90,
+          },
         ],
-        joined,
-        my_entry: joined ? entry(0) : null,
-        bars: bars(60),
-        played_bars: [],
-        warmup_bars: [],
-        history_sessions: 60,
-        play_sessions: 60,
-        total_sessions: 120,
       })
     }
-    if (path === "/flashback/current/join" && method === "POST") {
-      joined = true
+    if (path === "/flashback/rooms" && method === "POST") {
+      stage = "waiting"
+      return json(route, room("waiting"))
+    }
+    if (path === `/flashback/rooms/${ROOM_ID}` && method === "GET") return json(route, room(stage === "playing" ? "playing" : "waiting"))
+    if (path === `/flashback/rooms/${ROOM_ID}/start`) {
+      stage = "playing"
+      return json(route, { match: snapshot(0), room: room("playing"), removed: [] })
+    }
+    if (path === `/flashback/matches/${MATCH_ID}` && method === "GET") return json(route, snapshot(step))
+    if (path === `/flashback/matches/${MATCH_ID}/state`) {
       return json(route, {
-        entry_id: "11111111-1111-4111-8111-111111111111",
-        round_id: "22222222-2222-4222-8222-222222222222",
-        first_join: true,
-        fee_xu: 0,
-        cash: "10000000",
-        joined_at: "2026-10-22T13:00:00.000Z",
+        ends_at: "2026-10-30T01:10:00.000Z",
+        match_id: MATCH_ID,
+        my_finished: false,
+        my_step: step,
+        players,
+        playing_count: 2,
+        remaining_ms: 420_000,
+        room_id: ROOM_ID,
+        server_now: "2026-10-30T01:00:30.000Z",
+        started_at: "2026-10-30T01:00:00.000Z",
+        status: "playing",
       })
     }
-    if (path === "/flashback/current/leaderboard") {
-      return json(route, { scope: "all", rows: [{ rank: 1, username: "ngoclan.vo", pnl_pct: 0.12, is_me: false }], me: null, total_players: 12 })
+    if (path === `/flashback/matches/${MATCH_ID}/next`) {
+      step += 1
+      return json(route, { bar: bars(1, VIEW_BARS + step - 1)[0], me: me(step) })
     }
-    if (path === "/flashback/indicators") return json(route, { indicators: [] })
+    if (path === "/flashback/indicators") {
+      return json(route, {
+        indicators: [
+          {
+            id: "ma",
+            name: "MA / SMA",
+            chapter: 4,
+            lesson_id: null,
+            params: [{ key: "period", label: "Chu kỳ SMA", type: "integer", min: 5, max: 200, step: 1, unit: "phiên", default: 20, lower: null, upper: null }],
+            cross_fields: [],
+            warmup_sessions: 20,
+          },
+        ],
+      })
+    }
     return json(route, {})
   })
 }
@@ -165,7 +269,7 @@ async function noHorizontalOverflow(page: Page) {
 }
 
 for (const theme of ["dark", "light"] as const) {
-  test(`Flashback ở 390px (${theme}): không tràn ngang, chữ rõ, thanh đáy khoá Mua/Bán khi chưa tham gia`, async ({ page }) => {
+  test(`Flashback ở 390px (${theme}): sảnh, tạo phòng, phòng chờ và màn chơi không tràn ngang, chữ rõ, thanh đáy đủ nút`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
     await page.emulateMedia({ colorScheme: theme })
     await page.addInitScript((value) => {
@@ -179,7 +283,54 @@ for (const theme of ["dark", "light"] as const) {
     await mockFlashback(page)
     await page.goto("/demo-trading?view=flashback")
 
-    // Panel Giao dịch mở phủ màn chính trên điện thoại: kiểm tra rồi đóng lại.
+    // Sảnh: vùng chính rộng hết cỡ, không có panel đặt lệnh.
+    await expect(page.getByRole("button", { name: "Chơi phòng bất kỳ" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Vào phòng 111111" })).toBeVisible()
+    await expect(page.getByRole("complementary", { name: "Flashback" })).toBeHidden()
+    expect(await noHorizontalOverflow(page)).toBe(true)
+    expect(await lowContrastTexts(page)).toEqual([])
+
+    // Hộp tạo phòng.
+    await page.getByRole("button", { name: "Tạo phòng" }).click()
+    const dialog = page.getByTestId("flashback-create-room")
+    await expect(dialog).toBeVisible()
+    expect(await noHorizontalOverflow(page)).toBe(true)
+    expect(await lowContrastTexts(page)).toEqual([])
+    await dialog.getByRole("button", { name: "Tạo phòng" }).click()
+
+    // Phòng chờ.
+    await expect(page.getByTestId("flashback-room-id")).toHaveText(ROOM_ID)
+    await expect(page.getByRole("button", { name: "Bắt đầu" })).toBeVisible()
+    expect(await noHorizontalOverflow(page)).toBe(true)
+    expect(await lowContrastTexts(page)).toEqual([])
+
+    // Màn chơi: thanh người chơi, đồng hồ và thanh nút cố định ở đáy.
+    await page.getByRole("button", { name: "Bắt đầu" }).click()
+    await expect(page.getByTestId("flashback-clock")).toBeVisible()
+    const buy = page.getByTestId("flashback-buy-mobile")
+    const sell = page.getByTestId("flashback-sell-mobile")
+    const next = page.getByTestId("flashback-next-mobile")
+    await expect(buy).toBeVisible()
+    await expect(sell).toBeVisible()
+    await expect(next).toBeVisible()
+    await expect(buy).toBeEnabled()
+    await expect(next).toBeEnabled()
+    // Panel đặt lệnh chỉ mở khi người chơi bấm, không tự bật lên lúc bắt đầu ván.
+    await expect(page.getByRole("complementary", { name: "Flashback" })).toBeHidden()
+
+    const bar = await buy.evaluate((element) => element.parentElement?.getBoundingClientRect().toJSON() as DOMRect)
+    expect(bar.left).toBeGreaterThanOrEqual(0)
+    expect(bar.right).toBeLessThanOrEqual(390)
+    expect(bar.bottom).toBeLessThanOrEqual(844)
+    expect(await noHorizontalOverflow(page)).toBe(true)
+    expect(await lowContrastTexts(page)).toEqual([])
+
+    await next.click()
+    await expect(page.getByTestId("flashback-session")).toHaveText("Phiên 1")
+    expect(await noHorizontalOverflow(page)).toBe(true)
+
+    // Bấm Mua ở đáy mở panel đặt lệnh; đóng lại thì chỉ còn màn chơi.
+    await buy.click()
     const panel = page.getByRole("complementary", { name: "Flashback" })
     await expect(panel).toBeVisible()
     await expect(panel.getByText("Giá khớp")).toBeVisible()
@@ -187,39 +338,5 @@ for (const theme of ["dark", "light"] as const) {
     expect(await lowContrastTexts(page)).toEqual([])
     await page.getByRole("button", { name: "Đóng công cụ" }).click()
     await expect(panel).toBeHidden()
-
-    const joinCard = page.getByTestId("join-card")
-    await expect(joinCard).toBeVisible()
-    const buy = page.getByTestId("flashback-buy-mobile")
-    const sell = page.getByTestId("flashback-sell-mobile")
-    const next = page.getByTestId("flashback-next-mobile")
-    await expect(buy).toBeVisible()
-    await expect(sell).toBeVisible()
-    await expect(next).toBeVisible()
-    await expect(buy).toBeDisabled()
-    await expect(sell).toBeDisabled()
-    await expect(next).toBeDisabled()
-
-    // Thanh đáy nằm trọn trong màn hình.
-    const bar = await buy.evaluate((element) => element.parentElement?.getBoundingClientRect().toJSON() as DOMRect)
-    expect(bar.left).toBeGreaterThanOrEqual(0)
-    expect(bar.right).toBeLessThanOrEqual(390)
-    expect(bar.bottom).toBeLessThanOrEqual(844)
-
-    expect(await noHorizontalOverflow(page)).toBe(true)
-    expect(await lowContrastTexts(page)).toEqual([])
-
-    await joinCard.getByRole("button", { name: "Tham gia miễn phí" }).click()
-    await expect(joinCard).toBeHidden()
-    await expect(buy).toBeEnabled()
-    await expect(sell).toBeEnabled()
-    await expect(next).toBeEnabled()
-    expect(await noHorizontalOverflow(page)).toBe(true)
-    expect(await lowContrastTexts(page)).toEqual([])
-
-    // Bấm Mua ở đáy mở lại panel đặt lệnh.
-    await buy.click()
-    await expect(panel).toBeVisible()
-    expect(await noHorizontalOverflow(page)).toBe(true)
   })
 }

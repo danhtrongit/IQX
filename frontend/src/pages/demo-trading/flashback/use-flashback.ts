@@ -1,61 +1,35 @@
 /**
- * React Query của Flashback (spec v1.1 §2.4 - §2.9).
+ * Khoá cache và các phép cập nhật ảnh chụp ván của Flashback v2.
  *
- * Mọi thay đổi trạng thái lượt chơi đi qua server: bấm "Phiên tiếp" mới nhận nến kế tiếp, đặt
- * lệnh mới nhận lệnh đã khớp. Hook chỉ invalidate lại các query đã lệch.
+ * Mọi thay đổi trạng thái ván đi qua server: bấm "Phiên tiếp" mới nhận nến kế tiếp, đặt lệnh mới
+ * nhận lệnh đã khớp. Phản hồi của server chứa đủ `me` mới nên màn chơi cập nhật thẳng vào cache,
+ * không phải tải lại cả ván sau mỗi thao tác.
  */
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { toast } from "sonner"
+import { useQuery } from "@tanstack/react-query"
 
 import { useAuth } from "@/hooks/use-auth"
 import {
-  fetchCurrent,
   fetchIndicators,
-  fetchLeaderboard,
-  fetchNextBar,
-  finishRound,
-  joinRound,
-  placeOrder,
-  saveIndicators,
-  type FlashbackLeaderboardScope,
-  type FlashbackOrderSide,
+  type FlashbackFinishResult,
+  type FlashbackMatchState,
+  type FlashbackMe,
+  type FlashbackNextResult,
+  type FlashbackSnapshot,
 } from "./flashback-api"
 
 const NO_USER = ""
 
 export const flashbackKeys = {
-  current: (userId: string) => ["flashback", "current", userId] as const,
-  leaderboard: (userId: string, scope: FlashbackLeaderboardScope) => ["flashback", "leaderboard", userId, scope] as const,
+  mine: (userId: string) => ["flashback", "mine", userId] as const,
+  rooms: (userId: string, filter: string) => ["flashback", "rooms", userId, filter] as const,
+  room: (userId: string, code: string) => ["flashback", "room", userId, code] as const,
+  match: (userId: string, matchId: string) => ["flashback", "match", userId, matchId] as const,
+  state: (userId: string, matchId: string) => ["flashback", "state", userId, matchId] as const,
+  result: (userId: string, matchId: string) => ["flashback", "result", userId, matchId] as const,
   indicators: (userId: string) => ["flashback", "indicators", userId] as const,
 }
 
-/** Đề đang mở và lượt chơi của người dùng. */
-export function useFlashbackCurrent() {
-  const { user } = useAuth()
-  const userId = user?.id ?? NO_USER
-  return useQuery({
-    queryKey: flashbackKeys.current(userId),
-    enabled: !!userId,
-    staleTime: 10_000,
-    retry: false,
-    queryFn: ({ signal }) => fetchCurrent(signal),
-  })
-}
-
-/** Bảng xếp hạng của đề hiện tại: "Toàn IQX" hoặc "Nhóm của tôi". */
-export function useFlashbackLeaderboard(scope: FlashbackLeaderboardScope, enabled: boolean) {
-  const { user } = useAuth()
-  const userId = user?.id ?? NO_USER
-  return useQuery({
-    queryKey: flashbackKeys.leaderboard(userId, scope),
-    enabled: enabled && !!userId,
-    staleTime: 30_000,
-    retry: false,
-    queryFn: ({ signal }) => fetchLeaderboard(scope, signal),
-  })
-}
-
-/** Các chỉ báo người dùng đã mở ở Học viện, kèm metadata tham số. */
+/** Metadata của đủ 16 chỉ báo: tên, tham số và miền cho phép. */
 export function useFlashbackIndicators(enabled: boolean) {
   const { user } = useAuth()
   const userId = user?.id ?? NO_USER
@@ -68,83 +42,28 @@ export function useFlashbackIndicators(enabled: boolean) {
   })
 }
 
-/** Tải lại đề hiện tại và bảng xếp hạng (khi server báo đề đã tới giờ đóng). */
-export function useReloadFlashback() {
-  const queryClient = useQueryClient()
-  const { user } = useAuth()
-  const userId = user?.id ?? NO_USER
-  return () => {
-    void queryClient.invalidateQueries({ queryKey: flashbackKeys.current(userId) })
-    void queryClient.invalidateQueries({ queryKey: ["flashback", "leaderboard", userId] })
+/** Sang phiên tiếp theo: thêm nến mới và thay toàn bộ `me`. */
+export function applyNext(snapshot: FlashbackSnapshot, result: FlashbackNextResult): FlashbackSnapshot {
+  return {
+    ...snapshot,
+    played_bars: [...snapshot.played_bars, result.bar],
+    my_step: result.me.step,
+    my_finished: result.me.finished || snapshot.my_finished,
+    me: result.me,
   }
 }
 
-/** Tham gia đề: lần đầu miễn phí, từ lần hai trừ phí cấu hình (mặc định 100 xu). */
-export function useJoinRound() {
-  const queryClient = useQueryClient()
-  const { user } = useAuth()
-  const userId = user?.id ?? NO_USER
-  return useMutation({
-    mutationFn: () => joinRound(),
-    onSuccess: (result) => {
-      void queryClient.invalidateQueries({ queryKey: flashbackKeys.current(userId) })
-      void queryClient.invalidateQueries({ queryKey: ["shop"] })
-      toast.success(result.fee_xu > 0 ? `Đã tham gia · −${result.fee_xu} xu` : "Đã tham gia miễn phí")
-    },
-  })
+/** Đặt lệnh xong: chỉ `me` đổi (tiền mặt, cổ phiếu, lệnh đã khớp). */
+export function applyOrder(snapshot: FlashbackSnapshot, me: FlashbackMe): FlashbackSnapshot {
+  return { ...snapshot, me }
 }
 
-/** Mở nến của phiên tiếp theo. */
-export function useNextSession() {
-  const queryClient = useQueryClient()
-  const { user } = useAuth()
-  const userId = user?.id ?? NO_USER
-  return useMutation({
-    mutationFn: (entryId: string) => fetchNextBar(entryId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: flashbackKeys.current(userId) })
-    },
-  })
+/** Hoàn thành: `me` đã chốt và số người còn đang chơi. */
+export function applyFinish(snapshot: FlashbackSnapshot, result: FlashbackFinishResult): FlashbackSnapshot {
+  return { ...snapshot, me: result.me, my_finished: true, my_step: result.me.step, playing_count: result.playing_count }
 }
 
-/** Đặt lệnh mua hoặc bán. */
-export function usePlaceOrder() {
-  const queryClient = useQueryClient()
-  const { user } = useAuth()
-  const userId = user?.id ?? NO_USER
-  return useMutation({
-    mutationFn: (input: { entryId: string; side: FlashbackOrderSide; qty: number }) =>
-      placeOrder(input.entryId, { side: input.side, qty: input.qty }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: flashbackKeys.current(userId) })
-    },
-  })
-}
-
-/** Chốt lượt chơi và nhận kết quả cùng hạng tạm thời. */
-export function useFinishRound() {
-  const queryClient = useQueryClient()
-  const { user } = useAuth()
-  const userId = user?.id ?? NO_USER
-  return useMutation({
-    mutationFn: (entryId: string) => finishRound(entryId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: flashbackKeys.current(userId) })
-      void queryClient.invalidateQueries({ queryKey: ["flashback", "leaderboard", userId] })
-    },
-  })
-}
-
-/** Lưu bộ chỉ báo của lượt chơi. */
-export function useSaveIndicators() {
-  const queryClient = useQueryClient()
-  const { user } = useAuth()
-  const userId = user?.id ?? NO_USER
-  return useMutation({
-    mutationFn: (input: { entryId: string; indicators: Parameters<typeof saveIndicators>[1] }) =>
-      saveIndicators(input.entryId, input.indicators),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: flashbackKeys.current(userId) })
-    },
-  })
+/** Cùng phép với `applyFinish` cho trạng thái chung, để thanh người chơi không nháy về số cũ. */
+export function applyFinishToState(state: FlashbackMatchState, result: FlashbackFinishResult): FlashbackMatchState {
+  return { ...state, my_finished: true, my_step: result.me.step, playing_count: result.playing_count }
 }

@@ -194,6 +194,12 @@ export function ledgerRowLabel(item: LedgerRowInput, lessonNames: ReadonlyMap<st
       return { title: "Tham gia Flashback", detail: null }
     case "flashback_reward":
       return { title: "Thưởng Flashback", detail: null }
+    case "flashback_stake":
+      return { title: "Cược Flashback", detail: null }
+    case "flashback_win":
+      return { title: "Thắng Flashback", detail: null }
+    case "flashback_refund":
+      return { title: "Hoàn xu cược Flashback", detail: null }
     default:
       return { title: "Điều chỉnh xu", detail: null }
   }

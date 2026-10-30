@@ -20,10 +20,12 @@ export type WorkspaceRail = {
  * main-area tool (Insight) while it fills the main area. Selection logic (show, hide,
  * switch) belongs to the workspace frame.
  */
-export function RailMenu({ rail, panelId, panelShown, onSelect, orientation = "vertical" }: {
+export function RailMenu({ rail, panelId, panelShown, panelHidden = false, onSelect, orientation = "vertical" }: {
   rail: WorkspaceRail
   panelId: string
   panelShown: boolean
+  /** The frame leaves the panel out: the active tool stays marked but controls nothing. */
+  panelHidden?: boolean
   onSelect: (item: RailItem, button: HTMLElement) => void
   /** `horizontal`: a tool bar above the main area, used on phones so the main area keeps the full width. */
   orientation?: "vertical" | "horizontal"
@@ -31,7 +33,7 @@ export function RailMenu({ rail, panelId, panelShown, onSelect, orientation = "v
   if (rail.items.length === 0) return null
 
   function isOn(item: RailItem) {
-    return item.affects === "sidebar" ? panelShown && item.id === rail.activeTool : item.id === rail.mainToolId
+    return item.affects === "sidebar" ? (panelShown || panelHidden) && item.id === rail.activeTool : item.id === rail.mainToolId
   }
 
   if (orientation === "horizontal") {
@@ -52,8 +54,8 @@ export function RailMenu({ rail, panelId, panelShown, onSelect, orientation = "v
               type="button"
               variant="ghost"
               aria-pressed={on}
-              aria-controls={panelTool ? panelId : undefined}
-              aria-expanded={panelTool ? on : undefined}
+              aria-controls={panelTool && !panelHidden ? panelId : undefined}
+              aria-expanded={panelTool && !panelHidden ? on : undefined}
               data-tool={item.id}
               data-current={current || undefined}
               onClick={(event) => onSelect(item, event.currentTarget)}
@@ -96,8 +98,8 @@ export function RailMenu({ rail, panelId, panelShown, onSelect, orientation = "v
                 type="button"
                 variant="ghost"
                 aria-pressed={on}
-                aria-controls={panelTool ? panelId : undefined}
-                aria-expanded={panelTool ? on : undefined}
+                aria-controls={panelTool && !panelHidden ? panelId : undefined}
+                aria-expanded={panelTool && !panelHidden ? on : undefined}
                 data-tool={item.id}
                 onClick={(event) => onSelect(item, event.currentTarget)}
                 className={cn(
