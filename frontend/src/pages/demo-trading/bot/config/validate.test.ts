@@ -55,6 +55,9 @@ describe("row validation messages", () => {
     const draft = rows("macd")
     draft.buy.rows[0]!.values.slow = ""
     expect(validateSideRows("macd", macd.rows, "buy", draft.buy.rows).map((error) => error.field)).toEqual(["slow"])
+    const outOfRange = rows("macd")
+    outOfRange.buy.rows[0]!.values.fast = "300"
+    expect(validateSideRows("macd", macd.rows, "buy", outOfRange.buy.rows).map((error) => error.field)).toEqual(["fast"])
   })
 
   it("rejects an enum code that is not in the options and a step that is not a multiple", () => {

@@ -4,8 +4,9 @@
  *   node dist/scripts/indicator-conditions-v3-migrate.js            # dry run (default): never writes
  *   node dist/scripts/indicator-conditions-v3-migrate.js --apply    # writes
  *
- * Order: back up the database, deploy the V3 code, apply migration 0032 (backups +
- * `bot_config_pauses`), then run this script outside the Bot window (18:30-19:40 ICT).
+ * Order: back up the database, apply migration 0032 (backups + `bot_config_pauses`) BEFORE the
+ * V3 code starts (it reads `bot_config_pauses`), deploy the V3 code, then run this script outside
+ * the Bot window (18:30-19:40 ICT), preferably after it so no Bot session runs on an old config.
  *
  * Per user, in one transaction under the same owner lock as `SharedConfigService.save`:
  * - Shared config: when the latest revision is not in the current format, append revision
@@ -17,6 +18,8 @@
  * - Bot (owner decision 1): `bot_accounts.status = 'active'`, a `bot_instances` row and active
  *   conditions in the pre-migration config the Bot runs on (the effective revision, or the
  *   pending latest one that would have become effective) → one silent `bot_config_pauses` row.
+ *   A Bot that was off only because every row of an ON tab was off would start trading on the
+ *   V3 default rows, so it is paused the same way (spec §6.2: a Bot that was off stays off).
  *   No notification. Any other Bot is "đang tắt sẵn" and only gets the new defaults.
  * - Strategy alerts (owner decision 2): every live alert whose pinned config is not in the
  *   current format gets a new version pinned to the user's latest current revision (the one just
@@ -432,7 +435,8 @@ export async function migrateUser(
          from bot_accounts a where a.user_id = $1`,
       [userId],
     );
-    const running = botRunning(facts[0] ?? null, runsOn);
+    // Also pause when the V3 defaults would make an idle Bot trade (master + tab ON, rows all OFF).
+    const running = botRunning(facts[0] ?? null, [...runsOn, built.config]);
 
     let savedAt = context.now;
     if (context.apply) {

@@ -121,6 +121,9 @@ export function validateRow(
     const left = value[constraint.left];
     const right = value[constraint.right];
     if (!isFiniteNumber(left) || !isFiniteNumber(right) || left < right) continue;
+    // One message per bad value: a field already out of range is not also compared.
+    const flagged = [constraint.left, constraint.right].map((k) => `${path}.${k}`);
+    if (errors.some((e) => flagged.includes(e.path))) continue;
     errors.push({
       path: `${path}.${constraint.left}`,
       message: fastSlowMessage(side, row),

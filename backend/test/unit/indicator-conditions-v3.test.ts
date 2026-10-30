@@ -1141,6 +1141,12 @@ describe('SPEC V3 §4 validation (server re-checks the form rules)', () => {
         [`indicators.macd.buy.rules.${index}.fast`, `Mua · dòng ${index + 1}: ${fastSlow}`],
       ]);
     }
+    // A fast period already out of range gets only its range message.
+    const macd = sideOf('macd');
+    macd.rules[0]!.fast = 300;
+    expect(messages('macd', 'buy', macd).map(([path]) => path)).toEqual([
+      'indicators.macd.buy.rules.0.fast',
+    ]);
   });
 
   it('decimal fields keep enforcing their step (owner decision 5)', () => {

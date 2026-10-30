@@ -88,6 +88,19 @@ describe('indicator conditions V3 migration: builders', () => {
     expect(botRunning(null, [on])).toBe(false);
   });
 
+  it('pauses an idle Bot whose ON tabs had every row OFF, since V3 default rows would trade', () => {
+    const stored = preV3Config(1);
+    const indicators = stored.indicators as Record<string, Record<string, unknown>>;
+    const ma = indicators.ma as { buy: { rules: { enabled?: boolean }[] }; sell: typeof ma.buy };
+    for (const side of [ma.buy, ma.sell]) {
+      side.rules = side.rules.map((rule) => ({ ...rule, enabled: false }));
+    }
+    const active = { status: 'active', has_instance: true };
+    expect(botRunning(active, [stored])).toBe(false);
+    const { config } = migratedConfig(stored, 2);
+    expect(botRunning(active, [stored, config])).toBe(true);
+  });
+
   it('resets a pre-V3 Luyện tập draft keeping its switches and hold, and leaves V3 drafts', () => {
     const reset = practiceDraftReset('rsi', {
       buy: { enabled: false, params: { period: 9 }, ops: { r1: '<' } },

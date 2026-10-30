@@ -62,9 +62,9 @@ const OWNER = 'user-owner';
 const OTHER = 'user-other';
 const SAVED_AT = '2025-06-02T03:00:00.000Z';
 
-const synthetic = deepFreeze(reference.syntheticBars(950));
-const START = synthetic[400]!.date;
-const END = synthetic[949]!.date;
+const synthetic = deepFreeze(reference.syntheticBars(1000));
+const START = synthetic[450]!.date;
+const END = synthetic[999]!.date;
 
 function indicator(config: SharedConfig, id: string): IndicatorConfig {
   const item = config.indicators[id];
@@ -321,8 +321,8 @@ describe('StrategyBacktestsService', () => {
   it('stores an immutable snapshot of the saved revision, data and assumptions', async () => {
     const run = await service().create(OWNER, body());
 
-    // Bars the engine saw: 300 warmup sessions before START, VNINDEX attached as `market`.
-    const expectedBars: Bar[] = synthetic.slice(100).map((bar) => ({
+    // Bars the engine saw: 450 warmup sessions before START, VNINDEX attached as `market`.
+    const expectedBars: Bar[] = synthetic.slice(0).map((bar) => ({
       date: bar.date,
       open: bar.open,
       high: bar.high,
@@ -355,8 +355,8 @@ describe('StrategyBacktestsService', () => {
       skipped_rows: 0,
       data_hash: hash,
       benchmark: { symbol: 'VNINDEX', available: true, source: 'fake-feed' },
-      warmup_sessions_requested: 300,
-      warmup_bars: 300,
+      warmup_sessions_requested: 450,
+      warmup_bars: 450,
       fee_preset: 'standard',
       fees: { buy: 0.0015, sell: 0.0025 },
       lot_size: CLEAN_TECH_2_0.lot_size,
@@ -420,7 +420,7 @@ describe('StrategyBacktestsService', () => {
       options: { fee_buy: 0, fee_sell: 0, execution: 'same_close' },
     });
     // Without VNINDEX the bars carry no `market` value at all (nothing is fabricated).
-    const expectedBars = toRecords(synthetic.slice(100)).map(({ time, ...rest }) => ({
+    const expectedBars = toRecords(synthetic.slice(0)).map(({ time, ...rest }) => ({
       date: time,
       ...rest,
     }));
@@ -516,7 +516,7 @@ describe('StrategyBacktestsService', () => {
     const error = await rejection(
       service().create(
         OWNER,
-        body({ research: { kind: 'out_of_sample', split_date: synthetic[700]!.date } }),
+        body({ research: { kind: 'out_of_sample', split_date: synthetic[750]!.date } }),
       ),
     );
     expect(error.getStatus()).toBe(403);

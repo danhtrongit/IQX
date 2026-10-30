@@ -81,7 +81,8 @@ import {
 import type { BacktestRunBody } from './strategy-backtests.schemas.js';
 
 /** Sessions fetched before `start` so indicators are warm on the first traded bar. */
-const WARMUP_SESSIONS = 300;
+// V3 trend rows at N=200 need 2N+1 bars (RSI 200 trend: 401); keep a margin.
+const WARMUP_SESSIONS = 450;
 const MAX_BARS = 3_500;
 const FETCH_CONCURRENCY = 4;
 /** Upper bound of engine runs one research request may cost (baseline included). */

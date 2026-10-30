@@ -92,6 +92,8 @@ export function validateRowValues(
     const left = values[constraint.left]
     const right = values[constraint.right]
     if (!isFiniteNumber(left) || !isFiniteNumber(right) || left < right) continue
+    // One message per bad value: a field already out of range is not also compared.
+    if (errors.some((e) => e.field === constraint.left || e.field === constraint.right)) continue
     errors.push({ path: `${path}.${constraint.left}`, side, row, field: constraint.left, message: fastSlowMessage(side, row) })
   }
   return errors
