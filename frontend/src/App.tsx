@@ -70,6 +70,7 @@ const VTAccountsPage = lazyPage(() => import("@/pages/admin/trading/vt-accounts-
 const VTAccountDetailPage = lazyPage(() => import("@/pages/admin/trading/vt-account-detail-page").then(module => ({ default: module.VTAccountDetailPage })))
 const VTConfigPage = lazyPage(() => import("@/pages/admin/trading/vt-config-page").then(module => ({ default: module.VTConfigPage })))
 const CoursesPage = lazyPage(() => import("@/pages/admin/learning/courses-page").then(module => ({ default: module.CoursesPage })))
+const VirtualOfficePage = lazyPage(() => import("@/pages/virtual-office/virtual-office-page").then(module => ({ default: module.VirtualOfficePage })))
 const AboutPage = lazyPage(() => import("@/pages/about/about-page").then(module => ({ default: module.AboutPage })))
 const CourseEditPage = lazyPage(() => import("@/pages/admin/learning/course-edit-page").then(module => ({ default: module.CourseEditPage })))
 
@@ -114,6 +115,7 @@ export const routes: RouteObject[] = [
       { path: "canh-bao", element: <RedirectWithSearch to="/chien-luoc" tab="canh-bao" />, handle: { chrome: emptyChrome } },
       { path: "backtest", element: <RedirectWithSearch to="/chien-luoc" tab="backtest" />, handle: { chrome: emptyChrome } },
       { path: "backtest/:symbol", Component: BacktestSymbolRedirect, handle: { chrome: emptyChrome } },
+      { path: "van-phong-ao", Component: VirtualOfficePage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug", Component: CourseDetailPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug/:episodeId", Component: EpisodeViewerPage, handle: { chrome: emptyChrome } },

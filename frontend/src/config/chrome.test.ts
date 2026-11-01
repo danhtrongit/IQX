@@ -75,6 +75,7 @@ describe("demo workspace chrome", () => {
       "Demo Trading",
       "Chiến lược",
       "Học viện",
+      "Văn phòng ảo",
     ])
   })
 })
