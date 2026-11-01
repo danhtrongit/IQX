@@ -59,6 +59,7 @@ Public and authenticated product routes:
 | `/bieu-do` | Advanced chart workspace |
 | `/demo-trading` | Learning journey and virtual trading |
 | `/chien-luoc` | Alerts and backtest |
+| `/van-phong-ao` | Virtual office: 3D brokerage floor (three.js) fed by real market data |
 | `/bai-hoc` | Course catalog |
 | `/bai-hoc/:slug` | Course detail |
 | `/bai-hoc/:slug/:episodeId` | Episode viewer |

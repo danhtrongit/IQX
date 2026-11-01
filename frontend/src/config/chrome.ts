@@ -44,6 +44,7 @@ export const HEADER_NAV: readonly { to: string; label: string; hidden?: boolean 
   { to: "/bai-hoc", label: "Bài học", hidden: !SHOW_LESSONS_NAV },
   // The HỌC VIỆN section of the workspace (the old /hoc-vien route redirects here).
   { to: "/demo-trading?view=academy", label: "Học viện" },
+  { to: "/van-phong-ao", label: "Văn phòng ảo" },
 ]
 
 /**
