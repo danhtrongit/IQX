@@ -153,6 +153,7 @@ export const ledgerItemSchema = z.object({
     'flashback_stake',
     'flashback_win',
     'flashback_refund',
+    'signup_bonus',
   ]),
   delta: z.number().int(),
   balance_after: z.number().int(),

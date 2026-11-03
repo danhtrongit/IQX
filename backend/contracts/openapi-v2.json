@@ -129728,7 +129728,8 @@
                               "flashback_reward",
                               "flashback_stake",
                               "flashback_win",
-                              "flashback_refund"
+                              "flashback_refund",
+                              "signup_bonus"
                             ],
                             "type": "string"
                           },

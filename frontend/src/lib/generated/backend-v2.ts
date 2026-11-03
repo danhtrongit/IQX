@@ -49647,7 +49647,8 @@ export type ListShopCoinLedgerResponses = {
         | "flashback_reward"
         | "flashback_stake"
         | "flashback_win"
-        | "flashback_refund";
+        | "flashback_refund"
+        | "signup_bonus";
       label: {
         lesson_id: string | null;
         lesson_key: string | null;

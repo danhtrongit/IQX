@@ -11,6 +11,9 @@ export const COIN_POLICY_VERSION = 'iqx-shop-xu-v2';
 /** +100 xu for each first valid lesson completion (one per user per stable lesson key). */
 export const LESSON_REWARD_XU = 100;
 
+/** One-time welcome bonus credited to every newly registered account. */
+export const SIGNUP_BONUS_XU = 1000;
+
 /** Price of one purchasable mascot (linh thú) in xu. */
 export const MASCOT_PRICE_XU = 2000;
 

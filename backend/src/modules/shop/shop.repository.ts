@@ -25,7 +25,8 @@ export type CoinLedgerKind =
   | 'flashback_reward'
   | 'flashback_stake'
   | 'flashback_win'
-  | 'flashback_refund';
+  | 'flashback_refund'
+  | 'signup_bonus';
 
 export interface WalletState {
   readonly balance: number;
