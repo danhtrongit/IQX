@@ -25,6 +25,7 @@ import {
 } from './auth.types.js';
 import { normalizePhone, uniqueViolationConstraint, userConflict } from './user-identity.js';
 import { createReferralOfferGrant } from '../team-leads/referral-offer.js';
+import { COIN_POLICY_VERSION, SIGNUP_BONUS_XU } from '../shop/shop.catalog.js';
 import {
   resolveReferralCode,
   type ResolvedReferralCode,
@@ -157,6 +158,7 @@ export class AuthService {
             }),
           );
         }
+        await creditSignupBonus(tx, created.id);
         const trialGranted = await this.grantTrialIfAvailable(tx, created.id);
         if (!trialGranted && !offerGranted) return created;
         const refreshed = await tx.query<UserDatabaseRow>(
@@ -680,4 +682,20 @@ export class AuthService {
 
 function passwordFingerprint(hash: string): string {
   return createHash('sha256').update(hash).digest('base64url');
+}
+
+/** +SIGNUP_BONUS_XU for a brand-new account; runs inside the registration transaction. */
+async function creditSignupBonus(tx: SqlClient, userId: string): Promise<void> {
+  const inserted = await tx.query<{ user_id: string }>(
+    `insert into coin_wallets (user_id, balance, last_seq) values ($1, $2, 1)
+     on conflict (user_id) do nothing returning user_id`,
+    [userId, SIGNUP_BONUS_XU],
+  );
+  if (inserted.length === 0) return;
+  await tx.query(
+    `insert into coin_ledger
+       (id, user_id, seq, kind, delta, balance_after, unique_key, ref, policy_version)
+     values ($1, $2, 1, 'signup_bonus', $3, $3, $4, '{}'::jsonb, $5)`,
+    [randomUUID(), userId, SIGNUP_BONUS_XU, `signup_bonus:${userId}`, COIN_POLICY_VERSION],
+  );
 }

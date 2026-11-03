@@ -200,6 +200,8 @@ export function ledgerRowLabel(item: LedgerRowInput, lessonNames: ReadonlyMap<st
       return { title: "Thắng Flashback", detail: null }
     case "flashback_refund":
       return { title: "Hoàn xu cược Flashback", detail: null }
+    case "signup_bonus":
+      return { title: "Thưởng đăng ký", detail: null }
     default:
       return { title: "Điều chỉnh xu", detail: null }
   }
