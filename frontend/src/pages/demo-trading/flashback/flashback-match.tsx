@@ -1,35 +1,31 @@
 /**
- * Màn chơi Flashback v2 (spec v2 §6): thanh người chơi với đồng hồ chung ở giữa, ba ô số liệu
- * (Phiên, Tổng tài sản, Tiền mặt), biểu đồ, nút "Phiên tiếp" và các phím tắt. Trên điện thoại có
- * thanh nút cố định ở đáy. Mỗi người tự bấm "Phiên tiếp", không chờ người khác; ở phiên cuối nút
- * đổi thành "Hoàn thành".
+ * Màn chơi Flashback v2 (spec v2 §6, v2.1 §6, §7): thanh người chơi với đồng hồ chung ở giữa, ba ô
+ * số liệu (Phiên, Tổng tài sản, Tiền mặt), biểu đồ kèm nút "Các chỉ báo" và công cụ vẽ, nút "Phiên
+ * tiếp" và các phím tắt. Trên điện thoại có thanh nút cố định ở đáy. Mỗi người tự bấm "Phiên tiếp",
+ * không chờ người khác; ở phiên cuối nút đổi thành "Hoàn thành".
  */
 import { useCallback, useEffect, useState, type ReactNode } from "react"
-import { Check, Play, Sigma } from "lucide-react"
+import { Play, Sigma } from "lucide-react"
 
 import { PanelState } from "@/components/layout/panel-state"
 import { useWorkspaceFrame } from "@/components/layout/workspace-frame-context"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import type { FlashbackPlayer } from "./flashback-api"
-import { PlayerAvatar } from "./flashback-avatar"
 import { FlashbackChart } from "./flashback-chart"
 import { useFlashback, type MatchApi } from "./flashback-context"
+import { DrawingToolbar } from "./flashback-drawing-toolbar"
 import { IndicatorPicker, IndicatorSettings } from "./flashback-indicator-dialogs"
 import { defaultParams } from "./flashback-indicators"
-import {
-  FLASHBACK_LOW_TIME_MS,
-  clockText,
-  formatMoney,
-  leaderIds,
-  playerStatus,
-} from "./flashback-model"
+import { formatMoney } from "./flashback-model"
+import { PlayerBar } from "./flashback-player-bar"
 import { FlashbackResult } from "./flashback-result"
+import { useChartDrawings } from "./use-chart-drawings"
 
 export function FlashbackMatchScreen() {
   const { match, matchLoading, matchFailed, retryMatch } = useFlashback()
-  if (match) return <MatchView match={match} />
+  // `key` theo ID ván: sang ván mới thì hình vẽ và các hộp thoại bắt đầu lại (v2.1 §7.5).
+  if (match) return <MatchView key={match.snapshot.match_id} match={match} />
   if (matchFailed) {
     return (
       <PanelState
@@ -58,6 +54,8 @@ function MatchView({ match }: { match: MatchApi }) {
   const atLastBar = match.step >= match.playBars
   const { setSide, requestQtyFocus, nextSession, finish } = match
   const resultOpen = match.resultOpen
+  // Hình vẽ của riêng mình, giữ trong suốt ván (kể cả khi "Xem lại biểu đồ"); phím tắt tắt khi có hộp thoại.
+  const drawings = useChartDrawings(!pickerOpen && settingsKey === null && !resultOpen)
 
   /**
    * Hiện khung đặt lệnh (mở lớp trên điện thoại, bung lại cột đã thu gọn trên màn hình rộng) và đưa
@@ -131,11 +129,12 @@ function MatchView({ match }: { match: MatchApi }) {
       </section>
 
       <section className="relative flex flex-col gap-2 rounded-lg border border-border bg-card p-2.5">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button type="button" variant="outline" size="sm" onClick={() => setPickerOpen(true)} aria-label="Các chỉ báo">
             <Sigma className="size-3.5" aria-hidden="true" />
             Các chỉ báo
           </Button>
+          <DrawingToolbar drawings={drawings} />
         </div>
 
         <FlashbackChart
@@ -144,6 +143,7 @@ function MatchView({ match }: { match: MatchApi }) {
           orders={match.me.orders}
           viewBars={match.viewBars}
           playBars={match.playBars}
+          drawings={drawings}
           onToggle={match.toggleIndicator}
           onSettings={setSettingsKey}
           onRemove={match.removeIndicator}
@@ -277,129 +277,6 @@ function StatTile({
       <span className="block text-[11px] font-semibold text-text-secondary">{label}</span>
       <b className="mt-1 block truncate font-heading text-lg font-bold text-foreground tabular-nums">{value}</b>
       {children}
-    </div>
-  )
-}
-
-// ------------------------------------------------------------------ thanh người chơi
-
-function PlayerBar({ match }: { match: MatchApi }) {
-  const leaders = leaderIds(match.players)
-  const middle = Math.ceil(match.players.length / 2)
-  const cells = match.players.map((player) => (
-    <PlayerCell key={player.user_id} player={player} playBars={match.playBars} leader={leaders.has(player.user_id)} />
-  ))
-  return (
-    <section
-      aria-label="Người chơi"
-      className="flex flex-wrap items-center justify-center gap-1 rounded-lg border border-border bg-card p-2 min-[901px]:gap-2.5 min-[901px]:p-2.5"
-    >
-      {cells.slice(0, middle)}
-      <MatchClock clock={match.clock} ended={match.ended} onExpire={match.expireClock} />
-      {cells.slice(middle)}
-    </section>
-  )
-}
-
-function PlayerCell({ player, playBars, leader }: { player: FlashbackPlayer; playBars: number; leader: boolean }) {
-  // Trong lúc chơi không hiện % của ai, chỉ "Đang chơi · phiên/tổng" hoặc "✓ Đã xong" (v2.1 §6.2).
-  const status = playerStatus(player, playBars)
-  const done = status.kind === "done"
-  return (
-    <div
-      className={cn(
-        "flex min-w-0 items-center gap-2 rounded-md px-1.5 py-1 min-[901px]:gap-2.5 min-[901px]:px-2.5",
-        player.is_me && "bg-primary/10",
-      )}
-      data-testid="flashback-player"
-      data-me={player.is_me}
-      data-leader={leader}
-      data-status={status.kind}
-    >
-      <span className="relative shrink-0">
-        <PlayerAvatar
-          name={player.name}
-          avatarUrl={player.avatar_url}
-          seed={player.user_id}
-          className={cn("size-7 min-[901px]:size-[34px]", leader && "ring-[3px] ring-chart-2", done && "ring-[3px] ring-price-up")}
-        />
-        {done ? (
-          <span
-            className="absolute -right-1 -bottom-1 grid size-3.5 place-items-center rounded-full bg-price-up text-card"
-            data-testid="flashback-player-done"
-          >
-            <Check className="size-2.5" strokeWidth={4} aria-hidden="true" />
-          </span>
-        ) : null}
-      </span>
-      <div className="flex min-w-0 flex-col gap-0.5">
-        <b className="max-w-[74px] truncate text-[13px] font-extrabold min-[901px]:max-w-[130px] min-[901px]:text-[15px]">
-          {player.name}
-          {leader ? <span className="sr-only"> đang dẫn đầu</span> : null}
-        </b>
-        <span
-          className={cn(
-            "self-start rounded-sm px-1.5 py-0.5 text-[13px] leading-none font-extrabold tabular-nums",
-            status.kind === "result"
-              ? status.percent > 0
-                ? "bg-price-up text-card"
-                : status.percent < 0
-                  ? "bg-price-down text-card"
-                  : "bg-muted text-foreground"
-              : done
-                ? "bg-price-up/15 text-price-up"
-                : "bg-muted text-foreground",
-          )}
-          data-testid="flashback-player-status"
-        >
-          {status.text}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-/** Đồng hồ chung của phòng: mm:ss ở giữa thanh, đỏ khi còn dưới 1 phút, "Kết thúc" khi hết ván. */
-function MatchClock({
-  clock,
-  ended,
-  onExpire,
-}: {
-  clock: MatchApi["clock"]
-  ended: boolean
-  onExpire: () => void
-}) {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    if (ended) return
-    const timer = setInterval(() => setNow(Date.now()), 1000)
-    return () => clearInterval(timer)
-  }, [ended])
-
-  const remaining = Math.max(0, clock.remainingMs - Math.max(0, now - clock.receivedAt))
-  const expired = !ended && remaining <= 0
-  // Hết giờ theo đồng hồ: hỏi server ngay để biết ván đã kết thúc chưa.
-  useEffect(() => {
-    if (expired) onExpire()
-  }, [expired, onExpire])
-
-  const low = !ended && remaining < FLASHBACK_LOW_TIME_MS
-  return (
-    <div
-      className="flex items-center justify-center border-x border-border px-3.5 max-[900px]:order-first max-[900px]:w-full max-[900px]:border-x-0 max-[900px]:border-b max-[900px]:px-0 max-[900px]:pb-1.5"
-      data-testid="flashback-clock"
-      data-low={low}
-      role="timer"
-      aria-label="Thời gian còn lại"
-    >
-      <b
-        className={cn(
-          "font-heading text-lg font-black tabular-nums min-[901px]:text-[22px]",
-          low ? "text-destructive" : "text-foreground",
-        )}
-      >
-        {ended ? "Kết thúc" : clockText(remaining)}
-      </b>
     </div>
   )
 }

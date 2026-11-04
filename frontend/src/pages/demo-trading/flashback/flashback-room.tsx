@@ -1,7 +1,8 @@
 /**
  * Phòng chờ Flashback (spec v2 §4, v2.1 §1): ID phòng cỡ lớn kèm ổ khoá, nút Sao chép ID, 4 ô thông
  * số, các ô người chơi (bằng số người tối đa, tối thiểu 4; từ 9 người trở lên ô thu nhỏ, lưới 6 cột
- * và cuộn trong khung), Rời phòng và Bắt đầu (chỉ chủ phòng). Không có khung hướng dẫn hay chữ giải thích.
+ * và cuộn trong khung; mỗi ô có avatar kèm cấp và vương miện, v2.1 §3.3 và §4.3), Rời phòng và Bắt
+ * đầu (chỉ chủ phòng). Không có khung hướng dẫn hay chữ giải thích.
  */
 import { Copy, Lock } from "lucide-react"
 
@@ -124,6 +125,9 @@ function Slot({ room, index, compact }: { room: FlashbackRoom; index: number; co
           avatarUrl={member.avatar_url}
           seed={member.user_id}
           className={compact ? "size-[34px]" : "size-12"}
+          wrapperClassName="mt-1.5"
+          level={member.level}
+          crown={member.crown}
         />
         <b className="w-full truncate text-sm font-bold">{member.name}</b>
         {member.is_owner ? (

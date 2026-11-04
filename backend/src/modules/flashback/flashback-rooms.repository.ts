@@ -1,5 +1,5 @@
 /**
- * Kho dữ liệu của Flashback v2 · Phòng chơi (migration 0033).
+ * Kho dữ liệu của Flashback v2 · Phòng chơi (migration 0033; cấp, điểm, hạng ở migration 0038).
  *
  * Mọi ghi đi qua transaction của caller. Khoá dùng: dòng phòng (`FOR UPDATE`) cho vào/rời/bắt
  * đầu/chơi lại, dòng người chơi cho phiên tiếp/đặt lệnh/hoàn thành, dòng ván cho chốt ván, dòng
@@ -40,6 +40,8 @@ export interface FbRoomRow {
 export interface FbRoomListRow extends FbRoomRow {
   readonly ownerName: string;
   readonly ownerAvatarUrl: string | null;
+  /** Tổng điểm cấp của chủ phòng (v2.1 §3), để tính cấp. */
+  readonly ownerTotalPoints: number;
   readonly memberCount: number;
 }
 
@@ -49,6 +51,8 @@ export interface FbMemberRow {
   readonly joinedAt: Date;
   readonly name: string;
   readonly avatarUrl: string | null;
+  /** Tổng điểm cấp hiện tại của người này (v2.1 §3), để tính cấp. */
+  readonly totalPoints: number;
 }
 
 export interface FbMatchRow {
@@ -96,11 +100,19 @@ export interface FbEntryRow {
   readonly winXu: number;
   readonly refundXu: number;
   readonly status: 'playing' | 'finished';
+  /** Điểm cấp nhận từ ván này (v2.1 §3.1): 10, 3 hoặc 0. */
+  readonly points: number;
+  /** Thắng ván từ 2 người (hạng 1, gồm cả hoà); ván chơi 1 mình luôn false. */
+  readonly isWin: boolean;
+  /** Lúc đã cộng điểm; null là chưa cộng (mỗi (ván, người) chỉ cộng một lần). */
+  readonly pointsAwardedAt: Date | null;
 }
 
 export interface FbEntryPlayerRow extends FbEntryRow {
   readonly name: string;
   readonly avatarUrl: string | null;
+  /** Tổng điểm cấp hiện tại của người này, để tính cấp. */
+  readonly totalPoints: number;
 }
 
 export interface NewFbRoom {
@@ -203,6 +215,93 @@ export interface NewFbOrder {
   readonly idempotencyKey: string | null;
 }
 
+/** Cộng điểm cấp cho một người của một ván (v2.1 §3, §10.2). */
+export interface FbAwardInput {
+  readonly entryId: string;
+  readonly userId: string;
+  readonly points: number;
+  readonly isWin: boolean;
+  /** Ván từ 2 người: tính vào số ván và số thắng của bảng xếp hạng; ván chơi 1 mình thì không. */
+  readonly counted: boolean;
+  readonly at: Date;
+}
+
+/** Một dòng bảng xếp hạng (v2.1 §4). `rank` bắt đầu từ 1. */
+export interface FbLeaderboardRow {
+  readonly rank: number;
+  readonly userId: string;
+  readonly name: string;
+  readonly avatarUrl: string | null;
+  readonly points: number;
+  readonly games: number;
+  readonly wins: number;
+}
+
+/** Bộ lọc lịch sử đấu (v2.1 §5.3): kết quả và mốc thời gian bắt đầu (null = tất cả). */
+export interface FbHistoryFilter {
+  readonly result: 'all' | 'win' | 'lose' | 'solo';
+  readonly since: Date | null;
+}
+
+/** Một ván trong lịch sử đấu của một người (v2.1 §5.2). */
+export interface FbHistoryRow {
+  readonly entryId: string;
+  readonly matchId: string;
+  readonly roomCode: string;
+  readonly endedAt: Date;
+  readonly playerCount: number;
+  readonly viewBars: number;
+  readonly playBars: number;
+  readonly minutes: number;
+  readonly matchStakeXu: number;
+  readonly symbol: string;
+  readonly startDate: string;
+  readonly endDate: string;
+  readonly rank: number;
+  /** Số người đồng hạng 1 của ván (để phân biệt Thắng và Hoà). */
+  readonly topCount: number;
+  readonly pnlPct: number;
+  readonly cash: bigint;
+  readonly finalNav: bigint;
+  readonly stakeXu: number;
+  readonly winXu: number;
+  readonly refundXu: number;
+  readonly points: number;
+}
+
+/** Một người chơi trong chi tiết một ván của lịch sử đấu. */
+export interface FbHistoryPlayerRow {
+  readonly matchId: string;
+  readonly userId: string;
+  readonly name: string;
+  readonly avatarUrl: string | null;
+  readonly totalPoints: number;
+  readonly rank: number;
+  readonly pnlPct: number;
+  readonly stakeXu: number;
+  readonly winXu: number;
+  readonly refundXu: number;
+  readonly points: number;
+  readonly joinedAt: Date;
+}
+
+/** Sáu số tổng kết của lịch sử đấu trong một khoảng thời gian (v2.1 §5.1). */
+export interface FbHistorySummaryRow {
+  readonly games: number;
+  readonly soloGames: number;
+  /** Ván từ 2 người thắng, gồm cả hoà hạng 1. */
+  readonly wins: number;
+  /** Tổng xu nhận (thắng, hoàn) trừ xu cược đã mất. */
+  readonly xuNet: number;
+  readonly points: number;
+  readonly avgPnlPct: number | null;
+  readonly bestPnlPct: number | null;
+  readonly bestSymbol: string | null;
+}
+
+/** Tối đa bấy nhiêu ván gần nhất được trả về trong lịch sử đấu (chủ sản phẩm chốt 200). */
+export const FB_HISTORY_CAP = 200;
+
 /** Phiên bản chính sách ghi vào `coin_ledger.policy_version`. */
 export const FB_LEDGER_POLICY = 'iqx-flashback-v2-rooms';
 
@@ -281,6 +380,42 @@ export abstract class FlashbackRoomsRepository {
     entryId: string,
     key: string,
   ): Promise<FlashbackOrderRow | null>;
+  // cấp, điểm, hạng (v2.1 §3, §4)
+  /**
+   * Cộng điểm cho một người của một ván đúng một lần: chỉ dòng `points_awarded_at IS NULL` được cập
+   * nhật, rồi (ván từ 2 người) tăng `fb_player_stats`. false khi đã cộng rồi. Gọi trong transaction
+   * chốt ván, theo thứ tự user_id để các transaction cùng khoá một thứ tự.
+   */
+  abstract awardEntry(tx: SqlClient, input: FbAwardInput): Promise<boolean>;
+  /** Ván đã kết thúc mà còn người chưa được cộng điểm (ván chốt bởi bản cũ), cũ nhất trước. */
+  abstract pendingAwardMatchIds(db: SqlClient, limit: number): Promise<string[]>;
+  /** Top `limit` của bảng xếp hạng, theo thứ tự §4.1. Chỉ người đã chơi ít nhất 1 ván từ 2 người. */
+  abstract leaderboard(db: SqlClient, limit: number): Promise<FbLeaderboardRow[]>;
+  /** Dòng bảng xếp hạng của một người với đúng hạng; null khi chưa chơi ván nào từ 2 người. */
+  abstract leaderboardRow(db: SqlClient, userId: string): Promise<FbLeaderboardRow | null>;
+  /** Mã người dùng đang hạng 1, 2, 3 (theo thứ tự). */
+  abstract top3(db: SqlClient): Promise<string[]>;
+  /** Tổng điểm của người chơi ngay sau khi nhận điểm ở dòng này (tính tới và gồm cả dòng đó). */
+  abstract pointsThroughEntry(db: SqlClient, entryId: string): Promise<number>;
+  // lịch sử đấu (v2.1 §5)
+  /** Ván đã kết thúc của người này, mới nhất trước, tối đa `FB_HISTORY_CAP`; `total` là số ván khớp (đã giới hạn). */
+  abstract historyPage(
+    db: SqlClient,
+    userId: string,
+    filter: FbHistoryFilter,
+    offset: number,
+    limit: number,
+  ): Promise<{ total: number; rows: FbHistoryRow[] }>;
+  abstract historyPlayers(
+    db: SqlClient,
+    matchIds: readonly string[],
+  ): Promise<FbHistoryPlayerRow[]>;
+  abstract historyOrders(db: SqlClient, entryIds: readonly string[]): Promise<FlashbackOrderRow[]>;
+  abstract historySummary(
+    db: SqlClient,
+    userId: string,
+    since: Date | null,
+  ): Promise<FbHistorySummaryRow>;
 }
 
 // ------------------------------------------------------------------ ánh xạ dòng
@@ -392,6 +527,9 @@ const mapEntry = (row: Row): FbEntryRow => ({
   winXu: toInt(row.win_xu, 'win_xu'),
   refundXu: toInt(row.refund_xu, 'refund_xu'),
   status: String(row.status) as 'playing' | 'finished',
+  points: toInt(row.points, 'points'),
+  isWin: row.is_win === true,
+  pointsAwardedAt: toDateOrNull(row.points_awarded_at),
 });
 
 const mapLot = (row: Row): FlashbackLotRow => ({
@@ -429,13 +567,34 @@ const MATCH_COLUMNS = `id, room_id, symbol, to_char(start_date, 'YYYY-MM-DD') as
 
 const ENTRY_COLUMNS = `e.id, e.match_id, e.user_id, e.stake_xu, e.step, e.cash, e.initial_cash,
   e.nav_by_step::text[] as nav_by_step, e.joined_at, e.finished_at, e.auto_finished, e.final_nav,
-  e.pnl_pct, e.rank, e.win_xu, e.refund_xu, e.status`;
+  e.pnl_pct, e.rank, e.win_xu, e.refund_xu, e.status, e.points, e.is_win, e.points_awarded_at`;
 
 const LOT_COLUMNS = `id, entry_id, qty, price, step, sellable_step, created_at`;
 const ORDER_COLUMNS = `id, entry_id, side, qty, price, step, amount, fee, tax, idempotency_key, created_at`;
 
 /** Tên hiển thị trong phòng: tên đăng nhập, chưa đặt thì họ tên (không bao giờ dùng email). */
 const DISPLAY_NAME = `coalesce(nullif(u.username, ''), nullif(u.full_name, ''), 'Người chơi')`;
+
+/** Thứ tự bảng xếp hạng (v2.1 §4.1); khớp `compareRank` ở flashback-rooms.logic.ts. */
+const RANK_ORDER = `order by s.points desc, s.wins desc, s.reached_points_at asc, s.user_id asc`;
+
+/** Điều kiện SQL theo bộ lọc kết quả của lịch sử đấu (chuỗi cố định, không nhận từ người dùng). */
+const HISTORY_RESULT_SQL: Record<FbHistoryFilter['result'], string> = {
+  all: '',
+  solo: 'and m.player_count < 2',
+  win: 'and m.player_count >= 2 and e.rank = 1',
+  lose: 'and m.player_count >= 2 and e.rank <> 1',
+};
+
+const mapLeaderboardRow = (row: Row): FbLeaderboardRow => ({
+  rank: toInt(row.rank, 'rank'),
+  userId: String(row.user_id),
+  name: String(row.name ?? ''),
+  avatarUrl: toText(row.avatar_url),
+  points: toInt(row.points, 'points'),
+  games: toInt(row.games, 'games'),
+  wins: toInt(row.wins, 'wins'),
+});
 
 @Injectable()
 export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
@@ -486,10 +645,12 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
   ): Promise<FbRoomListRow[]> {
     const rows = await db.query<Row>(
       `select ${ROOM_COLUMNS}, ${DISPLAY_NAME} as owner_name, u.avatar_url as owner_avatar_url,
+              coalesce(s.points, 0) as owner_total_points,
               (select count(*) from fb_room_members m
                 where m.room_id = r.id and m.left_at is null)::int as member_count
          from fb_rooms r
          join users u on u.id = r.owner_id
+         left join fb_player_stats s on s.user_id = r.owner_id
         where r.status <> 'closed'
           and ($1::text = 'all' or r.status = $1::text)
         order by r.created_at desc, r.id
@@ -500,6 +661,7 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
       ...mapRoom(row),
       ownerName: String(row.owner_name ?? ''),
       ownerAvatarUrl: toText(row.owner_avatar_url),
+      ownerTotalPoints: toInt(row.owner_total_points, 'owner_total_points'),
       memberCount: toInt(row.member_count, 'member_count'),
     }));
   }
@@ -542,9 +704,11 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
 
   async activeMembers(db: SqlClient, roomId: string): Promise<FbMemberRow[]> {
     const rows = await db.query<Row>(
-      `select m.room_id, m.user_id, m.joined_at, ${DISPLAY_NAME} as name, u.avatar_url
+      `select m.room_id, m.user_id, m.joined_at, ${DISPLAY_NAME} as name, u.avatar_url,
+              coalesce(s.points, 0) as total_points
          from fb_room_members m
          join users u on u.id = m.user_id
+         left join fb_player_stats s on s.user_id = m.user_id
         where m.room_id = $1 and m.left_at is null
         order by m.joined_at, m.id`,
       [roomId],
@@ -555,6 +719,7 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
       joinedAt: toDate(row.joined_at),
       name: String(row.name ?? ''),
       avatarUrl: toText(row.avatar_url),
+      totalPoints: toInt(row.total_points, 'total_points'),
     }));
   }
 
@@ -769,9 +934,11 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
 
   async entriesByMatch(db: SqlClient, matchId: string, lock = false): Promise<FbEntryPlayerRow[]> {
     const rows = await db.query<Row>(
-      `select ${ENTRY_COLUMNS}, ${DISPLAY_NAME} as name, u.avatar_url
+      `select ${ENTRY_COLUMNS}, ${DISPLAY_NAME} as name, u.avatar_url,
+              coalesce(s.points, 0) as total_points
          from fb_entries e
          join users u on u.id = e.user_id
+         left join fb_player_stats s on s.user_id = e.user_id
         where e.match_id = $1
         order by e.joined_at, e.id
         ${lock ? 'for update of e' : ''}`,
@@ -781,6 +948,7 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
       ...mapEntry(row),
       name: String(row.name ?? ''),
       avatarUrl: toText(row.avatar_url),
+      totalPoints: toInt(row.total_points, 'total_points'),
     }));
   }
 
@@ -881,5 +1049,257 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
       [entryId, key],
     );
     return rows[0] ? mapOrder(rows[0]) : null;
+  }
+
+  // ------------------------------------------------------------------ cấp, điểm, hạng (v2.1)
+
+  async awardEntry(tx: SqlClient, input: FbAwardInput): Promise<boolean> {
+    // Chỉ dòng chưa cộng điểm được cập nhật: chạy lại hay hai transaction cùng lúc đều không cộng
+    // hai lần (dòng bị khoá, bên sau thấy points_awarded_at đã có và không khớp điều kiện).
+    const rows = await tx.query<{ id: string }>(
+      `update fb_entries set points = $2, is_win = $3, points_awarded_at = $4
+        where id = $1 and points_awarded_at is null
+       returning id::text as id`,
+      [input.entryId, input.points, input.isWin, input.at],
+    );
+    if (rows.length === 0) return false;
+    if (input.counted) {
+      await tx.query(
+        `insert into fb_player_stats as s (user_id, points, games, wins, reached_points_at, updated_at)
+         values ($1, $2, 1, $3, $4, $4)
+         on conflict (user_id) do update set
+           points = s.points + excluded.points,
+           games = s.games + 1,
+           wins = s.wins + excluded.wins,
+           reached_points_at = case when excluded.points > 0
+                                    then excluded.reached_points_at else s.reached_points_at end,
+           updated_at = excluded.updated_at`,
+        [input.userId, input.points, input.isWin ? 1 : 0, input.at],
+      );
+    }
+    return true;
+  }
+
+  async pendingAwardMatchIds(db: SqlClient, limit: number): Promise<string[]> {
+    const rows = await db.query<{ id: string }>(
+      `select m.id::text as id
+         from (select distinct e.match_id
+                 from fb_entries e
+                where e.points_awarded_at is null and e.status = 'finished') p
+         join fb_matches m on m.id = p.match_id
+        where m.status in ('finished', 'paid')
+        order by m.ended_at nulls last, m.id
+        limit $1`,
+      [limit],
+    );
+    return rows.map((row) => row.id);
+  }
+
+  async leaderboard(db: SqlClient, limit: number): Promise<FbLeaderboardRow[]> {
+    const rows = await db.query<Row>(
+      `select row_number() over (${RANK_ORDER})::int as rank,
+              s.user_id, ${DISPLAY_NAME} as name, u.avatar_url, s.points, s.games, s.wins
+         from fb_player_stats s
+         join users u on u.id = s.user_id
+        where s.games > 0
+        order by 1
+        limit $1`,
+      [limit],
+    );
+    return rows.map(mapLeaderboardRow);
+  }
+
+  async leaderboardRow(db: SqlClient, userId: string): Promise<FbLeaderboardRow | null> {
+    const rows = await db.query<Row>(
+      `select 1 + (
+                select count(*) from fb_player_stats o
+                 where o.games > 0 and (
+                       o.points > s.points
+                    or (o.points = s.points and o.wins > s.wins)
+                    or (o.points = s.points and o.wins = s.wins
+                        and o.reached_points_at < s.reached_points_at)
+                    or (o.points = s.points and o.wins = s.wins
+                        and o.reached_points_at = s.reached_points_at and o.user_id < s.user_id)
+                 )
+              )::int as rank,
+              s.user_id, ${DISPLAY_NAME} as name, u.avatar_url, s.points, s.games, s.wins
+         from fb_player_stats s
+         join users u on u.id = s.user_id
+        where s.user_id = $1 and s.games > 0`,
+      [userId],
+    );
+    return rows[0] ? mapLeaderboardRow(rows[0]) : null;
+  }
+
+  async top3(db: SqlClient): Promise<string[]> {
+    const rows = await db.query<{ user_id: string }>(
+      `select s.user_id::text as user_id
+         from fb_player_stats s
+        where s.games > 0
+        order by s.points desc, s.wins desc, s.reached_points_at asc, s.user_id asc
+        limit 3`,
+    );
+    return rows.map((row) => row.user_id);
+  }
+
+  async pointsThroughEntry(db: SqlClient, entryId: string): Promise<number> {
+    const rows = await db.query<{ total: string }>(
+      `select coalesce(sum(p.points), 0)::text as total
+         from fb_entries e
+         join fb_entries p on p.user_id = e.user_id
+        where e.id = $1
+          and e.points_awarded_at is not null
+          and p.points_awarded_at is not null
+          and (p.points_awarded_at < e.points_awarded_at
+               or (p.points_awarded_at = e.points_awarded_at and p.id <= e.id))`,
+      [entryId],
+    );
+    return rows[0] ? toInt(rows[0].total, 'total') : 0;
+  }
+
+  async historyPage(
+    db: SqlClient,
+    userId: string,
+    filter: FbHistoryFilter,
+    offset: number,
+    limit: number,
+  ): Promise<{ total: number; rows: FbHistoryRow[] }> {
+    const where = `e.user_id = $1 and m.status <> 'playing' and e.rank is not null
+          and ($2::timestamptz is null or m.ended_at >= $2::timestamptz)
+          ${HISTORY_RESULT_SQL[filter.result]}`;
+    const counted = await db.query<{ total: number }>(
+      `select count(*)::int as total from (
+         select 1 from fb_entries e join fb_matches m on m.id = e.match_id
+          where ${where}
+          order by m.ended_at desc, m.id desc
+          limit ${FB_HISTORY_CAP}
+       ) latest`,
+      [userId, filter.since],
+    );
+    const total = counted[0] ? toInt(counted[0].total, 'total') : 0;
+    const pageLimit = Math.max(0, Math.min(limit, FB_HISTORY_CAP - offset));
+    if (total === 0 || pageLimit === 0) return { total, rows: [] };
+    const rows = await db.query<Row>(
+      `select e.id as entry_id, e.match_id, r.code as room_code, m.ended_at, m.player_count,
+              m.view_bars, m.play_bars, m.minutes, m.stake_xu as match_stake_xu, m.symbol,
+              to_char(m.start_date, 'YYYY-MM-DD') as start_date_text,
+              to_char(m.end_date, 'YYYY-MM-DD') as end_date_text,
+              e.rank, e.pnl_pct, e.cash, e.final_nav, e.stake_xu, e.win_xu, e.refund_xu, e.points,
+              (select count(*) from fb_entries t
+                where t.match_id = e.match_id and t.rank = 1)::int as top_count
+         from fb_entries e
+         join fb_matches m on m.id = e.match_id
+         join fb_rooms r on r.id = m.room_id
+        where ${where}
+        order by m.ended_at desc, m.id desc
+        limit $3 offset $4`,
+      [userId, filter.since, pageLimit, offset],
+    );
+    return {
+      total,
+      rows: rows.map((row): FbHistoryRow => ({
+        entryId: String(row.entry_id),
+        matchId: String(row.match_id),
+        roomCode: String(row.room_code),
+        endedAt: toDate(row.ended_at),
+        playerCount: toInt(row.player_count, 'player_count'),
+        viewBars: toInt(row.view_bars, 'view_bars'),
+        playBars: toInt(row.play_bars, 'play_bars'),
+        minutes: toInt(row.minutes, 'minutes'),
+        matchStakeXu: toInt(row.match_stake_xu, 'match_stake_xu'),
+        symbol: String(row.symbol),
+        startDate: String(row.start_date_text),
+        endDate: String(row.end_date_text),
+        rank: toInt(row.rank, 'rank'),
+        topCount: toInt(row.top_count, 'top_count'),
+        pnlPct: Number(row.pnl_pct ?? 0),
+        cash: toBigInt(row.cash, 'cash'),
+        finalNav: toBigInt(row.final_nav ?? row.cash, 'final_nav'),
+        stakeXu: toInt(row.stake_xu, 'stake_xu'),
+        winXu: toInt(row.win_xu, 'win_xu'),
+        refundXu: toInt(row.refund_xu, 'refund_xu'),
+        points: toInt(row.points, 'points'),
+      })),
+    };
+  }
+
+  async historyPlayers(db: SqlClient, matchIds: readonly string[]): Promise<FbHistoryPlayerRow[]> {
+    if (matchIds.length === 0) return [];
+    const rows = await db.query<Row>(
+      `select e.match_id, e.user_id, ${DISPLAY_NAME} as name, u.avatar_url, e.rank, e.pnl_pct,
+              e.stake_xu, e.win_xu, e.refund_xu, e.points, e.joined_at,
+              coalesce(s.points, 0) as total_points
+         from fb_entries e
+         join users u on u.id = e.user_id
+         left join fb_player_stats s on s.user_id = e.user_id
+        where e.match_id = any($1::uuid[])
+        order by e.match_id, e.rank nulls last, e.joined_at, e.id`,
+      [[...matchIds]],
+    );
+    return rows.map((row): FbHistoryPlayerRow => ({
+      matchId: String(row.match_id),
+      userId: String(row.user_id),
+      name: String(row.name ?? ''),
+      avatarUrl: toText(row.avatar_url),
+      totalPoints: toInt(row.total_points, 'total_points'),
+      rank: row.rank === null || row.rank === undefined ? 0 : toInt(row.rank, 'rank'),
+      pnlPct: Number(row.pnl_pct ?? 0),
+      stakeXu: toInt(row.stake_xu, 'stake_xu'),
+      winXu: toInt(row.win_xu, 'win_xu'),
+      refundXu: toInt(row.refund_xu, 'refund_xu'),
+      points: toInt(row.points, 'points'),
+      joinedAt: toDate(row.joined_at),
+    }));
+  }
+
+  async historyOrders(db: SqlClient, entryIds: readonly string[]): Promise<FlashbackOrderRow[]> {
+    if (entryIds.length === 0) return [];
+    const rows = await db.query<Row>(
+      `select ${ORDER_COLUMNS} from fb_orders where entry_id = any($1::uuid[])
+        order by entry_id, created_at, id`,
+      [[...entryIds]],
+    );
+    return rows.map(mapOrder);
+  }
+
+  async historySummary(
+    db: SqlClient,
+    userId: string,
+    since: Date | null,
+  ): Promise<FbHistorySummaryRow> {
+    const rows = await db.query<Row>(
+      `select count(*)::int as games,
+              (count(*) filter (where m.player_count < 2))::int as solo_games,
+              (count(*) filter (where m.player_count >= 2 and e.rank = 1))::int as wins,
+              coalesce(sum(e.win_xu + e.refund_xu - e.stake_xu), 0)::text as xu_net,
+              coalesce(sum(e.points), 0)::int as points,
+              (avg(e.pnl_pct))::float8 as avg_pnl_pct,
+              (max(e.pnl_pct))::float8 as best_pnl_pct,
+              (select bm.symbol
+                 from fb_entries be
+                 join fb_matches bm on bm.id = be.match_id
+                where be.user_id = $1 and bm.status <> 'playing' and be.rank is not null
+                  and ($2::timestamptz is null or bm.ended_at >= $2::timestamptz)
+                order by be.pnl_pct desc, bm.ended_at desc, bm.id desc
+                limit 1) as best_symbol
+         from fb_entries e
+         join fb_matches m on m.id = e.match_id
+        where e.user_id = $1 and m.status <> 'playing' and e.rank is not null
+          and ($2::timestamptz is null or m.ended_at >= $2::timestamptz)`,
+      [userId, since],
+    );
+    const row = rows[0] ?? {};
+    const optional = (value: unknown) =>
+      value === null || value === undefined ? null : Number(value);
+    return {
+      games: toInt(row.games ?? 0, 'games'),
+      soloGames: toInt(row.solo_games ?? 0, 'solo_games'),
+      wins: toInt(row.wins ?? 0, 'wins'),
+      xuNet: toInt(row.xu_net ?? 0, 'xu_net'),
+      points: toInt(row.points ?? 0, 'points'),
+      avgPnlPct: optional(row.avg_pnl_pct),
+      bestPnlPct: optional(row.best_pnl_pct),
+      bestSymbol: toText(row.best_symbol),
+    };
   }
 }

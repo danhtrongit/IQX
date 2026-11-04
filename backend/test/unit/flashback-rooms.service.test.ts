@@ -1,78 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import type { FlashbackBar } from '../../src/modules/flashback/flashback.types.js';
 import {
-  FlashbackRoomsService,
-  type FbDatasetPort,
-  type FbMatchDataset,
-} from '../../src/modules/flashback/flashback-rooms.service.js';
-import { MemoryRoomsRepository, memoryDatabase } from './helpers/flashback-rooms-memory.js';
-
-const T0 = new Date('2026-10-30T03:00:00.000Z');
-const CASH = 10_000_000n;
-
-/** Nến có ngày thật năm 2015 và mã FPT/VNM: không được xuất hiện trong phản hồi trước khi hết ván. */
-function makeDataset(
-  symbol: string,
-  viewBars: number,
-  playBars: number,
-  close: (index: number) => number,
-): FbMatchDataset {
-  const bar = (index: number, offset: number): FlashbackBar => {
-    const c = close(index);
-    return {
-      d: new Date(Date.UTC(2015, 0, 1) + (index + offset) * 86_400_000).toISOString().slice(0, 10),
-      o: c,
-      h: c,
-      l: c,
-      c,
-      v: 1_000_000,
-    };
-  };
-  return {
-    symbol,
-    warmupBars: Array.from({ length: 252 }, (_, index) => bar(0, index - 400)),
-    bars: Array.from({ length: viewBars + playBars }, (_, index) => bar(index, 0)),
-    priceSource: 'VCI:dong:adjusted',
-    fallbackLevel: 0,
-  };
-}
-
-/** Giá theo phiên chơi: phiên k (k = index − view + 1) đóng cửa 10.000 + 100·k. */
-const rising = (viewBars: number) => (index: number) =>
-  10_000 + Math.max(0, index - (viewBars - 1)) * 100;
-
-function setup(options: { close?: (viewBars: number) => (index: number) => number } = {}) {
-  const repository = new MemoryRoomsRepository();
-  const clock = { at: new Date(T0) };
-  const symbols = ['FPT', 'VNM', 'HPG', 'MWG'];
-  const picks: string[] = [];
-  const dataset: FbDatasetPort = {
-    pick: async (_now, viewBars, playBars) => {
-      const symbol = symbols[picks.length % symbols.length]!;
-      picks.push(symbol);
-      return makeDataset(symbol, viewBars, playBars, (options.close ?? rising)(viewBars));
-    },
-  };
-  const service = new FlashbackRoomsService(memoryDatabase(), repository, dataset, {
-    now: () => clock.at,
-  });
-  const advance = (ms: number) => {
-    clock.at = new Date(clock.at.getTime() + ms);
-  };
-  return { repository, service, clock, advance, picks };
-}
-
-async function rejection(promise: Promise<unknown>) {
-  try {
-    await promise;
-  } catch (error) {
-    return error as { status: number; response: { code: string; message: string } };
-  }
-  throw new Error('expected a rejection');
-}
-
-const code = (error: { response: { code: string } }) => error.response.code;
+  CASH,
+  T0,
+  code,
+  playTo,
+  rejection,
+  roomOf,
+  setup,
+} from './helpers/flashback-rooms-fixtures.js';
 
 describe('Flashback v2 · Phòng chơi: sảnh, tạo phòng, vào phòng', () => {
   it('tạo phòng: cấp ID 6 chữ số, người tạo là chủ phòng và vào phòng chờ ngay', async () => {
@@ -239,33 +175,6 @@ describe('Flashback v2 · Phòng chơi: sảnh, tạo phòng, vào phòng', () =
 });
 
 describe('Flashback v2 · Phòng chơi: bắt đầu, xu cược, kết thúc', () => {
-  async function roomOf(
-    h: ReturnType<typeof setup>,
-    users: readonly string[],
-    settings: Record<string, unknown> = { stake_xu: 100, play_bars: 30, view_bars: 60 },
-    balance = 1000,
-  ) {
-    for (const id of users) h.repository.addUser(id, `user-${id}`, balance);
-    const room = await h.service.createRoom(users[0]!, { max_players: 4, ...settings });
-    for (const id of users.slice(1)) {
-      h.advance(10);
-      await h.service.joinRoom(id, room.id, null);
-    }
-    return room;
-  }
-
-  async function playTo(
-    h: ReturnType<typeof setup>,
-    userId: string,
-    matchId: string,
-    step: number,
-  ) {
-    let current = (await h.service.state(userId, matchId)).my_step;
-    while (current < step) {
-      current = (await h.service.next(userId, matchId)).me.step;
-    }
-  }
-
   it('chỉ chủ phòng bắt đầu được; bắt đầu khi chỉ có một người thì không trừ xu', async () => {
     const h = setup();
     const room = await roomOf(h, ['a']);
@@ -403,12 +312,21 @@ describe('Flashback v2 · Phòng chơi: bắt đầu, xu cược, kết thúc', 
       const state = await h.service.state(viewer, match.match_id);
       expect(state.status).toBe('playing');
       expect(
-        state.players.map((p) => [p.user_id, p.is_me, p.step, p.finished, p.pnl_pct, p.pnl_percent]),
+        state.players.map((p) => [
+          p.user_id,
+          p.is_me,
+          p.step,
+          p.finished,
+          p.pnl_pct,
+          p.pnl_percent,
+        ]),
       ).toEqual([
         ['a', viewer === 'a', 5, false, null, null],
         ['b', viewer === 'b', 20, false, null, null],
       ]);
-      expect(JSON.stringify(state)).not.toMatch(/total_assets|final_nav|nav_by_step|pnl_pct":[-\d]/);
+      expect(JSON.stringify(state)).not.toMatch(
+        /total_assets|final_nav|nav_by_step|pnl_pct":[-\d]/,
+      );
     }
     // Ảnh chụp ván (dùng khi vào lại) cũng không lộ % của ai trong danh sách người chơi.
     const snapshot = await h.service.matchSnapshot('a', match.match_id);
@@ -448,7 +366,12 @@ describe('Flashback v2 · Phòng chơi: bắt đầu, xu cược, kết thúc', 
   it('v2.1 §1: phòng 30 người trừ cược, chạy hết ván, trả xu đúng cho cả 30 người', async () => {
     const h = setup();
     const ids = Array.from({ length: 30 }, (_, index) => `u${String(index).padStart(2, '0')}`);
-    const room = await roomOf(h, ids, { max_players: 30, stake_xu: 10, play_bars: 30, view_bars: 60 });
+    const room = await roomOf(h, ids, {
+      max_players: 30,
+      stake_xu: 10,
+      play_bars: 30,
+      view_bars: 60,
+    });
     expect(room.max_players).toBe(30);
     expect((await h.service.getRoom('u29', room.id)).members).toHaveLength(30);
     const { match } = await h.service.startRoom('u00', room.id);

@@ -682,6 +682,16 @@
       "requestType": "FlashbackIndicatorsData",
       "responseType": "FlashbackIndicatorsResponses"
     },
+    "GET /api/v2/flashback/leaderboard": {
+      "operationId": "flashbackRoomsLeaderboard",
+      "requestType": "FlashbackRoomsLeaderboardData",
+      "responseType": "FlashbackRoomsLeaderboardResponses"
+    },
+    "GET /api/v2/flashback/leaderboard/top3": {
+      "operationId": "flashbackRoomsLeaderboardTop3",
+      "requestType": "FlashbackRoomsLeaderboardTop3Data",
+      "responseType": "FlashbackRoomsLeaderboardTop3Responses"
+    },
     "GET /api/v2/flashback/matches/{id}": {
       "operationId": "flashbackMatchGet",
       "requestType": "FlashbackMatchGetData",
@@ -696,6 +706,21 @@
       "operationId": "flashbackMatchState",
       "requestType": "FlashbackMatchStateData",
       "responseType": "FlashbackMatchStateResponses"
+    },
+    "GET /api/v2/flashback/me/history": {
+      "operationId": "flashbackMyHistory",
+      "requestType": "FlashbackMyHistoryData",
+      "responseType": "FlashbackMyHistoryResponses"
+    },
+    "GET /api/v2/flashback/me/history/summary": {
+      "operationId": "flashbackMyHistorySummary",
+      "requestType": "FlashbackMyHistorySummaryData",
+      "responseType": "FlashbackMyHistorySummaryResponses"
+    },
+    "GET /api/v2/flashback/me/level": {
+      "operationId": "flashbackMyLevel",
+      "requestType": "FlashbackMyLevelData",
+      "responseType": "FlashbackMyLevelResponses"
     },
     "GET /api/v2/flashback/rooms": {
       "operationId": "flashbackRoomsList",
@@ -1996,6 +2021,11 @@
       "operationId": "flashbackMatchOrder",
       "requestType": "FlashbackMatchOrderData",
       "responseType": "FlashbackMatchOrderResponses"
+    },
+    "POST /api/v2/flashback/matches/{id}/reactions": {
+      "operationId": "flashbackMatchReaction",
+      "requestType": "FlashbackMatchReactionData",
+      "responseType": "FlashbackMatchReactionResponses"
     },
     "POST /api/v2/flashback/rooms": {
       "operationId": "flashbackRoomsCreate",

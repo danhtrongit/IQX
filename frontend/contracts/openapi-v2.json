@@ -35098,7 +35098,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 788 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 794 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -106808,6 +106808,386 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/flashback/leaderboard": {
+      "get": {
+        "operationId": "flashbackRoomsLeaderboard",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 50,
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "me": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "avatar_url": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "crown": {
+                          "anyOf": [
+                            {
+                              "enum": [
+                                1
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                2
+                              ],
+                              "type": "number"
+                            },
+                            {
+                              "enum": [
+                                3
+                              ],
+                              "type": "number"
+                            }
+                          ],
+                          "nullable": true
+                        },
+                        "games": {
+                          "type": "number"
+                        },
+                        "is_me": {
+                          "type": "boolean"
+                        },
+                        "level": {
+                          "type": "number"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "points": {
+                          "type": "number"
+                        },
+                        "rank": {
+                          "type": "number"
+                        },
+                        "user_id": {
+                          "type": "string"
+                        },
+                        "wins": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "user_id",
+                        "name",
+                        "avatar_url",
+                        "level",
+                        "crown",
+                        "rank",
+                        "points",
+                        "wins",
+                        "games",
+                        "is_me"
+                      ],
+                      "type": "object"
+                    },
+                    "rows": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "crown": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ],
+                            "nullable": true
+                          },
+                          "games": {
+                            "type": "number"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "level": {
+                            "type": "number"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "points": {
+                            "type": "number"
+                          },
+                          "rank": {
+                            "type": "number"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          },
+                          "wins": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "level",
+                          "crown",
+                          "rank",
+                          "points",
+                          "wins",
+                          "games",
+                          "is_me"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "rows",
+                    "me"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Bảng xếp hạng toàn hệ thống (kèm dòng của tôi nếu ngoài top)",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/leaderboard/top3": {
+      "get": {
+        "operationId": "flashbackRoomsLeaderboardTop3",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "users": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avatar_url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "level": {
+                            "type": "number"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "points": {
+                            "type": "number"
+                          },
+                          "rank": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ]
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "rank",
+                          "user_id",
+                          "name",
+                          "avatar_url",
+                          "level",
+                          "points"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "users"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Người đang hạng 1, 2, 3 (để vẽ vương miện)",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/flashback/matches/{id}": {
       "get": {
         "operationId": "flashbackMatchGet",
@@ -107085,11 +107465,37 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "crown": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ],
+                            "nullable": true
+                          },
                           "finished": {
                             "type": "boolean"
                           },
                           "is_me": {
                             "type": "boolean"
+                          },
+                          "level": {
+                            "type": "number"
                           },
                           "name": {
                             "type": "string"
@@ -107113,6 +107519,8 @@
                           "user_id",
                           "name",
                           "avatar_url",
+                          "level",
+                          "crown",
                           "is_me",
                           "finished",
                           "step",
@@ -107128,6 +107536,33 @@
                     },
                     "pot_xu": {
                       "type": "number"
+                    },
+                    "reactions": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "age_ms": {
+                            "type": "number"
+                          },
+                          "emoji": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "user_id",
+                          "emoji",
+                          "age_ms"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "remaining_ms": {
                       "type": "number"
@@ -107202,6 +107637,7 @@
                     "my_finished",
                     "playing_count",
                     "players",
+                    "reactions",
                     "view_bars",
                     "play_bars",
                     "minutes",
@@ -108163,6 +108599,134 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/flashback/matches/{id}/reactions": {
+      "post": {
+        "operationId": "flashbackMatchReaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "emoji": {
+                    "maxLength": 16,
+                    "minLength": 1,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "emoji"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "emoji": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "user_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "user_id",
+                    "emoji"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gửi biểu cảm trong ván đang chơi (😂 😎 🚀 📉 😭 🔥 👏 🤡 💸 🙏 😱 🤑); 1 biểu cảm mỗi 1,5 giây",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/flashback/matches/{id}/result": {
       "get": {
         "operationId": "flashbackMatchResult",
@@ -108237,6 +108801,46 @@
                     "pot_xu": {
                       "type": "number"
                     },
+                    "progress": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "level": {
+                          "type": "number"
+                        },
+                        "level_base": {
+                          "type": "number"
+                        },
+                        "leveled_up": {
+                          "type": "boolean"
+                        },
+                        "next_level_points": {
+                          "type": "number"
+                        },
+                        "points": {
+                          "type": "number"
+                        },
+                        "previous_level": {
+                          "type": "number"
+                        },
+                        "remaining_points": {
+                          "type": "number"
+                        },
+                        "total_points": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "points",
+                        "total_points",
+                        "level",
+                        "previous_level",
+                        "leveled_up",
+                        "level_base",
+                        "next_level_points",
+                        "remaining_points"
+                      ],
+                      "type": "object"
+                    },
                     "refund": {
                       "type": "boolean"
                     },
@@ -108251,6 +108855,29 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "crown": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ],
+                            "nullable": true
+                          },
                           "final_nav": {
                             "type": "string"
                           },
@@ -108260,6 +108887,9 @@
                           "is_winner": {
                             "type": "boolean"
                           },
+                          "level": {
+                            "type": "number"
+                          },
                           "name": {
                             "type": "string"
                           },
@@ -108267,6 +108897,9 @@
                             "type": "number"
                           },
                           "pnl_percent": {
+                            "type": "number"
+                          },
+                          "points": {
                             "type": "number"
                           },
                           "rank": {
@@ -108290,6 +108923,8 @@
                           "user_id",
                           "name",
                           "avatar_url",
+                          "level",
+                          "crown",
                           "rank",
                           "is_me",
                           "is_winner",
@@ -108298,7 +108933,8 @@
                           "final_nav",
                           "win_xu",
                           "refund_xu",
-                          "xu_label"
+                          "xu_label",
+                          "points"
                         ],
                         "type": "object"
                       },
@@ -108330,6 +108966,7 @@
                     "refund",
                     "end_reason",
                     "rows",
+                    "progress",
                     "symbol",
                     "start_date",
                     "end_date",
@@ -108447,11 +109084,37 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "crown": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ],
+                            "nullable": true
+                          },
                           "finished": {
                             "type": "boolean"
                           },
                           "is_me": {
                             "type": "boolean"
+                          },
+                          "level": {
+                            "type": "number"
                           },
                           "name": {
                             "type": "string"
@@ -108475,6 +109138,8 @@
                           "user_id",
                           "name",
                           "avatar_url",
+                          "level",
+                          "crown",
                           "is_me",
                           "finished",
                           "step",
@@ -108487,6 +109152,33 @@
                     },
                     "playing_count": {
                       "type": "number"
+                    },
+                    "reactions": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "age_ms": {
+                            "type": "number"
+                          },
+                          "emoji": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "user_id",
+                          "emoji",
+                          "age_ms"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
                     },
                     "remaining_ms": {
                       "type": "number"
@@ -108519,7 +109211,8 @@
                     "my_step",
                     "my_finished",
                     "playing_count",
-                    "players"
+                    "players",
+                    "reactions"
                   ],
                   "type": "object"
                 }
@@ -108591,6 +109284,629 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/flashback/me/history": {
+      "get": {
+        "operationId": "flashbackMyHistory",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "result",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "enum": [
+                "all",
+                "win",
+                "lose",
+                "solo"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "enum": [
+                "7",
+                "30",
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "maximum": 1000,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "items": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "cash_percent": {
+                            "type": "number"
+                          },
+                          "end_date": {
+                            "type": "string"
+                          },
+                          "ended_at": {
+                            "type": "string"
+                          },
+                          "match_id": {
+                            "type": "string"
+                          },
+                          "minutes": {
+                            "type": "number"
+                          },
+                          "orders": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "amount": {
+                                  "type": "string"
+                                },
+                                "fee": {
+                                  "type": "string"
+                                },
+                                "id": {
+                                  "type": "string"
+                                },
+                                "price": {
+                                  "type": "string"
+                                },
+                                "qty": {
+                                  "type": "number"
+                                },
+                                "side": {
+                                  "enum": [
+                                    "buy",
+                                    "sell"
+                                  ],
+                                  "type": "string"
+                                },
+                                "step": {
+                                  "type": "number"
+                                },
+                                "tax": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "step",
+                                "side",
+                                "qty",
+                                "price",
+                                "fee",
+                                "tax",
+                                "amount"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "play_bars": {
+                            "type": "number"
+                          },
+                          "player_count": {
+                            "type": "number"
+                          },
+                          "players": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "avatar_url": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "crown": {
+                                  "anyOf": [
+                                    {
+                                      "enum": [
+                                        1
+                                      ],
+                                      "type": "number"
+                                    },
+                                    {
+                                      "enum": [
+                                        2
+                                      ],
+                                      "type": "number"
+                                    },
+                                    {
+                                      "enum": [
+                                        3
+                                      ],
+                                      "type": "number"
+                                    }
+                                  ],
+                                  "nullable": true
+                                },
+                                "is_me": {
+                                  "type": "boolean"
+                                },
+                                "level": {
+                                  "type": "number"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "pnl_pct": {
+                                  "type": "number"
+                                },
+                                "pnl_percent": {
+                                  "type": "number"
+                                },
+                                "points": {
+                                  "type": "number"
+                                },
+                                "rank": {
+                                  "type": "number"
+                                },
+                                "user_id": {
+                                  "type": "string"
+                                },
+                                "xu": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "user_id",
+                                "name",
+                                "avatar_url",
+                                "level",
+                                "crown",
+                                "rank",
+                                "is_me",
+                                "pnl_pct",
+                                "pnl_percent",
+                                "xu",
+                                "points"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "pnl_pct": {
+                            "type": "number"
+                          },
+                          "pnl_percent": {
+                            "type": "number"
+                          },
+                          "points": {
+                            "type": "number"
+                          },
+                          "rank": {
+                            "type": "number"
+                          },
+                          "result": {
+                            "enum": [
+                              "win",
+                              "tie",
+                              "lose",
+                              "solo"
+                            ],
+                            "type": "string"
+                          },
+                          "room_id": {
+                            "type": "string"
+                          },
+                          "stake_xu": {
+                            "type": "number"
+                          },
+                          "start_date": {
+                            "type": "string"
+                          },
+                          "symbol": {
+                            "type": "string"
+                          },
+                          "view_bars": {
+                            "type": "number"
+                          },
+                          "xu": {
+                            "type": "number"
+                          }
+                        },
+                        "required": [
+                          "match_id",
+                          "room_id",
+                          "ended_at",
+                          "player_count",
+                          "view_bars",
+                          "play_bars",
+                          "minutes",
+                          "stake_xu",
+                          "symbol",
+                          "start_date",
+                          "end_date",
+                          "result",
+                          "rank",
+                          "pnl_pct",
+                          "pnl_percent",
+                          "xu",
+                          "points",
+                          "cash_percent",
+                          "players",
+                          "orders"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "page": {
+                      "type": "number"
+                    },
+                    "page_size": {
+                      "type": "number"
+                    },
+                    "pages": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "items",
+                    "page",
+                    "page_size",
+                    "total",
+                    "pages"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Lịch sử đấu của tôi (200 ván gần nhất, 20 ván mỗi trang)",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/me/history/summary": {
+      "get": {
+        "operationId": "flashbackMyHistorySummary",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "days",
+            "required": false,
+            "schema": {
+              "default": "all",
+              "enum": [
+                "7",
+                "30",
+                "all"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "avg_pnl_pct": {
+                      "type": "number"
+                    },
+                    "avg_pnl_percent": {
+                      "type": "number"
+                    },
+                    "best_pnl_pct": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "best_pnl_percent": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "best_symbol": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "games": {
+                      "type": "number"
+                    },
+                    "multi_games": {
+                      "type": "number"
+                    },
+                    "points": {
+                      "type": "number"
+                    },
+                    "solo_games": {
+                      "type": "number"
+                    },
+                    "win_rate": {
+                      "type": "number"
+                    },
+                    "wins": {
+                      "type": "number"
+                    },
+                    "xu_net": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "games",
+                    "solo_games",
+                    "multi_games",
+                    "wins",
+                    "win_rate",
+                    "xu_net",
+                    "points",
+                    "avg_pnl_pct",
+                    "avg_pnl_percent",
+                    "best_pnl_pct",
+                    "best_pnl_percent",
+                    "best_symbol"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Sáu số tổng kết lịch sử đấu trong khoảng thời gian",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/me/level": {
+      "get": {
+        "operationId": "flashbackMyLevel",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "games": {
+                      "type": "number"
+                    },
+                    "level": {
+                      "type": "number"
+                    },
+                    "level_base": {
+                      "type": "number"
+                    },
+                    "next_level_points": {
+                      "type": "number"
+                    },
+                    "points": {
+                      "type": "number"
+                    },
+                    "rank": {
+                      "nullable": true,
+                      "type": "number"
+                    },
+                    "remaining_points": {
+                      "type": "number"
+                    },
+                    "wins": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "points",
+                    "level",
+                    "level_base",
+                    "next_level_points",
+                    "remaining_points",
+                    "rank",
+                    "games",
+                    "wins"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thẻ cấp của tôi: điểm, cấp, mốc điểm và hạng toàn hệ thống",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/flashback/rooms": {
       "get": {
         "operationId": "flashbackRoomsList",
@@ -108649,13 +109965,41 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "crown": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      1
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      2
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  }
+                                ],
+                                "nullable": true
+                              },
+                              "level": {
+                                "type": "number"
+                              },
                               "name": {
                                 "type": "string"
                               }
                             },
                             "required": [
                               "name",
-                              "avatar_url"
+                              "avatar_url",
+                              "level",
+                              "crown"
                             ],
                             "type": "object"
                           },
@@ -108872,6 +110216,29 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "crown": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ],
+                            "nullable": true
+                          },
                           "is_me": {
                             "type": "boolean"
                           },
@@ -108880,6 +110247,9 @@
                           },
                           "joined_at": {
                             "type": "string"
+                          },
+                          "level": {
+                            "type": "number"
                           },
                           "name": {
                             "type": "string"
@@ -108892,6 +110262,8 @@
                           "user_id",
                           "name",
                           "avatar_url",
+                          "level",
+                          "crown",
                           "is_owner",
                           "is_me",
                           "joined_at"
@@ -109092,6 +110464,29 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "crown": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      1
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      2
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  }
+                                ],
+                                "nullable": true
+                              },
                               "is_me": {
                                 "type": "boolean"
                               },
@@ -109100,6 +110495,9 @@
                               },
                               "joined_at": {
                                 "type": "string"
+                              },
+                              "level": {
+                                "type": "number"
                               },
                               "name": {
                                 "type": "string"
@@ -109112,6 +110510,8 @@
                               "user_id",
                               "name",
                               "avatar_url",
+                              "level",
+                              "crown",
                               "is_owner",
                               "is_me",
                               "joined_at"
@@ -109311,6 +110711,29 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "crown": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ],
+                            "nullable": true
+                          },
                           "is_me": {
                             "type": "boolean"
                           },
@@ -109319,6 +110742,9 @@
                           },
                           "joined_at": {
                             "type": "string"
+                          },
+                          "level": {
+                            "type": "number"
                           },
                           "name": {
                             "type": "string"
@@ -109331,6 +110757,8 @@
                           "user_id",
                           "name",
                           "avatar_url",
+                          "level",
+                          "crown",
                           "is_owner",
                           "is_me",
                           "joined_at"
@@ -109534,6 +110962,29 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "crown": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ],
+                            "nullable": true
+                          },
                           "is_me": {
                             "type": "boolean"
                           },
@@ -109542,6 +110993,9 @@
                           },
                           "joined_at": {
                             "type": "string"
+                          },
+                          "level": {
+                            "type": "number"
                           },
                           "name": {
                             "type": "string"
@@ -109554,6 +111008,8 @@
                           "user_id",
                           "name",
                           "avatar_url",
+                          "level",
+                          "crown",
                           "is_owner",
                           "is_me",
                           "joined_at"
@@ -109776,6 +111232,29 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "crown": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ],
+                            "nullable": true
+                          },
                           "is_me": {
                             "type": "boolean"
                           },
@@ -109784,6 +111263,9 @@
                           },
                           "joined_at": {
                             "type": "string"
+                          },
+                          "level": {
+                            "type": "number"
                           },
                           "name": {
                             "type": "string"
@@ -109796,6 +111278,8 @@
                           "user_id",
                           "name",
                           "avatar_url",
+                          "level",
+                          "crown",
                           "is_owner",
                           "is_me",
                           "joined_at"
@@ -110101,6 +111585,29 @@
                             "nullable": true,
                             "type": "string"
                           },
+                          "crown": {
+                            "anyOf": [
+                              {
+                                "enum": [
+                                  1
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  2
+                                ],
+                                "type": "number"
+                              },
+                              {
+                                "enum": [
+                                  3
+                                ],
+                                "type": "number"
+                              }
+                            ],
+                            "nullable": true
+                          },
                           "is_me": {
                             "type": "boolean"
                           },
@@ -110109,6 +111616,9 @@
                           },
                           "joined_at": {
                             "type": "string"
+                          },
+                          "level": {
+                            "type": "number"
                           },
                           "name": {
                             "type": "string"
@@ -110121,6 +111631,8 @@
                           "user_id",
                           "name",
                           "avatar_url",
+                          "level",
+                          "crown",
                           "is_owner",
                           "is_me",
                           "joined_at"
@@ -110522,11 +112034,37 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "crown": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      1
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      2
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  }
+                                ],
+                                "nullable": true
+                              },
                               "finished": {
                                 "type": "boolean"
                               },
                               "is_me": {
                                 "type": "boolean"
+                              },
+                              "level": {
+                                "type": "number"
                               },
                               "name": {
                                 "type": "string"
@@ -110550,6 +112088,8 @@
                               "user_id",
                               "name",
                               "avatar_url",
+                              "level",
+                              "crown",
                               "is_me",
                               "finished",
                               "step",
@@ -110565,6 +112105,33 @@
                         },
                         "pot_xu": {
                           "type": "number"
+                        },
+                        "reactions": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "age_ms": {
+                                "type": "number"
+                              },
+                              "emoji": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "type": "string"
+                              },
+                              "user_id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "user_id",
+                              "emoji",
+                              "age_ms"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
                         },
                         "remaining_ms": {
                           "type": "number"
@@ -110639,6 +112206,7 @@
                         "my_finished",
                         "playing_count",
                         "players",
+                        "reactions",
                         "view_bars",
                         "play_bars",
                         "minutes",
@@ -110738,6 +112306,29 @@
                                 "nullable": true,
                                 "type": "string"
                               },
+                              "crown": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      1
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      2
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  }
+                                ],
+                                "nullable": true
+                              },
                               "is_me": {
                                 "type": "boolean"
                               },
@@ -110746,6 +112337,9 @@
                               },
                               "joined_at": {
                                 "type": "string"
+                              },
+                              "level": {
+                                "type": "number"
                               },
                               "name": {
                                 "type": "string"
@@ -110758,6 +112352,8 @@
                               "user_id",
                               "name",
                               "avatar_url",
+                              "level",
+                              "crown",
                               "is_owner",
                               "is_me",
                               "joined_at"
@@ -162903,11 +164499,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 599,
+    "authenticatedOperations": 605,
     "noContentResponses": 18,
-    "operations": 806,
+    "operations": 812,
     "publicOperations": 207,
-    "responseSchemas": 788,
+    "responseSchemas": 794,
     "untypedResponses": 0
   }
 }
