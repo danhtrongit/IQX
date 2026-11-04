@@ -14,31 +14,31 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 
+import { LearnLink } from "./learn-link"
 import type { ChartView } from "./model"
 
 export type ChartCardProps = {
   view: ChartView
+  /** Khoá bài học của chỉ tiêu (`metric_key` của danh mục), cho nút "Học"; bỏ trống thì không có nút. */
+  metricKey?: string
   /** Khuôn cố định theo năm (D, E1, E2): có nhãn "Theo năm, cố định", không có ô số kỳ (spec §4.1). */
   fixedYear: boolean
-  /** Ô số kỳ; null khi thẻ không có ô này (khuôn cố định, chỉ tiêu không áp dụng). */
+  /** Ô số kỳ; null khi thẻ không có ô này (khuôn cố định). */
   period: { count: number; options: readonly number[]; unit: string } | null
   onPeriodChange: (count: number) => void
   onRemove: () => void
   /** Đổi chỗ với thẻ trước hoặc sau; bỏ trống khi thẻ đã ở đầu hoặc cuối (DB-05a). */
   onMoveUp?: () => void
   onMoveDown?: () => void
-  /** Chỉ tiêu không áp dụng cho mã ngân hàng (spec §7). */
-  notApplicable?: boolean
   /** Số liệu đang tải: thẻ hiện khung chờ, chưa vẽ gì. */
   pending?: boolean
   /** Lý do biểu đồ trống do máy chủ báo (chỉ hiện khi không có số liệu). */
   note?: string
 }
 
-const BANK_NOTE = "Không áp dụng cho ngân hàng. Báo cáo tài chính ngân hàng không có chỉ tiêu này theo cách tính của doanh nghiệp thông thường."
 const EMPTY_NOTE = "Đang cập nhật dữ liệu"
 
-/** Nhãn vàng dạng pill: "Theo năm, cố định", "Không áp dụng" (DB-05f). */
+/** Nhãn vàng dạng pill: "Theo năm, cố định" (DB-05f). */
 export function WarningPill({ children }: { children: ReactNode }) {
   return (
     <span className="shrink-0 rounded-full border border-status-warning/45 px-2 py-px text-[10px] font-semibold whitespace-nowrap text-status-warning">
@@ -56,20 +56,20 @@ function EmptyNote({ children }: { children: ReactNode }) {
 }
 
 /**
- * Một thẻ biểu đồ của dashboard (spec §4): tay kéo, tên chỉ tiêu, ô số kỳ và
- * thân biểu đồ vẽ bằng bộ khuôn dùng chung. Đầu thẻ không có con số lớn của
- * kỳ gần nhất. Kéo bằng tay kéo chạy được cả chuột, cảm ứng và bàn phím;
- * menu thẻ có Lên trên / Xuống dưới cho trường hợp không kéo được.
+ * Một thẻ biểu đồ của dashboard (spec Dashboard v2 §4): tay kéo, tên chỉ tiêu, nút "Học", ô số
+ * kỳ và thân biểu đồ vẽ bằng bộ khuôn dùng chung. Đầu thẻ không có con số lớn của kỳ gần nhất.
+ * Kéo bằng tay kéo chạy được cả chuột, cảm ứng và bàn phím; menu thẻ có Lên trên / Xuống dưới
+ * cho trường hợp không kéo được.
  */
 export function ChartCard({
   view,
+  metricKey,
   fixedYear,
   period,
   onPeriodChange,
   onRemove,
   onMoveUp,
   onMoveDown,
-  notApplicable = false,
   pending = false,
   note,
 }: ChartCardProps) {
@@ -88,7 +88,7 @@ export function ChartCard({
       )}
     >
       <header className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-start gap-1.5">
+        <div className="flex min-w-0 flex-wrap items-start gap-x-1.5 gap-y-1">
           <button
             type="button"
             ref={setActivatorNodeRef}
@@ -100,7 +100,8 @@ export function ChartCard({
             <GripVertical aria-hidden="true" className="size-4" />
           </button>
           <h3 className="min-w-0 text-sm leading-snug font-semibold break-words">{view.name}</h3>
-          {!notApplicable && fixedYear && <WarningPill>Theo năm, cố định</WarningPill>}
+          {metricKey && <LearnLink metricKey={metricKey} name={view.name} className="mt-px" />}
+          {fixedYear && <WarningPill>Theo năm, cố định</WarningPill>}
         </div>
         <div className="flex shrink-0 items-center">
           <DropdownMenu>
@@ -147,8 +148,6 @@ export function ChartCard({
 
       {pending ? (
         <Skeleton className="h-40 w-full rounded-sm" />
-      ) : notApplicable ? (
-        <EmptyNote>{BANK_NOTE}</EmptyNote>
       ) : !hasData ? (
         <EmptyNote>{note ?? EMPTY_NOTE}</EmptyNote>
       ) : (

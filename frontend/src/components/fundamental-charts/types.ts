@@ -29,13 +29,20 @@ export type FundamentalChartData = {
   decimals?: number
   /** Nhãn kỳ (`Q2/26`, `2025`) hoặc ngày `YYYY-MM-DD` (khuôn F). */
   labels: string[]
+  /**
+   * Chuỗi trên tầng trên. Khuôn A và B có thể có hai đường (đường 1 `--s1`, đường 2 `--line2`,
+   * spec Dashboard v2 §9); các khuôn còn lại dùng đường đầu tiên.
+   */
   main: FundamentalSeries[]
   sub?: FundamentalSub
   /** Đơn vị của chuỗi `main` ở khuôn D, E1, E2. */
   mainUnit?: string
   /** Giá trị tóm tắt máy chủ tính sẵn: CAGR %, độ lệch chuẩn, số năm dương liên tục. */
   hero?: number | null
-  /** Đường tham chiếu cố định (khuôn F2: PEG = 1). */
+  /**
+   * Đường tham chiếu cố định nét đứt: khuôn F2 (PEG = 1) và khuôn B (Combined ratio, mốc 100%).
+   * Trục giá trị của tầng trên luôn chứa mốc này.
+   */
   ref?: number
   /**
    * Ghi chú định nghĩa dưới chú giải, ví dụ Net Debt / EBITDA: "Tiền gồm đầu tư tài chính ngắn hạn"

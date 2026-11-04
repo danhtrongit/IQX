@@ -5,3 +5,4 @@ export * from './financials.frequency.js';
 export * from './bctc.js';
 export * from './dashboard.js';
 export * from './benchmark.js';
+export * from './financials.industry.js';

@@ -1,10 +1,11 @@
 /**
- * Hợp đồng dữ liệu của Dashboard phân tích (spec §11): thiết lập theo tài khoản, danh mục 33
- * chỉ tiêu và số liệu theo khuôn biểu đồ. Các schema này vừa là ràng buộc runtime (pipe
- * `StandardSchemaValidationPipe`) vừa là nguồn OpenAPI.
+ * Hợp đồng dữ liệu của Dashboard phân tích v2 (spec §11): thiết lập theo tài khoản và theo ngành,
+ * danh mục 62 chỉ tiêu và số liệu theo khuôn biểu đồ. Các schema này vừa là ràng buộc runtime
+ * (pipe `StandardSchemaValidationPipe`) vừa là nguồn OpenAPI.
  */
 import { z } from 'zod';
 
+import { INDUSTRIES } from '../financials/financials.industry.js';
 import { METRIC_STATUSES } from '../screener/screener.metrics.js';
 import {
   DASHBOARD_CHART_KINDS,
@@ -14,6 +15,9 @@ import {
 } from './dashboard.catalog.js';
 
 export const dashboardChartNameSchema = z.enum(DASHBOARD_CHART_NAMES);
+
+/** Ngành của mã theo mẫu báo cáo tài chính (§1.3): `thuong`, `nh`, `ck`, `bh`. */
+export const dashboardIndustrySchema = z.enum(INDUSTRIES);
 
 export const dashboardPeriodModeSchema = z.enum(DASHBOARD_PERIOD_MODES);
 
@@ -73,29 +77,64 @@ export const dashboardSettingsSchema = z.object({
 
 export type DashboardSettings = z.infer<typeof dashboardSettingsSchema>;
 
+/** Thiết lập theo ngành (§6.1): mỗi ngành một thiết lập; ngành chưa lưu nhận bộ mặc định (§6.3). */
+export const dashboardIndustrySettingsSchema = z.object({
+  thuong: dashboardSettingsSchema,
+  nh: dashboardSettingsSchema,
+  ck: dashboardSettingsSchema,
+  bh: dashboardSettingsSchema,
+});
+
+export type DashboardIndustrySettings = z.infer<typeof dashboardIndustrySettingsSchema>;
+
 export const dashboardSavedSettingsSchema = dashboardSettingsSchema.extend({
+  nganh: dashboardIndustrySchema,
   revision: z.number().int(),
   updated_at: z.string(),
 });
 
-/** Danh mục 33 chỉ tiêu theo 6 nhóm (spec §8) + cờ không áp dụng cho ngân hàng (spec §7). */
-export const dashboardCatalogSchema = z.array(
-  z.object({
-    group: z.string(),
-    items: z.array(
-      z.object({
-        name: dashboardChartNameSchema,
-        /** Khuôn biểu đồ (spec §9): biết trước khuôn cố định theo năm để hiện ô số kỳ ngay (DB-05e). */
-        kind: z.enum(DASHBOARD_CHART_KINDS),
-        na_for_bank: z.boolean(),
-      }),
-    ),
-  }),
-);
+/**
+ * Danh mục chỉ tiêu theo ngành (§3.2, §8): mỗi ngành có chương chung (Học viện Ch. 8) và chương
+ * riêng, mỗi chương chia nhóm. `metric_key` là khoá ổn định để nút "Học" nối tới bài học.
+ */
+export const dashboardCatalogSchema = z.object({
+  industries: z.array(
+    z.object({
+      nganh: dashboardIndustrySchema,
+      /** Nhãn ngành hiện cạnh mã: "Doanh nghiệp sản xuất", "Ngân hàng", "Chứng khoán", "Bảo hiểm". */
+      label: z.string(),
+      /** Số chỉ tiêu của ngành: 33, 28, 27 hoặc 25 (§3.1). */
+      total: z.number().int(),
+      /** Bộ mặc định 6 biểu đồ của ngành (§6.3). */
+      default_charts: z.array(dashboardChartNameSchema),
+      chapters: z.array(
+        z.object({
+          chapter: z.string(),
+          /** Chương Học viện v4 của các bài học trong chương (8–12). */
+          academy_chapter: z.number().int(),
+          groups: z.array(
+            z.object({
+              group: z.string(),
+              items: z.array(
+                z.object({
+                  name: dashboardChartNameSchema,
+                  metric_key: z.string(),
+                  /** Khuôn biểu đồ (spec §9): biết trước khuôn cố định theo năm để hiện ô số kỳ ngay (DB-05e). */
+                  kind: z.enum(DASHBOARD_CHART_KINDS),
+                }),
+              ),
+            }),
+          ),
+        }),
+      ),
+    }),
+  ),
+});
 
 export type DashboardCatalog = z.infer<typeof dashboardCatalogSchema>;
 
 const dashboardSeriesPointSchema = z.object({
+  /** Tên đường/cột; ghi đúng loại doanh thu của ngành (§8.1), ví dụ "TOI quý này". */
   name: z.string(),
   /** `null` = kỳ không tính được (spec §10), không phải số 0. */
   v: z.array(z.number().nullable()),
@@ -103,6 +142,7 @@ const dashboardSeriesPointSchema = z.object({
 
 export const dashboardSeriesSchema = z.object({
   labels: z.array(z.string()),
+  /** Một đường, hoặc hai đường ở khuôn A/B của chỉ tiêu ngành (§9). */
   main: z.array(dashboardSeriesPointSchema),
   sub: z
     .object({
@@ -130,24 +170,26 @@ export const dashboardChartSchema = z.object({
   main: z.array(dashboardSeriesPointSchema).optional(),
   mainUnit: z.string().optional(),
   hero: z.number().nullable().optional(),
+  /** Mốc tham chiếu: PEG = 1 (khuôn F2), combined ratio = 100 (khuôn B, §9). */
   ref: z.number().optional(),
   /** Daily series of a kind-F chart (the valuation endpoint carries the real one). */
   v: z.array(z.number().nullable()).optional(),
 });
 
-/** Một biểu đồ của dashboard: có dữ liệu, hoặc không áp dụng cho mã ngân hàng. */
-export const dashboardChartEntrySchema = z.union([
-  z.object({ name: z.string(), na: z.literal(1) }),
-  dashboardChartSchema,
-]);
+/** Ngành của một mã (§1.3), để client chọn đúng danh mục và thiết lập trước khi hỏi số liệu. */
+export const dashboardIndustryResponseSchema = z.object({
+  symbol: z.string(),
+  nganh: dashboardIndustrySchema,
+  label: z.string(),
+});
 
 export const dashboardFundamentalResponseSchema = z.object({
   symbol: z.string(),
-  /** Mã ngân hàng: 22 chỉ tiêu không áp dụng (spec §7). */
-  is_bank: z.boolean(),
+  /** Ngành của mã theo mẫu báo cáo tài chính (§1.3). */
+  nganh: dashboardIndustrySchema,
   /** Chế độ kỳ mặc định của client; response luôn có cả hai chế độ. */
   per: dashboardPeriodModeSchema,
-  charts: z.record(z.string(), dashboardChartEntrySchema),
+  charts: z.record(z.string(), dashboardChartSchema),
 });
 
 export const dashboardValuationChartSchema = z.object({
@@ -160,18 +202,13 @@ export const dashboardValuationChartSchema = z.object({
 
 export const dashboardValuationResponseSchema = z.object({
   symbol: z.string(),
+  nganh: dashboardIndustrySchema,
   /** Dãy ngày dùng chung cho mọi chuỗi định giá. */
   dates: z.array(z.string()),
-  charts: z.record(
-    z.string(),
-    z.union([
-      z.object({ name: z.string(), na: z.literal(1) }),
-      dashboardValuationChartSchema,
-    ]),
-  ),
+  charts: z.record(z.string(), dashboardValuationChartSchema),
 });
 
-/** Query của `GET /api/v2/fundamental/:symbol`: danh sách chỉ tiêu và chế độ kỳ. */
+/** Query của `GET /api/v2/fundamental/:symbol`: danh sách chỉ tiêu (của ngành mã) và chế độ kỳ. */
 export const dashboardFundamentalQuerySchema = z.object({
   /** Tên chỉ tiêu, phân tách bằng dấu phẩy: "ROE,D/E,P/E". */
   charts: z.string().max(1000).optional(),

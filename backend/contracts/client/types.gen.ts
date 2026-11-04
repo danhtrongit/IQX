@@ -40552,12 +40552,83 @@ export type DashboardCatalogError =
   DashboardCatalogErrors[keyof DashboardCatalogErrors];
 
 export type DashboardCatalogResponses = {
-  200: Array<{
-    group: string;
-    items: Array<{
-      kind: "A" | "B" | "C" | "D" | "E1" | "E2" | "F" | "F2";
-      na_for_bank: boolean;
-      name:
+  200: {
+    industries: Array<{
+      chapters: Array<{
+        academy_chapter: number;
+        chapter: string;
+        groups: Array<{
+          group: string;
+          items: Array<{
+            kind: "A" | "B" | "C" | "D" | "E1" | "E2" | "F" | "F2";
+            metric_key: string;
+            name:
+              | "Tăng trưởng doanh thu"
+              | "Tăng trưởng LNST"
+              | "Tăng trưởng EPS"
+              | "Revenue CAGR 3Y"
+              | "Net Profit CAGR 3Y"
+              | "EPS CAGR 3Y"
+              | "Profit Positive Streak"
+              | "Revenue Growth Stability"
+              | "Margin Stability"
+              | "EPS Stability"
+              | "ROE"
+              | "ROA"
+              | "Biên lợi nhuận ròng"
+              | "P/E"
+              | "P/B"
+              | "P/S"
+              | "PEG"
+              | "Biên lợi nhuận gộp"
+              | "ROIC"
+              | "ROIC Stability"
+              | "Asset Turnover"
+              | "Cash Conversion Cycle"
+              | "D/E"
+              | "Current Ratio"
+              | "Interest Coverage"
+              | "Net Debt / EBITDA"
+              | "CFO Margin"
+              | "CFO / LNST"
+              | "Capex / Revenue"
+              | "FCF Margin"
+              | "FCF Positive Streak"
+              | "EV / EBITDA"
+              | "FCF Yield"
+              | "NIM"
+              | "Lợi suất tài sản sinh lãi và chi phí vốn"
+              | "CIR"
+              | "Tỷ trọng thu nhập ngoài lãi"
+              | "Tăng trưởng lợi nhuận trước dự phòng"
+              | "Chi phí tín dụng"
+              | "Tỷ lệ dự phòng / Dư nợ"
+              | "Lãi dự thu / Dư nợ"
+              | "Tăng trưởng tín dụng và huy động"
+              | "LDR"
+              | "VCSH / Tổng tài sản"
+              | "Cơ cấu doanh thu hoạt động"
+              | "Biên lợi nhuận hoạt động"
+              | "Chi phí hoạt động / Doanh thu hoạt động"
+              | "Tăng trưởng dư nợ cho vay"
+              | "Dư nợ cho vay / VCSH"
+              | "Lợi suất cho vay"
+              | "Biên lợi nhuận môi giới"
+              | "Tỷ trọng tài sản tự doanh"
+              | "Hiệu suất tự doanh"
+              | "Nợ vay / VCSH"
+              | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+              | "Tỷ lệ giữ lại"
+              | "Tỷ lệ bồi thường"
+              | "Tỷ lệ chi phí"
+              | "Combined ratio"
+              | "Lợi suất đầu tư"
+              | "Cơ cấu lợi nhuận"
+              | "Dự phòng nghiệp vụ / VCSH";
+          }>;
+        }>;
+      }>;
+      default_charts: Array<
         | "Tăng trưởng doanh thu"
         | "Tăng trưởng LNST"
         | "Tăng trưởng EPS"
@@ -40568,12 +40639,16 @@ export type DashboardCatalogResponses = {
         | "Revenue Growth Stability"
         | "Margin Stability"
         | "EPS Stability"
-        | "ROIC Stability"
         | "ROE"
         | "ROA"
-        | "ROIC"
-        | "Biên lợi nhuận gộp"
         | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
         | "Asset Turnover"
         | "Cash Conversion Cycle"
         | "D/E"
@@ -40585,18 +40660,89 @@ export type DashboardCatalogResponses = {
         | "Capex / Revenue"
         | "FCF Margin"
         | "FCF Positive Streak"
-        | "P/E"
-        | "P/B"
-        | "P/S"
-        | "PEG"
         | "EV / EBITDA"
-        | "FCF Yield";
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+      >;
+      label: string;
+      nganh: "thuong" | "nh" | "ck" | "bh";
+      total: number;
     }>;
-  }>;
+  };
 };
 
 export type DashboardCatalogResponse =
   DashboardCatalogResponses[keyof DashboardCatalogResponses];
+
+export type DashboardIndustryData = {
+  body?: never;
+  path: {
+    symbol: string;
+  };
+  query?: never;
+  url: "/api/v2/dashboard/industry/{symbol}";
+};
+
+export type DashboardIndustryErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type DashboardIndustryError =
+  DashboardIndustryErrors[keyof DashboardIndustryErrors];
+
+export type DashboardIndustryResponses = {
+  200: {
+    label: string;
+    nganh: "thuong" | "nh" | "ck" | "bh";
+    symbol: string;
+  };
+};
+
+export type DashboardIndustryResponse =
+  DashboardIndustryResponses[keyof DashboardIndustryResponses];
 
 export type DashboardSettingsData = {
   body?: never;
@@ -40633,48 +40779,298 @@ export type DashboardSettingsError =
 
 export type DashboardSettingsResponses = {
   200: {
-    charts: Array<
-      | "Tăng trưởng doanh thu"
-      | "Tăng trưởng LNST"
-      | "Tăng trưởng EPS"
-      | "Revenue CAGR 3Y"
-      | "Net Profit CAGR 3Y"
-      | "EPS CAGR 3Y"
-      | "Profit Positive Streak"
-      | "Revenue Growth Stability"
-      | "Margin Stability"
-      | "EPS Stability"
-      | "ROIC Stability"
-      | "ROE"
-      | "ROA"
-      | "ROIC"
-      | "Biên lợi nhuận gộp"
-      | "Biên lợi nhuận ròng"
-      | "Asset Turnover"
-      | "Cash Conversion Cycle"
-      | "D/E"
-      | "Current Ratio"
-      | "Interest Coverage"
-      | "Net Debt / EBITDA"
-      | "CFO Margin"
-      | "CFO / LNST"
-      | "Capex / Revenue"
-      | "FCF Margin"
-      | "FCF Positive Streak"
-      | "P/E"
-      | "P/B"
-      | "P/S"
-      | "PEG"
-      | "EV / EBITDA"
-      | "FCF Yield"
-    >;
-    nks: {
-      [key: string]: {
-        q?: 4 | 5 | 8 | 12 | 20;
-        y?: 3 | 5 | 10;
+    bh: {
+      charts: Array<
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROE"
+        | "ROA"
+        | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "EV / EBITDA"
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+      >;
+      nks: {
+        [key: string]: {
+          q?: 4 | 5 | 8 | 12 | 20;
+          y?: 3 | 5 | 10;
+        };
       };
+      per: "q" | "y";
     };
-    per: "q" | "y";
+    ck: {
+      charts: Array<
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROE"
+        | "ROA"
+        | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "EV / EBITDA"
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+      >;
+      nks: {
+        [key: string]: {
+          q?: 4 | 5 | 8 | 12 | 20;
+          y?: 3 | 5 | 10;
+        };
+      };
+      per: "q" | "y";
+    };
+    nh: {
+      charts: Array<
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROE"
+        | "ROA"
+        | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "EV / EBITDA"
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+      >;
+      nks: {
+        [key: string]: {
+          q?: 4 | 5 | 8 | 12 | 20;
+          y?: 3 | 5 | 10;
+        };
+      };
+      per: "q" | "y";
+    };
+    thuong: {
+      charts: Array<
+        | "Tăng trưởng doanh thu"
+        | "Tăng trưởng LNST"
+        | "Tăng trưởng EPS"
+        | "Revenue CAGR 3Y"
+        | "Net Profit CAGR 3Y"
+        | "EPS CAGR 3Y"
+        | "Profit Positive Streak"
+        | "Revenue Growth Stability"
+        | "Margin Stability"
+        | "EPS Stability"
+        | "ROE"
+        | "ROA"
+        | "Biên lợi nhuận ròng"
+        | "P/E"
+        | "P/B"
+        | "P/S"
+        | "PEG"
+        | "Biên lợi nhuận gộp"
+        | "ROIC"
+        | "ROIC Stability"
+        | "Asset Turnover"
+        | "Cash Conversion Cycle"
+        | "D/E"
+        | "Current Ratio"
+        | "Interest Coverage"
+        | "Net Debt / EBITDA"
+        | "CFO Margin"
+        | "CFO / LNST"
+        | "Capex / Revenue"
+        | "FCF Margin"
+        | "FCF Positive Streak"
+        | "EV / EBITDA"
+        | "FCF Yield"
+        | "NIM"
+        | "Lợi suất tài sản sinh lãi và chi phí vốn"
+        | "CIR"
+        | "Tỷ trọng thu nhập ngoài lãi"
+        | "Tăng trưởng lợi nhuận trước dự phòng"
+        | "Chi phí tín dụng"
+        | "Tỷ lệ dự phòng / Dư nợ"
+        | "Lãi dự thu / Dư nợ"
+        | "Tăng trưởng tín dụng và huy động"
+        | "LDR"
+        | "VCSH / Tổng tài sản"
+        | "Cơ cấu doanh thu hoạt động"
+        | "Biên lợi nhuận hoạt động"
+        | "Chi phí hoạt động / Doanh thu hoạt động"
+        | "Tăng trưởng dư nợ cho vay"
+        | "Dư nợ cho vay / VCSH"
+        | "Lợi suất cho vay"
+        | "Biên lợi nhuận môi giới"
+        | "Tỷ trọng tài sản tự doanh"
+        | "Hiệu suất tự doanh"
+        | "Nợ vay / VCSH"
+        | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+        | "Tỷ lệ giữ lại"
+        | "Tỷ lệ bồi thường"
+        | "Tỷ lệ chi phí"
+        | "Combined ratio"
+        | "Lợi suất đầu tư"
+        | "Cơ cấu lợi nhuận"
+        | "Dự phòng nghiệp vụ / VCSH"
+      >;
+      nks: {
+        [key: string]: {
+          q?: 4 | 5 | 8 | 12 | 20;
+          y?: 3 | 5 | 10;
+        };
+      };
+      per: "q" | "y";
+    };
   };
 };
 
@@ -40694,12 +41090,16 @@ export type DashboardSaveSettingsData = {
       | "Revenue Growth Stability"
       | "Margin Stability"
       | "EPS Stability"
-      | "ROIC Stability"
       | "ROE"
       | "ROA"
-      | "ROIC"
-      | "Biên lợi nhuận gộp"
       | "Biên lợi nhuận ròng"
+      | "P/E"
+      | "P/B"
+      | "P/S"
+      | "PEG"
+      | "Biên lợi nhuận gộp"
+      | "ROIC"
+      | "ROIC Stability"
       | "Asset Turnover"
       | "Cash Conversion Cycle"
       | "D/E"
@@ -40711,12 +41111,37 @@ export type DashboardSaveSettingsData = {
       | "Capex / Revenue"
       | "FCF Margin"
       | "FCF Positive Streak"
-      | "P/E"
-      | "P/B"
-      | "P/S"
-      | "PEG"
       | "EV / EBITDA"
       | "FCF Yield"
+      | "NIM"
+      | "Lợi suất tài sản sinh lãi và chi phí vốn"
+      | "CIR"
+      | "Tỷ trọng thu nhập ngoài lãi"
+      | "Tăng trưởng lợi nhuận trước dự phòng"
+      | "Chi phí tín dụng"
+      | "Tỷ lệ dự phòng / Dư nợ"
+      | "Lãi dự thu / Dư nợ"
+      | "Tăng trưởng tín dụng và huy động"
+      | "LDR"
+      | "VCSH / Tổng tài sản"
+      | "Cơ cấu doanh thu hoạt động"
+      | "Biên lợi nhuận hoạt động"
+      | "Chi phí hoạt động / Doanh thu hoạt động"
+      | "Tăng trưởng dư nợ cho vay"
+      | "Dư nợ cho vay / VCSH"
+      | "Lợi suất cho vay"
+      | "Biên lợi nhuận môi giới"
+      | "Tỷ trọng tài sản tự doanh"
+      | "Hiệu suất tự doanh"
+      | "Nợ vay / VCSH"
+      | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+      | "Tỷ lệ giữ lại"
+      | "Tỷ lệ bồi thường"
+      | "Tỷ lệ chi phí"
+      | "Combined ratio"
+      | "Lợi suất đầu tư"
+      | "Cơ cấu lợi nhuận"
+      | "Dự phòng nghiệp vụ / VCSH"
     >;
     nks: {
       [key: string]: {
@@ -40726,9 +41151,11 @@ export type DashboardSaveSettingsData = {
     };
     per: "q" | "y";
   };
-  path?: never;
+  path: {
+    nganh: "thuong" | "nh" | "ck" | "bh";
+  };
   query?: never;
-  url: "/api/v2/dashboard/settings";
+  url: "/api/v2/dashboard/settings/{nganh}";
 };
 
 export type DashboardSaveSettingsErrors = {
@@ -40770,12 +41197,16 @@ export type DashboardSaveSettingsResponses = {
       | "Revenue Growth Stability"
       | "Margin Stability"
       | "EPS Stability"
-      | "ROIC Stability"
       | "ROE"
       | "ROA"
-      | "ROIC"
-      | "Biên lợi nhuận gộp"
       | "Biên lợi nhuận ròng"
+      | "P/E"
+      | "P/B"
+      | "P/S"
+      | "PEG"
+      | "Biên lợi nhuận gộp"
+      | "ROIC"
+      | "ROIC Stability"
       | "Asset Turnover"
       | "Cash Conversion Cycle"
       | "D/E"
@@ -40787,13 +41218,39 @@ export type DashboardSaveSettingsResponses = {
       | "Capex / Revenue"
       | "FCF Margin"
       | "FCF Positive Streak"
-      | "P/E"
-      | "P/B"
-      | "P/S"
-      | "PEG"
       | "EV / EBITDA"
       | "FCF Yield"
+      | "NIM"
+      | "Lợi suất tài sản sinh lãi và chi phí vốn"
+      | "CIR"
+      | "Tỷ trọng thu nhập ngoài lãi"
+      | "Tăng trưởng lợi nhuận trước dự phòng"
+      | "Chi phí tín dụng"
+      | "Tỷ lệ dự phòng / Dư nợ"
+      | "Lãi dự thu / Dư nợ"
+      | "Tăng trưởng tín dụng và huy động"
+      | "LDR"
+      | "VCSH / Tổng tài sản"
+      | "Cơ cấu doanh thu hoạt động"
+      | "Biên lợi nhuận hoạt động"
+      | "Chi phí hoạt động / Doanh thu hoạt động"
+      | "Tăng trưởng dư nợ cho vay"
+      | "Dư nợ cho vay / VCSH"
+      | "Lợi suất cho vay"
+      | "Biên lợi nhuận môi giới"
+      | "Tỷ trọng tài sản tự doanh"
+      | "Hiệu suất tự doanh"
+      | "Nợ vay / VCSH"
+      | "Tăng trưởng doanh thu phí bảo hiểm gốc"
+      | "Tỷ lệ giữ lại"
+      | "Tỷ lệ bồi thường"
+      | "Tỷ lệ chi phí"
+      | "Combined ratio"
+      | "Lợi suất đầu tư"
+      | "Cơ cấu lợi nhuận"
+      | "Dự phòng nghiệp vụ / VCSH"
     >;
+    nganh: "thuong" | "nh" | "ck" | "bh";
     nks: {
       [key: string]: {
         q?: 4 | 5 | 8 | 12 | 20;
@@ -42535,67 +42992,62 @@ export type DashboardFundamentalError =
 export type DashboardFundamentalResponses = {
   200: {
     charts: {
-      [key: string]:
-        | {
-            na: 1;
+      [key: string]: {
+        decimals: number;
+        hero?: number | null;
+        kind: "A" | "B" | "C" | "D" | "E1" | "E2" | "F" | "F2";
+        labels?: Array<string>;
+        legend_note?: string;
+        main?: Array<{
+          name: string;
+          v: Array<number | null>;
+        }>;
+        mainUnit?: string;
+        name: string;
+        note?: string;
+        q?: {
+          labels: Array<string>;
+          main: Array<{
             name: string;
-          }
-        | {
-            decimals: number;
-            hero?: number | null;
-            kind: "A" | "B" | "C" | "D" | "E1" | "E2" | "F" | "F2";
-            labels?: Array<string>;
-            legend_note?: string;
-            main?: Array<{
+            v: Array<number | null>;
+          }>;
+          sub?: {
+            series: Array<{
               name: string;
               v: Array<number | null>;
             }>;
-            mainUnit?: string;
-            name: string;
-            note?: string;
-            q?: {
-              labels: Array<string>;
-              main: Array<{
-                name: string;
-                v: Array<number | null>;
-              }>;
-              sub?: {
-                series: Array<{
-                  name: string;
-                  v: Array<number | null>;
-                }>;
-                type: "grouped" | "stacked";
-                unit: string;
-              };
-            };
-            ref?: number;
-            status:
-              | "ok"
-              | "missing"
-              | "not_applicable"
-              | "insufficient_base"
-              | "definition_pending"
-              | "data_unavailable";
+            type: "grouped" | "stacked";
             unit: string;
-            v?: Array<number | null>;
-            y?: {
-              labels: Array<string>;
-              main: Array<{
-                name: string;
-                v: Array<number | null>;
-              }>;
-              sub?: {
-                series: Array<{
-                  name: string;
-                  v: Array<number | null>;
-                }>;
-                type: "grouped" | "stacked";
-                unit: string;
-              };
-            };
           };
+        };
+        ref?: number;
+        status:
+          | "ok"
+          | "missing"
+          | "not_applicable"
+          | "insufficient_base"
+          | "definition_pending"
+          | "data_unavailable";
+        unit: string;
+        v?: Array<number | null>;
+        y?: {
+          labels: Array<string>;
+          main: Array<{
+            name: string;
+            v: Array<number | null>;
+          }>;
+          sub?: {
+            series: Array<{
+              name: string;
+              v: Array<number | null>;
+            }>;
+            type: "grouped" | "stacked";
+            unit: string;
+          };
+        };
+      };
     };
-    is_bank: boolean;
+    nganh: "thuong" | "nh" | "ck" | "bh";
     per: "q" | "y";
     symbol: string;
   };
@@ -58107,19 +58559,15 @@ export type DashboardValuationError =
 export type DashboardValuationResponses = {
   200: {
     charts: {
-      [key: string]:
-        | {
-            na: 1;
-            name: string;
-          }
-        | {
-            kind: "F";
-            name: string;
-            unit: string;
-            v: Array<number | null>;
-          };
+      [key: string]: {
+        kind: "F";
+        name: string;
+        unit: string;
+        v: Array<number | null>;
+      };
     };
     dates: Array<string>;
+    nganh: "thuong" | "nh" | "ck" | "bh";
     symbol: string;
   };
 };

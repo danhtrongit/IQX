@@ -2,11 +2,13 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 
 import {
   fetchDashboardCatalog,
+  fetchDashboardIndustry,
   fetchDashboardSettings,
   fetchFundamental,
-  fetchInstrument,
   fetchValuation,
   saveDashboardSettings,
+  type DashboardSettings,
+  type Industry,
   type PeriodMode,
   type SaveSettingsBody,
 } from "./api"
@@ -14,12 +16,13 @@ import {
 export const dashboardKeys = {
   settings: ["dashboard", "settings"] as const,
   catalog: ["dashboard", "catalog"] as const,
+  industry: (symbol: string) => ["dashboard", "industry", symbol] as const,
   fundamental: (symbol: string, charts: string) => ["dashboard", "fundamental", symbol, charts] as const,
   valuation: (symbol: string, from: string, charts: string) =>
     ["dashboard", "valuation", symbol, from, charts] as const,
 }
 
-/** Thiết lập dashboard của tài khoản; máy chủ trả sẵn bộ mặc định nếu chưa lưu. */
+/** Thiết lập dashboard của tài khoản theo ngành; máy chủ trả sẵn bộ mặc định của ngành chưa lưu. */
 export function useDashboardSettings(enabled: boolean) {
   return useQuery({
     queryKey: dashboardKeys.settings,
@@ -29,11 +32,21 @@ export function useDashboardSettings(enabled: boolean) {
   })
 }
 
-/** Danh mục 33 chỉ tiêu chia 6 nhóm, kèm cờ "không áp dụng cho ngân hàng". */
+/** Danh mục 62 chỉ tiêu theo ngành: chương, nhóm, khoá bài học và bộ mặc định của từng ngành. */
 export function useDashboardCatalog() {
   return useQuery({
     queryKey: dashboardKeys.catalog,
     queryFn: ({ signal }) => fetchDashboardCatalog(signal),
+    staleTime: 60 * 60_000,
+  })
+}
+
+/** Ngành của mã theo mẫu báo cáo tài chính (spec §1.3): quyết định danh mục và thiết lập đang dùng. */
+export function useDashboardIndustry(symbol: string) {
+  return useQuery({
+    queryKey: dashboardKeys.industry(symbol),
+    queryFn: ({ signal }) => fetchDashboardIndustry(symbol, signal),
+    enabled: symbol.length > 0,
     staleTime: 60 * 60_000,
   })
 }
@@ -67,35 +80,18 @@ export function useValuation(symbol: string, from: string, charts: string[], ena
   })
 }
 
-/** Ngành cấp 2 của mã báo đây là ngân hàng (VCI ghi "Ngân hàng", có nguồn ghi "Banks"). */
-export function isBankIndustry(industry: string | null | undefined): boolean {
-  return !!industry && /ng[âa]n h[àa]ng|\bbanks?\b/i.test(industry)
-}
-
-/**
- * Loại doanh nghiệp đoán từ danh sách mã (cùng nguồn với ô tìm kiếm), để nhãn
- * "Ngân hàng" hiện ngay trước khi số liệu về (DB-05d). `null` khi chưa biết.
- */
-export function useInstrumentIsBank(symbol: string): boolean | null {
-  const query = useQuery({
-    queryKey: ["instruments", "detail", symbol],
-    queryFn: ({ signal }) => fetchInstrument(symbol, signal),
-    enabled: symbol.length > 0,
-    staleTime: 60 * 60_000,
-    retry: false,
-  })
-  if (!query.data) return null
-  const instrument = query.data.data
-  return isBankIndustry(instrument.icbLv2) || isBankIndustry(instrument.icbLv1)
-}
-
-/** Lưu thiết lập theo tài khoản; câu trả lời là thiết lập đã lưu. */
+/** Lưu thiết lập của một ngành theo tài khoản; chỉ ngành đó đổi, các ngành khác giữ nguyên. */
 export function useSaveDashboardSettings() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: SaveSettingsBody) => saveDashboardSettings(body),
-    onSuccess: (saved) => {
-      queryClient.setQueryData(dashboardKeys.settings, saved)
+    mutationFn: ({ nganh, body }: { nganh: Industry; body: SaveSettingsBody }) =>
+      saveDashboardSettings(nganh, body),
+    onSuccess: (saved, { nganh }) => {
+      queryClient.setQueryData<DashboardSettings>(dashboardKeys.settings, (current) =>
+        current
+          ? { ...current, [nganh]: { charts: saved.charts, per: saved.per, nks: saved.nks } }
+          : current,
+      )
     },
   })
 }
