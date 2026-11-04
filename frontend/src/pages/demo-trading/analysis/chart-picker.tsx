@@ -9,8 +9,8 @@ import { chapterSize, chosenCount, industryItems, normalizeSearch } from "./mode
 
 /**
  * Khung "Biểu đồ" bên phải (spec Dashboard v2 §3): chỉ gồm chỉ tiêu của ngành đang xem, chia hai
- * cấp là chương (Phân tích cơ bản chung và chương riêng của ngành) rồi nhóm, mỗi cấp kèm số đã
- * chọn. Mỗi dòng có ô tick để thêm hoặc bỏ biểu đồ khỏi dashboard và nút "Học" mở bài học của chỉ
+ * cấp là nhóm cấp 1 (Chỉ tiêu chung và chỉ tiêu riêng của ngành, tên theo spec Học viện v4.1 §6.2, không
+ * mang tên chương Học viện) rồi nhóm cấp 2, mỗi cấp kèm số đã chọn. Mỗi dòng có ô tick để thêm hoặc bỏ biểu đồ khỏi dashboard và nút "Học" mở bài học của chỉ
  * tiêu; nút "Học" đứng ngoài nhãn của ô tick nên không làm tick hay bỏ tick.
  */
 export function ChartPicker({

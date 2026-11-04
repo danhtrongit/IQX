@@ -29,14 +29,3 @@ const ALLOWED: ReadonlySet<string> = new Set(TECHNICAL_INDICATOR_IDS)
 export function isCatalogIndicator(id: string): boolean {
   return ALLOWED.has(id)
 }
-
-/** Chapter heading of the technical lessons in the library. */
-export const CHAPTER_TITLES: Readonly<Record<number, string>> = {
-  4: "Phương pháp kỹ thuật",
-  6: "Chỉ báo xu hướng",
-  7: "Chỉ báo động lượng và dòng tiền",
-}
-
-export function chapterTitle(chapter: number): string {
-  return CHAPTER_TITLES[chapter] ?? `Chương ${chapter}`
-}

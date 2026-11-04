@@ -11,7 +11,6 @@ import { recordAudit, type AuditContext } from '../users/audit.js';
 import {
   AcademyConfigRepository,
   type AcademyConfigLogRow,
-  type AcademyConfigRow,
   type AcademyConfigWithActor,
   type AcademyLeaderRow,
 } from './academy-config.repository.js';

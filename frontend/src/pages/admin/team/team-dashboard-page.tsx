@@ -14,14 +14,16 @@ import {
 } from "@/pages/admin/core/components/overview-panels"
 
 import { TEAM_USER_SEGMENTS, type TeamUserSegment } from "./api"
-import { useTeamDailyRevenue, useTeamMe, useTeamMetricsOverview, useTeamSegmentCount } from "./hooks"
+import { useTeamAcademyConfig, useTeamDailyRevenue, useTeamMe, useTeamMetricsOverview, useTeamSegmentCount } from "./hooks"
 import { SEGMENT_COPY, segmentHref, teamScopeLabel } from "./labels"
+import { TeamAcademyConfigCard } from "./team-academy-config-card"
 
 /** Tổng quan của trưởng nhóm: cùng bố cục với quản trị viên, số liệu chỉ tính trong nhóm. */
 export function TeamDashboardPage() {
   const me = useTeamMe()
   const overview = useTeamMetricsOverview()
   const revenue = useTeamDailyRevenue(30)
+  const academy = useTeamAcademyConfig()
   const counts = {
     new_7d: useTeamSegmentCount("new_7d"),
     email_unverified: useTeamSegmentCount("email_unverified"),
@@ -36,6 +38,7 @@ export function TeamDashboardPage() {
     void me.refetch()
     void overview.refetch()
     void revenue.refetch()
+    void academy.refetch()
     for (const segment of TEAM_USER_SEGMENTS) void counts[segment].refetch()
   }
 
@@ -81,6 +84,13 @@ export function TeamDashboardPage() {
       </div>
 
       <OverviewShortcuts label="Lối tắt người dùng trong nhóm" items={shortcuts} />
+
+      <TeamAcademyConfigCard
+        config={academy.data}
+        loading={academy.isPending}
+        error={academy.error}
+        onRetry={() => void academy.refetch()}
+      />
     </WorkspacePage>
   )
 }

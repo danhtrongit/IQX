@@ -119,7 +119,7 @@ export function useUniverseActions(): UniverseActions {
         }
         if (isApiError(error, 403)) {
           attempt.current = null
-          return failure("locked", messageOf(error, "Bạn chưa mở chỉ tiêu cần thiết để áp dụng danh mục này."))
+          return failure("locked", messageOf(error, "Chưa áp dụng được danh mục này: tài khoản chưa được cấp quyền dùng chỉ tiêu cần thiết."))
         }
         if (isApiError(error, 404, "LIST_NOT_FOUND")) {
           attempt.current = null

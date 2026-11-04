@@ -1,5 +1,6 @@
 /**
- * «Bot» tool panel (right): the buy source and the 16 indicators grouped by chapter.
+ * «Bot» tool panel (right): the buy source and the 16 indicators grouped by type (trend, momentum...), never by
+ * Học viện chapter (spec Học viện v4.1 §6.1).
  *
  * This is the only place that configures the Bot. Nothing here starts a run or places
  * an order; saving a configuration or a source records a revision that counts from a
@@ -20,7 +21,7 @@ import { masterToggleIntent } from "../config/master"
 import { effectiveText } from "../config/summary"
 import type { TechnicalIndicator } from "../config/types"
 import { useBotConfig } from "../config/use-bot-config"
-import { chapterTitle, useBotNavigation } from "../navigation"
+import { useBotNavigation } from "../navigation"
 import { UniverseCard } from "../universe/universe-card"
 import { groupIndicators } from "./indicator-groups"
 import { IndicatorRow } from "./indicator-row"
@@ -44,7 +45,6 @@ export function BotPanel() {
 
   const ready = config.availability === "ready"
   const total = config.indicators.length || TOTAL_INDICATORS
-  const grantedCount = config.indicators.filter((indicator) => config.granted.has(indicator.id)).length
   const groups = groupIndicators(config.indicators, query)
   const modalIndicator = modal ? config.indicators.find((indicator) => indicator.id === modal.id) : undefined
 
@@ -67,7 +67,7 @@ export function BotPanel() {
   }
 
   return (
-    <SidebarPanel title="Bot" description={ready ? `${grantedCount} / ${total} chỉ báo đã mở` : "Chỉ báo và nguồn mua của Bot"}>
+    <SidebarPanel title="Bot" description={ready ? `${total} chỉ báo` : "Chỉ báo và nguồn mua của Bot"}>
       <UniverseCard />
 
       <div className="relative">
@@ -107,10 +107,8 @@ export function BotPanel() {
             <p className="rounded-md border border-dashed border-border p-4 text-center text-xs text-muted-foreground">Không tìm thấy chỉ báo.</p>
           ) : (
             groups.map((group) => (
-              <section key={group.chapter} aria-label={`Chương ${group.chapter}`} className="mb-3 space-y-2.5">
-                <h3 className="mx-0.5 mt-4 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase first:mt-0">
-                  Chương {group.chapter} · {chapterTitle(group.chapter)}
-                </h3>
+              <section key={group.id} aria-label={group.title} className="mb-3 space-y-2.5">
+                <h3 className="mx-0.5 mt-4 text-[10px] font-semibold tracking-wide text-muted-foreground uppercase first:mt-0">{group.title}</h3>
                 {group.indicators.map((indicator) => {
                   const granted = config.granted.has(indicator.id)
                   const saved = savedIndicatorConfig(config.state, indicator)

@@ -2,8 +2,9 @@ import { Button } from "@/components/ui/button"
 import type { ProgressResponse } from "../content-types"
 
 /**
- * "Tiến độ học tập x / N": required lessons of the published chapters passed (exams and the
- * optional practice room are not counted). Never shows a fake 0 while progress is unknown.
+ * "Tiến độ học tập x / N": required lessons of the learner's chapters passed (exams and the optional
+ * practice room are not counted; a lesson passed in a chapter his config no longer has is in neither
+ * number, spec v4.1 §2.4). Never shows a fake 0 while progress is unknown.
  */
 export function ProgressCard({
   progress,
@@ -13,12 +14,13 @@ export function ProgressCard({
   onRetry,
 }: {
   progress: ProgressResponse | undefined
-  total: number
+  /** N from the catalog while the progress is still loading; unknown until one of them arrives. */
+  total: number | undefined
   failed: boolean
   loading: boolean
   onRetry: () => void
 }) {
-  const max = progress?.course_total ?? total
+  const max = progress?.course_total ?? total ?? 0
   const done = progress?.course_done
   return (
     <section aria-label="Tiến độ học tập" className="rounded-lg border border-border bg-card p-3.5">

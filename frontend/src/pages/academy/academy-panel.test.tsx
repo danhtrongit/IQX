@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ApiError } from "@/lib/api"
 import { createFakeAcademyApi } from "./test-api"
-import { keysBefore, keyOf } from "./test-fixtures"
+import { buildCatalog, keysBefore, keyOf } from "./test-fixtures"
 import { overlayFrame, renderAcademy, stubBrowser } from "./test-support"
 import { resetAcademyViewState } from "./view-state"
 
@@ -181,6 +181,84 @@ describe("AcademyPanel structure", () => {
     await user.click(within(panel()).getAllByRole("button", { name: "Thử lại" }).at(-1) as HTMLElement)
     await ready()
     expect(panel().querySelectorAll("[data-chapter]")).toHaveLength(12)
+  })
+})
+
+describe("AcademyPanel with a team lead's Academy config (spec v4.1)", () => {
+  // Group A: every chapter except Kỹ năng Sale SACO (original chapter 2).
+  const GROUP_A = [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+
+  async function readyGroupA(options: Parameters<typeof createFakeAcademyApi>[0] = {}) {
+    install({ chapters: GROUP_A, ...options })
+    renderAcademy("/demo-trading?view=academy", { main: false })
+    await within(panel()).findByText("Chương 1 · Nền tảng")
+    await waitFor(() => expect(row("ch01-l01").getAttribute("data-state")).not.toBe("unknown"))
+  }
+
+  it("numbers the chapters again from 1 and counts only the config's lessons: 106 bài học, x / 106 (§2)", async () => {
+    await readyGroupA({ completed: ["concept:ch01_l01"] })
+
+    expect(within(panel()).getByText("106 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("1 / 106")).toBeTruthy()
+    expect(within(panel()).queryByText(/116/)).toBeNull()
+    expect(within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" }).getAttribute("aria-valuemax")).toBe("106")
+
+    const groups = [...panel().querySelectorAll<HTMLElement>("[data-chapter]")]
+    expect(groups.map((group) => group.getAttribute("data-chapter"))).toEqual(["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11"])
+    expect(within(groups[1]).getAllByRole("button")[0].textContent).toContain("Chương 2 · Thương hiệu cá nhân")
+    expect(within(groups[10]).getAllByRole("button")[0].textContent).toContain("Chương 11 · Phân tích công ty bảo hiểm")
+    // The removed chapter and the twelfth number do not exist for this learner.
+    expect(panel().textContent).not.toContain("Kỹ năng Sale SACO")
+    expect(panel().textContent).not.toMatch(/Chương 12/)
+  })
+
+  it("names the exam with the learner's number and keeps each chapter keyed by its fixed id", async () => {
+    const user = userEvent.setup()
+    await readyGroupA()
+    expect(chapter(2).getAttribute("data-chapter-id")).toBe("ch03")
+    await user.click(chapterButton(2))
+    expect(within(row("ch03-exam")).getByText("Bài thi Chương 2")).toBeTruthy()
+    expect(within(row("ch03-exam")).getByRole("button", { name: "Làm bài Bài thi Chương 2" })).toBeTruthy()
+    // The lesson names keep their text; only the chapter number a learner reads is his own.
+    expect(within(chapter(2)).getAllByText(/^Bài học 3\.\d$/).length).toBeGreaterThan(0)
+  })
+
+  it("keeps a chapter open by its id when the learner's numbers change under him", async () => {
+    const user = userEvent.setup()
+    const first = renderAcademy("/demo-trading?view=academy", { main: false })
+    await ready()
+    await user.click(chapterButton(3))
+    expect(chapterButton(3).getAttribute("aria-expanded")).toBe("true")
+    first.unmount()
+
+    // The next visit comes with another config: ch03 is chapter 2 now and is still the open one.
+    install({ chapters: GROUP_A })
+    renderAcademy("/demo-trading?view=academy", { main: false })
+    await within(panel()).findByText("Chương 2 · Thương hiệu cá nhân")
+    expect(chapter(2).getAttribute("data-chapter-id")).toBe("ch03")
+    expect(chapterButton(2).getAttribute("aria-expanded")).toBe("true")
+    expect(chapterButton(3).getAttribute("aria-expanded")).toBe("false")
+  })
+
+  it("sequential mode locks only along the config's chapters: the first chapter after Nền tảng opens once Nền tảng is passed", async () => {
+    const program = buildCatalog({ chapters: GROUP_A, mode: "sequential" })
+    install({ mode: "sequential", chapters: GROUP_A, completed: keysBefore("ch03-l01", program) })
+    renderAcademy("/demo-trading?view=academy&lesson=ch03-l01", { main: false })
+    await ready()
+    // The chapter 2 of this learner (ch03) is next: it needs nothing from the removed chapter.
+    expect(within(row("ch03-l01")).getByRole("button").textContent).toBe("Học bài")
+    expect(within(row("ch03-l02")).queryByRole("button")).toBeNull()
+    expect(within(row("ch03-l02")).getByText("Chưa mở")).toBeTruthy()
+  })
+
+  it("a config of two chapters shows two groups and, in sequential mode, locks the second lesson of the first", async () => {
+    install({ mode: "sequential", chapters: [1, 3], completed: [] })
+    renderAcademy("/demo-trading?view=academy", { main: false })
+    await ready()
+    expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Học bài")
+    expect(within(row("ch01-l02")).queryByRole("button")).toBeNull()
+    expect(panel().querySelectorAll('[aria-disabled="true"]').length).toBeGreaterThan(0)
+    expect(panel().querySelectorAll("[data-chapter]")).toHaveLength(2)
   })
 })
 

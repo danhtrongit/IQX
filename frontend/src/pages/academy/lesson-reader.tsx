@@ -5,8 +5,8 @@ import { PanelState } from "@/components/layout/panel-state"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/use-auth"
 import { errorMessage } from "@/lib/api"
-import { isItemLocked, isNotFound } from "./api"
-import { catalogItems, itemStates, locateItem, locatorText } from "./catalog-model"
+import { isItemLocked, isNotFound, isNotInProgram } from "./api"
+import { catalogItems, itemLabel, itemStates, locateItem, locatorText, resumeItemId } from "./catalog-model"
 import { useAcademyNavigation } from "./navigation"
 import { academyKeys, useAcademyCatalog, useAcademyItem, useAcademyProgress } from "./queries"
 import type { QuizIntent } from "./quiz/boot-quiz"
@@ -32,9 +32,10 @@ function ReaderSkeleton() {
 
 /**
  * The open item in the left area: a lesson or the practice room (content, quiz gate, pager), a
- * chapter exam (intro), or the quiz of either (content hidden). A locked item (403, `sequential`
- * accounts only: learning is free by default) shows LockedState. Mount it with `key={lessonId}`: a slow
- * response of item A never paints into item B.
+ * chapter exam (intro), or the quiz of either (content hidden). An item that is not its turn yet (403,
+ * accounts that learn in order only) shows the lock frame with "Học tiếp", never the content (spec v4.1
+ * §4); an item whose chapter is not in the account's program (404) says so. Mount it with `key={lessonId}`:
+ * a slow response of item A never paints into item B.
  */
 export function LessonReader({ lessonId }: { lessonId: string }) {
   const { user } = useAuth()
@@ -83,7 +84,7 @@ export function LessonReader({ lessonId }: { lessonId: string }) {
   }, [])
 
   const reloadItem = useCallback(() => {
-    void queryClient.invalidateQueries({ queryKey: academyKeys.catalog })
+    void queryClient.invalidateQueries({ queryKey: academyKeys.catalog(user?.id) })
     void queryClient.invalidateQueries({ queryKey: academyKeys.progress(user?.id) })
     void queryClient.invalidateQueries({ queryKey: academyKeys.item(user?.id, lessonId) })
     setMode({ kind: "read" })
@@ -109,7 +110,18 @@ export function LessonReader({ lessonId }: { lessonId: string }) {
         <ReaderSkeleton />
       ) : itemQuery.isError || !item ? (
         isItemLocked(itemQuery.error) ? (
-          <LockedState currentItemId={progress?.current_item_id ?? null} onOpen={nav.openLesson} />
+          <LockedState name={catalogItem ? itemLabel(catalogItem) : null} resumeItemId={resumeItemId(progress)} onOpen={nav.openLesson} />
+        ) : isNotInProgram(itemQuery.error) ? (
+          <PanelState
+            title="Bài này không còn trong chương trình học của bạn"
+            description="Chương chứa bài này không nằm trong chương trình học của nhóm bạn."
+            descriptionClassName="text-academy-subtle"
+            action={
+              resumeItemId(progress)
+                ? { label: "Học tiếp", onClick: () => nav.openLesson(resumeItemId(progress) as string) }
+                : { label: "Về danh sách bài", onClick: nav.closeLesson }
+            }
+          />
         ) : (
           <PanelState
             title={isNotFound(itemQuery.error) ? "Không tìm thấy bài học" : "Chưa tải được nội dung bài học"}

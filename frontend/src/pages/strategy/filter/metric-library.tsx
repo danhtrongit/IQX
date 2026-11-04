@@ -5,13 +5,14 @@ import { Button } from "@/components/ui/button"
 
 import { LibraryHead, LibraryShell } from "../shared/library-shell"
 import { matchesQuery } from "../shared/library-utils"
-import { isMetricUsable, metricChapter } from "./definition"
+import { isMetricUsable, metricChapter, metricGroupTitle } from "./definition"
 import type { MetricId, ScreenerMetric } from "./types"
 
 /**
- * Left library of the Bộ lọc: only the metrics whose lesson is passed. Usable ones can be added;
- * a learned metric the repo cannot compute yet is listed as unavailable with the server's reason.
- * The full list of 42 is in "Danh mục 42 chỉ tiêu".
+ * Left library of the Bộ lọc: the metrics the account can use, under the industry groups of spec Học viện v4.1
+ * §6.2 ("Chỉ tiêu chung", "Chỉ tiêu ngân hàng"...), never a chapter name. Usable ones can be added; a metric the
+ * repo cannot compute yet is listed as unavailable with the server's reason. The full list of 42 is in "Danh mục
+ * 42 chỉ tiêu".
  */
 export function MetricLibrary({
   metrics,
@@ -40,18 +41,16 @@ export function MetricLibrary({
 
   return (
     <LibraryShell label="Thư viện chỉ tiêu" open={open} onOpenChange={onOpenChange}>
-      <LibraryHead title="Chỉ tiêu đã mở" count={usableCount} searchLabel="Tìm chỉ tiêu" placeholder="Tìm chỉ tiêu…" query={query} onQuery={setQuery} />
+      <LibraryHead title="Chỉ tiêu" count={usableCount} searchLabel="Tìm chỉ tiêu" placeholder="Tìm chỉ tiêu…" query={query} onQuery={setQuery} />
 
       {learned.length === 0 ? (
-        <p className="text-xs leading-5 text-muted-foreground">
-          Chưa có chỉ tiêu nào được mở. Hoàn thành bài học chỉ tiêu cơ bản trong Học viện để dùng trong Bộ lọc.
-        </p>
+        <p className="text-xs leading-5 text-muted-foreground">Chưa có chỉ tiêu nào để dùng trong Bộ lọc.</p>
       ) : groups.length === 0 ? (
         <p className="text-xs text-muted-foreground">Không có chỉ tiêu phù hợp.</p>
       ) : (
         groups.map(([chapter, items]) => (
-          <section key={chapter} aria-label={`Chương ${chapter}`} className="space-y-1.5">
-            <h3 className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">Chương {chapter}</h3>
+          <section key={chapter} aria-label={metricGroupTitle(items[0]!)} className="space-y-1.5">
+            <h3 className="text-[10px] font-semibold tracking-wide text-muted-foreground uppercase">{metricGroupTitle(items[0]!)}</h3>
             <ul className="space-y-1.5">
               {items.map((metric) => {
                 const usable = isMetricUsable(metric)

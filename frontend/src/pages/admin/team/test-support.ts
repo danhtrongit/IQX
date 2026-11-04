@@ -1,6 +1,25 @@
 import type { User360 } from "@/pages/admin/core/api"
 
-import type { TeamUserRow } from "./api"
+import type { TeamAcademyConfig, TeamUserRow } from "./api"
+
+/** Cấu hình Học viện của một nhóm có cấu hình riêng: bỏ chương 2, nên "Thương hiệu cá nhân" thành chương 2. */
+export function teamAcademyConfig(overrides: Partial<TeamAcademyConfig> = {}): TeamAcademyConfig {
+  return {
+    has_own_config: true,
+    read_only: true,
+    mode: "sequential",
+    chapter_count: 3,
+    chapter_total: 12,
+    required_total: 40,
+    updated_at: "2026-11-02T03:00:00Z",
+    chapters: [
+      { chapter_id: "ch01", display_no: 1, title: "Nền tảng", lesson_count: 12, has_practice: false },
+      { chapter_id: "ch03", display_no: 2, title: "Thương hiệu cá nhân", lesson_count: 10, has_practice: true },
+      { chapter_id: "ch04", display_no: 3, title: "Phương pháp kỹ thuật", lesson_count: 18, has_practice: false },
+    ],
+    ...overrides,
+  }
+}
 
 export function teamUserRow(overrides: Partial<TeamUserRow> = {}): TeamUserRow {
   return {

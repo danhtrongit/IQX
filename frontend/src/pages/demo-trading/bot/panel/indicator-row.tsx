@@ -8,9 +8,9 @@ import { cn } from "@/lib/utils"
 import type { TechnicalIndicator } from "../config/types"
 
 /**
- * One indicator of the Bot panel. Locked (not learned) indicators only offer the
- * lesson: no practice, no configuration, no ON/OFF. Learned ones offer Luyện tập,
- * Cấu hình and the master switch.
+ * One indicator of the Bot panel: its name, then Luyện tập, Cấu hình and the master switch. No "Đã mở" label and
+ * no chapter (spec Học viện v4.1 §6.1): the tool is not unlocked by lessons any more. An indicator the server
+ * did not grant (never the case today) only offers its lesson: no practice, no configuration, no ON/OFF.
  */
 export function IndicatorRow({
   indicator,
@@ -43,7 +43,6 @@ export function IndicatorRow({
           {!granted && <Lock aria-hidden="true" className="size-3 shrink-0" />}
           <span className="min-w-0 break-words">{indicator.name}</span>
         </h4>
-        <span className="shrink-0 text-[10px] text-muted-foreground">{granted ? "Đã mở" : "Chưa mở"}</span>
       </div>
 
       {granted ? (

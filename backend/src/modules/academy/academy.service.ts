@@ -135,7 +135,7 @@ export class AcademyService implements OnModuleInit {
         lesson_count: chapter.lesson_count,
         items: chapter.items.map((item) => catalogItemView(item, chapter)),
       })),
-      retired_lessons: [...content.retired].map(([lesson_key, name]) => ({ lesson_key, name })),
+      retired_lessons: retiredLessons(content, program),
     };
   }
 
@@ -834,6 +834,24 @@ function currentOf(
 ): string | null {
   const opened = lastOpened ? content.itemsByKey.get(lastOpened.lesson_key) : undefined;
   return currentItemId(program.sequence, states, opened?.id ?? null);
+}
+
+/**
+ * Names the Shop ledger may need: keys that left the catalog, plus the lessons of chapters outside the learner's
+ * program, which he may have passed before a config change (his history and coins stay, v4.1 §7). An exam of such a
+ * chapter has no number for him, so it is named after its chapter.
+ */
+function retiredLessons(
+  content: AcademyContent,
+  program: AcademyProgram,
+): CatalogResponse['retired_lessons'] {
+  const names = new Map(content.retired);
+  const inProgram = new Set(program.chapters.flatMap((chapter) => chapter.items.map((item) => item.id)));
+  for (const item of content.items.values()) {
+    if (inProgram.has(item.id) || names.has(item.lesson_key)) continue;
+    names.set(item.lesson_key, item.kind === 'chapter_exam' ? `Bài thi · ${item.chapter_title}` : item.name);
+  }
+  return [...names].map(([lesson_key, name]) => ({ lesson_key, name }));
 }
 
 /**

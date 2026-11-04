@@ -108,7 +108,7 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
           default_charts: ["ROE"],
           chapters: [
             {
-              chapter: "Phân tích cơ bản chung",
+              chapter: "Chỉ tiêu chung",
               academy_chapter: 8,
               groups: [{ group: "Hiệu quả", items: [{ name: "ROE", metric_key: "roe", kind: "B" }] }],
             },
@@ -210,7 +210,8 @@ describe("DemoTradingPage for a brand-new user", () => {
 
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
-    expect(within(panel()).getByText("116 bài học")).toBeTruthy()
+    // N comes from the learner's own catalog (spec v4.1 §2.4), so it shows once the catalog has loaded.
+    expect(await within(panel()).findByText("116 bài học")).toBeTruthy()
     // The panel lists the real catalog and the learner's progress.
     expect(await within(panel()).findByText("Chương 1 · Nền tảng")).toBeTruthy()
     expect(within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })).toBeTruthy()
@@ -276,7 +277,7 @@ describe("DemoTradingPage for a brand-new user", () => {
     const { router } = await renderPage("/demo-trading?view=journey&content=journey&symbol=FPT")
     await waitFor(() => expect(router.state.location.search).toBe("?view=academy&symbol=FPT"))
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
-    expect(within(panel()).getByText("116 bài học")).toBeTruthy()
+    expect(await within(panel()).findByText("116 bài học")).toBeTruthy()
     expect(paths().filter((call) => /\/cap\d|\/journey|\/bot\/mascot/.test(call))).toEqual([])
   })
 
@@ -288,7 +289,9 @@ describe("DemoTradingPage for a brand-new user", () => {
     await waitFor(() => expect(within(panel()).getByRole("heading", { name: "Bot" })).toBeTruthy())
     // The Bot panel: buy source card, search and the 16 indicators; main: KPIs and the mascot with the config state.
     await waitFor(() => expect(within(panel()).getAllByRole("article")).toHaveLength(16))
-    expect(within(panel()).getByText("5 / 16 chỉ báo đã mở")).toBeTruthy()
+    expect(within(panel()).getByText("16 chỉ báo")).toBeTruthy()
+    // No chapter name and no "Đã mở" label in a tool (spec Học viện v4.1 §6.1).
+    expect(panel().textContent).not.toMatch(/Chương|Đã mở|đã mở/)
     expect(within(panel()).getByRole("region", { name: "Danh mục mua mới" })).toBeTruthy()
     expect(within(panel()).getByRole("searchbox", { name: "Tìm chỉ báo" })).toBeTruthy()
     expect(await screen.findByTestId("bot-state-chip")).toBeTruthy()

@@ -28,7 +28,9 @@ beforeEach(() => {
 })
 afterEach(() => vi.unstubAllGlobals())
 
-const REGISTRY_ORDER = ["RSI", "MACD", "MA / SMA", "Bollinger Bands", "Khối lượng", "EMA", "MA Cross", "DMI", "Donchian Channel", "Stochastic", "CCI", "OBV", "MFI", "Chaikin Money Flow", "ROC", "Williams %R"]
+/** The 16 indicators by type (spec Học viện v4.1 §6.1), registry order inside a group. */
+const GROUPS = ["Đường trung bình", "Động lượng", "Biến động", "Kênh giá", "Xu hướng", "Khối lượng", "Dòng tiền"]
+const GROUPED_ORDER = ["MA / SMA", "EMA", "MA Cross", "RSI", "MACD", "Stochastic", "CCI", "ROC", "Williams %R", "Bollinger Bands", "Donchian Channel", "DMI", "Khối lượng", "OBV", "MFI", "Chaikin Money Flow"]
 
 async function renderPanel(route?: string) {
   const view = renderBot(<BotPanel />, route)
@@ -40,26 +42,24 @@ const location = () => screen.getByTestId("location").textContent ?? ""
 const patches = () => callsTo(world, "PATCH", "/strategy/shared-config")
 
 describe("Bot panel", () => {
-  it("lists the 16 indicators grouped by chapter in registry order, with the opened count in the header", async () => {
+  it("lists the 16 indicators grouped by type, never by Học viện chapter, with the indicator count in the header (spec Học viện v4.1 §6.1)", async () => {
     await renderPanel()
 
     expect(screen.getByRole("heading", { name: "Bot" })).toBeTruthy()
-    expect(screen.getByText("5 / 16 chỉ báo đã mở")).toBeTruthy()
-    const groups = screen.getAllByRole("region").filter((region) => region.getAttribute("aria-label")?.startsWith("Chương"))
-    expect(groups.map((group) => group.querySelector("h3")?.textContent)).toEqual([
-      "Chương 4 · Phương pháp kỹ thuật",
-      "Chương 7 · Chỉ báo động lượng và dòng tiền",
-      "Chương 8 · Chương 8",
-    ])
+    expect(screen.getByText("16 chỉ báo")).toBeTruthy()
+    const groups = screen.getAllByRole("region").filter((region) => GROUPS.includes(region.getAttribute("aria-label") ?? ""))
+    expect(groups.map((group) => group.querySelector("h3")?.textContent)).toEqual(GROUPS)
     const names = screen.getAllByRole("article").map((article) => article.getAttribute("aria-label"))
-    expect(names).toEqual(REGISTRY_ORDER)
-    expect(groups.map((group) => within(group).getAllByRole("article").length)).toEqual([5, 4, 7])
+    expect(names).toEqual(GROUPED_ORDER)
+    expect(groups.map((group) => within(group).getAllByRole("article").length)).toEqual([3, 6, 1, 1, 1, 2, 2])
+    // No chapter name, no chapter number and no "Đã mở" / "Chưa mở" label anywhere in the tool.
+    expect(document.body.textContent).not.toMatch(/Chương|Đã mở|đã mở|Chưa mở|Phương pháp kỹ thuật|Chỉ báo xu hướng|Chỉ báo động lượng/)
   })
 
   it("renders granted indicators with practice, config and an accessible master switch", async () => {
     await renderPanel()
     const rsi = within(row("RSI"))
-    expect(rsi.getByText("Đã mở")).toBeTruthy()
+    expect(rsi.queryByText("Đã mở")).toBeNull()
     expect(rsi.getByRole("button", { name: /Luyện tập/ })).toBeTruthy()
     expect(rsi.getByRole("button", { name: /Cấu hình/ })).toBeTruthy()
     const toggle = rsi.getByRole("switch", { name: "Bật RSI cho Bot" })
@@ -70,7 +70,7 @@ describe("Bot panel", () => {
     world.granted = ["rsi"]
     await renderPanel("/demo-trading?view=bot&symbol=FPT&content=overview")
     const ema = within(row("EMA"))
-    expect(ema.getByText("Chưa mở")).toBeTruthy()
+    expect(ema.queryByText("Chưa mở")).toBeNull()
     expect(ema.getByText("Chưa phát hành")).toBeTruthy()
     expect(ema.queryByRole("link")).toBeNull()
     expect(ema.queryByRole("button")).toBeNull()
@@ -161,7 +161,7 @@ describe("Bot panel", () => {
       await waitFor(() => expect(callsTo(world, "GET", "/strategy/shared-config").length).toBeGreaterThan(1))
     })
 
-    it("names the indicator whose quiz is missing when the server locks it (403 CAPABILITY_LOCKED)", async () => {
+    it("names the indicator the server refuses to switch on (403 CAPABILITY_LOCKED), without any lesson wording", async () => {
       world.indicators.rsi!.buy.enabled = true
       world.override["PATCH /strategy/shared-config"] = () => {
         throw new FakeApiError("Cần hoàn thành bài học của chỉ báo rsi trước khi bật.", 403, {
@@ -172,7 +172,7 @@ describe("Bot panel", () => {
       const user = userEvent.setup()
       await renderPanel()
       await user.click(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }))
-      await waitFor(() => expect(mocks.toast.error).toHaveBeenCalledWith("Đạt bài kiểm tra của bài học chỉ báo RSI để bật."))
+      await waitFor(() => expect(mocks.toast.error).toHaveBeenCalledWith("Chưa bật được chỉ báo RSI: tài khoản chưa được cấp quyền dùng."))
       expect(within(row("RSI")).getByRole("switch", { name: "Bật RSI cho Bot" }).getAttribute("aria-checked")).toBe("false")
     })
   })

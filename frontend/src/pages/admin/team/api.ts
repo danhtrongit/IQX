@@ -8,6 +8,7 @@
  * tính trong bộ nhớ trên toàn bộ thành viên của nhóm (nhóm nhỏ), các cột còn lại sắp trong SQL.
  */
 import { requestOperation } from "@/lib/contract-client"
+import type { ApiResponseFor } from "@/lib/contract-types"
 import {
   adaptDailyRevenuePoint,
   adaptLoginHistoryRow,
@@ -119,6 +120,18 @@ export function adaptTeamUserRow(raw: WireTeamUserRow): TeamUserRow {
       currentLessonLabel: raw.academy.current_lesson?.label ?? null,
     },
   }
+}
+
+/**
+ * Cấu hình Học viện của nhóm mình, chỉ đọc (Học viện v4.1 §1.3). `chapters` đã được máy chủ đánh
+ * số lại (`display_no`), đúng như người dùng của nhóm thấy; client không tự tính số chương.
+ * `has_own_config: false` nghĩa là nhóm chưa có cấu hình riêng và học theo cấu hình mặc định.
+ */
+export type TeamAcademyConfig = ApiResponseFor<"GET /api/v2/team/academy-config">
+export type TeamAcademyChapter = TeamAcademyConfig["chapters"][number]
+
+export function fetchTeamAcademyConfig(signal?: AbortSignal): Promise<TeamAcademyConfig> {
+  return requestOperation("GET /api/v2/team/academy-config", {}, { signal })
 }
 
 export const teamApi = {

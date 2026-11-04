@@ -11076,8 +11076,11 @@ export type LegacyUser360Response = {
       total: number;
     };
     chapters: Array<{
+      chapter_id: string;
       completed: number;
+      display_no: number | null;
       exam_passed: boolean;
+      in_program: boolean;
       lessons: Array<{
         attempts: number;
         completed_at: string | null;
@@ -11092,13 +11095,19 @@ export type LegacyUser360Response = {
         status:
           "completed" | "in_progress" | "failed" | "not_started" | "locked";
       }>;
-      no: number;
       title: string;
       total: number;
     }>;
     completed: number;
+    config: {
+      chapter_count: number;
+      chapter_total: number;
+      mode: "free" | "sequential";
+      source: "default" | "leader" | "admin";
+    };
     current_lesson: {
-      chapter: number;
+      chapter_display_no: number;
+      chapter_id: string;
       kind: "lesson" | "chapter_exam";
       label: string;
       lesson_id: string;
@@ -11106,7 +11115,8 @@ export type LegacyUser360Response = {
       order: number;
     } | null;
     last_completion: {
-      chapter: number;
+      chapter_display_no: number;
+      chapter_id: string;
       completed_at: string;
       label: string;
       lesson_id: string;
@@ -26889,6 +26899,65 @@ export type ReferralsControllerMine0Responses = {
 export type ReferralsControllerMine0Response =
   ReferralsControllerMine0Responses[keyof ReferralsControllerMine0Responses];
 
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/team/academy-config";
+};
+
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigErrors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigError =
+  TeamAcademyConfigGetApiV1TeamAcademyConfigErrors[keyof TeamAcademyConfigGetApiV1TeamAcademyConfigErrors];
+
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigResponses = {
+  200: {
+    chapter_count: number;
+    chapter_total: number;
+    chapters: Array<{
+      chapter_id: string;
+      display_no: number;
+      has_practice: boolean;
+      lesson_count: number;
+      title: string;
+    }>;
+    has_own_config: boolean;
+    mode: "free" | "sequential";
+    read_only: true;
+    required_total: number;
+    updated_at: string | null;
+  };
+};
+
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigResponse =
+  TeamAcademyConfigGetApiV1TeamAcademyConfigResponses[keyof TeamAcademyConfigGetApiV1TeamAcademyConfigResponses];
+
 export type TeamControllerMe0Data = {
   body?: never;
   path?: never;
@@ -27094,7 +27163,8 @@ export type TeamControllerUsers0Responses = {
         all_done: boolean;
         completed: number;
         current_lesson: {
-          chapter: number;
+          chapter_display_no: number;
+          chapter_id: string;
           kind: "lesson" | "chapter_exam";
           label: string;
           lesson_id: string;
@@ -27184,8 +27254,11 @@ export type TeamControllerUser0Responses = {
         total: number;
       };
       chapters: Array<{
+        chapter_id: string;
         completed: number;
+        display_no: number | null;
         exam_passed: boolean;
+        in_program: boolean;
         lessons: Array<{
           attempts: number;
           completed_at: string | null;
@@ -27200,13 +27273,19 @@ export type TeamControllerUser0Responses = {
           status:
             "completed" | "in_progress" | "failed" | "not_started" | "locked";
         }>;
-        no: number;
         title: string;
         total: number;
       }>;
       completed: number;
+      config: {
+        chapter_count: number;
+        chapter_total: number;
+        mode: "free" | "sequential";
+        source: "default" | "leader" | "admin";
+      };
       current_lesson: {
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         kind: "lesson" | "chapter_exam";
         label: string;
         lesson_id: string;
@@ -27214,7 +27293,8 @@ export type TeamControllerUser0Responses = {
         order: number;
       } | null;
       last_completion: {
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         completed_at: string;
         label: string;
         lesson_id: string;
@@ -28959,8 +29039,11 @@ export type AcademyCatalogResponses = {
     catalog_version: string;
     chapters: Array<{
       audience: "all";
+      chapter_id: string;
+      display_no: number;
       items: Array<{
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         content_version: string | null;
         has_scenario: boolean;
         id: string;
@@ -28975,9 +29058,9 @@ export type AcademyCatalogResponses = {
         question_count: number;
       }>;
       lesson_count: number;
-      no: number;
       title: string;
     }>;
+    mode: "free" | "sequential";
     required_total: number;
     retired_lessons: Array<{
       lesson_key: string;
@@ -29029,7 +29112,8 @@ export type AcademyLessonResponses = {
         attempts_submitted: number;
         best_score: number | null;
         catalog_version: string;
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         charts: {
           [key: string]: AcademyChartModel;
         };
@@ -29079,7 +29163,8 @@ export type AcademyLessonResponses = {
         attempts_submitted: number;
         best_score: number | null;
         catalog_version: string;
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         chapter_title: string;
         completed_at: string | null;
         content_version: string | null;
@@ -29443,10 +29528,12 @@ export type AcademyLinkError = AcademyLinkErrors[keyof AcademyLinkErrors];
 
 export type AcademyLinkResponses = {
   200: {
-    chapter: number | null;
+    chapter_display_no: number | null;
+    chapter_id: string | null;
     found: boolean;
-    item_id: string | null;
+    lesson_id: string | null;
     lesson_key: string | null;
+    locked: boolean;
     matched_by: "metric_key" | "title" | "title_prefix";
     metric: string;
     metric_key: string | null;
@@ -29496,9 +29583,10 @@ export type AcademyProgressResponses = {
     access_mode: "free" | "sequential";
     catalog_version: string;
     chapters: Array<{
+      chapter_id: string;
+      display_no: number;
       done: number;
       exam_passed: boolean;
-      no: number;
       total: number;
     }>;
     course_done: number;
@@ -29512,12 +29600,435 @@ export type AcademyProgressResponses = {
       id: string;
       state: "passed" | "open" | "locked";
     }>;
+    next_item_id: string | null;
     progress_revision: number;
   };
 };
 
 export type AcademyProgressResponse =
   AcademyProgressResponses[keyof AcademyProgressResponses];
+
+export type AdminAcademyConfigsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/academy-configs";
+};
+
+export type AdminAcademyConfigsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigsError =
+  AdminAcademyConfigsErrors[keyof AdminAcademyConfigsErrors];
+
+export type AdminAcademyConfigsResponses = {
+  200: {
+    catalog_chapters: Array<{
+      chapter_id: string;
+      has_dashboard_metrics: boolean;
+      has_practice: boolean;
+      lesson_count: number;
+      no: number;
+      title: string;
+    }>;
+    catalog_version: string;
+    items: Array<{
+      chapter_count: number;
+      chapter_ids: Array<string>;
+      chapter_total: number;
+      id: string | null;
+      inherits_default: boolean;
+      leader: {
+        full_name: string;
+        status: "active" | "revoked";
+        user_id: string;
+        username: string;
+      } | null;
+      mode: "free" | "sequential";
+      name: string;
+      owner_type: "default" | "leader";
+      required_total: number;
+      updated_at: string | null;
+      updated_by: {
+        full_name: string;
+        id: string;
+        username: string;
+      } | null;
+      user_count: number;
+    }>;
+  };
+};
+
+export type AdminAcademyConfigsResponse =
+  AdminAcademyConfigsResponses[keyof AdminAcademyConfigsResponses];
+
+export type AdminAcademyConfigCreateData = {
+  body: {
+    chapter_ids: Array<string>;
+    leader_id: string;
+    mode: "free" | "sequential";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/academy-configs";
+};
+
+export type AdminAcademyConfigCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigCreateError =
+  AdminAcademyConfigCreateErrors[keyof AdminAcademyConfigCreateErrors];
+
+export type AdminAcademyConfigCreateResponses = {
+  200: {
+    chapter_count: number;
+    chapter_ids: Array<string>;
+    chapter_total: number;
+    id: string | null;
+    inherits_default: boolean;
+    leader: {
+      full_name: string;
+      status: "active" | "revoked";
+      user_id: string;
+      username: string;
+    } | null;
+    mode: "free" | "sequential";
+    name: string;
+    owner_type: "default" | "leader";
+    required_total: number;
+    updated_at: string | null;
+    updated_by: {
+      full_name: string;
+      id: string;
+      username: string;
+    } | null;
+    user_count: number;
+  };
+};
+
+export type AdminAcademyConfigCreateResponse =
+  AdminAcademyConfigCreateResponses[keyof AdminAcademyConfigCreateResponses];
+
+export type AdminAcademyConfigPreviewData = {
+  body: {
+    chapter_ids: Array<string>;
+    mode: "free" | "sequential";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/academy-configs/preview";
+};
+
+export type AdminAcademyConfigPreviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigPreviewError =
+  AdminAcademyConfigPreviewErrors[keyof AdminAcademyConfigPreviewErrors];
+
+export type AdminAcademyConfigPreviewResponses = {
+  200: {
+    chapter_count: number;
+    chapter_total: number;
+    chapters: Array<{
+      chapter_id: string;
+      display_no: number;
+      has_practice: boolean;
+      lesson_count: number;
+      title: string;
+    }>;
+    mode: "free" | "sequential";
+    required_total: number;
+    warnings: Array<{
+      chapter_id: string;
+      code: "DASHBOARD_METRIC_CHAPTER_REMOVED";
+      message: string;
+      title: string;
+    }>;
+  };
+};
+
+export type AdminAcademyConfigPreviewResponse =
+  AdminAcademyConfigPreviewResponses[keyof AdminAcademyConfigPreviewResponses];
+
+export type AdminAcademyConfigDeleteData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/academy-configs/{id}";
+};
+
+export type AdminAcademyConfigDeleteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigDeleteError =
+  AdminAcademyConfigDeleteErrors[keyof AdminAcademyConfigDeleteErrors];
+
+export type AdminAcademyConfigDeleteResponses = {
+  200: {
+    chapter_count: number;
+    chapter_ids: Array<string>;
+    chapter_total: number;
+    id: string | null;
+    inherits_default: boolean;
+    leader: {
+      full_name: string;
+      status: "active" | "revoked";
+      user_id: string;
+      username: string;
+    } | null;
+    mode: "free" | "sequential";
+    name: string;
+    owner_type: "default" | "leader";
+    required_total: number;
+    updated_at: string | null;
+    updated_by: {
+      full_name: string;
+      id: string;
+      username: string;
+    } | null;
+    user_count: number;
+  };
+};
+
+export type AdminAcademyConfigDeleteResponse =
+  AdminAcademyConfigDeleteResponses[keyof AdminAcademyConfigDeleteResponses];
+
+export type AdminAcademyConfigSaveData = {
+  body: {
+    chapter_ids: Array<string>;
+    mode: "free" | "sequential";
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/academy-configs/{id}";
+};
+
+export type AdminAcademyConfigSaveErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigSaveError =
+  AdminAcademyConfigSaveErrors[keyof AdminAcademyConfigSaveErrors];
+
+export type AdminAcademyConfigSaveResponses = {
+  200: {
+    chapter_count: number;
+    chapter_ids: Array<string>;
+    chapter_total: number;
+    id: string | null;
+    inherits_default: boolean;
+    leader: {
+      full_name: string;
+      status: "active" | "revoked";
+      user_id: string;
+      username: string;
+    } | null;
+    mode: "free" | "sequential";
+    name: string;
+    owner_type: "default" | "leader";
+    required_total: number;
+    updated_at: string | null;
+    updated_by: {
+      full_name: string;
+      id: string;
+      username: string;
+    } | null;
+    user_count: number;
+  };
+};
+
+export type AdminAcademyConfigSaveResponse =
+  AdminAcademyConfigSaveResponses[keyof AdminAcademyConfigSaveResponses];
+
+export type AdminAcademyConfigLogsData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: {
+    limit?: number;
+  };
+  url: "/api/v2/admin/academy-configs/{id}/logs";
+};
+
+export type AdminAcademyConfigLogsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigLogsError =
+  AdminAcademyConfigLogsErrors[keyof AdminAcademyConfigLogsErrors];
+
+export type AdminAcademyConfigLogsResponses = {
+  200: {
+    items: Array<{
+      action: "create" | "update" | "delete";
+      after: {
+        chapter_ids: Array<string>;
+        mode: "free" | "sequential";
+      } | null;
+      before: {
+        chapter_ids: Array<string>;
+        mode: "free" | "sequential";
+      } | null;
+      changed_at: string;
+      changed_by: {
+        full_name: string;
+        id: string;
+        username: string;
+      } | null;
+      id: string;
+    }>;
+  };
+};
+
+export type AdminAcademyConfigLogsResponse =
+  AdminAcademyConfigLogsResponses[keyof AdminAcademyConfigLogsResponses];
 
 export type AdminAlertsControllerFactorLibrary1Data = {
   body?: never;
@@ -58582,6 +59093,65 @@ export type StrategyConfigListRevisionsResponses = {
 export type StrategyConfigListRevisionsResponse =
   StrategyConfigListRevisionsResponses[keyof StrategyConfigListRevisionsResponses];
 
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/team/academy-config";
+};
+
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigError =
+  TeamAcademyConfigGetApiV2TeamAcademyConfigErrors[keyof TeamAcademyConfigGetApiV2TeamAcademyConfigErrors];
+
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigResponses = {
+  200: {
+    chapter_count: number;
+    chapter_total: number;
+    chapters: Array<{
+      chapter_id: string;
+      display_no: number;
+      has_practice: boolean;
+      lesson_count: number;
+      title: string;
+    }>;
+    has_own_config: boolean;
+    mode: "free" | "sequential";
+    read_only: true;
+    required_total: number;
+    updated_at: string | null;
+  };
+};
+
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigResponse =
+  TeamAcademyConfigGetApiV2TeamAcademyConfigResponses[keyof TeamAcademyConfigGetApiV2TeamAcademyConfigResponses];
+
 export type TeamControllerMe1Data = {
   body?: never;
   path?: never;
@@ -58787,7 +59357,8 @@ export type TeamControllerUsers1Responses = {
         all_done: boolean;
         completed: number;
         current_lesson: {
-          chapter: number;
+          chapter_display_no: number;
+          chapter_id: string;
           kind: "lesson" | "chapter_exam";
           label: string;
           lesson_id: string;
@@ -58877,8 +59448,11 @@ export type TeamControllerUser1Responses = {
         total: number;
       };
       chapters: Array<{
+        chapter_id: string;
         completed: number;
+        display_no: number | null;
         exam_passed: boolean;
+        in_program: boolean;
         lessons: Array<{
           attempts: number;
           completed_at: string | null;
@@ -58893,13 +59467,19 @@ export type TeamControllerUser1Responses = {
           status:
             "completed" | "in_progress" | "failed" | "not_started" | "locked";
         }>;
-        no: number;
         title: string;
         total: number;
       }>;
       completed: number;
+      config: {
+        chapter_count: number;
+        chapter_total: number;
+        mode: "free" | "sequential";
+        source: "default" | "leader" | "admin";
+      };
       current_lesson: {
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         kind: "lesson" | "chapter_exam";
         label: string;
         lesson_id: string;
@@ -58907,7 +59487,8 @@ export type TeamControllerUser1Responses = {
         order: number;
       } | null;
       last_completion: {
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         completed_at: string;
         label: string;
         lesson_id: string;

@@ -76,6 +76,20 @@ the saved notes. `test/unit/academy-v4*.test.ts` cover the schema, the chart bui
   match the Dashboard v2 catalog one to one (checked by title); the new bank, securities and insurance lessons use
   `fundamental:<metric_key>` as their lesson key.
 
+## Chapter numbers (Học viện v4.1)
+
+A team lead's group may learn a subset of the 12 chapters, so the number a learner sees ("Chương 3") is the position in
+HIS chapters, counted again from 1 by the server (`display_no`). Chapter ids, item ids, lesson keys and exam keys are
+fixed (`ch01` ... `ch12`). Therefore:
+
+- Lesson content (`lessons/*.vi.json`) never names a chapter number. A lesson that points at another lesson names it
+  (`bài MA`, `bài Tìm khách hàng`) or the part it belongs to (`phần Nền tảng`); the 9 lessons of the mockup that said
+  "Chương 2 · Bài 3", "Chương 4", "Chương 10" ... are rewritten in `overrides/text.json`. `schema.ts` fails the import
+  when a lesson, chart or summary text contains `Chương <digit>`.
+- Exam names and intros are templates with a `{n}` placeholder in `catalog-table.ts` (`Bài thi Chương {n}`, "... trong
+  Chương {n}."). The server fills in the learner's `display_no`; the stored copy never holds a literal chapter number.
+- Chapter titles (`Chỉ tiêu ...` for Chương 8-12 since v4.1 §6.2) carry no number either.
+
 ## Overrides
 
 Nobody edits the output JSON by hand; fixes live here and are re-applied on every run.

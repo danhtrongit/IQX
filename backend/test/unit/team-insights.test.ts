@@ -295,6 +295,99 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
   });
 });
 
+function buildAcademyProgram(chapterIds: readonly string[], doneIds: readonly string[]) {
+  return buildAcademyProgress(content, programFor({ chapter_ids: chapterIds }), { completions: done(doneIds), attempts: [] });
+}
+
+describe('academy progress in the user own program (Học viện v4.1 §8.4, §7)', () => {
+  const ALL = content.catalog.chapters.map((chapter) => `ch${String(chapter.no).padStart(2, '0')}`);
+  const GROUP_A = ALL.filter((id) => id !== 'ch02');
+
+  it('shows the chapters of the user config numbered again from 1, and N = 106 for group A', () => {
+    const view = buildAcademyProgress(
+      content,
+      programFor({ mode: 'sequential', chapter_ids: GROUP_A }),
+      {
+        completions: done(['ch01-l01', 'ch03-l01']),
+        attempts: [],
+      },
+      { source: 'leader' },
+    );
+    expect(view.config).toEqual({ source: 'leader', mode: 'sequential', chapter_count: 11, chapter_total: 12 });
+    expect(view.total).toBe(106);
+    expect(view.completed).toBe(2);
+    expect(view.chapters.slice(0, 3).map((chapter) => [chapter.chapter_id, chapter.display_no, chapter.title, chapter.in_program])).toEqual([
+      ['ch01', 1, 'Nền tảng', true],
+      ['ch03', 2, 'Thương hiệu cá nhân', true],
+      ['ch04', 3, 'Phương pháp kỹ thuật', true],
+    ]);
+    // Exam and locator lines carry the user's own chapter number.
+    expect(row(view, 'ch03-exam').name).toBe('Bài thi Chương 2');
+    expect(view.chapters.flatMap((chapter) => chapter.lessons).some((lesson) => lesson.lesson_id.startsWith('ch02-'))).toBe(false);
+    // Sequential: the chain of his chapters decides the status of the rest.
+    expect(row(view, 'ch03-l02').status).toBe('locked');
+    expect(view.current_lesson).toMatchObject({
+      lesson_id: 'ch01-l02',
+      chapter_display_no: 1,
+      label: `Chương 1 · Bài 2: ${content.items.get('ch01-l02')!.name}`,
+    });
+  });
+
+  it('keeps what the user passed in a chapter that left his config, after the program, outside the progress', () => {
+    const view = buildAcademyProgram(GROUP_A, ['ch01-l01', 'ch02-l01', 'ch02-l02']);
+    expect(view.total).toBe(106);
+    // Not counted in x / N ...
+    expect(view.completed).toBe(1);
+    // ... but listed last, without a number, so staff still see it.
+    const kept = view.chapters.at(-1)!;
+    expect(kept).toMatchObject({ chapter_id: 'ch02', display_no: null, in_program: false, title: 'Kỹ năng Sale SACO' });
+    expect(kept.completed).toBe(2);
+    expect(kept.lessons.filter((lesson) => lesson.status === 'completed').map((lesson) => lesson.lesson_id)).toEqual(['ch02-l01', 'ch02-l02']);
+    expect(view.chapters.slice(0, -1).every((chapter) => chapter.in_program && chapter.display_no !== null)).toBe(true);
+    // A user who did nothing in the removed chapter has no entry for it.
+    expect(buildAcademyProgram(GROUP_A, ['ch01-l01']).chapters.some((chapter) => !chapter.in_program)).toBe(false);
+    // Adding the chapter back puts it in place again with its history intact.
+    const back = buildAcademyProgram(ALL, ['ch01-l01', 'ch02-l01', 'ch02-l02']);
+    expect(back.chapters[1]).toMatchObject({ chapter_id: 'ch02', display_no: 2, in_program: true, completed: 2 });
+    expect(back.completed).toBe(3);
+  });
+
+  it('resolves the config of every user of a list through the config port, once for the page', async () => {
+    const userA = '00000000-0000-4000-8000-0000000000a1';
+    const userB = '00000000-0000-4000-8000-0000000000a2';
+    const database = {
+      query: vi.fn((sql: string) => {
+        if (sql.includes('academy_completions'))
+          return Promise.resolve([
+            { user_id: userA, ...done(['ch01-l01'])[0] },
+            { user_id: userB, ...done(['ch01-l01'])[0] },
+          ]);
+        return Promise.resolve([]);
+      }),
+    };
+    const calls: string[][] = [];
+    const configs = {
+      configOf: () => Promise.reject(new Error('not used')),
+      configsOf: (ids: readonly string[]) => {
+        calls.push([...ids]);
+        return Promise.resolve(
+          new Map(
+            ids.map((id) => [
+              id,
+              { mode: 'free' as const, chapter_ids: id === userA ? GROUP_A : ALL, source: 'leader' as const, config_id: 'c1' },
+            ]),
+          ),
+        );
+      },
+    };
+    const reader = new AcademyProgressReader(database as never, academyV4Source, configs);
+    const summaries = await reader.summaries([userA, userB]);
+    expect(calls).toEqual([[userA, userB]]);
+    expect(summaries.get(userA)).toMatchObject({ total: 106, completed: 1 });
+    expect(summaries.get(userB)).toMatchObject({ total: 116, completed: 1 });
+  });
+});
+
 describe('group-scoped admin metrics (admin spec v1.1 §6)', () => {
   function recordingDatabase() {
     const calls: Array<{ sql: string; params: readonly unknown[] }> = [];

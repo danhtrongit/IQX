@@ -1609,7 +1609,10 @@ export const catalogResponseSchema = z.object({
       items: z.array(catalogItemResponseSchema),
     }),
   ),
-  /** lesson_key -> name for keys no longer in the catalog (shop ledger labels). */
+  /**
+   * lesson_key -> name for keys no longer in the catalog and for lessons of chapters outside the learner's program
+   * (shop ledger labels: what he passed there stays in his history).
+   */
   retired_lessons: z.array(z.object({ lesson_key: z.string(), name: z.string() })),
 });
 export type CatalogResponse = z.infer<typeof catalogResponseSchema>;

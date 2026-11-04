@@ -5,7 +5,7 @@ import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatDateTime, formatNumber } from "@/lib/format"
 
-import type { AcademyLessonStatus, AcademyProgress } from "../api"
+import type { AcademyConfigInfo, AcademyLessonStatus, AcademyProgress } from "../api"
 import type { StatusTone } from "../labels"
 import { StatusBadge } from "./status-badge"
 
@@ -34,10 +34,25 @@ function SummaryTile({ label, value, hint, progress }: { label: string; value: s
   )
 }
 
+const CONFIG_SOURCE: Record<AcademyConfigInfo["source"], string> = {
+  default: "Cấu hình mặc định",
+  leader: "Cấu hình của nhóm",
+  admin: "Quản trị viên: đủ chương, học tự do",
+}
+
+/** "Cấu hình mặc định · Học tự do · 11/12 chương": the config that applies to this user (v4.1 §1.1). */
+function configLine(config: AcademyConfigInfo): string {
+  const mode = config.mode === "sequential" ? "Học lần lượt" : "Học tự do"
+  const parts = config.source === "admin" ? [CONFIG_SOURCE.admin] : [CONFIG_SOURCE[config.source], mode, `${config.chapterCount}/${config.chapterTotal} chương`]
+  return parts.join(" · ")
+}
+
 /**
- * Tab Học viện (admin spec v1.1 §5.1.4), dùng chung cho quản trị viên và trưởng nhóm. Chỉ
- * hiện các chương đã phát hành mà máy chủ trả về. Mỗi chương có một dòng "Bài thi Chương c"
- * (n/20 hoặc n/30) và một dòng Phòng tập thực chiến tự chọn, không tính vào tổng bài học.
+ * Tab Học viện (admin spec v1.1 §5.1.4, Học viện v4.1 §8.4), dùng chung cho quản trị viên và trưởng nhóm. Hiện các
+ * chương trong cấu hình Học viện của chính người dùng đó, theo số chương đã đánh lại của họ ("Chương 2 · Thương hiệu
+ * cá nhân"), kèm tên chương. Chương đã bị bỏ khỏi cấu hình nhưng người dùng từng học nằm riêng ở cuối, ghi rõ là
+ * không tính vào tiến độ. Mỗi chương có một dòng "Bài thi Chương c" (n/20 hoặc n/30) và một dòng Phòng tập thực chiến
+ * tự chọn, không tính vào tổng bài học.
  */
 export function UserAcademyTab({ academy }: { academy: AcademyProgress | null }) {
   if (!academy) {
@@ -47,10 +62,16 @@ export function UserAcademyTab({ academy }: { academy: AcademyProgress | null })
   const hasExams = academy.chapterExams.total > 0
   const current = academy.currentLesson
   const currentLabel = !academy.started ? "Chưa bắt đầu" : academy.allDone ? "Đã hoàn thành các chương hiện có" : (current?.label ?? "—")
-  const openChapter = current?.chapter ?? academy.chapters.find((chapter) => chapter.completed < chapter.total)?.no ?? academy.chapters[0]?.no
+  const openChapter =
+    current?.chapterId ??
+    academy.chapters.find((chapter) => chapter.inProgram && chapter.completed < chapter.total)?.chapterId ??
+    academy.chapters[0]?.chapterId
 
   return (
     <div className="space-y-4">
+      <p data-academy-config className="text-sm text-muted-foreground">
+        {configLine(academy.config)}
+      </p>
       <div className={hasExams ? "grid gap-3 sm:grid-cols-2 xl:grid-cols-4" : "grid gap-3 sm:grid-cols-3"}>
         <SummaryTile
           label="Bài đã hoàn thành"
@@ -72,25 +93,27 @@ export function UserAcademyTab({ academy }: { academy: AcademyProgress | null })
       </div>
 
       {academy.chapters.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Chưa có chương nào được phát hành.</p>
+        <p className="text-sm text-muted-foreground">Cấu hình Học viện của người dùng này chưa có chương nào.</p>
       ) : (
         <Accordion
           type="multiple"
-          defaultValue={openChapter !== undefined ? [String(openChapter)] : []}
+          defaultValue={openChapter !== undefined ? [openChapter] : []}
           className="rounded-lg bg-card ring-1 ring-border/60 ring-inset dark:ring-0"
         >
           {academy.chapters.map((chapter) => (
-            <AccordionItem key={chapter.no} value={String(chapter.no)}>
+            <AccordionItem key={chapter.chapterId} value={chapter.chapterId} data-in-program={chapter.inProgram}>
               <AccordionTrigger className="px-3">
                 <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5">
-                  <span className="font-medium">
-                    Chương {chapter.no} · {chapter.title}
+                  <span className={chapter.inProgram ? "font-medium" : "font-medium text-muted-foreground"}>
+                    {chapter.displayNo !== null ? `Chương ${chapter.displayNo} · ${chapter.title}` : chapter.title}
                   </span>
+                  {!chapter.inProgram && <Badge variant="outline">Đã bỏ khỏi cấu hình</Badge>}
                   <span className="flex items-center gap-2 text-xs font-normal text-muted-foreground">
                     <Progress value={percent(chapter.completed, chapter.total)} className="w-24" aria-hidden="true" />
                     <span className="tabular-nums">
                       {chapter.completed}/{chapter.total} bài
                     </span>
+                    {!chapter.inProgram && <span>Không tính vào tiến độ</span>}
                   </span>
                 </span>
               </AccordionTrigger>

@@ -60,18 +60,23 @@ describe("library", () => {
     await renderTab()
     const library = screen.getByRole("complementary", { name: "Thư viện chỉ báo" })
     expect(within(library).getAllByTestId(/^library-/)).toHaveLength(5)
-    for (const name of ["RSI", "MACD", "MA / SMA", "Bollinger Bands", "Khối lượng"]) expect(within(library).getByText(name)).toBeTruthy()
+    for (const name of ["RSI", "MACD", "MA / SMA", "Bollinger Bands"]) expect(within(library).getByText(name)).toBeTruthy()
+    // "Khối lượng" is also the name of a group: the indicator is found by its row.
+    expect(within(within(library).getByTestId("library-volume")).getByText("Khối lượng")).toBeTruthy()
     expect(within(library).queryByText("EMA")).toBeNull()
-    expect(within(library).getByLabelText("5 đã mở")).toBeTruthy()
+    expect(within(library).getByLabelText("5 mục")).toBeTruthy()
   })
 
-  it("shows exactly the 16 indicators once all 16 are granted, grouped by chapter 4, 7 and 8", async () => {
+  it("shows exactly the 16 indicators once all 16 are granted, grouped by type and never by chapter (spec Học viện v4.1 §6.1)", async () => {
     world.granted = ALL_16
     await renderTab()
     const library = screen.getByRole("complementary", { name: "Thư viện chỉ báo" })
     expect(within(library).getAllByTestId(/^library-/)).toHaveLength(16)
-    expect(within(library).getByLabelText("16 đã mở")).toBeTruthy()
-    for (const chapter of [4, 7, 8]) expect(within(library).getByRole("region", { name: `Chương ${chapter}` })).toBeTruthy()
+    expect(within(library).getByLabelText("16 mục")).toBeTruthy()
+    const groups = ["Đường trung bình", "Động lượng", "Biến động", "Kênh giá", "Xu hướng", "Khối lượng", "Dòng tiền"]
+    expect(within(library).getAllByRole("region").map((region) => region.getAttribute("aria-label"))).toEqual(groups)
+    expect(within(library).getByRole("heading", { name: "Chỉ báo" })).toBeTruthy()
+    expect(library.textContent).not.toMatch(/Chương|đã mở|Phương pháp kỹ thuật|Chỉ báo xu hướng|Chỉ báo động lượng/)
   })
 
   it("never lists ADX, ATR or any id outside the 16, even when the server sends one as granted", async () => {
