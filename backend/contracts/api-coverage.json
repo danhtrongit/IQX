@@ -3880,8 +3880,8 @@
     "semanticVerification": "manual-review-required"
   },
   "runtime": {
-    "documentedHttp": 806,
-    "registeredHttp": 1283,
+    "documentedHttp": 811,
+    "registeredHttp": 1291,
     "websocketAdapter": "WsAdapter",
     "websocketGateways": 2
   },
