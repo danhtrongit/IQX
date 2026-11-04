@@ -1,11 +1,14 @@
 /**
  * Tab Bảng xếp hạng của sảnh (spec v2.1 §4.2): dòng luật điểm, bục top 1, 2, 3 xếp 2 - 1 - 3 với bệ
- * vàng, bạc, đồng, rồi bảng từ hạng 4 tới hạng 50 (Hạng, Avatar, Người chơi, Điểm, Thắng/Ván). Dòng
+ * vàng, bạc, đồng, rồi bảng từ hạng 4 tới hạng 50 (Hạng, Avatar, Người chơi, Điểm, Thắng/Ván), chia trang
+ * 10 người một trang (không cuộn). Dòng
  * của mình có nền xanh và "(bạn)"; ngoài top 50 thì thêm dòng "…" rồi dòng của mình với đúng hạng.
  */
+import { useState } from "react"
+
 import { PanelState } from "@/components/layout/panel-state"
+import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import type { FlashbackLeaderboardRow } from "./flashback-api"
 import { PlayerAvatar } from "./flashback-avatar"
@@ -14,6 +17,9 @@ import { useLeaderboard } from "./use-flashback-progress"
 
 /** Cột của bảng từ hạng 4: Hạng, Avatar, Người chơi, Điểm, Thắng/Ván. */
 const COLUMNS = "grid-cols-[28px_32px_minmax(0,1fr)_64px_72px] sm:grid-cols-[40px_36px_minmax(0,1fr)_88px_88px]"
+
+/** Số người một trang của bảng từ hạng 4. */
+export const LEADERBOARD_PAGE_SIZE = 10
 
 /** Bệ đỡ của hạng 1, 2, 3: màu và chiều cao (thấp dần). */
 const PEDESTAL: Record<1 | 2 | 3, string> = {
@@ -25,6 +31,7 @@ const PEDESTAL: Record<1 | 2 | 3, string> = {
 export function LeaderboardTab() {
   const query = useLeaderboard()
   const board = query.data
+  const [page, setPage] = useState(1)
 
   if (!board) {
     if (query.isError) {
@@ -48,6 +55,9 @@ export function LeaderboardTab() {
 
   const byRank = new Map(board.rows.map((row) => [row.rank, row]))
   const rest = board.rows.filter((row) => row.rank > 3)
+  const pages = Math.max(1, Math.ceil(rest.length / LEADERBOARD_PAGE_SIZE))
+  const currentPage = Math.min(page, pages)
+  const shown = rest.slice((currentPage - 1) * LEADERBOARD_PAGE_SIZE, currentPage * LEADERBOARD_PAGE_SIZE)
 
   return (
     <div className="mx-auto w-full max-w-[820px] space-y-3.5" data-testid="flashback-leaderboard">
@@ -84,9 +94,8 @@ export function LeaderboardTab() {
                 <span className="text-right">Điểm</span>
                 <span className="text-right">Thắng/Ván</span>
               </div>
-              <ScrollArea className="max-h-[60vh]" data-testid="flashback-leaderboard-scroll">
-              <ol className="m-0 flex list-none flex-col gap-0.5 p-0 pr-2.5" aria-label="Từ hạng 4">
-                {rest.map((row) => (
+              <ol className="m-0 flex list-none flex-col gap-0.5 p-0" aria-label="Từ hạng 4" data-testid="flashback-leaderboard-page">
+                {shown.map((row) => (
                   <BoardRow key={row.user_id} row={row} />
                 ))}
                 {board.me ? (
@@ -98,8 +107,21 @@ export function LeaderboardTab() {
                   </>
                 ) : null}
               </ol>
-              </ScrollArea>
             </div>
+          ) : null}
+
+          {pages > 1 ? (
+            <nav aria-label="Phân trang bảng xếp hạng" className="flex items-center justify-center gap-3">
+              <Button type="button" variant="outline" size="sm" disabled={currentPage <= 1} onClick={() => setPage(currentPage - 1)}>
+                Trang trước
+              </Button>
+              <span className="text-sm font-semibold tabular-nums" aria-live="polite">
+                Trang {currentPage}/{pages}
+              </span>
+              <Button type="button" variant="outline" size="sm" disabled={currentPage >= pages} onClick={() => setPage(currentPage + 1)}>
+                Trang sau
+              </Button>
+            </nav>
           ) : null}
         </>
       )}
