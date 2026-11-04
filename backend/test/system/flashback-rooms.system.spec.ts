@@ -1,10 +1,21 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import type { FlashbackMarketDataPort } from '../../src/modules/flashback/flashback.market-data.js';
+import { vietnamDate } from '../../src/modules/flashback/flashback.round-builder.js';
 import { FLASHBACK_CLOCK } from '../../src/modules/flashback/flashback.service.js';
 import type { FlashbackBar } from '../../src/modules/flashback/flashback.types.js';
+import { FlashbackDatasetBuilder } from '../../src/modules/flashback/flashback-dataset.builder.js';
+import { FLASHBACK_NO_DATA_MESSAGE } from '../../src/modules/flashback/flashback-dataset.config.js';
+import type { DatasetRawRow } from '../../src/modules/flashback/flashback-dataset.logic.js';
+import { FLASHBACK_DATASET_SOURCE } from '../../src/modules/flashback/flashback-dataset.source.js';
+import { compareRank } from '../../src/modules/flashback/flashback-rooms.logic.js';
 import { FlashbackRoomsService } from '../../src/modules/flashback/flashback-rooms.service.js';
+import { weekdaysFrom } from '../unit/helpers/flashback-dataset-fixtures.js';
+import { FakeDatasetSource } from '../unit/helpers/flashback-dataset-memory.js';
 import {
   authHeader,
   registerAndLogin,
@@ -12,9 +23,10 @@ import {
   type SystemStack,
 } from './system-stack.js';
 
-// Flashback v2 · Phòng chơi trên PostgreSQL thật với migration 0033: chọn mã VN30 và giai đoạn
-// bằng bộ dựng đề v1.2 (nguồn nến giả lập, có ngày thật), trừ cược một lần, chốt ván và trả xu
-// idempotent, hết giờ tính ở phiên cuối, ràng buộc ledger và khoá khi vào phòng song song.
+// Flashback v2 · Phòng chơi trên PostgreSQL thật với migration 0033 và kho dữ liệu v2.2 (0039): kho
+// được dựng bằng bộ dựng thật từ một nguồn giả lập (6 mã, mọi ngày thường từ 2012), ván cắt đoạn
+// W + H + P phiên từ kho đó và lưu (dataset_version, start_idx); trừ cược một lần, chốt ván và trả
+// xu idempotent, hết giờ tính ở phiên cuối, ràng buộc ledger và khoá khi vào phòng song song.
 const BASE = '/api/v2/flashback';
 const VN30 = [
   'ACB',
@@ -77,12 +89,39 @@ const market: FlashbackMarketDataPort = {
   vn30Symbols: async () => [...VN30],
 };
 
+/** Sáu mã của rổ giả lập; `min_symbols` của kho được hạ xuống 6 để bộ dựng kích hoạt bản này. */
+const DATASET_SYMBOLS = ['AAA', 'BBB', 'CCC', 'DDD', 'EEE', 'FFF'];
+
+/** Nến thô (đồng) của một mã: giá dao động ±2%/phiên quanh 50.000đ, khối lượng 1 triệu cổ. */
+function datasetRows(symbol: string, dates: readonly string[]): DatasetRawRow[] {
+  const seed = symbol.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  let price = 50_000;
+  return dates.map((date, index) => {
+    price *= 1 + 0.02 * Math.sin((index + 1) * 1.7 + seed);
+    const close = Math.round(price);
+    return { date, open: close, high: close, low: close, close, volume: 1_000_000 };
+  });
+}
+
+/** Nguồn dữ liệu giả của bộ dựng kho: mọi ngày thường từ 2012-01-02 tới hôm qua. */
+function datasetSource(): FakeDatasetSource {
+  const today = vietnamDate(new Date());
+  const weekdays = Math.ceil(((Date.now() - Date.UTC(2012, 0, 2)) / 86_400_000) * (5 / 7)) + 10;
+  const dates = weekdaysFrom('2012-01-02', weekdays).filter((date) => date < today);
+  const source = new FakeDatasetSource();
+  source.basketSymbols = [...DATASET_SYMBOLS];
+  source.calendarDates = dates;
+  for (const symbol of DATASET_SYMBOLS) source.histories.set(symbol, datasetRows(symbol, dates));
+  return source;
+}
+
 type Session = Awaited<ReturnType<typeof registerAndLogin>>;
 
 describe('system acceptance: Flashback v2 · Phòng chơi', () => {
   let stack: SystemStack;
   let app: NestFastifyApplication;
   const clock = { at: new Date() };
+  let datasetVersion = 0;
 
   beforeAll(async () => {
     stack = await startSystemStack(
@@ -90,12 +129,27 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       {
         overrideProviders: [
           { token: 'FLASHBACK_MARKET_DATA', value: market },
+          { token: FLASHBACK_DATASET_SOURCE, value: datasetSource() },
           { token: FLASHBACK_CLOCK, value: { now: () => clock.at } },
         ],
       },
     );
     app = stack.app;
+    // Kho v2.2 chưa có phiên bản nào: dựng và kích hoạt bản đầu tiên bằng bộ dựng thật (đúng lệnh
+    // `npm run flashback:dataset:build` trên máy chủ), rổ giả lập nhỏ nên hạ ngưỡng 80 mã.
+    await setDatasetConfig({ min_symbols: DATASET_SYMBOLS.length });
+    const built = await app.get(FlashbackDatasetBuilder).build({ trigger: 'cli' });
+    expect(built).toMatchObject({ status: 'active', okCount: DATASET_SYMBOLS.length });
+    datasetVersion = built.status === 'active' ? built.version : 0;
   }, 180_000);
+
+  /** Ghi đè một phần tham số `flashback_settings.dataset` (có hiệu lực ngay ở lần cắt kế tiếp). */
+  const setDatasetConfig = (patch: Record<string, number>) =>
+    stack.query(
+      `insert into flashback_settings (key, value) values ('dataset', $1::jsonb)
+       on conflict (key) do update set value = flashback_settings.value || excluded.value`,
+      [JSON.stringify(patch)],
+    );
 
   afterAll(async () => {
     await stack?.close();
@@ -108,6 +162,14 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       headers: authHeader(session.accessToken),
       ...(payload ? { payload } : {}),
     });
+
+  /** Người chơi bấm "Sẵn sàng" (chủ phòng bắt đầu được ván khi mọi người đã sẵn sàng). */
+  const ready = async (sessions: readonly Session[], roomId: string) => {
+    for (const session of sessions) {
+      const response = await call(session, 'POST', `rooms/${roomId}/ready`, { ready: true });
+      expect(response.statusCode, response.body).toBe(200);
+    }
+  };
 
   async function user(name: string, xu: number): Promise<Session> {
     const session = await registerAndLogin(app, name);
@@ -153,7 +215,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     }
   }
 
-  it('4 người cược 100: trừ cược một lần, cùng một bộ nến VN30, không lộ mã/ngày, người thắng +400, chạy lại không cộng hai lần', async () => {
+  it('4 người cược 100: trừ cược một lần, cùng một bộ nến của kho, không lộ mã/ngày, người thắng +400, chạy lại không cộng hai lần', async () => {
     const players = [
       await user('fb-a', 1000),
       await user('fb-b', 1000),
@@ -183,6 +245,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       full: true,
     });
     expect((await call(b, 'POST', `rooms/${room.id}/start`)).statusCode).toBe(403);
+    await ready([b, c, d], room.id);
 
     const started = await call(a, 'POST', `rooms/${room.id}/start`);
     expect(started.statusCode, started.body).toBe(200);
@@ -199,14 +262,44 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     expect(match.history_bars).toHaveLength(40);
     expect(match.warmup_bars).toHaveLength(252);
     expect(match.pot_xu).toBe(400);
-    const [row] = await stack.query<{ symbol: string; bars: number; start_date: string }>(
-      `select symbol, jsonb_array_length(bars)::int as bars, to_char(start_date, 'YYYY-MM-DD') as start_date
+    const [row] = await stack.query<{
+      symbol: string;
+      bars: number;
+      start_date: string;
+      dataset_version: number;
+      start_idx: number;
+    }>(
+      `select symbol, jsonb_array_length(bars)::int as bars, to_char(start_date, 'YYYY-MM-DD') as start_date,
+              dataset_version, start_idx
          from fb_matches where id = $1`,
       [match.match_id],
     );
-    expect(VN30).toContain(row!.symbol);
+    expect(DATASET_SYMBOLS).toContain(row!.symbol);
     expect(row!.bars).toBe(70);
     expect(row!.start_date >= '2012-01-01').toBe(true);
+    // Ván ghi lại điểm cắt của mình (spec v2.2 §3.5) và 252 + 70 nến lưu trong ván đúng là các
+    // phiên start_idx .. start_idx + 321 của kho: dựng lại được mà không cần bản chép.
+    expect(row!.dataset_version).toBe(datasetVersion);
+    expect(row!.start_idx).toBeGreaterThanOrEqual(0);
+    const storedVsStore = (column: 'warmup_bars' | 'bars', offset: number) =>
+      stack.query(
+        `select count(*)::int as n,
+                count(*) filter (
+                  where to_char(d.date, 'YYYY-MM-DD') <> e.bar->>'d'
+                     or d.open <> (e.bar->>'o')::bigint
+                     or d.close <> (e.bar->>'c')::bigint
+                     or d.volume <> (e.bar->>'v')::bigint
+                )::int as different
+           from fb_matches m
+          cross join lateral jsonb_array_elements(m.${column}) with ordinality as e(bar, pos)
+           join fb_dataset_bars d
+             on d.version = m.dataset_version and d.symbol = m.symbol
+            and d.idx = m.start_idx + ${offset} + e.pos - 1
+          where m.id = $1`,
+        [match.match_id],
+      );
+    expect(await storedVsStore('warmup_bars', 0)).toEqual([{ n: 252, different: 0 }]);
+    expect(await storedVsStore('bars', 252)).toEqual([{ n: 70, different: 0 }]);
     // Không có mã, ngày phiên thật trong phản hồi bắt đầu và ảnh chụp ván của người khác.
     const snapshotB = await call(b, 'GET', `matches/${match.match_id}`);
     for (const body of [started.body, snapshotB.body]) {
@@ -319,9 +412,74 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     const result = await call(solo, 'GET', `matches/${matchId}/result`);
     expect(result.json()).toMatchObject({ title: 'Kết quả', solo: true, end_reason: 'timeout' });
     expect(
-      await stack.query('select 1 from coin_ledger where user_id = $1', [solo.id]),
+      // Chơi 1 mình không cược, không thưởng: ví chỉ có khoản tặng đăng ký (migration 0034).
+      await stack.query(
+        `select 1 from coin_ledger
+          where user_id = $1 and kind in ('flashback_stake', 'flashback_win', 'flashback_refund')`,
+        [solo.id],
+      ),
     ).toHaveLength(0);
     clock.at = new Date();
+  });
+
+  it('không cắt được đề: 409 kèm đúng câu của spec, chưa trừ xu, không tạo ván, phòng vẫn chờ; kho có điểm cắt trở lại thì bắt đầu được', async () => {
+    const owner = await user('fb-nocut-a', 500);
+    const guest = await user('fb-nocut-b', 500);
+    const created = await call(owner, 'POST', 'rooms', {
+      view_bars: 40,
+      play_bars: 30,
+      minutes: 5,
+      max_players: 2,
+      stake_xu: 100,
+    });
+    expect(created.statusCode, created.body).toBe(200);
+    const roomId = (created.json() as { id: string }).id;
+    expect((await call(guest, 'POST', `rooms/${roomId}/join`, {})).statusCode).toBe(200);
+    await ready([guest], roomId);
+    const matchesBefore = await stack.query<{ n: number }>(
+      'select count(*)::int as n from fb_matches',
+    );
+    const stakes = (session: Session) =>
+      stack.query(`select 1 from coin_ledger where user_id = $1 and kind = 'flashback_stake'`, [
+        session.id,
+      ]);
+
+    // Đòi thanh khoản bình quân 1.000 tỷ/phiên: không phiên nào của rổ giả lập (khoảng 50 tỷ) đạt.
+    await setDatasetConfig({ min_liquidity_vnd: 1_000_000_000_000 });
+    try {
+      const refused = await call(owner, 'POST', `rooms/${roomId}/start`);
+      // 4xx chứ không phải 5xx: bộ lọc lỗi chung thay mọi thông báo 5xx bằng câu chung chung.
+      expect(refused.statusCode, refused.body).toBe(409);
+      expect(refused.json()).toMatchObject({
+        error: { code: 'FLASHBACK_DATA_UNAVAILABLE', message: FLASHBACK_NO_DATA_MESSAGE },
+      });
+      for (const session of [owner, guest]) {
+        expect(await balance(session)).toBe(500);
+        expect(await stakes(session)).toHaveLength(0);
+      }
+      expect(await stack.query('select count(*)::int as n from fb_matches')).toEqual(matchesBefore);
+      expect(await stack.query('select status from fb_rooms where code = $1', [roomId])).toEqual([
+        { status: 'waiting' },
+      ]);
+    } finally {
+      await setDatasetConfig({ min_liquidity_vnd: 3_000_000_000 });
+    }
+
+    const retried = await call(owner, 'POST', `rooms/${roomId}/start`);
+    expect(retried.statusCode, retried.body).toBe(200);
+    for (const session of [owner, guest]) {
+      expect(await balance(session)).toBe(400);
+      expect(await stakes(session)).toHaveLength(1);
+    }
+
+    // Chơi hết và chốt ván vừa bắt đầu: các test sau tua đồng hồ rồi quét mọi ván đang mở, nên không
+    // được để lại ván dở dang ở đây.
+    const matchId = (retried.json() as { match: { match_id: string } }).match.match_id;
+    for (const session of [owner, guest]) {
+      await playToEnd(session, matchId);
+      const finished = await call(session, 'POST', `matches/${matchId}/finish`);
+      expect(finished.statusCode, finished.body).toBe(200);
+    }
   });
 
   it('ledger: mỗi (ván, người, loại) một dòng và dấu của delta đúng loại', async () => {
@@ -329,20 +487,20 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     const matchId = '00000000-0000-4000-8000-0000000000aa';
     await stack.query(
       `insert into coin_ledger (user_id, seq, kind, delta, balance_after, unique_key, ref, policy_version)
-       values ($1, 1, 'flashback_win', 10, 110, 'k1', jsonb_build_object('match_id', $2::text), 't')`,
+       values ($1, 101, 'flashback_win', 10, 110, 'k1', jsonb_build_object('match_id', $2::text), 't')`,
       [holder.id, matchId],
     );
     await expect(
       stack.query(
         `insert into coin_ledger (user_id, seq, kind, delta, balance_after, unique_key, ref, policy_version)
-         values ($1, 2, 'flashback_win', 10, 120, 'k2', jsonb_build_object('match_id', $2::text), 't')`,
+         values ($1, 102, 'flashback_win', 10, 120, 'k2', jsonb_build_object('match_id', $2::text), 't')`,
         [holder.id, matchId],
       ),
     ).rejects.toMatchObject({ code: '23505' });
     await expect(
       stack.query(
         `insert into coin_ledger (user_id, seq, kind, delta, balance_after, unique_key, ref, policy_version)
-         values ($1, 3, 'flashback_stake', 10, 120, 'k3', '{}'::jsonb, 't')`,
+         values ($1, 103, 'flashback_stake', 10, 120, 'k3', '{}'::jsonb, 't')`,
         [holder.id],
       ),
     ).rejects.toMatchObject({ code: '23514' });
@@ -372,5 +530,544 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
         [z.id],
       ),
     ).toEqual([{ n: 1 }]);
+  });
+
+  it('sẵn sàng và đuổi khỏi phòng (migration 0042): chặn bắt đầu, xoá khi bắt đầu, đuổi không đổi xu, chặn vào lại 10 phút', async () => {
+    const [a, b, c] = [
+      await user('rk-a', 500),
+      await user('rk-b', 500),
+      await user('rk-c', 500),
+    ] as [Session, Session, Session];
+    const room = (
+      await call(a, 'POST', 'rooms', { max_players: 4, stake_xu: 50 })
+    ).json() as { id: string };
+    for (const session of [b, c]) await call(session, 'POST', `rooms/${room.id}/join`, {});
+    const readyAt = (session: Session) =>
+      stack.query<{ ready_at: Date | null }>(
+        'select ready_at from fb_room_members where user_id = $1 and left_at is null',
+        [session.id],
+      );
+
+    // Chưa ai sẵn sàng: 409 FB_PLAYERS_NOT_READY, chưa có ván, chưa trừ xu.
+    const blocked = await call(a, 'POST', `rooms/${room.id}/start`);
+    expect(blocked.statusCode).toBe(409);
+    expect(blocked.json()).toMatchObject({
+      error: { code: 'FB_PLAYERS_NOT_READY', message: 'Còn 2 người chơi chưa sẵn sàng' },
+    });
+    expect(await balance(b)).toBe(500);
+
+    const readied = await call(b, 'POST', `rooms/${room.id}/ready`, { ready: true });
+    expect(readied.statusCode, readied.body).toBe(200);
+    // Thứ tự thành viên theo joined_at; đồng hồ giả của test này đứng yên nên so theo ID.
+    expect(
+      Object.fromEntries(
+        (readied.json() as { members: { user_id: string; ready: boolean }[] }).members.map(
+          (member) => [member.user_id, member.ready],
+        ),
+      ),
+    ).toEqual({ [a.id]: true, [b.id]: true, [c.id]: false });
+    expect((await readyAt(b))[0]!.ready_at).not.toBeNull();
+    // Body sai bị từ chối ở lớp validate.
+    expect((await call(b, 'POST', `rooms/${room.id}/ready`, { ready: 'yes' })).statusCode).toBe(422);
+
+    // Chỉ chủ phòng đuổi; không tự đuổi mình.
+    expect((await call(b, 'POST', `rooms/${room.id}/kick`, { user_id: c.id })).statusCode).toBe(403);
+    expect((await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: a.id })).statusCode).toBe(409);
+
+    const kicked = await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: c.id });
+    expect(kicked.statusCode, kicked.body).toBe(200);
+    expect(
+      (kicked.json() as { members: { user_id: string }[] }).members.map((m) => m.user_id).sort(),
+    ).toEqual([a.id, b.id].sort());
+    expect(await balance(c)).toBe(500);
+    expect(
+      await stack.query(
+        `select left_reason from fb_room_members where user_id = $1 order by joined_at desc limit 1`,
+        [c.id],
+      ),
+    ).toEqual([{ left_reason: 'kicked' }]);
+    expect((await call(c, 'GET', `rooms/${room.id}`)).statusCode).toBe(403);
+    const mine = (await call(c, 'GET', 'rooms/me')).json() as {
+      room: unknown;
+      notice: string | null;
+      kicked: boolean;
+    };
+    expect(mine).toEqual({
+      room: null,
+      notice: 'Bạn đã bị chủ phòng mời ra khỏi phòng.',
+      kicked: true,
+    });
+    expect(((await call(c, 'GET', 'rooms/me')).json() as { kicked: boolean }).kicked).toBe(false);
+    const rejoin = await call(c, 'POST', `rooms/${room.id}/join`, {});
+    expect(rejoin.statusCode).toBe(409);
+    expect(rejoin.json()).toMatchObject({ error: { code: 'FB_KICKED' } });
+
+    // Bắt đầu: chỉ còn a và b, cược 50 trừ của hai người; sẵn sàng bị xoá.
+    const started = await call(a, 'POST', `rooms/${room.id}/start`);
+    expect(started.statusCode, started.body).toBe(200);
+    expect(await balance(b)).toBe(450);
+    expect(await balance(c)).toBe(500);
+    expect(
+      await stack.query(
+        'select ready_at from fb_room_members where user_id = any($1::uuid[]) and left_at is null',
+        [[a.id, b.id]],
+      ),
+    ).toEqual([{ ready_at: null }, { ready_at: null }]);
+    // Đang chơi: không đuổi, không bấm sẵn sàng.
+    expect((await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: b.id })).statusCode).toBe(409);
+    expect((await call(b, 'POST', `rooms/${room.id}/ready`, { ready: true })).statusCode).toBe(409);
+
+    // Chơi xong ván: để tác vụ định kỳ của các test sau (đẩy đồng hồ giả) không chốt ván này.
+    const matchId = (started.json() as { match: { match_id: string } }).match.match_id;
+    for (const session of [a, b]) {
+      await playToEnd(session, matchId);
+      expect((await call(session, 'POST', `matches/${matchId}/finish`)).statusCode).toBe(200);
+    }
+  });
+
+  // ---------------------------------------------------------------- v2.1: cấp, điểm, hạng, lịch sử
+
+  type StatsRow = {
+    user_id: string;
+    points: number;
+    games: number;
+    wins: number;
+    reached_points_at: Date;
+  };
+
+  const allStats = () =>
+    stack.query<StatsRow>(
+      `select user_id::text as user_id, points, games, wins, reached_points_at
+         from fb_player_stats where games > 0`,
+    );
+
+  const sortedByRank = (rows: StatsRow[]) =>
+    rows
+      .map((row) => ({
+        userId: row.user_id,
+        points: row.points,
+        wins: row.wins,
+        reachedPointsAt: new Date(row.reached_points_at),
+      }))
+      .sort(compareRank);
+
+  it('v2.1 điểm cấp: thắng +10, thua +3, ghi vào fb_entries và fb_player_stats một lần; chạy lại không cộng thêm', async () => {
+    const [a, b, c] = [
+      await user('lv-a', 1000),
+      await user('lv-b', 1000),
+      await user('lv-c', 1000),
+    ] as [Session, Session, Session];
+    const created = await call(a, 'POST', 'rooms', { max_players: 3, stake_xu: 10 });
+    const room = created.json() as { id: string };
+    for (const session of [b, c]) await call(session, 'POST', `rooms/${room.id}/join`, {});
+    await ready([b, c], room.id);
+    const started = await call(a, 'POST', `rooms/${room.id}/start`);
+    expect(started.statusCode, started.body).toBe(200);
+    const matchId = (started.json() as { match: { match_id: string } }).match.match_id;
+    await playToEnd(a, matchId, { step: 0, qty: 50 });
+    for (const session of [a, b, c]) {
+      if (session !== a) await playToEnd(session, matchId);
+      expect((await call(session, 'POST', `matches/${matchId}/finish`)).statusCode).toBe(200);
+    }
+
+    const entries = await stack.query<{
+      user_id: string;
+      rank: number;
+      points: number;
+      is_win: boolean;
+      awarded: boolean;
+    }>(
+      `select user_id::text as user_id, rank, points, is_win, points_awarded_at is not null as awarded
+         from fb_entries where match_id = $1`,
+      [matchId],
+    );
+    expect(entries).toHaveLength(3);
+    for (const entry of entries) {
+      expect(entry.awarded).toBe(true);
+      expect(entry.points).toBe(entry.rank === 1 ? 10 : 3);
+      expect(entry.is_win).toBe(entry.rank === 1);
+    }
+    const stats = await allStats();
+    for (const entry of entries) {
+      expect(stats.find((row) => row.user_id === entry.user_id)).toMatchObject({
+        points: entry.points,
+        games: 1,
+        wins: entry.is_win ? 1 : 0,
+      });
+    }
+
+    // Kết quả có cột điểm và dòng tiến độ; GET me/level khớp bảng điểm.
+    const result = (await call(b, 'GET', `matches/${matchId}/result`)).json() as {
+      rows: { user_id: string; points: number; level: number; crown: 1 | 2 | 3 | null }[];
+      progress: { points: number; total_points: number; level: number; leveled_up: boolean };
+    };
+    expect(result.rows.map((row) => row.points).sort()).toEqual(
+      entries.map((entry) => entry.points).sort(),
+    );
+    const mine = entries.find((entry) => entry.user_id === b.id)!;
+    expect(result.progress).toMatchObject({
+      points: mine.points,
+      total_points: mine.points,
+      level: 1,
+      leveled_up: false,
+    });
+    const level = (await call(b, 'GET', 'me/level')).json() as {
+      points: number;
+      level: number;
+      level_base: number;
+      next_level_points: number;
+      rank: number | null;
+    };
+    expect(level).toMatchObject({
+      points: mine.points,
+      level: 1,
+      level_base: 0,
+      next_level_points: 20,
+    });
+    expect(level.rank).toBeGreaterThanOrEqual(1);
+
+    // Chạy lại nhiều lần (chốt ván, tác vụ định kỳ, mở kết quả) không đổi bảng điểm.
+    const before = JSON.stringify(await allStats());
+    const service = app.get(FlashbackRoomsService);
+    clock.at = new Date(clock.at.getTime() + 3_600_000);
+    expect(await service.settle(matchId)).toBe(false);
+    await service.sweep();
+    await service.sweep();
+    await call(a, 'GET', `matches/${matchId}/result`);
+    expect(JSON.stringify(await allStats())).toBe(before);
+    clock.at = new Date();
+  });
+
+  it('v2.1 bảng xếp hạng: SQL xếp đúng thứ tự §4.1 (khớp compareRank), top 3, dòng của mình ngoài top, vương miện', async () => {
+    const players: Session[] = [];
+    for (let index = 0; index < 8; index += 1) players.push(await user(`rk-${index}`, 100));
+    // Điểm có nhiều cặp bằng nhau (điểm, ván thắng, mốc đạt điểm) để chạm đủ các tiêu chí phụ.
+    const spec = [
+      [200, 10, 100],
+      [150, 8, 100],
+      [150, 8, 100],
+      [150, 8, 50],
+      [150, 9, 200],
+      [90, 3, 10],
+      [90, 3, 10],
+      [4, 1, 1],
+    ] as const;
+    for (const [index, [points, wins, minute]] of spec.entries()) {
+      await stack.query(
+        `insert into fb_player_stats (user_id, points, games, wins, reached_points_at)
+         values ($1, $2, $3, $4, timestamptz '2026-01-01 00:00:00+00' + ($5 * interval '1 minute'))
+         on conflict (user_id) do update
+           set points = excluded.points, games = excluded.games, wins = excluded.wins,
+               reached_points_at = excluded.reached_points_at`,
+        [players[index]!.id, points, wins + 5, wins, minute],
+      );
+    }
+    const expected = sortedByRank(await allStats()).map((row) => row.userId);
+
+    const board = (await call(players[3]!, 'GET', 'leaderboard?limit=50')).json() as {
+      rows: {
+        rank: number;
+        user_id: string;
+        points: number;
+        crown: 1 | 2 | 3 | null;
+        is_me: boolean;
+      }[];
+      me: unknown;
+    };
+    expect(board.rows.map((row) => row.user_id)).toEqual(expected);
+    expect(board.rows.map((row) => row.rank)).toEqual(expected.map((_, index) => index + 1));
+    expect(board.rows.map((row) => row.crown).slice(0, 4)).toEqual([1, 2, 3, null]);
+    expect(board.rows.filter((row) => row.is_me).map((row) => row.user_id)).toEqual([
+      players[3]!.id,
+    ]);
+    expect(board.me).toBeNull();
+
+    // Giới hạn top: người ngoài top nhận thêm dòng của mình với đúng hạng.
+    const lastSession = players[7]!;
+    const rankOf = expected.indexOf(lastSession.id) + 1;
+    expect(rankOf).toBeGreaterThan(3);
+    const limited = (await call(lastSession, 'GET', 'leaderboard?limit=3')).json() as {
+      rows: unknown[];
+      me: { rank: number; user_id: string; is_me: boolean } | null;
+    };
+    expect(limited.rows).toHaveLength(3);
+    expect(limited.me).toMatchObject({ rank: rankOf, user_id: lastSession.id, is_me: true });
+    expect(((await call(lastSession, 'GET', 'me/level')).json() as { rank: number }).rank).toBe(
+      rankOf,
+    );
+
+    // Top 3 và vương miện ở sảnh (chủ phòng hạng 1).
+    const top3 = (await call(players[0]!, 'GET', 'leaderboard/top3')).json() as {
+      users: { rank: number; user_id: string }[];
+    };
+    expect(top3.users.map((item) => [item.rank, item.user_id])).toEqual(
+      expected.slice(0, 3).map((id, index) => [index + 1, id]),
+    );
+    const owner = players.find((session) => session.id === expected[0])!;
+    const ownerRoom = (
+      await call(owner, 'POST', 'rooms', { max_players: 2, stake_xu: 10 })
+    ).json() as { id: string; members: { crown: number | null; level: number }[] };
+    // 200 điểm: levelBase(6) = 200 <= 200 < levelBase(7) = 270.
+    expect(ownerRoom.members[0]).toMatchObject({ crown: 1, level: 6 });
+    const lobby = (await call(players[7]!, 'GET', 'rooms?status=waiting')).json() as {
+      rooms: { id: string; owner: { crown: number | null; level: number } }[];
+    };
+    expect(lobby.rooms.find((room) => room.id === ownerRoom.id)?.owner).toMatchObject({
+      crown: 1,
+      level: 6,
+    });
+    await call(owner, 'POST', `rooms/${ownerRoom.id}/leave`);
+  });
+
+  it('v2.1 lịch sử đấu: danh sách, lọc, phân trang, chi tiết chỉ có lệnh của mình và 6 số tổng kết trên PostgreSQL thật', async () => {
+    const p = await user('hist-p', 1000);
+    const q = await user('hist-q', 1000);
+    const created = await call(p, 'POST', 'rooms', { max_players: 2, stake_xu: 20 });
+    const room = created.json() as { id: string };
+    await call(q, 'POST', `rooms/${room.id}/join`, {});
+    await ready([q], room.id);
+    const started = await call(p, 'POST', `rooms/${room.id}/start`);
+    const matchId = (started.json() as { match: { match_id: string } }).match.match_id;
+    await playToEnd(p, matchId, { step: 0, qty: 100 });
+    await playToEnd(q, matchId);
+    for (const session of [p, q]) await call(session, 'POST', `matches/${matchId}/finish`);
+    // Đồng hồ của bộ kiểm thử đứng yên: nếu không nhích lên thì hai ván có cùng `ended_at` và thứ tự
+    // "mới nhất trước" chỉ còn phụ thuộc vào UUID ngẫu nhiên.
+    clock.at = new Date(clock.at.getTime() + 60_000);
+    // Một ván chơi 1 mình để có nhãn "Chơi 1 mình".
+    await call(p, 'POST', `rooms/${room.id}/leave`);
+    await call(q, 'POST', `rooms/${room.id}/leave`).catch(() => undefined);
+    const soloRoom = (await call(p, 'POST', 'rooms', { max_players: 1 })).json() as { id: string };
+    const soloStart = await call(p, 'POST', `rooms/${soloRoom.id}/start`);
+    const soloMatch = (soloStart.json() as { match: { match_id: string } }).match.match_id;
+    await playToEnd(p, soloMatch);
+    await call(p, 'POST', `matches/${soloMatch}/finish`);
+
+    type History = {
+      items: {
+        match_id: string;
+        result: string;
+        rank: number;
+        xu: number;
+        points: number;
+        symbol: string;
+        player_count: number;
+        orders: { side: string; qty: number }[];
+        players: { user_id: string; is_me: boolean; rank: number }[];
+        ended_at: string;
+      }[];
+      page: number;
+      pages: number;
+      total: number;
+    };
+    const all = (await call(p, 'GET', 'me/history')).json() as History;
+    expect(all.total).toBe(2);
+    expect(all.items.map((item) => item.match_id)).toEqual([soloMatch, matchId]);
+    // Mới nhất trước theo thời điểm kết thúc, không phải do hoà rồi xếp theo ID.
+    expect(all.items[0]!.ended_at > all.items[1]!.ended_at).toBe(true);
+    expect(all.items[0]).toMatchObject({ result: 'solo', xu: 0, points: 0, player_count: 1 });
+    const duel = all.items[1]!;
+    expect(DATASET_SYMBOLS).toContain(duel.symbol);
+    expect(['win', 'tie', 'lose']).toContain(duel.result);
+    expect(duel.points).toBe(duel.result === 'lose' ? 3 : 10);
+    expect(duel.players).toHaveLength(2);
+    expect(duel.players.find((player) => player.is_me)?.user_id).toBe(p.id);
+    expect(duel.orders).toHaveLength(1);
+    expect(duel.orders[0]).toMatchObject({ side: 'buy', qty: 100 });
+    // q không có lệnh nào và không thấy lệnh của p.
+    const theirs = (await call(q, 'GET', 'me/history')).json() as History;
+    expect(theirs.items).toHaveLength(1);
+    expect(theirs.items[0]!.orders).toEqual([]);
+
+    const query = async (qs: string) =>
+      (await call(p, 'GET', `me/history?${qs}`)).json() as History;
+    expect((await query('result=solo')).items.map((item) => item.result)).toEqual(['solo']);
+    const wins = await query('result=win');
+    expect(wins.total).toBe(duel.result === 'lose' ? 0 : 1);
+    expect((await query('result=lose')).total).toBe(duel.result === 'lose' ? 1 : 0);
+    expect((await query('days=7')).total).toBe(2);
+    expect((await query('days=30&result=solo')).total).toBe(1);
+    expect((await query('page=9')).page).toBe(1);
+    expect((await call(p, 'GET', 'me/history?result=bogus')).statusCode).toBe(422);
+
+    const summary = (await call(p, 'GET', 'me/history/summary?days=7')).json() as {
+      games: number;
+      solo_games: number;
+      multi_games: number;
+      wins: number;
+      win_rate: number;
+      xu_net: number;
+      points: number;
+      avg_pnl_percent: number;
+      best_symbol: string | null;
+    };
+    expect(summary).toMatchObject({ games: 2, solo_games: 1, multi_games: 1 });
+    expect(summary.points).toBe(duel.points);
+    expect(summary.wins).toBe(duel.result === 'lose' ? 0 : 1);
+    expect(summary.win_rate).toBe(duel.result === 'lose' ? 0 : 1);
+    expect(summary.xu_net).toBe(duel.xu);
+    expect(summary.best_symbol).not.toBeNull();
+    // Mốc thời gian: ván lùi về 40 ngày trước chỉ nằm trong "Tất cả".
+    await stack.query(
+      `update fb_matches set ended_at = ended_at - interval '40 days' where id = $1`,
+      [matchId],
+    );
+    expect(
+      ((await call(p, 'GET', 'me/history/summary?days=30')).json() as { games: number }).games,
+    ).toBe(1);
+    expect(((await call(p, 'GET', 'me/history/summary')).json() as { games: number }).games).toBe(
+      2,
+    );
+    expect((await query('days=30')).total).toBe(1);
+    clock.at = new Date();
+  });
+
+  it('v2.1 biểu cảm: gửi qua API, cả ván thấy ở state, chặn 1,5 giây, từ chối emoji lạ, hết ván thì không gửi được', async () => {
+    const r1 = await user('rx-1', 200);
+    const r2 = await user('rx-2', 200);
+    const room = (await call(r1, 'POST', 'rooms', { max_players: 2, stake_xu: 10 })).json() as {
+      id: string;
+    };
+    await call(r2, 'POST', `rooms/${room.id}/join`, {});
+    await ready([r2], room.id);
+    const started = await call(r1, 'POST', `rooms/${room.id}/start`);
+    const matchId = (started.json() as { match: { match_id: string } }).match.match_id;
+    const send = (session: Session, emoji: string) =>
+      call(session, 'POST', `matches/${matchId}/reactions`, { emoji });
+
+    const sent = await send(r1, '🚀');
+    expect(sent.statusCode, sent.body).toBe(200);
+    expect(sent.json()).toMatchObject({ user_id: r1.id, emoji: '🚀' });
+    const blocked = await send(r1, '🔥');
+    expect(blocked.statusCode).toBe(429);
+    expect(blocked.json()).toMatchObject({ error: { code: 'REACTION_TOO_FAST' } });
+    expect((await send(r1, '👍')).statusCode).toBe(400);
+    const state = (await call(r2, 'GET', `matches/${matchId}/state`)).json() as {
+      reactions: { id: string; user_id: string; emoji: string }[];
+    };
+    expect(state.reactions).toEqual([
+      expect.objectContaining({
+        id: (sent.json() as { id: string }).id,
+        user_id: r1.id,
+        emoji: '🚀',
+      }),
+    ]);
+    clock.at = new Date(clock.at.getTime() + 1_600);
+    expect((await send(r1, '🔥')).statusCode).toBe(200);
+    expect((await send(r2, '🤑')).statusCode).toBe(200);
+    // Người ngoài ván không gửi được.
+    const outsider = await user('rx-out', 0);
+    expect((await send(outsider, '😂')).statusCode).toBe(404);
+
+    for (const session of [r1, r2]) {
+      await playToEnd(session, matchId);
+      await call(session, 'POST', `matches/${matchId}/finish`);
+    }
+    expect((await send(r1, '😎')).statusCode).toBe(409);
+    expect(
+      ((await call(r1, 'GET', `matches/${matchId}/state`)).json() as { reactions: unknown[] })
+        .reactions,
+    ).toEqual([]);
+    clock.at = new Date();
+  });
+
+  it('migration 0038: cộng bù điểm cho ván đã chốt trước đó, dựng lại bảng điểm và chạy lại vẫn không đổi', async () => {
+    const [x, y, z] = [await user('mg-x', 0), await user('mg-y', 0), await user('mg-z', 0)] as [
+      Session,
+      Session,
+      Session,
+    ];
+    const migration = readFileSync(
+      fileURLToPath(new URL('../../migrations/0038_flashback_levels.sql', import.meta.url)),
+      'utf8',
+    );
+    const insertRoom = async (codeValue: string, owner: Session) =>
+      (
+        await stack.query<{ id: string }>(
+          `insert into fb_rooms (code, owner_id, view_bars, play_bars, minutes, max_players, stake_xu,
+                                 status, closed_at, close_reason)
+           values ($1, $2, 30, 30, 5, 4, 0, 'closed', now(), 'ended_timeout')
+           returning id::text as id`,
+          [codeValue, owner.id],
+        )
+      )[0]!.id;
+    const insertMatch = async (roomId: string, players: number, endedAt: string) =>
+      (
+        await stack.query<{ id: string }>(
+          `insert into fb_matches (room_id, symbol, start_date, end_date, view_bars, play_bars, minutes,
+                                   stake_xu, player_count, pot_xu, started_at, ends_at, status,
+                                   ended_at, end_reason, paid_at)
+           values ($1, 'FPT', '2015-01-02', '2015-06-30', 30, 30, 5, 0, $2, 0,
+                   $3::timestamptz - interval '5 minutes', $3::timestamptz, 'paid', $3::timestamptz,
+                   'all_finished', $3::timestamptz)
+           returning id::text as id`,
+          [roomId, players, endedAt],
+        )
+      )[0]!.id;
+    const insertEntry = (matchId: string, session: Session, rank: number) =>
+      stack.query(
+        `insert into fb_entries (match_id, user_id, step, status, final_nav, pnl_pct, rank, finished_at)
+         values ($1, $2, 30, 'finished', 10000000, 0, $3, now())`,
+        [matchId, session.id, rank],
+      );
+    // Ván 1 (x thắng, y thua, z thua), ván 2 (hoà hạng 1: y, z; x hạng 3), ván 3 (x chơi 1 mình).
+    const m1 = await insertMatch(await insertRoom('900001', x), 3, '2026-10-01T10:00:00Z');
+    await insertEntry(m1, x, 1);
+    await insertEntry(m1, y, 2);
+    await insertEntry(m1, z, 2);
+    const m2 = await insertMatch(await insertRoom('900002', y), 3, '2026-10-02T10:00:00Z');
+    await insertEntry(m2, x, 3);
+    await insertEntry(m2, y, 1);
+    await insertEntry(m2, z, 1);
+    const m3 = await insertMatch(await insertRoom('900003', x), 1, '2026-10-03T10:00:00Z');
+    await insertEntry(m3, x, 1);
+
+    await stack.query(migration);
+    const read = () =>
+      stack.query<{
+        match_id: string;
+        user_id: string;
+        points: number;
+        is_win: boolean;
+        awarded_at: Date | null;
+      }>(
+        `select match_id::text as match_id, user_id::text as user_id, points, is_win,
+                points_awarded_at as awarded_at
+           from fb_entries where match_id = any($1::uuid[]) order by match_id, rank, user_id`,
+        [[m1, m2, m3]],
+      );
+    const entries = await read();
+    expect(entries).toHaveLength(7);
+    const awarded = (matchId: string, session: Session) =>
+      entries.find((row) => row.match_id === matchId && row.user_id === session.id);
+    expect(awarded(m1, x)).toMatchObject({ points: 10, is_win: true });
+    expect(awarded(m1, y)).toMatchObject({ points: 3, is_win: false });
+    expect(awarded(m1, z)).toMatchObject({ points: 3, is_win: false });
+    expect(awarded(m2, y)).toMatchObject({ points: 10, is_win: true });
+    expect(awarded(m2, z)).toMatchObject({ points: 10, is_win: true });
+    expect(awarded(m2, x)).toMatchObject({ points: 3, is_win: false });
+    // Ván chơi 1 mình: 0 điểm, không thắng, nhưng vẫn đánh dấu đã xử lý.
+    expect(awarded(m3, x)).toMatchObject({ points: 0, is_win: false });
+    expect(entries.every((row) => row.awarded_at !== null)).toBe(true);
+    expect(new Date(awarded(m1, x)!.awarded_at!).toISOString()).toBe('2026-10-01T10:00:00.000Z');
+    const stats = async (session: Session) =>
+      (
+        await stack.query<{ points: number; games: number; wins: number; reached: Date }>(
+          `select points, games, wins, reached_points_at as reached from fb_player_stats where user_id = $1`,
+          [session.id],
+        )
+      )[0];
+    expect(await stats(x)).toMatchObject({ points: 13, games: 2, wins: 1 });
+    expect(await stats(y)).toMatchObject({ points: 13, games: 2, wins: 1 });
+    expect(await stats(z)).toMatchObject({ points: 13, games: 2, wins: 1 });
+    // Mốc đạt điểm là lúc kết thúc ván cuối có điểm (x: ván 2; ván 1 người không tính).
+    expect(new Date((await stats(x))!.reached).toISOString()).toBe('2026-10-02T10:00:00.000Z');
+
+    // Chạy lại lần nữa: không đổi gì (idempotent).
+    const snapshot = JSON.stringify([await read(), await stats(x), await stats(y), await stats(z)]);
+    await stack.query(migration);
+    expect(JSON.stringify([await read(), await stats(x), await stats(y), await stats(z)])).toBe(
+      snapshot,
+    );
   });
 });

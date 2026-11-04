@@ -142,6 +142,21 @@
       "requestType": "FlashbackAdminAlertsData",
       "responseType": "FlashbackAdminAlertsResponses"
     },
+    "GET /api/v2/admin/flashback/dataset": {
+      "operationId": "flashbackAdminDataset",
+      "requestType": "FlashbackAdminDatasetData",
+      "responseType": "FlashbackAdminDatasetResponses"
+    },
+    "GET /api/v2/admin/flashback/dataset/symbols": {
+      "operationId": "flashbackAdminDatasetSymbols",
+      "requestType": "FlashbackAdminDatasetSymbolsData",
+      "responseType": "FlashbackAdminDatasetSymbolsResponses"
+    },
+    "GET /api/v2/admin/flashback/dataset/versions": {
+      "operationId": "flashbackAdminDatasetVersions",
+      "requestType": "FlashbackAdminDatasetVersionsData",
+      "responseType": "FlashbackAdminDatasetVersionsResponses"
+    },
     "GET /api/v2/admin/flashback/pause": {
       "operationId": "flashbackAdminPauseStatus",
       "requestType": "FlashbackAdminPauseStatusData",
@@ -682,6 +697,16 @@
       "requestType": "FlashbackIndicatorsData",
       "responseType": "FlashbackIndicatorsResponses"
     },
+    "GET /api/v2/flashback/leaderboard": {
+      "operationId": "flashbackRoomsLeaderboard",
+      "requestType": "FlashbackRoomsLeaderboardData",
+      "responseType": "FlashbackRoomsLeaderboardResponses"
+    },
+    "GET /api/v2/flashback/leaderboard/top3": {
+      "operationId": "flashbackRoomsLeaderboardTop3",
+      "requestType": "FlashbackRoomsLeaderboardTop3Data",
+      "responseType": "FlashbackRoomsLeaderboardTop3Responses"
+    },
     "GET /api/v2/flashback/matches/{id}": {
       "operationId": "flashbackMatchGet",
       "requestType": "FlashbackMatchGetData",
@@ -696,6 +721,21 @@
       "operationId": "flashbackMatchState",
       "requestType": "FlashbackMatchStateData",
       "responseType": "FlashbackMatchStateResponses"
+    },
+    "GET /api/v2/flashback/me/history": {
+      "operationId": "flashbackMyHistory",
+      "requestType": "FlashbackMyHistoryData",
+      "responseType": "FlashbackMyHistoryResponses"
+    },
+    "GET /api/v2/flashback/me/history/summary": {
+      "operationId": "flashbackMyHistorySummary",
+      "requestType": "FlashbackMyHistorySummaryData",
+      "responseType": "FlashbackMyHistorySummaryResponses"
+    },
+    "GET /api/v2/flashback/me/level": {
+      "operationId": "flashbackMyLevel",
+      "requestType": "FlashbackMyLevelData",
+      "responseType": "FlashbackMyLevelResponses"
     },
     "GET /api/v2/flashback/rooms": {
       "operationId": "flashbackRoomsList",
@@ -1527,6 +1567,11 @@
       "requestType": "AdminAlertsControllerSetupTelegramWebhook1Data",
       "responseType": "AdminAlertsControllerSetupTelegramWebhook1Responses"
     },
+    "POST /api/v2/admin/flashback/dataset/refresh": {
+      "operationId": "flashbackAdminDatasetRefresh",
+      "requestType": "FlashbackAdminDatasetRefreshData",
+      "responseType": "FlashbackAdminDatasetRefreshResponses"
+    },
     "POST /api/v2/admin/flashback/pause": {
       "operationId": "flashbackAdminPause",
       "requestType": "FlashbackAdminPauseData",
@@ -1997,6 +2042,11 @@
       "requestType": "FlashbackMatchOrderData",
       "responseType": "FlashbackMatchOrderResponses"
     },
+    "POST /api/v2/flashback/matches/{id}/reactions": {
+      "operationId": "flashbackMatchReaction",
+      "requestType": "FlashbackMatchReactionData",
+      "responseType": "FlashbackMatchReactionResponses"
+    },
     "POST /api/v2/flashback/rooms": {
       "operationId": "flashbackRoomsCreate",
       "requestType": "FlashbackRoomsCreateData",
@@ -2007,10 +2057,20 @@
       "requestType": "FlashbackRoomsJoinData",
       "responseType": "FlashbackRoomsJoinResponses"
     },
+    "POST /api/v2/flashback/rooms/{code}/kick": {
+      "operationId": "flashbackRoomsKick",
+      "requestType": "FlashbackRoomsKickData",
+      "responseType": "FlashbackRoomsKickResponses"
+    },
     "POST /api/v2/flashback/rooms/{code}/leave": {
       "operationId": "flashbackRoomsLeave",
       "requestType": "FlashbackRoomsLeaveData",
       "responseType": "FlashbackRoomsLeaveResponses"
+    },
+    "POST /api/v2/flashback/rooms/{code}/ready": {
+      "operationId": "flashbackRoomsReady",
+      "requestType": "FlashbackRoomsReadyData",
+      "responseType": "FlashbackRoomsReadyResponses"
     },
     "POST /api/v2/flashback/rooms/{code}/replay": {
       "operationId": "flashbackRoomsReplay",
@@ -2241,6 +2301,11 @@
       "operationId": "AdminAlertsController_update[1]",
       "requestType": "AdminAlertsControllerUpdate1Data",
       "responseType": "AdminAlertsControllerUpdate1Responses"
+    },
+    "PUT /api/v2/admin/flashback/dataset/config": {
+      "operationId": "flashbackAdminDatasetConfig",
+      "requestType": "FlashbackAdminDatasetConfigData",
+      "responseType": "FlashbackAdminDatasetConfigResponses"
     },
     "PUT /api/v2/admin/team-leads/{leadId}/policy": {
       "operationId": "AdminTeamLeadsController_updatePolicy[1]",

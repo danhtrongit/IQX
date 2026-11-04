@@ -34,6 +34,8 @@ const member = (id: string, name: string, owner: boolean) => ({
   is_owner: owner,
   joined_at: "2026-10-30T01:00:00.000Z",
   name,
+  // Chủ phòng luôn sẵn sàng; người còn lại đã bấm Sẵn sàng để chủ phòng bắt đầu được.
+  ready: true,
   user_id: id,
 })
 
@@ -122,7 +124,7 @@ async function mockFlashback(page: Page) {
     const url = new URL(route.request().url())
     const path = url.pathname.replace(/^.*\/api\/v2/, "")
     const method = route.request().method()
-    if (path === "/flashback/rooms/me") return json(route, { room: stage === "lobby" ? null : room(stage), notice: null })
+    if (path === "/flashback/rooms/me") return json(route, { room: stage === "lobby" ? null : room(stage), notice: null, kicked: false })
     if (path === "/flashback/rooms" && method === "GET") {
       return json(route, {
         rooms: [

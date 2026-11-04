@@ -2,8 +2,17 @@ import { describe, expect, it } from 'vitest';
 
 import {
   FB_INITIAL_CASH_VND,
+  FB_POINTS_LOSS,
+  FB_POINTS_WIN,
+  compareRank,
   hashRoomPassword,
+  historyResultOf,
   joinCheck,
+  levelBase,
+  levelInfo,
+  levelOfPoints,
+  levelStep,
+  matchPoints,
   navAtStep,
   pnlKey,
   randomJoinCandidates,
@@ -290,7 +299,12 @@ describe('§7 chốt ván: settleMatch', () => {
     });
     expect(settlement.outcomes).toHaveLength(30);
     expect(settlement.potXu).toBe(300);
-    expect(settlement.outcomes[0]).toMatchObject({ userId: 'H', rank: 1, winner: true, winXu: 300 });
+    expect(settlement.outcomes[0]).toMatchObject({
+      userId: 'H',
+      rank: 1,
+      winner: true,
+      winXu: 300,
+    });
     expect(settlement.outcomes.reduce((sum, outcome) => sum + outcome.winXu, 0)).toBe(300);
     expect(settlement.outcomes.filter((outcome) => outcome.winner)).toHaveLength(1);
     expect(new Set(settlement.outcomes.map((outcome) => outcome.userId)).size).toBe(30);
@@ -352,5 +366,163 @@ describe('§6.1 tài sản theo phiên và tiêu đề kết quả', () => {
     expect(resultTitle({ solo: false, winners: [a], viewerId: 'b' })).toBe('minhkhoa thắng');
     expect(resultXuLabel({ winXu: 400, refundXu: 0 })).toBe('+400 xu');
     expect(resultXuLabel({ winXu: 0, refundXu: 0 })).toBeNull();
+  });
+});
+
+describe('v2.1 §3 điểm mỗi ván: matchPoints', () => {
+  it('thắng +10, thua +3, chơi 1 mình 0 (kể cả khi "thắng")', () => {
+    expect(FB_POINTS_WIN).toBe(10);
+    expect(FB_POINTS_LOSS).toBe(3);
+    expect(matchPoints({ solo: false, winner: true })).toBe(10);
+    expect(matchPoints({ solo: false, winner: false })).toBe(3);
+    expect(matchPoints({ solo: true, winner: true })).toBe(0);
+    expect(matchPoints({ solo: true, winner: false })).toBe(0);
+  });
+
+  it('điểm cố định theo số người: phòng 2 người và phòng 30 người cùng +10 / +3', () => {
+    const settle = (count: number) =>
+      settleMatch({
+        players: Array.from({ length: count }, (_, index): FbSettlementPlayer => ({
+          entryId: `e${index}`,
+          userId: `u${String(index).padStart(2, '0')}`,
+          joinedAt: new Date(1000 + index),
+          step: 30,
+          cash: index === 0 ? CASH + 1_000_000n : CASH,
+          holdings: 0,
+          navByStep: [CASH],
+          finished: true,
+        })),
+        playBars: 30,
+        priceAt: () => 10_000n,
+        stakeXu: 0,
+      });
+    for (const count of [2, 30]) {
+      const solo = false;
+      const points = settle(count).outcomes.map((outcome) =>
+        matchPoints({ solo, winner: outcome.winner }),
+      );
+      expect(points.filter((value) => value === 10)).toHaveLength(1);
+      expect(points.filter((value) => value === 3)).toHaveLength(count - 1);
+    }
+  });
+
+  it('hoà hạng 1: mọi người đồng hạng đều là người thắng và nhận +10', () => {
+    const tie = settleMatch({
+      players: ['a', 'b', 'c'].map((id, index): FbSettlementPlayer => ({
+        entryId: id,
+        userId: id,
+        joinedAt: new Date(1000 + index),
+        step: 30,
+        cash: CASH,
+        holdings: 0,
+        navByStep: [CASH],
+        finished: true,
+      })),
+      playBars: 30,
+      priceAt: () => 10_000n,
+      stakeXu: 0,
+    });
+    expect(
+      tie.outcomes.map((outcome) => matchPoints({ solo: false, winner: outcome.winner })),
+    ).toEqual([10, 10, 10]);
+  });
+});
+
+describe('v2.1 §3.2 công thức cấp', () => {
+  it('tổng điểm để đạt cấp L = 5 × (L − 1) × (L + 2), khớp bảng của spec', () => {
+    const table: [level: number, base: number, step: number][] = [
+      [1, 0, 20],
+      [2, 20, 30],
+      [3, 50, 40],
+      [5, 140, 60],
+      [10, 540, 110],
+      [20, 2090, 210],
+      [30, 4640, 310],
+    ];
+    for (const [level, base, step] of table) {
+      expect(levelBase(level)).toBe(base);
+      expect(levelStep(level)).toBe(step);
+      expect(levelBase(level + 1) - levelBase(level)).toBe(step);
+      expect(levelOfPoints(base)).toBe(level);
+    }
+  });
+
+  it('mốc cấp: 50 điểm là cấp 3, 49 điểm là cấp 2; 0 điểm là cấp 1', () => {
+    expect(levelOfPoints(0)).toBe(1);
+    expect(levelOfPoints(19)).toBe(1);
+    expect(levelOfPoints(20)).toBe(2);
+    expect(levelOfPoints(49)).toBe(2);
+    expect(levelOfPoints(50)).toBe(3);
+    expect(levelOfPoints(89)).toBe(3);
+    expect(levelOfPoints(90)).toBe(4);
+  });
+
+  it('khớp định nghĩa ở mọi điểm tới 20.000 và không bao giờ xuống cấp khi điểm tăng', () => {
+    let previous = 1;
+    for (let points = 0; points <= 20_000; points += 1) {
+      const level = levelOfPoints(points);
+      expect(levelBase(level)).toBeLessThanOrEqual(points);
+      expect(levelBase(level + 1)).toBeGreaterThan(points);
+      expect(level).toBeGreaterThanOrEqual(previous);
+      previous = level;
+    }
+  });
+
+  it('không giới hạn cấp; điểm âm hoặc lẻ được chuẩn hoá', () => {
+    expect(levelOfPoints(1_000_000)).toBeGreaterThan(400);
+    expect(levelOfPoints(-5)).toBe(1);
+    expect(levelOfPoints(49.9)).toBe(2);
+  });
+
+  it('levelInfo: mốc hiện tại, mốc kế tiếp và số điểm còn thiếu', () => {
+    expect(levelInfo(75)).toEqual({
+      points: 75,
+      level: 3,
+      levelBase: 50,
+      nextLevelPoints: 90,
+      remaining: 15,
+    });
+    expect(levelInfo(0)).toMatchObject({
+      level: 1,
+      levelBase: 0,
+      nextLevelPoints: 20,
+      remaining: 20,
+    });
+    expect(levelInfo(50)).toMatchObject({ level: 3, remaining: 40 });
+  });
+});
+
+describe('v2.1 §4.1 thứ tự bảng xếp hạng: compareRank', () => {
+  const key = (userId: string, points: number, wins: number, minute: number) => ({
+    userId,
+    points,
+    wins,
+    reachedPointsAt: new Date(Date.UTC(2026, 10, 1, 0, minute)),
+  });
+
+  it('điểm cao trước; bằng điểm thì nhiều ván thắng trước; vẫn bằng thì ai đạt mốc sớm hơn', () => {
+    const rows = [
+      key('d', 50, 3, 5),
+      key('b', 60, 2, 9),
+      key('c', 50, 4, 8),
+      key('a', 50, 3, 1),
+      key('e', 10, 1, 0),
+    ];
+    expect(rows.sort(compareRank).map((row) => row.userId)).toEqual(['b', 'c', 'a', 'd', 'e']);
+  });
+
+  it('bằng cả ba tiêu chí thì so mã người dùng để thứ tự luôn ổn định', () => {
+    const rows = [key('u2', 30, 1, 3), key('u1', 30, 1, 3)];
+    expect(rows.sort(compareRank).map((row) => row.userId)).toEqual(['u1', 'u2']);
+    expect(compareRank(rows[0]!, rows[0]!)).toBe(0);
+  });
+});
+
+describe('v2.1 §5.2 nhãn kết quả trong lịch sử: historyResultOf', () => {
+  it('chơi 1 mình, thắng một mình, hoà hạng 1, thua', () => {
+    expect(historyResultOf({ playerCount: 1, rank: 1, topCount: 1 })).toBe('solo');
+    expect(historyResultOf({ playerCount: 4, rank: 1, topCount: 1 })).toBe('win');
+    expect(historyResultOf({ playerCount: 4, rank: 1, topCount: 2 })).toBe('tie');
+    expect(historyResultOf({ playerCount: 4, rank: 3, topCount: 2 })).toBe('lose');
   });
 });

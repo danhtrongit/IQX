@@ -39,6 +39,7 @@ import {
   usePauseFlashback,
   useRevealFlashbackRound,
 } from "./flashback-hooks"
+import { FlashbackDatasetSection } from "./flashback-dataset-section"
 import type { StatusTone } from "./labels"
 
 /** Trạng thái của một đề theo spec v1.2 §5.1. */
@@ -555,6 +556,8 @@ export function FlashbackPage() {
           />
         )}
       </Section>
+
+      <FlashbackDatasetSection />
 
       {confirm.element}
 
