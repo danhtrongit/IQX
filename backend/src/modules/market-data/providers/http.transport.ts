@@ -5,6 +5,7 @@ export const MARKET_UPSTREAM_ORIGINS = new Set([
   'https://iq.vietcap.com.vn',
   'https://dchart-api.vndirect.com.vn',
   'https://api-finfo.vndirect.com.vn',
+  'https://services.entrade.com.vn',
   'https://kbbuddywts.kbsec.com.vn',
   'https://data.maybanktrade.com.vn',
   'https://fmarket.vn',

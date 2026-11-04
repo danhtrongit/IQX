@@ -137,6 +137,21 @@
       "requestType": "FlashbackAdminAlertsData",
       "responseType": "FlashbackAdminAlertsResponses"
     },
+    "GET /api/v2/admin/flashback/dataset": {
+      "operationId": "flashbackAdminDataset",
+      "requestType": "FlashbackAdminDatasetData",
+      "responseType": "FlashbackAdminDatasetResponses"
+    },
+    "GET /api/v2/admin/flashback/dataset/symbols": {
+      "operationId": "flashbackAdminDatasetSymbols",
+      "requestType": "FlashbackAdminDatasetSymbolsData",
+      "responseType": "FlashbackAdminDatasetSymbolsResponses"
+    },
+    "GET /api/v2/admin/flashback/dataset/versions": {
+      "operationId": "flashbackAdminDatasetVersions",
+      "requestType": "FlashbackAdminDatasetVersionsData",
+      "responseType": "FlashbackAdminDatasetVersionsResponses"
+    },
     "GET /api/v2/admin/flashback/pause": {
       "operationId": "flashbackAdminPauseStatus",
       "requestType": "FlashbackAdminPauseStatusData",
@@ -1517,6 +1532,11 @@
       "requestType": "AdminAlertsControllerSetupTelegramWebhook1Data",
       "responseType": "AdminAlertsControllerSetupTelegramWebhook1Responses"
     },
+    "POST /api/v2/admin/flashback/dataset/refresh": {
+      "operationId": "flashbackAdminDatasetRefresh",
+      "requestType": "FlashbackAdminDatasetRefreshData",
+      "responseType": "FlashbackAdminDatasetRefreshResponses"
+    },
     "POST /api/v2/admin/flashback/pause": {
       "operationId": "flashbackAdminPause",
       "requestType": "FlashbackAdminPauseData",
@@ -2231,6 +2251,11 @@
       "operationId": "AdminAlertsController_update[1]",
       "requestType": "AdminAlertsControllerUpdate1Data",
       "responseType": "AdminAlertsControllerUpdate1Responses"
+    },
+    "PUT /api/v2/admin/flashback/dataset/config": {
+      "operationId": "flashbackAdminDatasetConfig",
+      "requestType": "FlashbackAdminDatasetConfigData",
+      "responseType": "FlashbackAdminDatasetConfigResponses"
     },
     "PUT /api/v2/admin/team-leads/{leadId}/policy": {
       "operationId": "AdminTeamLeadsController_updatePolicy[1]",

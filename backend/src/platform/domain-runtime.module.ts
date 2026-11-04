@@ -27,6 +27,7 @@ import { TradingModule } from '../modules/trading/trading.module.js';
 import { TradingRightsService } from '../modules/trading/rights.service.js';
 import { ResearchDailyJob, ResearchModule } from '../modules/research/index.js';
 import { FlashbackJob } from '../modules/flashback/flashback.job.js';
+import { FlashbackDatasetJob, requestedByFromJobId } from '../modules/flashback/flashback-dataset.job.js';
 import { FlashbackRoomsJob } from '../modules/flashback/flashback-rooms.job.js';
 import { FlashbackModule } from '../modules/flashback/flashback.module.js';
 import {
@@ -96,6 +97,7 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly research?: ResearchDailyJob,
     private readonly flashback?: FlashbackJob,
     private readonly flashbackRooms?: FlashbackRoomsJob,
+    private readonly flashbackDataset?: FlashbackDatasetJob,
   ) {}
 
   handlers(): RuntimeJobHandlers {
@@ -108,6 +110,15 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
         if (!this.flashbackRooms)
           return { status: 'skipped', reason: 'flashback-rooms-unavailable' };
         return this.flashbackRooms.run();
+      },
+      'flashback.dataset-refresh': async ({ jobId }) => {
+        if (!this.flashbackDataset)
+          return { status: 'skipped', reason: 'flashback-dataset-unavailable' };
+        // Job do quản trị bấm nút có id `manual-...`: luôn dựng. Job theo lịch chỉ dựng khi tới hạn.
+        return this.flashbackDataset.run({
+          manual: jobId.startsWith('manual-'),
+          requestedBy: requestedByFromJobId(jobId),
+        });
       },
       'reports.daily': async ({ scheduledFor }) =>
         this.generateReport('daily', ictDate(scheduledFor)),

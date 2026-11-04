@@ -9,5 +9,6 @@ export {
 export type { MarketRequestOptions } from './providers/http.transport.js';
 export { VciMarketProvider, VCI_GROUPS } from './providers/vci.provider.js';
 export { VndMarketProvider } from './providers/vnd.provider.js';
+export { DNSE_CHART_BASE, DnseMarketProvider } from './providers/dnse.provider.js';
 export { KbsMarketProvider } from './providers/kbs.provider.js';
 export type { JsonObject, ProviderResult } from './providers/provider.types.js';

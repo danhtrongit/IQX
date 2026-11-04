@@ -136,6 +136,9 @@ export interface NewFbMatch {
   readonly playBars: number;
   readonly warmupBars: readonly FlashbackBar[];
   readonly bars: readonly FlashbackBar[];
+  /** v2.2 §3.5: phiên bản kho và điểm cắt (null với ván không cắt từ kho). */
+  readonly datasetVersion?: number | null;
+  readonly startIdx?: number | null;
   readonly minutes: number;
   readonly stakeXu: number;
   readonly playerCount: number;
@@ -678,9 +681,10 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
     const rows = await tx.query<Row>(
       `insert into fb_matches
          (room_id, symbol, start_date, end_date, price_source, fallback_level, view_bars, play_bars,
-          warmup_bars, bars, minutes, stake_xu, player_count, pot_xu, started_at, ends_at, status)
+          warmup_bars, bars, minutes, stake_xu, player_count, pot_xu, started_at, ends_at, status,
+          dataset_version, start_idx)
        values ($1, $2, $3::date, $4::date, $5, $6, $7, $8, $9::jsonb, $10::jsonb, $11, $12, $13,
-               $14, $15, $16, 'playing')
+               $14, $15, $16, 'playing', $17, $18)
        returning ${MATCH_COLUMNS}`,
       [
         input.roomId,
@@ -699,6 +703,8 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
         input.potXu,
         input.startedAt,
         input.endsAt,
+        input.datasetVersion ?? null,
+        input.startIdx ?? null,
       ],
     );
     if (!rows[0]) throw new Error('Flashback rooms could not insert the match');

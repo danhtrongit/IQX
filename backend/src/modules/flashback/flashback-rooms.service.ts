@@ -29,6 +29,7 @@ import {
   FLASHBACK_SETTLEMENT_SESSIONS,
   FLASHBACK_TAX_BPS,
 } from './flashback.constants.js';
+import { FLASHBACK_NO_DATA_MESSAGE } from './flashback-dataset.config.js';
 import {
   FB_INITIAL_CASH_VND,
   FB_ROOM_ENDED_TTL_MS,
@@ -85,9 +86,12 @@ export interface FbMatchDataset {
   readonly bars: readonly FlashbackBar[];
   readonly priceSource: string | null;
   readonly fallbackLevel: number;
+  /** v2.2: phiên bản kho và điểm cắt của đoạn dữ liệu (null/thiếu với đường dẫn cũ). */
+  readonly datasetVersion?: number | null;
+  readonly startIdx?: number | null;
 }
 
-/** Chọn ngẫu nhiên một mã VN30 hiện hành và một giai đoạn hợp lệ (spec v2 §5). */
+/** Cắt một giai đoạn hợp lệ từ kho dữ liệu đang dùng (spec v2.2 §3). */
 export interface FbDatasetPort {
   pick(now: Date, viewBars: number, playBars: number): Promise<FbMatchDataset | null>;
 }
@@ -469,7 +473,7 @@ export class FlashbackRoomsService {
     if (!dataset || dataset.bars.length !== before.viewBars + before.playBars)
       throw new ServiceUnavailableException({
         code: 'FLASHBACK_DATA_UNAVAILABLE',
-        message: 'Chưa chuẩn bị được dữ liệu ván chơi, hãy thử lại',
+        message: FLASHBACK_NO_DATA_MESSAGE,
       });
 
     const outcome = await this.database.transaction(async (tx) => {
@@ -530,6 +534,8 @@ export class FlashbackRoomsService {
         playBars,
         warmupBars: dataset.warmupBars,
         bars: dataset.bars,
+        datasetVersion: dataset.datasetVersion ?? null,
+        startIdx: dataset.startIdx ?? null,
         minutes: room.minutes,
         stakeXu,
         playerCount: players.length,
