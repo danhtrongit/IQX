@@ -8,6 +8,7 @@ import {
   selectionSchema,
 } from '../../src/modules/saved-filters/saved-filters.schemas.js';
 import {
+  criteriaHash,
   SavedResultsService,
   selectResultRows,
 } from '../../src/modules/saved-filters/saved-results.service.js';
@@ -38,7 +39,28 @@ const row = (symbol: string, passed: boolean): ScreenerRow =>
     name: `Công ty ${symbol}`,
     sector: 'Ngành',
     exchange: 'HOSE',
+    group: 'thuong',
     passed,
+    market: { price: 25.5, change_pct: 1.2, market_cap: 3200, avg_value: 41.7 },
+    technical: {
+      'rsi.level': {
+        key: 'rsi.level',
+        indicator: 'rsi',
+        row_id: 'rsi.level',
+        label: 'RSI14',
+        status: 'ok',
+        result: passed,
+        op: '<',
+        value: passed ? 28.4 : 63.7,
+        value2: null,
+        value3: null,
+        display: passed ? '28,4' : '63,7',
+        sort_value: passed ? 28.4 : 63.7,
+        previous: { value: 30.1, value2: null, value3: null },
+        lag: null,
+        params: { period: 14, op: '<', threshold: 30 },
+      },
+    },
     metrics: { roe: cell(passed ? 'ok' : 'missing') },
   }) as unknown as ScreenerRow;
 
@@ -139,14 +161,36 @@ type SnapshotRecord = Record<string, unknown> & {
   created_at: Date;
 };
 
+const MARKET = {
+  exchanges: ['HOSE'],
+  baskets: ['VN30'],
+  statement_groups: [],
+  market_cap: { min: 1000, max: null },
+  avg_value: { sessions: 20, min: 5 },
+  close_price: { min: null, max: null },
+};
+const RSI_ROWS = [
+  { id: 'rsi.level', enabled: true, period: 14, op: '<', threshold: 30 },
+  { id: 'rsi.trend', enabled: false, period: 14, dir: 'up' },
+];
 const DEFINITION = {
+  schema_version: '4.0',
+  name: 'ROE',
+  logic: 'AND',
+  data_mode: 'latest_disclosed',
+  market: MARKET,
+  rules: [
+    { id: 'r1', metric_id: 'roe', period: 'ttm', operator: '>', value: 0.1, api_unit: 'ratio' },
+  ],
+  technical: [{ indicator: 'rsi', rules: RSI_ROWS }],
+};
+/** The same fundamental criteria stored by an older (3.0) version of the filter. */
+const DEFINITION_V3 = {
   schema_version: '3.0',
   name: 'ROE',
   logic: 'AND',
   data_mode: 'latest_disclosed',
-  rules: [
-    { id: 'r1', metric_id: 'roe', period: 'ttm', operator: '>', value: 0.1, api_unit: 'ratio' },
-  ],
+  rules: DEFINITION.rules,
   scope: { market: 'HOSE', sector: '' },
 };
 
@@ -157,10 +201,11 @@ class FakeDb {
       user_id: USER_A,
       definition: DEFINITION,
       as_of: new Date('2026-02-01T03:00:00.000Z'),
+      session_date: '2026-01-30',
       data_source: 'VCI',
-      calculation_version: 'iqx-fund-2.0',
+      calculation_version: 'iqx-fund-2.0+tech-1.0',
       registry_version: 'iqx-fund-registry-2.1',
-      summary: { counts: { universe: 4, passed: 3 } },
+      summary: { counts: { universe: 4, passed: 3 }, price_source: 'DNSE' },
       results: ROWS,
     },
   ];
@@ -247,6 +292,7 @@ class FakeDb {
         visibility,
         key,
         requestHash,
+        sessionDate,
       ] = v as [
         string,
         string,
@@ -267,6 +313,7 @@ class FakeDb {
         string,
         string | null,
         string,
+        string | null,
       ];
       if (
         key !== null &&
@@ -285,6 +332,7 @@ class FakeDb {
         definition_hash: hash,
         as_of: new Date(asOf),
         run_at: new Date(asOf),
+        session_date: sessionDate,
         data_source: source,
         calculation_version: calc,
         registry_version: registry,
@@ -422,10 +470,12 @@ describe('SavedResultsService', () => {
       visibility: 'saved',
       run_id: RUN_ID,
       data_source: 'VCI',
-      calculation_version: 'iqx-fund-2.0',
+      calculation_version: 'iqx-fund-2.0+tech-1.0',
       registry_version: 'iqx-fund-registry-2.1',
       selection: { mode: 'subset', symbols: ['AAA', 'BBB'] },
-      totals: { run_universe: 4, run_passed: 3, selected: 2 },
+      totals: { run_universe: 4, run_passed: 3, selected: 2, price_source: 'DNSE' },
+      // Bộ lọc 4.0 §5, §7: the closed session of the Thị trường + Kỹ thuật columns is frozen with the rows.
+      session_date: '2026-01-30',
     });
     // as_of is the data cutoff of the run; created_at is when it was saved. Never one field.
     expect(snapshot.as_of).toBe('2026-02-01T03:00:00.000Z');
@@ -437,6 +487,10 @@ describe('SavedResultsService', () => {
     expect(snapshot.rows[0]).toMatchObject({
       symbol: 'AAA',
       metrics: { roe: { actual_period_label: 'TTM Q4/2025', published_at: '2026-01-30' } },
+      // The Thị trường and Kỹ thuật columns are frozen too, as computed at session T.
+      group: 'thuong',
+      market: { price: 25.5, change_pct: 1.2, market_cap: 3200, avg_value: 41.7 },
+      technical: { 'rsi.level': { display: '28,4', sort_value: 28.4, status: 'ok', result: true } },
     });
     expect(snapshot.definition).toEqual(DEFINITION);
   });
@@ -543,7 +597,13 @@ describe('SavedResultsService', () => {
       run_id: RUN_ID,
       as_of: '2026-02-01',
       data_source: 'VCI',
-      scope: { market: 'HOSE', source: 'filter_result', run_id: RUN_ID },
+      // Bộ lọc 4.0 §7: the list scope stores the 4.0 `market` block and the session T.
+      scope: {
+        market: MARKET,
+        session_date: '2026-01-30',
+        source: 'filter_result',
+        run_id: RUN_ID,
+      },
     });
     expect(list.result_snapshot_id).toBe(database.snapshots[0]!.id);
     expect(list.provenance).toMatchObject({
@@ -551,7 +611,14 @@ describe('SavedResultsService', () => {
       run_id: RUN_ID,
       definition_hash: canonicalHash(DEFINITION),
       selection: { mode: 'subset', selected_count: 2 },
-      criteria: { rules: DEFINITION.rules, scope: DEFINITION.scope },
+      session_date: '2026-01-30',
+      // provenance.criteria = Thị trường + the ENABLED technical rows + rules (a switched-off row is not a criterion).
+      criteria: {
+        market: MARKET,
+        technical: [{ indicator: 'rsi', rules: [RSI_ROWS[0]] }],
+        rules: DEFINITION.rules,
+        columns: [],
+      },
     });
     // The evidence snapshot is internal too: not part of "saved" results.
     expect(database.snapshots[0]!.visibility).toBe('internal');
@@ -676,5 +743,140 @@ describe('SavedResultsService', () => {
     await expect(service.getSnapshot(USER_A, list.result_snapshot_id!)).rejects.toBeInstanceOf(
       NotFoundException,
     );
+  });
+});
+
+describe('criteriaHash (Bộ lọc 4.0 §6.3)', () => {
+  const withTechnical = (rows: unknown[]) => ({
+    ...DEFINITION,
+    technical: [{ indicator: 'rsi', rules: rows }],
+  });
+
+  it('is the same for a 3.0 definition and its 4.0 mapping', () => {
+    const v4 = {
+      ...DEFINITION,
+      market: { ...MARKET, baskets: [], market_cap: { min: null, max: null }, avg_value: { sessions: 20, min: null } },
+      technical: [],
+    };
+    expect(criteriaHash(DEFINITION_V3)).toBe(criteriaHash(v4));
+  });
+
+  it('ignores the order of a multi-choice list and the display name', () => {
+    const shuffled = {
+      ...DEFINITION,
+      name: 'Tên khác',
+      market: { ...MARKET, exchanges: ['UPCOM', 'HNX', 'HOSE'], baskets: ['VN30'] },
+    };
+    const sorted = { ...DEFINITION, market: { ...MARKET, exchanges: ['HNX', 'HOSE', 'UPCOM'] } };
+    expect(criteriaHash(shuffled)).toBe(criteriaHash(sorted));
+  });
+
+  it('leaves out switched-off technical rows (their values are not criteria) but not enabled ones', () => {
+    const base = criteriaHash(withTechnical(RSI_ROWS));
+    // The disabled `rsi.trend` row may hold any values without changing the criteria.
+    expect(
+      criteriaHash(
+        withTechnical([RSI_ROWS[0], { id: 'rsi.trend', enabled: false, period: 50, dir: 'down' }]),
+      ),
+    ).toBe(base);
+    // Switching it on, or changing an enabled row, does change them.
+    expect(criteriaHash(withTechnical([RSI_ROWS[0], { ...RSI_ROWS[1], enabled: true }]))).not.toBe(base);
+    expect(criteriaHash(withTechnical([{ ...RSI_ROWS[0], threshold: 25 }, RSI_ROWS[1]]))).not.toBe(
+      base,
+    );
+    // An indicator with every row switched off is no criterion at all.
+    const none = criteriaHash({ ...DEFINITION, technical: [] });
+    expect(
+      criteriaHash(withTechnical([{ ...RSI_ROWS[0], enabled: false }, RSI_ROWS[1]])),
+    ).toBe(none);
+  });
+
+  it('changes with any Thị trường value', () => {
+    const base = criteriaHash(DEFINITION);
+    expect(criteriaHash({ ...DEFINITION, market: { ...MARKET, baskets: ['VN100'] } })).not.toBe(base);
+    expect(
+      criteriaHash({ ...DEFINITION, market: { ...MARKET, avg_value: { sessions: 30, min: 5 } } }),
+    ).not.toBe(base);
+    expect(
+      criteriaHash({ ...DEFINITION, market: { ...MARKET, close_price: { min: 10, max: null } } }),
+    ).not.toBe(base);
+  });
+
+  it('does not count the sector review flag of a mapped 3.0 filter as a criterion', () => {
+    const flagged = { ...DEFINITION_V3, scope: { market: 'HOSE', sector: 'Ngân hàng' } };
+    const plain = { ...DEFINITION_V3 };
+    expect(criteriaHash(flagged)).toBe(criteriaHash(plain));
+  });
+});
+
+describe('SavedResultsService with a run stored before 4.0', () => {
+  it('reads the frozen criteria as 4.0 and defaults the columns the old rows never had', async () => {
+    const { database, service } = setup();
+    const oldRow = {
+      symbol: 'AAA',
+      name: 'Công ty AAA',
+      sector: 'Ngành',
+      exchange: 'HOSE',
+      passed: true,
+      metrics: { roe: cell('ok') },
+    } as unknown as ScreenerRow;
+    Object.assign(database.runs[0]!, {
+      definition: DEFINITION_V3,
+      session_date: null,
+      results: [oldRow],
+      summary: { counts: { universe: 1, passed: 1 } },
+    });
+    const snapshot = await service.createSnapshot(
+      USER_A,
+      resultSnapshotCreateSchema.parse({ name: 'Cũ', run_id: RUN_ID, selection: { mode: 'all' } }),
+    );
+    expect(snapshot.session_date).toBeNull();
+    expect(snapshot.definition).toMatchObject({
+      schema_version: '4.0',
+      market: { exchanges: ['HOSE'], statement_groups: [] },
+      technical: [],
+    });
+    // The stored evidence is byte-for-byte the 3.0 definition the run used.
+    expect(database.snapshots[0]!.definition).toEqual(DEFINITION_V3);
+    expect(snapshot.rows[0]).toMatchObject({
+      group: null,
+      market: { price: null, change_pct: null, market_cap: null, avg_value: null },
+      technical: {},
+    });
+  });
+
+  it('F22 accepts the filter version that stored the 3.0 criteria of the same run', async () => {
+    const { database, service } = setup();
+    Object.assign(database.runs[0]!, { definition: DEFINITION_V3 });
+    database.filterVersions[0] = { filter_id: FILTER_ID, version: 1, definition: DEFINITION };
+    // Criteria of version 1 (4.0, technical rows switched off or empty, Hose only) differ: market/technical.
+    await expect(
+      service.createSnapshot(
+        USER_A,
+        resultSnapshotCreateSchema.parse({
+          name: 'x',
+          run_id: RUN_ID,
+          selection: { mode: 'all' },
+          filter_id: FILTER_ID,
+          filter_version: 1,
+        }),
+      ),
+    ).rejects.toMatchObject({ response: { code: 'FILTER_MISMATCH' } });
+    database.filterVersions[0] = {
+      filter_id: FILTER_ID,
+      version: 1,
+      definition: { ...DEFINITION_V3, name: 'tên khác' },
+    };
+    const ok = await service.createSnapshot(
+      USER_A,
+      resultSnapshotCreateSchema.parse({
+        name: 'x',
+        run_id: RUN_ID,
+        selection: { mode: 'all' },
+        filter_id: FILTER_ID,
+        filter_version: 1,
+      }),
+    );
+    expect(ok.filter_version).toBe(1);
   });
 });

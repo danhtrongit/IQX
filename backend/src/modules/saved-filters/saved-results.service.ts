@@ -8,7 +8,8 @@ import {
 } from '@nestjs/common';
 
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
-import { readStoredDefinition } from '../screener/screener.definition.js';
+import { criteriaOf, readStoredDefinition } from '../screener/screener.definition.js';
+import { EMPTY_MARKET_VALUES } from '../screener/screener.market.js';
 import type { ScreenerRow } from '../screener/screener.schemas.js';
 import { vnDate } from '../strategy-config/strategy-config.calendar.js';
 import { findBotUsage, listInUseByBot } from './saved-filters.bot-usage.js';
@@ -33,7 +34,8 @@ type RunRecord = {
   data_source: string;
   calculation_version: string;
   registry_version: string;
-  summary: { counts?: Record<string, unknown> };
+  session_date: string | null;
+  summary: { counts?: Record<string, unknown>; price_source?: string | null };
   results: ScreenerRow[];
 };
 
@@ -48,6 +50,7 @@ type SnapshotRecord = {
   definition_hash: string;
   as_of: Timestamp;
   run_at: Timestamp;
+  session_date: string | null;
   data_source: string;
   calculation_version: string;
   registry_version: string;
@@ -61,8 +64,8 @@ type SnapshotRecord = {
 type IdempotencyRow = { id: string; request_hash: string | null };
 
 const SNAPSHOT_COLUMNS = `id, name, visibility, run_id, filter_id, filter_version, definition,
-       definition_hash, as_of, run_at, data_source, calculation_version, registry_version,
-       selection, symbols, rows, totals, created_at`;
+       definition_hash, as_of, run_at, session_date, data_source, calculation_version,
+       registry_version, selection, symbols, rows, totals, created_at`;
 
 const toIso = (value: Timestamp): string =>
   (value instanceof Date ? value : new Date(value)).toISOString();
@@ -96,6 +99,7 @@ function summaryOf(record: SnapshotRecord): ResultSnapshotSummary {
     definition_hash: record.definition_hash,
     as_of: toIso(record.as_of),
     run_at: toIso(record.run_at),
+    session_date: record.session_date ? String(record.session_date).slice(0, 10) : null,
     data_source: record.data_source,
     calculation_version: record.calculation_version,
     registry_version: record.registry_version,
@@ -107,24 +111,35 @@ function summaryOf(record: SnapshotRecord): ResultSnapshotSummary {
   };
 }
 
+/** A frozen row of a run stored before 4.0 has no group, market values or technical cells. */
+const withRowDefaults = (row: ScreenerRow): ScreenerRow => ({
+  ...row,
+  group: row.group ?? null,
+  market: row.market ?? { ...EMPTY_MARKET_VALUES },
+  technical: row.technical ?? {},
+});
+
+/** The frozen criteria as definition 4.0 (a snapshot of an older run is mapped on read, never rewritten). */
+const definitionV4 = (definition: unknown): FilterDefinition =>
+  (readStoredDefinition(definition)?.definition ?? definition) as FilterDefinition;
+
 function fullOf(record: SnapshotRecord): ResultSnapshot {
   return {
     ...summaryOf(record),
-    definition: record.definition,
-    rows: record.rows as unknown as ResultSnapshot['rows'],
+    definition: definitionV4(record.definition),
+    rows: record.rows.map(withRowDefaults) as unknown as ResultSnapshot['rows'],
   };
 }
 
-/** Criteria only (not the display name): two runs of the same criteria are the same filter. */
-function criteriaHash(definition: unknown): string {
+/**
+ * Criteria only (not the display name): two runs of the same criteria are the same filter. Covers
+ * Thị trường, the enabled Kỹ thuật rows, the rules and the reference columns (Bộ lọc 4.0 §6.3); a
+ * stored 2.0 / 3.0 definition is compared through its 4.0 mapping.
+ */
+export function criteriaHash(definition: unknown): string {
   const normalized = readStoredDefinition(definition)?.definition;
-  const source = normalized ?? (definition as FilterDefinition);
-  return canonicalHash({
-    rules: source.rules,
-    columns: source.columns ?? [],
-    scope: source.scope,
-    data_mode: source.data_mode ?? 'latest_disclosed',
-  });
+  if (!normalized) return canonicalHash(definition);
+  return canonicalHash(criteriaOf(normalized));
 }
 
 /**
@@ -325,18 +340,25 @@ export class SavedResultsService {
         snapshot = existing;
       }
       const picked = selectResultRows(snapshot.rows, input.selection);
-      const definition = snapshot.definition;
+      // Criteria and scope are recorded as definition 4.0: Thị trường + enabled Kỹ thuật + rules + columns.
+      const normalized = readStoredDefinition(snapshot.definition)?.definition;
+      const criteria = normalized
+        ? criteriaOf(normalized)
+        : {
+            market: null,
+            technical: [],
+            rules: snapshot.definition.rules,
+            columns: snapshot.definition.columns ?? [],
+            data_mode: 'latest_disclosed',
+          };
+      const sessionDate = snapshot.session_date ? String(snapshot.session_date).slice(0, 10) : null;
       const provenance = {
         kind: 'filter_result',
         result_snapshot_id: snapshot.id,
         run_id: snapshot.run_id,
         definition_hash: snapshot.definition_hash,
-        criteria: {
-          rules: definition.rules,
-          columns: definition.columns ?? [],
-          scope: definition.scope,
-          data_mode: definition.data_mode ?? 'latest_disclosed',
-        },
+        criteria,
+        session_date: sessionDate,
         as_of: toIso(snapshot.as_of),
         run_at: toIso(snapshot.run_at),
         calculation_version: snapshot.calculation_version,
@@ -361,8 +383,8 @@ export class SavedResultsService {
           vnDate(new Date(snapshot.as_of)),
           snapshot.data_source,
           JSON.stringify({
-            market: definition.scope.market,
-            sector: definition.scope.sector,
+            market: criteria.market,
+            session_date: sessionDate,
             source: 'filter_result',
             result_snapshot_id: snapshot.id,
             run_id: snapshot.run_id,
@@ -395,7 +417,8 @@ export class SavedResultsService {
     requestHash: string,
   ): Promise<SnapshotRecord> {
     const [run] = await client.query<RunRecord>(
-      `SELECT id, definition, as_of, data_source, calculation_version, registry_version, summary, results
+      `SELECT id, definition, as_of, session_date, data_source, calculation_version, registry_version,
+              summary, results
          FROM screener_runs WHERE id = $1 AND user_id = $2`,
       [input.run_id, userId],
     );
@@ -433,6 +456,7 @@ export class SavedResultsService {
       run_passed: run.results.filter((row) => row.passed).length,
       selected: picked.symbols.length,
       counts: run.summary.counts ?? null,
+      price_source: run.summary.price_source ?? null,
     };
     const selection = { mode: input.selection.mode, symbols: picked.symbols };
     const definitionHash = canonicalHash(run.definition);
@@ -440,9 +464,9 @@ export class SavedResultsService {
       `INSERT INTO result_snapshots
          (id, user_id, name, run_id, filter_id, filter_version, definition, definition_hash,
           as_of, run_at, data_source, calculation_version, registry_version, selection, symbols,
-          rows, totals, visibility, idempotency_key, request_hash)
+          rows, totals, visibility, idempotency_key, request_hash, session_date)
        VALUES ($1, $2, $3, $4, $5, $6, $7::jsonb, $8, $9::timestamptz, $9::timestamptz, $10, $11,
-               $12, $13::jsonb, $14::text[], $15::jsonb, $16::jsonb, $17, $18, $19)
+               $12, $13::jsonb, $14::text[], $15::jsonb, $16::jsonb, $17, $18, $19, $20::date)
        ON CONFLICT (user_id, idempotency_key) DO NOTHING
        RETURNING ${SNAPSHOT_COLUMNS}`,
       [
@@ -465,6 +489,7 @@ export class SavedResultsService {
         input.visibility,
         key,
         requestHash,
+        run.session_date,
       ],
     );
     if (created) return created;

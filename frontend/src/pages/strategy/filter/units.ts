@@ -42,6 +42,29 @@ export function formatDisplayNumber(value: number | null | undefined): string {
   return value == null || !Number.isFinite(value) ? "—" : displayFormat.format(value)
 }
 
+const fixedFormats = new Map<number, Intl.NumberFormat>()
+
+/** A number with exactly `decimals` decimals in the vi-VN format (`62,40`), or "—" when it is not a number. */
+export function formatFixed(value: number | null | undefined, decimals: number): string {
+  if (value == null || !Number.isFinite(value)) return "—"
+  let format = fixedFormats.get(decimals)
+  if (!format) {
+    format = new Intl.NumberFormat("vi-VN", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+    fixedFormats.set(decimals, format)
+  }
+  return format.format(value)
+}
+
+/** `+0,52` / `−1,20` / `0,00`: a change in percentage points, signed. */
+export function formatSigned(value: number | null | undefined, decimals: number): string {
+  if (value == null || !Number.isFinite(value)) return "—"
+  const text = formatFixed(Math.abs(value), decimals)
+  const shown = Number(Math.abs(value).toFixed(decimals))
+  if (value > 0 && shown > 0) return `+${text}`
+  if (value < 0 && shown > 0) return `−${text}`
+  return text
+}
+
 /** Text put in the threshold input when a saved filter is loaded (decimal comma). */
 export function displayInputText(api: number, apiUnit: ApiUnit | string): string {
   return String(toDisplayValue(api, apiUnit)).replace(".", ",")

@@ -4,18 +4,27 @@ import { fileURLToPath } from 'node:url';
 
 import { z } from 'zod';
 
-import { ruleIssues } from '../screener/screener.definition.js';
+import {
+  marketIssues,
+  ruleIssues,
+  type MarketScope,
+  type TechnicalItem,
+} from '../screener/screener.definition.js';
 import type {
   ScreenerApiUnit,
   ScreenerMetricId,
   ScreenerPeriod,
 } from '../screener/screener.registry.js';
+import { marketScopeSchema, technicalItemSchema } from '../screener/screener.schemas.js';
+import { technicalIssues } from '../screener/screener.technical.js';
 
 /**
  * Zod mirror of the screener's read-only `filter.schema.json` (JSON Schema 2020-12, schema
- * version 3.0: a period per rule). Enumerations and limits are read from the JSON file so the
- * saved-filter validation never drifts from the screener contract. Stored 2.0 versions are never
- * validated against this schema: they are mapped on read (`readStoredDefinition`).
+ * version 4.0: Thị trường `market`, a period per rule, Kỹ thuật `technical`). Enumerations and
+ * limits of the fundamental part are read from the JSON file so the saved-filter validation never
+ * drifts from the screener contract; `market` and `technical` reuse the screener's own schemas and
+ * semantic checks. Stored 2.0 / 3.0 versions are never validated against this schema: they are
+ * mapped on read (`readStoredDefinition`).
  */
 const enumOf = z.object({ enum: z.array(z.string()).min(1) });
 
@@ -39,10 +48,8 @@ const filterJsonSchemaShape = z.object({
       }),
     }),
     columns: z.object({ maxItems: z.number().int().min(1) }),
-    scope: z.object({
-      required: z.array(z.string()),
-      properties: z.object({ market: z.object({}), sector: z.object({}) }),
-    }),
+    market: z.object({ required: z.array(z.string()) }),
+    technical: z.object({ maxItems: z.number().int().min(1) }),
   }),
 });
 
@@ -96,37 +103,41 @@ function buildFilterDefinitionSchema(json: FilterJsonSchemaShape) {
       period: z.enum(asEnum(ruleProps.period.enum)),
     })
     .strict();
-  const scope = z.object({ market: z.string(), sector: z.string() }).strict();
   return z
     .object({
       schema_version: z.literal(properties.schema_version.const),
       name: z.string().min(properties.name.minLength).max(properties.name.maxLength),
       logic: z.literal(properties.logic.const),
       data_mode: z.literal(properties.data_mode.const).default(properties.data_mode.const),
+      market: marketScopeSchema,
       rules: z.array(rule),
+      technical: z.array(technicalItemSchema).max(properties.technical.maxItems).default([]),
       columns: z.array(column).max(properties.columns.maxItems).optional(),
-      scope,
     })
     .strict()
     .superRefine((definition, context) => {
-      const issues = ruleIssues(
-        definition.rules.map((item) => ({
-          metric_id: item.metric_id as ScreenerMetricId,
-          period: item.period as ScreenerPeriod,
-          operator: item.operator as '>' | '<',
-          api_unit: item.api_unit as ScreenerApiUnit,
-        })),
-        (definition.columns ?? []).map((item) => ({
-          metric_id: item.metric_id as ScreenerMetricId,
-          period: item.period as ScreenerPeriod,
-        })),
-      );
+      const issues = [
+        ...marketIssues(definition.market as unknown as MarketScope),
+        ...technicalIssues(definition.technical as unknown as TechnicalItem[]),
+        ...ruleIssues(
+          definition.rules.map((item) => ({
+            metric_id: item.metric_id as ScreenerMetricId,
+            period: item.period as ScreenerPeriod,
+            operator: item.operator as '>' | '<',
+            api_unit: item.api_unit as ScreenerApiUnit,
+          })),
+          (definition.columns ?? []).map((item) => ({
+            metric_id: item.metric_id as ScreenerMetricId,
+            period: item.period as ScreenerPeriod,
+          })),
+        ),
+      ];
       for (const issue of issues)
         context.addIssue({ code: 'custom', path: issue.path, message: issue.message });
     });
 }
 
-/** Saved-filter definition (schema 3.0) validated exactly like `filter.schema.json`. */
+/** Saved-filter definition (schema 4.0) validated exactly like `filter.schema.json`. */
 export const filterDefinitionSchema = buildFilterDefinitionSchema(loadFilterJsonSchema());
 
 export type FilterDefinition = z.infer<typeof filterDefinitionSchema>;

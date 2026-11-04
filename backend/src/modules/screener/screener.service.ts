@@ -4,15 +4,16 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 
-import { DatabaseService } from '../../platform/database/index.js';
 import { VciMarketProvider } from '../market-data/index.js';
 import { ACADEMY_GRANTS, type AcademyGrantsPort } from '../academy/academy.ports.js';
 import { finite } from '../financials/financials.calculations.js';
 import { canonicalJson, sha256Hex } from '../quant/v2/hash.js';
 import {
+  marketIssues,
   normalizeDefinition,
   notReadyMetrics,
   ruleIssues,
@@ -20,12 +21,25 @@ import {
   type DefinitionRule,
   type LegacyScreenerDefinition,
   type ScreenerDefinitionV3,
+  type ScreenerDefinitionV4,
+  type TechnicalItem,
 } from './screener.definition.js';
+import {
+  cheapVerdict,
+  computeMarketValues,
+  EMPTY_MARKET_VALUES,
+  emptyMarketQuality,
+  marketNeedsBars,
+  valueVerdict,
+  type BasketMembers,
+  type MarketQuality,
+} from './screener.market.js';
 import { METRIC_REASONS, metricSupport, type MetricStatus } from './screener.metrics.js';
+import { SCREENER_MARKET_DATA, type ScreenerMarketDataPort } from './screener.ports.js';
 import {
   loadFundamentalRegistry,
-  SCREENER_CALCULATION_VERSION,
   SCREENER_DEFINITION_SCHEMA_VERSION,
+  screenerCalculationVersion,
   SCREENER_REGISTRY_VERSION,
   screenerPeriodLabel,
   type ScreenerMetricId,
@@ -33,7 +47,6 @@ import {
 } from './screener.registry.js';
 import { ScreenerRunRepository, type ScreenerRunStore } from './screener.repository.js';
 import {
-  normalizeScreenerScope,
   SCREENER_FETCH_CONCURRENCY,
   SCREENER_MAX_UNIVERSE,
   type ScreenerMetricView,
@@ -45,6 +58,7 @@ import {
   type ScreenerRunInput,
 } from './screener.schemas.js';
 import { shareEventsFromVci, withShareHistory, type ShareEvent } from './screener.shares.js';
+import { sortRows } from './screener.sort.js';
 import {
   EPS_METRICS,
   evaluateScreenerMetric,
@@ -55,19 +69,26 @@ import {
   type ScreenerMetricResult,
   type VciStatementSections,
 } from './screener.statements.js';
+import {
+  evaluateTechnical,
+  technicalColumnLabels,
+  technicalColumns,
+  technicalIssues,
+  toEngineBars,
+  type TechnicalColumnSpec,
+  type TechnicalEvaluation,
+} from './screener.technical.js';
 
 export const SCREENER_DATA_SOURCE = 'VCI';
 
-interface UniverseRow extends Record<string, unknown> {
-  symbol: string;
-  name: string | null;
-  exchange: string | null;
-  sector: string | null;
-}
-
 const PRICE_BOARD_CHUNK = 100;
+/** Symbols whose stored bars are read together in step 1 (bounded memory). */
+const BAR_CHUNK = 200;
+/** Step 1 is CPU work on the request thread: hand the event loop back this often. */
+const YIELD_EVERY = 25;
 
 const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
+const yieldToEventLoop = () => new Promise<void>((resolve) => setImmediate(resolve));
 
 /**
  * Strict comparison; a null value never passes. A lower-bound streak (whole history positive)
@@ -108,14 +129,19 @@ const AVAILABILITY_RULE =
   'A report is used only from the VN day after its publication date; "latest" is resolved per company at this result\'s as_of.';
 
 /**
- * Exception statistics (spec §7.6): per metric and role, how many companies fall in each status
- * and why. A missing/not-applicable required condition is counted here, never as "did not pass".
+ * Exception statistics (spec §7.6 and Bộ lọc 4.0 §3.4): per metric and role, and per technical row,
+ * how many companies fall in each status and why. A missing/not-applicable required condition or a
+ * NO_SIGNAL technical row is counted here, never as "did not pass". A company that failed Kỹ thuật
+ * never reached the fundamental step (its `metrics` is empty): that is not an exception.
  */
 export function summarizeRows(
   rows: readonly ScreenerRow[],
   rules: readonly DefinitionRule[],
   columns: readonly DefinitionColumn[],
-): Pick<ScreenerRunHeader, 'counts' | 'data_quality'> {
+  technical: ReadonlyArray<TechnicalColumnSpec & { label?: string }> = [],
+): Pick<ScreenerRunHeader, 'counts'> & {
+  data_quality: Pick<ScreenerRunHeader['data_quality'], 'metrics' | 'technical'>;
+} {
   const required = rules.map((rule) => rule.metric_id);
   let passed = 0;
   let failedThreshold = 0;
@@ -123,11 +149,22 @@ export function summarizeRows(
   let withMissing = 0;
   for (const row of rows) {
     if (row.passed) passed += 1;
-    const requiredCells = required.map((id) => row.metrics[id]);
-    const exception = requiredCells.some((cell) => !cell || cell.status !== 'ok');
-    if (exception) withExceptions += 1;
+    const technicalCells = Object.values(row.technical);
+    const technicalException = technicalCells.some((cell) => cell.status !== 'ok');
+    const reachedFundamentals = Object.keys(row.metrics).length > 0;
+    const fundamentalException =
+      reachedFundamentals &&
+      required.some((id) => {
+        const cell = row.metrics[id];
+        return !cell || cell.status !== 'ok';
+      });
+    if (technicalException || fundamentalException) withExceptions += 1;
     else if (!row.passed) failedThreshold += 1;
-    if (Object.values(row.metrics).some((cell) => cell.status === 'missing')) withMissing += 1;
+    if (
+      Object.values(row.metrics).some((cell) => cell.status === 'missing') ||
+      technicalCells.some((cell) => cell.status === 'missing')
+    )
+      withMissing += 1;
   }
   const specs = [
     ...rules.map((rule) => ({
@@ -170,19 +207,43 @@ export function summarizeRows(
           by_reason: byReason,
         };
       }),
+      technical: technical.map((spec) => {
+        const byStatus: Record<string, number> = {};
+        const byReason: Record<string, number> = {};
+        for (const row of rows) {
+          const cell = row.technical[spec.key];
+          if (!cell) continue;
+          byStatus[cell.status] = (byStatus[cell.status] ?? 0) + 1;
+          if (cell.status !== 'ok') {
+            const code = cell.reason_code ?? cell.status;
+            byReason[code] = (byReason[code] ?? 0) + 1;
+          }
+        }
+        return {
+          key: spec.key,
+          indicator: spec.indicator,
+          row_id: spec.row_id,
+          label: spec.label ?? spec.key,
+          by_status: byStatus,
+          by_reason: byReason,
+        };
+      }),
     },
   };
 }
+
+/** A company inside Thị trường with its Kỹ thuật verdict; the fundamental step fills `metrics`/`passed`. */
+type Candidate = { row: ScreenerRow; technical: TechnicalEvaluation };
 
 @Injectable()
 export class ScreenerService {
   private readonly logger = new Logger(ScreenerService.name);
 
   constructor(
-    private readonly database: DatabaseService,
     private readonly vci: VciMarketProvider,
     @Inject(ACADEMY_GRANTS) private readonly grants: AcademyGrantsPort,
     @Inject(ScreenerRunRepository) private readonly runs: ScreenerRunStore,
+    @Inject(SCREENER_MARKET_DATA) private readonly market: ScreenerMarketDataPort,
   ) {}
 
   async metrics(userId: string): Promise<ScreenerMetricView[]> {
@@ -210,8 +271,8 @@ export class ScreenerService {
   }
 
   async run(userId: string, input: ScreenerRunInput, now = new Date()): Promise<ScreenerRunData> {
-    const { definition, legacy } = normalizeDefinition(
-      input as ScreenerDefinitionV3 | LegacyScreenerDefinition,
+    const { definition, legacy, sector_review } = normalizeDefinition(
+      input as ScreenerDefinitionV4 | ScreenerDefinitionV3 | LegacyScreenerDefinition,
     );
     if (legacy?.needs_review)
       throw new UnprocessableEntityException({
@@ -220,8 +281,19 @@ export class ScreenerService {
           'Bộ lọc cũ dùng kỳ không còn được hỗ trợ cho một số điều kiện; hãy chọn lại kỳ tính, hệ thống không tự đổi sang kỳ khác.',
         details: legacy.rules.filter((rule) => rule.status === 'needs_review'),
       });
+    if (sector_review)
+      throw new UnprocessableEntityException({
+        code: 'SECTOR_REVIEW_REQUIRED',
+        message: `Chọn lại ngành: ngành ICB “${sector_review.sector}” của bộ lọc cũ không còn được hỗ trợ.`,
+        details: [{ sector: sector_review.sector }],
+      });
     const columns = definition.columns ?? [];
-    const issues = ruleIssues(definition.rules, columns);
+    const technicalItems = definition.technical ?? [];
+    const issues = [
+      ...marketIssues(definition.market),
+      ...ruleIssues(definition.rules, columns),
+      ...technicalIssues(technicalItems),
+    ];
     if (issues.length)
       throw new UnprocessableEntityException({
         code: 'DEFINITION_INVALID',
@@ -240,56 +312,85 @@ export class ScreenerService {
           'Có chỉ tiêu chưa có định nghĩa hoặc nguồn dữ liệu để tính; chỉ tiêu này chưa dùng được trong bộ lọc.',
         details: notReady,
       });
+    // Kỹ thuật and Thị trường need no capability (Bộ lọc 4.0 §8): only the fundamental cells are checked.
     await this.assertLearned(userId, specs);
 
-    const scope = normalizeScreenerScope(definition.scope);
-    const universeRows = await this.universe(scope.market, scope.sector);
-    const truncated = universeRows.length > SCREENER_MAX_UNIVERSE;
-    const universe = universeRows.slice(0, SCREENER_MAX_UNIVERSE);
+    // ---- Step 1 (Bộ lọc 4.0 §9): Thị trường + Kỹ thuật over the whole universe, from the stored bars.
+    const technicalSpecs = technicalColumns(technicalItems);
+    const needsBars = marketNeedsBars(definition.market) || technicalSpecs.length > 0;
+    const needsSession = needsBars || definition.market.baskets.length > 0;
+    const session = await this.market.resolveSession(now);
+    if (needsSession && !session)
+      throw new ServiceUnavailableException({
+        code: 'MARKET_DATA_UNAVAILABLE',
+        message:
+          'Chưa có dữ liệu giá của phiên đã đóng cửa để lọc Thị trường và Kỹ thuật. Hãy thử lại sau ít phút.',
+      });
+    const stepOne = await this.stepOne(definition, session, now);
+    let candidates = stepOne.candidates;
 
-    const needsMarket = specs.some((spec) => PRICE_METRICS.has(spec.metric_id));
-    const prices = needsMarket ? await this.prices(universe.map((row) => row.symbol)) : new Map();
-
-    const results = await mapWithConcurrency(universe, SCREENER_FETCH_CONCURRENCY, async (row) => {
-      // No condition and no column: a scope-only listing, no provider call.
-      const metrics = specs.length
-        ? await this.evaluateSymbol(
-            row.symbol,
-            specs,
-            needsMarket,
-            prices.get(row.symbol) ?? null,
-            now,
-          )
-        : {};
-      const passed = definition.rules.every((rule) =>
-        rulePasses(metrics[rule.metric_id]!, rule.operator, rule.value),
+    // ---- Step 2: fundamentals (VCI) only for the survivors, capped.
+    const needsFundamentals = specs.length > 0;
+    const survivors = candidates.filter((candidate) => candidate.technical.passed);
+    const truncated = needsFundamentals && survivors.length > SCREENER_MAX_UNIVERSE;
+    if (needsFundamentals) {
+      const computed = survivors.slice(0, SCREENER_MAX_UNIVERSE);
+      const computedSymbols = new Set(computed.map((candidate) => candidate.row.symbol));
+      const surviving = new Set(survivors.map((candidate) => candidate.row.symbol));
+      // Companies beyond the cap are not evaluated, so they are not listed (spec §9: "giữ cơ chế cắt").
+      candidates = candidates.filter(
+        (candidate) =>
+          computedSymbols.has(candidate.row.symbol) || !surviving.has(candidate.row.symbol),
       );
-      return {
-        symbol: row.symbol,
-        name: row.name,
-        sector: row.sector,
-        exchange: row.exchange,
-        passed,
-        metrics,
-      } satisfies ScreenerRow;
-    });
+      const needsPrice = specs.some((spec) => PRICE_METRICS.has(spec.metric_id));
+      const prices = needsPrice
+        ? await this.prices(computed.map((candidate) => candidate.row.symbol))
+        : new Map<string, number>();
+      await mapWithConcurrency(computed, SCREENER_FETCH_CONCURRENCY, async (candidate) => {
+        const metrics = await this.evaluateSymbol(
+          candidate.row.symbol,
+          specs,
+          needsPrice,
+          prices.get(candidate.row.symbol) ?? null,
+          now,
+        );
+        candidate.row.metrics = metrics;
+        candidate.row.passed = definition.rules.every((rule) =>
+          rulePasses(metrics[rule.metric_id]!, rule.operator, rule.value),
+        );
+      });
+    } else {
+      for (const candidate of candidates) candidate.row.passed = candidate.technical.passed;
+    }
+    const results = candidates.map((candidate) => candidate.row);
 
+    const labels = technicalColumnLabels(technicalItems);
+    const summary = summarizeRows(
+      results,
+      definition.rules,
+      columns,
+      technicalSpecs.map((spec) => ({ ...spec, label: labels.get(spec.key) })),
+    );
     const header: Omit<ScreenerRunHeader, 'result_id'> = {
       schema_version: SCREENER_DEFINITION_SCHEMA_VERSION,
       data_mode: 'latest_disclosed',
       as_of: now.toISOString(),
+      session_date: session,
       definition: definition as ScreenerRunHeader['definition'],
       legacy_review: legacy,
       data_source: SCREENER_DATA_SOURCE,
-      calculation_version: SCREENER_CALCULATION_VERSION,
+      price_source: session ? this.market.priceSource : null,
+      calculation_version: screenerCalculationVersion(),
       registry_version: SCREENER_REGISTRY_VERSION,
       universe_truncated: truncated,
+      fundamental_candidates: needsFundamentals ? survivors.length : null,
       provenance_notes: {
         period_dates: 'not_provided_by_source',
         report_scope: 'not_provided_by_source',
         availability_rule: AVAILABILITY_RULE,
       },
-      ...summarizeRows(results, definition.rules, columns),
+      counts: summary.counts,
+      data_quality: { ...summary.data_quality, market: stepOne.quality },
     };
     const resultId = await this.runs.insert({
       user_id: userId,
@@ -312,7 +413,9 @@ export class ScreenerService {
         code: 'SCREENER_RESULT_NOT_FOUND',
         message: 'Không tìm thấy kết quả lọc (có thể đã hết hạn lưu); hãy chạy lại bộ lọc.',
       });
-    const rows = query.passed_only ? stored.results.filter((row) => row.passed) : stored.results;
+    const all = query.passed_only ? stored.results.filter((row) => row.passed) : stored.results;
+    // The whole result is ordered before it is cut into pages (Bộ lọc 4.0 §4.3); the stored rows never change.
+    const rows = sortRows(all, query.sort, query.order);
     return {
       ...stored.header,
       total: rows.length,
@@ -320,6 +423,84 @@ export class ScreenerService {
       limit: query.limit,
       results: rows.slice(query.offset, query.offset + query.limit),
     };
+  }
+
+  /**
+   * Thị trường scope and Kỹ thuật verdicts for every active stock, from the stored closed bars of
+   * session T. Sàn / Rổ / Ngành are applied first (no bars); bars are then read chunk by chunk for
+   * the symbols still in play, so memory stays bounded and no provider is called.
+   */
+  private async stepOne(
+    definition: ScreenerDefinitionV4,
+    session: string | null,
+    now: Date,
+  ): Promise<{ candidates: Candidate[]; quality: MarketQuality }> {
+    const { market } = definition;
+    const technicalItems: TechnicalItem[] = definition.technical ?? [];
+    const quality = emptyMarketQuality();
+    const universe = await this.market.universe();
+    quality.universe = universe.length;
+
+    let baskets: BasketMembers = new Map();
+    if (market.baskets.length && session) {
+      baskets = await this.market.basketMembers(market.baskets, session, now);
+      quality.baskets_unavailable = market.baskets.filter((code) => baskets.get(code) === null);
+    }
+
+    const inPlay = universe.filter((record) => {
+      const verdict = cheapVerdict(record, market, baskets);
+      if (!verdict.in_scope && verdict.missing) quality.excluded_missing[verdict.missing] += 1;
+      return verdict.in_scope;
+    });
+
+    const candidates: Candidate[] = [];
+    let processed = 0;
+    for (let start = 0; start < inPlay.length; start += BAR_CHUNK) {
+      const chunk = inPlay.slice(start, start + BAR_CHUNK);
+      const bars = session
+        ? await this.market.loadBars(
+            chunk.map((record) => record.symbol),
+            session,
+          )
+        : new Map();
+      for (const record of chunk) {
+        const columns = bars.get(record.symbol) ?? null;
+        const values =
+          session && columns
+            ? computeMarketValues(columns, session, record.shares, market.avg_value.sessions)
+            : EMPTY_MARKET_VALUES;
+        const verdict = valueVerdict(values, market);
+        if (!verdict.in_scope) {
+          if (verdict.missing) quality.excluded_missing[verdict.missing] += 1;
+          continue;
+        }
+        quality.in_scope += 1;
+        const hasSessionBar = !!columns && columns.dates.at(-1) === session;
+        if (session && !hasSessionBar) quality.without_session_bar += 1;
+        const technical = evaluateTechnical(
+          technicalItems,
+          columns && hasSessionBar ? toEngineBars(columns) : null,
+          session ?? '',
+        );
+        candidates.push({
+          technical,
+          row: {
+            symbol: record.symbol,
+            name: record.name,
+            sector: record.sector,
+            exchange: record.exchange,
+            group: record.group,
+            passed: false,
+            market: values,
+            technical: Object.fromEntries(technical.cells.map((cell) => [cell.key, cell])),
+            metrics: {},
+          },
+        });
+        processed += 1;
+        if (processed % YIELD_EVERY === 0) await yieldToEventLoop();
+      }
+    }
+    return { candidates, quality };
   }
 
   private async assertLearned(userId: string, specs: readonly CellSpec[]): Promise<void> {
@@ -338,26 +519,6 @@ export class ScreenerService {
         // the v2 error filter forwards only `code`, `message` and array `details`
         details: locked.map((id) => ({ capability: `metric:${id}`, reason: 'not_learned' })),
       });
-  }
-
-  private async universe(market: string, sector: string | null): Promise<UniverseRow[]> {
-    return this.database.query<UniverseRow>(
-      `select upper(symbol) as symbol,
-              coalesce(nullif(trim(name), ''), nullif(trim(short_name), '')) as name,
-              case when upper(exchange) = 'HSX' then 'HOSE' else upper(exchange) end as exchange,
-              coalesce(nullif(trim(icb_lv2), ''), nullif(trim(icb_lv1), '')) as sector
-         from symbols
-        where is_active = true
-          and coalesce(is_index, false) = false
-          and lower(asset_type) = 'stock'
-          and ($1::text = 'ALL' or upper(exchange) = $1 or ($1 = 'HOSE' and upper(exchange) = 'HSX'))
-          and ($2::text is null
-               or lower(coalesce(nullif(trim(icb_lv2), ''), nullif(trim(icb_lv1), ''))) = lower($2)
-               or lower(trim(icb_lv1)) = lower($2))
-        order by upper(symbol)
-        limit $3`,
-      [market, sector, SCREENER_MAX_UNIVERSE + 1],
-    );
   }
 
   /** Observed price per symbol: last match, else reference price; null when the board fails. */

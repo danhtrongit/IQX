@@ -48,7 +48,7 @@ export class ScreenerController {
   @ApiOperation({
     operationId: 'screenerRun',
     summary:
-      'Run a filter definition 3.0 (a period per rule; 2.0 is mapped) at the latest published reports',
+      'Run a filter definition 4.0 (Thị trường + Cơ bản + Kỹ thuật; 3.0 and 2.0 are mapped) on the last closed session and the latest published reports',
   })
   @ApiOkResponse({ schema: openApi(screenerRunResponseSchema) })
   run(
@@ -61,7 +61,8 @@ export class ScreenerController {
   @Get('results/:resultId')
   @ApiOperation({
     operationId: 'screenerResultGet',
-    summary: 'One page of a stored run (same as_of on every page; owner only)',
+    summary:
+      'One page of a stored run, sorted over the whole result by `sort`/`order` (same as_of on every page; owner only)',
   })
   @ApiOkResponse({ schema: openApi(screenerResultPageSchema) })
   result(

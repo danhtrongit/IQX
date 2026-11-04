@@ -128,6 +128,25 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       enabled: enabled('market.index-membership'),
     },
     {
+      name: 'market.daily-bars',
+      description:
+        'Fill the daily bar store (DNSE, adjusted) for the screener after the close; no-op when up to date',
+      // Ticks all day, every day: the handler is idempotent and only works once the benchmark has a
+      // closed bar newer than the stored session (Bot readiness 15:15), so it also bootstraps an
+      // empty store and survives a missed tick or worker restart without a trading-day calendar.
+      everyMs: 600_000,
+      tradingDay: false,
+      enabled: enabled('market.daily-bars'),
+    },
+    {
+      name: 'market.symbol-attributes',
+      description:
+        'Refresh the statement template (Ngành) and share count (Vốn hóa) of each stock for the screener',
+      everyMs: 600_000,
+      tradingDay: false,
+      enabled: enabled('market.symbol-attributes'),
+    },
+    {
       name: 'bot.session-eod',
       description: 'Run the standard bot after close',
       pattern: '0 0 19 * * 1-5',

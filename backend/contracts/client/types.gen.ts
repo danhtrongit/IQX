@@ -54661,6 +54661,27 @@ export type ListStrategySavedFiltersResponses = {
         }>;
         data_mode: "latest_disclosed";
         logic: "AND";
+        market: {
+          avg_value: {
+            min: number | null;
+            sessions: number;
+          };
+          baskets?: Array<
+            "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+          > | null;
+          close_price: {
+            max: number | null;
+            min: number | null;
+          };
+          exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+          legacy_sector?: string;
+          market_cap: {
+            max: number | null;
+            min: number | null;
+          };
+          needs_review?: "sector";
+          statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+        };
         name: string;
         rules: Array<{
           api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -54712,11 +54733,38 @@ export type ListStrategySavedFiltersResponses = {
           period: "quarter" | "ttm" | "year" | "three_year";
           value: number;
         }>;
-        schema_version: "3.0";
-        scope: {
-          market: string;
-          sector: string;
-        };
+        schema_version: "4.0";
+        technical: Array<
+          | {
+              factor: number;
+              indicator: "volume";
+              ops: [string, string];
+              sessions: number;
+            }
+          | {
+              indicator:
+                | "rsi"
+                | "macd"
+                | "ma"
+                | "bollinger"
+                | "ema"
+                | "ma_cross"
+                | "dmi"
+                | "stochastic"
+                | "cci"
+                | "obv"
+                | "mfi"
+                | "cmf"
+                | "donchian"
+                | "roc"
+                | "williams_r";
+              rules: Array<{
+                enabled: boolean;
+                id: string;
+                [key: string]: number | string | boolean | string;
+              }>;
+            }
+        >;
       };
       definition_hash: string;
       id: string;
@@ -54734,6 +54782,9 @@ export type ListStrategySavedFiltersResponses = {
         stored_schema_version: "2.0";
       } | null;
       name: string;
+      sector_review: {
+        sector: string;
+      } | null;
       stored_schema_version: string;
       updated_at: string;
       version: number;
@@ -54795,6 +54846,27 @@ export type CreateStrategySavedFilterData = {
       }>;
       data_mode?: "latest_disclosed";
       logic: "AND";
+      market: {
+        avg_value: {
+          min: number | null;
+          sessions: number;
+        };
+        baskets?: Array<
+          "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+        > | null;
+        close_price: {
+          max: number | null;
+          min: number | null;
+        };
+        exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+        legacy_sector?: string;
+        market_cap: {
+          max: number | null;
+          min: number | null;
+        };
+        needs_review?: "sector";
+        statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+      };
       name: string;
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -54846,11 +54918,38 @@ export type CreateStrategySavedFilterData = {
         period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "3.0";
-      scope: {
-        market: string;
-        sector: string;
-      };
+      schema_version: "4.0";
+      technical?: Array<
+        | {
+            factor: number;
+            indicator: "volume";
+            ops: [string, string];
+            sessions: number;
+          }
+        | {
+            indicator:
+              | "rsi"
+              | "macd"
+              | "ma"
+              | "bollinger"
+              | "ema"
+              | "ma_cross"
+              | "dmi"
+              | "stochastic"
+              | "cci"
+              | "obv"
+              | "mfi"
+              | "cmf"
+              | "donchian"
+              | "roc"
+              | "williams_r";
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | string;
+            }>;
+          }
+      >;
     };
     idempotency_key?: string;
     name: string;
@@ -54943,6 +55042,27 @@ export type CreateStrategySavedFilterResponses = {
       }>;
       data_mode: "latest_disclosed";
       logic: "AND";
+      market: {
+        avg_value: {
+          min: number | null;
+          sessions: number;
+        };
+        baskets?: Array<
+          "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+        > | null;
+        close_price: {
+          max: number | null;
+          min: number | null;
+        };
+        exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+        legacy_sector?: string;
+        market_cap: {
+          max: number | null;
+          min: number | null;
+        };
+        needs_review?: "sector";
+        statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+      };
       name: string;
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -54994,11 +55114,38 @@ export type CreateStrategySavedFilterResponses = {
         period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "3.0";
-      scope: {
-        market: string;
-        sector: string;
-      };
+      schema_version: "4.0";
+      technical: Array<
+        | {
+            factor: number;
+            indicator: "volume";
+            ops: [string, string];
+            sessions: number;
+          }
+        | {
+            indicator:
+              | "rsi"
+              | "macd"
+              | "ma"
+              | "bollinger"
+              | "ema"
+              | "ma_cross"
+              | "dmi"
+              | "stochastic"
+              | "cci"
+              | "obv"
+              | "mfi"
+              | "cmf"
+              | "donchian"
+              | "roc"
+              | "williams_r";
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | string;
+            }>;
+          }
+      >;
     };
     definition_hash: string;
     id: string;
@@ -55016,6 +55163,9 @@ export type CreateStrategySavedFilterResponses = {
       stored_schema_version: "2.0";
     } | null;
     name: string;
+    sector_review: {
+      sector: string;
+    } | null;
     stored_schema_version: string;
     updated_at: string;
     version: number;
@@ -55173,6 +55323,27 @@ export type GetStrategySavedFilterResponses = {
       }>;
       data_mode: "latest_disclosed";
       logic: "AND";
+      market: {
+        avg_value: {
+          min: number | null;
+          sessions: number;
+        };
+        baskets?: Array<
+          "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+        > | null;
+        close_price: {
+          max: number | null;
+          min: number | null;
+        };
+        exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+        legacy_sector?: string;
+        market_cap: {
+          max: number | null;
+          min: number | null;
+        };
+        needs_review?: "sector";
+        statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+      };
       name: string;
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -55224,11 +55395,38 @@ export type GetStrategySavedFilterResponses = {
         period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "3.0";
-      scope: {
-        market: string;
-        sector: string;
-      };
+      schema_version: "4.0";
+      technical: Array<
+        | {
+            factor: number;
+            indicator: "volume";
+            ops: [string, string];
+            sessions: number;
+          }
+        | {
+            indicator:
+              | "rsi"
+              | "macd"
+              | "ma"
+              | "bollinger"
+              | "ema"
+              | "ma_cross"
+              | "dmi"
+              | "stochastic"
+              | "cci"
+              | "obv"
+              | "mfi"
+              | "cmf"
+              | "donchian"
+              | "roc"
+              | "williams_r";
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | string;
+            }>;
+          }
+      >;
     };
     definition_hash: string;
     id: string;
@@ -55246,6 +55444,9 @@ export type GetStrategySavedFilterResponses = {
       stored_schema_version: "2.0";
     } | null;
     name: string;
+    sector_review: {
+      sector: string;
+    } | null;
     stored_schema_version: string;
     updated_at: string;
     version: number;
@@ -55311,6 +55512,27 @@ export type UpdateStrategySavedFilterData = {
       }>;
       data_mode?: "latest_disclosed";
       logic: "AND";
+      market: {
+        avg_value: {
+          min: number | null;
+          sessions: number;
+        };
+        baskets?: Array<
+          "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+        > | null;
+        close_price: {
+          max: number | null;
+          min: number | null;
+        };
+        exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+        legacy_sector?: string;
+        market_cap: {
+          max: number | null;
+          min: number | null;
+        };
+        needs_review?: "sector";
+        statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+      };
       name: string;
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -55362,11 +55584,38 @@ export type UpdateStrategySavedFilterData = {
         period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "3.0";
-      scope: {
-        market: string;
-        sector: string;
-      };
+      schema_version: "4.0";
+      technical?: Array<
+        | {
+            factor: number;
+            indicator: "volume";
+            ops: [string, string];
+            sessions: number;
+          }
+        | {
+            indicator:
+              | "rsi"
+              | "macd"
+              | "ma"
+              | "bollinger"
+              | "ema"
+              | "ma_cross"
+              | "dmi"
+              | "stochastic"
+              | "cci"
+              | "obv"
+              | "mfi"
+              | "cmf"
+              | "donchian"
+              | "roc"
+              | "williams_r";
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | string;
+            }>;
+          }
+      >;
     };
     name?: string;
   };
@@ -55460,6 +55709,27 @@ export type UpdateStrategySavedFilterResponses = {
       }>;
       data_mode: "latest_disclosed";
       logic: "AND";
+      market: {
+        avg_value: {
+          min: number | null;
+          sessions: number;
+        };
+        baskets?: Array<
+          "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+        > | null;
+        close_price: {
+          max: number | null;
+          min: number | null;
+        };
+        exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+        legacy_sector?: string;
+        market_cap: {
+          max: number | null;
+          min: number | null;
+        };
+        needs_review?: "sector";
+        statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+      };
       name: string;
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -55511,11 +55781,38 @@ export type UpdateStrategySavedFilterResponses = {
         period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "3.0";
-      scope: {
-        market: string;
-        sector: string;
-      };
+      schema_version: "4.0";
+      technical: Array<
+        | {
+            factor: number;
+            indicator: "volume";
+            ops: [string, string];
+            sessions: number;
+          }
+        | {
+            indicator:
+              | "rsi"
+              | "macd"
+              | "ma"
+              | "bollinger"
+              | "ema"
+              | "ma_cross"
+              | "dmi"
+              | "stochastic"
+              | "cci"
+              | "obv"
+              | "mfi"
+              | "cmf"
+              | "donchian"
+              | "roc"
+              | "williams_r";
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | string;
+            }>;
+          }
+      >;
     };
     definition_hash: string;
     id: string;
@@ -55533,6 +55830,9 @@ export type UpdateStrategySavedFilterResponses = {
       stored_schema_version: "2.0";
     } | null;
     name: string;
+    sector_review: {
+      sector: string;
+    } | null;
     stored_schema_version: string;
     updated_at: string;
     version: number;
@@ -55603,7 +55903,15 @@ export type ListStrategySavedListsResponses = {
       result_snapshot_id: string | null;
       run_id: string | null;
       scope: {
-        [key: string]: string | number | boolean | null;
+        [key: string]:
+          | string
+          | number
+          | boolean
+          | null
+          | Array<unknown>
+          | {
+              [key: string]: unknown;
+            };
       };
       tickers: Array<string>;
       visibility: "saved" | "internal";
@@ -55623,7 +55931,15 @@ export type CreateStrategySavedListData = {
     idempotency_key?: string;
     name: string;
     scope: {
-      [key: string]: string | number | boolean | null;
+      [key: string]:
+        | string
+        | number
+        | boolean
+        | null
+        | Array<unknown>
+        | {
+            [key: string]: unknown;
+          };
     };
     tickers: Array<string>;
   };
@@ -55678,7 +55994,15 @@ export type CreateStrategySavedListResponses = {
     result_snapshot_id: string | null;
     run_id: string | null;
     scope: {
-      [key: string]: string | number | boolean | null;
+      [key: string]:
+        | string
+        | number
+        | boolean
+        | null
+        | Array<unknown>
+        | {
+            [key: string]: unknown;
+          };
     };
     tickers: Array<string>;
     visibility: "saved" | "internal";
@@ -55757,7 +56081,15 @@ export type CreateStrategySavedListFromResultResponses = {
     result_snapshot_id: string | null;
     run_id: string | null;
     scope: {
-      [key: string]: string | number | boolean | null;
+      [key: string]:
+        | string
+        | number
+        | boolean
+        | null
+        | Array<unknown>
+        | {
+            [key: string]: unknown;
+          };
     };
     tickers: Array<string>;
     visibility: "saved" | "internal";
@@ -55871,7 +56203,15 @@ export type GetStrategySavedListResponses = {
     result_snapshot_id: string | null;
     run_id: string | null;
     scope: {
-      [key: string]: string | number | boolean | null;
+      [key: string]:
+        | string
+        | number
+        | boolean
+        | null
+        | Array<unknown>
+        | {
+            [key: string]: unknown;
+          };
     };
     tickers: Array<string>;
     visibility: "saved" | "internal";
@@ -56358,6 +56698,7 @@ export type ListStrategyResultSnapshotsResponses = {
         mode: "all" | "subset";
         symbols: Array<string>;
       };
+      session_date: string | null;
       symbols: Array<string>;
       totals: {
         [key: string]: unknown;
@@ -56477,6 +56818,27 @@ export type CreateStrategyResultSnapshotResponses = {
       }>;
       data_mode: "latest_disclosed";
       logic: "AND";
+      market: {
+        avg_value: {
+          min: number | null;
+          sessions: number;
+        };
+        baskets?: Array<
+          "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+        > | null;
+        close_price: {
+          max: number | null;
+          min: number | null;
+        };
+        exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+        legacy_sector?: string;
+        market_cap: {
+          max: number | null;
+          min: number | null;
+        };
+        needs_review?: "sector";
+        statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+      };
       name: string;
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -56528,11 +56890,38 @@ export type CreateStrategyResultSnapshotResponses = {
         period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "3.0";
-      scope: {
-        market: string;
-        sector: string;
-      };
+      schema_version: "4.0";
+      technical: Array<
+        | {
+            factor: number;
+            indicator: "volume";
+            ops: [string, string];
+            sessions: number;
+          }
+        | {
+            indicator:
+              | "rsi"
+              | "macd"
+              | "ma"
+              | "bollinger"
+              | "ema"
+              | "ma_cross"
+              | "dmi"
+              | "stochastic"
+              | "cci"
+              | "obv"
+              | "mfi"
+              | "cmf"
+              | "donchian"
+              | "roc"
+              | "williams_r";
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | string;
+            }>;
+          }
+      >;
     };
     definition_hash: string;
     filter_id: string | null;
@@ -56550,6 +56939,7 @@ export type CreateStrategyResultSnapshotResponses = {
       mode: "all" | "subset";
       symbols: Array<string>;
     };
+    session_date: string | null;
     symbols: Array<string>;
     totals: {
       [key: string]: unknown;
@@ -56704,6 +57094,27 @@ export type GetStrategyResultSnapshotResponses = {
       }>;
       data_mode: "latest_disclosed";
       logic: "AND";
+      market: {
+        avg_value: {
+          min: number | null;
+          sessions: number;
+        };
+        baskets?: Array<
+          "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+        > | null;
+        close_price: {
+          max: number | null;
+          min: number | null;
+        };
+        exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+        legacy_sector?: string;
+        market_cap: {
+          max: number | null;
+          min: number | null;
+        };
+        needs_review?: "sector";
+        statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+      };
       name: string;
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -56755,11 +57166,38 @@ export type GetStrategyResultSnapshotResponses = {
         period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "3.0";
-      scope: {
-        market: string;
-        sector: string;
-      };
+      schema_version: "4.0";
+      technical: Array<
+        | {
+            factor: number;
+            indicator: "volume";
+            ops: [string, string];
+            sessions: number;
+          }
+        | {
+            indicator:
+              | "rsi"
+              | "macd"
+              | "ma"
+              | "bollinger"
+              | "ema"
+              | "ma_cross"
+              | "dmi"
+              | "stochastic"
+              | "cci"
+              | "obv"
+              | "mfi"
+              | "cmf"
+              | "donchian"
+              | "roc"
+              | "williams_r";
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | string;
+            }>;
+          }
+      >;
     };
     definition_hash: string;
     filter_id: string | null;
@@ -56777,6 +57215,7 @@ export type GetStrategyResultSnapshotResponses = {
       mode: "all" | "subset";
       symbols: Array<string>;
     };
+    session_date: string | null;
     symbols: Array<string>;
     totals: {
       [key: string]: unknown;
@@ -56901,6 +57340,8 @@ export type ScreenerResultGetData = {
     offset?: number;
     limit?: number;
     passed_only?: boolean;
+    sort?: string;
+    order?: "asc" | "desc";
   };
   url: "/api/v2/strategy/screener/results/{resultId}";
 };
@@ -56948,6 +57389,20 @@ export type ScreenerResultGetResponses = {
     };
     data_mode: "latest_disclosed";
     data_quality: {
+      market: {
+        baskets_unavailable: Array<string>;
+        excluded_missing: {
+          avg_value: number;
+          basket: number;
+          close_price: number;
+          exchange: number;
+          market_cap: number;
+          statement_group: number;
+        };
+        in_scope: number;
+        universe: number;
+        without_session_bar: number;
+      };
       metrics: Array<{
         by_reason: {
           [key: string]: number;
@@ -57001,6 +57456,18 @@ export type ScreenerResultGetResponses = {
         period_mode: "quarter" | "ttm" | "year" | "three_year";
         role: "condition" | "reference";
       }>;
+      technical: Array<{
+        by_reason: {
+          [key: string]: number;
+        };
+        by_status: {
+          [key: string]: number;
+        };
+        indicator: string;
+        key: string;
+        label: string;
+        row_id: string;
+      }>;
     };
     data_source: string;
     definition: {
@@ -57052,6 +57519,27 @@ export type ScreenerResultGetResponses = {
       }>;
       data_mode: "latest_disclosed";
       logic: "AND";
+      market: {
+        avg_value: {
+          min: number | null;
+          sessions: number;
+        };
+        baskets?: Array<
+          "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+        > | null;
+        close_price: {
+          max: number | null;
+          min: number | null;
+        };
+        exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+        legacy_sector?: string;
+        market_cap: {
+          max: number | null;
+          min: number | null;
+        };
+        needs_review?: "sector";
+        statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+      };
       name: string;
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -57103,12 +57591,40 @@ export type ScreenerResultGetResponses = {
         period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "3.0";
-      scope: {
-        market: string;
-        sector: string;
-      };
+      schema_version: "4.0";
+      technical: Array<
+        | {
+            factor: number;
+            indicator: "volume";
+            ops: [string, string];
+            sessions: number;
+          }
+        | {
+            indicator:
+              | "rsi"
+              | "macd"
+              | "ma"
+              | "bollinger"
+              | "ema"
+              | "ma_cross"
+              | "dmi"
+              | "stochastic"
+              | "cci"
+              | "obv"
+              | "mfi"
+              | "cmf"
+              | "donchian"
+              | "roc"
+              | "williams_r";
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | string;
+            }>;
+          }
+      >;
     };
+    fundamental_candidates: number | null;
     legacy_review: {
       legacy_period: "TTM" | "annual" | "quarter";
       needs_review: boolean;
@@ -57166,6 +57682,7 @@ export type ScreenerResultGetResponses = {
     } | null;
     limit: number;
     offset: number;
+    price_source: string | null;
     provenance_notes: {
       availability_rule: string;
       period_dates: "not_provided_by_source";
@@ -57175,6 +57692,13 @@ export type ScreenerResultGetResponses = {
     result_id: string;
     results: Array<{
       exchange: string | null;
+      group: "thuong" | "nh" | "ck" | "bh";
+      market: {
+        avg_value: number | null;
+        change_pct: number | null;
+        market_cap: number | null;
+        price: number | null;
+      };
       metrics: {
         [key: string]: {
           actual_period_label: string | null;
@@ -57249,8 +57773,37 @@ export type ScreenerResultGetResponses = {
       passed: boolean;
       sector: string | null;
       symbol: string;
+      technical: {
+        [key: string]: {
+          display: string | null;
+          indicator: string;
+          key: string;
+          label: string;
+          lag: number | null;
+          op: string | null;
+          params: {
+            [key: string]: number | string;
+          };
+          previous: {
+            display: string | null;
+            value: number | null;
+            value2: number | null;
+            value3: number | null;
+          } | null;
+          reason?: string;
+          reason_code?: string;
+          result: boolean | null;
+          row_id: string;
+          sort_value: number | null;
+          status: "ok" | "missing";
+          value: number | null;
+          value2: number | null;
+          value3: number | null;
+        };
+      };
     }>;
-    schema_version: "3.0";
+    schema_version: "4.0";
+    session_date: string | null;
     total: number;
     universe_truncated: boolean;
   };
@@ -57261,6 +57814,160 @@ export type ScreenerResultGetResponse =
 
 export type ScreenerRunData = {
   body:
+    | {
+        columns?: Array<{
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          period: "quarter" | "ttm" | "year" | "three_year";
+        }>;
+        data_mode?: "latest_disclosed";
+        logic: "AND";
+        market: {
+          avg_value: {
+            min: number | null;
+            sessions: number;
+          };
+          baskets?: Array<
+            "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+          > | null;
+          close_price: {
+            max: number | null;
+            min: number | null;
+          };
+          exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+          legacy_sector?: string;
+          market_cap: {
+            max: number | null;
+            min: number | null;
+          };
+          needs_review?: "sector";
+          statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+        };
+        name: string;
+        rules: Array<{
+          api_unit: "ratio" | "lần" | "ngày" | "năm";
+          id: string;
+          metric_id:
+            | "revenue_yoy"
+            | "profit_yoy"
+            | "eps_yoy"
+            | "gross_margin"
+            | "net_margin"
+            | "roe"
+            | "roa"
+            | "roic"
+            | "debt_equity"
+            | "net_debt_ebitda"
+            | "current_ratio"
+            | "interest_coverage"
+            | "cfo_margin"
+            | "cfo_profit"
+            | "fcf_margin"
+            | "fcf_yoy"
+            | "capex_revenue"
+            | "accrual"
+            | "pe"
+            | "pb"
+            | "ps"
+            | "ev_ebitda"
+            | "peg"
+            | "fcf_yield"
+            | "revenue_cagr3"
+            | "profit_cagr3"
+            | "eps_cagr3"
+            | "asset_turnover"
+            | "ccc"
+            | "working_cap_turnover"
+            | "revenue_growth_stability"
+            | "eps_growth_stability"
+            | "net_margin_stability"
+            | "roic_stability"
+            | "fcf_positive_streak"
+            | "profit_positive_streak"
+            | "dividend_yield"
+            | "payout_ratio"
+            | "dividend_cagr3"
+            | "share_count_yoy"
+            | "buyback_yield"
+            | "shareholder_yield";
+          operator: ">" | "<";
+          period: "quarter" | "ttm" | "year" | "three_year";
+          value: number;
+        }>;
+        schema_version: "4.0";
+        technical?: Array<
+          | {
+              factor: number;
+              indicator: "volume";
+              ops: [string, string];
+              sessions: number;
+            }
+          | {
+              indicator:
+                | "rsi"
+                | "macd"
+                | "ma"
+                | "bollinger"
+                | "ema"
+                | "ma_cross"
+                | "dmi"
+                | "stochastic"
+                | "cci"
+                | "obv"
+                | "mfi"
+                | "cmf"
+                | "donchian"
+                | "roc"
+                | "williams_r";
+              rules: Array<{
+                enabled: boolean;
+                id: string;
+                [key: string]: number | string | boolean | string;
+              }>;
+            }
+        >;
+      }
     | {
         columns?: Array<{
           metric_id:
@@ -57473,6 +58180,20 @@ export type ScreenerRunResponses = {
     };
     data_mode: "latest_disclosed";
     data_quality: {
+      market: {
+        baskets_unavailable: Array<string>;
+        excluded_missing: {
+          avg_value: number;
+          basket: number;
+          close_price: number;
+          exchange: number;
+          market_cap: number;
+          statement_group: number;
+        };
+        in_scope: number;
+        universe: number;
+        without_session_bar: number;
+      };
       metrics: Array<{
         by_reason: {
           [key: string]: number;
@@ -57526,6 +58247,18 @@ export type ScreenerRunResponses = {
         period_mode: "quarter" | "ttm" | "year" | "three_year";
         role: "condition" | "reference";
       }>;
+      technical: Array<{
+        by_reason: {
+          [key: string]: number;
+        };
+        by_status: {
+          [key: string]: number;
+        };
+        indicator: string;
+        key: string;
+        label: string;
+        row_id: string;
+      }>;
     };
     data_source: string;
     definition: {
@@ -57577,6 +58310,27 @@ export type ScreenerRunResponses = {
       }>;
       data_mode: "latest_disclosed";
       logic: "AND";
+      market: {
+        avg_value: {
+          min: number | null;
+          sessions: number;
+        };
+        baskets?: Array<
+          "VN30" | "VN100" | "VNMIDCAP" | "VNSMALLCAP" | "HNX30"
+        > | null;
+        close_price: {
+          max: number | null;
+          min: number | null;
+        };
+        exchanges?: Array<"HOSE" | "HNX" | "UPCOM" | "HSX"> | null;
+        legacy_sector?: string;
+        market_cap: {
+          max: number | null;
+          min: number | null;
+        };
+        needs_review?: "sector";
+        statement_groups?: Array<"thuong" | "nh" | "ck" | "bh"> | null;
+      };
       name: string;
       rules: Array<{
         api_unit: "ratio" | "lần" | "ngày" | "năm";
@@ -57628,12 +58382,40 @@ export type ScreenerRunResponses = {
         period: "quarter" | "ttm" | "year" | "three_year";
         value: number;
       }>;
-      schema_version: "3.0";
-      scope: {
-        market: string;
-        sector: string;
-      };
+      schema_version: "4.0";
+      technical: Array<
+        | {
+            factor: number;
+            indicator: "volume";
+            ops: [string, string];
+            sessions: number;
+          }
+        | {
+            indicator:
+              | "rsi"
+              | "macd"
+              | "ma"
+              | "bollinger"
+              | "ema"
+              | "ma_cross"
+              | "dmi"
+              | "stochastic"
+              | "cci"
+              | "obv"
+              | "mfi"
+              | "cmf"
+              | "donchian"
+              | "roc"
+              | "williams_r";
+            rules: Array<{
+              enabled: boolean;
+              id: string;
+              [key: string]: number | string | boolean | string;
+            }>;
+          }
+      >;
     };
+    fundamental_candidates: number | null;
     legacy_review: {
       legacy_period: "TTM" | "annual" | "quarter";
       needs_review: boolean;
@@ -57689,6 +58471,7 @@ export type ScreenerRunResponses = {
       }>;
       stored_schema_version: "2.0";
     } | null;
+    price_source: string | null;
     provenance_notes: {
       availability_rule: string;
       period_dates: "not_provided_by_source";
@@ -57698,6 +58481,13 @@ export type ScreenerRunResponses = {
     result_id: string;
     results: Array<{
       exchange: string | null;
+      group: "thuong" | "nh" | "ck" | "bh";
+      market: {
+        avg_value: number | null;
+        change_pct: number | null;
+        market_cap: number | null;
+        price: number | null;
+      };
       metrics: {
         [key: string]: {
           actual_period_label: string | null;
@@ -57772,8 +58562,37 @@ export type ScreenerRunResponses = {
       passed: boolean;
       sector: string | null;
       symbol: string;
+      technical: {
+        [key: string]: {
+          display: string | null;
+          indicator: string;
+          key: string;
+          label: string;
+          lag: number | null;
+          op: string | null;
+          params: {
+            [key: string]: number | string;
+          };
+          previous: {
+            display: string | null;
+            value: number | null;
+            value2: number | null;
+            value3: number | null;
+          } | null;
+          reason?: string;
+          reason_code?: string;
+          result: boolean | null;
+          row_id: string;
+          sort_value: number | null;
+          status: "ok" | "missing";
+          value: number | null;
+          value2: number | null;
+          value3: number | null;
+        };
+      };
     }>;
-    schema_version: "3.0";
+    schema_version: "4.0";
+    session_date: string | null;
     universe_truncated: boolean;
   };
 };

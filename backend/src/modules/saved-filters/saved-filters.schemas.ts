@@ -13,7 +13,18 @@ const ticker = z
   .max(20)
   .regex(/^[A-Za-z0-9._-]+$/)
   .transform((value) => value.toUpperCase());
-const scopeValue = z.union([z.string().max(200), z.number().finite(), z.boolean(), z.null()]);
+/**
+ * A list's scope: scalars, or (Bộ lọc 4.0) the `market` block and its arrays as stored JSON.
+ * Objects and arrays are accepted only as plain JSON values.
+ */
+const scopeValue = z.union([
+  z.string().max(200),
+  z.number().finite(),
+  z.boolean(),
+  z.null(),
+  z.array(z.unknown()),
+  z.record(z.string(), z.unknown()),
+]);
 
 export const savedResourceIdSchema = z.uuid();
 
@@ -179,12 +190,17 @@ export const savedFilterSummarySchema = z
     name: z.string(),
     current_version: z.number().int(),
     version: z.number().int(),
-    /** Always schema 3.0: a stored 2.0 version is mapped on read, never rewritten. */
+    /** Always schema 4.0: a stored 2.0 / 3.0 version is mapped on read, never rewritten. */
     definition: filterDefinitionSchema,
-    /** Schema version of the stored row (2.0 = filter-wide period mapped onto every rule). */
+    /** Schema version of the stored row (2.0 = filter-wide period mapped onto every rule; 3.0 = ICB scope). */
     stored_schema_version: z.string(),
     /** Present for a stored 2.0 version; `needs_review` rules must get a new period before running. */
     legacy_review: legacyReviewSchema.nullable(),
+    /**
+     * Set when the filter still has an ICB sector from schema 3.0: it cannot run until a statement
+     * group is chosen again ("Cần chọn lại ngành"). `sector` is the old ICB name, kept as evidence.
+     */
+    sector_review: z.object({ sector: z.string() }).strict().nullable(),
     definition_hash: z.string(),
     created_at: timestamp,
     updated_at: timestamp,
@@ -237,6 +253,8 @@ export const resultSnapshotSummarySchema = z
     /** Data cutoff of the run: when the figures were resolved. Not the save time. */
     as_of: timestamp,
     run_at: timestamp,
+    /** Session T (closed session) of the frozen Thị trường and Kỹ thuật columns; null for runs before 4.0. */
+    session_date: z.iso.date().nullable(),
     data_source: z.string(),
     calculation_version: z.string(),
     registry_version: z.string(),
@@ -252,7 +270,7 @@ export type ResultSnapshotSummary = z.infer<typeof resultSnapshotSummarySchema>;
 
 export const resultSnapshotSchema = resultSnapshotSummarySchema
   .extend({
-    /** Criteria (definition 3.0) the run used, frozen. */
+    /** Criteria (definition 4.0) the run used, frozen. */
     definition: filterDefinitionSchema,
     /** Rows of the saved symbols with per-cell values, statuses, actual periods and provenance. */
     rows: z.array(z.record(z.string(), z.unknown())),

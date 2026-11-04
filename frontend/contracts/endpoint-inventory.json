@@ -3810,7 +3810,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 28,
+      "line": 29,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/screener/metrics",
       "method": "GET",
@@ -3823,7 +3823,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 32,
+      "line": 33,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/screener/run",
       "method": "POST",
@@ -3836,7 +3836,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 40,
+      "line": 45,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/screener/results/{resultId}",
       "method": "GET",
@@ -3849,7 +3849,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 50,
+      "line": 76,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/filters",
       "method": "GET",
@@ -3862,7 +3862,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 54,
+      "line": 80,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/filters",
       "method": "POST",
@@ -3875,7 +3875,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 59,
+      "line": 85,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/strategy/filters/{filterId}",
       "method": "PUT",
@@ -3888,7 +3888,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 63,
+      "line": 89,
       "callee": "requestOperation",
       "raw": "DELETE /api/v2/strategy/filters/{filterId}",
       "method": "DELETE",
@@ -3901,7 +3901,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 70,
+      "line": 96,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/lists",
       "method": "GET",
@@ -3914,7 +3914,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 74,
+      "line": 100,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/lists/{listId}",
       "method": "GET",
@@ -3927,7 +3927,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 79,
+      "line": 105,
       "callee": "requestOperation",
       "raw": "DELETE /api/v2/strategy/lists/{listId}",
       "method": "DELETE",
@@ -3940,7 +3940,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 101,
+      "line": 127,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/lists/from-result",
       "method": "POST",
@@ -3953,7 +3953,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 107,
+      "line": 133,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/result-snapshots",
       "method": "GET",
@@ -3966,7 +3966,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 111,
+      "line": 137,
       "callee": "requestOperation",
       "raw": "GET /api/v2/strategy/result-snapshots/{snapshotId}",
       "method": "GET",
@@ -3979,7 +3979,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 122,
+      "line": 148,
       "callee": "requestOperation",
       "raw": "POST /api/v2/strategy/result-snapshots",
       "method": "POST",
@@ -3992,7 +3992,7 @@
     },
     {
       "file": "src/pages/strategy/filter/api.ts",
-      "line": 135,
+      "line": 161,
       "callee": "requestOperation",
       "raw": "DELETE /api/v2/strategy/result-snapshots/{snapshotId}",
       "method": "DELETE",

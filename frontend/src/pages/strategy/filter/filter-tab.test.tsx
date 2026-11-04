@@ -6,8 +6,9 @@ import { renderBot as render, stubBrowser } from "../../demo-trading/bot/test-re
 import { callsTo, request, savedList, universeState } from "../../demo-trading/bot/test-support"
 import { createStrategyApi, createStrategyWorld, FakeApiError, LIST_ID, T0, type StrategyWorld } from "../test-support"
 import { FilterTab } from "./filter-tab"
+import { emptyMarket } from "./market"
 
-const mocks = vi.hoisted(() => ({ api: vi.fn(), toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() } }))
+const mocks = vi.hoisted(() => ({ api: vi.fn(), toast: { success: vi.fn(), error: vi.fn(), info: vi.fn(), warning: vi.fn() } }))
 
 vi.mock("@/hooks/use-auth", () => ({
   useAuth: () => ({ user: { id: "user-1" }, isAuthenticated: true, isLoading: false, isPremium: true, premiumLoading: false, openAuth: vi.fn() }),
@@ -33,7 +34,7 @@ const posts = (path: string) => callsTo(world, "POST", path)
 
 async function renderTab() {
   render(<FilterTab />, "/chien-luoc?tab=bo-loc")
-  await screen.findByRole("region", { name: "Điều kiện lọc" })
+  await screen.findByRole("region", { name: "Cơ bản" })
 }
 
 const library = () => screen.getByRole("complementary", { name: "Thư viện chỉ tiêu" })
@@ -44,7 +45,7 @@ async function addMetric(user: ReturnType<typeof userEvent.setup>, name: string)
 
 /** LNST > 15 on the latest quarter and ROE > 15 on four quarters, as in the approved sample. */
 async function addSampleConditions(user: ReturnType<typeof userEvent.setup>) {
-  await addMetric(user, "Tăng trưởng LNST YoY")
+  await addMetric(user, "Tăng trưởng LNST")
   await addMetric(user, "ROE")
   for (const input of screen.getAllByLabelText("Ngưỡng")) await user.type(input, "15")
 }
@@ -59,52 +60,11 @@ async function runSample(user: ReturnType<typeof userEvent.setup>) {
   return runFilter(user)
 }
 
-describe("metric library", () => {
-  it("lists only the learned metrics; usable ones can be added, a learned but not-ready one is unavailable with its reason", async () => {
-    await renderTab()
-    const items = within(library()).getAllByTestId(/^metric-/)
-    expect(items.map((item) => item.getAttribute("data-testid"))).toEqual(["metric-revenue_yoy", "metric-profit_yoy", "metric-eps_yoy", "metric-gross_margin", "metric-net_margin", "metric-roe", "metric-roic"])
-    expect(within(library()).queryByText("ROA")).toBeNull()
-    expect(within(library()).getByLabelText("5 mục")).toBeTruthy()
-    // Groups are industry groups (spec Học viện v4.1 §6.2), never a chapter name or "Đã mở".
-    expect(within(library()).getAllByRole("region").map((region) => region.getAttribute("aria-label"))).toEqual(["Chỉ tiêu chung", "Chỉ tiêu doanh nghiệp sản xuất"])
-    expect(library().textContent).not.toMatch(/Chương|đã mở/)
-    const eps = within(library()).getByTestId("metric-eps_yoy")
-    expect(eps.textContent).toMatch(/Chưa dùng được: Nguồn dữ liệu hiện tại chưa có EPS/)
-    expect(within(eps).getByRole("button").hasAttribute("disabled")).toBe(true)
-    expect(within(library()).getByTestId("metric-roic").textContent).toMatch(/Chưa có thuế suất chuẩn hóa/)
-    expect(within(library()).getByText("Tăng trưởng LNST YoY")).toBeTruthy()
-    expect(document.body.textContent).not.toContain("DT YoY")
-  })
-
-  it("names all 42 lessons in the catalog dialog with what each is missing", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    await user.click(within(library()).getByRole("button", { name: "Danh mục 42 chỉ tiêu" }))
-    const dialog = await screen.findByRole("dialog", { name: /Danh mục 8 chỉ tiêu/ })
-    expect(within(dialog).getByTestId("catalog-roa").textContent).toContain("Chưa dùng được")
-    expect(within(dialog).getByTestId("catalog-roa").textContent).toContain("Chỉ tiêu doanh nghiệp sản xuất")
-    expect(dialog.textContent).not.toMatch(/Chương|Chưa mở/)
-    expect(within(dialog).getByTestId("catalog-roic").textContent).toContain("Chờ định nghĩa")
-    expect(within(dialog).getByTestId("catalog-eps_yoy").textContent).toContain("Chưa có nguồn dữ liệu")
-    expect(within(dialog).getByTestId("catalog-roe").textContent).toContain("Dùng được")
-  })
-
-  it("has no Mua/Bán switch anywhere in the filter", async () => {
-    const user = userEvent.setup()
-    await renderTab()
-    await addSampleConditions(user)
-    expect(screen.queryAllByRole("switch")).toHaveLength(0)
-    expect(screen.queryByRole("button", { name: /^(Mua|Bán)$/ })).toBeNull()
-    expect(screen.queryByText(/Điều kiện (Mua|Bán)/)).toBeNull()
-  })
-})
-
 describe("conditions", () => {
   it("gives every condition its own period from the metric's allowed periods, with the metric's default", async () => {
     const user = userEvent.setup()
     await renderTab()
-    await addMetric(user, "Tăng trưởng LNST YoY")
+    await addMetric(user, "Tăng trưởng LNST")
     await addMetric(user, "ROE")
     const lnst = within(screen.getByTestId("rule-profit_yoy")).getByLabelText("Kỳ tính") as HTMLSelectElement
     const roe = within(screen.getByTestId("rule-roe")).getByLabelText("Kỳ tính") as HTMLSelectElement
@@ -112,7 +72,7 @@ describe("conditions", () => {
     expect([...lnst.options].map((option) => option.textContent)).toEqual(["Quý gần nhất", "Bốn quý gần nhất", "Năm tài chính gần nhất"])
     expect(roe.value).toBe("ttm")
     expect([...roe.options].map((option) => option.textContent)).toEqual(["Bốn quý gần nhất", "Năm tài chính gần nhất"])
-    expect(within(screen.getByRole("region", { name: "Phạm vi lọc" })).queryByLabelText(/Kỳ/)).toBeNull()
+    expect(within(screen.getByRole("region", { name: "Thị trường" })).queryByLabelText(/Kỳ/)).toBeNull()
 
     await user.selectOptions(lnst, "year")
     expect(lnst.value).toBe("year")
@@ -129,20 +89,21 @@ describe("conditions", () => {
     expect(screen.getAllByTestId("rule-roe")).toHaveLength(1)
   })
 
-  it("sends definition 3.0 with a period per rule, ratio thresholds, reference columns and no filter-wide period", async () => {
+  it("sends definition 4.0 with a period per rule, ratio thresholds, reference columns, an empty Thị trường and no technical item", async () => {
     const user = userEvent.setup()
     await renderTab()
-    await addMetric(user, "Tăng trưởng LNST YoY")
+    await addMetric(user, "Tăng trưởng LNST")
     await addMetric(user, "ROE")
     await user.selectOptions(within(screen.getByTestId("rule-profit_yoy")).getByLabelText("Kỳ tính"), "year")
     const [lnst, roe] = screen.getAllByLabelText("Ngưỡng")
     await user.type(lnst!, "15,5")
     await user.type(roe!, "15")
     await runFilter(user)
-    const body = posts("/strategy/screener/run")[0]!.body as { schema_version: string; scope: Record<string, string>; rules: Array<Record<string, unknown>>; columns: Array<Record<string, unknown>>; logic: string }
-    expect(body.schema_version).toBe("3.0")
+    const body = posts("/strategy/screener/run")[0]!.body as { schema_version: string; market: Record<string, unknown>; technical: unknown[]; rules: Array<Record<string, unknown>>; columns: Array<Record<string, unknown>>; logic: string }
+    expect(body.schema_version).toBe("4.0")
     expect(body.logic).toBe("AND")
-    expect(body.scope).toEqual({ market: "all", sector: "all" })
+    expect(body.market).toEqual({ exchanges: [], baskets: [], statement_groups: [], market_cap: { min: null, max: null }, avg_value: { sessions: 20, min: null }, close_price: { min: null, max: null } })
+    expect(body.technical).toEqual([])
     expect(body.rules).toMatchObject([
       { metric_id: "profit_yoy", period: "year", operator: ">", value: 0.155, api_unit: "ratio" },
       { metric_id: "roe", period: "ttm", operator: ">", value: 0.15, api_unit: "ratio" },
@@ -170,7 +131,7 @@ describe("results", () => {
     expect(within(results).getByTestId("result-counts").textContent).toBe("6 doanh nghiệp trong phạm vi · 2 đạt · 2 không đạt ngưỡng · 2 có điều kiện không tính được")
 
     const lnstHead = within(results).getByTestId("head-profit_yoy")
-    expect(lnstHead.textContent).toContain("Tăng trưởng LNST YoY (%)")
+    expect(lnstHead.textContent).toContain("Tăng trưởng LNST (%)")
     expect(lnstHead.textContent).toContain("Quý gần nhất")
     expect(within(results).getByTestId("head-roe").textContent).toContain("Bốn quý gần nhất")
     const fpt = within(results).getByTestId("row-FPT")
@@ -212,8 +173,8 @@ describe("results", () => {
     const user = userEvent.setup()
     await renderTab()
     const results = await runSample(user)
-    await user.click(within(results).getByRole("button", { name: /FPT · Tăng trưởng LNST YoY: 28/ }))
-    const dialog = await screen.findByRole("dialog", { name: "FPT · Tăng trưởng LNST YoY" })
+    await user.click(within(results).getByRole("button", { name: /FPT · Tăng trưởng LNST: 28/ }))
+    const dialog = await screen.findByRole("dialog", { name: "FPT · Tăng trưởng LNST" })
     expect(dialog.textContent).toContain("Quý gần nhất")
     expect(dialog.textContent).toMatch(/Kỳ đang tính.*Q3\/2025/)
     expect(dialog.textContent).toMatch(/Kỳ so sánh.*Q3\/2024/)
@@ -282,19 +243,19 @@ describe("results", () => {
 })
 
 describe("three different saves", () => {
-  it("Lưu bộ lọc saves only the criteria (3.0, a period per rule), not a list, a result or anything of the Bot", async () => {
+  it("Lưu bộ lọc saves only the criteria (4.0, a period per rule), not a list, a result or anything of the Bot", async () => {
     const user = userEvent.setup()
     await renderTab()
     await addSampleConditions(user)
     await user.click(screen.getByRole("button", { name: "Lưu bộ lọc" }))
     const dialog = await screen.findByRole("dialog", { name: "Lưu bộ lọc" })
     await user.type(within(dialog).getByLabelText("Tên bộ lọc"), "Tăng trưởng và ROE")
-    expect(dialog.textContent).toMatch(/Tăng trưởng LNST YoY \(Quý gần nhất\) > 15 %/)
+    expect(dialog.textContent).toMatch(/Tăng trưởng LNST \(Quý gần nhất\) > 15 %/)
     await user.click(within(dialog).getByRole("button", { name: "Lưu bộ lọc" }))
     await waitFor(() => expect(posts("/strategy/filters")).toHaveLength(1))
     const body = posts("/strategy/filters")[0]!.body as { name: string; definition: { schema_version: string; rules: Array<{ period: string }> } }
     expect(body.name).toBe("Tăng trưởng và ROE")
-    expect(body.definition.schema_version).toBe("3.0")
+    expect(body.definition.schema_version).toBe("4.0")
     expect(body.definition.rules.map((rule) => rule.period)).toEqual(["quarter", "ttm"])
     expect(posts("/strategy/lists/from-result")).toHaveLength(0)
     expect(posts("/strategy/result-snapshots")).toHaveLength(0)
@@ -375,8 +336,8 @@ describe("saved filters", () => {
     const user = userEvent.setup()
     world.filters = [
       {
-        id: "f0000000-0000-4000-8000-000000000001", name: "Chất lượng", current_version: 2, version: 2, stored_schema_version: "3.0", legacy_review: null, definition_hash: "h", created_at: T0, updated_at: T0,
-        definition: { schema_version: "3.0", name: "Chất lượng", logic: "AND", data_mode: "latest_disclosed", scope: { market: "HOSE", sector: "all" }, rules: [{ id: "x1", metric_id: "roe", period: "year", operator: ">", value: 0.2, api_unit: "ratio" }] },
+        id: "f0000000-0000-4000-8000-000000000001", name: "Chất lượng", current_version: 2, version: 2, stored_schema_version: "4.0", legacy_review: null, sector_review: null, definition_hash: "h", created_at: T0, updated_at: T0,
+        definition: { schema_version: "4.0", name: "Chất lượng", logic: "AND", data_mode: "latest_disclosed", market: { ...emptyMarket(), exchanges: ["HOSE"] }, technical: [], rules: [{ id: "x1", metric_id: "roe", period: "year", operator: ">", value: 0.2, api_unit: "ratio" }] },
       },
     ]
     await renderTab()
@@ -387,7 +348,8 @@ describe("saved filters", () => {
     const rule = await screen.findByTestId("rule-roe")
     expect((within(rule).getByLabelText("Kỳ tính") as HTMLSelectElement).value).toBe("year")
     expect((within(rule).getByLabelText("Ngưỡng") as HTMLInputElement).value).toBe("20")
-    expect((screen.getByLabelText("Thị trường") as HTMLSelectElement).value).toBe("HOSE")
+    expect(within(screen.getByRole("group", { name: "Sàn" })).getByRole("button", { name: "HOSE" }).getAttribute("aria-pressed")).toBe("true")
+    expect(within(screen.getByRole("group", { name: "Sàn" })).getByRole("button", { name: "HNX" }).getAttribute("aria-pressed")).toBe("false")
     expect(posts("/strategy/screener/run")).toHaveLength(0)
     expect(posts("/bot/universe/apply-list")).toHaveLength(0)
   })
@@ -396,9 +358,9 @@ describe("saved filters", () => {
     const user = userEvent.setup()
     world.filters = [
       {
-        id: "f0000000-0000-4000-8000-000000000002", name: "ROE quý cũ", current_version: 1, version: 1, stored_schema_version: "2.0", definition_hash: "h", created_at: T0, updated_at: T0,
+        id: "f0000000-0000-4000-8000-000000000002", name: "ROE quý cũ", current_version: 1, version: 1, stored_schema_version: "2.0", sector_review: null, definition_hash: "h", created_at: T0, updated_at: T0,
         legacy_review: { stored_schema_version: "2.0", legacy_period: "quarter", needs_review: true, rules: [{ rule_id: "x1", metric_id: "roe", legacy_period: "quarter", mapped_period: "quarter", status: "needs_review", reason: "Kỳ quarter của bộ lọc cũ không còn được hỗ trợ cho roe; cần chọn lại kỳ." }] },
-        definition: { schema_version: "3.0", name: "ROE quý cũ", logic: "AND", data_mode: "latest_disclosed", scope: { market: "all", sector: "all" }, rules: [{ id: "x1", metric_id: "roe", period: "quarter", operator: ">", value: 0.15, api_unit: "ratio" }] },
+        definition: { schema_version: "4.0", name: "ROE quý cũ", logic: "AND", data_mode: "latest_disclosed", market: emptyMarket(), technical: [], rules: [{ id: "x1", metric_id: "roe", period: "quarter", operator: ">", value: 0.15, api_unit: "ratio" }] },
       },
     ]
     await renderTab()

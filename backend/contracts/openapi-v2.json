@@ -148076,6 +148076,120 @@
                                 ],
                                 "type": "string"
                               },
+                              "market": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "avg_value": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "min": {
+                                        "nullable": true,
+                                        "type": "number"
+                                      },
+                                      "sessions": {
+                                        "type": "number"
+                                      }
+                                    },
+                                    "required": [
+                                      "sessions",
+                                      "min"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "baskets": {
+                                    "items": {
+                                      "enum": [
+                                        "VN30",
+                                        "VN100",
+                                        "VNMIDCAP",
+                                        "VNSMALLCAP",
+                                        "HNX30"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "nullable": true,
+                                    "type": "array"
+                                  },
+                                  "close_price": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "max": {
+                                        "nullable": true,
+                                        "type": "number"
+                                      },
+                                      "min": {
+                                        "nullable": true,
+                                        "type": "number"
+                                      }
+                                    },
+                                    "required": [
+                                      "min",
+                                      "max"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "exchanges": {
+                                    "items": {
+                                      "enum": [
+                                        "HOSE",
+                                        "HNX",
+                                        "UPCOM",
+                                        "HSX"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "nullable": true,
+                                    "type": "array"
+                                  },
+                                  "legacy_sector": {
+                                    "maxLength": 200,
+                                    "type": "string"
+                                  },
+                                  "market_cap": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "max": {
+                                        "nullable": true,
+                                        "type": "number"
+                                      },
+                                      "min": {
+                                        "nullable": true,
+                                        "type": "number"
+                                      }
+                                    },
+                                    "required": [
+                                      "min",
+                                      "max"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "needs_review": {
+                                    "enum": [
+                                      "sector"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "statement_groups": {
+                                    "items": {
+                                      "enum": [
+                                        "thuong",
+                                        "nh",
+                                        "ck",
+                                        "bh"
+                                      ],
+                                      "type": "string"
+                                    },
+                                    "nullable": true,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "market_cap",
+                                  "avg_value",
+                                  "close_price"
+                                ],
+                                "type": "object"
+                              },
                               "name": {
                                 "maxLength": 120,
                                 "minLength": 1,
@@ -148178,25 +148292,112 @@
                               },
                               "schema_version": {
                                 "enum": [
-                                  "3.0"
+                                  "4.0"
                                 ],
                                 "type": "string"
                               },
-                              "scope": {
-                                "additionalProperties": false,
-                                "properties": {
-                                  "market": {
-                                    "type": "string"
-                                  },
-                                  "sector": {
-                                    "type": "string"
-                                  }
+                              "technical": {
+                                "default": [],
+                                "items": {
+                                  "anyOf": [
+                                    {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "factor": {
+                                          "type": "number"
+                                        },
+                                        "indicator": {
+                                          "enum": [
+                                            "volume"
+                                          ],
+                                          "type": "string"
+                                        },
+                                        "ops": {
+                                          "items": {
+                                            "maxLength": 16,
+                                            "type": "string"
+                                          },
+                                          "maxItems": 2,
+                                          "minItems": 2,
+                                          "type": "array"
+                                        },
+                                        "sessions": {
+                                          "type": "number"
+                                        }
+                                      },
+                                      "required": [
+                                        "indicator",
+                                        "sessions",
+                                        "factor",
+                                        "ops"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "indicator": {
+                                          "enum": [
+                                            "rsi",
+                                            "macd",
+                                            "ma",
+                                            "bollinger",
+                                            "ema",
+                                            "ma_cross",
+                                            "dmi",
+                                            "stochastic",
+                                            "cci",
+                                            "obv",
+                                            "mfi",
+                                            "cmf",
+                                            "donchian",
+                                            "roc",
+                                            "williams_r"
+                                          ],
+                                          "type": "string"
+                                        },
+                                        "rules": {
+                                          "items": {
+                                            "additionalProperties": {
+                                              "anyOf": [
+                                                {
+                                                  "type": "number"
+                                                },
+                                                {
+                                                  "type": "string"
+                                                }
+                                              ]
+                                            },
+                                            "properties": {
+                                              "enabled": {
+                                                "type": "boolean"
+                                              },
+                                              "id": {
+                                                "maxLength": 64,
+                                                "minLength": 1,
+                                                "type": "string"
+                                              }
+                                            },
+                                            "required": [
+                                              "id",
+                                              "enabled"
+                                            ],
+                                            "type": "object"
+                                          },
+                                          "maxItems": 8,
+                                          "type": "array"
+                                        }
+                                      },
+                                      "required": [
+                                        "indicator",
+                                        "rules"
+                                      ],
+                                      "type": "object"
+                                    }
+                                  ]
                                 },
-                                "required": [
-                                  "market",
-                                  "sector"
-                                ],
-                                "type": "object"
+                                "maxItems": 16,
+                                "type": "array"
                               }
                             },
                             "required": [
@@ -148204,8 +148405,9 @@
                               "name",
                               "logic",
                               "data_mode",
+                              "market",
                               "rules",
-                              "scope"
+                              "technical"
                             ],
                             "type": "object"
                           },
@@ -148295,6 +148497,19 @@
                           "name": {
                             "type": "string"
                           },
+                          "sector_review": {
+                            "additionalProperties": false,
+                            "nullable": true,
+                            "properties": {
+                              "sector": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "sector"
+                            ],
+                            "type": "object"
+                          },
                           "stored_schema_version": {
                             "type": "string"
                           },
@@ -148317,6 +148532,7 @@
                           "definition",
                           "stored_schema_version",
                           "legacy_review",
+                          "sector_review",
                           "definition_hash",
                           "created_at",
                           "updated_at"
@@ -148503,6 +148719,120 @@
                         ],
                         "type": "string"
                       },
+                      "market": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avg_value": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "min": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "sessions": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "sessions",
+                              "min"
+                            ],
+                            "type": "object"
+                          },
+                          "baskets": {
+                            "items": {
+                              "enum": [
+                                "VN30",
+                                "VN100",
+                                "VNMIDCAP",
+                                "VNSMALLCAP",
+                                "HNX30"
+                              ],
+                              "type": "string"
+                            },
+                            "nullable": true,
+                            "type": "array"
+                          },
+                          "close_price": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "max": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "min": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "min",
+                              "max"
+                            ],
+                            "type": "object"
+                          },
+                          "exchanges": {
+                            "items": {
+                              "enum": [
+                                "HOSE",
+                                "HNX",
+                                "UPCOM",
+                                "HSX"
+                              ],
+                              "type": "string"
+                            },
+                            "nullable": true,
+                            "type": "array"
+                          },
+                          "legacy_sector": {
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "market_cap": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "max": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "min": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "min",
+                              "max"
+                            ],
+                            "type": "object"
+                          },
+                          "needs_review": {
+                            "enum": [
+                              "sector"
+                            ],
+                            "type": "string"
+                          },
+                          "statement_groups": {
+                            "items": {
+                              "enum": [
+                                "thuong",
+                                "nh",
+                                "ck",
+                                "bh"
+                              ],
+                              "type": "string"
+                            },
+                            "nullable": true,
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "market_cap",
+                          "avg_value",
+                          "close_price"
+                        ],
+                        "type": "object"
+                      },
                       "name": {
                         "maxLength": 120,
                         "minLength": 1,
@@ -148605,33 +148935,120 @@
                       },
                       "schema_version": {
                         "enum": [
-                          "3.0"
+                          "4.0"
                         ],
                         "type": "string"
                       },
-                      "scope": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "market": {
-                            "type": "string"
-                          },
-                          "sector": {
-                            "type": "string"
-                          }
+                      "technical": {
+                        "default": [],
+                        "items": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "factor": {
+                                  "type": "number"
+                                },
+                                "indicator": {
+                                  "enum": [
+                                    "volume"
+                                  ],
+                                  "type": "string"
+                                },
+                                "ops": {
+                                  "items": {
+                                    "maxLength": 16,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 2,
+                                  "minItems": 2,
+                                  "type": "array"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "indicator",
+                                "sessions",
+                                "factor",
+                                "ops"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "indicator": {
+                                  "enum": [
+                                    "rsi",
+                                    "macd",
+                                    "ma",
+                                    "bollinger",
+                                    "ema",
+                                    "ma_cross",
+                                    "dmi",
+                                    "stochastic",
+                                    "cci",
+                                    "obv",
+                                    "mfi",
+                                    "cmf",
+                                    "donchian",
+                                    "roc",
+                                    "williams_r"
+                                  ],
+                                  "type": "string"
+                                },
+                                "rules": {
+                                  "items": {
+                                    "additionalProperties": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "string"
+                                        }
+                                      ]
+                                    },
+                                    "properties": {
+                                      "enabled": {
+                                        "type": "boolean"
+                                      },
+                                      "id": {
+                                        "maxLength": 64,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "enabled"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "maxItems": 8,
+                                  "type": "array"
+                                }
+                              },
+                              "required": [
+                                "indicator",
+                                "rules"
+                              ],
+                              "type": "object"
+                            }
+                          ]
                         },
-                        "required": [
-                          "market",
-                          "sector"
-                        ],
-                        "type": "object"
+                        "maxItems": 16,
+                        "type": "array"
                       }
                     },
                     "required": [
                       "schema_version",
                       "name",
                       "logic",
-                      "rules",
-                      "scope"
+                      "market",
+                      "rules"
                     ],
                     "type": "object"
                   },
@@ -148759,6 +149176,120 @@
                           ],
                           "type": "string"
                         },
+                        "market": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "avg_value": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "sessions",
+                                "min"
+                              ],
+                              "type": "object"
+                            },
+                            "baskets": {
+                              "items": {
+                                "enum": [
+                                  "VN30",
+                                  "VN100",
+                                  "VNMIDCAP",
+                                  "VNSMALLCAP",
+                                  "HNX30"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "close_price": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "exchanges": {
+                              "items": {
+                                "enum": [
+                                  "HOSE",
+                                  "HNX",
+                                  "UPCOM",
+                                  "HSX"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "legacy_sector": {
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "market_cap": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "needs_review": {
+                              "enum": [
+                                "sector"
+                              ],
+                              "type": "string"
+                            },
+                            "statement_groups": {
+                              "items": {
+                                "enum": [
+                                  "thuong",
+                                  "nh",
+                                  "ck",
+                                  "bh"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "market_cap",
+                            "avg_value",
+                            "close_price"
+                          ],
+                          "type": "object"
+                        },
                         "name": {
                           "maxLength": 120,
                           "minLength": 1,
@@ -148861,25 +149392,112 @@
                         },
                         "schema_version": {
                           "enum": [
-                            "3.0"
+                            "4.0"
                           ],
                           "type": "string"
                         },
-                        "scope": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "market": {
-                              "type": "string"
-                            },
-                            "sector": {
-                              "type": "string"
-                            }
+                        "technical": {
+                          "default": [],
+                          "items": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "factor": {
+                                    "type": "number"
+                                  },
+                                  "indicator": {
+                                    "enum": [
+                                      "volume"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "ops": {
+                                    "items": {
+                                      "maxLength": 16,
+                                      "type": "string"
+                                    },
+                                    "maxItems": 2,
+                                    "minItems": 2,
+                                    "type": "array"
+                                  },
+                                  "sessions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "sessions",
+                                  "factor",
+                                  "ops"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "indicator": {
+                                    "enum": [
+                                      "rsi",
+                                      "macd",
+                                      "ma",
+                                      "bollinger",
+                                      "ema",
+                                      "ma_cross",
+                                      "dmi",
+                                      "stochastic",
+                                      "cci",
+                                      "obv",
+                                      "mfi",
+                                      "cmf",
+                                      "donchian",
+                                      "roc",
+                                      "williams_r"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "rules": {
+                                    "items": {
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean"
+                                        },
+                                        "id": {
+                                          "maxLength": 64,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "enabled"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "maxItems": 8,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "rules"
+                                ],
+                                "type": "object"
+                              }
+                            ]
                           },
-                          "required": [
-                            "market",
-                            "sector"
-                          ],
-                          "type": "object"
+                          "maxItems": 16,
+                          "type": "array"
                         }
                       },
                       "required": [
@@ -148887,8 +149505,9 @@
                         "name",
                         "logic",
                         "data_mode",
+                        "market",
                         "rules",
-                        "scope"
+                        "technical"
                       ],
                       "type": "object"
                     },
@@ -148978,6 +149597,19 @@
                     "name": {
                       "type": "string"
                     },
+                    "sector_review": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "sector": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "sector"
+                      ],
+                      "type": "object"
+                    },
                     "stored_schema_version": {
                       "type": "string"
                     },
@@ -149027,6 +149659,7 @@
                     "definition",
                     "stored_schema_version",
                     "legacy_review",
+                    "sector_review",
                     "definition_hash",
                     "created_at",
                     "updated_at",
@@ -149331,6 +149964,120 @@
                           ],
                           "type": "string"
                         },
+                        "market": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "avg_value": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "sessions",
+                                "min"
+                              ],
+                              "type": "object"
+                            },
+                            "baskets": {
+                              "items": {
+                                "enum": [
+                                  "VN30",
+                                  "VN100",
+                                  "VNMIDCAP",
+                                  "VNSMALLCAP",
+                                  "HNX30"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "close_price": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "exchanges": {
+                              "items": {
+                                "enum": [
+                                  "HOSE",
+                                  "HNX",
+                                  "UPCOM",
+                                  "HSX"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "legacy_sector": {
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "market_cap": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "needs_review": {
+                              "enum": [
+                                "sector"
+                              ],
+                              "type": "string"
+                            },
+                            "statement_groups": {
+                              "items": {
+                                "enum": [
+                                  "thuong",
+                                  "nh",
+                                  "ck",
+                                  "bh"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "market_cap",
+                            "avg_value",
+                            "close_price"
+                          ],
+                          "type": "object"
+                        },
                         "name": {
                           "maxLength": 120,
                           "minLength": 1,
@@ -149433,25 +150180,112 @@
                         },
                         "schema_version": {
                           "enum": [
-                            "3.0"
+                            "4.0"
                           ],
                           "type": "string"
                         },
-                        "scope": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "market": {
-                              "type": "string"
-                            },
-                            "sector": {
-                              "type": "string"
-                            }
+                        "technical": {
+                          "default": [],
+                          "items": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "factor": {
+                                    "type": "number"
+                                  },
+                                  "indicator": {
+                                    "enum": [
+                                      "volume"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "ops": {
+                                    "items": {
+                                      "maxLength": 16,
+                                      "type": "string"
+                                    },
+                                    "maxItems": 2,
+                                    "minItems": 2,
+                                    "type": "array"
+                                  },
+                                  "sessions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "sessions",
+                                  "factor",
+                                  "ops"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "indicator": {
+                                    "enum": [
+                                      "rsi",
+                                      "macd",
+                                      "ma",
+                                      "bollinger",
+                                      "ema",
+                                      "ma_cross",
+                                      "dmi",
+                                      "stochastic",
+                                      "cci",
+                                      "obv",
+                                      "mfi",
+                                      "cmf",
+                                      "donchian",
+                                      "roc",
+                                      "williams_r"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "rules": {
+                                    "items": {
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean"
+                                        },
+                                        "id": {
+                                          "maxLength": 64,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "enabled"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "maxItems": 8,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "rules"
+                                ],
+                                "type": "object"
+                              }
+                            ]
                           },
-                          "required": [
-                            "market",
-                            "sector"
-                          ],
-                          "type": "object"
+                          "maxItems": 16,
+                          "type": "array"
                         }
                       },
                       "required": [
@@ -149459,8 +150293,9 @@
                         "name",
                         "logic",
                         "data_mode",
+                        "market",
                         "rules",
-                        "scope"
+                        "technical"
                       ],
                       "type": "object"
                     },
@@ -149550,6 +150385,19 @@
                     "name": {
                       "type": "string"
                     },
+                    "sector_review": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "sector": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "sector"
+                      ],
+                      "type": "object"
+                    },
                     "stored_schema_version": {
                       "type": "string"
                     },
@@ -149599,6 +150447,7 @@
                     "definition",
                     "stored_schema_version",
                     "legacy_review",
+                    "sector_review",
                     "definition_hash",
                     "created_at",
                     "updated_at",
@@ -149789,6 +150638,120 @@
                         ],
                         "type": "string"
                       },
+                      "market": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avg_value": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "min": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "sessions": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "sessions",
+                              "min"
+                            ],
+                            "type": "object"
+                          },
+                          "baskets": {
+                            "items": {
+                              "enum": [
+                                "VN30",
+                                "VN100",
+                                "VNMIDCAP",
+                                "VNSMALLCAP",
+                                "HNX30"
+                              ],
+                              "type": "string"
+                            },
+                            "nullable": true,
+                            "type": "array"
+                          },
+                          "close_price": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "max": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "min": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "min",
+                              "max"
+                            ],
+                            "type": "object"
+                          },
+                          "exchanges": {
+                            "items": {
+                              "enum": [
+                                "HOSE",
+                                "HNX",
+                                "UPCOM",
+                                "HSX"
+                              ],
+                              "type": "string"
+                            },
+                            "nullable": true,
+                            "type": "array"
+                          },
+                          "legacy_sector": {
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "market_cap": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "max": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "min": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "min",
+                              "max"
+                            ],
+                            "type": "object"
+                          },
+                          "needs_review": {
+                            "enum": [
+                              "sector"
+                            ],
+                            "type": "string"
+                          },
+                          "statement_groups": {
+                            "items": {
+                              "enum": [
+                                "thuong",
+                                "nh",
+                                "ck",
+                                "bh"
+                              ],
+                              "type": "string"
+                            },
+                            "nullable": true,
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "market_cap",
+                          "avg_value",
+                          "close_price"
+                        ],
+                        "type": "object"
+                      },
                       "name": {
                         "maxLength": 120,
                         "minLength": 1,
@@ -149891,33 +150854,120 @@
                       },
                       "schema_version": {
                         "enum": [
-                          "3.0"
+                          "4.0"
                         ],
                         "type": "string"
                       },
-                      "scope": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "market": {
-                            "type": "string"
-                          },
-                          "sector": {
-                            "type": "string"
-                          }
+                      "technical": {
+                        "default": [],
+                        "items": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "factor": {
+                                  "type": "number"
+                                },
+                                "indicator": {
+                                  "enum": [
+                                    "volume"
+                                  ],
+                                  "type": "string"
+                                },
+                                "ops": {
+                                  "items": {
+                                    "maxLength": 16,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 2,
+                                  "minItems": 2,
+                                  "type": "array"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "indicator",
+                                "sessions",
+                                "factor",
+                                "ops"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "indicator": {
+                                  "enum": [
+                                    "rsi",
+                                    "macd",
+                                    "ma",
+                                    "bollinger",
+                                    "ema",
+                                    "ma_cross",
+                                    "dmi",
+                                    "stochastic",
+                                    "cci",
+                                    "obv",
+                                    "mfi",
+                                    "cmf",
+                                    "donchian",
+                                    "roc",
+                                    "williams_r"
+                                  ],
+                                  "type": "string"
+                                },
+                                "rules": {
+                                  "items": {
+                                    "additionalProperties": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "string"
+                                        }
+                                      ]
+                                    },
+                                    "properties": {
+                                      "enabled": {
+                                        "type": "boolean"
+                                      },
+                                      "id": {
+                                        "maxLength": 64,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "enabled"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "maxItems": 8,
+                                  "type": "array"
+                                }
+                              },
+                              "required": [
+                                "indicator",
+                                "rules"
+                              ],
+                              "type": "object"
+                            }
+                          ]
                         },
-                        "required": [
-                          "market",
-                          "sector"
-                        ],
-                        "type": "object"
+                        "maxItems": 16,
+                        "type": "array"
                       }
                     },
                     "required": [
                       "schema_version",
                       "name",
                       "logic",
-                      "rules",
-                      "scope"
+                      "market",
+                      "rules"
                     ],
                     "type": "object"
                   },
@@ -150039,6 +151089,120 @@
                           ],
                           "type": "string"
                         },
+                        "market": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "avg_value": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "sessions",
+                                "min"
+                              ],
+                              "type": "object"
+                            },
+                            "baskets": {
+                              "items": {
+                                "enum": [
+                                  "VN30",
+                                  "VN100",
+                                  "VNMIDCAP",
+                                  "VNSMALLCAP",
+                                  "HNX30"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "close_price": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "exchanges": {
+                              "items": {
+                                "enum": [
+                                  "HOSE",
+                                  "HNX",
+                                  "UPCOM",
+                                  "HSX"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "legacy_sector": {
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "market_cap": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "needs_review": {
+                              "enum": [
+                                "sector"
+                              ],
+                              "type": "string"
+                            },
+                            "statement_groups": {
+                              "items": {
+                                "enum": [
+                                  "thuong",
+                                  "nh",
+                                  "ck",
+                                  "bh"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "market_cap",
+                            "avg_value",
+                            "close_price"
+                          ],
+                          "type": "object"
+                        },
                         "name": {
                           "maxLength": 120,
                           "minLength": 1,
@@ -150141,25 +151305,112 @@
                         },
                         "schema_version": {
                           "enum": [
-                            "3.0"
+                            "4.0"
                           ],
                           "type": "string"
                         },
-                        "scope": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "market": {
-                              "type": "string"
-                            },
-                            "sector": {
-                              "type": "string"
-                            }
+                        "technical": {
+                          "default": [],
+                          "items": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "factor": {
+                                    "type": "number"
+                                  },
+                                  "indicator": {
+                                    "enum": [
+                                      "volume"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "ops": {
+                                    "items": {
+                                      "maxLength": 16,
+                                      "type": "string"
+                                    },
+                                    "maxItems": 2,
+                                    "minItems": 2,
+                                    "type": "array"
+                                  },
+                                  "sessions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "sessions",
+                                  "factor",
+                                  "ops"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "indicator": {
+                                    "enum": [
+                                      "rsi",
+                                      "macd",
+                                      "ma",
+                                      "bollinger",
+                                      "ema",
+                                      "ma_cross",
+                                      "dmi",
+                                      "stochastic",
+                                      "cci",
+                                      "obv",
+                                      "mfi",
+                                      "cmf",
+                                      "donchian",
+                                      "roc",
+                                      "williams_r"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "rules": {
+                                    "items": {
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean"
+                                        },
+                                        "id": {
+                                          "maxLength": 64,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "enabled"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "maxItems": 8,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "rules"
+                                ],
+                                "type": "object"
+                              }
+                            ]
                           },
-                          "required": [
-                            "market",
-                            "sector"
-                          ],
-                          "type": "object"
+                          "maxItems": 16,
+                          "type": "array"
                         }
                       },
                       "required": [
@@ -150167,8 +151418,9 @@
                         "name",
                         "logic",
                         "data_mode",
+                        "market",
                         "rules",
-                        "scope"
+                        "technical"
                       ],
                       "type": "object"
                     },
@@ -150258,6 +151510,19 @@
                     "name": {
                       "type": "string"
                     },
+                    "sector_review": {
+                      "additionalProperties": false,
+                      "nullable": true,
+                      "properties": {
+                        "sector": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "sector"
+                      ],
+                      "type": "object"
+                    },
                     "stored_schema_version": {
                       "type": "string"
                     },
@@ -150307,6 +151572,7 @@
                     "definition",
                     "stored_schema_version",
                     "legacy_review",
+                    "sector_review",
                     "definition_hash",
                     "created_at",
                     "updated_at",
@@ -150491,6 +151757,14 @@
                                   ],
                                   "nullable": true,
                                   "type": "string"
+                                },
+                                {
+                                  "items": {},
+                                  "type": "array"
+                                },
+                                {
+                                  "additionalProperties": {},
+                                  "type": "object"
                                 }
                               ]
                             },
@@ -150671,6 +151945,14 @@
                           ],
                           "nullable": true,
                           "type": "string"
+                        },
+                        {
+                          "items": {},
+                          "type": "array"
+                        },
+                        {
+                          "additionalProperties": {},
+                          "type": "object"
                         }
                       ]
                     },
@@ -150782,6 +152064,14 @@
                             ],
                             "nullable": true,
                             "type": "string"
+                          },
+                          {
+                            "items": {},
+                            "type": "array"
+                          },
+                          {
+                            "additionalProperties": {},
+                            "type": "object"
                           }
                         ]
                       },
@@ -151084,6 +152374,14 @@
                             ],
                             "nullable": true,
                             "type": "string"
+                          },
+                          {
+                            "items": {},
+                            "type": "array"
+                          },
+                          {
+                            "additionalProperties": {},
+                            "type": "object"
                           }
                         ]
                       },
@@ -151387,6 +152685,14 @@
                             ],
                             "nullable": true,
                             "type": "string"
+                          },
+                          {
+                            "items": {},
+                            "type": "array"
+                          },
+                          {
+                            "additionalProperties": {},
+                            "type": "object"
                           }
                         ]
                       },
@@ -153282,6 +154588,12 @@
                             ],
                             "type": "object"
                           },
+                          "session_date": {
+                            "format": "date",
+                            "nullable": true,
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                            "type": "string"
+                          },
                           "symbols": {
                             "items": {
                               "type": "string"
@@ -153310,6 +154622,7 @@
                           "definition_hash",
                           "as_of",
                           "run_at",
+                          "session_date",
                           "data_source",
                           "calculation_version",
                           "registry_version",
@@ -153615,6 +154928,120 @@
                           ],
                           "type": "string"
                         },
+                        "market": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "avg_value": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "sessions",
+                                "min"
+                              ],
+                              "type": "object"
+                            },
+                            "baskets": {
+                              "items": {
+                                "enum": [
+                                  "VN30",
+                                  "VN100",
+                                  "VNMIDCAP",
+                                  "VNSMALLCAP",
+                                  "HNX30"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "close_price": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "exchanges": {
+                              "items": {
+                                "enum": [
+                                  "HOSE",
+                                  "HNX",
+                                  "UPCOM",
+                                  "HSX"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "legacy_sector": {
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "market_cap": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "needs_review": {
+                              "enum": [
+                                "sector"
+                              ],
+                              "type": "string"
+                            },
+                            "statement_groups": {
+                              "items": {
+                                "enum": [
+                                  "thuong",
+                                  "nh",
+                                  "ck",
+                                  "bh"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "market_cap",
+                            "avg_value",
+                            "close_price"
+                          ],
+                          "type": "object"
+                        },
                         "name": {
                           "maxLength": 120,
                           "minLength": 1,
@@ -153717,25 +155144,112 @@
                         },
                         "schema_version": {
                           "enum": [
-                            "3.0"
+                            "4.0"
                           ],
                           "type": "string"
                         },
-                        "scope": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "market": {
-                              "type": "string"
-                            },
-                            "sector": {
-                              "type": "string"
-                            }
+                        "technical": {
+                          "default": [],
+                          "items": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "factor": {
+                                    "type": "number"
+                                  },
+                                  "indicator": {
+                                    "enum": [
+                                      "volume"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "ops": {
+                                    "items": {
+                                      "maxLength": 16,
+                                      "type": "string"
+                                    },
+                                    "maxItems": 2,
+                                    "minItems": 2,
+                                    "type": "array"
+                                  },
+                                  "sessions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "sessions",
+                                  "factor",
+                                  "ops"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "indicator": {
+                                    "enum": [
+                                      "rsi",
+                                      "macd",
+                                      "ma",
+                                      "bollinger",
+                                      "ema",
+                                      "ma_cross",
+                                      "dmi",
+                                      "stochastic",
+                                      "cci",
+                                      "obv",
+                                      "mfi",
+                                      "cmf",
+                                      "donchian",
+                                      "roc",
+                                      "williams_r"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "rules": {
+                                    "items": {
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean"
+                                        },
+                                        "id": {
+                                          "maxLength": 64,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "enabled"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "maxItems": 8,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "rules"
+                                ],
+                                "type": "object"
+                              }
+                            ]
                           },
-                          "required": [
-                            "market",
-                            "sector"
-                          ],
-                          "type": "object"
+                          "maxItems": 16,
+                          "type": "array"
                         }
                       },
                       "required": [
@@ -153743,8 +155257,9 @@
                         "name",
                         "logic",
                         "data_mode",
+                        "market",
                         "rules",
-                        "scope"
+                        "technical"
                       ],
                       "type": "object"
                     },
@@ -153820,6 +155335,12 @@
                       ],
                       "type": "object"
                     },
+                    "session_date": {
+                      "format": "date",
+                      "nullable": true,
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                      "type": "string"
+                    },
                     "symbols": {
                       "items": {
                         "type": "string"
@@ -153848,6 +155369,7 @@
                     "definition_hash",
                     "as_of",
                     "run_at",
+                    "session_date",
                     "data_source",
                     "calculation_version",
                     "registry_version",
@@ -154154,6 +155676,120 @@
                           ],
                           "type": "string"
                         },
+                        "market": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "avg_value": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "sessions",
+                                "min"
+                              ],
+                              "type": "object"
+                            },
+                            "baskets": {
+                              "items": {
+                                "enum": [
+                                  "VN30",
+                                  "VN100",
+                                  "VNMIDCAP",
+                                  "VNSMALLCAP",
+                                  "HNX30"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "close_price": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "exchanges": {
+                              "items": {
+                                "enum": [
+                                  "HOSE",
+                                  "HNX",
+                                  "UPCOM",
+                                  "HSX"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "legacy_sector": {
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "market_cap": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "needs_review": {
+                              "enum": [
+                                "sector"
+                              ],
+                              "type": "string"
+                            },
+                            "statement_groups": {
+                              "items": {
+                                "enum": [
+                                  "thuong",
+                                  "nh",
+                                  "ck",
+                                  "bh"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "market_cap",
+                            "avg_value",
+                            "close_price"
+                          ],
+                          "type": "object"
+                        },
                         "name": {
                           "maxLength": 120,
                           "minLength": 1,
@@ -154256,25 +155892,112 @@
                         },
                         "schema_version": {
                           "enum": [
-                            "3.0"
+                            "4.0"
                           ],
                           "type": "string"
                         },
-                        "scope": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "market": {
-                              "type": "string"
-                            },
-                            "sector": {
-                              "type": "string"
-                            }
+                        "technical": {
+                          "default": [],
+                          "items": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "factor": {
+                                    "type": "number"
+                                  },
+                                  "indicator": {
+                                    "enum": [
+                                      "volume"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "ops": {
+                                    "items": {
+                                      "maxLength": 16,
+                                      "type": "string"
+                                    },
+                                    "maxItems": 2,
+                                    "minItems": 2,
+                                    "type": "array"
+                                  },
+                                  "sessions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "sessions",
+                                  "factor",
+                                  "ops"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "indicator": {
+                                    "enum": [
+                                      "rsi",
+                                      "macd",
+                                      "ma",
+                                      "bollinger",
+                                      "ema",
+                                      "ma_cross",
+                                      "dmi",
+                                      "stochastic",
+                                      "cci",
+                                      "obv",
+                                      "mfi",
+                                      "cmf",
+                                      "donchian",
+                                      "roc",
+                                      "williams_r"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "rules": {
+                                    "items": {
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean"
+                                        },
+                                        "id": {
+                                          "maxLength": 64,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "enabled"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "maxItems": 8,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "rules"
+                                ],
+                                "type": "object"
+                              }
+                            ]
                           },
-                          "required": [
-                            "market",
-                            "sector"
-                          ],
-                          "type": "object"
+                          "maxItems": 16,
+                          "type": "array"
                         }
                       },
                       "required": [
@@ -154282,8 +156005,9 @@
                         "name",
                         "logic",
                         "data_mode",
+                        "market",
                         "rules",
-                        "scope"
+                        "technical"
                       ],
                       "type": "object"
                     },
@@ -154359,6 +156083,12 @@
                       ],
                       "type": "object"
                     },
+                    "session_date": {
+                      "format": "date",
+                      "nullable": true,
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                      "type": "string"
+                    },
                     "symbols": {
                       "items": {
                         "type": "string"
@@ -154387,6 +156117,7 @@
                     "definition_hash",
                     "as_of",
                     "run_at",
+                    "session_date",
                     "data_source",
                     "calculation_version",
                     "registry_version",
@@ -154771,6 +156502,28 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "in": "query",
+            "name": "sort",
+            "required": false,
+            "schema": {
+              "pattern": "^(?:symbol|name|exchange|group|price|change_pct|market_cap|avg_value|metric:[a-z][a-z0-9_]*|tech:[a-z][a-z0-9_]*(?:\\.[a-z][a-z0-9_]*)?)$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "order",
+            "required": false,
+            "schema": {
+              "default": "asc",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -154833,6 +156586,84 @@
                     "data_quality": {
                       "additionalProperties": false,
                       "properties": {
+                        "market": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "baskets_unavailable": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "excluded_missing": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "avg_value": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "basket": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "close_price": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "exchange": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "market_cap": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "statement_group": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "exchange",
+                                "basket",
+                                "statement_group",
+                                "close_price",
+                                "market_cap",
+                                "avg_value"
+                              ],
+                              "type": "object"
+                            },
+                            "in_scope": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "universe": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "without_session_bar": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "universe",
+                            "in_scope",
+                            "excluded_missing",
+                            "baskets_unavailable",
+                            "without_session_bar"
+                          ],
+                          "type": "object"
+                        },
                         "metrics": {
                           "items": {
                             "additionalProperties": false,
@@ -154927,10 +156758,57 @@
                             "type": "object"
                           },
                           "type": "array"
+                        },
+                        "technical": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "by_reason": {
+                                "additionalProperties": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "type": "object"
+                              },
+                              "by_status": {
+                                "additionalProperties": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "type": "object"
+                              },
+                              "indicator": {
+                                "type": "string"
+                              },
+                              "key": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "row_id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "indicator",
+                              "row_id",
+                              "label",
+                              "by_status",
+                              "by_reason"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
                         }
                       },
                       "required": [
-                        "metrics"
+                        "metrics",
+                        "market",
+                        "technical"
                       ],
                       "type": "object"
                     },
@@ -155022,6 +156900,120 @@
                             "AND"
                           ],
                           "type": "string"
+                        },
+                        "market": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "avg_value": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "sessions",
+                                "min"
+                              ],
+                              "type": "object"
+                            },
+                            "baskets": {
+                              "items": {
+                                "enum": [
+                                  "VN30",
+                                  "VN100",
+                                  "VNMIDCAP",
+                                  "VNSMALLCAP",
+                                  "HNX30"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "close_price": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "exchanges": {
+                              "items": {
+                                "enum": [
+                                  "HOSE",
+                                  "HNX",
+                                  "UPCOM",
+                                  "HSX"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "legacy_sector": {
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "market_cap": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "needs_review": {
+                              "enum": [
+                                "sector"
+                              ],
+                              "type": "string"
+                            },
+                            "statement_groups": {
+                              "items": {
+                                "enum": [
+                                  "thuong",
+                                  "nh",
+                                  "ck",
+                                  "bh"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "market_cap",
+                            "avg_value",
+                            "close_price"
+                          ],
+                          "type": "object"
                         },
                         "name": {
                           "maxLength": 120,
@@ -155128,26 +157120,112 @@
                         },
                         "schema_version": {
                           "enum": [
-                            "3.0"
+                            "4.0"
                           ],
                           "type": "string"
                         },
-                        "scope": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "market": {
-                              "type": "string"
-                            },
-                            "sector": {
-                              "maxLength": 200,
-                              "type": "string"
-                            }
+                        "technical": {
+                          "default": [],
+                          "items": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "factor": {
+                                    "type": "number"
+                                  },
+                                  "indicator": {
+                                    "enum": [
+                                      "volume"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "ops": {
+                                    "items": {
+                                      "maxLength": 16,
+                                      "type": "string"
+                                    },
+                                    "maxItems": 2,
+                                    "minItems": 2,
+                                    "type": "array"
+                                  },
+                                  "sessions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "sessions",
+                                  "factor",
+                                  "ops"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "indicator": {
+                                    "enum": [
+                                      "rsi",
+                                      "macd",
+                                      "ma",
+                                      "bollinger",
+                                      "ema",
+                                      "ma_cross",
+                                      "dmi",
+                                      "stochastic",
+                                      "cci",
+                                      "obv",
+                                      "mfi",
+                                      "cmf",
+                                      "donchian",
+                                      "roc",
+                                      "williams_r"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "rules": {
+                                    "items": {
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean"
+                                        },
+                                        "id": {
+                                          "maxLength": 64,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "enabled"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "maxItems": 8,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "rules"
+                                ],
+                                "type": "object"
+                              }
+                            ]
                           },
-                          "required": [
-                            "market",
-                            "sector"
-                          ],
-                          "type": "object"
+                          "maxItems": 16,
+                          "type": "array"
                         }
                       },
                       "required": [
@@ -155155,10 +157233,17 @@
                         "name",
                         "logic",
                         "data_mode",
+                        "market",
                         "rules",
-                        "scope"
+                        "technical"
                       ],
                       "type": "object"
+                    },
+                    "fundamental_candidates": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "nullable": true,
+                      "type": "integer"
                     },
                     "legacy_review": {
                       "additionalProperties": false,
@@ -155295,6 +157380,10 @@
                       "minimum": -9007199254740991,
                       "type": "integer"
                     },
+                    "price_source": {
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "provenance_notes": {
                       "additionalProperties": false,
                       "properties": {
@@ -155336,6 +157425,44 @@
                           "exchange": {
                             "nullable": true,
                             "type": "string"
+                          },
+                          "group": {
+                            "enum": [
+                              "thuong",
+                              "nh",
+                              "ck",
+                              "bh"
+                            ],
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "market": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "avg_value": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "change_pct": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "market_cap": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "price": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "price",
+                              "change_pct",
+                              "market_cap",
+                              "avg_value"
+                            ],
+                            "type": "object"
                           },
                           "metrics": {
                             "additionalProperties": {
@@ -155506,6 +157633,133 @@
                           },
                           "symbol": {
                             "type": "string"
+                          },
+                          "technical": {
+                            "additionalProperties": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "display": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "indicator": {
+                                  "type": "string"
+                                },
+                                "key": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                },
+                                "lag": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "nullable": true,
+                                  "type": "integer"
+                                },
+                                "op": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "params": {
+                                  "additionalProperties": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  "type": "object"
+                                },
+                                "previous": {
+                                  "additionalProperties": false,
+                                  "nullable": true,
+                                  "properties": {
+                                    "display": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "value": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "value2": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "value3": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "value",
+                                    "value2",
+                                    "value3",
+                                    "display"
+                                  ],
+                                  "type": "object"
+                                },
+                                "reason": {
+                                  "type": "string"
+                                },
+                                "reason_code": {
+                                  "type": "string"
+                                },
+                                "result": {
+                                  "nullable": true,
+                                  "type": "boolean"
+                                },
+                                "row_id": {
+                                  "type": "string"
+                                },
+                                "sort_value": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "status": {
+                                  "enum": [
+                                    "ok",
+                                    "missing"
+                                  ],
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "value2": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "value3": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "indicator",
+                                "row_id",
+                                "label",
+                                "status",
+                                "result",
+                                "op",
+                                "value",
+                                "value2",
+                                "value3",
+                                "display",
+                                "sort_value",
+                                "previous",
+                                "lag",
+                                "params"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "object"
                           }
                         },
                         "required": [
@@ -155513,7 +157767,10 @@
                           "name",
                           "sector",
                           "exchange",
+                          "group",
                           "passed",
+                          "market",
+                          "technical",
                           "metrics"
                         ],
                         "type": "object"
@@ -155522,8 +157779,12 @@
                     },
                     "schema_version": {
                       "enum": [
-                        "3.0"
+                        "4.0"
                       ],
+                      "type": "string"
+                    },
+                    "session_date": {
+                      "nullable": true,
                       "type": "string"
                     },
                     "total": {
@@ -155540,12 +157801,15 @@
                     "schema_version",
                     "data_mode",
                     "as_of",
+                    "session_date",
                     "definition",
                     "legacy_review",
                     "data_source",
+                    "price_source",
                     "calculation_version",
                     "registry_version",
                     "universe_truncated",
+                    "fundamental_candidates",
                     "provenance_notes",
                     "counts",
                     "data_quality",
@@ -155626,7 +157890,7 @@
             "bearer": []
           }
         ],
-        "summary": "One page of a stored run (same as_of on every page; owner only)",
+        "summary": "One page of a stored run, sorted over the whole result by `sort`/`order` (same as_of on every page; owner only)",
         "tags": [
           "Strategy screener"
         ],
@@ -155643,6 +157907,428 @@
             "application/json": {
               "schema": {
                 "anyOf": [
+                  {
+                    "additionalProperties": false,
+                    "properties": {
+                      "columns": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "metric_id": {
+                              "enum": [
+                                "revenue_yoy",
+                                "profit_yoy",
+                                "eps_yoy",
+                                "gross_margin",
+                                "net_margin",
+                                "roe",
+                                "roa",
+                                "roic",
+                                "debt_equity",
+                                "net_debt_ebitda",
+                                "current_ratio",
+                                "interest_coverage",
+                                "cfo_margin",
+                                "cfo_profit",
+                                "fcf_margin",
+                                "fcf_yoy",
+                                "capex_revenue",
+                                "accrual",
+                                "pe",
+                                "pb",
+                                "ps",
+                                "ev_ebitda",
+                                "peg",
+                                "fcf_yield",
+                                "revenue_cagr3",
+                                "profit_cagr3",
+                                "eps_cagr3",
+                                "asset_turnover",
+                                "ccc",
+                                "working_cap_turnover",
+                                "revenue_growth_stability",
+                                "eps_growth_stability",
+                                "net_margin_stability",
+                                "roic_stability",
+                                "fcf_positive_streak",
+                                "profit_positive_streak",
+                                "dividend_yield",
+                                "payout_ratio",
+                                "dividend_cagr3",
+                                "share_count_yoy",
+                                "buyback_yield",
+                                "shareholder_yield"
+                              ],
+                              "type": "string"
+                            },
+                            "period": {
+                              "enum": [
+                                "quarter",
+                                "ttm",
+                                "year",
+                                "three_year"
+                              ],
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "metric_id",
+                            "period"
+                          ],
+                          "type": "object"
+                        },
+                        "maxItems": 12,
+                        "type": "array"
+                      },
+                      "data_mode": {
+                        "default": "latest_disclosed",
+                        "enum": [
+                          "latest_disclosed"
+                        ],
+                        "type": "string"
+                      },
+                      "logic": {
+                        "enum": [
+                          "AND"
+                        ],
+                        "type": "string"
+                      },
+                      "market": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "avg_value": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "min": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "sessions": {
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "sessions",
+                              "min"
+                            ],
+                            "type": "object"
+                          },
+                          "baskets": {
+                            "items": {
+                              "enum": [
+                                "VN30",
+                                "VN100",
+                                "VNMIDCAP",
+                                "VNSMALLCAP",
+                                "HNX30"
+                              ],
+                              "type": "string"
+                            },
+                            "nullable": true,
+                            "type": "array"
+                          },
+                          "close_price": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "max": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "min": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "min",
+                              "max"
+                            ],
+                            "type": "object"
+                          },
+                          "exchanges": {
+                            "items": {
+                              "enum": [
+                                "HOSE",
+                                "HNX",
+                                "UPCOM",
+                                "HSX"
+                              ],
+                              "type": "string"
+                            },
+                            "nullable": true,
+                            "type": "array"
+                          },
+                          "legacy_sector": {
+                            "maxLength": 200,
+                            "type": "string"
+                          },
+                          "market_cap": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "max": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "min": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "min",
+                              "max"
+                            ],
+                            "type": "object"
+                          },
+                          "needs_review": {
+                            "enum": [
+                              "sector"
+                            ],
+                            "type": "string"
+                          },
+                          "statement_groups": {
+                            "items": {
+                              "enum": [
+                                "thuong",
+                                "nh",
+                                "ck",
+                                "bh"
+                              ],
+                              "type": "string"
+                            },
+                            "nullable": true,
+                            "type": "array"
+                          }
+                        },
+                        "required": [
+                          "market_cap",
+                          "avg_value",
+                          "close_price"
+                        ],
+                        "type": "object"
+                      },
+                      "name": {
+                        "maxLength": 120,
+                        "minLength": 1,
+                        "type": "string"
+                      },
+                      "rules": {
+                        "items": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "api_unit": {
+                              "enum": [
+                                "ratio",
+                                "lần",
+                                "ngày",
+                                "năm"
+                              ],
+                              "type": "string"
+                            },
+                            "id": {
+                              "maxLength": 64,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "metric_id": {
+                              "enum": [
+                                "revenue_yoy",
+                                "profit_yoy",
+                                "eps_yoy",
+                                "gross_margin",
+                                "net_margin",
+                                "roe",
+                                "roa",
+                                "roic",
+                                "debt_equity",
+                                "net_debt_ebitda",
+                                "current_ratio",
+                                "interest_coverage",
+                                "cfo_margin",
+                                "cfo_profit",
+                                "fcf_margin",
+                                "fcf_yoy",
+                                "capex_revenue",
+                                "accrual",
+                                "pe",
+                                "pb",
+                                "ps",
+                                "ev_ebitda",
+                                "peg",
+                                "fcf_yield",
+                                "revenue_cagr3",
+                                "profit_cagr3",
+                                "eps_cagr3",
+                                "asset_turnover",
+                                "ccc",
+                                "working_cap_turnover",
+                                "revenue_growth_stability",
+                                "eps_growth_stability",
+                                "net_margin_stability",
+                                "roic_stability",
+                                "fcf_positive_streak",
+                                "profit_positive_streak",
+                                "dividend_yield",
+                                "payout_ratio",
+                                "dividend_cagr3",
+                                "share_count_yoy",
+                                "buyback_yield",
+                                "shareholder_yield"
+                              ],
+                              "type": "string"
+                            },
+                            "operator": {
+                              "enum": [
+                                ">",
+                                "<"
+                              ],
+                              "type": "string"
+                            },
+                            "period": {
+                              "enum": [
+                                "quarter",
+                                "ttm",
+                                "year",
+                                "three_year"
+                              ],
+                              "type": "string"
+                            },
+                            "value": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "metric_id",
+                            "period",
+                            "operator",
+                            "value",
+                            "api_unit"
+                          ],
+                          "type": "object"
+                        },
+                        "maxItems": 42,
+                        "type": "array"
+                      },
+                      "schema_version": {
+                        "enum": [
+                          "4.0"
+                        ],
+                        "type": "string"
+                      },
+                      "technical": {
+                        "default": [],
+                        "items": {
+                          "anyOf": [
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "factor": {
+                                  "type": "number"
+                                },
+                                "indicator": {
+                                  "enum": [
+                                    "volume"
+                                  ],
+                                  "type": "string"
+                                },
+                                "ops": {
+                                  "items": {
+                                    "maxLength": 16,
+                                    "type": "string"
+                                  },
+                                  "maxItems": 2,
+                                  "minItems": 2,
+                                  "type": "array"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "indicator",
+                                "sessions",
+                                "factor",
+                                "ops"
+                              ],
+                              "type": "object"
+                            },
+                            {
+                              "additionalProperties": false,
+                              "properties": {
+                                "indicator": {
+                                  "enum": [
+                                    "rsi",
+                                    "macd",
+                                    "ma",
+                                    "bollinger",
+                                    "ema",
+                                    "ma_cross",
+                                    "dmi",
+                                    "stochastic",
+                                    "cci",
+                                    "obv",
+                                    "mfi",
+                                    "cmf",
+                                    "donchian",
+                                    "roc",
+                                    "williams_r"
+                                  ],
+                                  "type": "string"
+                                },
+                                "rules": {
+                                  "items": {
+                                    "additionalProperties": {
+                                      "anyOf": [
+                                        {
+                                          "type": "number"
+                                        },
+                                        {
+                                          "type": "string"
+                                        }
+                                      ]
+                                    },
+                                    "properties": {
+                                      "enabled": {
+                                        "type": "boolean"
+                                      },
+                                      "id": {
+                                        "maxLength": 64,
+                                        "minLength": 1,
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "enabled"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "maxItems": 8,
+                                  "type": "array"
+                                }
+                              },
+                              "required": [
+                                "indicator",
+                                "rules"
+                              ],
+                              "type": "object"
+                            }
+                          ]
+                        },
+                        "maxItems": 16,
+                        "type": "array"
+                      }
+                    },
+                    "required": [
+                      "schema_version",
+                      "name",
+                      "logic",
+                      "market",
+                      "rules"
+                    ],
+                    "type": "object"
+                  },
                   {
                     "additionalProperties": false,
                     "properties": {
@@ -156073,6 +158759,84 @@
                     "data_quality": {
                       "additionalProperties": false,
                       "properties": {
+                        "market": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "baskets_unavailable": {
+                              "items": {
+                                "type": "string"
+                              },
+                              "type": "array"
+                            },
+                            "excluded_missing": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "avg_value": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "basket": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "close_price": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "exchange": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "market_cap": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "statement_group": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                }
+                              },
+                              "required": [
+                                "exchange",
+                                "basket",
+                                "statement_group",
+                                "close_price",
+                                "market_cap",
+                                "avg_value"
+                              ],
+                              "type": "object"
+                            },
+                            "in_scope": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "universe": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            },
+                            "without_session_bar": {
+                              "maximum": 9007199254740991,
+                              "minimum": -9007199254740991,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "universe",
+                            "in_scope",
+                            "excluded_missing",
+                            "baskets_unavailable",
+                            "without_session_bar"
+                          ],
+                          "type": "object"
+                        },
                         "metrics": {
                           "items": {
                             "additionalProperties": false,
@@ -156167,10 +158931,57 @@
                             "type": "object"
                           },
                           "type": "array"
+                        },
+                        "technical": {
+                          "items": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "by_reason": {
+                                "additionalProperties": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "type": "object"
+                              },
+                              "by_status": {
+                                "additionalProperties": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "type": "object"
+                              },
+                              "indicator": {
+                                "type": "string"
+                              },
+                              "key": {
+                                "type": "string"
+                              },
+                              "label": {
+                                "type": "string"
+                              },
+                              "row_id": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "key",
+                              "indicator",
+                              "row_id",
+                              "label",
+                              "by_status",
+                              "by_reason"
+                            ],
+                            "type": "object"
+                          },
+                          "type": "array"
                         }
                       },
                       "required": [
-                        "metrics"
+                        "metrics",
+                        "market",
+                        "technical"
                       ],
                       "type": "object"
                     },
@@ -156262,6 +159073,120 @@
                             "AND"
                           ],
                           "type": "string"
+                        },
+                        "market": {
+                          "additionalProperties": false,
+                          "properties": {
+                            "avg_value": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "sessions": {
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "sessions",
+                                "min"
+                              ],
+                              "type": "object"
+                            },
+                            "baskets": {
+                              "items": {
+                                "enum": [
+                                  "VN30",
+                                  "VN100",
+                                  "VNMIDCAP",
+                                  "VNSMALLCAP",
+                                  "HNX30"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "close_price": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "exchanges": {
+                              "items": {
+                                "enum": [
+                                  "HOSE",
+                                  "HNX",
+                                  "UPCOM",
+                                  "HSX"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            },
+                            "legacy_sector": {
+                              "maxLength": 200,
+                              "type": "string"
+                            },
+                            "market_cap": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "max": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "min": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "min",
+                                "max"
+                              ],
+                              "type": "object"
+                            },
+                            "needs_review": {
+                              "enum": [
+                                "sector"
+                              ],
+                              "type": "string"
+                            },
+                            "statement_groups": {
+                              "items": {
+                                "enum": [
+                                  "thuong",
+                                  "nh",
+                                  "ck",
+                                  "bh"
+                                ],
+                                "type": "string"
+                              },
+                              "nullable": true,
+                              "type": "array"
+                            }
+                          },
+                          "required": [
+                            "market_cap",
+                            "avg_value",
+                            "close_price"
+                          ],
+                          "type": "object"
                         },
                         "name": {
                           "maxLength": 120,
@@ -156368,26 +159293,112 @@
                         },
                         "schema_version": {
                           "enum": [
-                            "3.0"
+                            "4.0"
                           ],
                           "type": "string"
                         },
-                        "scope": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "market": {
-                              "type": "string"
-                            },
-                            "sector": {
-                              "maxLength": 200,
-                              "type": "string"
-                            }
+                        "technical": {
+                          "default": [],
+                          "items": {
+                            "anyOf": [
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "factor": {
+                                    "type": "number"
+                                  },
+                                  "indicator": {
+                                    "enum": [
+                                      "volume"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "ops": {
+                                    "items": {
+                                      "maxLength": 16,
+                                      "type": "string"
+                                    },
+                                    "maxItems": 2,
+                                    "minItems": 2,
+                                    "type": "array"
+                                  },
+                                  "sessions": {
+                                    "type": "number"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "sessions",
+                                  "factor",
+                                  "ops"
+                                ],
+                                "type": "object"
+                              },
+                              {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "indicator": {
+                                    "enum": [
+                                      "rsi",
+                                      "macd",
+                                      "ma",
+                                      "bollinger",
+                                      "ema",
+                                      "ma_cross",
+                                      "dmi",
+                                      "stochastic",
+                                      "cci",
+                                      "obv",
+                                      "mfi",
+                                      "cmf",
+                                      "donchian",
+                                      "roc",
+                                      "williams_r"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "rules": {
+                                    "items": {
+                                      "additionalProperties": {
+                                        "anyOf": [
+                                          {
+                                            "type": "number"
+                                          },
+                                          {
+                                            "type": "string"
+                                          }
+                                        ]
+                                      },
+                                      "properties": {
+                                        "enabled": {
+                                          "type": "boolean"
+                                        },
+                                        "id": {
+                                          "maxLength": 64,
+                                          "minLength": 1,
+                                          "type": "string"
+                                        }
+                                      },
+                                      "required": [
+                                        "id",
+                                        "enabled"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "maxItems": 8,
+                                    "type": "array"
+                                  }
+                                },
+                                "required": [
+                                  "indicator",
+                                  "rules"
+                                ],
+                                "type": "object"
+                              }
+                            ]
                           },
-                          "required": [
-                            "market",
-                            "sector"
-                          ],
-                          "type": "object"
+                          "maxItems": 16,
+                          "type": "array"
                         }
                       },
                       "required": [
@@ -156395,10 +159406,17 @@
                         "name",
                         "logic",
                         "data_mode",
+                        "market",
                         "rules",
-                        "scope"
+                        "technical"
                       ],
                       "type": "object"
+                    },
+                    "fundamental_candidates": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "nullable": true,
+                      "type": "integer"
                     },
                     "legacy_review": {
                       "additionalProperties": false,
@@ -156525,6 +159543,10 @@
                       ],
                       "type": "object"
                     },
+                    "price_source": {
+                      "nullable": true,
+                      "type": "string"
+                    },
                     "provenance_notes": {
                       "additionalProperties": false,
                       "properties": {
@@ -156566,6 +159588,44 @@
                           "exchange": {
                             "nullable": true,
                             "type": "string"
+                          },
+                          "group": {
+                            "enum": [
+                              "thuong",
+                              "nh",
+                              "ck",
+                              "bh"
+                            ],
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "market": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "avg_value": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "change_pct": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "market_cap": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "price": {
+                                "nullable": true,
+                                "type": "number"
+                              }
+                            },
+                            "required": [
+                              "price",
+                              "change_pct",
+                              "market_cap",
+                              "avg_value"
+                            ],
+                            "type": "object"
                           },
                           "metrics": {
                             "additionalProperties": {
@@ -156736,6 +159796,133 @@
                           },
                           "symbol": {
                             "type": "string"
+                          },
+                          "technical": {
+                            "additionalProperties": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "display": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "indicator": {
+                                  "type": "string"
+                                },
+                                "key": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                },
+                                "lag": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "nullable": true,
+                                  "type": "integer"
+                                },
+                                "op": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "params": {
+                                  "additionalProperties": {
+                                    "anyOf": [
+                                      {
+                                        "type": "number"
+                                      },
+                                      {
+                                        "type": "string"
+                                      }
+                                    ]
+                                  },
+                                  "type": "object"
+                                },
+                                "previous": {
+                                  "additionalProperties": false,
+                                  "nullable": true,
+                                  "properties": {
+                                    "display": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "value": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "value2": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "value3": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    }
+                                  },
+                                  "required": [
+                                    "value",
+                                    "value2",
+                                    "value3",
+                                    "display"
+                                  ],
+                                  "type": "object"
+                                },
+                                "reason": {
+                                  "type": "string"
+                                },
+                                "reason_code": {
+                                  "type": "string"
+                                },
+                                "result": {
+                                  "nullable": true,
+                                  "type": "boolean"
+                                },
+                                "row_id": {
+                                  "type": "string"
+                                },
+                                "sort_value": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "status": {
+                                  "enum": [
+                                    "ok",
+                                    "missing"
+                                  ],
+                                  "type": "string"
+                                },
+                                "value": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "value2": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "value3": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "key",
+                                "indicator",
+                                "row_id",
+                                "label",
+                                "status",
+                                "result",
+                                "op",
+                                "value",
+                                "value2",
+                                "value3",
+                                "display",
+                                "sort_value",
+                                "previous",
+                                "lag",
+                                "params"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "object"
                           }
                         },
                         "required": [
@@ -156743,7 +159930,10 @@
                           "name",
                           "sector",
                           "exchange",
+                          "group",
                           "passed",
+                          "market",
+                          "technical",
                           "metrics"
                         ],
                         "type": "object"
@@ -156752,8 +159942,12 @@
                     },
                     "schema_version": {
                       "enum": [
-                        "3.0"
+                        "4.0"
                       ],
+                      "type": "string"
+                    },
+                    "session_date": {
+                      "nullable": true,
                       "type": "string"
                     },
                     "universe_truncated": {
@@ -156765,12 +159959,15 @@
                     "schema_version",
                     "data_mode",
                     "as_of",
+                    "session_date",
                     "definition",
                     "legacy_review",
                     "data_source",
+                    "price_source",
                     "calculation_version",
                     "registry_version",
                     "universe_truncated",
+                    "fundamental_candidates",
                     "provenance_notes",
                     "counts",
                     "data_quality",
@@ -156848,7 +160045,7 @@
             "bearer": []
           }
         ],
-        "summary": "Run a filter definition 3.0 (a period per rule; 2.0 is mapped) at the latest published reports",
+        "summary": "Run a filter definition 4.0 (Thị trường + Cơ bản + Kỹ thuật; 3.0 and 2.0 are mapped) on the last closed session and the latest published reports",
         "tags": [
           "Strategy screener"
         ],

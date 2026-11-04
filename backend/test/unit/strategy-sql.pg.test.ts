@@ -349,18 +349,30 @@ describe.skipIf(!URL)('Strategy SQL against PostgreSQL', () => {
       name: symbol,
       sector: 'S',
       exchange: 'HOSE',
+      group: 'thuong' as const,
       passed: symbol !== 'PGX',
+      market: { price: 25.5, change_pct: 1.2, market_cap: 1200, avg_value: 35 },
+      technical: {},
       metrics: { roe: cell(symbol === 'PGX' ? 'missing' : 'ok') } as never,
     }));
   const header = (): Omit<ScreenerRunHeader, 'result_id'> => ({
-    schema_version: '3.0',
+    schema_version: '4.0',
     data_mode: 'latest_disclosed',
     as_of: '2026-02-01T03:00:00.000Z',
+    session_date: '2026-01-30',
     definition: {
-      schema_version: '3.0',
+      schema_version: '4.0',
       name: 'ROE',
       logic: 'AND',
       data_mode: 'latest_disclosed',
+      market: {
+        exchanges: ['HOSE'],
+        baskets: [],
+        statement_groups: [],
+        market_cap: { min: null, max: null },
+        avg_value: { sessions: 20, min: null },
+        close_price: { min: null, max: null },
+      },
       rules: [
         {
           id: 'r1',
@@ -371,13 +383,16 @@ describe.skipIf(!URL)('Strategy SQL against PostgreSQL', () => {
           api_unit: 'ratio',
         },
       ],
-      scope: { market: 'HOSE', sector: '' },
+      technical: [],
+      columns: [],
     },
     legacy_review: null,
     data_source: 'VCI',
-    calculation_version: 'iqx-fund-2.0',
+    price_source: 'DNSE',
+    calculation_version: 'iqx-fund-2.0+tech-1.0',
     registry_version: 'iqx-fund-registry-2.1',
     universe_truncated: false,
+    fundamental_candidates: 3,
     provenance_notes: {
       period_dates: 'not_provided_by_source',
       report_scope: 'not_provided_by_source',
@@ -390,7 +405,24 @@ describe.skipIf(!URL)('Strategy SQL against PostgreSQL', () => {
       with_required_exceptions: 1,
       missing: 1,
     },
-    data_quality: { metrics: [] },
+    data_quality: {
+      metrics: [],
+      market: {
+        universe: 3,
+        in_scope: 3,
+        excluded_missing: {
+          exchange: 0,
+          basket: 0,
+          statement_group: 0,
+          close_price: 0,
+          market_cap: 0,
+          avg_value: 0,
+        },
+        baskets_unavailable: [],
+        without_session_bar: 0,
+      },
+      technical: [],
+    },
   });
   it('screener runs: owner-scoped storage, immutability and bounded retention', async () => {
     const id = await runs.insert({

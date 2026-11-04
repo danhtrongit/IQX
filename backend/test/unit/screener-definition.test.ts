@@ -145,13 +145,17 @@ describe('ruleIssues', () => {
 describe('legacy 2.0 definitions (I05 / I06)', () => {
   it('I05 maps the filter-wide period onto each rule, preserving what the old run computed', () => {
     const quarter = normalizeDefinition(legacy('quarter', ['revenue_yoy', 'gross_margin']));
-    expect(quarter.definition.schema_version).toBe('3.0');
+    expect(quarter.definition.schema_version).toBe('4.0');
     expect(quarter.definition.data_mode).toBe('latest_disclosed');
     expect(quarter.definition.rules.map((r) => [r.metric_id, r.period])).toEqual([
       ['revenue_yoy', 'quarter'],
       ['gross_margin', 'quarter'],
     ]);
-    expect(quarter.definition.scope).toEqual({ market: 'HOSE', sector: 'all' });
+    // 2.0 → 3.0 → 4.0: the single exchange becomes a list, `sector = all` leaves Ngành unfiltered.
+    expect(quarter.definition.market).toMatchObject({ exchanges: ['HOSE'], statement_groups: [] });
+    expect(quarter.definition.market.needs_review).toBeUndefined();
+    expect(quarter.sector_review).toBeNull();
+    expect(quarter.definition.technical).toEqual([]);
     expect(quarter.legacy).toMatchObject({ needs_review: false, legacy_period: 'quarter' });
 
     const annual = normalizeDefinition(legacy('annual', ['profit_yoy', 'pe', 'debt_equity']));
