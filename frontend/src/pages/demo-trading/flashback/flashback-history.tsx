@@ -10,6 +10,7 @@ import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react"
 import { PanelState } from "@/components/layout/panel-state"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import type {
   FlashbackHistoryDays,
@@ -322,7 +323,8 @@ function HistoryDetail({ id, item }: { id: string; item: FlashbackHistoryItem })
     <div id={id} className="grid gap-4 border-t border-border px-3 pt-3 pb-3.5 md:grid-cols-2" data-testid="flashback-history-detail">
       <section aria-label="Kết quả ván" className="min-w-0 space-y-1.5">
         <h4 className="font-heading text-sm font-bold">Kết quả ván</h4>
-        <ol className="m-0 flex max-h-[40vh] list-none flex-col gap-1 overflow-y-auto p-0">
+        <ScrollArea className="max-h-[40vh]">
+        <ol className="m-0 flex list-none flex-col gap-1 p-0 pr-2.5">
           {item.players.map((player) => (
             <li
               key={player.user_id}
@@ -350,6 +352,7 @@ function HistoryDetail({ id, item }: { id: string; item: FlashbackHistoryItem })
             </li>
           ))}
         </ol>
+        </ScrollArea>
       </section>
 
       <section aria-label="Lệnh của bạn" className="min-w-0 space-y-1.5">
@@ -359,7 +362,7 @@ function HistoryDetail({ id, item }: { id: string; item: FlashbackHistoryItem })
         {item.orders.length === 0 ? (
           <p className="m-0 rounded-md bg-muted/40 px-2 py-3 text-center text-[13px] font-semibold">Không có lệnh</p>
         ) : (
-          <div className="max-h-[40vh] overflow-auto rounded-md border border-border">
+          <ScrollArea orientation="both" className="max-h-[40vh] rounded-md border border-border">
             <table className="w-full text-[13px] tabular-nums">
               <thead>
                 <tr className="text-xs text-text-secondary">
@@ -384,7 +387,7 @@ function HistoryDetail({ id, item }: { id: string; item: FlashbackHistoryItem })
                 ))}
               </tbody>
             </table>
-          </div>
+          </ScrollArea>
         )}
       </section>
     </div>

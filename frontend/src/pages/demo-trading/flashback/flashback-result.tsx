@@ -9,6 +9,7 @@ import { ArrowRight } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { COIN_TEXT } from "../shop/shop-ui"
 import type { FlashbackMatchResult } from "./flashback-api"
@@ -28,8 +29,9 @@ export function FlashbackResult({ match, result }: { match: MatchApi; result: Fl
         <DialogTitle className="font-heading text-xl font-extrabold">{result.title}</DialogTitle>
         <DialogDescription className="sr-only">Kết quả ván Flashback</DialogDescription>
 
+        <ScrollArea className="max-h-[46vh]">
         <ol
-          className="m-0 max-h-[46vh] list-none space-y-1.5 overflow-y-auto p-0 pt-2"
+          className="m-0 list-none space-y-1.5 p-0 pt-2 pr-2.5"
           aria-label="Bảng xếp hạng"
           data-testid="flashback-result-rows"
         >
@@ -83,6 +85,7 @@ export function FlashbackResult({ match, result }: { match: MatchApi; result: Fl
             )
           })}
         </ol>
+        </ScrollArea>
 
         <p
           data-testid="flashback-progress"

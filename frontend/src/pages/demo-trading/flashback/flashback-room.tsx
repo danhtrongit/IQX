@@ -9,6 +9,7 @@ import { Copy, Lock } from "lucide-react"
 import { PanelState } from "@/components/layout/panel-state"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { COIN_TEXT } from "../shop/shop-ui"
 import type { FlashbackRoom } from "./flashback-api"
@@ -71,19 +72,22 @@ export function FlashbackRoomScreen() {
         />
       </section>
 
+      {/* Phòng đông (từ 9 người): lưới thu nhỏ cuộn bằng ScrollArea (DESIGN: không dùng thanh cuộn mặc định). */}
+      <ScrollArea className={compact ? "max-h-[52vh]" : undefined}>
       <section
         aria-label="Người chơi"
         data-testid="flashback-slots"
         data-compact={compact}
         className={cn(
           "grid gap-2.5",
-          compact ? "max-h-[52vh] grid-cols-3 gap-2 overflow-auto sm:grid-cols-6" : "grid-cols-2 sm:grid-cols-4",
+          compact ? "grid-cols-3 gap-2 pr-2.5 sm:grid-cols-6" : "grid-cols-2 sm:grid-cols-4",
         )}
       >
         {Array.from({ length: roomSlotCount(room.max_players) }, (_, index) => (
           <Slot key={index} room={room} index={index} compact={compact} />
         ))}
       </section>
+      </ScrollArea>
 
       <div className="flex flex-wrap gap-2">
         <Button type="button" variant="outline" className="flex-1 sm:flex-none" disabled={api.leaveBusy} onClick={api.leave}>

@@ -71,6 +71,7 @@ import {
   flashbackKeys,
   useFlashbackIndicators,
 } from "./use-flashback"
+import { playEffect, playOrderSound, playVoice, sellOutcome } from "./flashback-sound"
 import { invalidateFlashbackProgress } from "./use-flashback-progress"
 
 /** Bong bóng còn sống dưới ngần này mili giây thì không đáng hiện (đã gần mờ hết). */
@@ -387,6 +388,21 @@ export function useFlashbackController(): FlashbackContextValue {
     toast.info("Hết giờ")
   }, [result])
 
+  // Âm thanh kết quả: thắng thì nhạc chúc mừng và "Chúc mừng! Bạn đã chiến thắng!", không thì "Ván đấu
+  // kết thúc". Chỉ cho người đang ở trong ván lúc nó kết thúc, mỗi ván một lần.
+  const resultSounded = useRef(new Set<string>())
+  useEffect(() => {
+    if (!result || !sawPlaying.current.has(result.match_id) || resultSounded.current.has(result.match_id)) return
+    resultSounded.current.add(result.match_id)
+    const won = !result.solo && result.rows.some((row) => row.is_me && row.is_winner)
+    if (won) {
+      playEffect("celebrate")
+      playVoice("win")
+    } else {
+      playVoice("finish")
+    }
+  }, [result])
+
   // Màn chơi mới: báo đã trừ cược (hoặc chơi một mình) đúng một lần cho mỗi ván, và lấy lại số dư xu
   // (người vào ván do chủ phòng bắt đầu cũng bị trừ cược mà không tự làm mới ví).
   const freshMatchId = place.phase === "match" && place.fresh ? place.matchId : null
@@ -395,6 +411,7 @@ export function useFlashbackController(): FlashbackContextValue {
   useEffect(() => {
     if (!freshMatchId || freshStake === null || startedToasts.current.has(freshMatchId)) return
     startedToasts.current.add(freshMatchId)
+    playVoice("start")
     toast.success(freshStake > 0 ? `Bắt đầu · đã trừ ${formatNumber(freshStake)} xu` : "Bắt đầu chơi")
     if (freshStake > 0) void queryClient.invalidateQueries({ queryKey: SHOP_QUERY_ROOT })
   }, [freshMatchId, freshStake, queryClient])
@@ -562,6 +579,12 @@ export function useFlashbackController(): FlashbackContextValue {
       placeOrder(matchId ?? "", { side: input.side, qty: input.qty, idempotency_key: input.key }),
     onSuccess: (placed) => {
       pendingOrder.current = null
+      // Âm thanh: mua; bán thì chốt lời hay cắt lỗ so với giá vốn của số cổ phiếu đang giữ trước lệnh.
+      const before = matchId ? queryClient.getQueryData<FlashbackSnapshot>(flashbackKeys.match(userId, matchId)) : undefined
+      playOrderSound(
+        placed.order.side,
+        placed.order.side === "sell" ? sellOutcome(before?.me.positions ?? [], placed.order) : "flat",
+      )
       patchSnapshot((current) => applyOrder(current, placed.me))
       setQty("")
       const verb = placed.order.side === "buy" ? "Đã mua" : "Đã bán"
