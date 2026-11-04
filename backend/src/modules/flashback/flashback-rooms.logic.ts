@@ -2,9 +2,9 @@
  * Luật thuần (không I/O) của Flashback v2 · Phòng chơi (docs/flashback-v2-rooms/IQX-Flashback-SPEC.md).
  *
  * Mọi quyết định có thể kiểm thử độc lập nằm ở đây: kiểm tra thiết lập phòng (§3), thứ tự kiểm tra
- * khi vào phòng (§2.3), lọc "Chơi phòng bất kỳ" (§2.1), giá trị tài sản theo phiên và % của người
- * khác tại `min(phiên của họ, phiên của mình)` (§6.1), chốt ván khi hết giờ (§7.1), xếp hạng có hoà
- * và chia xu (§7.2), tiêu đề cửa sổ kết quả (§7.3) và chuyển nến sang dạng gửi trình duyệt (§5).
+ * khi vào phòng (§2.3), lọc "Chơi phòng bất kỳ" (§2.1), giá trị tài sản theo phiên (§6.1; từ v2.1
+ * §6.2 trong lúc chơi không ai thấy % của ai), chốt ván khi hết giờ (§7.1), xếp hạng có hoà và chia
+ * xu (§7.2), tiêu đề cửa sổ kết quả (§7.3) và chuyển nến sang dạng gửi trình duyệt (§5).
  */
 
 import { randomBytes, scrypt as scryptCallback, timingSafeEqual } from 'node:crypto';
@@ -25,7 +25,8 @@ export const FB_ROOM_BARS_MIN = 30;
 export const FB_ROOM_BARS_MAX = 120;
 export const FB_ROOM_MINUTES = [5, 10, 15, 20, 30, 45, 60] as const;
 export const FB_ROOM_MAX_PLAYERS_MIN = 1;
-export const FB_ROOM_MAX_PLAYERS_MAX = 4;
+/** Flashback v2.1 §1: phòng tối đa 30 người. */
+export const FB_ROOM_MAX_PLAYERS_MAX = 30;
 export const FB_ROOM_STAKE_MIN = 10;
 export const FB_ROOM_STAKE_STEP = 10;
 export const FB_ROOM_PASSWORD_MIN = 4;
@@ -104,7 +105,10 @@ export function validateRoomSettings(
   if (!(FB_ROOM_MINUTES as readonly number[]).includes(minutes))
     return { ok: false, message: 'Thời gian chơi phải là 5, 10, 15, 20, 30, 45 hoặc 60 phút' };
   if (!isIntIn(maxPlayers, FB_ROOM_MAX_PLAYERS_MIN, FB_ROOM_MAX_PLAYERS_MAX))
-    return { ok: false, message: 'Số người tối đa phải từ 1 đến 4' };
+    return {
+      ok: false,
+      message: `Số người tối đa phải từ ${FB_ROOM_MAX_PLAYERS_MIN} đến ${FB_ROOM_MAX_PLAYERS_MAX}`,
+    };
   // Chọn 1 người thì ô cược bị khoá: ván không cược, bỏ qua giá trị gửi lên.
   const stakeXu = maxPlayers === 1 ? 0 : rawStake;
   if (
@@ -302,11 +306,6 @@ export function pnlFraction(nav: bigint, initialCash: bigint = FB_INITIAL_CASH_V
 export function pnlKey(nav: bigint, initialCash: bigint = FB_INITIAL_CASH_VND): number {
   const key = Math.round((Number(nav - initialCash) * 10_000) / Number(initialCash));
   return Object.is(key, -0) ? 0 : key;
-}
-
-/** Bước dùng để hiện % của một người cho người xem đang ở `viewerStep` (§6.1, DESIGN #5). */
-export function visibleStep(playerStep: number, viewerStep: number): number {
-  return Math.max(0, Math.min(playerStep, viewerStep));
 }
 
 /**

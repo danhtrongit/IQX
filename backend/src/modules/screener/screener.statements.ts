@@ -140,12 +140,50 @@ export function availableDate(period: StatementPeriod): string {
   return period.published_at ?? assumedPublication(period.year, period.quarter);
 }
 
-/** Merges the three VCI sections per (year, period) and keeps only reports published before as-of. */
+/**
+ * A statement line read from a VCI row: one field, or the sum of several fields (a line missing
+ * from every field stays absent). `negate` flips the sign of the (summed) amount.
+ */
+export interface ConceptFieldSpec {
+  field?: string;
+  fields?: readonly string[];
+  negate?: boolean;
+}
+
+/** Overrides of the standard concept map and extra concepts of an industry template (Dashboard v2). */
+export type ConceptFieldMap = Readonly<Record<string, ConceptFieldSpec>>;
+
+function conceptAmount(row: Record<string, unknown>, spec: ConceptFieldSpec): number | undefined {
+  if (spec.fields) {
+    let total = 0;
+    let found = false;
+    for (const field of spec.fields) {
+      const n = finite(row[field]);
+      if (n === undefined) continue;
+      total += n;
+      found = true;
+    }
+    return found ? (spec.negate ? 0 - total : total) : undefined;
+  }
+  const n = spec.field ? finite(row[spec.field]) : undefined;
+  return n === undefined ? undefined : spec.negate ? 0 - n : n;
+}
+
+/**
+ * Merges the three VCI sections per (year, period) and keeps only reports published before as-of.
+ * `extra` adds concepts and overrides the standard ones (the revenue line of a bank is its total
+ * operating income, …): the industry mappings of the Dashboard. Without it the result is the
+ * standard concept set the screener uses.
+ */
 export function normalizeVciStatements(
   sections: VciStatementSections,
   asOf: Date,
+  extra?: ConceptFieldMap,
 ): NormalizedStatements {
   const cutoff = vnDate(asOf);
+  const concepts = (
+    extra ? { ...CONCEPT_FIELDS, ...extra } : CONCEPT_FIELDS
+  ) as Readonly<Record<string, ConceptFieldSpec>>;
   const build = (kind: 'years' | 'quarters') => {
     const merged = new Map<string, StatementPeriod>();
     for (const section of [sections.balance_sheet, sections.income_statement, sections.cash_flow]) {
@@ -166,12 +204,9 @@ export function normalizeVciStatements(
           published_at: null,
           updated_at: null,
         };
-        for (const [concept, spec] of Object.entries(CONCEPT_FIELDS) as [
-          StatementConcept,
-          { field: string; negate?: boolean },
-        ][]) {
-          const n = finite(row[spec.field]);
-          if (n !== undefined) period.values[concept] = spec.negate ? -n : n;
+        for (const [concept, spec] of Object.entries(concepts)) {
+          const n = conceptAmount(row, spec);
+          if (n !== undefined) period.values[concept as StatementConcept] = n;
         }
         if (published !== null && (period.published_at === null || published > period.published_at))
           period.published_at = published;

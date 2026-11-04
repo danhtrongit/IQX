@@ -1,8 +1,9 @@
 /**
- * Dashboard phân tích · lớp dữ liệu (spec §11).
+ * Dashboard phân tích · lớp dữ liệu (spec Dashboard v2 §11).
  *
- * Mọi thứ đến từ máy chủ: thiết lập theo tài khoản (`/dashboard/settings`),
- * danh mục 33 chỉ tiêu (`/dashboard/catalog`), số liệu theo khuôn
+ * Mọi thứ đến từ máy chủ: ngành của mã (`/dashboard/industry/{mã}`), thiết lập
+ * theo tài khoản và theo ngành (`/dashboard/settings`), danh mục 62 chỉ tiêu
+ * chia theo ngành (`/dashboard/catalog`), số liệu theo khuôn
  * (`/fundamental/{mã}`) và chuỗi định giá theo ngày (`/valuation/{mã}`).
  *
  * API trả đủ 20 quý và 10 năm, client tự cắt theo số kỳ đã chọn nên đổi số
@@ -14,38 +15,51 @@ import type { ApiRequestFor, ApiResponseFor } from "@/lib/contract-types"
 
 export type DashboardSettings = ApiResponseFor<"GET /api/v2/dashboard/settings">
 export type DashboardCatalog = ApiResponseFor<"GET /api/v2/dashboard/catalog">
+export type DashboardIndustry = ApiResponseFor<"GET /api/v2/dashboard/industry/{symbol}">
 export type DashboardFundamental = ApiResponseFor<"GET /api/v2/fundamental/{symbol}">
 export type DashboardValuation = ApiResponseFor<"GET /api/v2/valuation/{symbol}">
-export type SaveSettingsBody = ApiRequestFor<"PUT /api/v2/dashboard/settings">["body"]
+export type SaveSettingsBody = ApiRequestFor<"PUT /api/v2/dashboard/settings/{nganh}">["body"]
+export type SavedSettings = ApiResponseFor<"PUT /api/v2/dashboard/settings/{nganh}">
+
+/** Ngành của mã theo mẫu báo cáo tài chính (spec §1.3). */
+export type Industry = DashboardIndustry["nganh"]
+export const INDUSTRIES: readonly Industry[] = ["thuong", "nh", "ck", "bh"]
+
+/** Nhãn ngành hiện cạnh mã (spec §1.2). */
+export const INDUSTRY_LABEL: Record<Industry, string> = {
+  thuong: "Doanh nghiệp sản xuất",
+  nh: "Ngân hàng",
+  ck: "Chứng khoán",
+  bh: "Bảo hiểm",
+}
+
+/** Thiết lập của một ngành. */
+export type IndustrySettings = DashboardSettings[Industry]
+
+/** Một ngành trong danh mục: chương, nhóm, số chỉ tiêu và bộ mặc định (spec §3, §6.3). */
+export type CatalogIndustry = DashboardCatalog["industries"][number]
+export type CatalogChapter = CatalogIndustry["chapters"][number]
+export type CatalogGroup = CatalogChapter["groups"][number]
+export type CatalogItem = CatalogGroup["items"][number]
 
 /** Tên chỉ tiêu: khoá của một biểu đồ trong thiết lập và trong số liệu. */
-export type ChartName = DashboardCatalog[number]["items"][number]["name"]
-export type CatalogGroup = DashboardCatalog[number]
-export type CatalogItem = DashboardCatalog[number]["items"][number]
+export type ChartName = CatalogItem["name"]
 
 /** Chế độ kỳ chung cho cả dashboard. */
-export type PeriodMode = DashboardSettings["per"]
+export type PeriodMode = IndustrySettings["per"]
 /** Số kỳ riêng của từng biểu đồ, theo từng chế độ. */
-export type PeriodCounts = DashboardSettings["nks"]
+export type PeriodCounts = IndustrySettings["nks"]
 
 export type SeriesPoint = { name: string; v: (number | null)[] }
 export type SubSeries = { unit: string; type: "grouped" | "stacked"; series: SeriesPoint[] }
 export type ChartSeries = { labels: string[]; main: SeriesPoint[]; sub?: SubSeries }
 
-export type FundamentalEntry = DashboardFundamental["charts"][string]
-/** Chỉ tiêu không áp dụng cho mã ngân hàng (spec §7). */
-export type NotApplicableEntry = Extract<FundamentalEntry, { na: 1 }>
-export type ChartDataEntry = Exclude<FundamentalEntry, { na: 1 }>
+/** Một biểu đồ của câu trả lời số liệu: chỉ có một dạng, mọi chỉ tiêu trong danh mục của ngành đều vẽ được. */
+export type ChartDataEntry = DashboardFundamental["charts"][string]
 export type ChartKind = ChartDataEntry["kind"]
 export type ChartStatus = ChartDataEntry["status"]
 
-export type ValuationEntry = DashboardValuation["charts"][string]
-export type ValuationChart = Exclude<ValuationEntry, { na: 1 }>
-
-/** Chỉ tiêu không áp dụng cho mã ngân hàng (spec §7). */
-export function isNotApplicable(entry: FundamentalEntry | undefined): entry is NotApplicableEntry {
-  return !!entry && "na" in entry
-}
+export type ValuationChart = DashboardValuation["charts"][string]
 
 export function fetchDashboardSettings(signal?: AbortSignal): Promise<DashboardSettings> {
   return requestOperation("GET /api/v2/dashboard/settings", {}, { signal })
@@ -55,8 +69,14 @@ export function fetchDashboardCatalog(signal?: AbortSignal): Promise<DashboardCa
   return requestOperation("GET /api/v2/dashboard/catalog", {}, { signal })
 }
 
-export function saveDashboardSettings(body: SaveSettingsBody, signal?: AbortSignal) {
-  return requestOperation("PUT /api/v2/dashboard/settings", { body }, { signal })
+/** Ngành của một mã, từ mẫu báo cáo tài chính của doanh nghiệp. */
+export function fetchDashboardIndustry(symbol: string, signal?: AbortSignal): Promise<DashboardIndustry> {
+  return requestOperation("GET /api/v2/dashboard/industry/{symbol}", { path: { symbol } }, { signal })
+}
+
+/** Lưu thiết lập của MỘT ngành (spec §6.2); các ngành khác giữ nguyên. */
+export function saveDashboardSettings(nganh: Industry, body: SaveSettingsBody, signal?: AbortSignal) {
+  return requestOperation("PUT /api/v2/dashboard/settings/{nganh}", { path: { nganh }, body }, { signal })
 }
 
 /** Số liệu các biểu đồ được hỏi, đủ 20 quý và 10 năm để client tự cắt. */
@@ -71,13 +91,6 @@ export function fetchFundamental(
     { path: { symbol }, query: { charts: charts.join(","), per } },
     { signal },
   )
-}
-
-export type InstrumentDetail = ApiResponseFor<"GET /api/v2/instruments/{symbol}">
-
-/** Thông tin một mã trong danh sách mã: ngành cấp 1 và 2 cho nhãn loại doanh nghiệp. */
-export function fetchInstrument(symbol: string, signal?: AbortSignal): Promise<InstrumentDetail> {
-  return requestOperation("GET /api/v2/instruments/{symbol}", { path: { symbol } }, { signal })
 }
 
 /** Chuỗi định giá theo ngày (khuôn F). `from` là ngày bắt đầu, tối đa 10 năm. */

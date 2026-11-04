@@ -1,10 +1,13 @@
 export { FundamentalChart } from "./fundamental-chart"
 export {
   BAND_COLOR,
+  FOURTH_COLOR,
+  LINE_COLORS,
   MAIN_COLOR,
   NEGATIVE_COLOR,
   REFERENCE_COLOR,
   SECOND_COLOR,
+  SECOND_LINE_COLOR,
   SERIES_COLORS,
   THIRD_COLOR,
   cagrPath,
@@ -12,6 +15,8 @@ export {
   figureTable,
   figureTooltip,
   hasChartData,
+  lineColor,
+  referenceLabel,
   streakStart,
   type FigureTable,
   type HoverState,

@@ -657,6 +657,11 @@
       "requestType": "DashboardCatalogData",
       "responseType": "DashboardCatalogResponses"
     },
+    "GET /api/v2/dashboard/industry/{symbol}": {
+      "operationId": "dashboardIndustry",
+      "requestType": "DashboardIndustryData",
+      "responseType": "DashboardIndustryResponses"
+    },
     "GET /api/v2/dashboard/settings": {
       "operationId": "dashboardSettings",
       "requestType": "DashboardSettingsData",
@@ -2257,7 +2262,7 @@
       "requestType": "SaveChartDrawingV2Data",
       "responseType": "SaveChartDrawingV2Responses"
     },
-    "PUT /api/v2/dashboard/settings": {
+    "PUT /api/v2/dashboard/settings/{nganh}": {
       "operationId": "dashboardSaveSettings",
       "requestType": "DashboardSaveSettingsData",
       "responseType": "DashboardSaveSettingsResponses"

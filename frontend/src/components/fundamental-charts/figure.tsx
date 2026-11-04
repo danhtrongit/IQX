@@ -2,6 +2,7 @@ import { dailyAxis, finiteValues, meanOf, medianOf, stdDevOf } from "./format"
 import {
   cagrPath,
   figureTooltip,
+  lineColor,
   MAIN_COLOR,
   REFERENCE_COLOR,
   streakStart,
@@ -48,7 +49,9 @@ export function ChartFigure({
 
   let drawing
   if (chart.kind === "A" || chart.kind === "B" || chart.kind === "C") {
-    const hasNegative = (main?.v ?? []).some((value) => typeof value === "number" && value < 0)
+    const hasNegative = chart.main.some((series) =>
+      series.v.some((value) => typeof value === "number" && value < 0),
+    )
     drawing = (
       <>
         <PanelLabel>{unit}</PanelLabel>
@@ -57,7 +60,13 @@ export function ChartFigure({
           height={150}
           axis={false}
           zero={chart.kind === "A" && hasNegative}
-          lines={main ? [{ name: main.name, values: main.v, color: MAIN_COLOR, markers: true }] : []}
+          reference={chart.ref}
+          lines={chart.main.map((series, index) => ({
+            name: series.name,
+            values: series.v,
+            color: lineColor(index),
+            markers: true,
+          }))}
         />
         {chart.sub && (
           <>

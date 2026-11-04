@@ -50,7 +50,6 @@ import {
   barAtStep,
   validateRoomSettings,
   verifyRoomPassword,
-  visibleStep,
   type FbPublicBar,
   type FbRoomSettingsInput,
 } from './flashback-rooms.logic.js';
@@ -188,9 +187,14 @@ export interface FbEntryView {
 export interface FbStatePlayer extends FbPlayerRef {
   readonly is_me: boolean;
   readonly finished: boolean;
-  /** % lợi nhuận (phân số) tại `min(phiên của họ, phiên của mình)`; sau khi kết thúc là % cuối. */
-  readonly pnl_pct: number;
-  readonly pnl_percent: number;
+  /** Phiên hiện tại của người này (v2.1 §6.2: "Đang chơi · {phiên}/{số phiên chơi}"). */
+  readonly step: number;
+  /**
+   * % lợi nhuận (phân số): null trong lúc chơi, không ai thấy % của ai (v2.1 §6.2); chỉ sau khi
+   * ván kết thúc mới trả % cuối.
+   */
+  readonly pnl_pct: number | null;
+  readonly pnl_percent: number | null;
 }
 
 export interface FbStateView {
@@ -1122,20 +1126,23 @@ export class FlashbackRoomsService {
     const now = this.clock.now();
     const ended = match.status !== 'playing';
     const players = entries.map((entry): FbStatePlayer => {
-      let nav: bigint;
-      if (ended) nav = entry.finalNav ?? navAtStep(entry.navByStep, match.playBars);
-      else if (entry.userId === me.userId) nav = navAtStep(entry.navByStep, entry.step);
-      // % của người khác chỉ tính tới phiên mình đang xem (§6.1).
-      else nav = navAtStep(entry.navByStep, visibleStep(entry.step, me.step));
-      const pnl = pnlFraction(nav, entry.initialCash);
+      // Trong lúc chơi chỉ trả phiên hiện tại và trạng thái xong, không trả tài sản hay % của ai,
+      // kể cả của chính mình (v2.1 §6.2). Sau khi kết thúc mới có % cuối.
+      const pnl = ended
+        ? pnlFraction(
+            entry.finalNav ?? navAtStep(entry.navByStep, match.playBars),
+            entry.initialCash,
+          )
+        : null;
       return {
         user_id: entry.userId,
         name: entry.name,
         avatar_url: entry.avatarUrl,
         is_me: entry.userId === me.userId,
         finished: entry.status === 'finished',
+        step: entry.step,
         pnl_pct: pnl,
-        pnl_percent: pnl * 100,
+        pnl_percent: pnl === null ? null : pnl * 100,
       };
     });
     return {

@@ -6,23 +6,30 @@ import {
   decimalsForUnit,
   finiteValues,
   formatDayLabel,
+  formatNumber,
   formatWithUnit,
   meanOf,
   medianOf,
 } from "./format"
 import type { FundamentalChartData } from "./types"
 
-/** Chuỗi chính, chuỗi thứ hai, chuỗi thứ ba, âm (spec §9, token trong index.css). */
+/** Chuỗi chính, chuỗi thứ hai, chuỗi thứ ba, chuỗi thứ tư, âm (spec §9, token trong index.css). */
 export const MAIN_COLOR = "var(--s1)"
 export const SECOND_COLOR = "var(--s2)"
 export const THIRD_COLOR = "var(--s3)"
+export const FOURTH_COLOR = "var(--s4)"
+/** Đường thứ hai trên tầng trên của khuôn A và B (chỉ tiêu theo ngành, spec Dashboard v2 §9). */
+export const SECOND_LINE_COLOR = "var(--line2)"
 export const NEGATIVE_COLOR = "var(--neg)"
 /** Đường tham chiếu: nét đứt sáng, trung tính. */
 export const REFERENCE_COLOR = "var(--ref-line)"
 /** Dải bình quân/trung vị ± độ lệch chuẩn. */
 export const BAND_COLOR = "var(--band)"
 
-export const SERIES_COLORS = [MAIN_COLOR, SECOND_COLOR, THIRD_COLOR]
+/** Màu cột theo thứ tự chuỗi: tối đa bốn cột (Cơ cấu doanh thu hoạt động có bốn cột chồng). */
+export const SERIES_COLORS = [MAIN_COLOR, SECOND_COLOR, THIRD_COLOR, FOURTH_COLOR]
+/** Màu đường trên tầng trên theo thứ tự chuỗi: đường 1 xanh, đường 2 vàng. */
+export const LINE_COLORS = [MAIN_COLOR, SECOND_LINE_COLOR]
 
 export type LegendItem = { label: string; color: string; shape: "line" | "bar" | "band" }
 
@@ -72,12 +79,31 @@ export function streakStart(values: (number | null)[], hero: number | null | und
   return Math.max(0, values.length - streak)
 }
 
+/** Màu của đường thứ `index` trên tầng trên. */
+export function lineColor(index: number): string {
+  return LINE_COLORS[index % LINE_COLORS.length]
+}
+
+/** Nhãn đường tham chiếu của khuôn A, B, C, ví dụ "Mốc 100%" (spec Dashboard v2 §9). */
+export function referenceLabel(chart: Pick<FundamentalChartData, "ref" | "unit">): string {
+  const value = chart.ref ?? 0
+  return `Mốc ${formatNumber(value, Number.isInteger(value) ? 0 : decimalsForUnit(chart.unit))}${chart.unit === "%" ? "%" : ""}`
+}
+
 /** Chú giải của một biểu đồ theo khuôn của nó. */
 export function figureLegend(chart: FundamentalChartData): LegendItem[] {
   const main = chart.main[0]
   const mainUnit = mainUnitOf(chart)
   if (chart.kind === "A" || chart.kind === "B" || chart.kind === "C") {
-    const items: LegendItem[] = main ? [{ label: main.name, color: MAIN_COLOR, shape: "line" }] : []
+    // Mỗi đường một mục (tối đa hai), rồi đường tham chiếu, rồi các cột thành phần.
+    const items: LegendItem[] = chart.main.map((series, index) => ({
+      label: series.name,
+      color: lineColor(index),
+      shape: "line" as const,
+    }))
+    if (chart.ref !== undefined) {
+      items.push({ label: referenceLabel(chart), color: REFERENCE_COLOR, shape: "line" })
+    }
     for (const [index, series] of (chart.sub?.series ?? []).entries()) {
       items.push({ label: series.name, color: SERIES_COLORS[index % SERIES_COLORS.length], shape: "bar" })
     }
@@ -197,7 +223,7 @@ export function figureTable(chart: FundamentalChartData): FigureTable {
   return { columns, rows }
 }
 
-/** Biểu đồ có ít nhất một giá trị để vẽ. */
+/** Biểu đồ có ít nhất một giá trị để vẽ, ở đường nào cũng được. */
 export function hasChartData(chart: FundamentalChartData): boolean {
-  return chart.labels.length > 0 && (chart.main[0]?.v ?? []).some((value) => value !== null)
+  return chart.labels.length > 0 && chart.main.some((series) => series.v.some((value) => value !== null))
 }

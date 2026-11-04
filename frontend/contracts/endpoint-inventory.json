@@ -404,7 +404,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 53,
+      "line": 56,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/catalog",
       "method": "GET",
@@ -417,7 +417,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 57,
+      "line": 60,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/progress",
       "method": "GET",
@@ -430,7 +430,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 62,
+      "line": 65,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}",
       "method": "GET",
@@ -443,7 +443,20 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 72,
+      "line": 75,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/academy/link",
+      "method": "GET",
+      "route": "/api/v2/academy/link",
+      "matchedOperation": "GET /api/v2/academy/link",
+      "matchedOperations": [
+        "GET /api/v2/academy/link"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/academy/api.ts",
+      "line": 84,
       "callee": "requestOperation",
       "raw": "POST /api/v2/academy/lessons/{lessonId}/scenario",
       "method": "POST",
@@ -456,7 +469,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 82,
+      "line": 94,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}/notes",
       "method": "GET",
@@ -469,7 +482,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 88,
+      "line": 100,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/academy/lessons/{lessonId}/notes",
       "method": "PUT",
@@ -482,7 +495,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 94,
+      "line": 106,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}/attempt",
       "method": "GET",
@@ -495,7 +508,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 100,
+      "line": 112,
       "callee": "requestOperation",
       "raw": "GET /api/v2/academy/lessons/{lessonId}/attempts",
       "method": "GET",
@@ -508,7 +521,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 112,
+      "line": 124,
       "callee": "requestOperation",
       "raw": "POST /api/v2/academy/attempts",
       "method": "POST",
@@ -521,7 +534,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 121,
+      "line": 133,
       "callee": "requestOperation",
       "raw": "PUT /api/v2/academy/attempts/{attemptId}/answers",
       "method": "PUT",
@@ -534,7 +547,7 @@
     },
     {
       "file": "src/pages/academy/api.ts",
-      "line": 137,
+      "line": 149,
       "callee": "requestOperation",
       "raw": "POST /api/v2/academy/attempts/{attemptId}/submit",
       "method": "POST",
@@ -2062,7 +2075,7 @@
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 51,
+      "line": 65,
       "callee": "requestOperation",
       "raw": "GET /api/v2/dashboard/settings",
       "method": "GET",
@@ -2075,7 +2088,7 @@
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 55,
+      "line": 69,
       "callee": "requestOperation",
       "raw": "GET /api/v2/dashboard/catalog",
       "method": "GET",
@@ -2088,20 +2101,33 @@
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 59,
+      "line": 74,
       "callee": "requestOperation",
-      "raw": "PUT /api/v2/dashboard/settings",
-      "method": "PUT",
-      "route": "/api/v2/dashboard/settings",
-      "matchedOperation": "PUT /api/v2/dashboard/settings",
+      "raw": "GET /api/v2/dashboard/industry/{symbol}",
+      "method": "GET",
+      "route": "/api/v2/dashboard/industry/{symbol}",
+      "matchedOperation": "GET /api/v2/dashboard/industry/{symbol}",
       "matchedOperations": [
-        "PUT /api/v2/dashboard/settings"
+        "GET /api/v2/dashboard/industry/{symbol}"
       ],
       "classification": "api-call"
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 69,
+      "line": 79,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/dashboard/settings/{nganh}",
+      "method": "PUT",
+      "route": "/api/v2/dashboard/settings/{nganh}",
+      "matchedOperation": "PUT /api/v2/dashboard/settings/{nganh}",
+      "matchedOperations": [
+        "PUT /api/v2/dashboard/settings/{nganh}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/analysis/api.ts",
+      "line": 89,
       "callee": "requestOperation",
       "raw": "GET /api/v2/fundamental/{symbol}",
       "method": "GET",
@@ -2114,20 +2140,7 @@
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 80,
-      "callee": "requestOperation",
-      "raw": "GET /api/v2/instruments/{symbol}",
-      "method": "GET",
-      "route": "/api/v2/instruments/{symbol}",
-      "matchedOperation": "GET /api/v2/instruments/{symbol}",
-      "matchedOperations": [
-        "GET /api/v2/instruments/{symbol}"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 90,
+      "line": 103,
       "callee": "requestOperation",
       "raw": "GET /api/v2/valuation/{symbol}",
       "method": "GET",
@@ -3915,7 +3928,6 @@
     "DELETE /api/v2/backtest/strategies/{strategyId}",
     "DELETE /api/v2/cap5/watchlist/{symbol}",
     "DELETE /api/v2/chart-drawings/{symbol}",
-    "GET /api/v2/academy/link",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
     "GET /api/v2/admin/metrics/plan-distribution",
