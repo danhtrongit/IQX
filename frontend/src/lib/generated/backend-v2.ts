@@ -42146,6 +42146,122 @@ export type FlashbackIndicatorsResponses = {
 export type FlashbackIndicatorsResponse =
   FlashbackIndicatorsResponses[keyof FlashbackIndicatorsResponses];
 
+export type FlashbackRoomsLeaderboardData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number;
+  };
+  url: "/api/v2/flashback/leaderboard";
+};
+
+export type FlashbackRoomsLeaderboardErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsLeaderboardError =
+  FlashbackRoomsLeaderboardErrors[keyof FlashbackRoomsLeaderboardErrors];
+
+export type FlashbackRoomsLeaderboardResponses = {
+  200: {
+    me: {
+      avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
+      games: number;
+      is_me: boolean;
+      level: number;
+      name: string;
+      points: number;
+      rank: number;
+      user_id: string;
+      wins: number;
+    } | null;
+    rows: Array<{
+      avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
+      games: number;
+      is_me: boolean;
+      level: number;
+      name: string;
+      points: number;
+      rank: number;
+      user_id: string;
+      wins: number;
+    }>;
+  };
+};
+
+export type FlashbackRoomsLeaderboardResponse =
+  FlashbackRoomsLeaderboardResponses[keyof FlashbackRoomsLeaderboardResponses];
+
+export type FlashbackRoomsLeaderboardTop3Data = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/leaderboard/top3";
+};
+
+export type FlashbackRoomsLeaderboardTop3Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsLeaderboardTop3Error =
+  FlashbackRoomsLeaderboardTop3Errors[keyof FlashbackRoomsLeaderboardTop3Errors];
+
+export type FlashbackRoomsLeaderboardTop3Responses = {
+  200: {
+    users: Array<{
+      avatar_url: string | null;
+      level: number;
+      name: string;
+      points: number;
+      rank: 1 | 2 | 3;
+      user_id: string;
+    }>;
+  };
+};
+
+export type FlashbackRoomsLeaderboardTop3Response =
+  FlashbackRoomsLeaderboardTop3Responses[keyof FlashbackRoomsLeaderboardTop3Responses];
+
 export type FlashbackMatchGetData = {
   body?: never;
   path: {
@@ -42243,8 +42359,10 @@ export type FlashbackMatchGetResponses = {
     }>;
     players: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       finished: boolean;
       is_me: boolean;
+      level: number;
       name: string;
       pnl_pct: number | null;
       pnl_percent: number | null;
@@ -42253,6 +42371,12 @@ export type FlashbackMatchGetResponses = {
     }>;
     playing_count: number;
     pot_xu: number;
+    reactions: Array<{
+      age_ms: number;
+      emoji: string;
+      id: string;
+      user_id: string;
+    }>;
     remaining_ms: number;
     room_id: string;
     server_now: string;
@@ -42533,6 +42657,54 @@ export type FlashbackMatchOrderResponses = {
 export type FlashbackMatchOrderResponse =
   FlashbackMatchOrderResponses[keyof FlashbackMatchOrderResponses];
 
+export type FlashbackMatchReactionData = {
+  body: {
+    emoji: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/matches/{id}/reactions";
+};
+
+export type FlashbackMatchReactionErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMatchReactionError =
+  FlashbackMatchReactionErrors[keyof FlashbackMatchReactionErrors];
+
+export type FlashbackMatchReactionResponses = {
+  200: {
+    emoji: string;
+    id: string;
+    user_id: string;
+  };
+};
+
+export type FlashbackMatchReactionResponse =
+  FlashbackMatchReactionResponses[keyof FlashbackMatchReactionResponses];
+
 export type FlashbackMatchResultData = {
   body?: never;
   path: {
@@ -42582,16 +42754,29 @@ export type FlashbackMatchResultResponses = {
       volume: number;
     }>;
     pot_xu: number;
+    progress: {
+      level: number;
+      level_base: number;
+      leveled_up: boolean;
+      next_level_points: number;
+      points: number;
+      previous_level: number;
+      remaining_points: number;
+      total_points: number;
+    };
     refund: boolean;
     room_id: string;
     rows: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       final_nav: string;
       is_me: boolean;
       is_winner: boolean;
+      level: number;
       name: string;
       pnl_pct: number;
       pnl_percent: number;
+      points: number;
       rank: number;
       refund_xu: number;
       user_id: string;
@@ -42652,8 +42837,10 @@ export type FlashbackMatchStateResponses = {
     my_step: number;
     players: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       finished: boolean;
       is_me: boolean;
+      level: number;
       name: string;
       pnl_pct: number | null;
       pnl_percent: number | null;
@@ -42661,6 +42848,12 @@ export type FlashbackMatchStateResponses = {
       user_id: string;
     }>;
     playing_count: number;
+    reactions: Array<{
+      age_ms: number;
+      emoji: string;
+      id: string;
+      user_id: string;
+    }>;
     remaining_ms: number;
     room_id: string;
     server_now: string;
@@ -42671,6 +42864,202 @@ export type FlashbackMatchStateResponses = {
 
 export type FlashbackMatchStateResponse =
   FlashbackMatchStateResponses[keyof FlashbackMatchStateResponses];
+
+export type FlashbackMyHistoryData = {
+  body?: never;
+  path?: never;
+  query?: {
+    result?: "all" | "win" | "lose" | "solo";
+    days?: "7" | "30" | "all";
+    page?: number;
+  };
+  url: "/api/v2/flashback/me/history";
+};
+
+export type FlashbackMyHistoryErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMyHistoryError =
+  FlashbackMyHistoryErrors[keyof FlashbackMyHistoryErrors];
+
+export type FlashbackMyHistoryResponses = {
+  200: {
+    items: Array<{
+      cash_percent: number;
+      end_date: string;
+      ended_at: string;
+      match_id: string;
+      minutes: number;
+      orders: Array<{
+        amount: string;
+        fee: string;
+        id: string;
+        price: string;
+        qty: number;
+        side: "buy" | "sell";
+        step: number;
+        tax: string;
+      }>;
+      play_bars: number;
+      player_count: number;
+      players: Array<{
+        avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
+        is_me: boolean;
+        level: number;
+        name: string;
+        pnl_pct: number;
+        pnl_percent: number;
+        points: number;
+        rank: number;
+        user_id: string;
+        xu: number;
+      }>;
+      pnl_pct: number;
+      pnl_percent: number;
+      points: number;
+      rank: number;
+      result: "win" | "tie" | "lose" | "solo";
+      room_id: string;
+      stake_xu: number;
+      start_date: string;
+      symbol: string;
+      view_bars: number;
+      xu: number;
+    }>;
+    page: number;
+    page_size: number;
+    pages: number;
+    total: number;
+  };
+};
+
+export type FlashbackMyHistoryResponse =
+  FlashbackMyHistoryResponses[keyof FlashbackMyHistoryResponses];
+
+export type FlashbackMyHistorySummaryData = {
+  body?: never;
+  path?: never;
+  query?: {
+    days?: "7" | "30" | "all";
+  };
+  url: "/api/v2/flashback/me/history/summary";
+};
+
+export type FlashbackMyHistorySummaryErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMyHistorySummaryError =
+  FlashbackMyHistorySummaryErrors[keyof FlashbackMyHistorySummaryErrors];
+
+export type FlashbackMyHistorySummaryResponses = {
+  200: {
+    avg_pnl_pct: number;
+    avg_pnl_percent: number;
+    best_pnl_pct: number | null;
+    best_pnl_percent: number | null;
+    best_symbol: string | null;
+    games: number;
+    multi_games: number;
+    points: number;
+    solo_games: number;
+    win_rate: number;
+    wins: number;
+    xu_net: number;
+  };
+};
+
+export type FlashbackMyHistorySummaryResponse =
+  FlashbackMyHistorySummaryResponses[keyof FlashbackMyHistorySummaryResponses];
+
+export type FlashbackMyLevelData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/me/level";
+};
+
+export type FlashbackMyLevelErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMyLevelError =
+  FlashbackMyLevelErrors[keyof FlashbackMyLevelErrors];
+
+export type FlashbackMyLevelResponses = {
+  200: {
+    games: number;
+    level: number;
+    level_base: number;
+    next_level_points: number;
+    points: number;
+    rank: number | null;
+    remaining_points: number;
+    wins: number;
+  };
+};
+
+export type FlashbackMyLevelResponse =
+  FlashbackMyLevelResponses[keyof FlashbackMyLevelResponses];
 
 export type FlashbackRoomsListData = {
   body?: never;
@@ -42719,6 +43108,8 @@ export type FlashbackRoomsListResponses = {
       minutes: number;
       owner: {
         avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
+        level: number;
         name: string;
       };
       play_bars: number;
@@ -42789,9 +43180,11 @@ export type FlashbackRoomsCreateResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
       user_id: string;
     }>;
@@ -42860,9 +43253,11 @@ export type FlashbackRoomsMineResponses = {
       max_players: number;
       members: Array<{
         avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
         is_me: boolean;
         is_owner: boolean;
         joined_at: string;
+        level: number;
         name: string;
         user_id: string;
       }>;
@@ -42930,9 +43325,11 @@ export type FlashbackRoomsRandomJoinResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
       user_id: string;
     }>;
@@ -43001,9 +43398,11 @@ export type FlashbackRoomsGetResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
       user_id: string;
     }>;
@@ -43074,9 +43473,11 @@ export type FlashbackRoomsJoinResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
       user_id: string;
     }>;
@@ -43189,9 +43590,11 @@ export type FlashbackRoomsReplayResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
       user_id: string;
     }>;
@@ -43306,8 +43709,10 @@ export type FlashbackRoomsStartResponses = {
       }>;
       players: Array<{
         avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
         finished: boolean;
         is_me: boolean;
+        level: number;
         name: string;
         pnl_pct: number | null;
         pnl_percent: number | null;
@@ -43316,6 +43721,12 @@ export type FlashbackRoomsStartResponses = {
       }>;
       playing_count: number;
       pot_xu: number;
+      reactions: Array<{
+        age_ms: number;
+        emoji: string;
+        id: string;
+        user_id: string;
+      }>;
       remaining_ms: number;
       room_id: string;
       server_now: string;
@@ -43353,9 +43764,11 @@ export type FlashbackRoomsStartResponses = {
       max_players: number;
       members: Array<{
         avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
         is_me: boolean;
         is_owner: boolean;
         joined_at: string;
+        level: number;
         name: string;
         user_id: string;
       }>;

@@ -424,6 +424,110 @@ export function settleMatch(input: {
   return { outcomes, potXu, shareXu, refund };
 }
 
+// ------------------------------------------------------------------ v2.1 §3, §4 cấp, điểm, hạng
+
+/** Ván từ 2 người: thắng (kể cả đồng hạng 1) nhận 10 điểm (v2.1 §3.1). */
+export const FB_POINTS_WIN = 10;
+/** Ván từ 2 người: thua nhận 3 điểm (v2.1 §3.1). */
+export const FB_POINTS_LOSS = 3;
+
+/**
+ * Điểm cấp của một người trong một ván (v2.1 §3.1): ván chơi 1 mình không có điểm, ván từ 2 người
+ * thắng +10, thua +3. Chủ sản phẩm chốt giữ cố định, không tăng theo số người trong phòng.
+ */
+export function matchPoints(input: { readonly solo: boolean; readonly winner: boolean }): number {
+  if (input.solo) return 0;
+  return input.winner ? FB_POINTS_WIN : FB_POINTS_LOSS;
+}
+
+/** Tổng điểm để đạt cấp L: 5 × (L − 1) × (L + 2) (v2.1 §3.2). Cấp 1 là 0 điểm. */
+export function levelBase(level: number): number {
+  const value = Math.max(1, Math.trunc(level));
+  return 5 * (value - 1) * (value + 2);
+}
+
+/** Điểm cần thêm để lên từ cấp L sang cấp L + 1: 20 + 10 × (L − 1). */
+export function levelStep(level: number): number {
+  return 20 + 10 * (Math.max(1, Math.trunc(level)) - 1);
+}
+
+/**
+ * Cấp từ tổng điểm: cấp lớn nhất L mà `levelBase(L) <= điểm`. Không giới hạn cấp, tính từ điểm nên
+ * không bao giờ xuống cấp. Nghiệm gần đúng của 5(L−1)(L+2) = p rồi chỉnh lại bằng phép so sánh
+ * nguyên để không lệch ở các mốc (50 điểm là cấp 3, 49 điểm là cấp 2).
+ */
+export function levelOfPoints(points: number): number {
+  const total = Math.max(0, Math.trunc(points));
+  let level = Math.max(1, Math.floor((-1 + Math.sqrt(9 + (4 * total) / 5)) / 2));
+  while (levelBase(level + 1) <= total) level += 1;
+  while (level > 1 && levelBase(level) > total) level -= 1;
+  return level;
+}
+
+export interface FbLevelInfo {
+  readonly points: number;
+  readonly level: number;
+  /** Tổng điểm để đạt cấp hiện tại. */
+  readonly levelBase: number;
+  /** Tổng điểm để đạt cấp kế tiếp. */
+  readonly nextLevelPoints: number;
+  /** Còn thiếu bao nhiêu điểm để lên cấp kế tiếp (luôn >= 1). */
+  readonly remaining: number;
+}
+
+export function levelInfo(points: number): FbLevelInfo {
+  const total = Math.max(0, Math.trunc(points));
+  const level = levelOfPoints(total);
+  const next = levelBase(level + 1);
+  return {
+    points: total,
+    level,
+    levelBase: levelBase(level),
+    nextLevelPoints: next,
+    remaining: next - total,
+  };
+}
+
+/** Vương miện: 1 vàng, 2 bạc, 3 đồng (v2.1 §4.3). */
+export type FbCrown = 1 | 2 | 3;
+
+export interface FbRankKey {
+  readonly userId: string;
+  readonly points: number;
+  readonly wins: number;
+  /** Lúc đạt mốc điểm hiện tại. */
+  readonly reachedPointsAt: Date;
+}
+
+/**
+ * Thứ tự bảng xếp hạng (v2.1 §4.1): điểm giảm dần; bằng điểm thì nhiều ván thắng hơn xếp trên; vẫn
+ * bằng thì ai đạt mốc điểm đó sớm hơn xếp trên; cuối cùng so mã người dùng để thứ tự luôn ổn định.
+ * Phải khớp `order by` của truy vấn bảng xếp hạng ở kho dữ liệu.
+ */
+export function compareRank(left: FbRankKey, right: FbRankKey): number {
+  if (left.points !== right.points) return right.points - left.points;
+  if (left.wins !== right.wins) return right.wins - left.wins;
+  const byTime = left.reachedPointsAt.getTime() - right.reachedPointsAt.getTime();
+  if (byTime !== 0) return byTime;
+  return left.userId < right.userId ? -1 : left.userId > right.userId ? 1 : 0;
+}
+
+export type FbHistoryResult = 'win' | 'tie' | 'lose' | 'solo';
+
+/**
+ * Nhãn kết quả của một ván trong lịch sử đấu (v2.1 §5.2): chơi 1 mình; hạng 1 một mình là Thắng,
+ * hạng 1 cùng người khác là Hoà; còn lại là Thua. `topCount` là số người đồng hạng 1.
+ */
+export function historyResultOf(input: {
+  readonly playerCount: number;
+  readonly rank: number;
+  readonly topCount: number;
+}): FbHistoryResult {
+  if (input.playerCount < 2) return 'solo';
+  if (input.rank !== 1) return 'lose';
+  return input.topCount > 1 ? 'tie' : 'win';
+}
+
 /** Tiêu đề cửa sổ kết quả cho người xem (§7.3). */
 export function resultTitle(input: {
   readonly solo: boolean;

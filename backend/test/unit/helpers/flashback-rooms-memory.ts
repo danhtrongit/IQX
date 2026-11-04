@@ -1,7 +1,8 @@
 /**
  * Kho phòng chơi Flashback v2 trong bộ nhớ (cho test đơn vị của FlashbackRoomsService).
  * Bắt chước các ràng buộc quan trọng của migration 0033: code duy nhất trong phòng chưa đóng, mỗi
- * tài khoản một phòng, khoá ledger duy nhất, ví không âm.
+ * tài khoản một phòng, khoá ledger duy nhất, ví không âm; và của migration 0038: điểm chỉ cộng cho
+ * dòng chưa có points_awarded_at, bảng xếp hạng theo điểm, ván thắng, mốc đạt điểm.
  */
 
 import { randomUUID } from 'node:crypto';
@@ -10,11 +11,19 @@ import type {
   DatabaseService,
   SqlClient,
 } from '../../../src/platform/database/database.service.js';
+import { compareRank } from '../../../src/modules/flashback/flashback-rooms.logic.js';
 import {
+  FB_HISTORY_CAP,
   FlashbackRoomsRepository,
+  type FbAwardInput,
   type FbEntryPatch,
   type FbEntryPlayerRow,
   type FbEntryRow,
+  type FbHistoryFilter,
+  type FbHistoryPlayerRow,
+  type FbHistoryRow,
+  type FbHistorySummaryRow,
+  type FbLeaderboardRow,
   type FbLedgerEntry,
   type FbMatchPatch,
   type FbMatchRow,
@@ -55,6 +64,15 @@ export interface MemoryRoomsState {
   orders: FlashbackOrderRow[];
   wallets: Map<string, { balance: number; lastSeq: number }>;
   ledger: (FbLedgerEntry & { createdAt: Date })[];
+  /** fb_player_stats: chỉ người đã chơi ván từ 2 người (hoặc được đặt sẵn trong test). */
+  stats: Map<string, MemoryStats>;
+}
+
+export interface MemoryStats {
+  points: number;
+  games: number;
+  wins: number;
+  reachedPointsAt: Date;
 }
 
 export function memoryDatabase(): DatabaseService {
@@ -78,6 +96,7 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
     orders: [],
     wallets: new Map(),
     ledger: [],
+    stats: new Map(),
   };
 
   /** Mã phòng cấp lần lượt khi test cần mã cố định. */
@@ -93,8 +112,34 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
     return this.state.wallets.get(userId)?.balance ?? 0;
   }
 
+  /** Đặt sẵn bảng điểm của một người (để dựng bảng xếp hạng trong test). */
+  setStats(userId: string, stats: Partial<MemoryStats> & { points: number }): void {
+    this.state.stats.set(userId, { games: 1, wins: 0, reachedPointsAt: new Date(0), ...stats });
+  }
+
+  totalPointsOf(userId: string): number {
+    return this.state.stats.get(userId)?.points ?? 0;
+  }
+
   private user(userId: string) {
     return this.state.users.get(userId) ?? { name: userId, avatarUrl: null };
+  }
+
+  private ranked(): (FbLeaderboardRow & { reachedPointsAt: Date })[] {
+    return [...this.state.stats.entries()]
+      .filter(([, stats]) => stats.games > 0)
+      .map(([userId, stats]) => ({ userId, ...stats }))
+      .sort(compareRank)
+      .map((row, index) => ({
+        rank: index + 1,
+        userId: row.userId,
+        name: this.user(row.userId).name,
+        avatarUrl: this.user(row.userId).avatarUrl,
+        points: row.points,
+        games: row.games,
+        wins: row.wins,
+        reachedPointsAt: row.reachedPointsAt,
+      }));
   }
 
   async insertRoom(_tx: SqlClient, input: NewFbRoom): Promise<FbRoomRow | null> {
@@ -145,6 +190,7 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
         ...room,
         ownerName: this.user(room.ownerId).name,
         ownerAvatarUrl: null,
+        ownerTotalPoints: this.totalPointsOf(room.ownerId),
         memberCount: this.state.members.filter((m) => m.roomId === room.id && !m.leftAt).length,
       }));
   }
@@ -183,6 +229,7 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
         joinedAt: member.joinedAt,
         name: this.user(member.userId).name,
         avatarUrl: null,
+        totalPoints: this.totalPointsOf(member.userId),
       }));
   }
 
@@ -320,6 +367,9 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
       winXu: 0,
       refundXu: 0,
       status: 'playing',
+      points: 0,
+      isWin: false,
+      pointsAwardedAt: null,
     };
     this.state.entries.push(entry);
     return { ...entry };
@@ -343,6 +393,7 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
         navByStep: [...entry.navByStep],
         name: this.user(entry.userId).name,
         avatarUrl: null,
+        totalPoints: this.totalPointsOf(entry.userId),
       }));
   }
 
@@ -400,5 +451,198 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
     key: string,
   ): Promise<FlashbackOrderRow | null> {
     return this.state.orders.find((o) => o.entryId === entryId && o.idempotencyKey === key) ?? null;
+  }
+
+  // ------------------------------------------------------------------ cấp, điểm, hạng (0038)
+
+  async awardEntry(_tx: SqlClient, input: FbAwardInput): Promise<boolean> {
+    const entry = this.state.entries.find((item) => item.id === input.entryId);
+    if (!entry || entry.pointsAwardedAt) return false;
+    entry.points = input.points;
+    entry.isWin = input.isWin;
+    entry.pointsAwardedAt = input.at;
+    if (input.counted) {
+      const stats = this.state.stats.get(input.userId) ?? {
+        points: 0,
+        games: 0,
+        wins: 0,
+        reachedPointsAt: input.at,
+      };
+      stats.points += input.points;
+      stats.games += 1;
+      stats.wins += input.isWin ? 1 : 0;
+      if (input.points > 0) stats.reachedPointsAt = input.at;
+      this.state.stats.set(input.userId, stats);
+    }
+    return true;
+  }
+
+  async pendingAwardMatchIds(_db: SqlClient, limit: number): Promise<string[]> {
+    return this.state.matches
+      .filter(
+        (match) =>
+          match.status !== 'playing' &&
+          this.state.entries.some(
+            (entry) =>
+              entry.matchId === match.id &&
+              entry.status === 'finished' &&
+              entry.pointsAwardedAt === null,
+          ),
+      )
+      .sort((left, right) => (left.endedAt?.getTime() ?? 0) - (right.endedAt?.getTime() ?? 0))
+      .slice(0, limit)
+      .map((match) => match.id);
+  }
+
+  async leaderboard(_db: SqlClient, limit: number): Promise<FbLeaderboardRow[]> {
+    return this.ranked()
+      .slice(0, limit)
+      .map(({ reachedPointsAt: _at, ...row }) => row);
+  }
+
+  async leaderboardRow(_db: SqlClient, userId: string): Promise<FbLeaderboardRow | null> {
+    const found = this.ranked().find((row) => row.userId === userId);
+    if (!found) return null;
+    const { reachedPointsAt: _at, ...row } = found;
+    return row;
+  }
+
+  async top3(_db: SqlClient): Promise<string[]> {
+    return this.ranked()
+      .slice(0, 3)
+      .map((row) => row.userId);
+  }
+
+  async pointsThroughEntry(_db: SqlClient, entryId: string): Promise<number> {
+    const entry = this.state.entries.find((item) => item.id === entryId);
+    if (!entry?.pointsAwardedAt) return 0;
+    const at = entry.pointsAwardedAt.getTime();
+    return this.state.entries
+      .filter(
+        (other) =>
+          other.userId === entry.userId &&
+          other.pointsAwardedAt !== null &&
+          (other.pointsAwardedAt.getTime() < at ||
+            (other.pointsAwardedAt.getTime() === at && other.id <= entry.id)),
+      )
+      .reduce((sum, other) => sum + other.points, 0);
+  }
+
+  private historyEntries(userId: string, filter: FbHistoryFilter) {
+    return this.state.entries
+      .map((entry) => ({ entry, match: this.state.matches.find((m) => m.id === entry.matchId) }))
+      .filter(
+        (item): item is { entry: Mutable<FbEntryRow>; match: Mutable<FbMatchRow> } =>
+          item.match !== undefined,
+      )
+      .filter(({ entry, match }) => {
+        if (entry.userId !== userId || match.status === 'playing' || entry.rank === null)
+          return false;
+        if (filter.since && (!match.endedAt || match.endedAt < filter.since)) return false;
+        const multi = match.playerCount >= 2;
+        if (filter.result === 'solo') return !multi;
+        if (filter.result === 'win') return multi && entry.rank === 1;
+        if (filter.result === 'lose') return multi && entry.rank !== 1;
+        return true;
+      })
+      .sort(
+        (left, right) =>
+          (right.match.endedAt?.getTime() ?? 0) - (left.match.endedAt?.getTime() ?? 0) ||
+          (right.match.id < left.match.id ? -1 : right.match.id > left.match.id ? 1 : 0),
+      );
+  }
+
+  async historyPage(
+    _db: SqlClient,
+    userId: string,
+    filter: FbHistoryFilter,
+    offset: number,
+    limit: number,
+  ): Promise<{ total: number; rows: FbHistoryRow[] }> {
+    const all = this.historyEntries(userId, filter).slice(0, FB_HISTORY_CAP);
+    const pageLimit = Math.max(0, Math.min(limit, FB_HISTORY_CAP - offset));
+    const rows = all.slice(offset, offset + pageLimit).map(({ entry, match }): FbHistoryRow => {
+      const room = this.state.rooms.find((item) => item.id === match.roomId);
+      return {
+        entryId: entry.id,
+        matchId: match.id,
+        roomCode: room?.code ?? '',
+        endedAt: match.endedAt ?? new Date(0),
+        playerCount: match.playerCount,
+        viewBars: match.viewBars,
+        playBars: match.playBars,
+        minutes: match.minutes,
+        matchStakeXu: match.stakeXu,
+        symbol: match.symbol,
+        startDate: match.startDate,
+        endDate: match.endDate,
+        rank: entry.rank ?? 0,
+        topCount: this.state.entries.filter((t) => t.matchId === match.id && t.rank === 1).length,
+        pnlPct: entry.pnlPct ?? 0,
+        cash: entry.cash,
+        finalNav: entry.finalNav ?? entry.cash,
+        stakeXu: entry.stakeXu,
+        winXu: entry.winXu,
+        refundXu: entry.refundXu,
+        points: entry.points,
+      };
+    });
+    return { total: all.length, rows };
+  }
+
+  async historyPlayers(_db: SqlClient, matchIds: readonly string[]): Promise<FbHistoryPlayerRow[]> {
+    return this.state.entries
+      .filter((entry) => matchIds.includes(entry.matchId))
+      .sort(
+        (left, right) =>
+          (left.rank ?? 99) - (right.rank ?? 99) ||
+          left.joinedAt.getTime() - right.joinedAt.getTime(),
+      )
+      .map((entry): FbHistoryPlayerRow => ({
+        matchId: entry.matchId,
+        userId: entry.userId,
+        name: this.user(entry.userId).name,
+        avatarUrl: null,
+        totalPoints: this.totalPointsOf(entry.userId),
+        rank: entry.rank ?? 0,
+        pnlPct: entry.pnlPct ?? 0,
+        stakeXu: entry.stakeXu,
+        winXu: entry.winXu,
+        refundXu: entry.refundXu,
+        points: entry.points,
+        joinedAt: entry.joinedAt,
+      }));
+  }
+
+  async historyOrders(_db: SqlClient, entryIds: readonly string[]): Promise<FlashbackOrderRow[]> {
+    return this.state.orders.filter((order) => entryIds.includes(order.entryId));
+  }
+
+  async historySummary(
+    _db: SqlClient,
+    userId: string,
+    since: Date | null,
+  ): Promise<FbHistorySummaryRow> {
+    const items = this.historyEntries(userId, { result: 'all', since });
+    const best = [...items].sort(
+      (left, right) =>
+        (right.entry.pnlPct ?? 0) - (left.entry.pnlPct ?? 0) ||
+        (right.match.endedAt?.getTime() ?? 0) - (left.match.endedAt?.getTime() ?? 0),
+    )[0];
+    return {
+      games: items.length,
+      soloGames: items.filter(({ match }) => match.playerCount < 2).length,
+      wins: items.filter(({ entry, match }) => match.playerCount >= 2 && entry.rank === 1).length,
+      xuNet: items.reduce(
+        (sum, { entry }) => sum + entry.winXu + entry.refundXu - entry.stakeXu,
+        0,
+      ),
+      points: items.reduce((sum, { entry }) => sum + entry.points, 0),
+      avgPnlPct: items.length
+        ? items.reduce((sum, { entry }) => sum + (entry.pnlPct ?? 0), 0) / items.length
+        : null,
+      bestPnlPct: best ? (best.entry.pnlPct ?? 0) : null,
+      bestSymbol: best?.match.symbol ?? null,
+    };
   }
 }

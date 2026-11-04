@@ -20,6 +20,26 @@
   .page-loading-bar { animation: none; width: 100%; }
 }
 
+/* Biểu cảm của Flashback (v2.1 §6.4): hiện to ở avatar người gửi, bay xuống nhẹ rồi mờ dần trong 2,5 giây. */
+@keyframes iqx-reaction {
+  0% { opacity: 0; transform: translate(-50%, -85%) scale(0.4); }
+  12% { opacity: 1; transform: translate(-50%, -60%) scale(1.25); }
+  25% { transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -5%) scale(0.95); }
+}
+
+@keyframes iqx-reaction-fade {
+  0%, 80% { opacity: 1; transform: translate(-50%, -50%); }
+  100% { opacity: 0; transform: translate(-50%, -50%); }
+}
+
+.fb-reaction { animation: iqx-reaction 2.5s ease-out both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fb-reaction { animation-name: iqx-reaction-fade; }
+}
+
 @theme inline {
     --font-sans: 'Be Vietnam Pro', sans-serif;
     --font-heading: 'Space Grotesk Variable', 'Be Vietnam Pro', sans-serif;
@@ -74,6 +94,11 @@
     --shadow-brand-glow: var(--brand-glow);
     --shadow-brand-glow-lg: var(--brand-glow-lg);
     --color-status-warning: var(--status-warning);
+    --color-crown-gold: var(--crown-gold);
+    --color-crown-silver: var(--crown-silver);
+    --color-crown-bronze: var(--crown-bronze);
+    --color-crown-foreground: var(--crown-foreground);
+    --color-level-badge: var(--level-badge);
     --color-academy-subtle: var(--academy-subtle);
     --color-academy-label: var(--academy-label);
     --color-text-secondary: var(--text-secondary);
@@ -149,6 +174,13 @@
     --status-error: var(--destructive);
     --status-info: var(--primary);
     --status-warning: oklch(0.52 0.12 70);
+    /* Vương miện top 1, 2, 3 của Flashback (spec v2.1 §4.3): vàng, bạc, đồng; chữ trên bệ đỡ dùng crown-foreground. */
+    --crown-gold: oklch(0.77 0.16 86);
+    --crown-silver: oklch(0.72 0.02 250);
+    --crown-bronze: oklch(0.64 0.11 52);
+    --crown-foreground: oklch(0.22 0.02 256);
+    /* Nền tối của ô cấp nhỏ ở góc avatar (viền và số dùng crown-gold). */
+    --level-badge: oklch(0.22 0.02 256);
     /* Học viện reader: sub-text and chart labels (never muted-foreground there). */
     --academy-subtle: oklch(0.330 0.020 256);
     --academy-label: oklch(0.380 0.020 256);
@@ -221,6 +253,11 @@
     --status-error: oklch(0.76 0.16 25);
     --status-info: oklch(0.76 0.12 250);
     --status-warning: oklch(0.79 0.14 80);
+    --crown-gold: oklch(0.84 0.16 90);
+    --crown-silver: oklch(0.87 0.015 250);
+    --crown-bronze: oklch(0.73 0.12 55);
+    --crown-foreground: oklch(0.2 0.02 256);
+    --level-badge: oklch(0.16 0.02 256);
     --academy-subtle: oklch(0.925 0.018 245);
     --academy-label: oklch(0.870 0.022 248);
     --text-secondary: #c9d6e4;

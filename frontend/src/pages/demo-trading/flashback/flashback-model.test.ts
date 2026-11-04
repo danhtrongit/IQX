@@ -1,29 +1,48 @@
 import { describe, expect, it } from "vitest"
 
-import type { FlashbackPlayer, FlashbackPosition } from "./flashback-api"
+import type { FlashbackHistoryItem, FlashbackPlayer, FlashbackPosition, FlashbackResultProgress } from "./flashback-api"
 import {
+  HISTORY_DAY_FILTERS,
+  HISTORY_RESULT_FILTERS,
+  HISTORY_RESULT_LABEL,
+  LEADERBOARD_LIMIT,
+  LEADERBOARD_NOTE,
   QTY_QUICK_ADD,
+  REACTION_BUBBLE_MS,
+  REACTION_COOLDOWN_MS,
+  REACTION_EMOJIS,
+  REACTION_TOO_FAST,
   ROOM_FORM_DEFAULTS,
   ROOM_PLAYER_OPTIONS,
   addQty,
   avatarTone,
   clockText,
+  finishedCount,
+  formatDateTime,
   formatMatchDate,
   formatSignedMoney,
   formatSignedPercent,
+  historyRankLine,
+  historyRoomLine,
+  historyXuLine,
   indicatorColor,
   initialOf,
   instanceShortLabel,
   isRoomCode,
   leaderIds,
+  levelPercent,
   maxBuyQty,
   orderCashChange,
   orderError,
+  orderPlayers,
   orderPreview,
   playerStatus,
+  pointsLabel,
+  progressLine,
   roomSlotCount,
   sellableQty,
   sessionLabel,
+  signTone,
   validateRoomForm,
   type RoomForm,
 } from "./flashback-model"
@@ -212,8 +231,10 @@ describe("đồng hồ, dẫn đầu, nhãn trục và ngày", () => {
 
   const player = (id: string, pnl: number | null, overrides: Partial<FlashbackPlayer> = {}): FlashbackPlayer => ({
     avatar_url: null,
+    crown: null,
     finished: false,
     is_me: false,
+    level: 1,
     name: id,
     pnl_pct: pnl === null ? null : pnl / 100,
     pnl_percent: pnl,
@@ -284,5 +305,154 @@ describe("avatar và chỉ báo", () => {
     expect(instanceShortLabel({ id: "ma", params: { period: 20 } })).toBe("ma 20")
     expect(instanceShortLabel({ id: "rsi", params: { period: 14, level: { lower: 30, upper: 70 } } })).toBe("rsi 14")
     expect(instanceShortLabel({ id: "obv", params: {} })).toBe("obv")
+  })
+})
+
+describe("cấp và điểm (v2.1 §3)", () => {
+  const progress = (overrides: Partial<FlashbackResultProgress> = {}): FlashbackResultProgress => ({
+    level: 3,
+    level_base: 50,
+    leveled_up: false,
+    next_level_points: 90,
+    points: 10,
+    previous_level: 3,
+    remaining_points: 15,
+    total_points: 75,
+    ...overrides,
+  })
+
+  it("levelPercent: phần đã đi được trong cấp hiện tại, chặn trong 0 đến 100", () => {
+    expect(levelPercent({ points: 50, level_base: 50, next_level_points: 90 })).toBe(0)
+    expect(levelPercent({ points: 70, level_base: 50, next_level_points: 90 })).toBe(50)
+    expect(levelPercent({ points: 89, level_base: 50, next_level_points: 90 })).toBe(98)
+    expect(levelPercent({ points: 120, level_base: 50, next_level_points: 90 })).toBe(100)
+    expect(levelPercent({ points: 10, level_base: 50, next_level_points: 90 })).toBe(0)
+    expect(levelPercent({ points: 5, level_base: 0, next_level_points: 0 })).toBe(0)
+  })
+
+  it('pointsLabel: "+10 điểm" và "+3 điểm"; ván chơi 1 mình hoặc 0 điểm thì để trống', () => {
+    expect(pointsLabel(10, false)).toBe("+10 điểm")
+    expect(pointsLabel(3, false)).toBe("+3 điểm")
+    expect(pointsLabel(10, true)).toBe("")
+    expect(pointsLabel(0, false)).toBe("")
+  })
+
+  it("progressLine: ba kiểu dòng tiến độ của mình ở cửa sổ kết quả", () => {
+    expect(progressLine({ solo: false, progress: progress() })).toEqual({
+      kind: "progress",
+      text: "Điểm +10 · Cấp 3 · 75 điểm · còn 15 điểm lên cấp 4",
+    })
+    expect(
+      progressLine({
+        solo: false,
+        progress: progress({ level: 4, level_base: 90, leveled_up: true, previous_level: 3, remaining_points: 50, total_points: 95 }),
+      }),
+    ).toEqual({ kind: "level-up", text: "🎉 Lên cấp 4! Bạn có 95 điểm." })
+    expect(progressLine({ solo: true, progress: progress({ points: 0 }) })).toEqual({
+      kind: "solo",
+      text: "Chơi 1 mình không tính điểm cấp.",
+    })
+    // Ván chơi 1 mình không bao giờ báo lên cấp, dù số liệu của server có gì.
+    expect(progressLine({ solo: true, progress: progress({ leveled_up: true }) }).kind).toBe("solo")
+  })
+
+  it("bảng xếp hạng: dòng luật điểm và giới hạn top 50", () => {
+    expect(LEADERBOARD_NOTE).toBe("Thắng +10 điểm · Thua +3 điểm · Chơi 1 mình không tính điểm")
+    expect(LEADERBOARD_LIMIT).toBe(50)
+  })
+})
+
+describe("thanh người chơi (v2.1 §6.1)", () => {
+  const row = (id: string, isMe: boolean, finished = false) => ({ id, is_me: isMe, finished })
+
+  it("orderPlayers: mình đứng đầu, người còn lại giữ nguyên thứ tự vào phòng và không sửa mảng gốc", () => {
+    const source = [row("a", false), row("b", false), row("me", true), row("c", false)]
+    expect(orderPlayers(source).map((player) => player.id)).toEqual(["me", "a", "b", "c"])
+    expect(source.map((player) => player.id)).toEqual(["a", "b", "me", "c"])
+    expect(orderPlayers([row("a", false), row("b", false)]).map((player) => player.id)).toEqual(["a", "b"])
+    expect(orderPlayers([])).toEqual([])
+  })
+
+  it("finishedCount: số người đã bấm Hoàn thành", () => {
+    expect(finishedCount([])).toBe(0)
+    expect(finishedCount([row("a", false), row("b", true, true), row("c", false, true)])).toBe(2)
+  })
+})
+
+describe("biểu cảm (v2.1 §6.4)", () => {
+  it("12 biểu cảm theo đúng thứ tự bảng chọn, không trùng nhau", () => {
+    expect([...REACTION_EMOJIS]).toEqual(["😂", "😎", "🚀", "📉", "😭", "🔥", "👏", "🤡", "💸", "🙏", "😱", "🤑"])
+    expect(new Set(REACTION_EMOJIS).size).toBe(12)
+  })
+
+  it("mỗi người 1 biểu cảm mỗi 1,5 giây; bong bóng hiện khoảng 2,5 giây; câu báo gửi quá nhanh", () => {
+    expect(REACTION_COOLDOWN_MS).toBe(1_500)
+    expect(REACTION_BUBBLE_MS).toBe(2_500)
+    expect(REACTION_TOO_FAST).toBe("Từ từ thôi 😄")
+  })
+})
+
+describe("lịch sử đấu (v2.1 §5)", () => {
+  const item = (overrides: Partial<FlashbackHistoryItem> = {}) => ({
+    room_id: "123456",
+    player_count: 4,
+    view_bars: 60,
+    play_bars: 30,
+    minutes: 10,
+    result: "win" as const,
+    rank: 1,
+    stake_xu: 100,
+    xu: 300,
+    ...overrides,
+  })
+
+  it("bộ lọc kết quả và thời gian đúng nhãn của spec", () => {
+    expect(HISTORY_RESULT_FILTERS.map((filter) => [filter.id, filter.label])).toEqual([
+      ["all", "Tất cả"],
+      ["win", "Thắng"],
+      ["lose", "Thua"],
+      ["solo", "Chơi 1 mình"],
+    ])
+    expect(HISTORY_DAY_FILTERS.map((filter) => [filter.id, filter.label])).toEqual([
+      ["7", "7 ngày"],
+      ["30", "30 ngày"],
+      ["all", "Tất cả"],
+    ])
+    expect(HISTORY_RESULT_LABEL).toEqual({ win: "Thắng", tie: "Hoà", lose: "Thua", solo: "Chơi 1 mình" })
+  })
+
+  it("formatDateTime: dd/mm/yyyy hh:mm theo giờ máy, và giữ nguyên chuỗi không phải ngày", () => {
+    expect(formatDateTime(new Date(2026, 9, 31, 9, 5).toISOString())).toBe("31/10/2026 09:05")
+    expect(formatDateTime(new Date(2026, 0, 2, 23, 59).toISOString())).toBe("02/01/2026 23:59")
+    expect(formatDateTime("không phải ngày")).toBe("không phải ngày")
+  })
+
+  it('historyRoomLine: "Phòng {ID} · {n} người · {xem}/{chơi} phiên · {m} phút"', () => {
+    expect(historyRoomLine(item())).toBe("Phòng 123456 · 4 người · 60/30 phiên · 10 phút")
+    expect(historyRoomLine(item({ room_id: "000987", player_count: 1, view_bars: 45, play_bars: 40, minutes: 5 }))).toBe(
+      "Phòng 000987 · 1 người · 45/40 phiên · 5 phút",
+    )
+  })
+
+  it('historyRankLine: "Hạng {h}/{n}"; ván chơi 1 mình bỏ trống', () => {
+    expect(historyRankLine(item({ rank: 2, player_count: 5, result: "lose" }))).toBe("Hạng 2/5")
+    expect(historyRankLine(item({ rank: 1, player_count: 3, result: "tie" }))).toBe("Hạng 1/3")
+    expect(historyRankLine(item({ rank: 1, player_count: 1, result: "solo" }))).toBe("")
+  })
+
+  it('historyXuLine: "+x xu", "−x xu" hoặc "Không cược"', () => {
+    expect(historyXuLine(item({ xu: 300 }))).toBe("+300 xu")
+    expect(historyXuLine(item({ xu: -100 }))).toBe("−100 xu")
+    expect(historyXuLine(item({ xu: 1_500, stake_xu: 1_000 }))).toBe("+1.500 xu")
+    expect(historyXuLine(item({ xu: 0, stake_xu: 0 }))).toBe("Không cược")
+  })
+
+  it("signTone: lãi xanh, lỗ đỏ, bằng 0 hoặc không có thì chữ thường", () => {
+    expect(signTone(2.5)).toBe("up")
+    expect(signTone(-0.01)).toBe("down")
+    expect(signTone(0)).toBe("flat")
+    expect(signTone(null)).toBe("flat")
+    expect(signTone(undefined)).toBe("flat")
+    expect(signTone(Number.NaN)).toBe("flat")
   })
 })
