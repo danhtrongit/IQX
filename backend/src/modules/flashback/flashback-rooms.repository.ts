@@ -53,6 +53,14 @@ export interface FbMemberRow {
   readonly avatarUrl: string | null;
   /** Tổng điểm cấp hiện tại của người này (v2.1 §3), để tính cấp. */
   readonly totalPoints: number;
+  /** Đã bấm "Sẵn sàng" ở phòng chờ (`ready_at` khác null). Chủ phòng được tính ở service. */
+  readonly ready: boolean;
+}
+
+/** Thông báo một lần của người bị đưa ra khỏi phòng và lý do rời (`kicked` khi bị chủ phòng đuổi). */
+export interface FbTakenNotice {
+  readonly notice: string;
+  readonly reason: string | null;
 }
 
 export interface FbMatchRow {
@@ -340,8 +348,25 @@ export abstract class FlashbackRoomsRepository {
     at: Date,
   ): Promise<boolean>;
   abstract removeAllMembers(tx: SqlClient, roomId: string, reason: string, at: Date): Promise<void>;
-  /** Lấy và xoá thông báo một lần mới nhất của tài khoản (ví dụ bị đưa ra vì thiếu xu). */
-  abstract takeNotice(tx: SqlClient, userId: string): Promise<string | null>;
+  /** Đặt hoặc bỏ "Sẵn sàng" của một thành viên đang ở trong phòng; false khi không còn ở trong. */
+  abstract setMemberReady(
+    tx: SqlClient,
+    roomId: string,
+    userId: string,
+    ready: boolean,
+    at: Date,
+  ): Promise<boolean>;
+  /** Bỏ "Sẵn sàng" của mọi thành viên đang ở trong phòng. */
+  abstract resetReady(tx: SqlClient, roomId: string): Promise<void>;
+  /** Người này bị chủ phòng đuổi khỏi đúng phòng này từ mốc `since` trở lại đây? */
+  abstract wasKickedSince(
+    db: SqlClient,
+    roomId: string,
+    userId: string,
+    since: Date,
+  ): Promise<boolean>;
+  /** Lấy và xoá thông báo một lần mới nhất của tài khoản (ví dụ bị đưa ra vì thiếu xu, bị đuổi). */
+  abstract takeNotice(tx: SqlClient, userId: string): Promise<FbTakenNotice | null>;
   // ví xu
   abstract balance(db: SqlClient, userId: string): Promise<number>;
   abstract lockWallet(tx: SqlClient, userId: string): Promise<{ balance: number; lastSeq: number }>;
@@ -708,7 +733,7 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
   async activeMembers(db: SqlClient, roomId: string): Promise<FbMemberRow[]> {
     const rows = await db.query<Row>(
       `select m.room_id, m.user_id, m.joined_at, ${DISPLAY_NAME} as name, u.avatar_url,
-              coalesce(s.points, 0) as total_points
+              coalesce(s.points, 0) as total_points, (m.ready_at is not null) as ready
          from fb_room_members m
          join users u on u.id = m.user_id
          left join fb_player_stats s on s.user_id = m.user_id
@@ -723,6 +748,7 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
       name: String(row.name ?? ''),
       avatarUrl: toText(row.avatar_url),
       totalPoints: toInt(row.total_points, 'total_points'),
+      ready: row.ready === true,
     }));
   }
 
@@ -770,22 +796,64 @@ export class PgFlashbackRoomsRepository extends FlashbackRoomsRepository {
     );
   }
 
-  async takeNotice(tx: SqlClient, userId: string): Promise<string | null> {
-    const rows = await tx.query<{ notice: string; left_at: Date }>(
+  async setMemberReady(
+    tx: SqlClient,
+    roomId: string,
+    userId: string,
+    ready: boolean,
+    at: Date,
+  ): Promise<boolean> {
+    const rows = await tx.query<{ id: string }>(
+      `update fb_room_members set ready_at = $3
+        where room_id = $1 and user_id = $2 and left_at is null
+       returning id::text as id`,
+      [roomId, userId, ready ? at : null],
+    );
+    return rows.length > 0;
+  }
+
+  async resetReady(tx: SqlClient, roomId: string): Promise<void> {
+    await tx.query(
+      `update fb_room_members set ready_at = null
+        where room_id = $1 and left_at is null and ready_at is not null`,
+      [roomId],
+    );
+  }
+
+  async wasKickedSince(
+    db: SqlClient,
+    roomId: string,
+    userId: string,
+    since: Date,
+  ): Promise<boolean> {
+    const rows = await db.query<{ found: number }>(
+      `select 1 as found from fb_room_members
+        where room_id = $1 and user_id = $2 and left_reason = 'kicked' and left_at > $3
+        limit 1`,
+      [roomId, userId, since],
+    );
+    return rows.length > 0;
+  }
+
+  async takeNotice(tx: SqlClient, userId: string): Promise<FbTakenNotice | null> {
+    const rows = await tx.query<{ notice: string; left_at: Date; left_reason: string | null }>(
       `with picked as (
-         select id, notice, left_at from fb_room_members
+         select id, notice, left_at, left_reason from fb_room_members
           where user_id = $1 and notice is not null
           for update
        )
        update fb_room_members m set notice = null
          from picked where m.id = picked.id
-       returning picked.notice as notice, picked.left_at as left_at`,
+       returning picked.notice as notice, picked.left_at as left_at,
+                 picked.left_reason as left_reason`,
       [userId],
     );
     const latest = [...rows].sort(
       (left, right) => toDate(right.left_at).getTime() - toDate(left.left_at).getTime(),
     )[0];
-    return latest ? String(latest.notice) : null;
+    return latest
+      ? { notice: String(latest.notice), reason: toText(latest.left_reason) }
+      : null;
   }
 
   async balance(db: SqlClient, userId: string): Promise<number> {

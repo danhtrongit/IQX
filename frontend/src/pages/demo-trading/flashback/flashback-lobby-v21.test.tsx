@@ -278,24 +278,36 @@ describe("Flashback sảnh v2.1: bảng xếp hạng (§4)", () => {
     expect(within(screen.getByTestId("flashback-pod-1")).getByText("Hà").className).not.toContain("text-primary")
   })
 
-  it("chỉ lấy top 50; mình ngoài top 50 thì có dòng … rồi dòng của mình với đúng hạng", async () => {
+  it("chỉ lấy top 50, chia trang 10 người (không cuộn); mình ngoài top 50 thì có dòng … rồi dòng của mình", async () => {
+    const user = userEvent.setup()
     const top = Array.from({ length: 50 }, (_, index) => leaderboardRow({ rank: index + 1, name: `Người ${index + 1}` }))
     const mine = leaderboardRow({ rank: 87, name: "Linh", points: 12, is_me: true, user_id: "user-1" })
     await openBoard({ leaderboard: { rows: top, me: mine } })
     expect(backend.callsTo("GET", "/flashback/leaderboard")[0].path).toContain("limit=50")
 
-    const list = screen.getByRole("list", { name: "Từ hạng 4" })
-    const rows = within(list).getAllByTestId("flashback-leaderboard-row")
-    // Hạng 4 đến 50 là 47 dòng, cộng dòng của mình.
-    expect(rows).toHaveLength(48)
-    expect(rows[46].textContent).toContain("Người 50")
-    expect(rows[47].getAttribute("data-me")).toBe("true")
-    expect(rows[47].textContent).toContain("87")
-    expect(rows[47].textContent).toContain("Linh")
-    expect(within(rows[47]).getByText("(bạn)")).toBeTruthy()
-    const gap = within(list).getByText("…")
-    expect(gap.compareDocumentPosition(rows[47]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
-    expect(gap.compareDocumentPosition(rows[46]) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy()
+    const rowsOf = () => within(screen.getByRole("list", { name: "Từ hạng 4" })).getAllByTestId("flashback-leaderboard-row")
+    // Trang 1: hạng 4 đến 13, cộng dòng của mình.
+    expect(rowsOf()).toHaveLength(11)
+    expect(rowsOf()[0].textContent).toContain("Người 4")
+    expect(rowsOf()[9].textContent).toContain("Người 13")
+    expect(rowsOf()[10].getAttribute("data-me")).toBe("true")
+    expect(rowsOf()[10].textContent).toContain("87")
+    expect(within(rowsOf()[10]).getByText("(bạn)")).toBeTruthy()
+    const nav = screen.getByRole("navigation", { name: "Phân trang bảng xếp hạng" })
+    expect(within(nav).getByText("Trang 1/5")).toBeTruthy()
+    expect(within(nav).getByRole("button", { name: "Trang trước" })).toHaveProperty("disabled", true)
+    expect(screen.queryByTestId("flashback-leaderboard-scroll")).toBeNull()
+
+    // Trang cuối: hạng 44 đến 50 (7 người), dòng … rồi dòng của mình vẫn ở cuối.
+    for (let index = 0; index < 4; index += 1) await user.click(within(nav).getByRole("button", { name: "Trang sau" }))
+    expect(within(nav).getByText("Trang 5/5")).toBeTruthy()
+    expect(within(nav).getByRole("button", { name: "Trang sau" })).toHaveProperty("disabled", true)
+    const rows = rowsOf()
+    expect(rows).toHaveLength(8)
+    expect(rows[0].textContent).toContain("Người 44")
+    expect(rows[6].textContent).toContain("Người 50")
+    const gap = within(screen.getByRole("list", { name: "Từ hạng 4" })).getByText("…")
+    expect(gap.compareDocumentPosition(rows[7]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
   })
 
   it("mình trong top 50 thì không có dòng … và không lặp dòng của mình", async () => {

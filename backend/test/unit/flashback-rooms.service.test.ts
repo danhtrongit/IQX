@@ -95,6 +95,7 @@ describe('Flashback v2 · Phòng chơi: sảnh, tạo phòng, vào phòng', () =
       response: { code: 'ROOM_FULL', message: 'Phòng đã đủ người' },
     });
 
+    await service.setReady('p1', locked.id, true);
     await service.startRoom('owner', locked.id);
     expect(await rejection(service.joinRoom('p3', locked.id, '1234'))).toMatchObject({
       status: 409,
@@ -167,7 +168,7 @@ describe('Flashback v2 · Phòng chơi: sảnh, tạo phòng, vào phòng', () =
     advance(60_000);
     expect(await service.sweep()).toEqual({ settled: 0, closed: 1 });
     expect((await service.listRooms('all')).rooms).toHaveLength(0);
-    expect(await service.myRoom('a')).toEqual({ room: null, notice: null });
+    expect(await service.myRoom('a')).toEqual({ room: null, notice: null, kicked: false });
     // Đã ra khỏi phòng nên tạo được phòng mới.
     expect((await service.createRoom('a', {})).id).not.toBe(undefined);
     expect(room.auto_close_at).toBe(new Date(T0.getTime() + 30 * 60_000).toISOString());
@@ -479,6 +480,7 @@ describe('Flashback v2 · Phòng chơi: bắt đầu, xu cược, kết thúc', 
     expect(await h.service.myRoom('b')).toEqual({
       room: null,
       notice: 'Không đủ xu để vào phòng cược 100 xu',
+      kicked: false,
     });
     // Thông báo chỉ hiện một lần.
     expect((await h.service.myRoom('b')).notice).toBeNull();
@@ -507,6 +509,12 @@ describe('Flashback v2 · Phòng chơi: bắt đầu, xu cược, kết thúc', 
       view_bars: 60,
     });
     expect(replayed.members.map((m) => m.user_id)).toEqual(['a', 'b', 'c']);
+    // Về phòng chờ sau ván thì "Sẵn sàng" của mọi người bị xoá (chủ phòng vẫn được tính là sẵn sàng).
+    expect(replayed.members.map((m) => [m.user_id, m.ready])).toEqual([
+      ['a', true],
+      ['b', false],
+      ['c', false],
+    ]);
 
     // c còn 900 xu nhưng tiêu hết trước khi chủ phòng bắt đầu lại.
     h.repository.state.wallets.set('c', { balance: 40, lastSeq: 10 });
@@ -518,6 +526,7 @@ describe('Flashback v2 · Phòng chơi: bắt đầu, xu cược, kết thúc', 
 
     // b không bấm chơi lại nhưng vẫn ở phòng; thiếu xu thì bị đưa ra lúc bắt đầu.
     h.repository.state.wallets.set('b', { balance: 90, lastSeq: 10 });
+    await h.service.setReady('b', room.id, true);
     const second = await h.service.startRoom('a', room.id);
     expect(second.removed.map((r) => r.message)).toEqual(['Không đủ 100 xu để chơi lại']);
     expect(second.match.match_id).not.toBe(first.match.match_id);

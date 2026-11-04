@@ -51,6 +51,14 @@ export const fbJoinRoomBodySchema = z
   .default({});
 export type FbJoinRoomBody = z.infer<typeof fbJoinRoomBodySchema>;
 
+/** Thân Sẵn sàng / Huỷ sẵn sàng của phòng chờ. */
+export const fbReadyBodySchema = z.strictObject({ ready: z.boolean() });
+export type FbReadyBody = z.infer<typeof fbReadyBodySchema>;
+
+/** Thân đuổi một thành viên khỏi phòng chờ (chỉ chủ phòng). */
+export const fbKickBodySchema = z.strictObject({ user_id: z.uuid() });
+export type FbKickBody = z.infer<typeof fbKickBodySchema>;
+
 /** Thân đặt lệnh (như v1.1). */
 export const fbOrderBodySchema = z.strictObject({
   side: z.enum(['buy', 'sell']),
@@ -151,6 +159,7 @@ const roomSchema = z.object({
       is_owner: z.boolean(),
       is_me: z.boolean(),
       joined_at: z.string(),
+      ready: z.boolean(),
     }),
   ),
   match: z
@@ -415,7 +424,13 @@ export class FlashbackRoomsController {
     summary: 'Phòng hiện tại của tôi (vào lại) và thông báo một lần',
   })
   @ApiOkResponse({
-    schema: openapi(z.object({ room: roomSchema.nullable(), notice: z.string().nullable() })),
+    schema: openapi(
+      z.object({
+        room: roomSchema.nullable(),
+        notice: z.string().nullable(),
+        kicked: z.boolean(),
+      }),
+    ),
   })
   async mine(@CurrentUser() user: AuthenticatedUser) {
     return this.rooms.myRoom(user.id);
@@ -471,6 +486,36 @@ export class FlashbackRoomsController {
     @Param('code', { schema: fbRoomCodeParamSchema }) code: string,
   ) {
     return this.rooms.leaveRoom(user.id, code);
+  }
+
+  @Post('rooms/:code/ready')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'flashbackRoomsReady',
+    summary: 'Sẵn sàng hoặc huỷ sẵn sàng ở phòng chờ',
+  })
+  @ApiOkResponse({ schema: openapi(roomSchema) })
+  async ready(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('code', { schema: fbRoomCodeParamSchema }) code: string,
+    @Body({ schema: fbReadyBodySchema }) body: FbReadyBody,
+  ) {
+    return this.rooms.setReady(user.id, code, body.ready);
+  }
+
+  @Post('rooms/:code/kick')
+  @HttpCode(200)
+  @ApiOperation({
+    operationId: 'flashbackRoomsKick',
+    summary: 'Đuổi một người khỏi phòng chờ (chỉ chủ phòng)',
+  })
+  @ApiOkResponse({ schema: openapi(roomSchema) })
+  async kick(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('code', { schema: fbRoomCodeParamSchema }) code: string,
+    @Body({ schema: fbKickBodySchema }) body: FbKickBody,
+  ) {
+    return this.rooms.kickMember(user.id, code, body.user_id);
   }
 
   @Post('rooms/:code/start')

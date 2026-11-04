@@ -185,6 +185,16 @@ export function replayRoom(code: string): Promise<FlashbackRoom> {
   return requestOperation("POST /api/v2/flashback/rooms/{code}/replay", { path: { code } })
 }
 
+/** Bấm "Sẵn sàng" (true) hoặc "Huỷ sẵn sàng" (false) ở phòng chờ; trả phòng mới nhất. */
+export function setRoomReady(code: string, ready: boolean): Promise<FlashbackRoom> {
+  return requestOperation("POST /api/v2/flashback/rooms/{code}/ready", { path: { code }, body: { ready } })
+}
+
+/** Chủ phòng đuổi một thành viên khỏi phòng chờ; trả phòng mới nhất. */
+export function kickRoomMember(code: string, userId: string): Promise<FlashbackRoom> {
+  return requestOperation("POST /api/v2/flashback/rooms/{code}/kick", { path: { code }, body: { user_id: userId } })
+}
+
 // ------------------------------------------------------------------ ván chơi
 
 export function fetchMatch(matchId: string, signal?: AbortSignal): Promise<FlashbackSnapshot> {

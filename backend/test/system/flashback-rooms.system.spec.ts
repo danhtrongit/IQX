@@ -163,6 +163,14 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       ...(payload ? { payload } : {}),
     });
 
+  /** Người chơi bấm "Sẵn sàng" (chủ phòng bắt đầu được ván khi mọi người đã sẵn sàng). */
+  const ready = async (sessions: readonly Session[], roomId: string) => {
+    for (const session of sessions) {
+      const response = await call(session, 'POST', `rooms/${roomId}/ready`, { ready: true });
+      expect(response.statusCode, response.body).toBe(200);
+    }
+  };
+
   async function user(name: string, xu: number): Promise<Session> {
     const session = await registerAndLogin(app, name);
     await stack.query(
@@ -237,6 +245,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       full: true,
     });
     expect((await call(b, 'POST', `rooms/${room.id}/start`)).statusCode).toBe(403);
+    await ready([b, c, d], room.id);
 
     const started = await call(a, 'POST', `rooms/${room.id}/start`);
     expect(started.statusCode, started.body).toBe(200);
@@ -426,6 +435,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     expect(created.statusCode, created.body).toBe(200);
     const roomId = (created.json() as { id: string }).id;
     expect((await call(guest, 'POST', `rooms/${roomId}/join`, {})).statusCode).toBe(200);
+    await ready([guest], roomId);
     const matchesBefore = await stack.query<{ n: number }>(
       'select count(*)::int as n from fb_matches',
     );
@@ -522,6 +532,99 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     ).toEqual([{ n: 1 }]);
   });
 
+  it('sẵn sàng và đuổi khỏi phòng (migration 0042): chặn bắt đầu, xoá khi bắt đầu, đuổi không đổi xu, chặn vào lại 10 phút', async () => {
+    const [a, b, c] = [
+      await user('rk-a', 500),
+      await user('rk-b', 500),
+      await user('rk-c', 500),
+    ] as [Session, Session, Session];
+    const room = (
+      await call(a, 'POST', 'rooms', { max_players: 4, stake_xu: 50 })
+    ).json() as { id: string };
+    for (const session of [b, c]) await call(session, 'POST', `rooms/${room.id}/join`, {});
+    const readyAt = (session: Session) =>
+      stack.query<{ ready_at: Date | null }>(
+        'select ready_at from fb_room_members where user_id = $1 and left_at is null',
+        [session.id],
+      );
+
+    // Chưa ai sẵn sàng: 409 FB_PLAYERS_NOT_READY, chưa có ván, chưa trừ xu.
+    const blocked = await call(a, 'POST', `rooms/${room.id}/start`);
+    expect(blocked.statusCode).toBe(409);
+    expect(blocked.json()).toMatchObject({
+      error: { code: 'FB_PLAYERS_NOT_READY', message: 'Còn 2 người chơi chưa sẵn sàng' },
+    });
+    expect(await balance(b)).toBe(500);
+
+    const readied = await call(b, 'POST', `rooms/${room.id}/ready`, { ready: true });
+    expect(readied.statusCode, readied.body).toBe(200);
+    // Thứ tự thành viên theo joined_at; đồng hồ giả của test này đứng yên nên so theo ID.
+    expect(
+      Object.fromEntries(
+        (readied.json() as { members: { user_id: string; ready: boolean }[] }).members.map(
+          (member) => [member.user_id, member.ready],
+        ),
+      ),
+    ).toEqual({ [a.id]: true, [b.id]: true, [c.id]: false });
+    expect((await readyAt(b))[0]!.ready_at).not.toBeNull();
+    // Body sai bị từ chối ở lớp validate.
+    expect((await call(b, 'POST', `rooms/${room.id}/ready`, { ready: 'yes' })).statusCode).toBe(422);
+
+    // Chỉ chủ phòng đuổi; không tự đuổi mình.
+    expect((await call(b, 'POST', `rooms/${room.id}/kick`, { user_id: c.id })).statusCode).toBe(403);
+    expect((await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: a.id })).statusCode).toBe(409);
+
+    const kicked = await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: c.id });
+    expect(kicked.statusCode, kicked.body).toBe(200);
+    expect(
+      (kicked.json() as { members: { user_id: string }[] }).members.map((m) => m.user_id).sort(),
+    ).toEqual([a.id, b.id].sort());
+    expect(await balance(c)).toBe(500);
+    expect(
+      await stack.query(
+        `select left_reason from fb_room_members where user_id = $1 order by joined_at desc limit 1`,
+        [c.id],
+      ),
+    ).toEqual([{ left_reason: 'kicked' }]);
+    expect((await call(c, 'GET', `rooms/${room.id}`)).statusCode).toBe(403);
+    const mine = (await call(c, 'GET', 'rooms/me')).json() as {
+      room: unknown;
+      notice: string | null;
+      kicked: boolean;
+    };
+    expect(mine).toEqual({
+      room: null,
+      notice: 'Bạn đã bị chủ phòng mời ra khỏi phòng.',
+      kicked: true,
+    });
+    expect(((await call(c, 'GET', 'rooms/me')).json() as { kicked: boolean }).kicked).toBe(false);
+    const rejoin = await call(c, 'POST', `rooms/${room.id}/join`, {});
+    expect(rejoin.statusCode).toBe(409);
+    expect(rejoin.json()).toMatchObject({ error: { code: 'FB_KICKED' } });
+
+    // Bắt đầu: chỉ còn a và b, cược 50 trừ của hai người; sẵn sàng bị xoá.
+    const started = await call(a, 'POST', `rooms/${room.id}/start`);
+    expect(started.statusCode, started.body).toBe(200);
+    expect(await balance(b)).toBe(450);
+    expect(await balance(c)).toBe(500);
+    expect(
+      await stack.query(
+        'select ready_at from fb_room_members where user_id = any($1::uuid[]) and left_at is null',
+        [[a.id, b.id]],
+      ),
+    ).toEqual([{ ready_at: null }, { ready_at: null }]);
+    // Đang chơi: không đuổi, không bấm sẵn sàng.
+    expect((await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: b.id })).statusCode).toBe(409);
+    expect((await call(b, 'POST', `rooms/${room.id}/ready`, { ready: true })).statusCode).toBe(409);
+
+    // Chơi xong ván: để tác vụ định kỳ của các test sau (đẩy đồng hồ giả) không chốt ván này.
+    const matchId = (started.json() as { match: { match_id: string } }).match.match_id;
+    for (const session of [a, b]) {
+      await playToEnd(session, matchId);
+      expect((await call(session, 'POST', `matches/${matchId}/finish`)).statusCode).toBe(200);
+    }
+  });
+
   // ---------------------------------------------------------------- v2.1: cấp, điểm, hạng, lịch sử
 
   type StatsRow = {
@@ -557,6 +660,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     const created = await call(a, 'POST', 'rooms', { max_players: 3, stake_xu: 10 });
     const room = created.json() as { id: string };
     for (const session of [b, c]) await call(session, 'POST', `rooms/${room.id}/join`, {});
+    await ready([b, c], room.id);
     const started = await call(a, 'POST', `rooms/${room.id}/start`);
     expect(started.statusCode, started.body).toBe(200);
     const matchId = (started.json() as { match: { match_id: string } }).match.match_id;
@@ -721,6 +825,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     const created = await call(p, 'POST', 'rooms', { max_players: 2, stake_xu: 20 });
     const room = created.json() as { id: string };
     await call(q, 'POST', `rooms/${room.id}/join`, {});
+    await ready([q], room.id);
     const started = await call(p, 'POST', `rooms/${room.id}/start`);
     const matchId = (started.json() as { match: { match_id: string } }).match.match_id;
     await playToEnd(p, matchId, { step: 0, qty: 100 });
@@ -824,6 +929,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       id: string;
     };
     await call(r2, 'POST', `rooms/${room.id}/join`, {});
+    await ready([r2], room.id);
     const started = await call(r1, 'POST', `rooms/${room.id}/start`);
     const matchId = (started.json() as { match: { match_id: string } }).match.match_id;
     const send = (session: Session, emoji: string) =>

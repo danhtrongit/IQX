@@ -246,3 +246,37 @@ export function PasswordDialog({
     </Dialog>
   )
 }
+
+/** Hộp xác nhận chủ phòng đuổi một thành viên khỏi phòng chờ. */
+export function KickMemberDialog({
+  name,
+  busy,
+  onConfirm,
+  onClose,
+}: {
+  name: string
+  busy: boolean
+  onConfirm: () => void
+  onClose: () => void
+}) {
+  return (
+    <Dialog open onOpenChange={(open) => !open && onClose()}>
+      <DialogContent showCloseButton={false} className="sm:max-w-[420px]" data-testid="flashback-kick">
+        <DialogHeader>
+          <DialogTitle className="text-lg font-bold">Đuổi khỏi phòng</DialogTitle>
+          <DialogDescription>
+            Mời {name} ra khỏi phòng? Người này không vào lại phòng được trong 10 phút.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex justify-end gap-2">
+          <Button type="button" variant="outline" onClick={onClose}>
+            Hủy
+          </Button>
+          <Button type="button" variant="destructive" disabled={busy} onClick={onConfirm}>
+            Đuổi khỏi phòng
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}

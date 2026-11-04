@@ -424,6 +424,12 @@ describe("Flashback: cửa sổ kết quả", () => {
     expect(backend.callsTo("POST", `/flashback/rooms/${ROOM_CODE}/replay`)).toHaveLength(1)
     expect(screen.queryByTestId("flashback-result")).toBeNull()
 
+    // Sau ván "Sẵn sàng" bị xoá: Minh phải bấm lại thì chủ phòng mới bắt đầu được.
+    expect(screen.getByRole("button", { name: "Bắt đầu" }).hasAttribute("disabled")).toBe(true)
+    backend.setReady(MINH.user_id)
+    await waitFor(() => expect(screen.getByRole("button", { name: "Bắt đầu" }).hasAttribute("disabled")).toBe(false), {
+      timeout: 4_000,
+    })
     await user.click(screen.getByRole("button", { name: "Bắt đầu" }))
     await findGame()
     expect(tileValue("Phiên")).toBe("0 / 30")
@@ -498,7 +504,7 @@ describe("Flashback: hết giờ", () => {
   it("chủ phòng vừa bấm Bắt đầu rồi hết giờ cũng được báo Hết giờ", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    setup({ room: { status: "waiting", owner: ME, members: [ME, MINH] } })
+    setup({ room: { status: "waiting", owner: ME, members: [ME, MINH], ready: [MINH.user_id] } })
     renderGame()
     await user.click(await screen.findByRole("button", { name: "Bắt đầu" }))
     await findGame()

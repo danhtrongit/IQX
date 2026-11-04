@@ -59,7 +59,11 @@ async function roomOf(h: ReturnType<typeof setup>, users: readonly string[]) {
     play_bars: 30,
     view_bars: 60,
   });
-  for (const id of users.slice(1)) await h.service.joinRoom(id, room.id, null);
+  for (const id of users.slice(1)) {
+    await h.service.joinRoom(id, room.id, null);
+    // Từ v2.1 chủ phòng chỉ bắt đầu được khi mọi người đã bấm "Sẵn sàng" (kiểm tra này nằm SAU bước cắt đề).
+    await h.service.setReady(id, room.id, true);
+  }
   return room;
 }
 

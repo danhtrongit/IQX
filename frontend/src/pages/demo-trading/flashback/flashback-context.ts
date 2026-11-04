@@ -78,6 +78,12 @@ export type RoomApi = {
   leaveBusy: boolean
   start: () => void
   startBusy: boolean
+  /** Bấm "Sẵn sàng" (true) hoặc "Huỷ sẵn sàng" (false) của chính mình. */
+  setReady: (ready: boolean) => void
+  readyBusy: boolean
+  /** Chủ phòng đuổi một thành viên khỏi phòng chờ (đã qua hộp xác nhận). */
+  kick: (userId: string) => void
+  kickBusy: boolean
 }
 
 export type MatchApi = {

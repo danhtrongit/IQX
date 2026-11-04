@@ -43186,6 +43186,7 @@ export type FlashbackRoomsCreateResponses = {
       joined_at: string;
       level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -43236,6 +43237,7 @@ export type FlashbackRoomsMineError =
 
 export type FlashbackRoomsMineResponses = {
   200: {
+    kicked: boolean;
     notice: string | null;
     room: {
       auto_close_at: string | null;
@@ -43259,6 +43261,7 @@ export type FlashbackRoomsMineResponses = {
         joined_at: string;
         level: number;
         name: string;
+        ready: boolean;
         user_id: string;
       }>;
       minutes: number;
@@ -43331,6 +43334,7 @@ export type FlashbackRoomsRandomJoinResponses = {
       joined_at: string;
       level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -43404,6 +43408,7 @@ export type FlashbackRoomsGetResponses = {
       joined_at: string;
       level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -43479,6 +43484,7 @@ export type FlashbackRoomsJoinResponses = {
       joined_at: string;
       level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -43493,6 +43499,82 @@ export type FlashbackRoomsJoinResponses = {
 
 export type FlashbackRoomsJoinResponse =
   FlashbackRoomsJoinResponses[keyof FlashbackRoomsJoinResponses];
+
+export type FlashbackRoomsKickData = {
+  body: {
+    user_id: string;
+  };
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/kick";
+};
+
+export type FlashbackRoomsKickErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsKickError =
+  FlashbackRoomsKickErrors[keyof FlashbackRoomsKickErrors];
+
+export type FlashbackRoomsKickResponses = {
+  200: {
+    auto_close_at: string | null;
+    created_at: string;
+    id: string;
+    is_owner: boolean;
+    locked: boolean;
+    match: {
+      ends_at: string;
+      id: string;
+      joined: boolean;
+      started_at: string;
+      status: "playing" | "ended";
+    } | null;
+    max_players: number;
+    members: Array<{
+      avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
+      is_me: boolean;
+      is_owner: boolean;
+      joined_at: string;
+      level: number;
+      name: string;
+      ready: boolean;
+      user_id: string;
+    }>;
+    minutes: number;
+    owner_id: string;
+    play_bars: number;
+    server_now: string;
+    stake_xu: number;
+    status: "waiting" | "playing";
+    view_bars: number;
+  };
+};
+
+export type FlashbackRoomsKickResponse =
+  FlashbackRoomsKickResponses[keyof FlashbackRoomsKickResponses];
 
 export type FlashbackRoomsLeaveData = {
   body?: never;
@@ -43537,6 +43619,82 @@ export type FlashbackRoomsLeaveResponses = {
 
 export type FlashbackRoomsLeaveResponse =
   FlashbackRoomsLeaveResponses[keyof FlashbackRoomsLeaveResponses];
+
+export type FlashbackRoomsReadyData = {
+  body: {
+    ready: boolean;
+  };
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/ready";
+};
+
+export type FlashbackRoomsReadyErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsReadyError =
+  FlashbackRoomsReadyErrors[keyof FlashbackRoomsReadyErrors];
+
+export type FlashbackRoomsReadyResponses = {
+  200: {
+    auto_close_at: string | null;
+    created_at: string;
+    id: string;
+    is_owner: boolean;
+    locked: boolean;
+    match: {
+      ends_at: string;
+      id: string;
+      joined: boolean;
+      started_at: string;
+      status: "playing" | "ended";
+    } | null;
+    max_players: number;
+    members: Array<{
+      avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
+      is_me: boolean;
+      is_owner: boolean;
+      joined_at: string;
+      level: number;
+      name: string;
+      ready: boolean;
+      user_id: string;
+    }>;
+    minutes: number;
+    owner_id: string;
+    play_bars: number;
+    server_now: string;
+    stake_xu: number;
+    status: "waiting" | "playing";
+    view_bars: number;
+  };
+};
+
+export type FlashbackRoomsReadyResponse =
+  FlashbackRoomsReadyResponses[keyof FlashbackRoomsReadyResponses];
 
 export type FlashbackRoomsReplayData = {
   body?: never;
@@ -43596,6 +43754,7 @@ export type FlashbackRoomsReplayResponses = {
       joined_at: string;
       level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -43770,6 +43929,7 @@ export type FlashbackRoomsStartResponses = {
         joined_at: string;
         level: number;
         name: string;
+        ready: boolean;
         user_id: string;
       }>;
       minutes: number;
