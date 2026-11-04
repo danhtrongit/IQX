@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { WorkspaceFrameContext, type WorkspaceFrameState } from "@/components/layout/workspace-frame-context"
 
+import { CHART_HEIGHT_MOBILE, PLOT_WEIGHT } from "./flashback-chart-layout"
 import { FlashbackMain } from "./flashback-main"
 import { FlashbackPanel } from "./flashback-panel"
 import { FlashbackProvider } from "./flashback-provider"
@@ -21,6 +22,7 @@ import {
   type BackendOptions,
   type FlashbackBackend,
 } from "./flashback-test-support"
+import { CHART_BOTTOM_RESERVE } from "./use-chart-fit"
 
 const mocks = vi.hoisted(() => ({
   api: vi.fn(),
@@ -82,6 +84,12 @@ function stubChartWidth(width: number) {
   Object.defineProperty(HTMLElement.prototype, "clientWidth", { configurable: true, get: () => width })
 }
 
+const ORIGINAL_INNER_HEIGHT = window.innerHeight
+/** Chiều cao cửa sổ giả: biểu đồ máy tính gói gọn trong chiều cao này trừ phần bên dưới (jsdom không có bố cục). */
+function stubViewportHeight(height: number) {
+  Object.defineProperty(window, "innerHeight", { configurable: true, writable: true, value: height })
+}
+
 async function findGame() {
   await screen.findByTestId("flashback-clock")
   await waitFor(() => expect(screen.getByTestId("flashback-session")).toBeTruthy())
@@ -112,10 +120,11 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers()
   Reflect.deleteProperty(HTMLElement.prototype, "clientWidth")
+  stubViewportHeight(ORIGINAL_INNER_HEIGHT)
 })
 
 describe("Flashback: thanh người chơi và đồng hồ chung", () => {
-  it("mỗi người một ô avatar, tên và % lợi nhuận; dòng của mình có nền nhạt", async () => {
+  it("mỗi người một ô avatar, tên và trạng thái Đang chơi · phiên/tổng; dòng của mình có nền nhạt", async () => {
     setup()
     renderGame()
     await findGame()
@@ -123,22 +132,54 @@ describe("Flashback: thanh người chơi và đồng hồ chung", () => {
     expect(cells.map((cell) => cell.getAttribute("data-me"))).toEqual(["true", "false"])
     expect(within(cells[0]).getByText("Linh")).toBeTruthy()
     expect(within(cells[1]).getByText("Minh")).toBeTruthy()
-    expect(cells[0].textContent).toContain("0,00%")
-    expect(cells[1].textContent).toContain("0,00%")
+    expect(within(cells[0]).getByTestId("flashback-player-status").textContent).toBe("Đang chơi · 0/30")
+    expect(within(cells[1]).getByTestId("flashback-player-status").textContent).toBe("Đang chơi · 0/30")
+    expect(cells.map((cell) => cell.getAttribute("data-status"))).toEqual(["playing", "playing"])
     expect(cells[0].className).toContain("bg-primary/10")
     expect(cells[1].className).not.toContain("bg-primary/10")
   })
 
-  it("người dẫn đầu có viền vàng quanh avatar; một mình thì không có", async () => {
+  it("trong lúc chơi không hiện % của ai, kể cả của mình, và không có viền vàng dẫn đầu (v2.1 §6.2)", async () => {
     setup()
+    // Người kia đang lãi nhưng server không gửi % trong lúc chơi nên thanh không có gì để so sánh.
     backend.setRivalPnl(MINH.user_id, 3.5)
     renderGame()
     await findGame()
     const cells = screen.getAllByTestId("flashback-player")
+    for (const cell of cells) {
+      expect(cell.textContent).not.toContain("%")
+      expect(cell.getAttribute("data-leader")).toBe("false")
+      expect(cell.querySelector("[class*='ring-chart-2']")).toBeNull()
+    }
+    expect(screen.getByRole("region", { name: "Người chơi" }).textContent).not.toContain("+3,50%")
+  })
+
+  it("người bấm Hoàn thành hiện ✓ Đã xong, viền xanh lá và dấu ✓ trên avatar; người còn lại không có", async () => {
+    setup()
+    backend.rivalFinishes(MINH.user_id, 3.5)
+    renderGame()
+    await findGame()
+    const cells = screen.getAllByTestId("flashback-player")
+    expect(cells.map((cell) => cell.getAttribute("data-status"))).toEqual(["playing", "done"])
+    expect(within(cells[1]).getByTestId("flashback-player-status").textContent).toBe("✓ Đã xong")
+    expect(within(cells[1]).getByTestId("flashback-player-done")).toBeTruthy()
+    expect(cells[1].querySelector("[class*='ring-price-up']")).not.toBeNull()
+    expect(within(cells[0]).queryByTestId("flashback-player-done")).toBeNull()
+    expect(cells[0].querySelector("[class*='ring-price-up']")).toBeNull()
+    expect(cells[1].textContent).not.toContain("%")
+  })
+
+  it("ván kết thúc: dòng trạng thái đổi thành % lợi nhuận và người hạng 1 có viền vàng", async () => {
+    setup({ match: { status: "ended", rivals: [{ person: MINH, pnl: 3.5, finished: true }] } })
+    renderGame()
+    await screen.findByTestId("flashback-result")
+    const cells = screen.getAllByTestId("flashback-player")
+    expect(cells.map((cell) => cell.getAttribute("data-status"))).toEqual(["result", "result"])
     expect(cells.map((cell) => cell.getAttribute("data-leader"))).toEqual(["false", "true"])
     expect(cells[1].querySelector("[class*='ring-chart-2']")).not.toBeNull()
     expect(cells[0].querySelector("[class*='ring-chart-2']")).toBeNull()
-    expect(cells[1].textContent).toContain("+3,50%")
+    expect(within(cells[1]).getByTestId("flashback-player-status").textContent).toBe("+3,50%")
+    expect(within(cells[0]).getByTestId("flashback-player-status").textContent).toBe("0,00%")
   })
 
   it("chơi một mình: không ai dẫn đầu", async () => {
@@ -197,7 +238,8 @@ describe("Flashback: số liệu và biểu đồ", () => {
     expect(screen.getByTestId("flashback-session").textContent).toBe("Phiên 0")
   })
 
-  it("điện thoại: nhãn trục rút gọn và biểu đồ dùng chiều cao điện thoại", async () => {
+  it("điện thoại: nhãn trục rút gọn và biểu đồ cao cố định 380px, chia theo cùng tỷ lệ", async () => {
+    stubViewportHeight(900)
     setup()
     renderGame()
     await findGame()
@@ -206,18 +248,35 @@ describe("Flashback: số liệu và biểu đồ", () => {
     expect(labels).toContain("Lịch sử")
     expect(labels).not.toContain("Lịch sử 60 phiên")
     expect(chart.parentElement?.getAttribute("data-narrow")).toBe("true")
-    expect(document.querySelector('[data-pane="price"]')?.getAttribute("data-plot-height")).toBe("240")
-    expect(document.querySelector('[data-pane="volume"]')?.getAttribute("data-plot-height")).toBe("70")
+    expect(chart.parentElement?.getAttribute("data-chart-height")).toBe(String(CHART_HEIGHT_MOBILE))
+    const price = Number(document.querySelector('[data-pane="price"]')?.getAttribute("data-plot-height"))
+    const volume = Number(document.querySelector('[data-pane="volume"]')?.getAttribute("data-plot-height"))
+    expect(price / volume).toBeCloseTo(PLOT_WEIGHT.price / PLOT_WEIGHT.volume, 0)
   })
 
-  it("máy tính: ô giá 300px và ô khối lượng 90px", async () => {
+  it("máy tính: biểu đồ gói gọn trong màn hình, ô giá và ô khối lượng chia theo tỷ lệ 3,2 : 1", async () => {
     stubChartWidth(1000)
+    stubViewportHeight(900)
     setup()
     renderGame()
     await findGame()
-    expect(document.querySelector('[data-pane="price"]')?.getAttribute("data-plot-height")).toBe("300")
-    expect(document.querySelector('[data-pane="volume"]')?.getAttribute("data-plot-height")).toBe("90")
-    expect(screen.getByRole("img", { name: "Biểu đồ nến Flashback" }).parentElement?.getAttribute("data-narrow")).toBe("false")
+    const chart = screen.getByRole("img", { name: "Biểu đồ nến Flashback" })
+    expect(chart.parentElement?.getAttribute("data-narrow")).toBe("false")
+    // Chiều cao cửa sổ trừ phần bên dưới (đáy khung, nút Phiên tiếp, lề trang); jsdom đặt biểu đồ ở đỉnh.
+    expect(chart.parentElement?.getAttribute("data-chart-height")).toBe(String(900 - CHART_BOTTOM_RESERVE))
+    const price = Number(document.querySelector('[data-pane="price"]')?.getAttribute("data-plot-height"))
+    const volume = Number(document.querySelector('[data-pane="volume"]')?.getAttribute("data-plot-height"))
+    expect(price / volume).toBeCloseTo(PLOT_WEIGHT.price / PLOT_WEIGHT.volume, 1)
+  })
+
+  it("máy tính: màn hình thấp thì biểu đồ không thấp hơn 300px", async () => {
+    stubChartWidth(1000)
+    stubViewportHeight(300)
+    setup()
+    renderGame()
+    await findGame()
+    const chart = screen.getByRole("img", { name: "Biểu đồ nến Flashback" })
+    expect(chart.parentElement?.getAttribute("data-chart-height")).toBe("300")
   })
 
   it("số phiên xem và chơi theo đúng phòng: 45 xem, 40 chơi thì trục ghi Lịch sử 45 phiên và Phiên 40", async () => {
@@ -501,6 +560,61 @@ describe("Flashback: khung đặt lệnh", () => {
     expect((form.getByRole("button", { name: "Đặt mua" }) as HTMLButtonElement).disabled).toBe(true)
   })
 
+  it("ô +10 và +100 ngay dưới Số cổ phiếu cộng dồn vào số đang có: +10 hai lần ra 20, thêm +100 ra 120", async () => {
+    const user = userEvent.setup()
+    setup()
+    renderGame()
+    await findGame()
+    const form = within(orderForm())
+    const qty = form.getByLabelText("Số cổ phiếu") as HTMLInputElement
+    expect(qty.value).toBe("")
+    await user.click(form.getByRole("button", { name: "+10" }))
+    expect(qty.value).toBe("10")
+    await user.click(form.getByRole("button", { name: "+10" }))
+    expect(qty.value).toBe("20")
+    await user.click(form.getByRole("button", { name: "+100" }))
+    expect(qty.value).toBe("120")
+    // Giá trị lệnh, phí và tổng tiền tự tính lại theo số mới.
+    expect(form.getByText("Giá trị lệnh").nextElementSibling?.textContent).toBe("3.456.000")
+    expect(form.getByText("Phí 0,15%").nextElementSibling?.textContent).toBe("5.184")
+    expect(form.getByText("Tổng tiền trả").nextElementSibling?.textContent).toBe("3.461.184")
+    // Chỉ cộng số, không tự đặt lệnh.
+    expect(backend.callsTo("POST", "/flashback/matches/").filter((call) => call.path.endsWith("/orders"))).toHaveLength(0)
+    // Cộng thêm vào số đã gõ tay.
+    await user.clear(qty)
+    await user.type(qty, "5")
+    await user.click(form.getByRole("button", { name: "+10" }))
+    expect(qty.value).toBe("15")
+  })
+
+  it("+100 vượt số mua tối đa thì báo lỗi như nhập tay và không tự cắt; cả hai ô dùng được ở tab Bán", async () => {
+    const user = userEvent.setup()
+    setup()
+    renderGame()
+    await findGame()
+    const form = within(orderForm())
+    const qty = form.getByLabelText("Số cổ phiếu") as HTMLInputElement
+    for (let index = 0; index < 4; index += 1) await user.click(form.getByRole("button", { name: "+100" }))
+    expect(qty.value).toBe("400")
+    expect(form.getByRole("alert").textContent).toBe("Không đủ tiền mặt")
+    expect((form.getByRole("button", { name: "Đặt mua" }) as HTMLButtonElement).disabled).toBe(true)
+
+    await user.click(form.getByRole("button", { name: "Bán" }))
+    await user.clear(qty)
+    await user.click(form.getByRole("button", { name: "+10" }))
+    expect(qty.value).toBe("10")
+    expect(form.getByRole("alert").textContent).toBe("Vượt số cổ phiếu đang có")
+  })
+
+  it("hết ván hoặc đã hoàn thành thì hai ô +10 và +100 bị khoá cùng ô nhập", async () => {
+    setup({ match: { status: "ended" } })
+    renderGame()
+    await screen.findByTestId("flashback-result")
+    // Cửa sổ kết quả đang mở nên khung đặt lệnh bị ẩn khỏi cây trợ năng: tìm theo testid.
+    expect((screen.getByTestId("flashback-qty-add-10") as HTMLButtonElement).disabled).toBe(true)
+    expect((screen.getByTestId("flashback-qty-add-100") as HTMLButtonElement).disabled).toBe(true)
+  })
+
   it("đặt mua: gửi lệnh với khoá chống trùng, cập nhật tiền mặt, cổ phiếu đang giữ và lệnh đã khớp", async () => {
     const user = userEvent.setup()
     setup()
@@ -676,40 +790,61 @@ describe("Flashback: chỉ báo", () => {
     expect(picker().getByText("Không có chỉ báo phù hợp")).toBeTruthy()
   })
 
-  it("chỉ báo có ô riêng cao 130px (110px trên điện thoại), mỗi ô một dải chú giải, thêm thì biểu đồ dài thêm", async () => {
+  it("thêm chỉ báo riêng thì các khung chia lại chiều cao theo tỷ lệ 3,2 : 1 : 1,15, biểu đồ không dài thêm", async () => {
     stubChartWidth(1000)
+    stubViewportHeight(900)
     const user = userEvent.setup()
     setup()
     renderGame()
     await findGame()
     const base = chartHeight()
+    expect(base).toBe(900 - CHART_BOTTOM_RESERVE)
     expect(panes("indicator")).toHaveLength(0)
+    const plot = (name: string, index = 0) => Number(panes(name)[index].getAttribute("data-plot-height"))
+    const priceBefore = plot("price")
 
     await addIndicator(user, "RSI")
     expect(panes("indicator")).toHaveLength(1)
-    expect(panes("indicator")[0].getAttribute("data-plot-height")).toBe("130")
     expect(panes("indicator")[0].querySelectorAll("button").length).toBe(3)
-    const afterOne = chartHeight()
-    expect(afterOne - base).toBe(130 + 24 + 4 + 10)
+    expect(chartHeight()).toBe(base)
+    expect(plot("price")).toBeLessThan(priceBefore)
+    expect(plot("indicator") / plot("volume")).toBeCloseTo(PLOT_WEIGHT.indicator / PLOT_WEIGHT.volume, 1)
 
     await addIndicator(user, "MACD")
     expect(panes("indicator")).toHaveLength(2)
-    expect(panes("indicator").map((pane) => pane.getAttribute("data-plot-height"))).toEqual(["130", "130"])
-    expect(chartHeight() - afterOne).toBe(130 + 24 + 4 + 10)
-    // Ô giá và ô khối lượng giữ nguyên chiều cao, không bị ép nhỏ lại.
-    expect(panes("price")[0].getAttribute("data-plot-height")).toBe("300")
-    expect(panes("volume")[0].getAttribute("data-plot-height")).toBe("90")
+    expect(chartHeight()).toBe(base)
+    expect(plot("indicator", 1)).toBe(plot("indicator", 0))
+    expect(plot("price") / plot("volume")).toBeCloseTo(PLOT_WEIGHT.price / PLOT_WEIGHT.volume, 1)
+    expect(plot("indicator", 0) / plot("volume")).toBeCloseTo(PLOT_WEIGHT.indicator / PLOT_WEIGHT.volume, 1)
   })
 
-  it("điện thoại: chỉ báo 110px, ô giá 240px, ô khối lượng 70px", async () => {
+  it("máy tính bật 5 chỉ báo riêng: biểu đồ vẫn một chiều cao, mọi khung có chỗ vẽ", async () => {
+    stubChartWidth(1000)
+    stubViewportHeight(900)
+    const user = userEvent.setup()
+    setup()
+    renderGame()
+    await findGame()
+    const base = chartHeight()
+    for (const name of ["RSI", "MACD", "Stochastic", "CCI", "ROC"]) await addIndicator(user, name)
+    expect(panes("indicator")).toHaveLength(5)
+    expect(chartHeight()).toBe(base)
+    for (const name of ["price", "volume", "indicator"]) {
+      for (const pane of panes(name)) expect(Number(pane.getAttribute("data-plot-height"))).toBeGreaterThan(0)
+    }
+  })
+
+  it("điện thoại: thêm chỉ báo vẫn giữ biểu đồ cao 380px, các khung chia theo cùng tỷ lệ", async () => {
+    stubViewportHeight(900)
     const user = userEvent.setup()
     setup()
     renderGame()
     await findGame()
     await addIndicator(user, "RSI")
-    expect(panes("indicator")[0].getAttribute("data-plot-height")).toBe("110")
-    expect(panes("price")[0].getAttribute("data-plot-height")).toBe("240")
-    expect(panes("volume")[0].getAttribute("data-plot-height")).toBe("70")
+    expect(chartHeight()).toBe(CHART_HEIGHT_MOBILE)
+    const plot = (name: string) => Number(panes(name)[0].getAttribute("data-plot-height"))
+    expect(plot("price") / plot("volume")).toBeCloseTo(PLOT_WEIGHT.price / PLOT_WEIGHT.volume, 0)
+    expect(plot("indicator") / plot("volume")).toBeCloseTo(PLOT_WEIGHT.indicator / PLOT_WEIGHT.volume, 0)
   })
 
   it("chỉ báo vẽ trên giá thêm một dòng vào dải chú giải của ô giá; chỉ báo khối lượng vào ô khối lượng", async () => {

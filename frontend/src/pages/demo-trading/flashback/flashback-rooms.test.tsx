@@ -357,6 +357,26 @@ describe("Flashback: hộp tạo phòng", () => {
     })
   })
 
+  it("v2.1 §1: số người tối đa chọn được từ 1 đến 30, chọn 30 thì gửi max_players 30", async () => {
+    setup()
+    const { user, dialog } = await openCreate()
+    await user.click(dialog.getByLabelText("Số người tối đa"))
+    const options = await screen.findAllByRole("option")
+    expect(options.map((option) => option.textContent)).toEqual(Array.from({ length: 30 }, (_, index) => `${index + 1} người`))
+    await user.click(screen.getByRole("option", { name: "30 người" }))
+    expect(dialog.getByLabelText("Số người tối đa").textContent).toBe("30 người")
+    // Từ 2 người trở lên ô cược vẫn mở.
+    expect((dialog.getByLabelText("Xu cược mỗi người") as HTMLInputElement).disabled).toBe(false)
+
+    await user.click(dialog.getByRole("button", { name: "Tạo phòng" }))
+    expect((await screen.findByTestId("flashback-room-id")).textContent).toBe(ROOM_CODE)
+    expect(backend.callsTo("POST", "/flashback/rooms").find((call) => call.path === "/flashback/rooms")?.body).toMatchObject({
+      max_players: 30,
+      stake_xu: 100,
+    })
+    expect(screen.getByTestId("flashback-slots").children).toHaveLength(30)
+  })
+
   it("giá trị sai báo đúng một dòng lỗi trong hộp, không gọi server, và gõ lại thì dòng lỗi biến mất", async () => {
     setup()
     const { user, dialog } = await openCreate()
@@ -456,6 +476,53 @@ describe("Flashback: phòng chờ", () => {
     expect(document.querySelectorAll('[data-testid="flashback-slot-off"]')).toHaveLength(2)
     const tiles = screen.getByRole("region", { name: "Thông số phòng" })
     expect(within(tiles).getByText("Cược").nextElementSibling?.textContent).toBe("Không cược")
+  })
+
+  describe("phòng đông người (v2.1 §1)", () => {
+    const crowd = (count: number) =>
+      Array.from({ length: count }, (_, index) => ({ user_id: `user-x${index}`, name: `Bạn ${index + 1}`, avatar_url: null }))
+
+    it("phòng 30 người có đủ 30 ô, lưới 6 cột thu nhỏ và cuộn trong khung cao tối đa nửa màn hình", async () => {
+      setup({ room: { status: "waiting", members: [ME, ...crowd(11)], settings: { max_players: 30, stake_xu: 0 } } })
+      renderFlashback()
+      await screen.findByTestId("flashback-room-id")
+      const grid = screen.getByTestId("flashback-slots")
+      expect(within(grid).getAllByTestId("flashback-slot")).toHaveLength(12)
+      expect(within(grid).getAllByTestId("flashback-slot-empty")).toHaveLength(18)
+      expect(grid.querySelectorAll('[data-testid="flashback-slot-off"]')).toHaveLength(0)
+      expect(grid.getAttribute("data-compact")).toBe("true")
+      expect(grid.className).toContain("sm:grid-cols-6")
+      expect(grid.className).toContain("grid-cols-3")
+      expect(grid.className).toContain("max-h-[52vh]")
+      expect(grid.className).toContain("overflow-auto")
+    })
+
+    it("từ 9 người trở lên ô thu nhỏ, dưới 9 người giữ lưới 4 cột như cũ", async () => {
+      setup({ room: { status: "waiting", members: [ME], settings: { max_players: 9, stake_xu: 0 } } })
+      const nine = renderFlashback()
+      await screen.findByTestId("flashback-room-id")
+      expect(screen.getByTestId("flashback-slots").getAttribute("data-compact")).toBe("true")
+      expect(within(screen.getByTestId("flashback-slots")).getAllByTestId("flashback-slot-empty")).toHaveLength(8)
+      nine.unmount()
+
+      setup({ room: { status: "waiting", members: [ME], settings: { max_players: 8, stake_xu: 0 } } })
+      renderFlashback()
+      await screen.findByTestId("flashback-room-id")
+      const grid = screen.getByTestId("flashback-slots")
+      expect(grid.getAttribute("data-compact")).toBe("false")
+      expect(grid.className).toContain("sm:grid-cols-4")
+      expect(grid.className).not.toContain("overflow-auto")
+      expect(within(grid).getAllByTestId("flashback-slot-empty")).toHaveLength(7)
+    })
+
+    it("số ô bằng số người tối đa, tối thiểu 4 ô: phòng 5 người có 5 ô", async () => {
+      setup({ room: { status: "waiting", members: [ME], settings: { max_players: 5, stake_xu: 0 } } })
+      renderFlashback()
+      await screen.findByTestId("flashback-room-id")
+      const grid = screen.getByTestId("flashback-slots")
+      expect(grid.children).toHaveLength(5)
+      expect(grid.querySelectorAll('[data-testid="flashback-slot-off"]')).toHaveLength(0)
+    })
   })
 
   it("chủ phòng thấy nút Bắt đầu; người vào sau chỉ có Rời phòng", async () => {

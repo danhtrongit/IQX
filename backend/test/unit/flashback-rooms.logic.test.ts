@@ -12,7 +12,6 @@ import {
   settleMatch,
   validateRoomSettings,
   verifyRoomPassword,
-  visibleStep,
   type FbJoinCheckInput,
   type FbSettlementPlayer,
 } from '../../src/modules/flashback/flashback-rooms.logic.js';
@@ -51,6 +50,15 @@ describe('§3 tạo phòng: validateRoomSettings', () => {
     expect(validateRoomSettings({ ...ok, stake_xu: 1000 }, 1000)).toMatchObject({ ok: true });
   });
 
+  it('v2.1 §1: phòng 5 đến 30 người hợp lệ, mặc định vẫn 4 người', () => {
+    for (const maxPlayers of [5, 8, 9, 29, 30])
+      expect(validateRoomSettings({ ...ok, max_players: maxPlayers }, 1000)).toMatchObject({
+        ok: true,
+        value: { maxPlayers, stakeXu: 100 },
+      });
+    expect(validateRoomSettings({}, 1000)).toMatchObject({ ok: true, value: { maxPlayers: 4 } });
+  });
+
   it('chọn 1 người thì khoá ô cược: không cược kể cả khi gửi giá trị lẻ hay không có xu', () => {
     expect(validateRoomSettings({ ...ok, max_players: 1, stake_xu: 15 }, 0)).toEqual({
       ok: true,
@@ -60,10 +68,12 @@ describe('§3 tạo phòng: validateRoomSettings', () => {
 
   it('kiểm tra thời gian, số người và mật khẩu 4–12 ký tự; trường thiếu dùng mặc định', () => {
     expect(validateRoomSettings({ ...ok, minutes: 7 }, 1000)).toMatchObject({ ok: false });
-    expect(validateRoomSettings({ ...ok, max_players: 5 }, 1000)).toEqual({
+    expect(validateRoomSettings({ ...ok, max_players: 31 }, 1000)).toEqual({
       ok: false,
-      message: 'Số người tối đa phải từ 1 đến 4',
+      message: 'Số người tối đa phải từ 1 đến 30',
     });
+    expect(validateRoomSettings({ ...ok, max_players: 0 }, 1000)).toMatchObject({ ok: false });
+    expect(validateRoomSettings({ ...ok, max_players: 2.5 }, 1000)).toMatchObject({ ok: false });
     expect(validateRoomSettings({ ...ok, password: 'abc' }, 1000)).toEqual({
       ok: false,
       message: 'Mật khẩu từ 4 đến 12 ký tự',
@@ -268,6 +278,25 @@ describe('§7 chốt ván: settleMatch', () => {
     expect(resultXuLabel(settlement.outcomes[0]!)).toBe('Hoàn xu cược');
   });
 
+  it('v2.1 §1: phòng 30 người cược 10: người thắng nhận đủ 300 xu, mọi người đều có hạng', () => {
+    const ids = Array.from({ length: 30 }, (_, index) => String.fromCharCode(65 + index));
+    const settlement = settleMatch({
+      players: ids.map((id, index) =>
+        player(id, { cash: index === 7 ? CASH + 500_000n : CASH - BigInt(index) * 1_000n }),
+      ),
+      playBars: 30,
+      priceAt,
+      stakeXu: 10,
+    });
+    expect(settlement.outcomes).toHaveLength(30);
+    expect(settlement.potXu).toBe(300);
+    expect(settlement.outcomes[0]).toMatchObject({ userId: 'H', rank: 1, winner: true, winXu: 300 });
+    expect(settlement.outcomes.reduce((sum, outcome) => sum + outcome.winXu, 0)).toBe(300);
+    expect(settlement.outcomes.filter((outcome) => outcome.winner)).toHaveLength(1);
+    expect(new Set(settlement.outcomes.map((outcome) => outcome.userId)).size).toBe(30);
+    expect(settlement.outcomes[29]!.rank).toBe(30);
+  });
+
   it('chơi một mình: không cược, không xu', () => {
     const settlement = settleMatch({
       players: [player('a', { holdings: 100, cash: CASH - 1_000_000n })],
@@ -301,12 +330,10 @@ describe('§7 chốt ván: settleMatch', () => {
   });
 });
 
-describe('§6.1 % người khác và tiêu đề kết quả', () => {
-  it('% của người khác lấy tại min(phiên của họ, phiên của mình)', () => {
-    expect(visibleStep(20, 10)).toBe(10);
-    expect(visibleStep(5, 10)).toBe(5);
+describe('§6.1 tài sản theo phiên và tiêu đề kết quả', () => {
+  it('navAtStep lấy tài sản tại phiên, quá lịch sử thì lấy phần tử cuối', () => {
     const navs = [CASH, CASH + 1n, CASH + 2n];
-    expect(navAtStep(navs, visibleStep(20, 1))).toBe(CASH + 1n);
+    expect(navAtStep(navs, 1)).toBe(CASH + 1n);
     expect(navAtStep(navs, 9)).toBe(CASH + 2n);
   });
 

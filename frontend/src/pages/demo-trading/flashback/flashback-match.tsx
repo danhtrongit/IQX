@@ -5,7 +5,7 @@
  * đổi thành "Hoàn thành".
  */
 import { useCallback, useEffect, useState, type ReactNode } from "react"
-import { Play, Sigma } from "lucide-react"
+import { Check, Play, Sigma } from "lucide-react"
 
 import { PanelState } from "@/components/layout/panel-state"
 import { useWorkspaceFrame } from "@/components/layout/workspace-frame-context"
@@ -22,8 +22,8 @@ import {
   FLASHBACK_LOW_TIME_MS,
   clockText,
   formatMoney,
-  formatSignedPercent,
   leaderIds,
+  playerStatus,
 } from "./flashback-model"
 import { FlashbackResult } from "./flashback-result"
 
@@ -287,7 +287,7 @@ function PlayerBar({ match }: { match: MatchApi }) {
   const leaders = leaderIds(match.players)
   const middle = Math.ceil(match.players.length / 2)
   const cells = match.players.map((player) => (
-    <PlayerCell key={player.user_id} player={player} leader={leaders.has(player.user_id)} />
+    <PlayerCell key={player.user_id} player={player} playBars={match.playBars} leader={leaders.has(player.user_id)} />
   ))
   return (
     <section
@@ -301,8 +301,10 @@ function PlayerBar({ match }: { match: MatchApi }) {
   )
 }
 
-function PlayerCell({ player, leader }: { player: FlashbackPlayer; leader: boolean }) {
-  const percent = player.pnl_percent
+function PlayerCell({ player, playBars, leader }: { player: FlashbackPlayer; playBars: number; leader: boolean }) {
+  // Trong lúc chơi không hiện % của ai, chỉ "Đang chơi · phiên/tổng" hoặc "✓ Đã xong" (v2.1 §6.2).
+  const status = playerStatus(player, playBars)
+  const done = status.kind === "done"
   return (
     <div
       className={cn(
@@ -312,13 +314,24 @@ function PlayerCell({ player, leader }: { player: FlashbackPlayer; leader: boole
       data-testid="flashback-player"
       data-me={player.is_me}
       data-leader={leader}
+      data-status={status.kind}
     >
-      <PlayerAvatar
-        name={player.name}
-        avatarUrl={player.avatar_url}
-        seed={player.user_id}
-        className={cn("size-7 min-[901px]:size-[34px]", leader && "ring-[3px] ring-chart-2")}
-      />
+      <span className="relative shrink-0">
+        <PlayerAvatar
+          name={player.name}
+          avatarUrl={player.avatar_url}
+          seed={player.user_id}
+          className={cn("size-7 min-[901px]:size-[34px]", leader && "ring-[3px] ring-chart-2", done && "ring-[3px] ring-price-up")}
+        />
+        {done ? (
+          <span
+            className="absolute -right-1 -bottom-1 grid size-3.5 place-items-center rounded-full bg-price-up text-card"
+            data-testid="flashback-player-done"
+          >
+            <Check className="size-2.5" strokeWidth={4} aria-hidden="true" />
+          </span>
+        ) : null}
+      </span>
       <div className="flex min-w-0 flex-col gap-0.5">
         <b className="max-w-[74px] truncate text-[13px] font-extrabold min-[901px]:max-w-[130px] min-[901px]:text-[15px]">
           {player.name}
@@ -327,10 +340,19 @@ function PlayerCell({ player, leader }: { player: FlashbackPlayer; leader: boole
         <span
           className={cn(
             "self-start rounded-sm px-1.5 py-0.5 text-[13px] leading-none font-extrabold tabular-nums",
-            percent > 0 ? "bg-price-up text-card" : percent < 0 ? "bg-price-down text-card" : "bg-muted text-foreground",
+            status.kind === "result"
+              ? status.percent > 0
+                ? "bg-price-up text-card"
+                : status.percent < 0
+                  ? "bg-price-down text-card"
+                  : "bg-muted text-foreground"
+              : done
+                ? "bg-price-up/15 text-price-up"
+                : "bg-muted text-foreground",
           )}
+          data-testid="flashback-player-status"
         >
-          {formatSignedPercent(percent)}
+          {status.text}
         </span>
       </div>
     </div>

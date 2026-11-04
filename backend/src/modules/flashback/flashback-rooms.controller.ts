@@ -176,8 +176,10 @@ const stateShape = {
       ...playerRefShape,
       is_me: z.boolean(),
       finished: z.boolean(),
-      pnl_pct: z.number(),
-      pnl_percent: z.number(),
+      step: z.number(),
+      // null trong lúc chơi (v2.1 §6.2); chỉ có % cuối sau khi ván kết thúc.
+      pnl_pct: z.number().nullable(),
+      pnl_percent: z.number().nullable(),
     }),
   ),
 };
