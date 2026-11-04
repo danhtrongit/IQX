@@ -695,7 +695,7 @@ async function creditSignupBonus(tx: SqlClient, userId: string): Promise<void> {
   await tx.query(
     `insert into coin_ledger
        (id, user_id, seq, kind, delta, balance_after, unique_key, ref, policy_version)
-     values ($1, $2, 1, 'signup_bonus', $3, $3, $4, '{}'::jsonb, $5)`,
+     values ($1, $2, 1, 'signup_bonus', $3::integer, $3::bigint, $4, '{}'::jsonb, $5)`,
     [randomUUID(), userId, SIGNUP_BONUS_XU, `signup_bonus:${userId}`, COIN_POLICY_VERSION],
   );
 }
