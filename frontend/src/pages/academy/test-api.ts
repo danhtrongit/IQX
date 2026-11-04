@@ -1,10 +1,11 @@
 /**
- * A small in-memory Học viện v3.3 backend for the tests. Plug `handler` into the mocked `api()` of
+ * A small in-memory Học viện v4 backend for the tests. Plug `handler` into the mocked `api()` of
  * `@/lib/api`; every call is recorded in `calls` ("GET /academy/catalog") and `bodies`.
- * Locks follow the server's prefix rule; answers are graded here and never sent to the client.
+ * Learning is free (nothing is locked) unless `mode: "sequential"`, which applies the server's prefix rule;
+ * answers are graded here and never sent to the client.
  */
 import { ApiError } from "@/lib/api"
-import type { AttemptResponse, CatalogItem, LessonContent, NotesResponse, ResumeResponse } from "./content-types"
+import type { AccessMode, AttemptResponse, CatalogItem, LessonContent, LinkResponse, NotesResponse, ResumeResponse } from "./content-types"
 import {
   ATTEMPT_ID,
   buildAttempt,
@@ -18,12 +19,14 @@ import {
   statesOf,
 } from "./test-fixtures"
 
-type Route = "catalog" | "progress" | "lesson" | "scenario" | "notes" | "resume" | "history" | "create" | "draft" | "submit"
+type Route = "catalog" | "progress" | "lesson" | "scenario" | "notes" | "resume" | "history" | "create" | "draft" | "submit" | "link"
 type Answer = { question_id: string; option_id: string }
 type Draft = { revision: number; selections: Record<string, string> }
 type AttemptRecord = { attempt: AttemptResponse; item: CatalogItem; key: string; answers?: Answer[]; newly?: boolean }
 
 export type FakeOptions = {
+  /** `free` (default): every item is open; `sequential`: an item opens once every earlier required item is passed. */
+  mode?: AccessMode
   /** Lesson keys already completed (e.g. "concept:ch01_l01", "technical:rsi"). */
   completed?: string[]
   lessons?: Record<string, Partial<LessonContent>>
@@ -42,6 +45,9 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
   const catalog = buildCatalog()
   const byId = new Map(catalogItemsOf(catalog).map((item) => [item.id, item] as const))
   const completed = new Set(options.completed ?? [])
+  const mode: AccessMode = options.mode ?? "free"
+  /** The item opened last (a required lesson or exam): the server's "bài đang học". */
+  let openedId: string | null = null
   const calls: string[] = []
   const bodies: { call: string; body: unknown }[] = []
   const failures = new Map<Route, { error: unknown; times: number }>()
@@ -84,8 +90,43 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
   function requireOpenItem(id: string): CatalogItem {
     const item = byId.get(id)
     if (!item) throw notFound()
-    if (statesOf(catalog, completed).get(id) === "locked") throw locked()
+    if (statesOf(catalog, completed, mode).get(id) === "locked") throw locked()
     return item
+  }
+
+  /** The server's link rule (spec v4 §6): `metric_key`, else the exact title, else a title starting with `name + " ·"`; a miss answers the current lesson. */
+  function resolveLink(metric: string): LinkResponse {
+    const query = metric.trim().toLowerCase()
+    const lessons = catalogItemsOf(catalog).filter((item) => item.kind === "lesson")
+    const ordered = [...lessons.filter((item) => item.metric_key), ...lessons.filter((item) => !item.metric_key)]
+    const byKey = lessons.find((item) => item.metric_key?.toLowerCase() === query)
+    const byTitle = ordered.find((item) => item.name.toLowerCase() === query)
+    const byPrefix = ordered.find((item) => item.name.toLowerCase().startsWith(`${query} ·`))
+    const hit = !query ? null : byKey ? { item: byKey, by: "metric_key" } : byTitle ? { item: byTitle, by: "title" } : byPrefix ? { item: byPrefix, by: "title_prefix" } : null
+    if (hit)
+      return {
+        found: true,
+        metric,
+        item_id: hit.item.id,
+        lesson_key: hit.item.lesson_key,
+        metric_key: hit.item.metric_key,
+        chapter: hit.item.chapter,
+        title: hit.item.name,
+        matched_by: hit.by as LinkResponse["matched_by"],
+        url: `/hoc-vien/${hit.item.id}`,
+      }
+    const current = buildProgress(completed, catalog, mode, openedId).current_item_id
+    return {
+      found: false,
+      metric,
+      item_id: current,
+      lesson_key: null,
+      metric_key: null,
+      chapter: null,
+      title: null,
+      matched_by: null as unknown as LinkResponse["matched_by"],
+      url: current ? `/hoc-vien/${current}` : "/hoc-vien",
+    }
   }
 
   async function handler(rawPath: string, init: RequestInit = {}): Promise<unknown> {
@@ -99,14 +140,19 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
     if (hold) await hold
 
     if (path === "/academy/catalog") return check("catalog"), catalog
-    if (path === "/academy/progress") return check("progress"), buildProgress(completed, catalog)
+    if (path === "/academy/progress") return check("progress"), buildProgress(completed, catalog, mode, openedId)
+    if (path === "/academy/link") {
+      check("link")
+      return resolveLink(new URLSearchParams(rawPath.split("?")[1] ?? "").get("metric") ?? "")
+    }
 
     let match = /^\/academy\/lessons\/(ch\d{2}-(?:l\d{2}|exam|practice))$/.exec(path)
     if (match) {
       check("lesson")
       const item = requireOpenItem(match[1])
+      if (!item.optional) openedId = item.id
       const choice = scenarios.get(item.id)
-      const response = buildItem(item, statesOf(catalog, completed).get(item.id) ?? "open", options.lessons?.[item.id])
+      const response = buildItem(item, statesOf(catalog, completed, mode).get(item.id) ?? "open", options.lessons?.[item.id])
       return response.kind === "chapter_exam" || choice === undefined
         ? response
         : { ...response, scenario_choice: { choice, chosen_at: "2026-10-08T00:40:00.000Z" } }

@@ -1,8 +1,8 @@
 /**
- * Data layer of the Học viện tool (v3.3: 13 chapters, all published), authenticated.
+ * Data layer of the Học viện tool (v4: 12 chapters, all published, free learning), authenticated.
  *
  * 1  `GET  /academy/catalog`                    published chapters, items (lesson / exam / practice), retired names
- * 2  `GET  /academy/progress`                   server-computed item states, course and chapter counts, grants
+ * 2  `GET  /academy/progress`                   server-computed item states, course and chapter counts, access mode
  * 3  `GET  /academy/lessons/{id}`               lesson or practice content (typed blocks + chart models), or exam intro
  * 4  `POST /academy/lessons/{id}/scenario`      store the scenario choice once
  * 5  `GET  /academy/lessons/{id}/notes`         workpads, checklists, roleplay scores of the account
@@ -11,10 +11,12 @@
  * 8  `GET  /academy/lessons/{id}/attempts`      score-only history of submitted attempts
  * 9  `POST /academy/attempts`                   every question of the bank in a server-shuffled order, no key
  * 10 `PUT  /academy/attempts/{id}/answers`      save draft selections (partial, merged, revisioned)
- * 11 `POST /academy/attempts/{id}/submit`       server grading: score only, completion, grants, reward
+ * 11 `POST /academy/attempts/{id}/submit`       server grading: score only, completion, reward
+ * 12 `GET  /academy/link?metric=`               deep link: the lesson of a metric (never an error)
  *
- * Correctness, locks, completion, grants and coins are only ever decided by the server; the client
- * never sends a score, a pass flag or a capability, and never receives an answer key.
+ * Correctness, locks (only in a `sequential` account), completion and coins are only ever decided by
+ * the server; the client never sends a score or a pass flag, and never receives an answer key. No
+ * tool depends on a lesson any more (spec v4 §4.2), so there are no grants to read here.
  */
 import { ApiError } from "@/lib/api"
 import { requestOperation } from "@/lib/contract-client"
@@ -26,6 +28,7 @@ import type {
   DraftState,
   HistoryResponse,
   ItemResponse,
+  LinkResponse,
   NotesResponse,
   ProgressResponse,
   ResumeResponse,
@@ -61,6 +64,15 @@ export async function fetchItem(lessonId: string, signal?: AbortSignal): Promise
   return unwrap<ItemResponse>(
     await requestOperation("GET /api/v2/academy/lessons/{lessonId}", { path: { lessonId } }, { signal }),
   )
+}
+
+/**
+ * The lesson that teaches a metric (spec v4 §6): by `metric_key`, else by exact lesson title, else by a
+ * title starting with `name + " ·"`. A miss is not an error: `found` is false and `item_id` is the lesson
+ * the learner was last on (null when there is none).
+ */
+export async function fetchLink(metric: string, signal?: AbortSignal): Promise<LinkResponse> {
+  return unwrap<LinkResponse>(await requestOperation("GET /api/v2/academy/link", { query: { metric } }, { signal }))
 }
 
 export async function chooseScenario(
@@ -154,6 +166,7 @@ export function isCatalogMismatch(error: unknown): boolean {
   return hasCode(error, 409, "CATALOG_VERSION_MISMATCH") || hasCode(error, 409, "ASSESSMENT_VERSION_MISMATCH")
 }
 
+/** Only an account in `sequential` mode (spec v4.1) can still meet a locked item; in free mode this never happens. */
 export const isItemLocked = (error: unknown) => hasCode(error, 403, "ACADEMY_ITEM_LOCKED")
 export const isScenarioRequired = (error: unknown) => hasCode(error, 403, "ACADEMY_SCENARIO_REQUIRED")
 export const isNotesConflict = (error: unknown) => hasCode(error, 409, "NOTES_REVISION_CONFLICT")

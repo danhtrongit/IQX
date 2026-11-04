@@ -50,7 +50,11 @@ export type PanelProps = {
   onHover: (index: number | null, x: number) => void
 }
 
-const PADDING_LEFT = 44
+/**
+ * Lề trái chung của mọi tấm vẽ (cả hai tầng của một biểu đồ phải thẳng cột nên không đổi theo tấm).
+ * Đủ cho nhãn trục dài nhất của chỉ tiêu tính bằng tỷ đồng ("100.000" ở cỡ 10,5px ≈ 41px).
+ */
+const PADDING_LEFT = 48
 const PADDING_RIGHT = 8
 const PADDING_TOP = 8
 const PADDING_BOTTOM = 20

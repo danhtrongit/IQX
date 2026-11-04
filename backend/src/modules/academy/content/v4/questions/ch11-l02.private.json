@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l02",
+  "questions": [
+    {
+      "correct_option_id": "296a352b93",
+      "id": "ch11-l02-q01",
+      "options": [
+        {
+          "id": "296a352b93",
+          "text": "(Doanh thu hoạt động − Chi phí hoạt động) ÷ Doanh thu hoạt động"
+        },
+        {
+          "id": "905313bd44",
+          "text": "Lợi nhuận sau thuế ÷ Doanh thu hoạt động"
+        },
+        {
+          "id": "b29264fda5",
+          "text": "(Doanh thu môi giới − Chi phí môi giới) ÷ Doanh thu môi giới"
+        }
+      ],
+      "prompt": "Biên lợi nhuận hoạt động được tính thế nào?"
+    },
+    {
+      "correct_option_id": "bf66e60c81",
+      "id": "ch11-l02-q02",
+      "options": [
+        {
+          "id": "bf66e60c81",
+          "text": "Vì chi phí hoạt động đóng vai trò như giá vốn"
+        },
+        {
+          "id": "12f2a18f22",
+          "text": "Vì đã trừ hết chi phí quản lý và thuế"
+        },
+        {
+          "id": "4499006638",
+          "text": "Vì chỉ tính riêng mảng môi giới"
+        }
+      ],
+      "prompt": "Vì sao biên lợi nhuận hoạt động được xem là biên gộp của công ty chứng khoán?"
+    },
+    {
+      "correct_option_id": "8a995f08d1",
+      "id": "ch11-l02-q03",
+      "options": [
+        {
+          "id": "8a995f08d1",
+          "text": "Chi phí lãi vay"
+        },
+        {
+          "id": "91128930a0",
+          "text": "Chi phí môi giới"
+        },
+        {
+          "id": "dfc3fb5cb2",
+          "text": "Lỗ từ tài sản tài chính FVTPL"
+        }
+      ],
+      "prompt": "Khoản nào không nằm trong chi phí hoạt động?"
+    },
+    {
+      "correct_option_id": "633368f5e6",
+      "id": "ch11-l02-q04",
+      "options": [
+        {
+          "id": "633368f5e6",
+          "text": "Từ 50% trở lên và ổn định"
+        },
+        {
+          "id": "6cd67e5de3",
+          "text": "Dưới 40% và dao động mạnh"
+        },
+        {
+          "id": "1bc1e33d82",
+          "text": "Đúng bằng biên lợi nhuận ròng"
+        }
+      ],
+      "prompt": "Mức biên lợi nhuận hoạt động nào thường được xem là tốt?"
+    },
+    {
+      "chart_id": "c11l2-rep",
+      "correct_option_id": "3285bf1521",
+      "id": "ch11-l02-q05",
+      "options": [
+        {
+          "id": "3285bf1521",
+          "text": "Doanh thu hoạt động 4 quý"
+        },
+        {
+          "id": "2adb3a6323",
+          "text": "Lợi nhuận sau thuế 4 quý"
+        },
+        {
+          "id": "39352698f9",
+          "text": "Chi phí quản lý 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, tổng chiều cao cột chồng phía dưới là gì?"
+    }
+  ],
+  "salt": "6e8db67786762cecc32137e7a785375cbc60aea7e16c3b56900288a74568ec39"
+}

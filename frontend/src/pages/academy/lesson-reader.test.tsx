@@ -50,8 +50,7 @@ describe("LessonReader header and locator", () => {
     expect(within(header).getByText("Đã nhận 100 xu")).toBeTruthy()
   })
 
-  it("names an exam Bài thi Chương c and the practice room Chương 3 · Phòng tập thực chiến", async () => {
-    install({ completed: keysBefore("ch04-l01") })
+  it("names an exam Bài thi Chương c and the practice room Chương 3 · Phòng tập thực chiến, both open at once", async () => {
     const first = open("ch03-exam")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 3" })).toBeTruthy()
     await waitFor(() => expect(locator()).toBe("Bài thi Chương 3"))
@@ -80,8 +79,21 @@ describe("LessonReader header and locator", () => {
 })
 
 describe("LessonReader locked and missing items", () => {
-  it("shows LockedState for a 403 and leads to the item being learned", async () => {
-    install({ completed: ["concept:ch01_l01"] })
+  it("opens any item at once in free mode: the last lesson, a late exam and the practice room need nothing before them", async () => {
+    for (const [id, heading] of [
+      ["ch12-l08", "Bài học 12.8"],
+      ["ch10-exam", "Bài thi Chương 10"],
+      ["ch03-practice", "Phòng tập thực chiến"],
+    ] as const) {
+      const view = open(id)
+      expect(await screen.findByRole("heading", { level: 2, name: heading })).toBeTruthy()
+      expect(screen.queryByRole("heading", { level: 2, name: "Bài này chưa mở" })).toBeNull()
+      view.unmount()
+    }
+  })
+
+  it("shows LockedState for a 403 in sequential mode (spec v4.1) and leads to the item being learned", async () => {
+    install({ mode: "sequential", completed: ["concept:ch01_l01"] })
     const user = userEvent.setup()
     const { router } = open("ch01-l05")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài này chưa mở" })).toBeTruthy()
@@ -111,7 +123,6 @@ describe("LessonQuizGate", () => {
     expect(screen.getByText("3 câu")).toBeTruthy()
     first.unmount()
 
-    install({ completed: keysBefore("ch04-l02") })
     open("ch04-l02")
     expect(await screen.findByRole("button", { name: "Làm bài kiểm tra" })).toBeTruthy()
     expect(screen.getByText("5 câu")).toBeTruthy()
@@ -144,24 +155,37 @@ describe("LessonQuizGate", () => {
 })
 
 describe("ItemPager", () => {
-  it("disables a locked next item; the exam intro leads back to the start of its chapter", async () => {
+  it("leaves the next item open in free mode, with no lock", async () => {
     const user = userEvent.setup()
-    const first = open("ch01-l01")
+    const { router } = open("ch01-l01")
+    await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
+    const pager = await screen.findByRole("navigation", { name: "Bài trước và bài sau" })
+    const next = within(pager).getByRole("button", { name: /Bài sau: Bài học 1.2/ })
+    await waitFor(() => expect(next.hasAttribute("disabled")).toBe(false))
+    expect(pager.querySelector("svg.lucide-lock")).toBeNull()
+    await user.click(next)
+    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+  })
+
+  it("disables a locked next item for an account in sequential mode (spec v4.1)", async () => {
+    install({ mode: "sequential" })
+    open("ch01-l01")
     await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
     const pager = await screen.findByRole("navigation", { name: "Bài trước và bài sau" })
     await waitFor(() => expect(within(pager).getByRole("button", { name: /Bài sau: Bài học 1.2/ }).hasAttribute("disabled")).toBe(true))
-    first.unmount()
+  })
 
-    install({ completed: keysBefore("ch02-l02") })
+  it("the passed exam intro leads back to the start of its chapter", async () => {
+    install({ completed: [keyOf("ch01-exam")] })
+    const user = userEvent.setup()
     const { router } = open("ch01-exam")
     await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 1" })
-    await user.click(screen.getByRole("button", { name: "Xem lại Chương 1" }))
+    await user.click(await screen.findByRole("button", { name: "Xem lại Chương 1" }))
     expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l01")
     await screen.findByRole("heading", { level: 2, name: "Bài học 1.1" })
   })
 
   it("goes from the last lesson of a chapter to its exam and on to the next chapter", async () => {
-    install({ completed: keysBefore("ch02-l02") })
     const user = userEvent.setup()
     const { router } = open("ch01-l10")
     await screen.findByRole("heading", { level: 2, name: "Bài học 1.10" })
@@ -173,8 +197,7 @@ describe("ItemPager", () => {
 })
 
 describe("ExamIntro", () => {
-  it("shows the intro, the bold all-correct rule and Bắt đầu làm bài", async () => {
-    install({ completed: keysBefore("ch01-exam") })
+  it("shows the intro, the bold all-correct rule and Bắt đầu làm bài, with no lesson passed", async () => {
     open("ch01-exam")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 1" })).toBeTruthy()
     expect(screen.getByText("Bài thi gồm 20 câu hỏi về toàn bộ kiến thức Chương 1.", { exact: false })).toBeTruthy()
@@ -183,7 +206,7 @@ describe("ExamIntro", () => {
   })
 
   it("once passed shows Đã hoàn thành and Xem lại Chương c", async () => {
-    install({ completed: [...keysBefore("ch01-exam"), keyOf("ch01-exam")] })
+    install({ completed: [keyOf("ch01-exam")] })
     open("ch01-exam")
     await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 1" })
     expect(screen.getByRole("button", { name: "Đã hoàn thành" }).hasAttribute("disabled")).toBe(true)

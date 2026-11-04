@@ -1,7 +1,7 @@
 /**
- * Allowlist sanitizer for the Inline HTML of Học viện v3.3 lesson content.
+ * Allowlist sanitizer for the Inline HTML of Học viện v4 lesson content.
  *
- * The content schema (`backend/src/modules/academy/content/v3/schema.ts`, `inlineHtml`) allows only
+ * The content schema (`backend/src/modules/academy/content/v4/schema.ts`, `inlineHtml`) allows only
  * `<b> <strong> <em> <br>` and `<span class="tone-…">`. The server validates that at boot, but the
  * string is still injected with `dangerouslySetInnerHTML`, so it is rebuilt from scratch here: only
  * allowlisted elements are re-created, no attribute of the source is copied except one `tone-*`

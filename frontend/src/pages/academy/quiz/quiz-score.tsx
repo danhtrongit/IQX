@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { ItemResponse, SubmitResult } from "../api"
 import { scrollReaderToTop } from "../scroll"
-import { chapterPill, DONE_LABEL, quizLabel, reviewLabel, unlockedPill } from "./quiz-copy"
+import { chapterPill, DONE_LABEL, quizLabel, reviewLabel } from "./quiz-copy"
 
 /**
  * Result of a graded attempt: "n/N" and Đạt / Chưa đạt, nothing else about the questions (no correct
- * option, no wrong-question list, no explanation). A pass shows what it opened: the indicator pills
- * ("Đã mở chỉ báo X") or, for an exam, "Đã hoàn thành Chương c".
+ * option, no wrong-question list, no explanation). A passed exam adds "Đã hoàn thành Chương c"; a passed
+ * lesson adds nothing (spec v4 §3: no "Đã mở chỉ báo X" label, no tool depends on a lesson).
  */
 export function QuizScore({
   item,
@@ -34,8 +34,6 @@ export function QuizScore({
   }, [])
 
   const passed = result.passed
-  // The item owns the unlock, so its kind tells a chỉ báo from a chỉ tiêu (spec §4.2).
-  const unlockKind = item.unlock?.kind ?? "technical"
   return (
     <section aria-label={`Kết quả ${quizLabel(item)}`} className="rounded-lg border border-border bg-card p-5 text-center sm:p-8">
       <p className="text-sm font-semibold text-primary">{quizLabel(item)}</p>
@@ -50,18 +48,11 @@ export function QuizScore({
       <p className={cn("mt-3 text-lg font-semibold", passed ? "text-(--status-success)" : "text-destructive")}>
         {passed ? "Đạt" : "Chưa đạt"}
       </p>
-      {passed && (result.unlocked_labels.length > 0 || result.chapter_completed !== null) && (
+      {passed && result.chapter_completed !== null && (
         <ul className="m-0 mt-3 flex list-none flex-wrap justify-center gap-2 p-0">
-          {result.unlocked_labels.map((label) => (
-            <li key={label} className="rounded-full border border-(--status-success)/50 bg-(--status-success)/10 px-3 py-1 text-sm font-medium text-foreground">
-              {unlockedPill(unlockKind, label)}
-            </li>
-          ))}
-          {result.chapter_completed !== null && (
-            <li className="rounded-full border border-(--status-success)/50 bg-(--status-success)/10 px-3 py-1 text-sm font-medium text-foreground">
-              {chapterPill(result.chapter_completed)}
-            </li>
-          )}
+          <li className="rounded-full border border-(--status-success)/50 bg-(--status-success)/10 px-3 py-1 text-sm font-medium text-foreground">
+            {chapterPill(result.chapter_completed)}
+          </li>
         </ul>
       )}
       <div className="mt-5 flex flex-wrap justify-center gap-2">

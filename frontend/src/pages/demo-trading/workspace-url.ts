@@ -7,6 +7,14 @@ export const ACADEMY_VIEW = "academy"
 export const VIEW_PARAM = "view"
 /** Lesson to open inside the Học viện tool, e.g. `?view=academy&lesson=ch01-l01`. */
 export const LESSON_PARAM = "lesson"
+/**
+ * Metric whose lesson the Học viện tool opens (spec v4 §6), e.g. `?view=academy&metric=NIM` or
+ * `metric=Tỷ lệ dự phòng / Dư nợ`. The tool resolves it through `GET /academy/link` once the account is
+ * known, then replaces it with `lesson=<item id>`.
+ */
+export const METRIC_PARAM = "metric"
+/** A metric key or name is free text; the server takes at most this many characters (`linkQuerySchema`). */
+export const METRIC_MAX_LENGTH = 120
 
 /** Rail tools of the retired journey; they all land on the Học viện tool now. */
 const LEGACY_VIEWS: ReadonlySet<string> = new Set(["journey", "identity", "analysis"])
@@ -74,10 +82,23 @@ export function demoTradingLoader({ request }: LoaderFunctionArgs): null {
   return null
 }
 
-/** Where the legacy `/hoc-vien[/:lessonId]` routes now live: the workspace Học viện tool. */
-export function academyWorkspaceLocation(lessonId: string | undefined, search = "", hash = "") {
+/** A usable metric key or name: trimmed, not empty, within the server's limit; otherwise null. */
+export function parseMetricParam(value: string | null | undefined): string | null {
+  const name = value?.trim()
+  return name && name.length <= METRIC_MAX_LENGTH ? name : null
+}
+
+/**
+ * Where the `/hoc-vien[/:lessonId]` and `/hoc-vien/bai/:metric` routes live: the workspace Học viện tool.
+ * A lesson id is kept when it looks like one; a metric (argument, else the `metric` query parameter) is
+ * kept when it is usable, and anything else is dropped.
+ */
+export function academyWorkspaceLocation(lessonId: string | undefined, search = "", hash = "", metric?: string) {
   const params = new URLSearchParams(search)
   params.set(VIEW_PARAM, ACADEMY_VIEW)
   if (lessonId && LESSON_ID.test(lessonId)) params.set(LESSON_PARAM, lessonId)
+  const name = parseMetricParam(metric ?? params.get(METRIC_PARAM))
+  if (name) params.set(METRIC_PARAM, name)
+  else params.delete(METRIC_PARAM)
   return { pathname: "/demo-trading", search: `?${params}`, hash }
 }

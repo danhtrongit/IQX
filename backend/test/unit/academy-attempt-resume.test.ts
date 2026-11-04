@@ -29,7 +29,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 type Started = Awaited<ReturnType<typeof start>>;
 type Harness = ReturnType<typeof setup>;
 
-/** A ch4 lesson: 5 questions, open once chapters 1-3 are passed. */
+/** A ch4 lesson: 5 questions. */
 const LESSON = 'ch04-l01';
 
 /** The first option of each question, in the attempt's own order. */
@@ -63,8 +63,8 @@ async function submitScoring(
   return result;
 }
 
-describe('academy v3.3 routes', () => {
-  it('registers exactly the 11 routes; review and guide completion are gone', () => {
+describe('academy v4 routes', () => {
+  it('registers exactly the 12 routes (11 of v3.3 plus the deep link); review and guide completion are gone', () => {
     const routes = Object.getOwnPropertyNames(AcademyController.prototype)
       .filter((name) => name !== 'constructor')
       .map((name) => {
@@ -77,6 +77,7 @@ describe('academy v3.3 routes', () => {
       [
         'GET catalog',
         'GET progress',
+        'GET link',
         'GET lessons/:lessonId',
         'POST lessons/:lessonId/scenario',
         'GET lessons/:lessonId/notes',

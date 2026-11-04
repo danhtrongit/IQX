@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l05",
+  "questions": [
+    {
+      "correct_option_id": "cce158f089",
+      "id": "ch12-l05-q01",
+      "options": [
+        {
+          "id": "cce158f089",
+          "text": "Tỷ lệ bồi thường cộng tỷ lệ chi phí"
+        },
+        {
+          "id": "6874d6f3b1",
+          "text": "Tỷ lệ giữ lại cộng tỷ lệ bồi thường"
+        },
+        {
+          "id": "21e73aa015",
+          "text": "Tỷ lệ chi phí cộng lợi suất đầu tư"
+        }
+      ],
+      "prompt": "Combined ratio bằng gì?"
+    },
+    {
+      "correct_option_id": "76531de3c4",
+      "id": "ch12-l05-q02",
+      "options": [
+        {
+          "id": "76531de3c4",
+          "text": "Mảng bảo hiểm tự thân có lãi"
+        },
+        {
+          "id": "bcb35fb45e",
+          "text": "Công ty lỗ từ nghiệp vụ bảo hiểm"
+        },
+        {
+          "id": "8b1e889e7a",
+          "text": "Công ty không có lợi nhuận đầu tư"
+        }
+      ],
+      "prompt": "Combined ratio dưới 100% có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "e8b4f92912",
+      "id": "ch12-l05-q03",
+      "options": [
+        {
+          "id": "e8b4f92912",
+          "text": "Lợi nhuận từ hoạt động đầu tư"
+        },
+        {
+          "id": "9cd1b9d008",
+          "text": "Phần thu đòi từ khách hàng"
+        },
+        {
+          "id": "be80408df3",
+          "text": "Tăng phí nhượng tái bảo hiểm"
+        }
+      ],
+      "prompt": "Khi combined ratio trên 100%, lợi nhuận của công ty phải dựa vào đâu?"
+    },
+    {
+      "correct_option_id": "0334e14777",
+      "id": "ch12-l05-q04",
+      "options": [
+        {
+          "id": "0334e14777",
+          "text": "Bảo hiểm phi nhân thọ"
+        },
+        {
+          "id": "66eb0de705",
+          "text": "Bảo hiểm nhân thọ"
+        },
+        {
+          "id": "f2dcf48ad8",
+          "text": "Cả hai với ý nghĩa như nhau"
+        }
+      ],
+      "prompt": "Combined ratio chủ yếu được dùng cho loại hình bảo hiểm nào?"
+    },
+    {
+      "chart_id": "c12l5-rep",
+      "correct_option_id": "304620a282",
+      "id": "ch12-l05-q05",
+      "options": [
+        {
+          "id": "304620a282",
+          "text": "Tỷ lệ bồi thường và tỷ lệ chi phí"
+        },
+        {
+          "id": "763daf2278",
+          "text": "Phí gốc và phí thuần"
+        },
+        {
+          "id": "d068071a48",
+          "text": "Lợi nhuận bảo hiểm và lợi nhuận đầu tư"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột chồng phía dưới gồm những phần nào?"
+    }
+  ],
+  "salt": "299f1eff7cad2f5b0025b144f69bf00aedb7715ba7b85bfbf48b8d2fa5a4c034"
+}

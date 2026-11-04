@@ -1,0 +1,491 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l2-g1": {
+      "alt": "Phí bảo hiểm gốc 4 quý là 13.665 tỷ, gồm 8.119 tỷ giữ lại (59,4%) trở thành doanh thu phí bảo hiểm thuần và 5.546 tỷ nhượng tái (40,6%). Tỷ lệ giữ lại bằng 8.119 chia 13.665, khoảng 59,4%",
+      "brackets": [
+        {
+          "from": 0,
+          "label": "Doanh thu phí bảo hiểm thuần",
+          "row": 0,
+          "to": 8119,
+          "tone": "p1"
+        },
+        {
+          "from": 8119,
+          "label": "Phí nhượng tái bảo hiểm",
+          "row": 0,
+          "to": 13665,
+          "tone": "p5"
+        }
+      ],
+      "kind": "segment_bar",
+      "max": 13665,
+      "rows": [
+        {
+          "label": "Phí bảo hiểm gốc 4 quý · 13.665 tỷ",
+          "segments": [
+            {
+              "label": "Giữ lại · 8.119 tỷ",
+              "sub": "59,4%",
+              "tone": "p1",
+              "value": 8119
+            },
+            {
+              "label": "Nhượng tái · 5.546 tỷ",
+              "sub": "40,6%",
+              "tone": "p5",
+              "value": 5546
+            }
+          ],
+          "total": {
+            "text": "Tỷ lệ giữ lại = 8.119 ÷ 13.665 ≈ 59,4%",
+            "tone": "warn"
+          }
+        }
+      ],
+      "unit": "tỷ đồng"
+    },
+    "c12l2-g2": {
+      "items": [
+        {
+          "model": {
+            "alt": "Dòng tiền tái bảo hiểm trên 100 đồng phí gốc: khách hàng trả phí gốc 100 cho công ty bảo hiểm, công ty giữ lại 60 và nhượng 40 cho nhà tái bảo hiểm. Khi bồi thường 50 cho khách, công ty thu đòi 20 từ nhà tái bảo hiểm",
+            "edges": [
+              {
+                "from": "khach-hang",
+                "label": "Phí gốc 100",
+                "to": "cong-ty-bao-hiem"
+              },
+              {
+                "from": "cong-ty-bao-hiem",
+                "label": "Bồi thường 50",
+                "to": "khach-hang"
+              },
+              {
+                "from": "cong-ty-bao-hiem",
+                "label": "Phí nhượng 40",
+                "to": "nha-tai-bao-hiem"
+              },
+              {
+                "from": "nha-tai-bao-hiem",
+                "label": "Thu đòi 20",
+                "to": "cong-ty-bao-hiem"
+              }
+            ],
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "khach-hang",
+                "sub": "Mua bảo hiểm",
+                "title": "Khách hàng"
+              },
+              {
+                "id": "cong-ty-bao-hiem",
+                "sub": "Giữ lại 60 đồng",
+                "title": "Công ty bảo hiểm",
+                "tone": "p1"
+              },
+              {
+                "id": "nha-tai-bao-hiem",
+                "sub": "Nhận 40 đồng",
+                "title": "Nhà tái bảo hiểm",
+                "tone": "warn"
+              }
+            ]
+          },
+          "title": "Ví dụ trên 100 đồng phí gốc, công ty giữ lại 60%"
+        },
+        {
+          "model": {
+            "alt": "Khi tổn thất 50 đồng, công ty gánh 30 đồng và nhà tái bảo hiểm gánh 20 đồng",
+            "kind": "segment_bar",
+            "max": 50,
+            "rows": [
+              {
+                "label": "Khi tổn thất 50 đồng",
+                "segments": [
+                  {
+                    "label": "Công ty gánh 30",
+                    "tone": "p1",
+                    "value": 30
+                  },
+                  {
+                    "label": "Nhà tái bảo hiểm gánh 20",
+                    "tone": "warn",
+                    "value": 20
+                  }
+                ]
+              }
+            ],
+            "unit": "đồng"
+          }
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack"
+    },
+    "c12l2-g3": {
+      "items": [
+        {
+          "model": {
+            "bounds": [
+              0,
+              1000
+            ],
+            "caption_tone": "warn",
+            "caption_value": "Lãi lớn khi êm, lỗ nặng khi có sự cố",
+            "kind": "category",
+            "labels": [
+              "Công ty tự chịu",
+              "Tái bảo hiểm chịu"
+            ],
+            "mode": "grouped",
+            "orientation": "h",
+            "series": [
+              {
+                "name": "Phần tổn thất 1.000 tỷ",
+                "per_bar_tones": [
+                  "p5",
+                  "p1"
+                ],
+                "tone": "p5",
+                "values": [
+                  850,
+                  150
+                ]
+              }
+            ],
+            "unit": "tỷ",
+            "value_format": {
+              "suffix": " tỷ"
+            },
+            "value_labels": "all"
+          },
+          "title": "Giữ lại 85%",
+          "tone": "warn"
+        },
+        {
+          "model": {
+            "bounds": [
+              0,
+              1000
+            ],
+            "caption_tone": "p1",
+            "caption_value": "Lãi nhỏ hơn, kết quả ổn định hơn",
+            "kind": "category",
+            "labels": [
+              "Công ty tự chịu",
+              "Tái bảo hiểm chịu"
+            ],
+            "mode": "grouped",
+            "orientation": "h",
+            "series": [
+              {
+                "name": "Phần tổn thất 1.000 tỷ",
+                "per_bar_tones": [
+                  "p5",
+                  "p1"
+                ],
+                "tone": "p5",
+                "values": [
+                  350,
+                  650
+                ]
+              }
+            ],
+            "unit": "tỷ",
+            "value_format": {
+              "suffix": " tỷ"
+            },
+            "value_labels": "all"
+          },
+          "title": "Giữ lại 35%",
+          "tone": "p1"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row",
+      "title": "Một vụ tổn thất lớn 1.000 tỷ"
+    },
+    "c12l2-rep": {
+      "alt": "Tỷ lệ giữ lại: 59,4%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Phí thuần / Phí gốc (4 quý)",
+            "v": [
+              59.523,
+              59.847,
+              59.538,
+              58.436,
+              58.68,
+              58.722,
+              59.005,
+              59.415
+            ]
+          }
+        ],
+        "name": "Tỷ lệ giữ lại",
+        "sub": {
+          "series": [
+            {
+              "name": "Phí bảo hiểm gốc 4 quý",
+              "v": [
+                11259.913,
+                11619.468,
+                11945.554,
+                12253.517,
+                12629.913,
+                13008.773,
+                13343.53,
+                13665.336
+              ]
+            },
+            {
+              "name": "Phí bảo hiểm thuần 4 quý",
+              "v": [
+                6702.234,
+                6953.888,
+                7112.089,
+                7160.419,
+                7411.254,
+                7639.006,
+                7873.37,
+                8119.28
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Công ty bảo hiểm thường chuyển một phần rủi ro cho nhà tái bảo hiểm. Tỷ lệ giữ lại cho biết công ty tự giữ bao nhiêu phần trăm phí, cũng là bao nhiêu phần trăm rủi ro.",
+  "lesson_key": "fundamental:retention_ratio",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l2-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Tỷ lệ giữ lại</b> (retention ratio) bằng <b>doanh thu phí bảo hiểm thuần 4 quý</b> chia cho <b>doanh thu phí bảo hiểm gốc 4 quý</b>. Cả hai dòng đều nằm trên <b>báo cáo kết quả kinh doanh</b>.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Phần không giữ lại chủ yếu là <b>phí nhượng tái bảo hiểm</b>, tức phí công ty trả cho nhà tái bảo hiểm để họ gánh một phần tổn thất.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ lệ giữ lại là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "<b>Tái bảo hiểm</b> (reinsurance) là bảo hiểm cho chính công ty bảo hiểm. Công ty chia phí cho nhà tái bảo hiểm, đổi lại được chia sẻ bồi thường khi có tổn thất lớn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l2-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khách hàng trả toàn bộ phí cho công ty bảo hiểm.",
+              "title": "Phí gốc"
+            },
+            {
+              "text": "Công ty chuyển một phần phí cho nhà tái bảo hiểm.",
+              "title": "Phí nhượng tái"
+            },
+            {
+              "text": "Khi có tổn thất, nhà tái bảo hiểm trả phần bồi thường tương ứng.",
+              "title": "Thu đòi bồi thường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Tái bảo hiểm hoạt động thế nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l2-rep",
+          "title": "Tỷ lệ giữ lại",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ giữ lại, bằng phí thuần chia phí gốc, tính theo 4 quý gần nhất.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hai cột: phí bảo hiểm gốc 4 quý và phí bảo hiểm thuần 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Khoảng chênh giữa hai cột là phần phí đã nhượng cho nhà tái bảo hiểm.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Công ty giữ nhiều phí hơn nên có thể lãi nhiều hơn, nhưng phải tự gánh tổn thất lớn khi có sự cố.",
+              "title": "Giữ lại cao",
+              "tone": "pos"
+            },
+            {
+              "text": "Rủi ro được chia sẻ nhiều, lợi nhuận ổn định hơn nhưng phần phí còn lại để sinh lời nhỏ.",
+              "title": "Giữ lại thấp",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức tham khảo ở Việt Nam: công ty phi nhân thọ thường giữ lại 50-80%, công ty nhân thọ thường trên 95%. Tỷ lệ phù hợp phụ thuộc quy mô vốn và loại rủi ro công ty bán.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l2-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ giữ lại cao cho thấy công ty chấp nhận tự gánh nhiều rủi ro.",
+              "title": "Hiểu khẩu vị rủi ro"
+            },
+            {
+              "text": "Tỷ lệ giữ lại tăng nhanh cần đi kèm vốn chủ đủ mạnh.",
+              "title": "Theo dõi thay đổi"
+            },
+            {
+              "text": "Một vụ tổn thất lớn ảnh hưởng mạnh hơn ở công ty giữ lại nhiều.",
+              "title": "Giải thích lợi nhuận"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bảo hiểm mẫu có số liệu 4 quý từ Q3/25 đến Q2/26 (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Phí bảo hiểm gốc 4 quý",
+              "text": "13.665 tỷ đồng."
+            },
+            {
+              "term": "Phí bảo hiểm thuần 4 quý",
+              "text": "8.119 tỷ đồng."
+            },
+            {
+              "term": "Tỷ lệ giữ lại",
+              "text": "8.119 ÷ 13.665 ≈ 59,4%."
+            },
+            {
+              "term": "Phần nhượng tái",
+              "text": "Khoảng 40,6% phí gốc được chia cho nhà tái bảo hiểm. Tỷ lệ giữ lại ổn định quanh 58-60% trong 8 quý."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giữ lại cao cũng là gánh nhiều rủi ro hơn trên cùng số vốn.",
+              "title": "Cho rằng giữ lại cao luôn tốt"
+            },
+            {
+              "text": "Nhân thọ và phi nhân thọ có mức giữ lại rất khác nhau.",
+              "title": "So khác loại hình"
+            },
+            {
+              "text": "Nhượng tái làm giảm phí nhưng cũng giảm bồi thường công ty phải trả.",
+              "title": "Bỏ qua thu đòi tái bảo hiểm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ giữ lại = <b>phí thuần 4 quý ÷ phí gốc 4 quý</b>.",
+    "Phần không giữ lại là <b>phí nhượng tái bảo hiểm</b>.",
+    "Giữ lại cao: <b>lãi tiềm năng lớn hơn, rủi ro lớn hơn</b>.",
+    "Mức tham khảo: phi nhân thọ <b>50-80%</b>, nhân thọ <b>trên 95%</b>."
+  ],
+  "title": "Tỷ lệ giữ lại · phần rủi ro công ty tự gánh"
+}

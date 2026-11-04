@@ -1,0 +1,374 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l5-g1": {
+      "alt": "Lợi suất cho vay bằng lãi cho vay 4 quý 1.882 tỷ chia dư nợ bình quân 19.280 tỷ, bằng 9,8%: 100 đồng cho vay thu về 9,8 đồng lãi mỗi năm",
+      "edges": [
+        {
+          "from": "interest",
+          "label": "chia",
+          "to": "average"
+        },
+        {
+          "from": "average",
+          "label": "bằng",
+          "to": "yield"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "interest",
+          "sub": "Từ Q3/25 đến Q2/26",
+          "title": "Lãi cho vay 4 quý",
+          "tone": "p1",
+          "value": "1.882 tỷ"
+        },
+        {
+          "id": "average",
+          "sub": "(19.500 + 19.060) ÷ 2",
+          "title": "Dư nợ bình quân",
+          "tone": "warn",
+          "value": "19.280 tỷ"
+        },
+        {
+          "emph": true,
+          "id": "yield",
+          "sub": "100 đồng cho vay thu về 9,8 đồng lãi/năm",
+          "title": "Lợi suất cho vay",
+          "tone": "pos",
+          "value": "9,8%"
+        }
+      ]
+    },
+    "c11l5-g2": {
+      "kind": "category",
+      "labels": [
+        "Q2/25 · đầu kỳ",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26 · cuối kỳ"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Dư nợ",
+          "tone": "p1",
+          "values": [
+            19500,
+            17920,
+            17169,
+            17527,
+            19060
+          ]
+        }
+      ],
+      "threshold": {
+        "label": "Bình quân đầu và cuối kỳ · 19.280",
+        "value": 19280
+      },
+      "title": "Dư nợ cho vay cuối quý (tỷ đồng)",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c11l5-g3": {
+      "kind": "category",
+      "labels": [
+        "Lợi suất cho vay",
+        "Chi phí vay",
+        "Chênh lệch"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "Giá trị",
+          "per_bar_tones": [
+            "p1",
+            "warn",
+            "pos"
+          ],
+          "tone": "p1",
+          "values": [
+            9.8,
+            6,
+            3.8
+          ]
+        }
+      ],
+      "title": "Lợi suất cho vay so với chi phí vay · chi phí vay là số minh họa",
+      "unit": "%",
+      "value_format": {
+        "decimals": 1,
+        "suffix": "%"
+      },
+      "value_labels": "all"
+    },
+    "c11l5-rep": {
+      "alt": "Lợi suất cho vay: 9,8%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Lợi suất cho vay (4 quý)",
+            "v": [
+              11.229,
+              11.055,
+              10.793,
+              10.473,
+              10.138,
+              9.856,
+              9.708,
+              9.759
+            ]
+          }
+        ],
+        "name": "Lợi suất cho vay",
+        "sub": {
+          "series": [
+            {
+              "name": "Lãi từ cho vay 4 quý",
+              "v": [
+                2555.526,
+                2563.739,
+                2483.216,
+                2335.944,
+                2158.828,
+                1996.64,
+                1893.045,
+                1881.502
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l05",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Lợi suất cho vay cho biết mỗi đồng công ty chứng khoán cho vay thu về bao nhiêu tiền lãi trong một năm. Chỉ tiêu này phản ánh mức lãi suất thực tế của mảng cho vay margin.",
+  "lesson_key": "fundamental:margin_loan_yield",
+  "order": 5,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l5-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Lấy dòng <b>lãi từ các khoản cho vay và phải thu</b> trên <b>báo cáo kết quả hoạt động</b>, cộng <b>4 quý</b>, chia cho <b>dư nợ cho vay bình quân</b> trên bảng cân đối kế toán.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Lợi suất 9,8% nghĩa là 100 đồng cho vay mang về 9,8 đồng tiền lãi mỗi năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Lợi suất cho vay là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Tiền lãi phát sinh suốt cả năm, trong khi dư nợ thay đổi từng quý. Dư nợ bình quân là trung bình của dư nợ đầu kỳ và cuối kỳ.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l5-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lãi từ các khoản cho vay và phải thu, cộng 4 quý gần nhất.",
+              "title": "Tử số"
+            },
+            {
+              "text": "Trung bình dư nợ cùng quý năm trước và dư nợ quý hiện tại.",
+              "title": "Mẫu số"
+            },
+            {
+              "text": "Lãi suất bình quân công ty thu được trên dư nợ trong năm.",
+              "title": "Kết quả"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao dùng dư nợ bình quân"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l5-rep",
+          "title": "Lợi suất cho vay",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi suất cho vay tính theo 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Lãi từ các khoản cho vay cộng dồn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột thấp dần cùng đường đi xuống cho thấy cả quy mô lẫn lãi suất đều giảm.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 9% đến 13% một năm (tham khảo), cao hơn rõ rệt chi phí vay của công ty.",
+              "title": "Lợi suất ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "Giảm liên tục, thu hẹp khoảng cách với chi phí vay, thường do cạnh tranh hạ lãi margin.",
+              "title": "Lợi suất suy giảm",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Phần chênh lệch giữa lợi suất cho vay và chi phí vay là phần lãi thật của mảng margin.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l5-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi suất cần cao hơn chi phí lãi vay của công ty một khoảng đủ lớn.",
+              "title": "So với chi phí vay"
+            },
+            {
+              "text": "Lợi suất giảm đều có thể do chính sách hạ lãi để giữ khách.",
+              "title": "Theo dõi xu hướng"
+            },
+            {
+              "text": "Lãi cho vay tăng bền khi cả dư nợ và lợi suất cùng giữ vững.",
+              "title": "Kết hợp dư nợ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu có số liệu như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Lãi cho vay 4 quý",
+              "text": "Từ Q3/25 đến Q2/26: 1.882 tỷ đồng."
+            },
+            {
+              "term": "Dư nợ đầu kỳ và cuối kỳ",
+              "text": "Cuối Q2/25 là 19.500, cuối Q2/26 là 19.060."
+            },
+            {
+              "term": "Dư nợ bình quân",
+              "text": "(19.500 + 19.060) ÷ 2 = 19.280 tỷ đồng."
+            },
+            {
+              "term": "Lợi suất cho vay",
+              "text": "1.882 ÷ 19.280 ≈ 9,8%, thấp hơn mức 11,2% của Q3/24."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dư nợ cuối kỳ có thể cao hoặc thấp bất thường, làm lệch kết quả.",
+              "title": "Dùng dư nợ cuối kỳ"
+            },
+            {
+              "text": "Lợi suất là mức thu thực tế, đã gồm ưu đãi và các khoản ứng trước.",
+              "title": "Nhầm với lãi suất niêm yết"
+            },
+            {
+              "text": "Lợi suất cao nhưng chi phí vay cũng cao thì phần lãi giữ lại vẫn mỏng.",
+              "title": "Bỏ qua chi phí vay"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Lợi suất cho vay</b> = lãi từ các khoản cho vay và phải thu 4 quý ÷ dư nợ bình quân.",
+    "Tử số trên <b>báo cáo kết quả hoạt động</b>, mẫu số trên <b>bảng cân đối kế toán</b>.",
+    "Mức <b>9% đến 13%</b> một năm thường gặp, ghi nhận như tham khảo.",
+    "Cần so với <b>chi phí vay</b> để thấy phần lãi thật."
+  ],
+  "title": "Lợi suất cho vay · lãi thu được trên dư nợ"
+}

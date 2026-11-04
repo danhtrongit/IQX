@@ -1,0 +1,440 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l6-g1": {
+      "alt": "Doanh thu môi giới 4 quý là 1.444 tỷ đồng, gồm chi phí môi giới 996 tỷ đồng và lãi môi giới 448 tỷ đồng; biên lợi nhuận môi giới bằng 448 chia 1.444, khoảng 31,0%",
+      "kind": "segment_bar",
+      "max": 1444,
+      "rows": [
+        {
+          "label": "Doanh thu môi giới 4 quý · 1.444 tỷ đồng",
+          "segments": [
+            {
+              "label": "Chi phí môi giới",
+              "sub": "996 tỷ",
+              "tone": "p5",
+              "value": 996
+            },
+            {
+              "label": "Lãi môi giới",
+              "sub": "448 tỷ",
+              "tone": "pos",
+              "value": 448
+            }
+          ],
+          "sub": "Biên lợi nhuận môi giới = 448 ÷ 1.444",
+          "total": {
+            "text": "≈ 31,0%",
+            "tone": "pos"
+          }
+        }
+      ]
+    },
+    "c11l6-g2": {
+      "alt": "Giá trị giao dịch nhân tỷ lệ phí bằng doanh thu môi giới, trừ chi phí môi giới bằng lãi môi giới; biên lãi môi giới khoảng 31%",
+      "edges": [
+        {
+          "from": "volume",
+          "label": "nhân",
+          "to": "fee"
+        },
+        {
+          "from": "fee",
+          "label": "bằng",
+          "to": "revenue"
+        },
+        {
+          "from": "revenue",
+          "label": "trừ",
+          "to": "cost"
+        },
+        {
+          "from": "cost",
+          "label": "bằng",
+          "to": "profit"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "caption": "Thanh khoản thị trường",
+          "id": "volume",
+          "title": "Giá trị giao dịch"
+        },
+        {
+          "caption": "Cạnh tranh về phí",
+          "id": "fee",
+          "title": "Tỷ lệ phí"
+        },
+        {
+          "caption": "Kết quả hoạt động",
+          "id": "revenue",
+          "title": "Doanh thu môi giới",
+          "tone": "p1"
+        },
+        {
+          "caption": "Nhân sự, phí, hệ thống",
+          "id": "cost",
+          "title": "Chi phí môi giới",
+          "tone": "p5"
+        },
+        {
+          "caption": "Biên khoảng 31%",
+          "id": "profit",
+          "title": "Lãi môi giới",
+          "tone": "pos"
+        }
+      ]
+    },
+    "c11l6-g3": {
+      "kind": "category",
+      "labels": [
+        "Thanh khoản cao",
+        "Thanh khoản vừa",
+        "Thanh khoản thấp"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Doanh thu môi giới",
+          "tone": "p1",
+          "values": [
+            200,
+            140,
+            90
+          ]
+        },
+        {
+          "name": "Chi phí môi giới",
+          "tone": "p5",
+          "values": [
+            120,
+            98,
+            78
+          ]
+        }
+      ],
+      "sublabels": [
+        "Biên 40%",
+        "Biên 30%",
+        "Biên 13%"
+      ],
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c11l6-rep": {
+      "alt": "Biên lợi nhuận môi giới: 31,0%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Biên lợi nhuận môi giới (4 quý)",
+            "v": [
+              29.24,
+              29.466,
+              30.785,
+              30.628,
+              30.911,
+              31.525,
+              31.518,
+              31.029
+            ]
+          }
+        ],
+        "name": "Biên lợi nhuận môi giới",
+        "sub": {
+          "series": [
+            {
+              "name": "Doanh thu môi giới 4 quý",
+              "v": [
+                2618.907,
+                2691.517,
+                2673.904,
+                2437.626,
+                2128.111,
+                1817.242,
+                1579.247,
+                1443.812
+              ]
+            },
+            {
+              "name": "Chi phí môi giới 4 quý",
+              "v": [
+                1853.138,
+                1898.44,
+                1850.735,
+                1691.019,
+                1470.291,
+                1244.36,
+                1081.495,
+                995.805
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biên lợi nhuận môi giới cho biết mảng môi giới giữ lại bao nhiêu phần trăm doanh thu sau khi trừ chi phí. Biên này cho thấy công ty có kiếm lời thật từ phí giao dịch hay không.",
+  "lesson_key": "fundamental:brokerage_margin",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l6-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Biên lợi nhuận môi giới</b> = (Doanh thu môi giới − Chi phí môi giới) ÷ Doanh thu môi giới. Hai dòng <b>doanh thu nghiệp vụ môi giới chứng khoán</b> và <b>chi phí nghiệp vụ môi giới chứng khoán</b> nằm trên <b>báo cáo kết quả hoạt động</b>, cộng 4 quý.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Biên 31% nghĩa là mỗi 100 đồng phí môi giới thu được còn lại 31 đồng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Biên lợi nhuận môi giới là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l6-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phụ thuộc thanh khoản thị trường và số khách hàng của công ty.",
+              "title": "Giá trị giao dịch"
+            },
+            {
+              "text": "Cạnh tranh khiến nhiều công ty giảm phí, có nơi miễn phí giao dịch.",
+              "title": "Tỷ lệ phí"
+            },
+            {
+              "text": "Hoa hồng nhân viên, phí trả sở giao dịch và lưu ký, chi phí hệ thống.",
+              "title": "Chi phí môi giới"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lãi môi giới đến từ đâu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l6-rep",
+          "title": "Biên lợi nhuận môi giới",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên lợi nhuận môi giới tính theo 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Doanh thu môi giới cộng 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột bên trái mỗi quý"
+            },
+            {
+              "text": "Chi phí môi giới cộng 4 quý, khoảng cách hai cột là lãi môi giới.",
+              "title": "Cột bên phải mỗi quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ 30% trở lên và giữ vững khi thanh khoản giảm (tham khảo). Chi phí co giãn theo doanh thu.",
+              "title": "Biên tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới 10% hoặc âm. Công ty đang hạ phí để giữ thị phần hoặc chi phí cố định quá lớn.",
+              "title": "Biên yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Một phần chi phí môi giới là cố định. Khi thanh khoản giảm, doanh thu giảm nhanh hơn chi phí nên biên thu hẹp.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l6-g3",
+          "legend": [
+            {
+              "label": "Doanh thu môi giới (tỷ đồng)",
+              "tone": "p1"
+            },
+            {
+              "label": "Chi phí môi giới (tỷ đồng)",
+              "tone": "p5"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên giữ được khi doanh thu giảm cho thấy chi phí linh hoạt.",
+              "title": "Đánh giá sức cạnh tranh"
+            },
+            {
+              "text": "Biên cao nhưng doanh thu nhỏ thì đóng góp vào lợi nhuận vẫn ít.",
+              "title": "Đọc cùng doanh thu môi giới"
+            },
+            {
+              "text": "Biên thấp kéo dài có thể là chủ ý dùng môi giới để kéo khách vay margin.",
+              "title": "Nhận diện chiến lược"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu có số liệu 4 quý như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Kỳ 4 quý đến"
+            },
+            {
+              "label": "Doanh thu môi giới"
+            },
+            {
+              "label": "Chi phí môi giới"
+            },
+            {
+              "label": "Biên"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "2.619",
+                "1.853",
+                "29,2%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "1.817",
+                "1.244",
+                "31,5%"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "1.444",
+                "996",
+                {
+                  "rating": "good",
+                  "text": "31,0%"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Doanh thu môi giới giảm gần 45% từ Q3/24 đến Q2/26, nhưng chi phí giảm cùng nhịp nên biên vẫn giữ quanh 31%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh thu lớn mà chi phí cũng lớn thì phần lãi giữ lại rất mỏng.",
+              "title": "Chỉ nhìn doanh thu môi giới"
+            },
+            {
+              "text": "Có công ty chấp nhận biên thấp để thu hút khách vay margin.",
+              "title": "Coi biên thấp luôn xấu"
+            },
+            {
+              "text": "Biên thay đổi mạnh theo giá trị giao dịch của toàn thị trường.",
+              "title": "Bỏ qua thanh khoản"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Biên lợi nhuận môi giới</b> = (Doanh thu môi giới − Chi phí môi giới) ÷ Doanh thu môi giới.",
+    "Số liệu cộng <b>4 quý</b> trên báo cáo kết quả hoạt động.",
+    "Biên <b>từ 30% trở lên</b> và giữ vững là mức tham khảo tốt.",
+    "Biên co lại khi <b>thanh khoản giảm</b> vì một phần chi phí là cố định."
+  ],
+  "title": "Biên lợi nhuận môi giới · lãi từ phí giao dịch"
+}

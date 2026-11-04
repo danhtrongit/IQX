@@ -1,5 +1,5 @@
-/** Copy and small pure rules of the quiz screens (spec v3.3 §2.1, §3.2, §3.3). */
-import type { CatalogItem, LessonContent, SubmitResult, UnlockKind } from "../content-types"
+/** Copy and small pure rules of the quiz screens (spec v4 §2.1, §3). */
+import type { CatalogItem, LessonContent, SubmitResult } from "../content-types"
 
 export const QUIZ_START_LABEL = "Làm bài kiểm tra"
 export const EXAM_START_LABEL = "Bắt đầu làm bài"
@@ -23,12 +23,9 @@ export function reviewLabel(item: Pick<CatalogItem, "kind" | "chapter">): string
 }
 
 /**
- * The pill of an opened capability: a technical lesson opens a chỉ báo (Bot, Backtest, Cảnh báo),
- * a fundamental lesson opens a chỉ tiêu (Bộ lọc). The label comes from the server, the kind from
- * the item's `unlock`.
+ * The pill of a passed exam. A passed lesson shows none: since spec v4 §3 no tool opens by learning, so
+ * there is no "Đã mở chỉ báo X / chỉ tiêu X" label any more.
  */
-export const unlockedPill = (kind: UnlockKind, label: string) =>
-  kind === "fundamental" ? `Đã mở chỉ tiêu ${label}` : `Đã mở chỉ báo ${label}`
 export const chapterPill = (chapter: number) => `Đã hoàn thành Chương ${chapter}`
 
 /** The coin toast of a first pass: only when the ledger confirmed the credit (never for exams). */

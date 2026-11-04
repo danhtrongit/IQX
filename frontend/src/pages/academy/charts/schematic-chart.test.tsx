@@ -124,4 +124,25 @@ describe("SchematicChart label layout", () => {
     const desktop = draw(model, 768)
     expect([...desktop.querySelectorAll("text")].filter((node) => labels.includes(node.textContent ?? ""))).toHaveLength(ticks.length)
   })
+
+  it("keeps the label of a bracket at the edge of a narrow chart inside the drawing", () => {
+    const label = "−5,6% so với quý trước"
+    const model: SchematicModel = {
+      kind: "schematic",
+      alt: "Phí bảo hiểm gốc theo quý",
+      domain: { x: [-0.5, 7.5], y: [0, 5700] },
+      axes: { x: { ticks: [0, 3, 7].map((v) => ({ v, label: `Q${v}` })) }, y: { ticks: [{ v: 0, label: "0" }] } },
+      layers: [
+        { t: "bars", x: [6, 7], h: [3449, 3255], tones: ["p1", "p1"], base: 0 },
+        { t: "bracket", x: [6, 7], y: 4400, label, tone: "neg" },
+      ],
+    }
+    for (const width of [317, 358, 768]) {
+      cleanup()
+      restore?.()
+      const span = box(textNode(draw(model, width), label))
+      expect(span.x0).toBeGreaterThanOrEqual(0)
+      expect(span.x1).toBeLessThanOrEqual(width)
+    }
+  })
 })

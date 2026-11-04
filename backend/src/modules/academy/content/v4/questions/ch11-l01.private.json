@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l01",
+  "questions": [
+    {
+      "correct_option_id": "04f161c5d3",
+      "id": "ch11-l01-q01",
+      "options": [
+        {
+          "id": "04f161c5d3",
+          "text": "Công ty chứng khoán kiếm tiền từ những mảng nào"
+        },
+        {
+          "id": "99f1ef199a",
+          "text": "Công ty chứng khoán vay nợ từ những nguồn nào"
+        },
+        {
+          "id": "efe667b0bc",
+          "text": "Tài sản của công ty nằm ở những khoản nào"
+        }
+      ],
+      "prompt": "Cơ cấu doanh thu hoạt động cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "56c0324e76",
+      "id": "ch11-l01-q02",
+      "options": [
+        {
+          "id": "56c0324e76",
+          "text": "Báo cáo kết quả hoạt động"
+        },
+        {
+          "id": "8955f242da",
+          "text": "Bảng cân đối kế toán"
+        },
+        {
+          "id": "94c42f5423",
+          "text": "Báo cáo lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Số liệu cơ cấu doanh thu hoạt động lấy từ báo cáo nào?"
+    },
+    {
+      "correct_option_id": "08f12b58c8",
+      "id": "ch11-l01-q03",
+      "options": [
+        {
+          "id": "08f12b58c8",
+          "text": "Tự doanh"
+        },
+        {
+          "id": "f4666c2cdd",
+          "text": "Cho vay margin"
+        },
+        {
+          "id": "82253cef30",
+          "text": "Lưu ký chứng khoán"
+        }
+      ],
+      "prompt": "Mảng nào thường dao động mạnh nhất theo thị trường?"
+    },
+    {
+      "correct_option_id": "a03784a184",
+      "id": "ch11-l01-q04",
+      "options": [
+        {
+          "id": "a03784a184",
+          "text": "Lãi từ các khoản cho vay và phải thu"
+        },
+        {
+          "id": "f1e36f8d1f",
+          "text": "Doanh thu nghiệp vụ môi giới chứng khoán"
+        },
+        {
+          "id": "02b7614f8b",
+          "text": "Lãi từ tài sản tài chính FVTPL"
+        }
+      ],
+      "prompt": "Doanh thu cho vay margin đến từ dòng nào?"
+    },
+    {
+      "chart_id": "c11l1-rep",
+      "correct_option_id": "f64b21277b",
+      "id": "ch11-l01-q05",
+      "options": [
+        {
+          "id": "f64b21277b",
+          "text": "Tỷ trọng tự doanh trong doanh thu hoạt động"
+        },
+        {
+          "id": "751b216f7c",
+          "text": "Tỷ trọng môi giới trong doanh thu hoạt động"
+        },
+        {
+          "id": "110cc37c1e",
+          "text": "Tổng doanh thu hoạt động của từng quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường phía trên thể hiện gì?"
+    }
+  ],
+  "salt": "6ee736f9b66a3f66de7b40b8b1231d1a2afd2cea9b322721554afbcb12a56f70"
+}

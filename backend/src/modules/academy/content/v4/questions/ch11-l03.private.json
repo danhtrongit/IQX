@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l03",
+  "questions": [
+    {
+      "correct_option_id": "f6c6053394",
+      "id": "ch11-l03-q01",
+      "options": [
+        {
+          "id": "f6c6053394",
+          "text": "Các khoản cho vay"
+        },
+        {
+          "id": "fc5e8530b5",
+          "text": "Tài sản tài chính FVTPL"
+        },
+        {
+          "id": "5ee1952895",
+          "text": "Phải trả người bán"
+        }
+      ],
+      "prompt": "Dư nợ cho vay lấy từ dòng nào trên bảng cân đối kế toán?"
+    },
+    {
+      "correct_option_id": "34a37bbda6",
+      "id": "ch11-l03-q02",
+      "options": [
+        {
+          "id": "34a37bbda6",
+          "text": "Cho vay margin và ứng trước tiền bán"
+        },
+        {
+          "id": "be74439156",
+          "text": "Tiền gửi có kỳ hạn và trái phiếu"
+        },
+        {
+          "id": "f37b55926c",
+          "text": "Cổ phiếu niêm yết và chứng chỉ quỹ"
+        }
+      ],
+      "prompt": "Các khoản cho vay của công ty chứng khoán gồm những gì?"
+    },
+    {
+      "correct_option_id": "18bba1d5c1",
+      "id": "ch11-l03-q03",
+      "options": [
+        {
+          "id": "18bba1d5c1",
+          "text": "Để loại bỏ yếu tố mùa vụ giữa các quý"
+        },
+        {
+          "id": "0d34a61518",
+          "text": "Để dư nợ luôn có tăng trưởng dương"
+        },
+        {
+          "id": "c7d0cc2b1a",
+          "text": "Vì số quý trước không được công bố"
+        }
+      ],
+      "prompt": "Vì sao so dư nợ với cùng kỳ năm trước?"
+    },
+    {
+      "correct_option_id": "f26132fe64",
+      "id": "ch11-l03-q04",
+      "options": [
+        {
+          "id": "f26132fe64",
+          "text": "Giảm, kéo theo lãi cho vay giảm"
+        },
+        {
+          "id": "fc3d66e7e3",
+          "text": "Tăng mạnh nhờ nhà đầu tư vay nhiều"
+        },
+        {
+          "id": "b192862c50",
+          "text": "Không chịu ảnh hưởng của thị trường"
+        }
+      ],
+      "prompt": "Khi thị trường trầm lắng, dư nợ cho vay thường thế nào?"
+    },
+    {
+      "chart_id": "c11l3-rep",
+      "correct_option_id": "0fa8d9e11f",
+      "id": "ch11-l03-q05",
+      "options": [
+        {
+          "id": "0fa8d9e11f",
+          "text": "Dư nợ cùng quý năm trước"
+        },
+        {
+          "id": "5eedd01847",
+          "text": "Vốn chủ sở hữu cuối quý"
+        },
+        {
+          "id": "98fc873074",
+          "text": "Lãi cho vay cộng 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột bên phải mỗi quý thể hiện gì?"
+    }
+  ],
+  "salt": "29b36fe520784cb83e0a11075529904d832343ad44f8ea5ab9159d2a2ab0c015"
+}

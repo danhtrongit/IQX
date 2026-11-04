@@ -22,6 +22,7 @@ export interface OperationMap {
   "GET /api/v2/academy/lessons/{lessonId}/attempt": { request: T.AcademyResumeAttemptData; response: T.AcademyResumeAttemptResponses[keyof T.AcademyResumeAttemptResponses] }
   "GET /api/v2/academy/lessons/{lessonId}/attempts": { request: T.AcademyLessonAttemptsData; response: T.AcademyLessonAttemptsResponses[keyof T.AcademyLessonAttemptsResponses] }
   "GET /api/v2/academy/lessons/{lessonId}/notes": { request: T.AcademyLessonNotesData; response: T.AcademyLessonNotesResponses[keyof T.AcademyLessonNotesResponses] }
+  "GET /api/v2/academy/link": { request: T.AcademyLinkData; response: T.AcademyLinkResponses[keyof T.AcademyLinkResponses] }
   "GET /api/v2/academy/progress": { request: T.AcademyProgressData; response: T.AcademyProgressResponses[keyof T.AcademyProgressResponses] }
   "GET /api/v2/admin/alerts/factor-library": { request: T.AdminAlertsControllerFactorLibrary1Data; response: T.AdminAlertsControllerFactorLibrary1Responses[keyof T.AdminAlertsControllerFactorLibrary1Responses] }
   "GET /api/v2/admin/alerts/indicators": { request: T.AdminAlertsControllerIndicators1Data; response: T.AdminAlertsControllerIndicators1Responses[keyof T.AdminAlertsControllerIndicators1Responses] }
@@ -482,6 +483,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/academy/lessons/{lessonId}/attempt": { request: "AcademyResumeAttemptData", response: "AcademyResumeAttemptResponses" },
   "GET /api/v2/academy/lessons/{lessonId}/attempts": { request: "AcademyLessonAttemptsData", response: "AcademyLessonAttemptsResponses" },
   "GET /api/v2/academy/lessons/{lessonId}/notes": { request: "AcademyLessonNotesData", response: "AcademyLessonNotesResponses" },
+  "GET /api/v2/academy/link": { request: "AcademyLinkData", response: "AcademyLinkResponses" },
   "GET /api/v2/academy/progress": { request: "AcademyProgressData", response: "AcademyProgressResponses" },
   "GET /api/v2/admin/alerts/factor-library": { request: "AdminAlertsControllerFactorLibrary1Data", response: "AdminAlertsControllerFactorLibrary1Responses" },
   "GET /api/v2/admin/alerts/indicators": { request: "AdminAlertsControllerIndicators1Data", response: "AdminAlertsControllerIndicators1Responses" },

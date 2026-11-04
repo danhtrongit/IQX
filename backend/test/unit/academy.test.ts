@@ -40,13 +40,14 @@ import {
 } from '../../src/modules/academy/academy.schemas.js';
 import { AcademyService, buildProgress } from '../../src/modules/academy/academy.service.js';
 import {
-  ACADEMY_V3_CATALOG_VERSION,
+  ACADEMY_V4_CATALOG_VERSION,
   NOTES_KEY_MAX,
   itemIdSchema,
   nextRequiredItemId,
   scenarioOf,
+  type AcademyAccessMode,
   type LessonFile,
-} from '../../src/modules/academy/content/v3/schema.js';
+} from '../../src/modules/academy/content/v4/schema.js';
 import type { Environment } from '../../src/platform/config/environment.js';
 import { LESSON_REWARD_PORT } from '../../src/platform/ports/lesson-reward.port.js';
 import {
@@ -54,6 +55,7 @@ import {
   MemoryAcademy,
   OTHER_USER,
   USER,
+  accessModeOf,
   answersScoring,
   correctAnswers,
   deepKeys,
@@ -66,10 +68,10 @@ import {
   setup,
   start,
 } from './academy-test-kit.js';
-import { academyV3Fixture } from './academy-v3-fixture.js';
+import { academyV4Fixture } from './academy-v4-fixture.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const content = academyV3Fixture();
+const content = academyV4Fixture();
 
 /** Exact names that must never appear in any academy response (design §2). */
 const BANNED_KEYS = [
@@ -140,13 +142,13 @@ function contentWithBigPractice(): AcademyContent {
   return { ...content, items, itemsByKey };
 }
 
-describe('academy v3.3 catalog', () => {
-  it('serves 13 published chapters, 87 required lessons, 13 exams and the optional practice', () => {
+describe('academy v4 catalog', () => {
+  it('serves 12 published chapters, 116 required lessons, 12 exams and the optional practice', () => {
     const { service } = setup();
     const catalog = service.catalog();
     expect(catalogResponseSchema.parse(catalog)).toEqual(catalog);
-    expect(catalog.catalog_version).toBe(ACADEMY_V3_CATALOG_VERSION);
-    expect(catalog.required_total).toBe(87);
+    expect(catalog.catalog_version).toBe(ACADEMY_V4_CATALOG_VERSION);
+    expect(catalog.required_total).toBe(116);
     expect(catalog.chapters.map((chapter) => [chapter.no, chapter.lesson_count])).toEqual([
       [1, 10],
       [2, 10],
@@ -155,12 +157,11 @@ describe('academy v3.3 catalog', () => {
       [5, 4],
       [6, 4],
       [7, 7],
-      [8, 6],
-      [9, 5],
-      [10, 7],
-      [11, 4],
-      [12, 5],
-      [13, 6],
+      [8, 17],
+      [9, 16],
+      [10, 11],
+      [11, 10],
+      [12, 8],
     ]);
     expect(catalog.chapters.map((chapter) => chapter.title)).toEqual([
       'Nền tảng',
@@ -170,16 +171,15 @@ describe('academy v3.3 catalog', () => {
       'Phương pháp cơ bản',
       'Chỉ báo xu hướng',
       'Chỉ báo động lượng và dòng tiền',
-      'Tốc độ tăng trưởng',
-      'Độ ổn định',
-      'Hiệu quả và biên lợi nhuận',
-      'Nợ và khả năng thanh toán',
-      'Dòng tiền',
-      'Định giá',
+      'Phân tích cơ bản chung',
+      'Phân tích doanh nghiệp sản xuất',
+      'Phân tích ngân hàng',
+      'Phân tích công ty chứng khoán',
+      'Phân tích công ty bảo hiểm',
     ]);
     const items = catalog.chapters.flatMap((chapter) => chapter.items);
-    expect(items).toHaveLength(101);
-    expect(items.filter((entry) => entry.kind === 'chapter_exam')).toHaveLength(13);
+    expect(items).toHaveLength(129);
+    expect(items.filter((entry) => entry.kind === 'chapter_exam')).toHaveLength(12);
     const practice = items.filter((entry) => entry.optional);
     expect(practice.map((entry) => [entry.id, entry.kind, entry.position])).toEqual([
       ['ch03-practice', 'practice', null],
@@ -187,6 +187,8 @@ describe('academy v3.3 catalog', () => {
     expect(catalog.retired_lessons.length).toBeGreaterThan(0);
     expect(catalog.retired_lessons.map((entry) => entry.lesson_key)).toContain('concept:hop_luu');
     expectNoBannedKeys(catalog);
+    // Spec v4 §5.1: the `unlock` field is gone from every item.
+    expect(items.every((entry) => !('unlock' in entry))).toBe(true);
   });
 
   it('uses the item id and key formats, positions, question counts and exam intros', () => {
@@ -197,11 +199,13 @@ describe('academy v3.3 catalog', () => {
       expect(itemIdSchema.safeParse(entry.id).success, entry.id).toBe(true);
       if (entry.kind === 'chapter_exam') {
         const cc = entry.id.slice(0, 4);
-        expect(entry.lesson_key).toBe(`exam:${cc}`);
+        // Chapters 1-7 keep their v3.3 exam keys; the exams of chapters 8-12 are new (spec §5.3.2).
+        expect(entry.lesson_key).toBe(entry.chapter <= 7 ? `exam:${cc}` : `exam:${cc}-v4`);
         expect(entry.question_count).toBe(entry.chapter <= 3 ? 20 : 30);
         expect(entry.intro).toMatch(/^Bài thi gồm \d+ câu hỏi/);
         expect(entry.content_version).toBeNull();
         expect(entry.position).toBeNull();
+        expect(entry.metric_key).toBeNull();
       } else {
         expect(entry.lesson_key).toMatch(/^(concept|technical|fundamental):[a-z0-9_]+$/);
         expect(entry.question_count).toBe(entry.chapter <= 3 ? 3 : 5);
@@ -216,135 +220,267 @@ describe('academy v3.3 catalog', () => {
       'Bài thi gồm 20 câu hỏi về toàn bộ kiến thức Chương 1.',
     );
     expect(items.find((entry) => entry.id === 'ch04-l03')?.position).toBe(3);
-    const unlocks = items.filter((entry) => entry.unlock);
-    expect(
-      unlocks.map((entry) => [entry.id, entry.lesson_key, entry.unlock?.capability_id]),
-    ).toEqual([
-      ['ch04-l04', 'technical:volume', 'indicator:volume'],
-      ['ch04-l05', 'technical:ma', 'indicator:ma'],
-      ['ch04-l06', 'technical:rsi', 'indicator:rsi'],
-      ['ch04-l07', 'technical:macd', 'indicator:macd'],
-      ['ch04-l08', 'technical:bollinger', 'indicator:bollinger'],
-      ['ch06-l01', 'technical:ema', 'indicator:ema'],
-      ['ch06-l02', 'technical:ma_cross', 'indicator:ma_cross'],
-      ['ch06-l03', 'technical:dmi', 'indicator:dmi'],
-      ['ch06-l04', 'technical:donchian', 'indicator:donchian'],
-      ['ch07-l01', 'technical:stochastic', 'indicator:stochastic'],
-      ['ch07-l02', 'technical:cci', 'indicator:cci'],
-      ['ch07-l03', 'technical:roc', 'indicator:roc'],
-      ['ch07-l04', 'technical:williams_r', 'indicator:williams_r'],
-      ['ch07-l05', 'technical:obv', 'indicator:obv'],
-      ['ch07-l06', 'technical:mfi', 'indicator:mfi'],
-      ['ch07-l07', 'technical:cmf', 'indicator:cmf'],
-      ['ch08-l01', 'fundamental:revenue_yoy', 'metric:revenue_yoy'],
-      ['ch08-l02', 'fundamental:profit_yoy', 'metric:profit_yoy'],
-      ['ch08-l03', 'fundamental:eps_yoy', 'metric:eps_yoy'],
-      ['ch08-l04', 'fundamental:revenue_cagr3', 'metric:revenue_cagr3'],
-      ['ch08-l05', 'fundamental:profit_cagr3', 'metric:profit_cagr3'],
-      ['ch08-l06', 'fundamental:eps_cagr3', 'metric:eps_cagr3'],
-      ['ch09-l01', 'fundamental:profit_positive_streak', 'metric:profit_positive_streak'],
-      ['ch09-l02', 'fundamental:revenue_growth_stability', 'metric:revenue_growth_stability'],
-      ['ch09-l03', 'fundamental:net_margin_stability', 'metric:net_margin_stability'],
-      ['ch09-l04', 'fundamental:eps_growth_stability', 'metric:eps_growth_stability'],
-      ['ch09-l05', 'fundamental:roic_stability', 'metric:roic_stability'],
-      ['ch10-l01', 'fundamental:roe', 'metric:roe'],
-      ['ch10-l02', 'fundamental:roa', 'metric:roa'],
-      ['ch10-l03', 'fundamental:roic', 'metric:roic'],
-      ['ch10-l04', 'fundamental:gross_margin', 'metric:gross_margin'],
-      ['ch10-l05', 'fundamental:net_margin', 'metric:net_margin'],
-      ['ch10-l06', 'fundamental:asset_turnover', 'metric:asset_turnover'],
-      ['ch10-l07', 'fundamental:ccc', 'metric:ccc'],
-      ['ch11-l01', 'fundamental:debt_equity', 'metric:debt_equity'],
-      ['ch11-l02', 'fundamental:current_ratio', 'metric:current_ratio'],
-      ['ch11-l03', 'fundamental:interest_coverage', 'metric:interest_coverage'],
-      ['ch11-l04', 'fundamental:net_debt_ebitda', 'metric:net_debt_ebitda'],
-      ['ch12-l01', 'fundamental:cfo_margin', 'metric:cfo_margin'],
-      ['ch12-l02', 'fundamental:cfo_profit', 'metric:cfo_profit'],
-      ['ch12-l03', 'fundamental:capex_revenue', 'metric:capex_revenue'],
-      ['ch12-l04', 'fundamental:fcf_margin', 'metric:fcf_margin'],
-      ['ch12-l05', 'fundamental:fcf_positive_streak', 'metric:fcf_positive_streak'],
-      ['ch13-l01', 'fundamental:pe', 'metric:pe'],
-      ['ch13-l02', 'fundamental:pb', 'metric:pb'],
-      ['ch13-l03', 'fundamental:ps', 'metric:ps'],
-      ['ch13-l04', 'fundamental:peg', 'metric:peg'],
-      ['ch13-l05', 'fundamental:ev_ebitda', 'metric:ev_ebitda'],
-      ['ch13-l06', 'fundamental:fcf_yield', 'metric:fcf_yield'],
+    expect(items.find((entry) => entry.id === 'ch12-l08')?.position).toBe(8);
+  });
+
+  it('names the dashboard metric of every chapter 8-12 lesson (metric_key, spec v4 §5.1)', () => {
+    const items = setup()
+      .service.catalog()
+      .chapters.flatMap((chapter) => chapter.items);
+    const byChapter = new Map<number, string[]>();
+    for (const entry of items)
+      if (entry.metric_key !== null)
+        byChapter.set(entry.chapter, [...(byChapter.get(entry.chapter) ?? []), entry.metric_key]);
+    expect([...byChapter]).toEqual([
+      [
+        8,
+        [
+          'revenue_yoy',
+          'profit_yoy',
+          'eps_yoy',
+          'revenue_cagr3',
+          'profit_cagr3',
+          'eps_cagr3',
+          'profit_positive_streak',
+          'revenue_growth_stability',
+          'net_margin_stability',
+          'eps_growth_stability',
+          'roe',
+          'roa',
+          'net_margin',
+          'pe',
+          'pb',
+          'ps',
+          'peg',
+        ],
+      ],
+      [
+        9,
+        [
+          'gross_margin',
+          'roic',
+          'roic_stability',
+          'asset_turnover',
+          'ccc',
+          'debt_equity',
+          'current_ratio',
+          'interest_coverage',
+          'net_debt_ebitda',
+          'cfo_margin',
+          'cfo_profit',
+          'capex_revenue',
+          'fcf_margin',
+          'fcf_positive_streak',
+          'ev_ebitda',
+          'fcf_yield',
+        ],
+      ],
+      [
+        10,
+        [
+          'nim',
+          'yield_cost',
+          'cir',
+          'non_interest_share',
+          'ppop_growth',
+          'credit_cost',
+          'provision_to_loans',
+          'credit_deposit_growth',
+          'ldr',
+          'accrued_to_loans',
+          'equity_to_assets',
+        ],
+      ],
+      [
+        11,
+        [
+          'revenue_mix',
+          'operating_margin',
+          'margin_loan_growth',
+          'margin_loan_to_equity',
+          'margin_loan_yield',
+          'brokerage_margin',
+          'prop_asset_share',
+          'prop_return',
+          'opex_to_revenue',
+          'borrowings_to_equity',
+        ],
+      ],
+      [
+        12,
+        [
+          'gwp_growth',
+          'retention_ratio',
+          'loss_ratio',
+          'expense_ratio',
+          'combined_ratio',
+          'investment_yield',
+          'profit_mix',
+          'reserves_to_equity',
+        ],
+      ],
     ]);
-    expect(unlocks).toHaveLength(49);
+    // The lesson key stays `fundamental:<metric_key>`: it is the durable identity, so completions carry over.
+    for (const entry of items.filter((candidate) => candidate.metric_key !== null))
+      expect(entry.lesson_key).toBe(`fundamental:${entry.metric_key}`);
+    expect(
+      new Set(items.flatMap((entry) => (entry.metric_key ? [entry.metric_key] : []))).size,
+    ).toBe(62);
+  });
+
+  it('the 33 metric lessons moved from v3.3 chapters 8-13 keep their keys (carry-over, spec §5.3)', () => {
+    const v33Keys = [
+      'revenue_yoy',
+      'profit_yoy',
+      'eps_yoy',
+      'revenue_cagr3',
+      'profit_cagr3',
+      'eps_cagr3',
+      'profit_positive_streak',
+      'revenue_growth_stability',
+      'net_margin_stability',
+      'eps_growth_stability',
+      'roic_stability',
+      'roe',
+      'roa',
+      'roic',
+      'gross_margin',
+      'net_margin',
+      'asset_turnover',
+      'ccc',
+      'debt_equity',
+      'current_ratio',
+      'interest_coverage',
+      'net_debt_ebitda',
+      'cfo_margin',
+      'cfo_profit',
+      'capex_revenue',
+      'fcf_margin',
+      'fcf_positive_streak',
+      'pe',
+      'pb',
+      'ps',
+      'peg',
+      'ev_ebitda',
+      'fcf_yield',
+    ].map((id) => `fundamental:${id}`);
+    expect(v33Keys).toHaveLength(33);
+    for (const key of v33Keys)
+      expect(content.itemsByKey.get(key)?.chapter, key).toBeLessThanOrEqual(9);
+    // Chapters 1-7 keep every v3.3 lesson key too: the technical indicators and the concept lessons.
+    expect(content.itemsByKey.get('technical:rsi')).toMatchObject({ id: 'ch04-l06' });
+    expect(content.itemsByKey.get('concept:dau_tu_chung_khoan')).toMatchObject({ id: 'ch01-l01' });
   });
 });
 
-describe('academy v3.3 sequence and progress (design §3)', () => {
-  const states = (keys: string[]) =>
+describe('academy v4 free learning and progress (spec §4.1)', () => {
+  const states = (keys: string[], mode: AcademyAccessMode = 'free') =>
     new Map(
       buildProgress(
         content,
         keys.map((key) => completion(key)),
+        new Map(),
+        mode,
       ).items.map((entry) => [entry.id, entry.state]),
     );
 
-  it('a new user has only ch01-l01 open and 0 / 87', () => {
+  it('a new user has every item open, exams and the practice included, and 0 / 116', () => {
     const progress = buildProgress(content, []);
     expect(progressResponseSchema.parse(progress)).toEqual(progress);
-    expect(
-      progress.items.filter((entry) => entry.state !== 'locked').map((entry) => entry.id),
-    ).toEqual(['ch01-l01']);
+    expect(progress.items).toHaveLength(129);
+    expect(progress.items.every((entry) => entry.state === 'open')).toBe(true);
     expect(progress).toMatchObject({
       course_done: 0,
-      course_total: 87,
+      course_total: 116,
       current_item_id: 'ch01-l01',
+      access_mode: 'free',
     });
     expect(progress.chapters.map((chapter) => chapter.total)).toEqual([
-      10, 10, 9, 10, 4, 4, 7, 6, 5, 7, 4, 5, 6,
+      10, 10, 9, 10, 4, 4, 7, 17, 16, 11, 10, 8,
     ]);
-    expect(progress.granted_capabilities).toEqual([]);
+    // Spec v4 §4.2: a progress response carries no capability any more.
+    expect(progress).not.toHaveProperty('granted_capabilities');
   });
 
-  it('a user holding only technical:rsi sees ch04-l06 passed and everything else locked', () => {
-    const result = states(['technical:rsi']);
-    expect(result.get('ch01-l01')).toBe('open');
+  it('a passed lesson is passed wherever it sits and nothing is ever locked', () => {
+    const result = states(['technical:rsi', 'fundamental:roe']);
     expect(result.get('ch04-l06')).toBe('passed');
-    expect([...result.values()].filter((state) => state === 'open')).toHaveLength(1);
-    expect(buildProgress(content, [completion('technical:rsi')]).granted_capabilities).toEqual([
-      'indicator:rsi',
-    ]);
+    expect(result.get('ch08-l11')).toBe('passed');
+    expect([...result.values()].filter((state) => state === 'passed')).toHaveLength(2);
+    expect([...result.values()].filter((state) => state === 'open')).toHaveLength(127);
+    expect([...result.values()]).not.toContain('locked');
   });
 
-  it('after the ch3 exam the optional practice and ch04-l01 open together; practice never blocks', () => {
-    const keys = keysBefore('ch04-l01');
-    const result = states(keys);
-    expect(result.get('ch03-practice')).toBe('open');
-    expect(result.get('ch04-l01')).toBe('open');
-    const progress = buildProgress(
-      content,
-      keys.map((key) => completion(key)),
-    );
-    expect(progress.current_item_id).toBe('ch04-l01');
-    expect(progress.course_done).toBe(29);
-    expect(progress.chapters.slice(0, 3).every((chapter) => chapter.exam_passed)).toBe(true);
-    // Practice passed changes nothing in the totals.
-    const withPractice = buildProgress(content, [
-      ...keys.map((key) => completion(key)),
+  it('x / 116 counts required lessons passed in any order; exams and the practice never count', () => {
+    const progress = buildProgress(content, [
+      completion('fundamental:nim'),
+      completion('technical:rsi'),
+      completion('exam:ch04'),
       completion(item('ch03-practice').lesson_key),
     ]);
-    expect(withPractice.course_done).toBe(29);
-    expect(withPractice.current_item_id).toBe('ch04-l01');
+    expect(progress.course_done).toBe(2);
+    expect(progress.chapters.find((chapter) => chapter.no === 4)).toMatchObject({
+      done: 1,
+      total: 10,
+      exam_passed: true,
+    });
+    expect(progress.chapters.find((chapter) => chapter.no === 10)).toMatchObject({
+      done: 1,
+      total: 11,
+      exam_passed: false,
+    });
   });
 
   it('counts every published lesson once and reports null current when all is passed', () => {
     const all = [...content.items.values()].map((entry) => completion(entry.lesson_key));
     const progress = buildProgress(content, all);
-    expect(progress).toMatchObject({ course_done: 87, current_item_id: null });
-    const expected = [
-      ...new Set([...content.items.values()].flatMap((entry) => entry.capabilities)),
-    ].sort();
-    expect(progress.granted_capabilities).toEqual(expected);
-    expect(
-      progress.granted_capabilities.filter((capability) => capability.startsWith('indicator:')),
-    ).toHaveLength(16);
-    expect(
-      progress.granted_capabilities.filter((capability) => capability.startsWith('metric:')),
-    ).toHaveLength(33);
+    expect(progress).toMatchObject({ course_done: 116, current_item_id: null });
+    expect(progress.chapters.every((chapter) => chapter.done === chapter.total)).toBe(true);
+    expect(progress.chapters.every((chapter) => chapter.exam_passed)).toBe(true);
+  });
+
+  it('the current item is the one opened last, else the first required item still to pass', () => {
+    expect(buildProgress(content, [completion('concept:dau_tu_chung_khoan')])).toMatchObject({
+      current_item_id: 'ch01-l02',
+    });
+    const opened = (lessonKey: string, keys: string[] = []) =>
+      buildProgress(
+        content,
+        keys.map((key) => completion(key)),
+        new Map(),
+        'free',
+        {
+          lesson_key: lessonKey,
+        },
+      ).current_item_id;
+    expect(opened('fundamental:nim')).toBe('ch10-l01');
+    expect(opened('exam:ch12-v4')).toBe('ch12-exam');
+    // Opened last wins even when it is already passed.
+    expect(opened('technical:rsi', ['technical:rsi'])).toBe('ch04-l06');
+    // A key the catalog no longer has (an older catalog's pick) falls back to the first item to pass.
+    expect(opened('fundamental:dividend_yield')).toBe('ch01-l01');
+  });
+
+  it('keeps the v3.3 prefix rule only as the sequential mode (the v4.1 hook)', () => {
+    const fresh = states([], 'sequential');
+    expect([...fresh].filter(([, state]) => state !== 'locked').map(([id]) => id)).toEqual([
+      'ch01-l01',
+    ]);
+    const rsi = states(['technical:rsi'], 'sequential');
+    expect(rsi.get('ch01-l01')).toBe('open');
+    expect(rsi.get('ch04-l06')).toBe('passed');
+    expect([...rsi.values()].filter((state) => state === 'open')).toHaveLength(1);
+    const keys = keysBefore('ch04-l01');
+    const afterCh3 = states(keys, 'sequential');
+    expect(afterCh3.get('ch03-practice')).toBe('open');
+    expect(afterCh3.get('ch04-l01')).toBe('open');
+    expect(afterCh3.get('ch04-l02')).toBe('locked');
+    expect(buildProgress(content, [], new Map(), 'sequential').access_mode).toBe('sequential');
+    // Both ends of the chain: chapter 8 opens only after chapter 7 is done.
+    expect(states(keysBefore('ch08-l01'), 'sequential').get('ch08-l01')).toBe('open');
+    expect(states(keysBefore('ch08-l01').slice(0, -1), 'sequential').get('ch08-l01')).toBe(
+      'locked',
+    );
   });
 
   it('maps completion methods outside quiz / legacy_migration to null', () => {
@@ -364,7 +500,7 @@ describe('academy v3.3 sequence and progress (design §3)', () => {
     memory.attempts.push({
       ...memory.attempts[0]!,
       id: '00000000-0000-4000-8000-0000000000ff',
-      catalog_version: 'iqx-academy-outline-13ch-71lessons-v1',
+      catalog_version: 'iqx-academy-v3.3-13ch-87lessons',
       idempotency_key: 'old-key-0001',
       score: 3,
     });
@@ -379,8 +515,8 @@ describe('academy v3.3 sequence and progress (design §3)', () => {
   });
 });
 
-describe('academy v3.3 item content', () => {
-  it('serves a lesson with its blocks and no answers; a locked item is 403; unknown is 404', async () => {
+describe('academy v4 item content', () => {
+  it('serves any item to anybody: lessons, exams and the practice are open; unknown is 404', async () => {
     const { service } = setup();
     const lesson = await service.lesson(USER, 'ch01-l01');
     expect(itemResponseSchema.parse(lesson)).toEqual(lesson);
@@ -389,20 +525,46 @@ describe('academy v3.3 item content', () => {
       state: 'open',
       scenario_choice: null,
       reward: null,
+      metric_key: null,
     });
     expectNoBannedKeys(lesson);
-    await expect(service.lesson(USER, 'ch01-l02')).rejects.toMatchObject({
-      status: 403,
-      response: { code: 'ACADEMY_ITEM_LOCKED' },
+    // Free learning (spec §4.1): no ACADEMY_ITEM_LOCKED whatever the order.
+    for (const id of ['ch01-l02', 'ch06-l01', 'ch10-l01', 'ch12-l08', 'ch12-exam', 'ch03-practice'])
+      expect(await service.lesson(USER, id), id).toMatchObject({ state: 'open' });
+    expect(await service.lesson(USER, 'ch10-l01')).toMatchObject({
+      kind: 'lesson',
+      metric_key: 'nim',
+      lesson_key: 'fundamental:nim',
     });
-    await expect(service.lesson(USER, 'ch06-l01')).rejects.toMatchObject({
-      status: 403,
-      response: { code: 'ACADEMY_ITEM_LOCKED' },
+    for (const id of ['ch99-l01', 'ch13-l01', 'ch13-exam'])
+      await expect(service.lesson(USER, id), id).rejects.toMatchObject({
+        status: 404,
+        response: { code: 'LESSON_NOT_FOUND' },
+      });
+  });
+
+  it('the sequential mode still answers 403 ACADEMY_ITEM_LOCKED, for the users the resolver puts there only', async () => {
+    const { service, memory } = setup({ accessModes: accessModeOf('sequential', [USER]) });
+    expect(await service.lesson(USER, 'ch01-l01')).toMatchObject({ state: 'open' });
+    for (const id of ['ch01-l02', 'ch06-l01', 'ch12-exam'])
+      await expect(service.lesson(USER, id), id).rejects.toMatchObject({
+        status: 403,
+        response: { code: 'ACADEMY_ITEM_LOCKED' },
+      });
+    // Another learner of the same service is in the default free mode.
+    expect(await service.lesson(OTHER_USER, 'ch06-l01')).toMatchObject({ state: 'open' });
+    openItem(memory, 'ch01-l02');
+    expect(await service.lesson(USER, 'ch01-l02')).toMatchObject({ state: 'open' });
+    expect((await service.progress(USER)).access_mode).toBe('sequential');
+    expect((await service.progress(OTHER_USER)).access_mode).toBe('free');
+  });
+
+  it('a failing mode resolver falls back to the default free mode', async () => {
+    const { service } = setup({
+      accessModes: { accessModeOf: () => Promise.reject(new Error('settings down')) },
     });
-    await expect(service.lesson(USER, 'ch99-l01')).rejects.toMatchObject({
-      status: 404,
-      response: { code: 'LESSON_NOT_FOUND' },
-    });
+    expect(await service.lesson(USER, 'ch06-l01')).toMatchObject({ state: 'open' });
+    expect((await service.progress(USER)).access_mode).toBe('free');
   });
 
   it('serves the exam intro and the passed state of an out-of-order indicator lesson', async () => {
@@ -423,7 +585,7 @@ describe('academy v3.3 item content', () => {
   });
 });
 
-describe('academy v3.3 scenario choice', () => {
+describe('academy v4 scenario choice', () => {
   it('requires a choice before the quiz, stores it once and returns the first choice on replay', async () => {
     const { service, memory } = setup();
     memory.complete(USER, keysBefore('ch02-l01'));
@@ -443,13 +605,30 @@ describe('academy v3.3 scenario choice', () => {
     expect((await start(service, 'ch02-l01')).total).toBe(3);
   });
 
-  it('refuses items without a scenario (422) and locked items (403)', async () => {
+  it('refuses items without a scenario (422); scenario lessons are open in any order but still gate the quiz', async () => {
     const { service } = setup();
     await expect(service.chooseScenario(USER, 'ch01-l01', { choice: 0 })).rejects.toMatchObject({
       status: 422,
       response: { code: 'NO_SCENARIO' },
     });
+    // Free learning: ch02-l03 is open at once (no ACADEMY_ITEM_LOCKED), its quiz still needs a choice first.
+    await expect(start(service, 'ch02-l03')).rejects.toMatchObject({
+      status: 403,
+      response: { code: 'ACADEMY_SCENARIO_REQUIRED' },
+    });
+    await expect(service.chooseScenario(USER, 'ch02-l03', { choice: 1 })).resolves.toMatchObject({
+      created: true,
+    });
+    expect((await start(service, 'ch02-l03')).total).toBe(3);
+  });
+
+  it('in the sequential mode a locked scenario lesson is 403 ACADEMY_ITEM_LOCKED', async () => {
+    const { service } = setup({ mode: 'sequential' });
     await expect(service.chooseScenario(USER, 'ch02-l01', { choice: 0 })).rejects.toMatchObject({
+      status: 403,
+      response: { code: 'ACADEMY_ITEM_LOCKED' },
+    });
+    await expect(start(service, 'ch02-l01')).rejects.toMatchObject({
       status: 403,
       response: { code: 'ACADEMY_ITEM_LOCKED' },
     });
@@ -473,17 +652,21 @@ describe('academy v3.3 scenario choice', () => {
   });
 });
 
-describe('academy v3.3 practice notes', () => {
-  it('is only available for lessons with interactive blocks and respects the lock', async () => {
+describe('academy v4 practice notes', () => {
+  it('is only available for lessons with interactive blocks; the sequential mode keeps the lock', async () => {
     const { service, memory } = setup();
     await expect(service.lessonNotes(USER, 'ch01-l01')).rejects.toMatchObject({
       status: 404,
       response: { code: 'NOTES_NOT_AVAILABLE' },
     });
-    await expect(service.lessonNotes(USER, 'ch02-l02')).rejects.toMatchObject({
+    const sequential = setup({ mode: 'sequential' }).service;
+    await expect(sequential.lessonNotes(USER, 'ch02-l02')).rejects.toMatchObject({
       status: 403,
       response: { code: 'ACADEMY_ITEM_LOCKED' },
     });
+    await expect(
+      sequential.saveLessonNotes(USER, 'ch02-l02', { checks: { 'l2:0': true } }),
+    ).rejects.toMatchObject({ status: 403, response: { code: 'ACADEMY_ITEM_LOCKED' } });
     openItem(memory, 'ch02-l02');
     const empty = await service.lessonNotes(USER, 'ch02-l02');
     expect(notesResponseSchema.parse(empty)).toEqual(empty);
@@ -599,7 +782,7 @@ describe('academy v3.3 practice notes', () => {
   });
 });
 
-describe('academy v3.3 attempts and grading', () => {
+describe('academy v4 attempts and grading', () => {
   const cases: Array<[string, number, boolean]> = [
     ['ch01-l01', 2, false],
     ['ch01-l01', 3, true],
@@ -641,9 +824,10 @@ describe('academy v3.3 attempts and grading', () => {
       reward: { status: 'credited', delta: 100, balance_after: 100 },
       next_item_id: 'ch01-l02',
       chapter_completed: null,
-      newly_granted: [],
-      unlocked_labels: [],
     });
+    // Spec v4 §3.3 / §4.2: the result no longer says which indicator or metric a lesson "opened".
+    for (const gone of ['granted_capabilities', 'newly_granted', 'unlocked_labels'])
+      expect(result, gone).not.toHaveProperty(gone);
     expect(rewards!.calls).toHaveLength(1);
     expect(rewards!.calls[0]!.tx).toBe(memory.tx);
     expect(await service.submit(USER, result.attempt_id, { answers: [] })).toEqual(result);
@@ -662,21 +846,37 @@ describe('academy v3.3 attempts and grading', () => {
     expect(rewards!.calls).toHaveLength(1);
   });
 
-  it('an indicator lesson reports the unlock label and the capability', async () => {
+  it('an indicator lesson opens no tool: the pass is an ordinary completion', async () => {
     const { service, memory } = setup();
-    openItem(memory, 'ch04-l06');
     const result = await pass(service, 'ch04-l06', 'attempt-key-0001');
     expect(result).toMatchObject({
-      newly_granted: ['indicator:rsi'],
-      unlocked_labels: ['RSI'],
+      passed: true,
+      completion: { newly_completed: true },
       next_item_id: 'ch04-l07',
     });
-    expect(result.granted_capabilities).toContain('indicator:rsi');
-    const again = await pass(service, 'ch04-l06', 'attempt-key-0002');
+    expectExactKeys(result, submitResponseSchema);
+    expect(memory.completionRows.map((row) => row.lesson_key)).toEqual(['technical:rsi']);
+  });
+
+  it('a lesson passed under v3.3 stays passed under v4: no new reward, no new completion (carry-over)', async () => {
+    const { service, rewards, memory } = setup();
+    // v3.3 data: the ROE lesson (then ch10-l01) and the old chapter 10 exam are completed.
+    memory.complete(USER, ['fundamental:roe', 'exam:ch10']);
+    const progress = await service.progress(USER);
+    const byId = new Map(progress.items.map((entry) => [entry.id, entry]));
+    expect(byId.get('ch08-l11')).toMatchObject({ state: 'passed' });
+    expect(progress.course_done).toBe(1);
+    // The old exam key is not one of the new exams (spec §5.3.2): ch10-exam of v4 is still to pass.
+    expect(byId.get('ch10-exam')).toMatchObject({ state: 'open' });
+    expect(byId.get('ch08-exam')).toMatchObject({ state: 'open' });
+    const again = await pass(service, 'ch08-l11', 'attempt-key-0001');
     expect(again).toMatchObject({
-      newly_granted: [],
-      unlocked_labels: ['RSI'],
+      passed: true,
+      reward: null,
+      completion: { newly_completed: false },
     });
+    expect(rewards!.calls).toHaveLength(0);
+    expect(memory.completionRows).toHaveLength(2);
   });
 
   it('an exam pass completes the chapter without a reward or a hook call', async () => {
@@ -711,7 +911,7 @@ describe('academy v3.3 attempts and grading', () => {
     expect((await service.progress(USER)).course_done).toBe(before);
   });
 
-  it('QA-08: 87 lessons pay 8.700 xu, the practice makes 8.800, exams pay nothing', async () => {
+  it('QA-08: 116 lessons pay 11.600 xu, the practice makes 11.700, exams pay nothing', async () => {
     const { service, memory } = setup();
     const paid = { lesson: 0, practice: 0, exam: 0 };
     let lessons = 0;
@@ -727,9 +927,9 @@ describe('academy v3.3 attempts and grading', () => {
         lessons += 1;
       }
     }
-    expect(lessons).toBe(87);
-    expect(paid.lesson).toBe(8700);
-    expect(paid.lesson + paid.practice).toBe(8800);
+    expect(lessons).toBe(116);
+    expect(paid.lesson).toBe(11600);
+    expect(paid.lesson + paid.practice).toBe(11700);
     expect(paid.exam).toBe(0);
   });
 
@@ -800,27 +1000,41 @@ describe('academy v3.3 attempts and grading', () => {
     });
   });
 
-  it('rejects a stale catalog, unknown items and locked items', async () => {
+  it('rejects a stale catalog and unknown items; every real item can be started at once (free learning)', async () => {
     const { service } = setup();
-    await expect(
-      service.createAttempt(USER, {
-        lesson_id: 'ch01-l01',
-        catalog_version: 'iqx-academy-outline-13ch-71lessons-v1',
-        idempotency_key: 'attempt-key-0001',
-      }),
-    ).rejects.toMatchObject({ status: 409, response: { code: 'CATALOG_VERSION_MISMATCH' } });
+    for (const stale of [
+      'iqx-academy-outline-13ch-71lessons-v1',
+      'iqx-academy-v3.3-13ch-87lessons',
+    ])
+      await expect(
+        service.createAttempt(USER, {
+          lesson_id: 'ch01-l01',
+          catalog_version: stale,
+          idempotency_key: 'attempt-key-0001',
+        }),
+      ).rejects.toMatchObject({ status: 409, response: { code: 'CATALOG_VERSION_MISMATCH' } });
     await expect(start(service, 'ch99-l01')).rejects.toMatchObject({
       status: 404,
       response: { code: 'LESSON_NOT_FOUND' },
     });
-    await expect(start(service, 'ch09-l01')).rejects.toMatchObject({
-      status: 403,
-      response: { code: 'ACADEMY_ITEM_LOCKED' },
+    await expect(start(service, 'ch13-l01')).rejects.toMatchObject({
+      status: 404,
+      response: { code: 'LESSON_NOT_FOUND' },
     });
-    await expect(start(service, 'ch01-exam')).rejects.toMatchObject({
-      status: 403,
-      response: { code: 'ACADEMY_ITEM_LOCKED' },
-    });
+    // No ACADEMY_ITEM_LOCKED: a chapter 9 lesson, a chapter 1 exam and the last exam open at once.
+    expect((await start(service, 'ch09-l01', 'attempt-key-0002')).total).toBe(5);
+    expect((await start(service, 'ch01-exam', 'attempt-key-0003')).total).toBe(20);
+    expect((await start(service, 'ch12-exam', 'attempt-key-0004')).total).toBe(30);
+    expect((await start(service, 'ch03-practice', 'attempt-key-0005')).kind).toBe('lesson');
+  });
+
+  it('the sequential mode refuses locked items when starting an attempt', async () => {
+    const { service } = setup({ mode: 'sequential' });
+    for (const id of ['ch09-l01', 'ch01-exam'])
+      await expect(start(service, id)).rejects.toMatchObject({
+        status: 403,
+        response: { code: 'ACADEMY_ITEM_LOCKED' },
+      });
   });
 
   it('rejects incomplete or foreign answers with 422 and keeps the attempt open', async () => {
@@ -882,7 +1096,6 @@ describe('academy v3.3 attempts and grading', () => {
       total: 8,
       passed: true,
       next_item_id: null,
-      newly_granted: [],
       reward: null,
     });
     expectExactKeys(replay, submitResponseSchema);
@@ -922,7 +1135,7 @@ describe('academy v3.3 attempts and grading', () => {
   });
 });
 
-describe('academy v3.3 responses never carry answers', () => {
+describe('academy v4 responses never carry answers', () => {
   it('walks every response and checks the exact keys of attempt, resume, draft, submit and history', async () => {
     const { service, memory } = setup();
     const responses: unknown[] = [service.catalog(), await service.progress(USER)];
