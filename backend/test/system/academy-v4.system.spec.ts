@@ -368,7 +368,10 @@ describe('system acceptance: Học viện v4', () => {
     expect(byKey.statusCode, byKey.body).toBe(200);
     expect(byKey.json()).toMatchObject({
       found: true,
-      item_id: 'ch10-l01',
+      lesson_id: 'ch10-l01',
+      locked: false,
+      chapter_id: 'ch10',
+      chapter_display_no: 10,
       matched_by: 'metric_key',
       url: '/hoc-vien/ch10-l01',
     });
@@ -379,7 +382,7 @@ describe('system acceptance: Học viện v4', () => {
     );
     expect(byName.json()).toMatchObject({
       found: true,
-      item_id: 'ch10-l07',
+      lesson_id: 'ch10-l07',
       matched_by: 'title_prefix',
     });
     await call(user, 'GET', 'lessons/ch11-l04');
@@ -387,7 +390,8 @@ describe('system acceptance: Học viện v4', () => {
     expect(nothing.statusCode, nothing.body).toBe(200);
     expect(nothing.json()).toMatchObject({
       found: false,
-      item_id: 'ch11-l04',
+      lesson_id: 'ch11-l04',
+      locked: false,
       url: '/hoc-vien/ch11-l04',
     });
     expect((await call(user, 'GET', 'link')).statusCode).toBe(422);

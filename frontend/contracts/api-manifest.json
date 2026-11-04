@@ -2,6 +2,11 @@
   "schema": "backend/contracts/openapi-v2.json",
   "generatedTypes": "backend/contracts/client/types.gen.ts",
   "operations": {
+    "DELETE /api/v2/admin/academy-configs/{id}": {
+      "operationId": "adminAcademyConfigDelete",
+      "requestType": "AdminAcademyConfigDeleteData",
+      "responseType": "AdminAcademyConfigDeleteResponses"
+    },
     "DELETE /api/v2/admin/alerts/signals/{key}": {
       "operationId": "AdminAlertsController_remove[1]",
       "requestType": "AdminAlertsControllerRemove1Data",
@@ -111,6 +116,16 @@
       "operationId": "academyProgress",
       "requestType": "AcademyProgressData",
       "responseType": "AcademyProgressResponses"
+    },
+    "GET /api/v2/admin/academy-configs": {
+      "operationId": "adminAcademyConfigs",
+      "requestType": "AdminAcademyConfigsData",
+      "responseType": "AdminAcademyConfigsResponses"
+    },
+    "GET /api/v2/admin/academy-configs/{id}/logs": {
+      "operationId": "adminAcademyConfigLogs",
+      "requestType": "AdminAcademyConfigLogsData",
+      "responseType": "AdminAcademyConfigLogsResponses"
     },
     "GET /api/v2/admin/alerts/factor-library": {
       "operationId": "AdminAlertsController_factorLibrary[1]",
@@ -1352,6 +1367,11 @@
       "requestType": "StrategyConfigListRevisionsData",
       "responseType": "StrategyConfigListRevisionsResponses"
     },
+    "GET /api/v2/team/academy-config": {
+      "operationId": "teamAcademyConfig_get_api_v2_team_academy_config",
+      "requestType": "TeamAcademyConfigGetApiV2TeamAcademyConfigData",
+      "responseType": "TeamAcademyConfigGetApiV2TeamAcademyConfigResponses"
+    },
     "GET /api/v2/team/me": {
       "operationId": "TeamController_me[1]",
       "requestType": "TeamControllerMe1Data",
@@ -1551,6 +1571,16 @@
       "operationId": "academyChooseScenario",
       "requestType": "AcademyChooseScenarioData",
       "responseType": "AcademyChooseScenarioResponses"
+    },
+    "POST /api/v2/admin/academy-configs": {
+      "operationId": "adminAcademyConfigCreate",
+      "requestType": "AdminAcademyConfigCreateData",
+      "responseType": "AdminAcademyConfigCreateResponses"
+    },
+    "POST /api/v2/admin/academy-configs/preview": {
+      "operationId": "adminAcademyConfigPreview",
+      "requestType": "AdminAcademyConfigPreviewData",
+      "responseType": "AdminAcademyConfigPreviewResponses"
     },
     "POST /api/v2/admin/alerts/seed": {
       "operationId": "AdminAlertsController_seed[1]",
@@ -2296,6 +2326,11 @@
       "operationId": "academySaveLessonNotes",
       "requestType": "AcademySaveLessonNotesData",
       "responseType": "AcademySaveLessonNotesResponses"
+    },
+    "PUT /api/v2/admin/academy-configs/{id}": {
+      "operationId": "adminAcademyConfigSave",
+      "requestType": "AdminAcademyConfigSaveData",
+      "responseType": "AdminAcademyConfigSaveResponses"
     },
     "PUT /api/v2/admin/alerts/signals/{key}": {
       "operationId": "AdminAlertsController_update[1]",

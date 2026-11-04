@@ -20,11 +20,13 @@ function academy(overrides: Partial<AcademyProgress> = {}): AcademyProgress {
     allDone: false,
     completed: 2,
     total: 4,
+    config: { source: "default", mode: "free", chapterCount: 1, chapterTotal: 12 },
     chapterExams: { passed: 0, total: 0 },
-    currentLesson: { lessonId: "c1-l3", chapter: 1, order: 3, name: "Nến Nhật", label: "Chương 1 · Bài 3: Nến Nhật" },
+    currentLesson: { lessonId: "c1-l3", chapterId: "ch01", chapterDisplayNo: 1, order: 3, name: "Nến Nhật", label: "Chương 1 · Bài 3: Nến Nhật" },
     lastCompletion: {
       lessonId: "c1-l2",
-      chapter: 1,
+      chapterId: "ch01",
+      chapterDisplayNo: 1,
       order: 2,
       name: "Khối lượng",
       label: "Chương 1 · Bài 2: Khối lượng",
@@ -34,7 +36,9 @@ function academy(overrides: Partial<AcademyProgress> = {}): AcademyProgress {
     learningCoins: 15,
     chapters: [
       {
-        no: 1,
+        chapterId: "ch01",
+        displayNo: 1,
+        inProgram: true,
         title: "Nền tảng",
         completed: 2,
         total: 4,
@@ -82,6 +86,66 @@ describe("Học viện tab", () => {
     render(<UserAcademyTab academy={academy({ chapterExams: { passed: 1, total: 3 } })} />)
     expect(screen.getByText("Bài thi cuối chương đã đạt")).toBeTruthy()
     expect(screen.getByText("1/3")).toBeTruthy()
+  })
+
+  const lesson = (lessonId: string, order: number, name: string, status: "completed" | "not_started") => ({
+    lessonId,
+    order,
+    name,
+    kind: "lesson" as const,
+    optional: false,
+    status,
+    attempts: 0,
+    latestScore: null,
+    maxScore: 3,
+    completedAt: status === "completed" ? "2026-10-09T03:00:00Z" : null,
+    isCurrent: false,
+  })
+
+  it("numbers the chapters the way this user sees them (group A without Kỹ năng Sale SACO, spec v4.1 §8.4)", () => {
+    render(
+      <UserAcademyTab
+        academy={academy({
+          completed: 1,
+          total: 106,
+          config: { source: "leader", mode: "sequential", chapterCount: 11, chapterTotal: 12 },
+          currentLesson: { lessonId: "ch03-l02", chapterId: "ch03", chapterDisplayNo: 2, order: 2, name: "Thương hiệu", label: "Chương 2 · Bài 2: Thương hiệu" },
+          chapters: [
+            { chapterId: "ch01", displayNo: 1, inProgram: true, title: "Nền tảng", completed: 1, total: 10, examPassed: false, lessons: [lesson("ch01-l01", 1, "Đầu tư", "completed")] },
+            { chapterId: "ch03", displayNo: 2, inProgram: true, title: "Thương hiệu cá nhân", completed: 0, total: 9, examPassed: false, lessons: [lesson("ch03-l02", 2, "Thương hiệu", "not_started")] },
+          ],
+        })}
+      />,
+    )
+    expect(screen.getByText("Cấu hình của nhóm · Học lần lượt · 11/12 chương")).toBeTruthy()
+    expect(screen.getByText("Chương 1 · Nền tảng")).toBeTruthy()
+    expect(screen.getByText("Chương 2 · Thương hiệu cá nhân")).toBeTruthy()
+    expect(screen.getByText("1 / 106")).toBeTruthy()
+    expect(document.body.textContent).not.toMatch(/Chương 3 · Thương hiệu/)
+  })
+
+  it("keeps a removed chapter in the history, without a number and outside the progress", () => {
+    render(
+      <UserAcademyTab
+        academy={academy({
+          config: { source: "leader", mode: "free", chapterCount: 1, chapterTotal: 12 },
+          chapters: [
+            { chapterId: "ch01", displayNo: 1, inProgram: true, title: "Nền tảng", completed: 1, total: 10, examPassed: false, lessons: [lesson("ch01-l01", 1, "Đầu tư", "completed")] },
+            { chapterId: "ch02", displayNo: null, inProgram: false, title: "Kỹ năng Sale SACO", completed: 3, total: 10, examPassed: false, lessons: [lesson("ch02-l01", 1, "Tìm khách hàng", "completed")] },
+          ],
+        })}
+      />,
+    )
+    const removed = document.querySelector('[data-in-program="false"]') as HTMLElement
+    expect(within(removed).getByText("Kỹ năng Sale SACO")).toBeTruthy()
+    expect(within(removed).getByText("Đã bỏ khỏi cấu hình")).toBeTruthy()
+    expect(within(removed).getByText("Không tính vào tiến độ")).toBeTruthy()
+    expect(within(removed).queryByText(/^Chương \d/)).toBeNull()
+  })
+
+  it("says an administrator sees every chapter and learns freely", () => {
+    render(<UserAcademyTab academy={academy({ config: { source: "admin", mode: "free", chapterCount: 12, chapterTotal: 12 } })} />)
+    expect(screen.getByText("Quản trị viên: đủ chương, học tự do")).toBeTruthy()
   })
 })
 

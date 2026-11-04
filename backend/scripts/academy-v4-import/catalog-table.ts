@@ -1,5 +1,6 @@
 import {
   ACADEMY_V4_CATALOG_VERSION,
+  CHAPTER_NO_PLACEHOLDER,
   examKeyOf,
   questionCountFor,
 } from '../../src/modules/academy/content/v4/schema.js';
@@ -56,7 +57,8 @@ const E = (ch: number): CatalogRow => {
     id: `${cc}-exam`,
     kind: 'chapter_exam',
     lesson_key: examKeyOf(ch),
-    name: `Bài thi Chương ${ch}`,
+    // Template, not a literal number (spec v4.1 §2.3): the API fills in the learner's chapter number.
+    name: `Bài thi Chương ${CHAPTER_NO_PLACEHOLDER}`,
   };
 };
 
@@ -264,14 +266,18 @@ export const CHAPTER_TITLES: Readonly<Record<number, string>> = {
   12: 'Phân tích công ty bảo hiểm',
 };
 
-/** First sentence of the exam intro (the UI appends the bold "Cần trả lời đúng tất cả câu hỏi..."). */
+/**
+ * First sentence of the exam intro (the UI appends the bold "Cần trả lời đúng tất cả câu hỏi..."), stored as a template:
+ * `{n}` is the chapter number the learner sees (spec v4.1 §2.3). The mockup spells the original number, so the
+ * importer compares `withChapterNo(template, chapter)` with the mockup text.
+ */
 export function examIntro(chapter: number): string {
   const n = questionCountFor(chapter, 'chapter_exam');
   if (chapter === 2)
-    return `Bài thi gồm ${n} câu hỏi về toàn bộ kỹ năng sale của SACO trong Chương 2.`;
+    return `Bài thi gồm ${n} câu hỏi về toàn bộ kỹ năng sale của SACO trong Chương ${CHAPTER_NO_PLACEHOLDER}.`;
   if (chapter === 3)
-    return `Bài thi gồm ${n} câu hỏi về toàn bộ kiến thức thương hiệu cá nhân trong Chương 3.`;
-  return `Bài thi gồm ${n} câu hỏi về toàn bộ kiến thức Chương ${chapter}.`;
+    return `Bài thi gồm ${n} câu hỏi về toàn bộ kiến thức thương hiệu cá nhân trong Chương ${CHAPTER_NO_PLACEHOLDER}.`;
+  return `Bài thi gồm ${n} câu hỏi về toàn bộ kiến thức Chương ${CHAPTER_NO_PLACEHOLDER}.`;
 }
 
 /** Sentence the mockup appends to every exam lead; checked, then dropped. */

@@ -109,8 +109,12 @@ export const dashboardCatalogSchema = z.object({
       default_charts: z.array(dashboardChartNameSchema),
       chapters: z.array(
         z.object({
+          /** Tiêu đề nhóm cấp 1: "Chỉ tiêu chung", "Chỉ tiêu ngân hàng"... (Học viện v4.1 §6.2). */
           chapter: z.string(),
-          /** Chương Học viện v4 của các bài học trong chương (8–12). */
+          /**
+           * Chương cố định của danh mục Học viện v4 (8–12) chứa bài học của các chỉ tiêu. Không phải số chương người
+           * học thấy (mỗi nhóm đánh số lại, Học viện v4.1 §2): không hiển thị.
+           */
           academy_chapter: z.number().int(),
           groups: z.array(
             z.object({

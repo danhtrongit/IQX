@@ -5,7 +5,15 @@ import type {
   AcademyItem,
 } from '../../src/modules/academy/academy.content.types.js';
 import type { RandomInt } from '../../src/modules/academy/academy.grading.js';
-import type { AcademyAccessModePort } from '../../src/modules/academy/academy.ports.js';
+import {
+  adminConfig,
+  allChapterIds,
+  buildAcademyProgram,
+  type AcademyConfigData,
+  type AcademyProgram,
+  type ResolvedAcademyConfig,
+} from '../../src/modules/academy/academy.config.js';
+import type { AcademyConfigPort } from '../../src/modules/academy/academy.ports.js';
 import type { AcademyAccessMode } from '../../src/modules/academy/content/v4/schema.js';
 import {
   NOTES_SIZE_LIMIT,
@@ -474,24 +482,74 @@ export class TestAcademyService extends AcademyService {
     rewards: LessonRewardPort | undefined,
     private readonly fixture?: AcademyContent,
     private readonly seeded?: RandomInt,
-    accessModes?: AcademyAccessModePort,
+    configs?: AcademyConfigPort,
   ) {
-    super(repository, rewards, accessModes);
+    super(repository, rewards, configs);
   }
   protected override readonly content = (): AcademyContent => this.fixture ?? academyV4Fixture();
   protected override readonly random: RandomInt = (maxExclusive) =>
     this.seeded ? this.seeded(maxExclusive) : Math.floor(Math.random() * maxExclusive);
 }
 
-/** Access-mode resolver double: everybody (or the listed users) in `mode`; the others stay `free`. */
-export function accessModeOf(
-  mode: AcademyAccessMode,
-  users?: readonly string[],
-): AcademyAccessModePort {
+/**
+ * The config a learner gets in tests (v4.1): `mode` (default `free`) over `chapter_ids` (default: every chapter of the
+ * fixture), as the `default` source with no row id.
+ */
+export function resolvedConfig(
+  config: Partial<AcademyConfigData> = {},
+  content: AcademyContent = academyV4Fixture(),
+): ResolvedAcademyConfig {
   return {
-    accessModeOf: (userId) => Promise.resolve(!users || users.includes(userId) ? mode : 'free'),
+    mode: config.mode ?? 'free',
+    chapter_ids: config.chapter_ids ?? allChapterIds(content),
+    source: 'default',
+    config_id: null,
   };
 }
+
+/**
+ * Config resolver double. Everybody (or the listed users) gets `config`; the others get the rollout default (free,
+ * every chapter). `byUser` gives individual users their own config instead (the first match wins over `config`).
+ */
+export function configPort(
+  config: Partial<AcademyConfigData>,
+  users?: readonly string[],
+  byUser: Readonly<Record<string, Partial<AcademyConfigData>>> = {},
+): AcademyConfigPort & { calls: string[][] } {
+  const calls: string[][] = [];
+  const configOf = (userId: string): ResolvedAcademyConfig => {
+    const own = byUser[userId];
+    if (own) return resolvedConfig(own);
+    return !users || users.includes(userId) ? resolvedConfig(config) : resolvedConfig();
+  };
+  return {
+    calls,
+    configOf: (userId) => {
+      calls.push([userId]);
+      return Promise.resolve(configOf(userId));
+    },
+    configsOf: (userIds) => {
+      calls.push([...userIds]);
+      return Promise.resolve(new Map(userIds.map((id) => [id, configOf(id)])));
+    },
+  };
+}
+
+/** Config resolver double with only a mode: everybody (or the listed users) in `mode`, every chapter. */
+export function accessModeOf(mode: AcademyAccessMode, users?: readonly string[]) {
+  return configPort({ mode }, users);
+}
+
+/** The program of a config over the fixture content (what `AcademyService` builds per request). */
+export function programFor(
+  config: Partial<AcademyConfigData> = {},
+  content: AcademyContent = academyV4Fixture(),
+): AcademyProgram {
+  return buildAcademyProgram(content, resolvedConfig(config, content));
+}
+
+/** The built-in administrator config (all chapters, free). */
+export const adminResolved = (content: AcademyContent = academyV4Fixture()) => adminConfig(content);
 
 export function setup(
   options: {
@@ -500,19 +558,27 @@ export function setup(
     random?: RandomInt;
     /** Puts every user in this access mode; the default (no resolver) is `free`. */
     mode?: AcademyAccessMode;
-    accessModes?: AcademyAccessModePort;
+    /** Gives every user these chapters (fixed ids, `ch03`...); the default is every chapter. */
+    chapters?: readonly string[];
+    configs?: AcademyConfigPort;
   } = {},
 ) {
   const memory = new MemoryAcademy();
   const rewards = options.rewards === false ? undefined : new FakeRewards();
   const content = options.content ?? academyV4Fixture();
-  const accessModes =
-    options.accessModes ?? (options.mode ? accessModeOf(options.mode) : undefined);
+  const configs =
+    options.configs ??
+    (options.mode || options.chapters
+      ? configPort({
+          ...(options.mode ? { mode: options.mode } : {}),
+          ...(options.chapters ? { chapter_ids: options.chapters } : {}),
+        })
+      : undefined);
   return {
     memory,
     rewards,
     content,
-    service: new TestAcademyService(memory, rewards, content, options.random, accessModes),
+    service: new TestAcademyService(memory, rewards, content, options.random, configs),
     grants: new AcademyGrantsService(memory),
   };
 }

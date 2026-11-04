@@ -9,13 +9,15 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import type { FastifyRequest } from 'fastify';
 
+import type { TeamAcademyConfigResponse } from '../academy/academy-config.schemas.js';
 import { CurrentUser, Roles, type AuthenticatedUser } from '../auth/index.js';
 import { auditContext } from '../users/audit.js';
 import { ActiveTeamLeadGuard } from './active-team-lead.guard.js';
 import {
+  TEAM_ACADEMY_CONFIG_SCHEMA,
   TEAM_LOGIN_HISTORY_SCHEMA,
   TEAM_ME_SCHEMA,
   TEAM_MEMBER_REMOVE_SCHEMA,
@@ -55,6 +57,17 @@ export class TeamController {
   @ApiOkResponse({ schema: TEAM_ME_SCHEMA })
   me(@CurrentUser() lead: AuthenticatedUser): Promise<TeamMe> {
     return this.team.me(lead.id);
+  }
+
+  @Get('academy-config')
+  @ApiOperation({
+    operationId: 'teamAcademyConfig',
+    summary:
+      'The Academy config of the lead’s own group, read only (Học viện v4.1 §1.3): mode, chapters renumbered from 1 and N. Editing is admin only',
+  })
+  @ApiOkResponse({ schema: TEAM_ACADEMY_CONFIG_SCHEMA })
+  academyConfig(@CurrentUser() lead: AuthenticatedUser): Promise<TeamAcademyConfigResponse> {
+    return this.team.academyConfig(lead.id);
   }
 
   @Get('metrics/overview')

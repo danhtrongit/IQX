@@ -339,7 +339,7 @@ describe("Lưu", () => {
       const dialog = await openConfig(user)
       await user.click(within(dialog).getByRole("switch", { name: "Sử dụng điều kiện Mua" }))
       await user.click(saveButton(dialog))
-      expect(await within(dialog).findByText("Đạt bài kiểm tra của bài học chỉ báo RSI để bật.")).toBeTruthy()
+      expect(await within(dialog).findByText("Chưa bật được chỉ báo RSI: tài khoản chưa được cấp quyền dùng.")).toBeTruthy()
     })
   })
 

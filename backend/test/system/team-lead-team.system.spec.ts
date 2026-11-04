@@ -58,8 +58,11 @@ type User360 = Record<string, unknown> & {
     completed: number;
     current_lesson: { lesson_id: string } | null;
     chapter_exams: { total: number; passed: number };
+    config: { source: string; mode: string; chapter_count: number; chapter_total: number };
     chapters: Array<{
-      no: number;
+      chapter_id: string;
+      display_no: number | null;
+      in_program: boolean;
       total: number;
       completed: number;
       exam_passed: boolean;
@@ -523,10 +526,21 @@ describe('system acceptance: team lead area (team/*)', () => {
       expect.arrayContaining([expect.objectContaining({ amount_vnd: 99_000, status: 'paid' })]),
     );
 
-    // Published chapters only (1-12); x / 116 counts required lessons; one exam row per chapter.
-    expect(view.academy.chapters.map((chapter) => chapter.no)).toEqual([
+    // A member of a lead without an own Academy config learns the default one (v4.1 §8.2): all 12 chapters, free
+    // mode, numbered 1-12; x / 116 counts required lessons; one exam row per chapter.
+    expect(view.academy.config).toEqual({
+      source: 'default',
+      mode: 'free',
+      chapter_count: 12,
+      chapter_total: 12,
+    });
+    expect(view.academy.chapters.map((chapter) => chapter.display_no)).toEqual([
       1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
     ]);
+    expect(view.academy.chapters.map((chapter) => chapter.chapter_id)).toEqual(
+      Array.from({ length: 12 }, (_, index) => `ch${String(index + 1).padStart(2, '0')}`),
+    );
+    expect(view.academy.chapters.every((chapter) => chapter.in_program)).toBe(true);
     expect(view.academy.total).toBe(116);
     expect(view.academy.completed).toBe(2);
     expect(view.academy.chapter_exams).toEqual({ total: 12, passed: 0 });

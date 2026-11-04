@@ -64,6 +64,7 @@ import {
   keysBefore,
   openItem,
   pass,
+  programFor,
   seededRandom,
   setup,
   start,
@@ -143,13 +144,14 @@ function contentWithBigPractice(): AcademyContent {
 }
 
 describe('academy v4 catalog', () => {
-  it('serves 12 published chapters, 116 required lessons, 12 exams and the optional practice', () => {
+  it('serves 12 published chapters, 116 required lessons, 12 exams and the optional practice', async () => {
     const { service } = setup();
-    const catalog = service.catalog();
+    const catalog = await service.catalog(USER);
     expect(catalogResponseSchema.parse(catalog)).toEqual(catalog);
     expect(catalog.catalog_version).toBe(ACADEMY_V4_CATALOG_VERSION);
+    expect(catalog.mode).toBe('free');
     expect(catalog.required_total).toBe(116);
-    expect(catalog.chapters.map((chapter) => [chapter.no, chapter.lesson_count])).toEqual([
+    expect(catalog.chapters.map((chapter) => [chapter.display_no, chapter.lesson_count])).toEqual([
       [1, 10],
       [2, 10],
       [3, 9],
@@ -191,30 +193,31 @@ describe('academy v4 catalog', () => {
     expect(items.every((entry) => !('unlock' in entry))).toBe(true);
   });
 
-  it('uses the item id and key formats, positions, question counts and exam intros', () => {
-    const items = setup()
-      .service.catalog()
-      .chapters.flatMap((chapter) => chapter.items);
+  it('uses the item id and key formats, positions, question counts and exam intros', async () => {
+    const items = (await setup().service.catalog(USER)).chapters.flatMap(
+      (chapter) => chapter.items,
+    );
     for (const entry of items) {
       expect(itemIdSchema.safeParse(entry.id).success, entry.id).toBe(true);
+      const chapter = entry.chapter_display_no;
+      expect(entry.chapter_id).toBe(entry.id.slice(0, 4));
       if (entry.kind === 'chapter_exam') {
         const cc = entry.id.slice(0, 4);
         // Chapters 1-7 keep their v3.3 exam keys; the exams of chapters 8-12 are new (spec §5.3.2).
-        expect(entry.lesson_key).toBe(entry.chapter <= 7 ? `exam:${cc}` : `exam:${cc}-v4`);
-        expect(entry.question_count).toBe(entry.chapter <= 3 ? 20 : 30);
+        expect(entry.lesson_key).toBe(chapter <= 7 ? `exam:${cc}` : `exam:${cc}-v4`);
+        expect(entry.question_count).toBe(chapter <= 3 ? 20 : 30);
         expect(entry.intro).toMatch(/^Bài thi gồm \d+ câu hỏi/);
+        expect(entry.name).toBe(`Bài thi Chương ${chapter}`);
         expect(entry.content_version).toBeNull();
         expect(entry.position).toBeNull();
         expect(entry.metric_key).toBeNull();
       } else {
         expect(entry.lesson_key).toMatch(/^(concept|technical|fundamental):[a-z0-9_]+$/);
-        expect(entry.question_count).toBe(entry.chapter <= 3 ? 3 : 5);
+        expect(entry.question_count).toBe(chapter <= 3 ? 3 : 5);
         expect(entry.intro).toBeNull();
         expect(entry.content_version).toMatch(/^[0-9a-f]{16}$/);
       }
-      expect(entry.has_scenario).toBe(
-        entry.kind === 'lesson' && (entry.chapter === 2 || entry.chapter === 3),
-      );
+      expect(entry.has_scenario).toBe(entry.kind === 'lesson' && (chapter === 2 || chapter === 3));
     }
     expect(items.find((entry) => entry.id === 'ch01-exam')?.intro).toBe(
       'Bài thi gồm 20 câu hỏi về toàn bộ kiến thức Chương 1.',
@@ -223,14 +226,17 @@ describe('academy v4 catalog', () => {
     expect(items.find((entry) => entry.id === 'ch12-l08')?.position).toBe(8);
   });
 
-  it('names the dashboard metric of every chapter 8-12 lesson (metric_key, spec v4 §5.1)', () => {
-    const items = setup()
-      .service.catalog()
-      .chapters.flatMap((chapter) => chapter.items);
+  it('names the dashboard metric of every chapter 8-12 lesson (metric_key, spec v4 §5.1)', async () => {
+    const items = (await setup().service.catalog(USER)).chapters.flatMap(
+      (chapter) => chapter.items,
+    );
     const byChapter = new Map<number, string[]>();
     for (const entry of items)
       if (entry.metric_key !== null)
-        byChapter.set(entry.chapter, [...(byChapter.get(entry.chapter) ?? []), entry.metric_key]);
+        byChapter.set(entry.chapter_display_no, [
+          ...(byChapter.get(entry.chapter_display_no) ?? []),
+          entry.metric_key,
+        ]);
     expect([...byChapter]).toEqual([
       [
         8,
@@ -378,14 +384,19 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
     new Map(
       buildProgress(
         content,
+        programFor({ mode }),
         keys.map((key) => completion(key)),
-        new Map(),
-        mode,
       ).items.map((entry) => [entry.id, entry.state]),
+    );
+  const progressOf = (keys: string[], mode: AcademyAccessMode = 'free') =>
+    buildProgress(
+      content,
+      programFor({ mode }),
+      keys.map((key) => completion(key)),
     );
 
   it('a new user has every item open, exams and the practice included, and 0 / 116', () => {
-    const progress = buildProgress(content, []);
+    const progress = progressOf([]);
     expect(progressResponseSchema.parse(progress)).toEqual(progress);
     expect(progress.items).toHaveLength(129);
     expect(progress.items.every((entry) => entry.state === 'open')).toBe(true);
@@ -393,6 +404,7 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
       course_done: 0,
       course_total: 116,
       current_item_id: 'ch01-l01',
+      next_item_id: 'ch01-l01',
       access_mode: 'free',
     });
     expect(progress.chapters.map((chapter) => chapter.total)).toEqual([
@@ -412,19 +424,21 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
   });
 
   it('x / 116 counts required lessons passed in any order; exams and the practice never count', () => {
-    const progress = buildProgress(content, [
-      completion('fundamental:nim'),
-      completion('technical:rsi'),
-      completion('exam:ch04'),
-      completion(item('ch03-practice').lesson_key),
+    const progress = progressOf([
+      'fundamental:nim',
+      'technical:rsi',
+      'exam:ch04',
+      item('ch03-practice').lesson_key,
     ]);
     expect(progress.course_done).toBe(2);
-    expect(progress.chapters.find((chapter) => chapter.no === 4)).toMatchObject({
+    expect(progress.chapters.find((chapter) => chapter.display_no === 4)).toMatchObject({
+      chapter_id: 'ch04',
       done: 1,
       total: 10,
       exam_passed: true,
     });
-    expect(progress.chapters.find((chapter) => chapter.no === 10)).toMatchObject({
+    expect(progress.chapters.find((chapter) => chapter.display_no === 10)).toMatchObject({
+      chapter_id: 'ch10',
       done: 1,
       total: 11,
       exam_passed: false,
@@ -432,26 +446,27 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
   });
 
   it('counts every published lesson once and reports null current when all is passed', () => {
-    const all = [...content.items.values()].map((entry) => completion(entry.lesson_key));
-    const progress = buildProgress(content, all);
-    expect(progress).toMatchObject({ course_done: 116, current_item_id: null });
+    const progress = progressOf([...content.items.values()].map((entry) => entry.lesson_key));
+    expect(progress).toMatchObject({
+      course_done: 116,
+      current_item_id: null,
+      next_item_id: null,
+    });
     expect(progress.chapters.every((chapter) => chapter.done === chapter.total)).toBe(true);
     expect(progress.chapters.every((chapter) => chapter.exam_passed)).toBe(true);
   });
 
   it('the current item is the one opened last, else the first required item still to pass', () => {
-    expect(buildProgress(content, [completion('concept:dau_tu_chung_khoan')])).toMatchObject({
+    expect(progressOf(['concept:dau_tu_chung_khoan'])).toMatchObject({
       current_item_id: 'ch01-l02',
     });
     const opened = (lessonKey: string, keys: string[] = []) =>
       buildProgress(
         content,
+        programFor(),
         keys.map((key) => completion(key)),
         new Map(),
-        'free',
-        {
-          lesson_key: lessonKey,
-        },
+        { lesson_key: lessonKey },
       ).current_item_id;
     expect(opened('fundamental:nim')).toBe('ch10-l01');
     expect(opened('exam:ch12-v4')).toBe('ch12-exam');
@@ -475,7 +490,7 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
     expect(afterCh3.get('ch03-practice')).toBe('open');
     expect(afterCh3.get('ch04-l01')).toBe('open');
     expect(afterCh3.get('ch04-l02')).toBe('locked');
-    expect(buildProgress(content, [], new Map(), 'sequential').access_mode).toBe('sequential');
+    expect(progressOf([], 'sequential').access_mode).toBe('sequential');
     // Both ends of the chain: chapter 8 opens only after chapter 7 is done.
     expect(states(keysBefore('ch08-l01'), 'sequential').get('ch08-l01')).toBe('open');
     expect(states(keysBefore('ch08-l01').slice(0, -1), 'sequential').get('ch08-l01')).toBe(
@@ -484,7 +499,7 @@ describe('academy v4 free learning and progress (spec §4.1)', () => {
   });
 
   it('maps completion methods outside quiz / legacy_migration to null', () => {
-    const progress = buildProgress(content, [
+    const progress = buildProgress(content, programFor(), [
       completion('concept:dau_tu_chung_khoan', 'guide'),
       completion('technical:rsi', 'legacy_migration'),
     ]);
@@ -544,7 +559,7 @@ describe('academy v4 item content', () => {
   });
 
   it('the sequential mode still answers 403 ACADEMY_ITEM_LOCKED, for the users the resolver puts there only', async () => {
-    const { service, memory } = setup({ accessModes: accessModeOf('sequential', [USER]) });
+    const { service, memory } = setup({ configs: accessModeOf('sequential', [USER]) });
     expect(await service.lesson(USER, 'ch01-l01')).toMatchObject({ state: 'open' });
     for (const id of ['ch01-l02', 'ch06-l01', 'ch12-exam'])
       await expect(service.lesson(USER, id), id).rejects.toMatchObject({
@@ -559,12 +574,12 @@ describe('academy v4 item content', () => {
     expect((await service.progress(OTHER_USER)).access_mode).toBe('free');
   });
 
-  it('a failing mode resolver falls back to the default free mode', async () => {
-    const { service } = setup({
-      accessModes: { accessModeOf: () => Promise.reject(new Error('settings down')) },
-    });
-    expect(await service.lesson(USER, 'ch06-l01')).toMatchObject({ state: 'open' });
-    expect((await service.progress(USER)).access_mode).toBe('free');
+  it('a failing config lookup fails the request: there is no fallback config (v4.1 §8.2)', async () => {
+    const down = () => Promise.reject(new Error('settings down'));
+    const { service } = setup({ configs: { configOf: down, configsOf: down } });
+    await expect(service.lesson(USER, 'ch06-l01')).rejects.toThrow('settings down');
+    await expect(service.progress(USER)).rejects.toThrow('settings down');
+    await expect(service.catalog(USER)).rejects.toThrow('settings down');
   });
 
   it('serves the exam intro and the passed state of an out-of-order indicator lesson', async () => {
@@ -1138,7 +1153,7 @@ describe('academy v4 attempts and grading', () => {
 describe('academy v4 responses never carry answers', () => {
   it('walks every response and checks the exact keys of attempt, resume, draft, submit and history', async () => {
     const { service, memory } = setup();
-    const responses: unknown[] = [service.catalog(), await service.progress(USER)];
+    const responses: unknown[] = [await service.catalog(USER), await service.progress(USER)];
     responses.push(await service.lesson(USER, 'ch01-l01'));
     const attempt = await start(service);
     expectExactKeys(attempt, attemptResponseSchema);

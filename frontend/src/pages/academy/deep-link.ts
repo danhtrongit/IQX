@@ -11,8 +11,11 @@ import { parseLessonParam } from "./navigation"
  * `/hoc-vien/bai/<metric>`, `/hoc-vien?metric=<metric>` or the Dashboard's "Học" button.
  *
  * Once the account is known the server resolves the name (`GET /academy/link`: `metric_key`, else the exact
- * lesson title, else a title starting with `name + " ·"`) and the lesson replaces the parameter in the URL
- * (a replace, so Back never returns to the link). It is never an error:
+ * lesson title, else a title starting with `name + " ·"`, among the lessons of the account's chapters) and the
+ * lesson replaces the parameter in the URL (a replace, so Back never returns to the link). A lesson that is
+ * not its turn yet (`locked`, an account that learns in order, spec v4.1 §4) opens the same way: the reader
+ * asks the server for it, gets the 403 and shows the lock frame with "Học tiếp", never the lesson. It is never
+ * an error:
  * - a name no lesson teaches opens the lesson the learner was last on (the server's answer), or nothing;
  * - a failed request just drops the parameter, so the tool shows its list as usual;
  * - a guest keeps the parameter, which resolves after sign-in;
@@ -60,7 +63,7 @@ export function useAcademyDeepLink(): { pending: boolean } {
       if (!controller.signal.aborted) settle(itemId)
     }
     fetchLink(metric, controller.signal).then(
-      (link) => finish(parseLessonParam(link.item_id)),
+      (link) => finish(parseLessonParam(link.lesson_id)),
       () => finish(null),
     )
     return () => controller.abort()

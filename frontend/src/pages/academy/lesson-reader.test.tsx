@@ -92,12 +92,35 @@ describe("LessonReader locked and missing items", () => {
     }
   })
 
-  it("shows LockedState for a 403 in sequential mode (spec v4.1) and leads to the item being learned", async () => {
+  it("shows the lock frame for a 403 in sequential mode (spec v4.1 §4): lock icon, the lesson name, Học lần lượt để mở bài này, Học tiếp", async () => {
     install({ mode: "sequential", completed: ["concept:ch01_l01"] })
     const user = userEvent.setup()
     const { router } = open("ch01-l05")
-    expect(await screen.findByRole("heading", { level: 2, name: "Bài này chưa mở" })).toBeTruthy()
-    await user.click(await screen.findByRole("button", { name: "Đến bài đang học" }))
+    // The frame names the lesson the learner asked for, never its content.
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.5" })).toBeTruthy()
+    expect(screen.getByText("Học lần lượt để mở bài này.")).toBeTruthy()
+    expect(reader().querySelector("svg.lucide-lock")).not.toBeNull()
+    expect(within(reader()).queryByRole("heading", { level: 3, name: "Tóm tắt" })).toBeNull()
+    expect(within(reader()).queryByRole("button", { name: "Làm bài kiểm tra" })).toBeNull()
+    await user.click(await screen.findByRole("button", { name: "Học tiếp" }))
+    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
+  })
+
+  it("names a locked exam Bài thi Chương c in the frame, with the number this learner sees", async () => {
+    install({ mode: "sequential", chapters: [1, 3, 4], completed: ["concept:ch01_l01"] })
+    open("ch03-exam")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài thi Chương 2" })).toBeTruthy()
+    expect(screen.getByText("Học lần lượt để mở bài này.")).toBeTruthy()
+  })
+
+  it("says an item whose chapter is not in the learner's program is gone, and leads back to the lesson being learned (404, spec v4.1 §7)", async () => {
+    install({ chapters: [1, 3, 4], completed: ["concept:ch01_l01"] })
+    const user = userEvent.setup()
+    const { router } = open("ch02-l01")
+    expect(await screen.findByText("Bài này không còn trong chương trình học của bạn")).toBeTruthy()
+    expect(screen.queryByText("Không tìm thấy bài học")).toBeNull()
+    await user.click(screen.getByRole("button", { name: "Học tiếp" }))
     expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
   })

@@ -44,18 +44,24 @@ export type DashboardScope = 'chung' | Industry;
 export const DASHBOARD_SCOPES = ['chung', ...INDUSTRIES] as const;
 
 export interface DashboardChapterInfo {
-  /** Tên chương hiện ở khung "Biểu đồ" (§3.2). */
+  /**
+   * Tiêu đề nhóm cấp 1 ở khung "Biểu đồ" (§3.2). Học viện v4.1 §6.2: không còn trùng tên chương Học viện, nên chỉ có
+   * dạng "Chỉ tiêu chung", "Chỉ tiêu ngân hàng"... (tên ngành của mã vẫn là `INDUSTRY_LABELS`).
+   */
   title: string;
-  /** Chương của Học viện v4 mà bài học của các chỉ tiêu trong chương nằm ở. */
+  /**
+   * Chương CỐ ĐỊNH của danh mục Học viện v4 (8-12) mà bài học của các chỉ tiêu trong chương nằm ở. Đây không phải số
+   * chương người học thấy (mỗi nhóm có số riêng, Học viện v4.1 §2): đừng hiển thị. Nút "Học" nối bài theo `metric_key`.
+   */
   academy_chapter: 8 | 9 | 10 | 11 | 12;
 }
 
 export const DASHBOARD_CHAPTERS: Readonly<Record<DashboardScope, DashboardChapterInfo>> = {
-  chung: { title: 'Phân tích cơ bản chung', academy_chapter: 8 },
-  thuong: { title: INDUSTRY_LABELS.thuong, academy_chapter: 9 },
-  nh: { title: INDUSTRY_LABELS.nh, academy_chapter: 10 },
-  ck: { title: INDUSTRY_LABELS.ck, academy_chapter: 11 },
-  bh: { title: INDUSTRY_LABELS.bh, academy_chapter: 12 },
+  chung: { title: 'Chỉ tiêu chung', academy_chapter: 8 },
+  thuong: { title: 'Chỉ tiêu doanh nghiệp sản xuất', academy_chapter: 9 },
+  nh: { title: 'Chỉ tiêu ngân hàng', academy_chapter: 10 },
+  ck: { title: 'Chỉ tiêu chứng khoán', academy_chapter: 11 },
+  bh: { title: 'Chỉ tiêu bảo hiểm', academy_chapter: 12 },
 };
 
 /** Id của 29 chỉ tiêu mới của ngân hàng, chứng khoán và bảo hiểm (công thức ở `dashboard.native.ts`). */

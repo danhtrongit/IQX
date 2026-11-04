@@ -11,15 +11,15 @@ export const SUBMIT_LABEL = "Nộp bài"
 
 /**
  * The label above every question (spec §3.2-1): "Bài thi Chương c" for an exam, otherwise "Bài kiểm tra", the
- * practice room included (its name belongs in the locator, §2.4).
+ * practice room included (its name belongs in the locator, §2.4). c is the learner's own chapter number.
  */
-export function quizLabel(item: Pick<CatalogItem, "kind" | "chapter">): string {
-  return item.kind === "chapter_exam" ? `Bài thi Chương ${item.chapter}` : "Bài kiểm tra"
+export function quizLabel(item: Pick<CatalogItem, "kind" | "chapter_display_no">): string {
+  return item.kind === "chapter_exam" ? `Bài thi Chương ${item.chapter_display_no}` : "Bài kiểm tra"
 }
 
 /** "Xem lại bài", or "Xem lại Chương c" for an exam (it leads to the first item of the chapter). */
-export function reviewLabel(item: Pick<CatalogItem, "kind" | "chapter">): string {
-  return item.kind === "chapter_exam" ? `Xem lại Chương ${item.chapter}` : "Xem lại bài"
+export function reviewLabel(item: Pick<CatalogItem, "kind" | "chapter_display_no">): string {
+  return item.kind === "chapter_exam" ? `Xem lại Chương ${item.chapter_display_no}` : "Xem lại bài"
 }
 
 /**

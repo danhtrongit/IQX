@@ -10,7 +10,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useAuth } from "@/hooks/use-auth"
 import { fetchTeamReferralCode, referralKeys } from "@/pages/referral/api"
 
-import { teamApi, type TeamUserListParams, type TeamUserSegment } from "./api"
+import { fetchTeamAcademyConfig, teamApi, type TeamUserListParams, type TeamUserSegment } from "./api"
 
 const root = (leadId: string | null | undefined) => ["team", leadId ?? "guest"] as const
 
@@ -18,6 +18,7 @@ export const teamKeys = {
   all: root,
   metrics: (leadId: string | null | undefined) => [...root(leadId), "metrics"] as const,
   revenue: (leadId: string | null | undefined, days: number) => [...root(leadId), "metrics", "revenue", days] as const,
+  academyConfig: (leadId: string | null | undefined) => [...root(leadId), "academy-config"] as const,
   segmentCount: (leadId: string | null | undefined, segment: TeamUserSegment) =>
     [...root(leadId), "metrics", "segment", segment] as const,
   users: (leadId: string | null | undefined) => [...root(leadId), "users"] as const,
@@ -69,6 +70,17 @@ export function useTeamSegmentCount(segment: TeamUserSegment) {
     enabled: !!user,
     queryFn: () => teamApi.segmentCount(segment),
     ...AUTO_REFRESH,
+  })
+}
+
+/** Cấu hình Học viện của nhóm, chỉ đọc (Học viện v4.1 §1.3). Chỉ quản trị viên đổi được. */
+export function useTeamAcademyConfig() {
+  const { user } = useAuth()
+  return useQuery({
+    queryKey: teamKeys.academyConfig(user?.id),
+    enabled: !!user,
+    queryFn: ({ signal }) => fetchTeamAcademyConfig(signal),
+    staleTime: 60_000,
   })
 }
 

@@ -600,11 +600,12 @@ describe("start", () => {
     expect(starts[0]).toBe(starts[1])
   })
 
-  it("403 not granted links to the lesson of the indicator", async () => {
+  it("403 not granted links to the lesson of the indicator, without any lock-by-lesson wording", async () => {
     backend.stateFailure = { status: 403, code: "CAPABILITY_LOCKED", message: "Cần hoàn thành bài học" }
     renderPractice()
-    const notice = await screen.findAllByText(/Bạn chưa mở khóa chỉ báo RSI/)
+    const notice = await screen.findAllByText(/Chưa luyện tập được chỉ báo RSI/)
     expect(notice.length).toBeGreaterThan(0)
+    expect(document.body.textContent).not.toMatch(/mở khóa|Chương|Đạt bài kiểm tra/)
     const link = (await screen.findAllByRole("link", { name: /Học bài RSI/ }))[0]
     expect(link.getAttribute("href")).toBe("/demo-trading?view=academy&lesson=ch04-l06")
     expect(screen.queryByRole("button", { name: "Bắt đầu" })).toBeNull()

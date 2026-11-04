@@ -47,7 +47,7 @@ export function LibraryShell({
   )
 }
 
-/** Head of a library: title, how many tools are open, and the search box. */
+/** Head of a library: title, how many items it lists, and the search box. */
 export function LibraryHead({
   title,
   count,
@@ -67,7 +67,7 @@ export function LibraryHead({
     <>
       <div className="flex items-center justify-between gap-2 pr-8 lg:pr-0">
         <h2 className="text-[10.5px] font-semibold tracking-wide text-muted-foreground uppercase">{title}</h2>
-        <span aria-label={`${count} đã mở`} className="rounded-sm border border-border bg-muted/50 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums">
+        <span aria-label={`${count} mục`} className="rounded-sm border border-border bg-muted/50 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums">
           {count}
         </span>
       </div>

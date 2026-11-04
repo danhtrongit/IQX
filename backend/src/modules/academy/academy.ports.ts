@@ -1,4 +1,4 @@
-import type { AcademyAccessMode } from './content/v4/schema.js';
+import type { ResolvedAcademyConfig } from './academy.config.js';
 
 /**
  * Cross-module port: capabilities of the learner's tools.
@@ -26,15 +26,17 @@ export interface AcademyGrantsPort {
 }
 
 /**
- * Per-learner access mode (spec v4 §4.1, supplement v4.1 §2). `free` is the default and the only mode v4 ships: every
- * lesson, exam and the practice are open. `sequential` keeps the v3.3 prefix rule (an item opens once every earlier
- * required item is passed) and is what the supplement's per-user / per-group setting will switch on later: the service
- * asks this port once per request, so a resolver backed by that setting plugs in here and nothing else changes.
- * Optional: without a provider every user is in the default mode.
+ * Per-learner Academy config (supplement v4.1 §1, §8.2): which chapters a user learns and in which mode (`free` or
+ * `sequential`). It is resolved from the user's group on EVERY call, so a config edit or a change of group applies at
+ * once (spec §7) and nothing about the learner is stored or cached. The service asks this port once per request;
+ * without a provider every learner gets the rollout default (Học tự do, all 12 chapters). A failing lookup fails the
+ * request: it never falls back to another config, because opening chapters or locks by accident is worse than an error.
  */
-export const ACADEMY_ACCESS_MODE = Symbol('ACADEMY_ACCESS_MODE');
+export const ACADEMY_CONFIG = Symbol('ACADEMY_CONFIG');
 
-export interface AcademyAccessModePort {
-  /** The learner's access mode (`free` when unknown). Never throws for unknown users. */
-  accessModeOf(userId: string): Promise<AcademyAccessMode>;
+export interface AcademyConfigPort {
+  /** The config that applies to the user (an unknown user gets the default config). */
+  configOf(userId: string): Promise<ResolvedAcademyConfig>;
+  /** Same rule for many users in two queries (staff progress lists); every id has an entry. */
+  configsOf(userIds: readonly string[]): Promise<Map<string, ResolvedAcademyConfig>>;
 }

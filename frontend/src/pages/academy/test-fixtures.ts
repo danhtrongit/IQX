@@ -1,8 +1,9 @@
 /**
- * Typed v4 fixtures for the Học viện tests: a catalog shaped like the real one (12 published chapters,
- * 116 required lessons, one exam per chapter, the optional ch3 practice), item responses, question banks,
- * attempts and score-only results. Option `-a` is always the correct one. Learning is free by default
- * (nothing locked); `mode: "sequential"` reproduces the v3.3 prefix lock of an account switched to it.
+ * Typed v4.1 fixtures for the Học viện tests: a catalog shaped like the real one (12 chapters, 116 required
+ * lessons, one exam per chapter, the optional practice of the personal-brand chapter), item responses, question
+ * banks, attempts and score-only results. Option `-a` is always the correct one. A program is the learner's
+ * config: `chapters` are the ORIGINAL chapter numbers it holds (fixed ids `ch01`..`ch12`), numbered again from 1
+ * as `display_no`; learning is free by default (nothing locked) and `mode: "sequential"` applies the prefix lock.
  */
 import type {
   AccessMode,
@@ -76,7 +77,7 @@ export function questionCountFor(chapter: number, kind: ItemKind): number {
   return chapter <= 3 ? 3 : 5
 }
 
-function catalogItem(chapter: number, order: number, kind: ItemKind, position: number | null): CatalogItem {
+function catalogItem(chapter: number, displayNo: number, order: number, kind: ItemKind, position: number | null): CatalogItem {
   const id = kind === "lesson" ? itemId(chapter, order) : itemId(chapter, kind === "chapter_exam" ? "exam" : "practice")
   const indicator = INDICATORS[id]
   const metricKey = kind === "lesson" ? (METRIC_KEYS[chapter]?.[order - 1] ?? null) : null
@@ -95,29 +96,41 @@ function catalogItem(chapter: number, order: number, kind: ItemKind, position: n
     id,
     kind,
     lesson_key: lessonKey,
-    chapter,
+    chapter_id: `ch${pad2(chapter)}`,
+    chapter_display_no: displayNo,
     order,
     position,
-    name: kind === "chapter_exam" ? `Bài thi Chương ${chapter}` : kind === "practice" ? "Phòng tập thực chiến" : `Bài học ${chapter}.${order}`,
+    name: kind === "chapter_exam" ? `Bài thi Chương ${displayNo}` : kind === "practice" ? "Phòng tập thực chiến" : `Bài học ${chapter}.${order}`,
     optional: kind === "practice",
     question_count: questions,
     metric_key: metricKey,
     has_scenario: kind === "lesson" && (chapter === 2 || chapter === 3),
-    intro: kind === "chapter_exam" ? `Bài thi gồm ${questions} câu hỏi về toàn bộ kiến thức Chương ${chapter}.` : null,
+    intro: kind === "chapter_exam" ? `Bài thi gồm ${questions} câu hỏi về toàn bộ kiến thức Chương ${displayNo}.` : null,
     content_version: kind === "chapter_exam" ? null : `cv-${id}`,
   }
 }
 
-export function buildCatalog(): CatalogResponse {
+/** The learner's program: the ORIGINAL numbers of the chapters his config holds, and his mode. */
+export type ProgramOptions = { chapters?: readonly number[]; mode?: AccessMode }
+
+export const ALL_CHAPTERS: readonly number[] = CHAPTERS.map((_, index) => index + 1)
+
+/** The original number of the chapter of an item (`ch04-l06` has chapter 4), whatever number the learner sees. */
+export const chapterNoOf = (item: Pick<CatalogItem, "chapter_id">) => Number(item.chapter_id.slice(2))
+
+export function buildCatalog({ chapters = ALL_CHAPTERS, mode = "free" }: ProgramOptions = {}): CatalogResponse {
+  const chosen = ALL_CHAPTERS.filter((no) => chapters.includes(no))
   return {
     catalog_version: CATALOG_VERSION,
-    required_total: CHAPTERS.reduce((sum, chapter) => sum + chapter.lessons, 0),
-    chapters: CHAPTERS.map((chapter, index) => {
-      const no = index + 1
-      const items = Array.from({ length: chapter.lessons }, (_, k) => catalogItem(no, k + 1, "lesson", k + 1))
-      items.push(catalogItem(no, chapter.lessons + 1, "chapter_exam", null))
-      if (no === 3) items.push(catalogItem(no, chapter.lessons + 2, "practice", null))
-      return { no, title: chapter.title, audience: "all" as const, lesson_count: chapter.lessons, items }
+    mode,
+    required_total: chosen.reduce((sum, no) => sum + CHAPTERS[no - 1].lessons, 0),
+    chapters: chosen.map((no, index) => {
+      const chapter = CHAPTERS[no - 1]
+      const displayNo = index + 1
+      const items = Array.from({ length: chapter.lessons }, (_, k) => catalogItem(no, displayNo, k + 1, "lesson", k + 1))
+      items.push(catalogItem(no, displayNo, chapter.lessons + 1, "chapter_exam", null))
+      if (no === 3) items.push(catalogItem(no, displayNo, chapter.lessons + 2, "practice", null))
+      return { chapter_id: `ch${pad2(no)}`, display_no: displayNo, title: chapter.title, audience: "all" as const, lesson_count: chapter.lessons, items }
     }),
     retired_lessons: [{ lesson_key: "concept:hop_luu", name: "Hợp lưu" }],
   }
@@ -126,10 +139,10 @@ export function buildCatalog(): CatalogResponse {
 export const catalogItemsOf = (catalog: CatalogResponse) => catalog.chapters.flatMap((chapter) => chapter.items)
 
 /**
- * States of the server: `free` (default, spec v4 §4.1) is passed or open for every item; `sequential`
- * (an account switched to the v3.3 rule, spec v4.1) opens an item iff every earlier required item is passed.
+ * States of the server: `free` (the default config, spec v4.1 §3.1) is passed or open for every item;
+ * `sequential` (§3.2) opens an item iff every earlier required item of the program's chain is passed.
  */
-export function statesOf(catalog: CatalogResponse, completedKeys: ReadonlySet<string>, mode: AccessMode = "free"): Map<string, ItemState> {
+export function statesOf(catalog: CatalogResponse, completedKeys: ReadonlySet<string>, mode: AccessMode = catalog.mode): Map<string, ItemState> {
   const states = new Map<string, ItemState>()
   let prefixDone = true
   for (const item of catalogItemsOf(catalog)) {
@@ -144,19 +157,22 @@ export function statesOf(catalog: CatalogResponse, completedKeys: ReadonlySet<st
 export function buildProgress(
   completedKeys: ReadonlySet<string>,
   catalog: CatalogResponse = buildCatalog(),
-  mode: AccessMode = "free",
+  mode: AccessMode = catalog.mode,
   openedId: string | null = null,
 ): ProgressResponse {
   const states = statesOf(catalog, completedKeys, mode)
   const items = catalogItemsOf(catalog)
   const passedLesson = (item: CatalogItem) => item.kind === "lesson" && states.get(item.id) === "passed"
+  // "Học tiếp": the first required item that is open and not passed, whatever was opened last.
+  const nextId = items.find((item) => !item.optional && states.get(item.id) === "open")?.id ?? null
   return {
     catalog_version: CATALOG_VERSION,
     access_mode: mode,
     progress_revision: completedKeys.size,
     course_done: items.filter(passedLesson).length,
     course_total: catalog.required_total,
-    current_item_id: openedId ?? items.find((item) => !item.optional && states.get(item.id) === "open")?.id ?? null,
+    current_item_id: openedId ?? nextId,
+    next_item_id: nextId,
     items: items.map((item) => ({
       id: item.id,
       state: states.get(item.id) ?? "locked",
@@ -166,7 +182,8 @@ export function buildProgress(
       attempts_submitted: 0,
     })),
     chapters: catalog.chapters.map((chapter) => ({
-      no: chapter.no,
+      chapter_id: chapter.chapter_id,
+      display_no: chapter.display_no,
       done: chapter.items.filter(passedLesson).length,
       total: chapter.lesson_count,
       exam_passed: chapter.items.some((item) => item.kind === "chapter_exam" && states.get(item.id) === "passed"),
@@ -183,7 +200,7 @@ export function buildItem(item: CatalogItem, state: ItemState, overrides: Partia
     attempts_submitted: 0,
   }
   if (item.kind === "chapter_exam") {
-    return { ...item, ...status, kind: "chapter_exam", intro: item.intro ?? "", chapter_title: CHAPTERS[item.chapter - 1]?.title ?? "" }
+    return { ...item, ...status, kind: "chapter_exam", intro: item.intro ?? "", chapter_title: CHAPTERS[chapterNoOf(item) - 1]?.title ?? "" }
   }
   const scenario = item.has_scenario
     ? [
@@ -273,7 +290,7 @@ export function buildSubmitResult(item: CatalogItem, score: number, overrides: P
     best_score: score,
     attempts_submitted: 1,
     completion: { completed: passed, newly_completed: passed, completed_at: passed ? "2026-10-08T01:00:00.000Z" : null },
-    chapter_completed: passed && item.kind === "chapter_exam" ? item.chapter : null,
+    chapter_completed: passed && item.kind === "chapter_exam" ? item.chapter_display_no : null,
     next_item_id: null,
     progress_revision: 1,
     reward: passed && item.kind !== "chapter_exam" ? { status: "credited", delta: 100, balance_after: 100 } : null,

@@ -60,19 +60,22 @@ function readJson<T>(key: string, guard: (value: unknown) => value is T): T | nu
 /* ── Panel: open chapters and scroll position ─────────────────────────────── */
 
 export type PanelViewState = {
-  /** `null` until the learner (or a deep link) has decided: the panel then opens Chương 1 only. */
-  openChapters: number[] | null
+  /**
+   * Fixed chapter ids (`ch03`), never the number the learner sees: that number changes with his config (spec v4.1 §2).
+   * `null` until the learner (or a deep link) has decided: the panel then opens the chapter of the current item only.
+   */
+  openChapters: string[] | null
   scrollTop: number
 }
 
-const panelKey = (userId: string | undefined) => `${PREFIX}panel.v1.${userId ?? "anonymous"}`
+const panelKey = (userId: string | undefined) => `${PREFIX}panel.v2.${userId ?? "anonymous"}`
 
 function isPanelState(value: unknown): value is PanelViewState {
   if (!value || typeof value !== "object") return false
   const candidate = value as { openChapters?: unknown; scrollTop?: unknown }
   const chapters = candidate.openChapters
   return (
-    (chapters === null || (Array.isArray(chapters) && chapters.every((no) => Number.isInteger(no)))) &&
+    (chapters === null || (Array.isArray(chapters) && chapters.every((id) => typeof id === "string"))) &&
     typeof candidate.scrollTop === "number" &&
     Number.isFinite(candidate.scrollTop)
   )

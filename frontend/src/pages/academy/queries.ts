@@ -1,11 +1,11 @@
 /**
  * React Query hooks of the Học viện tool.
  *
- * Progress and lesson responses are private per account, so their keys carry the
- * user id (a sign-out never reuses another account's cache). The catalog is the
- * same for everybody. Reads use `retry: false`: a failure is reported with an
- * explicit "Thử lại", never retried into a fake empty state, and a failed
- * refresh keeps the last confirmed data on screen.
+ * Catalog, progress and lesson responses are private per account (the catalog holds the chapters of the
+ * account's group config, numbered for that account, spec v4.1), so their keys carry the user id (a
+ * sign-out never reuses another account's cache). Reads use `retry: false`: a failure is reported with an
+ * explicit "Thử lại", never retried into a fake empty state, and a failed refresh keeps the last
+ * confirmed data on screen.
  */
 import { useCallback } from "react"
 import { useQuery, useQueryClient, type QueryClient, type QueryKey } from "@tanstack/react-query"
@@ -29,7 +29,7 @@ import {
 
 export const academyKeys = {
   all: ["academy"] as const,
-  catalog: ["academy", "catalog"] as const,
+  catalog: (userId: string | undefined) => ["academy", "catalog", userId] as const,
   progress: (userId: string | undefined) => ["academy", "progress", userId] as const,
   item: (userId: string | undefined, itemId: string) => ["academy", "item", userId, itemId] as const,
   resume: (userId: string | undefined, lessonId: string) => ["academy", "resume", userId, lessonId] as const,
@@ -76,12 +76,13 @@ export function invalidateAfterSubmit(
 }
 
 export function useAcademyCatalog() {
-  const { isAuthenticated } = useAuth()
+  const { user, isAuthenticated } = useAuth()
   return useQuery<CatalogResponse>({
-    queryKey: academyKeys.catalog,
+    queryKey: academyKeys.catalog(user?.id),
     queryFn: ({ signal }) => fetchCatalog(signal),
     enabled: isAuthenticated,
-    staleTime: 10 * 60_000,
+    // A config change or a move to another group applies at once (spec v4.1 §7): re-read it as often as the progress.
+    staleTime: 30_000,
     retry: false,
   })
 }
@@ -151,7 +152,7 @@ export function useRefreshAcademy() {
   return useCallback(
     () =>
       Promise.all([
-        queryClient.invalidateQueries({ queryKey: academyKeys.catalog }),
+        queryClient.invalidateQueries({ queryKey: ["academy", "catalog"] }),
         queryClient.invalidateQueries({ queryKey: ["academy", "progress"] }),
       ]),
     [queryClient],

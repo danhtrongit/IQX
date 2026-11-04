@@ -1,4 +1,5 @@
 import { act, screen, waitFor, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ApiError } from "@/lib/api"
@@ -60,6 +61,46 @@ describe("deep link by metric (spec v4 §6)", () => {
     const byName = renderAcademy("/demo-trading?view=academy&metric=B%C3%A0i%20h%E1%BB%8Dc%2012.3")
     expect(await screen.findByRole("heading", { level: 2, name: "Bài học 12.3" })).toBeTruthy()
     expect(byName.router.state.location.search).toBe("?view=academy&lesson=ch12-l03")
+  })
+
+  it("opens a metric whose lesson is not its turn yet as the lock frame with Học tiếp, never the content (spec v4.1 §4)", async () => {
+    install({ mode: "sequential", completed: ["concept:ch01_l01"] })
+    const user = userEvent.setup()
+    const { router } = renderAcademy("/demo-trading?view=academy&symbol=FPT&metric=nim")
+    // The Dashboard's "Học" button of a chỉ tiêu: the link says locked, the reader asks and gets the 403.
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })).toBeTruthy()
+    expect(router.state.location.search).toBe("?view=academy&symbol=FPT&lesson=ch10-l01")
+    expect(screen.getByText("Học lần lượt để mở bài này.")).toBeTruthy()
+    expect(screen.queryByRole("heading", { level: 3, name: "Tóm tắt" })).toBeNull()
+    // The sidebar highlights the lesson that was asked for, as a locked row.
+    const panel = screen.getByRole("complementary", { name: "Học viện" })
+    const lockedRow = panel.querySelector('[data-academy-row="ch10-l01"]') as HTMLElement
+    expect(lockedRow.getAttribute("data-state")).toBe("locked")
+    expect(lockedRow.className).toContain("bg-primary/10")
+    await user.click(screen.getByRole("button", { name: "Học tiếp" }))
+    expect(router.state.location.search).toBe("?view=academy&symbol=FPT&lesson=ch01-l02")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
+  })
+
+  it("opens the lesson of a metric under the chapter number this learner sees (a config without chapter 2: Chương 9 · Phân tích ngân hàng)", async () => {
+    install({ chapters: [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] })
+    const { router } = renderAcademy("/demo-trading?view=academy&metric=nim")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 10.1" })).toBeTruthy()
+    expect(router.state.location.search).toBe("?view=academy&lesson=ch10-l01")
+    const panel = screen.getByRole("complementary", { name: "Học viện" })
+    expect(within(panel).getByRole("button", { name: /^Chương 9 · Phân tích ngân hàng/ }).getAttribute("aria-expanded")).toBe("true")
+    expect(within(panel).queryByRole("button", { name: /^Chương 10 · Phân tích ngân hàng/ })).toBeNull()
+    expect(within(panel).getByRole("button", { name: /^Chương 10 · Phân tích công ty chứng khoán/ })).toBeTruthy()
+    await waitFor(() => expect(document.querySelector("[data-academy-locator]")?.textContent).toBe("Chương 9 · Bài 1 / 11"))
+  })
+
+  it("treats a name taught only by a chapter outside the config as unknown: the lesson being learned opens", async () => {
+    install({ chapters: [1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], completed: ["concept:ch01_l01"] })
+    // "Bài học 2.1" is a lesson of the removed Kỹ năng Sale SACO chapter: this account has no such lesson.
+    const { router } = renderAcademy("/demo-trading?view=academy&metric=B%C3%A0i%20h%E1%BB%8Dc%202.1")
+    expect(await screen.findByRole("heading", { level: 2, name: "Bài học 1.2" })).toBeTruthy()
+    expect(router.state.location.search).toBe("?view=academy&lesson=ch01-l02")
+    expect(screen.queryByRole("alert")).toBeNull()
   })
 
   it("never shows an error for a name no lesson teaches: it opens the lesson being learned", async () => {

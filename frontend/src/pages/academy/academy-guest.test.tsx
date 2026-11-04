@@ -21,12 +21,13 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals())
 
 describe("Học viện for a guest", () => {
-  it("asks to sign in instead of showing a list or a fake 0 / 116, and requests nothing", async () => {
+  it("asks to sign in instead of showing a list or a made-up count, and requests nothing", async () => {
     const user = userEvent.setup()
     renderAcademy("/demo-trading?view=academy&lesson=ch01-l01")
     expect(screen.getByText("Đăng nhập để học")).toBeTruthy()
-    expect(screen.getByText("116 bài học")).toBeTruthy()
-    expect(screen.queryByText(/\/ 116/)).toBeNull()
+    // The number of lessons depends on the account's Academy config (spec v4.1 §2.4): a guest is told none.
+    expect(screen.queryByText(/\d+ bài học/)).toBeNull()
+    expect(screen.queryByText(/\d+ \/ \d+/)).toBeNull()
     expect(screen.queryByRole("progressbar")).toBeNull()
     // The deep link does not leave a skeleton hanging on the left: the mascot stage stays.
     expect(screen.getByTestId("mascot-stage")).toBeTruthy()

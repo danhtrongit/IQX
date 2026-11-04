@@ -1244,13 +1244,32 @@ export const itemStateSchema = z.enum(['passed', 'open', 'locked']);
 export type ItemState = z.infer<typeof itemStateSchema>;
 
 /**
- * Access modes (spec v4 §4.1, v4.1 supplement). `free`: every item is open, nothing locks. `sequential`: the v3.3
- * prefix rule (an item is open iff every earlier required item is passed). The mode is resolved per user
- * (`AcademyAccessModePort`); the default and the only mode v4 ships is `free`.
+ * Access modes (spec v4 §4.1, v4.1 §3). `free`: every item of the learner's chapters is open, nothing locks.
+ * `sequential`: the v3.3 prefix rule over the chain of the learner's chapters (an item is open iff every earlier
+ * required item is passed). The mode comes from the learner's Academy config (`AcademyConfigPort`, v4.1 §1);
+ * the default config ships `free`.
  */
 export const accessModeSchema = z.enum(['free', 'sequential']);
 export type AcademyAccessMode = z.infer<typeof accessModeSchema>;
 export const DEFAULT_ACADEMY_ACCESS_MODE: AcademyAccessMode = 'free';
+
+/**
+ * Fixed chapter id (`ch01`..`ch12`, the prefix of the item ids). It never changes when a learner's chapters are
+ * renumbered: the number a learner sees is the per-config `display_no` (spec v4.1 §2), computed by the server.
+ */
+export const chapterIdSchema = z.string().regex(/^ch\d{2}$/);
+export const chapterIdOf = (chapter: number): string => `ch${String(chapter).padStart(2, '0')}`;
+
+/**
+ * Placeholder of the displayed chapter number in stored copy (exam name and intro: "Bài thi Chương {n}", spec v4.1
+ * §2.3). Stored copy never holds a literal chapter number; `withChapterNo` fills the learner's `display_no` in when
+ * the item is served.
+ */
+export const CHAPTER_NO_PLACEHOLDER = '{n}';
+export const withChapterNo = (template: string, displayNo: number): string =>
+  template.split(CHAPTER_NO_PLACEHOLDER).join(String(displayNo));
+/** "Chương 4", "chương 10": a literal chapter number in copy (forbidden everywhere, spec v4.1 §5). */
+export const LITERAL_CHAPTER_NO = /ch(?:ương|uong)\s*\d/i;
 
 /**
  * snake_case key of the dashboard metric a lesson teaches (chapters 8-12 lessons, spec v4 §5.1 `metric_key`);
@@ -1333,6 +1352,14 @@ export const catalogFileSchema = z
         keys.add(it.lesson_key);
         if (it.question_count !== questionCountFor(ch.no, it.kind)) issue(`${it.id}: question_count`);
         if (it.optional !== (it.kind === 'practice')) issue(`${it.id}: only practice is optional`);
+        // Spec v4.1 §2.3: copy never stores a chapter number. Exam name and intro are templates with `{n}`.
+        const copy = [it.name, it.intro ?? ''];
+        if (copy.some((text) => LITERAL_CHAPTER_NO.test(text)))
+          issue(`${it.id}: name and intro must not hold a literal chapter number (use ${CHAPTER_NO_PLACEHOLDER})`);
+        if (copy.some((text) => text.includes(CHAPTER_NO_PLACEHOLDER)) !== (it.kind === 'chapter_exam'))
+          issue(`${it.id}: ${CHAPTER_NO_PLACEHOLDER} belongs to chapter exams only`);
+        if (it.kind === 'chapter_exam' && !(it.name.includes(CHAPTER_NO_PLACEHOLDER) && it.intro?.includes(CHAPTER_NO_PLACEHOLDER)))
+          issue(`${it.id}: exam name and intro must both hold ${CHAPTER_NO_PLACEHOLDER}`);
         if (it.has_scenario !== (it.kind === 'lesson' && (ch.no === 2 || ch.no === 3)))
           issue(`${it.id}: has_scenario must be true exactly for ch2/ch3 lessons`);
         if ((it.intro !== null) !== (it.kind === 'chapter_exam')) issue(`${it.id}: intro only on exams`);
@@ -1505,6 +1532,7 @@ export function toPublicQuestion(q: BankQuestion, optionOrder: readonly string[]
 export const ACADEMY_ERROR_CODES = [
   'FEATURE_DISABLED', // 404
   'LESSON_NOT_FOUND', // 404 unknown or unpublished item id
+  'ACADEMY_ITEM_NOT_IN_PROGRAM', // 404 the item's chapter is not in the learner's Academy config (spec v4.1 §7, §8.3)
   'ATTEMPT_NOT_FOUND', // 404
   'NOTES_NOT_AVAILABLE', // 404 item has no workpad/checklist/practice_case/roleplay_score
   'ACADEMY_ITEM_LOCKED', // 403 sequential mode only (v3.3 prefix rule): GET content, notes, scenario, attempts of a locked item
@@ -1534,21 +1562,30 @@ export const rewardResultSchema = z
   .nullable();
 export type RewardResult = z.infer<typeof rewardResultSchema>;
 
-/* GET catalog (static, not user specific; published chapters only) */
+/*
+ * GET catalog (spec v4.1 §8.3): user specific. It lists only the chapters of the learner's Academy config, numbered
+ * again from 1 (`display_no`, computed here: a client never numbers chapters itself). Ids (`chapter_id`, item ids,
+ * lesson keys, exam keys) never change with the numbering.
+ */
 export const catalogItemResponseSchema = z.object({
   id: z.string(),
   kind: itemKindSchema,
   lesson_key: z.string(),
-  chapter: z.number().int(),
+  /** Fixed id of the item's chapter (`ch03`). Never shown to the learner. */
+  chapter_id: z.string(),
+  /** The chapter number the learner sees ("Chương c", "Bài thi Chương c"): `display_no` of the chapter. */
+  chapter_display_no: z.number().int(),
   order: z.number().int(),
   /** 1..lesson_count for required lessons ("Bài n / m"), null for exam and practice. */
   position: z.number().int().nullable(),
+  /** Exams read "Bài thi Chương {chapter_display_no}". */
   name: z.string(),
   optional: z.boolean(),
   question_count: z.number().int(),
   /** Dashboard metric key of a chapter 8-12 lesson (deep link, spec v4 §5.1/§6); null elsewhere. */
   metric_key: z.string().nullable(),
   has_scenario: z.boolean(),
+  /** Exam intro with the learner's chapter number filled in; null for lessons. */
   intro: z.string().nullable(),
   /** null for exams (no lesson content). */
   content_version: z.string().nullable(),
@@ -1557,23 +1594,30 @@ export type CatalogItemResponse = z.infer<typeof catalogItemResponseSchema>;
 
 export const catalogResponseSchema = z.object({
   catalog_version: z.string(),
-  /** 116 now: required lessons of published chapters. */
+  /** The learner's access mode (`free` or `sequential`). */
+  mode: accessModeSchema,
+  /** N: required lessons of the learner's chapters (116 minus the removed chapters' lessons). Practice never counts. */
   required_total: z.number().int(),
   chapters: z.array(
     z.object({
-      no: z.number().int(),
+      chapter_id: z.string(),
+      /** 1..k over the learner's chapters in catalog order. */
+      display_no: z.number().int(),
       title: z.string(),
       audience: z.literal('all'),
       lesson_count: z.number().int(),
       items: z.array(catalogItemResponseSchema),
     }),
   ),
-  /** lesson_key -> name for keys no longer in the catalog (shop ledger labels). */
+  /**
+   * lesson_key -> name for keys no longer in the catalog and for lessons of chapters outside the learner's program
+   * (shop ledger labels: what he passed there stays in his history).
+   */
   retired_lessons: z.array(z.object({ lesson_key: z.string(), name: z.string() })),
 });
 export type CatalogResponse = z.infer<typeof catalogResponseSchema>;
 
-/* GET progress (user specific; server-computed states) */
+/* GET progress (user specific; server-computed states over the learner's chapters) */
 export const progressItemSchema = z.object({
   id: z.string(),
   state: itemStateSchema,
@@ -1586,19 +1630,33 @@ export const progressItemSchema = z.object({
 export const progressResponseSchema = z.object({
   catalog_version: z.string(),
   progress_revision: z.number().int(),
-  /** Required published lessons passed / total (x / 116). Exams and practice excluded. */
+  /**
+   * Required lessons passed / N (spec v4.1 §2.4): only the lessons of the learner's chapters count, so a passed
+   * lesson of a removed chapter is in neither number. Exams and practice are excluded.
+   */
   course_done: z.number().int(),
   course_total: z.number().int(),
   /**
-   * "Bài đang học" (spec v4 §4.1): the item the user opened last; when nothing was opened yet, the first
-   * required item that is open and not passed; null when everything published is done and nothing was opened.
+   * "Bài đang học" (spec v4 §4.1): the item the user opened last (when it is not locked); otherwise the first
+   * required item that is open and not passed; null when the learner's chapters are done and nothing was opened.
    */
   current_item_id: z.string().nullable(),
-  /** `free` (default): every item is open. `sequential`: the v3.3 prefix rule (hook for per-user modes). */
+  /**
+   * "Học tiếp" (spec v4.1 §4): the first required item that is open and not passed, whatever was opened last;
+   * null when every required item of the learner's chapters is passed.
+   */
+  next_item_id: z.string().nullable(),
+  /** The learner's access mode: `free` opens everything, `sequential` is the v3.3 prefix rule over the chain. */
   access_mode: accessModeSchema,
   items: z.array(progressItemSchema),
   chapters: z.array(
-    z.object({ no: z.number().int(), done: z.number().int(), total: z.number().int(), exam_passed: z.boolean() }),
+    z.object({
+      chapter_id: z.string(),
+      display_no: z.number().int(),
+      done: z.number().int(),
+      total: z.number().int(),
+      exam_passed: z.boolean(),
+    }),
   ),
 });
 export type ProgressResponse = z.infer<typeof progressResponseSchema>;
@@ -1693,17 +1751,28 @@ export const notesSaveRequestSchema = z.strictObject({
 });
 export type NotesSaveRequest = z.infer<typeof notesSaveRequestSchema>;
 
-/* GET link?metric=<metric key or metric name> (spec v4 §6): deep link from a tool's "Học" button to its lesson */
+/*
+ * GET link?metric=<metric key or metric name> (spec v4 §6, v4.1 §4 / §8.3): deep link from a tool's "Học" button to its
+ * lesson. Only lessons of the learner's Academy config resolve; `locked` is true when the learner's sequential chain has
+ * not reached the lesson yet (the front-end then shows the lock frame, never the lesson).
+ */
 export const linkQuerySchema = z.object({ metric: z.string().trim().min(1).max(120) });
 export const LINK_MATCHES = ['metric_key', 'title', 'title_prefix'] as const;
 export const linkResponseSchema = z.object({
-  /** false: no lesson teaches this metric; `item_id` then is the lesson the user was learning (or null) and never an error. */
+  /**
+   * false: no lesson of the learner's chapters teaches this metric; `lesson_id` then is the lesson the learner was
+   * learning (or null) and never an error.
+   */
   found: z.boolean(),
   metric: z.string(),
-  item_id: z.string().nullable(),
+  lesson_id: z.string().nullable(),
+  /** true: found in the learner's chapters but still locked (sequential mode, not its turn). Always false when not found. */
+  locked: z.boolean(),
   lesson_key: z.string().nullable(),
   metric_key: z.string().nullable(),
-  chapter: z.number().int().nullable(),
+  /** Fixed id of the lesson's chapter (`ch09`); the number to show is `chapter_display_no`. */
+  chapter_id: z.string().nullable(),
+  chapter_display_no: z.number().int().nullable(),
   title: z.string().nullable(),
   /** `metric_key` first, then the exact lesson title, then a title that starts with `name + " ·"` (spec §6). */
   matched_by: z.enum(LINK_MATCHES).nullable(),
@@ -1774,9 +1843,9 @@ export const submitResponseSchema = z.object({
     newly_completed: z.boolean(),
     completed_at: isoDate.nullable(),
   }),
-  /** Exam passed: "Đã hoàn thành Chương c". */
+  /** Exam passed: the learner's `display_no` of the chapter, for "Đã hoàn thành Chương c" (null otherwise). */
   chapter_completed: z.number().int().nullable(),
-  /** Next required item in the sequence (after passing), else null. */
+  /** Next required item in the learner's chain (after passing), else null. */
   next_item_id: z.string().nullable(),
   progress_revision: z.number().int(),
   /** Always null for chapter exams. */

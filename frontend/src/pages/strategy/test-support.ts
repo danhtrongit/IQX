@@ -231,14 +231,14 @@ function metric(partial: Partial<MetricView> & Pick<MetricView, "id" | "name" | 
 
 export function metricsFixture(learned: readonly string[] = ["revenue_yoy", "profit_yoy", "eps_yoy", "gross_margin", "net_margin", "roe", "roic"]): MetricView[] {
   const all: MetricView[] = [
-    metric({ id: "revenue_yoy", name: "Tăng trưởng doanh thu YoY", lesson_id: "ch03-l01" }),
-    metric({ id: "profit_yoy", name: "Tăng trưởng LNST YoY", lesson_id: "ch03-l02" }),
-    metric({ id: "eps_yoy", name: "Tăng trưởng EPS YoY", lesson_id: "ch03-l03", readiness: "data_unavailable", supported: false, unsupported_reason: "Nguồn dữ liệu hiện tại chưa có EPS điều chỉnh tách/thưởng cổ phiếu." }),
-    metric({ id: "gross_margin", name: "Biên lợi nhuận gộp", lesson_id: "ch03-l04", default_period: "ttm", allowed_periods: TTM_FIRST, applicability: "non_financial" }),
-    metric({ id: "net_margin", name: "Biên lợi nhuận ròng", lesson_id: "ch03-l05", default_period: "ttm", allowed_periods: TTM_FIRST }),
-    metric({ id: "roe", name: "ROE", lesson_id: "ch03-l06", default_period: "ttm", allowed_periods: ROE }),
-    metric({ id: "roa", name: "ROA", lesson_id: "ch06-l01", default_period: "ttm", allowed_periods: ROE }),
-    metric({ id: "roic", name: "ROIC", lesson_id: "ch06-l02", default_period: "ttm", allowed_periods: ROE, readiness: "definition_pending", supported: false, unsupported_reason: "Chưa có thuế suất chuẩn hóa; không tự ước lượng NOPAT." }),
+    metric({ id: "revenue_yoy", name: "Tăng trưởng doanh thu YoY", lesson_id: "ch08-l01" }),
+    metric({ id: "profit_yoy", name: "Tăng trưởng LNST YoY", lesson_id: "ch08-l02" }),
+    metric({ id: "eps_yoy", name: "Tăng trưởng EPS YoY", lesson_id: "ch08-l03", readiness: "data_unavailable", supported: false, unsupported_reason: "Nguồn dữ liệu hiện tại chưa có EPS điều chỉnh tách/thưởng cổ phiếu." }),
+    metric({ id: "gross_margin", name: "Biên lợi nhuận gộp", lesson_id: "ch08-l04", default_period: "ttm", allowed_periods: TTM_FIRST, applicability: "non_financial" }),
+    metric({ id: "net_margin", name: "Biên lợi nhuận ròng", lesson_id: "ch08-l05", default_period: "ttm", allowed_periods: TTM_FIRST }),
+    metric({ id: "roe", name: "ROE", lesson_id: "ch08-l06", default_period: "ttm", allowed_periods: ROE }),
+    metric({ id: "roa", name: "ROA", lesson_id: "ch09-l01", default_period: "ttm", allowed_periods: ROE }),
+    metric({ id: "roic", name: "ROIC", lesson_id: "ch09-l02", default_period: "ttm", allowed_periods: ROE, readiness: "definition_pending", supported: false, unsupported_reason: "Chưa có thuế suất chuẩn hóa; không tự ước lượng NOPAT." }),
   ]
   return all.map((item) => ({ ...item, learned: learned.includes(item.id) }))
 }

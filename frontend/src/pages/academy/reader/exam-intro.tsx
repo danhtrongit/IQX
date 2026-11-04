@@ -7,7 +7,8 @@ import { DONE_LABEL, EXAM_RULE, EXAM_START_LABEL } from "../quiz/quiz-copy"
 
 /**
  * Intro of a chapter exam (spec §3.3): "Bài thi Chương c", the catalog intro plus the bold rule,
- * and "Bắt đầu làm bài". Once passed: "Đã hoàn thành" and "Xem lại Chương c".
+ * and "Bắt đầu làm bài". Once passed: "Đã hoàn thành" and "Xem lại Chương c". c is the learner's own
+ * chapter number and the server already filled it into the intro (spec v4.1 §2.3).
  */
 export function ExamIntro({
   exam,
@@ -26,7 +27,7 @@ export function ExamIntro({
   return (
     <section className="rounded-lg border border-border bg-card p-4 sm:p-6">
       <h2 ref={headingRef} tabIndex={-1} className="font-heading text-2xl leading-tight font-bold text-foreground outline-none sm:text-[28px]">
-        Bài thi Chương {exam.chapter}
+        Bài thi Chương {exam.chapter_display_no}
       </h2>
       <p className="mt-3 max-w-[70ch] text-sm leading-7 text-foreground">
         {exam.intro} <b>{EXAM_RULE}</b>
@@ -45,7 +46,7 @@ export function ExamIntro({
             </Button>
             {onReviewChapter && (
               <Button type="button" variant="ghost" onClick={onReviewChapter}>
-                Xem lại Chương {exam.chapter}
+                Xem lại Chương {exam.chapter_display_no}
               </Button>
             )}
           </>
