@@ -90,11 +90,35 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
   if (path.startsWith("/instruments")) {
     return { data: [{ symbol: "VCB", name: "NH TMCP Ngoại thương Việt Nam", exchange: "HOSE" }] }
   }
-  // Dashboard phân tích: thiết lập, danh mục và số liệu theo khuôn.
-  if (path === "/dashboard/settings") return { charts: ["ROE"], per: "q", nks: {} }
-  if (path === "/dashboard/catalog") return []
-  if (path.startsWith("/fundamental/")) return { symbol: "FPT", is_bank: false, per: "q", charts: {} }
-  if (path.startsWith("/valuation/")) return { symbol: "FPT", dates: [], charts: {} }
+  // Dashboard phân tích: ngành của mã, thiết lập theo ngành, danh mục và số liệu theo khuôn.
+  if (path.startsWith("/dashboard/industry/")) {
+    return { symbol: "FPT", nganh: "thuong", label: "Doanh nghiệp sản xuất" }
+  }
+  if (path === "/dashboard/settings") {
+    const own = { charts: ["ROE"], per: "q", nks: {} }
+    return { thuong: own, nh: own, ck: own, bh: own }
+  }
+  if (path === "/dashboard/catalog") {
+    return {
+      industries: [
+        {
+          nganh: "thuong",
+          label: "Doanh nghiệp sản xuất",
+          total: 1,
+          default_charts: ["ROE"],
+          chapters: [
+            {
+              chapter: "Phân tích cơ bản chung",
+              academy_chapter: 8,
+              groups: [{ group: "Hiệu quả", items: [{ name: "ROE", metric_key: "roe", kind: "B" }] }],
+            },
+          ],
+        },
+      ],
+    }
+  }
+  if (path.startsWith("/fundamental/")) return { symbol: "FPT", nganh: "thuong", per: "q", charts: {} }
+  if (path.startsWith("/valuation/")) return { symbol: "FPT", nganh: "thuong", dates: [], charts: {} }
   return {}
 }
 

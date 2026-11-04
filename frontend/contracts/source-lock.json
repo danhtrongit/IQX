@@ -1,5 +1,5 @@
 {
   "source": "backend/contracts/openapi-v2.json",
-  "schemaSha256": "588c9c84251902bdac3e3f2344ca1cd0237ee4ec05823b97f0c96d8a822616d4",
-  "typesSha256": "7d8f02619ccb3f30504cd16c092fa66cc1af3b3b3ca10d0c3c2fae085f322963"
+  "schemaSha256": "e61a908522e441131c94534769d131aea56115ea64414f2a8964de289f600f53",
+  "typesSha256": "9f9ead2f4131b682767c36fafd5739b66e33e3db06c5b0b6f483e82aae85551d"
 }

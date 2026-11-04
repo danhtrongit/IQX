@@ -1,11 +1,15 @@
+import { BadRequestException, UnprocessableEntityException } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
 
 import {
   DASHBOARD_CHART_NAMES,
   DASHBOARD_CHARTS,
   DASHBOARD_DEFAULT_CHARTS,
-  DASHBOARD_GROUPS,
-  appliesToBank,
+  DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY,
+  DASHBOARD_INDUSTRY_CHAPTERS,
+  DASHBOARD_INDUSTRY_CHARTS,
+  NATIVE_METRIC_IDS,
+  chartInIndustry,
   dashboardChart,
 } from '../../src/modules/dashboard/dashboard.catalog.js';
 import { DashboardService } from '../../src/modules/dashboard/dashboard.service.js';
@@ -21,6 +25,7 @@ import {
   pegValue,
   type DashboardChartPayload,
 } from '../../src/modules/dashboard/dashboard.series.js';
+import { INDUSTRIES, type Industry } from '../../src/modules/financials/financials.industry.js';
 import type { VciMarketProvider } from '../../src/modules/market-data/index.js';
 import type { MarketDataService } from '../../src/modules/market-data/market-data.service.js';
 
@@ -28,37 +33,33 @@ type Row = Record<string, unknown>;
 
 const USER = '00000000-0000-4000-8000-000000000001';
 
-/** 11 chỉ tiêu áp dụng cho mã ngân hàng (spec §7). */
-const BANK_APPLICABLE = [
-  'Tăng trưởng LNST',
-  'Tăng trưởng EPS',
-  'Net Profit CAGR 3Y',
-  'EPS CAGR 3Y',
-  'Profit Positive Streak',
-  'EPS Stability',
-  'ROE',
-  'ROA',
-  'P/E',
-  'P/B',
-  'PEG',
-];
-
-/** In-memory twin of the dashboard_settings table. */
+/** In-memory twin of the dashboard_settings table: one row per (account, industry). */
 class InMemorySettingsStore implements DashboardSettingsStore {
   readonly rows = new Map<string, StoredDashboardSettings>();
 
-  async find(userId: string): Promise<StoredDashboardSettings | null> {
-    return this.rows.get(userId) ?? null;
+  async findAll(userId: string): Promise<Partial<Record<Industry, StoredDashboardSettings>>> {
+    const result: Partial<Record<Industry, StoredDashboardSettings>> = {};
+    for (const industry of INDUSTRIES) {
+      const row = this.rows.get(`${userId}:${industry}`);
+      if (row) result[industry] = row;
+    }
+    return result;
   }
 
-  async save(userId: string, settings: DashboardSettings): Promise<StoredDashboardSettings> {
-    const previous = this.rows.get(userId);
+  async save(
+    userId: string,
+    industry: Industry,
+    settings: DashboardSettings,
+  ): Promise<StoredDashboardSettings> {
+    const key = `${userId}:${industry}`;
+    const previous = this.rows.get(key);
     const row: StoredDashboardSettings = {
       ...structuredClone(settings),
+      nganh: industry,
       revision: (previous?.revision ?? 0) + 1,
       updated_at: '2026-10-22T03:00:00.000Z',
     };
-    this.rows.set(userId, row);
+    this.rows.set(key, row);
     return row;
   }
 }
@@ -154,7 +155,7 @@ function fakeMarket() {
   } as unknown as MarketDataService;
 }
 
-/** Một biểu đồ có dữ liệu (không phải cờ "không áp dụng"). */
+/** Một biểu đồ có dữ liệu của response. */
 function chartOf(
   response: { charts: Record<string, unknown> },
   name: string,
@@ -169,81 +170,206 @@ function service(bank = false, store = new InMemorySettingsStore()) {
   };
 }
 
-describe('dashboard catalog (33 chỉ tiêu, 6 nhóm, 11 chỉ tiêu ngân hàng)', () => {
-  it('has 33 charts in 6 groups, in the order of the spec', () => {
-    expect(DASHBOARD_CHARTS).toHaveLength(33);
-    expect(DASHBOARD_CHART_NAMES).toHaveLength(33);
-    expect(new Set(DASHBOARD_CHART_NAMES).size).toBe(33);
-    expect(DASHBOARD_GROUPS.map((group) => group.group)).toEqual([
-      'Tốc độ tăng trưởng',
-      'Độ ổn định',
-      'Hiệu quả và biên lợi nhuận',
-      'Nợ và khả năng thanh toán',
-      'Dòng tiền',
-      'Định giá',
+describe('dashboard catalog (62 chỉ tiêu theo ngành)', () => {
+  it('has 62 charts: 17 common + 16 manufacturing + 11 bank + 10 securities + 8 insurance', () => {
+    expect(DASHBOARD_CHARTS).toHaveLength(62);
+    expect(DASHBOARD_CHART_NAMES).toHaveLength(62);
+    expect(new Set(DASHBOARD_CHART_NAMES).size).toBe(62);
+    const byScope = (scope: string) =>
+      DASHBOARD_CHARTS.filter((chart) => chart.scope === scope).length;
+    expect([
+      byScope('chung'),
+      byScope('thuong'),
+      byScope('nh'),
+      byScope('ck'),
+      byScope('bh'),
+    ]).toEqual([17, 16, 11, 10, 8]);
+  });
+
+  it('gives each industry its common chapter plus its own: 33, 28, 27 and 25 charts', () => {
+    expect(INDUSTRIES.map((industry) => DASHBOARD_INDUSTRY_CHARTS[industry].length)).toEqual([
+      33, 28, 27, 25,
     ]);
-    expect(DASHBOARD_GROUPS.flatMap((group) => group.items)).toHaveLength(33);
+    for (const industry of INDUSTRIES) {
+      const chapters = DASHBOARD_INDUSTRY_CHAPTERS[industry];
+      expect(chapters.map((chapter) => chapter.scope)).toEqual(['chung', industry]);
+      expect(chapters[0]!.title).toBe('Phân tích cơ bản chung');
+      expect(chapters.flatMap((chapter) => chapter.groups.flatMap((group) => group.items))).toEqual(
+        DASHBOARD_INDUSTRY_CHARTS[industry],
+      );
+    }
+    expect(DASHBOARD_INDUSTRY_CHAPTERS.nh.map((chapter) => chapter.academy_chapter)).toEqual([
+      8, 10,
+    ]);
+    expect(DASHBOARD_INDUSTRY_CHAPTERS.bh.map((chapter) => chapter.title)).toEqual([
+      'Phân tích cơ bản chung',
+      'Bảo hiểm',
+    ]);
   });
 
-  it('marks exactly the 11 bank-applicable indicators of the spec', () => {
-    const applicable = DASHBOARD_CHARTS.filter((chart) => appliesToBank(chart.metric_id)).map(
-      (chart) => chart.name,
-    );
-    expect(applicable.sort()).toEqual([...BANK_APPLICABLE].sort());
-    expect(applicable).toHaveLength(11);
-    expect(DASHBOARD_CHARTS.length - applicable.length).toBe(22);
+  it('keeps the 33 ids of v1 and gives every chart a stable metric key equal to its id', () => {
+    const keys = DASHBOARD_CHARTS.map((chart) => chart.metric_key);
+    expect(new Set(keys).size).toBe(62);
+    for (const chart of DASHBOARD_CHARTS) expect(chart.metric_key).toBe(chart.metric_id);
+    expect(DASHBOARD_CHARTS.filter((chart) => chart.registry_id !== null)).toHaveLength(33);
+    expect(DASHBOARD_CHARTS.filter((chart) => chart.registry_id === null)).toHaveLength(29);
+    expect(
+      DASHBOARD_CHARTS.filter((chart) => chart.registry_id === null).map((chart) => chart.metric_id),
+    ).toEqual([...NATIVE_METRIC_IDS]);
+    for (const chart of DASHBOARD_CHARTS.filter((item) => item.registry_id !== null))
+      expect(chart.registry_id).toBe(chart.metric_id);
   });
 
-  it('exposes the catalogue with the bank flag', () => {
+  it('has a valid default set of 6 charts for each industry (spec §6.3)', () => {
+    for (const industry of INDUSTRIES) {
+      const defaults = DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[industry];
+      expect(defaults).toHaveLength(6);
+      expect(new Set(defaults).size).toBe(6);
+      for (const name of defaults) {
+        const chart = dashboardChart(name);
+        expect(chart, name).not.toBeNull();
+        expect(chartInIndustry(chart!, industry), `${industry}: ${name}`).toBe(true);
+      }
+    }
+    expect(DASHBOARD_DEFAULT_CHARTS).toEqual(DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.thuong);
+    expect(DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.nh).toEqual([
+      'Tăng trưởng LNST',
+      'NIM',
+      'CIR',
+      'Chi phí tín dụng',
+      'ROE',
+      'P/B',
+    ]);
+  });
+
+  it('exposes the catalogue per industry with chapters, groups, counts and the lesson key', () => {
     const catalog = service().service.catalog();
-    expect(catalog).toHaveLength(6);
-    expect(catalog.flatMap((group) => group.items)).toHaveLength(33);
-    const flagged = catalog.flatMap((group) => group.items).filter((item) => item.na_for_bank);
-    expect(flagged).toHaveLength(22);
-    expect(catalog.flatMap((group) => group.items).find((item) => item.name === 'ROE')).toEqual({
-      name: 'ROE',
+    expect(catalog.industries.map((industry) => [industry.nganh, industry.total])).toEqual([
+      ['thuong', 33],
+      ['nh', 28],
+      ['ck', 27],
+      ['bh', 25],
+    ]);
+    const bank = catalog.industries.find((industry) => industry.nganh === 'nh')!;
+    expect(bank.label).toBe('Ngân hàng');
+    expect(bank.default_charts).toEqual([...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.nh]);
+    expect(bank.chapters.map((chapter) => [chapter.chapter, chapter.academy_chapter])).toEqual([
+      ['Phân tích cơ bản chung', 8],
+      ['Ngân hàng', 10],
+    ]);
+    const groups = bank.chapters.flatMap((chapter) => chapter.groups);
+    expect(groups.map((group) => group.group)).toEqual([
+      'Tăng trưởng',
+      'Ổn định',
+      'Hiệu quả',
+      'Định giá',
+      'Thu nhập và hiệu quả',
+      'Rủi ro tín dụng',
+      'Quy mô và vốn',
+    ]);
+    const items = groups.flatMap((group) => group.items);
+    expect(items).toHaveLength(28);
+    expect(items.find((item) => item.name === 'NIM')).toEqual({
+      name: 'NIM',
+      metric_key: 'nim',
       kind: 'B',
-      na_for_bank: false,
     });
+    expect(items.find((item) => item.name === 'ROE')).toEqual({
+      name: 'ROE',
+      metric_key: 'roe',
+      kind: 'B',
+    });
+    // Nothing of a manufacturer is offered to a bank: no gross margin, D/E, CCC, cash flow...
+    const names = items.map((item) => item.name);
+    for (const name of ['Biên lợi nhuận gộp', 'D/E', 'Cash Conversion Cycle', 'CFO Margin'])
+      expect(names).not.toContain(name);
   });
 
-  it('uses the six chart shapes of the spec', () => {
+  it('uses the chart shapes of the spec', () => {
     const kinds = new Set(DASHBOARD_CHARTS.map((chart) => chart.kind));
     expect([...kinds].sort()).toEqual(['A', 'B', 'C', 'D', 'E1', 'E2', 'F', 'F2']);
+    expect(dashboardChart('Combined ratio')?.ref).toBe(100);
+    expect(dashboardChart('PEG')?.ref).toBe(1);
   });
 });
 
-describe('dashboard settings (theo tài khoản, trên server)', () => {
-  it('returns the default dashboard when the account never saved anything', async () => {
+describe('dashboard settings (theo tài khoản và theo ngành, trên server)', () => {
+  it('returns the default dashboard of every industry when the account never saved anything', async () => {
     const { service: dashboard } = service();
-    expect(await dashboard.settings(USER)).toEqual({
-      charts: [...DASHBOARD_DEFAULT_CHARTS],
-      per: 'q',
-      nks: {},
-    });
-    expect(DASHBOARD_DEFAULT_CHARTS).toHaveLength(6);
+    const settings = await dashboard.settings(USER);
+    expect(Object.keys(settings)).toEqual(['thuong', 'nh', 'ck', 'bh']);
+    for (const industry of INDUSTRIES)
+      expect(settings[industry]).toEqual({
+        charts: [...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY[industry]],
+        per: 'q',
+        nks: {},
+      });
   });
 
-  it('saves the settings and reads them back', async () => {
+  it('saves one industry, reads it back and leaves the other industries at their defaults', async () => {
     const { service: dashboard, store } = service();
     const input = dashboardSettingsInputSchema.parse({
-      charts: ['ROE', 'P/E'],
+      charts: ['ROE', 'NIM'],
       per: 'y',
       nks: { ROE: { q: 20, y: 5 } },
     });
-    const saved = await dashboard.saveSettings(USER, input);
-    expect(saved.charts).toEqual(['ROE', 'P/E']);
+    const saved = await dashboard.saveSettings(USER, 'nh', input);
+    expect(saved.nganh).toBe('nh');
+    expect(saved.charts).toEqual(['ROE', 'NIM']);
     expect(saved.per).toBe('y');
     expect(saved.nks).toEqual({ ROE: { q: 20, y: 5 } });
     expect(saved.revision).toBe(1);
     expect(saved.updated_at).toBe('2026-10-22T03:00:00.000Z');
-    expect(await dashboard.settings(USER)).toEqual({
-      charts: ['ROE', 'P/E'],
+    const settings = await dashboard.settings(USER);
+    expect(settings.nh).toEqual({
+      charts: ['ROE', 'NIM'],
       per: 'y',
       nks: { ROE: { q: 20, y: 5 } },
     });
-    await dashboard.saveSettings(USER, input);
-    expect(store.rows.get(USER)?.revision).toBe(2);
+    expect(settings.thuong.charts).toEqual([...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.thuong]);
+    expect(settings.ck.charts).toEqual([...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.ck]);
+    await dashboard.saveSettings(USER, 'nh', input);
+    expect(store.rows.get(`${USER}:nh`)?.revision).toBe(2);
+    expect(store.rows.has(`${USER}:thuong`)).toBe(false);
+  });
+
+  it('rejects a chart that is not in the industry (400) and keeps the other settings', async () => {
+    const { service: dashboard } = service();
+    const input = dashboardSettingsInputSchema.parse({ charts: ['ROE', 'D/E'], per: 'q', nks: {} });
+    await expect(dashboard.saveSettings(USER, 'nh', input)).rejects.toThrow(BadRequestException);
+    await expect(
+      dashboard.saveSettings(
+        USER,
+        'bh',
+        dashboardSettingsInputSchema.parse({ charts: ['NIM'], per: 'q', nks: {} }),
+      ),
+    ).rejects.toThrow(BadRequestException);
+    await expect(
+      dashboard.saveSettings(
+        USER,
+        'thuong',
+        dashboardSettingsInputSchema.parse({ charts: ['D/E'], per: 'q', nks: { 'NIM': { q: 8 } } }),
+      ),
+    ).rejects.toThrow(BadRequestException);
+    // The same set is fine for the industry that owns it.
+    await expect(dashboard.saveSettings(USER, 'thuong', input)).resolves.toMatchObject({
+      charts: ['ROE', 'D/E'],
+    });
+  });
+
+  it('falls back to the default set when a saved row holds charts outside its industry', async () => {
+    const { service: dashboard, store } = service();
+    store.rows.set(`${USER}:bh`, {
+      nganh: 'bh',
+      charts: ['NIM'],
+      per: 'y',
+      nks: {},
+      revision: 3,
+      updated_at: '2026-10-22T03:00:00.000Z',
+    });
+    expect((await dashboard.settings(USER)).bh.charts).toEqual([
+      ...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.bh,
+    ]);
   });
 
   it('rejects a chart outside the catalogue and a period outside the allowed ones', () => {
@@ -271,7 +397,7 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
       per: 'q',
     });
     expect(response.symbol).toBe('FPT');
-    expect(response.is_bank).toBe(false);
+    expect(response.nganh).toBe('thuong');
     const growth = chartOf(response, 'Tăng trưởng doanh thu');
     expect(growth.kind).toBe('A');
     expect(growth.unit).toBe('%');
@@ -324,6 +450,7 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
     expect(stability.kind).toBe('E1');
     expect(stability.unit).toBe('điểm %');
     expect(stability.mainUnit).toBe('%');
+    expect(stability.main?.[0]?.name).toBe('Tăng trưởng doanh thu năm');
     const streak = chartOf(response, 'Profit Positive Streak');
     expect(streak.kind).toBe('E2');
     expect(streak.unit).toBe('năm');
@@ -344,6 +471,7 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
     const { service: dashboard } = service();
     const response = await dashboard.valuation('FPT', { from: '2024-01-01' });
     expect(response.symbol).toBe('FPT');
+    expect(response.nganh).toBe('thuong');
     expect(response.dates).toEqual(['2024-01-02', '2024-01-03']);
     const pe = response.charts['P/E'] as { name: string; kind: string; unit: string; v: (number | null)[] };
     expect(pe.kind).toBe('F');
@@ -363,22 +491,44 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
     expect(fcfYield.v[1]).toBeCloseTo((280 / 91_000) * 100, 6);
   });
 
-  it('marks the 22 indicators a bank does not have and keeps the 11 others', async () => {
+  it('gives a bank only its own 28 charts: no not-applicable cards, 400 for a foreign chart', async () => {
     const { service: dashboard } = service(true);
     const response = await dashboard.fundamental('VCB', { per: 'q' });
-    expect(response.is_bank).toBe(true);
+    expect(response.nganh).toBe('nh');
     const charts = Object.values(response.charts);
-    const notApplicable = charts.filter((chart) => 'na' in chart && chart.na === 1);
-    expect(notApplicable).toHaveLength(22);
-    expect(Object.keys(response.charts)).toHaveLength(33);
-    expect(notApplicable.map((chart) => chart.name)).toEqual(
-      expect.arrayContaining(['Tăng trưởng doanh thu', 'Biên lợi nhuận gộp', 'D/E']),
+    expect(charts).toHaveLength(28);
+    expect(charts.some((chart) => 'na' in chart)).toBe(false);
+    expect(Object.keys(response.charts)).toEqual(
+      DASHBOARD_INDUSTRY_CHARTS.nh.map((chart) => chart.name),
     );
-    const applicable = charts.filter((chart) => !('na' in chart));
-    expect(applicable).toHaveLength(11);
-    expect(applicable.map((chart) => chart.name)).toEqual(
-      expect.arrayContaining(BANK_APPLICABLE),
+    // The revenue of a bank is its total operating income (TOI): the names say so.
+    const growth = chartOf(response, 'Tăng trưởng doanh thu');
+    expect(growth.q?.sub?.series.map((item) => item.name)).toEqual([
+      'TOI quý này',
+      'Cùng kỳ năm trước',
+    ]);
+    expect(chartOf(response, 'Biên lợi nhuận ròng').q?.main[0]?.name).toBe(
+      'LNST / TOI (4 quý)',
     );
+    await expect(
+      dashboard.fundamental('VCB', { charts: 'ROE,Biên lợi nhuận gộp', per: 'q' }),
+    ).rejects.toThrow(BadRequestException);
+    await expect(
+      dashboard.valuation('VCB', { charts: 'EV / EBITDA', from: '2024-01-01' }),
+    ).rejects.toThrow(BadRequestException);
+  });
+
+  it('returns the industry of a symbol from its statement template', async () => {
+    expect(await service(false).service.industry('fpt')).toEqual({
+      symbol: 'FPT',
+      nganh: 'thuong',
+      label: 'Doanh nghiệp sản xuất',
+    });
+    expect(await service(true).service.industry('vcb')).toEqual({
+      symbol: 'VCB',
+      nganh: 'nh',
+      label: 'Ngân hàng',
+    });
   });
 
   it('leaves a period that cannot be computed empty instead of drawing zero', async () => {
@@ -408,9 +558,11 @@ describe('dashboard charts (khuôn dữ liệu theo spec §8–§11)', () => {
     }
   });
 
-  it('rejects an indicator outside the catalogue', async () => {
+  it('rejects an indicator outside the catalogue (422) before any statement is fetched', async () => {
     const { service: dashboard } = service();
-    await expect(dashboard.fundamental('FPT', { charts: 'RSI', per: 'q' })).rejects.toThrow();
+    await expect(dashboard.fundamental('FPT', { charts: 'RSI', per: 'q' })).rejects.toThrow(
+      UnprocessableEntityException,
+    );
   });
 });
 
@@ -434,6 +586,7 @@ describe('PEG rule (spec §10)', () => {
 describe('dashboard catalogue helpers', () => {
   it('finds a chart by its display name', () => {
     expect(dashboardChart('ROE')?.metric_id).toBe('roe');
+    expect(dashboardChart('NIM')?.metric_id).toBe('nim');
     expect(dashboardChart('RSI')).toBeNull();
   });
 });

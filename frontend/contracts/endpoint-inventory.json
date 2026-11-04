@@ -2062,7 +2062,7 @@
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 51,
+      "line": 65,
       "callee": "requestOperation",
       "raw": "GET /api/v2/dashboard/settings",
       "method": "GET",
@@ -2075,7 +2075,7 @@
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 55,
+      "line": 69,
       "callee": "requestOperation",
       "raw": "GET /api/v2/dashboard/catalog",
       "method": "GET",
@@ -2088,20 +2088,33 @@
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 59,
+      "line": 74,
       "callee": "requestOperation",
-      "raw": "PUT /api/v2/dashboard/settings",
-      "method": "PUT",
-      "route": "/api/v2/dashboard/settings",
-      "matchedOperation": "PUT /api/v2/dashboard/settings",
+      "raw": "GET /api/v2/dashboard/industry/{symbol}",
+      "method": "GET",
+      "route": "/api/v2/dashboard/industry/{symbol}",
+      "matchedOperation": "GET /api/v2/dashboard/industry/{symbol}",
       "matchedOperations": [
-        "PUT /api/v2/dashboard/settings"
+        "GET /api/v2/dashboard/industry/{symbol}"
       ],
       "classification": "api-call"
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 69,
+      "line": 79,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/dashboard/settings/{nganh}",
+      "method": "PUT",
+      "route": "/api/v2/dashboard/settings/{nganh}",
+      "matchedOperation": "PUT /api/v2/dashboard/settings/{nganh}",
+      "matchedOperations": [
+        "PUT /api/v2/dashboard/settings/{nganh}"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/analysis/api.ts",
+      "line": 89,
       "callee": "requestOperation",
       "raw": "GET /api/v2/fundamental/{symbol}",
       "method": "GET",
@@ -2114,20 +2127,7 @@
     },
     {
       "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 80,
-      "callee": "requestOperation",
-      "raw": "GET /api/v2/instruments/{symbol}",
-      "method": "GET",
-      "route": "/api/v2/instruments/{symbol}",
-      "matchedOperation": "GET /api/v2/instruments/{symbol}",
-      "matchedOperations": [
-        "GET /api/v2/instruments/{symbol}"
-      ],
-      "classification": "api-call"
-    },
-    {
-      "file": "src/pages/demo-trading/analysis/api.ts",
-      "line": 90,
+      "line": 103,
       "callee": "requestOperation",
       "raw": "GET /api/v2/valuation/{symbol}",
       "method": "GET",

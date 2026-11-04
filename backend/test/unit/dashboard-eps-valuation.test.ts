@@ -132,7 +132,7 @@ function service(options: Options = {}, events: Row[] | null = [BONUS, PLACEMENT
     }),
   } as unknown as MarketDataService;
   const store = {
-    find: async () => null,
+    findAll: async () => ({}),
     save: async () => null,
   } as unknown as DashboardSettingsStore;
   return new DashboardService(vci, market, store);
@@ -208,16 +208,20 @@ describe('Dashboard EPS charts on split/bonus-adjusted shares (DB-01)', () => {
     expect(peg.ref).toBe(1);
   });
 
-  it('the bank template still gets the EPS charts and PEG, ROIC stays not applicable', async () => {
+  it('the bank template (nganh nh) still gets the EPS charts and PEG; ROIC is outside its industry', async () => {
     const response = await service({ bank: true }).fundamental('BBB', {
-      charts: 'Tăng trưởng EPS,PEG,ROIC,ROIC Stability',
+      charts: 'Tăng trưởng EPS,PEG',
       per: 'q',
     });
-    expect(response.is_bank).toBe(true);
+    expect(response.nganh).toBe('nh');
     expect(chart(response, 'Tăng trưởng EPS').status).toBe('ok');
     expect(chart(response, 'PEG').status).toBe('ok');
-    expect(response.charts.ROIC).toEqual({ name: 'ROIC', na: 1 });
-    expect(response.charts['ROIC Stability']).toEqual({ name: 'ROIC Stability', na: 1 });
+    // v2: a chart that does not exist for banks is refused, not drawn as a not-applicable card.
+    for (const name of ['ROIC', 'ROIC Stability']) {
+      await expect(
+        service({ bank: true }).fundamental('BBB', { charts: name, per: 'q' }),
+      ).rejects.toMatchObject({ status: 400 });
+    }
   });
 
   it('Net Debt / EBITDA carries the definition note of its cash (DB-06)', async () => {

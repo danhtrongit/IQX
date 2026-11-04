@@ -1,14 +1,17 @@
 /**
- * Số liệu Dashboard phân tích: dựng chuỗi kỳ cho 33 chỉ tiêu theo khuôn biểu đồ (spec §8–§10).
+ * Số liệu Dashboard phân tích: dựng chuỗi kỳ cho 62 chỉ tiêu theo khuôn biểu đồ (spec §8–§10).
  *
- * Công thức KHÔNG được viết lại: mọi chỉ tiêu đều chạy qua registry Bộ lọc
- * (`evaluateScreenerMetric` / `calculateMetric` của `modules/screener`), nên số liệu khớp đúng
- * công thức đang dùng trong sản phẩm. Phần chỉ làm ở đây là:
+ * Công thức KHÔNG được viết lại cho 33 chỉ tiêu của registry Bộ lọc: chúng chạy qua
+ * `evaluateScreenerMetric` / `calculateMetric` của `modules/screener`, nên số liệu khớp đúng công
+ * thức đang dùng trong sản phẩm (với dòng "Doanh thu" riêng của từng ngành, §8.1). 29 chỉ tiêu
+ * mới của ngân hàng, chứng khoán, bảo hiểm tính ở `dashboard.native.ts` trên cùng cửa sổ kỳ. Phần
+ * làm ở đây là:
  *  - dựng lịch sử kỳ (20 quý / 10 năm) và các số thành phần đi kèm (cột dưới đường chính);
- *  - quy đổi đơn vị: tỷ đồng (VCI báo cáo bằng đồng), % và điểm % (phần trăm), lần, ngày,
- *    đồng/CP (EPS điều chỉnh tách/thưởng của `withShareHistory`);
+ *  - quy đổi đơn vị: tỷ đồng, nghìn tỷ đồng (VCI báo cáo bằng đồng), % và điểm % (phần trăm), lần,
+ *    ngày, đồng/CP (EPS điều chỉnh tách/thưởng của `withShareHistory`);
  *  - quy tắc §10: kỳ không tính được thì để trống (null), không vẽ số 0.
  */
+import type { Industry } from '../financials/financials.industry.js';
 import {
   calculateMetric,
   METRIC_REASONS,
@@ -26,7 +29,6 @@ import {
   nopatOf,
   type MarketInputs,
   type NormalizedStatements,
-  type StatementConcept,
   type StatementPeriod,
 } from '../screener/screener.statements.js';
 import {
@@ -37,15 +39,23 @@ import {
   type DashboardChartKind,
   type DashboardChartSpec,
   type DashboardSubType,
+  type NativeMetricId,
 } from './dashboard.catalog.js';
+import { industryConcepts, type DashboardConcept } from './dashboard.mapping.js';
+import { NATIVE_METRICS } from './dashboard.native.js';
 
-/** VCI báo cáo tài chính bằng đồng; Dashboard hiển thị tỷ đồng. */
+/** VCI báo cáo tài chính bằng đồng; Dashboard hiển thị tỷ đồng hoặc nghìn tỷ đồng. */
 const VND_PER_BILLION = 1_000_000_000;
+/** Chia cho đơn vị này để ra đơn vị của cột bên dưới (cột đã ở đơn vị hiển thị thì không có mặt). */
+const SUB_UNIT_DIVISOR: Readonly<Record<string, number>> = {
+  'tỷ đồng': VND_PER_BILLION,
+  'nghìn tỷ đồng': VND_PER_BILLION * 1000,
+};
 /** Số ngày của một năm (DIO/DSO/DPO — công thức CCC của registry). */
 const DAYS_PER_YEAR = 365;
 
 /** Concepts that are flows: a fiscal year is their sum over the four quarters. */
-const FLOW_CONCEPTS: readonly StatementConcept[] = [
+const FLOW_CONCEPTS: readonly DashboardConcept[] = [
   'revenue',
   'cogs',
   'gross_profit',
@@ -64,7 +74,7 @@ const FLOW_CONCEPTS: readonly StatementConcept[] = [
 ];
 
 /** Concepts that are balances: a fiscal year keeps the end-of-year value. */
-const BALANCE_CONCEPTS: readonly StatementConcept[] = [
+const BALANCE_CONCEPTS: readonly DashboardConcept[] = [
   'current_assets',
   'cash',
   'st_investments',
@@ -82,17 +92,22 @@ const BALANCE_CONCEPTS: readonly StatementConcept[] = [
   'shares',
 ];
 
+type ConceptValues = Partial<Record<DashboardConcept, number>>;
+
+/** Số liệu của một kỳ ở dạng khoản mục của Dashboard (gồm cả khoản mục riêng của ngành). */
+const valuesOf = (period: StatementPeriod): ConceptValues => period.values;
+
 export interface DashboardWindow {
   /** Label of the period ("Q2/26" / "2025"). */
   label: string;
   /** Value of the current discrete period (the quarter itself, or the whole fiscal year). */
-  point(concept: StatementConcept): number | null;
+  point(concept: DashboardConcept): number | null;
   /** Flow of the window (four quarters / one fiscal year). */
-  flow(concept: StatementConcept): number | null;
+  flow(concept: DashboardConcept): number | null;
   /** Balance at the end of the window. */
-  end(concept: StatementConcept): number | null;
+  end(concept: DashboardConcept): number | null;
   /** Balance at the start of the window (the same balance one year earlier). */
-  start(concept: StatementConcept): number | null;
+  start(concept: DashboardConcept): number | null;
   /** The same window one year earlier (null when the history is shorter). */
   previous: DashboardWindow | null;
 }
@@ -125,7 +140,7 @@ export interface DashboardChartPayload {
   note?: string;
   /** Definition note shown with the legend, e.g. what "tiền" covers (DB-06). */
   legend_note?: string;
-  /** Quarter mode (kinds A/B/C/F2). */
+  /** Quarter mode (kinds A/B/C/F2); `main` has two lines for the indicators of §9. */
   q?: DashboardSeriesData;
   /** Year mode (kinds A/B/C/F2). */
   y?: DashboardSeriesData;
@@ -134,16 +149,10 @@ export interface DashboardChartPayload {
   main?: { name: string; v: (number | null)[] }[];
   mainUnit?: string;
   hero?: number | null;
-  /** Fixed reference line (kind F2: PEG = 1). */
+  /** Fixed reference line (kind F2: PEG = 1; kind B: combined ratio = 100). */
   ref?: number;
   /** Daily series of a kind-F chart; the fundamental endpoint leaves it empty. */
   v?: (number | null)[];
-}
-
-/** The chart of an indicator that does not apply to this kind of company (spec §7). */
-export interface DashboardNotApplicablePayload {
-  name: string;
-  na: 1;
 }
 
 const ordinal = (p: StatementPeriod) => p.year * 4 + (p.quarter ?? 1) - 1;
@@ -151,8 +160,8 @@ const ordinal = (p: StatementPeriod) => p.year * 4 + (p.quarter ?? 1) - 1;
 const quarterLabel = (p: StatementPeriod) => `Q${p.quarter ?? 1}/${String(p.year).slice(2)}`;
 const yearLabel = (p: StatementPeriod) => String(p.year);
 
-const value = (p: StatementPeriod | null | undefined, concept: StatementConcept): number | null =>
-  p?.values[concept] ?? null;
+const value = (p: StatementPeriod | null | undefined, concept: DashboardConcept): number | null =>
+  (p ? valuesOf(p)[concept] : undefined) ?? null;
 
 const average = (a: number | null, b: number | null): number | null =>
   a === null || b === null ? null : (a + b) / 2;
@@ -175,9 +184,18 @@ export function displayValue(metricId: ScreenerMetricId, raw: number | null): nu
 
 /**
  * Fiscal-year rows of the dashboard: flows are the sum of the four quarters, balances are the
- * end-of-year values, and a year without its four quarters is left out (spec §8).
+ * end-of-year values, and a year without its four quarters is left out (spec §8). The concepts of
+ * the industry template (`dashboard.mapping.ts`) follow the same rule by their kind.
  */
-export function annualStatements(statements: NormalizedStatements): NormalizedStatements {
+export function annualStatements(
+  statements: NormalizedStatements,
+  industry: Industry = 'thuong',
+): NormalizedStatements {
+  const flows: readonly DashboardConcept[] = [...FLOW_CONCEPTS, ...industryConcepts(industry, 'flow')];
+  const balances: readonly DashboardConcept[] = [
+    ...BALANCE_CONCEPTS,
+    ...industryConcepts(industry, 'balance'),
+  ];
   const byYear = new Map<number, StatementPeriod[]>();
   for (const quarter of statements.quarters) {
     if (quarter.quarter === null) continue;
@@ -199,12 +217,12 @@ export function annualStatements(statements: NormalizedStatements): NormalizedSt
     );
     if (quarters.some((period) => period === undefined)) continue;
     const rows = quarters as StatementPeriod[];
-    const values: Partial<Record<StatementConcept, number>> = {};
-    for (const concept of FLOW_CONCEPTS) {
+    const values: ConceptValues = {};
+    for (const concept of flows) {
       let total = 0;
       let complete = true;
       for (const row of rows) {
-        const current = row.values[concept];
+        const current = valuesOf(row)[concept];
         if (current === undefined) {
           complete = false;
           break;
@@ -214,8 +232,8 @@ export function annualStatements(statements: NormalizedStatements): NormalizedSt
       if (complete) values[concept] = total;
     }
     const last = rows[3]!;
-    for (const concept of BALANCE_CONCEPTS) {
-      const current = last.values[concept];
+    for (const concept of balances) {
+      const current = valuesOf(last)[concept];
       if (current !== undefined) values[concept] = current;
     }
     const annual = published.get(year);
@@ -274,11 +292,11 @@ export function quarterWindow(
   const windowIndexes = [0, 1, 2, 3].map((back) => quarterIndexAt(statements, index, back));
   const complete = windowIndexes.every((item) => item >= 0);
   const startIndex = quarterIndexAt(statements, index, 4);
-  const flow = (concept: StatementConcept): number | null => {
+  const flow = (concept: DashboardConcept): number | null => {
     if (!complete) return null;
     let total = 0;
     for (const item of windowIndexes) {
-      const current = statements.quarters[item]!.values[concept];
+      const current = valuesOf(statements.quarters[item]!)[concept];
       if (current === undefined) return null;
       total += current;
     }
@@ -373,13 +391,29 @@ export function pegValue(pe: number | null, epsGrowth: number | null): number | 
   return pe / (epsGrowth * 100);
 }
 
-/** Name of the main line of every indicator (spec §8). */
+/** Tên một chuỗi theo chế độ Quý/Năm. */
+interface PeriodNames {
+  q: readonly string[];
+  y: readonly string[];
+}
+
+/**
+ * "Doanh thu" của từng ngành (spec §8.1): tên đường và cột ghi đúng loại doanh thu, ví dụ "TOI
+ * quý này", "LNST / Phí bảo hiểm thuần (4 quý)". `title` đứng đầu câu, `inline` đứng giữa câu.
+ */
+export const REVENUE_LABELS: Readonly<Record<Industry, { title: string; inline: string }>> = {
+  thuong: { title: 'Doanh thu', inline: 'doanh thu' },
+  nh: { title: 'TOI', inline: 'TOI' },
+  ck: { title: 'Doanh thu hoạt động', inline: 'doanh thu hoạt động' },
+  bh: { title: 'Phí bảo hiểm thuần', inline: 'phí bảo hiểm thuần' },
+};
+
+/** Name of the main line of every registry indicator (spec §8). */
 const MAIN_NAMES: Readonly<Partial<Record<ScreenerMetricId, { q: string; y: string }>>> = {
   revenue_yoy: { q: 'Tăng trưởng so với cùng kỳ', y: 'Tăng trưởng so với năm trước' },
   profit_yoy: { q: 'Tăng trưởng so với cùng kỳ', y: 'Tăng trưởng so với năm trước' },
   eps_yoy: { q: 'Tăng trưởng so với cùng kỳ', y: 'Tăng trưởng so với năm trước' },
   gross_margin: { q: 'Biên gộp (4 quý)', y: 'Biên gộp năm' },
-  net_margin: { q: 'Biên ròng (4 quý)', y: 'Biên ròng năm' },
   // DB-06: ROE = LNST cổ đông công ty mẹ / VCSH cổ đông công ty mẹ bình quân.
   roe: { q: 'ROE (4 quý, cổ đông công ty mẹ)', y: 'ROE năm (cổ đông công ty mẹ)' },
   roa: { q: 'ROA (4 quý)', y: 'ROA năm' },
@@ -395,33 +429,43 @@ const MAIN_NAMES: Readonly<Partial<Record<ScreenerMetricId, { q: string; y: stri
   capex_revenue: { q: 'Capex / doanh thu (4 quý)', y: 'Capex / doanh thu năm' },
   fcf_margin: { q: 'FCF / doanh thu (4 quý)', y: 'FCF / doanh thu năm' },
   peg: { q: 'PEG cuối quý', y: 'PEG cuối năm' },
-  revenue_cagr3: { q: 'Doanh thu', y: 'Doanh thu' },
-  profit_cagr3: { q: 'LNST', y: 'LNST' },
   eps_cagr3: { q: 'EPS', y: 'EPS' },
+  profit_cagr3: { q: 'LNST', y: 'LNST' },
   profit_positive_streak: { q: 'LNST năm', y: 'LNST năm' },
   fcf_positive_streak: { q: 'FCF năm', y: 'FCF năm' },
-  revenue_growth_stability: {
-    q: 'Tăng trưởng doanh thu năm',
-    y: 'Tăng trưởng doanh thu năm',
-  },
   net_margin_stability: { q: 'Biên ròng năm', y: 'Biên ròng năm' },
   eps_growth_stability: { q: 'EPS năm', y: 'EPS năm' },
   roic_stability: { q: 'ROIC năm', y: 'ROIC năm' },
 };
 
-/** Chú giải định nghĩa đi kèm chú thích của một chỉ tiêu (DB-06). */
+/** Chú giải định nghĩa đi kèm chú thích của một chỉ tiêu registry (DB-06). */
 const LEGEND_NOTES: Readonly<Partial<Record<ScreenerMetricId, string>>> = {
   net_debt_ebitda: 'Tiền gồm đầu tư tài chính ngắn hạn',
 };
 
-/** Tên đường chính của một chỉ tiêu (bảng trên là nguồn duy nhất). */
-function mainNameOf(metricId: ScreenerMetricId): { q: string; y: string } {
-  const names = MAIN_NAMES[metricId];
-  if (!names) throw new Error(`Dashboard: chỉ tiêu ${metricId} chưa có tên đường chính`);
-  return names;
+/** Tên đường chính của một chỉ tiêu registry; các chỉ tiêu theo "doanh thu" đổi tên theo ngành. */
+function mainNameOf(metricId: ScreenerMetricId, industry: Industry): { q: string; y: string } {
+  const revenue = REVENUE_LABELS[industry];
+  switch (metricId) {
+    case 'net_margin':
+      return industry === 'thuong'
+        ? { q: 'Biên ròng (4 quý)', y: 'Biên ròng năm' }
+        : { q: `LNST / ${revenue.title} (4 quý)`, y: `LNST / ${revenue.title} năm` };
+    case 'revenue_cagr3':
+      return { q: revenue.title, y: revenue.title };
+    case 'revenue_growth_stability': {
+      const name = `Tăng trưởng ${revenue.inline} năm`;
+      return { q: name, y: name };
+    }
+    default: {
+      const names = MAIN_NAMES[metricId];
+      if (!names) throw new Error(`Dashboard: chỉ tiêu ${metricId} chưa có tên đường chính`);
+      return names;
+    }
+  }
 }
 
-/** Period used in the quarter mode of every indicator (the registry's own periods). */
+/** Period used in the quarter mode of every registry indicator (the registry's own periods). */
 const QUARTER_PERIOD: Readonly<Partial<Record<ScreenerMetricId, ScreenerPeriod>>> = {
   revenue_yoy: 'quarter',
   profit_yoy: 'quarter',
@@ -430,21 +474,13 @@ const QUARTER_PERIOD: Readonly<Partial<Record<ScreenerMetricId, ScreenerPeriod>>
   current_ratio: 'quarter',
 };
 
-/** Names of the bars below the main line, per indicator and mode. */
-interface SubNames {
-  q: string[];
-  y: string[];
-}
-
-const SUB_NAMES: Readonly<Partial<Record<ScreenerMetricId, SubNames>>> = {
-  revenue_yoy: { q: ['Quý này', 'Cùng kỳ năm trước'], y: ['Năm này', 'Năm trước'] },
+const SUB_NAMES: Readonly<Partial<Record<ScreenerMetricId, PeriodNames>>> = {
   profit_yoy: { q: ['Quý này', 'Cùng kỳ năm trước'], y: ['Năm này', 'Năm trước'] },
   eps_yoy: { q: ['EPS quý này', 'EPS cùng kỳ'], y: ['EPS năm này', 'EPS năm trước'] },
   gross_margin: {
     q: ['Giá vốn 4 quý', 'Lợi nhuận gộp 4 quý'],
     y: ['Giá vốn năm', 'Lợi nhuận gộp năm'],
   },
-  net_margin: { q: ['LNST 4 quý'], y: ['LNST năm'] },
   roe: { q: ['LNST 4 quý'], y: ['LNST năm'] },
   roa: { q: ['Tổng tài sản bình quân'], y: ['Tổng tài sản bình quân'] },
   roic: { q: ['NOPAT 4 quý'], y: ['NOPAT năm'] },
@@ -472,66 +508,78 @@ const SUB_NAMES: Readonly<Partial<Record<ScreenerMetricId, SubNames>>> = {
   },
 };
 
-/**
- * Values of the bars below the main line. Every bar comes from the same window as the line, so
- * `main = f(bars)`; the unit is the display unit of the bars (tỷ đồng, ngày).
- */
-function subValues(
-  metricId: ScreenerMetricId,
-  window: DashboardWindow,
-): (number | null)[][] {
+/** Tên các cột bên dưới đường chính của một chỉ tiêu registry; doanh thu đổi tên theo ngành. */
+function subNamesOf(metricId: ScreenerMetricId, industry: Industry): PeriodNames | undefined {
+  const revenue = REVENUE_LABELS[industry];
   switch (metricId) {
     case 'revenue_yoy':
-      return [[window.point('revenue')], [window.previous?.point('revenue') ?? null]];
-    case 'profit_yoy':
-      return [[window.point('npat_parent')], [window.previous?.point('npat_parent') ?? null]];
-    case 'eps_yoy':
-      return [[window.point('eps')], [window.previous?.point('eps') ?? null]];
-    case 'gross_margin':
-      return [[window.flow('cogs')], [window.flow('gross_profit')]];
+      return industry === 'thuong'
+        ? { q: ['Quý này', 'Cùng kỳ năm trước'], y: ['Năm này', 'Năm trước'] }
+        : {
+            q: [`${revenue.title} quý này`, 'Cùng kỳ năm trước'],
+            y: [`${revenue.title} năm này`, 'Năm trước'],
+          };
     case 'net_margin':
-      return [[window.flow('npat')]];
+      return { q: ['LNST 4 quý'], y: ['LNST năm'] };
+    default:
+      return SUB_NAMES[metricId];
+  }
+}
+
+/**
+ * Values of the bars below the main line of a registry indicator. Every bar comes from the same
+ * window as the line, so `main = f(bars)`; amounts stay in VND, days and EPS as they are.
+ */
+function subValues(metricId: ScreenerMetricId, window: DashboardWindow): (number | null)[] {
+  switch (metricId) {
+    case 'revenue_yoy':
+      return [window.point('revenue'), window.previous?.point('revenue') ?? null];
+    case 'profit_yoy':
+      return [window.point('npat_parent'), window.previous?.point('npat_parent') ?? null];
+    case 'eps_yoy':
+      return [window.point('eps'), window.previous?.point('eps') ?? null];
+    case 'gross_margin':
+      return [window.flow('cogs'), window.flow('gross_profit')];
+    case 'net_margin':
+      return [window.flow('npat')];
     case 'roe':
-      return [[window.flow('npat_parent')]];
+      return [window.flow('npat_parent')];
     case 'roa':
-      return [[average(window.end('total_assets'), window.start('total_assets'))]];
+      return [average(window.end('total_assets'), window.start('total_assets'))];
     case 'roic':
       return [
-        [nopatOf(window.flow('pbt'), window.flow('interest_expense'), window.flow('income_tax'))],
+        nopatOf(window.flow('pbt'), window.flow('interest_expense'), window.flow('income_tax')),
       ];
     case 'asset_turnover':
       return [
-        [window.flow('revenue')],
-        [average(window.end('total_assets'), window.start('total_assets'))],
+        window.flow('revenue'),
+        average(window.end('total_assets'), window.start('total_assets')),
       ];
     case 'ccc': {
       const parts = cccParts(window);
-      return [[parts.dio], [parts.dso], [parts.dpo]];
+      return [parts.dio, parts.dso, parts.dpo];
     }
     case 'debt_equity':
-      return [[debtOf(window)], [window.end('equity')]];
+      return [debtOf(window), window.end('equity')];
     case 'current_ratio':
-      return [[window.end('current_assets')], [window.end('current_liabilities')]];
+      return [window.end('current_assets'), window.end('current_liabilities')];
     case 'interest_coverage':
       return [
-        [sum(window.point('pbt'), window.point('interest_expense'))],
-        [window.point('interest_expense')],
+        sum(window.point('pbt'), window.point('interest_expense')),
+        window.point('interest_expense'),
       ];
     case 'net_debt_ebitda': {
       const cash = eligibleCashOf(window);
-      return [
-        [sum(debtOf(window), cash === null ? null : -cash)],
-        [ebitdaOf(window)],
-      ];
+      return [sum(debtOf(window), cash === null ? null : -cash), ebitdaOf(window)];
     }
     case 'cfo_margin':
-      return [[window.flow('cfo')]];
+      return [window.flow('cfo')];
     case 'cfo_profit':
-      return [[window.flow('cfo')], [window.flow('npat')]];
+      return [window.flow('cfo'), window.flow('npat')];
     case 'capex_revenue':
-      return [[window.flow('capex')]];
+      return [window.flow('capex')];
     case 'fcf_margin':
-      return [[window.flow('cfo')], [window.flow('capex')], [fcfOf(window)]];
+      return [window.flow('cfo'), window.flow('capex'), fcfOf(window)];
     default:
       return [];
   }
@@ -540,6 +588,8 @@ function subValues(
 export interface DashboardContext {
   /** Statements with the dashboard fiscal-year rows (`annualStatements`). */
   statements: NormalizedStatements;
+  /** Ngành của mã: quyết định tên đường/cột của các chỉ tiêu theo "doanh thu" (§8.1). */
+  industry: Industry;
   /** Price and share count of the company (null when the chart does not need them). */
   market: MarketInputs;
   /**
@@ -569,13 +619,13 @@ interface PeriodValue {
 }
 
 function evaluatePeriod(
-  spec: DashboardChartSpec,
+  metricId: ScreenerMetricId,
   context: DashboardContext,
   index: number,
   mode: 'q' | 'y',
   window: DashboardWindow,
 ): PeriodValue {
-  if (spec.metric_id === 'ccc') {
+  if (metricId === 'ccc') {
     if (mode === 'q') {
       const parts = cccParts(window);
       return {
@@ -595,16 +645,15 @@ function evaluatePeriod(
       ...(annual.reason ? { reason: annual.reason } : {}),
     };
   }
-  if (spec.metric_id === 'peg') return pegPeriod(context, index, mode, window);
-  const period: ScreenerPeriod =
-    mode === 'q' ? (QUARTER_PERIOD[spec.metric_id] ?? 'ttm') : 'year';
+  if (metricId === 'peg') return pegPeriod(context, index, mode, window);
+  const period: ScreenerPeriod = mode === 'q' ? (QUARTER_PERIOD[metricId] ?? 'ttm') : 'year';
   const statements =
     mode === 'q'
       ? sliceQuarters(context.statements, index)
       : sliceYears(context.statements, index);
-  const result = evaluateScreenerMetric(spec.metric_id, statements, context.market, period);
+  const result = evaluateScreenerMetric(metricId, statements, context.market, period);
   return {
-    value: result.status === 'ok' ? displayValue(spec.metric_id, result.value) : null,
+    value: result.status === 'ok' ? displayValue(metricId, result.value) : null,
     status: result.status,
     ...(result.reason ? { reason: result.reason } : {}),
   };
@@ -644,46 +693,40 @@ function pegPeriod(
   };
 }
 
-/** One quarter of the chart: the main line and the bars below it. */
+/** One period of the chart: the main line(s) and the bars below them. */
 interface ChartPoint {
   label: string;
-  main: number | null;
-  sub: (number | null)[][];
+  main: (number | null)[];
+  sub: (number | null)[];
   status: MetricStatus;
   reason?: string;
 }
 
-function quarterPoint(
+function periodPoint(
   spec: DashboardChartSpec,
   context: DashboardContext,
   index: number,
+  mode: 'q' | 'y',
 ): ChartPoint {
-  const window = quarterWindow(context.statements, index);
-  if (!window)
-    return { label: '', main: null, sub: [], status: 'missing' };
-  const evaluated = evaluatePeriod(spec, context, index, 'q', window);
+  const window =
+    mode === 'q'
+      ? quarterWindow(context.statements, index)
+      : yearWindow(context.statements, index);
+  if (!window) return { label: '', main: [], sub: [], status: 'missing' };
+  if (spec.registry_id === null) {
+    const values = NATIVE_METRICS[spec.metric_id as NativeMetricId].compute(window);
+    return {
+      label: window.label,
+      main: values.main,
+      sub: values.sub,
+      status: values.main.every((item) => item === null) ? 'missing' : 'ok',
+    };
+  }
+  const evaluated = evaluatePeriod(spec.registry_id, context, index, mode, window);
   return {
     label: window.label,
-    main: evaluated.value,
-    sub: subValues(spec.metric_id, window),
-    status: evaluated.status,
-    ...(evaluated.reason ? { reason: evaluated.reason } : {}),
-  };
-}
-
-/** One fiscal year of the chart. */
-function yearPoint(
-  spec: DashboardChartSpec,
-  context: DashboardContext,
-  index: number,
-): ChartPoint {
-  const window = yearWindow(context.statements, index);
-  if (!window) return { label: '', main: null, sub: [], status: 'missing' };
-  const evaluated = evaluatePeriod(spec, context, index, 'y', window);
-  return {
-    label: window.label,
-    main: evaluated.value,
-    sub: subValues(spec.metric_id, window),
+    main: [evaluated.value],
+    sub: subValues(spec.registry_id, window),
     status: evaluated.status,
     ...(evaluated.reason ? { reason: evaluated.reason } : {}),
   };
@@ -696,37 +739,58 @@ function buildPeriodChart(
 ): { qPoints: ChartPoint[]; yPoints: ChartPoint[] } {
   return {
     qPoints: recentQuarterIndexes(context.statements).map((index) =>
-      quarterPoint(spec, context, index),
+      periodPoint(spec, context, index, 'q'),
     ),
     yPoints: recentYearIndexes(context.statements).map((index) =>
-      yearPoint(spec, context, index),
+      periodPoint(spec, context, index, 'y'),
     ),
   };
 }
 
-/** One period block of the kinds A/B/C/F2: the main line and the bars below it. */
+/** Tên đường chính và cột dưới của một chỉ tiêu theo chế độ Quý/Năm. */
+function seriesNames(
+  spec: DashboardChartSpec,
+  industry: Industry,
+): { main: PeriodNames; sub: PeriodNames } {
+  if (spec.registry_id === null) {
+    const native = NATIVE_METRICS[spec.metric_id as NativeMetricId];
+    return { main: native.main, sub: native.sub };
+  }
+  const main = mainNameOf(spec.registry_id, industry);
+  return {
+    main: { q: [main.q], y: [main.y] },
+    sub: subNamesOf(spec.registry_id, industry) ?? { q: [], y: [] },
+  };
+}
+
+/** One period block of the kinds A/B/C/F2: the main line(s) and the bars below them. */
 function toPeriodSeries(
   spec: DashboardChartSpec,
   points: ChartPoint[],
   mode: 'q' | 'y',
+  industry: Industry,
 ): DashboardSeriesData {
-  const names = mainNameOf(spec.metric_id);
-  const subNames = SUB_NAMES[spec.metric_id];
+  const names = seriesNames(spec, industry);
+  const mainNames = names.main[mode];
+  const subNames = names.sub[mode];
   const series: DashboardSeriesData = {
     labels: points.map((point) => point.label),
-    main: [{ name: names[mode], v: points.map((point) => point.main) }],
+    main: mainNames.map((name, position) => ({
+      name,
+      v: points.map((point) => point.main[position] ?? null),
+    })),
   };
-  if (subNames && spec.sub_unit && spec.sub_type) {
-    // Amounts travel in VND and show in tỷ đồng; days and EPS (đồng/CP) are shown as they are.
-    const inBillions = spec.sub_unit === 'tỷ đồng';
+  if (subNames.length > 0 && spec.sub_unit && spec.sub_type) {
+    // Amounts travel in VND and show in tỷ đồng / nghìn tỷ đồng; days, EPS and % are shown as they are.
+    const divisor = SUB_UNIT_DIVISOR[spec.sub_unit];
     series.sub = {
       unit: spec.sub_unit,
       type: spec.sub_type,
-      series: subNames[mode].map((name, position) => ({
+      series: subNames.map((name, position) => ({
         name,
         v: points.map((point) => {
-          const raw = point.sub[position]?.[0] ?? null;
-          return inBillions ? toBillion(raw) : raw;
+          const raw = point.sub[position] ?? null;
+          return divisor === undefined || raw === null ? raw : raw / divisor;
         }),
       })),
     };
@@ -734,7 +798,7 @@ function toPeriodSeries(
   return series;
 }
 
-/** Annual values of one indicator, used by the kinds D/E1/E2. */
+/** Annual values of one registry indicator, used by the kinds D/E1/E2. */
 function annualValues(
   metricId: ScreenerMetricId,
   context: DashboardContext,
@@ -787,9 +851,10 @@ function annualValues(
   });
 }
 
-/** Builds the year-fixed kinds D/E1/E2. */
+/** Builds the year-fixed kinds D/E1/E2 of a registry indicator. */
 function buildFixedChart(
   spec: DashboardChartSpec,
+  metricId: ScreenerMetricId,
   context: DashboardContext,
 ): DashboardFixedData {
   const count = spec.kind === 'E2' ? 7 : spec.kind === 'E1' ? 5 : 4;
@@ -797,18 +862,18 @@ function buildFixedChart(
   const labels = indexes.map((index) =>
     context.statements.years[index] ? yearLabel(context.statements.years[index]!) : '',
   );
-  const values = annualValues(spec.metric_id, context, indexes);
+  const values = annualValues(metricId, context, indexes);
   const result = evaluateScreenerMetric(
-    spec.metric_id,
+    metricId,
     context.statements,
     context.market,
     spec.kind === 'E2' ? 'year' : 'three_year',
   );
-  const hero = result.status === 'ok' ? displayValue(spec.metric_id, result.value) : null;
+  const hero = result.status === 'ok' ? displayValue(metricId, result.value) : null;
   return {
     labels,
-    main: [{ name: mainNameOf(spec.metric_id).q, v: values }],
-    mainUnit: spec.main_unit ?? dashboardUnit(spec.metric_id),
+    main: [{ name: mainNameOf(metricId, context.industry).q, v: values }],
+    mainUnit: spec.main_unit ?? dashboardUnit(spec),
     hero,
   };
 }
@@ -822,7 +887,7 @@ export function buildDashboardChart(
   spec: DashboardChartSpec,
   context: DashboardContext,
 ): DashboardChartPayload {
-  const unit = dashboardUnit(spec.metric_id);
+  const unit = dashboardUnit(spec);
   const payload: DashboardChartPayload = {
     name: spec.name,
     kind: spec.kind,
@@ -830,23 +895,25 @@ export function buildDashboardChart(
     decimals: dashboardDecimals(unit),
     status: 'ok',
   };
-  const legend = LEGEND_NOTES[spec.metric_id];
-  if (legend) payload.legend_note = legend;
   if (spec.kind === 'F') {
     // A daily valuation chart: the series itself comes from the valuation endpoint.
     return { ...payload, v: [] };
   }
-  const support = metricSupport(spec.metric_id);
+  if (spec.registry_id === null) return buildNativeChart(spec, context, payload);
+  const metricId = spec.registry_id;
+  const legend = LEGEND_NOTES[metricId];
+  if (legend) payload.legend_note = legend;
+  const support = metricSupport(metricId);
   if (!support.supported) {
     payload.status =
-      fundamentalMetric(spec.metric_id).readiness === 'definition_pending'
+      fundamentalMetric(metricId).readiness === 'definition_pending'
         ? 'definition_pending'
         : 'data_unavailable';
     if (support.unsupported_reason) payload.note = support.unsupported_reason;
   }
 
   if (spec.kind === 'D' || spec.kind === 'E1' || spec.kind === 'E2') {
-    const fixed = buildFixedChart(spec, context);
+    const fixed = buildFixedChart(spec, metricId, context);
     payload.labels = fixed.labels;
     payload.mainUnit = fixed.mainUnit;
     payload.hero = fixed.hero;
@@ -858,15 +925,15 @@ export function buildDashboardChart(
       return payload;
     }
     payload.main = [
-      { name: mainNameOf(spec.metric_id).q, v: fixed.labels.map(() => null) },
+      { name: mainNameOf(metricId, context.industry).q, v: fixed.labels.map(() => null) },
     ];
     payload.hero = null;
     return payload;
   }
 
   const points = buildPeriodChart(spec, context);
-  payload.q = toPeriodSeries(spec, points.qPoints, 'q');
-  payload.y = toPeriodSeries(spec, points.yPoints, 'y');
+  payload.q = toPeriodSeries(spec, points.qPoints, 'q', context.industry);
+  payload.y = toPeriodSeries(spec, points.yPoints, 'y', context.industry);
   if (spec.ref !== null) payload.ref = spec.ref;
   if (!support.supported) {
     payload.q = emptyPeriod(payload.q);
@@ -874,9 +941,28 @@ export function buildDashboardChart(
     return payload;
   }
   const last = points.qPoints.at(-1);
-  if (points.qPoints.every((point) => point.main === null)) {
+  if (points.qPoints.every((point) => point.main.every((item) => item === null))) {
     payload.status = last?.status ?? 'missing';
     if (last?.reason) payload.note = last.reason;
+  }
+  return payload;
+}
+
+/** Chart of one of the 29 industry indicators of `dashboard.native.ts` (kinds A and B). */
+function buildNativeChart(
+  spec: DashboardChartSpec,
+  context: DashboardContext,
+  payload: DashboardChartPayload,
+): DashboardChartPayload {
+  const native = NATIVE_METRICS[spec.metric_id as NativeMetricId];
+  if (native.legendNote) payload.legend_note = native.legendNote;
+  const points = buildPeriodChart(spec, context);
+  payload.q = toPeriodSeries(spec, points.qPoints, 'q', context.industry);
+  payload.y = toPeriodSeries(spec, points.yPoints, 'y', context.industry);
+  if (spec.ref !== null) payload.ref = spec.ref;
+  if (points.qPoints.every((point) => point.main.every((item) => item === null))) {
+    payload.status = 'missing';
+    payload.note = native.emptyNote ?? 'Chưa đủ số liệu báo cáo tài chính để tính chỉ tiêu';
   }
   return payload;
 }
@@ -900,3 +986,4 @@ function emptyPeriod(series: DashboardSeriesData): DashboardSeriesData {
       : {}),
   };
 }
+

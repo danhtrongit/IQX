@@ -35098,7 +35098,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 786 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 787 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -103941,33 +103941,149 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "additionalProperties": false,
-                    "properties": {
-                      "group": {
-                        "type": "string"
-                      },
+                  "additionalProperties": false,
+                  "properties": {
+                    "industries": {
                       "items": {
-                        "items": {
-                          "additionalProperties": false,
-                          "properties": {
-                            "kind": {
-                              "enum": [
-                                "A",
-                                "B",
-                                "C",
-                                "D",
-                                "E1",
-                                "E2",
-                                "F",
-                                "F2"
+                        "additionalProperties": false,
+                        "properties": {
+                          "chapters": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "academy_chapter": {
+                                  "maximum": 9007199254740991,
+                                  "minimum": -9007199254740991,
+                                  "type": "integer"
+                                },
+                                "chapter": {
+                                  "type": "string"
+                                },
+                                "groups": {
+                                  "items": {
+                                    "additionalProperties": false,
+                                    "properties": {
+                                      "group": {
+                                        "type": "string"
+                                      },
+                                      "items": {
+                                        "items": {
+                                          "additionalProperties": false,
+                                          "properties": {
+                                            "kind": {
+                                              "enum": [
+                                                "A",
+                                                "B",
+                                                "C",
+                                                "D",
+                                                "E1",
+                                                "E2",
+                                                "F",
+                                                "F2"
+                                              ],
+                                              "type": "string"
+                                            },
+                                            "metric_key": {
+                                              "type": "string"
+                                            },
+                                            "name": {
+                                              "enum": [
+                                                "Tăng trưởng doanh thu",
+                                                "Tăng trưởng LNST",
+                                                "Tăng trưởng EPS",
+                                                "Revenue CAGR 3Y",
+                                                "Net Profit CAGR 3Y",
+                                                "EPS CAGR 3Y",
+                                                "Profit Positive Streak",
+                                                "Revenue Growth Stability",
+                                                "Margin Stability",
+                                                "EPS Stability",
+                                                "ROE",
+                                                "ROA",
+                                                "Biên lợi nhuận ròng",
+                                                "P/E",
+                                                "P/B",
+                                                "P/S",
+                                                "PEG",
+                                                "Biên lợi nhuận gộp",
+                                                "ROIC",
+                                                "ROIC Stability",
+                                                "Asset Turnover",
+                                                "Cash Conversion Cycle",
+                                                "D/E",
+                                                "Current Ratio",
+                                                "Interest Coverage",
+                                                "Net Debt / EBITDA",
+                                                "CFO Margin",
+                                                "CFO / LNST",
+                                                "Capex / Revenue",
+                                                "FCF Margin",
+                                                "FCF Positive Streak",
+                                                "EV / EBITDA",
+                                                "FCF Yield",
+                                                "NIM",
+                                                "Lợi suất tài sản sinh lãi và chi phí vốn",
+                                                "CIR",
+                                                "Tỷ trọng thu nhập ngoài lãi",
+                                                "Tăng trưởng lợi nhuận trước dự phòng",
+                                                "Chi phí tín dụng",
+                                                "Tỷ lệ dự phòng / Dư nợ",
+                                                "Lãi dự thu / Dư nợ",
+                                                "Tăng trưởng tín dụng và huy động",
+                                                "LDR",
+                                                "VCSH / Tổng tài sản",
+                                                "Cơ cấu doanh thu hoạt động",
+                                                "Biên lợi nhuận hoạt động",
+                                                "Chi phí hoạt động / Doanh thu hoạt động",
+                                                "Tăng trưởng dư nợ cho vay",
+                                                "Dư nợ cho vay / VCSH",
+                                                "Lợi suất cho vay",
+                                                "Biên lợi nhuận môi giới",
+                                                "Tỷ trọng tài sản tự doanh",
+                                                "Hiệu suất tự doanh",
+                                                "Nợ vay / VCSH",
+                                                "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                                                "Tỷ lệ giữ lại",
+                                                "Tỷ lệ bồi thường",
+                                                "Tỷ lệ chi phí",
+                                                "Combined ratio",
+                                                "Lợi suất đầu tư",
+                                                "Cơ cấu lợi nhuận",
+                                                "Dự phòng nghiệp vụ / VCSH"
+                                              ],
+                                              "type": "string"
+                                            }
+                                          },
+                                          "required": [
+                                            "name",
+                                            "metric_key",
+                                            "kind"
+                                          ],
+                                          "type": "object"
+                                        },
+                                        "type": "array"
+                                      }
+                                    },
+                                    "required": [
+                                      "group",
+                                      "items"
+                                    ],
+                                    "type": "object"
+                                  },
+                                  "type": "array"
+                                }
+                              },
+                              "required": [
+                                "chapter",
+                                "academy_chapter",
+                                "groups"
                               ],
-                              "type": "string"
+                              "type": "object"
                             },
-                            "na_for_bank": {
-                              "type": "boolean"
-                            },
-                            "name": {
+                            "type": "array"
+                          },
+                          "default_charts": {
+                            "items": {
                               "enum": [
                                 "Tăng trưởng doanh thu",
                                 "Tăng trưởng LNST",
@@ -103979,12 +104095,16 @@
                                 "Revenue Growth Stability",
                                 "Margin Stability",
                                 "EPS Stability",
-                                "ROIC Stability",
                                 "ROE",
                                 "ROA",
-                                "ROIC",
-                                "Biên lợi nhuận gộp",
                                 "Biên lợi nhuận ròng",
+                                "P/E",
+                                "P/B",
+                                "P/S",
+                                "PEG",
+                                "Biên lợi nhuận gộp",
+                                "ROIC",
+                                "ROIC Stability",
                                 "Asset Turnover",
                                 "Cash Conversion Cycle",
                                 "D/E",
@@ -103996,33 +104116,76 @@
                                 "Capex / Revenue",
                                 "FCF Margin",
                                 "FCF Positive Streak",
-                                "P/E",
-                                "P/B",
-                                "P/S",
-                                "PEG",
                                 "EV / EBITDA",
-                                "FCF Yield"
+                                "FCF Yield",
+                                "NIM",
+                                "Lợi suất tài sản sinh lãi và chi phí vốn",
+                                "CIR",
+                                "Tỷ trọng thu nhập ngoài lãi",
+                                "Tăng trưởng lợi nhuận trước dự phòng",
+                                "Chi phí tín dụng",
+                                "Tỷ lệ dự phòng / Dư nợ",
+                                "Lãi dự thu / Dư nợ",
+                                "Tăng trưởng tín dụng và huy động",
+                                "LDR",
+                                "VCSH / Tổng tài sản",
+                                "Cơ cấu doanh thu hoạt động",
+                                "Biên lợi nhuận hoạt động",
+                                "Chi phí hoạt động / Doanh thu hoạt động",
+                                "Tăng trưởng dư nợ cho vay",
+                                "Dư nợ cho vay / VCSH",
+                                "Lợi suất cho vay",
+                                "Biên lợi nhuận môi giới",
+                                "Tỷ trọng tài sản tự doanh",
+                                "Hiệu suất tự doanh",
+                                "Nợ vay / VCSH",
+                                "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                                "Tỷ lệ giữ lại",
+                                "Tỷ lệ bồi thường",
+                                "Tỷ lệ chi phí",
+                                "Combined ratio",
+                                "Lợi suất đầu tư",
+                                "Cơ cấu lợi nhuận",
+                                "Dự phòng nghiệp vụ / VCSH"
                               ],
                               "type": "string"
-                            }
+                            },
+                            "type": "array"
                           },
-                          "required": [
-                            "name",
-                            "kind",
-                            "na_for_bank"
-                          ],
-                          "type": "object"
+                          "label": {
+                            "type": "string"
+                          },
+                          "nganh": {
+                            "enum": [
+                              "thuong",
+                              "nh",
+                              "ck",
+                              "bh"
+                            ],
+                            "type": "string"
+                          },
+                          "total": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
+                          }
                         },
-                        "type": "array"
-                      }
-                    },
-                    "required": [
-                      "group",
-                      "items"
-                    ],
-                    "type": "object"
+                        "required": [
+                          "nganh",
+                          "label",
+                          "total",
+                          "default_charts",
+                          "chapters"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
                   },
-                  "type": "array"
+                  "required": [
+                    "industries"
+                  ],
+                  "type": "object"
                 }
               }
             },
@@ -104070,7 +104233,105 @@
           }
         },
         "security": [],
-        "summary": "The 33 analysis charts in their 6 groups, with the chart shape and the bank not-applicable flag",
+        "summary": "The 62 analysis charts by industry: 17 common + 16 manufacturing + 11 bank + 10 securities + 8 insurance, in chapters and groups, with the Academy lesson key and the default set of each industry",
+        "tags": [
+          "Dashboard phân tích"
+        ],
+        "x-auth-level": "public",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/dashboard/industry/{symbol}": {
+      "get": {
+        "operationId": "dashboardIndustry",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "symbol",
+            "required": true,
+            "schema": {
+              "pattern": "^[A-Z0-9]{1,10}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "label": {
+                      "type": "string"
+                    },
+                    "nganh": {
+                      "enum": [
+                        "thuong",
+                        "nh",
+                        "ck",
+                        "bh"
+                      ],
+                      "type": "string"
+                    },
+                    "symbol": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "symbol",
+                    "nganh",
+                    "label"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [],
+        "summary": "Industry of one symbol from its financial statement template: thuong, nh (banks and finance companies), ck or bh; unknown template counts as thuong",
         "tags": [
           "Dashboard phân tích"
         ],
@@ -104089,124 +104350,624 @@
                 "schema": {
                   "additionalProperties": false,
                   "properties": {
-                    "charts": {
-                      "items": {
-                        "enum": [
-                          "Tăng trưởng doanh thu",
-                          "Tăng trưởng LNST",
-                          "Tăng trưởng EPS",
-                          "Revenue CAGR 3Y",
-                          "Net Profit CAGR 3Y",
-                          "EPS CAGR 3Y",
-                          "Profit Positive Streak",
-                          "Revenue Growth Stability",
-                          "Margin Stability",
-                          "EPS Stability",
-                          "ROIC Stability",
-                          "ROE",
-                          "ROA",
-                          "ROIC",
-                          "Biên lợi nhuận gộp",
-                          "Biên lợi nhuận ròng",
-                          "Asset Turnover",
-                          "Cash Conversion Cycle",
-                          "D/E",
-                          "Current Ratio",
-                          "Interest Coverage",
-                          "Net Debt / EBITDA",
-                          "CFO Margin",
-                          "CFO / LNST",
-                          "Capex / Revenue",
-                          "FCF Margin",
-                          "FCF Positive Streak",
-                          "P/E",
-                          "P/B",
-                          "P/S",
-                          "PEG",
-                          "EV / EBITDA",
-                          "FCF Yield"
-                        ],
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
-                    "nks": {
-                      "additionalProperties": {
-                        "additionalProperties": false,
-                        "properties": {
-                          "q": {
-                            "anyOf": [
-                              {
-                                "enum": [
-                                  4
-                                ],
-                                "type": "number"
-                              },
-                              {
-                                "enum": [
-                                  5
-                                ],
-                                "type": "number"
-                              },
-                              {
-                                "enum": [
-                                  8
-                                ],
-                                "type": "number"
-                              },
-                              {
-                                "enum": [
-                                  12
-                                ],
-                                "type": "number"
-                              },
-                              {
-                                "enum": [
-                                  20
-                                ],
-                                "type": "number"
-                              }
-                            ]
+                    "bh": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "charts": {
+                          "items": {
+                            "enum": [
+                              "Tăng trưởng doanh thu",
+                              "Tăng trưởng LNST",
+                              "Tăng trưởng EPS",
+                              "Revenue CAGR 3Y",
+                              "Net Profit CAGR 3Y",
+                              "EPS CAGR 3Y",
+                              "Profit Positive Streak",
+                              "Revenue Growth Stability",
+                              "Margin Stability",
+                              "EPS Stability",
+                              "ROE",
+                              "ROA",
+                              "Biên lợi nhuận ròng",
+                              "P/E",
+                              "P/B",
+                              "P/S",
+                              "PEG",
+                              "Biên lợi nhuận gộp",
+                              "ROIC",
+                              "ROIC Stability",
+                              "Asset Turnover",
+                              "Cash Conversion Cycle",
+                              "D/E",
+                              "Current Ratio",
+                              "Interest Coverage",
+                              "Net Debt / EBITDA",
+                              "CFO Margin",
+                              "CFO / LNST",
+                              "Capex / Revenue",
+                              "FCF Margin",
+                              "FCF Positive Streak",
+                              "EV / EBITDA",
+                              "FCF Yield",
+                              "NIM",
+                              "Lợi suất tài sản sinh lãi và chi phí vốn",
+                              "CIR",
+                              "Tỷ trọng thu nhập ngoài lãi",
+                              "Tăng trưởng lợi nhuận trước dự phòng",
+                              "Chi phí tín dụng",
+                              "Tỷ lệ dự phòng / Dư nợ",
+                              "Lãi dự thu / Dư nợ",
+                              "Tăng trưởng tín dụng và huy động",
+                              "LDR",
+                              "VCSH / Tổng tài sản",
+                              "Cơ cấu doanh thu hoạt động",
+                              "Biên lợi nhuận hoạt động",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
+                              "Tăng trưởng dư nợ cho vay",
+                              "Dư nợ cho vay / VCSH",
+                              "Lợi suất cho vay",
+                              "Biên lợi nhuận môi giới",
+                              "Tỷ trọng tài sản tự doanh",
+                              "Hiệu suất tự doanh",
+                              "Nợ vay / VCSH",
+                              "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                              "Tỷ lệ giữ lại",
+                              "Tỷ lệ bồi thường",
+                              "Tỷ lệ chi phí",
+                              "Combined ratio",
+                              "Lợi suất đầu tư",
+                              "Cơ cấu lợi nhuận",
+                              "Dự phòng nghiệp vụ / VCSH"
+                            ],
+                            "type": "string"
                           },
-                          "y": {
-                            "anyOf": [
-                              {
-                                "enum": [
-                                  3
-                                ],
-                                "type": "number"
-                              },
-                              {
-                                "enum": [
-                                  5
-                                ],
-                                "type": "number"
-                              },
-                              {
-                                "enum": [
-                                  10
-                                ],
-                                "type": "number"
-                              }
-                            ]
-                          }
+                          "type": "array"
                         },
-                        "type": "object"
+                        "nks": {
+                          "additionalProperties": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "q": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      4
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      8
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      12
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      20
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "y": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      10
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "object"
+                        },
+                        "per": {
+                          "enum": [
+                            "q",
+                            "y"
+                          ],
+                          "type": "string"
+                        }
                       },
+                      "required": [
+                        "charts",
+                        "per",
+                        "nks"
+                      ],
                       "type": "object"
                     },
-                    "per": {
-                      "enum": [
-                        "q",
-                        "y"
+                    "ck": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "charts": {
+                          "items": {
+                            "enum": [
+                              "Tăng trưởng doanh thu",
+                              "Tăng trưởng LNST",
+                              "Tăng trưởng EPS",
+                              "Revenue CAGR 3Y",
+                              "Net Profit CAGR 3Y",
+                              "EPS CAGR 3Y",
+                              "Profit Positive Streak",
+                              "Revenue Growth Stability",
+                              "Margin Stability",
+                              "EPS Stability",
+                              "ROE",
+                              "ROA",
+                              "Biên lợi nhuận ròng",
+                              "P/E",
+                              "P/B",
+                              "P/S",
+                              "PEG",
+                              "Biên lợi nhuận gộp",
+                              "ROIC",
+                              "ROIC Stability",
+                              "Asset Turnover",
+                              "Cash Conversion Cycle",
+                              "D/E",
+                              "Current Ratio",
+                              "Interest Coverage",
+                              "Net Debt / EBITDA",
+                              "CFO Margin",
+                              "CFO / LNST",
+                              "Capex / Revenue",
+                              "FCF Margin",
+                              "FCF Positive Streak",
+                              "EV / EBITDA",
+                              "FCF Yield",
+                              "NIM",
+                              "Lợi suất tài sản sinh lãi và chi phí vốn",
+                              "CIR",
+                              "Tỷ trọng thu nhập ngoài lãi",
+                              "Tăng trưởng lợi nhuận trước dự phòng",
+                              "Chi phí tín dụng",
+                              "Tỷ lệ dự phòng / Dư nợ",
+                              "Lãi dự thu / Dư nợ",
+                              "Tăng trưởng tín dụng và huy động",
+                              "LDR",
+                              "VCSH / Tổng tài sản",
+                              "Cơ cấu doanh thu hoạt động",
+                              "Biên lợi nhuận hoạt động",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
+                              "Tăng trưởng dư nợ cho vay",
+                              "Dư nợ cho vay / VCSH",
+                              "Lợi suất cho vay",
+                              "Biên lợi nhuận môi giới",
+                              "Tỷ trọng tài sản tự doanh",
+                              "Hiệu suất tự doanh",
+                              "Nợ vay / VCSH",
+                              "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                              "Tỷ lệ giữ lại",
+                              "Tỷ lệ bồi thường",
+                              "Tỷ lệ chi phí",
+                              "Combined ratio",
+                              "Lợi suất đầu tư",
+                              "Cơ cấu lợi nhuận",
+                              "Dự phòng nghiệp vụ / VCSH"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "nks": {
+                          "additionalProperties": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "q": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      4
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      8
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      12
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      20
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "y": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      10
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "object"
+                        },
+                        "per": {
+                          "enum": [
+                            "q",
+                            "y"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "charts",
+                        "per",
+                        "nks"
                       ],
-                      "type": "string"
+                      "type": "object"
+                    },
+                    "nh": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "charts": {
+                          "items": {
+                            "enum": [
+                              "Tăng trưởng doanh thu",
+                              "Tăng trưởng LNST",
+                              "Tăng trưởng EPS",
+                              "Revenue CAGR 3Y",
+                              "Net Profit CAGR 3Y",
+                              "EPS CAGR 3Y",
+                              "Profit Positive Streak",
+                              "Revenue Growth Stability",
+                              "Margin Stability",
+                              "EPS Stability",
+                              "ROE",
+                              "ROA",
+                              "Biên lợi nhuận ròng",
+                              "P/E",
+                              "P/B",
+                              "P/S",
+                              "PEG",
+                              "Biên lợi nhuận gộp",
+                              "ROIC",
+                              "ROIC Stability",
+                              "Asset Turnover",
+                              "Cash Conversion Cycle",
+                              "D/E",
+                              "Current Ratio",
+                              "Interest Coverage",
+                              "Net Debt / EBITDA",
+                              "CFO Margin",
+                              "CFO / LNST",
+                              "Capex / Revenue",
+                              "FCF Margin",
+                              "FCF Positive Streak",
+                              "EV / EBITDA",
+                              "FCF Yield",
+                              "NIM",
+                              "Lợi suất tài sản sinh lãi và chi phí vốn",
+                              "CIR",
+                              "Tỷ trọng thu nhập ngoài lãi",
+                              "Tăng trưởng lợi nhuận trước dự phòng",
+                              "Chi phí tín dụng",
+                              "Tỷ lệ dự phòng / Dư nợ",
+                              "Lãi dự thu / Dư nợ",
+                              "Tăng trưởng tín dụng và huy động",
+                              "LDR",
+                              "VCSH / Tổng tài sản",
+                              "Cơ cấu doanh thu hoạt động",
+                              "Biên lợi nhuận hoạt động",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
+                              "Tăng trưởng dư nợ cho vay",
+                              "Dư nợ cho vay / VCSH",
+                              "Lợi suất cho vay",
+                              "Biên lợi nhuận môi giới",
+                              "Tỷ trọng tài sản tự doanh",
+                              "Hiệu suất tự doanh",
+                              "Nợ vay / VCSH",
+                              "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                              "Tỷ lệ giữ lại",
+                              "Tỷ lệ bồi thường",
+                              "Tỷ lệ chi phí",
+                              "Combined ratio",
+                              "Lợi suất đầu tư",
+                              "Cơ cấu lợi nhuận",
+                              "Dự phòng nghiệp vụ / VCSH"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "nks": {
+                          "additionalProperties": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "q": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      4
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      8
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      12
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      20
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "y": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      10
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "object"
+                        },
+                        "per": {
+                          "enum": [
+                            "q",
+                            "y"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "charts",
+                        "per",
+                        "nks"
+                      ],
+                      "type": "object"
+                    },
+                    "thuong": {
+                      "additionalProperties": false,
+                      "properties": {
+                        "charts": {
+                          "items": {
+                            "enum": [
+                              "Tăng trưởng doanh thu",
+                              "Tăng trưởng LNST",
+                              "Tăng trưởng EPS",
+                              "Revenue CAGR 3Y",
+                              "Net Profit CAGR 3Y",
+                              "EPS CAGR 3Y",
+                              "Profit Positive Streak",
+                              "Revenue Growth Stability",
+                              "Margin Stability",
+                              "EPS Stability",
+                              "ROE",
+                              "ROA",
+                              "Biên lợi nhuận ròng",
+                              "P/E",
+                              "P/B",
+                              "P/S",
+                              "PEG",
+                              "Biên lợi nhuận gộp",
+                              "ROIC",
+                              "ROIC Stability",
+                              "Asset Turnover",
+                              "Cash Conversion Cycle",
+                              "D/E",
+                              "Current Ratio",
+                              "Interest Coverage",
+                              "Net Debt / EBITDA",
+                              "CFO Margin",
+                              "CFO / LNST",
+                              "Capex / Revenue",
+                              "FCF Margin",
+                              "FCF Positive Streak",
+                              "EV / EBITDA",
+                              "FCF Yield",
+                              "NIM",
+                              "Lợi suất tài sản sinh lãi và chi phí vốn",
+                              "CIR",
+                              "Tỷ trọng thu nhập ngoài lãi",
+                              "Tăng trưởng lợi nhuận trước dự phòng",
+                              "Chi phí tín dụng",
+                              "Tỷ lệ dự phòng / Dư nợ",
+                              "Lãi dự thu / Dư nợ",
+                              "Tăng trưởng tín dụng và huy động",
+                              "LDR",
+                              "VCSH / Tổng tài sản",
+                              "Cơ cấu doanh thu hoạt động",
+                              "Biên lợi nhuận hoạt động",
+                              "Chi phí hoạt động / Doanh thu hoạt động",
+                              "Tăng trưởng dư nợ cho vay",
+                              "Dư nợ cho vay / VCSH",
+                              "Lợi suất cho vay",
+                              "Biên lợi nhuận môi giới",
+                              "Tỷ trọng tài sản tự doanh",
+                              "Hiệu suất tự doanh",
+                              "Nợ vay / VCSH",
+                              "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                              "Tỷ lệ giữ lại",
+                              "Tỷ lệ bồi thường",
+                              "Tỷ lệ chi phí",
+                              "Combined ratio",
+                              "Lợi suất đầu tư",
+                              "Cơ cấu lợi nhuận",
+                              "Dự phòng nghiệp vụ / VCSH"
+                            ],
+                            "type": "string"
+                          },
+                          "type": "array"
+                        },
+                        "nks": {
+                          "additionalProperties": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "q": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      4
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      8
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      12
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      20
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              },
+                              "y": {
+                                "anyOf": [
+                                  {
+                                    "enum": [
+                                      3
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      5
+                                    ],
+                                    "type": "number"
+                                  },
+                                  {
+                                    "enum": [
+                                      10
+                                    ],
+                                    "type": "number"
+                                  }
+                                ]
+                              }
+                            },
+                            "type": "object"
+                          },
+                          "type": "object"
+                        },
+                        "per": {
+                          "enum": [
+                            "q",
+                            "y"
+                          ],
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "charts",
+                        "per",
+                        "nks"
+                      ],
+                      "type": "object"
                     }
                   },
                   "required": [
-                    "charts",
-                    "per",
-                    "nks"
+                    "thuong",
+                    "nh",
+                    "ck",
+                    "bh"
                   ],
                   "type": "object"
                 }
@@ -104270,16 +105031,33 @@
             "bearer": []
           }
         ],
-        "summary": "Dashboard settings of the account: chart list and order, quarter/year mode, periods per chart",
+        "summary": "Dashboard settings of the account per industry {thuong, nh, ck, bh}: chart list and order, quarter/year mode, periods per chart; an industry never saved returns its default set",
         "tags": [
           "Dashboard phân tích"
         ],
         "x-auth-level": "authenticated",
         "x-response-schema-status": "explicit"
-      },
+      }
+    },
+    "/api/v2/dashboard/settings/{nganh}": {
       "put": {
         "operationId": "dashboardSaveSettings",
-        "parameters": [],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "nganh",
+            "required": true,
+            "schema": {
+              "enum": [
+                "thuong",
+                "nh",
+                "ck",
+                "bh"
+              ],
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -104299,12 +105077,16 @@
                         "Revenue Growth Stability",
                         "Margin Stability",
                         "EPS Stability",
-                        "ROIC Stability",
                         "ROE",
                         "ROA",
-                        "ROIC",
-                        "Biên lợi nhuận gộp",
                         "Biên lợi nhuận ròng",
+                        "P/E",
+                        "P/B",
+                        "P/S",
+                        "PEG",
+                        "Biên lợi nhuận gộp",
+                        "ROIC",
+                        "ROIC Stability",
                         "Asset Turnover",
                         "Cash Conversion Cycle",
                         "D/E",
@@ -104316,16 +105098,41 @@
                         "Capex / Revenue",
                         "FCF Margin",
                         "FCF Positive Streak",
-                        "P/E",
-                        "P/B",
-                        "P/S",
-                        "PEG",
                         "EV / EBITDA",
-                        "FCF Yield"
+                        "FCF Yield",
+                        "NIM",
+                        "Lợi suất tài sản sinh lãi và chi phí vốn",
+                        "CIR",
+                        "Tỷ trọng thu nhập ngoài lãi",
+                        "Tăng trưởng lợi nhuận trước dự phòng",
+                        "Chi phí tín dụng",
+                        "Tỷ lệ dự phòng / Dư nợ",
+                        "Lãi dự thu / Dư nợ",
+                        "Tăng trưởng tín dụng và huy động",
+                        "LDR",
+                        "VCSH / Tổng tài sản",
+                        "Cơ cấu doanh thu hoạt động",
+                        "Biên lợi nhuận hoạt động",
+                        "Chi phí hoạt động / Doanh thu hoạt động",
+                        "Tăng trưởng dư nợ cho vay",
+                        "Dư nợ cho vay / VCSH",
+                        "Lợi suất cho vay",
+                        "Biên lợi nhuận môi giới",
+                        "Tỷ trọng tài sản tự doanh",
+                        "Hiệu suất tự doanh",
+                        "Nợ vay / VCSH",
+                        "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                        "Tỷ lệ giữ lại",
+                        "Tỷ lệ bồi thường",
+                        "Tỷ lệ chi phí",
+                        "Combined ratio",
+                        "Lợi suất đầu tư",
+                        "Cơ cấu lợi nhuận",
+                        "Dự phòng nghiệp vụ / VCSH"
                       ],
                       "type": "string"
                     },
-                    "maxItems": 33,
+                    "maxItems": 62,
                     "type": "array"
                   },
                   "nks": {
@@ -104432,12 +105239,16 @@
                           "Revenue Growth Stability",
                           "Margin Stability",
                           "EPS Stability",
-                          "ROIC Stability",
                           "ROE",
                           "ROA",
-                          "ROIC",
-                          "Biên lợi nhuận gộp",
                           "Biên lợi nhuận ròng",
+                          "P/E",
+                          "P/B",
+                          "P/S",
+                          "PEG",
+                          "Biên lợi nhuận gộp",
+                          "ROIC",
+                          "ROIC Stability",
                           "Asset Turnover",
                           "Cash Conversion Cycle",
                           "D/E",
@@ -104449,16 +105260,50 @@
                           "Capex / Revenue",
                           "FCF Margin",
                           "FCF Positive Streak",
-                          "P/E",
-                          "P/B",
-                          "P/S",
-                          "PEG",
                           "EV / EBITDA",
-                          "FCF Yield"
+                          "FCF Yield",
+                          "NIM",
+                          "Lợi suất tài sản sinh lãi và chi phí vốn",
+                          "CIR",
+                          "Tỷ trọng thu nhập ngoài lãi",
+                          "Tăng trưởng lợi nhuận trước dự phòng",
+                          "Chi phí tín dụng",
+                          "Tỷ lệ dự phòng / Dư nợ",
+                          "Lãi dự thu / Dư nợ",
+                          "Tăng trưởng tín dụng và huy động",
+                          "LDR",
+                          "VCSH / Tổng tài sản",
+                          "Cơ cấu doanh thu hoạt động",
+                          "Biên lợi nhuận hoạt động",
+                          "Chi phí hoạt động / Doanh thu hoạt động",
+                          "Tăng trưởng dư nợ cho vay",
+                          "Dư nợ cho vay / VCSH",
+                          "Lợi suất cho vay",
+                          "Biên lợi nhuận môi giới",
+                          "Tỷ trọng tài sản tự doanh",
+                          "Hiệu suất tự doanh",
+                          "Nợ vay / VCSH",
+                          "Tăng trưởng doanh thu phí bảo hiểm gốc",
+                          "Tỷ lệ giữ lại",
+                          "Tỷ lệ bồi thường",
+                          "Tỷ lệ chi phí",
+                          "Combined ratio",
+                          "Lợi suất đầu tư",
+                          "Cơ cấu lợi nhuận",
+                          "Dự phòng nghiệp vụ / VCSH"
                         ],
                         "type": "string"
                       },
                       "type": "array"
+                    },
+                    "nganh": {
+                      "enum": [
+                        "thuong",
+                        "nh",
+                        "ck",
+                        "bh"
+                      ],
+                      "type": "string"
                     },
                     "nks": {
                       "additionalProperties": {
@@ -104545,6 +105390,7 @@
                     "charts",
                     "per",
                     "nks",
+                    "nganh",
                     "revision",
                     "updated_at"
                   ],
@@ -104610,7 +105456,7 @@
             "bearer": []
           }
         ],
-        "summary": "Save the dashboard settings of the account (server side, per account)",
+        "summary": "Save the dashboard settings of ONE industry of the account (server side); a chart outside that industry is rejected with 400",
         "tags": [
           "Dashboard phân tích"
         ],
@@ -110019,59 +110865,79 @@
                   "properties": {
                     "charts": {
                       "additionalProperties": {
-                        "anyOf": [
-                          {
-                            "additionalProperties": false,
-                            "properties": {
-                              "na": {
-                                "enum": [
-                                  1
-                                ],
-                                "type": "number"
-                              },
-                              "name": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "name",
-                              "na"
-                            ],
-                            "type": "object"
+                        "additionalProperties": false,
+                        "properties": {
+                          "decimals": {
+                            "maximum": 9007199254740991,
+                            "minimum": -9007199254740991,
+                            "type": "integer"
                           },
-                          {
+                          "hero": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "kind": {
+                            "enum": [
+                              "A",
+                              "B",
+                              "C",
+                              "D",
+                              "E1",
+                              "E2",
+                              "F",
+                              "F2"
+                            ],
+                            "type": "string"
+                          },
+                          "labels": {
+                            "items": {
+                              "type": "string"
+                            },
+                            "type": "array"
+                          },
+                          "legend_note": {
+                            "type": "string"
+                          },
+                          "main": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "name": {
+                                  "type": "string"
+                                },
+                                "v": {
+                                  "items": {
+                                    "nullable": true,
+                                    "type": "number"
+                                  },
+                                  "type": "array"
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "v"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "mainUnit": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "note": {
+                            "type": "string"
+                          },
+                          "q": {
                             "additionalProperties": false,
                             "properties": {
-                              "decimals": {
-                                "maximum": 9007199254740991,
-                                "minimum": -9007199254740991,
-                                "type": "integer"
-                              },
-                              "hero": {
-                                "nullable": true,
-                                "type": "number"
-                              },
-                              "kind": {
-                                "enum": [
-                                  "A",
-                                  "B",
-                                  "C",
-                                  "D",
-                                  "E1",
-                                  "E2",
-                                  "F",
-                                  "F2"
-                                ],
-                                "type": "string"
-                              },
                               "labels": {
                                 "items": {
                                   "type": "string"
                                 },
                                 "type": "array"
-                              },
-                              "legend_note": {
-                                "type": "string"
                               },
                               "main": {
                                 "items": {
@@ -110096,25 +110962,10 @@
                                 },
                                 "type": "array"
                               },
-                              "mainUnit": {
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "note": {
-                                "type": "string"
-                              },
-                              "q": {
+                              "sub": {
                                 "additionalProperties": false,
                                 "properties": {
-                                  "labels": {
-                                    "items": {
-                                      "type": "string"
-                                    },
-                                    "type": "array"
-                                  },
-                                  "main": {
+                                  "series": {
                                     "items": {
                                       "additionalProperties": false,
                                       "properties": {
@@ -110137,180 +110988,158 @@
                                     },
                                     "type": "array"
                                   },
-                                  "sub": {
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "series": {
-                                        "items": {
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string"
-                                            },
-                                            "v": {
-                                              "items": {
-                                                "nullable": true,
-                                                "type": "number"
-                                              },
-                                              "type": "array"
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "v"
-                                          ],
-                                          "type": "object"
-                                        },
-                                        "type": "array"
-                                      },
-                                      "type": {
-                                        "enum": [
-                                          "grouped",
-                                          "stacked"
-                                        ],
-                                        "type": "string"
-                                      },
-                                      "unit": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "required": [
-                                      "unit",
-                                      "type",
-                                      "series"
+                                  "type": {
+                                    "enum": [
+                                      "grouped",
+                                      "stacked"
                                     ],
-                                    "type": "object"
+                                    "type": "string"
+                                  },
+                                  "unit": {
+                                    "type": "string"
                                   }
                                 },
                                 "required": [
-                                  "labels",
-                                  "main"
-                                ],
-                                "type": "object"
-                              },
-                              "ref": {
-                                "type": "number"
-                              },
-                              "status": {
-                                "enum": [
-                                  "ok",
-                                  "missing",
-                                  "not_applicable",
-                                  "insufficient_base",
-                                  "definition_pending",
-                                  "data_unavailable"
-                                ],
-                                "type": "string"
-                              },
-                              "unit": {
-                                "type": "string"
-                              },
-                              "v": {
-                                "items": {
-                                  "nullable": true,
-                                  "type": "number"
-                                },
-                                "type": "array"
-                              },
-                              "y": {
-                                "additionalProperties": false,
-                                "properties": {
-                                  "labels": {
-                                    "items": {
-                                      "type": "string"
-                                    },
-                                    "type": "array"
-                                  },
-                                  "main": {
-                                    "items": {
-                                      "additionalProperties": false,
-                                      "properties": {
-                                        "name": {
-                                          "type": "string"
-                                        },
-                                        "v": {
-                                          "items": {
-                                            "nullable": true,
-                                            "type": "number"
-                                          },
-                                          "type": "array"
-                                        }
-                                      },
-                                      "required": [
-                                        "name",
-                                        "v"
-                                      ],
-                                      "type": "object"
-                                    },
-                                    "type": "array"
-                                  },
-                                  "sub": {
-                                    "additionalProperties": false,
-                                    "properties": {
-                                      "series": {
-                                        "items": {
-                                          "additionalProperties": false,
-                                          "properties": {
-                                            "name": {
-                                              "type": "string"
-                                            },
-                                            "v": {
-                                              "items": {
-                                                "nullable": true,
-                                                "type": "number"
-                                              },
-                                              "type": "array"
-                                            }
-                                          },
-                                          "required": [
-                                            "name",
-                                            "v"
-                                          ],
-                                          "type": "object"
-                                        },
-                                        "type": "array"
-                                      },
-                                      "type": {
-                                        "enum": [
-                                          "grouped",
-                                          "stacked"
-                                        ],
-                                        "type": "string"
-                                      },
-                                      "unit": {
-                                        "type": "string"
-                                      }
-                                    },
-                                    "required": [
-                                      "unit",
-                                      "type",
-                                      "series"
-                                    ],
-                                    "type": "object"
-                                  }
-                                },
-                                "required": [
-                                  "labels",
-                                  "main"
+                                  "unit",
+                                  "type",
+                                  "series"
                                 ],
                                 "type": "object"
                               }
                             },
                             "required": [
-                              "name",
-                              "kind",
-                              "unit",
-                              "decimals",
-                              "status"
+                              "labels",
+                              "main"
+                            ],
+                            "type": "object"
+                          },
+                          "ref": {
+                            "type": "number"
+                          },
+                          "status": {
+                            "enum": [
+                              "ok",
+                              "missing",
+                              "not_applicable",
+                              "insufficient_base",
+                              "definition_pending",
+                              "data_unavailable"
+                            ],
+                            "type": "string"
+                          },
+                          "unit": {
+                            "type": "string"
+                          },
+                          "v": {
+                            "items": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "type": "array"
+                          },
+                          "y": {
+                            "additionalProperties": false,
+                            "properties": {
+                              "labels": {
+                                "items": {
+                                  "type": "string"
+                                },
+                                "type": "array"
+                              },
+                              "main": {
+                                "items": {
+                                  "additionalProperties": false,
+                                  "properties": {
+                                    "name": {
+                                      "type": "string"
+                                    },
+                                    "v": {
+                                      "items": {
+                                        "nullable": true,
+                                        "type": "number"
+                                      },
+                                      "type": "array"
+                                    }
+                                  },
+                                  "required": [
+                                    "name",
+                                    "v"
+                                  ],
+                                  "type": "object"
+                                },
+                                "type": "array"
+                              },
+                              "sub": {
+                                "additionalProperties": false,
+                                "properties": {
+                                  "series": {
+                                    "items": {
+                                      "additionalProperties": false,
+                                      "properties": {
+                                        "name": {
+                                          "type": "string"
+                                        },
+                                        "v": {
+                                          "items": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          },
+                                          "type": "array"
+                                        }
+                                      },
+                                      "required": [
+                                        "name",
+                                        "v"
+                                      ],
+                                      "type": "object"
+                                    },
+                                    "type": "array"
+                                  },
+                                  "type": {
+                                    "enum": [
+                                      "grouped",
+                                      "stacked"
+                                    ],
+                                    "type": "string"
+                                  },
+                                  "unit": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "unit",
+                                  "type",
+                                  "series"
+                                ],
+                                "type": "object"
+                              }
+                            },
+                            "required": [
+                              "labels",
+                              "main"
                             ],
                             "type": "object"
                           }
-                        ]
+                        },
+                        "required": [
+                          "name",
+                          "kind",
+                          "unit",
+                          "decimals",
+                          "status"
+                        ],
+                        "type": "object"
                       },
                       "type": "object"
                     },
-                    "is_bank": {
-                      "type": "boolean"
+                    "nganh": {
+                      "enum": [
+                        "thuong",
+                        "nh",
+                        "ck",
+                        "bh"
+                      ],
+                      "type": "string"
                     },
                     "per": {
                       "enum": [
@@ -110325,7 +111154,7 @@
                   },
                   "required": [
                     "symbol",
-                    "is_bank",
+                    "nganh",
                     "per",
                     "charts"
                   ],
@@ -110377,7 +111206,7 @@
           }
         },
         "security": [],
-        "summary": "Chart data of one symbol: 20 quarters and 10 years per chart, na for the charts a bank does not have",
+        "summary": "Chart data of one symbol and its industry (nganh): 20 quarters and 10 years per chart; a chart outside the industry of the symbol is rejected with 400",
         "tags": [
           "Dashboard phân tích"
         ],
@@ -159016,58 +159845,35 @@
                   "properties": {
                     "charts": {
                       "additionalProperties": {
-                        "anyOf": [
-                          {
-                            "additionalProperties": false,
-                            "properties": {
-                              "na": {
-                                "enum": [
-                                  1
-                                ],
-                                "type": "number"
-                              },
-                              "name": {
-                                "type": "string"
-                              }
-                            },
-                            "required": [
-                              "name",
-                              "na"
+                        "additionalProperties": false,
+                        "properties": {
+                          "kind": {
+                            "enum": [
+                              "F"
                             ],
-                            "type": "object"
+                            "type": "string"
                           },
-                          {
-                            "additionalProperties": false,
-                            "properties": {
-                              "kind": {
-                                "enum": [
-                                  "F"
-                                ],
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              },
-                              "unit": {
-                                "type": "string"
-                              },
-                              "v": {
-                                "items": {
-                                  "nullable": true,
-                                  "type": "number"
-                                },
-                                "type": "array"
-                              }
+                          "name": {
+                            "type": "string"
+                          },
+                          "unit": {
+                            "type": "string"
+                          },
+                          "v": {
+                            "items": {
+                              "nullable": true,
+                              "type": "number"
                             },
-                            "required": [
-                              "name",
-                              "kind",
-                              "unit",
-                              "v"
-                            ],
-                            "type": "object"
+                            "type": "array"
                           }
-                        ]
+                        },
+                        "required": [
+                          "name",
+                          "kind",
+                          "unit",
+                          "v"
+                        ],
+                        "type": "object"
                       },
                       "type": "object"
                     },
@@ -159077,12 +159883,22 @@
                       },
                       "type": "array"
                     },
+                    "nganh": {
+                      "enum": [
+                        "thuong",
+                        "nh",
+                        "ck",
+                        "bh"
+                      ],
+                      "type": "string"
+                    },
                     "symbol": {
                       "type": "string"
                     }
                   },
                   "required": [
                     "symbol",
+                    "nganh",
                     "dates",
                     "charts"
                   ],
@@ -162022,9 +162838,9 @@
   "x-metadata-quality": {
     "authenticatedOperations": 598,
     "noContentResponses": 18,
-    "operations": 804,
-    "publicOperations": 206,
-    "responseSchemas": 786,
+    "operations": 805,
+    "publicOperations": 207,
+    "responseSchemas": 787,
     "untypedResponses": 0
   }
 }
