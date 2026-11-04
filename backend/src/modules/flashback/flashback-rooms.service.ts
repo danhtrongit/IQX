@@ -474,11 +474,11 @@ export class FlashbackRoomsService {
     this.assertCanStart(before, userId);
     const now = this.clock.now();
     const dataset = await this.dataset.pick(now, before.viewBars, before.playBars);
+    // Không cắt được đề (spec v2.2 §3.3 bước 7): không bắt đầu, chưa trừ xu, chủ phòng đọc được
+    // thông báo. Dùng 409 thay cho 503 vì bộ lọc lỗi chung thay MỌI thông báo 5xx bằng câu chung
+    // "Dịch vụ tạm thời không khả dụng", nên chủ phòng sẽ không bao giờ thấy câu của spec.
     if (!dataset || dataset.bars.length !== before.viewBars + before.playBars)
-      throw new ServiceUnavailableException({
-        code: 'FLASHBACK_DATA_UNAVAILABLE',
-        message: FLASHBACK_NO_DATA_MESSAGE,
-      });
+      throw conflict('FLASHBACK_DATA_UNAVAILABLE', FLASHBACK_NO_DATA_MESSAGE);
 
     const outcome = await this.database.transaction(async (tx) => {
       const room = await this.repository.roomByCode(tx, code, true);
