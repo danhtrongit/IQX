@@ -2101,7 +2101,7 @@
     {
       "blocks": [
         {
-          "text": "<b>EMA</b> (Exponential Moving Average) là đường trung bình hàm mũ của giá đóng cửa trong N phiên. Giống đường MA đã học ở Chương 4, EMA làm mượt biến động giá để thấy rõ xu hướng. Điểm khác là EMA <b>phản ứng nhanh hơn</b> khi giá đổi hướng.",
+          "text": "<b>EMA</b> (Exponential Moving Average) là đường trung bình hàm mũ của giá đóng cửa trong N phiên. Giống đường MA đã học ở bài MA, EMA làm mượt biến động giá để thấy rõ xu hướng. Điểm khác là EMA <b>phản ứng nhanh hơn</b> khi giá đổi hướng.",
           "type": "paragraph"
         },
         {

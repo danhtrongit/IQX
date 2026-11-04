@@ -127,11 +127,11 @@
         {
           "has_scenario": false,
           "id": "ch01-exam",
-          "intro": "Bài thi gồm 20 câu hỏi về toàn bộ kiến thức Chương 1.",
+          "intro": "Bài thi gồm 20 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch01",
           "metric_key": null,
-          "name": "Bài thi Chương 1",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 11,
           "question_count": 20
@@ -268,11 +268,11 @@
         {
           "has_scenario": false,
           "id": "ch02-exam",
-          "intro": "Bài thi gồm 20 câu hỏi về toàn bộ kỹ năng sale của SACO trong Chương 2.",
+          "intro": "Bài thi gồm 20 câu hỏi về toàn bộ kỹ năng sale của SACO trong Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch02",
           "metric_key": null,
-          "name": "Bài thi Chương 2",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 11,
           "question_count": 20
@@ -397,11 +397,11 @@
         {
           "has_scenario": false,
           "id": "ch03-exam",
-          "intro": "Bài thi gồm 20 câu hỏi về toàn bộ kiến thức thương hiệu cá nhân trong Chương 3.",
+          "intro": "Bài thi gồm 20 câu hỏi về toàn bộ kiến thức thương hiệu cá nhân trong Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch03",
           "metric_key": null,
-          "name": "Bài thi Chương 3",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 10,
           "question_count": 20
@@ -550,11 +550,11 @@
         {
           "has_scenario": false,
           "id": "ch04-exam",
-          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 4.",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch04",
           "metric_key": null,
-          "name": "Bài thi Chương 4",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 11,
           "question_count": 30
@@ -619,11 +619,11 @@
         {
           "has_scenario": false,
           "id": "ch05-exam",
-          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 5.",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch05",
           "metric_key": null,
-          "name": "Bài thi Chương 5",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 5,
           "question_count": 30
@@ -688,11 +688,11 @@
         {
           "has_scenario": false,
           "id": "ch06-exam",
-          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 6.",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch06",
           "metric_key": null,
-          "name": "Bài thi Chương 6",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 5,
           "question_count": 30
@@ -793,11 +793,11 @@
         {
           "has_scenario": false,
           "id": "ch07-exam",
-          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 7.",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch07",
           "metric_key": null,
-          "name": "Bài thi Chương 7",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 8,
           "question_count": 30
@@ -1018,11 +1018,11 @@
         {
           "has_scenario": false,
           "id": "ch08-exam",
-          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 8.",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch08-v4",
           "metric_key": null,
-          "name": "Bài thi Chương 8",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 18,
           "question_count": 30
@@ -1231,11 +1231,11 @@
         {
           "has_scenario": false,
           "id": "ch09-exam",
-          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 9.",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch09-v4",
           "metric_key": null,
-          "name": "Bài thi Chương 9",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 17,
           "question_count": 30
@@ -1384,11 +1384,11 @@
         {
           "has_scenario": false,
           "id": "ch10-exam",
-          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 10.",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch10-v4",
           "metric_key": null,
-          "name": "Bài thi Chương 10",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 12,
           "question_count": 30
@@ -1525,11 +1525,11 @@
         {
           "has_scenario": false,
           "id": "ch11-exam",
-          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 11.",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch11-v4",
           "metric_key": null,
-          "name": "Bài thi Chương 11",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 11,
           "question_count": 30
@@ -1642,11 +1642,11 @@
         {
           "has_scenario": false,
           "id": "ch12-exam",
-          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương 12.",
+          "intro": "Bài thi gồm 30 câu hỏi về toàn bộ kiến thức Chương {n}.",
           "kind": "chapter_exam",
           "lesson_key": "exam:ch12-v4",
           "metric_key": null,
-          "name": "Bài thi Chương 12",
+          "name": "Bài thi Chương {n}",
           "optional": false,
           "order": 9,
           "question_count": 30

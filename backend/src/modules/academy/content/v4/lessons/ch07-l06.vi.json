@@ -2489,7 +2489,7 @@
     {
       "blocks": [
         {
-          "text": "RSI (Chương 4) chỉ dùng giá. MFI thêm khối lượng, nên hai đường thường cùng hướng nhưng <b>lệch nhau ở những phiên khối lượng bất thường</b>.",
+          "text": "RSI chỉ dùng giá. MFI thêm khối lượng, nên hai đường thường cùng hướng nhưng <b>lệch nhau ở những phiên khối lượng bất thường</b>.",
           "type": "paragraph"
         },
         {

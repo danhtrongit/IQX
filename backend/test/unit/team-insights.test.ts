@@ -5,11 +5,13 @@ import {
   AcademyProgressReader,
   buildAcademyProgress,
   type AcademyCompletionFact,
+  type AcademyUserFacts,
 } from '../../src/modules/academy/academy-progress-reader.service.js';
 import { ACADEMY_V4_CATALOG_VERSION } from '../../src/modules/academy/content/v4/schema.js';
 import { AdminMetricsService } from '../../src/modules/admin/admin-metrics.service.js';
 import { TeamService } from '../../src/modules/team-leads/team.service.js';
 import { teamUserListQuerySchema } from '../../src/modules/team-leads/team.schemas.js';
+import { programFor } from './academy-test-kit.js';
 import { academyV4Fixture, academyV4Source } from './academy-v4-fixture.js';
 
 const content = academyV4Fixture();
@@ -32,6 +34,11 @@ function ids(filter: (id: string) => boolean = () => true): string[] {
 const isLesson = (id: string) => /-l\d{2}$/.test(id);
 const isExam = (id: string) => id.endsWith('-exam');
 
+/** The staff view of a user with the rollout default config (free, all 12 chapters). */
+function build(facts?: AcademyUserFacts) {
+  return buildAcademyProgress(content, programFor(), facts);
+}
+
 function row(view: ReturnType<typeof buildAcademyProgress>, id: string) {
   const found = view.chapters.flatMap((chapter) => chapter.lessons).find((l) => l.lesson_id === id);
   if (!found) throw new Error(id);
@@ -40,9 +47,10 @@ function row(view: ReturnType<typeof buildAcademyProgress>, id: string) {
 
 describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học viện v4)', () => {
   it('lists the 12 published chapters with lessons, exam and practice; totals count 116 required lessons', () => {
-    const view = buildAcademyProgress(content);
+    const view = build();
     expect(view.catalog_version).toBe(ACADEMY_V4_CATALOG_VERSION);
-    expect(view.chapters.map((chapter) => [chapter.no, chapter.total])).toEqual([
+    expect(view.config).toEqual({ source: 'default', mode: 'free', chapter_count: 12, chapter_total: 12 });
+    expect(view.chapters.map((chapter) => [chapter.display_no, chapter.total])).toEqual([
       [1, 10],
       [2, 10],
       [3, 9],
@@ -86,7 +94,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
   });
 
   it('keeps a carried indicator completion passed out of order and ignores keys outside the catalog', () => {
-    const view = buildAcademyProgress(content, {
+    const view = build({
       completions: [
         {
           lesson_key: 'technical:rsi',
@@ -111,7 +119,8 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
     expect(row(view, 'ch04-l05').status).toBe('not_started');
     expect(view.current_lesson).toEqual({
       lesson_id: 'ch01-l01',
-      chapter: 1,
+      chapter_id: 'ch01',
+      chapter_display_no: 1,
       order: 1,
       name: 'Đầu tư chứng khoán',
       label: 'Chương 1 · Bài 1: Đầu tư chứng khoán',
@@ -126,7 +135,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
   });
 
   it('points at the chapter exam once the chapter lessons are passed, with exam scores out of 20', () => {
-    const view = buildAcademyProgress(content, {
+    const view = build({
       completions: done(ids((id) => id.startsWith('ch01-l'))),
       attempts: [
         { lesson_key: keyOf('ch01-exam'), attempts: 2, latest_score: 18, open_at: null },
@@ -151,7 +160,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
     expect(row(view, 'ch01-l03')).toMatchObject({ status: 'completed', latest_score: 3 });
     expect(row(view, 'ch02-l01').status).toBe('not_started');
 
-    const open = buildAcademyProgress(content, {
+    const open = build({
       completions: done(ids((id) => id.startsWith('ch01-l'))),
       attempts: [{ lesson_key: keyOf('ch01-exam'), attempts: 0, latest_score: null, open_at: AT }],
     });
@@ -160,14 +169,14 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
 
   it('opens the practice next to chapter 4 without counting it, and never makes it current', () => {
     const throughCh3 = ids((id) => /^ch0[1-3]-/.test(id) && !id.endsWith('practice'));
-    const view = buildAcademyProgress(content, { completions: done(throughCh3), attempts: [] });
+    const view = build({ completions: done(throughCh3), attempts: [] });
     expect(view.completed).toBe(29);
     expect(view.chapter_exams).toEqual({ total: 12, passed: 3 });
     expect(row(view, 'ch03-practice')).toMatchObject({ status: 'not_started', is_current: false });
     expect(row(view, 'ch04-l01')).toMatchObject({ status: 'not_started', is_current: true });
     expect(view.current_lesson?.lesson_id).toBe('ch04-l01');
 
-    const withPractice = buildAcademyProgress(content, {
+    const withPractice = build({
       completions: [...done(throughCh3), ...done(['ch03-practice'], '2026-10-02T00:00:00.000Z')],
       attempts: [],
     });
@@ -179,7 +188,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
 
   it('"bài đang học" is the item opened last, found by its durable key (spec v4 §4.1)', () => {
     const opened = (lessonKey: string, completions: AcademyCompletionFact[] = []) =>
-      buildAcademyProgress(content, {
+      build({
         completions,
         attempts: [],
         last_opened: { lesson_key: lessonKey, opened_at: AT },
@@ -188,7 +197,8 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
     expect(nim).toMatchObject({ started: true, completed: 0, all_done: false });
     expect(nim.current_lesson).toMatchObject({
       lesson_id: 'ch10-l01',
-      chapter: 10,
+      chapter_id: 'ch10',
+      chapter_display_no: 10,
       kind: 'lesson',
       label: 'Chương 10 · Bài 1: NIM · biên lãi thuần',
     });
@@ -208,7 +218,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
       expect(fallback.current_lesson).toBeNull();
     }
     // all_done ignores what was opened last: every required item passed means done.
-    const all = buildAcademyProgress(content, {
+    const all = build({
       completions: done(ids((id) => isLesson(id) || isExam(id))),
       attempts: [],
       last_opened: { lesson_key: 'technical:rsi', opened_at: AT },
@@ -218,7 +228,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
   });
 
   it('reports all done only once every required lesson and chapter exam is passed', () => {
-    const lessonsOnly = buildAcademyProgress(content, {
+    const lessonsOnly = build({
       completions: done(ids((id) => isLesson(id) || (isExam(id) && id !== 'ch05-exam'))),
       attempts: [],
     });
@@ -228,7 +238,7 @@ describe('academy progress for staff views (admin spec v1.1 §5.1.4, Học việ
       label: 'Bài thi Chương 5',
     });
 
-    const all = buildAcademyProgress(content, {
+    const all = build({
       completions: done(ids((id) => isLesson(id) || isExam(id))),
       attempts: [],
     });
@@ -334,6 +344,7 @@ describe('team service (admin spec v1.1 §4.3)', () => {
     const service = new TeamService(
       {} as never,
       teamLeads as never,
+      {} as never,
       {} as never,
       {} as never,
       {} as never,

@@ -1,6 +1,8 @@
 import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/index.js';
+import { AcademyConfigService } from '../academy/academy-config.service.js';
+import type { TeamAcademyConfigResponse } from '../academy/academy-config.schemas.js';
 import {
   AcademyProgressReader,
   type AcademyProgressSummary,
@@ -105,7 +107,16 @@ export class TeamService {
     private readonly adminUsers: AdminUsersService,
     private readonly metrics: AdminMetricsService,
     private readonly academy: AcademyProgressReader,
+    private readonly academyConfigs: AcademyConfigService,
   ) {}
+
+  /**
+   * Học viện v4.1 §1.3: the Academy config of the lead's own group, read only. The group is always the caller's; a
+   * lead cannot name another one and has no way to change the config (admin only).
+   */
+  academyConfig(leadId: string): Promise<TeamAcademyConfigResponse> {
+    return this.academyConfigs.teamConfig(leadId);
+  }
 
   async me(leadId: string): Promise<TeamMe> {
     const [row] = await this.database.query<{

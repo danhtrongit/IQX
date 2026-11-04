@@ -193,7 +193,7 @@ describe('dashboard catalog (62 chỉ tiêu theo ngành)', () => {
     for (const industry of INDUSTRIES) {
       const chapters = DASHBOARD_INDUSTRY_CHAPTERS[industry];
       expect(chapters.map((chapter) => chapter.scope)).toEqual(['chung', industry]);
-      expect(chapters[0]!.title).toBe('Phân tích cơ bản chung');
+      expect(chapters[0]!.title).toBe('Chỉ tiêu chung');
       expect(chapters.flatMap((chapter) => chapter.groups.flatMap((group) => group.items))).toEqual(
         DASHBOARD_INDUSTRY_CHARTS[industry],
       );
@@ -202,8 +202,8 @@ describe('dashboard catalog (62 chỉ tiêu theo ngành)', () => {
       8, 10,
     ]);
     expect(DASHBOARD_INDUSTRY_CHAPTERS.bh.map((chapter) => chapter.title)).toEqual([
-      'Phân tích cơ bản chung',
-      'Bảo hiểm',
+      'Chỉ tiêu chung',
+      'Chỉ tiêu bảo hiểm',
     ]);
   });
 
@@ -254,8 +254,8 @@ describe('dashboard catalog (62 chỉ tiêu theo ngành)', () => {
     expect(bank.label).toBe('Ngân hàng');
     expect(bank.default_charts).toEqual([...DASHBOARD_DEFAULT_CHARTS_BY_INDUSTRY.nh]);
     expect(bank.chapters.map((chapter) => [chapter.chapter, chapter.academy_chapter])).toEqual([
-      ['Phân tích cơ bản chung', 8],
-      ['Ngân hàng', 10],
+      ['Chỉ tiêu chung', 8],
+      ['Chỉ tiêu ngân hàng', 10],
     ]);
     const groups = bank.chapters.flatMap((chapter) => chapter.groups);
     expect(groups.map((group) => group.group)).toEqual([
