@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l07",
+  "questions": [
+    {
+      "correct_option_id": "6c4d4004c0",
+      "id": "ch12-l07-q01",
+      "options": [
+        {
+          "id": "6c4d4004c0",
+          "text": "Nghiệp vụ bảo hiểm và hoạt động đầu tư"
+        },
+        {
+          "id": "c64225f96a",
+          "text": "Phí gốc và phí nhượng tái"
+        },
+        {
+          "id": "dd8f2447d9",
+          "text": "Dự phòng phí và dự phòng bồi thường"
+        }
+      ],
+      "prompt": "Lợi nhuận công ty bảo hiểm đến từ hai nguồn nào?"
+    },
+    {
+      "correct_option_id": "70221f792a",
+      "id": "ch12-l07-q02",
+      "options": [
+        {
+          "id": "70221f792a",
+          "text": "Phí thuần trừ bồi thường thuần và chi phí"
+        },
+        {
+          "id": "701e17a5a9",
+          "text": "Phí gốc trừ phí nhượng tái bảo hiểm"
+        },
+        {
+          "id": "9fcaf085e7",
+          "text": "Doanh thu tài chính trừ chi phí tài chính"
+        }
+      ],
+      "prompt": "Lợi nhuận bảo hiểm được tính thế nào?"
+    },
+    {
+      "correct_option_id": "d2fa1aaf16",
+      "id": "ch12-l07-q03",
+      "options": [
+        {
+          "id": "d2fa1aaf16",
+          "text": "Mảng bảo hiểm đang lỗ"
+        },
+        {
+          "id": "463a1d794a",
+          "text": "Mảng bảo hiểm có lãi rất cao"
+        },
+        {
+          "id": "d3862292fd",
+          "text": "Công ty không có khoản đầu tư"
+        }
+      ],
+      "prompt": "Tỷ trọng lợi nhuận đầu tư trên 100% có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "1e3b88da1c",
+      "id": "ch12-l07-q04",
+      "options": [
+        {
+          "id": "1e3b88da1c",
+          "text": "Lãi suất và thị trường chứng khoán"
+        },
+        {
+          "id": "c5ce9cafdf",
+          "text": "Số lượng đại lý bảo hiểm"
+        },
+        {
+          "id": "7e669eb547",
+          "text": "Tỷ lệ giữ lại phí"
+        }
+      ],
+      "prompt": "Lợi nhuận phụ thuộc nhiều vào đầu tư sẽ nhạy cảm với yếu tố nào?"
+    },
+    {
+      "chart_id": "c12l7-rep",
+      "correct_option_id": "a730234cd0",
+      "id": "ch12-l07-q05",
+      "options": [
+        {
+          "id": "a730234cd0",
+          "text": "Tỷ trọng lợi nhuận đầu tư trong tổng hai mảng"
+        },
+        {
+          "id": "4c0b7913bf",
+          "text": "Lợi nhuận bảo hiểm cộng dồn 4 quý"
+        },
+        {
+          "id": "33a7ab75f8",
+          "text": "Combined ratio cộng dồn 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, đường phía trên thể hiện gì?"
+    }
+  ],
+  "salt": "a8973aacb0f1c46392fbd7873029f1571fe216853c93b6f9286ab560788f2e02"
+}

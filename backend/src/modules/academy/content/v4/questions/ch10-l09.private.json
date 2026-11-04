@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l09",
+  "questions": [
+    {
+      "correct_option_id": "d3f68c9926",
+      "id": "ch10-l09-q01",
+      "options": [
+        {
+          "id": "d3f68c9926",
+          "text": "Cho vay khách hàng chia tiền gửi khách hàng"
+        },
+        {
+          "id": "9f337510ff",
+          "text": "Tiền gửi khách hàng chia tổng tài sản"
+        },
+        {
+          "id": "20170e82ff",
+          "text": "Cho vay khách hàng chia vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "LDR đơn giản trong bài được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "d0d3359d2e",
+      "id": "ch10-l09-q02",
+      "options": [
+        {
+          "id": "d0d3359d2e",
+          "text": "Chỉ dùng hai dòng trên bảng cân đối"
+        },
+        {
+          "id": "9049e2c452",
+          "text": "LDR đơn giản dùng số liệu cộng dồn của cả năm"
+        },
+        {
+          "id": "be20d516eb",
+          "text": "Hai cách tính luôn cho ra cùng một kết quả"
+        }
+      ],
+      "prompt": "LDR đơn giản khác LDR theo quy định của Ngân hàng Nhà nước ở điểm nào?"
+    },
+    {
+      "correct_option_id": "d5d9a8b3a2",
+      "id": "ch10-l09-q03",
+      "options": [
+        {
+          "id": "d5d9a8b3a2",
+          "text": "Cho vay khách hàng lớn hơn tiền gửi khách hàng"
+        },
+        {
+          "id": "3f2b5b6f65",
+          "text": "Ngân hàng còn nhiều tiền gửi chưa cho vay"
+        },
+        {
+          "id": "4b94b28400",
+          "text": "Ngân hàng đang có lợi nhuận cao bất thường"
+        }
+      ],
+      "prompt": "LDR vượt 100% có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "eca1d1f7e7",
+      "id": "ch10-l09-q04",
+      "options": [
+        {
+          "id": "eca1d1f7e7",
+          "text": "Tiền chưa cho vay thường sinh lời thấp, làm NIM giảm"
+        },
+        {
+          "id": "55b7125e7d",
+          "text": "LDR thấp làm chi phí dự phòng rủi ro tín dụng tăng mạnh"
+        },
+        {
+          "id": "e47f8964c0",
+          "text": "LDR thấp khiến vốn chủ sở hữu giảm"
+        }
+      ],
+      "prompt": "Vì sao LDR quá thấp cũng không hẳn tốt?"
+    },
+    {
+      "chart_id": "c10l9-rep",
+      "correct_option_id": "703e6a8864",
+      "id": "ch10-l09-q05",
+      "options": [
+        {
+          "id": "703e6a8864",
+          "text": "Vượt mức 100%"
+        },
+        {
+          "id": "4d228d4e66",
+          "text": "Nằm dưới mức 80%"
+        },
+        {
+          "id": "24b19ff046",
+          "text": "Giảm về 0%"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, khi cột cho vay cao hơn cột tiền gửi thì đường LDR thế nào?"
+    }
+  ],
+  "salt": "027eddcf2cd3d29543c1f5b063dbdd935994895a293cfbd46adfb8ec450cfc15"
+}

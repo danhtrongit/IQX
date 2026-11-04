@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l15",
+  "questions": [
+    {
+      "correct_option_id": "cc5bb09e1e",
+      "id": "ch09-l15-q01",
+      "options": [
+        {
+          "id": "cc5bb09e1e",
+          "text": "Vốn hóa cộng nợ vay trừ tiền"
+        },
+        {
+          "id": "244b326c5e",
+          "text": "Vốn hóa trừ nợ vay cộng tiền"
+        },
+        {
+          "id": "293d416843",
+          "text": "Tổng tài sản trừ vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "EV được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "69b4f44818",
+      "id": "ch09-l15-q02",
+      "options": [
+        {
+          "id": "69b4f44818",
+          "text": "Số tiền để mua lại toàn bộ doanh nghiệp"
+        },
+        {
+          "id": "070835f424",
+          "text": "Phần lợi nhuận được chia cho toàn bộ cổ đông"
+        },
+        {
+          "id": "2f90d58a53",
+          "text": "Giá trị sổ sách của tài sản cố định"
+        }
+      ],
+      "prompt": "EV thể hiện điều gì?"
+    },
+    {
+      "correct_option_id": "c6021b25c1",
+      "id": "ch09-l15-q03",
+      "options": [
+        {
+          "id": "c6021b25c1",
+          "text": "Lãi vay, thuế và khấu hao"
+        },
+        {
+          "id": "f2ad63025d",
+          "text": "Giá vốn, chi phí bán hàng và thuế"
+        },
+        {
+          "id": "22636d2083",
+          "text": "Cổ tức, lãi vay và giá vốn"
+        }
+      ],
+      "prompt": "EBITDA là lợi nhuận trước những khoản nào?"
+    },
+    {
+      "correct_option_id": "b79b6628b4",
+      "id": "ch09-l15-q04",
+      "options": [
+        {
+          "id": "b79b6628b4",
+          "text": "Khi so doanh nghiệp có mức nợ vay khác nhau"
+        },
+        {
+          "id": "24ebf8a169",
+          "text": "Khi định giá các ngân hàng thương mại"
+        },
+        {
+          "id": "ef9b703be2",
+          "text": "Khi doanh nghiệp không có hoạt động kinh doanh"
+        }
+      ],
+      "prompt": "EV/EBITDA đặc biệt hữu ích khi nào?"
+    },
+    {
+      "chart_id": "c9l15-rep",
+      "correct_option_id": "fc93fb0d1a",
+      "id": "ch09-l15-q05",
+      "options": [
+        {
+          "id": "fc93fb0d1a",
+          "text": "Đắt hơn so với lịch sử của chính doanh nghiệp"
+        },
+        {
+          "id": "9a9b7a1349",
+          "text": "Rẻ hơn so với lịch sử của chính doanh nghiệp"
+        },
+        {
+          "id": "fce81e332e",
+          "text": "Nợ vay của doanh nghiệp đã giảm hẳn về mức 0"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của EV/EBITDA, đường chính nằm trên dải dao động cho thấy điều gì?"
+    }
+  ],
+  "salt": "d867a1bf01e6dbdcb9e90dee982411087a127a6f8860261459b700944ebef4de"
+}

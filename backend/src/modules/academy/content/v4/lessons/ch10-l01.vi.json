@@ -1,0 +1,379 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l1-g1": {
+      "alt": "NIM bằng thu nhập lãi thuần 4 quý 95.811 tỷ đồng chia cho tài sản sinh lãi bình quân 2.243 nghìn tỷ đồng, bằng 4,27%",
+      "edges": [
+        {
+          "from": "thu-nhap-lai-thuan",
+          "label": "÷",
+          "to": "tai-san-sinh-lai"
+        },
+        {
+          "from": "tai-san-sinh-lai",
+          "label": "=",
+          "to": "nim"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "thu-nhap-lai-thuan",
+          "sub": "Kết quả kinh doanh · Q3/25 đến Q2/26",
+          "title": "Thu nhập lãi thuần 4 quý",
+          "tone": "p1",
+          "value": "95.811 tỷ"
+        },
+        {
+          "id": "tai-san-sinh-lai",
+          "sub": "Bảng cân đối · Bình quân đầu và cuối kỳ",
+          "title": "Tài sản sinh lãi bình quân",
+          "tone": "warn",
+          "value": "2.243 nghìn tỷ"
+        },
+        {
+          "emph": true,
+          "id": "nim",
+          "sub": "100 đồng tài sản sinh lãi tạo ra 4,27 đồng lãi thuần",
+          "title": "NIM",
+          "tone": "pos",
+          "value": "4,27%"
+        }
+      ]
+    },
+    "c10l1-g2": {
+      "caption_value": "Không tính vào mẫu số: tiền mặt, tài sản cố định, tài sản khác",
+      "kind": "category",
+      "labels": [
+        "Cho vay khách hàng",
+        "Chứng khoán đầu tư",
+        "Gửi và cho vay TCTD khác",
+        "Chứng khoán kinh doanh"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "Tài sản sinh lãi bình quân · 2.243 nghìn tỷ đồng",
+          "per_bar_tones": [
+            "p1",
+            "pos",
+            "warn",
+            "p5"
+          ],
+          "tone": "p1",
+          "values": [
+            1580,
+            330,
+            300,
+            33
+          ]
+        }
+      ],
+      "title": "Tài sản sinh lãi bình quân · 2.243 nghìn tỷ đồng",
+      "unit": "nghìn tỷ đồng",
+      "value_labels": "all"
+    },
+    "c10l1-g3": {
+      "kind": "category",
+      "labels": [
+        "Nhiều cho vay tiêu dùng",
+        "Bán lẻ cá nhân",
+        "Cân bằng",
+        "Doanh nghiệp lớn"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "NIM tham khảo theo mô hình ngân hàng · số minh họa",
+          "per_bar_tones": [
+            "p5",
+            "p1",
+            "p1",
+            "pos"
+          ],
+          "tone": "p5",
+          "values": [
+            6.5,
+            4.5,
+            3.5,
+            2.8
+          ]
+        }
+      ],
+      "title": "NIM tham khảo theo mô hình ngân hàng · số minh họa",
+      "unit": "%",
+      "value_format": {
+        "decimals": 1,
+        "suffix": "%"
+      },
+      "value_labels": "all"
+    },
+    "c10l1-rep": {
+      "alt": "NIM: 4,3%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "NIM (4 quý)",
+            "v": [
+              4.12,
+              4.129,
+              4.044,
+              4.072,
+              3.944,
+              4.021,
+              3.962,
+              4.271
+            ]
+          }
+        ],
+        "name": "NIM",
+        "sub": {
+          "series": [
+            {
+              "name": "Thu nhập lãi thuần 4 quý",
+              "v": [
+                72928.368,
+                75332.475,
+                77039.293,
+                78467.196,
+                80474.528,
+                83639.247,
+                87763.217,
+                95811.14
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "NIM cho biết mỗi 100 đồng tài sản sinh lãi mang về cho ngân hàng bao nhiêu đồng thu nhập lãi thuần trong một năm. Cho vay và nhận tiền gửi là việc chính của ngân hàng, nên NIM là chỉ tiêu quan trọng nhất khi đọc kết quả kinh doanh ngân hàng.",
+  "lesson_key": "fundamental:nim",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l1-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>NIM</b> (Net Interest Margin) là biên lãi thuần. Lấy <b>thu nhập lãi thuần 4 quý gần nhất</b> chia cho <b>tài sản sinh lãi bình quân</b>. Thu nhập lãi thuần là dòng đầu tiên trên báo cáo kết quả kinh doanh của ngân hàng, bằng thu nhập lãi trừ chi phí lãi.",
+          "type": "paragraph"
+        },
+        {
+          "text": "NIM 4,27% nghĩa là mỗi 100 đồng tài sản sinh lãi tạo ra 4,27 đồng chênh lệch lãi mỗi năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "NIM là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Tài sản sinh lãi là phần tài sản mang lại tiền lãi. Cộng bốn dòng trên <b>bảng cân đối kế toán</b>, rồi lấy bình quân đầu kỳ và cuối kỳ.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l1-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dòng thu nhập lãi thuần, cộng dồn 4 quý gần nhất.",
+              "title": "Tử số từ kết quả kinh doanh"
+            },
+            {
+              "text": "Tiền gửi và cho vay các tổ chức tín dụng khác, chứng khoán kinh doanh, cho vay khách hàng, chứng khoán đầu tư.",
+              "title": "Mẫu số từ bảng cân đối"
+            },
+            {
+              "text": "Tiền mặt, tài sản cố định và tài sản khác vì không sinh lãi.",
+              "title": "Không tính"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Tài sản sinh lãi gồm những gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l1-rep",
+          "title": "NIM",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "NIM tính theo 4 quý gần nhất, cập nhật mỗi quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Thu nhập lãi thuần cộng dồn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tăng đều mà đường NIM vẫn giữ vững nghĩa là ngân hàng mở rộng quy mô mà không phải hy sinh biên lãi.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ khoảng 3,5% trở lên và ổn định hoặc tăng qua nhiều quý. Đây là mức tham khảo thường gặp ở các ngân hàng Việt Nam.",
+              "title": "NIM tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 2,5% hoặc giảm liên tục, cho thấy chênh lệch giữa lãi cho vay và lãi huy động đang bị thu hẹp.",
+              "title": "NIM yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức NIM phụ thuộc nhiều vào mô hình kinh doanh. Ngân hàng cho vay cá nhân và tiêu dùng nhiều có NIM cao hơn ngân hàng chủ yếu cho vay doanh nghiệp lớn, nhưng rủi ro cũng cao hơn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l1-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "NIM giảm nhiều quý liền là dấu hiệu sớm về áp lực lên lợi nhuận.",
+              "title": "Theo dõi xu hướng"
+            },
+            {
+              "text": "So ngân hàng bán lẻ với ngân hàng bán lẻ, ngân hàng doanh nghiệp với ngân hàng doanh nghiệp.",
+              "title": "So với ngân hàng cùng mô hình"
+            },
+            {
+              "text": "NIM cao nhưng chi phí dự phòng cũng cao thì phần lãi giữ lại chưa chắc nhiều hơn.",
+              "title": "Đọc cùng chi phí tín dụng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Ngân hàng mẫu có số liệu 4 quý từ Q3/25 đến Q2/26 như sau.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Thu nhập lãi thuần 4 quý",
+              "text": "Thu nhập lãi 166.324 − chi phí lãi 70.513 = 95.811 tỷ đồng."
+            },
+            {
+              "term": "Tài sản sinh lãi bình quân",
+              "text": "Khoảng 2.243 nghìn tỷ đồng, trong đó cho vay khách hàng chiếm khoảng 70%."
+            },
+            {
+              "term": "NIM",
+              "text": "95.811 ÷ 2.243.000 ≈ 4,27%."
+            },
+            {
+              "term": "So với một năm trước",
+              "text": "NIM Q2/25 là 4,07%. Biên lãi được cải thiện trong khi quy mô vẫn tăng."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tổng tài sản gồm cả phần không sinh lãi, làm NIM thấp hơn thực tế.",
+              "title": "Chia cho tổng tài sản"
+            },
+            {
+              "text": "Thu nhập lãi một quý có thể dao động. Dùng số 4 quý để thấy rõ xu hướng.",
+              "title": "Chỉ xem một quý"
+            },
+            {
+              "text": "NIM cao có thể đến từ cho vay khách hàng rủi ro cao. Cần đọc cùng chi phí tín dụng.",
+              "title": "Cho rằng NIM càng cao càng tốt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>NIM</b> = thu nhập lãi thuần 4 quý ÷ <b>tài sản sinh lãi bình quân</b>.",
+    "Tài sản sinh lãi gồm <b>tiền gửi và cho vay TCTD khác, chứng khoán, cho vay khách hàng</b>.",
+    "NIM <b>từ khoảng 3,5% và ổn định</b> thường được xem là tốt, mức này chỉ để tham khảo.",
+    "Đọc NIM cùng <b>chi phí tín dụng</b> để thấy biên lãi có đi kèm rủi ro cao hay không."
+  ],
+  "title": "NIM · biên lãi thuần"
+}

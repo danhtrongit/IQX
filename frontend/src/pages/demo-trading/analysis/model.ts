@@ -1,24 +1,32 @@
 /**
- * Dashboard phân tích · phép tính thuần (spec §5, §6, §8, §10).
+ * Dashboard phân tích · phép tính thuần (spec Dashboard v2 §3, §5, §6, §8, §10).
  *
- * Ở đây không có React và không có I/O: bộ mặc định, cách cắt số kỳ và
- * khoảng thời gian của biểu đồ định giá. Định dạng số và hình vẽ nằm ở bộ
- * khuôn dùng chung `@/components/fundamental-charts`. Mọi thứ
- * ở đây là hàm thuần để kiểm thử được và để lớp giao diện chỉ lo vẽ.
+ * Ở đây không có React và không có I/O: bộ mặc định của từng ngành, cách cắt
+ * số kỳ, khoảng thời gian của biểu đồ định giá và lọc danh mục theo ô tìm kiếm.
+ * Định dạng số và hình vẽ nằm ở bộ khuôn dùng chung
+ * `@/components/fundamental-charts`. Mọi thứ ở đây là hàm thuần để kiểm thử
+ * được và để lớp giao diện chỉ lo vẽ.
  */
 import { FIXED_YEAR_KINDS, type FundamentalChartData } from "@/components/fundamental-charts"
 
-import type { ChartDataEntry, ChartName, ChartSeries, PeriodCounts, PeriodMode } from "./api"
+import type {
+  CatalogChapter,
+  CatalogIndustry,
+  ChartDataEntry,
+  ChartName,
+  ChartSeries,
+  Industry,
+  PeriodCounts,
+  PeriodMode,
+} from "./api"
 
-/** Bộ mặc định (spec §6.3): Quý, mỗi biểu đồ 5 kỳ, 6 biểu đồ. */
-export const DEFAULT_CHARTS: readonly ChartName[] = [
-  "Tăng trưởng doanh thu",
-  "Tăng trưởng LNST",
-  "Biên lợi nhuận ròng",
-  "ROE",
-  "D/E",
-  "P/E",
-]
+/**
+ * Đường dẫn nút "Học" của một chỉ tiêu: mở đúng bài học của chỉ tiêu trong Học viện
+ * (spec §4.3). `metric_key` là khoá ổn định của chỉ tiêu, không phải tên hiển thị.
+ */
+export function academyMetricHref(metricKey: string): string {
+  return `/academy?metric=${encodeURIComponent(metricKey)}`
+}
 
 /** Số kỳ chọn được theo chế độ (spec §5.2). */
 export const PERIOD_OPTIONS: Record<PeriodMode, readonly number[]> = {
@@ -72,8 +80,47 @@ export function isSameSettings(a: DashboardDraft, b: DashboardDraft): boolean {
   return nksSignature(a.nks) === nksSignature(b.nks)
 }
 
-/** Bộ mặc định của spec: 6 biểu đồ, Quý, 5 kỳ. */
-export const DEFAULT_DRAFT: DashboardDraft = { charts: [...DEFAULT_CHARTS], per: "q", nks: {} }
+/**
+ * Bộ mặc định của một ngành (spec §6.3): 6 biểu đồ của ngành đó, Quý, 5 kỳ. Danh sách biểu đồ lấy
+ * từ danh mục của máy chủ nên chỉ có một nguồn; chưa có danh mục thì chưa có bộ mặc định.
+ */
+export function defaultDraftOf(industry: CatalogIndustry | undefined): DashboardDraft | undefined {
+  if (!industry) return undefined
+  return { charts: [...industry.default_charts], per: "q", nks: {} }
+}
+
+/** Tất cả chỉ tiêu của một ngành, theo thứ tự chương rồi nhóm. */
+export function industryItems(industry: CatalogIndustry | undefined) {
+  return (industry?.chapters ?? []).flatMap((chapter) => chapter.groups.flatMap((group) => group.items))
+}
+
+/** Số chỉ tiêu của một chương. */
+export function chapterSize(chapter: CatalogChapter): number {
+  return chapter.groups.reduce((sum, group) => sum + group.items.length, 0)
+}
+
+/** Số chỉ tiêu đã chọn trong một danh sách chỉ tiêu. */
+export function chosenCount(items: readonly { name: ChartName }[], selected: readonly ChartName[]): number {
+  return items.filter((item) => selected.includes(item.name)).length
+}
+
+/** Bỏ dấu và hạ chữ thường, để tìm "khoi luong" ra "Khối lượng". */
+export function normalizeSearch(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/gi, "d")
+    .toLowerCase()
+    .trim()
+}
+
+/** Ngành đã biết của mã từ một danh sách ngành (dùng khi chọn thiết lập theo ngành). */
+export function findIndustry(
+  catalog: readonly CatalogIndustry[] | undefined,
+  industry: Industry | undefined,
+): CatalogIndustry | undefined {
+  return industry ? catalog?.find((item) => item.nganh === industry) : undefined
+}
 
 /** Cắt chuỗi còn lại số kỳ gần nhất (spec §5.2). */
 export function cutSeries(series: ChartSeries, count: number): ChartSeries {

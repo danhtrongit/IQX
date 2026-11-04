@@ -56,7 +56,7 @@ async function call<T>(method: string, route: string, body?: unknown, token?: st
 
 async function banksDirectory(): Promise<string> {
   const here = dirname(fileURLToPath(import.meta.url));
-  const relative = join('src', 'modules', 'academy', 'content', 'v3', 'questions');
+  const relative = join('src', 'modules', 'academy', 'content', 'v4', 'questions');
   for (const root of [join(here, '..'), join(here, '..', '..')]) {
     const candidate = join(root, relative);
     try {

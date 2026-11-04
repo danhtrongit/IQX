@@ -90,11 +90,35 @@ async function respond(path: string, init?: RequestInit): Promise<unknown> {
   if (path.startsWith("/instruments")) {
     return { data: [{ symbol: "VCB", name: "NH TMCP Ngoại thương Việt Nam", exchange: "HOSE" }] }
   }
-  // Dashboard phân tích: thiết lập, danh mục và số liệu theo khuôn.
-  if (path === "/dashboard/settings") return { charts: ["ROE"], per: "q", nks: {} }
-  if (path === "/dashboard/catalog") return []
-  if (path.startsWith("/fundamental/")) return { symbol: "FPT", is_bank: false, per: "q", charts: {} }
-  if (path.startsWith("/valuation/")) return { symbol: "FPT", dates: [], charts: {} }
+  // Dashboard phân tích: ngành của mã, thiết lập theo ngành, danh mục và số liệu theo khuôn.
+  if (path.startsWith("/dashboard/industry/")) {
+    return { symbol: "FPT", nganh: "thuong", label: "Doanh nghiệp sản xuất" }
+  }
+  if (path === "/dashboard/settings") {
+    const own = { charts: ["ROE"], per: "q", nks: {} }
+    return { thuong: own, nh: own, ck: own, bh: own }
+  }
+  if (path === "/dashboard/catalog") {
+    return {
+      industries: [
+        {
+          nganh: "thuong",
+          label: "Doanh nghiệp sản xuất",
+          total: 1,
+          default_charts: ["ROE"],
+          chapters: [
+            {
+              chapter: "Phân tích cơ bản chung",
+              academy_chapter: 8,
+              groups: [{ group: "Hiệu quả", items: [{ name: "ROE", metric_key: "roe", kind: "B" }] }],
+            },
+          ],
+        },
+      ],
+    }
+  }
+  if (path.startsWith("/fundamental/")) return { symbol: "FPT", nganh: "thuong", per: "q", charts: {} }
+  if (path.startsWith("/valuation/")) return { symbol: "FPT", nganh: "thuong", dates: [], charts: {} }
   return {}
 }
 
@@ -186,11 +210,12 @@ describe("DemoTradingPage for a brand-new user", () => {
 
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
-    expect(within(panel()).getByText("87 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("116 bài học")).toBeTruthy()
     // The panel lists the real catalog and the learner's progress.
     expect(await within(panel()).findByText("Chương 1 · Nền tảng")).toBeTruthy()
     expect(within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })).toBeTruthy()
-    expect(await within(panel()).findByRole("button", { name: /^Học bài/ })).toBeTruthy()
+    // Free learning: every lesson of the opened chapter offers its own "Học bài" button.
+    expect(await within(panel()).findByRole("button", { name: "Học bài Bài học 1.1" })).toBeTruthy()
     expect(screen.queryByTestId("academy-empty")).toBeNull()
     // The main area is the tool's own view: no tablist, no page heading block.
     expect(screen.queryByRole("tablist", { name: "Nội dung demo trading" })).toBeNull()
@@ -251,7 +276,7 @@ describe("DemoTradingPage for a brand-new user", () => {
     const { router } = await renderPage("/demo-trading?view=journey&content=journey&symbol=FPT")
     await waitFor(() => expect(router.state.location.search).toBe("?view=academy&symbol=FPT"))
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
-    expect(within(panel()).getByText("87 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("116 bài học")).toBeTruthy()
     expect(paths().filter((call) => /\/cap\d|\/journey|\/bot\/mascot/.test(call))).toEqual([])
   })
 

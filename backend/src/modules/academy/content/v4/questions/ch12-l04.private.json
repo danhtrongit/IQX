@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l04",
+  "questions": [
+    {
+      "correct_option_id": "7c17fdda87",
+      "id": "ch12-l04-q01",
+      "options": [
+        {
+          "id": "7c17fdda87",
+          "text": "Chi phí kinh doanh và quản lý chia phí bảo hiểm thuần"
+        },
+        {
+          "id": "a4d7223fbe",
+          "text": "Chi phí kinh doanh và quản lý chia vốn chủ sở hữu"
+        },
+        {
+          "id": "f17e85aa13",
+          "text": "Bồi thường thuần chia phí bảo hiểm thuần"
+        }
+      ],
+      "prompt": "Tỷ lệ chi phí được tính thế nào?"
+    },
+    {
+      "correct_option_id": "a6e5195698",
+      "id": "ch12-l04-q02",
+      "options": [
+        {
+          "id": "a6e5195698",
+          "text": "Hoa hồng đại lý và chi phí khai thác"
+        },
+        {
+          "id": "fcf1d5e8a9",
+          "text": "Lãi tiền gửi ngân hàng nhận được"
+        },
+        {
+          "id": "86c552611f",
+          "text": "Phí nhượng tái bảo hiểm"
+        }
+      ],
+      "prompt": "Khoản nào thuộc chi phí khác hoạt động kinh doanh bảo hiểm?"
+    },
+    {
+      "correct_option_id": "cc7ab1ae09",
+      "id": "ch12-l04-q03",
+      "options": [
+        {
+          "id": "cc7ab1ae09",
+          "text": "Công ty có lợi thế quy mô"
+        },
+        {
+          "id": "25887af0e5",
+          "text": "Công ty đang hạ phí bảo hiểm"
+        },
+        {
+          "id": "3d19f23e2f",
+          "text": "Công ty nhượng tái nhiều hơn"
+        }
+      ],
+      "prompt": "Tỷ lệ chi phí giảm dần khi quy mô phí tăng cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "d42ea95e8a",
+      "id": "ch12-l04-q04",
+      "options": [
+        {
+          "id": "d42ea95e8a",
+          "text": "Chạy đua hoa hồng để mua doanh thu"
+        },
+        {
+          "id": "a6cbc555c6",
+          "text": "Công ty quản lý chi phí rất hiệu quả"
+        },
+        {
+          "id": "3f54c66313",
+          "text": "Bồi thường đang giảm nhanh"
+        }
+      ],
+      "prompt": "Tỷ lệ chi phí tăng cùng lúc phí tăng mạnh có thể là dấu hiệu gì?"
+    },
+    {
+      "chart_id": "c12l4-rep",
+      "correct_option_id": "e18cb577a2",
+      "id": "ch12-l04-q05",
+      "options": [
+        {
+          "id": "e18cb577a2",
+          "text": "Đi xuống"
+        },
+        {
+          "id": "df6beaac99",
+          "text": "Đi lên"
+        },
+        {
+          "id": "e0d8f28644",
+          "text": "Vượt mốc 100%"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, phí thuần tăng nhanh hơn chi phí thì đường tỷ lệ chi phí thế nào?"
+    }
+  ],
+  "salt": "3f4c18b14be3059de44ac5230dd0be8180d46fa8ceef2d5bb4a8c9515332a5e6"
+}

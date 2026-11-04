@@ -1,0 +1,26 @@
+{
+  "ch01-l10-q02": {
+    "options": [
+      "Vì phần lãi được tính trên số vốn đã nhỏ đi sau khi lỗ",
+      "Vì khi lãi luôn phải trừ thêm một nửa phí",
+      "Vì lãi và lỗ luôn được tính trên cùng một số vốn"
+    ],
+    "prompt": "Vì sao lỗ một nửa thì phải lãi nhiều hơn một nửa mới hòa vốn?"
+  },
+  "ch02-l01-q03": {
+    "options": [
+      "Mục tiêu ngày nhỏ và cụ thể nên dễ bắt tay làm, dễ theo dõi",
+      "Để cuối tháng không phải báo cáo kết quả",
+      "Để mỗi ngày làm ít hơn mức mục tiêu tháng cần"
+    ],
+    "prompt": "Vì sao nên chia mục tiêu tháng thành mục tiêu ngày?"
+  },
+  "ch07-exam-q17": {
+    "options": [
+      "Cùng ý nghĩa nhưng thang âm: quá mua gần 0, quá bán gần −100",
+      "Cùng thang 0 đến 100 và giống hệt Stochastic",
+      "Ngược ý nghĩa: gần 0 là vùng quá bán"
+    ],
+    "prompt": "Williams %R khác Stochastic thế nào về thang đo?"
+  }
+}

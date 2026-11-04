@@ -3746,6 +3746,9 @@
       "GET /api/v2/auth/reset-password",
       "GET /api/v2/auth/username-available",
       "GET /api/v2/auth/verify-email",
+      "GET /api/v2/dashboard/catalog",
+      "GET /api/v2/dashboard/industry/{symbol}",
+      "GET /api/v2/fundamental/{symbol}",
       "GET /api/v2/health",
       "GET /api/v2/instruments",
       "GET /api/v2/instruments/{symbol}",
@@ -3833,6 +3836,7 @@
       "GET /api/v2/market-data/trading/{symbol}/supply-demand/summary",
       "GET /api/v2/media/{token}",
       "GET /api/v2/premium/plans",
+      "GET /api/v2/valuation/{symbol}",
       "GET /api/v2/virtual-trading/leaderboard",
       "GET /health/live",
       "GET /health/ready",
@@ -3876,8 +3880,8 @@
     "semanticVerification": "manual-review-required"
   },
   "runtime": {
-    "documentedHttp": 785,
-    "registeredHttp": 1252,
+    "documentedHttp": 806,
+    "registeredHttp": 1283,
     "websocketAdapter": "WsAdapter",
     "websocketGateways": 2
   },

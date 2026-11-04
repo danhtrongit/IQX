@@ -32,8 +32,9 @@ function ReaderSkeleton() {
 
 /**
  * The open item in the left area: a lesson or the practice room (content, quiz gate, pager), a
- * chapter exam (intro), or the quiz of either (content hidden). A locked item (403) shows
- * LockedState. Mount it with `key={lessonId}`: a slow response of item A never paints into item B.
+ * chapter exam (intro), or the quiz of either (content hidden). A locked item (403, `sequential`
+ * accounts only: learning is free by default) shows LockedState. Mount it with `key={lessonId}`: a slow
+ * response of item A never paints into item B.
  */
 export function LessonReader({ lessonId }: { lessonId: string }) {
   const { user } = useAuth()

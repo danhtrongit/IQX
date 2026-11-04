@@ -1,0 +1,445 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l2-g1": {
+      "alt": "Doanh thu hoạt động 4 quý là 4.305 tỷ đồng, gồm chi phí hoạt động 1.924 tỷ đồng và lợi nhuận hoạt động 2.381 tỷ đồng; biên lợi nhuận hoạt động bằng 2.381 chia 4.305, khoảng 55,3%",
+      "kind": "segment_bar",
+      "max": 4305,
+      "rows": [
+        {
+          "label": "Doanh thu hoạt động 4 quý · 4.305 tỷ đồng",
+          "segments": [
+            {
+              "label": "Chi phí hoạt động",
+              "sub": "1.924 tỷ",
+              "tone": "p5",
+              "value": 1924
+            },
+            {
+              "label": "Lợi nhuận hoạt động",
+              "sub": "2.381 tỷ",
+              "tone": "pos",
+              "value": 2381
+            }
+          ],
+          "sub": "Biên lợi nhuận hoạt động = 2.381 ÷ 4.305",
+          "total": {
+            "text": "≈ 55,3%",
+            "tone": "pos"
+          }
+        }
+      ]
+    },
+    "c11l2-g2": {
+      "items": [
+        {
+          "model": {
+            "alt": "Doanh nghiệp sản xuất: doanh thu thuần trừ giá vốn hàng bán bằng lợi nhuận gộp",
+            "edges": [
+              {
+                "from": "sx-a",
+                "label": "trừ",
+                "to": "sx-b"
+              },
+              {
+                "from": "sx-b",
+                "label": "bằng",
+                "to": "sx-c"
+              }
+            ],
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "sx-a",
+                "title": "Doanh thu thuần"
+              },
+              {
+                "id": "sx-b",
+                "title": "Giá vốn hàng bán"
+              },
+              {
+                "id": "sx-c",
+                "title": "Lợi nhuận gộp",
+                "tone": "p1"
+              }
+            ]
+          },
+          "title": "Doanh nghiệp sản xuất · biên gộp",
+          "tone": "p1"
+        },
+        {
+          "model": {
+            "alt": "Công ty chứng khoán: doanh thu hoạt động trừ chi phí hoạt động bằng lợi nhuận hoạt động",
+            "edges": [
+              {
+                "from": "ck-a",
+                "label": "trừ",
+                "to": "ck-b"
+              },
+              {
+                "from": "ck-b",
+                "label": "bằng",
+                "to": "ck-c"
+              }
+            ],
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "ck-a",
+                "title": "Doanh thu hoạt động"
+              },
+              {
+                "id": "ck-b",
+                "title": "Chi phí hoạt động"
+              },
+              {
+                "id": "ck-c",
+                "title": "Lợi nhuận hoạt động",
+                "tone": "pos"
+              }
+            ]
+          },
+          "title": "Công ty chứng khoán · biên lợi nhuận hoạt động",
+          "tone": "pos"
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack"
+    },
+    "c11l2-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Công ty A · thiên về cho vay",
+          "tone": "p1",
+          "values": [
+            56,
+            55,
+            55,
+            54,
+            55,
+            56,
+            55,
+            56
+          ]
+        },
+        {
+          "name": "Công ty B · thiên về tự doanh",
+          "tone": "p5",
+          "values": [
+            62,
+            40,
+            58,
+            35,
+            60,
+            44,
+            30,
+            52
+          ]
+        }
+      ],
+      "unit": "%",
+      "value_labels": "none"
+    },
+    "c11l2-rep": {
+      "alt": "Biên lợi nhuận hoạt động: 55,3%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Biên lợi nhuận hoạt động (4 quý)",
+            "v": [
+              56.103,
+              55.693,
+              54.209,
+              53.813,
+              52.825,
+              52.578,
+              53.941,
+              55.303
+            ]
+          }
+        ],
+        "name": "Biên lợi nhuận hoạt động",
+        "sub": {
+          "series": [
+            {
+              "name": "Chi phí hoạt động",
+              "v": [
+                3217.744,
+                3291.066,
+                3363.736,
+                3170.779,
+                2771.846,
+                2526,
+                2160.572,
+                1924.003
+              ]
+            },
+            {
+              "name": "Lợi nhuận hoạt động",
+              "v": [
+                4112.492,
+                4136.849,
+                3982.067,
+                3694.311,
+                3103.806,
+                2800.689,
+                2530.31,
+                2380.579
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Biên lợi nhuận hoạt động cho biết mỗi đồng doanh thu hoạt động còn lại bao nhiêu sau chi phí hoạt động. Đây là phiên bản biên gộp dành cho công ty chứng khoán.",
+  "lesson_key": "fundamental:operating_margin",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l2-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Biên lợi nhuận hoạt động</b> = (Doanh thu hoạt động − Chi phí hoạt động) ÷ Doanh thu hoạt động. Cả hai dòng đều nằm trên <b>báo cáo kết quả hoạt động</b>, cộng dồn <b>4 quý gần nhất</b>.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Biên 55,3% nghĩa là mỗi 100 đồng doanh thu hoạt động còn lại 55,3 đồng trước chi phí quản lý, chi phí tài chính và thuế.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Biên lợi nhuận hoạt động là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán không có giá vốn hàng bán. Chi phí hoạt động đóng vai trò tương tự giá vốn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l2-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lỗ từ tài sản tài chính, chi phí môi giới, chi phí tự doanh, lưu ký, dự phòng.",
+              "title": "Chi phí hoạt động gồm"
+            },
+            {
+              "text": "Chi phí lãi vay nằm ở mục chi phí tài chính, đứng sau lợi nhuận hoạt động.",
+              "title": "Không gồm lãi vay"
+            },
+            {
+              "text": "Chi phí quản lý công ty chứng khoán cũng nằm riêng, không trừ trong biên này.",
+              "title": "Không gồm quản lý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao gọi là biên gộp"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l2-rep",
+          "title": "Biên lợi nhuận hoạt động",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên lợi nhuận hoạt động tính theo 4 quý gần nhất.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng chi phí hoạt động và lợi nhuận hoạt động 4 quý, tổng chiều cao là doanh thu hoạt động.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột thấp dần cho thấy quy mô thu hẹp. Đường đi lên cho thấy chi phí giảm nhanh hơn doanh thu.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Từ 50% trở lên và ổn định qua nhiều quý (tham khảo). Công ty giữ được phần lớn doanh thu.",
+              "title": "Biên tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới 40% hoặc lên xuống thất thường. Thường do lỗ tự doanh hoặc chi phí môi giới cao.",
+              "title": "Biên yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Công ty thiên về cho vay có biên khá phẳng. Công ty thiên về tự doanh có biên giật mạnh theo thị trường.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l2-g3",
+          "legend": [
+            {
+              "label": "Công ty A · thiên về cho vay (%)",
+              "tone": "p1"
+            },
+            {
+              "label": "Công ty B · thiên về tự doanh (%)",
+              "tone": "p5"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên đi lên đều qua nhiều quý cho thấy hiệu quả cải thiện thật.",
+              "title": "Theo dõi xu hướng"
+            },
+            {
+              "text": "Biên giảm cùng lúc tự doanh giảm thường là do lỗ tài sản tài chính.",
+              "title": "Đọc cùng cơ cấu doanh thu"
+            },
+            {
+              "text": "So với công ty chứng khoán có cơ cấu doanh thu gần giống để đánh giá công bằng.",
+              "title": "So trong ngành"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu có số liệu 4 quý từ Q3/25 đến Q2/26 như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Doanh thu hoạt động 4 quý",
+              "text": "4.305 tỷ đồng."
+            },
+            {
+              "term": "Chi phí hoạt động 4 quý",
+              "text": "1.924 tỷ đồng."
+            },
+            {
+              "term": "Lợi nhuận hoạt động",
+              "text": "4.305 − 1.924 = 2.381 tỷ đồng."
+            },
+            {
+              "term": "Biên lợi nhuận hoạt động",
+              "text": "2.381 ÷ 4.305 ≈ 55,3%, tăng từ mức thấp 52,6% ở Q4/25."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Biên hoạt động chưa trừ chi phí quản lý, lãi vay và thuế nên luôn cao hơn biên ròng.",
+              "title": "Nhầm với biên ròng"
+            },
+            {
+              "text": "Biên tăng trong khi doanh thu giảm mạnh vẫn là lợi nhuận tuyệt đối nhỏ đi.",
+              "title": "Bỏ qua quy mô"
+            },
+            {
+              "text": "Một quý tự doanh thắng lớn có thể đẩy biên lên tạm thời.",
+              "title": "Tin một quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Biên lợi nhuận hoạt động</b> = (Doanh thu hoạt động − Chi phí hoạt động) ÷ Doanh thu hoạt động.",
+    "Lấy số <b>4 quý</b> trên báo cáo kết quả hoạt động.",
+    "Đây là <b>phiên bản biên gộp</b> của công ty chứng khoán, chưa trừ lãi vay và quản lý.",
+    "Biên <b>từ 50% trở lên và ổn định</b> thường được xem là tốt."
+  ],
+  "title": "Biên lợi nhuận hoạt động · biên gộp của công ty chứng khoán"
+}

@@ -190,6 +190,9 @@
     --s1: var(--chart-1);
     --s2: #d95926;
     --s3: #199e70;
+    /* Cột thứ tư và đường thứ hai của các chỉ tiêu theo ngành (spec Dashboard v2 §9). Nền sáng dùng sắc đậm hơn để đủ tương phản. */
+    --s4: #7c5bd6;
+    --line2: #b7791f;
     --neg: var(--price-down);
     --ref-line: var(--chart-5);
     --band: color-mix(in oklab, var(--s1) 14%, transparent);
@@ -261,6 +264,8 @@
     --s1: var(--chart-1);
     --s2: #d95926;
     --s3: #199e70;
+    --s4: #b99cff;
+    --line2: #f5d76e;
     --neg: #e66767;
     --ref-line: #8aa0b8;
     --band: color-mix(in oklab, var(--s1) 13%, transparent);

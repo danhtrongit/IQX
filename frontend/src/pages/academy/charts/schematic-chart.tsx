@@ -186,6 +186,12 @@ function tagBox(layer: Extract<SchematicLayer, { t: "tag" }>, g: Geometry): Box 
   return { x0, y0, x1: x0 + w, y1: y0 + 18 }
 }
 
+/** Centre of a bracket's label: the middle of the bracket, kept inside the plot like a tag, so a bracket at the edge of a narrow chart does not push its label out. */
+function bracketLabelX(layer: Extract<SchematicLayer, { t: "bracket" }>, g: Geometry): number {
+  const mid = (g.x(layer.x[0]) + g.x(layer.x[1])) / 2
+  return fitX(mid, layoutWidth(layer.label, 10.5), "middle", g.left, g.right)
+}
+
 function zoneRect(layer: Extract<SchematicLayer, { t: "zone" }>, g: Geometry): Box & { thin: boolean } {
   const panel = layer.panel ?? 0
   const top = g.tops[panel] ?? g.tops[0]
@@ -226,7 +232,7 @@ function sceneMarks(layers: SchematicLayer[], g: Geometry): Pick<Scene, "boxes" 
         const x1 = g.x(layer.x[1])
         const by = y(layer.y)
         segs.push([x0, by, x1, by], [x0, by - 5, x0, by], [x1, by - 5, x1, by])
-        boxes.push(placementBox({ lines: [layer.label], x: (x0 + x1) / 2, y: by + 14, anchor: "middle", size: 10.5, gap: 13, className: "" }))
+        boxes.push(placementBox({ lines: [layer.label], x: bracketLabelX(layer, g), y: by + 14, anchor: "middle", size: 10.5, gap: 13, className: "" }))
         break
       }
       case "bars":
@@ -659,7 +665,7 @@ function Layer({ layer, geometry, arrowId, hatchId }: { layer: SchematicLayer; g
       return (
         <g>
           <path d={`M${x0},${by - 5} L${x0},${by} L${x1},${by} L${x1},${by - 5}`} fill="none" strokeWidth="1.4" className={TONE_STROKE[layer.tone]} />
-          <text x={(x0 + x1) / 2} y={by + 14} textAnchor="middle" className={cn(textFill(layer.tone), "text-[10.5px] font-semibold")}>
+          <text x={bracketLabelX(layer, geometry)} y={by + 14} textAnchor="middle" className={cn(textFill(layer.tone), "text-[10.5px] font-semibold")}>
             {layer.label}
           </text>
         </g>

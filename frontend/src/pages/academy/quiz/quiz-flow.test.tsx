@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { ApiError } from "@/lib/api"
 import { createFakeAcademyApi } from "../test-api"
-import { ATTEMPT_ID, CATALOG_VERSION, keysBefore } from "../test-fixtures"
+import { ATTEMPT_ID, CATALOG_VERSION } from "../test-fixtures"
 import { renderAcademy, stubBrowser } from "../test-support"
 import { resetAcademyViewState } from "../view-state"
 
@@ -199,8 +199,7 @@ describe("quiz: score-only result", () => {
     expect(await screen.findByRole("heading", { level: 3, name: "Nội dung chính" })).toBeTruthy()
   })
 
-  it("fails 4/5 in chapter 4 and shows Đã mở chỉ báo RSI on the RSI lesson pass", async () => {
-    install({ completed: keysBefore("ch04-l06") })
+  it("fails 4/5 in chapter 4, then passes 5/5 on the RSI lesson with no unlock label (spec v4 §3)", async () => {
     const user = userEvent.setup()
     await openItem("ch04-l06", "Bài học 4.6")
     await start(user)
@@ -208,30 +207,32 @@ describe("quiz: score-only result", () => {
     await answerAll(user, 5, [4])
     expect((await screen.findByLabelText("Điểm 4 trên 5")).textContent).toBe("4/5")
     expect(screen.getByText("Chưa đạt")).toBeTruthy()
-    expect(screen.queryByText(/Đã mở chỉ báo/)).toBeNull()
 
     await user.click(screen.getByRole("button", { name: "Làm lại" }))
     await screen.findByRole("heading", { level: 3, name: /^Câu hỏi 1 / })
     await answerAll(user, 5)
     expect((await screen.findByLabelText("Điểm 5 trên 5")).textContent).toBe("5/5")
-    expect(screen.getByText("Đã mở chỉ báo RSI")).toBeTruthy()
+    expect(screen.getByText("Đạt")).toBeTruthy()
+    // No tool depends on a lesson any more: the result never says a chỉ báo was opened.
+    expect(screen.queryByText(/Đã mở/)).toBeNull()
+    expect(document.body.textContent).not.toMatch(/Đã mở chỉ/)
   })
 
-  it("a fundamental lesson opens a chỉ tiêu: Đã mở chỉ tiêu ROE on the ROE lesson pass", async () => {
-    install({ completed: keysBefore("ch10-l01") })
+  it("a metric lesson (ROE, chapter 8) passes with the same plain result: no Đã mở chỉ tiêu label", async () => {
     const user = userEvent.setup()
-    await openItem("ch10-l01", "Bài học 10.1")
+    await openItem("ch08-l11", "Bài học 8.11")
     await start(user)
     await answerAll(user, 5)
     expect((await screen.findByLabelText("Điểm 5 trên 5")).textContent).toBe("5/5")
-    expect(screen.getByText("Đã mở chỉ tiêu ROE")).toBeTruthy()
-    expect(screen.queryByText(/Đã mở chỉ báo/)).toBeNull()
+    expect(screen.getByText("Đạt")).toBeTruthy()
+    expect(screen.getByRole("button", { name: "Đã hoàn thành" }).hasAttribute("disabled")).toBe(true)
+    expect(screen.queryByText(/Đã mở/)).toBeNull()
   })
 
   it("HV-02: a chart-reading question draws the lesson's representative chart above the prompt", async () => {
-    const file = resolve(process.cwd(), "../backend/src/modules/academy/content/v3/lessons/ch10-l01.vi.json")
+    const file = resolve(process.cwd(), "../backend/src/modules/academy/content/v4/lessons/ch10-l01.vi.json")
     const charts = { "c10l1-rep": (JSON.parse(readFileSync(file, "utf8")) as { charts: Record<string, never> }).charts["c10l1-rep"] }
-    install({ completed: keysBefore("ch10-l01"), lessons: { "ch10-l01": { charts } } })
+    install({ lessons: { "ch10-l01": { charts } } })
     const user = userEvent.setup()
     await openItem("ch10-l01", "Bài học 10.1")
     await start(user)
@@ -242,8 +243,7 @@ describe("quiz: score-only result", () => {
     expect(document.querySelector("[data-quiz-chart]")).toBeNull()
   })
 
-  it("an exam: Bài thi Chương c label, 20 questions, Đã hoàn thành Chương c, no coin toast", async () => {
-    install({ completed: keysBefore("ch01-exam") })
+  it("an exam: Bài thi Chương c label, 20 questions, Đã hoàn thành Chương c, no coin toast, no lesson passed before it", async () => {
     const user = userEvent.setup()
     const { router } = await openItem("ch01-exam", "Bài thi Chương 1")
     await start(user, "Bắt đầu làm bài")
@@ -261,7 +261,7 @@ describe("quiz: score-only result", () => {
   }, 20_000)
 
   it("the practice room quiz is labelled Bài kiểm tra, not the room name (spec §3.2-1)", async () => {
-    install({ completed: keysBefore("ch04-l01"), lessons: { "ch03-practice": { has_scenario: false } } })
+    install({ lessons: { "ch03-practice": { has_scenario: false } } })
     const user = userEvent.setup()
     await openItem("ch03-practice", "Phòng tập thực chiến")
     await start(user)
@@ -271,7 +271,6 @@ describe("quiz: score-only result", () => {
   })
 
   it("an exam at 19/20 is Chưa đạt and offers Làm lại and Xem lại Chương c", async () => {
-    install({ completed: keysBefore("ch01-exam") })
     const user = userEvent.setup()
     await openItem("ch01-exam", "Bài thi Chương 1")
     await start(user, "Bắt đầu làm bài")
@@ -288,7 +287,6 @@ describe("quiz: server refusals", () => {
   it("403 ACADEMY_SCENARIO_REQUIRED returns to the content and scrolls to the scenario", async () => {
     // The item says a choice exists (a stale tab) but the server holds none.
     install({
-      completed: keysBefore("ch02-l01"),
       lessons: { "ch02-l01": { scenario_choice: { choice: 0, chosen_at: "2026-10-08T00:40:00.000Z" } } },
     })
     const user = userEvent.setup()

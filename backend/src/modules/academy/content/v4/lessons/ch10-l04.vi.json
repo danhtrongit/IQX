@@ -1,0 +1,425 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l4-g1": {
+      "alt": "Tổng thu nhập hoạt động quý Q2/26 là 34.329 tỷ đồng, gồm 27.283 tỷ thu nhập lãi thuần (79,5%) và 7.047 tỷ thu nhập ngoài lãi (20,5%); tỷ trọng ngoài lãi bằng 7.047 chia 34.329, xấp xỉ 20,5%",
+      "brackets": [
+        {
+          "from": 27283,
+          "label": "Tỷ trọng ngoài lãi = 7.047 ÷ 34.329 ≈ 20,5%",
+          "row": 0,
+          "to": 34329,
+          "tone": "warn"
+        }
+      ],
+      "kind": "segment_bar",
+      "max": 34329,
+      "rows": [
+        {
+          "label": "Tổng thu nhập hoạt động Q2/26",
+          "segments": [
+            {
+              "label": "Thu nhập lãi thuần · 79,5%",
+              "sub": "27.283 tỷ",
+              "tone": "p1",
+              "value": 27283
+            },
+            {
+              "label": "Ngoài lãi · 20,5%",
+              "sub": "7.047 tỷ",
+              "tone": "warn",
+              "value": 7047
+            }
+          ],
+          "total": {
+            "text": "34.329 tỷ đồng"
+          }
+        }
+      ],
+      "unit": "tỷ đồng"
+    },
+    "c10l4-g2": {
+      "kind": "category",
+      "labels": [
+        "Lãi thuần từ dịch vụ",
+        "Kinh doanh ngoại hối",
+        "Hoạt động khác",
+        "Chứng khoán đầu tư",
+        "Chứng khoán kinh doanh",
+        "Góp vốn, mua cổ phần"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "Thu nhập ngoài lãi Q2/26 theo từng dòng · tỷ đồng",
+          "per_bar_tones": [
+            "pos",
+            "pos",
+            "warn",
+            "p5",
+            "p5",
+            "warn"
+          ],
+          "tone": "pos",
+          "values": [
+            3400,
+            1150,
+            1500,
+            600,
+            250,
+            147
+          ]
+        }
+      ],
+      "title": "Thu nhập ngoài lãi Q2/26 theo từng dòng · tỷ đồng",
+      "unit": "tỷ đồng",
+      "value_labels": "all"
+    },
+    "c10l4-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Lãi thuần dịch vụ · đều đặn",
+          "tone": "pos",
+          "values": [
+            2.6,
+            2.7,
+            2.8,
+            2.9,
+            3,
+            3.1,
+            3.3,
+            3.4
+          ]
+        },
+        {
+          "name": "Lãi chứng khoán · thất thường",
+          "tone": "p5",
+          "values": [
+            0.9,
+            0.2,
+            1.3,
+            0.4,
+            1.4,
+            -0.2,
+            1.6,
+            0.85
+          ]
+        }
+      ],
+      "title": "nghìn tỷ đồng · minh họa",
+      "unit": "nghìn tỷ đồng",
+      "value_labels": "none"
+    },
+    "c10l4-rep": {
+      "alt": "Tỷ trọng thu nhập ngoài lãi: 20,5%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Thu nhập ngoài lãi / TOI",
+            "v": [
+              23.09,
+              19.617,
+              23.32,
+              21.008,
+              23.556,
+              20.855,
+              24.077,
+              20.527
+            ]
+          }
+        ],
+        "name": "Tỷ trọng thu nhập ngoài lãi",
+        "sub": {
+          "series": [
+            {
+              "name": "Thu nhập lãi thuần",
+              "v": [
+                19400.101,
+                19522.051,
+                20310.405,
+                19234.639,
+                21407.433,
+                22686.77,
+                24434.376,
+                27282.561
+              ]
+            },
+            {
+              "name": "Thu nhập ngoài lãi",
+              "v": [
+                5824.336,
+                4764.146,
+                6176.901,
+                5115.333,
+                6596.643,
+                5978.106,
+                7748.809,
+                7046.791
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ngoài cho vay, ngân hàng còn kiếm tiền từ phí dịch vụ, ngoại hối, chứng khoán và nhiều hoạt động khác. Tỷ trọng thu nhập ngoài lãi cho biết ngân hàng phụ thuộc vào tiền lãi đến mức nào.",
+  "lesson_key": "fundamental:non_interest_share",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l4-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Tỷ trọng thu nhập ngoài lãi</b> bằng <b>tổng thu nhập hoạt động trừ thu nhập lãi thuần</b>, chia cho <b>tổng thu nhập hoạt động</b>. Cả ba con số đều lấy từ báo cáo kết quả kinh doanh. Tỷ trọng 20,5% nghĩa là cứ 100 đồng thu nhập thì 20,5 đồng không đến từ tiền lãi.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ trọng thu nhập ngoài lãi là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Trên báo cáo kết quả kinh doanh, thu nhập ngoài lãi là tổng của các dòng lãi thuần từ những hoạt động khác cho vay.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l4-g2",
+          "legend": [
+            {
+              "label": "Ổn định",
+              "tone": "pos"
+            },
+            {
+              "label": "Dao động theo thị trường",
+              "tone": "p5"
+            },
+            {
+              "label": "Nguồn khác",
+              "tone": "warn"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lãi thuần từ dịch vụ như thanh toán, thẻ, bảo lãnh, bán bảo hiểm. Lãi thuần kinh doanh ngoại hối.",
+              "title": "Nguồn ổn định"
+            },
+            {
+              "text": "Lãi thuần mua bán chứng khoán kinh doanh và chứng khoán đầu tư, phụ thuộc thị trường.",
+              "title": "Nguồn dao động"
+            },
+            {
+              "text": "Lãi thuần hoạt động khác, thường là thu hồi nợ đã xử lý. Thu nhập từ góp vốn, mua cổ phần.",
+              "title": "Nguồn khác"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Thu nhập ngoài lãi gồm những gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l4-rep",
+          "title": "Tỷ trọng thu nhập ngoài lãi",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thu nhập ngoài lãi chia tổng thu nhập hoạt động của từng quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng của từng quý: phần dưới là thu nhập lãi thuần, phần trên là thu nhập ngoài lãi, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Phần trên của cột lớn dần qua các năm là nguồn thu đang đa dạng hơn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ trọng khoảng 20% đến 30% và đến chủ yếu từ dịch vụ, ngoại hối. Đây là mức tham khảo thường gặp ở Việt Nam.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ trọng tăng vọt nhờ lãi chứng khoán hay thu nhập khác trong một vài quý. Phần này khó lặp lại.",
+              "title": "Cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Chất lượng quan trọng hơn con số. Thu nhập dịch vụ đều đặn qua các quý, còn lãi chứng khoán có thể đổi thành lỗ khi thị trường xấu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l4-g3",
+          "legend": [
+            {
+              "label": "Lãi thuần dịch vụ · đều đặn",
+              "tone": "pos"
+            },
+            {
+              "label": "Lãi chứng khoán · thất thường",
+              "tone": "p5"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Xem dòng nào làm tỷ trọng thay đổi: dịch vụ, ngoại hối hay chứng khoán.",
+              "title": "Tách từng dòng"
+            },
+            {
+              "text": "Thu nhập ngoài lãi có tính mùa vụ, tỷ trọng thường dao động giữa các quý trong năm.",
+              "title": "So cùng kỳ năm trước"
+            },
+            {
+              "text": "Khi NIM bị ép, nguồn thu ngoài lãi ổn định giúp lợi nhuận ít bị ảnh hưởng hơn.",
+              "title": "Đọc cùng NIM"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Số liệu của ngân hàng mẫu trong quý Q2/26.",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Tổng thu nhập hoạt động",
+              "text": "34.329 tỷ đồng."
+            },
+            {
+              "term": "Thu nhập lãi thuần",
+              "text": "27.283 tỷ đồng."
+            },
+            {
+              "term": "Thu nhập ngoài lãi",
+              "text": "34.329 − 27.283 = 7.047 tỷ đồng."
+            },
+            {
+              "term": "Tỷ trọng",
+              "text": "7.047 ÷ 34.329 ≈ 20,5%. Các quý trước dao động trong khoảng 19,6% đến 24,1%."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phí dịch vụ bền hơn nhiều so với lãi mua bán chứng khoán.",
+              "title": "Coi mọi khoản ngoài lãi như nhau"
+            },
+            {
+              "text": "Thu nhập lãi giảm cũng làm tỷ trọng ngoài lãi tăng, dù thu nhập ngoài lãi không đổi.",
+              "title": "Hiểu sai khi NIM giảm"
+            },
+            {
+              "text": "Tỷ trọng thay đổi theo mùa. So cùng quý năm trước hoặc dùng số 4 quý.",
+              "title": "So hai quý liền nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Tỷ trọng thu nhập ngoài lãi</b> = (TOI − thu nhập lãi thuần) ÷ TOI.",
+    "Gồm lãi thuần từ <b>dịch vụ, ngoại hối, chứng khoán, hoạt động khác, góp vốn</b>.",
+    "Mức tham khảo <b>khoảng 20% đến 30%</b>, nguồn từ dịch vụ là bền nhất.",
+    "Luôn xem <b>dòng nào tạo ra</b> thu nhập ngoài lãi, không chỉ nhìn tỷ trọng."
+  ],
+  "title": "Tỷ trọng thu nhập ngoài lãi · độ đa dạng nguồn thu"
+}

@@ -1,6 +1,6 @@
 /**
- * Renderer fixtures: one block of every static type of the v3.3 schema and one chart model of
- * every kind, shaped like the real content (`backend/src/modules/academy/content/v3/lessons`).
+ * Renderer fixtures: one block of every static type of the v4 schema and one chart model of
+ * every kind, shaped like the real content (`backend/src/modules/academy/content/v4/lessons`).
  */
 import type { ChartModel, InteractiveBlock, LessonBlock, StaticBlock } from "../content-types"
 

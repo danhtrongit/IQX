@@ -1,0 +1,446 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l11-g1": {
+      "items": [
+        {
+          "model": {
+            "alt": "Bảng cân đối Q2/26: tổng tài sản 2.573 nghìn tỷ đồng gồm nợ phải trả 2.332 nghìn tỷ và vốn chủ sở hữu 240,2 nghìn tỷ",
+            "kind": "segment_bar",
+            "max": 2572.6,
+            "rows": [
+              {
+                "label": "Tổng tài sản",
+                "segments": [
+                  {
+                    "label": "Nợ phải trả",
+                    "sub": "2.332 nghìn tỷ",
+                    "tone": "p5",
+                    "value": 2332.4
+                  },
+                  {
+                    "label": "Vốn chủ sở hữu",
+                    "sub": "240,2 nghìn tỷ",
+                    "tone": "p1",
+                    "value": 240.2
+                  }
+                ],
+                "total": {
+                  "text": "2.573 nghìn tỷ"
+                }
+              }
+            ],
+            "unit": "nghìn tỷ"
+          }
+        },
+        {
+          "model": {
+            "alt": "Vốn chủ sở hữu bằng 9,3% tổng tài sản, tương ứng đòn bẩy 10,7 lần",
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "emph": true,
+                "id": "vcsh-tong-tai-san",
+                "title": "VCSH / Tổng tài sản",
+                "tone": "warn",
+                "value": "9,3%"
+              },
+              {
+                "emph": true,
+                "id": "don-bay",
+                "title": "Đòn bẩy",
+                "tone": "p5",
+                "value": "10,7 lần"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack",
+      "title": "Bảng cân đối Q2/26"
+    },
+    "c10l11-g2": {
+      "items": [
+        {
+          "model": {
+            "alt": "Ngân hàng A · vốn chủ 10%. Lỗ 3% tài sản làm vốn chủ còn 7%. Lỗ lấy đi 30% vốn chủ",
+            "kind": "segment_bar",
+            "max": 100,
+            "rows": [
+              {
+                "label": "Tổng tài sản 100%",
+                "segments": [
+                  {
+                    "label": "Nợ phải trả",
+                    "tone": "p5",
+                    "value": 90
+                  },
+                  {
+                    "label": "Lỗ 3% tài sản",
+                    "tone": "neg",
+                    "value": 3
+                  },
+                  {
+                    "label": "Vốn chủ còn 7%",
+                    "tone": "p1",
+                    "value": 7
+                  }
+                ],
+                "total": {
+                  "text": "Lỗ lấy đi 30% vốn chủ",
+                  "tone": "pos"
+                }
+              }
+            ],
+            "unit": "%"
+          },
+          "title": "Ngân hàng A · vốn chủ 10%",
+          "tone": "pos"
+        },
+        {
+          "model": {
+            "alt": "Ngân hàng B · vốn chủ 5%. Lỗ 3% tài sản làm vốn chủ còn 2%. Lỗ lấy đi 60% vốn chủ",
+            "kind": "segment_bar",
+            "max": 100,
+            "rows": [
+              {
+                "label": "Tổng tài sản 100%",
+                "segments": [
+                  {
+                    "label": "Nợ phải trả",
+                    "tone": "p5",
+                    "value": 95
+                  },
+                  {
+                    "label": "Lỗ 3% tài sản",
+                    "tone": "neg",
+                    "value": 3
+                  },
+                  {
+                    "label": "Vốn chủ còn 2%",
+                    "tone": "p1",
+                    "value": 2
+                  }
+                ],
+                "total": {
+                  "text": "Lỗ lấy đi 60% vốn chủ",
+                  "tone": "neg"
+                }
+              }
+            ],
+            "unit": "%"
+          },
+          "title": "Ngân hàng B · vốn chủ 5%",
+          "tone": "neg"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c10l11-g3": {
+      "kind": "category",
+      "labels": [
+        "VCSH / Tổng tài sản 12%",
+        "VCSH / Tổng tài sản 9%",
+        "VCSH / Tổng tài sản 6%"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "ROA (%)",
+          "tone": "p1",
+          "values": [
+            1.5,
+            1.5,
+            1.5
+          ]
+        },
+        {
+          "name": "ROE (%)",
+          "tone": "warn",
+          "values": [
+            12.5,
+            16.7,
+            25
+          ]
+        }
+      ],
+      "title": "Cùng ROA 1,5% · số minh họa",
+      "unit": "%",
+      "value_labels": "all"
+    },
+    "c10l11-rep": {
+      "alt": "VCSH / Tổng tài sản: 9,3%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "VCSH / Tổng tài sản",
+            "v": [
+              9.028,
+              9.109,
+              9.098,
+              9.404,
+              9.267,
+              9.543,
+              9.141,
+              9.335
+            ]
+          }
+        ],
+        "name": "VCSH / Tổng tài sản",
+        "sub": {
+          "series": [
+            {
+              "name": "Vốn chủ sở hữu",
+              "v": [
+                182.498,
+                189.798,
+                197.39,
+                205.285,
+                213.497,
+                222.037,
+                230.918,
+                240.155
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "nghìn tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l11",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ngân hàng hoạt động chủ yếu bằng tiền gửi và tiền vay, phần vốn của cổ đông chỉ chiếm một phần nhỏ. Tỷ lệ vốn chủ sở hữu trên tổng tài sản cho biết lớp vốn đệm này dày đến đâu và ngân hàng dùng đòn bẩy cao đến mức nào.",
+  "lesson_key": "fundamental:equity_to_assets",
+  "order": 11,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l11-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>VCSH / Tổng tài sản</b> bằng <b>vốn chủ sở hữu</b> chia cho <b>tổng tài sản</b>, cả hai lấy từ bảng cân đối kế toán cuối quý. Nghịch đảo của tỷ lệ này là <b>đòn bẩy</b>: tổng tài sản gấp bao nhiêu lần vốn chủ.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 9,3% tương ứng đòn bẩy khoảng 10,7 lần. Mỗi 100 đồng tài sản có 9,3 đồng là vốn của cổ đông.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "VCSH / Tổng tài sản là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Khi ngân hàng bị lỗ, phần lỗ trừ vào vốn chủ trước, sau đó mới ảnh hưởng tới người gửi tiền. Lớp đệm càng dày, ngân hàng càng chịu được nhiều tổn thất.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l11-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Một khoản lỗ lớn chỉ lấy đi một phần nhỏ vốn chủ.",
+              "title": "Đệm dày"
+            },
+            {
+              "text": "Cùng khoản lỗ đó lấy đi phần lớn vốn chủ, ngân hàng dễ phải tăng vốn.",
+              "title": "Đệm mỏng"
+            },
+            {
+              "text": "Lợi nhuận giữ lại hoặc phát hành thêm cổ phiếu làm lớp đệm dày lên.",
+              "title": "Tăng vốn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Lớp đệm hấp thụ thua lỗ"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l11-rep",
+          "title": "VCSH / Tổng tài sản",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Vốn chủ sở hữu chia tổng tài sản cuối mỗi quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Vốn chủ sở hữu cuối mỗi quý, đơn vị nghìn tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tăng đều mà đường vẫn giữ vững nghĩa là vốn chủ tăng kịp với tốc độ tăng tài sản.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 9% trở lên và ổn định hoặc tăng. Đây là mức tham khảo của các ngân hàng có vốn dày ở Việt Nam.",
+              "title": "Đệm vốn tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 6% hoặc giảm dần. Ngân hàng dùng đòn bẩy rất cao, dễ phải tăng vốn khi mở rộng.",
+              "title": "Đệm vốn mỏng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Tỷ lệ thấp làm ROE cao hơn vì vốn chủ ít, nhưng rủi ro cũng lớn hơn. Cùng mức ROA, ngân hàng nhiều đòn bẩy sẽ có ROE cao hơn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l11-g3",
+          "legend": [
+            {
+              "label": "ROA (%)",
+              "tone": "p1"
+            },
+            {
+              "label": "ROE (%)",
+              "tone": "warn"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "ROE cao nhờ đệm vốn mỏng kém bền hơn ROE cao nhờ ROA tốt.",
+              "title": "Kiểm tra chất lượng ROE"
+            },
+            {
+              "text": "Đệm vốn dày giúp ngân hàng mở rộng cho vay mà ít cần phát hành thêm cổ phiếu.",
+              "title": "Xem khả năng tăng trưởng"
+            },
+            {
+              "text": "Tỷ lệ giảm dần nghĩa là tài sản tăng nhanh hơn lợi nhuận giữ lại.",
+              "title": "Theo dõi xu hướng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Vốn chủ sở hữu Q2/26",
+              "text": "240,2 nghìn tỷ đồng."
+            },
+            {
+              "term": "Tổng tài sản Q2/26",
+              "text": "Khoảng 2.573 nghìn tỷ đồng."
+            },
+            {
+              "term": "VCSH / Tổng tài sản",
+              "text": "240,2 ÷ 2.573 ≈ 9,3%. Đòn bẩy khoảng 10,7 lần."
+            },
+            {
+              "term": "So với một năm trước",
+              "text": "Q2/25 là 9,4%. Vốn chủ tăng 17% nhờ lợi nhuận giữ lại, gần bằng tốc độ tăng tài sản."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Doanh nghiệp sản xuất có tỷ lệ 40% đến 60%. Ngân hàng 8% đến 10% là bình thường.",
+              "title": "So với doanh nghiệp thường"
+            },
+            {
+              "text": "ROE cao do đòn bẩy lớn đi kèm lớp đệm mỏng.",
+              "title": "Chỉ khen ROE cao"
+            },
+            {
+              "text": "Trả cổ tức tiền mặt lớn làm vốn chủ giảm, tỷ lệ đi xuống.",
+              "title": "Bỏ qua cổ tức tiền mặt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>VCSH / Tổng tài sản</b> = vốn chủ sở hữu ÷ <b>tổng tài sản</b>, lấy từ bảng cân đối.",
+    "Nghịch đảo của tỷ lệ là <b>đòn bẩy</b>: tổng tài sản gấp bao nhiêu lần vốn chủ.",
+    "Mức tham khảo <b>khoảng 9% trở lên</b> là đệm vốn tốt với ngân hàng Việt Nam.",
+    "Đệm mỏng làm <b>ROE cao hơn</b> nhưng ngân hàng <b>chịu lỗ kém hơn</b>."
+  ],
+  "title": "VCSH / Tổng tài sản · mức đệm vốn của ngân hàng"
+}

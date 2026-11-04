@@ -22,6 +22,7 @@ export interface OperationMap {
   "GET /api/v2/academy/lessons/{lessonId}/attempt": { request: T.AcademyResumeAttemptData; response: T.AcademyResumeAttemptResponses[keyof T.AcademyResumeAttemptResponses] }
   "GET /api/v2/academy/lessons/{lessonId}/attempts": { request: T.AcademyLessonAttemptsData; response: T.AcademyLessonAttemptsResponses[keyof T.AcademyLessonAttemptsResponses] }
   "GET /api/v2/academy/lessons/{lessonId}/notes": { request: T.AcademyLessonNotesData; response: T.AcademyLessonNotesResponses[keyof T.AcademyLessonNotesResponses] }
+  "GET /api/v2/academy/link": { request: T.AcademyLinkData; response: T.AcademyLinkResponses[keyof T.AcademyLinkResponses] }
   "GET /api/v2/academy/progress": { request: T.AcademyProgressData; response: T.AcademyProgressResponses[keyof T.AcademyProgressResponses] }
   "GET /api/v2/admin/alerts/factor-library": { request: T.AdminAlertsControllerFactorLibrary1Data; response: T.AdminAlertsControllerFactorLibrary1Responses[keyof T.AdminAlertsControllerFactorLibrary1Responses] }
   "GET /api/v2/admin/alerts/indicators": { request: T.AdminAlertsControllerIndicators1Data; response: T.AdminAlertsControllerIndicators1Responses[keyof T.AdminAlertsControllerIndicators1Responses] }
@@ -132,6 +133,7 @@ export interface OperationMap {
   "GET /api/v2/cap8/progress": { request: T.GetCap8ProgressV2Data; response: T.GetCap8ProgressV2Responses[keyof T.GetCap8ProgressV2Responses] }
   "GET /api/v2/chart-drawings/{symbol}": { request: T.GetChartDrawingV2Data; response: T.GetChartDrawingV2Responses[keyof T.GetChartDrawingV2Responses] }
   "GET /api/v2/dashboard/catalog": { request: T.DashboardCatalogData; response: T.DashboardCatalogResponses[keyof T.DashboardCatalogResponses] }
+  "GET /api/v2/dashboard/industry/{symbol}": { request: T.DashboardIndustryData; response: T.DashboardIndustryResponses[keyof T.DashboardIndustryResponses] }
   "GET /api/v2/dashboard/settings": { request: T.DashboardSettingsData; response: T.DashboardSettingsResponses[keyof T.DashboardSettingsResponses] }
   "GET /api/v2/flashback/current": { request: T.FlashbackCurrentData; response: T.FlashbackCurrentResponses[keyof T.FlashbackCurrentResponses] }
   "GET /api/v2/flashback/current/leaderboard": { request: T.FlashbackLeaderboardData; response: T.FlashbackLeaderboardResponses[keyof T.FlashbackLeaderboardResponses] }
@@ -458,7 +460,7 @@ export interface OperationMap {
   "PUT /api/v2/alerts/rules/{ruleId}": { request: T.AlertsControllerUpdateRule1Data; response: T.AlertsControllerUpdateRule1Responses[keyof T.AlertsControllerUpdateRule1Responses] }
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: T.QuantControllerUpdate0Data; response: T.QuantControllerUpdate0Responses[keyof T.QuantControllerUpdate0Responses] }
   "PUT /api/v2/chart-drawings/{symbol}": { request: T.SaveChartDrawingV2Data; response: T.SaveChartDrawingV2Responses[keyof T.SaveChartDrawingV2Responses] }
-  "PUT /api/v2/dashboard/settings": { request: T.DashboardSaveSettingsData; response: T.DashboardSaveSettingsResponses[keyof T.DashboardSaveSettingsResponses] }
+  "PUT /api/v2/dashboard/settings/{nganh}": { request: T.DashboardSaveSettingsData; response: T.DashboardSaveSettingsResponses[keyof T.DashboardSaveSettingsResponses] }
   "PUT /api/v2/flashback/entries/{id}/indicators": { request: T.FlashbackSaveIndicatorsData; response: T.FlashbackSaveIndicatorsResponses[keyof T.FlashbackSaveIndicatorsResponses] }
   "PUT /api/v2/practice/{indicatorId}/draft": { request: T.PracticeSaveDraftData; response: T.PracticeSaveDraftResponses[keyof T.PracticeSaveDraftResponses] }
   "PUT /api/v2/shop/active-mascot": { request: T.SetShopActiveMascotData; response: T.SetShopActiveMascotResponses[keyof T.SetShopActiveMascotResponses] }
@@ -487,6 +489,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/academy/lessons/{lessonId}/attempt": { request: "AcademyResumeAttemptData", response: "AcademyResumeAttemptResponses" },
   "GET /api/v2/academy/lessons/{lessonId}/attempts": { request: "AcademyLessonAttemptsData", response: "AcademyLessonAttemptsResponses" },
   "GET /api/v2/academy/lessons/{lessonId}/notes": { request: "AcademyLessonNotesData", response: "AcademyLessonNotesResponses" },
+  "GET /api/v2/academy/link": { request: "AcademyLinkData", response: "AcademyLinkResponses" },
   "GET /api/v2/academy/progress": { request: "AcademyProgressData", response: "AcademyProgressResponses" },
   "GET /api/v2/admin/alerts/factor-library": { request: "AdminAlertsControllerFactorLibrary1Data", response: "AdminAlertsControllerFactorLibrary1Responses" },
   "GET /api/v2/admin/alerts/indicators": { request: "AdminAlertsControllerIndicators1Data", response: "AdminAlertsControllerIndicators1Responses" },
@@ -597,6 +600,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/cap8/progress": { request: "GetCap8ProgressV2Data", response: "GetCap8ProgressV2Responses" },
   "GET /api/v2/chart-drawings/{symbol}": { request: "GetChartDrawingV2Data", response: "GetChartDrawingV2Responses" },
   "GET /api/v2/dashboard/catalog": { request: "DashboardCatalogData", response: "DashboardCatalogResponses" },
+  "GET /api/v2/dashboard/industry/{symbol}": { request: "DashboardIndustryData", response: "DashboardIndustryResponses" },
   "GET /api/v2/dashboard/settings": { request: "DashboardSettingsData", response: "DashboardSettingsResponses" },
   "GET /api/v2/flashback/current": { request: "FlashbackCurrentData", response: "FlashbackCurrentResponses" },
   "GET /api/v2/flashback/current/leaderboard": { request: "FlashbackLeaderboardData", response: "FlashbackLeaderboardResponses" },
@@ -923,7 +927,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PUT /api/v2/alerts/rules/{ruleId}": { request: "AlertsControllerUpdateRule1Data", response: "AlertsControllerUpdateRule1Responses" },
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: "QuantControllerUpdate0Data", response: "QuantControllerUpdate0Responses" },
   "PUT /api/v2/chart-drawings/{symbol}": { request: "SaveChartDrawingV2Data", response: "SaveChartDrawingV2Responses" },
-  "PUT /api/v2/dashboard/settings": { request: "DashboardSaveSettingsData", response: "DashboardSaveSettingsResponses" },
+  "PUT /api/v2/dashboard/settings/{nganh}": { request: "DashboardSaveSettingsData", response: "DashboardSaveSettingsResponses" },
   "PUT /api/v2/flashback/entries/{id}/indicators": { request: "FlashbackSaveIndicatorsData", response: "FlashbackSaveIndicatorsResponses" },
   "PUT /api/v2/practice/{indicatorId}/draft": { request: "PracticeSaveDraftData", response: "PracticeSaveDraftResponses" },
   "PUT /api/v2/shop/active-mascot": { request: "SetShopActiveMascotData", response: "SetShopActiveMascotResponses" },

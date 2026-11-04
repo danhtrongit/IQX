@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l13",
+  "questions": [
+    {
+      "correct_option_id": "3cda552078",
+      "id": "ch09-l13-q01",
+      "options": [
+        {
+          "id": "3cda552078",
+          "text": "CFO trừ Capex"
+        },
+        {
+          "id": "7cd8ccabd8",
+          "text": "LNST trừ cổ tức"
+        },
+        {
+          "id": "a6a6d01c74",
+          "text": "Doanh thu trừ giá vốn"
+        }
+      ],
+      "prompt": "FCF được tính như thế nào?"
+    },
+    {
+      "correct_option_id": "a6360757ce",
+      "id": "ch09-l13-q02",
+      "options": [
+        {
+          "id": "a6360757ce",
+          "text": "FCF chia cho doanh thu"
+        },
+        {
+          "id": "90f50a88be",
+          "text": "FCF chia cho lợi nhuận sau thuế"
+        },
+        {
+          "id": "c579656888",
+          "text": "Capex chia cho doanh thu"
+        }
+      ],
+      "prompt": "FCF Margin là gì?"
+    },
+    {
+      "correct_option_id": "edb83a22d4",
+      "id": "ch09-l13-q03",
+      "options": [
+        {
+          "id": "edb83a22d4",
+          "text": "Tiền kinh doanh không đủ chi cho đầu tư"
+        },
+        {
+          "id": "2b41f6310d",
+          "text": "Doanh nghiệp chắc chắn đang thua lỗ"
+        },
+        {
+          "id": "5e027d47da",
+          "text": "Doanh nghiệp vừa trả hết nợ vay"
+        }
+      ],
+      "prompt": "FCF âm cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "2869c0305c",
+      "id": "ch09-l13-q04",
+      "options": [
+        {
+          "id": "2869c0305c",
+          "text": "Doanh nghiệp có FCF Margin cao hơn"
+        },
+        {
+          "id": "aa40b9a6d4",
+          "text": "Doanh nghiệp có Capex cao hơn"
+        },
+        {
+          "id": "425b499623",
+          "text": "Doanh nghiệp có doanh thu thấp hơn"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp cùng biên lợi nhuận ròng, doanh nghiệp nào tạo nhiều tiền hơn cho cổ đông?"
+    },
+    {
+      "chart_id": "c9l13-rep",
+      "correct_option_id": "d1280b8b88",
+      "id": "ch09-l13-q05",
+      "options": [
+        {
+          "id": "d1280b8b88",
+          "text": "FCF, bằng CFO trừ Capex"
+        },
+        {
+          "id": "5d110cda1b",
+          "text": "Capex cộng dồn 4 quý"
+        },
+        {
+          "id": "f1f1e67d57",
+          "text": "Lợi nhuận sau thuế 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện FCF Margin, cột xanh lá mỗi quý thể hiện gì?"
+    }
+  ],
+  "salt": "a5ce3e8762402a239b0780ab9c5f617b4d5cef820e855061391d7d21ccd1d290"
+}

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l11",
+  "questions": [
+    {
+      "correct_option_id": "64f818cb58",
+      "id": "ch10-l11-q01",
+      "options": [
+        {
+          "id": "64f818cb58",
+          "text": "Vốn chủ sở hữu chia tổng tài sản"
+        },
+        {
+          "id": "8ce71bd0f4",
+          "text": "Tổng tài sản chia vốn chủ sở hữu"
+        },
+        {
+          "id": "1a6e6bda42",
+          "text": "Vốn chủ sở hữu chia cho vay khách hàng"
+        }
+      ],
+      "prompt": "VCSH / Tổng tài sản được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "4b16a0a1fa",
+      "id": "ch10-l11-q02",
+      "options": [
+        {
+          "id": "4b16a0a1fa",
+          "text": "Đòn bẩy tài chính"
+        },
+        {
+          "id": "885fe9be28",
+          "text": "Biên lãi thuần"
+        },
+        {
+          "id": "bd723d3fa9",
+          "text": "Chi phí tín dụng"
+        }
+      ],
+      "prompt": "Nghịch đảo của VCSH / Tổng tài sản là gì?"
+    },
+    {
+      "correct_option_id": "f3187c1f05",
+      "id": "ch10-l11-q03",
+      "options": [
+        {
+          "id": "f3187c1f05",
+          "text": "Vốn chủ sở hữu"
+        },
+        {
+          "id": "751d8987a9",
+          "text": "Tiền gửi của khách hàng"
+        },
+        {
+          "id": "ea3a77a5a6",
+          "text": "Giấy tờ có giá đã phát hành"
+        }
+      ],
+      "prompt": "Khi ngân hàng bị lỗ, phần lỗ trừ vào đâu trước?"
+    },
+    {
+      "correct_option_id": "af353cdb47",
+      "id": "ch10-l11-q04",
+      "options": [
+        {
+          "id": "af353cdb47",
+          "text": "Cao hơn"
+        },
+        {
+          "id": "f835290636",
+          "text": "Thấp hơn"
+        },
+        {
+          "id": "35483e7968",
+          "text": "Bằng nhau"
+        }
+      ],
+      "prompt": "Cùng ROA, ngân hàng có VCSH / Tổng tài sản thấp hơn sẽ có ROE thế nào?"
+    },
+    {
+      "chart_id": "c10l11-rep",
+      "correct_option_id": "9fc1335c61",
+      "id": "ch10-l11-q05",
+      "options": [
+        {
+          "id": "9fc1335c61",
+          "text": "Vốn chủ sở hữu cuối mỗi quý"
+        },
+        {
+          "id": "bc3ae75590",
+          "text": "Tổng tài sản cuối mỗi quý"
+        },
+        {
+          "id": "fea2ca0627",
+          "text": "Lợi nhuận sau thuế 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "52114f91486aaf08eb86f9eb5f254995f16638336f33f5e82fae8530700226be"
+}

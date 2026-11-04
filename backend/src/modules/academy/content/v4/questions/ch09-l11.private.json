@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l11",
+  "questions": [
+    {
+      "correct_option_id": "3413938cd7",
+      "id": "ch09-l11-q01",
+      "options": [
+        {
+          "id": "3413938cd7",
+          "text": "Mức độ lợi nhuận được chuyển thành tiền"
+        },
+        {
+          "id": "666981406a",
+          "text": "Tốc độ tăng trưởng của lợi nhuận"
+        },
+        {
+          "id": "5238aeeb17",
+          "text": "Khả năng trả nợ ngắn hạn"
+        }
+      ],
+      "prompt": "CFO / LNST đo điều gì?"
+    },
+    {
+      "correct_option_id": "778b0358e5",
+      "id": "ch09-l11-q02",
+      "options": [
+        {
+          "id": "778b0358e5",
+          "text": "Lợi nhuận có tiền thật hậu thuẫn"
+        },
+        {
+          "id": "d89c3e4518",
+          "text": "Doanh nghiệp đang vay nợ quá nhiều"
+        },
+        {
+          "id": "c8a06710b3",
+          "text": "Lợi nhuận chủ yếu nằm trên giấy"
+        }
+      ],
+      "prompt": "Tỷ lệ CFO / LNST quanh 1 lần hoặc cao hơn cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "c61322494d",
+      "id": "ch09-l11-q03",
+      "options": [
+        {
+          "id": "c61322494d",
+          "text": "Phần lớn lợi nhuận chưa thu được tiền"
+        },
+        {
+          "id": "8e027ba65e",
+          "text": "Doanh nghiệp đang trả cổ tức quá cao"
+        },
+        {
+          "id": "786d5fee85",
+          "text": "Doanh nghiệp có khấu hao rất lớn"
+        }
+      ],
+      "prompt": "Tỷ lệ CFO / LNST dưới 0,5 lần kéo dài là dấu hiệu gì?"
+    },
+    {
+      "correct_option_id": "4195c9d82c",
+      "id": "ch09-l11-q04",
+      "options": [
+        {
+          "id": "4195c9d82c",
+          "text": "Phải thu khách hàng và hàng tồn kho"
+        },
+        {
+          "id": "7d6d7affe7",
+          "text": "Vốn điều lệ và thặng dư vốn"
+        },
+        {
+          "id": "817d073352",
+          "text": "Số lượng cổ phiếu đang lưu hành"
+        }
+      ],
+      "prompt": "Khi tỷ lệ CFO / LNST thấp, nên kiểm tra khoản mục nào trước?"
+    },
+    {
+      "chart_id": "c9l11-rep",
+      "correct_option_id": "88eb9345f0",
+      "id": "ch09-l11-q05",
+      "options": [
+        {
+          "id": "88eb9345f0",
+          "text": "CFO lớn hơn LNST, tỷ lệ trên 1 lần"
+        },
+        {
+          "id": "dab3459a83",
+          "text": "LNST lớn hơn CFO, tỷ lệ dưới 1 lần"
+        },
+        {
+          "id": "c952d8d994",
+          "text": "Doanh thu đang giảm so với quý trước"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện CFO / LNST, cột xanh cao hơn cột cam nghĩa là gì?"
+    }
+  ],
+  "salt": "28d7f3a9815cff4990c869bad5c6fbcaffc9bbba8347bc2b1bba3d2cc9f311c4"
+}

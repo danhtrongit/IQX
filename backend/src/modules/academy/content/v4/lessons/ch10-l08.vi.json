@@ -1,0 +1,569 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l8-g1": {
+      "items": [
+        {
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q2/25",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Cho vay KH",
+                "tone": "p1",
+                "values": [
+                  1450,
+                  1709
+                ]
+              },
+              {
+                "name": "Tiền gửi KH",
+                "tone": "warn",
+                "values": [
+                  1605,
+                  1697
+                ]
+              }
+            ],
+            "title": "Đơn vị: nghìn tỷ đồng",
+            "unit": "nghìn tỷ đồng",
+            "value_labels": "all"
+          }
+        },
+        {
+          "model": {
+            "alt": "Từ Q2/25 đến Q2/26 cho vay khách hàng tăng từ 1.450 lên 1.709 nghìn tỷ đồng, tức tăng trưởng tín dụng +17,9%; tiền gửi khách hàng tăng từ 1.605 lên 1.697 nghìn tỷ đồng, tức tăng trưởng huy động +5,7%",
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "emph": true,
+                "id": "tang-truong-tin-dung",
+                "title": "Tăng trưởng tín dụng",
+                "tone": "p1",
+                "value": "+17,9%"
+              },
+              {
+                "emph": true,
+                "id": "tang-truong-huy-dong",
+                "title": "Tăng trưởng huy động",
+                "tone": "warn",
+                "value": "+5,7%"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack"
+    },
+    "c10l8-g2": {
+      "items": [
+        {
+          "model": {
+            "bounds": [
+              0,
+              25
+            ],
+            "caption_tone": "pos",
+            "caption_value": "Nguồn vốn theo kịp",
+            "kind": "category",
+            "labels": [
+              "Tín dụng",
+              "Huy động"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Tăng trưởng (%)",
+                "per_bar_tones": [
+                  "p1",
+                  "warn"
+                ],
+                "tone": "p1",
+                "values": [
+                  15,
+                  15
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_format": {
+              "suffix": "%"
+            },
+            "value_labels": "all"
+          },
+          "title": "Cân bằng",
+          "tone": "pos"
+        },
+        {
+          "model": {
+            "bounds": [
+              0,
+              25
+            ],
+            "caption_tone": "neg",
+            "caption_value": "Phải tìm vốn đắt hơn",
+            "kind": "category",
+            "labels": [
+              "Tín dụng",
+              "Huy động"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Tăng trưởng (%)",
+                "per_bar_tones": [
+                  "p1",
+                  "warn"
+                ],
+                "tone": "p1",
+                "values": [
+                  22,
+                  8
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_format": {
+              "suffix": "%"
+            },
+            "value_labels": "all"
+          },
+          "title": "Tín dụng vượt",
+          "tone": "neg"
+        },
+        {
+          "model": {
+            "bounds": [
+              0,
+              25
+            ],
+            "caption_tone": "warn",
+            "caption_value": "Thừa vốn, sinh lời thấp",
+            "kind": "category",
+            "labels": [
+              "Tín dụng",
+              "Huy động"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Tăng trưởng (%)",
+                "per_bar_tones": [
+                  "p1",
+                  "warn"
+                ],
+                "tone": "p1",
+                "values": [
+                  8,
+                  18
+                ]
+              }
+            ],
+            "unit": "%",
+            "value_format": {
+              "suffix": "%"
+            },
+            "value_labels": "all"
+          },
+          "title": "Huy động vượt",
+          "tone": "warn"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c10l8-g3": {
+      "alt": "Tăng trưởng tín dụng tăng từ 14% lên 26% còn tăng trưởng huy động giảm từ 13% xuống 6% từ Q3/24 đến Q2/26, khoảng chênh giữa hai đường rộng dần",
+      "kind": "series_panels",
+      "marks": [],
+      "panels": [
+        {
+          "bounds": [
+            0,
+            30
+          ],
+          "digits": 0,
+          "fill_between": {
+            "a": 0,
+            "above": "neg",
+            "b": 1,
+            "below": "neg"
+          },
+          "notes": [
+            {
+              "i": 5,
+              "text": "Khoảng chênh rộng dần",
+              "tone": "neg",
+              "value": 16
+            }
+          ],
+          "series": [
+            {
+              "name": "Tăng trưởng tín dụng (%)",
+              "role": "p1",
+              "values": [
+                14,
+                16,
+                18,
+                20,
+                22,
+                24,
+                25,
+                26
+              ],
+              "width": 2
+            },
+            {
+              "name": "Tăng trưởng huy động (%)",
+              "role": "warn",
+              "values": [
+                13,
+                12,
+                11,
+                10,
+                9,
+                8,
+                7,
+                6
+              ],
+              "width": 2
+            }
+          ],
+          "ticks": [
+            0,
+            5,
+            10,
+            15,
+            20,
+            25,
+            30
+          ],
+          "title": ""
+        }
+      ],
+      "x": {
+        "end": 7,
+        "start": 0,
+        "ticks": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ]
+      }
+    },
+    "c10l8-rep": {
+      "alt": "Tăng trưởng tín dụng và huy động: 17,9%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng tín dụng",
+            "v": [
+              16.783,
+              16.762,
+              16.063,
+              14.732,
+              13.973,
+              11.667,
+              16.433,
+              17.85
+            ]
+          },
+          {
+            "name": "Tăng trưởng huy động",
+            "v": [
+              10.22,
+              12.338,
+              11.284,
+              12.365,
+              18.981,
+              8.143,
+              16.458,
+              5.715
+            ]
+          }
+        ],
+        "name": "Tăng trưởng tín dụng và huy động",
+        "sub": {
+          "series": [
+            {
+              "name": "Cho vay khách hàng",
+              "v": [
+                1343.006,
+                1384.212,
+                1441.416,
+                1450.261,
+                1530.668,
+                1545.706,
+                1678.282,
+                1709.127
+              ]
+            },
+            {
+              "name": "Tiền gửi khách hàng",
+              "v": [
+                1443.888,
+                1510.262,
+                1546.674,
+                1605.09,
+                1717.953,
+                1633.243,
+                1801.222,
+                1696.82
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "nghìn tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l08",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Cho vay là nơi ngân hàng kiếm tiền, tiền gửi là nguồn vốn để cho vay. Đặt hai tốc độ tăng cạnh nhau cho biết ngân hàng mở rộng nhanh đến đâu và nguồn vốn có theo kịp hay không.",
+  "lesson_key": "fundamental:credit_deposit_growth",
+  "order": 8,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l8-g1",
+          "legend": [
+            {
+              "label": "Cho vay KH",
+              "tone": "p1"
+            },
+            {
+              "label": "Tiền gửi KH",
+              "tone": "warn"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Tăng trưởng tín dụng</b> là mức tăng của dòng <b>cho vay khách hàng</b> trên bảng cân đối so với cùng kỳ năm trước. <b>Tăng trưởng huy động</b> là mức tăng của dòng <b>tiền gửi của khách hàng</b>, cũng so với cùng kỳ năm trước.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tăng trưởng tín dụng và huy động là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Cho vay tăng nhanh hơn tiền gửi thì phần chênh phải lấy từ nguồn khác, thường đắt hơn. Tiền gửi tăng nhanh hơn cho vay thì ngân hàng dư vốn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l8-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Hai tốc độ gần nhau, nguồn vốn theo kịp nhu cầu cho vay.",
+              "title": "Cân bằng"
+            },
+            {
+              "text": "Phải vay thêm liên ngân hàng hoặc phát hành giấy tờ có giá, chi phí vốn dễ tăng.",
+              "title": "Tín dụng vượt"
+            },
+            {
+              "text": "Thừa vốn phải gửi lại các TCTD khác hoặc mua chứng khoán, lợi suất thấp hơn cho vay.",
+              "title": "Huy động vượt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Khi hai tốc độ lệch nhau"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l8-rep",
+          "title": "Tăng trưởng tín dụng và huy động",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng tín dụng và tăng trưởng huy động so với cùng kỳ năm trước, đơn vị %.",
+              "title": "Hai đường phía trên"
+            },
+            {
+              "text": "Hai cột mỗi quý: cho vay khách hàng và tiền gửi khách hàng cuối quý, đơn vị nghìn tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Đường tín dụng nằm trên đường huy động nhiều quý liền là nguồn vốn đang căng dần.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tín dụng tăng khoảng 12% đến 18% mỗi năm, huy động tăng tương đương. Đây là mức tham khảo thường gặp ở Việt Nam.",
+              "title": "Tích cực",
+              "tone": "pos"
+            },
+            {
+              "text": "Tín dụng tăng rất nhanh trong khi huy động chậm lại. Rủi ro thanh khoản và chi phí vốn cùng tăng.",
+              "title": "Cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Tăng trưởng tín dụng quá nhanh so với mặt bằng chung cũng cần xem kỹ. Cho vay nhanh dễ đi kèm nới lỏng điều kiện cho vay.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l8-g3",
+          "legend": [
+            {
+              "label": "Tăng trưởng tín dụng (%)",
+              "tone": "p1"
+            },
+            {
+              "label": "Tăng trưởng huy động (%)",
+              "tone": "warn"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tín dụng tăng đều là nền tảng để thu nhập lãi thuần tăng trong các quý tới.",
+              "title": "Dự báo thu nhập lãi"
+            },
+            {
+              "text": "Tín dụng vượt huy động nhiều quý thường kéo chi phí vốn đi lên.",
+              "title": "Đọc cùng chi phí vốn"
+            },
+            {
+              "text": "Khoảng chênh giữa hai tốc độ sẽ làm LDR tăng hoặc giảm.",
+              "title": "Đọc cùng LDR"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Cho vay khách hàng",
+              "text": "Từ 1.450 nghìn tỷ ở Q2/25 lên 1.709 nghìn tỷ ở Q2/26. Tăng khoảng 17,9%."
+            },
+            {
+              "term": "Tiền gửi khách hàng",
+              "text": "Từ 1.605 nghìn tỷ lên 1.697 nghìn tỷ. Tăng khoảng 5,7%."
+            },
+            {
+              "term": "Khoảng chênh",
+              "text": "Tín dụng tăng nhanh gấp ba lần huy động trong năm gần nhất."
+            },
+            {
+              "term": "Hệ quả",
+              "text": "Cho vay đã vượt tiền gửi khách hàng. Chi phí vốn tăng từ 3,49% lên 3,88% cùng giai đoạn."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tiền gửi biến động mạnh theo thời điểm cuối quý. So cùng kỳ năm trước sẽ ổn định hơn.",
+              "title": "So với cuối quý trước"
+            },
+            {
+              "text": "Cho vay tăng quá nhanh có thể làm chất lượng khoản vay đi xuống ở các năm sau.",
+              "title": "Coi tăng nhanh luôn là tốt"
+            },
+            {
+              "text": "Tín dụng chỉ bền khi có nguồn vốn ổn định đi kèm.",
+              "title": "Bỏ qua huy động"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Tăng trưởng tín dụng</b>: cho vay khách hàng so với cùng kỳ năm trước.",
+    "<b>Tăng trưởng huy động</b>: tiền gửi khách hàng so với cùng kỳ năm trước.",
+    "Mức tham khảo <b>khoảng 12% đến 18%</b> mỗi năm, hai tốc độ nên gần nhau.",
+    "Tín dụng <b>vượt xa</b> huy động là nguồn vốn đang căng, chi phí vốn dễ tăng."
+  ],
+  "title": "Tăng trưởng tín dụng và huy động · tốc độ mở rộng của ngân hàng"
+}

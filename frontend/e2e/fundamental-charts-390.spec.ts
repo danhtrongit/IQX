@@ -1,5 +1,5 @@
 /**
- * QA-06 (spec cập nhật 22-10 §4) for the Dashboard phân tích and a Chương 8-13 lesson with a
+ * QA-06 (spec cập nhật 22-10 §4) for the Dashboard phân tích and a Chương 8-12 lesson with a
  * representative chart: at 390px nothing overflows horizontally and no text is grey. DB-02: the
  * lesson's ROE chart and the Dashboard's ROE card are drawn by the same shared renderer.
  *
@@ -14,7 +14,7 @@ import type { Page, Route } from "@playwright/test"
 import { buildCatalog, buildItem, buildProgress, catalogItemsOf } from "../src/pages/academy/test-fixtures"
 import { expect, seedMember, test } from "./fixtures"
 
-const CONTENT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../backend/src/modules/academy/content/v3/lessons")
+const CONTENT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../backend/src/modules/academy/content/v4/lessons")
 
 type Series = { name: string; v: (number | null)[] }
 type Fundamental = {
@@ -37,13 +37,13 @@ function card(name: string, model: Fundamental) {
 }
 
 async function mockDashboard(page: Page) {
-  const pe = rep("ch13-l01", "c13l1-rep")
+  const pe = rep("ch08-l14", "c8l14-rep")
   const charts = {
     "Tăng trưởng doanh thu": card("Tăng trưởng doanh thu", rep("ch08-l01", "c8l1-rep")),
     "Tăng trưởng LNST": card("Tăng trưởng LNST", rep("ch08-l02", "c8l2-rep")),
-    "Biên lợi nhuận ròng": card("Biên lợi nhuận ròng", rep("ch10-l05", "c10l5-rep")),
-    ROE: card("ROE", rep("ch10-l01", "c10l1-rep")),
-    "D/E": card("D/E", rep("ch11-l01", "c11l1-rep")),
+    "Biên lợi nhuận ròng": card("Biên lợi nhuận ròng", rep("ch08-l13", "c8l13-rep")),
+    ROE: card("ROE", rep("ch08-l11", "c8l11-rep")),
+    "D/E": card("D/E", rep("ch09-l06", "c9l6-rep")),
     "P/E": { name: "P/E", kind: "F", unit: "lần", decimals: 2, status: "ok", v: [] },
   }
   const groups = [
@@ -162,16 +162,16 @@ test.describe("QA-06 · 390px · bộ khuôn biểu đồ chỉ tiêu dùng chun
     await roe.locator("[data-fundamental-chart]").screenshot({ path: testInfo.outputPath("dashboard-roe-390.png") })
   })
 
-  test("Học viện ch10-l01: không tràn ngang, không chữ xám, biểu đồ đại diện ROE là cùng bộ khuôn", async ({ page }, testInfo) => {
+  test("Học viện ch08-l11: không tràn ngang, không chữ xám, biểu đồ đại diện ROE là cùng bộ khuôn", async ({ page }, testInfo) => {
     await seedMember(page)
-    await mockAcademy(page, "ch10-l01")
-    await page.goto("/demo-trading?view=academy&lesson=ch10-l01")
-    const figure = page.locator('[data-chart-id="c10l1-rep"]')
+    await mockAcademy(page, "ch08-l11")
+    await page.goto("/demo-trading?view=academy&lesson=ch08-l11")
+    const figure = page.locator('[data-chart-id="c8l11-rep"]')
     await expect(figure.locator('[data-fundamental-chart="B"]')).toBeVisible()
     await expect(figure.getByRole("button", { name: "Bảng số" })).toBeVisible()
 
     expect(await overflows(page)).toBe(false)
-    expect(await greyTexts(page, '[data-lesson-id="ch10-l01"]')).toEqual([])
+    expect(await greyTexts(page, '[data-lesson-id="ch08-l11"]')).toEqual([])
 
     await figure.scrollIntoViewIfNeeded()
     await figure.locator("[data-fundamental-chart]").screenshot({ path: testInfo.outputPath("academy-roe-390.png") })

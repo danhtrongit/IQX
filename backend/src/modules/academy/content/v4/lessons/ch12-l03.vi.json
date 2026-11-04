@@ -1,0 +1,579 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l3-g1": {
+      "alt": "Tỷ lệ bồi thường bằng bồi thường thuần 4 quý 4.614 tỷ chia phí thuần 4 quý 8.119 tỷ, bằng 56,8%: 100 đồng phí thuần trả 56,8 đồng bồi thường",
+      "edges": [
+        {
+          "from": "boi-thuong-thuan",
+          "label": "÷",
+          "to": "phi-thuan"
+        },
+        {
+          "from": "phi-thuan",
+          "label": "=",
+          "to": "ty-le-boi-thuong"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "boi-thuong-thuan",
+          "sub": "Sau thu đòi tái bảo hiểm",
+          "title": "Bồi thường thuần 4 quý",
+          "tone": "p5",
+          "value": "4.614 tỷ"
+        },
+        {
+          "id": "phi-thuan",
+          "sub": "Phí đã giữ lại",
+          "title": "Phí thuần 4 quý",
+          "tone": "p1",
+          "value": "8.119 tỷ"
+        },
+        {
+          "id": "ty-le-boi-thuong",
+          "sub": "100 đồng phí thuần trả 56,8 đồng bồi thường",
+          "title": "Tỷ lệ bồi thường",
+          "tone": "warn",
+          "value": "56,8%"
+        }
+      ]
+    },
+    "c12l3-g2": {
+      "alt": "Từ tổng chi bồi thường 6.900 tỷ đồng, trừ thu đòi tái bảo hiểm 2.286 tỷ, còn bồi thường thuần 4.614 tỷ đồng (4 quý, số minh họa)",
+      "axes": {
+        "x": {
+          "ticks": [
+            {
+              "label": "Tổng chi bồi thường",
+              "v": 0
+            },
+            {
+              "label": "Thu đòi tái bảo hiểm",
+              "v": 1
+            },
+            {
+              "label": "Bồi thường thuần",
+              "v": 2
+            }
+          ]
+        },
+        "y": {
+          "ticks": [],
+          "title": "Tỷ đồng · 4 quý · số minh họa"
+        }
+      },
+      "domain": {
+        "x": [
+          -0.5,
+          2.5
+        ],
+        "y": [
+          -552,
+          7866
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "base": 0,
+          "h": [
+            6900
+          ],
+          "t": "bars",
+          "tones": [
+            "p5"
+          ],
+          "x": [
+            0
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            0,
+            6900
+          ],
+          "t": "text",
+          "text": "6.900",
+          "tone": "price"
+        },
+        {
+          "base": 6900,
+          "h": [
+            -2286
+          ],
+          "t": "bars",
+          "tones": [
+            "pos"
+          ],
+          "x": [
+            1
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            1,
+            6900
+          ],
+          "t": "text",
+          "text": "−2.286",
+          "tone": "price"
+        },
+        {
+          "base": 0,
+          "h": [
+            4614
+          ],
+          "t": "bars",
+          "tones": [
+            "p5"
+          ],
+          "x": [
+            2
+          ]
+        },
+        {
+          "anchor": "middle",
+          "at": [
+            2,
+            4614
+          ],
+          "t": "text",
+          "text": "4.614",
+          "tone": "warn"
+        }
+      ]
+    },
+    "c12l3-g3": {
+      "alt": "Tỷ lệ bồi thường phi nhân thọ, mức tham khảo: dưới 40% là thấp, 40 đến 55% là tốt, 55 đến 65% cần theo dõi, trên 65% là cao. Công ty mẫu ở 56,8%",
+      "domain": [
+        30,
+        80
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Công ty mẫu 56,8%",
+          "side": "a",
+          "tone": "warn",
+          "v": 56.8
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "30%",
+          "v": 30
+        },
+        {
+          "label": "40%",
+          "v": 40
+        },
+        {
+          "label": "55%",
+          "v": 55
+        },
+        {
+          "label": "65%",
+          "v": 65
+        },
+        {
+          "label": "80%",
+          "v": 80
+        }
+      ],
+      "zones": [
+        {
+          "from": 30,
+          "label": "Thấp",
+          "to": 40,
+          "tone": "p1"
+        },
+        {
+          "from": 40,
+          "label": "Tốt",
+          "to": 55,
+          "tone": "pos"
+        },
+        {
+          "from": 55,
+          "label": "Cần theo dõi",
+          "to": 65,
+          "tone": "warn"
+        },
+        {
+          "from": 65,
+          "label": "Cao",
+          "to": 80,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c12l3-g4": {
+      "items": [
+        {
+          "model": {
+            "alt": "Phi nhân thọ chi trả khi có tổn thất, hợp đồng thường kéo dài 1 năm, nên tỷ lệ bồi thường cao nghĩa là phí bán ra quá thấp",
+            "brackets": [
+              {
+                "from": 0,
+                "label": "Tỷ lệ cao: phí bán ra quá thấp",
+                "row": 0,
+                "to": 1,
+                "tone": "price"
+              }
+            ],
+            "kind": "segment_bar",
+            "max": 1,
+            "rows": [
+              {
+                "label": "Chi trả khi có tổn thất",
+                "segments": [
+                  {
+                    "label": "Bồi thường tổn thất",
+                    "tone": "p5",
+                    "value": 1
+                  }
+                ],
+                "sub": "Hợp đồng thường kéo dài 1 năm"
+              }
+            ]
+          },
+          "title": "Phi nhân thọ",
+          "tone": "p1"
+        },
+        {
+          "model": {
+            "alt": "Nhân thọ chi trả cả khi hợp đồng đáo hạn gồm đáo hạn, tiết kiệm và rủi ro, hợp đồng kéo dài nhiều năm, nên tỷ lệ chi trả cao chưa chắc là xấu",
+            "brackets": [
+              {
+                "from": 0,
+                "label": "Tỷ lệ cao chưa chắc là xấu",
+                "row": 0,
+                "to": 1,
+                "tone": "price"
+              }
+            ],
+            "kind": "segment_bar",
+            "max": 1,
+            "rows": [
+              {
+                "label": "Chi trả cả khi hợp đồng đáo hạn",
+                "segments": [
+                  {
+                    "label": "Đáo hạn",
+                    "tone": "p1",
+                    "value": 0.45
+                  },
+                  {
+                    "label": "Tiết kiệm",
+                    "tone": "pos",
+                    "value": 0.3
+                  },
+                  {
+                    "label": "Rủi ro",
+                    "tone": "p5",
+                    "value": 0.25
+                  }
+                ],
+                "sub": "Hợp đồng kéo dài nhiều năm"
+              }
+            ]
+          },
+          "title": "Nhân thọ",
+          "tone": "warn"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c12l3-rep": {
+      "alt": "Tỷ lệ bồi thường: 56,8%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tỷ lệ bồi thường (4 quý)",
+            "v": [
+              54.612,
+              53.752,
+              52.339,
+              51.826,
+              52.904,
+              55.161,
+              56.94,
+              56.825
+            ]
+          }
+        ],
+        "name": "Tỷ lệ bồi thường",
+        "sub": {
+          "series": [
+            {
+              "name": "Bồi thường thuần 4 quý",
+              "v": [
+                3660.245,
+                3737.847,
+                3722.374,
+                3710.93,
+                3920.852,
+                4213.768,
+                4483.135,
+                4613.754
+              ]
+            },
+            {
+              "name": "Phí bảo hiểm thuần 4 quý",
+              "v": [
+                6702.234,
+                6953.888,
+                7112.089,
+                7160.419,
+                7411.254,
+                7639.006,
+                7873.37,
+                8119.28
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tỷ lệ bồi thường cho biết trong mỗi 100 đồng phí công ty giữ lại, bao nhiêu đồng phải trả cho khách hàng khi có tổn thất. Đây là thước đo trực tiếp nhất về chất lượng định phí và chọn khách hàng.",
+  "lesson_key": "fundamental:loss_ratio",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l3-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Tỷ lệ bồi thường</b> (loss ratio) bằng <b>chi bồi thường thuần 4 quý</b> chia cho <b>doanh thu phí bảo hiểm thuần 4 quý</b>. Hai dòng này nằm trên <b>báo cáo kết quả kinh doanh</b>.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 56,8% nghĩa là mỗi 100 đồng phí giữ lại, công ty dùng 56,8 đồng để bồi thường.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ lệ bồi thường là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty trả bồi thường đầy đủ cho khách hàng, sau đó <b>thu đòi</b> lại phần nhà tái bảo hiểm phải chịu. Phần còn lại là bồi thường thuần.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l3-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Số tiền công ty trả cho khách hàng có tổn thất trong kỳ.",
+              "title": "Tổng chi bồi thường"
+            },
+            {
+              "text": "Phần nhà tái bảo hiểm hoàn trả theo tỷ lệ đã nhận nhượng.",
+              "title": "Thu đòi tái bảo hiểm"
+            },
+            {
+              "text": "Phần công ty thực sự gánh, dùng làm tử số của tỷ lệ.",
+              "title": "Bồi thường thuần"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Bồi thường thuần được tính thế nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l3-rep",
+          "title": "Tỷ lệ bồi thường",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ bồi thường tính theo 4 quý gần nhất.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hai cột: bồi thường thuần 4 quý và phí bảo hiểm thuần 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột bồi thường tăng nhanh hơn cột phí thì đường tỷ lệ đi lên.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Ổn định quanh 40-55% với công ty phi nhân thọ, không tăng mạnh khi phí tăng nhanh.",
+              "title": "Tỷ lệ bồi thường tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên 65% hoặc tăng liên tục nhiều quý, cho thấy phí bán ra không đủ bù tổn thất.",
+              "title": "Tỷ lệ bồi thường xấu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức tham khảo cho công ty phi nhân thọ ở Việt Nam. Một quý có thiên tai có thể đẩy tỷ lệ lên cao, nên cần xem xu hướng 4 quý.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l3-g3",
+          "type": "chart"
+        },
+        {
+          "text": "Với <b>bảo hiểm nhân thọ</b>, chi trả gồm cả tiền đáo hạn và quyền lợi tiết kiệm đã cam kết. Tỷ lệ chi trả cao ở nhân thọ không mang ý nghĩa xấu như ở phi nhân thọ.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l3-g4",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ thấp và ổn định cho thấy công ty định phí sát với rủi ro.",
+              "title": "Đánh giá định phí"
+            },
+            {
+              "text": "Phí tăng nhanh mà tỷ lệ bồi thường tăng theo là dấu hiệu hạ phí.",
+              "title": "Kiểm tra tăng trưởng"
+            },
+            {
+              "text": "Cộng với tỷ lệ chi phí để ra combined ratio của mảng bảo hiểm.",
+              "title": "Kết hợp tỷ lệ chi phí"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bảo hiểm mẫu, số liệu 4 quý từ Q3/25 đến Q2/26 (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Bồi thường thuần 4 quý",
+              "text": "4.614 tỷ đồng."
+            },
+            {
+              "term": "Phí bảo hiểm thuần 4 quý",
+              "text": "8.119 tỷ đồng."
+            },
+            {
+              "term": "Tỷ lệ bồi thường",
+              "text": "4.614 ÷ 8.119 ≈ 56,8%."
+            },
+            {
+              "term": "Xu hướng",
+              "text": "Từ mức thấp 51,8% ở Q2/25 tăng lên 56,8% ở Q2/26. Bồi thường tăng nhanh hơn phí, cần theo dõi thêm."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Bồi thường thuần phải chia cho phí thuần để hai vế cùng sau tái bảo hiểm.",
+              "title": "Dùng phí gốc làm mẫu số"
+            },
+            {
+              "text": "Một vụ tổn thất lớn có thể làm tỷ lệ của một quý tăng vọt.",
+              "title": "Kết luận từ một quý"
+            },
+            {
+              "text": "Chi trả nhân thọ gồm quyền lợi đáo hạn nên mức cao là bình thường.",
+              "title": "Áp mốc phi nhân thọ cho nhân thọ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ bồi thường = <b>bồi thường thuần 4 quý ÷ phí thuần 4 quý</b>.",
+    "Bồi thường thuần = tổng chi bồi thường − <b>thu đòi tái bảo hiểm</b>.",
+    "Phi nhân thọ: <b>40-55%</b> là mức tham khảo tốt, trên 65% là cao.",
+    "Ở nhân thọ, tỷ lệ chi trả <b>mang ý nghĩa khác</b>, không so như phi nhân thọ."
+  ],
+  "title": "Tỷ lệ bồi thường · phần phí dùng để trả tổn thất"
+}

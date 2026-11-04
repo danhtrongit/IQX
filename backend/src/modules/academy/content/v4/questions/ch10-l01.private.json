@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l01",
+  "questions": [
+    {
+      "correct_option_id": "3d4b6077fe",
+      "id": "ch10-l01-q01",
+      "options": [
+        {
+          "id": "3d4b6077fe",
+          "text": "Thu nhập lãi thuần trên mỗi đồng tài sản sinh lãi"
+        },
+        {
+          "id": "c0e01fcd18",
+          "text": "Lợi nhuận sau thuế trên mỗi đồng vốn chủ sở hữu bình quân"
+        },
+        {
+          "id": "0182919050",
+          "text": "Chi phí hoạt động trên mỗi đồng thu nhập"
+        }
+      ],
+      "prompt": "NIM của ngân hàng đo lường điều gì?"
+    },
+    {
+      "correct_option_id": "3c5a83cd9c",
+      "id": "ch10-l01-q02",
+      "options": [
+        {
+          "id": "3c5a83cd9c",
+          "text": "Tài sản sinh lãi bình quân"
+        },
+        {
+          "id": "069b219a55",
+          "text": "Tổng tài sản cuối kỳ"
+        },
+        {
+          "id": "62daa9e164",
+          "text": "Tiền gửi khách hàng cuối kỳ"
+        }
+      ],
+      "prompt": "Mẫu số của NIM là gì?"
+    },
+    {
+      "correct_option_id": "ac5d06753c",
+      "id": "ch10-l01-q03",
+      "options": [
+        {
+          "id": "ac5d06753c",
+          "text": "Tài sản cố định"
+        },
+        {
+          "id": "a798bea590",
+          "text": "Cho vay khách hàng"
+        },
+        {
+          "id": "44c194a6fd",
+          "text": "Chứng khoán đầu tư"
+        }
+      ],
+      "prompt": "Khoản nào không thuộc tài sản sinh lãi?"
+    },
+    {
+      "correct_option_id": "a4b46b2373",
+      "id": "ch10-l01-q04",
+      "options": [
+        {
+          "id": "a4b46b2373",
+          "text": "Ngân hàng có thể đang cho vay nhóm khách hàng rủi ro hơn"
+        },
+        {
+          "id": "b9f4bd241a",
+          "text": "Ngân hàng chắc chắn có lợi nhuận cao nhất trong toàn ngành"
+        },
+        {
+          "id": "577aeae6f9",
+          "text": "Ngân hàng đang có quá nhiều tiền gửi chưa cho vay"
+        }
+      ],
+      "prompt": "NIM cao nhưng chi phí tín dụng cũng cao thường cho thấy điều gì?"
+    },
+    {
+      "chart_id": "c10l1-rep",
+      "correct_option_id": "da92a3e9b3",
+      "id": "ch10-l01-q05",
+      "options": [
+        {
+          "id": "da92a3e9b3",
+          "text": "Thu nhập lãi thuần cộng dồn 4 quý"
+        },
+        {
+          "id": "a2710405e6",
+          "text": "Tài sản sinh lãi bình quân cuối mỗi quý"
+        },
+        {
+          "id": "8db4b38b02",
+          "text": "Chi phí lãi của từng quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của NIM, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "1a08072d23fc0e6de8d0bbb16ca1f6bfa68a3c9750f12bf145ecad9381e0be56"
+}

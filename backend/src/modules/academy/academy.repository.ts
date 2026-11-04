@@ -127,6 +127,20 @@ export type SaveNotesResult =
   | { status: 'conflict'; current: PracticeNotesRow | null }
   | { status: 'too_large' };
 
+/**
+ * The item the learner opened last (one row per account; "bài đang học", spec v4 §4.1). `lesson_key` is the durable
+ * identity: the current catalog finds the item by it, whatever id the item had when it was opened.
+ */
+export type LastOpenedRow = {
+  user_id: string;
+  lesson_key: string;
+  lesson_id: string;
+  catalog_version: string;
+  opened_at: Date;
+};
+
+export type NewLastOpened = Omit<LastOpenedRow, 'opened_at'>;
+
 /** Same measure as ck_academy_practice_notes_size (jsonb text, larger than compact JSON). */
 export const NOTES_SIZE_LIMIT = 65536;
 
@@ -176,6 +190,13 @@ export interface AcademyStore {
   completions(userId: string): Promise<CompletionRow[]>;
   /** `lesson:<legacy id>` capabilities of the user's legacy academy_grants (read only). */
   legacyLessonCapabilities(userId: string): Promise<string[]>;
+  /** The item the learner opened last, if any. */
+  lastOpened(userId: string): Promise<LastOpenedRow | null>;
+  /**
+   * Remembers the item the learner just opened (one row per account). Re-opening the same item within a minute writes
+   * nothing, so reading a lesson never churns the row.
+   */
+  recordOpened(row: NewLastOpened): Promise<void>;
   scenarioChoice(userId: string, lessonKey: string): Promise<ScenarioChoiceRow | null>;
   scenarioChoices(userId: string): Promise<ScenarioChoiceRow[]>;
   /**
@@ -225,6 +246,7 @@ const SCENARIO_COLUMNS =
   'user_id, lesson_key, lesson_id, choice, scenario_hash, catalog_version, created_at';
 const NOTES_COLUMNS =
   'user_id, lesson_key, lesson_id, texts, checks, scores, revision, created_at, updated_at';
+const LAST_OPENED_COLUMNS = 'user_id, lesson_key, lesson_id, catalog_version, opened_at';
 
 export class AcademySqlStore implements AcademyStore {
   constructor(private readonly client: SqlClient) {}
@@ -467,6 +489,29 @@ export class AcademySqlStore implements AcademyStore {
       [userId],
     );
     return rows.map((row) => row.capability);
+  }
+
+  async lastOpened(userId: string) {
+    const rows = await this.client.query<LastOpenedRow>(
+      `select ${LAST_OPENED_COLUMNS} from academy_last_opened where user_id = $1`,
+      [userId],
+    );
+    return rows[0] ?? null;
+  }
+
+  async recordOpened(row: NewLastOpened) {
+    await this.client.query(
+      `insert into academy_last_opened (user_id, lesson_key, lesson_id, catalog_version)
+       values ($1, $2, $3, $4)
+       on conflict (user_id) do update
+         set lesson_key = excluded.lesson_key, lesson_id = excluded.lesson_id,
+             catalog_version = excluded.catalog_version, opened_at = now()
+         where academy_last_opened.lesson_key is distinct from excluded.lesson_key
+            or academy_last_opened.lesson_id is distinct from excluded.lesson_id
+            or academy_last_opened.catalog_version is distinct from excluded.catalog_version
+            or academy_last_opened.opened_at < now() - interval '1 minute'`,
+      [row.user_id, row.lesson_key, row.lesson_id, row.catalog_version],
+    );
   }
 
   async scenarioChoice(userId: string, lessonKey: string) {
