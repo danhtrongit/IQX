@@ -5,6 +5,7 @@
  */
 import { PanelState } from "@/components/layout/panel-state"
 import { Skeleton } from "@/components/ui/skeleton"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import type { FlashbackLeaderboardRow } from "./flashback-api"
 import { PlayerAvatar } from "./flashback-avatar"
@@ -83,7 +84,8 @@ export function LeaderboardTab() {
                 <span className="text-right">Điểm</span>
                 <span className="text-right">Thắng/Ván</span>
               </div>
-              <ol className="m-0 flex max-h-[60vh] list-none flex-col gap-0.5 overflow-y-auto p-0" aria-label="Từ hạng 4">
+              <ScrollArea className="max-h-[60vh]" data-testid="flashback-leaderboard-scroll">
+              <ol className="m-0 flex list-none flex-col gap-0.5 p-0 pr-2.5" aria-label="Từ hạng 4">
                 {rest.map((row) => (
                   <BoardRow key={row.user_id} row={row} />
                 ))}
@@ -96,6 +98,7 @@ export function LeaderboardTab() {
                   </>
                 ) : null}
               </ol>
+              </ScrollArea>
             </div>
           ) : null}
         </>

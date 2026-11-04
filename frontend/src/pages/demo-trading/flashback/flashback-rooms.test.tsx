@@ -493,8 +493,9 @@ describe("Flashback: phòng chờ", () => {
       expect(grid.getAttribute("data-compact")).toBe("true")
       expect(grid.className).toContain("sm:grid-cols-6")
       expect(grid.className).toContain("grid-cols-3")
-      expect(grid.className).toContain("max-h-[52vh]")
-      expect(grid.className).toContain("overflow-auto")
+      const scroller = grid.closest<HTMLElement>('[data-slot="scroll-area"]')
+      expect(scroller?.className).toContain("max-h-[52vh]")
+      expect(grid.className).not.toContain("overflow-auto")
     })
 
     it("từ 9 người trở lên ô thu nhỏ, dưới 9 người giữ lưới 4 cột như cũ", async () => {

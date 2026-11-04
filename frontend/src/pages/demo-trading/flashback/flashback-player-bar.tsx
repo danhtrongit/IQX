@@ -15,6 +15,7 @@ import { Check, Smile, Volume2, VolumeX } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import type { FlashbackPlayer } from "./flashback-api"
 import { PlayerAvatar } from "./flashback-avatar"
@@ -58,7 +59,8 @@ export function PlayerBar({ match }: { match: MatchApi }) {
           <SoundToggle />
         </div>
       </div>
-      <div className="flex gap-1.5 overflow-x-auto pt-2.5 pb-1" data-testid="flashback-player-list">
+      <ScrollArea orientation="horizontal">
+      <div className="flex w-max gap-1.5 pt-2.5 pb-2.5" data-testid="flashback-player-list">
         {players.map((player) => (
           <PlayerCell
             key={player.user_id}
@@ -69,6 +71,7 @@ export function PlayerBar({ match }: { match: MatchApi }) {
           />
         ))}
       </div>
+      </ScrollArea>
     </section>
   )
 }
