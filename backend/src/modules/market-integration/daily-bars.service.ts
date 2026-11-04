@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 
 import { DatabaseService } from '../../platform/database/database.service.js';
 import { DnseMarketProvider, type DnseDailyBar } from '../market-data/providers/dnse.provider.js';
+import { MarketTransportError } from '../market-data/providers/http.transport.js';
 import { daysBefore, isCompletedVietnamSession, vnToday } from './integration.utils.js';
 
 /**
@@ -19,6 +20,10 @@ export const DAILY_BARS_BENCHMARK = 'VNINDEX';
 const FETCH_CONCURRENCY = 6;
 /** A symbol that failed or has no provider data is asked again after this long. */
 const RETRY_AFTER_MS = 60 * 60_000;
+/** A transient provider failure (timeout, 5xx) is asked again on a tick after this long. */
+const FAILED_RETRY_AFTER_MS = 10 * 60_000;
+/** Exchanges DNSE serves; OTC and delisted codes only return "invalid symbol". */
+export const DAILY_BARS_EXCHANGES = ['HOSE', 'HNX', 'UPCOM'] as const;
 /** Calendar days requested per symbol: comfortably more than the retained sessions. */
 const HISTORY_DAYS = 820;
 /** A session is "the" session T once this share of the stored symbols has its bar. */
@@ -218,7 +223,14 @@ export class DailyBarsService {
   async refreshSymbol(symbol: string, now = new Date()): Promise<'stored' | 'no_data'> {
     const to = Math.floor(now.getTime() / 1000);
     const from = to - HISTORY_DAYS * 86_400;
-    const fetched = await this.dnse.fetchDailyBars(symbol, from, to, 'stock');
+    let fetched: Awaited<ReturnType<DnseMarketProvider['fetchDailyBars']>>;
+    try {
+      fetched = await this.dnse.fetchDailyBars(symbol, from, to, 'stock');
+    } catch (error) {
+      // DNSE answers 400 "invalid symbol" for codes it does not list: no data, not a failure.
+      if (error instanceof MarketTransportError && error.status === 400) return 'no_data';
+      throw error;
+    }
     const columns = toStoredColumns(fetched.bars, now);
     if (!columns.d.length) return 'no_data';
     await this.database.query(
@@ -267,6 +279,7 @@ export class DailyBarsService {
           else summary.no_data += 1;
         } catch (error) {
           summary.failed += 1;
+          this.attempts.set(symbol, now.getTime() - RETRY_AFTER_MS + FAILED_RETRY_AFTER_MS);
           if (summary.errors.length < 5)
             summary.errors.push(
               `${symbol}: ${error instanceof Error ? error.message : String(error)}`,
@@ -340,6 +353,8 @@ export class DailyBarsService {
         `Daily bars refreshed for ${target}: ${summary.stored}/${summary.requested} stored, ` +
           `${summary.no_data} without data, ${summary.failed} failed in ${summary.elapsed_ms} ms`,
       );
+      if (summary.errors.length)
+        this.logger.warn(`Daily bars failures (first ${summary.errors.length}): ${summary.errors.join('; ')}`);
       return { status: 'refreshed', session: target, summary };
     } finally {
       this.refreshing = null;
@@ -355,10 +370,11 @@ export class DailyBarsService {
         where s.is_active = true
           and coalesce(s.is_index, false) = false
           and lower(s.asset_type) = 'stock'
+          and upper(coalesce(s.exchange, '')) = any($2::text[])
           and (b.symbol is null
                or b.fetched_at < (($1::date + time '15:15') at time zone 'Asia/Ho_Chi_Minh'))
         order by upper(s.symbol)`,
-      [session],
+      [session, [...DAILY_BARS_EXCHANGES]],
     );
     return rows.map((row) => row.symbol);
   }

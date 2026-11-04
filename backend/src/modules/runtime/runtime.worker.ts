@@ -17,6 +17,9 @@ import {
   type RuntimeOptions,
 } from './runtime.types.js';
 
+/** Lock per active job; BullMQ renews it every half while the job runs. */
+export const RUNTIME_LOCK_DURATION_MS = 5 * 60_000;
+
 function ictDate(date: Date): string {
   return new Date(date.getTime() + 7 * 60 * 60 * 1_000).toISOString().slice(0, 10);
 }
@@ -75,8 +78,13 @@ export class RuntimeWorker implements OnModuleInit, OnApplicationShutdown {
       connection,
       prefix: this.queue.opts.prefix,
       concurrency: this.options.concurrency ?? 4,
+      // Market refresh jobs (daily bars, symbol attributes) run for minutes; a 30 s lock let a busy
+      // tick be marked stalled and run twice.
+      lockDuration: RUNTIME_LOCK_DURATION_MS,
     });
-    this.worker.on('error', (error) => this.logger.error(`Runtime worker error: ${error.name}`));
+    this.worker.on('error', (error) =>
+      this.logger.error(`Runtime worker error: ${error.name}: ${error.message}`),
+    );
   }
 
   async stop(): Promise<void> {
