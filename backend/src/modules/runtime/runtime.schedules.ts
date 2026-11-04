@@ -166,6 +166,14 @@ export function defaultRuntimeSchedules(): readonly RuntimeJobSchedule[] {
       tradingDay: false,
       enabled: enabled('flashback.rooms-sweep'),
     },
+    {
+      name: 'flashback.dataset-refresh',
+      description:
+        'Flashback v2.2 Kho dữ liệu: kiểm tra mỗi ngày 03:15 và chỉ dựng phiên bản VN100 mới sau kỳ cơ cấu định kỳ (tháng 2 và tháng 8) hoặc khi chưa có kho; nút "Làm mới kho" của quản trị dùng cùng tác vụ',
+      pattern: '0 15 3 * * *',
+      tradingDay: false,
+      enabled: enabled('flashback.dataset-refresh'),
+    },
   ];
 }
 

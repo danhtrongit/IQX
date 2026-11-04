@@ -30,6 +30,9 @@ export interface OperationMap {
   "GET /api/v2/admin/audit": { request: T.AdminAuditControllerList1Data; response: T.AdminAuditControllerList1Responses[keyof T.AdminAuditControllerList1Responses] }
   "GET /api/v2/admin/audit/export": { request: T.AdminAuditControllerExport1Data; response: T.AdminAuditControllerExport1Responses[keyof T.AdminAuditControllerExport1Responses] }
   "GET /api/v2/admin/flashback/alerts": { request: T.FlashbackAdminAlertsData; response: T.FlashbackAdminAlertsResponses[keyof T.FlashbackAdminAlertsResponses] }
+  "GET /api/v2/admin/flashback/dataset": { request: T.FlashbackAdminDatasetData; response: T.FlashbackAdminDatasetResponses[keyof T.FlashbackAdminDatasetResponses] }
+  "GET /api/v2/admin/flashback/dataset/symbols": { request: T.FlashbackAdminDatasetSymbolsData; response: T.FlashbackAdminDatasetSymbolsResponses[keyof T.FlashbackAdminDatasetSymbolsResponses] }
+  "GET /api/v2/admin/flashback/dataset/versions": { request: T.FlashbackAdminDatasetVersionsData; response: T.FlashbackAdminDatasetVersionsResponses[keyof T.FlashbackAdminDatasetVersionsResponses] }
   "GET /api/v2/admin/flashback/pause": { request: T.FlashbackAdminPauseStatusData; response: T.FlashbackAdminPauseStatusResponses[keyof T.FlashbackAdminPauseStatusResponses] }
   "GET /api/v2/admin/flashback/reward-holds": { request: T.FlashbackAdminRewardHoldsData; response: T.FlashbackAdminRewardHoldsResponses[keyof T.FlashbackAdminRewardHoldsResponses] }
   "GET /api/v2/admin/flashback/rounds": { request: T.FlashbackAdminRoundsData; response: T.FlashbackAdminRoundsResponses[keyof T.FlashbackAdminRoundsResponses] }
@@ -312,6 +315,7 @@ export interface OperationMap {
   "POST /api/v2/admin/alerts/seed": { request: T.AdminAlertsControllerSeed1Data; response: T.AdminAlertsControllerSeed1Responses[keyof T.AdminAlertsControllerSeed1Responses] }
   "POST /api/v2/admin/alerts/signals": { request: T.AdminAlertsControllerCreate1Data; response: T.AdminAlertsControllerCreate1Responses[keyof T.AdminAlertsControllerCreate1Responses] }
   "POST /api/v2/admin/alerts/telegram/webhook": { request: T.AdminAlertsControllerSetupTelegramWebhook1Data; response: T.AdminAlertsControllerSetupTelegramWebhook1Responses[keyof T.AdminAlertsControllerSetupTelegramWebhook1Responses] }
+  "POST /api/v2/admin/flashback/dataset/refresh": { request: T.FlashbackAdminDatasetRefreshData; response: T.FlashbackAdminDatasetRefreshResponses[keyof T.FlashbackAdminDatasetRefreshResponses] }
   "POST /api/v2/admin/flashback/pause": { request: T.FlashbackAdminPauseData; response: T.FlashbackAdminPauseResponses[keyof T.FlashbackAdminPauseResponses] }
   "POST /api/v2/admin/flashback/reward-holds/{id}/release": { request: T.FlashbackAdminReleaseRewardHoldData; response: T.FlashbackAdminReleaseRewardHoldResponses[keyof T.FlashbackAdminReleaseRewardHoldResponses] }
   "POST /api/v2/admin/flashback/reward-holds/{id}/void": { request: T.FlashbackAdminVoidRewardHoldData; response: T.FlashbackAdminVoidRewardHoldResponses[keyof T.FlashbackAdminVoidRewardHoldResponses] }
@@ -458,6 +462,7 @@ export interface OperationMap {
   "PUT /api/v2/academy/attempts/{attemptId}/answers": { request: T.AcademySaveDraftAnswersData; response: T.AcademySaveDraftAnswersResponses[keyof T.AcademySaveDraftAnswersResponses] }
   "PUT /api/v2/academy/lessons/{lessonId}/notes": { request: T.AcademySaveLessonNotesData; response: T.AcademySaveLessonNotesResponses[keyof T.AcademySaveLessonNotesResponses] }
   "PUT /api/v2/admin/alerts/signals/{key}": { request: T.AdminAlertsControllerUpdate1Data; response: T.AdminAlertsControllerUpdate1Responses[keyof T.AdminAlertsControllerUpdate1Responses] }
+  "PUT /api/v2/admin/flashback/dataset/config": { request: T.FlashbackAdminDatasetConfigData; response: T.FlashbackAdminDatasetConfigResponses[keyof T.FlashbackAdminDatasetConfigResponses] }
   "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: T.AdminTeamLeadsControllerUpdatePolicy1Data; response: T.AdminTeamLeadsControllerUpdatePolicy1Responses[keyof T.AdminTeamLeadsControllerUpdatePolicy1Responses] }
   "PUT /api/v2/alerts/rules/{ruleId}": { request: T.AlertsControllerUpdateRule1Data; response: T.AlertsControllerUpdateRule1Responses[keyof T.AlertsControllerUpdateRule1Responses] }
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: T.QuantControllerUpdate0Data; response: T.QuantControllerUpdate0Responses[keyof T.QuantControllerUpdate0Responses] }
@@ -499,6 +504,9 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/admin/audit": { request: "AdminAuditControllerList1Data", response: "AdminAuditControllerList1Responses" },
   "GET /api/v2/admin/audit/export": { request: "AdminAuditControllerExport1Data", response: "AdminAuditControllerExport1Responses" },
   "GET /api/v2/admin/flashback/alerts": { request: "FlashbackAdminAlertsData", response: "FlashbackAdminAlertsResponses" },
+  "GET /api/v2/admin/flashback/dataset": { request: "FlashbackAdminDatasetData", response: "FlashbackAdminDatasetResponses" },
+  "GET /api/v2/admin/flashback/dataset/symbols": { request: "FlashbackAdminDatasetSymbolsData", response: "FlashbackAdminDatasetSymbolsResponses" },
+  "GET /api/v2/admin/flashback/dataset/versions": { request: "FlashbackAdminDatasetVersionsData", response: "FlashbackAdminDatasetVersionsResponses" },
   "GET /api/v2/admin/flashback/pause": { request: "FlashbackAdminPauseStatusData", response: "FlashbackAdminPauseStatusResponses" },
   "GET /api/v2/admin/flashback/reward-holds": { request: "FlashbackAdminRewardHoldsData", response: "FlashbackAdminRewardHoldsResponses" },
   "GET /api/v2/admin/flashback/rounds": { request: "FlashbackAdminRoundsData", response: "FlashbackAdminRoundsResponses" },
@@ -781,6 +789,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/admin/alerts/seed": { request: "AdminAlertsControllerSeed1Data", response: "AdminAlertsControllerSeed1Responses" },
   "POST /api/v2/admin/alerts/signals": { request: "AdminAlertsControllerCreate1Data", response: "AdminAlertsControllerCreate1Responses" },
   "POST /api/v2/admin/alerts/telegram/webhook": { request: "AdminAlertsControllerSetupTelegramWebhook1Data", response: "AdminAlertsControllerSetupTelegramWebhook1Responses" },
+  "POST /api/v2/admin/flashback/dataset/refresh": { request: "FlashbackAdminDatasetRefreshData", response: "FlashbackAdminDatasetRefreshResponses" },
   "POST /api/v2/admin/flashback/pause": { request: "FlashbackAdminPauseData", response: "FlashbackAdminPauseResponses" },
   "POST /api/v2/admin/flashback/reward-holds/{id}/release": { request: "FlashbackAdminReleaseRewardHoldData", response: "FlashbackAdminReleaseRewardHoldResponses" },
   "POST /api/v2/admin/flashback/reward-holds/{id}/void": { request: "FlashbackAdminVoidRewardHoldData", response: "FlashbackAdminVoidRewardHoldResponses" },
@@ -927,6 +936,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "PUT /api/v2/academy/attempts/{attemptId}/answers": { request: "AcademySaveDraftAnswersData", response: "AcademySaveDraftAnswersResponses" },
   "PUT /api/v2/academy/lessons/{lessonId}/notes": { request: "AcademySaveLessonNotesData", response: "AcademySaveLessonNotesResponses" },
   "PUT /api/v2/admin/alerts/signals/{key}": { request: "AdminAlertsControllerUpdate1Data", response: "AdminAlertsControllerUpdate1Responses" },
+  "PUT /api/v2/admin/flashback/dataset/config": { request: "FlashbackAdminDatasetConfigData", response: "FlashbackAdminDatasetConfigResponses" },
   "PUT /api/v2/admin/team-leads/{leadId}/policy": { request: "AdminTeamLeadsControllerUpdatePolicy1Data", response: "AdminTeamLeadsControllerUpdatePolicy1Responses" },
   "PUT /api/v2/alerts/rules/{ruleId}": { request: "AlertsControllerUpdateRule1Data", response: "AlertsControllerUpdateRule1Responses" },
   "PUT /api/v2/backtest/strategies/{strategyId}": { request: "QuantControllerUpdate0Data", response: "QuantControllerUpdate0Responses" },

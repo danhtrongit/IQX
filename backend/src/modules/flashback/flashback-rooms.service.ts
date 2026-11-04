@@ -29,6 +29,7 @@ import {
   FLASHBACK_SETTLEMENT_SESSIONS,
   FLASHBACK_TAX_BPS,
 } from './flashback.constants.js';
+import { FLASHBACK_NO_DATA_MESSAGE } from './flashback-dataset.config.js';
 import {
   FB_INITIAL_CASH_VND,
   FB_KICKED_NOTICE,
@@ -95,7 +96,7 @@ import type { FlashbackBar, FlashbackLotRow, FlashbackOrderRow } from './flashba
 
 // ------------------------------------------------------------------ cổng dữ liệu ván
 
-/** Bộ dữ liệu một ván: mã VN30 và giai đoạn đã điều chỉnh (§5). Chỉ server. */
+/** Bộ dữ liệu một ván: một mã VN100 và một đoạn W + H + P phiên đã điều chỉnh của kho (v2.2 §3). Chỉ server. */
 export interface FbMatchDataset {
   readonly symbol: string;
   readonly warmupBars: readonly FlashbackBar[];
@@ -103,9 +104,12 @@ export interface FbMatchDataset {
   readonly bars: readonly FlashbackBar[];
   readonly priceSource: string | null;
   readonly fallbackLevel: number;
+  /** v2.2: phiên bản kho và điểm cắt của đoạn dữ liệu (null/thiếu với đường dẫn cũ). */
+  readonly datasetVersion?: number | null;
+  readonly startIdx?: number | null;
 }
 
-/** Chọn ngẫu nhiên một mã VN30 hiện hành và một giai đoạn hợp lệ (spec v2 §5). */
+/** Cắt một giai đoạn hợp lệ từ kho dữ liệu đang dùng (spec v2.2 §3). */
 export interface FbDatasetPort {
   pick(now: Date, viewBars: number, playBars: number): Promise<FbMatchDataset | null>;
 }
@@ -716,7 +720,7 @@ export class FlashbackRoomsService {
 
   /**
    * Bắt đầu ván (§4, §5, §8): chỉ chủ phòng; kiểm tra lại xu từng người (ai thiếu bị đưa ra kèm
-   * thông báo), một mình thì không cược, trừ cược mỗi người đúng một lần, chọn mã VN30 và giai
+   * thông báo), một mình thì không cược, trừ cược mỗi người đúng một lần, cắt mã VN100 và giai
    * đoạn ngẫu nhiên, tạo ván. Trả nến lịch sử và nến khởi tạo chỉ báo, không có mã hay ngày.
    */
   async startRoom(userId: string, code: string): Promise<FbStartResult> {
@@ -726,11 +730,11 @@ export class FlashbackRoomsService {
     this.assertCanStart(before, userId);
     const now = this.clock.now();
     const dataset = await this.dataset.pick(now, before.viewBars, before.playBars);
+    // Không cắt được đề (spec v2.2 §3.3 bước 7): không bắt đầu, chưa trừ xu, chủ phòng đọc được
+    // thông báo. Dùng 409 thay cho 503 vì bộ lọc lỗi chung thay MỌI thông báo 5xx bằng câu chung
+    // "Dịch vụ tạm thời không khả dụng", nên chủ phòng sẽ không bao giờ thấy câu của spec.
     if (!dataset || dataset.bars.length !== before.viewBars + before.playBars)
-      throw new ServiceUnavailableException({
-        code: 'FLASHBACK_DATA_UNAVAILABLE',
-        message: 'Chưa chuẩn bị được dữ liệu ván chơi, hãy thử lại',
-      });
+      throw conflict('FLASHBACK_DATA_UNAVAILABLE', FLASHBACK_NO_DATA_MESSAGE);
 
     const outcome = await this.database.transaction(async (tx) => {
       const room = await this.repository.roomByCode(tx, code, true);
@@ -794,6 +798,8 @@ export class FlashbackRoomsService {
         playBars,
         warmupBars: dataset.warmupBars,
         bars: dataset.bars,
+        datasetVersion: dataset.datasetVersion ?? null,
+        startIdx: dataset.startIdx ?? null,
         minutes: room.minutes,
         stakeXu,
         playerCount: players.length,

@@ -30082,6 +30082,391 @@ export type FlashbackAdminAlertsResponses = {
 export type FlashbackAdminAlertsResponse =
   FlashbackAdminAlertsResponses[keyof FlashbackAdminAlertsResponses];
 
+export type FlashbackAdminDatasetData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset";
+};
+
+export type FlashbackAdminDatasetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetError =
+  FlashbackAdminDatasetErrors[keyof FlashbackAdminDatasetErrors];
+
+export type FlashbackAdminDatasetResponses = {
+  200: {
+    active: {
+      activated_at: string | null;
+      created_at: string;
+      duration_ms: number | null;
+      excluded_count: number;
+      finished_at: string | null;
+      first_date: string | null;
+      last_date: string | null;
+      log: {
+        [key: string]: unknown;
+      };
+      requested_by: string | null;
+      source: string;
+      status: "building" | "active" | "retired" | "failed";
+      symbols_count: number;
+      trigger: "scheduled" | "manual" | "cli";
+      version: number;
+    } | null;
+    alerts: Array<{
+      code: string;
+      level: "high" | "medium" | "low";
+      message: string;
+      run_at: string;
+    }>;
+    building: {
+      heartbeat_at: string;
+      progress: {
+        done: number;
+        excluded: number;
+        ok: number;
+        phase: "basket" | "calendar" | "symbols" | "finalize" | "done";
+        total: number;
+      };
+      stale: boolean;
+      started_at: string;
+      trigger: "scheduled" | "manual" | "cli";
+      version: number;
+    } | null;
+    config: {
+      basket: string;
+      max_gap_sessions: number;
+      max_zero_volume_ratio: number;
+      min_daily_volatility: number;
+      min_liquidity_vnd: number;
+      min_months_ago: number;
+      min_symbols: number;
+      price_sources: Array<"DNSE" | "VCI">;
+      rebalance_dates: Array<string>;
+      refresh_delay_days: number;
+      refresh_months: Array<number>;
+      warmup_sessions: number;
+    };
+    config_defaults: {
+      basket: string;
+      max_gap_sessions: number;
+      max_zero_volume_ratio: number;
+      min_daily_volatility: number;
+      min_liquidity_vnd: number;
+      min_months_ago: number;
+      min_symbols: number;
+      price_sources: Array<"DNSE" | "VCI">;
+      rebalance_dates: Array<string>;
+      refresh_delay_days: number;
+      refresh_months: Array<number>;
+      warmup_sessions: number;
+    };
+    config_invalid: Array<string>;
+    latest_failed: {
+      activated_at: string | null;
+      created_at: string;
+      duration_ms: number | null;
+      excluded_count: number;
+      finished_at: string | null;
+      first_date: string | null;
+      last_date: string | null;
+      log: {
+        [key: string]: unknown;
+      };
+      requested_by: string | null;
+      source: string;
+      status: "building" | "active" | "retired" | "failed";
+      symbols_count: number;
+      trigger: "scheduled" | "manual" | "cli";
+      version: number;
+    } | null;
+    schedule: {
+      anchor: string | null;
+      due: boolean;
+      reason: string;
+    };
+    warnings: Array<{
+      at: string | null;
+      code: string;
+      level: "high" | "medium";
+      message: string;
+    }>;
+  };
+};
+
+export type FlashbackAdminDatasetResponse =
+  FlashbackAdminDatasetResponses[keyof FlashbackAdminDatasetResponses];
+
+export type FlashbackAdminDatasetConfigData = {
+  body: {
+    basket?: string;
+    max_gap_sessions?: number;
+    max_zero_volume_ratio?: number;
+    min_daily_volatility?: number;
+    min_liquidity_vnd?: number;
+    min_months_ago?: number;
+    min_symbols?: number;
+    price_sources?: Array<"DNSE" | "VCI">;
+    rebalance_dates?: Array<string>;
+    refresh_delay_days?: number;
+    refresh_months?: Array<number>;
+    warmup_sessions?: number;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset/config";
+};
+
+export type FlashbackAdminDatasetConfigErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetConfigError =
+  FlashbackAdminDatasetConfigErrors[keyof FlashbackAdminDatasetConfigErrors];
+
+export type FlashbackAdminDatasetConfigResponses = {
+  200: {
+    config: {
+      basket: string;
+      max_gap_sessions: number;
+      max_zero_volume_ratio: number;
+      min_daily_volatility: number;
+      min_liquidity_vnd: number;
+      min_months_ago: number;
+      min_symbols: number;
+      price_sources: Array<"DNSE" | "VCI">;
+      rebalance_dates: Array<string>;
+      refresh_delay_days: number;
+      refresh_months: Array<number>;
+      warmup_sessions: number;
+    };
+    config_invalid: Array<string>;
+  };
+};
+
+export type FlashbackAdminDatasetConfigResponse =
+  FlashbackAdminDatasetConfigResponses[keyof FlashbackAdminDatasetConfigResponses];
+
+export type FlashbackAdminDatasetRefreshData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset/refresh";
+};
+
+export type FlashbackAdminDatasetRefreshErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetRefreshError =
+  FlashbackAdminDatasetRefreshErrors[keyof FlashbackAdminDatasetRefreshErrors];
+
+export type FlashbackAdminDatasetRefreshResponses = {
+  200: {
+    accepted: true;
+    job_id: string | null;
+    mode: "queued" | "inline";
+  };
+};
+
+export type FlashbackAdminDatasetRefreshResponse =
+  FlashbackAdminDatasetRefreshResponses[keyof FlashbackAdminDatasetRefreshResponses];
+
+export type FlashbackAdminDatasetSymbolsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    version?: number;
+  };
+  url: "/api/v2/admin/flashback/dataset/symbols";
+};
+
+export type FlashbackAdminDatasetSymbolsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetSymbolsError =
+  FlashbackAdminDatasetSymbolsErrors[keyof FlashbackAdminDatasetSymbolsErrors];
+
+export type FlashbackAdminDatasetSymbolsResponses = {
+  200: {
+    status: string | null;
+    symbols: Array<{
+      bad_count: number;
+      bars_count: number;
+      first_date: string | null;
+      last_date: string | null;
+      price_source: string | null;
+      reason: string | null;
+      status: "ok" | "excluded";
+      symbol: string;
+      value_basis: string | null;
+    }>;
+    version: number | null;
+  };
+};
+
+export type FlashbackAdminDatasetSymbolsResponse =
+  FlashbackAdminDatasetSymbolsResponses[keyof FlashbackAdminDatasetSymbolsResponses];
+
+export type FlashbackAdminDatasetVersionsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset/versions";
+};
+
+export type FlashbackAdminDatasetVersionsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetVersionsError =
+  FlashbackAdminDatasetVersionsErrors[keyof FlashbackAdminDatasetVersionsErrors];
+
+export type FlashbackAdminDatasetVersionsResponses = {
+  200: {
+    versions: Array<{
+      activated_at: string | null;
+      created_at: string;
+      duration_ms: number | null;
+      excluded_count: number;
+      finished_at: string | null;
+      first_date: string | null;
+      last_date: string | null;
+      log: {
+        [key: string]: unknown;
+      };
+      requested_by: string | null;
+      source: string;
+      status: "building" | "active" | "retired" | "failed";
+      symbols_count: number;
+      trigger: "scheduled" | "manual" | "cli";
+      version: number;
+    }>;
+  };
+};
+
+export type FlashbackAdminDatasetVersionsResponse =
+  FlashbackAdminDatasetVersionsResponses[keyof FlashbackAdminDatasetVersionsResponses];
+
 export type FlashbackAdminPauseStatusData = {
   body?: never;
   path?: never;

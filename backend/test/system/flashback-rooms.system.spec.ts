@@ -5,10 +5,17 @@ import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import type { FlashbackMarketDataPort } from '../../src/modules/flashback/flashback.market-data.js';
+import { vietnamDate } from '../../src/modules/flashback/flashback.round-builder.js';
 import { FLASHBACK_CLOCK } from '../../src/modules/flashback/flashback.service.js';
 import type { FlashbackBar } from '../../src/modules/flashback/flashback.types.js';
+import { FlashbackDatasetBuilder } from '../../src/modules/flashback/flashback-dataset.builder.js';
+import { FLASHBACK_NO_DATA_MESSAGE } from '../../src/modules/flashback/flashback-dataset.config.js';
+import type { DatasetRawRow } from '../../src/modules/flashback/flashback-dataset.logic.js';
+import { FLASHBACK_DATASET_SOURCE } from '../../src/modules/flashback/flashback-dataset.source.js';
 import { compareRank } from '../../src/modules/flashback/flashback-rooms.logic.js';
 import { FlashbackRoomsService } from '../../src/modules/flashback/flashback-rooms.service.js';
+import { weekdaysFrom } from '../unit/helpers/flashback-dataset-fixtures.js';
+import { FakeDatasetSource } from '../unit/helpers/flashback-dataset-memory.js';
 import {
   authHeader,
   registerAndLogin,
@@ -16,9 +23,10 @@ import {
   type SystemStack,
 } from './system-stack.js';
 
-// Flashback v2 · Phòng chơi trên PostgreSQL thật với migration 0033: chọn mã VN30 và giai đoạn
-// bằng bộ dựng đề v1.2 (nguồn nến giả lập, có ngày thật), trừ cược một lần, chốt ván và trả xu
-// idempotent, hết giờ tính ở phiên cuối, ràng buộc ledger và khoá khi vào phòng song song.
+// Flashback v2 · Phòng chơi trên PostgreSQL thật với migration 0033 và kho dữ liệu v2.2 (0039): kho
+// được dựng bằng bộ dựng thật từ một nguồn giả lập (6 mã, mọi ngày thường từ 2012), ván cắt đoạn
+// W + H + P phiên từ kho đó và lưu (dataset_version, start_idx); trừ cược một lần, chốt ván và trả
+// xu idempotent, hết giờ tính ở phiên cuối, ràng buộc ledger và khoá khi vào phòng song song.
 const BASE = '/api/v2/flashback';
 const VN30 = [
   'ACB',
@@ -81,12 +89,39 @@ const market: FlashbackMarketDataPort = {
   vn30Symbols: async () => [...VN30],
 };
 
+/** Sáu mã của rổ giả lập; `min_symbols` của kho được hạ xuống 6 để bộ dựng kích hoạt bản này. */
+const DATASET_SYMBOLS = ['AAA', 'BBB', 'CCC', 'DDD', 'EEE', 'FFF'];
+
+/** Nến thô (đồng) của một mã: giá dao động ±2%/phiên quanh 50.000đ, khối lượng 1 triệu cổ. */
+function datasetRows(symbol: string, dates: readonly string[]): DatasetRawRow[] {
+  const seed = symbol.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  let price = 50_000;
+  return dates.map((date, index) => {
+    price *= 1 + 0.02 * Math.sin((index + 1) * 1.7 + seed);
+    const close = Math.round(price);
+    return { date, open: close, high: close, low: close, close, volume: 1_000_000 };
+  });
+}
+
+/** Nguồn dữ liệu giả của bộ dựng kho: mọi ngày thường từ 2012-01-02 tới hôm qua. */
+function datasetSource(): FakeDatasetSource {
+  const today = vietnamDate(new Date());
+  const weekdays = Math.ceil(((Date.now() - Date.UTC(2012, 0, 2)) / 86_400_000) * (5 / 7)) + 10;
+  const dates = weekdaysFrom('2012-01-02', weekdays).filter((date) => date < today);
+  const source = new FakeDatasetSource();
+  source.basketSymbols = [...DATASET_SYMBOLS];
+  source.calendarDates = dates;
+  for (const symbol of DATASET_SYMBOLS) source.histories.set(symbol, datasetRows(symbol, dates));
+  return source;
+}
+
 type Session = Awaited<ReturnType<typeof registerAndLogin>>;
 
 describe('system acceptance: Flashback v2 · Phòng chơi', () => {
   let stack: SystemStack;
   let app: NestFastifyApplication;
   const clock = { at: new Date() };
+  let datasetVersion = 0;
 
   beforeAll(async () => {
     stack = await startSystemStack(
@@ -94,12 +129,27 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       {
         overrideProviders: [
           { token: 'FLASHBACK_MARKET_DATA', value: market },
+          { token: FLASHBACK_DATASET_SOURCE, value: datasetSource() },
           { token: FLASHBACK_CLOCK, value: { now: () => clock.at } },
         ],
       },
     );
     app = stack.app;
+    // Kho v2.2 chưa có phiên bản nào: dựng và kích hoạt bản đầu tiên bằng bộ dựng thật (đúng lệnh
+    // `npm run flashback:dataset:build` trên máy chủ), rổ giả lập nhỏ nên hạ ngưỡng 80 mã.
+    await setDatasetConfig({ min_symbols: DATASET_SYMBOLS.length });
+    const built = await app.get(FlashbackDatasetBuilder).build({ trigger: 'cli' });
+    expect(built).toMatchObject({ status: 'active', okCount: DATASET_SYMBOLS.length });
+    datasetVersion = built.status === 'active' ? built.version : 0;
   }, 180_000);
+
+  /** Ghi đè một phần tham số `flashback_settings.dataset` (có hiệu lực ngay ở lần cắt kế tiếp). */
+  const setDatasetConfig = (patch: Record<string, number>) =>
+    stack.query(
+      `insert into flashback_settings (key, value) values ('dataset', $1::jsonb)
+       on conflict (key) do update set value = flashback_settings.value || excluded.value`,
+      [JSON.stringify(patch)],
+    );
 
   afterAll(async () => {
     await stack?.close();
@@ -165,7 +215,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     }
   }
 
-  it('4 người cược 100: trừ cược một lần, cùng một bộ nến VN30, không lộ mã/ngày, người thắng +400, chạy lại không cộng hai lần', async () => {
+  it('4 người cược 100: trừ cược một lần, cùng một bộ nến của kho, không lộ mã/ngày, người thắng +400, chạy lại không cộng hai lần', async () => {
     const players = [
       await user('fb-a', 1000),
       await user('fb-b', 1000),
@@ -212,14 +262,44 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     expect(match.history_bars).toHaveLength(40);
     expect(match.warmup_bars).toHaveLength(252);
     expect(match.pot_xu).toBe(400);
-    const [row] = await stack.query<{ symbol: string; bars: number; start_date: string }>(
-      `select symbol, jsonb_array_length(bars)::int as bars, to_char(start_date, 'YYYY-MM-DD') as start_date
+    const [row] = await stack.query<{
+      symbol: string;
+      bars: number;
+      start_date: string;
+      dataset_version: number;
+      start_idx: number;
+    }>(
+      `select symbol, jsonb_array_length(bars)::int as bars, to_char(start_date, 'YYYY-MM-DD') as start_date,
+              dataset_version, start_idx
          from fb_matches where id = $1`,
       [match.match_id],
     );
-    expect(VN30).toContain(row!.symbol);
+    expect(DATASET_SYMBOLS).toContain(row!.symbol);
     expect(row!.bars).toBe(70);
     expect(row!.start_date >= '2012-01-01').toBe(true);
+    // Ván ghi lại điểm cắt của mình (spec v2.2 §3.5) và 252 + 70 nến lưu trong ván đúng là các
+    // phiên start_idx .. start_idx + 321 của kho: dựng lại được mà không cần bản chép.
+    expect(row!.dataset_version).toBe(datasetVersion);
+    expect(row!.start_idx).toBeGreaterThanOrEqual(0);
+    const storedVsStore = (column: 'warmup_bars' | 'bars', offset: number) =>
+      stack.query(
+        `select count(*)::int as n,
+                count(*) filter (
+                  where to_char(d.date, 'YYYY-MM-DD') <> e.bar->>'d'
+                     or d.open <> (e.bar->>'o')::bigint
+                     or d.close <> (e.bar->>'c')::bigint
+                     or d.volume <> (e.bar->>'v')::bigint
+                )::int as different
+           from fb_matches m
+          cross join lateral jsonb_array_elements(m.${column}) with ordinality as e(bar, pos)
+           join fb_dataset_bars d
+             on d.version = m.dataset_version and d.symbol = m.symbol
+            and d.idx = m.start_idx + ${offset} + e.pos - 1
+          where m.id = $1`,
+        [match.match_id],
+      );
+    expect(await storedVsStore('warmup_bars', 0)).toEqual([{ n: 252, different: 0 }]);
+    expect(await storedVsStore('bars', 252)).toEqual([{ n: 70, different: 0 }]);
     // Không có mã, ngày phiên thật trong phản hồi bắt đầu và ảnh chụp ván của người khác.
     const snapshotB = await call(b, 'GET', `matches/${match.match_id}`);
     for (const body of [started.body, snapshotB.body]) {
@@ -340,6 +420,66 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       ),
     ).toHaveLength(0);
     clock.at = new Date();
+  });
+
+  it('không cắt được đề: 409 kèm đúng câu của spec, chưa trừ xu, không tạo ván, phòng vẫn chờ; kho có điểm cắt trở lại thì bắt đầu được', async () => {
+    const owner = await user('fb-nocut-a', 500);
+    const guest = await user('fb-nocut-b', 500);
+    const created = await call(owner, 'POST', 'rooms', {
+      view_bars: 40,
+      play_bars: 30,
+      minutes: 5,
+      max_players: 2,
+      stake_xu: 100,
+    });
+    expect(created.statusCode, created.body).toBe(200);
+    const roomId = (created.json() as { id: string }).id;
+    expect((await call(guest, 'POST', `rooms/${roomId}/join`, {})).statusCode).toBe(200);
+    await ready([guest], roomId);
+    const matchesBefore = await stack.query<{ n: number }>(
+      'select count(*)::int as n from fb_matches',
+    );
+    const stakes = (session: Session) =>
+      stack.query(`select 1 from coin_ledger where user_id = $1 and kind = 'flashback_stake'`, [
+        session.id,
+      ]);
+
+    // Đòi thanh khoản bình quân 1.000 tỷ/phiên: không phiên nào của rổ giả lập (khoảng 50 tỷ) đạt.
+    await setDatasetConfig({ min_liquidity_vnd: 1_000_000_000_000 });
+    try {
+      const refused = await call(owner, 'POST', `rooms/${roomId}/start`);
+      // 4xx chứ không phải 5xx: bộ lọc lỗi chung thay mọi thông báo 5xx bằng câu chung chung.
+      expect(refused.statusCode, refused.body).toBe(409);
+      expect(refused.json()).toMatchObject({
+        error: { code: 'FLASHBACK_DATA_UNAVAILABLE', message: FLASHBACK_NO_DATA_MESSAGE },
+      });
+      for (const session of [owner, guest]) {
+        expect(await balance(session)).toBe(500);
+        expect(await stakes(session)).toHaveLength(0);
+      }
+      expect(await stack.query('select count(*)::int as n from fb_matches')).toEqual(matchesBefore);
+      expect(await stack.query('select status from fb_rooms where code = $1', [roomId])).toEqual([
+        { status: 'waiting' },
+      ]);
+    } finally {
+      await setDatasetConfig({ min_liquidity_vnd: 3_000_000_000 });
+    }
+
+    const retried = await call(owner, 'POST', `rooms/${roomId}/start`);
+    expect(retried.statusCode, retried.body).toBe(200);
+    for (const session of [owner, guest]) {
+      expect(await balance(session)).toBe(400);
+      expect(await stakes(session)).toHaveLength(1);
+    }
+
+    // Chơi hết và chốt ván vừa bắt đầu: các test sau tua đồng hồ rồi quét mọi ván đang mở, nên không
+    // được để lại ván dở dang ở đây.
+    const matchId = (retried.json() as { match: { match_id: string } }).match.match_id;
+    for (const session of [owner, guest]) {
+      await playToEnd(session, matchId);
+      const finished = await call(session, 'POST', `matches/${matchId}/finish`);
+      expect(finished.statusCode, finished.body).toBe(200);
+    }
   });
 
   it('ledger: mỗi (ván, người, loại) một dòng và dấu của delta đúng loại', async () => {
@@ -727,7 +867,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     expect(all.items[0]!.ended_at > all.items[1]!.ended_at).toBe(true);
     expect(all.items[0]).toMatchObject({ result: 'solo', xu: 0, points: 0, player_count: 1 });
     const duel = all.items[1]!;
-    expect(VN30).toContain(duel.symbol);
+    expect(DATASET_SYMBOLS).toContain(duel.symbol);
     expect(['win', 'tie', 'lose']).toContain(duel.result);
     expect(duel.points).toBe(duel.result === 'lose' ? 3 : 10);
     expect(duel.players).toHaveLength(2);

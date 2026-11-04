@@ -1083,6 +1083,71 @@
       "classification": "api-call"
     },
     {
+      "file": "src/pages/admin/core/flashback-dataset-api.ts",
+      "line": 334,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/dataset",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/dataset",
+      "matchedOperation": "GET /api/v2/admin/flashback/dataset",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/dataset"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-dataset-api.ts",
+      "line": 340,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/dataset/symbols",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/dataset/symbols",
+      "matchedOperation": "GET /api/v2/admin/flashback/dataset/symbols",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/dataset/symbols"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-dataset-api.ts",
+      "line": 350,
+      "callee": "requestOperation",
+      "raw": "GET /api/v2/admin/flashback/dataset/versions",
+      "method": "GET",
+      "route": "/api/v2/admin/flashback/dataset/versions",
+      "matchedOperation": "GET /api/v2/admin/flashback/dataset/versions",
+      "matchedOperations": [
+        "GET /api/v2/admin/flashback/dataset/versions"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-dataset-api.ts",
+      "line": 359,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/admin/flashback/dataset/refresh",
+      "method": "POST",
+      "route": "/api/v2/admin/flashback/dataset/refresh",
+      "matchedOperation": "POST /api/v2/admin/flashback/dataset/refresh",
+      "matchedOperations": [
+        "POST /api/v2/admin/flashback/dataset/refresh"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/admin/core/flashback-dataset-api.ts",
+      "line": 380,
+      "callee": "requestOperation",
+      "raw": "PUT /api/v2/admin/flashback/dataset/config",
+      "method": "PUT",
+      "route": "/api/v2/admin/flashback/dataset/config",
+      "matchedOperation": "PUT /api/v2/admin/flashback/dataset/config",
+      "matchedOperations": [
+        "PUT /api/v2/admin/flashback/dataset/config"
+      ],
+      "classification": "api-call"
+    },
+    {
       "file": "src/pages/admin/learning/api.ts",
       "line": 147,
       "callee": "apiUpload",
