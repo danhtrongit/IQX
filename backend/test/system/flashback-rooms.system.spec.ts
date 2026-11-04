@@ -207,7 +207,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     }
   }
 
-  it('4 người cược 100: trừ cược một lần, cùng một bộ nến VN30, không lộ mã/ngày, người thắng +400, chạy lại không cộng hai lần', async () => {
+  it('4 người cược 100: trừ cược một lần, cùng một bộ nến của kho, không lộ mã/ngày, người thắng +400, chạy lại không cộng hai lần', async () => {
     const players = [
       await user('fb-a', 1000),
       await user('fb-b', 1000),
@@ -460,6 +460,15 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     for (const session of [owner, guest]) {
       expect(await balance(session)).toBe(400);
       expect(await stakes(session)).toHaveLength(1);
+    }
+
+    // Chơi hết và chốt ván vừa bắt đầu: các test sau tua đồng hồ rồi quét mọi ván đang mở, nên không
+    // được để lại ván dở dang ở đây.
+    const matchId = (retried.json() as { match: { match_id: string } }).match.match_id;
+    for (const session of [owner, guest]) {
+      await playToEnd(session, matchId);
+      const finished = await call(session, 'POST', `matches/${matchId}/finish`);
+      expect(finished.statusCode, finished.body).toBe(200);
     }
   });
 
@@ -753,7 +762,7 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     expect(all.items[0]!.ended_at > all.items[1]!.ended_at).toBe(true);
     expect(all.items[0]).toMatchObject({ result: 'solo', xu: 0, points: 0, player_count: 1 });
     const duel = all.items[1]!;
-    expect(VN30).toContain(duel.symbol);
+    expect(DATASET_SYMBOLS).toContain(duel.symbol);
     expect(['win', 'tie', 'lose']).toContain(duel.result);
     expect(duel.points).toBe(duel.result === 'lose' ? 3 : 10);
     expect(duel.players).toHaveLength(2);
