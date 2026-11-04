@@ -9,6 +9,7 @@ import {
   Inject,
   Injectable,
   Logger,
+  ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 
@@ -19,7 +20,7 @@ import {
   INDUSTRY_LABELS,
   type Industry,
 } from '../financials/financials.industry.js';
-import { MarketDataService, VciMarketProvider } from '../market-data/index.js';
+import { MarketDataService, MarketTransportError, VciMarketProvider } from '../market-data/index.js';
 import {
   sharesAt,
   shareEventsFromVci,
@@ -266,7 +267,7 @@ export class DashboardService {
   /** Ngành của một mã theo mẫu báo cáo tài chính (spec §1.3); chưa rõ mẫu thì `thuong` (§13). */
   async industry(symbol: string): Promise<DashboardIndustryResponse> {
     const sym = symbol.toUpperCase();
-    const income = await this.vci.fetchFinancialRaw(sym, 'INCOME_STATEMENT');
+    const income = await this.financialRaw(sym, 'INCOME_STATEMENT');
     const nganh = detectIndustry(income.data);
     return { symbol: sym, nganh, label: INDUSTRY_LABELS[nganh] };
   }
@@ -361,11 +362,26 @@ export class DashboardService {
     return valuation;
   }
 
+  /** VCI financial statements; an upstream transport failure is a 503, like FinancialsService. */
+  private financialRaw(
+    symbol: string,
+    section: 'BALANCE_SHEET' | 'INCOME_STATEMENT' | 'CASH_FLOW',
+  ): ReturnType<VciMarketProvider['fetchFinancialRaw']> {
+    return this.vci.fetchFinancialRaw(symbol, section).catch((error: unknown) => {
+      if (error instanceof MarketTransportError)
+        throw new ServiceUnavailableException({
+          code: 'FINANCIAL_PROVIDER_UNAVAILABLE',
+          message: 'Dữ liệu báo cáo tài chính tạm thời không khả dụng',
+        });
+      throw error;
+    });
+  }
+
   /** Ba báo cáo tài chính của một mã (bảng cân đối, kết quả kinh doanh, lưu chuyển tiền tệ). */
   private async sections(symbol: string): Promise<VciStatementSections> {
     const [balance, income, cash] = await Promise.all(
       (['BALANCE_SHEET', 'INCOME_STATEMENT', 'CASH_FLOW'] as const).map((section) =>
-        this.vci.fetchFinancialRaw(symbol, section),
+        this.financialRaw(symbol, section),
       ),
     );
     return {
