@@ -47,6 +47,15 @@ export const FB_ROOM_WAITING_TTL_MS = 30 * 60_000;
 /** Phòng đã có kết quả mà không ai bấm "Chơi lại" cũng đóng sau 30 phút. */
 export const FB_ROOM_ENDED_TTL_MS = 30 * 60_000;
 
+/** Người bị chủ phòng đuổi không vào lại đúng phòng đó trong ngần này thời gian. */
+export const FB_KICK_BLOCK_MS = 10 * 60_000;
+
+/** Lý do đóng dòng thành viên khi bị chủ phòng đuổi (`fb_room_members.left_reason`). */
+export const FB_KICKED_REASON = 'kicked';
+
+/** Thông báo một lần cho người bị đuổi (hiện ở lần hỏi `rooms/me` kế tiếp). */
+export const FB_KICKED_NOTICE = 'Bạn đã bị chủ phòng mời ra khỏi phòng.';
+
 /** Vốn mỗi người mỗi ván (§6.3). */
 export const FB_INITIAL_CASH_VND = FLASHBACK_INITIAL_CASH_VND;
 
@@ -206,6 +215,31 @@ export function joinCheck(input: FbJoinCheckInput): FbJoinError | null {
       message: 'Bạn đang ở một phòng khác, hãy rời phòng đó trước',
     };
   return null;
+}
+
+// ------------------------------------------------------------------ Sẵn sàng
+
+export interface FbReadyMember {
+  readonly userId: string;
+  readonly ready: boolean;
+}
+
+/**
+ * Người chơi chưa sẵn sàng của một phòng chờ. Chủ phòng luôn được tính là sẵn sàng nên không bao
+ * giờ nằm trong danh sách; phòng chỉ có chủ phòng thì danh sách rỗng (bắt đầu được ngay).
+ */
+export function membersNotReady<T extends FbReadyMember>(
+  members: readonly T[],
+  ownerId: string,
+): T[] {
+  return members.filter((member) => member.userId !== ownerId && !member.ready);
+}
+
+/** Dòng báo khi chủ phòng bấm Bắt đầu mà còn người chưa sẵn sàng. */
+export function playersNotReadyMessage(count: number): string {
+  return count === 1
+    ? 'Còn 1 người chơi chưa sẵn sàng'
+    : `Còn ${count} người chơi chưa sẵn sàng`;
 }
 
 export interface FbRandomJoinRoom {

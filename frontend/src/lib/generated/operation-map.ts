@@ -409,7 +409,9 @@ export interface OperationMap {
   "POST /api/v2/flashback/matches/{id}/reactions": { request: T.FlashbackMatchReactionData; response: T.FlashbackMatchReactionResponses[keyof T.FlashbackMatchReactionResponses] }
   "POST /api/v2/flashback/rooms": { request: T.FlashbackRoomsCreateData; response: T.FlashbackRoomsCreateResponses[keyof T.FlashbackRoomsCreateResponses] }
   "POST /api/v2/flashback/rooms/{code}/join": { request: T.FlashbackRoomsJoinData; response: T.FlashbackRoomsJoinResponses[keyof T.FlashbackRoomsJoinResponses] }
+  "POST /api/v2/flashback/rooms/{code}/kick": { request: T.FlashbackRoomsKickData; response: T.FlashbackRoomsKickResponses[keyof T.FlashbackRoomsKickResponses] }
   "POST /api/v2/flashback/rooms/{code}/leave": { request: T.FlashbackRoomsLeaveData; response: T.FlashbackRoomsLeaveResponses[keyof T.FlashbackRoomsLeaveResponses] }
+  "POST /api/v2/flashback/rooms/{code}/ready": { request: T.FlashbackRoomsReadyData; response: T.FlashbackRoomsReadyResponses[keyof T.FlashbackRoomsReadyResponses] }
   "POST /api/v2/flashback/rooms/{code}/replay": { request: T.FlashbackRoomsReplayData; response: T.FlashbackRoomsReplayResponses[keyof T.FlashbackRoomsReplayResponses] }
   "POST /api/v2/flashback/rooms/{code}/start": { request: T.FlashbackRoomsStartData; response: T.FlashbackRoomsStartResponses[keyof T.FlashbackRoomsStartResponses] }
   "POST /api/v2/flashback/rooms/random-join": { request: T.FlashbackRoomsRandomJoinData; response: T.FlashbackRoomsRandomJoinResponses[keyof T.FlashbackRoomsRandomJoinResponses] }
@@ -876,7 +878,9 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/flashback/matches/{id}/reactions": { request: "FlashbackMatchReactionData", response: "FlashbackMatchReactionResponses" },
   "POST /api/v2/flashback/rooms": { request: "FlashbackRoomsCreateData", response: "FlashbackRoomsCreateResponses" },
   "POST /api/v2/flashback/rooms/{code}/join": { request: "FlashbackRoomsJoinData", response: "FlashbackRoomsJoinResponses" },
+  "POST /api/v2/flashback/rooms/{code}/kick": { request: "FlashbackRoomsKickData", response: "FlashbackRoomsKickResponses" },
   "POST /api/v2/flashback/rooms/{code}/leave": { request: "FlashbackRoomsLeaveData", response: "FlashbackRoomsLeaveResponses" },
+  "POST /api/v2/flashback/rooms/{code}/ready": { request: "FlashbackRoomsReadyData", response: "FlashbackRoomsReadyResponses" },
   "POST /api/v2/flashback/rooms/{code}/replay": { request: "FlashbackRoomsReplayData", response: "FlashbackRoomsReplayResponses" },
   "POST /api/v2/flashback/rooms/{code}/start": { request: "FlashbackRoomsStartData", response: "FlashbackRoomsStartResponses" },
   "POST /api/v2/flashback/rooms/random-join": { request: "FlashbackRoomsRandomJoinData", response: "FlashbackRoomsRandomJoinResponses" },

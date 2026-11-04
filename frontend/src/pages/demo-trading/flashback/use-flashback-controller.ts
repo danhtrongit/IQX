@@ -25,12 +25,14 @@ import {
   fetchRooms,
   finishMatch,
   joinRoom as joinRoomRequest,
+  kickRoomMember,
   leaveRoom,
   nextBar,
   placeOrder,
   randomJoinRoom,
   replayRoom,
   sendReaction as sendReactionRequest,
+  setRoomReady,
   startRoom,
   type FlashbackCreateRoomBody,
   type FlashbackIndicatorParams,
@@ -133,7 +135,8 @@ export function useFlashbackController(): FlashbackContextValue {
   const loadMine = useCallback(
     async (signal?: AbortSignal) => {
       const mine = await fetchMyRoom(signal)
-      if (mine.notice) toast.info(mine.notice)
+      // Bị chủ phòng đuổi: server báo `kicked` cùng thông báo một lần, về sảnh kèm toast cảnh báo.
+      if (mine.notice) (mine.kicked ? toast.warning : toast.info)(mine.notice)
       if (mine.room) queryClient.setQueryData(flashbackKeys.room(userId, mine.room.id), mine.room)
       return mine
     },
@@ -429,6 +432,8 @@ export function useFlashbackController(): FlashbackContextValue {
 
   // Có người vào hoặc rời phòng chờ: báo ngắn (§4). Lần tải đầu chỉ lấy mốc so sánh.
   const knownMembers = useRef<{ code: string; members: Map<string, string> } | null>(null)
+  // Người vừa bị chính mình đuổi: đã có toast riêng, không báo thêm "đã rời phòng".
+  const kickedByMe = useRef(new Set<string>())
   useEffect(() => {
     if (place.phase !== "room" || !room || room.id !== place.code) {
       knownMembers.current = null
@@ -442,7 +447,7 @@ export function useFlashbackController(): FlashbackContextValue {
       if (!previous.members.has(member.user_id) && !member.is_me) toast.info(`${member.name} đã vào phòng`)
     }
     for (const [id, name] of previous.members) {
-      if (!members.has(id)) toast.info(`${name} đã rời phòng`)
+      if (!members.has(id) && !kickedByMe.current.delete(id)) toast.info(`${name} đã rời phòng`)
     }
   }, [place, room])
 
@@ -476,6 +481,42 @@ export function useFlashbackController(): FlashbackContextValue {
   const start = useCallback(() => {
     if (roomCode) startMutation.mutate(roomCode)
   }, [roomCode, startMutation])
+
+  const readyMutation = useMutation({
+    mutationFn: (input: { code: string; ready: boolean }) => setRoomReady(input.code, input.ready),
+    onSuccess: (updated) => queryClient.setQueryData(flashbackKeys.room(userId, updated.id), updated),
+    onError: (error) => {
+      toast.error(messageOf(error, "Chưa đổi được trạng thái sẵn sàng. Thử lại."))
+      if (isGone(error)) void resync()
+    },
+  })
+  const setReady = useCallback(
+    (ready: boolean) => {
+      if (roomCode) readyMutation.mutate({ code: roomCode, ready })
+    },
+    [readyMutation, roomCode],
+  )
+
+  const kickMutation = useMutation({
+    mutationFn: (input: { code: string; userId: string; name: string }) => kickRoomMember(input.code, input.userId),
+    onSuccess: (updated, input) => {
+      kickedByMe.current.add(input.userId)
+      queryClient.setQueryData(flashbackKeys.room(userId, updated.id), updated)
+      toast.success(`Đã mời ${input.name} ra khỏi phòng`)
+    },
+    onError: (error) => {
+      toast.error(messageOf(error, "Chưa đuổi được người chơi. Thử lại."))
+      if (isGone(error)) void resync()
+    },
+  })
+  const kick = useCallback(
+    (targetId: string) => {
+      if (!roomCode) return
+      const name = room?.members.find((member) => member.user_id === targetId)?.name ?? "người chơi"
+      kickMutation.mutate({ code: roomCode, userId: targetId, name })
+    },
+    [kickMutation, room, roomCode],
+  )
 
   const copyId = useCallback(() => {
     if (!roomCode) return
@@ -808,6 +849,10 @@ export function useFlashbackController(): FlashbackContextValue {
       leaveBusy: leaveMutation.isPending,
       start,
       startBusy: startMutation.isPending,
+      setReady,
+      readyBusy: readyMutation.isPending,
+      kick,
+      kickBusy: kickMutation.isPending,
     },
     match,
     matchLoading: place.phase === "match" && snapshotQuery.isPending,

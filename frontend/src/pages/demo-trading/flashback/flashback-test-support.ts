@@ -92,6 +92,8 @@ type RoomSim = {
   code: string
   owner: Person
   members: Person[]
+  /** user_id của những người không phải chủ phòng đang bấm "Sẵn sàng". */
+  ready: Set<string>
   settings: RoomSettings
   password: string | null
   status: "waiting" | "playing"
@@ -100,7 +102,11 @@ type RoomSim = {
 
 export type BackendOptions = {
   /** Phòng đang ở lúc vào màn hình. */
-  room?: Partial<Pick<RoomSim, "code" | "owner" | "members" | "password" | "status">> & { settings?: Partial<RoomSettings> }
+  room?: Partial<Pick<RoomSim, "code" | "owner" | "members" | "password" | "status">> & {
+    settings?: Partial<RoomSettings>
+    /** Những người (không phải chủ phòng) đã sẵn sàng lúc vào màn hình. */
+    ready?: string[]
+  }
   /** Ván đang dở của phòng (bước đã chơi...) khi `room.status` là "playing". */
   match?: Partial<Pick<MatchSim, "step" | "finished" | "cash" | "holdings" | "status">> & {
     /** Còn bao nhiêu mili giây lúc vào ván. */
@@ -311,6 +317,8 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     listing: options.listing ?? ([] as FlashbackRoomListItem[]),
     passwords: options.passwords ?? ({} as Record<string, string>),
     notice: options.notice ?? null,
+    /** Thông báo `notice` kế tiếp là do bị chủ phòng đuổi (cờ `kicked` của `rooms/me`). */
+    kicked: false,
     indicators: options.indicators ?? INDICATOR_METAS,
     /** Điểm, hạng và số ván của mình trước ván đang chơi. */
     points: options.progress?.points ?? 0,
@@ -335,6 +343,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       code: options.room.code ?? ROOM_CODE,
       owner,
       members: options.room.members ?? [owner],
+      ready: new Set(options.room.ready ?? []),
       settings,
       password: options.room.password ?? null,
       status: options.room.status ?? "waiting",
@@ -476,6 +485,8 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
         is_owner: person.user_id === room.owner.user_id,
         joined_at: "2026-10-30T01:00:00.000Z",
         name: person.name,
+        // Như server: chủ phòng luôn được tính là sẵn sàng.
+        ready: person.user_id === room.owner.user_id || room.ready.has(person.user_id),
         user_id: person.user_id,
       })),
       minutes: room.settings.minutes,
@@ -695,8 +706,10 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       }
       case "GET /flashback/rooms/me": {
         const notice = state.notice
+        const kicked = state.kicked && notice !== null
         state.notice = null
-        return { room: state.room ? roomView(state.room) : null, notice }
+        state.kicked = false
+        return { room: state.room ? roomView(state.room) : null, notice, kicked }
       }
       case "POST /flashback/rooms": {
         const body = call.body as {
@@ -711,6 +724,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
           code: ROOM_CODE,
           owner: ME,
           members: [ME],
+          ready: new Set(),
           settings: {
             view_bars: body.view_bars,
             play_bars: body.play_bars,
@@ -742,12 +756,38 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
         state.room = null
         return { left: true }
       }
+      case "POST /flashback/rooms/:code/ready": {
+        const room = currentRoom()
+        if (room.status !== "waiting") throw new ApiError("Phòng đang chơi", 409, "ROOM_PLAYING")
+        const wanted = (call.body as { ready: boolean }).ready
+        if (room.owner.user_id !== ME.user_id) {
+          if (wanted) room.ready.add(ME.user_id)
+          else room.ready.delete(ME.user_id)
+        }
+        return roomView(room)
+      }
+      case "POST /flashback/rooms/:code/kick": {
+        const room = currentRoom()
+        const targetId = (call.body as { user_id: string }).user_id
+        if (room.owner.user_id !== ME.user_id) throw new ApiError("Chỉ chủ phòng được mời người ra khỏi phòng", 403, "NOT_ROOM_OWNER")
+        if (room.status !== "waiting") throw new ApiError("Đang chơi, chưa mời người ra khỏi phòng được", 409, "ROOM_PLAYING")
+        if (targetId === ME.user_id) throw new ApiError("Bạn không thể tự mời mình ra khỏi phòng", 409, "FB_KICK_SELF")
+        if (!room.members.some((person) => person.user_id === targetId)) {
+          throw new ApiError("Người chơi này không còn ở trong phòng", 404, "FB_MEMBER_NOT_FOUND")
+        }
+        room.members = room.members.filter((person) => person.user_id !== targetId)
+        room.ready.delete(targetId)
+        return roomView(room)
+      }
       case "POST /flashback/rooms/:code/start": {
         const room = currentRoom()
         if (room.owner.user_id !== ME.user_id) throw new ApiError("Chỉ chủ phòng được bắt đầu", 403, "NOT_ROOM_OWNER")
+        const waiting = room.members.filter((person) => person.user_id !== room.owner.user_id && !room.ready.has(person.user_id)).length
+        if (waiting > 0) throw new ApiError(`Còn ${waiting} người chơi chưa sẵn sàng`, 409, "FB_PLAYERS_NOT_READY")
         const removed = state.removedOnStart
         if (removed.length > 0) room.members = room.members.filter((person) => !removed.some((gone) => gone.user_id === person.user_id))
         room.status = "playing"
+        room.ready.clear()
         room.match = newMatch()
         room.match.rivals = room.members
           .filter((person) => person.user_id !== ME.user_id)
@@ -758,6 +798,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
         const room = currentRoom()
         room.status = "waiting"
         room.match = null
+        room.ready.clear()
         return roomView(room)
       }
       case "GET /flashback/indicators":
@@ -867,6 +908,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       code,
       owner,
       members: [owner, ME],
+      ready: new Set(),
       settings: {
         view_bars: row.view_bars,
         play_bars: row.play_bars,
@@ -904,6 +946,19 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     removeMember: (userId: string) => {
       const room = currentRoom()
       room.members = room.members.filter((member) => member.user_id !== userId)
+      room.ready.delete(userId)
+    },
+    /** Người khác (không phải chủ phòng) bấm Sẵn sàng hoặc Huỷ sẵn sàng. */
+    setReady: (userId: string, ready = true) => {
+      const room = currentRoom()
+      if (ready) room.ready.add(userId)
+      else room.ready.delete(userId)
+    },
+    /** Chủ phòng khác đuổi mình: mình không còn trong phòng, `rooms/me` báo `kicked` kèm thông báo một lần. */
+    kickedByOwner: () => {
+      state.room = null
+      state.notice = "Bạn đã bị chủ phòng mời ra khỏi phòng."
+      state.kicked = true
     },
     /** Chủ phòng khác bắt đầu ván (người chơi còn lại sang màn chơi khi phòng được tải lại). */
     startByOwner: () => {
@@ -919,6 +974,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       const room = currentRoom()
       room.status = "waiting"
       room.match = null
+      room.ready.clear()
     },
     /** Người khác hoàn thành ván với mức lãi lỗ này. */
     rivalFinishes: (userId: string, pnl: number) => {
