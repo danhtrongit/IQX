@@ -386,7 +386,7 @@ describe('mapWithConcurrency', () => {
 });
 
 describe('ScreenerService.metrics', () => {
-  it('HV-03: a legacy grant keeps the 9 lesson-less metrics visible and learned', async () => {
+  it('Học viện v4: lists all 42 registry metrics whatever the grants (no lesson filter)', async () => {
     const lessonless = ['fcf_yoy', 'accrual', 'dividend_yield', 'buyback_yield'];
     const { service: svc } = service(
       UNIVERSE,
@@ -394,25 +394,33 @@ describe('ScreenerService.metrics', () => {
       lessonless.map((id) => `metric:${id}`),
     );
     const metrics = await svc.metrics(USER);
-    expect(metrics.map((m) => m.id)).toEqual(expect.arrayContaining(lessonless));
+    expect(metrics).toHaveLength(42);
+    expect(metrics.map((m) => m.id)).toEqual(
+      expect.arrayContaining([...lessonless, 'payout_ratio']),
+    );
     expect(metrics.find((m) => m.id === 'fcf_yoy')).toMatchObject({
       learned: true,
       lesson_id: null,
     });
-    expect(metrics.find((m) => m.id === 'payout_ratio')).toBeUndefined();
-    expect(metrics).toHaveLength(37);
+    expect(metrics.find((m) => m.id === 'payout_ratio')).toMatchObject({
+      learned: false,
+      lesson_id: null,
+    });
+    // The lesson that teaches a metric is its v4 lesson (chapters 8-9), for the "Học" link.
+    expect(metrics.find((m) => m.id === 'roe')?.lesson_id).toBe('ch08-l11');
+    expect(metrics.find((m) => m.id === 'pe')?.lesson_id).toBe('ch08-l14');
+    expect(metrics.find((m) => m.id === 'debt_equity')?.lesson_id).toBe('ch09-l06');
   });
 
-  it('lists the 33 lesson-backed registry metrics with learned flags, readiness and the period policy', async () => {
+  it('lists the registry metrics with learned flags, readiness and the period policy', async () => {
     const { service: svc } = service(UNIVERSE, fakeVci({ revenue: {} }).vci, [
       'metric:roe',
       'lesson:ch03-l01',
       'metric:dividend_yield', // legacy grant keeps this lesson-less metric visible
     ]);
     const metrics = await svc.metrics(USER);
-    expect(metrics).toHaveLength(34);
-    // HV-03: the 9 metrics without a lesson are hidden from learners.
-    expect(metrics.find((m) => m.id === 'fcf_yoy')).toBeUndefined();
+    expect(metrics).toHaveLength(42);
+    expect(metrics.find((m) => m.id === 'fcf_yoy')).toMatchObject({ learned: false });
     expect(metrics.find((m) => m.id === 'roe')).toMatchObject({
       learned: true,
       supported: true,

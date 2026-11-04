@@ -12,7 +12,7 @@ export function parseLessonParam(value: string | null): string | null {
 
 /**
  * The open lesson lives in the URL (`?view=academy&lesson=ch01-l01`): a reload or a direct link
- * (for example from a locked Bot indicator) restores it, and the panel and the reader read the
+ * (for example the Dashboard's "Học" button) restores it, and the panel and the reader read the
  * same value. Navigation only rewrites the parameters of this tool and keeps the rest (symbol...).
  */
 export function useAcademyNavigation() {

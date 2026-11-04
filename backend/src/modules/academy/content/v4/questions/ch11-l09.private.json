@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l09",
+  "questions": [
+    {
+      "correct_option_id": "b4b66dc08d",
+      "id": "ch11-l09-q01",
+      "options": [
+        {
+          "id": "b4b66dc08d",
+          "text": "Mỗi đồng doanh thu hoạt động tốn bao nhiêu chi phí hoạt động"
+        },
+        {
+          "id": "d062b16592",
+          "text": "Mỗi đồng vốn chủ tạo ra bao nhiêu doanh thu"
+        },
+        {
+          "id": "2331d31cc2",
+          "text": "Mỗi đồng cho vay thu về bao nhiêu tiền lãi"
+        }
+      ],
+      "prompt": "Chi phí hoạt động / Doanh thu hoạt động cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "b0d4b1c38b",
+      "id": "ch11-l09-q02",
+      "options": [
+        {
+          "id": "b0d4b1c38b",
+          "text": "Biên lợi nhuận hoạt động"
+        },
+        {
+          "id": "7fcf7ff0ea",
+          "text": "Biên lợi nhuận môi giới"
+        },
+        {
+          "id": "84b0a500e7",
+          "text": "Tỷ trọng tài sản tự doanh"
+        }
+      ],
+      "prompt": "Tỷ lệ này cộng với chỉ tiêu nào luôn bằng 100%?"
+    },
+    {
+      "correct_option_id": "25297cea1b",
+      "id": "ch11-l09-q03",
+      "options": [
+        {
+          "id": "25297cea1b",
+          "text": "Dưới 50% và ổn định"
+        },
+        {
+          "id": "c74f52a518",
+          "text": "Trên 60% và tăng nhanh"
+        },
+        {
+          "id": "027494e94a",
+          "text": "Đúng bằng 100%"
+        }
+      ],
+      "prompt": "Mức tỷ lệ chi phí nào thường được xem là tốt?"
+    },
+    {
+      "correct_option_id": "9c4e1a5ead",
+      "id": "ch11-l09-q04",
+      "options": [
+        {
+          "id": "9c4e1a5ead",
+          "text": "Lỗ tự doanh hoặc dự phòng tăng"
+        },
+        {
+          "id": "2c7791a812",
+          "text": "Dư nợ cho vay tăng mạnh"
+        },
+        {
+          "id": "3a6870751d",
+          "text": "Vốn chủ sở hữu tăng thêm"
+        }
+      ],
+      "prompt": "Tỷ lệ chi phí tăng đột ngột thường do đâu?"
+    },
+    {
+      "chart_id": "c11l9-rep",
+      "correct_option_id": "a4a538f4eb",
+      "id": "ch11-l09-q05",
+      "options": [
+        {
+          "id": "a4a538f4eb",
+          "text": "Chi phí và doanh thu hoạt động 4 quý"
+        },
+        {
+          "id": "c36b8f7f34",
+          "text": "Nợ vay và vốn chủ sở hữu"
+        },
+        {
+          "id": "72e32c1487",
+          "text": "Lãi cho vay và lãi tự doanh"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, hai cột mỗi quý là gì?"
+    }
+  ],
+  "salt": "159ee1e0712b5860ddfa51632897a0ffb8b72d7de43ae04402fc223d2668cac5"
+}

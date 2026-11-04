@@ -283,7 +283,7 @@ export function createShopBackend(options: BackendOptions = {}) {
       return { changed: true, active: activeView() }
     }
     if (path === "/academy/progress") {
-      return { catalog_version: "v", chapters: [], completed: [], completed_lesson_ids: [], course_done: state.lessons, course_total: 43, granted_capabilities: [], progress_revision: 1 }
+      return { catalog_version: "v", chapters: [], completed: [], completed_lesson_ids: [], course_done: state.lessons, course_total: 43, progress_revision: 1 }
     }
     if (path === "/academy/catalog") {
       const items = ["RSI", "MACD", "MA / SMA", "Bollinger Bands", "Khối lượng"].map((name, index) => ({

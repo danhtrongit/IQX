@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-exam",
+  "questions": [
+    {
+      "correct_option_id": "ee39cf9abe",
+      "id": "ch11-exam-q01",
+      "options": [
+        {
+          "id": "ee39cf9abe",
+          "text": "Bốn mảng"
+        },
+        {
+          "id": "4103d9df7e",
+          "text": "Hai mảng"
+        },
+        {
+          "id": "7f3a55f8e5",
+          "text": "Sáu mảng"
+        }
+      ],
+      "prompt": "Công ty chứng khoán có mấy mảng doanh thu hoạt động chính được học trong chương này?"
+    },
+    {
+      "correct_option_id": "fe9a2f217e",
+      "id": "ch11-exam-q02",
+      "options": [
+        {
+          "id": "fe9a2f217e",
+          "text": "Cho vay margin"
+        },
+        {
+          "id": "9ed93dd45e",
+          "text": "Tự doanh"
+        },
+        {
+          "id": "3ebc67201e",
+          "text": "Bảo lãnh phát hành"
+        }
+      ],
+      "prompt": "Mảng nào thường là nguồn thu đều nhất của công ty chứng khoán mẫu?"
+    },
+    {
+      "correct_option_id": "c92884fd88",
+      "id": "ch11-exam-q03",
+      "options": [
+        {
+          "id": "c92884fd88",
+          "text": "Ngân hàng đầu tư và khác"
+        },
+        {
+          "id": "fa295ece15",
+          "text": "Môi giới chứng khoán"
+        },
+        {
+          "id": "30b858bcde",
+          "text": "Tự doanh"
+        }
+      ],
+      "prompt": "Phí bảo lãnh, tư vấn, lưu ký được xếp vào mảng nào?"
+    },
+    {
+      "correct_option_id": "3272955fb9",
+      "id": "ch11-exam-q04",
+      "options": [
+        {
+          "id": "3272955fb9",
+          "text": "Lợi nhuận lên xuống mạnh theo thị trường"
+        },
+        {
+          "id": "8c30bdfd78",
+          "text": "Lợi nhuận rất ổn định qua các quý"
+        },
+        {
+          "id": "9937397f3f",
+          "text": "Không bị ảnh hưởng bởi giá cổ phiếu"
+        }
+      ],
+      "prompt": "Công ty có tự doanh chiếm phần lớn doanh thu thường có đặc điểm gì?"
+    },
+    {
+      "correct_option_id": "901b1d65c3",
+      "id": "ch11-exam-q05",
+      "options": [
+        {
+          "id": "901b1d65c3",
+          "text": "Báo cáo kết quả hoạt động"
+        },
+        {
+          "id": "a6dc5059f9",
+          "text": "Bảng cân đối kế toán"
+        },
+        {
+          "id": "5245fff751",
+          "text": "Báo cáo lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Doanh thu hoạt động và chi phí hoạt động nằm trên báo cáo nào?"
+    },
+    {
+      "correct_option_id": "b0d121c9d0",
+      "id": "ch11-exam-q06",
+      "options": [
+        {
+          "id": "b0d121c9d0",
+          "text": "Cao hơn vì chưa trừ quản lý, lãi vay và thuế"
+        },
+        {
+          "id": "8447a421ec",
+          "text": "Thấp hơn vì đã trừ thêm lãi vay"
+        },
+        {
+          "id": "d5f7807367",
+          "text": "Luôn bằng nhau ở mọi công ty"
+        }
+      ],
+      "prompt": "Biên lợi nhuận hoạt động cao hơn hay thấp hơn biên lợi nhuận ròng?"
+    },
+    {
+      "correct_option_id": "ad50dbcab9",
+      "id": "ch11-exam-q07",
+      "options": [
+        {
+          "id": "ad50dbcab9",
+          "text": "Khá ổn định qua các quý"
+        },
+        {
+          "id": "e74c3ce488",
+          "text": "Giật mạnh theo thị trường"
+        },
+        {
+          "id": "c2ed23723f",
+          "text": "Luôn âm khi thị trường tăng"
+        }
+      ],
+      "prompt": "Công ty thiên về cho vay margin thường có biên lợi nhuận hoạt động thế nào?"
+    },
+    {
+      "correct_option_id": "e8dff56572",
+      "id": "ch11-exam-q08",
+      "options": [
+        {
+          "id": "e8dff56572",
+          "text": "Nhà đầu tư nhận trước tiền bán chứng khoán chưa về"
+        },
+        {
+          "id": "4a8cf16fe3",
+          "text": "Công ty mua trước cổ phiếu của nhà đầu tư"
+        },
+        {
+          "id": "98c9e5ce52",
+          "text": "Nhà đầu tư nộp trước tiền mua chứng khoán"
+        }
+      ],
+      "prompt": "Ứng trước tiền bán là gì?"
+    },
+    {
+      "correct_option_id": "b693f00c5a",
+      "id": "ch11-exam-q09",
+      "options": [
+        {
+          "id": "b693f00c5a",
+          "text": "Rủi ro lớn khi thị trường giảm mạnh"
+        },
+        {
+          "id": "c5c2541d88",
+          "text": "Làm biên môi giới luôn tăng"
+        },
+        {
+          "id": "7ef03cd9e2",
+          "text": "Làm tài sản tự doanh giảm về 0"
+        }
+      ],
+      "prompt": "Dư nợ cho vay tăng quá nóng có rủi ro gì?"
+    },
+    {
+      "correct_option_id": "61d4f379d6",
+      "id": "ch11-exam-q10",
+      "options": [
+        {
+          "id": "61d4f379d6",
+          "text": "Nguồn vốn chủ hoặc nợ vay tăng tương ứng"
+        },
+        {
+          "id": "43b1d9ef16",
+          "text": "Biên môi giới giảm tương ứng"
+        },
+        {
+          "id": "0180a78f12",
+          "text": "Tài sản HTM giảm tương ứng"
+        }
+      ],
+      "prompt": "Tăng trưởng dư nợ lành mạnh cần đi kèm điều gì?"
+    },
+    {
+      "correct_option_id": "b2aa3223a1",
+      "id": "ch11-exam-q11",
+      "options": [
+        {
+          "id": "b2aa3223a1",
+          "text": "Bảng cân đối kế toán"
+        },
+        {
+          "id": "e490b48428",
+          "text": "Báo cáo kết quả hoạt động"
+        },
+        {
+          "id": "23b935128c",
+          "text": "Báo cáo lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Tử số và mẫu số của dư nợ cho vay / VCSH lấy từ đâu?"
+    },
+    {
+      "correct_option_id": "f727dfdf3a",
+      "id": "ch11-exam-q12",
+      "options": [
+        {
+          "id": "f727dfdf3a",
+          "text": "Khoảng 0,5 đến 1,5 lần"
+        },
+        {
+          "id": "d14c82d717",
+          "text": "Khoảng 3 đến 5 lần"
+        },
+        {
+          "id": "3df1e03775",
+          "text": "Luôn đúng bằng 0"
+        }
+      ],
+      "prompt": "Mức dư nợ cho vay / VCSH nào thường gặp và được xem là vừa phải?"
+    },
+    {
+      "correct_option_id": "7c92fdc6e7",
+      "id": "ch11-exam-q13",
+      "options": [
+        {
+          "id": "7c92fdc6e7",
+          "text": "Nợ vay / VCSH"
+        },
+        {
+          "id": "063b263b82",
+          "text": "Biên lợi nhuận môi giới"
+        },
+        {
+          "id": "82b3565b83",
+          "text": "Hiệu suất tự doanh"
+        }
+      ],
+      "prompt": "Dư nợ cho vay / VCSH thường đi cùng chiều với chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "7eeb14b7fc",
+      "id": "ch11-exam-q14",
+      "options": [
+        {
+          "id": "7eeb14b7fc",
+          "text": "Báo cáo kết quả hoạt động"
+        },
+        {
+          "id": "75f00146e5",
+          "text": "Bảng cân đối kế toán"
+        },
+        {
+          "id": "220e8b9d29",
+          "text": "Báo cáo lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Lãi từ các khoản cho vay và phải thu nằm trên báo cáo nào?"
+    },
+    {
+      "correct_option_id": "4e639c1255",
+      "id": "ch11-exam-q15",
+      "options": [
+        {
+          "id": "4e639c1255",
+          "text": "Là mức thu thực tế đã gồm ưu đãi"
+        },
+        {
+          "id": "1f47b17a19",
+          "text": "Luôn cao hơn lãi suất niêm yết"
+        },
+        {
+          "id": "1d8aa3f540",
+          "text": "Chỉ tính cho khoản ứng trước"
+        }
+      ],
+      "prompt": "Lợi suất cho vay khác lãi suất margin niêm yết ở điểm nào?"
+    },
+    {
+      "correct_option_id": "ce86625c34",
+      "id": "ch11-exam-q16",
+      "options": [
+        {
+          "id": "ce86625c34",
+          "text": "Khoảng 9% đến 13% một năm"
+        },
+        {
+          "id": "1b84087204",
+          "text": "Khoảng 1% đến 2% một năm"
+        },
+        {
+          "id": "dcc2dc20fe",
+          "text": "Khoảng 30% đến 40% một năm"
+        }
+      ],
+      "prompt": "Mức lợi suất cho vay thường gặp ở Việt Nam là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "ab8e98fed3",
+      "id": "ch11-exam-q17",
+      "options": [
+        {
+          "id": "ab8e98fed3",
+          "text": "Hoa hồng nhân viên, phí sở giao dịch, hệ thống"
+        },
+        {
+          "id": "a182172f1c",
+          "text": "Lãi vay ngân hàng và trái phiếu"
+        },
+        {
+          "id": "1cede4c04a",
+          "text": "Lỗ đánh giá lại cổ phiếu FVTPL"
+        }
+      ],
+      "prompt": "Chi phí môi giới gồm những khoản nào?"
+    },
+    {
+      "correct_option_id": "a1323c8e71",
+      "id": "ch11-exam-q18",
+      "options": [
+        {
+          "id": "a1323c8e71",
+          "text": "Từ 30% trở lên và giữ vững"
+        },
+        {
+          "id": "9dac1a7822",
+          "text": "Dưới 10% hoặc âm"
+        },
+        {
+          "id": "3719d0ba1e",
+          "text": "Đúng bằng biên hoạt động"
+        }
+      ],
+      "prompt": "Mức biên lợi nhuận môi giới nào thường được xem là tốt?"
+    },
+    {
+      "correct_option_id": "a86e1f1795",
+      "id": "ch11-exam-q19",
+      "options": [
+        {
+          "id": "a86e1f1795",
+          "text": "Chi phí môi giới linh hoạt theo doanh thu"
+        },
+        {
+          "id": "73f8fe64ab",
+          "text": "Công ty tăng mạnh tỷ lệ phí"
+        },
+        {
+          "id": "3cac6d3d4f",
+          "text": "Dư nợ cho vay tăng nhanh"
+        }
+      ],
+      "prompt": "Biên môi giới giữ vững khi doanh thu giảm cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "39be13f209",
+      "id": "ch11-exam-q20",
+      "options": [
+        {
+          "id": "39be13f209",
+          "text": "(FVTPL + AFS + HTM) ÷ Tổng tài sản"
+        },
+        {
+          "id": "f98dd442ce",
+          "text": "(FVTPL + AFS + HTM) ÷ Vốn chủ sở hữu"
+        },
+        {
+          "id": "580db98ed4",
+          "text": "Các khoản cho vay ÷ Tổng tài sản"
+        }
+      ],
+      "prompt": "Tỷ trọng tài sản tự doanh được tính thế nào?"
+    },
+    {
+      "correct_option_id": "14f7a8d0b3",
+      "id": "ch11-exam-q21",
+      "options": [
+        {
+          "id": "14f7a8d0b3",
+          "text": "Ghi nhận theo giá trị hợp lý qua lãi lỗ"
+        },
+        {
+          "id": "794e82de2f",
+          "text": "Giữ đến ngày đáo hạn để thu lãi"
+        },
+        {
+          "id": "43cd730eba",
+          "text": "Sẵn sàng để bán, đánh giá lại vào vốn chủ"
+        }
+      ],
+      "prompt": "FVTPL là loại tài sản nào?"
+    },
+    {
+      "correct_option_id": "c20ea7f14e",
+      "id": "ch11-exam-q22",
+      "options": [
+        {
+          "id": "c20ea7f14e",
+          "text": "Vốn chủ sở hữu"
+        },
+        {
+          "id": "3b866489ea",
+          "text": "Kết quả kinh doanh trong kỳ"
+        },
+        {
+          "id": "06026293fc",
+          "text": "Chi phí môi giới"
+        }
+      ],
+      "prompt": "Thay đổi giá trị của tài sản AFS được ghi nhận vào đâu?"
+    },
+    {
+      "correct_option_id": "38b8578037",
+      "id": "ch11-exam-q23",
+      "options": [
+        {
+          "id": "38b8578037",
+          "text": "Không lớn vì giá trị ổn định"
+        },
+        {
+          "id": "986d8e0c93",
+          "text": "Rất cao vì giá cổ phiếu biến động"
+        },
+        {
+          "id": "86d6ceb131",
+          "text": "Không thể đánh giá được"
+        }
+      ],
+      "prompt": "Tỷ trọng tự doanh cao nhưng chủ yếu là HTM thì rủi ro thế nào?"
+    },
+    {
+      "correct_option_id": "2537384585",
+      "id": "ch11-exam-q24",
+      "options": [
+        {
+          "id": "2537384585",
+          "text": "Tài sản tự doanh bình quân"
+        },
+        {
+          "id": "81a3ff1e89",
+          "text": "Tổng doanh thu hoạt động"
+        },
+        {
+          "id": "42b442771e",
+          "text": "Vốn chủ sở hữu cuối kỳ"
+        }
+      ],
+      "prompt": "Mẫu số của hiệu suất tự doanh là gì?"
+    },
+    {
+      "correct_option_id": "774ff3b5f0",
+      "id": "ch11-exam-q25",
+      "options": [
+        {
+          "id": "774ff3b5f0",
+          "text": "Rủi ro tự doanh chưa được bù đắp"
+        },
+        {
+          "id": "8a7e864bd9",
+          "text": "Công ty đang quản lý danh mục rất tốt"
+        },
+        {
+          "id": "053d644d5a",
+          "text": "Dư nợ cho vay đang quá cao"
+        }
+      ],
+      "prompt": "Hiệu suất tự doanh thấp hơn lãi tiền gửi nhiều quý cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "f32c3247ec",
+      "id": "ch11-exam-q26",
+      "options": [
+        {
+          "id": "f32c3247ec",
+          "text": "Phụ thuộc thị trường, khó lặp lại đều"
+        },
+        {
+          "id": "efec82a52a",
+          "text": "Luôn ổn định như lãi tiền gửi"
+        },
+        {
+          "id": "fb0c413fd9",
+          "text": "Luôn tăng khi dư nợ tăng"
+        }
+      ],
+      "prompt": "Hiệu suất tự doanh có đặc điểm gì qua các năm?"
+    },
+    {
+      "correct_option_id": "da296b4399",
+      "id": "ch11-exam-q27",
+      "options": [
+        {
+          "id": "da296b4399",
+          "text": "Giảm đúng bằng mức tăng đó"
+        },
+        {
+          "id": "257cd3b6e9",
+          "text": "Tăng đúng bằng mức tăng đó"
+        },
+        {
+          "id": "ed1089fbe6",
+          "text": "Không thay đổi gì"
+        }
+      ],
+      "prompt": "Khi tỷ lệ chi phí hoạt động / doanh thu hoạt động tăng, biên lợi nhuận hoạt động thế nào?"
+    },
+    {
+      "correct_option_id": "9ed2623904",
+      "id": "ch11-exam-q28",
+      "options": [
+        {
+          "id": "9ed2623904",
+          "text": "Gần như giữ nguyên"
+        },
+        {
+          "id": "b9bb7986f5",
+          "text": "Tăng rất mạnh"
+        },
+        {
+          "id": "1446bc6080",
+          "text": "Giảm về 0"
+        }
+      ],
+      "prompt": "Doanh thu giảm mạnh nhưng chi phí giảm cùng nhịp thì tỷ lệ chi phí thế nào?"
+    },
+    {
+      "correct_option_id": "7a8ffe2cdd",
+      "id": "ch11-exam-q29",
+      "options": [
+        {
+          "id": "7a8ffe2cdd",
+          "text": "Phải trả người bán"
+        },
+        {
+          "id": "644c635692",
+          "text": "Vay ngắn hạn"
+        },
+        {
+          "id": "788e46f660",
+          "text": "Vay dài hạn"
+        }
+      ],
+      "prompt": "Nợ vay / VCSH không tính khoản nào sau đây?"
+    },
+    {
+      "correct_option_id": "11605fb892",
+      "id": "ch11-exam-q30",
+      "options": [
+        {
+          "id": "11605fb892",
+          "text": "Lợi suất cho vay cao hơn chi phí vay"
+        },
+        {
+          "id": "468030a25b",
+          "text": "Biên môi giới thấp hơn 10%"
+        },
+        {
+          "id": "a39d83069f",
+          "text": "Tài sản tự doanh lớn hơn tổng tài sản"
+        }
+      ],
+      "prompt": "Đòn bẩy nợ vay chỉ có lợi khi nào?"
+    }
+  ],
+  "salt": "f248cedea916e6314e01a77d9c69f69f06a14ad40d2c731e4964a4cbb9bdb2b1"
+}

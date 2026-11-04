@@ -102,6 +102,11 @@
       "requestType": "AcademyLessonNotesData",
       "responseType": "AcademyLessonNotesResponses"
     },
+    "GET /api/v2/academy/link": {
+      "operationId": "academyLink",
+      "requestType": "AcademyLinkData",
+      "responseType": "AcademyLinkResponses"
+    },
     "GET /api/v2/academy/progress": {
       "operationId": "academyProgress",
       "requestType": "AcademyProgressData",

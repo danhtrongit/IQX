@@ -5,8 +5,9 @@ import { itemLabel } from "../catalog-model"
 import type { CatalogItem, ItemState } from "../content-types"
 
 /**
- * Previous and next item of the flat learning chain (across chapters). An item the server reports
- * as locked cannot be opened from here: its button stays disabled with a lock.
+ * Previous and next item of the flat learning chain (across chapters). In free mode (the default,
+ * spec v4 §4.1) both are always open; an item the server reports as locked (an account in `sequential`
+ * mode, spec v4.1) cannot be opened from here: its button stays disabled with a lock.
  */
 export function ItemPager({
   prev,

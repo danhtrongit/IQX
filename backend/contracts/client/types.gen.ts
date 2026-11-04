@@ -28892,11 +28892,9 @@ export type AcademySubmitAttemptResponses = {
       completed_at: string | null;
       newly_completed: boolean;
     };
-    granted_capabilities: Array<string>;
     kind: "lesson" | "chapter_exam";
     lesson_id: string;
     lesson_key: string;
-    newly_granted: Array<string>;
     next_item_id: string | null;
     passed: boolean;
     progress_revision: number;
@@ -28917,7 +28915,6 @@ export type AcademySubmitAttemptResponses = {
     score: number;
     submitted_at: string;
     total: number;
-    unlocked_labels: Array<string>;
   };
 };
 
@@ -28970,17 +28967,12 @@ export type AcademyCatalogResponses = {
         intro: string | null;
         kind: "lesson" | "practice" | "chapter_exam";
         lesson_key: string;
+        metric_key: string | null;
         name: string;
         optional: boolean;
         order: number;
         position: number | null;
         question_count: number;
-        unlock: {
-          capability_id: string;
-          id: string;
-          kind: "technical" | "fundamental";
-          label: string;
-        } | null;
       }>;
       lesson_count: number;
       no: number;
@@ -29050,6 +29042,7 @@ export type AcademyLessonResponses = {
         kind: "lesson" | "practice";
         lead: string;
         lesson_key: string;
+        metric_key: string | null;
         name: string;
         optional: boolean;
         order: number;
@@ -29081,12 +29074,6 @@ export type AcademyLessonResponses = {
         state: "passed" | "open" | "locked";
         summary: Array<string>;
         title: string;
-        unlock: {
-          capability_id: string;
-          id: string;
-          kind: "technical" | "fundamental";
-          label: string;
-        } | null;
       }
     | {
         attempts_submitted: number;
@@ -29101,18 +29088,13 @@ export type AcademyLessonResponses = {
         intro: string;
         kind: "chapter_exam";
         lesson_key: string;
+        metric_key: string | null;
         name: string;
         optional: boolean;
         order: number;
         position: number | null;
         question_count: number;
         state: "passed" | "open" | "locked";
-        unlock: {
-          capability_id: string;
-          id: string;
-          kind: "technical" | "fundamental";
-          label: string;
-        } | null;
       };
 };
 
@@ -29425,6 +29407,57 @@ export type AcademyChooseScenarioResponses = {
 export type AcademyChooseScenarioResponse =
   AcademyChooseScenarioResponses[keyof AcademyChooseScenarioResponses];
 
+export type AcademyLinkData = {
+  body?: never;
+  path?: never;
+  query: {
+    metric: string;
+  };
+  url: "/api/v2/academy/link";
+};
+
+export type AcademyLinkErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AcademyLinkError = AcademyLinkErrors[keyof AcademyLinkErrors];
+
+export type AcademyLinkResponses = {
+  200: {
+    chapter: number | null;
+    found: boolean;
+    item_id: string | null;
+    lesson_key: string | null;
+    matched_by: "metric_key" | "title" | "title_prefix";
+    metric: string;
+    metric_key: string | null;
+    title: string | null;
+    url: string;
+  };
+};
+
+export type AcademyLinkResponse =
+  AcademyLinkResponses[keyof AcademyLinkResponses];
+
 export type AcademyProgressData = {
   body?: never;
   path?: never;
@@ -29460,6 +29493,7 @@ export type AcademyProgressError =
 
 export type AcademyProgressResponses = {
   200: {
+    access_mode: "free" | "sequential";
     catalog_version: string;
     chapters: Array<{
       done: number;
@@ -29470,7 +29504,6 @@ export type AcademyProgressResponses = {
     course_done: number;
     course_total: number;
     current_item_id: string | null;
-    granted_capabilities: Array<string>;
     items: Array<{
       attempts_submitted: number;
       best_score: number | null;

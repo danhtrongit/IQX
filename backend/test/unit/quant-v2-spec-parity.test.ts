@@ -22,7 +22,7 @@ import {
   type SeriesMap,
   type Side,
 } from '../../src/modules/quant/v2/index.js';
-import { academyV3Fixture } from './academy-v3-fixture.js';
+import { academyV4Fixture } from './academy-v4-fixture.js';
 
 /**
  * Bot SPEC §9.1 (calculation variants) and the registry against the IQX engine.
@@ -153,13 +153,14 @@ describe('registry matches the approved v4 golden (iqx-rules-4.0)', () => {
     });
   });
 
-  it('Học viện v3.3: each published indicator lesson is the catalog item that unlocks it', () => {
-    const content = academyV3Fixture();
+  it('Học viện v4: each published indicator lesson is the catalog item that teaches it', () => {
+    const content = academyV4Fixture();
     for (const item of registry) {
       if (item.lesson_id === null) continue;
       const lesson = content.items.get(item.lesson_id);
       expect(lesson?.lesson_key, item.id).toBe(`technical:${item.id}`);
-      expect(lesson?.capabilities, item.id).toEqual([`indicator:${item.id}`]);
+      // Spec v4 §4.2: the lesson only teaches the indicator, it no longer unlocks it.
+      expect(lesson?.metric_key, item.id).toBeNull();
     }
   });
 

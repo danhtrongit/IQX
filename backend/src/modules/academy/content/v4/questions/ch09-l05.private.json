@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l05",
+  "questions": [
+    {
+      "correct_option_id": "bfe137b14b",
+      "id": "ch09-l05-q01",
+      "options": [
+        {
+          "id": "bfe137b14b",
+          "text": "Ngày tồn kho + ngày thu tiền − ngày trả tiền"
+        },
+        {
+          "id": "83af288872",
+          "text": "Ngày tồn kho − ngày thu tiền + ngày trả tiền"
+        },
+        {
+          "id": "ccc504fb6d",
+          "text": "Ngày thu tiền + ngày trả tiền − ngày tồn kho bình quân"
+        }
+      ],
+      "prompt": "Công thức chu kỳ chuyển đổi tiền mặt là gì?"
+    },
+    {
+      "correct_option_id": "9c14861ee9",
+      "id": "ch09-l05-q02",
+      "options": [
+        {
+          "id": "9c14861ee9",
+          "text": "Số ngày doanh nghiệp phải tự ứng vốn"
+        },
+        {
+          "id": "81b133f561",
+          "text": "Số ngày hàng nằm trong kho"
+        },
+        {
+          "id": "a6d408890e",
+          "text": "Số ngày từ khi vay ngân hàng đến khi trả hết nợ"
+        }
+      ],
+      "prompt": "CCC thể hiện điều gì?"
+    },
+    {
+      "correct_option_id": "e1d33f8900",
+      "id": "ch09-l05-q03",
+      "options": [
+        {
+          "id": "e1d33f8900",
+          "text": "Thu tiền khách trước khi trả nhà cung cấp"
+        },
+        {
+          "id": "f832119cc6",
+          "text": "Doanh nghiệp đang bán hàng với giá thấp hơn giá vốn"
+        },
+        {
+          "id": "06a8b104bf",
+          "text": "Hàng tồn kho đã bị hư hỏng"
+        }
+      ],
+      "prompt": "CCC âm có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "0416e660a9",
+      "id": "ch09-l05-q04",
+      "options": [
+        {
+          "id": "0416e660a9",
+          "text": "Rút ngắn dần qua các quý"
+        },
+        {
+          "id": "a613e01a2b",
+          "text": "Kéo dài dần qua các quý liên tiếp"
+        },
+        {
+          "id": "9e677426ef",
+          "text": "Dao động mạnh mỗi quý"
+        }
+      ],
+      "prompt": "Xu hướng CCC nào thường được xem là tích cực?"
+    },
+    {
+      "chart_id": "c9l5-rep",
+      "correct_option_id": "039f9712de",
+      "id": "ch09-l05-q05",
+      "options": [
+        {
+          "id": "039f9712de",
+          "text": "Ngày tồn kho, ngày thu tiền, ngày trả tiền"
+        },
+        {
+          "id": "1feadf71fd",
+          "text": "Doanh thu, giá vốn hàng bán và lợi nhuận gộp"
+        },
+        {
+          "id": "82cb34fcf2",
+          "text": "Tiền mặt, phải thu, hàng tồn kho"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của CCC, ba cột mỗi quý là gì?"
+    }
+  ],
+  "salt": "ef1e5ea4c04eaf9fdc3ccaafb797c93439d3b79fe001b7fb6657649da4c37f21"
+}

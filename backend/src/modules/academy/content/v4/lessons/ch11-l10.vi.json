@@ -1,0 +1,436 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l10-g1": {
+      "alt": "Nợ vay trên vốn chủ sở hữu bằng nợ vay 18.991 tỷ chia vốn chủ sở hữu 29.588 tỷ, bằng 0,64 lần: 100 đồng vốn chủ đi kèm 64 đồng nợ vay",
+      "edges": [
+        {
+          "from": "debt",
+          "label": "chia",
+          "to": "equity"
+        },
+        {
+          "from": "equity",
+          "label": "bằng",
+          "to": "ratio"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "debt",
+          "sub": "Vay ngắn hạn + dài hạn",
+          "title": "Nợ vay",
+          "tone": "p1",
+          "value": "18.991 tỷ"
+        },
+        {
+          "id": "equity",
+          "sub": "Cuối Q2/26",
+          "title": "Vốn chủ sở hữu",
+          "tone": "warn",
+          "value": "29.588 tỷ"
+        },
+        {
+          "emph": true,
+          "id": "ratio",
+          "sub": "100 đồng vốn chủ đi kèm 64 đồng nợ vay",
+          "title": "Nợ vay / VCSH",
+          "tone": "pos",
+          "value": "0,64 lần"
+        }
+      ]
+    },
+    "c11l10-g2": {
+      "alt": "Dòng vốn vay: ngân hàng và trái phiếu cho công ty chứng khoán vay ngắn hạn và dài hạn, công ty trả lãi vay; công ty cho nhà đầu tư vay ký quỹ qua cho vay margin và thu lãi cho vay; lợi nhuận đến từ chênh lệch giữa hai mức lãi",
+      "edges": "sequential",
+      "header": {
+        "text": "Lợi nhuận đến từ chênh lệch giữa hai mức lãi",
+        "tone": "warn"
+      },
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "banks",
+          "title": "Ngân hàng, trái phiếu"
+        },
+        {
+          "children": [
+            {
+              "title": "Công ty trả lãi vay",
+              "tone": "neg"
+            }
+          ],
+          "id": "borrow",
+          "title": "Vay ngắn hạn và dài hạn",
+          "tone": "p1"
+        },
+        {
+          "id": "firm",
+          "title": "Công ty chứng khoán",
+          "tone": "p1"
+        },
+        {
+          "children": [
+            {
+              "title": "Công ty thu lãi cho vay",
+              "tone": "pos"
+            }
+          ],
+          "id": "margin",
+          "title": "Cho vay margin",
+          "tone": "warn"
+        },
+        {
+          "id": "investor",
+          "title": "Nhà đầu tư vay ký quỹ"
+        }
+      ]
+    },
+    "c11l10-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q3/25",
+        "Q2/26"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Nợ vay",
+          "tone": "p1",
+          "values": [
+            24.4,
+            18.8,
+            19
+          ]
+        },
+        {
+          "name": "Dư nợ cho vay",
+          "tone": "warn",
+          "values": [
+            24.7,
+            17.9,
+            19.1
+          ]
+        }
+      ],
+      "unit": "nghìn tỷ",
+      "value_labels": "all"
+    },
+    "c11l10-rep": {
+      "alt": "Nợ vay / VCSH: 0,64 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Nợ vay / VCSH",
+            "v": [
+              0.982,
+              0.893,
+              0.853,
+              0.732,
+              0.686,
+              0.605,
+              0.604,
+              0.642
+            ]
+          }
+        ],
+        "name": "Nợ vay / VCSH",
+        "sub": {
+          "series": [
+            {
+              "name": "Nợ vay",
+              "v": [
+                24439.67,
+                22795.94,
+                22312.546,
+                19626.505,
+                18849.078,
+                17030.725,
+                17425.272,
+                18990.687
+              ]
+            },
+            {
+              "name": "Vốn chủ sở hữu",
+              "v": [
+                24890.981,
+                25513.255,
+                26151.087,
+                26804.864,
+                27474.985,
+                28161.86,
+                28865.906,
+                29587.554
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Nợ vay / VCSH cho biết công ty chứng khoán đi vay gấp bao nhiêu lần vốn chủ sở hữu. Nợ vay chủ yếu dùng để tài trợ cho vay margin, nên tỷ lệ này đi cùng quy mô cho vay.",
+  "lesson_key": "fundamental:borrowings_to_equity",
+  "order": 10,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l10-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Nợ vay gồm dòng <b>vay ngắn hạn</b> và <b>vay dài hạn</b>, bao gồm cả trái phiếu phát hành, trên <b>bảng cân đối kế toán</b>. Chia tổng nợ vay cho <b>vốn chủ sở hữu</b> cùng thời điểm cuối quý.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 0,64 lần nghĩa là mỗi 100 đồng vốn chủ đi kèm 64 đồng tiền vay.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Nợ vay / VCSH là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l10-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công ty vay ngân hàng hoặc phát hành trái phiếu rồi cho nhà đầu tư vay margin.",
+              "title": "Vay để cho vay"
+            },
+            {
+              "text": "Lãi cho vay margin cao hơn lãi vay, phần chênh lệch là lợi nhuận.",
+              "title": "Chênh lệch lãi"
+            },
+            {
+              "text": "Chi phí lãi vay nằm ở mục chi phí tài chính trên báo cáo kết quả hoạt động.",
+              "title": "Lãi vay ở đâu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Nợ vay được dùng vào đâu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l10-rep",
+          "title": "Nợ vay / VCSH",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ vay chia vốn chủ sở hữu cuối quý, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Nợ vay ngắn hạn và dài hạn, đơn vị tỷ đồng.",
+              "title": "Cột bên trái mỗi quý"
+            },
+            {
+              "text": "Vốn chủ sở hữu cuối quý, đơn vị tỷ đồng.",
+              "title": "Cột bên phải mỗi quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới khoảng 1,5 lần (tham khảo) và nợ vay tương xứng với dư nợ cho vay.",
+              "title": "Đòn bẩy vừa phải",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên 2 lần, hoặc nợ vay tăng nhanh hơn dư nợ cho vay. Rủi ro thanh khoản lớn khi thị trường giảm mạnh.",
+              "title": "Đòn bẩy cao",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Ở công ty chứng khoán mẫu, nợ vay gần như bằng dư nợ cho vay qua các quý. Công ty vay bao nhiêu thì cho vay bấy nhiêu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l10-g3",
+          "legend": [
+            {
+              "label": "Nợ vay (nghìn tỷ)",
+              "tone": "p1"
+            },
+            {
+              "label": "Dư nợ cho vay (nghìn tỷ)",
+              "tone": "warn"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ vay xấp xỉ dư nợ cho vay là cách dùng nợ dễ hiểu và có tài sản đối ứng.",
+              "title": "So với dư nợ cho vay"
+            },
+            {
+              "text": "Nợ vay tăng nhanh cho thấy công ty đang đẩy mạnh cho vay hoặc tự doanh.",
+              "title": "Theo dõi xu hướng"
+            },
+            {
+              "text": "Đòn bẩy chỉ có lợi khi lợi suất cho vay cao hơn chi phí vay.",
+              "title": "Đọc cùng lợi suất cho vay"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu có số liệu cuối quý như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Nợ vay"
+            },
+            {
+              "label": "Vốn chủ sở hữu"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "24.440",
+                "24.891",
+                "0,98 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "17.031",
+                "28.162",
+                "0,60 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "18.991",
+                "29.588",
+                {
+                  "rating": "good",
+                  "text": "0,64 lần"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Nợ vay giảm cùng dư nợ cho vay trong năm 2025, kéo tỷ lệ từ 0,98 xuống 0,60 lần. Khi dư nợ tăng trở lại, nợ vay cũng tăng theo.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nợ vay dùng cho margin có tài sản đối ứng sinh lãi, khác với nợ để bù lỗ.",
+              "title": "Coi mọi khoản nợ là xấu"
+            },
+            {
+              "text": "Chỉ tính vay ngắn hạn và dài hạn, không tính phải trả người bán hay tiền của khách hàng.",
+              "title": "Gộp cả nợ phải trả"
+            },
+            {
+              "text": "Đòn bẩy cao khi lãi vay tăng có thể làm lợi nhuận giảm nhanh.",
+              "title": "Bỏ qua lãi suất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Nợ vay / VCSH</b> = (vay ngắn hạn + vay dài hạn) ÷ vốn chủ sở hữu.",
+    "Số liệu lấy từ <b>bảng cân đối kế toán</b>, số cuối quý.",
+    "Nợ vay chủ yếu dùng để <b>tài trợ cho vay margin</b>.",
+    "Đọc cùng <b>dư nợ cho vay</b> và <b>lợi suất cho vay</b>."
+  ],
+  "title": "Nợ vay / VCSH · đòn bẩy của công ty chứng khoán"
+}

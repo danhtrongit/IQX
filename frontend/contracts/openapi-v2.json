@@ -5246,7 +5246,7 @@
                       ],
                       "type": "object"
                     },
-                    "maxItems": 3,
+                    "maxItems": 2,
                     "minItems": 1,
                     "type": "array"
                   },
@@ -5289,7 +5289,7 @@
                           ],
                           "type": "object"
                         },
-                        "maxItems": 3,
+                        "maxItems": 4,
                         "minItems": 1,
                         "type": "array"
                       },
@@ -35098,7 +35098,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 786 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 787 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -73279,12 +73279,6 @@
                       ],
                       "type": "object"
                     },
-                    "granted_capabilities": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
-                    },
                     "kind": {
                       "enum": [
                         "lesson",
@@ -73297,12 +73291,6 @@
                     },
                     "lesson_key": {
                       "type": "string"
-                    },
-                    "newly_granted": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
                     },
                     "next_item_id": {
                       "nullable": true,
@@ -73396,12 +73384,6 @@
                       "maximum": 9007199254740991,
                       "minimum": -9007199254740991,
                       "type": "integer"
-                    },
-                    "unlocked_labels": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
                     }
                   },
                   "required": [
@@ -73417,9 +73399,6 @@
                     "best_score",
                     "attempts_submitted",
                     "completion",
-                    "granted_capabilities",
-                    "newly_granted",
-                    "unlocked_labels",
                     "chapter_completed",
                     "next_item_id",
                     "progress_revision",
@@ -73553,6 +73532,10 @@
                                 "lesson_key": {
                                   "type": "string"
                                 },
+                                "metric_key": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
                                 "name": {
                                   "type": "string"
                                 },
@@ -73574,35 +73557,6 @@
                                   "maximum": 9007199254740991,
                                   "minimum": -9007199254740991,
                                   "type": "integer"
-                                },
-                                "unlock": {
-                                  "additionalProperties": false,
-                                  "nullable": true,
-                                  "properties": {
-                                    "capability_id": {
-                                      "type": "string"
-                                    },
-                                    "id": {
-                                      "type": "string"
-                                    },
-                                    "kind": {
-                                      "enum": [
-                                        "technical",
-                                        "fundamental"
-                                      ],
-                                      "type": "string"
-                                    },
-                                    "label": {
-                                      "type": "string"
-                                    }
-                                  },
-                                  "required": [
-                                    "kind",
-                                    "id",
-                                    "label",
-                                    "capability_id"
-                                  ],
-                                  "type": "object"
                                 }
                               },
                               "required": [
@@ -73615,7 +73569,7 @@
                                 "name",
                                 "optional",
                                 "question_count",
-                                "unlock",
+                                "metric_key",
                                 "has_scenario",
                                 "intro",
                                 "content_version"
@@ -73834,6 +73788,10 @@
                         "lesson_key": {
                           "type": "string"
                         },
+                        "metric_key": {
+                          "nullable": true,
+                          "type": "string"
+                        },
                         "name": {
                           "type": "string"
                         },
@@ -73985,35 +73943,6 @@
                         },
                         "title": {
                           "type": "string"
-                        },
-                        "unlock": {
-                          "additionalProperties": false,
-                          "nullable": true,
-                          "properties": {
-                            "capability_id": {
-                              "type": "string"
-                            },
-                            "id": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "enum": [
-                                "technical",
-                                "fundamental"
-                              ],
-                              "type": "string"
-                            },
-                            "label": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "kind",
-                            "id",
-                            "label",
-                            "capability_id"
-                          ],
-                          "type": "object"
                         }
                       },
                       "required": [
@@ -74026,7 +73955,7 @@
                         "name",
                         "optional",
                         "question_count",
-                        "unlock",
+                        "metric_key",
                         "has_scenario",
                         "intro",
                         "content_version",
@@ -74097,6 +74026,10 @@
                         "lesson_key": {
                           "type": "string"
                         },
+                        "metric_key": {
+                          "nullable": true,
+                          "type": "string"
+                        },
                         "name": {
                           "type": "string"
                         },
@@ -74126,35 +74059,6 @@
                             "locked"
                           ],
                           "type": "string"
-                        },
-                        "unlock": {
-                          "additionalProperties": false,
-                          "nullable": true,
-                          "properties": {
-                            "capability_id": {
-                              "type": "string"
-                            },
-                            "id": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "enum": [
-                                "technical",
-                                "fundamental"
-                              ],
-                              "type": "string"
-                            },
-                            "label": {
-                              "type": "string"
-                            }
-                          },
-                          "required": [
-                            "kind",
-                            "id",
-                            "label",
-                            "capability_id"
-                          ],
-                          "type": "object"
                         }
                       },
                       "required": [
@@ -74167,7 +74071,7 @@
                         "name",
                         "optional",
                         "question_count",
-                        "unlock",
+                        "metric_key",
                         "has_scenario",
                         "intro",
                         "content_version",
@@ -74242,7 +74146,7 @@
             "bearer": []
           }
         ],
-        "summary": "A lesson or practice (typed blocks, chart models, summary, scenario choice) or a chapter exam intro; 403 ACADEMY_ITEM_LOCKED when locked",
+        "summary": "A lesson or practice (typed blocks, chart models, summary, scenario choice) or a chapter exam intro; opening it makes it the current lesson; 403 ACADEMY_ITEM_LOCKED only in the sequential access mode",
         "tags": [
           "Academy"
         ],
@@ -75163,6 +75067,150 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/academy/link": {
+      "get": {
+        "operationId": "academyLink",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "metric",
+            "required": true,
+            "schema": {
+              "maxLength": 120,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "chapter": {
+                      "maximum": 9007199254740991,
+                      "minimum": -9007199254740991,
+                      "nullable": true,
+                      "type": "integer"
+                    },
+                    "found": {
+                      "type": "boolean"
+                    },
+                    "item_id": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "lesson_key": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "matched_by": {
+                      "enum": [
+                        "metric_key",
+                        "title",
+                        "title_prefix"
+                      ],
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "metric": {
+                      "type": "string"
+                    },
+                    "metric_key": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "title": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "found",
+                    "metric",
+                    "item_id",
+                    "lesson_key",
+                    "metric_key",
+                    "chapter",
+                    "title",
+                    "matched_by",
+                    "url"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Deep link to the lesson of a metric (the \"Học\" button): by metric_key, else exact lesson title, else a title starting with \"name ·\". Never an error: found=false answers with the lesson the learner was last on",
+        "tags": [
+          "Academy"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/academy/progress": {
       "get": {
         "operationId": "academyProgress",
@@ -75174,6 +75222,13 @@
                 "schema": {
                   "additionalProperties": false,
                   "properties": {
+                    "access_mode": {
+                      "enum": [
+                        "free",
+                        "sequential"
+                      ],
+                      "type": "string"
+                    },
                     "catalog_version": {
                       "type": "string"
                     },
@@ -75223,12 +75278,6 @@
                     "current_item_id": {
                       "nullable": true,
                       "type": "string"
-                    },
-                    "granted_capabilities": {
-                      "items": {
-                        "type": "string"
-                      },
-                      "type": "array"
                     },
                     "items": {
                       "items": {
@@ -75293,9 +75342,9 @@
                     "course_done",
                     "course_total",
                     "current_item_id",
+                    "access_mode",
                     "items",
-                    "chapters",
-                    "granted_capabilities"
+                    "chapters"
                   ],
                   "type": "object"
                 }
@@ -75359,7 +75408,7 @@
             "bearer": []
           }
         ],
-        "summary": "Server-computed state (passed/open/locked) of every item, course and chapter progress, current item and opened capabilities",
+        "summary": "Server-computed state (passed/open; locked only in the sequential access mode) of every item, course and chapter progress, the current item (the one opened last) and the access mode",
         "tags": [
           "Academy"
         ],
@@ -162020,11 +162069,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 598,
+    "authenticatedOperations": 599,
     "noContentResponses": 18,
-    "operations": 804,
+    "operations": 805,
     "publicOperations": 206,
-    "responseSchemas": 786,
+    "responseSchemas": 787,
     "untypedResponses": 0
   }
 }

@@ -3915,6 +3915,7 @@
     "DELETE /api/v2/backtest/strategies/{strategyId}",
     "DELETE /api/v2/cap5/watchlist/{symbol}",
     "DELETE /api/v2/chart-drawings/{symbol}",
+    "GET /api/v2/academy/link",
     "GET /api/v2/admin/alerts/factor-library",
     "GET /api/v2/admin/audit/export",
     "GET /api/v2/admin/metrics/plan-distribution",

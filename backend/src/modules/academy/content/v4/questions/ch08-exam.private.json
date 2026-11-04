@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch08-exam",
+  "questions": [
+    {
+      "correct_option_id": "18061cf9e4",
+      "id": "ch08-exam-q01",
+      "options": [
+        {
+          "id": "18061cf9e4",
+          "text": "So với cùng kỳ năm trước"
+        },
+        {
+          "id": "d19794e3b0",
+          "text": "So với quý liền trước"
+        },
+        {
+          "id": "c461a3cad8",
+          "text": "So với trung bình ngành"
+        }
+      ],
+      "prompt": "YoY có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "15fb7bfd60",
+      "id": "ch08-exam-q02",
+      "options": [
+        {
+          "id": "15fb7bfd60",
+          "text": "Lượng hàng bán ra gần như không tăng"
+        },
+        {
+          "id": "bdbebe8b82",
+          "text": "Doanh nghiệp đang mở rộng rất mạnh"
+        },
+        {
+          "id": "1f3311a719",
+          "text": "Biên lợi nhuận chắc chắn tăng"
+        }
+      ],
+      "prompt": "Tăng trưởng doanh thu dưới mức lạm phát cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "e51b09aaac",
+      "id": "ch08-exam-q03",
+      "options": [
+        {
+          "id": "e51b09aaac",
+          "text": "Phần còn lại sau khi trừ mọi chi phí và thuế"
+        },
+        {
+          "id": "07e080d12d",
+          "text": "Tổng tiền bán hàng trong kỳ"
+        },
+        {
+          "id": "e3b386d246",
+          "text": "Doanh thu trừ đi giá vốn"
+        }
+      ],
+      "prompt": "LNST là gì?"
+    },
+    {
+      "correct_option_id": "c44a32a322",
+      "id": "ch08-exam-q04",
+      "options": [
+        {
+          "id": "c44a32a322",
+          "text": "Không tính được"
+        },
+        {
+          "id": "8f4460b018",
+          "text": "Bằng 100%"
+        },
+        {
+          "id": "c641c19dd1",
+          "text": "Bằng 0%"
+        }
+      ],
+      "prompt": "Cùng kỳ năm trước LNST bằng 0. Tăng trưởng LNST quý này thế nào?"
+    },
+    {
+      "correct_option_id": "9ee5c9df2a",
+      "id": "ch08-exam-q05",
+      "options": [
+        {
+          "id": "9ee5c9df2a",
+          "text": "Đúng bằng 20%"
+        },
+        {
+          "id": "bf65680d8e",
+          "text": "Ít hơn 20%"
+        },
+        {
+          "id": "ea2598334d",
+          "text": "Nhiều hơn 20%"
+        }
+      ],
+      "prompt": "LNST tăng 20%, số cổ phiếu không đổi. EPS tăng bao nhiêu?"
+    },
+    {
+      "correct_option_id": "8597c70e6e",
+      "id": "ch08-exam-q06",
+      "options": [
+        {
+          "id": "8597c70e6e",
+          "text": "Lợi nhuận bị chia cho nhiều cổ phiếu hơn"
+        },
+        {
+          "id": "67ea9b29f6",
+          "text": "Giá cổ phiếu giảm trong một phiên"
+        },
+        {
+          "id": "f5c8e071c6",
+          "text": "Doanh thu bị chia cho nhiều quý hơn"
+        }
+      ],
+      "prompt": "Pha loãng cổ phiếu là gì?"
+    },
+    {
+      "correct_option_id": "354e42eff0",
+      "id": "ch08-exam-q07",
+      "options": [
+        {
+          "id": "354e42eff0",
+          "text": "3 bước"
+        },
+        {
+          "id": "2a3fe3f2b5",
+          "text": "4 bước"
+        },
+        {
+          "id": "266caff632",
+          "text": "2 bước"
+        }
+      ],
+      "prompt": "CAGR 3 năm từ 2022 đến 2025 gồm bao nhiêu bước tăng trưởng?"
+    },
+    {
+      "correct_option_id": "1052686907",
+      "id": "ch08-exam-q08",
+      "options": [
+        {
+          "id": "1052686907",
+          "text": "Bị đẩy lên cao hơn thực tế"
+        },
+        {
+          "id": "25acc4862a",
+          "text": "Bị kéo xuống thấp hơn thực tế"
+        },
+        {
+          "id": "a0b54922ba",
+          "text": "Không thay đổi"
+        }
+      ],
+      "prompt": "Chọn năm gốc là năm khủng hoảng có lợi nhuận rất thấp sẽ làm CAGR thế nào?"
+    },
+    {
+      "correct_option_id": "170dc4f847",
+      "id": "ch08-exam-q09",
+      "options": [
+        {
+          "id": "170dc4f847",
+          "text": "Nhiều hơn 30%"
+        },
+        {
+          "id": "1957354891",
+          "text": "Đúng 30%"
+        },
+        {
+          "id": "f9ca93f8f3",
+          "text": "Ít hơn 30%"
+        }
+      ],
+      "prompt": "LNST giảm 30% thì cần tăng bao nhiêu để về lại mức cũ?"
+    },
+    {
+      "correct_option_id": "529ae97409",
+      "id": "ch08-exam-q10",
+      "options": [
+        {
+          "id": "529ae97409",
+          "text": "Số cổ phiếu không đổi trong giai đoạn"
+        },
+        {
+          "id": "860b1b066c",
+          "text": "Doanh thu không đổi trong giai đoạn"
+        },
+        {
+          "id": "9ef3d10c70",
+          "text": "Doanh nghiệp không trả cổ tức"
+        }
+      ],
+      "prompt": "EPS CAGR bằng LNST CAGR khi nào?"
+    },
+    {
+      "correct_option_id": "8d52b63e20",
+      "id": "ch08-exam-q11",
+      "options": [
+        {
+          "id": "8d52b63e20",
+          "text": "Chỉ tiêu tăng khá đều qua các năm"
+        },
+        {
+          "id": "6aaef93ea9",
+          "text": "Chỉ tiêu biến động rất mạnh"
+        },
+        {
+          "id": "0bf0880257",
+          "text": "Doanh nghiệp đã phát hành thêm cổ phiếu"
+        }
+      ],
+      "prompt": "Trên các biểu đồ đại diện CAGR, các cột bám sát đường đứt nét cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "7f1067bd88",
+      "id": "ch08-exam-q12",
+      "options": [
+        {
+          "id": "7f1067bd88",
+          "text": "Lợi nhuận sau thuế"
+        },
+        {
+          "id": "30d936c62d",
+          "text": "Doanh thu thuần"
+        },
+        {
+          "id": "c4e0dee170",
+          "text": "Dòng tiền từ hoạt động kinh doanh"
+        }
+      ],
+      "prompt": "Profit Positive Streak được tính trên chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "614ab91ccb",
+      "id": "ch08-exam-q13",
+      "options": [
+        {
+          "id": "614ab91ccb",
+          "text": "Vẫn được tính, dù kinh doanh chính có thể đang lỗ"
+        },
+        {
+          "id": "eec9eb4ace",
+          "text": "Không được tính vào chuỗi"
+        },
+        {
+          "id": "00f19fd49a",
+          "text": "Làm chuỗi tự động bằng 0"
+        }
+      ],
+      "prompt": "Một năm có lãi nhờ bán tài sản ảnh hưởng thế nào tới chuỗi năm lãi?"
+    },
+    {
+      "correct_option_id": "2e225d8819",
+      "id": "ch08-exam-q14",
+      "options": [
+        {
+          "id": "2e225d8819",
+          "text": "Các năm nằm gần đường bình quân"
+        },
+        {
+          "id": "2507fdb1ba",
+          "text": "Doanh thu tăng rất nhanh"
+        },
+        {
+          "id": "8f1f3a81b9",
+          "text": "Doanh nghiệp có nhiều năm lỗ"
+        }
+      ],
+      "prompt": "Trên biểu đồ, dải độ lệch chuẩn hẹp cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "cb07fd330b",
+      "id": "ch08-exam-q15",
+      "options": [
+        {
+          "id": "cb07fd330b",
+          "text": "Biên lợi nhuận ròng"
+        },
+        {
+          "id": "8ceb616dcc",
+          "text": "Biên lợi nhuận gộp"
+        },
+        {
+          "id": "5be02db39e",
+          "text": "Tăng trưởng doanh thu"
+        }
+      ],
+      "prompt": "Margin Stability đo độ ổn định của chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "a0b2248f6c",
+      "id": "ch08-exam-q16",
+      "options": [
+        {
+          "id": "a0b2248f6c",
+          "text": "Mỗi ngành có mức biên rất khác nhau"
+        },
+        {
+          "id": "3e3b58a690",
+          "text": "Các ngành này không có biên lợi nhuận"
+        },
+        {
+          "id": "fbcb32f781",
+          "text": "Các ngành này dùng chung một mức biên"
+        }
+      ],
+      "prompt": "Vì sao không nên so Margin Stability giữa ngân hàng, bán lẻ và phần mềm?"
+    },
+    {
+      "correct_option_id": "aaac0aa05b",
+      "id": "ch08-exam-q17",
+      "options": [
+        {
+          "id": "aaac0aa05b",
+          "text": "Doanh nghiệp có EPS bình quân lớn hơn"
+        },
+        {
+          "id": "6a357fce71",
+          "text": "Doanh nghiệp có EPS bình quân nhỏ hơn"
+        },
+        {
+          "id": "f3eb165063",
+          "text": "Hai doanh nghiệp tốt như nhau"
+        }
+      ],
+      "prompt": "Hai doanh nghiệp có cùng độ lệch chuẩn EPS. Doanh nghiệp nào có EPS Stability tốt hơn?"
+    },
+    {
+      "correct_option_id": "68609750df",
+      "id": "ch08-exam-q18",
+      "options": [
+        {
+          "id": "68609750df",
+          "text": "Dưới 15%"
+        },
+        {
+          "id": "3ba796a34e",
+          "text": "Từ 15% đến 35%"
+        },
+        {
+          "id": "1e7357ed62",
+          "text": "Trên 35%"
+        }
+      ],
+      "prompt": "Mức EPS Stability nào được xem là ổn định theo mức tham khảo?"
+    },
+    {
+      "correct_option_id": "38a707e6d1",
+      "id": "ch08-exam-q19",
+      "options": [
+        {
+          "id": "38a707e6d1",
+          "text": "Mỗi đồng vốn chủ tạo ra bao nhiêu lợi nhuận"
+        },
+        {
+          "id": "e68be38c7e",
+          "text": "Mỗi đồng doanh thu còn lại bao nhiêu lãi"
+        },
+        {
+          "id": "b2cb68f434",
+          "text": "Mỗi đồng tài sản tạo ra bao nhiêu đồng doanh thu"
+        }
+      ],
+      "prompt": "ROE cho biết điều gì?"
+    },
+    {
+      "correct_option_id": "d8ccc644dc",
+      "id": "ch08-exam-q20",
+      "options": [
+        {
+          "id": "d8ccc644dc",
+          "text": "Đòn bẩy tài chính"
+        },
+        {
+          "id": "f9e15e2d0a",
+          "text": "Vòng quay tài sản"
+        },
+        {
+          "id": "5b196e55a1",
+          "text": "Biên lợi nhuận ròng"
+        }
+      ],
+      "prompt": "Thành phần nào trong DuPont đo mức dùng thêm nợ?"
+    },
+    {
+      "correct_option_id": "73b2db7e39",
+      "id": "ch08-exam-q21",
+      "options": [
+        {
+          "id": "73b2db7e39",
+          "text": "Lợi nhuận kinh doanh tăng"
+        },
+        {
+          "id": "201e8fc136",
+          "text": "Vốn chủ co lại do lỗ lũy kế"
+        },
+        {
+          "id": "03be2c2ac7",
+          "text": "Một khoản lãi bán tài sản"
+        }
+      ],
+      "prompt": "ROE tăng vì điều gì thì đáng tin hơn?"
+    },
+    {
+      "correct_option_id": "51829a4f50",
+      "id": "ch08-exam-q22",
+      "options": [
+        {
+          "id": "51829a4f50",
+          "text": "Ngân hàng"
+        },
+        {
+          "id": "5a8d708232",
+          "text": "Phần mềm"
+        },
+        {
+          "id": "45c5bfe624",
+          "text": "Dịch vụ tư vấn"
+        }
+      ],
+      "prompt": "Ngành nào thường có ROA thấp do cần nhiều tài sản?"
+    },
+    {
+      "correct_option_id": "ed98da0ac8",
+      "id": "ch08-exam-q23",
+      "options": [
+        {
+          "id": "ed98da0ac8",
+          "text": "Một bên lãi mỏng quay nhanh, một bên lãi dày quay chậm"
+        },
+        {
+          "id": "1bd4a290a0",
+          "text": "Hai bên có cùng biên lợi nhuận ròng"
+        },
+        {
+          "id": "24e3adcb23",
+          "text": "Hai bên có cùng vòng quay tài sản"
+        }
+      ],
+      "prompt": "Siêu thị và thủy điện có thể cùng ROA vì sao?"
+    },
+    {
+      "correct_option_id": "1d0c94eb52",
+      "id": "ch08-exam-q24",
+      "options": [
+        {
+          "id": "1d0c94eb52",
+          "text": "Price to Earnings, giá trên lợi nhuận"
+        },
+        {
+          "id": "5ed71e7e06",
+          "text": "Profit to Equity, lợi nhuận trên vốn"
+        },
+        {
+          "id": "bfa5329448",
+          "text": "Price to Equity, giá trên vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "P/E là viết tắt của gì?"
+    },
+    {
+      "correct_option_id": "65c9767d7d",
+      "id": "ch08-exam-q25",
+      "options": [
+        {
+          "id": "65c9767d7d",
+          "text": "Làm P/E trông rẻ hơn thực tế"
+        },
+        {
+          "id": "819117ea70",
+          "text": "Làm P/E trông đắt hơn thực tế"
+        },
+        {
+          "id": "52df01682d",
+          "text": "Không ảnh hưởng đến P/E"
+        }
+      ],
+      "prompt": "Khoản lãi bất thường một lần ảnh hưởng thế nào đến P/E?"
+    },
+    {
+      "correct_option_id": "6a91598787",
+      "id": "ch08-exam-q26",
+      "options": [
+        {
+          "id": "6a91598787",
+          "text": "Tài sản trên sổ sách có thể không còn đúng giá trị"
+        },
+        {
+          "id": "73e5a18c75",
+          "text": "Vì P/B dưới 1 chỉ xuất hiện ở ngành công nghệ"
+        },
+        {
+          "id": "5b9103961e",
+          "text": "Vì vốn chủ sở hữu luôn bị khai thấp"
+        }
+      ],
+      "prompt": "Vì sao P/B dưới 1 chưa chắc là rẻ?"
+    },
+    {
+      "correct_option_id": "164b90a3c7",
+      "id": "ch08-exam-q27",
+      "options": [
+        {
+          "id": "164b90a3c7",
+          "text": "Doanh thu ổn định hơn và ít khi âm"
+        },
+        {
+          "id": "f713dae6ba",
+          "text": "Doanh thu đã trừ hết mọi chi phí"
+        },
+        {
+          "id": "02eda68868",
+          "text": "P/S luôn cho kết luận chính xác hơn"
+        }
+      ],
+      "prompt": "Ưu điểm của P/S so với P/E là gì?"
+    },
+    {
+      "correct_option_id": "8c70218a7f",
+      "id": "ch08-exam-q28",
+      "options": [
+        {
+          "id": "8c70218a7f",
+          "text": "Tốc độ tăng trưởng EPS"
+        },
+        {
+          "id": "56afd47d64",
+          "text": "Tỷ lệ nợ vay trên vốn"
+        },
+        {
+          "id": "a900c90f82",
+          "text": "Biên lợi nhuận gộp"
+        }
+      ],
+      "prompt": "PEG kết hợp P/E với yếu tố nào?"
+    },
+    {
+      "correct_option_id": "7855813c2a",
+      "id": "ch08-exam-q29",
+      "options": [
+        {
+          "id": "7855813c2a",
+          "text": "Giá đã cao so với tốc độ tăng lợi nhuận"
+        },
+        {
+          "id": "3c4392a034",
+          "text": "Lợi nhuận đang tăng nhanh hơn giá cổ phiếu"
+        },
+        {
+          "id": "cbf58e8232",
+          "text": "Doanh nghiệp đang có lãi bất thường"
+        }
+      ],
+      "prompt": "PEG cao hơn 1 cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "7c5d766c11",
+      "id": "ch08-exam-q30",
+      "options": [
+        {
+          "id": "7c5d766c11",
+          "text": "Trung vị 3 năm của chính doanh nghiệp"
+        },
+        {
+          "id": "f73353a497",
+          "text": "Chỉ số của toàn thị trường"
+        },
+        {
+          "id": "bd089cef64",
+          "text": "Kế hoạch lợi nhuận năm sau của doanh nghiệp"
+        }
+      ],
+      "prompt": "Biểu đồ đại diện của P/E, P/B, P/S, EV/EBITDA và FCF Yield giúp so sánh với gì?"
+    }
+  ],
+  "salt": "51ef3b1d77fe956aef22624e28a7c1e0e483fcce6d2e2e37c372fa6c9224a9c6"
+}

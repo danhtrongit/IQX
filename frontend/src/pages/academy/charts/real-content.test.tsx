@@ -7,7 +7,7 @@ import { annotationsOnLine, textBoxes, textOverlaps } from "./test-geometry"
 import type { CatalogResponse, LessonContent } from "../content-types"
 
 /**
- * Integration: renders every real v3.3 lesson of the backend content (`content/v3/lessons` and
+ * Integration: renders every real v4 lesson of the backend content (`content/v4/lessons` and
  * `catalog.json` only, never the private question banks) at phone and desktop reader widths.
  */
 type LessonFile = Pick<
@@ -16,7 +16,7 @@ type LessonFile = Pick<
 >
 
 const lessonFiles = import.meta.glob(
-  "../../../../../backend/src/modules/academy/content/v3/lessons/*.vi.json",
+  "../../../../../backend/src/modules/academy/content/v4/lessons/*.vi.json",
   {
     eager: true,
     import: "default",
@@ -24,7 +24,7 @@ const lessonFiles = import.meta.glob(
 ) as Record<string, LessonFile>
 const catalog = Object.values(
   import.meta.glob(
-    "../../../../../backend/src/modules/academy/content/v3/catalog.json",
+    "../../../../../backend/src/modules/academy/content/v4/catalog.json",
     { eager: true, import: "default" }
   ) as Record<string, Pick<CatalogResponse, "chapters">>
 )[0]
@@ -61,8 +61,8 @@ function renderLesson(lesson: LessonFile, width: number) {
 }
 
 describe("real Học viện content", () => {
-  it("has the 88 lesson files of the published catalog", () => {
-    expect(lessons).toHaveLength(88)
+  it("has the 117 lesson files of the published catalog (116 lessons and the practice room)", () => {
+    expect(lessons).toHaveLength(117)
     const published = catalog.chapters.flatMap((chapter) =>
       "items" in chapter ? chapter.items : []
     )
@@ -643,9 +643,11 @@ const representatives = lessons.flatMap((lesson) =>
 )
 
 describe("real content: representative charts use the shared Dashboard renderer (DB-02)", () => {
-  it("all 33 representative charts of Chương 8-13 are fundamental models", () => {
-    expect(representatives.map(([, id]) => id)).toHaveLength(33)
+  it("all 62 representative charts of Chương 8-12 are fundamental models, one per metric lesson", () => {
+    expect(representatives.map(([, id]) => id)).toHaveLength(62)
     expect(representatives.every(([, id]) => id.endsWith("-rep"))).toBe(true)
+    const chapters = new Set(representatives.map(([lessonId]) => Number(lessonId.slice(2, 4))))
+    expect([...chapters].sort((a, b) => a - b)).toEqual([8, 9, 10, 11, 12])
   })
 
   for (const width of [358, 760]) {
@@ -667,7 +669,7 @@ describe("real content: representative charts use the shared Dashboard renderer 
     )
   }
 
-  it("the ROE chart of ch10-l01 is the Dashboard's kind B: line with markers over the bars of LNST 4 quý", () => {
+  it("the NIM chart of ch10-l01 is the Dashboard's kind B: line with markers over the bars of thu nhập lãi thuần 4 quý", () => {
     const { container } = renderLesson(lessonById("ch10-l01"), 760)
     const figure = container.querySelector('[data-chart-id="c10l1-rep"]') as HTMLElement
     expect(figure.querySelector('[data-fundamental-chart="B"]')).not.toBeNull()
@@ -677,15 +679,15 @@ describe("real content: representative charts use the shared Dashboard renderer 
     expect(texts(svgs[1] as SVGSVGElement)).toContain("Q2/26")
     expect(
       [...figure.querySelectorAll("li")].map((item) => item.textContent)
-    ).toEqual(["ROE (4 quý, cổ đông công ty mẹ)", "LNST 4 quý"])
+    ).toEqual(["NIM (4 quý)", "Thu nhập lãi thuần 4 quý"])
   })
 })
 
-describe("real content: v3.3 chart models", () => {
+describe("real content: v4 chart models", () => {
   it("a compare chart with layout 'stack' draws its two leaves one under the other", () => {
-    const { container } = renderLesson(lessonById("ch12-l03"), 760)
+    const { container } = renderLesson(lessonById("ch09-l12"), 760)
     const compare = container.querySelector(
-      '[data-chart-id="c12l3-g3"]'
+      '[data-chart-id="c9l12-g3"]'
     ) as HTMLElement
     expect(compare).not.toBeNull()
     const figures = compare.querySelectorAll("figure")
@@ -699,8 +701,8 @@ describe("real content: v3.3 chart models", () => {
   })
 
   it("a category chart with orientation 'h' draws its bars sideways", () => {
-    const { container } = renderLesson(lessonById("ch10-l02"), 760)
-    const svg = chartSvg(container, "c10l2-g3")
+    const { container } = renderLesson(lessonById("ch08-l12"), 760)
+    const svg = chartSvg(container, "c8l12-g3")
     // The zero axis of a horizontal chart is a vertical line.
     expect(
       [...svg.querySelectorAll("line")].filter(
@@ -717,8 +719,8 @@ describe("real content: v3.3 chart models", () => {
   })
 
   it("a scale chart draws its zones and its markers", () => {
-    const { container } = renderLesson(lessonById("ch12-l02"), 358)
-    const svg = chartSvg(container, "c12l2-g2")
+    const { container } = renderLesson(lessonById("ch09-l11"), 358)
+    const svg = chartSvg(container, "c9l11-g2")
     const printed = texts(svg)
     expect(printed).toContain("Cần theo dõi")
     expect(printed).toContain("Có tiền thật")

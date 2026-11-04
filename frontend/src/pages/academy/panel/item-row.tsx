@@ -7,9 +7,10 @@ import { itemLabel, rowAction } from "../catalog-model"
 import type { CatalogItem, ItemState } from "../content-types"
 
 /**
- * One item of a chapter: its name, "Tự chọn" for the practice room, and exactly one control. A
- * locked item has no button at all (Lock icon + "Chưa mở"). The state always comes from the server;
- * while it is unknown the row shows no control rather than a guess.
+ * One item of a chapter: its name, "Tự chọn" for the practice room, and exactly one control. The state
+ * always comes from the server; while it is unknown the row shows no control rather than a guess. In free
+ * mode (the default, spec v4 §4.1) a row is never locked; the lock (Lock icon + "Chưa mở", no button) is
+ * only drawn for an account in `sequential` mode (spec v4.1).
  */
 export function ItemRow({
   item,

@@ -1,0 +1,491 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l9-g1": {
+      "alt": "Chi phí trên doanh thu bằng chi phí hoạt động 4 quý 1.924 tỷ chia doanh thu hoạt động 4 quý 4.305 tỷ, bằng 44,7%: 100 đồng doanh thu tốn 44,7 đồng chi phí",
+      "edges": [
+        {
+          "from": "cost",
+          "label": "chia",
+          "to": "revenue"
+        },
+        {
+          "from": "revenue",
+          "label": "bằng",
+          "to": "ratio"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "cost",
+          "sub": "Từ Q3/25 đến Q2/26",
+          "title": "Chi phí hoạt động 4 quý",
+          "tone": "p5",
+          "value": "1.924 tỷ"
+        },
+        {
+          "id": "revenue",
+          "sub": "Từ Q3/25 đến Q2/26",
+          "title": "Doanh thu hoạt động 4 quý",
+          "tone": "p1",
+          "value": "4.305 tỷ"
+        },
+        {
+          "emph": true,
+          "id": "ratio",
+          "sub": "100 đồng doanh thu tốn 44,7 đồng chi phí",
+          "title": "Chi phí / Doanh thu",
+          "tone": "warn",
+          "value": "44,7%"
+        }
+      ]
+    },
+    "c11l9-g2": {
+      "alt": "Hai mặt của 100% doanh thu hoạt động: quý 3 năm 2024 chi phí 43,9% và biên lợi nhuận hoạt động 56,1%; quý 4 năm 2025 là 47,4% và 52,6%; quý 2 năm 2026 là 44,7% và 55,3%",
+      "kind": "segment_bar",
+      "max": 100,
+      "rows": [
+        {
+          "label": "Q3/24",
+          "segments": [
+            {
+              "label": "43,9%",
+              "tone": "p5",
+              "value": 43.9
+            },
+            {
+              "label": "56,1%",
+              "tone": "pos",
+              "value": 56.1
+            }
+          ]
+        },
+        {
+          "label": "Q4/25",
+          "segments": [
+            {
+              "label": "47,4%",
+              "tone": "p5",
+              "value": 47.4
+            },
+            {
+              "label": "52,6%",
+              "tone": "pos",
+              "value": 52.6
+            }
+          ]
+        },
+        {
+          "label": "Q2/26",
+          "segments": [
+            {
+              "label": "44,7%",
+              "tone": "p5",
+              "value": 44.7
+            },
+            {
+              "label": "55,3%",
+              "tone": "pos",
+              "value": 55.3
+            }
+          ]
+        }
+      ]
+    },
+    "c11l9-g3": {
+      "items": [
+        {
+          "model": {
+            "kind": "category",
+            "labels": [
+              "Q3/24",
+              "Q2/26"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Doanh thu 4 quý",
+                "tone": "p1",
+                "values": [
+                  7.3,
+                  4.3
+                ]
+              },
+              {
+                "name": "Chi phí 4 quý",
+                "tone": "p5",
+                "values": [
+                  3.2,
+                  1.9
+                ]
+              }
+            ],
+            "unit": "nghìn tỷ",
+            "value_labels": "all"
+          }
+        },
+        {
+          "model": {
+            "alt": "Doanh thu giảm 41%, chi phí giảm 40%, nên tỷ lệ chi phí trên doanh thu gần như giữ nguyên quanh 44 đến 45%",
+            "header": {
+              "text": "Thay đổi",
+              "tone": "price"
+            },
+            "kind": "flow",
+            "layout": "column",
+            "nodes": [
+              {
+                "id": "revenue",
+                "title": "Doanh thu",
+                "tone": "p1",
+                "value": "-41%"
+              },
+              {
+                "id": "cost",
+                "title": "Chi phí",
+                "tone": "p5",
+                "value": "-40%"
+              },
+              {
+                "id": "ratio",
+                "sub": "nguyên quanh 44 đến 45%",
+                "title": "Tỷ lệ gần như giữ",
+                "tone": "warn"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack"
+    },
+    "c11l9-rep": {
+      "alt": "Chi phí hoạt động / Doanh thu hoạt động: 44,7%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Chi phí / Doanh thu (4 quý)",
+            "v": [
+              43.897,
+              44.307,
+              45.791,
+              46.187,
+              47.175,
+              47.422,
+              46.059,
+              44.697
+            ]
+          }
+        ],
+        "name": "Chi phí hoạt động / Doanh thu hoạt động",
+        "sub": {
+          "series": [
+            {
+              "name": "Chi phí hoạt động 4 quý",
+              "v": [
+                3217.744,
+                3291.066,
+                3363.736,
+                3170.779,
+                2771.846,
+                2526,
+                2160.572,
+                1924.003
+              ]
+            },
+            {
+              "name": "Doanh thu hoạt động 4 quý",
+              "v": [
+                7330.236,
+                7427.916,
+                7345.803,
+                6865.089,
+                5875.652,
+                5326.69,
+                4690.882,
+                4304.582
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Chi phí hoạt động / Doanh thu hoạt động cho biết mỗi đồng doanh thu hoạt động phải bỏ ra bao nhiêu đồng chi phí hoạt động. Tỷ lệ càng thấp, công ty vận hành càng hiệu quả.",
+  "lesson_key": "fundamental:opex_to_revenue",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l9-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Lấy <b>chi phí hoạt động</b> chia <b>doanh thu hoạt động</b>, cả hai cộng <b>4 quý</b> trên <b>báo cáo kết quả hoạt động</b>.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ này và biên lợi nhuận hoạt động luôn cộng lại bằng 100%. Một bên tăng thì bên kia giảm đúng bằng chừng ấy.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Chi phí hoạt động / Doanh thu hoạt động là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l9-g2",
+          "legend": [
+            {
+              "label": "Chi phí / Doanh thu (%)",
+              "tone": "p5"
+            },
+            {
+              "label": "Biên lợi nhuận hoạt động (%)",
+              "tone": "pos"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi phí hoạt động ÷ doanh thu hoạt động, càng thấp càng tốt.",
+              "title": "Phần chi phí"
+            },
+            {
+              "text": "Biên lợi nhuận hoạt động, phần còn lại của 100% doanh thu.",
+              "title": "Phần lợi nhuận"
+            },
+            {
+              "text": "Tỷ lệ này giúp tập trung vào việc công ty kiểm soát chi phí ra sao.",
+              "title": "Góc nhìn chi phí"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Hai mặt của cùng một đồng doanh thu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l9-rep",
+          "title": "Chi phí hoạt động / Doanh thu hoạt động",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi phí hoạt động chia doanh thu hoạt động 4 quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Chi phí hoạt động cộng 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột bên trái mỗi quý"
+            },
+            {
+              "text": "Doanh thu hoạt động cộng 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột bên phải mỗi quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dưới 50% và ổn định (tham khảo). Chi phí giảm cùng nhịp khi doanh thu giảm.",
+              "title": "Tỷ lệ tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên 60% hoặc tăng nhanh. Doanh thu giảm mà chi phí không giảm theo, hoặc lỗ tự doanh lớn.",
+              "title": "Tỷ lệ yếu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Doanh thu giảm mạnh nhưng chi phí giảm gần cùng tỷ lệ, nên tỷ lệ chi phí gần như giữ nguyên.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l9-g3",
+          "legend": [
+            {
+              "label": "Doanh thu 4 quý (nghìn tỷ)",
+              "tone": "p1"
+            },
+            {
+              "label": "Chi phí 4 quý (nghìn tỷ)",
+              "tone": "p5"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ ổn định khi doanh thu biến động cho thấy chi phí linh hoạt.",
+              "title": "Đánh giá kiểm soát chi phí"
+            },
+            {
+              "text": "Tỷ lệ tăng đột ngột thường do lỗ tự doanh hoặc dự phòng tăng.",
+              "title": "Tìm nguyên nhân"
+            },
+            {
+              "text": "Hai chỉ tiêu là hai mặt của nhau, dùng một trong hai là đủ để so sánh.",
+              "title": "Đọc cùng biên hoạt động"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu có số liệu 4 quý như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Kỳ 4 quý đến"
+            },
+            {
+              "label": "Chi phí hoạt động"
+            },
+            {
+              "label": "Doanh thu hoạt động"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "3.218",
+                "7.330",
+                "43,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "2.526",
+                "5.327",
+                {
+                  "rating": "mid",
+                  "text": "47,4%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "1.924",
+                "4.305",
+                {
+                  "rating": "good",
+                  "text": "44,7%"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tỷ lệ tăng lên 47,4% ở Q4/25 rồi giảm lại còn 44,7% ở Q2/26, tương ứng biên lợi nhuận hoạt động 55,3%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ thấp nhưng doanh thu giảm mạnh thì lợi nhuận tuyệt đối vẫn đi xuống.",
+              "title": "Chỉ nhìn tỷ lệ"
+            },
+            {
+              "text": "Chi phí hoạt động không gồm chi phí quản lý và chi phí lãi vay.",
+              "title": "Nhầm với chi phí quản lý"
+            },
+            {
+              "text": "Công ty thiên về tự doanh có tỷ lệ biến động khác hẳn công ty thiên về cho vay.",
+              "title": "So khác cơ cấu"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Chi phí hoạt động / Doanh thu hoạt động</b> lấy số <b>4 quý</b> trên báo cáo kết quả hoạt động.",
+    "Tỷ lệ này cộng <b>biên lợi nhuận hoạt động</b> luôn bằng 100%.",
+    "Mức <b>dưới 50% và ổn định</b> thường được xem là tốt.",
+    "Tỷ lệ tăng đột ngột thường do <b>lỗ tự doanh</b> hoặc dự phòng."
+  ],
+  "title": "Chi phí hoạt động / Doanh thu hoạt động · mức tiêu hao doanh thu"
+}

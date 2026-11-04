@@ -1,0 +1,397 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l8-g1": {
+      "alt": "Nguồn vốn cuối Q2/26 gồm dự phòng nghiệp vụ 15.881 tỷ (nghĩa vụ với khách hàng), nợ khác 2.600 tỷ và vốn chủ sở hữu 9.892 tỷ (vốn của cổ đông). Dự phòng chia vốn chủ sở hữu bằng 15.881 chia 9.892, khoảng 1,61 lần",
+      "brackets": [
+        {
+          "from": 0,
+          "label": "Nghĩa vụ với khách hàng",
+          "row": 0,
+          "to": 15881,
+          "tone": "p5"
+        },
+        {
+          "from": 18481,
+          "label": "Vốn của cổ đông",
+          "row": 0,
+          "to": 28373,
+          "tone": "p1"
+        }
+      ],
+      "kind": "segment_bar",
+      "max": 28373,
+      "rows": [
+        {
+          "label": "Nguồn vốn cuối Q2/26 · tỷ đồng",
+          "segments": [
+            {
+              "label": "Dự phòng nghiệp vụ",
+              "sub": "15.881",
+              "tone": "p5",
+              "value": 15881
+            },
+            {
+              "label": "Nợ khác",
+              "sub": "2.600",
+              "tone": "neutral",
+              "value": 2600
+            },
+            {
+              "label": "Vốn chủ sở hữu",
+              "sub": "9.892",
+              "tone": "p1",
+              "value": 9892
+            }
+          ],
+          "total": {
+            "text": "Dự phòng ÷ VCSH = 15.881 ÷ 9.892 = 1,61 lần",
+            "tone": "warn"
+          }
+        }
+      ],
+      "unit": "tỷ đồng"
+    },
+    "c12l8-g2": {
+      "alt": "Công ty mẫu phi nhân thọ có tổng dự phòng nghiệp vụ 15.881 tỷ, gồm dự phòng phí 8.300 tỷ, dự phòng bồi thường 6.900 tỷ và dự phòng dao động lớn 681 tỷ",
+      "header": {
+        "text": "Công ty mẫu phi nhân thọ · tổng dự phòng nghiệp vụ 15.881 tỷ",
+        "tone": "price"
+      },
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "du-phong-phi",
+          "sub": "Phí đã thu, thời gian bảo hiểm chưa hết",
+          "title": "Dự phòng phí",
+          "tone": "p1",
+          "value": "8.300 tỷ"
+        },
+        {
+          "id": "du-phong-boi-thuong",
+          "sub": "Tổn thất đã xảy ra nhưng chưa trả xong",
+          "title": "Dự phòng bồi thường",
+          "tone": "p5",
+          "value": "6.900 tỷ"
+        },
+        {
+          "id": "du-phong-dao-dong-lon",
+          "sub": "Dành cho năm có tổn thất bất thường",
+          "title": "Dự phòng dao động lớn",
+          "tone": "warn",
+          "value": "681 tỷ"
+        }
+      ]
+    },
+    "c12l8-g3": {
+      "kind": "category",
+      "labels": [
+        "Phi nhân thọ · mẫu",
+        "Phi nhân thọ · mức cao",
+        "Nhân thọ · thường gặp"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "Dự phòng nghiệp vụ / VCSH · số minh họa",
+          "per_bar_tones": [
+            "p1",
+            "warn",
+            "p4"
+          ],
+          "tone": "p1",
+          "values": [
+            1.61,
+            2.5,
+            7
+          ]
+        }
+      ],
+      "title": "Dự phòng nghiệp vụ / VCSH · số minh họa",
+      "unit": "lần",
+      "value_format": {
+        "suffix": " lần"
+      },
+      "value_labels": "all"
+    },
+    "c12l8-rep": {
+      "alt": "Dự phòng nghiệp vụ / VCSH: 1,61 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Dự phòng nghiệp vụ / VCSH",
+            "v": [
+              1.584,
+              1.587,
+              1.59,
+              1.593,
+              1.596,
+              1.599,
+              1.602,
+              1.605
+            ]
+          }
+        ],
+        "name": "Dự phòng nghiệp vụ / VCSH",
+        "sub": {
+          "series": [
+            {
+              "name": "Dự phòng nghiệp vụ",
+              "v": [
+                13636.835,
+                13936.846,
+                14243.456,
+                14556.812,
+                14877.062,
+                15204.358,
+                15538.853,
+                15880.708
+              ]
+            },
+            {
+              "name": "Vốn chủ sở hữu",
+              "v": [
+                8611.83,
+                8784.067,
+                8959.748,
+                9138.943,
+                9321.722,
+                9508.156,
+                9698.32,
+                9892.286
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l08",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Dự phòng nghiệp vụ là số tiền công ty bảo hiểm phải dành ra cho các khoản bồi thường và quyền lợi sẽ trả trong tương lai. So với vốn chủ, chỉ tiêu này cho biết mỗi đồng vốn đang gánh bao nhiêu nghĩa vụ.",
+  "lesson_key": "fundamental:reserves_to_equity",
+  "order": 8,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l8-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "Chỉ tiêu bằng <b>dự phòng nghiệp vụ</b> chia cho <b>vốn chủ sở hữu</b>, cả hai lấy cuối kỳ trên <b>bảng cân đối kế toán</b>. Dự phòng nghiệp vụ nằm ở phần nợ phải trả.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Mức 1,61 lần nghĩa là mỗi đồng vốn chủ đứng sau 1,61 đồng nghĩa vụ với khách hàng.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Dự phòng nghiệp vụ / VCSH là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Trên bảng cân đối, dự phòng nghiệp vụ được chia thành các dòng nhỏ. Với phi nhân thọ thường gồm dự phòng phí, dự phòng bồi thường và <b>dự phòng dao động lớn</b> cho năm có tổn thất bất thường.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l8-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phần phí đã thu nhưng thời gian bảo hiểm chưa trôi qua, còn phải phục vụ khách hàng.",
+              "title": "Dự phòng phí"
+            },
+            {
+              "text": "Tổn thất đã xảy ra hoặc đã được báo nhưng chưa trả xong.",
+              "title": "Dự phòng bồi thường"
+            },
+            {
+              "text": "Chỉ có ở nhân thọ: quyền lợi dài hạn đã cam kết, thường là khoản lớn nhất.",
+              "title": "Dự phòng toán học"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Dự phòng nghiệp vụ gồm những gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l8-rep",
+          "title": "Dự phòng nghiệp vụ / VCSH",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự phòng nghiệp vụ chia vốn chủ sở hữu, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hai cột: dự phòng nghiệp vụ và vốn chủ sở hữu cuối mỗi quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Hai cột cùng tăng đều thì đường đi ngang, vốn đang lớn lên theo nghĩa vụ.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Với phi nhân thọ, khoảng 1-2 lần và ổn định. Vốn chủ tăng cùng tốc độ với nghĩa vụ.",
+              "title": "Mức an toàn",
+              "tone": "pos"
+            },
+            {
+              "text": "Tăng nhanh qua nhiều quý vì nghĩa vụ phình to trong khi vốn chủ đứng yên hoặc giảm.",
+              "title": "Mức đáng chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức tham khảo ở Việt Nam. Công ty <b>nhân thọ</b> có dự phòng toán học rất lớn nên chỉ tiêu thường gấp nhiều lần phi nhân thọ. Chỉ so trong cùng loại hình.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l8-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ thấp nghĩa là vốn chủ đủ dày để hấp thụ sai lệch khi tổn thất vượt dự tính.",
+              "title": "Đo sức chịu đựng"
+            },
+            {
+              "text": "Dự phòng lớn tạo ra khoản tiền tạm giữ để đầu tư.",
+              "title": "Hiểu quy mô danh mục"
+            },
+            {
+              "text": "Tỷ lệ tăng đều qua nhiều quý cần đi kèm kế hoạch tăng vốn.",
+              "title": "Theo dõi xu hướng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bảo hiểm mẫu (phi nhân thọ), bảng cân đối cuối Q2/26 (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Dự phòng nghiệp vụ",
+              "text": "15.881 tỷ đồng."
+            },
+            {
+              "term": "Vốn chủ sở hữu",
+              "text": "9.892 tỷ đồng."
+            },
+            {
+              "term": "Tỷ lệ",
+              "text": "15.881 ÷ 9.892 ≈ 1,61 lần."
+            },
+            {
+              "term": "Xu hướng",
+              "text": "Tăng rất chậm từ 1,58 lần ở Q3/24 lên 1,61 lần ở Q2/26. Vốn chủ tăng gần cùng nhịp với dự phòng."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự phòng là nghĩa vụ bình thường của nghề bảo hiểm, không phải dấu hiệu xấu.",
+              "title": "Xem dự phòng là nợ xấu"
+            },
+            {
+              "text": "Dự phòng toán học làm tỷ lệ của nhân thọ cao hơn nhiều.",
+              "title": "So nhân thọ với phi nhân thọ"
+            },
+            {
+              "text": "Tỷ lệ quá thấp có thể là vốn dùng chưa hiệu quả.",
+              "title": "Cho rằng càng thấp càng tốt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ = <b>dự phòng nghiệp vụ ÷ vốn chủ sở hữu</b>, lấy trên bảng cân đối.",
+    "Gồm <b>dự phòng phí, dự phòng bồi thường</b>, ở nhân thọ có thêm dự phòng toán học.",
+    "Phi nhân thọ: khoảng <b>1-2 lần và ổn định</b> là mức tham khảo.",
+    "Chỉ <b>so trong cùng loại hình</b> bảo hiểm."
+  ],
+  "title": "Dự phòng nghiệp vụ / VCSH · quy mô nghĩa vụ so với vốn"
+}

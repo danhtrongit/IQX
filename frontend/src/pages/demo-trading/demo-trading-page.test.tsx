@@ -186,7 +186,7 @@ describe("DemoTradingPage for a brand-new user", () => {
 
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
-    expect(within(panel()).getByText("87 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("116 bài học")).toBeTruthy()
     // The panel lists the real catalog and the learner's progress.
     expect(await within(panel()).findByText("Chương 1 · Nền tảng")).toBeTruthy()
     expect(within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })).toBeTruthy()
@@ -251,7 +251,7 @@ describe("DemoTradingPage for a brand-new user", () => {
     const { router } = await renderPage("/demo-trading?view=journey&content=journey&symbol=FPT")
     await waitFor(() => expect(router.state.location.search).toBe("?view=academy&symbol=FPT"))
     expect(within(rail()).getByRole("button", { name: "Học viện" }).getAttribute("aria-pressed")).toBe("true")
-    expect(within(panel()).getByText("87 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("116 bài học")).toBeTruthy()
     expect(paths().filter((call) => /\/cap\d|\/journey|\/bot\/mascot/.test(call))).toEqual([])
   })
 

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-l06",
+  "questions": [
+    {
+      "correct_option_id": "0c40c6b6c9",
+      "id": "ch10-l06-q01",
+      "options": [
+        {
+          "id": "0c40c6b6c9",
+          "text": "Chi phí dự phòng 4 quý chia cho vay khách hàng bình quân"
+        },
+        {
+          "id": "10c22129cb",
+          "text": "Dự phòng rủi ro cho vay chia cho vay khách hàng cuối kỳ"
+        },
+        {
+          "id": "724bd3e0b7",
+          "text": "Chi phí lãi 4 quý chia nợ chịu lãi bình quân"
+        }
+      ],
+      "prompt": "Chi phí tín dụng được tính bằng cách nào?"
+    },
+    {
+      "correct_option_id": "6305957af1",
+      "id": "ch10-l06-q02",
+      "options": [
+        {
+          "id": "6305957af1",
+          "text": "Báo cáo kết quả kinh doanh"
+        },
+        {
+          "id": "bb1c3ef0e9",
+          "text": "Bảng cân đối kế toán"
+        },
+        {
+          "id": "4176ad699b",
+          "text": "Báo cáo lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Chi phí dự phòng rủi ro tín dụng nằm trên báo cáo nào?"
+    },
+    {
+      "correct_option_id": "068710eae1",
+      "id": "ch10-l06-q03",
+      "options": [
+        {
+          "id": "068710eae1",
+          "text": "Chất lượng khoản vay có thể đang xấu đi"
+        },
+        {
+          "id": "32d57837f2",
+          "text": "Ngân hàng đang vận hành hiệu quả hơn"
+        },
+        {
+          "id": "0f855cacc8",
+          "text": "Nguồn vốn huy động đang dồi dào"
+        }
+      ],
+      "prompt": "Chi phí tín dụng tăng nhanh qua nhiều quý thường là dấu hiệu gì?"
+    },
+    {
+      "correct_option_id": "51acca519e",
+      "id": "ch10-l06-q04",
+      "options": [
+        {
+          "id": "51acca519e",
+          "text": "Biên lãi còn lại sau khi trừ rủi ro cho vay"
+        },
+        {
+          "id": "143e6033d5",
+          "text": "Tỷ lệ tiền gửi khách hàng đã được đem đi cho vay"
+        },
+        {
+          "id": "0a4b1253b4",
+          "text": "Mức đệm vốn của cổ đông"
+        }
+      ],
+      "prompt": "NIM trừ chi phí tín dụng cho biết điều gì?"
+    },
+    {
+      "chart_id": "c10l6-rep",
+      "correct_option_id": "a578eb560b",
+      "id": "ch10-l06-q05",
+      "options": [
+        {
+          "id": "a578eb560b",
+          "text": "Chi phí dự phòng cộng dồn 4 quý"
+        },
+        {
+          "id": "c0f45a2cf9",
+          "text": "Số dư dự phòng cuối mỗi quý"
+        },
+        {
+          "id": "577bd17713",
+          "text": "Cho vay khách hàng cuối mỗi quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của chi phí tín dụng, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "b04dac0b15bf0639091a07fd47faf3acd40d8186865c3cce0164ec4fbb3517e1"
+}

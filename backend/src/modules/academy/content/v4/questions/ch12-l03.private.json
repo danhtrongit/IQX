@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l03",
+  "questions": [
+    {
+      "correct_option_id": "27578ce4bb",
+      "id": "ch12-l03-q01",
+      "options": [
+        {
+          "id": "27578ce4bb",
+          "text": "Phần phí giữ lại được dùng để trả tổn thất"
+        },
+        {
+          "id": "bb2149f8b9",
+          "text": "Phần phí được chuyển cho nhà tái bảo hiểm"
+        },
+        {
+          "id": "9ef354c44c",
+          "text": "Tốc độ tăng của phí bảo hiểm gốc"
+        }
+      ],
+      "prompt": "Tỷ lệ bồi thường đo lường điều gì?"
+    },
+    {
+      "correct_option_id": "eb360e8679",
+      "id": "ch12-l03-q02",
+      "options": [
+        {
+          "id": "eb360e8679",
+          "text": "Tổng chi bồi thường trừ phần thu đòi tái bảo hiểm"
+        },
+        {
+          "id": "c82ba79f5e",
+          "text": "Tổng chi bồi thường cộng chi phí hoa hồng"
+        },
+        {
+          "id": "a7f40577ce",
+          "text": "Phí bảo hiểm thuần trừ chi phí quản lý"
+        }
+      ],
+      "prompt": "Bồi thường thuần được tính thế nào?"
+    },
+    {
+      "correct_option_id": "b6de52a7d5",
+      "id": "ch12-l03-q03",
+      "options": [
+        {
+          "id": "b6de52a7d5",
+          "text": "Doanh thu phí bảo hiểm thuần"
+        },
+        {
+          "id": "44abbcf3ef",
+          "text": "Doanh thu phí bảo hiểm gốc"
+        },
+        {
+          "id": "ad996d7e82",
+          "text": "Vốn chủ sở hữu bình quân"
+        }
+      ],
+      "prompt": "Mẫu số của tỷ lệ bồi thường là gì?"
+    },
+    {
+      "correct_option_id": "1c9c55ea62",
+      "id": "ch12-l03-q04",
+      "options": [
+        {
+          "id": "1c9c55ea62",
+          "text": "Chi trả gồm cả tiền đáo hạn và quyền lợi đã cam kết"
+        },
+        {
+          "id": "96c34b4e8c",
+          "text": "Nhân thọ không phải trích lập dự phòng"
+        },
+        {
+          "id": "e0f1f60c1f",
+          "text": "Nhân thọ không mua tái bảo hiểm"
+        }
+      ],
+      "prompt": "Vì sao tỷ lệ chi trả cao ở bảo hiểm nhân thọ không mang ý nghĩa xấu như ở phi nhân thọ?"
+    },
+    {
+      "chart_id": "c12l3-rep",
+      "correct_option_id": "58f5c0ae2a",
+      "id": "ch12-l03-q05",
+      "options": [
+        {
+          "id": "58f5c0ae2a",
+          "text": "Đi lên"
+        },
+        {
+          "id": "88001c1e5e",
+          "text": "Đi xuống"
+        },
+        {
+          "id": "da4a79a68f",
+          "text": "Đi ngang"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, khi cột bồi thường tăng nhanh hơn cột phí thì đường tỷ lệ thế nào?"
+    }
+  ],
+  "salt": "6123191d4570f8d9029eff435151313a7edec5f59acd91692a44db8be571a999"
+}

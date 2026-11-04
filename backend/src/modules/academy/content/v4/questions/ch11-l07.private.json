@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch11-l07",
+  "questions": [
+    {
+      "correct_option_id": "434a156d05",
+      "id": "ch11-l07-q01",
+      "options": [
+        {
+          "id": "434a156d05",
+          "text": "FVTPL, AFS và HTM"
+        },
+        {
+          "id": "318ee89ff0",
+          "text": "Các khoản cho vay và phải thu"
+        },
+        {
+          "id": "d5949bc5b9",
+          "text": "Tiền mặt và tiền gửi thanh toán"
+        }
+      ],
+      "prompt": "Tài sản tự doanh gồm những loại nào?"
+    },
+    {
+      "correct_option_id": "7d4e845d63",
+      "id": "ch11-l07-q02",
+      "options": [
+        {
+          "id": "7d4e845d63",
+          "text": "FVTPL"
+        },
+        {
+          "id": "de08485a89",
+          "text": "HTM"
+        },
+        {
+          "id": "9a798004ec",
+          "text": "AFS"
+        }
+      ],
+      "prompt": "Loại tài sản tự doanh nào thường biến động mạnh nhất?"
+    },
+    {
+      "correct_option_id": "3b2c72528f",
+      "id": "ch11-l07-q03",
+      "options": [
+        {
+          "id": "3b2c72528f",
+          "text": "Khoản đầu tư giữ đến ngày đáo hạn"
+        },
+        {
+          "id": "eb8ffbb410",
+          "text": "Tài sản ghi nhận qua lãi lỗ"
+        },
+        {
+          "id": "3e27b87728",
+          "text": "Tài sản sẵn sàng để bán bất kỳ lúc nào"
+        }
+      ],
+      "prompt": "HTM là loại tài sản như thế nào?"
+    },
+    {
+      "correct_option_id": "a47a912beb",
+      "id": "ch11-l07-q04",
+      "options": [
+        {
+          "id": "a47a912beb",
+          "text": "Công ty có phần lớn là cổ phiếu FVTPL"
+        },
+        {
+          "id": "06312b10e8",
+          "text": "Công ty có phần lớn là tiền gửi HTM"
+        },
+        {
+          "id": "2db74c5399",
+          "text": "Hai công ty luôn rủi ro như nhau"
+        }
+      ],
+      "prompt": "Hai công ty cùng tỷ trọng tự doanh 50%, công ty nào rủi ro hơn?"
+    },
+    {
+      "chart_id": "c11l7-rep",
+      "correct_option_id": "eca5e0fed1",
+      "id": "ch11-l07-q05",
+      "options": [
+        {
+          "id": "eca5e0fed1",
+          "text": "FVTPL, AFS và HTM"
+        },
+        {
+          "id": "2d6329f48b",
+          "text": "Môi giới, cho vay và tự doanh"
+        },
+        {
+          "id": "912bf2b869",
+          "text": "Nợ vay và vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, cột chồng phía dưới gồm những gì?"
+    }
+  ],
+  "salt": "37f81099da318077c5d3ffcab11a6276c6323897c3b5fb9454939e0da37bb6b1"
+}

@@ -1,0 +1,418 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l10-g1": {
+      "alt": "Thu nhập lãi ghi nhận trong kỳ trên kết quả kinh doanh chia hai phần: phần đã thu bằng tiền là tiền lãi thực thu trên báo cáo lưu chuyển tiền tệ, phần chưa thu là lãi, phí phải thu trên bảng cân đối kế toán, chính là tử số của tỷ lệ",
+      "kind": "segment_bar",
+      "max": 100,
+      "rows": [
+        {
+          "label": "Thu nhập lãi ghi nhận trong kỳ",
+          "segments": [
+            {
+              "label": "Đã thu bằng tiền",
+              "sub": "Tiền lãi thực thu · Báo cáo lưu chuyển tiền tệ",
+              "tone": "pos",
+              "value": 86
+            },
+            {
+              "label": "Chưa thu",
+              "sub": "Lãi, phí phải thu · Bảng cân đối kế toán · Tử số của tỷ lệ",
+              "tone": "warn",
+              "value": 14
+            }
+          ],
+          "sub": "Kết quả kinh doanh"
+        }
+      ],
+      "unit": "%"
+    },
+    "c10l10-g2": {
+      "alt": "Lãi dự thu trên dư nợ bằng lãi, phí phải thu 25.968 tỷ đồng chia cho cho vay khách hàng 1.709 nghìn tỷ đồng, bằng 1,52%",
+      "edges": [
+        {
+          "from": "lai-phi-phai-thu",
+          "label": "÷",
+          "to": "cho-vay"
+        },
+        {
+          "from": "cho-vay",
+          "label": "=",
+          "to": "lai-du-thu"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "lai-phi-phai-thu",
+          "sub": "Bảng cân đối Q2/26",
+          "title": "Lãi, phí phải thu",
+          "tone": "warn",
+          "value": "25.968 tỷ"
+        },
+        {
+          "id": "cho-vay",
+          "sub": "Bảng cân đối Q2/26",
+          "title": "Cho vay khách hàng",
+          "tone": "p1",
+          "value": "1.709 nghìn tỷ"
+        },
+        {
+          "emph": true,
+          "id": "lai-du-thu",
+          "sub": "100 đồng cho vay có 1,52 đồng lãi chưa thu",
+          "title": "Lãi dự thu / Dư nợ",
+          "tone": "p5",
+          "value": "1,52%"
+        }
+      ]
+    },
+    "c10l10-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Lãi, phí phải thu",
+          "tone": "p5",
+          "values": [
+            100,
+            107.9,
+            116,
+            118.8,
+            129.6,
+            135.3,
+            149.3,
+            160.6
+          ]
+        },
+        {
+          "name": "Cho vay khách hàng",
+          "tone": "p1",
+          "values": [
+            100,
+            103.1,
+            107.3,
+            108,
+            114,
+            115.1,
+            125,
+            127.3
+          ]
+        }
+      ],
+      "title": "Chỉ số, Q3/24 = 100",
+      "unit": "chỉ số",
+      "value_labels": "none"
+    },
+    "c10l10-rep": {
+      "alt": "Lãi dự thu / Dư nợ: 1,5%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Lãi, phí phải thu / Cho vay",
+            "v": [
+              1.204,
+              1.26,
+              1.301,
+              1.325,
+              1.369,
+              1.415,
+              1.438,
+              1.519
+            ]
+          }
+        ],
+        "name": "Lãi dự thu / Dư nợ",
+        "sub": {
+          "series": [
+            {
+              "name": "Lãi, phí phải thu",
+              "v": [
+                16166.671,
+                17447.28,
+                18750.55,
+                19212.892,
+                20954.302,
+                21869.099,
+                24133.931,
+                25968.133
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l10",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ngân hàng ghi nhận tiền lãi vào thu nhập ngay khi lãi phát sinh, kể cả khi khách hàng chưa trả. Phần lãi đã ghi nhận nhưng chưa thu được tiền gọi là lãi dự thu. Tỷ lệ này giúp kiểm tra thu nhập lãi có thực sự về thành tiền hay không.",
+  "lesson_key": "fundamental:accrued_to_loans",
+  "order": 10,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l10-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Lãi dự thu trên dư nợ</b> bằng dòng <b>các khoản lãi, phí phải thu</b> chia cho dòng <b>cho vay khách hàng</b>, cả hai nằm trên bảng cân đối kế toán cuối quý.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 1,52% nghĩa là cứ 100 đồng cho vay thì có 1,52 đồng tiền lãi, phí đã ghi vào thu nhập nhưng chưa thu được tiền.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Lãi dự thu / Dư nợ là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l10-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Luôn có một phần lãi chưa đến kỳ trả, nên lãi dự thu không bao giờ bằng 0.",
+              "title": "Bình thường"
+            },
+            {
+              "text": "Khách hàng có thể đang chậm trả lãi, hoặc được giãn thời gian trả lãi.",
+              "title": "Tăng nhanh"
+            },
+            {
+              "text": "Lãi không thu được sẽ phải ghi giảm sau này, thu nhập lãi hiện tại bị đánh giá cao.",
+              "title": "Ảnh hưởng thu nhập"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao cần theo dõi"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l10-rep",
+          "title": "Lãi dự thu / Dư nợ",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Các khoản lãi, phí phải thu chia cho vay khách hàng cuối mỗi quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Số dư các khoản lãi, phí phải thu cuối mỗi quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Đường đi lên đều đặn nghĩa là lãi phải thu đang tăng nhanh hơn cho vay.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tỷ lệ thấp và ổn định, khoảng 1% đến 1,5% của dư nợ. Đây là mức tham khảo.",
+              "title": "Lành mạnh",
+              "tone": "pos"
+            },
+            {
+              "text": "Tỷ lệ tăng nhanh qua nhiều quý. Lãi phải thu tăng nhanh hơn hẳn cho vay là dấu hiệu về chất lượng thu nhập.",
+              "title": "Cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Xu hướng quan trọng hơn mức tuyệt đối. Ngân hàng có nhiều khoản vay trả lãi cuối kỳ sẽ có tỷ lệ cao hơn một cách bình thường.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l10-g3",
+          "legend": [
+            {
+              "label": "Lãi, phí phải thu",
+              "tone": "p5"
+            },
+            {
+              "label": "Cho vay khách hàng",
+              "tone": "p1"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đặt mức tăng của lãi phải thu cạnh mức tăng của cho vay khách hàng.",
+              "title": "So tốc độ tăng"
+            },
+            {
+              "text": "Thu nhập lãi tăng mạnh mà tiền lãi thực thu trên lưu chuyển tiền tệ tăng chậm là cùng một tín hiệu.",
+              "title": "Đối chiếu dòng tiền"
+            },
+            {
+              "text": "Lãi dự thu tăng trong khi tỷ lệ dự phòng giảm là hai tín hiệu cần chú ý cùng lúc.",
+              "title": "Đọc cùng bộ đệm dự phòng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Bảng cân đối"
+            },
+            {
+              "label": "Q2/25"
+            },
+            {
+              "label": "Q2/26"
+            },
+            {
+              "label": "Thay đổi"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Các khoản lãi, phí phải thu",
+                "19.213",
+                "25.968",
+                {
+                  "rating": "mid",
+                  "text": "+35,2%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Cho vay khách hàng",
+                "1.450.261",
+                "1.709.127",
+                "+17,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Lãi dự thu / Dư nợ",
+                "1,32%",
+                "1,52%",
+                {
+                  "rating": "mid",
+                  "text": "Tăng liên tục"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Đơn vị tỷ đồng. Lãi phải thu tăng nhanh gần gấp đôi cho vay. Mức 1,52% chưa cao, nhưng xu hướng tăng liên tục cần theo dõi.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Thu nhập lãi trên kết quả kinh doanh gồm cả phần chưa thu được tiền.",
+              "title": "Coi thu nhập lãi là tiền đã thu"
+            },
+            {
+              "text": "Một tỷ lệ thấp nhưng tăng đều mỗi quý đáng chú ý hơn một tỷ lệ cao mà ổn định.",
+              "title": "Chỉ nhìn mức tuyệt đối"
+            },
+            {
+              "text": "Lợi nhuận tăng mạnh cùng lúc lãi dự thu tăng nhanh cần được kiểm tra kỹ hơn.",
+              "title": "Bỏ qua khi lợi nhuận tốt"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Lãi dự thu / Dư nợ</b> = các khoản lãi, phí phải thu ÷ <b>cho vay khách hàng</b>.",
+    "Lãi dự thu là lãi <b>đã ghi vào thu nhập nhưng chưa thu tiền</b>.",
+    "Tỷ lệ <b>tăng nhanh</b> là dấu hiệu cần chú ý về <b>chất lượng thu nhập</b>.",
+    "Xem <b>xu hướng</b> và so tốc độ tăng với cho vay, không chỉ nhìn mức tuyệt đối."
+  ],
+  "title": "Lãi dự thu / Dư nợ · chất lượng thu nhập lãi"
+}

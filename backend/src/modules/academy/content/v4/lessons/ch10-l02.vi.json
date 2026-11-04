@@ -1,0 +1,518 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l2-g1": {
+      "items": [
+        {
+          "model": {
+            "alt": "Lợi suất tài sản sinh lãi bằng thu nhập lãi 4 quý 166.324 tỷ đồng chia cho tài sản sinh lãi bình quân 2.243 nghìn tỷ đồng, bằng 7,42%",
+            "edges": [
+              {
+                "from": "thu-nhap-lai",
+                "label": "÷",
+                "to": "tai-san-sinh-lai"
+              },
+              {
+                "from": "tai-san-sinh-lai",
+                "label": "=",
+                "to": "loi-suat"
+              }
+            ],
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "thu-nhap-lai",
+                "title": "Thu nhập lãi 4 quý",
+                "tone": "p1",
+                "value": "166.324 tỷ"
+              },
+              {
+                "id": "tai-san-sinh-lai",
+                "title": "Tài sản sinh lãi bình quân",
+                "tone": "warn",
+                "value": "2.243 nghìn tỷ"
+              },
+              {
+                "emph": true,
+                "id": "loi-suat",
+                "title": "Lợi suất tài sản sinh lãi",
+                "tone": "pos",
+                "value": "7,42%"
+              }
+            ]
+          }
+        },
+        {
+          "model": {
+            "alt": "Chi phí vốn bằng chi phí lãi 4 quý 70.513 tỷ đồng chia cho nợ chịu lãi bình quân 1.816 nghìn tỷ đồng, bằng 3,88%",
+            "edges": [
+              {
+                "from": "chi-phi-lai",
+                "label": "÷",
+                "to": "no-chiu-lai"
+              },
+              {
+                "from": "no-chiu-lai",
+                "label": "=",
+                "to": "chi-phi-von"
+              }
+            ],
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "chi-phi-lai",
+                "title": "Chi phí lãi 4 quý",
+                "tone": "p1",
+                "value": "70.513 tỷ"
+              },
+              {
+                "id": "no-chiu-lai",
+                "title": "Nợ chịu lãi bình quân",
+                "tone": "warn",
+                "value": "1.816 nghìn tỷ"
+              },
+              {
+                "emph": true,
+                "id": "chi-phi-von",
+                "title": "Chi phí vốn",
+                "tone": "neg",
+                "value": "3,88%"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack"
+    },
+    "c10l2-g2": {
+      "kind": "category",
+      "labels": [
+        "Tiền gửi của khách hàng",
+        "Tiền gửi, vay TCTD khác",
+        "Phát hành giấy tờ có giá"
+      ],
+      "mode": "grouped",
+      "orientation": "h",
+      "series": [
+        {
+          "name": "Nợ chịu lãi bình quân · 1.816 nghìn tỷ đồng",
+          "per_bar_tones": [
+            "p1",
+            "warn",
+            "p5"
+          ],
+          "tone": "p1",
+          "values": [
+            1651,
+            110,
+            55
+          ]
+        }
+      ],
+      "title": "Nợ chịu lãi bình quân · 1.816 nghìn tỷ đồng",
+      "unit": "nghìn tỷ đồng",
+      "value_labels": "all"
+    },
+    "c10l2-g3": {
+      "bounds": [
+        0,
+        8
+      ],
+      "caption_tone": "warn",
+      "caption_value": "+0,74 nhờ phần vốn chủ",
+      "kind": "category",
+      "labels": [
+        "Lợi suất",
+        "Chi phí vốn",
+        "Chênh lệch",
+        "NIM"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Lợi suất, chi phí vốn, chênh lệch và NIM",
+          "per_bar_tones": [
+            "pos",
+            "neg",
+            "p1",
+            "warn"
+          ],
+          "tone": "pos",
+          "values": [
+            7.42,
+            3.88,
+            3.53,
+            4.27
+          ]
+        }
+      ],
+      "sublabels": [
+        "tài sản sinh lãi",
+        "",
+        "lợi suất − chi phí",
+        ""
+      ],
+      "ticks": [
+        0,
+        2,
+        4,
+        6,
+        8
+      ],
+      "unit": "%",
+      "value_format": {
+        "suffix": "%"
+      },
+      "value_labels": "all"
+    },
+    "c10l2-rep": {
+      "alt": "Lợi suất tài sản sinh lãi và chi phí vốn: 7,4%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Lợi suất tài sản sinh lãi",
+            "v": [
+              6.997,
+              7.021,
+              6.923,
+              7.088,
+              6.956,
+              7.107,
+              7.047,
+              7.415
+            ]
+          },
+          {
+            "name": "Chi phí vốn",
+            "v": [
+              3.362,
+              3.361,
+              3.397,
+              3.485,
+              3.533,
+              3.714,
+              3.711,
+              3.883
+            ]
+          }
+        ],
+        "name": "Lợi suất tài sản sinh lãi và chi phí vốn",
+        "sub": {
+          "series": [
+            {
+              "name": "Thu nhập lãi 4 quý",
+              "v": [
+                123844.957,
+                128104.872,
+                131904.462,
+                136605.277,
+                141914.644,
+                147851.454,
+                156088.454,
+                166324.363
+              ]
+            },
+            {
+              "name": "Chi phí lãi 4 quý",
+              "v": [
+                50916.588,
+                52772.396,
+                54865.169,
+                58138.081,
+                61440.116,
+                64212.206,
+                68325.237,
+                70513.223
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l02",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "NIM là kết quả của hai lực ngược chiều: ngân hàng thu lãi được bao nhiêu trên tài sản và phải trả lãi bao nhiêu cho nguồn vốn. Tách NIM thành hai vế giúp biết biên lãi thay đổi vì đâu.",
+  "lesson_key": "fundamental:yield_cost",
+  "order": 2,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l2-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Lợi suất tài sản sinh lãi</b> (Asset Yield) bằng <b>thu nhập lãi và các khoản thu nhập tương tự 4 quý</b> chia cho <b>tài sản sinh lãi bình quân</b>. Đây là mức lãi bình quân ngân hàng thu được.",
+          "type": "paragraph"
+        },
+        {
+          "text": "<b>Chi phí vốn</b> (Cost of Funds) bằng <b>chi phí lãi và các chi phí tương tự 4 quý</b> chia cho <b>nợ chịu lãi bình quân</b>. Đây là mức lãi bình quân ngân hàng phải trả.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Lợi suất tài sản sinh lãi và chi phí vốn là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Nợ chịu lãi là các nguồn vốn ngân hàng phải trả lãi. Lấy từ phần nợ phải trả trên <b>bảng cân đối kế toán</b>, rồi lấy bình quân đầu kỳ và cuối kỳ.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l2-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nguồn vốn lớn nhất, gồm tiền gửi của cá nhân và doanh nghiệp.",
+              "title": "Tiền gửi khách hàng"
+            },
+            {
+              "text": "Vốn vay trên thị trường liên ngân hàng, thường có lãi suất biến động nhanh.",
+              "title": "Tiền gửi và vay các TCTD khác"
+            },
+            {
+              "text": "Trái phiếu, chứng chỉ tiền gửi do ngân hàng phát hành, kỳ hạn dài, lãi thường cao hơn.",
+              "title": "Phát hành giấy tờ có giá"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Nợ chịu lãi gồm những gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l2-rep",
+          "title": "Lợi suất tài sản sinh lãi và chi phí vốn",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi suất tài sản sinh lãi và chi phí vốn, cùng tính theo 4 quý, đơn vị %.",
+              "title": "Hai đường phía trên"
+            },
+            {
+              "text": "Hai cột mỗi quý: thu nhập lãi 4 quý và chi phí lãi 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Khoảng cách giữa hai đường gần với NIM. Hai đường càng xa nhau, biên lãi càng rộng.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Lợi suất tăng nhanh hơn chi phí vốn, hoặc chi phí vốn giảm nhanh hơn lợi suất. Khoảng cách hai đường rộng ra.",
+              "title": "Biên lãi mở rộng",
+              "tone": "pos"
+            },
+            {
+              "text": "Chi phí vốn tăng nhanh mà lợi suất không theo kịp. Khoảng cách hai đường hẹp lại, NIM sẽ giảm.",
+              "title": "Biên lãi bị ép",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "NIM thường cao hơn khoảng chênh lệch một chút. Lý do là một phần tài sản sinh lãi được tài trợ bằng vốn chủ sở hữu, phần vốn này không phải trả lãi.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l2-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "NIM giảm vì lợi suất giảm khác với NIM giảm vì chi phí vốn tăng.",
+              "title": "Tìm nguyên nhân NIM đổi hướng"
+            },
+            {
+              "text": "Ngân hàng có nhiều tiền gửi rẻ thường giữ chi phí vốn ổn định hơn khi lãi suất thị trường tăng.",
+              "title": "Theo dõi khi lãi suất thay đổi"
+            },
+            {
+              "text": "Chi phí vốn tăng nhanh khi ngân hàng phải dựa nhiều vào vay liên ngân hàng và giấy tờ có giá.",
+              "title": "Đối chiếu nguồn vốn"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Khoản mục 4 quý"
+            },
+            {
+              "label": "Q2/25"
+            },
+            {
+              "label": "Q2/26"
+            },
+            {
+              "label": "Nhận xét"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Thu nhập lãi",
+                "136.605",
+                "166.324",
+                "Tỷ đồng"
+              ]
+            },
+            {
+              "cells": [
+                "Chi phí lãi",
+                "58.138",
+                "70.513",
+                "Tỷ đồng"
+              ]
+            },
+            {
+              "cells": [
+                "Lợi suất tài sản sinh lãi",
+                "7,09%",
+                "7,42%",
+                {
+                  "rating": "good",
+                  "text": "Tăng 0,33 điểm %"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Chi phí vốn",
+                "3,49%",
+                "3,88%",
+                {
+                  "rating": "mid",
+                  "text": "Tăng 0,39 điểm %"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Chênh lệch",
+                "3,60%",
+                "3,53%",
+                "Gần như giữ nguyên"
+              ]
+            },
+            {
+              "cells": [
+                "NIM",
+                "4,07%",
+                "4,27%",
+                {
+                  "rating": "good",
+                  "text": "Cao hơn chênh lệch"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Chi phí vốn tăng nhanh hơn lợi suất một chút, nhưng NIM vẫn tăng vì phần tài sản do vốn chủ tài trợ lớn dần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Lợi suất chia cho tài sản sinh lãi, chi phí vốn chia cho nợ chịu lãi. Hai mẫu số khác nhau.",
+              "title": "Dùng cùng một mẫu số"
+            },
+            {
+              "text": "Chênh lệch chỉ gần bằng NIM. NIM còn phụ thuộc phần vốn chủ không phải trả lãi.",
+              "title": "Coi chênh lệch là NIM"
+            },
+            {
+              "text": "Lợi suất tăng chưa chắc tốt nếu chi phí vốn tăng còn nhanh hơn.",
+              "title": "Chỉ nhìn một vế"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Lợi suất tài sản sinh lãi</b> = thu nhập lãi 4 quý ÷ tài sản sinh lãi bình quân.",
+    "<b>Chi phí vốn</b> = chi phí lãi 4 quý ÷ <b>nợ chịu lãi bình quân</b>.",
+    "Khoảng cách giữa hai đường <b>gần với NIM</b>, NIM thường cao hơn một chút.",
+    "Tách hai vế để biết NIM thay đổi vì <b>lãi thu vào</b> hay vì <b>lãi trả ra</b>."
+  ],
+  "title": "Lợi suất tài sản sinh lãi và chi phí vốn · hai vế của NIM"
+}
