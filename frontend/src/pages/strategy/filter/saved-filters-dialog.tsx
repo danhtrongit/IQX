@@ -2,6 +2,7 @@ import { useState } from "react"
 import { Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 
@@ -14,9 +15,10 @@ import { useDeleteFilter, useSavedFilters } from "./hooks"
 import type { SavedFilter, ScreenerMetric } from "./types"
 
 /**
- * "Bộ lọc đã lưu": criteria with the period of each condition. Using one only loads the criteria
- * into the editor; results are re-resolved at the latest published reports when it is run, and the
- * Bot is not touched.
+ * "Bộ lọc đã lưu": the whole criteria (Thị trường, the period of each fundamental condition, the
+ * technical indicators). Using one only loads the criteria into the editor; results are re-resolved at
+ * the latest published reports and the latest closed session when it is run, and the Bot is not touched.
+ * A filter saved with an ICB sector (before 4.0) is labelled `Cần chọn lại ngành`: the sector is never mapped for the user.
  */
 export function SavedFiltersDialog({
   metrics,
@@ -38,7 +40,7 @@ export function SavedFiltersDialog({
     <>
       <DialogShell
         title="Bộ lọc đã lưu"
-        description="Giữ tiêu chí và kỳ tính riêng của từng điều kiện. Mở lại sẽ lấy báo cáo mới nhất đã công bố tại thời điểm chạy."
+        description="Giữ tiêu chí thị trường, kỳ tính riêng của từng điều kiện cơ bản và các chỉ báo kỹ thuật. Mở lại sẽ lấy báo cáo mới nhất đã công bố và phiên đã đóng cửa gần nhất tại thời điểm chạy."
         size="lg"
         onClose={onClose}
         footer={<Button type="button" variant="outline" onClick={onClose}>Đóng</Button>}
@@ -56,13 +58,22 @@ export function SavedFiltersDialog({
           <ul className="space-y-3">
             {filters.data.map((filter) => {
               const review = filter.legacy_review?.needs_review === true
+              const sector = filter.sector_review?.sector ?? null
               return (
                 <li key={filter.id} className="rounded-md border border-border bg-background/40 p-3">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <h3 className="text-sm font-semibold break-words">{filter.name}</h3>
                       <p className="mt-1 text-xs leading-5 text-muted-foreground">{criteriaSummary(filter.definition, metrics)}</p>
-                      <p className="mt-1 text-[11px] text-muted-foreground">Phiên bản {filter.current_version}</p>
+                      <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-muted-foreground">
+                        <span>Phiên bản {filter.current_version}</span>
+                        {sector !== null && <Badge variant="outline" className="border-destructive/50 text-destructive">Cần chọn lại ngành</Badge>}
+                      </p>
+                      {sector !== null && (
+                        <p role="status" className="mt-1.5 text-[11px] leading-4 text-destructive">
+                          Ngành ICB “{sector}” của bộ lọc cũ không còn được hỗ trợ. Hệ thống không tự đổi: hãy chọn lại Ngành trước khi chạy.
+                        </p>
+                      )}
                       {review && (
                         <p role="status" className="mt-1.5 text-[11px] leading-4 text-price-ref">
                           Bộ lọc cũ có kỳ tính không còn được hỗ trợ cho một số điều kiện. Hệ thống không tự đổi kỳ: hãy chọn lại kỳ trước khi chạy.

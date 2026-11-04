@@ -1,5 +1,5 @@
 /**
- * Bộ lọc client: screener metrics/run/results, saved filters (definition 3.0), saved lists and
+ * Bộ lọc client: screener metrics/run/results, saved filters (definition 4.0), saved lists and
  * result snapshots, all through the generated contract.
  *
  * Three different saves, never mixed: a filter (criteria only, re-resolved at each run), a list
@@ -20,6 +20,7 @@ import type {
   SavedList,
   ScreenerMetric,
   Selection,
+  SortState,
 } from "./types"
 
 export const RESULT_PAGE_SIZE = 50
@@ -32,16 +33,41 @@ export function runScreener(definition: FilterDefinition, signal?: AbortSignal):
   return requestOperation("POST /api/v2/strategy/screener/run", { body: definition }, { signal })
 }
 
+/**
+ * One page of a stored result. With `sort` the server orders the WHOLE result before it cuts the page
+ * (blank cells last, ties by Mã A→Z); without it the order is Mã A→Z.
+ */
 export function getResultPage(
   resultId: string,
-  query: { offset: number; limit: number; passedOnly: boolean },
+  query: { offset: number; limit: number; passedOnly: boolean; sort?: SortState },
   signal?: AbortSignal,
 ): Promise<ResultPage> {
   return requestOperation(
     "GET /api/v2/strategy/screener/results/{resultId}",
-    { path: { resultId }, query: { offset: query.offset, limit: query.limit, passed_only: query.passedOnly } },
+    {
+      path: { resultId },
+      query: {
+        offset: query.offset,
+        limit: query.limit,
+        passed_only: query.passedOnly,
+        ...(query.sort ? { sort: query.sort.key, order: query.sort.order } : {}),
+      },
+    },
     { signal },
   )
+}
+
+/** The server caps a page of a stored result at 500 rows. */
+const PASSED_PAGE_SIZE = 500
+
+/** Every symbol that passed, page by page: a market-wide filter can pass more than one page. */
+export async function getAllPassedSymbols(resultId: string, signal?: AbortSignal): Promise<string[]> {
+  const symbols: string[] = []
+  for (;;) {
+    const page = await getResultPage(resultId, { offset: symbols.length, limit: PASSED_PAGE_SIZE, passedOnly: true }, signal)
+    symbols.push(...page.results.map((row) => row.symbol))
+    if (page.results.length === 0 || symbols.length >= page.total) return symbols
+  }
 }
 
 /* ── Saved filters ───────────────────────────────────────────────────────── */

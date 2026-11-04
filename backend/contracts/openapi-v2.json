@@ -152426,6 +152426,10 @@
                                   "additionalProperties": false,
                                   "nullable": true,
                                   "properties": {
+                                    "display": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
                                     "value": {
                                       "nullable": true,
                                       "type": "number"
@@ -152442,7 +152446,8 @@
                                   "required": [
                                     "value",
                                     "value2",
-                                    "value3"
+                                    "value3",
+                                    "display"
                                   ],
                                   "type": "object"
                                 },
@@ -154584,6 +154589,10 @@
                                   "additionalProperties": false,
                                   "nullable": true,
                                   "properties": {
+                                    "display": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
                                     "value": {
                                       "nullable": true,
                                       "type": "number"
@@ -154600,7 +154609,8 @@
                                   "required": [
                                     "value",
                                     "value2",
-                                    "value3"
+                                    "value3",
+                                    "display"
                                   ],
                                   "type": "object"
                                 },

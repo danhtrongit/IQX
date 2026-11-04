@@ -10,6 +10,21 @@ import { SIDE_LABEL } from "./validate"
 /** A flagged field: `row` is 1-based, `field` the field key (`period`, `threshold`…). */
 export type FlaggedField = { row: number; field: string }
 
+/**
+ * Texts that name the rows to assistive technology and tests. The defaults are the Bot's (`Điều kiện Mua`,
+ * `Bật điều kiện 1 (Mua)`); a screen with several lists on one page (the Bộ lọc's technical cards, which
+ * have no Mua/Bán tab) names its own, unique per card.
+ */
+export type ConditionRowsLabels = {
+  list?: string
+  /** `row` is 1-based. */
+  switchLabel?: (row: number) => string
+  /** `row` is 1-based. */
+  fieldLabel?: (field: RowField, row: number) => string
+  /** Suffix of `row-count-…` and `row-errors-…` test ids (default: the side). */
+  testId?: string
+}
+
 export type ConditionRowsProps = {
   /** The indicator's registry rows, in order (`GET /strategy/registry/technical` → `rows`). */
   definitions: readonly RowDefinition[]
@@ -26,6 +41,7 @@ export type ConditionRowsProps = {
   messages?: readonly string[]
   /** Prefix of the element ids; unique per form. */
   idPrefix?: string
+  labels?: ConditionRowsLabels
   className?: string
 }
 
@@ -108,17 +124,19 @@ export function ConditionRows({
   invalid = [],
   messages = [],
   idPrefix = "condition",
+  labels,
   className,
 }: ConditionRowsProps) {
   const editable = mode === "edit" && !!onRowChange
+  const testId = labels?.testId ?? side
   return (
     <div className={cn("space-y-2", className)}>
-      <p className="text-[11px] leading-4 text-muted-foreground" data-testid={`row-count-${side}`}>{enabledCountText(rows)}</p>
-      <ul className="divide-y divide-border overflow-hidden rounded-md border border-border bg-background/40" aria-label={`Điều kiện ${SIDE_LABEL[side]}`}>
+      <p className="text-[11px] leading-4 text-muted-foreground" data-testid={`row-count-${testId}`}>{enabledCountText(rows)}</p>
+      <ul className="divide-y divide-border overflow-hidden rounded-md border border-border bg-background/40" aria-label={labels?.list ?? `Điều kiện ${SIDE_LABEL[side]}`}>
         {definitions.map((definition, index) => {
           const row = rows[index] ?? { id: definition.id, enabled: false, values: {} }
           const number = index + 1
-          const switchLabel = rowSwitchLabel(side, number)
+          const switchLabel = labels?.switchLabel?.(number) ?? rowSwitchLabel(side, number)
           return (
             <li key={definition.id} data-row-id={definition.id} data-enabled={row.enabled} className="flex items-start gap-3 px-3 py-2.5">
               <Switch
@@ -150,7 +168,7 @@ export function ConditionRows({
                       field={field}
                       value={value}
                       id={`${idPrefix}-${side}-${index}-${field.key}`}
-                      label={fieldAriaLabel(field, side, number)}
+                      label={labels?.fieldLabel?.(field, number) ?? fieldAriaLabel(field, side, number)}
                       invalid={invalid.some((item) => item.row === number && item.field === field.key)}
                       onChange={(next) => onRowChange?.(index, { ...row, values: { ...row.values, [field.key]: next } })}
                     />
@@ -162,7 +180,7 @@ export function ConditionRows({
         })}
       </ul>
       {messages.length > 0 && (
-        <ul role="alert" className="list-disc space-y-0.5 pl-5 text-xs text-destructive" data-testid={`row-errors-${side}`}>
+        <ul role="alert" className="list-disc space-y-0.5 pl-5 text-xs text-destructive" data-testid={`row-errors-${testId}`}>
           {messages.map((message) => <li key={message}>{message}</li>)}
         </ul>
       )}

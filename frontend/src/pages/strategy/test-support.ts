@@ -19,10 +19,11 @@ type TradesView = ApiResponseFor<"GET /api/v2/strategy/backtests/{id}/trades">
 type TradeView = TradesView["items"][number]
 export type MetricView = ApiResponseFor<"GET /api/v2/strategy/screener/metrics">[number]
 type RunBody = ApiRequestFor<"POST /api/v2/strategy/screener/run">["body"]
-type Definition = Extract<RunBody, { schema_version: "3.0" }>
+type Definition = Extract<RunBody, { schema_version: "4.0" }>
 type ResultPage = ApiResponseFor<"GET /api/v2/strategy/screener/results/{resultId}">
 type ResultRowView = ResultPage["results"][number]
 type CellView = ResultRowView["metrics"][string]
+type TechCellView = ResultRowView["technical"][string]
 type FilterView = ApiResponseFor<"GET /api/v2/strategy/filters">["items"][number]
 type ListView = ApiResponseFor<"GET /api/v2/strategy/lists">["items"][number]
 type SnapshotView = ApiResponseFor<"GET /api/v2/strategy/result-snapshots/{snapshotId}">
@@ -265,21 +266,155 @@ function cell(symbol: string, metricId: string, periodMode: "quarter" | "ttm" | 
 }
 type ApiUnit = MetricView["api_unit"]
 
+/** A company of the fake market: the figures of session T (price in nghìn đồng, vốn hóa and GTGD in tỷ đồng) and its RSI. */
+export type Company = {
+  name: string
+  sector: string
+  exchange: "HOSE" | "HNX" | "UPCOM"
+  group: "thuong" | "nh" | "ck" | "bh"
+  baskets: string[]
+  price: number
+  change: number
+  cap: number
+  avg: number
+  /** RSI at T and one session earlier; `null`: a new listing without enough history (NO_SIGNAL). */
+  rsi: number | null
+  rsiBefore: number | null
+}
+
+export const COMPANIES: Record<string, Company> = {
+  FPT: { name: "CTCP FPT", sector: "Công nghệ", exchange: "HOSE", group: "thuong", baskets: ["VN30", "VN100"], price: 124.5, change: 1.23, cap: 183000, avg: 480.5, rsi: 63.7, rsiBefore: 55.2 },
+  HPG: { name: "CTCP Tập đoàn Hòa Phát", sector: "Sản xuất", exchange: "HOSE", group: "thuong", baskets: ["VN30", "VN100"], price: 27.4, change: -0.55, cap: 175000, avg: 620.1, rsi: 28.4, rsiBefore: 33 },
+  MBB: { name: "Ngân hàng TMCP Quân Đội", sector: "Ngân hàng", exchange: "HOSE", group: "nh", baskets: ["VN30", "VN100"], price: 24.1, change: 0.42, cap: 125000, avg: 300, rsi: 45, rsiBefore: 44 },
+  CMG: { name: "CTCP Tập đoàn Công nghệ CMC", sector: "Công nghệ", exchange: "HOSE", group: "thuong", baskets: ["VN100"], price: 52.3, change: 2.1, cap: 12000, avg: 85, rsi: 71.2, rsiBefore: 69 },
+  XYZ: { name: "CTCP Thiếu dữ liệu", sector: "Bán lẻ", exchange: "HNX", group: "thuong", baskets: [], price: 8.2, change: 1.35, cap: 400, avg: 3.4, rsi: null, rsiBefore: null },
+  NEG: { name: "CTCP Lợi nhuận âm", sector: "Sản xuất", exchange: "UPCOM", group: "thuong", baskets: [], price: 3.1, change: -1.5, cap: 90, avg: 0.4, rsi: 55, rsiBefore: 50 },
+}
+
+const companyOf = (symbol: string): Company =>
+  COMPANIES[symbol] ?? { name: `CTCP ${symbol}`, sector: "Công nghệ", exchange: "HOSE", group: "thuong", baskets: [], price: 10, change: 0, cap: 1000, avg: 10, rsi: 50, rsiBefore: 49 }
+
+const SESSION = "2026-10-07"
+const fixedVi = (value: number, decimals: number) => value.toLocaleString("vi-VN", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })
+
+/** Step 1, Thị trường: the six items are AND, the choices inside one item are OR; a blank item filters nothing. */
+function inMarketScope(company: Company, market: Definition["market"]): boolean {
+  const exchanges = (market.exchanges ?? []).map((value) => (value === "HSX" ? "HOSE" : value))
+  if (exchanges.length > 0 && !exchanges.includes(company.exchange)) return false
+  const baskets = market.baskets ?? []
+  if (baskets.length > 0 && !baskets.some((basket) => company.baskets.includes(basket))) return false
+  const groups = market.statement_groups ?? []
+  if (groups.length > 0 && !groups.includes(company.group)) return false
+  const { min: capMin, max: capMax } = market.market_cap
+  if ((capMin !== null && company.cap < capMin) || (capMax !== null && company.cap > capMax)) return false
+  const { min: priceMin, max: priceMax } = market.close_price
+  if ((priceMin !== null && company.price < priceMin) || (priceMax !== null && company.price > priceMax)) return false
+  return market.avg_value.min === null || company.avg >= market.avg_value.min
+}
+
+const NO_SIGNAL_REASON = "Chưa đủ số phiên giao dịch để tính chỉ báo ở điều kiện này. Không được coi là đạt."
+
+function technicalCell(key: string, indicator: string, rowId: string, label: string, partial: Partial<TechCellView>): TechCellView {
+  return { key, indicator, row_id: rowId, label, status: "ok", result: true, op: ">", value: 1, value2: null, value3: null, display: "1,0", sort_value: 1, previous: null, lag: null, params: {}, ...partial } as TechCellView
+}
+
+/** The technical cell of every SWITCHED-ON row of the definition, at session T. Only RSI has real numbers; the others are always true. */
+export function technicalCellsFor(symbol: string, items: NonNullable<Definition["technical"]>): Record<string, TechCellView> {
+  const company = companyOf(symbol)
+  const cells: Record<string, TechCellView> = {}
+  const missing = (key: string, indicator: string, rowId: string, label: string, params: TechCellView["params"] = {}, lag: number | null = null) =>
+    technicalCell(key, indicator, rowId, label, { status: "missing", result: null, op: null, value: null, display: null, sort_value: null, params, lag, reason: NO_SIGNAL_REASON, reason_code: "insufficient_price_history" })
+  for (const item of items) {
+    if (item.indicator === "volume") {
+      const volume = item as { sessions: number; factor: number; ops: [string, string] }
+      const params = { lookback: volume.sessions, mult: volume.factor }
+      const label = `KL / ${String(volume.factor).replace(".", ",")}×TB${volume.sessions} (nghìn cp)`
+      if (company.rsi === null) {
+        cells["volume.r1"] = missing("volume.r1", "volume", "r1", "Giá nay / trước", params, 1)
+        cells["volume.r2"] = missing("volume.r2", "volume", "r2", label, params)
+        continue
+      }
+      cells["volume.r1"] = technicalCell("volume.r1", "volume", "r1", "Giá nay / trước", { op: volume.ops[0], display: `${fixedVi(company.price, 2)} / ${fixedVi(company.price - 1, 2)}`, value: company.price, value2: company.price - 1, sort_value: company.price / (company.price - 1), lag: 1, params })
+      cells["volume.r2"] = technicalCell("volume.r2", "volume", "r2", label, { op: volume.ops[1], display: "230 / 189", value: 230, value2: 189, sort_value: 230 / 189, params })
+      continue
+    }
+    for (const rule of (item as { rules: Array<Record<string, number | string | boolean>> }).rules) {
+      if (rule.enabled !== true) continue
+      const rowId = String(rule.id)
+      const params = Object.fromEntries(Object.entries(rule).filter(([field, value]) => field !== "id" && field !== "enabled" && typeof value !== "boolean")) as Record<string, number | string>
+      if (rowId === "rsi.level") {
+        const label = `RSI${params.period}`
+        if (company.rsi === null) { cells[rowId] = missing(rowId, "rsi", rowId, label, params); continue }
+        const threshold = Number(params.threshold)
+        const result = params.op === "<" ? company.rsi < threshold : params.op === ">" ? company.rsi > threshold : false
+        cells[rowId] = technicalCell(rowId, "rsi", rowId, label, {
+          result, op: String(params.op), value: company.rsi, display: fixedVi(company.rsi, 1), sort_value: company.rsi, params,
+          previous: { value: company.rsiBefore, value2: null, value3: null, display: company.rsiBefore === null ? null : fixedVi(company.rsiBefore, 1) },
+        })
+        continue
+      }
+      if (rowId === "rsi.trend") {
+        const label = `RSI${params.period} nay / ${params.period} phiên trước`
+        if (company.rsi === null || company.rsiBefore === null) { cells[rowId] = missing(rowId, "rsi", rowId, label, params, Number(params.period)); continue }
+        cells[rowId] = technicalCell(rowId, "rsi", rowId, label, {
+          result: params.dir === "up" ? company.rsi > company.rsiBefore : company.rsi < company.rsiBefore, op: ">", value: company.rsi, value2: company.rsiBefore,
+          display: `${fixedVi(company.rsi, 1)} / ${fixedVi(company.rsiBefore, 1)}`, sort_value: company.rsi - company.rsiBefore, lag: Number(params.period), params,
+        })
+        continue
+      }
+      const label = `${String(item.indicator).toUpperCase()} ${rowId.split(".")[1] ?? rowId}`
+      cells[rowId] = company.rsi === null ? missing(rowId, String(item.indicator), rowId, label, params) : technicalCell(rowId, String(item.indicator), rowId, label, { params })
+    }
+  }
+  return cells
+}
+
+const exceptionOf = (cells: Record<string, TechCellView>) => Object.values(cells).some((item) => item.status !== "ok")
+
 function rowFor(symbol: string, definition: Definition, metrics: MetricView[]): ResultRowView {
+  const company = companyOf(symbol)
+  const technical = technicalCellsFor(symbol, definition.technical ?? [])
+  const technicalOk = Object.values(technical).every((item) => item.result === true)
   const byId = new Map(metrics.map((item) => [item.id as string, item]))
   const specs = [...definition.rules.map((rule) => ({ id: rule.metric_id as string, period: rule.period })), ...(definition.columns ?? []).map((column) => ({ id: column.metric_id as string, period: column.period }))]
+  // Step 2 runs only for companies that survived step 1; the others carry no fundamental figure.
   const cells: Record<string, CellView> = {}
-  for (const spec of specs) cells[spec.id] = cell(symbol, spec.id, spec.period, byId.get(spec.id)?.api_unit ?? "ratio")
-  const passed = definition.rules.every((rule) => {
+  if (technicalOk) for (const spec of specs) cells[spec.id] = cell(symbol, spec.id, spec.period, byId.get(spec.id)?.api_unit ?? "ratio")
+  const fundamentalOk = technicalOk && definition.rules.every((rule) => {
     const value = cells[rule.metric_id]
     if (!value || value.status !== "ok" || value.value === null) return false
     return rule.operator === ">" ? value.value > rule.value : value.value < rule.value
   })
-  const names: Record<string, [string, string, string]> = {
-    FPT: ["CTCP FPT", "Công nghệ", "HOSE"], HPG: ["CTCP Tập đoàn Hòa Phát", "Sản xuất", "HOSE"], MBB: ["Ngân hàng TMCP Quân Đội", "Ngân hàng", "HOSE"], CMG: ["CTCP Tập đoàn Công nghệ CMC", "Công nghệ", "HOSE"], XYZ: ["CTCP Thiếu dữ liệu", "Bán lẻ", "HNX"], NEG: ["CTCP Lợi nhuận âm", "Sản xuất", "UPCOM"],
+  return {
+    symbol, name: company.name, sector: company.sector, exchange: company.exchange, group: company.group, passed: technicalOk && fundamentalOk, metrics: cells, technical,
+    market: { price: company.price, change_pct: company.change, market_cap: company.cap, avg_value: company.avg },
+  } as ResultRowView
+}
+
+const SORT_TEXT = new Set(["symbol", "name", "exchange", "group"])
+
+/** Server-side order of the whole result (spec §4.3): blank or not ok last whatever the direction, ties by Mã A→Z. */
+export function sortRows(rows: ResultRowView[], key: string | null, order: string | null): ResultRowView[] {
+  const sortKey = key ?? "symbol"
+  const direction = order === "desc" ? -1 : 1
+  const valueOf = (row: ResultRowView): string | number | null => {
+    if (SORT_TEXT.has(sortKey)) return String(row[sortKey as "symbol" | "name" | "exchange" | "group"] ?? "")
+    if (sortKey === "price" || sortKey === "change_pct" || sortKey === "market_cap" || sortKey === "avg_value") return row.market[sortKey]
+    if (sortKey.startsWith("metric:")) { const item = row.metrics[sortKey.slice(7)]; return item && item.status === "ok" ? item.value : null }
+    if (sortKey.startsWith("tech:")) { const item = row.technical[sortKey.slice(5)]; return item && item.status === "ok" ? item.sort_value : null }
+    return null
   }
-  const [name, sector, exchange] = names[symbol] ?? [`CTCP ${symbol}`, "Công nghệ", "HOSE"]
-  return { symbol, name, sector, exchange, passed, metrics: cells } as ResultRowView
+  return [...rows].sort((a, b) => {
+    const left = valueOf(a)
+    const right = valueOf(b)
+    if (left === null && right !== null) return 1
+    if (left !== null && right === null) return -1
+    if (left !== null && right !== null && left !== right) {
+      const compared = typeof left === "string" ? left.localeCompare(String(right), "vi") : (left as number) - (right as number)
+      if (compared !== 0) return compared * direction
+    }
+    return a.symbol < b.symbol ? -1 : a.symbol > b.symbol ? 1 : 0
+  })
 }
 
 export const SYMBOLS = ["CMG", "FPT", "HPG", "MBB", "NEG", "XYZ"]
@@ -303,6 +438,12 @@ export type StrategyWorld = BotWorld & {
   snapshots: SnapshotView[]
   /** Extra passing companies (SYM001...) added to the universe, to exercise paging. */
   extraCompanies: number
+  /** The next runs answer 503 `MARKET_DATA_UNAVAILABLE`. */
+  marketDataUnavailable: boolean
+  /** The next runs say that more companies than the fundamental cap survived Thị trường and Kỹ thuật. */
+  truncated: boolean
+  /** Baskets the fake has no membership of at session T. */
+  basketsUnavailable: string[]
   /** Delay (ms) before a screener run answers, per call index, to reproduce out-of-order responses. */
   runDelay: (index: number) => number
   runCount: number
@@ -319,7 +460,7 @@ export function createStrategyWorld(partial: Partial<StrategyWorld> = {}): Strat
     alerts: [], events: [],
     revisions: [3, 2, 1].map((revision) => ({ revision, saved_at: T0, config_hash: `h${revision}`, effective_session: "2026-10-09", status: "effective" as const, legacy: false, outdated: false })),
     runs: [], runResponses: new Map(), nextTrades: 3, nextOpen: false, nextPending: false, marketAvailable: true,
-    metrics: metricsFixture(), screenerRuns: new Map(), filters: [], snapshots: [], extraCompanies: 0, runDelay: () => 0, runCount: 0,
+    metrics: metricsFixture(), screenerRuns: new Map(), filters: [], snapshots: [], extraCompanies: 0, marketDataUnavailable: false, truncated: false, basketsUnavailable: [], runDelay: () => 0, runCount: 0,
     ...partial,
   }
 }
@@ -348,7 +489,7 @@ export function createStrategyApi(world: StrategyWorld) {
       return structuredClone(override(body))
     }
     const done = (value: unknown, record = true) => {
-      if (record) world.calls.push({ method, path: target.pathname, body })
+      if (record) world.calls.push({ method, path: target.pathname, body, query: target.search })
       return structuredClone(value)
     }
     const segments = target.pathname.split("/").filter(Boolean)
@@ -421,23 +562,40 @@ export function createStrategyApi(world: StrategyWorld) {
         const delay = world.runDelay(index)
         if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay))
         const definition = body as unknown as Definition
+        if (definition.schema_version !== "4.0") throw new FakeApiError("Định nghĩa bộ lọc không hợp lệ.", 422, { code: "VALIDATION_ERROR" })
+        if (definition.market.needs_review === "sector") throw new FakeApiError(`Chọn lại ngành: ngành ICB “${definition.market.legacy_sector ?? ""}” của bộ lọc cũ không còn được hỗ trợ.`, 422, { code: "SECTOR_REVIEW_REQUIRED" })
+        if (world.marketDataUnavailable) throw new FakeApiError("Chưa có dữ liệu giá ngày đã chốt. Hãy thử lại sau.", 503, { code: "MARKET_DATA_UNAVAILABLE" })
         const universe = [...SYMBOLS, ...Array.from({ length: world.extraCompanies }, (_unused, index) => `SYM${String(index + 1).padStart(3, "0")}`)]
-        const rows = universe.map((symbol) => rowFor(symbol, definition, world.metrics))
+        const scoped = universe.filter((symbol) => inMarketScope(companyOf(symbol), definition.market)).sort()
+        const rows = scoped.map((symbol) => rowFor(symbol, definition, world.metrics))
+        const needsFundamentals = definition.rules.length > 0 || (definition.columns ?? []).length > 0
         const passed = rows.filter((row) => row.passed).length
-        const withExceptions = rows.filter((row) => definition.rules.some((rule) => row.metrics[rule.metric_id]?.status !== "ok")).length
+        const withExceptions = rows.filter((row) => exceptionOf(row.technical) || (Object.keys(row.metrics).length > 0 && definition.rules.some((rule) => row.metrics[rule.metric_id]?.status !== "ok"))).length
         const resultId = `dddddddd-dddd-4ddd-8ddd-${String(index + 1).padStart(12, "0")}`
         const specs = [...definition.rules.map((rule) => ({ ...rule, role: "condition" as const })), ...(definition.columns ?? []).map((column) => ({ metric_id: column.metric_id, period: column.period, role: "reference" as const }))]
+        const technicalColumns = [...new Set(rows.flatMap((row) => Object.keys(row.technical)))]
+        const technicalOf = (key: string) => rows.map((row) => row.technical[key]).find(Boolean)!
+        const tally = (values: string[]) => values.reduce<Record<string, number>>((acc, value) => { acc[value] = (acc[value] ?? 0) + 1; return acc }, {})
         const header = {
-          schema_version: "3.0" as const, data_mode: "latest_disclosed" as const, as_of: T0, definition, legacy_review: null, data_source: "VCI", calculation_version: "iqx-fund-2.0", registry_version: "iqx-fund-registry-2.1", universe_truncated: false,
+          schema_version: "4.0" as const, data_mode: "latest_disclosed" as const, as_of: T0, session_date: SESSION, price_source: "DNSE (giá điều chỉnh)", definition, legacy_review: null, data_source: "VCI", calculation_version: "iqx-fund-2.0+tech-1.0", registry_version: "iqx-fund-registry-2.1",
+          universe_truncated: world.truncated, fundamental_candidates: needsFundamentals ? (world.truncated ? 812 : rows.filter((row) => Object.keys(row.metrics).length > 0).length) : null,
           provenance_notes: { period_dates: "not_provided_by_source" as const, report_scope: "not_provided_by_source" as const, availability_rule: "Báo cáo chỉ được dùng từ ngày làm việc sau ngày công bố." },
           counts: { universe: rows.length, passed, failed_threshold: rows.length - passed - withExceptions, with_required_exceptions: withExceptions, missing: rows.filter((row) => Object.values(row.metrics).some((item) => item.status === "missing")).length },
-          data_quality: { metrics: specs.map((spec) => ({ metric_id: spec.metric_id, period_mode: spec.period, role: spec.role, by_status: rows.reduce<Record<string, number>>((acc, row) => { const status = row.metrics[spec.metric_id]?.status ?? "missing"; acc[status] = (acc[status] ?? 0) + 1; return acc }, {}), by_reason: {} })) },
+          data_quality: {
+            market: { universe: universe.length, in_scope: rows.length, excluded_missing: { exchange: 0, basket: 0, statement_group: 0, market_cap: 0, avg_value: 0, close_price: 0 }, baskets_unavailable: world.basketsUnavailable, without_session_bar: 0 },
+            metrics: specs.map((spec) => ({ metric_id: spec.metric_id, period_mode: spec.period, role: spec.role, by_status: tally(rows.filter((row) => Object.keys(row.metrics).length > 0).map((row) => row.metrics[spec.metric_id]?.status ?? "missing")), by_reason: {} })),
+            technical: technicalColumns.map((key) => {
+              const sample = technicalOf(key)
+              const statuses = rows.map((row) => row.technical[key]?.status ?? "missing")
+              return { key, indicator: sample.indicator, row_id: sample.row_id, label: sample.label, by_status: tally(statuses), by_reason: statuses.includes("missing") ? { insufficient_price_history: statuses.filter((status) => status === "missing").length } : {} }
+            }),
+          },
         }
         world.screenerRuns.set(resultId, { header: header as never, rows })
         return structuredClone({ result_id: resultId, ...header, results: rows })
       }
       case "POST /strategy/filters": {
-        const created = { id: `f0000000-0000-4000-8000-${String(world.filters.length + 1).padStart(12, "0")}`, name: String(body?.name), current_version: 1, version: 1, definition: body?.definition as Definition, stored_schema_version: "3.0", legacy_review: null, definition_hash: "h", created_at: T0, updated_at: T0 } as FilterView
+        const created = { id: `f0000000-0000-4000-8000-${String(world.filters.length + 1).padStart(12, "0")}`, name: String(body?.name), current_version: 1, version: 1, definition: body?.definition as Definition, stored_schema_version: "4.0", legacy_review: null, sector_review: null, definition_hash: "h", created_at: T0, updated_at: T0 } as FilterView
         world.filters.push(created)
         return done({ ...created, versions: [{ version: 1, definition_hash: "h", created_at: T0 }] })
       }
@@ -456,8 +614,8 @@ export function createStrategyApi(world: StrategyWorld) {
         if (bad.length) throw new FakeApiError("Có mã không thuộc tập kết quả đã đạt.", 422, { code: "SELECTION_INVALID", details: bad.map((symbol) => ({ symbol, reason: "not_passed" })) })
         const created: ListView = {
           id: `c0000000-0000-4000-8000-${String(world.lists.length + 1).padStart(12, "0")}`, name: String(body?.name), kind: "static_retrospective", filter_id: (body?.filter_id as string | undefined) ?? null, filter_version: (body?.filter_version as number | undefined) ?? null,
-          tickers, as_of: "2026-10-08", data_source: "VCI", scope: { market: "all", sector: "all" }, visibility: (body?.visibility as "saved" | "internal") ?? "saved", result_snapshot_id: null, run_id: String(body?.run_id),
-          provenance: { kind: "filter_result", criteria: { rules: stored.header.definition.rules, columns: stored.header.definition.columns ?? [], scope: stored.header.definition.scope } }, created_at: T0,
+          tickers, as_of: "2026-10-08", data_source: "VCI", scope: { market: stored.header.definition.market, session_date: stored.header.session_date, source: "filter_result" }, visibility: (body?.visibility as "saved" | "internal") ?? "saved", result_snapshot_id: null, run_id: String(body?.run_id),
+          provenance: { kind: "filter_result", criteria: { market: stored.header.definition.market, technical: stored.header.definition.technical ?? [], rules: stored.header.definition.rules, columns: stored.header.definition.columns ?? [], data_mode: "latest_disclosed" }, session_date: stored.header.session_date }, created_at: T0,
         }
         world.lists.push(created)
         return done(created)
@@ -470,7 +628,7 @@ export function createStrategyApi(world: StrategyWorld) {
         const rows = selection.mode === "all" ? passed : passed.filter((row) => selection.symbols.includes(row.symbol))
         const created = {
           id: `50000000-0000-4000-8000-${String(world.snapshots.length + 1).padStart(12, "0")}`, name: String(body?.name), visibility: "saved" as const, run_id: String(body?.run_id), filter_id: null, filter_version: null, definition_hash: "h", as_of: T0, run_at: T0,
-          data_source: "VCI", calculation_version: "iqx-fund-2.0", registry_version: "iqx-fund-registry-2.1", selection: selection.mode === "all" ? { mode: "all" as const, symbols: [] } : selection, symbols: rows.map((row) => row.symbol), totals: {}, row_count: rows.length, created_at: T0,
+          data_source: "VCI", calculation_version: "iqx-fund-2.0+tech-1.0", registry_version: "iqx-fund-registry-2.1", session_date: stored.header.session_date, selection: selection.mode === "all" ? { mode: "all" as const, symbols: [] } : selection, symbols: rows.map((row) => row.symbol), totals: {}, row_count: rows.length, created_at: T0,
           definition: stored.header.definition, rows: rows as unknown as Record<string, unknown>[],
         } as SnapshotView
         world.snapshots.push(created)
@@ -517,7 +675,8 @@ export function createStrategyApi(world: StrategyWorld) {
       if (!stored) throw notFound("SCREENER_RESULT_NOT_FOUND", "Không tìm thấy kết quả lọc")
       const offset = Number(target.searchParams.get("offset") ?? 0)
       const limit = Number(target.searchParams.get("limit") ?? 100)
-      const rows = target.searchParams.get("passed_only") === "true" ? stored.rows.filter((row) => row.passed) : stored.rows
+      const filtered = target.searchParams.get("passed_only") === "true" ? stored.rows.filter((row) => row.passed) : stored.rows
+      const rows = sortRows(filtered, target.searchParams.get("sort"), target.searchParams.get("order"))
       return done({ result_id: segments[3], ...stored.header, total: rows.length, offset, limit, results: rows.slice(offset, offset + limit) })
     }
     if (segments[0] === "strategy" && segments[1] === "filters" && segments.length === 3) {

@@ -43,9 +43,9 @@ function SnapshotDetail({ summary, metrics, onClose }: { summary: ResultSnapshot
         <>
           <p className="rounded-md border border-border bg-muted/40 p-3 text-xs leading-5 text-muted-foreground">{criteriaSummary(snapshot.data.definition, metrics)}</p>
           <p className="text-xs leading-5 text-muted-foreground">
-            Số liệu, kỳ thực tế và nguồn của lần lọc tại thời điểm lưu ({snapshot.data.data_source} · {snapshot.data.calculation_version}). Không được tính lại bằng dữ liệu mới.
+            Số liệu thị trường, kỹ thuật, kỳ thực tế và nguồn của lần lọc tại thời điểm lưu{snapshot.data.session_date ? `, phiên ${fmtDate(snapshot.data.session_date)}` : ""} ({snapshot.data.data_source} · {snapshot.data.calculation_version}). Không được tính lại bằng dữ liệu mới.
           </p>
-          <SnapshotTable definition={snapshot.data.definition} rows={asResultRows(snapshot.data.rows)} metrics={metrics} />
+          <SnapshotTable definition={snapshot.data.definition} rows={asResultRows(snapshot.data.rows)} metrics={metrics} sessionDate={snapshot.data.session_date} />
         </>
       )}
     </DialogShell>

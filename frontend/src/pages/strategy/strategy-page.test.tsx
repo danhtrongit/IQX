@@ -63,6 +63,8 @@ function renderPage(route: string) {
 
 const selectedTab = () => screen.getAllByRole("tab").find((tab) => tab.getAttribute("aria-selected") === "true")?.textContent
 const location = () => screen.getByTestId("location").textContent
+/** The tool mounted by the page tabs: the Bộ lọc library has tab panels of its own, which are not tools. */
+const toolPanels = () => screen.getAllByRole("tabpanel").filter((panel) => !panel.closest("aside"))
 
 describe("routing", () => {
   it("offers Cảnh báo, Backtest and Bộ lọc and opens Cảnh báo by default", async () => {
@@ -76,12 +78,12 @@ describe("routing", () => {
   it.each([
     ["?tab=canh-bao", "Cảnh báo", "Cảnh báo đang theo dõi"],
     ["?tab=backtest", "Backtest", "Điều kiện Mua"],
-    ["?tab=bo-loc", "Bộ lọc", "Điều kiện lọc"],
+    ["?tab=bo-loc", "Bộ lọc", "Cơ bản"],
   ])("opens the tab named by %s", async (search, tab, marker) => {
     renderPage(`/chien-luoc${search}`)
     expect(selectedTab()).toBe(tab)
     expect(await screen.findByRole("heading", { name: marker })).toBeTruthy()
-    expect(screen.getAllByRole("tabpanel")).toHaveLength(1)
+    expect(toolPanels()).toHaveLength(1)
   })
 
   it("falls back to the current default for an unknown tab and keeps every other parameter", async () => {
@@ -107,7 +109,7 @@ describe("routing", () => {
     renderPage("/chien-luoc?tab=canh-bao")
     await user.click(screen.getByRole("tab", { name: "Bộ lọc" }))
     expect(location()).toBe("/chien-luoc?tab=bo-loc")
-    expect(await screen.findByRole("heading", { name: "Điều kiện lọc" })).toBeTruthy()
+    expect(await screen.findByRole("heading", { name: "Cơ bản" })).toBeTruthy()
   })
 })
 
@@ -135,7 +137,7 @@ describe("state across tabs", () => {
     expect(callsTo(world, "POST", "/strategy/backtests")).toHaveLength(1)
     expect(callsTo(world, "POST", "/strategy/screener/run")).toHaveLength(0)
     expect(callsTo(world, "PATCH", "/strategy/shared-config")).toHaveLength(0)
-    expect(screen.getAllByRole("tabpanel")).toHaveLength(1)
+    expect(toolPanels()).toHaveLength(1)
   })
 
   it("does not load a tab until it is opened", async () => {

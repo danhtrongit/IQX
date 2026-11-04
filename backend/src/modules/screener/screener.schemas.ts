@@ -312,7 +312,15 @@ export const technicalCellSchema = z.object({
   /** Value the column sorts by (spec §4.3). */
   sort_value: nullableValue,
   /** The operands one session earlier; null for rows that already compare two sessions. */
-  previous: z.object({ value: nullableValue, value2: nullableValue, value3: nullableValue }).nullable(),
+  previous: z
+    .object({
+      value: nullableValue,
+      value2: nullableValue,
+      value3: nullableValue,
+      /** Same format as `display`, for the operands one session earlier. */
+      display: z.string().nullable(),
+    })
+    .nullable(),
   /** For rows comparing T with T−N: N. */
   lag: z.number().int().nullable(),
   /** The row's stored values (period, threshold, op…). */

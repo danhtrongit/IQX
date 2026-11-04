@@ -56316,6 +56316,7 @@ export type ScreenerResultGetResponses = {
             [key: string]: number | string;
           };
           previous: {
+            display: string | null;
             value: number | null;
             value2: number | null;
             value3: number | null;
@@ -57104,6 +57105,7 @@ export type ScreenerRunResponses = {
             [key: string]: number | string;
           };
           previous: {
+            display: string | null;
             value: number | null;
             value2: number | null;
             value3: number | null;

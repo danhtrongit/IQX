@@ -5,6 +5,9 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 
 import { useAuth } from "@/hooks/use-auth"
+import { botKeys } from "@/pages/demo-trading/bot/api"
+import { fetchTechnicalRegistry } from "@/pages/demo-trading/bot/config/api"
+import type { TechnicalRegistry } from "@/pages/demo-trading/bot/config/types"
 
 import { retryUnlessFinal } from "../shared/errors"
 import {
@@ -22,7 +25,7 @@ import {
   RESULT_PAGE_SIZE,
   updateFilter,
 } from "./api"
-import type { FilterDefinition, Selection } from "./types"
+import type { FilterDefinition, Selection, SortState } from "./types"
 
 export const filterKeys = {
   all: ["strategy", "filter"] as const,
@@ -30,9 +33,12 @@ export const filterKeys = {
   filters: (userId?: string) => ["strategy", "filter", "filters", userId] as const,
   lists: (userId?: string) => ["strategy", "filter", "lists", userId] as const,
   snapshots: (userId?: string) => ["strategy", "filter", "snapshots", userId] as const,
-  page: (userId: string | undefined, resultId: string, page: number, passedOnly: boolean) =>
-    ["strategy", "filter", "result", userId, resultId, page, passedOnly] as const,
+  page: (userId: string | undefined, resultId: string, page: number, passedOnly: boolean, sort: SortState) =>
+    ["strategy", "filter", "result", userId, resultId, page, passedOnly, sort.key, sort.order] as const,
 }
+
+/** The order a result has when it is run: Mã A→Z (the server's default). */
+export const DEFAULT_SORT: SortState = { key: "symbol", order: "asc" }
 
 export function useScreenerMetrics() {
   const { user, isPremium } = useAuth()
@@ -45,14 +51,32 @@ export function useScreenerMetrics() {
   })
 }
 
-/** One page of a stored result: every page shares the same `as_of`, so sorting and paging never change the data. */
-export function useResultPage(resultId: string | null, page: number, passedOnly: boolean) {
+/**
+ * The Bot's technical indicator registry (`GET /strategy/registry/technical`): the one definition of the
+ * 16 indicators, their rows, defaults and limits that the Kỹ thuật cards render. Shared with the Bot's cache.
+ */
+export function useTechnicalRegistry() {
+  const { user, isPremium } = useAuth()
+  return useQuery<TechnicalRegistry>({
+    queryKey: botKeys.registry(user?.id),
+    enabled: !!user && isPremium,
+    queryFn: ({ signal }) => fetchTechnicalRegistry(signal),
+    staleTime: 5 * 60_000,
+    retry: retryUnlessFinal,
+  })
+}
+
+/**
+ * One page of a stored result, in the order of `sort` (applied by the server to the whole result before
+ * paging). Every page shares the same `as_of`, so sorting and paging never change the data.
+ */
+export function useResultPage(resultId: string | null, page: number, passedOnly: boolean, sort: SortState) {
   const { user, isPremium } = useAuth()
   return useQuery({
-    queryKey: filterKeys.page(user?.id, resultId ?? "", page, passedOnly),
+    queryKey: filterKeys.page(user?.id, resultId ?? "", page, passedOnly, sort),
     enabled: !!user && isPremium && !!resultId,
     queryFn: ({ signal }) =>
-      getResultPage(resultId as string, { offset: page * RESULT_PAGE_SIZE, limit: RESULT_PAGE_SIZE, passedOnly }, signal),
+      getResultPage(resultId as string, { offset: page * RESULT_PAGE_SIZE, limit: RESULT_PAGE_SIZE, passedOnly, sort }, signal),
     placeholderData: keepPreviousData,
     staleTime: Infinity,
     retry: retryUnlessFinal,

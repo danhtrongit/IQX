@@ -21,6 +21,7 @@ import { fmtDate } from "../shared/format"
 import { getSnapshot } from "./api"
 import { criteriaSummary } from "./definition"
 import { useDeleteList, useSavedLists } from "./hooks"
+import { emptyMarket } from "./market"
 import { asResultRows } from "./snapshot-rows"
 import { SnapshotTable } from "./snapshot-table"
 import type { FilterDefinition, SavedList, ScreenerMetric } from "./types"
@@ -38,13 +39,16 @@ function inUseDetails(error: unknown): InUseDetail[] {
   }))
 }
 
-/** Criteria recorded with a list made from a result (`provenance.criteria`), when present. */
+/** Criteria recorded with a list made from a result (`provenance.criteria`: Thị trường, rules, enabled technical rows), when present. */
 function listCriteria(list: SavedList, metrics: readonly ScreenerMetric[]): string | null {
   const criteria = list.provenance?.criteria
   if (!criteria || typeof criteria !== "object") return null
-  const { rules, scope } = criteria as Partial<Pick<FilterDefinition, "rules" | "scope">>
-  if (!Array.isArray(rules) || !scope) return null
-  return criteriaSummary({ rules, scope }, metrics)
+  const { rules, market, technical } = criteria as Partial<Pick<FilterDefinition, "rules" | "market" | "technical">>
+  if (!Array.isArray(rules)) return null
+  return criteriaSummary(
+    { market: market && typeof market === "object" ? market : emptyMarket(), rules, technical: Array.isArray(technical) ? technical : [] },
+    metrics,
+  )
 }
 
 /**
@@ -186,8 +190,10 @@ function ListDetailDialog({
           <ErrorLine>Không tải được số liệu đã lưu: {errorMessage(snapshot.error)}</ErrorLine>
         ) : (
           <>
-            <p className="text-xs leading-5 text-muted-foreground">Số liệu và kỳ báo cáo được giữ tại lúc lưu, không lấy từ bộ lọc đang chỉnh hay dữ liệu mới.</p>
-            <SnapshotTable definition={snapshot.data.definition} rows={asResultRows(snapshot.data.rows)} metrics={metrics} />
+            <p className="text-xs leading-5 text-muted-foreground">
+              Số liệu thị trường, kỹ thuật và kỳ báo cáo được giữ tại lúc lưu{snapshot.data.session_date ? ` (phiên ${fmtDate(snapshot.data.session_date)})` : ""}, không lấy từ bộ lọc đang chỉnh hay dữ liệu mới.
+            </p>
+            <SnapshotTable definition={snapshot.data.definition} rows={asResultRows(snapshot.data.rows)} metrics={metrics} sessionDate={snapshot.data.session_date} />
           </>
         )
       ) : (

@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 
 import { DialogShell } from "../shared/dialog-shell"
 import { isMetricUsable, metricChapter } from "./definition"
+import { metricName } from "./metric-names"
 import type { ScreenerMetric } from "./types"
 
 function stateOf(metric: ScreenerMetric): { text: string; tone: string; reason: string | null } {
@@ -35,7 +36,7 @@ export function CatalogDialog({ metrics, onClose }: { metrics: readonly Screener
           return (
             <li key={metric.id} className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 px-3 py-2.5" data-testid={`catalog-${metric.id}`}>
               <div className="min-w-0">
-                <div className="text-sm font-medium break-words">{metric.name}</div>
+                <div className="text-sm font-medium break-words">{metricName(metric)}</div>
                 <div className="text-[11px] text-muted-foreground">{metric.lesson_id ? `Chương ${metricChapter(metric)} · ${metric.lesson_id}` : "Chưa phát hành"}</div>
                 {state.reason && <div className="mt-0.5 text-[11px] leading-4 text-muted-foreground">{state.reason}</div>}
               </div>

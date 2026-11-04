@@ -339,6 +339,8 @@ describe('Kỹ thuật (spec §3): one evaluation function shared with the Bot',
       display: '0,0',
       sort_value: 0,
       params: { period: 14, op: '<', threshold: 30 },
+      // The detail dialog shows T−1 in the same format as T.
+      previous: { value: 0, value2: null, value3: null, display: '0,0' },
     });
     expect(byRow.BBB).toMatchObject({ status: 'ok', result: false, value: 100, display: '100,0' });
     expect(result.results.map((row) => [row.symbol, row.passed])).toEqual([

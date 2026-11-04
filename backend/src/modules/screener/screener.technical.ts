@@ -60,7 +60,13 @@ export type TechnicalCellData = {
   /** What a click on the column title sorts by (spec §4.3); null sorts last. */
   sort_value: number | null;
   /** The same operands one session earlier; null for rows that already compare two sessions. */
-  previous: { value: number | null; value2: number | null; value3: number | null } | null;
+  previous: {
+    value: number | null;
+    value2: number | null;
+    value3: number | null;
+    /** The same text format as `display`, for the operands one session earlier. */
+    display: string | null;
+  } | null;
   /** Rows that compare T with T−N (`.trend`, previous bar, width, histogram): N. */
   lag: number | null;
   /** The row's own stored values (period, threshold, op…), for the detail dialog. */
@@ -425,14 +431,15 @@ function cellFor(
   if (hasPrevious) {
     if (rowKey === 'bollinger.price_action') {
       const bands = cache.series('bollinger', { period: num(values, 'period'), k: num(values, 'mult') });
-      previous = {
-        value: finiteOrNull(cache.close()[i - 1]),
-        value2: finiteOrNull(bands.lower?.[i - 1]),
-        value3: finiteOrNull(bands.upper?.[i - 1]),
-      };
+      const value = finiteOrNull(cache.close()[i - 1]);
+      const value2 = finiteOrNull(bands.lower?.[i - 1]);
+      const value3 = finiteOrNull(bands.upper?.[i - 1]);
+      previous = { value, value2, value3, display: display(spec, value, value2, value3) };
     } else {
       const before = evaluateRow(stored, cache, i - 1);
-      previous = { value: finiteOrNull(before.lhs), value2: spec.pair ? finiteOrNull(before.rhs) : null, value3: null };
+      const value = finiteOrNull(before.lhs);
+      const value2 = spec.pair ? finiteOrNull(before.rhs) : null;
+      previous = { value, value2, value3: null, display: display(spec, value, value2, null) };
     }
   }
   return {
