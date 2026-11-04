@@ -2037,10 +2037,20 @@
       "requestType": "FlashbackRoomsJoinData",
       "responseType": "FlashbackRoomsJoinResponses"
     },
+    "POST /api/v2/flashback/rooms/{code}/kick": {
+      "operationId": "flashbackRoomsKick",
+      "requestType": "FlashbackRoomsKickData",
+      "responseType": "FlashbackRoomsKickResponses"
+    },
     "POST /api/v2/flashback/rooms/{code}/leave": {
       "operationId": "flashbackRoomsLeave",
       "requestType": "FlashbackRoomsLeaveData",
       "responseType": "FlashbackRoomsLeaveResponses"
+    },
+    "POST /api/v2/flashback/rooms/{code}/ready": {
+      "operationId": "flashbackRoomsReady",
+      "requestType": "FlashbackRoomsReadyData",
+      "responseType": "FlashbackRoomsReadyResponses"
     },
     "POST /api/v2/flashback/rooms/{code}/replay": {
       "operationId": "flashbackRoomsReplay",

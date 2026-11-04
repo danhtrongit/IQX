@@ -770,6 +770,10 @@ describe("Flashback v2.1: công cụ vẽ (§7)", () => {
     const last = within(await screen.findByTestId("flashback-result"))
     await user.click(last.getByRole("button", { name: "Chơi lại" }))
     expect((await screen.findByTestId("flashback-room-id")).textContent).toBe(ROOM_CODE)
+    backend.setReady(MINH.user_id)
+    await waitFor(() => expect(screen.getByRole("button", { name: "Bắt đầu" }).hasAttribute("disabled")).toBe(false), {
+      timeout: 4_000,
+    })
     await user.click(screen.getByRole("button", { name: "Bắt đầu" }))
     await findGame()
     expect(shapes()).toHaveLength(0)

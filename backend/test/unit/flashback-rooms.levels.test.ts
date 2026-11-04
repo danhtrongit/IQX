@@ -516,6 +516,7 @@ describe('v2.1 §4 bảng xếp hạng và vương miện', () => {
     for (const id of ['p1', 'p2', 'p4']) {
       h.advance(10);
       await h.service.joinRoom(id, room.id, null);
+      await h.service.setReady(id, room.id, true);
     }
     const lobby = await h.service.listRooms('all');
     expect(lobby.rooms[0]!.owner).toMatchObject({ name: 'user-p3', crown: 3, level: 3 });

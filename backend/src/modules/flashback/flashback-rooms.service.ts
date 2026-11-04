@@ -31,6 +31,9 @@ import {
 } from './flashback.constants.js';
 import {
   FB_INITIAL_CASH_VND,
+  FB_KICKED_NOTICE,
+  FB_KICKED_REASON,
+  FB_KICK_BLOCK_MS,
   FB_ROOM_ENDED_TTL_MS,
   FB_ROOM_WAITING_TTL_MS,
   formatXu,
@@ -41,8 +44,10 @@ import {
   levelInfo,
   levelOfPoints,
   matchPoints,
+  membersNotReady,
   navAtStep,
   navOf,
+  playersNotReadyMessage,
   pnlFraction,
   priceAtStep,
   publicChart,
@@ -158,6 +163,8 @@ export interface FbRoomMemberView extends FbPlayerRef {
   readonly is_owner: boolean;
   readonly is_me: boolean;
   readonly joined_at: string;
+  /** Đã bấm "Sẵn sàng" ở phòng chờ. Chủ phòng luôn là true (được tính là sẵn sàng). */
+  readonly ready: boolean;
 }
 
 export interface FbRoomView {
@@ -482,12 +489,17 @@ export class FlashbackRoomsService {
   }
 
   /** Phòng hiện tại của tôi (để vào lại phòng chờ hoặc chơi tiếp ván dở) và thông báo một lần. */
-  async myRoom(userId: string): Promise<{ room: FbRoomView | null; notice: string | null }> {
+  async myRoom(
+    userId: string,
+  ): Promise<{ room: FbRoomView | null; notice: string | null; kicked: boolean }> {
     const roomId = await this.repository.activeRoomIdOf(this.database, userId);
     const room = roomId ? await this.repository.roomById(this.database, roomId) : null;
-    const notice = await this.database.transaction((tx) => this.repository.takeNotice(tx, userId));
-    if (!room || room.status === 'closed') return { room: null, notice };
-    return { room: await this.roomView(this.database, room, userId), notice };
+    const taken = await this.database.transaction((tx) => this.repository.takeNotice(tx, userId));
+    const notice = taken?.notice ?? null;
+    // `kicked`: lần hỏi này lấy được thông báo "bị chủ phòng đuổi" (một lần, như `notice`).
+    const kicked = taken?.reason === FB_KICKED_REASON;
+    if (!room || room.status === 'closed') return { room: null, notice, kicked };
+    return { room: await this.roomView(this.database, room, userId), notice, kicked };
   }
 
   async getRoom(userId: string, code: string): Promise<FbRoomView> {
@@ -580,6 +592,19 @@ export class FlashbackRoomsService {
       const members = await this.repository.activeMembers(tx, room.id);
       if (members.some((member) => member.userId === userId))
         return this.roomView(tx, room, userId, members);
+      // Bị chủ phòng đuổi thì không vào lại đúng phòng này trong 10 phút (kể cả "Chơi phòng bất kỳ").
+      if (
+        await this.repository.wasKickedSince(
+          tx,
+          room.id,
+          userId,
+          new Date(now.getTime() - FB_KICK_BLOCK_MS),
+        )
+      )
+        throw conflict(
+          'FB_KICKED',
+          'Bạn đã bị chủ phòng mời ra khỏi phòng này, hãy thử lại sau 10 phút',
+        );
       const otherRoom = await this.repository.activeRoomIdOf(tx, userId);
 
       if (room.status === 'playing' && room.currentMatchId && !randomOnly) {
@@ -638,15 +663,55 @@ export class FlashbackRoomsService {
       const members = await this.repository.activeMembers(tx, room.id);
       if (!members.some((member) => member.userId === userId))
         throw forbidden('NOT_IN_ROOM', 'Bạn không ở trong phòng này');
-      await this.repository.removeMember(tx, room.id, userId, 'leave', null, now);
-      await this.afterMemberLeft(
-        tx,
-        room,
-        members.filter((member) => member.userId !== userId),
-        now,
-      );
+      await this.dropMember(tx, room, members, userId, 'leave', null, now);
     });
     return { left: true };
+  }
+
+  /**
+   * Sẵn sàng / Huỷ sẵn sàng (chỉ phòng chờ). Chủ phòng luôn được tính là sẵn sàng nên bấm không đổi
+   * gì (trả lại phòng). Trả phòng mới nhất để máy người bấm cập nhật ngay.
+   */
+  async setReady(userId: string, code: string, ready: boolean): Promise<FbRoomView> {
+    this.assertCode(code);
+    const now = this.clock.now();
+    return this.database.transaction(async (tx) => {
+      const room = await this.repository.roomByCode(tx, code, true);
+      if (!room) throw roomNotFound(code);
+      const members = await this.repository.activeMembers(tx, room.id);
+      if (!members.some((member) => member.userId === userId))
+        throw forbidden('NOT_IN_ROOM', 'Bạn không ở trong phòng này');
+      if (room.status !== 'waiting') throw conflict('ROOM_PLAYING', 'Phòng đang chơi');
+      if (room.ownerId !== userId) await this.repository.setMemberReady(tx, room.id, userId, ready, now);
+      return this.roomView(tx, room, userId);
+    });
+  }
+
+  /**
+   * Chủ phòng đuổi một thành viên khỏi phòng chờ. Đi đúng đường rời phòng (`dropMember`): xu chỉ bị
+   * trừ lúc bắt đầu ván nên ở phòng chờ không có gì để hoàn. Người bị đuổi nhận thông báo một lần
+   * (`rooms/me`) và không vào lại phòng này trong 10 phút.
+   */
+  async kickMember(ownerId: string, code: string, targetUserId: string): Promise<FbRoomView> {
+    this.assertCode(code);
+    const now = this.clock.now();
+    return this.database.transaction(async (tx) => {
+      const room = await this.repository.roomByCode(tx, code, true);
+      if (!room) throw roomNotFound(code);
+      const members = await this.repository.activeMembers(tx, room.id);
+      if (!members.some((member) => member.userId === ownerId))
+        throw forbidden('NOT_IN_ROOM', 'Bạn không ở trong phòng này');
+      if (room.ownerId !== ownerId)
+        throw forbidden('NOT_ROOM_OWNER', 'Chỉ chủ phòng được mời người ra khỏi phòng');
+      if (targetUserId === ownerId)
+        throw conflict('FB_KICK_SELF', 'Bạn không thể tự mời mình ra khỏi phòng');
+      if (room.status !== 'waiting')
+        throw conflict('ROOM_PLAYING', 'Đang chơi, chưa mời người ra khỏi phòng được');
+      if (!members.some((member) => member.userId === targetUserId))
+        throw notFound('FB_MEMBER_NOT_FOUND', 'Người chơi này không còn ở trong phòng');
+      await this.dropMember(tx, room, members, targetUserId, FB_KICKED_REASON, FB_KICKED_NOTICE, now);
+      return this.roomView(tx, room, ownerId);
+    });
   }
 
   /**
@@ -674,6 +739,10 @@ export class FlashbackRoomsService {
       if (room.viewBars !== before.viewBars || room.playBars !== before.playBars)
         throw conflict('ROOM_CHANGED', 'Phòng vừa thay đổi, hãy thử lại');
       const members = await this.repository.activeMembers(tx, room.id);
+      // Mọi người (trừ chủ phòng, được tính là sẵn sàng) phải bấm "Sẵn sàng" trước khi bắt đầu.
+      const waiting = membersNotReady(members, room.ownerId);
+      if (waiting.length > 0)
+        throw conflict('FB_PLAYERS_NOT_READY', playersNotReadyMessage(waiting.length));
       const replay = room.matchCount > 0;
       const shortMessage = replay
         ? `Không đủ ${formatXu(room.stakeXu)} xu để chơi lại`
@@ -756,6 +825,8 @@ export class FlashbackRoomsService {
         currentMatchId: match.id,
         matchCount: room.matchCount + 1,
       });
+      // Sẵn sàng chỉ có nghĩa trong một lần chờ: ván mới bắt đầu thì xoá hết.
+      await this.repository.resetReady(tx, room.id);
       return { match, room: updated ?? room, removed };
     });
 
@@ -794,6 +865,8 @@ export class FlashbackRoomsService {
               status: 'waiting',
               waitingSince: now,
             })) ?? room;
+          // Về phòng chờ sau ván: mọi người phải bấm "Sẵn sàng" lại.
+          await this.repository.resetReady(tx, room.id);
         }
         if (current.stakeXu > 0) {
           const balance = await this.repository.balance(tx, userId);
@@ -1532,6 +1605,25 @@ export class FlashbackRoomsService {
     return (await this.repository.roomById(db, roomId))?.code ?? null;
   }
 
+  /** Đưa một thành viên ra khỏi phòng (rời hoặc bị đuổi), rồi chuyển chủ phòng hoặc đóng phòng nếu cần. */
+  private async dropMember(
+    tx: SqlClient,
+    room: FbRoomRow,
+    members: readonly FbMemberRow[],
+    userId: string,
+    reason: string,
+    notice: string | null,
+    now: Date,
+  ): Promise<void> {
+    await this.repository.removeMember(tx, room.id, userId, reason, notice, now);
+    await this.afterMemberLeft(
+      tx,
+      room,
+      members.filter((member) => member.userId !== userId),
+      now,
+    );
+  }
+
   private async afterMemberLeft(
     tx: SqlClient,
     room: FbRoomRow,
@@ -1853,6 +1945,7 @@ export class FlashbackRoomsService {
         is_owner: member.userId === fresh.ownerId,
         is_me: member.userId === userId,
         joined_at: iso(member.joinedAt),
+        ready: member.userId === fresh.ownerId || member.ready,
       })),
       match,
       created_at: iso(fresh.createdAt),

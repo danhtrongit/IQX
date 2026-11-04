@@ -2441,7 +2441,33 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 191,
+      "line": 190,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/rooms/{code}/ready",
+      "method": "POST",
+      "route": "/api/v2/flashback/rooms/{code}/ready",
+      "matchedOperation": "POST /api/v2/flashback/rooms/{code}/ready",
+      "matchedOperations": [
+        "POST /api/v2/flashback/rooms/{code}/ready"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 195,
+      "callee": "requestOperation",
+      "raw": "POST /api/v2/flashback/rooms/{code}/kick",
+      "method": "POST",
+      "route": "/api/v2/flashback/rooms/{code}/kick",
+      "matchedOperation": "POST /api/v2/flashback/rooms/{code}/kick",
+      "matchedOperations": [
+        "POST /api/v2/flashback/rooms/{code}/kick"
+      ],
+      "classification": "api-call"
+    },
+    {
+      "file": "src/pages/demo-trading/flashback/flashback-api.ts",
+      "line": 201,
       "callee": "requestOperation",
       "raw": "GET /api/v2/flashback/matches/{id}",
       "method": "GET",
@@ -2454,7 +2480,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 195,
+      "line": 205,
       "callee": "requestOperation",
       "raw": "GET /api/v2/flashback/matches/{id}/state",
       "method": "GET",
@@ -2467,7 +2493,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 199,
+      "line": 209,
       "callee": "requestOperation",
       "raw": "GET /api/v2/flashback/matches/{id}/result",
       "method": "GET",
@@ -2480,7 +2506,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 203,
+      "line": 213,
       "callee": "requestOperation",
       "raw": "POST /api/v2/flashback/matches/{id}/next",
       "method": "POST",
@@ -2493,7 +2519,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 207,
+      "line": 217,
       "callee": "requestOperation",
       "raw": "POST /api/v2/flashback/matches/{id}/orders",
       "method": "POST",
@@ -2506,7 +2532,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 211,
+      "line": 221,
       "callee": "requestOperation",
       "raw": "POST /api/v2/flashback/matches/{id}/finish",
       "method": "POST",
@@ -2519,7 +2545,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 216,
+      "line": 226,
       "callee": "requestOperation",
       "raw": "POST /api/v2/flashback/matches/{id}/reactions",
       "method": "POST",
@@ -2532,7 +2558,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 222,
+      "line": 232,
       "callee": "requestOperation",
       "raw": "GET /api/v2/flashback/me/level",
       "method": "GET",
@@ -2545,7 +2571,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 227,
+      "line": 237,
       "callee": "requestOperation",
       "raw": "GET /api/v2/flashback/leaderboard",
       "method": "GET",
@@ -2558,7 +2584,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 232,
+      "line": 242,
       "callee": "requestOperation",
       "raw": "GET /api/v2/flashback/me/history",
       "method": "GET",
@@ -2571,7 +2597,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 241,
+      "line": 251,
       "callee": "requestOperation",
       "raw": "GET /api/v2/flashback/me/history/summary",
       "method": "GET",
@@ -2584,7 +2610,7 @@
     },
     {
       "file": "src/pages/demo-trading/flashback/flashback-api.ts",
-      "line": 246,
+      "line": 256,
       "callee": "requestOperation",
       "raw": "GET /api/v2/flashback/indicators",
       "method": "GET",

@@ -31,6 +31,7 @@ import {
   type FbRoomListRow,
   type FbRoomPatch,
   type FbRoomRow,
+  type FbTakenNotice,
   type NewFbEntry,
   type NewFbLot,
   type NewFbMatch,
@@ -52,6 +53,7 @@ interface MemberRecord {
   leftAt: Date | null;
   leftReason: string | null;
   notice: string | null;
+  readyAt: Date | null;
 }
 
 export interface MemoryRoomsState {
@@ -230,6 +232,7 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
         name: this.user(member.userId).name,
         avatarUrl: null,
         totalPoints: this.totalPointsOf(member.userId),
+        ready: member.readyAt !== null,
       }));
   }
 
@@ -247,6 +250,7 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
       leftAt: null,
       leftReason: null,
       notice: null,
+      readyAt: null,
     });
     return true;
   }
@@ -277,13 +281,50 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
       }
   }
 
-  async takeNotice(_tx: SqlClient, userId: string): Promise<string | null> {
+  async setMemberReady(
+    _tx: SqlClient,
+    roomId: string,
+    userId: string,
+    ready: boolean,
+    at: Date,
+  ): Promise<boolean> {
+    const member = this.state.members.find(
+      (m) => m.roomId === roomId && m.userId === userId && !m.leftAt,
+    );
+    if (!member) return false;
+    member.readyAt = ready ? at : null;
+    return true;
+  }
+
+  async resetReady(_tx: SqlClient, roomId: string): Promise<void> {
+    for (const member of this.state.members)
+      if (member.roomId === roomId && !member.leftAt) member.readyAt = null;
+  }
+
+  async wasKickedSince(
+    _db: SqlClient,
+    roomId: string,
+    userId: string,
+    since: Date,
+  ): Promise<boolean> {
+    return this.state.members.some(
+      (m) =>
+        m.roomId === roomId &&
+        m.userId === userId &&
+        m.leftReason === 'kicked' &&
+        m.leftAt !== null &&
+        m.leftAt.getTime() > since.getTime(),
+    );
+  }
+
+  async takeNotice(_tx: SqlClient, userId: string): Promise<FbTakenNotice | null> {
     const withNotice = this.state.members
       .filter((m) => m.userId === userId && m.notice)
       .sort((left, right) => (right.leftAt?.getTime() ?? 0) - (left.leftAt?.getTime() ?? 0));
-    const latest = withNotice[0]?.notice ?? null;
+    const latest = withNotice[0];
+    const taken = latest ? { notice: latest.notice!, reason: latest.leftReason } : null;
     for (const member of withNotice) member.notice = null;
-    return latest;
+    return taken;
   }
 
   async balance(_db: SqlClient, userId: string): Promise<number> {

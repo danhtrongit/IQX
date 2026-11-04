@@ -596,7 +596,7 @@ describe("Flashback: phòng chờ", () => {
   })
 
   it("bắt đầu phòng có cược: báo đã trừ xu; người thiếu xu bị đưa ra và được báo", async () => {
-    setup({ room: { status: "waiting", members: [ME, MINH, HOA] } })
+    setup({ room: { status: "waiting", members: [ME, MINH, HOA], ready: [MINH.user_id, HOA.user_id] } })
     backend.state.removedOnStart = [{ message: "Không đủ xu", name: "Hòa", user_id: HOA.user_id }]
     const user = userEvent.setup()
     renderFlashback()
@@ -643,5 +643,196 @@ describe("Flashback: phòng chờ", () => {
     })
     await findLobby()
     expect(mocks.toast.info).toHaveBeenCalledWith("Bạn đã bị đưa ra khỏi phòng vì không đủ xu")
+  })
+})
+
+describe("Flashback: Sẵn sàng và Đuổi khỏi phòng", () => {
+  const startButton = () => screen.getByRole("button", { name: "Bắt đầu" })
+  const slotOf = (name: string) =>
+    screen.getAllByTestId("flashback-slot").find((slot) => slot.textContent?.includes(name)) as HTMLElement
+
+  it("người không phải chủ phòng có nút Sẵn sàng / Huỷ sẵn sàng; bấm gọi server và thẻ của mình hiện huy hiệu Sẵn sàng", async () => {
+    setup({ room: { status: "waiting", owner: MINH, members: [MINH, ME] } })
+    const user = userEvent.setup()
+    renderFlashback()
+    await screen.findByTestId("flashback-room-id")
+    expect(screen.queryByTestId("flashback-ready-badge")).toBeNull()
+    expect(screen.queryByRole("button", { name: "Huỷ sẵn sàng" })).toBeNull()
+
+    await user.click(screen.getByRole("button", { name: "Sẵn sàng" }))
+    expect(await screen.findByRole("button", { name: "Huỷ sẵn sàng" })).toBeTruthy()
+    expect(backend.callsTo("POST", `/flashback/rooms/${ROOM_CODE}/ready`)[0]?.body).toEqual({ ready: true })
+    expect(within(slotOf("Linh")).getByTestId("flashback-ready-badge").textContent).toBe("Sẵn sàng")
+    // Chủ phòng có huy hiệu Chủ phòng, không có huy hiệu Sẵn sàng.
+    expect(within(slotOf("Minh")).queryByTestId("flashback-ready-badge")).toBeNull()
+
+    await user.click(screen.getByRole("button", { name: "Huỷ sẵn sàng" }))
+    expect(await screen.findByRole("button", { name: "Sẵn sàng" })).toBeTruthy()
+    expect(backend.callsTo("POST", `/flashback/rooms/${ROOM_CODE}/ready`)[1]?.body).toEqual({ ready: false })
+    expect(screen.queryByTestId("flashback-ready-badge")).toBeNull()
+  })
+
+  it("chủ phòng không có nút Sẵn sàng; thẻ người khác hiện huy hiệu khi họ sẵn sàng (làm mới mỗi 2 giây)", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    setup({ room: { status: "waiting", members: [ME, MINH, HOA] } })
+    renderFlashback()
+    await screen.findByTestId("flashback-room-id")
+    expect(screen.queryByRole("button", { name: "Sẵn sàng" })).toBeNull()
+    expect(screen.queryByTestId("flashback-ready-badge")).toBeNull()
+
+    backend.setReady(MINH.user_id)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_100)
+    })
+    await waitFor(() => expect(within(slotOf("Minh")).getByTestId("flashback-ready-badge")).toBeTruthy())
+    expect(within(slotOf("Hòa")).queryByTestId("flashback-ready-badge")).toBeNull()
+  })
+
+  it("Bắt đầu chỉ bật khi mọi người trừ chủ phòng đã sẵn sàng; hiện số người còn phải chờ", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    setup({ room: { status: "waiting", members: [ME, MINH, HOA] } })
+    renderFlashback()
+    await screen.findByTestId("flashback-room-id")
+    expect(startButton().hasAttribute("disabled")).toBe(true)
+    expect(screen.getByTestId("flashback-ready-wait").textContent).toBe("Chờ 2 người sẵn sàng")
+
+    backend.setReady(MINH.user_id)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_100)
+    })
+    await waitFor(() => expect(screen.getByTestId("flashback-ready-wait").textContent).toBe("Chờ 1 người sẵn sàng"))
+    expect(startButton().hasAttribute("disabled")).toBe(true)
+
+    backend.setReady(HOA.user_id)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_100)
+    })
+    await waitFor(() => expect(startButton().hasAttribute("disabled")).toBe(false))
+    expect(screen.queryByTestId("flashback-ready-wait")).toBeNull()
+
+    // Một người huỷ sẵn sàng thì nút tắt lại.
+    backend.setReady(HOA.user_id, false)
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_100)
+    })
+    await waitFor(() => expect(startButton().hasAttribute("disabled")).toBe(true))
+    expect(backend.callsTo("POST", `/flashback/rooms/${ROOM_CODE}/start`)).toHaveLength(0)
+  })
+
+  it("chủ phòng một mình bắt đầu ngay, không cần ai sẵn sàng", async () => {
+    setup({ room: { status: "waiting", members: [ME] } })
+    renderFlashback()
+    await screen.findByTestId("flashback-room-id")
+    expect(startButton().hasAttribute("disabled")).toBe(false)
+    expect(screen.queryByTestId("flashback-ready-wait")).toBeNull()
+  })
+
+  it("server từ chối bắt đầu (FB_PLAYERS_NOT_READY) thì hiện đúng câu của server", async () => {
+    setup({ room: { status: "waiting", members: [ME, MINH], ready: [MINH.user_id] } })
+    backend.fail("POST /flashback/rooms/:code/start", {
+      status: 409,
+      code: "FB_PLAYERS_NOT_READY",
+      message: "Còn 1 người chơi chưa sẵn sàng",
+    })
+    const user = userEvent.setup()
+    renderFlashback()
+    await user.click(await screen.findByRole("button", { name: "Bắt đầu" }))
+    await waitFor(() => expect(mocks.toast.error).toHaveBeenCalledWith("Còn 1 người chơi chưa sẵn sàng"))
+    expect(screen.getByTestId("flashback-room-id")).toBeTruthy()
+  })
+
+  it("chỉ chủ phòng thấy nút đuổi, trên thẻ người khác, không trên thẻ chính mình", async () => {
+    setup({ room: { status: "waiting", members: [ME, MINH, HOA] } })
+    const { unmount } = renderFlashback()
+    await screen.findByTestId("flashback-room-id")
+    expect(screen.getByRole("button", { name: "Đuổi Minh khỏi phòng" })).toBeTruthy()
+    expect(screen.getByRole("button", { name: "Đuổi Hòa khỏi phòng" })).toBeTruthy()
+    expect(screen.queryByRole("button", { name: "Đuổi Linh khỏi phòng" })).toBeNull()
+    unmount()
+
+    setup({ room: { status: "waiting", owner: MINH, members: [MINH, ME, HOA] } })
+    renderFlashback()
+    await screen.findByTestId("flashback-room-id")
+    expect(screen.queryByRole("button", { name: /Đuổi .* khỏi phòng/ })).toBeNull()
+  })
+
+  it("Đuổi khỏi phòng có hộp xác nhận: Hủy không gọi server; xác nhận gọi kick, thẻ biến mất và có toast", async () => {
+    setup({ room: { status: "waiting", members: [ME, MINH, HOA], ready: [MINH.user_id] } })
+    const user = userEvent.setup()
+    renderFlashback()
+    await screen.findByTestId("flashback-room-id")
+
+    await user.click(screen.getByRole("button", { name: "Đuổi Minh khỏi phòng" }))
+    const dialog = within(await screen.findByTestId("flashback-kick"))
+    expect(dialog.getByText(/Mời Minh ra khỏi phòng/)).toBeTruthy()
+    await user.click(dialog.getByRole("button", { name: "Hủy" }))
+    await waitFor(() => expect(screen.queryByTestId("flashback-kick")).toBeNull())
+    expect(backend.callsTo("POST", `/flashback/rooms/${ROOM_CODE}/kick`)).toHaveLength(0)
+    expect(screen.getAllByTestId("flashback-slot")).toHaveLength(3)
+
+    await user.click(screen.getByRole("button", { name: "Đuổi Minh khỏi phòng" }))
+    await user.click(within(await screen.findByTestId("flashback-kick")).getByRole("button", { name: "Đuổi khỏi phòng" }))
+    await waitFor(() => expect(screen.getAllByTestId("flashback-slot")).toHaveLength(2))
+    expect(backend.callsTo("POST", `/flashback/rooms/${ROOM_CODE}/kick`)[0]?.body).toEqual({ user_id: MINH.user_id })
+    expect(mocks.toast.success).toHaveBeenCalledWith("Đã mời Minh ra khỏi phòng")
+    // Không báo thêm "Minh đã rời phòng" cho chính người vừa đuổi.
+    expect(mocks.toast.info).not.toHaveBeenCalledWith("Minh đã rời phòng")
+  })
+
+  it("lỗi từ server khi đuổi hiện thành toast lỗi và phòng giữ nguyên", async () => {
+    setup({ room: { status: "waiting", members: [ME, MINH] } })
+    backend.fail("POST /flashback/rooms/:code/kick", {
+      status: 404,
+      code: "FB_MEMBER_NOT_FOUND",
+      message: "Người chơi này không còn ở trong phòng",
+    })
+    const user = userEvent.setup()
+    renderFlashback()
+    await user.click(await screen.findByRole("button", { name: "Đuổi Minh khỏi phòng" }))
+    await user.click(within(await screen.findByTestId("flashback-kick")).getByRole("button", { name: "Đuổi khỏi phòng" }))
+    await waitFor(() => expect(mocks.toast.error).toHaveBeenCalledWith("Người chơi này không còn ở trong phòng"))
+    expect(screen.getByTestId("flashback-room-id")).toBeTruthy()
+  })
+
+  it("bị chủ phòng đuổi: người bị đuổi về sảnh kèm toast cảnh báo, không phải toast thường", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    setup({ room: { status: "waiting", owner: MINH, members: [MINH, ME] }, listing: [OPEN_ROOM] })
+    renderFlashback()
+    await screen.findByTestId("flashback-room-id")
+
+    backend.kickedByOwner()
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2_100)
+    })
+    await findLobby()
+    expect(mocks.toast.warning).toHaveBeenCalledWith("Bạn đã bị chủ phòng mời ra khỏi phòng.")
+    expect(mocks.toast.info).not.toHaveBeenCalledWith("Bạn đã bị chủ phòng mời ra khỏi phòng.")
+    expect(screen.queryByTestId("flashback-room-id")).toBeNull()
+  })
+
+  it("vào lại đúng phòng vừa bị đuổi: server báo FB_KICKED, hiện toast lỗi và ở lại sảnh", async () => {
+    setup({ listing: [OPEN_ROOM] })
+    backend.fail("POST /flashback/rooms/:code/join", {
+      status: 409,
+      code: "FB_KICKED",
+      message: "Bạn đã bị chủ phòng mời ra khỏi phòng này, hãy thử lại sau 10 phút",
+    })
+    const user = userEvent.setup()
+    renderFlashback()
+    await findLobby()
+    await user.click(await screen.findByRole("button", { name: "Vào phòng 111111" }))
+    await waitFor(() =>
+      expect(mocks.toast.error).toHaveBeenCalledWith("Bạn đã bị chủ phòng mời ra khỏi phòng này, hãy thử lại sau 10 phút"),
+    )
+    expect(screen.queryByTestId("flashback-room-id")).toBeNull()
+  })
+
+  it("mở màn hình sau khi bị đuổi: thông báo kicked hiện một lần như toast cảnh báo", async () => {
+    setup({ listing: [OPEN_ROOM] })
+    backend.state.notice = "Bạn đã bị chủ phòng mời ra khỏi phòng."
+    backend.state.kicked = true
+    renderFlashback()
+    await findLobby()
+    expect(mocks.toast.warning).toHaveBeenCalledWith("Bạn đã bị chủ phòng mời ra khỏi phòng.")
   })
 })

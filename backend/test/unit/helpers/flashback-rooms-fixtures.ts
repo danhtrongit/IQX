@@ -79,12 +79,21 @@ export async function rejection(promise: Promise<unknown>) {
 
 export const code = (error: { response: { code: string } }) => error.response.code;
 
-/** Tạo phòng với người đầu là chủ phòng, những người còn lại lần lượt vào phòng. */
+/** Mọi người trừ chủ phòng bấm "Sẵn sàng" (để chủ phòng bắt đầu được ván). */
+export async function readyAll(h: Harness, code: string, users: readonly string[]) {
+  for (const id of users.slice(1)) await h.service.setReady(id, code, true);
+}
+
+/**
+ * Tạo phòng với người đầu là chủ phòng, những người còn lại lần lượt vào phòng và (mặc định) bấm
+ * "Sẵn sàng" ngay, để test chỉ về xu hay ván chơi gọi `startRoom` được luôn.
+ */
 export async function roomOf(
   h: Harness,
   users: readonly string[],
   settings: Record<string, unknown> = { stake_xu: 100, play_bars: 30, view_bars: 60 },
   balance = 1000,
+  ready = true,
 ) {
   for (const id of users) h.repository.addUser(id, `user-${id}`, balance);
   const room = await h.service.createRoom(users[0]!, { max_players: 4, ...settings });
@@ -92,6 +101,7 @@ export async function roomOf(
     h.advance(10);
     await h.service.joinRoom(id, room.id, null);
   }
+  if (ready) await readyAll(h, room.id, users);
   return room;
 }
 
