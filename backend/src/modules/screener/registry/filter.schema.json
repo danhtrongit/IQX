@@ -3,7 +3,7 @@
   "additionalProperties": false,
   "properties": {
     "schema_version": {
-      "const": "3.0"
+      "const": "4.0"
     },
     "name": {
       "type": "string",
@@ -15,6 +15,136 @@
     },
     "data_mode": {
       "const": "latest_disclosed"
+    },
+    "market": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Thị trường (spec §2, §6.1). Empty array / null = not filtered. market_cap and avg_value.min in tỷ đồng, close_price in nghìn đồng (display units). `needs_review`/`legacy_sector` mark a 3.0 filter whose ICB sector must be chosen again.",
+      "properties": {
+        "exchanges": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "enum": [
+              "HOSE",
+              "HNX",
+              "UPCOM",
+              "HSX"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "baskets": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "enum": [
+              "VN30",
+              "VN100",
+              "VNMIDCAP",
+              "VNSMALLCAP",
+              "HNX30"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "statement_groups": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "enum": [
+              "thuong",
+              "nh",
+              "ck",
+              "bh"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "market_cap": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ]
+        },
+        "avg_value": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "sessions": {
+              "type": "integer",
+              "minimum": 5,
+              "maximum": 100
+            },
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "sessions",
+            "min"
+          ]
+        },
+        "close_price": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "min": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "max": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "min",
+            "max"
+          ]
+        },
+        "needs_review": {
+          "const": "sector"
+        },
+        "legacy_sector": {
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "market_cap",
+        "avg_value",
+        "close_price"
+      ]
     },
     "rules": {
       "type": "array",
@@ -107,6 +237,105 @@
         ]
       }
     },
+    "technical": {
+      "type": "array",
+      "maxItems": 16,
+      "description": "Kỹ thuật: the Bot's own stored condition rows (spec §6.1). Each indicator at most once; row ids and counts are checked against the Bot registry (iqx-rules) by the server.",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "indicator": {
+                "const": "volume"
+              },
+              "sessions": {
+                "type": "number",
+                "minimum": 5,
+                "maximum": 100
+              },
+              "factor": {
+                "type": "number",
+                "minimum": 0.5,
+                "maximum": 3
+              },
+              "ops": {
+                "type": "array",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": {
+                  "enum": [
+                    ">",
+                    "<"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "indicator",
+              "sessions",
+              "factor",
+              "ops"
+            ]
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "indicator": {
+                "enum": [
+                  "ma",
+                  "ema",
+                  "ma_cross",
+                  "rsi",
+                  "macd",
+                  "stochastic",
+                  "cci",
+                  "mfi",
+                  "roc",
+                  "williams_r",
+                  "cmf",
+                  "bollinger",
+                  "donchian",
+                  "dmi",
+                  "obv"
+                ]
+              },
+              "rules": {
+                "type": "array",
+                "maxItems": 8,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "enabled": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "enabled"
+                  ],
+                  "additionalProperties": {
+                    "type": [
+                      "number",
+                      "string"
+                    ]
+                  }
+                }
+              }
+            },
+            "required": [
+              "indicator",
+              "rules"
+            ]
+          }
+        ]
+      }
+    },
     "columns": {
       "type": "array",
       "maxItems": 12,
@@ -174,31 +403,16 @@
           "period"
         ]
       }
-    },
-    "scope": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "market": {
-          "type": "string"
-        },
-        "sector": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "market",
-        "sector"
-      ]
     }
   },
   "required": [
     "schema_version",
     "name",
     "logic",
+    "market",
     "rules",
-    "scope"
+    "technical"
   ],
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "description": "Bộ lọc definition 3.0: every rule carries its own `period` (default and allowed periods per metric come from fundamental-registry.json). Schema 2.0 (one filter-wide scope.period) is kept in filter.schema.v2.json and mapped on read, never rewritten."
+  "description": "Bộ lọc definition 4.0: Thị trường (`market`), fundamental `rules` (a `period` per rule), Kỹ thuật (`technical`) and display-only `columns`. No `scope.market` / `scope.sector`. 3.0 (filter.schema.v3.json) and 2.0 (filter.schema.v2.json) are mapped on read, never rewritten."
 }

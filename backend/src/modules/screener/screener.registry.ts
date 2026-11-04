@@ -60,10 +60,21 @@ export const SCREENER_API_UNITS = ['ratio', 'lần', 'ngày', 'năm'] as const;
 export type ScreenerApiUnit = (typeof SCREENER_API_UNITS)[number];
 
 export const SCREENER_CALCULATION_VERSION = 'iqx-fund-2.0';
+/** Market (Thị trường) + technical (Kỹ thuật) part of a run; `calculation_version` = fundamental + `+` + this. */
+export const SCREENER_TECH_CALCULATION_VERSION = 'tech-1.0';
+
+/** `iqx-fund-2.0+tech-1.0`: the engine versions behind one run (spec §7). */
+export const screenerCalculationVersion = (): string =>
+  `${SCREENER_CALCULATION_VERSION}+${SCREENER_TECH_CALCULATION_VERSION}`;
 /** Registry contract with per-metric `default_period` / `allowed_periods` / `readiness`. */
 export const SCREENER_REGISTRY_VERSION = 'iqx-fund-registry-2.1';
-/** Filter definition schema: every rule carries its own `period` (2.0 had one filter-wide period). */
-export const SCREENER_DEFINITION_SCHEMA_VERSION = '3.0';
+/**
+ * Filter definition schema 4.0: Thị trường (`market`) and Kỹ thuật (`technical`) beside the fundamental
+ * `rules`; 3.0 (a `period` per rule, `scope.market` + ICB `scope.sector`) and 2.0 (one filter-wide
+ * period) are mapped on read, never rewritten.
+ */
+export const SCREENER_DEFINITION_SCHEMA_VERSION = '4.0';
+export const SCREENER_V3_DEFINITION_SCHEMA_VERSION = '3.0';
 export const SCREENER_LEGACY_DEFINITION_SCHEMA_VERSION = '2.0';
 
 /**

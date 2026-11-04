@@ -3,7 +3,11 @@ import { randomUUID } from 'node:crypto';
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 
 import { DatabaseService, type SqlClient } from '../../platform/database/index.js';
-import { readStoredDefinition } from '../screener/screener.definition.js';
+import {
+  canonicalizeV4,
+  readStoredDefinition,
+  type ScreenerDefinitionV4,
+} from '../screener/screener.definition.js';
 import { vnDate } from '../strategy-config/strategy-config.calendar.js';
 import { findBotUsage, listInUseByBot } from './saved-filters.bot-usage.js';
 import type { FilterDefinition } from './saved-filters.definition.js';
@@ -88,9 +92,14 @@ function toIso(value: Timestamp): string {
   return (value instanceof Date ? value : new Date(value)).toISOString();
 }
 
+/** The submitted 4.0 definition in canonical form: what is hashed and stored. */
+function canonicalDefinition(definition: FilterDefinition): FilterDefinition {
+  return canonicalizeV4(definition as unknown as ScreenerDefinitionV4) as unknown as FilterDefinition;
+}
+
 function toFilterSummary(row: FilterRow): SavedFilterSummary {
-  // A stored 2.0 version (one filter-wide period) is mapped onto every rule on read; the stored
-  // row itself is never rewritten. An unrecognisable document is returned as stored.
+  // A stored 2.0 (one filter-wide period) or 3.0 (ICB scope) version is mapped to 4.0 on read; the
+  // stored row itself is never rewritten. An unrecognisable document is returned as stored.
   const mapped = readStoredDefinition(row.definition);
   return {
     id: row.id,
@@ -102,6 +111,7 @@ function toFilterSummary(row: FilterRow): SavedFilterSummary {
       (row.definition as { schema_version?: unknown } | null)?.schema_version ?? 'unknown',
     ),
     legacy_review: mapped?.legacy ?? null,
+    sector_review: mapped?.sector_review ?? null,
     definition_hash: row.definition_hash,
     created_at: toIso(row.created_at),
     updated_at: toIso(row.updated_at),
@@ -153,8 +163,9 @@ export class SavedFiltersService {
   }
 
   createFilter(userId: string, input: FilterCreateInput): Promise<SavedFilter> {
-    const definitionHash = canonicalHash(input.definition);
-    const requestHash = canonicalHash({ name: input.name, definition: input.definition });
+    const definition = canonicalDefinition(input.definition);
+    const definitionHash = canonicalHash(definition);
+    const requestHash = canonicalHash({ name: input.name, definition });
     const key = input.idempotency_key ?? null;
     return this.database.transaction(async (client) => {
       const replay = await this.findIdempotent(
@@ -188,14 +199,15 @@ export class SavedFiltersService {
       await client.query(
         `INSERT INTO filter_versions (filter_id, version, definition, definition_hash)
          VALUES ($1, 1, $2::jsonb, $3)`,
-        [created.id, JSON.stringify(input.definition), definitionHash],
+        [created.id, JSON.stringify(definition), definitionHash],
       );
       return this.loadFilter(client, userId, created.id);
     });
   }
 
   updateFilter(userId: string, filterId: string, input: FilterUpdateInput): Promise<SavedFilter> {
-    const definitionHash = canonicalHash(input.definition);
+    const definition = canonicalDefinition(input.definition);
+    const definitionHash = canonicalHash(definition);
     return this.database.transaction(async (client) => {
       const [current] = await client.query<{
         name: string;
@@ -213,8 +225,8 @@ export class SavedFiltersService {
       if (!current) throw filterNotFound();
 
       const name = input.name ?? current.name;
-      // A stored 2.0 version compares through its 3.0 mapping, so re-saving it unchanged does not
-      // create a new version (the stored row itself is never rewritten).
+      // A stored 2.0 / 3.0 version compares through its 4.0 mapping, so re-saving it unchanged does
+      // not create a new version (the stored row itself is never rewritten).
       const mappedCurrent = readStoredDefinition(current.definition)?.definition;
       const unchanged =
         current.definition_hash === definitionHash ||
@@ -224,7 +236,7 @@ export class SavedFiltersService {
         await client.query(
           `INSERT INTO filter_versions (filter_id, version, definition, definition_hash)
            VALUES ($1, $2, $3::jsonb, $4)`,
-          [filterId, next, JSON.stringify(input.definition), definitionHash],
+          [filterId, next, JSON.stringify(definition), definitionHash],
         );
         await client.query(
           `UPDATE strategy_filters

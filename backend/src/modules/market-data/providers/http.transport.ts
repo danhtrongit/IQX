@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 export const MARKET_UPSTREAM_ORIGINS = new Set([
   'https://trading.vietcap.com.vn',
   'https://iq.vietcap.com.vn',
+  'https://services.entrade.com.vn',
   'https://dchart-api.vndirect.com.vn',
   'https://api-finfo.vndirect.com.vn',
   'https://kbbuddywts.kbsec.com.vn',

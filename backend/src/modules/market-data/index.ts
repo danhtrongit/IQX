@@ -11,3 +11,5 @@ export { VciMarketProvider, VCI_GROUPS } from './providers/vci.provider.js';
 export { VndMarketProvider } from './providers/vnd.provider.js';
 export { KbsMarketProvider } from './providers/kbs.provider.js';
 export type { JsonObject, ProviderResult } from './providers/provider.types.js';
+export { DnseMarketProvider, dnseDate, parseDnseColumns } from './providers/dnse.provider.js';
+export type { DnseDailyBar, DnseDailyBars } from './providers/dnse.provider.js';

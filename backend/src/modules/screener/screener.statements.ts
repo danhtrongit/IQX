@@ -16,6 +16,7 @@
  * the next day, Asia/Ho_Chi_Minh), so `available_at` never precedes publication.
  */
 import { finite } from '../financials/financials.calculations.js';
+import { DEFAULT_INDUSTRY, detectIndustry } from '../financials/financials.industry.js';
 import {
   calculateMetric,
   insufficientBase,
@@ -107,8 +108,6 @@ export interface VciStatementSections {
   cash_flow: Partial<VciStatementRows>;
 }
 
-/** Bank (isb*), securities (iss*) and insurance (isi*) income-statement template fields. */
-const FINANCIAL_TEMPLATE_FIELD = /^is[bsi]\d+$/;
 const VN_OFFSET_MS = 7 * 3_600_000;
 
 function vnDate(instant: Date): string {
@@ -221,11 +220,9 @@ export function normalizeVciStatements(
     );
   };
   const income = sections.income_statement;
-  const financial = [...(income.quarters ?? []), ...(income.years ?? [])].some((row) =>
-    Object.entries(row).some(
-      ([key, value]) => FINANCIAL_TEMPLATE_FIELD.test(key) && (finite(value) ?? 0) !== 0,
-    ),
-  );
+  // Same function as the "Ngành" scope filter (symbols.statement_template): a company is financial
+  // exactly when its statement template is not the ordinary one (Bộ lọc 4.0 §2.3).
+  const financial = detectIndustry(income) !== DEFAULT_INDUSTRY;
   return { years: build('years'), quarters: build('quarters'), financial };
 }
 

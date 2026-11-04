@@ -34,14 +34,22 @@ const MISSING_ID = '00000000-0000-4000-8000-0000000000ff';
 
 function definition(overrides: Partial<FilterDefinition> = {}): FilterDefinition {
   return {
-    schema_version: '3.0',
+    schema_version: '4.0',
     name: 'ROE cao',
     logic: 'AND',
     data_mode: 'latest_disclosed',
+    market: {
+      exchanges: ['HOSE'],
+      baskets: [],
+      statement_groups: [],
+      market_cap: { min: null, max: null },
+      avg_value: { sessions: 20, min: null },
+      close_price: { min: null, max: null },
+    },
     rules: [
       { id: 'r1', metric_id: 'roe', period: 'ttm', operator: '>', value: 0.15, api_unit: 'ratio' },
     ],
-    scope: { market: 'HOSE', sector: '' },
+    technical: [],
     ...overrides,
   };
 }
@@ -445,8 +453,31 @@ describe('saved filter definition schema mirrors filter.schema.json', () => {
     ['OR logic', { logic: 'OR' }],
     ['empty name', { name: '' }],
     ['long name', { name: 'x'.repeat(121) }],
-    ['a filter-wide period in scope', { scope: { market: 'HOSE', sector: '', period: 'TTM' } }],
-    ['missing sector', { scope: { market: 'HOSE' } }],
+    ['the retired schema version 3.0', { schema_version: '3.0' }],
+    ['the retired scope block', { scope: { market: 'HOSE', sector: '' } }],
+    ['a missing market block', { market: undefined }],
+    ['an unknown exchange', { market: { ...definition().market, exchanges: ['NYSE'] } }],
+    ['an unknown basket', { market: { ...definition().market, baskets: ['VN50'] } }],
+    ['an unknown statement group', { market: { ...definition().market, statement_groups: ['icb'] } }],
+    ['a negative market cap', { market: { ...definition().market, market_cap: { min: -1, max: null } } }],
+    [
+      'a reversed price range',
+      { market: { ...definition().market, close_price: { min: 20, max: 10 } } },
+    ],
+    [
+      'N outside 5-100 sessions',
+      { market: { ...definition().market, avg_value: { sessions: 4, min: null } } },
+    ],
+    ['an unknown indicator', { technical: [{ indicator: 'ichimoku', rules: [] }] }],
+    [
+      'a repeated indicator',
+      {
+        technical: [
+          { indicator: 'rsi', rules: [] },
+          { indicator: 'rsi', rules: [] },
+        ],
+      },
+    ],
     ['a client date', { as_of: '2026-01-02' }],
   ])('rejects %s', (_label, overrides) => {
     expect(filterDefinitionSchema.safeParse({ ...definition(), ...overrides }).success).toBe(false);
@@ -522,7 +553,15 @@ describe('saved list request schema', () => {
 describe('canonical definition hash', () => {
   it('is independent of key order and stable across runs', () => {
     const reordered = {
-      scope: { sector: '', market: 'HOSE' },
+      technical: [],
+      market: {
+        close_price: { max: null, min: null },
+        avg_value: { min: null, sessions: 20 },
+        market_cap: { max: null, min: null },
+        statement_groups: [],
+        baskets: [],
+        exchanges: ['HOSE'],
+      },
       rules: [
         {
           api_unit: 'ratio',
@@ -536,7 +575,7 @@ describe('canonical definition hash', () => {
       logic: 'AND',
       data_mode: 'latest_disclosed',
       name: 'ROE cao',
-      schema_version: '3.0',
+      schema_version: '4.0',
     };
     expect(canonicalJson(reordered)).toBe(canonicalJson(definition()));
     expect(canonicalHash(reordered)).toBe(canonicalHash(definition()));
@@ -597,8 +636,8 @@ describe('SavedFiltersService filters', () => {
     expect(v2.versions.map((item) => item.version)).toEqual([1, 2]);
 
     // Same definition with different key order: no new version, rename only.
-    const { scope, ...rest } = changedDefinition;
-    const reordered: FilterDefinition = { scope, ...rest };
+    const { market, ...rest } = changedDefinition;
+    const reordered: FilterDefinition = { market, ...rest };
     const same = await service.updateFilter(USER_A, created.id, {
       name: 'Đổi tên',
       definition: reordered,
@@ -808,12 +847,14 @@ describe('SavedFiltersService reads stored 2.0 definitions without rewriting the
     const filter = await service.getFilter(USER_A, id);
     expect(filter.stored_schema_version).toBe('2.0');
     expect(filter.definition).toMatchObject({
-      schema_version: '3.0',
+      schema_version: '4.0',
       data_mode: 'latest_disclosed',
       rules: [{ metric_id: 'revenue_yoy', period: 'year' }],
-      scope: { market: 'HOSE', sector: '' },
+      market: { exchanges: ['HOSE'], statement_groups: [] },
+      technical: [],
     });
-    expect(filter.definition.scope).not.toHaveProperty('period');
+    expect(filter.definition).not.toHaveProperty('scope');
+    expect(filter.sector_review).toBeNull();
     expect(filter.legacy_review).toMatchObject({ needs_review: false, legacy_period: 'annual' });
     // The stored version is byte-for-byte what was saved, and so is its hash.
     expect(database.state.versions[0]?.definition).toEqual(stored);
@@ -833,7 +874,7 @@ describe('SavedFiltersService reads stored 2.0 definitions without rewriting the
     });
   });
 
-  it('re-saving the mapped definition unchanged does not create a version; editing does (n+1, 3.0)', async () => {
+  it('re-saving the mapped definition unchanged does not create a version; editing does (n+1, 4.0)', async () => {
     const { database, service } = setup();
     const id = seedLegacy(database, legacy('TTM', 'roe'));
     const mapped = (await service.getFilter(USER_A, id)).definition;
@@ -844,7 +885,7 @@ describe('SavedFiltersService reads stored 2.0 definitions without rewriting the
       definition: { ...mapped, rules: [{ ...mapped.rules[0]!, period: 'year' }] },
     });
     expect(edited.current_version).toBe(2);
-    expect(edited.stored_schema_version).toBe('3.0');
+    expect(edited.stored_schema_version).toBe('4.0');
     expect(edited.legacy_review).toBeNull();
     // Version 1 is still the untouched 2.0 document.
     expect(
@@ -963,5 +1004,144 @@ describe('STRATEGY_V2_ENABLED guard', () => {
     const guards = Reflect.getMetadata(GUARDS_METADATA, SavedFiltersController) as unknown[];
     expect(guards[0]).toBe(SavedFiltersFeatureGuard);
     expect(guards).toHaveLength(3);
+  });
+});
+
+describe('SavedFiltersService reads stored 3.0 definitions and saves 4.0 (Bộ lọc 4.0 §6.2-§6.3)', () => {
+  const v3 = (scope: { market: string; sector: string }) => ({
+    schema_version: '3.0',
+    name: 'Bộ lọc 3.0',
+    logic: 'AND',
+    data_mode: 'latest_disclosed',
+    rules: [
+      { id: 'r1', metric_id: 'roe', period: 'ttm', operator: '>', value: 0.15, api_unit: 'ratio' },
+    ],
+    scope,
+  });
+
+  function seed(database: FakeSavedFiltersDatabase, stored: unknown): string {
+    const id = '00000000-0000-4000-8000-0000000000f3';
+    const when = new Date('2026-01-01T00:00:00Z');
+    database.state.filters.push({
+      id,
+      user_id: USER_A,
+      name: 'Cũ 3.0',
+      current_version: 1,
+      idempotency_key: null,
+      request_hash: null,
+      deleted_at: null,
+      created_at: when,
+      updated_at: when,
+    });
+    database.state.versions.push({
+      filter_id: id,
+      version: 1,
+      definition: stored,
+      definition_hash: canonicalHash(stored),
+      created_at: when,
+    });
+    return id;
+  }
+
+  it('maps scope.market (HSX -> HOSE, all -> none) and leaves technical empty', async () => {
+    const { database, service } = setup();
+    const hsx = await service.getFilter(USER_A, seed(database, v3({ market: 'HSX', sector: '' })));
+    expect(hsx.stored_schema_version).toBe('3.0');
+    expect(hsx.definition.market.exchanges).toEqual(['HOSE']);
+    expect(hsx.definition.market.statement_groups).toEqual([]);
+    expect(hsx.definition.technical).toEqual([]);
+    expect(hsx.sector_review).toBeNull();
+    expect(hsx.definition.market.needs_review).toBeUndefined();
+  });
+
+  it('keeps the ICB sector as evidence and flags it for review; the stored row is untouched', async () => {
+    const { database, service } = setup();
+    const stored = v3({ market: 'all', sector: 'Ngân hàng' });
+    const copy = structuredClone(stored);
+    const id = seed(database, stored);
+    const filter = await service.getFilter(USER_A, id);
+    expect(filter.definition.market).toMatchObject({
+      exchanges: [],
+      statement_groups: [],
+      needs_review: 'sector',
+      legacy_sector: 'Ngân hàng',
+    });
+    expect(filter.sector_review).toEqual({ sector: 'Ngân hàng' });
+    expect(database.state.versions[0]?.definition).toEqual(copy);
+    expect((await service.listFilters(USER_A)).items[0]?.sector_review).toEqual({
+      sector: 'Ngân hàng',
+    });
+  });
+
+  it('re-saving the mapped 3.0 definition unchanged is not a new version', async () => {
+    const { database, service } = setup();
+    const id = seed(database, v3({ market: 'HOSE', sector: '' }));
+    const mapped = (await service.getFilter(USER_A, id)).definition;
+    const same = await service.updateFilter(USER_A, id, { definition: mapped });
+    expect(same.current_version).toBe(1);
+    expect(database.state.versions).toHaveLength(1);
+  });
+
+  it('stores the canonical 4.0 definition: lists sorted, HSX as HOSE, switched-off rows kept', async () => {
+    const { database, service } = setup();
+    const technical = [
+      {
+        indicator: 'rsi',
+        rules: [
+          { id: 'rsi.level', enabled: false, period: 14, op: '<', threshold: 30 },
+          { id: 'rsi.trend', enabled: true, period: 14, dir: 'up' },
+        ],
+      },
+    ];
+    const messy = definition({
+      market: {
+        exchanges: ['UPCOM', 'HSX', 'HNX'],
+        baskets: ['VN30', 'HNX30'],
+        statement_groups: ['ck', 'thuong'],
+        market_cap: { min: 1000, max: null },
+        avg_value: { sessions: 20, min: 5 },
+        close_price: { min: 10, max: 100 },
+      },
+      technical: technical as unknown as FilterDefinition['technical'],
+    });
+    const created = await service.createFilter(USER_A, createInput({ definition: messy }));
+    expect(created.definition.market).toMatchObject({
+      exchanges: ['HOSE', 'HNX', 'UPCOM'].sort(),
+      baskets: ['HNX30', 'VN30'],
+      statement_groups: ['ck', 'thuong'],
+    });
+    // The switched-off row stays in the stored definition (spec §6.3).
+    expect(JSON.stringify(created.definition.technical)).toContain('"enabled":false');
+    const stored = database.state.versions[0]?.definition as { technical: unknown[] };
+    expect(stored.technical).toEqual(technical);
+
+    // The same selection in another order is the same definition: no new version.
+    const shuffled = definition({
+      ...messy,
+      market: {
+        ...messy.market,
+        exchanges: ['HNX', 'UPCOM', 'HOSE'],
+        baskets: ['HNX30', 'VN30'],
+        statement_groups: ['thuong', 'ck'],
+      },
+    });
+    const same = await service.updateFilter(USER_A, created.id, { definition: shuffled });
+    expect(same.current_version).toBe(1);
+    // Changing one technical row is a new version.
+    const edited = await service.updateFilter(USER_A, created.id, {
+      definition: definition({
+        ...messy,
+        technical: [
+          {
+            indicator: 'rsi',
+            rules: [
+              { id: 'rsi.level', enabled: true, period: 14, op: '<', threshold: 30 },
+              { id: 'rsi.trend', enabled: true, period: 14, dir: 'up' },
+            ],
+          },
+        ] as unknown as FilterDefinition['technical'],
+      }),
+    });
+    expect(edited.current_version).toBe(2);
   });
 });

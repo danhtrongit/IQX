@@ -19,8 +19,12 @@ import {
 import { MarketDataModule, MarketDataService } from '../modules/market-data/index.js';
 import { MarketExtendedModule, MarketExtendedService } from '../modules/market-extended/index.js';
 import {
+  DailyBarsService,
+  IndexMembershipService,
   MarketInputSnapshotService,
   MarketIntegrationModule,
+  SCREENER_BASKET_CODES,
+  SymbolAttributesService,
 } from '../modules/market-integration/index.js';
 import { ReportsModule, MarketReportsService } from '../modules/reports/index.js';
 import { TradingModule } from '../modules/trading/trading.module.js';
@@ -96,6 +100,9 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
     private readonly research?: ResearchDailyJob,
     private readonly flashback?: FlashbackJob,
     private readonly flashbackRooms?: FlashbackRoomsJob,
+    private readonly dailyBars?: DailyBarsService,
+    private readonly symbolAttributes?: SymbolAttributesService,
+    private readonly indexMembership?: IndexMembershipService,
   ) {}
 
   handlers(): RuntimeJobHandlers {
@@ -144,7 +151,23 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
         }
         // A failed fetch must surface as a failed job; the Bot run retries once for today.
         if (result.status === 'unavailable') throw new Error(result.reason);
-        return this.complete(result);
+        return this.complete({ ...result, baskets: await this.captureScreenerBaskets(ictDate(scheduledFor)) });
+      },
+      'market.daily-bars': async ({ scheduledFor }) => {
+        if (!this.dailyBars) return { status: 'skipped', reason: 'daily-bars-unavailable' };
+        const outcome = await this.dailyBars.ensureFresh(scheduledFor);
+        if (outcome.status === 'skipped')
+          return { status: 'skipped', reason: outcome.reason, detail: { ...outcome } };
+        // Per-symbol failures are reported, never thrown: the next tick retries the stragglers.
+        return this.complete(outcome);
+      },
+      'market.symbol-attributes': async ({ scheduledFor }) => {
+        if (!this.symbolAttributes)
+          return { status: 'skipped', reason: 'symbol-attributes-unavailable' };
+        const outcome = await this.symbolAttributes.ensureFresh(scheduledFor);
+        return outcome.due === 0
+          ? { status: 'skipped', reason: 'nothing-due' }
+          : this.complete(outcome);
       },
       'bot.session-eod': async ({ scheduledFor }) =>
         this.complete(await this.bot.runScheduledSession(ictDate(scheduledFor))),
@@ -227,6 +250,21 @@ export class DomainRuntimeJobs implements TradingCalendarPort {
       throw new Error('Active trading calendar holidays must be an array');
     }
     return !(holidays as unknown[] | undefined)?.map(String).includes(date);
+  }
+
+  /**
+   * Stores today's constituents of the screener's other baskets (VN100, VNMidCap, VNSmallCap, HNX30).
+   * Best effort: the Bot only depends on VN30, so a failing basket is reported, not thrown.
+   */
+  private async captureScreenerBaskets(sessionDate: string): Promise<Record<string, string>> {
+    const out: Record<string, string> = {};
+    if (!this.indexMembership) return out;
+    for (const code of SCREENER_BASKET_CODES) {
+      if (code === 'VN30') continue;
+      const result = await this.indexMembership.capture(code, sessionDate);
+      out[code] = result.status;
+    }
+    return out;
   }
 
   private complete(value: unknown): JobOutcome {

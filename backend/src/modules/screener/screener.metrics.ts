@@ -102,6 +102,10 @@ export const METRIC_REASONS = {
   noReport: 'Chưa có báo cáo của kỳ cần dùng',
   lowEpsGrowth: 'Tăng trưởng EPS dưới 5% — PEG không có ý nghĩa',
   shareHistoryUnavailable: 'Chưa có lịch sử số cổ phiếu đã điều chỉnh tách/thưởng',
+  /** Kỹ thuật (Bộ lọc 4.0 §3.4): NO_SIGNAL, e.g. a new listing without enough bars for SMA200. */
+  insufficientPriceHistory: 'Chưa đủ lịch sử giá',
+  /** Kỹ thuật (§5): the symbol has no bar at session T (suspended or data not yet stored). */
+  noSessionBar: 'Không có nến ở phiên T',
 } as const;
 
 const DIVIDEND_EVENTS =
@@ -143,6 +147,8 @@ export const METRIC_REASON_CODES: Readonly<Record<keyof typeof METRIC_REASONS, s
   noReport: 'no_report',
   lowEpsGrowth: 'low_eps_growth',
   shareHistoryUnavailable: 'share_history_unavailable',
+  insufficientPriceHistory: 'insufficient_price_history',
+  noSessionBar: 'no_session_bar',
 };
 
 export function reasonCode(status: MetricStatus, reason: string | undefined): string | undefined {
