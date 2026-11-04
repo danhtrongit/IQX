@@ -22,6 +22,11 @@ type OrderResponse = ApiResponseFor<"POST /api/v2/flashback/matches/{id}/orders"
 type FinishResponse = ApiResponseFor<"POST /api/v2/flashback/matches/{id}/finish">
 type StartResponse = ApiResponseFor<"POST /api/v2/flashback/rooms/{code}/start">
 type IndicatorsResponse = ApiResponseFor<"GET /api/v2/flashback/indicators">
+type LevelResponse = ApiResponseFor<"GET /api/v2/flashback/me/level">
+type LeaderboardResponse = ApiResponseFor<"GET /api/v2/flashback/leaderboard">
+type HistoryResponse = ApiResponseFor<"GET /api/v2/flashback/me/history">
+type HistorySummaryResponse = ApiResponseFor<"GET /api/v2/flashback/me/history/summary">
+type ReactionResponse = ApiResponseFor<"POST /api/v2/flashback/matches/{id}/reactions">
 
 /** Một nến gửi cho trình duyệt: không có ngày thật, không có mã. */
 export type FlashbackBar = SnapshotResponse["history_bars"][number]
@@ -44,8 +49,35 @@ export type FlashbackPosition = FlashbackMe["positions"][number]
 export type FlashbackMatchState = StateResponse
 export type FlashbackPlayer = StateResponse["players"][number]
 
+/** Một biểu cảm vừa gửi trong ván: server giữ vài giây rồi bỏ (v2.1 §6.4). */
+export type FlashbackReaction = StateResponse["reactions"][number]
+export type FlashbackReactionSent = ReactionResponse
+
 export type FlashbackMatchResult = ResultResponse
 export type FlashbackResultRow = ResultResponse["rows"][number]
+/** Điểm và cấp của người gọi sau ván (v2.1 §3.3). */
+export type FlashbackResultProgress = ResultResponse["progress"]
+
+/** Vương miện của người đang hạng 1, 2, 3 toàn hệ thống; null khi không ở top 3 (v2.1 §4.3). */
+export type FlashbackCrown = FlashbackPlayer["crown"]
+
+/** Thẻ cấp của sảnh (v2.1 §2.1). */
+export type FlashbackMyLevel = LevelResponse
+export type FlashbackLeaderboard = LeaderboardResponse
+export type FlashbackLeaderboardRow = LeaderboardResponse["rows"][number]
+
+export type FlashbackHistoryResultFilter = "all" | "win" | "lose" | "solo"
+export type FlashbackHistoryDays = "7" | "30" | "all"
+export type FlashbackHistoryFilters = {
+  result: FlashbackHistoryResultFilter
+  days: FlashbackHistoryDays
+  page: number
+}
+export type FlashbackHistoryPage = HistoryResponse
+export type FlashbackHistoryItem = HistoryResponse["items"][number]
+export type FlashbackHistoryPlayer = FlashbackHistoryItem["players"][number]
+export type FlashbackHistoryOrder = FlashbackHistoryItem["orders"][number]
+export type FlashbackHistorySummary = HistorySummaryResponse
 
 export type FlashbackNextResult = NextResponse
 export type FlashbackOrderResult = OrderResponse
@@ -153,6 +185,16 @@ export function replayRoom(code: string): Promise<FlashbackRoom> {
   return requestOperation("POST /api/v2/flashback/rooms/{code}/replay", { path: { code } })
 }
 
+/** Bấm "Sẵn sàng" (true) hoặc "Huỷ sẵn sàng" (false) ở phòng chờ; trả phòng mới nhất. */
+export function setRoomReady(code: string, ready: boolean): Promise<FlashbackRoom> {
+  return requestOperation("POST /api/v2/flashback/rooms/{code}/ready", { path: { code }, body: { ready } })
+}
+
+/** Chủ phòng đuổi một thành viên khỏi phòng chờ; trả phòng mới nhất. */
+export function kickRoomMember(code: string, userId: string): Promise<FlashbackRoom> {
+  return requestOperation("POST /api/v2/flashback/rooms/{code}/kick", { path: { code }, body: { user_id: userId } })
+}
+
 // ------------------------------------------------------------------ ván chơi
 
 export function fetchMatch(matchId: string, signal?: AbortSignal): Promise<FlashbackSnapshot> {
@@ -177,6 +219,36 @@ export function placeOrder(matchId: string, body: FlashbackOrderBody): Promise<F
 
 export function finishMatch(matchId: string): Promise<FlashbackFinishResult> {
   return requestOperation("POST /api/v2/flashback/matches/{id}/finish", { path: { id: matchId } })
+}
+
+/** Gửi một biểu cảm tới cả phòng; server chỉ nhận 12 biểu cảm trong danh sách và 1 cái mỗi 1,5 giây. */
+export function sendReaction(matchId: string, emoji: string): Promise<FlashbackReactionSent> {
+  return requestOperation("POST /api/v2/flashback/matches/{id}/reactions", { path: { id: matchId }, body: { emoji } })
+}
+
+// ------------------------------------------------------------------ cấp, bảng xếp hạng, lịch sử
+
+export function fetchMyLevel(signal?: AbortSignal): Promise<FlashbackMyLevel> {
+  return requestOperation("GET /api/v2/flashback/me/level", {}, signal ? { signal } : {})
+}
+
+/** Top `limit` người chơi toàn hệ thống kèm dòng của mình nếu nằm ngoài top (v2.1 §4.2). */
+export function fetchLeaderboard(limit: number, signal?: AbortSignal): Promise<FlashbackLeaderboard> {
+  return requestOperation("GET /api/v2/flashback/leaderboard", { query: { limit } }, signal ? { signal } : {})
+}
+
+/** Lịch sử đấu của chính mình theo bộ lọc, 20 ván mỗi trang, tối đa 200 ván gần nhất (v2.1 §5). */
+export function fetchHistory(filters: FlashbackHistoryFilters, signal?: AbortSignal): Promise<FlashbackHistoryPage> {
+  return requestOperation(
+    "GET /api/v2/flashback/me/history",
+    { query: { result: filters.result, days: filters.days, page: filters.page } },
+    signal ? { signal } : {},
+  )
+}
+
+/** Sáu số tổng kết theo khoảng thời gian đang lọc (v2.1 §5.1). */
+export function fetchHistorySummary(days: FlashbackHistoryDays, signal?: AbortSignal): Promise<FlashbackHistorySummary> {
+  return requestOperation("GET /api/v2/flashback/me/history/summary", { query: { days } }, signal ? { signal } : {})
 }
 
 /** Đủ 16 chỉ báo cho mọi người: tên, tham số và miền cho phép (metadata dùng chung với Bot). */

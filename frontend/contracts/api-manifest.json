@@ -2,6 +2,11 @@
   "schema": "backend/contracts/openapi-v2.json",
   "generatedTypes": "backend/contracts/client/types.gen.ts",
   "operations": {
+    "DELETE /api/v2/admin/academy-configs/{id}": {
+      "operationId": "adminAcademyConfigDelete",
+      "requestType": "AdminAcademyConfigDeleteData",
+      "responseType": "AdminAcademyConfigDeleteResponses"
+    },
     "DELETE /api/v2/admin/alerts/signals/{key}": {
       "operationId": "AdminAlertsController_remove[1]",
       "requestType": "AdminAlertsControllerRemove1Data",
@@ -112,6 +117,16 @@
       "requestType": "AcademyProgressData",
       "responseType": "AcademyProgressResponses"
     },
+    "GET /api/v2/admin/academy-configs": {
+      "operationId": "adminAcademyConfigs",
+      "requestType": "AdminAcademyConfigsData",
+      "responseType": "AdminAcademyConfigsResponses"
+    },
+    "GET /api/v2/admin/academy-configs/{id}/logs": {
+      "operationId": "adminAcademyConfigLogs",
+      "requestType": "AdminAcademyConfigLogsData",
+      "responseType": "AdminAcademyConfigLogsResponses"
+    },
     "GET /api/v2/admin/alerts/factor-library": {
       "operationId": "AdminAlertsController_factorLibrary[1]",
       "requestType": "AdminAlertsControllerFactorLibrary1Data",
@@ -141,6 +156,21 @@
       "operationId": "flashbackAdminAlerts",
       "requestType": "FlashbackAdminAlertsData",
       "responseType": "FlashbackAdminAlertsResponses"
+    },
+    "GET /api/v2/admin/flashback/dataset": {
+      "operationId": "flashbackAdminDataset",
+      "requestType": "FlashbackAdminDatasetData",
+      "responseType": "FlashbackAdminDatasetResponses"
+    },
+    "GET /api/v2/admin/flashback/dataset/symbols": {
+      "operationId": "flashbackAdminDatasetSymbols",
+      "requestType": "FlashbackAdminDatasetSymbolsData",
+      "responseType": "FlashbackAdminDatasetSymbolsResponses"
+    },
+    "GET /api/v2/admin/flashback/dataset/versions": {
+      "operationId": "flashbackAdminDatasetVersions",
+      "requestType": "FlashbackAdminDatasetVersionsData",
+      "responseType": "FlashbackAdminDatasetVersionsResponses"
     },
     "GET /api/v2/admin/flashback/pause": {
       "operationId": "flashbackAdminPauseStatus",
@@ -682,6 +712,16 @@
       "requestType": "FlashbackIndicatorsData",
       "responseType": "FlashbackIndicatorsResponses"
     },
+    "GET /api/v2/flashback/leaderboard": {
+      "operationId": "flashbackRoomsLeaderboard",
+      "requestType": "FlashbackRoomsLeaderboardData",
+      "responseType": "FlashbackRoomsLeaderboardResponses"
+    },
+    "GET /api/v2/flashback/leaderboard/top3": {
+      "operationId": "flashbackRoomsLeaderboardTop3",
+      "requestType": "FlashbackRoomsLeaderboardTop3Data",
+      "responseType": "FlashbackRoomsLeaderboardTop3Responses"
+    },
     "GET /api/v2/flashback/matches/{id}": {
       "operationId": "flashbackMatchGet",
       "requestType": "FlashbackMatchGetData",
@@ -696,6 +736,21 @@
       "operationId": "flashbackMatchState",
       "requestType": "FlashbackMatchStateData",
       "responseType": "FlashbackMatchStateResponses"
+    },
+    "GET /api/v2/flashback/me/history": {
+      "operationId": "flashbackMyHistory",
+      "requestType": "FlashbackMyHistoryData",
+      "responseType": "FlashbackMyHistoryResponses"
+    },
+    "GET /api/v2/flashback/me/history/summary": {
+      "operationId": "flashbackMyHistorySummary",
+      "requestType": "FlashbackMyHistorySummaryData",
+      "responseType": "FlashbackMyHistorySummaryResponses"
+    },
+    "GET /api/v2/flashback/me/level": {
+      "operationId": "flashbackMyLevel",
+      "requestType": "FlashbackMyLevelData",
+      "responseType": "FlashbackMyLevelResponses"
     },
     "GET /api/v2/flashback/rooms": {
       "operationId": "flashbackRoomsList",
@@ -1312,6 +1367,11 @@
       "requestType": "StrategyConfigListRevisionsData",
       "responseType": "StrategyConfigListRevisionsResponses"
     },
+    "GET /api/v2/team/academy-config": {
+      "operationId": "teamAcademyConfig_get_api_v2_team_academy_config",
+      "requestType": "TeamAcademyConfigGetApiV2TeamAcademyConfigData",
+      "responseType": "TeamAcademyConfigGetApiV2TeamAcademyConfigResponses"
+    },
     "GET /api/v2/team/me": {
       "operationId": "TeamController_me[1]",
       "requestType": "TeamControllerMe1Data",
@@ -1512,6 +1572,16 @@
       "requestType": "AcademyChooseScenarioData",
       "responseType": "AcademyChooseScenarioResponses"
     },
+    "POST /api/v2/admin/academy-configs": {
+      "operationId": "adminAcademyConfigCreate",
+      "requestType": "AdminAcademyConfigCreateData",
+      "responseType": "AdminAcademyConfigCreateResponses"
+    },
+    "POST /api/v2/admin/academy-configs/preview": {
+      "operationId": "adminAcademyConfigPreview",
+      "requestType": "AdminAcademyConfigPreviewData",
+      "responseType": "AdminAcademyConfigPreviewResponses"
+    },
     "POST /api/v2/admin/alerts/seed": {
       "operationId": "AdminAlertsController_seed[1]",
       "requestType": "AdminAlertsControllerSeed1Data",
@@ -1526,6 +1596,11 @@
       "operationId": "AdminAlertsController_setupTelegramWebhook[1]",
       "requestType": "AdminAlertsControllerSetupTelegramWebhook1Data",
       "responseType": "AdminAlertsControllerSetupTelegramWebhook1Responses"
+    },
+    "POST /api/v2/admin/flashback/dataset/refresh": {
+      "operationId": "flashbackAdminDatasetRefresh",
+      "requestType": "FlashbackAdminDatasetRefreshData",
+      "responseType": "FlashbackAdminDatasetRefreshResponses"
     },
     "POST /api/v2/admin/flashback/pause": {
       "operationId": "flashbackAdminPause",
@@ -1997,6 +2072,11 @@
       "requestType": "FlashbackMatchOrderData",
       "responseType": "FlashbackMatchOrderResponses"
     },
+    "POST /api/v2/flashback/matches/{id}/reactions": {
+      "operationId": "flashbackMatchReaction",
+      "requestType": "FlashbackMatchReactionData",
+      "responseType": "FlashbackMatchReactionResponses"
+    },
     "POST /api/v2/flashback/rooms": {
       "operationId": "flashbackRoomsCreate",
       "requestType": "FlashbackRoomsCreateData",
@@ -2007,10 +2087,20 @@
       "requestType": "FlashbackRoomsJoinData",
       "responseType": "FlashbackRoomsJoinResponses"
     },
+    "POST /api/v2/flashback/rooms/{code}/kick": {
+      "operationId": "flashbackRoomsKick",
+      "requestType": "FlashbackRoomsKickData",
+      "responseType": "FlashbackRoomsKickResponses"
+    },
     "POST /api/v2/flashback/rooms/{code}/leave": {
       "operationId": "flashbackRoomsLeave",
       "requestType": "FlashbackRoomsLeaveData",
       "responseType": "FlashbackRoomsLeaveResponses"
+    },
+    "POST /api/v2/flashback/rooms/{code}/ready": {
+      "operationId": "flashbackRoomsReady",
+      "requestType": "FlashbackRoomsReadyData",
+      "responseType": "FlashbackRoomsReadyResponses"
     },
     "POST /api/v2/flashback/rooms/{code}/replay": {
       "operationId": "flashbackRoomsReplay",
@@ -2237,10 +2327,20 @@
       "requestType": "AcademySaveLessonNotesData",
       "responseType": "AcademySaveLessonNotesResponses"
     },
+    "PUT /api/v2/admin/academy-configs/{id}": {
+      "operationId": "adminAcademyConfigSave",
+      "requestType": "AdminAcademyConfigSaveData",
+      "responseType": "AdminAcademyConfigSaveResponses"
+    },
     "PUT /api/v2/admin/alerts/signals/{key}": {
       "operationId": "AdminAlertsController_update[1]",
       "requestType": "AdminAlertsControllerUpdate1Data",
       "responseType": "AdminAlertsControllerUpdate1Responses"
+    },
+    "PUT /api/v2/admin/flashback/dataset/config": {
+      "operationId": "flashbackAdminDatasetConfig",
+      "requestType": "FlashbackAdminDatasetConfigData",
+      "responseType": "FlashbackAdminDatasetConfigResponses"
     },
     "PUT /api/v2/admin/team-leads/{leadId}/policy": {
       "operationId": "AdminTeamLeadsController_updatePolicy[1]",

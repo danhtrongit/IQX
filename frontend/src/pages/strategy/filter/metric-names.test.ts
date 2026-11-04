@@ -20,14 +20,14 @@ describe("names and blocks of the Dashboard", () => {
 
   it("arranges the library in the blocks and groups of the Dashboard, without any chapter heading", () => {
     const blocks = libraryBlocks(metrics, "")
-    expect(blocks.map((block) => block.title)).toEqual(["Phân tích cơ bản chung", "Doanh nghiệp sản xuất"])
+    expect(blocks.map((block) => block.title)).toEqual(["Chỉ tiêu chung", "Chỉ tiêu doanh nghiệp sản xuất"])
     expect(blocks[0]!.groups.map((group) => [group.title, group.metrics.map((item) => item.id)])).toEqual([
       ["Tăng trưởng", ["revenue_yoy", "profit_yoy", "eps_yoy"]],
-      // An unopened metric (ROA) stays in its place, shown locked by the library.
-      ["Hiệu quả", ["roe", "roa", "net_margin"]],
+      // ROA is not open for this account: it is not listed (the catalog dialog names it).
+      ["Hiệu quả", ["roe", "net_margin"]],
     ])
     expect(blocks[1]!.groups.map((group) => [group.title, group.metrics.map((item) => item.id)])).toEqual([["Hiệu quả và biên lợi nhuận", ["gross_margin", "roic"]]])
-    expect(JSON.stringify(blocks)).not.toMatch(/Chương/)
+    expect(JSON.stringify(blocks)).not.toMatch(/Chương|Chưa mở|đã mở/)
   })
 
   it("puts an open metric the Dashboard lacks in the last block Khác, and no locked one", () => {
@@ -38,7 +38,7 @@ describe("names and blocks of the Dashboard", () => {
 
   it("searches by the Dashboard name, ignoring case and accents, and drops what is left empty", () => {
     const blocks = libraryBlocks(metrics, "tang truong")
-    expect(blocks.map((block) => block.title)).toEqual(["Phân tích cơ bản chung"])
+    expect(blocks.map((block) => block.title)).toEqual(["Chỉ tiêu chung"])
     expect(blocks[0]!.groups.flatMap((group) => group.metrics.map((item) => item.id))).toEqual(["revenue_yoy", "profit_yoy", "eps_yoy"])
     expect(libraryBlocks(metrics, "khong co chi tieu nay")).toEqual([])
   })

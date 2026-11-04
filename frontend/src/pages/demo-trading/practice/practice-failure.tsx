@@ -6,8 +6,9 @@ import { cn } from "@/lib/utils"
 import { PRACTICE_INDICATORS, lessonLink, type PracticeFailure } from "./practice-api"
 
 /**
- * One place that explains a practice failure: not learned yet (with the lesson link), data not
- * available, compute failed (retry keeps the locked config), stale tab, invalid input.
+ * One place that explains a practice failure: not allowed (403, with the lesson link; the tool is not unlocked by
+ * lessons any more, spec Học viện v4.1 §6.1), data not available, compute failed (retry keeps the locked config),
+ * stale tab, invalid input.
  */
 export function PracticeFailureNotice({
   failure,
@@ -36,10 +37,8 @@ export function PracticeFailureNotice({
         <div className="min-w-0 space-y-1">
           {failure.kind === "not_granted" ? (
             <>
-              <p className="font-medium">Bạn chưa mở khóa chỉ báo {name}.</p>
-              <p className="text-muted-foreground">
-                Đạt bài kiểm tra của bài học {name} để được luyện tập chỉ báo này.
-              </p>
+              <p className="font-medium">Chưa luyện tập được chỉ báo {name}.</p>
+              <p className="text-muted-foreground">Tài khoản này chưa được cấp quyền luyện tập chỉ báo này.</p>
             </>
           ) : failure.kind === "not_found" ? (
             <p className="font-medium">Chỉ báo này không có trong bộ luyện tập.</p>

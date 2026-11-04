@@ -65,7 +65,7 @@ const COMMON: [string, Item[]][] = [
 /* Chương riêng của từng ngành: 16 + 11 + 10 + 8 chỉ tiêu (spec §8.2–§8.5). */
 const OWN: Record<Industry, { chapter: string; academy: number; groups: [string, Item[]][] }> = {
   thuong: {
-    chapter: "Doanh nghiệp sản xuất",
+    chapter: "Chỉ tiêu doanh nghiệp sản xuất",
     academy: 9,
     groups: [
       [
@@ -107,7 +107,7 @@ const OWN: Record<Industry, { chapter: string; academy: number; groups: [string,
     ],
   },
   nh: {
-    chapter: "Ngân hàng",
+    chapter: "Chỉ tiêu ngân hàng",
     academy: 10,
     groups: [
       [
@@ -139,7 +139,7 @@ const OWN: Record<Industry, { chapter: string; academy: number; groups: [string,
     ],
   },
   ck: {
-    chapter: "Chứng khoán",
+    chapter: "Chỉ tiêu chứng khoán",
     academy: 11,
     groups: [
       [
@@ -170,7 +170,7 @@ const OWN: Record<Industry, { chapter: string; academy: number; groups: [string,
     ],
   },
   bh: {
-    chapter: "Bảo hiểm",
+    chapter: "Chỉ tiêu bảo hiểm",
     academy: 12,
     groups: [
       [
@@ -263,7 +263,7 @@ function catalogOf() {
       default_charts: DEFAULTS[industry],
       chapters: [
         {
-          chapter: "Phân tích cơ bản chung",
+          chapter: "Chỉ tiêu chung",
           academy_chapter: 8,
           groups: COMMON.map(([group, items]) => ({
             group,
@@ -801,10 +801,12 @@ describe("Dashboard phân tích v2 · ngành của mã", () => {
     const chapters = [...document.querySelectorAll<HTMLElement>("[data-chapter]")].map(
       (element) => element.dataset.chapter,
     )
-    expect(chapters).toEqual(["Phân tích cơ bản chung", "Ngân hàng"])
+    expect(chapters).toEqual(["Chỉ tiêu chung", "Chỉ tiêu ngân hàng"])
+    // Spec Học viện v4.1 §6.2: the first level groups are never the name of a Học viện chapter.
+    expect(document.body.textContent).not.toMatch(/Phân tích cơ bản chung|Phân tích ngân hàng|Chương \d/)
     // Mặc định ngân hàng: chung có Tăng trưởng LNST, ROE, P/B; riêng có NIM, CIR, Chi phí tín dụng.
-    expect(chapterHeading("Phân tích cơ bản chung")).toContain("3/17")
-    expect(chapterHeading("Ngân hàng")).toContain("3/11")
+    expect(chapterHeading("Chỉ tiêu chung")).toContain("3/17")
+    expect(chapterHeading("Chỉ tiêu ngân hàng")).toContain("3/11")
     expect(groupHeading("Tăng trưởng")).toContain("1/6")
     expect(groupHeading("Hiệu quả")).toContain("1/3")
     expect(groupHeading("Định giá")).toContain("1/4")
@@ -821,7 +823,7 @@ describe("Dashboard phân tích v2 · ngành của mã", () => {
     await user.type(screen.getByLabelText("Tìm chỉ tiêu"), "nim")
     await waitFor(() => expect(pickerNames()).toEqual(["NIM"]))
     expect(document.querySelectorAll("[data-chapter]")).toHaveLength(1)
-    expect(chapterHeading("Ngân hàng")).toContain("3/11")
+    expect(chapterHeading("Chỉ tiêu ngân hàng")).toContain("3/11")
 
     await user.clear(screen.getByLabelText("Tìm chỉ tiêu"))
     await user.type(screen.getByLabelText("Tìm chỉ tiêu"), "khong-co-chi-tieu")

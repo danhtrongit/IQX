@@ -4,6 +4,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { installResizeObserver, renderRoute } from "@/pages/admin/team-leads/test-support"
 
+import {
+  datasetStatusWire,
+  datasetSymbolsWire,
+  datasetVersionsWire,
+} from "./flashback-dataset-test-support"
 import { FlashbackPage } from "./flashback-page"
 
 const mocks = vi.hoisted(() => ({
@@ -118,6 +123,10 @@ function install() {
       return { ...HOLDS[0], status: "released", decided_at: "2026-10-21T00:00:00.000Z", decided_by: "admin-1" }
     }
     if (path === "/admin/flashback/settings") return { settings: SETTINGS }
+    // Mục "Kho dữ liệu Flashback" (spec v2.2) nằm cùng trang; test riêng của nó ở flashback-dataset-section.test.tsx.
+    if (path === "/admin/flashback/dataset") return datasetStatusWire()
+    if (path === "/admin/flashback/dataset/symbols") return datasetSymbolsWire()
+    if (path === "/admin/flashback/dataset/versions") return datasetVersionsWire()
     if (path.includes("/reveal")) {
       return { round_no: 7, symbol: "VIC", start_date: "2015-03-02", session_range: "2015-03-02..2015-08-28" }
     }

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { render, screen, within } from "@testing-library/react"
+import { cleanup, render, screen, within } from "@testing-library/react"
 import { createMemoryRouter, RouterProvider } from "react-router"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -70,6 +70,7 @@ describe("team lead route guard", () => {
     "/admin/system",
     "/admin/alerts",
     "/admin/lessons",
+    "/admin/academy",
     "/admin/users/7f1c/extra",
   ])("sends a team lead away from %s", (path) => {
     expect(isTeamAdminPath(path)).toBe(false)
@@ -88,6 +89,7 @@ describe("AdminLayout by role", () => {
             { path: "users", element: <p>Trang người dùng</p> },
             { path: "plans", element: <p>Trang gói</p> },
             { path: "team-leads", element: <p>Trang trưởng nhóm</p> },
+            { path: "academy", element: <p>Trang Học viện</p> },
           ],
         },
       ],
@@ -142,8 +144,25 @@ describe("AdminLayout by role", () => {
     const nav = screen.getAllByRole("navigation", { name: "Điều hướng quản trị" })[0]
     expect(within(nav).getByRole("link", { name: "Trưởng nhóm" }).getAttribute("href")).toBe("/admin/team-leads")
     expect(within(nav).getByRole("link", { name: "Gói Premium" })).toBeTruthy()
+    expect(within(nav).getByRole("link", { name: "Học viện" }).getAttribute("href")).toBe("/admin/academy")
     expect(screen.queryByText("Mã giới thiệu của bạn (tên đăng nhập)")).toBeNull()
     expect(mocks.fetchTeamReferralCode).not.toHaveBeenCalled()
+  })
+
+  it("opens the Học viện configs for an admin but sends a team lead back to the dashboard", async () => {
+    mocks.auth = authAs({ id: "admin-1", role: "admin", full_name: "Admin", username: "admin" })
+    const admin = renderAt("/admin/academy")
+    expect(screen.getByText("Trang Học viện")).toBeTruthy()
+    expect(admin.state.location.pathname).toBe("/admin/academy")
+    cleanup()
+
+    mocks.auth = authAs({ id: "lead-1", role: "team_lead", full_name: "Nguyễn Lan", username: "lan.nguyen" })
+    const lead = renderAt("/admin/academy")
+    expect(await screen.findByText("Trang tổng quan")).toBeTruthy()
+    expect(lead.state.location.pathname).toBe("/admin")
+    expect(screen.queryByText("Trang Học viện")).toBeNull()
+    const nav = screen.getAllByRole("navigation", { name: "Điều hướng quản trị" })[0]
+    expect(within(nav).queryByRole("link", { name: "Học viện" })).toBeNull()
   })
 
   it("blocks a premium user", () => {

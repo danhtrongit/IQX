@@ -18,7 +18,7 @@ export const STATUS_HINT: Record<AlertStatus, string> = {
   paused: "Không phát tín hiệu mới cho tới khi bật lại.",
   unchecked: "Đã bật, chưa có lần kiểm tra cuối phiên nào.",
   waiting_data: "Lần kiểm tra gần nhất chưa đánh giá được một số mã vì thiếu dữ liệu.",
-  config_error: "Có tổ hợp bị chặn do chưa mở chỉ báo hoặc cấu hình đã ghim không hợp lệ.",
+  config_error: "Có tổ hợp bị chặn do cấu hình đã ghim không hợp lệ hoặc thiếu quyền.",
 }
 
 export function sourceCaption(version: AlertVersion): string {

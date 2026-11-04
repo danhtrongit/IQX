@@ -2,7 +2,9 @@
  * Blocks, groups, order and display names of the Dashboard phân tích cơ bản (Bộ lọc 4.0 §2.5). The
  * library of the Cơ bản tab, the condition cards, the result column titles and the criteria
  * summaries all use these names, never the lesson names of `GET /strategy/screener/metrics`.
- * The 9 metrics that are not on the Dashboard keep the API name and sit in the last block "Khác".
+ * First level block titles follow Học viện v4.1 §6.2 ("Chỉ tiêu chung", "Chỉ tiêu doanh nghiệp sản xuất"),
+ * which replaced the chapter-like titles of Dashboard v2 §8. The 9 metrics that are not on the Dashboard
+ * keep the API name and sit in the last block "Khác".
  */
 import { matchesQuery } from "../shared/library-utils"
 import type { ScreenerMetric } from "./types"
@@ -12,7 +14,7 @@ type BlockSpec = { title: string; groups: readonly GroupSpec[] }
 
 const DASHBOARD: readonly BlockSpec[] = [
   {
-    title: "Phân tích cơ bản chung",
+    title: "Chỉ tiêu chung",
     groups: [
       {
         title: "Tăng trưởng",
@@ -54,7 +56,7 @@ const DASHBOARD: readonly BlockSpec[] = [
     ],
   },
   {
-    title: "Doanh nghiệp sản xuất",
+    title: "Chỉ tiêu doanh nghiệp sản xuất",
     groups: [
       {
         title: "Hiệu quả và biên lợi nhuận",
@@ -110,12 +112,13 @@ export type LibraryGroup = { title: string | null; metrics: ScreenerMetric[] }
 export type LibraryBlock = { title: string; groups: LibraryGroup[] }
 
 /**
- * The Cơ bản tab of the library. Every Dashboard metric is listed in the Dashboard's order (one the
- * account has not opened is shown locked); a metric that is not on the Dashboard appears in "Khác"
- * only when it is open, as before. Blocks and groups with nothing left after the search are dropped.
+ * The Cơ bản tab of the library: the metrics the account can use, in the Dashboard's order (a metric
+ * that is not open is not listed; the catalog dialog names it), and the ones the Dashboard lacks in
+ * "Khác". Blocks and groups with nothing left after the search are dropped.
  */
 export function libraryBlocks(metrics: readonly ScreenerMetric[], query: string): LibraryBlock[] {
-  const byId = new Map(metrics.map((metric) => [metric.id as string, metric]))
+  const open = metrics.filter((metric) => metric.learned)
+  const byId = new Map(open.map((metric) => [metric.id as string, metric]))
   const matches = (metric: ScreenerMetric) => matchesQuery(metricName(metric), query)
   const blocks: LibraryBlock[] = DASHBOARD.map((block) => ({
     title: block.title,
@@ -127,7 +130,7 @@ export function libraryBlocks(metrics: readonly ScreenerMetric[], query: string)
       }),
     })),
   }))
-  const other = metrics.filter((metric) => !DASHBOARD_NAME.has(metric.id) && metric.learned && matches(metric))
+  const other = open.filter((metric) => !DASHBOARD_NAME.has(metric.id) && matches(metric))
   const result = blocks
     .map((block) => ({ ...block, groups: block.groups.filter((group) => group.metrics.length > 0) }))
     .filter((block) => block.groups.length > 0)

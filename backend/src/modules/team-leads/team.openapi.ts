@@ -1,5 +1,7 @@
 import type { SchemaObject } from '@nestjs/swagger';
+import { z } from 'zod';
 
+import { teamAcademyConfigResponseSchema } from '../academy/academy-config.schemas.js';
 import {
   ACADEMY_SUMMARY_SCHEMA,
   closedObject,
@@ -7,6 +9,11 @@ import {
 } from '../users/member-insights.openapi.js';
 
 /** Response shapes of `team/*` (admin spec v1.1 §4.3), matching TeamService. */
+
+/** Học viện v4.1 §1.3: the lead's own group config, read only. */
+export const TEAM_ACADEMY_CONFIG_SCHEMA = z.toJSONSchema(teamAcademyConfigResponseSchema, {
+  target: 'openapi-3.0',
+}) as SchemaObject;
 
 const nullable = (schema: SchemaObject): SchemaObject => ({ ...schema, nullable: true });
 const uuid: SchemaObject = { type: 'string', format: 'uuid' };

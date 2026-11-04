@@ -6,12 +6,16 @@
  */
 import type {
   FlashbackCreateRoomBody,
+  FlashbackHistoryDays,
+  FlashbackHistoryItem,
+  FlashbackHistoryResultFilter,
   FlashbackIndicatorInstance,
   FlashbackIndicatorMeta,
   FlashbackOrder,
   FlashbackOrderSide,
   FlashbackPlayer,
   FlashbackPosition,
+  FlashbackResultProgress,
 } from "./flashback-api"
 
 /** Vốn mỗi người mỗi ván (§6.3). */
@@ -371,4 +375,106 @@ export function instanceShortLabel(instance: FlashbackIndicatorInstance, meta?: 
     .filter(([key]) => !["level"].includes(key))
     .map(([, value]) => (typeof value === "number" ? value : value.lower))
   return values.length ? `${name} ${values.join(" ")}` : name
+}
+
+// ------------------------------------------------------------------ cấp, điểm và vương miện (v2.1 §3, §4)
+
+/** Dòng đầu của tab Bảng xếp hạng (v2.1 §4.2). */
+export const LEADERBOARD_NOTE = "Thắng +10 điểm · Thua +3 điểm · Chơi 1 mình không tính điểm"
+/** Bảng xếp hạng hiện tới hạng 50 (v2.1 §4.2). */
+export const LEADERBOARD_LIMIT = 50
+
+/** Phần trăm đã đi được trong cấp hiện tại, cho thanh tiến độ của thẻ cấp (0 đến 100). */
+export function levelPercent(info: { points: number; level_base: number; next_level_points: number }): number {
+  const span = info.next_level_points - info.level_base
+  if (!Number.isFinite(span) || span <= 0) return 0
+  return Math.max(0, Math.min(100, Math.round(((info.points - info.level_base) / span) * 100)))
+}
+
+/** "+10 điểm" / "+3 điểm"; ván chơi 1 mình không có điểm nên để trống (v2.1 §3.3). */
+export function pointsLabel(points: number, solo: boolean): string {
+  return solo || points <= 0 ? "" : `+${formatNumber(points)} điểm`
+}
+
+export type ProgressLine = { kind: "solo" | "level-up" | "progress"; text: string }
+
+/** Dòng tiến độ của mình ở cửa sổ kết quả (v2.1 §3.3): thường, lên cấp, hoặc ván chơi 1 mình. */
+export function progressLine(result: { solo: boolean; progress: FlashbackResultProgress }): ProgressLine {
+  const { progress } = result
+  if (result.solo) return { kind: "solo", text: "Chơi 1 mình không tính điểm cấp." }
+  if (progress.leveled_up) {
+    return { kind: "level-up", text: `🎉 Lên cấp ${progress.level}! Bạn có ${formatNumber(progress.total_points)} điểm.` }
+  }
+  return {
+    kind: "progress",
+    text: `Điểm +${formatNumber(progress.points)} · Cấp ${progress.level} · ${formatNumber(progress.total_points)} điểm · còn ${formatNumber(progress.remaining_points)} điểm lên cấp ${progress.level + 1}`,
+  }
+}
+
+/** Mình đứng đầu, những người còn lại giữ nguyên thứ tự vào phòng (v2.1 §6.1). */
+export function orderPlayers<T extends { is_me: boolean }>(players: readonly T[]): T[] {
+  return [...players.filter((player) => player.is_me), ...players.filter((player) => !player.is_me)]
+}
+
+/** Số người đã bấm Hoàn thành (hoặc đã bị kéo tới phiên cuối khi hết giờ). */
+export function finishedCount(players: readonly Pick<FlashbackPlayer, "finished">[]): number {
+  return players.filter((player) => player.finished).length
+}
+
+// ------------------------------------------------------------------ biểu cảm (v2.1 §6.4)
+
+/** 12 biểu cảm theo đúng thứ tự của bảng chọn 6 cột (trùng danh sách server chấp nhận). */
+export const REACTION_EMOJIS = ["😂", "😎", "🚀", "📉", "😭", "🔥", "👏", "🤡", "💸", "🙏", "😱", "🤑"] as const
+/** Mỗi người 1 biểu cảm mỗi 1,5 giây. */
+export const REACTION_COOLDOWN_MS = 1_500
+/** Biểu cảm bay xuống nhẹ rồi mờ dần trong khoảng 2,5 giây. */
+export const REACTION_BUBBLE_MS = 2_500
+export const REACTION_TOO_FAST = "Từ từ thôi 😄"
+
+// ------------------------------------------------------------------ lịch sử đấu (v2.1 §5)
+
+export const HISTORY_RESULT_LABEL = { win: "Thắng", tie: "Hoà", lose: "Thua", solo: "Chơi 1 mình" } as const
+
+export const HISTORY_RESULT_FILTERS: readonly { id: FlashbackHistoryResultFilter; label: string }[] = [
+  { id: "all", label: "Tất cả" },
+  { id: "win", label: "Thắng" },
+  { id: "lose", label: "Thua" },
+  { id: "solo", label: "Chơi 1 mình" },
+]
+
+export const HISTORY_DAY_FILTERS: readonly { id: FlashbackHistoryDays; label: string }[] = [
+  { id: "7", label: "7 ngày" },
+  { id: "30", label: "30 ngày" },
+  { id: "all", label: "Tất cả" },
+]
+
+/** "2026-10-31T09:05:00Z" thành "31/10/2026 09:05" theo giờ máy người xem. */
+export function formatDateTime(iso: string): string {
+  const time = new Date(iso)
+  if (Number.isNaN(time.getTime())) return iso
+  const pad = (value: number) => String(value).padStart(2, "0")
+  return `${pad(time.getDate())}/${pad(time.getMonth() + 1)}/${time.getFullYear()} ${pad(time.getHours())}:${pad(time.getMinutes())}`
+}
+
+/** Dòng phụ của cột Thời gian: "Phòng {ID} · {n} người · {xem}/{chơi} phiên · {m} phút". */
+export function historyRoomLine(
+  item: Pick<FlashbackHistoryItem, "room_id" | "player_count" | "view_bars" | "play_bars" | "minutes">,
+): string {
+  return `Phòng ${item.room_id} · ${item.player_count} người · ${item.view_bars}/${item.play_bars} phiên · ${item.minutes} phút`
+}
+
+/** Dòng phụ của cột Kết quả: "Hạng {h}/{n}"; ván chơi 1 mình bỏ trống. */
+export function historyRankLine(item: Pick<FlashbackHistoryItem, "result" | "rank" | "player_count">): string {
+  return item.result === "solo" ? "" : `Hạng ${item.rank}/${item.player_count}`
+}
+
+/** Dòng phụ của cột Lợi nhuận: "+{x} xu" / "−{x} xu" / "Không cược". */
+export function historyXuLine(item: Pick<FlashbackHistoryItem, "stake_xu" | "xu">): string {
+  return item.stake_xu > 0 ? `${formatSignedMoney(item.xu)} xu` : "Không cược"
+}
+
+/** Dấu của một số lãi lỗ hoặc xu: lãi xanh, lỗ đỏ, bằng 0 hoặc không có thì chữ thường. */
+export function signTone(value: number | null | undefined): "up" | "down" | "flat" {
+  if (value == null || !Number.isFinite(value) || value === 0) return "flat"
+  return value > 0 ? "up" : "down"
 }

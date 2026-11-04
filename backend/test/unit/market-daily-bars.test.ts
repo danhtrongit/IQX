@@ -419,6 +419,7 @@ describe('screener job handlers', () => {
       undefined,
       undefined,
       undefined,
+      undefined, // flashbackDataset
       extra.dailyBars as never,
       extra.symbolAttributes as never,
       extra.indexMembership as never,

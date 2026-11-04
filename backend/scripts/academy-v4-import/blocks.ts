@@ -1,3 +1,4 @@
+import { withChapterNo } from '../../src/modules/academy/content/v4/schema.js';
 import type { Block, LessonFile, Section } from '../../src/modules/academy/content/v4/schema.js';
 import { EXAM_LEAD_SUFFIX, examIntro } from './catalog-table.js';
 import { attr, children, classes, describe, hasClass, isText } from './dom.js';
@@ -228,9 +229,10 @@ export function checkExam(norm: TextNormalizer, art: SourceArticle): void {
   const top = children(el);
   if (top.length !== 1 || keyOf(top[0] as Element) !== 'div.col')
     fail(ctx, el, 'exam article must be one div.col');
-  const { leadEl } = header(ctx, top[0] as Element, row.name);
+  // The catalog stores name and intro as `{n}` templates; the mockup spells the original chapter number.
+  const { leadEl } = header(ctx, top[0] as Element, withChapterNo(row.name, chapter));
   const lead = norm.plain(leadEl);
-  const want = `${examIntro(chapter)} ${EXAM_LEAD_SUFFIX}`;
+  const want = `${withChapterNo(examIntro(chapter), chapter)} ${EXAM_LEAD_SUFFIX}`;
   if (lead !== want) fail(ctx, leadEl, `exam lead "${lead}" differs from "${want}"`);
   const done = children(top[0] as Element).find((k) => keyOf(k) === 'div.done');
   if (!done || attr(children(done)[0] as Element, 'data-i') === undefined)

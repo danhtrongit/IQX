@@ -9,8 +9,11 @@ import { ApiError } from "@/lib/api"
 
 import type {
   FlashbackBar,
+  FlashbackCrown,
+  FlashbackHistoryItem,
   FlashbackIndicatorMeta,
   FlashbackIndicatorParamMeta,
+  FlashbackLeaderboardRow,
   FlashbackMatchResult,
   FlashbackMatchState,
   FlashbackMe,
@@ -30,11 +33,28 @@ export const ROOM_CODE = "482913"
 export const matchIdOf = (n: number) => `${String(n).padStart(8, "0")}-1111-4111-8111-111111111111`
 export const MATCH_ID = matchIdOf(1)
 
-export type Person = { user_id: string; name: string; avatar_url: string | null }
+/** `level` mặc định 1 và `crown` mặc định không có (người chưa ở top 3). */
+export type Person = {
+  user_id: string
+  name: string
+  avatar_url: string | null
+  level?: number
+  crown?: FlashbackCrown
+}
 
 export const ME: Person = { user_id: "user-1", name: "Linh", avatar_url: null }
 export const MINH: Person = { user_id: "user-2", name: "Minh", avatar_url: null }
 export const HOA: Person = { user_id: "user-3", name: "Hòa", avatar_url: null }
+
+const badge = (person: Pick<Person, "level" | "crown">) => ({ level: person.level ?? 1, crown: person.crown ?? null })
+
+/** Tổng điểm để đạt cấp L (v2.1 §3.2), giống server. */
+export const levelBase = (level: number) => 5 * (level - 1) * (level + 2)
+export function levelOf(points: number): number {
+  let level = 1
+  while (levelBase(level + 1) <= points) level += 1
+  return level
+}
 
 export type Call = { method: string; path: string; body?: Record<string, unknown> }
 export type Failure = { status: number; code: string; message: string }
@@ -72,6 +92,8 @@ type RoomSim = {
   code: string
   owner: Person
   members: Person[]
+  /** user_id của những người không phải chủ phòng đang bấm "Sẵn sàng". */
+  ready: Set<string>
   settings: RoomSettings
   password: string | null
   status: "waiting" | "playing"
@@ -80,7 +102,11 @@ type RoomSim = {
 
 export type BackendOptions = {
   /** Phòng đang ở lúc vào màn hình. */
-  room?: Partial<Pick<RoomSim, "code" | "owner" | "members" | "password" | "status">> & { settings?: Partial<RoomSettings> }
+  room?: Partial<Pick<RoomSim, "code" | "owner" | "members" | "password" | "status">> & {
+    settings?: Partial<RoomSettings>
+    /** Những người (không phải chủ phòng) đã sẵn sàng lúc vào màn hình. */
+    ready?: string[]
+  }
   /** Ván đang dở của phòng (bước đã chơi...) khi `room.status` là "playing". */
   match?: Partial<Pick<MatchSim, "step" | "finished" | "cash" | "holdings" | "status">> & {
     /** Còn bao nhiêu mili giây lúc vào ván. */
@@ -93,6 +119,14 @@ export type BackendOptions = {
   passwords?: Record<string, string>
   notice?: string | null
   indicators?: FlashbackIndicatorMeta[]
+  /** Cấp và vương miện của chính mình (mặc định cấp 1, không có vương miện). */
+  me?: Pick<Person, "level" | "crown">
+  /** Điểm, hạng và số ván của mình lúc vào màn hình (thẻ cấp; điểm này cũng là mốc trước ván ở kết quả). */
+  progress?: { points?: number; rank?: number | null; games?: number; wins?: number }
+  /** Bảng xếp hạng toàn hệ thống: các dòng từ hạng 1 và dòng của mình nếu ngoài top. */
+  leaderboard?: { rows: FlashbackLeaderboardRow[]; me?: FlashbackLeaderboardRow | null }
+  /** Lịch sử đấu của mình, mới nhất trước. */
+  history?: FlashbackHistoryItem[]
 }
 
 // ------------------------------------------------------------------ chỉ báo
@@ -200,7 +234,13 @@ export function playedBar(viewBars: number, index: number): FlashbackBar {
 
 // ------------------------------------------------------------------ dòng ở sảnh
 
-export function listingRow(overrides: Partial<FlashbackRoomListItem> & { id: string }): FlashbackRoomListItem {
+export function listingRow(
+  overrides: Partial<Omit<FlashbackRoomListItem, "owner">> & {
+    id: string
+    owner?: { name: string; avatar_url: string | null; level?: number; crown?: FlashbackCrown }
+  },
+): FlashbackRoomListItem {
+  const { owner, ...rest } = overrides
   return {
     created_at: "2026-10-30T01:00:00.000Z",
     full: false,
@@ -208,11 +248,62 @@ export function listingRow(overrides: Partial<FlashbackRoomListItem> & { id: str
     max_players: 4,
     member_count: 1,
     minutes: 10,
-    owner: { name: "Minh", avatar_url: null },
+    owner: { name: "Minh", avatar_url: null, level: 1, crown: null, ...owner },
     play_bars: 30,
     stake_xu: 100,
     status: "waiting",
     view_bars: 60,
+    ...rest,
+  }
+}
+
+// ------------------------------------------------------------------ bảng xếp hạng và lịch sử
+
+export function leaderboardRow(
+  overrides: Partial<FlashbackLeaderboardRow> & { rank: number; name: string },
+): FlashbackLeaderboardRow {
+  const points = overrides.points ?? Math.max(0, 200 - overrides.rank * 10)
+  return {
+    user_id: `rank-${overrides.rank}`,
+    avatar_url: null,
+    crown: overrides.rank <= 3 ? (overrides.rank as 1 | 2 | 3) : null,
+    games: 20,
+    is_me: false,
+    level: levelOf(points),
+    points,
+    wins: 8,
+    ...overrides,
+  }
+}
+
+/** Một ván trong lịch sử đấu của mình: thắng giữa hai người, có hai lệnh. */
+export function historyItem(overrides: Partial<FlashbackHistoryItem> & { match_id: string }): FlashbackHistoryItem {
+  return {
+    cash_percent: 42,
+    end_date: "2026-03-31",
+    ended_at: "2026-10-31T09:05:00.000Z",
+    minutes: 10,
+    orders: [
+      { id: "o1", step: 3, side: "buy", qty: 100, price: "28800", fee: "4320", tax: "0", amount: "2880000" },
+      { id: "o2", step: 12, side: "sell", qty: 100, price: "29500", fee: "4425", tax: "2950", amount: "2950000" },
+    ],
+    play_bars: 30,
+    player_count: 2,
+    players: [
+      { user_id: "user-1", name: "Linh", avatar_url: null, crown: null, level: 3, is_me: true, pnl_pct: 0.0234, pnl_percent: 2.34, points: 10, rank: 1, xu: 100 },
+      { user_id: "user-2", name: "Minh", avatar_url: null, crown: 2, level: 7, is_me: false, pnl_pct: -0.01, pnl_percent: -1, points: 3, rank: 2, xu: -100 },
+    ],
+    pnl_pct: 0.0234,
+    pnl_percent: 2.34,
+    points: 10,
+    rank: 1,
+    result: "win",
+    room_id: "123456",
+    stake_xu: 100,
+    start_date: "2026-01-02",
+    symbol: "VNM",
+    view_bars: 60,
+    xu: 100,
     ...overrides,
   }
 }
@@ -221,11 +312,24 @@ export function listingRow(overrides: Partial<FlashbackRoomListItem> & { id: str
 
 export function createFlashbackBackend(options: BackendOptions = {}) {
   const settings = { ...DEFAULT_SETTINGS, ...options.room?.settings }
+  const self: Person = { ...ME, ...options.me }
   const state = {
     listing: options.listing ?? ([] as FlashbackRoomListItem[]),
     passwords: options.passwords ?? ({} as Record<string, string>),
     notice: options.notice ?? null,
+    /** Thông báo `notice` kế tiếp là do bị chủ phòng đuổi (cờ `kicked` của `rooms/me`). */
+    kicked: false,
     indicators: options.indicators ?? INDICATOR_METAS,
+    /** Điểm, hạng và số ván của mình trước ván đang chơi. */
+    points: options.progress?.points ?? 0,
+    rank: options.progress?.rank === undefined ? null : options.progress.rank,
+    games: options.progress?.games ?? 0,
+    wins: options.progress?.wins ?? 0,
+    leaderboard: options.leaderboard ?? { rows: [] as FlashbackLeaderboardRow[], me: null },
+    history: options.history ?? ([] as FlashbackHistoryItem[]),
+    /** Biểu cảm đã gửi trong ván (của mình và của người khác); server giả giữ 4 giây như server thật. */
+    reactions: [] as { id: string; user_id: string; emoji: string; at: number }[],
+    reactionSeq: 0,
     /** Người bị đưa ra khỏi phòng lúc bắt đầu (thiếu xu). */
     removedOnStart: [] as { message: string; name: string; user_id: string }[],
     room: null as RoomSim | null,
@@ -239,6 +343,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       code: options.room.code ?? ROOM_CODE,
       owner,
       members: options.room.members ?? [owner],
+      ready: new Set(options.room.ready ?? []),
       settings,
       password: options.room.password ?? null,
       status: options.room.status ?? "waiting",
@@ -310,16 +415,18 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
   function standings(room: RoomSim, match: MatchSim) {
     const mine = {
       avatar_url: null,
+      ...badge(self),
       finished: match.finished,
       is_me: true,
-      name: ME.name,
+      name: self.name,
       pnl_pct: pnlPercent(match) / 100,
       pnl_percent: pnlPercent(match),
       step: match.step,
-      user_id: ME.user_id,
+      user_id: self.user_id,
     }
     const others = match.rivals.map((rival) => ({
       avatar_url: rival.person.avatar_url,
+      ...badge(rival.person),
       finished: rival.finished,
       is_me: false,
       name: rival.person.name,
@@ -329,6 +436,18 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       user_id: rival.person.user_id,
     }))
     return [mine, ...others]
+  }
+
+  /** Biểu cảm còn trong cửa sổ 4 giây của server thật. */
+  function recentReactions() {
+    const now = Date.now()
+    state.reactions = state.reactions.filter((reaction) => now - reaction.at < 4_000)
+    return state.reactions.map((reaction) => ({
+      id: reaction.id,
+      user_id: reaction.user_id,
+      emoji: reaction.emoji,
+      age_ms: now - reaction.at,
+    }))
   }
 
   /** Như server thật (v2.1 §6.2): trong lúc chơi chỉ có phiên và trạng thái xong, % là null. */
@@ -361,10 +480,13 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       max_players: room.settings.max_players,
       members: room.members.map((person) => ({
         avatar_url: person.avatar_url,
+        ...badge(person.user_id === ME.user_id ? self : person),
         is_me: person.user_id === ME.user_id,
         is_owner: person.user_id === room.owner.user_id,
         joined_at: "2026-10-30T01:00:00.000Z",
         name: person.name,
+        // Như server: chủ phòng luôn được tính là sẵn sàng.
+        ready: person.user_id === room.owner.user_id || room.ready.has(person.user_id),
         user_id: person.user_id,
       })),
       minutes: room.settings.minutes,
@@ -393,6 +515,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       players: players(room, match),
       playing_count: playingCount(room, match),
       pot_xu: room.settings.stake_xu * room.members.length,
+      reactions: recentReactions(),
       remaining_ms: remaining(match),
       room_id: room.code,
       server_now: "2026-10-30T01:00:30.000Z",
@@ -412,6 +535,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       my_step: match.step,
       players: players(room, match),
       playing_count: playingCount(room, match),
+      reactions: recentReactions(),
       remaining_ms: match.status === "ended" ? 0 : remaining(match),
       room_id: room.code,
       server_now: "2026-10-30T01:00:30.000Z",
@@ -432,24 +556,42 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     const share = pot > 0 ? Math.floor(pot / winners.length) : 0
     const mineWon = winners.some((player) => player.is_me)
     const title = solo ? "Kết quả" : winners.length > 1 ? "Hoà" : mineWon ? "Bạn thắng" : `${winners[0].name} thắng`
+    // Điểm ván (v2.1 §3.1): thắng +10 (kể cả hoà hạng 1), thua +3, chơi 1 mình 0.
+    const earned = solo ? 0 : mineWon ? 10 : 3
+    const total = state.points + earned
+    const levelBefore = levelOf(state.points)
+    const levelAfter = levelOf(total)
     return {
       end_date: "2026-03-31",
       end_reason: match.endReason,
       match_id: match.id,
       played_bars: Array.from({ length: room.settings.play_bars }, (_, index) => playedBar(room.settings.view_bars, index)),
       pot_xu: pot,
+      progress: {
+        level: levelAfter,
+        level_base: levelBase(levelAfter),
+        leveled_up: levelAfter > levelBefore,
+        next_level_points: levelBase(levelAfter + 1),
+        points: earned,
+        previous_level: levelBefore,
+        remaining_points: levelBase(levelAfter + 1) - total,
+        total_points: total,
+      },
       refund,
       room_id: room.code,
       rows: everyone.map((player) => {
         const isWinner = !solo && winners.includes(player)
         return {
           avatar_url: player.avatar_url,
+          crown: player.crown,
           final_nav: String(Math.round(INITIAL_CASH * (1 + player.pnl_percent / 100))),
           is_me: player.is_me,
           is_winner: isWinner,
+          level: player.level,
           name: player.name,
           pnl_pct: player.pnl_pct,
           pnl_percent: player.pnl_percent,
+          points: solo ? 0 : isWinner ? 10 : 3,
           rank: 1 + everyone.filter((other) => other.pnl_percent - player.pnl_percent > 0.005).length,
           refund_xu: refund ? stake : 0,
           user_id: player.user_id,
@@ -532,6 +674,16 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     return { order, me: me(room, match) }
   }
 
+  /** Lịch sử đã lọc như server: Thắng gồm cả Hoà, thời gian tính từ lúc ván kết thúc. */
+  function historyFiltered(result: string, days: string): FlashbackHistoryItem[] {
+    const since = days === "all" ? 0 : Date.now() - Number(days) * 86_400_000
+    return state.history.filter((item) => {
+      if (new Date(item.ended_at).getTime() < since) return false
+      if (result === "win") return item.result === "win" || item.result === "tie"
+      return result === "all" || item.result === result
+    })
+  }
+
   function normalize(path: string): string {
     return path
       .split("?")[0]
@@ -554,8 +706,10 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       }
       case "GET /flashback/rooms/me": {
         const notice = state.notice
+        const kicked = state.kicked && notice !== null
         state.notice = null
-        return { room: state.room ? roomView(state.room) : null, notice }
+        state.kicked = false
+        return { room: state.room ? roomView(state.room) : null, notice, kicked }
       }
       case "POST /flashback/rooms": {
         const body = call.body as {
@@ -570,6 +724,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
           code: ROOM_CODE,
           owner: ME,
           members: [ME],
+          ready: new Set(),
           settings: {
             view_bars: body.view_bars,
             play_bars: body.play_bars,
@@ -601,12 +756,38 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
         state.room = null
         return { left: true }
       }
+      case "POST /flashback/rooms/:code/ready": {
+        const room = currentRoom()
+        if (room.status !== "waiting") throw new ApiError("Phòng đang chơi", 409, "ROOM_PLAYING")
+        const wanted = (call.body as { ready: boolean }).ready
+        if (room.owner.user_id !== ME.user_id) {
+          if (wanted) room.ready.add(ME.user_id)
+          else room.ready.delete(ME.user_id)
+        }
+        return roomView(room)
+      }
+      case "POST /flashback/rooms/:code/kick": {
+        const room = currentRoom()
+        const targetId = (call.body as { user_id: string }).user_id
+        if (room.owner.user_id !== ME.user_id) throw new ApiError("Chỉ chủ phòng được mời người ra khỏi phòng", 403, "NOT_ROOM_OWNER")
+        if (room.status !== "waiting") throw new ApiError("Đang chơi, chưa mời người ra khỏi phòng được", 409, "ROOM_PLAYING")
+        if (targetId === ME.user_id) throw new ApiError("Bạn không thể tự mời mình ra khỏi phòng", 409, "FB_KICK_SELF")
+        if (!room.members.some((person) => person.user_id === targetId)) {
+          throw new ApiError("Người chơi này không còn ở trong phòng", 404, "FB_MEMBER_NOT_FOUND")
+        }
+        room.members = room.members.filter((person) => person.user_id !== targetId)
+        room.ready.delete(targetId)
+        return roomView(room)
+      }
       case "POST /flashback/rooms/:code/start": {
         const room = currentRoom()
         if (room.owner.user_id !== ME.user_id) throw new ApiError("Chỉ chủ phòng được bắt đầu", 403, "NOT_ROOM_OWNER")
+        const waiting = room.members.filter((person) => person.user_id !== room.owner.user_id && !room.ready.has(person.user_id)).length
+        if (waiting > 0) throw new ApiError(`Còn ${waiting} người chơi chưa sẵn sàng`, 409, "FB_PLAYERS_NOT_READY")
         const removed = state.removedOnStart
         if (removed.length > 0) room.members = room.members.filter((person) => !removed.some((gone) => gone.user_id === person.user_id))
         room.status = "playing"
+        room.ready.clear()
         room.match = newMatch()
         room.match.rivals = room.members
           .filter((person) => person.user_id !== ME.user_id)
@@ -617,10 +798,57 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
         const room = currentRoom()
         room.status = "waiting"
         room.match = null
+        room.ready.clear()
         return roomView(room)
       }
       case "GET /flashback/indicators":
         return { indicators: state.indicators }
+      case "GET /flashback/me/level": {
+        const level = levelOf(state.points)
+        return {
+          games: state.games,
+          level,
+          level_base: levelBase(level),
+          next_level_points: levelBase(level + 1),
+          points: state.points,
+          rank: state.rank,
+          remaining_points: levelBase(level + 1) - state.points,
+          wins: state.wins,
+        }
+      }
+      case "GET /flashback/leaderboard":
+        return { rows: state.leaderboard.rows, me: state.leaderboard.me ?? null }
+      case "GET /flashback/me/history": {
+        const query = new URLSearchParams(call.path.split("?")[1] ?? "")
+        const filtered = historyFiltered(query.get("result") ?? "all", query.get("days") ?? "all")
+        const total = Math.min(filtered.length, 200)
+        const pages = Math.max(1, Math.ceil(total / 20))
+        const page = Math.max(1, Math.min(pages, Number(query.get("page") ?? 1) || 1))
+        return { items: filtered.slice(0, 200).slice((page - 1) * 20, page * 20), page, page_size: 20, pages, total }
+      }
+      case "GET /flashback/me/history/summary": {
+        const query = new URLSearchParams(call.path.split("?")[1] ?? "")
+        const items = historyFiltered("all", query.get("days") ?? "all")
+        const solo = items.filter((item) => item.result === "solo").length
+        const multi = items.length - solo
+        const wins = items.filter((item) => item.result === "win" || item.result === "tie").length
+        const average = items.length ? items.reduce((sum, item) => sum + item.pnl_percent, 0) / items.length : 0
+        const best = items.reduce<FlashbackHistoryItem | null>((top, item) => (!top || item.pnl_percent > top.pnl_percent ? item : top), null)
+        return {
+          avg_pnl_pct: average / 100,
+          avg_pnl_percent: average,
+          best_pnl_pct: best ? best.pnl_percent / 100 : null,
+          best_pnl_percent: best ? best.pnl_percent : null,
+          best_symbol: best ? best.symbol : null,
+          games: items.length,
+          multi_games: multi,
+          points: items.reduce((sum, item) => sum + item.points, 0),
+          solo_games: solo,
+          win_rate: multi > 0 ? wins / multi : 0,
+          wins,
+          xu_net: items.reduce((sum, item) => sum + item.xu, 0),
+        }
+      }
       default:
         break
     }
@@ -644,6 +872,14 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
         }
         case "POST /flashback/matches/:id/orders":
           return placeOrder(room, match, call.body as { side: "buy" | "sell"; qty: number })
+        case "POST /flashback/matches/:id/reactions": {
+          if (match.status === "ended") throw new ApiError("Ván đã kết thúc", 409, "MATCH_ENDED")
+          const emoji = (call.body as { emoji?: string } | undefined)?.emoji ?? ""
+          state.reactionSeq += 1
+          const sent = { id: `reaction-${state.reactionSeq}`, user_id: ME.user_id, emoji, at: Date.now() }
+          state.reactions.push(sent)
+          return { id: sent.id, user_id: sent.user_id, emoji }
+        }
         case "POST /flashback/matches/:id/finish": {
           if (match.status !== "ended" && match.step < room.settings.play_bars) {
             throw new ApiError("Chưa tới phiên cuối", 409, "NOT_AT_END")
@@ -672,6 +908,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       code,
       owner,
       members: [owner, ME],
+      ready: new Set(),
       settings: {
         view_bars: row.view_bars,
         play_bars: row.play_bars,
@@ -709,6 +946,19 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     removeMember: (userId: string) => {
       const room = currentRoom()
       room.members = room.members.filter((member) => member.user_id !== userId)
+      room.ready.delete(userId)
+    },
+    /** Người khác (không phải chủ phòng) bấm Sẵn sàng hoặc Huỷ sẵn sàng. */
+    setReady: (userId: string, ready = true) => {
+      const room = currentRoom()
+      if (ready) room.ready.add(userId)
+      else room.ready.delete(userId)
+    },
+    /** Chủ phòng khác đuổi mình: mình không còn trong phòng, `rooms/me` báo `kicked` kèm thông báo một lần. */
+    kickedByOwner: () => {
+      state.room = null
+      state.notice = "Bạn đã bị chủ phòng mời ra khỏi phòng."
+      state.kicked = true
     },
     /** Chủ phòng khác bắt đầu ván (người chơi còn lại sang màn chơi khi phòng được tải lại). */
     startByOwner: () => {
@@ -724,6 +974,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       const room = currentRoom()
       room.status = "waiting"
       room.match = null
+      room.ready.clear()
     },
     /** Người khác hoàn thành ván với mức lãi lỗ này. */
     rivalFinishes: (userId: string, pnl: number) => {
@@ -742,6 +993,11 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     /** Đồng hồ của ván: còn bao nhiêu mili giây (0 là hết giờ). */
     setRemaining: (remainingMs: number) => {
       currentMatch().match.deadline = Date.now() + remainingMs
+    },
+    /** Một người khác gửi biểu cảm: tới máy này ở lần hỏi trạng thái kế tiếp, kèm tuổi `ageMs`. */
+    rivalReacts: (userId: string, emoji: string, ageMs = 0) => {
+      state.reactionSeq += 1
+      state.reactions.push({ id: `reaction-${state.reactionSeq}`, user_id: userId, emoji, at: Date.now() - ageMs })
     },
     match: () => currentMatch().match,
   }

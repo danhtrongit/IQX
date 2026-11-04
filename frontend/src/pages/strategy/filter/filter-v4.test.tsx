@@ -84,22 +84,43 @@ async function addRsiAbove60(user: User) {
 }
 
 describe("library", () => {
-  it("has two tabs, Cơ bản first, and lists the metrics in the blocks, groups and names of the Dashboard", async () => {
+  it("has two tabs, Cơ bản first, and lists the metrics the account can use in the blocks, groups and names of the Dashboard", async () => {
     await renderTab()
     const tabs = within(library()).getAllByRole("tab")
     expect(tabs.map((tab) => tab.textContent)).toEqual(["Cơ bản", "Kỹ thuật"])
     expect(tabs[0]!.getAttribute("aria-selected")).toBe("true")
-    expect(within(library()).getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent)).toEqual(["Phân tích cơ bản chung", "Doanh nghiệp sản xuất"])
+    // First level groups per Học viện v4.1 §6.2; second level groups and order per the Dashboard.
+    expect(within(library()).getAllByRole("heading", { level: 3 }).map((heading) => heading.textContent)).toEqual(["Chỉ tiêu chung", "Chỉ tiêu doanh nghiệp sản xuất"])
+    expect(within(library()).getAllByRole("heading", { level: 4 }).map((heading) => heading.textContent)).toEqual(["Tăng trưởng", "Hiệu quả", "Hiệu quả và biên lợi nhuận"])
     expect(within(library()).getAllByTestId(/^metric-/).map((item) => item.getAttribute("data-testid"))).toEqual([
-      "metric-revenue_yoy", "metric-profit_yoy", "metric-eps_yoy", "metric-roe", "metric-roa", "metric-net_margin", "metric-gross_margin", "metric-roic",
+      "metric-revenue_yoy", "metric-profit_yoy", "metric-eps_yoy", "metric-roe", "metric-net_margin", "metric-gross_margin", "metric-roic",
     ])
     expect(within(library()).getByText("Tăng trưởng LNST")).toBeTruthy()
-    expect(library().textContent).not.toMatch(/Chương \d/)
     expect(library().textContent).not.toContain("YoY")
-    expect(within(library()).getByLabelText("5 đã mở")).toBeTruthy()
-    // An unopened metric is locked, a learned one that is not ready says why.
-    expect(within(library()).getByTestId("metric-roa").textContent).toContain("Chưa mở")
-    expect(within(library()).getByTestId("metric-eps_yoy").textContent).toMatch(/Chưa dùng được: Nguồn dữ liệu hiện tại chưa có EPS/)
+    // Never a chapter name, an "Đã mở" label or a way to unlock; a metric the account cannot use is not listed.
+    expect(library().textContent).not.toMatch(/Chương|đã mở|Chưa mở|học bài/)
+    expect(within(library()).queryByTestId("metric-roa")).toBeNull()
+    expect(within(library()).getByLabelText("5 mục")).toBeTruthy()
+    // One that is open but not ready says why.
+    const eps = within(library()).getByTestId("metric-eps_yoy")
+    expect(eps.textContent).toMatch(/Chưa dùng được: Nguồn dữ liệu hiện tại chưa có EPS/)
+    expect(within(eps).getByRole("button").hasAttribute("disabled")).toBe(true)
+    expect(within(library()).getByTestId("metric-roic").textContent).toMatch(/Chưa có thuế suất chuẩn hóa/)
+  })
+
+  it("names all 42 lessons in the catalog dialog with what each is missing, by industry group and never by chapter", async () => {
+    const user = userEvent.setup()
+    await renderTab()
+    await user.click(within(library()).getByRole("button", { name: "Danh mục 42 chỉ tiêu" }))
+    const dialog = await screen.findByRole("dialog", { name: /Danh mục 8 chỉ tiêu/ })
+    expect(within(dialog).getByTestId("catalog-roa").textContent).toContain("Chưa dùng được")
+    expect(within(dialog).getByTestId("catalog-roa").textContent).toContain("Chỉ tiêu doanh nghiệp sản xuất")
+    expect(dialog.textContent).not.toMatch(/Chương|Chưa mở/)
+    expect(within(dialog).getByTestId("catalog-roic").textContent).toContain("Chờ định nghĩa")
+    expect(within(dialog).getByTestId("catalog-eps_yoy").textContent).toContain("Chưa có nguồn dữ liệu")
+    expect(within(dialog).getByTestId("catalog-roe").textContent).toContain("Dùng được")
+    // The Dashboard's name, not the lesson's.
+    expect(within(dialog).getByTestId("catalog-revenue_yoy").textContent).toContain("Tăng trưởng doanh thu")
   })
 
   it("lists the 16 indicators of the Bot in 7 groups, all open, and each can be added once: + becomes a tick, the card's X gives it back", async () => {

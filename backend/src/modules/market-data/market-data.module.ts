@@ -13,16 +13,16 @@ import { VndMarketProvider } from './providers/vnd.provider.js';
     MarketHttpTransport,
     VciMarketProvider,
     VndMarketProvider,
-    KbsMarketProvider,
     DnseMarketProvider,
+    KbsMarketProvider,
     MarketDataService,
   ],
   exports: [
     MarketHttpTransport,
     VciMarketProvider,
     VndMarketProvider,
-    KbsMarketProvider,
     DnseMarketProvider,
+    KbsMarketProvider,
     MarketDataService,
   ],
 })

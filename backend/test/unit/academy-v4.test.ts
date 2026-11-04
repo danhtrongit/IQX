@@ -94,17 +94,19 @@ describe('academy deep link (spec v4 §6)', () => {
     expect(hit).toEqual({
       found: true,
       metric: 'nim',
-      item_id: 'ch10-l01',
+      lesson_id: 'ch10-l01',
       lesson_key: 'fundamental:nim',
       metric_key: 'nim',
-      chapter: 10,
+      chapter_id: 'ch10',
+      chapter_display_no: 10,
+      locked: false,
       title: 'NIM · biên lãi thuần',
       matched_by: 'metric_key',
       url: '/hoc-vien/ch10-l01',
     });
     // The key is also found in upper case (the dashboard may send either).
     expect(await service.link(USER, 'ROE')).toMatchObject({
-      item_id: 'ch08-l11',
+      lesson_id: 'ch08-l11',
       matched_by: 'metric_key',
     });
   });
@@ -113,31 +115,31 @@ describe('academy deep link (spec v4 §6)', () => {
     const { service } = setup();
     expect(await service.link(USER, 'Biên lợi nhuận gộp')).toMatchObject({
       found: true,
-      item_id: 'ch09-l01',
+      lesson_id: 'ch09-l01',
       matched_by: 'title',
     });
     expect(await service.link(USER, 'EV / EBITDA')).toMatchObject({
-      item_id: 'ch09-l15',
+      lesson_id: 'ch09-l15',
       matched_by: 'title',
     });
     // The dashboard names of the bank / securities / insurance metrics start the title ("Tên · mô tả").
     expect(await service.link(USER, 'Tỷ lệ dự phòng / Dư nợ')).toMatchObject({
-      item_id: 'ch10-l07',
+      lesson_id: 'ch10-l07',
       matched_by: 'title_prefix',
-      chapter: 10,
+      chapter_display_no: 10,
       metric_key: 'provision_to_loans',
     });
     expect(await service.link(USER, 'Combined ratio')).toMatchObject({
-      item_id: 'ch12-l05',
+      lesson_id: 'ch12-l05',
       matched_by: 'title_prefix',
     });
     expect(await service.link(USER, 'Net Debt / EBITDA')).toMatchObject({
-      item_id: 'ch09-l09',
+      lesson_id: 'ch09-l09',
       matched_by: 'title_prefix',
     });
     // Indicator lessons of chapters 4, 6 and 7 are reachable by name too (Bot, Bộ lọc, Flashback later).
     expect(await service.link(USER, 'RSI')).toMatchObject({
-      item_id: 'ch04-l06',
+      lesson_id: 'ch04-l06',
       lesson_key: 'technical:rsi',
       metric_key: null,
       matched_by: 'title',
@@ -146,7 +148,7 @@ describe('academy deep link (spec v4 §6)', () => {
 
   it('ignores case, accents form and extra spaces, and never matches half a word', async () => {
     const { service } = setup();
-    expect(await service.link(USER, '  ev   /  ebitda ')).toMatchObject({ item_id: 'ch09-l15' });
+    expect(await service.link(USER, '  ev   /  ebitda ')).toMatchObject({ lesson_id: 'ch09-l15' });
     expect((await service.link(USER, 'Combined')).found).toBe(false);
     expect((await service.link(USER, 'Combined ratio ·')).found).toBe(false);
     expect((await service.link(USER, 'fundamental:nim')).found).toBe(false);
@@ -159,10 +161,12 @@ describe('academy deep link (spec v4 §6)', () => {
     expect(nothing).toEqual({
       found: false,
       metric: 'chi tieu khong ton tai',
-      item_id: 'ch01-l01',
+      lesson_id: 'ch01-l01',
       lesson_key: null,
       metric_key: null,
-      chapter: null,
+      chapter_id: null,
+      chapter_display_no: null,
+      locked: false,
       title: null,
       matched_by: null,
       url: '/hoc-vien/ch01-l01',
@@ -171,17 +175,17 @@ describe('academy deep link (spec v4 §6)', () => {
     memory.complete(USER, ['concept:dau_tu_chung_khoan']);
     expect(await service.link(USER, 'khong co')).toMatchObject({
       found: false,
-      item_id: 'ch01-l02',
+      lesson_id: 'ch01-l02',
     });
     // The lesson opened last wins.
     await service.lesson(USER, 'ch11-l04');
     expect(await service.link(USER, 'khong co')).toMatchObject({
       found: false,
-      item_id: 'ch11-l04',
+      lesson_id: 'ch11-l04',
       url: '/hoc-vien/ch11-l04',
     });
     // Another learner is not affected.
-    expect(await service.link(OTHER_USER, 'khong co')).toMatchObject({ item_id: 'ch01-l01' });
+    expect(await service.link(OTHER_USER, 'khong co')).toMatchObject({ lesson_id: 'ch01-l01' });
   });
 
   it('is found for every one of the 62 metric keys and reaches the right lesson', async () => {
@@ -190,13 +194,13 @@ describe('academy deep link (spec v4 §6)', () => {
       const hit = await service.link(USER, entry.metric_key!);
       expect(hit, entry.id).toMatchObject({
         found: true,
-        item_id: entry.id,
+        lesson_id: entry.id,
         matched_by: 'metric_key',
       });
       // Every lesson title also resolves by its own name (the dashboard sends names, spec §6).
       expect(await service.link(USER, entry.name), entry.id).toMatchObject({
         found: true,
-        item_id: entry.id,
+        lesson_id: entry.id,
         matched_by: 'title',
       });
       const short = entry.name.split(' · ')[0]!;
@@ -298,7 +302,8 @@ describe('academy free learning flow (spec v4 §4.1, §4.3)', () => {
     const progress = await service.progress(USER);
     expect(progress).toMatchObject({ course_done: 1, access_mode: 'free' });
     expect(progress.chapters.at(-1)).toMatchObject({
-      no: 12,
+      chapter_id: 'ch12',
+      display_no: 12,
       done: 1,
       total: 8,
       exam_passed: true,

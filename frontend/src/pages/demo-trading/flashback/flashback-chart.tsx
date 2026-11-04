@@ -5,20 +5,39 @@
  * đánh dấu "?", vạch đứt ngăn giữa phần xem và phần chơi. Ô khối lượng luôn hiện ngay dưới ô giá,
  * các chỉ báo có ô riêng nằm dưới. Không có ngày thật, không có tên mã.
  *
- * Mỗi khung có dải đầu riêng cho dòng chú giải (tên, thông số, giá trị, nút Ẩn / Cài đặt / Xóa);
- * đường vẽ nằm bên dưới dải này nên không đè lên chữ. Biểu đồ gói gọn trong màn hình (máy tính) hoặc
- * cao cố định 380px (điện thoại); thêm chỉ báo thì các khung tự chia lại chiều cao theo tỷ lệ giá 3,2 :
- * khối lượng 1 : mỗi chỉ báo riêng 1,15 (v2.1 §8, xem `flashback-chart-layout.ts`).
+ * Chú giải nổi kiểu TradingView (spec v2.3 §1): mỗi khung có chú giải ở góc trên bên trái, đè lên phần
+ * vẽ, không chiếm dòng nào. Ô giá tối thiểu 320px (điện thoại 240px), ô khối lượng và ô chỉ báo riêng
+ * cao cố định; thêm ô chỉ báo thì biểu đồ dài thêm (v2.3 §2, xem `flashback-chart-layout.ts`). Trục giá
+ * chỉ theo nến; đường MA ngoài khung có nhãn ở mép phải (v2.3 §3).
+ *
+ * Công cụ vẽ (v2.1 §7): Đường xu hướng và Fibonacci vẽ trên khung giá, neo theo (phiên, giá), cắt trong
+ * khung giá; bấm điểm đầu rồi điểm cuối hoặc nhấn giữ và kéo; chọn, kéo tay nắm, Delete để xoá.
  */
-import { memo, useCallback, useMemo, useState, type RefCallback } from "react"
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type RefCallback } from "react"
 import { Eye, EyeOff, Settings2, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { useChartWidth } from "@/pages/academy/charts/use-chart-width"
 import type { FlashbackBar, FlashbackOrder } from "./flashback-api"
-import { LEGEND_ROW, NARROW_WIDTH, PANE_GAP, axisTicks, chartLayout, chartTotalHeight, type PaneBox } from "./flashback-chart-layout"
+import { LEGEND_ROW, NARROW_WIDTH, PANE_GAP, axisTicks, chartLayout, offscaleLabels, priceRange, type PaneBox } from "./flashback-chart-layout"
 import type { ChartIndicator } from "./flashback-context"
+import {
+  FIB_LEVELS,
+  FIB_ZONE,
+  TREND_COLOR,
+  anchors,
+  fibLabel,
+  fibPrice,
+  hitDrawing,
+  hitHandle,
+  type Drawing,
+  type DrawingHandle,
+  type DrawingMap,
+  type DrawingPoint,
+  type ScreenPoint,
+} from "./flashback-drawings"
 import { formatNumber, formatPercent, formatSignedPercent, sessionLabel } from "./flashback-model"
+import type { ChartDrawings } from "./use-chart-drawings"
 import { useChartFit } from "./use-chart-fit"
 
 export type { ChartIndicator }
@@ -29,10 +48,14 @@ type Props = {
   orders: readonly FlashbackOrder[]
   viewBars: number
   playBars: number
+  drawings: ChartDrawings
   onToggle: (key: string) => void
   onSettings: (key: string) => void
   onRemove: (key: string) => void
 }
+
+/** Kéo từ điểm đầu quá ngần này pixel rồi thả thì coi là vẽ bằng cách kéo (v2.1 §7.2). */
+const DRAG_DRAW_DISTANCE = 10
 
 const PAD_LEFT = 6
 const PAD_RIGHT = 62
@@ -72,6 +95,7 @@ export const FlashbackChart = memo(function FlashbackChart({
   orders,
   viewBars,
   playBars,
+  drawings,
   onToggle,
   onSettings,
   onRemove,
@@ -90,10 +114,26 @@ export const FlashbackChart = memo(function FlashbackChart({
     [measureWidth, fitRef],
   )
   const [hover, setHover] = useState<number | null>(null)
+  // Điện thoại: chạm một dòng chú giải thì hiện 3 nút của dòng đó (v2.3 §1.3).
+  const [activeRow, setActiveRow] = useState<string | null>(null)
+  // Xem trước hình đang vẽ theo con trỏ, điểm bấm xuống (phân biệt bấm với kéo) và tay nắm đang kéo.
+  const [preview, setPreview] = useState<ScreenPoint | null>(null)
+  const downAt = useRef<ScreenPoint | null>(null)
+  const dragging = useRef<{ id: number; handle: DrawingHandle } | null>(null)
+  const clipId = `fb-clip-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`
   const narrow = width < NARROW_WIDTH
-  // Điện thoại và cửa sổ hẹp: cao cố định 380px. Máy tính: gói gọn trong màn hình (v2.1 §8).
-  const totalHeight = chartTotalHeight({ fixed: narrow || fit.pageNarrow, available: fit.available })
+  const mobile = narrow || fit.pageNarrow
   const totalSlots = viewBars + playBars
+
+  useEffect(() => {
+    if (activeRow === null) return
+    const close = (event: PointerEvent) => {
+      const target = event.target as Element | null
+      if (!target?.closest?.("[data-legend-row]")) setActiveRow(null)
+    }
+    document.addEventListener("pointerdown", close)
+    return () => document.removeEventListener("pointerdown", close)
+  }, [activeRow])
 
   const overlays = useMemo(() => indicators.filter((indicator) => indicator.plot.kind === "over"), [indicators])
   const volumeIndicators = useMemo(() => indicators.filter((indicator) => indicator.plot.kind === "vol"), [indicators])
@@ -103,12 +143,13 @@ export const FlashbackChart = memo(function FlashbackChart({
     () =>
       chartLayout({
         narrow,
+        mobile,
         overlayCount: overlays.length,
         volumeCount: volumeIndicators.length,
         indicatorKeys: ownPanes.map((indicator) => indicator.key),
-        totalHeight,
+        available: fit.available,
       }),
-    [narrow, overlays.length, volumeIndicators.length, ownPanes, totalHeight],
+    [narrow, mobile, overlays.length, volumeIndicators.length, ownPanes, fit.available],
   )
   const height = layout.height
   const pricePane = layout.panes[0]
@@ -121,29 +162,8 @@ export const FlashbackChart = memo(function FlashbackChart({
   const candleWidth = Math.max(1.5, Math.min(9, slot * 0.62))
   const x = (index: number) => PAD_LEFT + slot * (index + 0.5)
 
-  const priceScale = useMemo(() => {
-    let low = Number.POSITIVE_INFINITY
-    let high = Number.NEGATIVE_INFINITY
-    for (let index = 0; index <= current; index += 1) {
-      low = Math.min(low, bars[index].low)
-      high = Math.max(high, bars[index].high)
-    }
-    overlays
-      .filter((indicator) => !indicator.hidden)
-      .forEach((indicator) => {
-        indicator.plot.series.forEach((line) => {
-          for (let index = 0; index <= current; index += 1) {
-            const value = line.values[index]
-            if (value == null) continue
-            low = Math.min(low, value)
-            high = Math.max(high, value)
-          }
-        })
-      })
-    if (!Number.isFinite(low) || !Number.isFinite(high)) return { low: 0, high: 1 }
-    const padding = (high - low) * 0.07 || high * 0.01 || 1
-    return { low: low - padding, high: high + padding }
-  }, [bars, current, overlays])
+  // Trục giá chỉ theo nến đang hiện; đường chỉ báo không kéo giãn trục (v2.3 §3).
+  const priceScale = useMemo(() => priceRange(bars, current), [bars, current])
 
   const priceY = (value: number) => pricePane.top + ((priceScale.high - value) / (priceScale.high - priceScale.low)) * pricePane.height
 
@@ -165,6 +185,94 @@ export const FlashbackChart = memo(function FlashbackChart({
   }, [bars, current, volumeIndicators])
 
   const volumeY = (value: number) => volumePane.top + volumePane.height - (value / volumeMax) * volumePane.height
+
+  // ---- công cụ vẽ (v2.1 §7)
+  const drawingMap: DrawingMap = { x, y: priceY, right: width - PAD_RIGHT }
+  const { state: drawState, dispatch: drawDispatch } = drawings
+  const drawMode = drawState.tool !== null
+
+  function toScreen(clientX: number, clientY: number, target: SVGSVGElement): ScreenPoint {
+    const rect = target.getBoundingClientRect()
+    return {
+      x: ((clientX - rect.left) / (rect.width || width)) * width,
+      y: ((clientY - rect.top) / (rect.height || height)) * height,
+    }
+  }
+
+  /** Điểm màn hình thành (phiên, giá); `inPane` cho biết điểm có nằm trong khung giá không. */
+  function toData(point: ScreenPoint): { point: DrawingPoint; inPane: boolean } {
+    const session = Math.max(0, Math.min(totalSlots - 1, (point.x - PAD_LEFT) / slot - 0.5))
+    const price = priceScale.high - ((point.y - pricePane.top) / pricePane.height) * (priceScale.high - priceScale.low)
+    const inPane =
+      point.x >= PAD_LEFT && point.x <= width - PAD_RIGHT && point.y >= pricePane.top && point.y <= pricePane.top + pricePane.height
+    return { point: { session, price }, inPane }
+  }
+
+  function finishDrawing(point: ScreenPoint) {
+    drawDispatch({ type: "finish", b: toData(point).point })
+    setPreview(null)
+    downAt.current = null
+  }
+
+  function onDrawPointerDown(event: ReactPointerEvent<SVGSVGElement>) {
+    const point = toScreen(event.clientX, event.clientY, event.currentTarget)
+    const where = toData(point)
+    if (drawState.tool) {
+      // Chỉ vẽ được trên khung giá, cả điểm đầu lẫn điểm cuối.
+      if (!where.inPane) return
+      event.preventDefault()
+      event.currentTarget.setPointerCapture?.(event.pointerId)
+      if (drawState.pending) {
+        finishDrawing(point)
+        return
+      }
+      drawDispatch({ type: "start", a: where.point })
+      setPreview(point)
+      downAt.current = point
+      return
+    }
+    const selected = drawState.shapes.find((shape) => shape.id === drawState.selectedId)
+    const handle = hitHandle(selected, point, drawingMap)
+    if (selected && handle) {
+      dragging.current = { id: selected.id, handle }
+      event.currentTarget.setPointerCapture?.(event.pointerId)
+      event.preventDefault()
+      return
+    }
+    const hit = where.inPane ? hitDrawing(drawState.shapes, point, drawingMap) : null
+    drawDispatch({ type: "select", id: hit ? hit.id : null })
+  }
+
+  function onDrawPointerMove(event: ReactPointerEvent<SVGSVGElement>) {
+    const drag = dragging.current
+    if (!drag && !drawState.pending) return
+    const point = toScreen(event.clientX, event.clientY, event.currentTarget)
+    if (drag) drawDispatch({ type: "move", id: drag.id, handle: drag.handle, point: toData(point).point })
+    else setPreview(point)
+  }
+
+  function onDrawPointerUp(event: ReactPointerEvent<SVGSVGElement>) {
+    if (dragging.current) {
+      dragging.current = null
+      return
+    }
+    const start = downAt.current
+    downAt.current = null
+    if (!drawState.pending || !start) return
+    // Nhấn giữ tại điểm đầu, kéo tới điểm cuối rồi thả: vẽ xong ngay.
+    const point = toScreen(event.clientX, event.clientY, event.currentTarget)
+    if (Math.hypot(point.x - start.x, point.y - start.y) > DRAG_DRAW_DISTANCE) finishDrawing(point)
+  }
+
+  function onDrawPointerCancel() {
+    dragging.current = null
+    downAt.current = null
+  }
+
+  const previewShape: Drawing | null =
+    drawState.pending && preview
+      ? { id: -1, kind: drawState.pending.kind, a: drawState.pending.a, b: toData(preview).point }
+      : null
 
   if (current < 0) return <div className="w-full" style={{ minHeight: height }} ref={measure} />
 
@@ -193,6 +301,24 @@ export const FlashbackChart = memo(function FlashbackChart({
     setHover(index >= 0 && index <= current ? index : null)
   }
 
+  // Đường dạng MA (MA, EMA, MA Cross) ngoài khung ở phiên đang mở: nhãn ở mép phải (v2.3 §3).
+  const offscale = offscaleLabels(
+    overlays
+      .filter((indicator) => !indicator.hidden && (indicator.id === "ma" || indicator.id === "ema" || indicator.id === "ma_cross"))
+      .flatMap((indicator) =>
+        indicator.plot.series.map((line) => ({
+          key: `${indicator.key}-${line.key}`,
+          name: maLineName(indicator, line.key),
+          value: line.values[current] ?? null,
+          color: line.color ?? indicator.color,
+        })),
+      ),
+    priceScale,
+    pricePane,
+    formatNumber,
+  )
+  const closeY = priceY(bars[current].close)
+
   const changeClass = changePct > 0 ? "text-price-up" : changePct < 0 ? "text-price-down" : "text-foreground"
   const ohlc = (
     <span className="text-academy-label">
@@ -207,11 +333,18 @@ export const FlashbackChart = memo(function FlashbackChart({
         role="img"
         aria-label="Biểu đồ nến Flashback"
         viewBox={`0 0 ${width} ${height}`}
-        className="block w-full touch-pan-y"
+        // Đang vẽ thì chạm vào biểu đồ không cuộn trang (v2.1 §7.2) và con trỏ là dấu cộng.
+        className={cn("block w-full", drawMode ? "cursor-crosshair touch-none" : "touch-pan-y")}
         style={{ height }}
+        data-draw-mode={drawState.tool ?? "none"}
+        onPointerDown={onDrawPointerDown}
+        onPointerMove={onDrawPointerMove}
+        onPointerUp={onDrawPointerUp}
+        onPointerCancel={onDrawPointerCancel}
         onMouseMove={(event) => updateHover(event.clientX, event.currentTarget)}
         onMouseLeave={() => setHover(null)}
         onTouchStart={(event) => {
+          setActiveRow(null)
           const touch = event.touches[0]
           if (touch) updateHover(touch.clientX, event.currentTarget)
         }}
@@ -255,29 +388,46 @@ export const FlashbackChart = memo(function FlashbackChart({
           <line key={pane.key} x1={PAD_LEFT} x2={width - PAD_RIGHT} y1={pane.legendTop - PANE_GAP / 2} y2={pane.legendTop - PANE_GAP / 2} stroke={GRID} />
         ))}
 
-        {/* Lưới giá và nhãn ở trục phải */}
+        {/* Lưới giá và nhãn ở trục phải; vạch trùng chỗ nhãn giá đóng cửa thì bỏ số (v2.3 §3) */}
         {[0, 1, 2, 3, 4].map((step) => {
           const value = priceScale.low + ((priceScale.high - priceScale.low) * step) / 4
           const y = priceY(value)
           return (
             <g key={step}>
               <line x1={PAD_LEFT} x2={width - PAD_RIGHT} y1={y} y2={y} stroke={GRID} />
-              <text x={width - PAD_RIGHT + 6} y={y + 4} className="fill-academy-label text-[10.5px] tabular-nums">
-                {formatNumber(value)}
-              </text>
+              {Math.abs(y - closeY) >= 14 && (
+                <text x={width - PAD_RIGHT + 6} y={y + 4} className="fill-academy-label text-[10.5px] tabular-nums">
+                  {formatNumber(value)}
+                </text>
+              )}
             </g>
           )
         })}
 
-        {/* Chỉ báo vẽ trên ô giá */}
-        {overlays
-          .filter((indicator) => !indicator.hidden)
-          .map((indicator) => (
-            <g key={indicator.key}>
-              <IndicatorLines indicator={indicator} from={0} to={current} x={x} y={priceY} color={indicator.color} />
-              <CrossPoints indicator={indicator} from={0} to={current} x={x} y={priceY} />
-            </g>
-          ))}
+        {/* Chỉ báo vẽ trên ô giá: cắt theo khung, không kéo giãn trục */}
+        <g clipPath={`url(#${clipId})`} data-testid="flashback-price-overlays">
+          {overlays
+            .filter((indicator) => !indicator.hidden)
+            .map((indicator) => (
+              <g key={indicator.key}>
+                <IndicatorLines indicator={indicator} from={0} to={current} x={x} y={priceY} color={indicator.color} />
+                <CrossPoints indicator={indicator} from={0} to={current} x={x} y={priceY} />
+              </g>
+            ))}
+        </g>
+        {offscale.map((label) => (
+          <text
+            key={label.key}
+            x={width - PAD_RIGHT - 4}
+            y={label.y + 4}
+            textAnchor="end"
+            style={{ fill: label.color }}
+            className="text-[10.5px] font-semibold tabular-nums"
+            data-offscale={label.side}
+          >
+            {label.text}
+          </text>
+        ))}
 
         {/* Nến */}
         {bars.slice(0, current + 1).map((bar, index) => {
@@ -304,9 +454,22 @@ export const FlashbackChart = memo(function FlashbackChart({
           return <path key={order.id} d={`M${x(index)},${y} l6,-10 h-12z`} fill={TONE_DOWN} stroke="var(--background)" strokeWidth={1} />
         })}
 
+        {/* Hình vẽ: cắt trong khung giá, kể cả vùng phiên chưa mở (v2.1 §7.2) */}
+        <defs>
+          <clipPath id={clipId}>
+            <rect x={PAD_LEFT} y={pricePane.top} width={plotWidth} height={pricePane.height} />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${clipId})`} data-testid="flashback-drawings">
+          {drawState.shapes.map((shape) => (
+            <DrawingShape key={shape.id} drawing={shape} map={drawingMap} selected={shape.id === drawState.selectedId} />
+          ))}
+          {previewShape ? <DrawingShape drawing={previewShape} map={drawingMap} selected={false} preview /> : null}
+        </g>
+
         {/* Giá đóng cửa hiện tại */}
-        <line x1={PAD_LEFT} x2={PAD_LEFT + plotWidth} y1={priceY(bars[current].close)} y2={priceY(bars[current].close)} stroke="var(--chart-1)" strokeDasharray="2 3" />
-        <PriceTag x={width - PAD_RIGHT + 2} y={priceY(bars[current].close)} text={formatNumber(bars[current].close)} />
+        <line x1={PAD_LEFT} x2={PAD_LEFT + plotWidth} y1={closeY} y2={closeY} stroke="var(--chart-1)" strokeDasharray="2 3" />
+        <PriceTag x={width - PAD_RIGHT + 2} y={closeY} text={formatNumber(bars[current].close)} />
 
         {/* Ô khối lượng */}
         {bars.slice(0, current + 1).map((bar, index) => {
@@ -362,7 +525,7 @@ export const FlashbackChart = memo(function FlashbackChart({
         ))}
       </svg>
 
-      {/* Chú giải kiểu TradingView: mỗi khung một dải đầu riêng, nằm trên phần vẽ */}
+      {/* Chú giải nổi kiểu TradingView: góc trên bên trái mỗi khung, đè lên phần vẽ (v2.3 §1) */}
       <div className="pointer-events-none absolute inset-0">
         <Legend pane={pricePane} name="price">
           {narrow ? (
@@ -392,6 +555,9 @@ export const FlashbackChart = memo(function FlashbackChart({
               onToggle={onToggle}
               onSettings={onSettings}
               onRemove={onRemove}
+              touch={mobile}
+              active={activeRow === indicator.key}
+              onActivate={setActiveRow}
             />
           ))}
         </Legend>
@@ -409,6 +575,9 @@ export const FlashbackChart = memo(function FlashbackChart({
               onToggle={onToggle}
               onSettings={onSettings}
               onRemove={onRemove}
+              touch={mobile}
+              active={activeRow === indicator.key}
+              onActivate={setActiveRow}
             />
           ))}
         </Legend>
@@ -424,6 +593,9 @@ export const FlashbackChart = memo(function FlashbackChart({
                 onToggle={onToggle}
                 onSettings={onSettings}
                 onRemove={onRemove}
+                touch={mobile}
+                active={activeRow === indicator.key}
+                onActivate={setActiveRow}
               />
             </Legend>
           )
@@ -433,12 +605,12 @@ export const FlashbackChart = memo(function FlashbackChart({
   )
 })
 
-/** Dải đầu của một khung: đúng bằng chiều cao đã chừa trong bố cục. */
+/** Khối chú giải của một khung: nổi ở góc trên bên trái, đè lên phần vẽ, không chiếm chiều cao khung. */
 function Legend({ pane, name, children }: { pane: PaneBox; name: string; children: React.ReactNode }) {
   return (
     <div
-      className="absolute right-16 left-2 flex flex-col items-start overflow-hidden"
-      style={{ top: pane.legendTop, height: pane.legendHeight }}
+      className="absolute right-16 left-2 flex flex-col items-start gap-px"
+      style={{ top: pane.legendTop + 2, maxHeight: pane.height }}
       data-pane={name}
       data-legend-height={pane.legendHeight}
       data-plot-height={pane.height}
@@ -451,7 +623,7 @@ function Legend({ pane, name, children }: { pane: PaneBox; name: string; childre
 function LegendLine({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden rounded-sm px-1.5 text-[12.5px] leading-6 whitespace-nowrap tabular-nums"
+      className="pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden rounded-sm bg-black/40 px-1.5 text-[12.5px] leading-6 whitespace-nowrap tabular-nums"
       style={{ height: LEGEND_ROW }}
     >
       {children}
@@ -466,6 +638,69 @@ function PriceTag({ x, y, text }: { x: number; y: number; text: string }) {
       <text x={x + 4} y={y + 4} className="fill-primary-foreground text-[10.5px] font-bold tabular-nums">
         {text}
       </text>
+    </g>
+  )
+}
+
+/** Một hình vẽ: đường xu hướng (vàng) hoặc Fibonacci (7 mức, vùng 38,2 đến 61,8% tô nhạt, nét đứt nối hai điểm). */
+function DrawingShape({
+  drawing,
+  map,
+  selected,
+  preview = false,
+}: {
+  drawing: Drawing
+  map: DrawingMap
+  selected: boolean
+  preview?: boolean
+}) {
+  const { a, b } = anchors(drawing, map)
+  return (
+    <g data-testid="flashback-drawing" data-kind={drawing.kind} data-selected={selected} data-preview={preview}>
+      {drawing.kind === "trend" ? (
+        <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={TREND_COLOR} strokeWidth={selected ? 2.6 : 1.7} strokeLinecap="round" />
+      ) : (
+        <FibShape drawing={drawing} map={map} selected={selected} />
+      )}
+      {selected || preview
+        ? [a, b].map((point, index) => (
+            <circle
+              key={index}
+              cx={point.x}
+              cy={point.y}
+              r={5}
+              fill="var(--card)"
+              stroke={TREND_COLOR}
+              strokeWidth={2}
+              data-testid="flashback-drawing-handle"
+            />
+          ))
+        : null}
+    </g>
+  )
+}
+
+function FibShape({ drawing, map, selected }: { drawing: Drawing; map: DrawingMap; selected: boolean }) {
+  const { a, b } = anchors(drawing, map)
+  const left = Math.min(a.x, b.x)
+  const zoneA = map.y(fibPrice(drawing, FIB_ZONE[0]))
+  const zoneB = map.y(fibPrice(drawing, FIB_ZONE[1]))
+  return (
+    <g>
+      <rect x={left} y={Math.min(zoneA, zoneB)} width={Math.max(0, map.right - left)} height={Math.abs(zoneA - zoneB)} fill="var(--chart-1)" opacity={0.1} />
+      <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="var(--chart-5)" strokeWidth={1} strokeDasharray="4 4" />
+      {FIB_LEVELS.map(({ level, color }) => {
+        const price = fibPrice(drawing, level)
+        const y = map.y(price)
+        return (
+          <g key={level} data-level={level}>
+            <line x1={left} x2={map.right} y1={y} y2={y} stroke={color} strokeWidth={selected ? 1.8 : 1.1} />
+            <text x={left + 4} y={y - 3} style={{ fill: color }} className="text-[10.5px] font-bold tabular-nums">
+              {fibLabel(level, price)}
+            </text>
+          </g>
+        )
+      })}
     </g>
   )
 }
@@ -697,25 +932,34 @@ function LegendRow({
   onToggle,
   onSettings,
   onRemove,
+  touch,
+  active,
+  onActivate,
 }: {
   indicator: ChartIndicator
   values: LegendValue[]
   onToggle: (key: string) => void
   onSettings: (key: string) => void
   onRemove: (key: string) => void
+  /** Điện thoại: nút chỉ hiện khi dòng được chạm (v2.3 §1.3). */
+  touch: boolean
+  active: boolean
+  onActivate: (key: string) => void
 }) {
   return (
     <div
       className={cn(
-        "pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden rounded-sm px-1.5 text-[12.5px] whitespace-nowrap tabular-nums hover:bg-muted/60",
+        "group pointer-events-auto flex max-w-full items-center gap-x-2 overflow-hidden rounded-sm bg-black/40 px-1.5 text-[12.5px] whitespace-nowrap tabular-nums",
         indicator.hidden && "opacity-45",
       )}
       style={{ height: LEGEND_ROW }}
       data-legend-row={indicator.key}
+      data-active={active || undefined}
+      onClick={touch ? () => onActivate(indicator.key) : undefined}
     >
-      {/* Tên chỉ báo giữ nguyên chỗ để nhận ra được trên điện thoại; các giá trị co lại (có dấu ba chấm) trước, 3 nút luôn còn đủ. */}
-      <span className="max-w-[calc(100%-5.5rem)] min-w-0 shrink-0 truncate font-bold text-foreground">{indicator.label}</span>
-      <span className="min-w-0 truncate">
+      {/* Hẹp chỗ thì các giá trị co lại (có dấu ba chấm) trước tên chỉ báo; 3 nút luôn còn đủ. */}
+      <span className="min-w-0 truncate font-bold text-foreground">{indicator.label}</span>
+      <span className="min-w-0 shrink-[1000] truncate">
         {values.map((value, idx) => {
           const line = indicator.plot.series[idx]
           const color = value.color ?? line?.color
@@ -734,7 +978,13 @@ function LegendRow({
           )
         })}
       </span>
-      <span className="flex shrink-0 items-center">
+      <span
+        className={cn(
+          "shrink-0 items-center",
+          touch ? (active ? "flex" : "hidden") : "hidden group-focus-within:flex group-hover:flex",
+        )}
+        data-legend-buttons
+      >
         <button
           type="button"
           className={LEGEND_BUTTON}
@@ -765,4 +1015,15 @@ function LegendRow({
       </span>
     </div>
   )
+}
+
+/** Tên đường MA cho nhãn ngoài khung: "MA 200", "EMA 50"; MA Cross ghi chu kỳ của từng đường. */
+function maLineName(indicator: ChartIndicator, lineKey: string): string {
+  const period = (name: string, fallback: number) => {
+    const value = indicator.params?.[name]
+    return typeof value === "number" ? value : fallback
+  }
+  if (indicator.id === "ema") return `EMA ${period("period", 20)}`
+  if (indicator.id === "ma_cross") return lineKey === "f" ? `MA ${period("fast", 20)}` : `MA ${period("slow", 50)}`
+  return `MA ${period("period", 20)}`
 }

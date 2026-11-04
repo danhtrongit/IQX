@@ -29,16 +29,26 @@ import {
   FLASHBACK_SETTLEMENT_SESSIONS,
   FLASHBACK_TAX_BPS,
 } from './flashback.constants.js';
+import { FLASHBACK_NO_DATA_MESSAGE } from './flashback-dataset.config.js';
 import {
   FB_INITIAL_CASH_VND,
+  FB_KICKED_NOTICE,
+  FB_KICKED_REASON,
+  FB_KICK_BLOCK_MS,
   FB_ROOM_ENDED_TTL_MS,
   FB_ROOM_WAITING_TTL_MS,
   formatXu,
   hashRoomPassword,
+  historyResultOf,
   isRoomCode,
   joinCheck,
+  levelInfo,
+  levelOfPoints,
+  matchPoints,
+  membersNotReady,
   navAtStep,
   navOf,
+  playersNotReadyMessage,
   pnlFraction,
   priceAtStep,
   publicChart,
@@ -50,15 +60,25 @@ import {
   barAtStep,
   validateRoomSettings,
   verifyRoomPassword,
+  type FbCrown,
+  type FbHistoryResult,
   type FbPublicBar,
   type FbRoomSettingsInput,
 } from './flashback-rooms.logic.js';
 import {
+  FB_REACTION_WINDOW_MS,
+  FbReactionStore,
+  isReactionEmoji,
+  type FbReaction,
+} from './flashback-rooms.reactions.js';
+import {
+  FB_HISTORY_CAP,
   FLASHBACK_ROOMS_REPOSITORY,
   FlashbackRoomsRepository,
   fbLedgerKey,
   type FbEntryPlayerRow,
   type FbEntryRow,
+  type FbLeaderboardRow,
   type FbLedgerKind,
   type FbMatchRow,
   type FbMemberRow,
@@ -76,7 +96,7 @@ import type { FlashbackBar, FlashbackLotRow, FlashbackOrderRow } from './flashba
 
 // ------------------------------------------------------------------ cổng dữ liệu ván
 
-/** Bộ dữ liệu một ván: mã VN30 và giai đoạn đã điều chỉnh (§5). Chỉ server. */
+/** Bộ dữ liệu một ván: một mã VN100 và một đoạn W + H + P phiên đã điều chỉnh của kho (v2.2 §3). Chỉ server. */
 export interface FbMatchDataset {
   readonly symbol: string;
   readonly warmupBars: readonly FlashbackBar[];
@@ -84,9 +104,12 @@ export interface FbMatchDataset {
   readonly bars: readonly FlashbackBar[];
   readonly priceSource: string | null;
   readonly fallbackLevel: number;
+  /** v2.2: phiên bản kho và điểm cắt của đoạn dữ liệu (null/thiếu với đường dẫn cũ). */
+  readonly datasetVersion?: number | null;
+  readonly startIdx?: number | null;
 }
 
-/** Chọn ngẫu nhiên một mã VN30 hiện hành và một giai đoạn hợp lệ (spec v2 §5). */
+/** Cắt một giai đoạn hợp lệ từ kho dữ liệu đang dùng (spec v2.2 §3). */
 export interface FbDatasetPort {
   pick(now: Date, viewBars: number, playBars: number): Promise<FbMatchDataset | null>;
 }
@@ -110,7 +133,15 @@ const matchEnded = () => conflict('MATCH_ENDED', 'Ván đã kết thúc');
 
 // ------------------------------------------------------------------ dạng trả về
 
-export interface FbPlayerRef {
+/** Cấp và vương miện hiện trên avatar ở mọi chỗ có người chơi (v2.1 §3.3, §4.3). */
+export interface FbBadge {
+  /** Cấp tính từ tổng điểm (1 khi chưa có điểm). */
+  readonly level: number;
+  /** 1 vàng, 2 bạc, 3 đồng khi đang hạng 1, 2, 3 toàn hệ thống; null khi không. */
+  readonly crown: FbCrown | null;
+}
+
+export interface FbPlayerRef extends FbBadge {
   readonly user_id: string;
   readonly name: string;
   readonly avatar_url: string | null;
@@ -119,8 +150,8 @@ export interface FbPlayerRef {
 export interface FbRoomListItem {
   readonly id: string;
   readonly locked: boolean;
-  /** Chủ phòng: chỉ tên và avatar (sảnh không lộ user_id). */
-  readonly owner: { readonly name: string; readonly avatar_url: string | null };
+  /** Chủ phòng: tên, avatar, cấp và vương miện (sảnh không lộ user_id). */
+  readonly owner: FbBadge & { readonly name: string; readonly avatar_url: string | null };
   readonly view_bars: number;
   readonly play_bars: number;
   readonly minutes: number;
@@ -136,6 +167,8 @@ export interface FbRoomMemberView extends FbPlayerRef {
   readonly is_owner: boolean;
   readonly is_me: boolean;
   readonly joined_at: string;
+  /** Đã bấm "Sẵn sàng" ở phòng chờ. Chủ phòng luôn là true (được tính là sẵn sàng). */
+  readonly ready: boolean;
 }
 
 export interface FbRoomView {
@@ -197,6 +230,15 @@ export interface FbStatePlayer extends FbPlayerRef {
   readonly pnl_percent: number | null;
 }
 
+/** Một biểu cảm vừa gửi trong ván (v2.1 §6.4), lấy theo polling của `state`. */
+export interface FbReactionView {
+  readonly id: string;
+  readonly user_id: string;
+  readonly emoji: string;
+  /** Đã gửi cách đây bao nhiêu mili giây khi server trả `state`. */
+  readonly age_ms: number;
+}
+
 export interface FbStateView {
   readonly match_id: string;
   readonly room_id: string;
@@ -210,6 +252,8 @@ export interface FbStateView {
   /** Số người chưa bấm Hoàn thành (dùng cho "Còn n người đang chơi"). */
   readonly playing_count: number;
   readonly players: FbStatePlayer[];
+  /** Biểu cảm của vài giây gần đây; trống khi ván đã kết thúc. Máy khách bỏ trùng theo `id`. */
+  readonly reactions: FbReactionView[];
 }
 
 export interface FbMatchSnapshot extends FbStateView {
@@ -238,6 +282,23 @@ export interface FbResultRow extends FbPlayerRef {
   readonly refund_xu: number;
   /** "+400 xu", "Hoàn xu cược" hoặc null (chỉ dòng người thắng có xu). */
   readonly xu_label: string | null;
+  /** Điểm cấp nhận từ ván (v2.1 §3.1): 10, 3 hoặc 0 (ván chơi 1 mình). */
+  readonly points: number;
+}
+
+/** Tiến độ cấp của người xem sau ván (v2.1 §3.3): dòng "Điểm +10 · Cấp 3 · 75 điểm · còn 15 điểm lên cấp 4". */
+export interface FbResultProgress {
+  /** Điểm nhận từ ván này (0 khi chơi 1 mình). */
+  readonly points: number;
+  /** Tổng điểm sau ván này. */
+  readonly total_points: number;
+  readonly level: number;
+  /** Cấp trước ván này. */
+  readonly previous_level: number;
+  readonly leveled_up: boolean;
+  readonly level_base: number;
+  readonly next_level_points: number;
+  readonly remaining_points: number;
 }
 
 export interface FbResultView {
@@ -250,6 +311,7 @@ export interface FbResultView {
   readonly refund: boolean;
   readonly end_reason: 'all_finished' | 'timeout' | null;
   readonly rows: FbResultRow[];
+  readonly progress: FbResultProgress;
   readonly symbol: string;
   /** Ngày phiên xem đầu tiên (YYYY-MM-DD). */
   readonly start_date: string;
@@ -266,8 +328,145 @@ export interface FbStartResult {
   readonly removed: { readonly user_id: string; readonly name: string; readonly message: string }[];
 }
 
+/** `GET me/level` (v2.1 §2.1, §10.2): thẻ cấp ở đầu sảnh. */
+export interface FbMyLevel {
+  readonly points: number;
+  readonly level: number;
+  /** Tổng điểm để đạt cấp hiện tại. */
+  readonly level_base: number;
+  /** Tổng điểm để đạt cấp kế tiếp. */
+  readonly next_level_points: number;
+  /** Còn thiếu bao nhiêu điểm để lên cấp kế tiếp. */
+  readonly remaining_points: number;
+  /** Hạng toàn hệ thống; null khi chưa chơi ván nào từ 2 người. */
+  readonly rank: number | null;
+  readonly games: number;
+  readonly wins: number;
+}
+
+export interface FbLeaderboardItem extends FbPlayerRef {
+  readonly rank: number;
+  readonly points: number;
+  readonly wins: number;
+  readonly games: number;
+  readonly is_me: boolean;
+}
+
+/** `GET leaderboard` (v2.1 §4.2): top theo `limit` và dòng của tôi nếu nằm ngoài top. */
+export interface FbLeaderboardView {
+  readonly rows: FbLeaderboardItem[];
+  readonly me: FbLeaderboardItem | null;
+}
+
+/** `GET leaderboard/top3` (v2.1 §10.2): người đang hạng 1, 2, 3 để vẽ vương miện. */
+export interface FbTop3View {
+  readonly users: {
+    readonly rank: FbCrown;
+    readonly user_id: string;
+    readonly name: string;
+    readonly avatar_url: string | null;
+    readonly level: number;
+    readonly points: number;
+  }[];
+}
+
+export interface FbHistoryPlayerView extends FbPlayerRef {
+  readonly rank: number;
+  readonly is_me: boolean;
+  readonly pnl_pct: number;
+  readonly pnl_percent: number;
+  /** Xu thắng trừ xu cược của người này; 0 khi ván không cược. */
+  readonly xu: number;
+  readonly points: number;
+}
+
+/** Lệnh của chính người xem trong chi tiết một ván (v2.1 §5.2); không bao giờ có lệnh người khác. */
+export interface FbHistoryOrderView {
+  readonly id: string;
+  readonly step: number;
+  readonly side: 'buy' | 'sell';
+  readonly qty: number;
+  readonly price: string;
+  readonly fee: string;
+  readonly tax: string;
+  readonly amount: string;
+}
+
+export interface FbHistoryItem {
+  readonly match_id: string;
+  readonly room_id: string;
+  readonly ended_at: string;
+  readonly player_count: number;
+  readonly view_bars: number;
+  readonly play_bars: number;
+  readonly minutes: number;
+  readonly stake_xu: number;
+  readonly symbol: string;
+  readonly start_date: string;
+  readonly end_date: string;
+  readonly result: FbHistoryResult;
+  readonly rank: number;
+  readonly pnl_pct: number;
+  readonly pnl_percent: number;
+  /** Xu thắng, hoàn trừ xu cược của tôi; 0 khi ván không cược. */
+  readonly xu: number;
+  readonly points: number;
+  /** Tiền mặt cuối ván so với tổng tài sản cuối ván, làm tròn phần trăm. */
+  readonly cash_percent: number;
+  readonly players: FbHistoryPlayerView[];
+  readonly orders: FbHistoryOrderView[];
+}
+
+export interface FbHistoryView {
+  readonly items: FbHistoryItem[];
+  readonly page: number;
+  readonly page_size: number;
+  /** Số ván khớp bộ lọc, đã giới hạn ở 200 ván gần nhất. */
+  readonly total: number;
+  readonly pages: number;
+}
+
+/** Sáu số tổng kết của lịch sử đấu (v2.1 §5.1), tính trên mọi ván trong khoảng thời gian lọc. */
+export interface FbHistorySummary {
+  readonly games: number;
+  readonly solo_games: number;
+  readonly multi_games: number;
+  readonly wins: number;
+  /** Tỷ lệ thắng 0..1 trên ván từ 2 người; 0 khi chưa có ván nào. */
+  readonly win_rate: number;
+  readonly xu_net: number;
+  readonly points: number;
+  readonly avg_pnl_pct: number;
+  readonly avg_pnl_percent: number;
+  readonly best_pnl_pct: number | null;
+  readonly best_pnl_percent: number | null;
+  readonly best_symbol: string | null;
+}
+
+export interface FbReactionSent {
+  readonly id: string;
+  readonly user_id: string;
+  readonly emoji: string;
+}
+
+export interface FbHistoryQuery {
+  readonly result: 'all' | 'win' | 'lose' | 'solo';
+  readonly days: '7' | '30' | 'all';
+  readonly page: number;
+}
+
 /** Số phòng tối đa trả về cho sảnh. */
 const LOBBY_LIMIT = 100;
+
+/** Số ván mỗi trang của lịch sử đấu (v2.1 §5.3). */
+export const FB_HISTORY_PAGE_SIZE = 20;
+
+/** Bảng xếp hạng tối đa bấy nhiêu dòng (v2.1 §4.2 hiện tới hạng 50). */
+export const FB_LEADERBOARD_DEFAULT_LIMIT = 50;
+export const FB_LEADERBOARD_MAX_LIMIT = 100;
+
+/** Số ván chờ cộng điểm được sửa mỗi lần chạy tác vụ định kỳ. */
+const AWARD_REPAIR_BATCH = 50;
 
 const iso = (value: Date) => value.toISOString();
 const sumQty = (lots: readonly FlashbackLotRow[]) => lots.reduce((sum, lot) => sum + lot.qty, 0);
@@ -275,6 +474,8 @@ const sumQty = (lots: readonly FlashbackLotRow[]) => lots.reduce((sum, lot) => s
 @Injectable()
 export class FlashbackRoomsService {
   private readonly logger = new Logger(FlashbackRoomsService.name);
+  /** Biểu cảm của các ván đang chơi (v2.1 §6.4): trong bộ nhớ, không lưu lịch sử. */
+  private readonly reactions = new FbReactionStore();
 
   constructor(
     private readonly database: DatabaseService,
@@ -287,16 +488,22 @@ export class FlashbackRoomsService {
 
   async listRooms(status: 'all' | 'waiting' | 'playing'): Promise<{ rooms: FbRoomListItem[] }> {
     const rows = await this.repository.listOpenRooms(this.database, status, LOBBY_LIMIT);
-    return { rooms: rows.map((row) => this.listItem(row)) };
+    const crowns = await this.crownMap(this.database);
+    return { rooms: rows.map((row) => this.listItem(row, crowns)) };
   }
 
   /** Phòng hiện tại của tôi (để vào lại phòng chờ hoặc chơi tiếp ván dở) và thông báo một lần. */
-  async myRoom(userId: string): Promise<{ room: FbRoomView | null; notice: string | null }> {
+  async myRoom(
+    userId: string,
+  ): Promise<{ room: FbRoomView | null; notice: string | null; kicked: boolean }> {
     const roomId = await this.repository.activeRoomIdOf(this.database, userId);
     const room = roomId ? await this.repository.roomById(this.database, roomId) : null;
-    const notice = await this.database.transaction((tx) => this.repository.takeNotice(tx, userId));
-    if (!room || room.status === 'closed') return { room: null, notice };
-    return { room: await this.roomView(this.database, room, userId), notice };
+    const taken = await this.database.transaction((tx) => this.repository.takeNotice(tx, userId));
+    const notice = taken?.notice ?? null;
+    // `kicked`: lần hỏi này lấy được thông báo "bị chủ phòng đuổi" (một lần, như `notice`).
+    const kicked = taken?.reason === FB_KICKED_REASON;
+    if (!room || room.status === 'closed') return { room: null, notice, kicked };
+    return { room: await this.roomView(this.database, room, userId), notice, kicked };
   }
 
   async getRoom(userId: string, code: string): Promise<FbRoomView> {
@@ -389,6 +596,19 @@ export class FlashbackRoomsService {
       const members = await this.repository.activeMembers(tx, room.id);
       if (members.some((member) => member.userId === userId))
         return this.roomView(tx, room, userId, members);
+      // Bị chủ phòng đuổi thì không vào lại đúng phòng này trong 10 phút (kể cả "Chơi phòng bất kỳ").
+      if (
+        await this.repository.wasKickedSince(
+          tx,
+          room.id,
+          userId,
+          new Date(now.getTime() - FB_KICK_BLOCK_MS),
+        )
+      )
+        throw conflict(
+          'FB_KICKED',
+          'Bạn đã bị chủ phòng mời ra khỏi phòng này, hãy thử lại sau 10 phút',
+        );
       const otherRoom = await this.repository.activeRoomIdOf(tx, userId);
 
       if (room.status === 'playing' && room.currentMatchId && !randomOnly) {
@@ -447,20 +667,60 @@ export class FlashbackRoomsService {
       const members = await this.repository.activeMembers(tx, room.id);
       if (!members.some((member) => member.userId === userId))
         throw forbidden('NOT_IN_ROOM', 'Bạn không ở trong phòng này');
-      await this.repository.removeMember(tx, room.id, userId, 'leave', null, now);
-      await this.afterMemberLeft(
-        tx,
-        room,
-        members.filter((member) => member.userId !== userId),
-        now,
-      );
+      await this.dropMember(tx, room, members, userId, 'leave', null, now);
     });
     return { left: true };
   }
 
   /**
+   * Sẵn sàng / Huỷ sẵn sàng (chỉ phòng chờ). Chủ phòng luôn được tính là sẵn sàng nên bấm không đổi
+   * gì (trả lại phòng). Trả phòng mới nhất để máy người bấm cập nhật ngay.
+   */
+  async setReady(userId: string, code: string, ready: boolean): Promise<FbRoomView> {
+    this.assertCode(code);
+    const now = this.clock.now();
+    return this.database.transaction(async (tx) => {
+      const room = await this.repository.roomByCode(tx, code, true);
+      if (!room) throw roomNotFound(code);
+      const members = await this.repository.activeMembers(tx, room.id);
+      if (!members.some((member) => member.userId === userId))
+        throw forbidden('NOT_IN_ROOM', 'Bạn không ở trong phòng này');
+      if (room.status !== 'waiting') throw conflict('ROOM_PLAYING', 'Phòng đang chơi');
+      if (room.ownerId !== userId) await this.repository.setMemberReady(tx, room.id, userId, ready, now);
+      return this.roomView(tx, room, userId);
+    });
+  }
+
+  /**
+   * Chủ phòng đuổi một thành viên khỏi phòng chờ. Đi đúng đường rời phòng (`dropMember`): xu chỉ bị
+   * trừ lúc bắt đầu ván nên ở phòng chờ không có gì để hoàn. Người bị đuổi nhận thông báo một lần
+   * (`rooms/me`) và không vào lại phòng này trong 10 phút.
+   */
+  async kickMember(ownerId: string, code: string, targetUserId: string): Promise<FbRoomView> {
+    this.assertCode(code);
+    const now = this.clock.now();
+    return this.database.transaction(async (tx) => {
+      const room = await this.repository.roomByCode(tx, code, true);
+      if (!room) throw roomNotFound(code);
+      const members = await this.repository.activeMembers(tx, room.id);
+      if (!members.some((member) => member.userId === ownerId))
+        throw forbidden('NOT_IN_ROOM', 'Bạn không ở trong phòng này');
+      if (room.ownerId !== ownerId)
+        throw forbidden('NOT_ROOM_OWNER', 'Chỉ chủ phòng được mời người ra khỏi phòng');
+      if (targetUserId === ownerId)
+        throw conflict('FB_KICK_SELF', 'Bạn không thể tự mời mình ra khỏi phòng');
+      if (room.status !== 'waiting')
+        throw conflict('ROOM_PLAYING', 'Đang chơi, chưa mời người ra khỏi phòng được');
+      if (!members.some((member) => member.userId === targetUserId))
+        throw notFound('FB_MEMBER_NOT_FOUND', 'Người chơi này không còn ở trong phòng');
+      await this.dropMember(tx, room, members, targetUserId, FB_KICKED_REASON, FB_KICKED_NOTICE, now);
+      return this.roomView(tx, room, ownerId);
+    });
+  }
+
+  /**
    * Bắt đầu ván (§4, §5, §8): chỉ chủ phòng; kiểm tra lại xu từng người (ai thiếu bị đưa ra kèm
-   * thông báo), một mình thì không cược, trừ cược mỗi người đúng một lần, chọn mã VN30 và giai
+   * thông báo), một mình thì không cược, trừ cược mỗi người đúng một lần, cắt mã VN100 và giai
    * đoạn ngẫu nhiên, tạo ván. Trả nến lịch sử và nến khởi tạo chỉ báo, không có mã hay ngày.
    */
   async startRoom(userId: string, code: string): Promise<FbStartResult> {
@@ -470,11 +730,11 @@ export class FlashbackRoomsService {
     this.assertCanStart(before, userId);
     const now = this.clock.now();
     const dataset = await this.dataset.pick(now, before.viewBars, before.playBars);
+    // Không cắt được đề (spec v2.2 §3.3 bước 7): không bắt đầu, chưa trừ xu, chủ phòng đọc được
+    // thông báo. Dùng 409 thay cho 503 vì bộ lọc lỗi chung thay MỌI thông báo 5xx bằng câu chung
+    // "Dịch vụ tạm thời không khả dụng", nên chủ phòng sẽ không bao giờ thấy câu của spec.
     if (!dataset || dataset.bars.length !== before.viewBars + before.playBars)
-      throw new ServiceUnavailableException({
-        code: 'FLASHBACK_DATA_UNAVAILABLE',
-        message: 'Chưa chuẩn bị được dữ liệu ván chơi, hãy thử lại',
-      });
+      throw conflict('FLASHBACK_DATA_UNAVAILABLE', FLASHBACK_NO_DATA_MESSAGE);
 
     const outcome = await this.database.transaction(async (tx) => {
       const room = await this.repository.roomByCode(tx, code, true);
@@ -483,6 +743,10 @@ export class FlashbackRoomsService {
       if (room.viewBars !== before.viewBars || room.playBars !== before.playBars)
         throw conflict('ROOM_CHANGED', 'Phòng vừa thay đổi, hãy thử lại');
       const members = await this.repository.activeMembers(tx, room.id);
+      // Mọi người (trừ chủ phòng, được tính là sẵn sàng) phải bấm "Sẵn sàng" trước khi bắt đầu.
+      const waiting = membersNotReady(members, room.ownerId);
+      if (waiting.length > 0)
+        throw conflict('FB_PLAYERS_NOT_READY', playersNotReadyMessage(waiting.length));
       const replay = room.matchCount > 0;
       const shortMessage = replay
         ? `Không đủ ${formatXu(room.stakeXu)} xu để chơi lại`
@@ -534,6 +798,8 @@ export class FlashbackRoomsService {
         playBars,
         warmupBars: dataset.warmupBars,
         bars: dataset.bars,
+        datasetVersion: dataset.datasetVersion ?? null,
+        startIdx: dataset.startIdx ?? null,
         minutes: room.minutes,
         stakeXu,
         playerCount: players.length,
@@ -565,6 +831,8 @@ export class FlashbackRoomsService {
         currentMatchId: match.id,
         matchCount: room.matchCount + 1,
       });
+      // Sẵn sàng chỉ có nghĩa trong một lần chờ: ván mới bắt đầu thì xoá hết.
+      await this.repository.resetReady(tx, room.id);
       return { match, room: updated ?? room, removed };
     });
 
@@ -603,6 +871,8 @@ export class FlashbackRoomsService {
               status: 'waiting',
               waitingSince: now,
             })) ?? room;
+          // Về phòng chờ sau ván: mọi người phải bấm "Sẵn sàng" lại.
+          await this.repository.resetReady(tx, room.id);
         }
         if (current.stakeXu > 0) {
           const balance = await this.repository.balance(tx, userId);
@@ -638,7 +908,13 @@ export class FlashbackRoomsService {
     const { match, entry, entries, roomCode } = await this.loadForViewer(userId, matchId);
     const ended = match.status !== 'playing';
     const chart = publicChart(match, ended ? match.playBars : entry.step);
-    const state = this.stateView(match, roomCode, entry, entries);
+    const state = this.stateView(
+      match,
+      roomCode,
+      entry,
+      entries,
+      await this.crownMap(this.database),
+    );
     return {
       ...state,
       view_bars: match.viewBars,
@@ -817,18 +1093,31 @@ export class FlashbackRoomsService {
     };
   }
 
-  /** Đồng hồ, % từng người theo §6.1 và ai đã hoàn thành. */
+  /**
+   * Đồng hồ, ai đã hoàn thành, phiên của từng người và biểu cảm mới (v2.1 §6.2, §6.4). Trong lúc
+   * chơi không có tài sản hay % của ai; sau khi kết thúc mới có % cuối.
+   */
   async state(userId: string, matchId: string): Promise<FbStateView> {
     await this.settleIfDue(matchId);
     const { match, entry, entries, roomCode } = await this.loadForViewer(userId, matchId);
-    return this.stateView(match, roomCode, entry, entries);
+    return this.stateView(match, roomCode, entry, entries, await this.crownMap(this.database));
   }
 
   /** Kết quả (§7.3): chỉ sau khi ván kết thúc; lúc này mới gửi mã và thời gian. */
   async result(userId: string, matchId: string): Promise<FbResultView> {
     await this.settleIfDue(matchId);
-    const { match, entries, roomCode } = await this.loadForViewer(userId, matchId);
+    let loaded = await this.loadForViewer(userId, matchId);
+    // Ván do bản cũ chốt có thể chưa cộng điểm: cộng bù một lần (idempotent) trước khi trả kết quả.
+    if (
+      loaded.match.status !== 'playing' &&
+      loaded.entries.some((entry) => entry.pointsAwardedAt === null)
+    ) {
+      await this.awardPending(matchId);
+      loaded = await this.loadForViewer(userId, matchId);
+    }
+    const { match, entries, roomCode } = loaded;
     if (match.status === 'playing') throw conflict('RESULT_NOT_READY', 'Ván chưa kết thúc');
+    const crowns = await this.crownMap(this.database);
     const solo = entries.length === 1;
     const sorted = [...entries].sort(
       (left, right) =>
@@ -837,6 +1126,7 @@ export class FlashbackRoomsService {
     );
     const winners = sorted.filter((entry) => entry.rank === 1);
     const refund = entries.some((entry) => entry.refundXu > 0);
+    const mine = entries.find((entry) => entry.userId === userId);
     return {
       match_id: match.id,
       room_id: roomCode,
@@ -856,6 +1146,7 @@ export class FlashbackRoomsService {
           user_id: entry.userId,
           name: entry.name,
           avatar_url: entry.avatarUrl,
+          ...this.badge(crowns, entry.userId, entry.totalPoints),
           rank: entry.rank ?? sorted.length,
           is_me: entry.userId === userId,
           is_winner: !solo && entry.rank === 1,
@@ -865,12 +1156,217 @@ export class FlashbackRoomsService {
           win_xu: entry.winXu,
           refund_xu: entry.refundXu,
           xu_label: resultXuLabel(entry),
+          points: entry.points,
         };
       }),
+      progress: await this.resultProgress(mine),
       symbol: match.symbol,
       start_date: match.startDate,
       end_date: match.endDate,
       played_bars: publicChart(match, match.playBars).played,
+    };
+  }
+
+  // ================================================================== biểu cảm (v2.1 §6.4)
+
+  /**
+   * Gửi một biểu cảm trong ván đang chơi. Chỉ người của ván mới gửi được; emoji phải nằm trong danh
+   * sách 12 cái; mỗi người 1 biểu cảm mỗi 1,5 giây. Không lưu lịch sử: các máy khác lấy biểu cảm ở
+   * lần polling `state` kế tiếp (xem `flashback-rooms.reactions.ts`).
+   */
+  async sendReaction(userId: string, matchId: string, emoji: string): Promise<FbReactionSent> {
+    if (!isReactionEmoji(emoji)) throw badRequest('REACTION_INVALID', 'Biểu cảm không hợp lệ');
+    await this.settleIfDue(matchId);
+    const match = await this.repository.matchById(this.database, matchId);
+    if (!match) throw matchNotFound();
+    const entry = await this.repository.entryByMatchUser(this.database, matchId, userId);
+    if (!entry) throw matchNotFound();
+    if (match.status !== 'playing') throw matchEnded();
+    const sent = this.reactions.send({
+      matchId,
+      userId,
+      emoji,
+      now: this.clock.now().getTime(),
+    });
+    if (!sent.ok) {
+      if (sent.reason === 'too_fast')
+        throw fail(429, 'REACTION_TOO_FAST', 'Từ từ thôi 😄', [
+          { retry_after_ms: sent.retryAfterMs },
+        ]);
+      throw badRequest('REACTION_INVALID', 'Biểu cảm không hợp lệ');
+    }
+    return { id: sent.reaction.id, user_id: userId, emoji: sent.reaction.emoji };
+  }
+
+  // ================================================================== cấp, hạng, lịch sử (v2.1)
+
+  /** Thẻ cấp ở đầu sảnh (v2.1 §2.1): điểm, cấp, mốc điểm và hạng toàn hệ thống. */
+  async myLevel(userId: string): Promise<FbMyLevel> {
+    const row = await this.repository.leaderboardRow(this.database, userId);
+    const info = levelInfo(row?.points ?? 0);
+    return {
+      points: info.points,
+      level: info.level,
+      level_base: info.levelBase,
+      next_level_points: info.nextLevelPoints,
+      remaining_points: info.remaining,
+      rank: row?.rank ?? null,
+      games: row?.games ?? 0,
+      wins: row?.wins ?? 0,
+    };
+  }
+
+  /** Bảng xếp hạng toàn hệ thống (v2.1 §4): top `limit` và dòng của tôi nếu nằm ngoài top. */
+  async leaderboard(
+    userId: string,
+    limit: number = FB_LEADERBOARD_DEFAULT_LIMIT,
+  ): Promise<FbLeaderboardView> {
+    const size = Math.max(1, Math.min(Math.trunc(limit), FB_LEADERBOARD_MAX_LIMIT));
+    const rows = await this.repository.leaderboard(this.database, size);
+    const mine = rows.some((row) => row.userId === userId)
+      ? null
+      : await this.repository.leaderboardRow(this.database, userId);
+    return {
+      rows: rows.map((row) => this.leaderboardItem(row, userId)),
+      me: mine ? this.leaderboardItem(mine, userId) : null,
+    };
+  }
+
+  /** Người đang hạng 1, 2, 3 (v2.1 §10.2), để vẽ vương miện ở nơi chưa có `crown` trong dữ liệu. */
+  async top3(): Promise<FbTop3View> {
+    const rows = await this.repository.leaderboard(this.database, 3);
+    return {
+      users: rows.map((row) => ({
+        rank: row.rank as FbCrown,
+        user_id: row.userId,
+        name: row.name,
+        avatar_url: row.avatarUrl,
+        level: levelOfPoints(row.points),
+        points: row.points,
+      })),
+    };
+  }
+
+  /**
+   * Lịch sử đấu của chính tôi (v2.1 §5): ván mới nhất trước, tối đa 200 ván gần nhất, 20 ván mỗi
+   * trang. Mỗi ván kèm người chơi (không kèm lệnh của họ) và lệnh của riêng tôi. Không có biểu đồ.
+   */
+  async history(userId: string, query: FbHistoryQuery): Promise<FbHistoryView> {
+    const filter = { result: query.result, since: this.historySince(query.days) };
+    let page = Math.max(1, Math.trunc(query.page));
+    const fetch = (at: number) =>
+      this.repository.historyPage(
+        this.database,
+        userId,
+        filter,
+        (at - 1) * FB_HISTORY_PAGE_SIZE,
+        FB_HISTORY_PAGE_SIZE,
+      );
+    let found = await fetch(page);
+    const pages = Math.max(1, Math.ceil(found.total / FB_HISTORY_PAGE_SIZE));
+    if (page > pages) {
+      page = pages;
+      found = await fetch(page);
+    }
+    const [players, orders, crowns] = await Promise.all([
+      this.repository.historyPlayers(
+        this.database,
+        found.rows.map((row) => row.matchId),
+      ),
+      this.repository.historyOrders(
+        this.database,
+        found.rows.map((row) => row.entryId),
+      ),
+      this.crownMap(this.database),
+    ]);
+    const items = found.rows.map((row): FbHistoryItem => {
+      const mine = orders.filter((order) => order.entryId === row.entryId);
+      return {
+        match_id: row.matchId,
+        room_id: row.roomCode,
+        ended_at: iso(row.endedAt),
+        player_count: row.playerCount,
+        view_bars: row.viewBars,
+        play_bars: row.playBars,
+        minutes: row.minutes,
+        stake_xu: row.matchStakeXu,
+        symbol: row.symbol,
+        start_date: row.startDate,
+        end_date: row.endDate,
+        result: historyResultOf({
+          playerCount: row.playerCount,
+          rank: row.rank,
+          topCount: row.topCount,
+        }),
+        rank: row.rank,
+        pnl_pct: row.pnlPct,
+        pnl_percent: row.pnlPct * 100,
+        xu: row.winXu + row.refundXu - row.stakeXu,
+        points: row.points,
+        cash_percent:
+          row.finalNav > 0n
+            ? Math.max(
+                0,
+                Math.min(100, Math.round((Number(row.cash) * 100) / Number(row.finalNav))),
+              )
+            : 0,
+        players: players
+          .filter((player) => player.matchId === row.matchId)
+          .map((player): FbHistoryPlayerView => ({
+            user_id: player.userId,
+            name: player.name,
+            avatar_url: player.avatarUrl,
+            ...this.badge(crowns, player.userId, player.totalPoints),
+            rank: player.rank,
+            is_me: player.userId === userId,
+            pnl_pct: player.pnlPct,
+            pnl_percent: player.pnlPct * 100,
+            xu: player.winXu + player.refundXu - player.stakeXu,
+            points: player.points,
+          })),
+        orders: mine.map((order) => ({
+          id: order.id,
+          step: order.step,
+          side: order.side,
+          qty: order.qty,
+          price: order.price.toString(),
+          fee: order.fee.toString(),
+          tax: order.tax.toString(),
+          amount: order.amount.toString(),
+        })),
+      };
+    });
+    return {
+      items,
+      page,
+      page_size: FB_HISTORY_PAGE_SIZE,
+      total: Math.min(found.total, FB_HISTORY_CAP),
+      pages,
+    };
+  }
+
+  /** Sáu số tổng kết của lịch sử đấu (v2.1 §5.1) trong khoảng thời gian đang lọc. */
+  async historySummary(userId: string, days: FbHistoryQuery['days']): Promise<FbHistorySummary> {
+    const row = await this.repository.historySummary(
+      this.database,
+      userId,
+      this.historySince(days),
+    );
+    const multi = row.games - row.soloGames;
+    const average = row.avgPnlPct ?? 0;
+    return {
+      games: row.games,
+      solo_games: row.soloGames,
+      multi_games: multi,
+      wins: row.wins,
+      win_rate: multi > 0 ? row.wins / multi : 0,
+      xu_net: row.xuNet,
+      points: row.points,
+      avg_pnl_pct: average,
+      avg_pnl_percent: average * 100,
+      best_pnl_pct: row.bestPnlPct,
+      best_pnl_percent: row.bestPnlPct === null ? null : row.bestPnlPct * 100,
+      best_symbol: row.bestSymbol,
     };
   }
 
@@ -954,12 +1450,76 @@ export class FlashbackRoomsService {
           rank: outcome.rank,
         });
       }
+      // Bước cuối của tác vụ kết thúc ván (v2.1 §10.2): cộng điểm cấp sau khi đã cộng xu.
+      await this.awardPoints(
+        tx,
+        settlement.outcomes.map((outcome) => ({
+          entryId: outcome.entryId,
+          userId: outcome.userId,
+          winner: outcome.winner,
+        })),
+        now,
+      );
       await this.repository.updateMatch(tx, matchId, { status: 'paid', paidAt: now });
       return true;
     });
   }
 
-  /** Tác vụ định kỳ: chốt ván hết giờ, đóng phòng chờ quá 30 phút và phòng bỏ dở sau kết quả. */
+  /**
+   * Cộng điểm cấp cho từng người của một ván đã kết thúc (v2.1 §3, §10.2): thắng (kể cả đồng hạng
+   * 1) +10, thua +3, ván chơi 1 mình 0 và không tính vào số ván. Mỗi (ván, người) chỉ một lần: kho
+   * dữ liệu chỉ cập nhật dòng chưa có `points_awarded_at`, nên chạy lại hay hai tiến trình cùng lúc
+   * đều không cộng hai lần. Cộng theo thứ tự user_id để các transaction khoá cùng một thứ tự.
+   * Trả số người vừa được cộng.
+   */
+  private async awardPoints(
+    tx: SqlClient,
+    players: readonly { entryId: string; userId: string; winner: boolean }[],
+    now: Date,
+  ): Promise<number> {
+    const solo = players.length === 1;
+    let awarded = 0;
+    for (const player of [...players].sort((a, b) => a.userId.localeCompare(b.userId))) {
+      const winner = !solo && player.winner;
+      const done = await this.repository.awardEntry(tx, {
+        entryId: player.entryId,
+        userId: player.userId,
+        points: matchPoints({ solo, winner }),
+        isWin: winner,
+        counted: !solo,
+        at: now,
+      });
+      if (done) awarded += 1;
+    }
+    return awarded;
+  }
+
+  /**
+   * Cộng bù điểm cho ván đã kết thúc mà còn người chưa được cộng (ván do bản cũ chốt trước khi có
+   * cấp). Dùng đúng đường cộng điểm của lúc chốt ván nên vẫn idempotent. Trả số người vừa được cộng.
+   */
+  private async awardPending(matchId: string): Promise<number> {
+    return this.database.transaction(async (tx) => {
+      const match = await this.repository.matchById(tx, matchId, true);
+      if (!match || match.status === 'playing') return 0;
+      const entries = await this.repository.entriesByMatch(tx, matchId, true);
+      if (entries.every((entry) => entry.pointsAwardedAt !== null)) return 0;
+      return this.awardPoints(
+        tx,
+        entries.map((entry) => ({
+          entryId: entry.id,
+          userId: entry.userId,
+          winner: entry.rank === 1,
+        })),
+        match.endedAt ?? this.clock.now(),
+      );
+    });
+  }
+
+  /**
+   * Tác vụ định kỳ: chốt ván hết giờ, cộng bù điểm cấp cho ván bản cũ đã chốt, đóng phòng chờ quá
+   * 30 phút và phòng bỏ dở sau kết quả.
+   */
   async sweep(now: Date = this.clock.now()): Promise<{ settled: number; closed: number }> {
     let settled = 0;
     for (const matchId of await this.repository.dueMatchIds(this.database, now)) {
@@ -968,6 +1528,22 @@ export class FlashbackRoomsService {
       } catch (error) {
         this.logger.error(
           `Flashback rooms: chốt ván ${matchId} lỗi (${error instanceof Error ? error.message : 'không rõ'})`,
+        );
+      }
+    }
+    for (const matchId of await this.repository.pendingAwardMatchIds(
+      this.database,
+      AWARD_REPAIR_BATCH,
+    )) {
+      try {
+        const awarded = await this.awardPending(matchId);
+        if (awarded > 0)
+          this.logger.warn(
+            `Flashback rooms: cộng bù điểm cấp cho ${awarded} người của ván ${matchId}`,
+          );
+      } catch (error) {
+        this.logger.error(
+          `Flashback rooms: cộng điểm ván ${matchId} lỗi (${error instanceof Error ? error.message : 'không rõ'})`,
         );
       }
     }
@@ -1033,6 +1609,25 @@ export class FlashbackRoomsService {
   private async codeOfRoom(db: SqlClient, roomId: string | null): Promise<string | null> {
     if (!roomId) return null;
     return (await this.repository.roomById(db, roomId))?.code ?? null;
+  }
+
+  /** Đưa một thành viên ra khỏi phòng (rời hoặc bị đuổi), rồi chuyển chủ phòng hoặc đóng phòng nếu cần. */
+  private async dropMember(
+    tx: SqlClient,
+    room: FbRoomRow,
+    members: readonly FbMemberRow[],
+    userId: string,
+    reason: string,
+    notice: string | null,
+    now: Date,
+  ): Promise<void> {
+    await this.repository.removeMember(tx, room.id, userId, reason, notice, now);
+    await this.afterMemberLeft(
+      tx,
+      room,
+      members.filter((member) => member.userId !== userId),
+      now,
+    );
   }
 
   private async afterMemberLeft(
@@ -1117,11 +1712,88 @@ export class FlashbackRoomsService {
     return { match, entry, entries, roomCode: room?.code ?? '' };
   }
 
+  /** Người đang hạng 1, 2, 3 toàn hệ thống → vương miện vàng, bạc, đồng (v2.1 §4.3). */
+  private async crownMap(db: SqlClient): Promise<Map<string, FbCrown>> {
+    const ids = await this.repository.top3(db);
+    return new Map(ids.map((id, index) => [id, (index + 1) as FbCrown]));
+  }
+
+  /** Cấp (từ tổng điểm) và vương miện của một người, gắn vào mọi nơi trả thông tin người chơi. */
+  private badge(
+    crowns: ReadonlyMap<string, FbCrown>,
+    userId: string,
+    totalPoints: number,
+  ): FbBadge {
+    return { level: levelOfPoints(totalPoints), crown: crowns.get(userId) ?? null };
+  }
+
+  private leaderboardItem(row: FbLeaderboardRow, viewerId: string): FbLeaderboardItem {
+    return {
+      user_id: row.userId,
+      name: row.name,
+      avatar_url: row.avatarUrl,
+      level: levelOfPoints(row.points),
+      crown: row.rank <= 3 ? (row.rank as FbCrown) : null,
+      rank: row.rank,
+      points: row.points,
+      wins: row.wins,
+      games: row.games,
+      is_me: row.userId === viewerId,
+    };
+  }
+
+  /** Mốc bắt đầu của bộ lọc thời gian của lịch sử đấu: 7 hoặc 30 ngày gần nhất, hoặc tất cả (null). */
+  private historySince(days: FbHistoryQuery['days']): Date | null {
+    if (days === 'all') return null;
+    return new Date(this.clock.now().getTime() - Number(days) * 86_400_000);
+  }
+
+  /**
+   * Dòng tiến độ của người xem sau ván (v2.1 §3.3). Tổng điểm là tổng tính tới và gồm cả ván này
+   * (không phải tổng hiện tại), nên mở lại kết quả sau khi đã chơi ván khác vẫn đúng cấp lúc đó.
+   */
+  private async resultProgress(mine: FbEntryPlayerRow | undefined): Promise<FbResultProgress> {
+    const gained = mine?.points ?? 0;
+    const total = mine
+      ? mine.pointsAwardedAt
+        ? await this.repository.pointsThroughEntry(this.database, mine.id)
+        : mine.totalPoints
+      : 0;
+    const info = levelInfo(total);
+    const previousLevel = levelOfPoints(Math.max(0, total - gained));
+    return {
+      points: gained,
+      total_points: info.points,
+      level: info.level,
+      previous_level: previousLevel,
+      leveled_up: info.level > previousLevel,
+      level_base: info.levelBase,
+      next_level_points: info.nextLevelPoints,
+      remaining_points: info.remaining,
+    };
+  }
+
+  /** Biểu cảm còn trong cửa sổ của ván đang chơi; ván đã kết thúc thì không còn (v2.1 §6.4). */
+  private reactionViews(match: FbMatchRow): FbReactionView[] {
+    if (match.status !== 'playing') return [];
+    const now = this.clock.now().getTime();
+    return this.reactions
+      .recent(match.id, now)
+      .filter((item: FbReaction) => now - item.at < FB_REACTION_WINDOW_MS)
+      .map((item) => ({
+        id: item.id,
+        user_id: item.userId,
+        emoji: item.emoji,
+        age_ms: Math.max(0, now - item.at),
+      }));
+  }
+
   private stateView(
     match: FbMatchRow,
     roomCode: string,
     me: FbEntryRow,
     entries: readonly FbEntryPlayerRow[],
+    crowns: ReadonlyMap<string, FbCrown>,
   ): FbStateView {
     const now = this.clock.now();
     const ended = match.status !== 'playing';
@@ -1138,6 +1810,7 @@ export class FlashbackRoomsService {
         user_id: entry.userId,
         name: entry.name,
         avatar_url: entry.avatarUrl,
+        ...this.badge(crowns, entry.userId, entry.totalPoints),
         is_me: entry.userId === me.userId,
         finished: entry.status === 'finished',
         step: entry.step,
@@ -1157,6 +1830,7 @@ export class FlashbackRoomsService {
       my_finished: me.status === 'finished',
       playing_count: entries.filter((entry) => entry.status !== 'finished').length,
       players,
+      reactions: this.reactionViews(match),
     };
   }
 
@@ -1213,11 +1887,15 @@ export class FlashbackRoomsService {
     };
   }
 
-  private listItem(row: FbRoomListRow): FbRoomListItem {
+  private listItem(row: FbRoomListRow, crowns: ReadonlyMap<string, FbCrown>): FbRoomListItem {
     return {
       id: row.code,
       locked: row.passwordHash !== null,
-      owner: { name: row.ownerName, avatar_url: row.ownerAvatarUrl },
+      owner: {
+        name: row.ownerName,
+        avatar_url: row.ownerAvatarUrl,
+        ...this.badge(crowns, row.ownerId, row.ownerTotalPoints),
+      },
       view_bars: row.viewBars,
       play_bars: row.playBars,
       minutes: row.minutes,
@@ -1239,6 +1917,7 @@ export class FlashbackRoomsService {
     // Đọc lại phòng để có chủ phòng và trạng thái mới nhất sau các thay đổi trong transaction.
     const fresh = (await this.repository.roomById(db, room.id)) ?? room;
     const members = knownMembers ?? (await this.repository.activeMembers(db, fresh.id));
+    const crowns = await this.crownMap(db);
     let match: FbRoomView['match'] = null;
     if (fresh.status === 'playing' && fresh.currentMatchId) {
       const row = await this.repository.matchById(db, fresh.currentMatchId);
@@ -1268,9 +1947,11 @@ export class FlashbackRoomsService {
         user_id: member.userId,
         name: member.name,
         avatar_url: member.avatarUrl,
+        ...this.badge(crowns, member.userId, member.totalPoints),
         is_owner: member.userId === fresh.ownerId,
         is_me: member.userId === userId,
         joined_at: iso(member.joinedAt),
+        ready: member.userId === fresh.ownerId || member.ready,
       })),
       match,
       created_at: iso(fresh.createdAt),

@@ -8,7 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { WorkspaceFrameContext, type WorkspaceFrameState } from "@/components/layout/workspace-frame-context"
 
-import { CHART_HEIGHT_MOBILE, PLOT_WEIGHT } from "./flashback-chart-layout"
+import { AXIS_HEIGHT, CHART_TOP, PANE_GAP, PANE_HEIGHT } from "./flashback-chart-layout"
 import { FlashbackMain } from "./flashback-main"
 import { FlashbackPanel } from "./flashback-panel"
 import { FlashbackProvider } from "./flashback-provider"
@@ -238,7 +238,7 @@ describe("Flashback: số liệu và biểu đồ", () => {
     expect(screen.getByTestId("flashback-session").textContent).toBe("Phiên 0")
   })
 
-  it("điện thoại: nhãn trục rút gọn và biểu đồ cao cố định 380px, chia theo cùng tỷ lệ", async () => {
+  it("điện thoại: nhãn trục rút gọn; giá 240px, khối lượng 64px (spec v2.3 §2)", async () => {
     stubViewportHeight(900)
     setup()
     renderGame()
@@ -248,13 +248,11 @@ describe("Flashback: số liệu và biểu đồ", () => {
     expect(labels).toContain("Lịch sử")
     expect(labels).not.toContain("Lịch sử 60 phiên")
     expect(chart.parentElement?.getAttribute("data-narrow")).toBe("true")
-    expect(chart.parentElement?.getAttribute("data-chart-height")).toBe(String(CHART_HEIGHT_MOBILE))
-    const price = Number(document.querySelector('[data-pane="price"]')?.getAttribute("data-plot-height"))
-    const volume = Number(document.querySelector('[data-pane="volume"]')?.getAttribute("data-plot-height"))
-    expect(price / volume).toBeCloseTo(PLOT_WEIGHT.price / PLOT_WEIGHT.volume, 0)
+    expect(document.querySelector('[data-pane="price"]')?.getAttribute("data-plot-height")).toBe(String(PANE_HEIGHT.mobile.priceMin))
+    expect(document.querySelector('[data-pane="volume"]')?.getAttribute("data-plot-height")).toBe(String(PANE_HEIGHT.mobile.volume))
   })
 
-  it("máy tính: biểu đồ gói gọn trong màn hình, ô giá và ô khối lượng chia theo tỷ lệ 3,2 : 1", async () => {
+  it("máy tính: biểu đồ gói gọn trong màn hình, khối lượng 80px, ô giá lấy phần còn lại", async () => {
     stubChartWidth(1000)
     stubViewportHeight(900)
     setup()
@@ -263,20 +261,20 @@ describe("Flashback: số liệu và biểu đồ", () => {
     const chart = screen.getByRole("img", { name: "Biểu đồ nến Flashback" })
     expect(chart.parentElement?.getAttribute("data-narrow")).toBe("false")
     // Chiều cao cửa sổ trừ phần bên dưới (đáy khung, nút Phiên tiếp, lề trang); jsdom đặt biểu đồ ở đỉnh.
-    expect(chart.parentElement?.getAttribute("data-chart-height")).toBe(String(900 - CHART_BOTTOM_RESERVE))
-    const price = Number(document.querySelector('[data-pane="price"]')?.getAttribute("data-plot-height"))
-    const volume = Number(document.querySelector('[data-pane="volume"]')?.getAttribute("data-plot-height"))
-    expect(price / volume).toBeCloseTo(PLOT_WEIGHT.price / PLOT_WEIGHT.volume, 1)
+    const available = 900 - CHART_BOTTOM_RESERVE
+    expect(chart.parentElement?.getAttribute("data-chart-height")).toBe(String(available))
+    expect(document.querySelector('[data-pane="volume"]')?.getAttribute("data-plot-height")).toBe("80")
+    expect(document.querySelector('[data-pane="price"]')?.getAttribute("data-plot-height")).toBe(String(available - CHART_TOP - AXIS_HEIGHT - 80 - PANE_GAP))
   })
 
-  it("máy tính: màn hình thấp thì biểu đồ không thấp hơn 300px", async () => {
+  it("máy tính: màn hình thấp thì ô giá không dưới 320px, biểu đồ dài hơn màn hình", async () => {
     stubChartWidth(1000)
     stubViewportHeight(300)
     setup()
     renderGame()
     await findGame()
-    const chart = screen.getByRole("img", { name: "Biểu đồ nến Flashback" })
-    expect(chart.parentElement?.getAttribute("data-chart-height")).toBe("300")
+    expect(document.querySelector('[data-pane="price"]')?.getAttribute("data-plot-height")).toBe("320")
+    expect(document.querySelector('[data-pane="volume"]')?.getAttribute("data-plot-height")).toBe("80")
   })
 
   it("số phiên xem và chơi theo đúng phòng: 45 xem, 40 chơi thì trục ghi Lịch sử 45 phiên và Phiên 40", async () => {
@@ -426,6 +424,12 @@ describe("Flashback: cửa sổ kết quả", () => {
     expect(backend.callsTo("POST", `/flashback/rooms/${ROOM_CODE}/replay`)).toHaveLength(1)
     expect(screen.queryByTestId("flashback-result")).toBeNull()
 
+    // Sau ván "Sẵn sàng" bị xoá: Minh phải bấm lại thì chủ phòng mới bắt đầu được.
+    expect(screen.getByRole("button", { name: "Bắt đầu" }).hasAttribute("disabled")).toBe(true)
+    backend.setReady(MINH.user_id)
+    await waitFor(() => expect(screen.getByRole("button", { name: "Bắt đầu" }).hasAttribute("disabled")).toBe(false), {
+      timeout: 4_000,
+    })
     await user.click(screen.getByRole("button", { name: "Bắt đầu" }))
     await findGame()
     expect(tileValue("Phiên")).toBe("0 / 30")
@@ -500,7 +504,7 @@ describe("Flashback: hết giờ", () => {
   it("chủ phòng vừa bấm Bắt đầu rồi hết giờ cũng được báo Hết giờ", async () => {
     vi.useFakeTimers({ shouldAdvanceTime: true })
     const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
-    setup({ room: { status: "waiting", owner: ME, members: [ME, MINH] } })
+    setup({ room: { status: "waiting", owner: ME, members: [ME, MINH], ready: [MINH.user_id] } })
     renderGame()
     await user.click(await screen.findByRole("button", { name: "Bắt đầu" }))
     await findGame()
@@ -790,7 +794,7 @@ describe("Flashback: chỉ báo", () => {
     expect(picker().getByText("Không có chỉ báo phù hợp")).toBeTruthy()
   })
 
-  it("thêm chỉ báo riêng thì các khung chia lại chiều cao theo tỷ lệ 3,2 : 1 : 1,15, biểu đồ không dài thêm", async () => {
+  it("thêm chỉ báo riêng: ô khối lượng và ô chỉ báo cao cố định, ô giá nhường phần còn lại tới mức 320px (spec v2.3 §2)", async () => {
     stubChartWidth(1000)
     stubViewportHeight(900)
     const user = userEvent.setup()
@@ -801,24 +805,22 @@ describe("Flashback: chỉ báo", () => {
     expect(base).toBe(900 - CHART_BOTTOM_RESERVE)
     expect(panes("indicator")).toHaveLength(0)
     const plot = (name: string, index = 0) => Number(panes(name)[index].getAttribute("data-plot-height"))
-    const priceBefore = plot("price")
 
     await addIndicator(user, "RSI")
     expect(panes("indicator")).toHaveLength(1)
     expect(panes("indicator")[0].querySelectorAll("button").length).toBe(3)
+    expect(plot("indicator")).toBe(100)
+    expect(plot("volume")).toBe(80)
     expect(chartHeight()).toBe(base)
-    expect(plot("price")).toBeLessThan(priceBefore)
-    expect(plot("indicator") / plot("volume")).toBeCloseTo(PLOT_WEIGHT.indicator / PLOT_WEIGHT.volume, 1)
 
     await addIndicator(user, "MACD")
     expect(panes("indicator")).toHaveLength(2)
-    expect(chartHeight()).toBe(base)
-    expect(plot("indicator", 1)).toBe(plot("indicator", 0))
-    expect(plot("price") / plot("volume")).toBeCloseTo(PLOT_WEIGHT.price / PLOT_WEIGHT.volume, 1)
-    expect(plot("indicator", 0) / plot("volume")).toBeCloseTo(PLOT_WEIGHT.indicator / PLOT_WEIGHT.volume, 1)
+    expect(plot("indicator", 1)).toBe(100)
+    expect(plot("volume")).toBe(80)
+    expect(plot("price")).toBeGreaterThanOrEqual(320)
   })
 
-  it("máy tính bật 5 chỉ báo riêng: biểu đồ vẫn một chiều cao, mọi khung có chỗ vẽ", async () => {
+  it("máy tính bật 5 chỉ báo riêng: ô giá vẫn 320px, biểu đồ dài thêm xuống dưới, không ô nào bị ép", async () => {
     stubChartWidth(1000)
     stubViewportHeight(900)
     const user = userEvent.setup()
@@ -828,40 +830,70 @@ describe("Flashback: chỉ báo", () => {
     const base = chartHeight()
     for (const name of ["RSI", "MACD", "Stochastic", "CCI", "ROC"]) await addIndicator(user, name)
     expect(panes("indicator")).toHaveLength(5)
-    expect(chartHeight()).toBe(base)
-    for (const name of ["price", "volume", "indicator"]) {
-      for (const pane of panes(name)) expect(Number(pane.getAttribute("data-plot-height"))).toBeGreaterThan(0)
-    }
+    expect(chartHeight()).toBeGreaterThan(base)
+    expect(panes("price")[0].getAttribute("data-plot-height")).toBe("320")
+    expect(panes("volume")[0].getAttribute("data-plot-height")).toBe("80")
+    for (const pane of panes("indicator")) expect(pane.getAttribute("data-plot-height")).toBe("100")
   })
 
-  it("điện thoại: thêm chỉ báo vẫn giữ biểu đồ cao 380px, các khung chia theo cùng tỷ lệ", async () => {
+  it("điện thoại: mỗi ô chỉ báo thêm 84px, ô giá và khối lượng giữ nguyên", async () => {
+    stubViewportHeight(900)
+    const user = userEvent.setup()
+    setup()
+    renderGame()
+    await findGame()
+    const before = chartHeight()
+    await addIndicator(user, "RSI")
+    expect(chartHeight()).toBe(before + 84 + PANE_GAP)
+    expect(panes("price")[0].getAttribute("data-plot-height")).toBe("240")
+    expect(panes("volume")[0].getAttribute("data-plot-height")).toBe("64")
+    expect(panes("indicator")[0].getAttribute("data-plot-height")).toBe("84")
+  })
+
+  it("điện thoại: chạm dòng chú giải thì hiện nút của dòng đó, chạm dòng khác thì chuyển, chạm ra ngoài thì ẩn", async () => {
     stubViewportHeight(900)
     const user = userEvent.setup()
     setup()
     renderGame()
     await findGame()
     await addIndicator(user, "RSI")
-    expect(chartHeight()).toBe(CHART_HEIGHT_MOBILE)
-    const plot = (name: string) => Number(panes(name)[0].getAttribute("data-plot-height"))
-    expect(plot("price") / plot("volume")).toBeCloseTo(PLOT_WEIGHT.price / PLOT_WEIGHT.volume, 0)
-    expect(plot("indicator") / plot("volume")).toBeCloseTo(PLOT_WEIGHT.indicator / PLOT_WEIGHT.volume, 0)
+    await addIndicator(user, "MACD")
+    const rows = () => Array.from(document.querySelectorAll<HTMLElement>("[data-legend-row]"))
+    const shown = () => rows().filter((row) => row.querySelector("[data-legend-buttons]")?.classList.contains("flex")).length
+    expect(shown()).toBe(0)
+    await user.click(rows()[0])
+    expect(rows()[0].getAttribute("data-active")).toBe("true")
+    expect(shown()).toBe(1)
+    await user.click(rows()[1])
+    expect(rows()[0].getAttribute("data-active")).toBeNull()
+    expect(rows()[1].getAttribute("data-active")).toBe("true")
+    expect(shown()).toBe(1)
+    await user.click(screen.getByRole("img", { name: "Biểu đồ nến Flashback" }))
+    expect(shown()).toBe(0)
   })
 
-  it("chỉ báo vẽ trên giá thêm một dòng vào dải chú giải của ô giá; chỉ báo khối lượng vào ô khối lượng", async () => {
+  it("thêm MA và Bollinger: chiều cao các ô không đổi, chú giải thêm dòng nhưng không trừ phần vẽ (nghiệm thu 1)", async () => {
     stubChartWidth(1000)
+    stubViewportHeight(900)
     const user = userEvent.setup()
     setup()
     renderGame()
     await findGame()
-    expect(panes("price")[0].getAttribute("data-legend-height")).toBe(String(24 + 4))
+    const price = panes("price")[0].getAttribute("data-plot-height")
+    const base = chartHeight()
+    expect(panes("price")[0].getAttribute("data-legend-height")).toBe("24")
     expect(panes("volume")[0].getAttribute("data-legend-height")).toBe("24")
 
     await addIndicator(user, "MA / SMA")
-    expect(panes("price")[0].getAttribute("data-legend-height")).toBe(String(24 + 24 + 4))
+    await addIndicator(user, "Bollinger")
+    expect(panes("price")[0].getAttribute("data-legend-height")).toBe(String(3 * 24))
+    expect(panes("price")[0].getAttribute("data-plot-height")).toBe(price)
+    expect(chartHeight()).toBe(base)
     expect(panes("indicator")).toHaveLength(0)
 
     await addIndicator(user, "Khối lượng")
     expect(panes("volume")[0].getAttribute("data-legend-height")).toBe("48")
+    expect(panes("volume")[0].getAttribute("data-plot-height")).toBe("80")
   })
 
   it("ẩn, cài đặt và xóa một chỉ báo; chỉ báo được nhớ trong trình duyệt", async () => {

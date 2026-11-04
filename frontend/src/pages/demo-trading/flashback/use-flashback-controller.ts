@@ -25,16 +25,20 @@ import {
   fetchRooms,
   finishMatch,
   joinRoom as joinRoomRequest,
+  kickRoomMember,
   leaveRoom,
   nextBar,
   placeOrder,
   randomJoinRoom,
   replayRoom,
+  sendReaction as sendReactionRequest,
+  setRoomReady,
   startRoom,
   type FlashbackCreateRoomBody,
   type FlashbackIndicatorParams,
   type FlashbackMatchState,
   type FlashbackOrderSide,
+  type FlashbackReaction,
   type FlashbackRoom,
   type FlashbackRoomFilter,
   type FlashbackSnapshot,
@@ -46,10 +50,14 @@ import type {
   JoinOutcome,
   LocalIndicator,
   MatchApi,
+  ReactionBubble,
 } from "./flashback-context"
 import { loadStoredIndicators, saveStoredIndicators } from "./flashback-indicator-store"
 import { computeIndicator, defaultParams, validateParams } from "./flashback-indicators"
 import {
+  REACTION_BUBBLE_MS,
+  REACTION_COOLDOWN_MS,
+  REACTION_TOO_FAST,
   ROOM_CODE_ERROR,
   formatNumber,
   indicatorColor,
@@ -65,6 +73,11 @@ import {
   flashbackKeys,
   useFlashbackIndicators,
 } from "./use-flashback"
+import { playEffect, playOrderSound, playVoice, sellOutcome } from "./flashback-sound"
+import { invalidateFlashbackProgress } from "./use-flashback-progress"
+
+/** Bong bóng còn sống dưới ngần này mili giây thì không đáng hiện (đã gần mờ hết). */
+const BUBBLE_MIN_LIFE_MS = 300
 
 type Place =
   | { phase: "boot" }
@@ -123,7 +136,8 @@ export function useFlashbackController(): FlashbackContextValue {
   const loadMine = useCallback(
     async (signal?: AbortSignal) => {
       const mine = await fetchMyRoom(signal)
-      if (mine.notice) toast.info(mine.notice)
+      // Bị chủ phòng đuổi: server báo `kicked` cùng thông báo một lần, về sảnh kèm toast cảnh báo.
+      if (mine.notice) (mine.kicked ? toast.warning : toast.info)(mine.notice)
       if (mine.room) queryClient.setQueryData(flashbackKeys.room(userId, mine.room.id), mine.room)
       return mine
     },
@@ -261,6 +275,53 @@ export function useFlashbackController(): FlashbackContextValue {
 
   // ------------------------------------------------------------------ ván chơi
 
+  // Biểu cảm (v2.1 §6.4): người khác gửi thì tới máy này qua lần hỏi trạng thái kế tiếp (2 giây một lần);
+  // mỗi biểu cảm có ID nên chỉ hiện một lần. Của mình hiện ngay khi bấm (không chờ server).
+  const [bubbles, setBubbles] = useState<ReactionBubble[]>([])
+  const seenReactions = useRef(new Set<string>())
+  const bubbleTimers = useRef(new Set<ReturnType<typeof setTimeout>>())
+  const lastReactionAt = useRef(0)
+  const reactionCount = useRef(0)
+
+  useEffect(() => {
+    const timers = bubbleTimers.current
+    return () => {
+      for (const timer of timers) clearTimeout(timer)
+      timers.clear()
+    }
+  }, [])
+
+  const removeBubble = useCallback((key: string) => {
+    setBubbles((current) => current.filter((bubble) => bubble.key !== key))
+  }, [])
+
+  const addBubble = useCallback(
+    (bubble: ReactionBubble, lifeMs: number) => {
+      setBubbles((current) => [...current, bubble])
+      const timer = setTimeout(() => {
+        bubbleTimers.current.delete(timer)
+        removeBubble(bubble.key)
+      }, lifeMs)
+      bubbleTimers.current.add(timer)
+    },
+    [removeBubble],
+  )
+
+  const ingestReactions = useCallback(
+    (reactions: readonly FlashbackReaction[]) => {
+      for (const reaction of reactions) {
+        if (seenReactions.current.has(reaction.id)) continue
+        seenReactions.current.add(reaction.id)
+        // Của chính mình đã hiện lúc bấm.
+        if (reaction.user_id === userId) continue
+        const life = REACTION_BUBBLE_MS - reaction.age_ms
+        if (life < BUBBLE_MIN_LIFE_MS) continue
+        addBubble({ key: reaction.id, userId: reaction.user_id, emoji: reaction.emoji, ageMs: reaction.age_ms }, life)
+      }
+    },
+    [addBubble, userId],
+  )
+
   const sawPlaying = useRef(new Set<string>())
   const snapshotQuery = useQuery({
     queryKey: flashbackKeys.match(userId, matchId ?? ""),
@@ -275,7 +336,11 @@ export function useFlashbackController(): FlashbackContextValue {
     enabled: !!userId && matchId !== null,
     staleTime: 0,
     retry: false,
-    queryFn: ({ signal }) => guarded(() => fetchMatchState(matchId ?? "", signal)),
+    queryFn: async ({ signal }) => {
+      const state = await guarded(() => fetchMatchState(matchId ?? "", signal))
+      ingestReactions(state.reactions)
+      return state
+    },
     // Ván đã kết thúc thì thôi hỏi: trạng thái không còn đổi.
     refetchInterval: (query) => (query.state.data?.status === "ended" ? false : 2_000),
   })
@@ -294,10 +359,12 @@ export function useFlashbackController(): FlashbackContextValue {
     if (matchId && playingSeen) sawPlaying.current.add(matchId)
   }, [matchId, playingSeen])
 
-  // Ván vừa kết thúc: lấy lại ảnh chụp cuối (tài khoản chốt, đủ nến) và số dư xu mới.
+  // Ván vừa kết thúc: lấy lại ảnh chụp cuối (tài khoản chốt, đủ nến), số dư xu mới và điểm, cấp,
+  // hạng, lịch sử đấu (đã cộng điểm lúc chốt ván).
   useEffect(() => {
     if (!ended || !matchId) return
     void queryClient.invalidateQueries({ queryKey: SHOP_QUERY_ROOT })
+    void invalidateFlashbackProgress(queryClient)
   }, [ended, matchId, queryClient])
   useEffect(() => {
     if (!ended || snapshotEnded || !matchId) return
@@ -324,6 +391,21 @@ export function useFlashbackController(): FlashbackContextValue {
     toast.info("Hết giờ")
   }, [result])
 
+  // Âm thanh kết quả: thắng thì nhạc chúc mừng và "Chúc mừng! Bạn đã chiến thắng!", không thì "Ván đấu
+  // kết thúc". Chỉ cho người đang ở trong ván lúc nó kết thúc, mỗi ván một lần.
+  const resultSounded = useRef(new Set<string>())
+  useEffect(() => {
+    if (!result || !sawPlaying.current.has(result.match_id) || resultSounded.current.has(result.match_id)) return
+    resultSounded.current.add(result.match_id)
+    const won = !result.solo && result.rows.some((row) => row.is_me && row.is_winner)
+    if (won) {
+      playEffect("celebrate")
+      playVoice("win")
+    } else {
+      playVoice("finish")
+    }
+  }, [result])
+
   // Màn chơi mới: báo đã trừ cược (hoặc chơi một mình) đúng một lần cho mỗi ván, và lấy lại số dư xu
   // (người vào ván do chủ phòng bắt đầu cũng bị trừ cược mà không tự làm mới ví).
   const freshMatchId = place.phase === "match" && place.fresh ? place.matchId : null
@@ -332,6 +414,7 @@ export function useFlashbackController(): FlashbackContextValue {
   useEffect(() => {
     if (!freshMatchId || freshStake === null || startedToasts.current.has(freshMatchId)) return
     startedToasts.current.add(freshMatchId)
+    playVoice("start")
     toast.success(freshStake > 0 ? `Bắt đầu · đã trừ ${formatNumber(freshStake)} xu` : "Bắt đầu chơi")
     if (freshStake > 0) void queryClient.invalidateQueries({ queryKey: SHOP_QUERY_ROOT })
   }, [freshMatchId, freshStake, queryClient])
@@ -366,6 +449,8 @@ export function useFlashbackController(): FlashbackContextValue {
 
   // Có người vào hoặc rời phòng chờ: báo ngắn (§4). Lần tải đầu chỉ lấy mốc so sánh.
   const knownMembers = useRef<{ code: string; members: Map<string, string> } | null>(null)
+  // Người vừa bị chính mình đuổi: đã có toast riêng, không báo thêm "đã rời phòng".
+  const kickedByMe = useRef(new Set<string>())
   useEffect(() => {
     if (place.phase !== "room" || !room || room.id !== place.code) {
       knownMembers.current = null
@@ -379,7 +464,7 @@ export function useFlashbackController(): FlashbackContextValue {
       if (!previous.members.has(member.user_id) && !member.is_me) toast.info(`${member.name} đã vào phòng`)
     }
     for (const [id, name] of previous.members) {
-      if (!members.has(id)) toast.info(`${name} đã rời phòng`)
+      if (!members.has(id) && !kickedByMe.current.delete(id)) toast.info(`${name} đã rời phòng`)
     }
   }, [place, room])
 
@@ -413,6 +498,42 @@ export function useFlashbackController(): FlashbackContextValue {
   const start = useCallback(() => {
     if (roomCode) startMutation.mutate(roomCode)
   }, [roomCode, startMutation])
+
+  const readyMutation = useMutation({
+    mutationFn: (input: { code: string; ready: boolean }) => setRoomReady(input.code, input.ready),
+    onSuccess: (updated) => queryClient.setQueryData(flashbackKeys.room(userId, updated.id), updated),
+    onError: (error) => {
+      toast.error(messageOf(error, "Chưa đổi được trạng thái sẵn sàng. Thử lại."))
+      if (isGone(error)) void resync()
+    },
+  })
+  const setReady = useCallback(
+    (ready: boolean) => {
+      if (roomCode) readyMutation.mutate({ code: roomCode, ready })
+    },
+    [readyMutation, roomCode],
+  )
+
+  const kickMutation = useMutation({
+    mutationFn: (input: { code: string; userId: string; name: string }) => kickRoomMember(input.code, input.userId),
+    onSuccess: (updated, input) => {
+      kickedByMe.current.add(input.userId)
+      queryClient.setQueryData(flashbackKeys.room(userId, updated.id), updated)
+      toast.success(`Đã mời ${input.name} ra khỏi phòng`)
+    },
+    onError: (error) => {
+      toast.error(messageOf(error, "Chưa đuổi được người chơi. Thử lại."))
+      if (isGone(error)) void resync()
+    },
+  })
+  const kick = useCallback(
+    (targetId: string) => {
+      if (!roomCode) return
+      const name = room?.members.find((member) => member.user_id === targetId)?.name ?? "người chơi"
+      kickMutation.mutate({ code: roomCode, userId: targetId, name })
+    },
+    [kickMutation, room, roomCode],
+  )
 
   const copyId = useCallback(() => {
     if (!roomCode) return
@@ -499,6 +620,12 @@ export function useFlashbackController(): FlashbackContextValue {
       placeOrder(matchId ?? "", { side: input.side, qty: input.qty, idempotency_key: input.key }),
     onSuccess: (placed) => {
       pendingOrder.current = null
+      // Âm thanh: mua; bán thì chốt lời hay cắt lỗ so với giá vốn của số cổ phiếu đang giữ trước lệnh.
+      const before = matchId ? queryClient.getQueryData<FlashbackSnapshot>(flashbackKeys.match(userId, matchId)) : undefined
+      playOrderSound(
+        placed.order.side,
+        placed.order.side === "sell" ? sellOutcome(before?.me.positions ?? [], placed.order) : "flat",
+      )
       patchSnapshot((current) => applyOrder(current, placed.me))
       setQty("")
       const verb = placed.order.side === "buy" ? "Đã mua" : "Đã bán"
@@ -523,6 +650,34 @@ export function useFlashbackController(): FlashbackContextValue {
     },
     onError: (error) => failMatchAction(error, "Chưa chốt được kết quả."),
   })
+
+  // Biểu cảm: mỗi người 1 cái mỗi 1,5 giây; bấm nhanh hơn thì báo và không gửi (v2.1 §6.4).
+  const reactionMutation = useMutation({
+    mutationFn: (emoji: string) => sendReactionRequest(matchId ?? "", emoji),
+  })
+  const reactionMutate = reactionMutation.mutate
+  const sendReaction = useCallback(
+    (emoji: string) => {
+      if (!matchId || ended) return
+      const now = Date.now()
+      if (now - lastReactionAt.current < REACTION_COOLDOWN_MS) {
+        toast.info(REACTION_TOO_FAST)
+        return
+      }
+      lastReactionAt.current = now
+      reactionCount.current += 1
+      const key = `mine-${reactionCount.current}`
+      addBubble({ key, userId, emoji, ageMs: 0 }, REACTION_BUBBLE_MS)
+      reactionMutate(emoji, {
+        onError: (error) => {
+          removeBubble(key)
+          if (codeOf(error) === "MATCH_ENDED") refreshMatch()
+          else toast.info(messageOf(error, "Chưa gửi được biểu cảm."))
+        },
+      })
+    },
+    [addBubble, ended, matchId, reactionMutate, refreshMatch, removeBubble, userId],
+  )
 
   // ------------------------------------------------------------------ chỉ báo (chỉ ở trình duyệt)
 
@@ -646,6 +801,9 @@ export function useFlashbackController(): FlashbackContextValue {
       playingCount: matchState?.playing_count ?? snapshot.playing_count,
       clock: ended ? { remainingMs: 0, receivedAt: clockSource.receivedAt } : clockSource,
       expireClock,
+      bubbles,
+      canReact: !ended,
+      sendReaction,
       side,
       setSide,
       qty,
@@ -714,6 +872,10 @@ export function useFlashbackController(): FlashbackContextValue {
       leaveBusy: leaveMutation.isPending,
       start,
       startBusy: startMutation.isPending,
+      setReady,
+      readyBusy: readyMutation.isPending,
+      kick,
+      kickBusy: kickMutation.isPending,
     },
     match,
     matchLoading: place.phase === "match" && snapshotQuery.isPending,

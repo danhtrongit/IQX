@@ -181,3 +181,17 @@ export function metricChapter(metric: Pick<ScreenerMetric, "lesson_id">): number
   const match = /^ch(\d+)-/.exec(metric.lesson_id ?? "")
   return match ? Number(match[1]) : 0
 }
+
+/** First level groups of the metrics (spec Học viện v4.1 §6.2): by industry, never the name of a Học viện chapter. */
+const METRIC_GROUPS: Readonly<Record<number, string>> = {
+  8: "Chỉ tiêu chung",
+  9: "Chỉ tiêu doanh nghiệp sản xuất",
+  10: "Chỉ tiêu ngân hàng",
+  11: "Chỉ tiêu chứng khoán",
+  12: "Chỉ tiêu bảo hiểm",
+}
+
+/** The group a metric is listed under: the industry group of the lesson that teaches it. */
+export function metricGroupTitle(metric: Pick<ScreenerMetric, "lesson_id">): string {
+  return METRIC_GROUPS[metricChapter(metric)] ?? "Chỉ tiêu khác"
+}

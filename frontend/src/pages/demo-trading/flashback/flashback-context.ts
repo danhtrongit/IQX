@@ -40,6 +40,9 @@ export type ChartIndicator = {
   plot: IndicatorPlot
 }
 
+/** Một biểu cảm đang bay ở avatar của người gửi (v2.1 §6.4); `ageMs` là tuổi của nó lúc tới máy này. */
+export type ReactionBubble = { key: string; userId: string; emoji: string; ageMs: number }
+
 /** Màn đang mở. `boot` là lúc hỏi server xem mình có đang ở phòng nào không. */
 export type FlashbackPhase = "boot" | "lobby" | "room" | "match"
 
@@ -75,6 +78,12 @@ export type RoomApi = {
   leaveBusy: boolean
   start: () => void
   startBusy: boolean
+  /** Bấm "Sẵn sàng" (true) hoặc "Huỷ sẵn sàng" (false) của chính mình. */
+  setReady: (ready: boolean) => void
+  readyBusy: boolean
+  /** Chủ phòng đuổi một thành viên khỏi phòng chờ (đã qua hộp xác nhận). */
+  kick: (userId: string) => void
+  kickBusy: boolean
 }
 
 export type MatchApi = {
@@ -100,6 +109,12 @@ export type MatchApi = {
   /** Mốc đồng hồ: còn bao nhiêu ms vào lúc `receivedAt`; đồng hồ tự đếm tiếp từ đó. */
   clock: { remainingMs: number; receivedAt: number }
   expireClock: () => void
+  /** Biểu cảm đang bay (của mình và của người khác); chỉ có trong lúc chơi. */
+  bubbles: ReactionBubble[]
+  /** Gửi biểu cảm được khi ván còn đang chơi (v2.1 §6.4). */
+  canReact: boolean
+  /** Gửi một biểu cảm tới cả phòng; quá 1 cái mỗi 1,5 giây thì báo "Từ từ thôi 😄" và không gửi. */
+  sendReaction: (emoji: string) => void
   side: FlashbackOrderSide
   setSide: (side: FlashbackOrderSide) => void
   qty: string

@@ -72,7 +72,10 @@ export const BOT_RESULT_SCHEMA = closedObject({
 
 const lessonRefProperties: Record<string, SchemaObject> = {
   lesson_id: string,
-  chapter: integer,
+  /** Fixed chapter id (`ch03`). */
+  chapter_id: string,
+  /** The chapter number the user sees: the number in HIS Academy config, counted again from 1 (v4.1 §2). */
+  chapter_display_no: integer,
   order: integer,
   name: string,
   label: string,
@@ -97,6 +100,13 @@ export const ACADEMY_SUMMARY_SCHEMA = closedObject(academySummaryProperties);
 export const ACADEMY_DETAIL_SCHEMA = closedObject({
   ...academySummaryProperties,
   catalog_version: string,
+  /** The Academy config that applies to the user (v4.1 §1.1, §8.2). */
+  config: closedObject({
+    source: { type: 'string', enum: ['default', 'leader', 'admin'] },
+    mode: { type: 'string', enum: ['free', 'sequential'] },
+    chapter_count: integer,
+    chapter_total: integer,
+  }),
   chapter_exams: closedObject({ total: integer, passed: integer }),
   last_completion: nullable(
     closedObject({
@@ -109,7 +119,10 @@ export const ACADEMY_DETAIL_SCHEMA = closedObject({
   chapters: {
     type: 'array',
     items: closedObject({
-      no: integer,
+      chapter_id: string,
+      /** The user's own chapter number; null for a chapter no longer in his config (kept for the history). */
+      display_no: nullable(integer),
+      in_program: boolean,
       title: string,
       total: integer,
       completed: integer,

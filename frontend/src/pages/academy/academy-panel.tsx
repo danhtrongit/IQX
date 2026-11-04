@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from "@/hooks/use-auth"
 import { errorMessage } from "@/lib/api"
 import { cn } from "@/lib/utils"
-import { chapterOfItem, itemStates, REQUIRED_TOTAL_FALLBACK } from "./catalog-model"
+import { chapterIdOfItem, itemStates } from "./catalog-model"
 import { useAcademyNavigation } from "./navigation"
 import { ChapterGroup } from "./panel/chapter-group"
 import { ProgressCard } from "./panel/progress-card"
@@ -18,11 +18,12 @@ import { scrollContainerOf } from "./scroll"
 import { loadPanelState, savePanelState } from "./view-state"
 
 /**
- * «Học viện» tool panel: "Học viện", "{required_total} bài học", the progress card and one group per
- * published chapter. Every row shows the server-computed state (`progress.items[].state`): "Xem lại",
- * "Học bài" / "Làm bài". Learning is free (spec v4 §4.1), so no row is locked; only an account switched
- * to `sequential` mode (spec v4.1) still gets a lock with "Chưa mở". No switch, no configuration and no
- * practice tool.
+ * «Học viện» tool panel: "Học viện", "{N} bài học", the progress card and one group per chapter of the
+ * learner's program (his group's Academy config, spec v4.1): the chapters are numbered from 1 by the server
+ * (`display_no`) and N counts only the required lessons of those chapters. Every row shows the server-computed
+ * state (`progress.items[].state`): "Xem lại", "Học bài" / "Làm bài". In `free` mode no row is locked; in
+ * `sequential` mode an item that is not its turn yet gets a lock with "Chưa mở". No switch, no configuration
+ * and no practice tool: the config belongs to the administrator.
  *
  * Until the learner decides, the chapter of the open item (or of the current item) is open; after that
  * the learner's own open/closed choice is kept for the session and a refetch never re-opens anything.
@@ -42,16 +43,18 @@ export function AcademyPanel() {
   const states = itemStates(progress)
   const openItemId = nav.lessonId
 
-  const [openChapters, setOpenChapters] = useState<number[] | null>(() => loadPanelState(userId).openChapters)
+  const [openChapters, setOpenChapters] = useState<string[] | null>(() => loadPanelState(userId).openChapters)
   const [revealedFor, setRevealedFor] = useState<string | null>(null)
-  const defaultChapter = chapterOfItem(openItemId) ?? chapterOfItem(progress?.current_item_id ?? null) ?? 1
-  const openSet = new Set(openChapters ?? [defaultChapter])
+  // Chapters are keyed by their fixed id: the number the learner sees changes with his config.
+  const defaultChapter =
+    chapterIdOfItem(openItemId) ?? chapterIdOfItem(progress?.current_item_id ?? null) ?? catalog?.chapters[0]?.chapter_id ?? null
+  const openSet = new Set(openChapters ?? (defaultChapter ? [defaultChapter] : []))
 
   // An item was opened (row or deep link, e.g. the Dashboard's "Học" button): show its chapter once.
-  const openChapter = chapterOfItem(openItemId)
+  const openChapter = chapterIdOfItem(openItemId)
   if (openItemId && openChapter !== null && revealedFor !== openItemId) {
     setRevealedFor(openItemId)
-    if (openChapters !== null && !openSet.has(openChapter)) setOpenChapters([...openSet, openChapter].sort((a, b) => a - b))
+    if (openChapters !== null && !openSet.has(openChapter)) setOpenChapters([...openSet, openChapter])
   }
 
   useEffect(() => {
@@ -97,11 +100,11 @@ export function AcademyPanel() {
     if (rowBox.top < viewportBox.top || rowBox.bottom > viewportBox.bottom) viewport.scrollTop += rowBox.top - viewportBox.top - 18
   }, [openItemId, catalogReady])
 
-  function toggle(no: number) {
+  function toggle(chapterId: string) {
     const next = new Set(openSet)
-    if (next.has(no)) next.delete(no)
-    else next.add(no)
-    setOpenChapters([...next].sort((a, b) => a - b))
+    if (next.has(chapterId)) next.delete(chapterId)
+    else next.add(chapterId)
+    setOpenChapters([...next])
   }
 
   function select(id: string) {
@@ -111,9 +114,10 @@ export function AcademyPanel() {
   }
 
   // Lessons, progress and coins belong to an account: a guest is asked to sign in and nothing is requested.
+  // The number of lessons depends on the account's Academy config, so a guest is told none.
   if (!isAuthenticated && !isLoading) {
     return (
-      <SidebarPanel title="Học viện" description={`${REQUIRED_TOTAL_FALLBACK} bài học`}>
+      <SidebarPanel title="Học viện">
         <PanelState
           title="Đăng nhập để học"
           description="Bài học, tiến độ và xu học tập được lưu theo tài khoản của bạn."
@@ -124,12 +128,13 @@ export function AcademyPanel() {
   }
 
   const refreshing = catalogQuery.isFetching || progressQuery.isFetching
-  const total = catalog?.required_total ?? REQUIRED_TOTAL_FALLBACK
+  // N: required lessons of the learner's chapters (spec v4.1 §2.4); unknown until the catalog arrives, never guessed.
+  const total = catalog?.required_total
 
   return (
     <SidebarPanel
       title="Học viện"
-      description={`${total} bài học`}
+      description={total === undefined ? undefined : `${total} bài học`}
       actions={
         <Button type="button" variant="ghost" size="icon-sm" aria-label="Làm mới Học viện" disabled={refreshing} onClick={() => void refresh()}>
           <RefreshCw className={cn(refreshing && "animate-spin motion-reduce:animate-none")} aria-hidden="true" />
@@ -147,10 +152,10 @@ export function AcademyPanel() {
         {catalog ? (
           catalog.chapters.map((chapter) => (
             <ChapterGroup
-              key={chapter.no}
+              key={chapter.chapter_id}
               chapter={chapter}
-              open={openSet.has(chapter.no)}
-              onToggle={() => toggle(chapter.no)}
+              open={openSet.has(chapter.chapter_id)}
+              onToggle={() => toggle(chapter.chapter_id)}
               states={states}
               progress={progress}
               currentItemId={openItemId}

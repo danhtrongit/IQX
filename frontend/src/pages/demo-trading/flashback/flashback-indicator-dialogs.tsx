@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import type { FlashbackIndicatorMeta, FlashbackIndicatorParams } from "./flashback-api"
 import { defaultParams, validateParams } from "./flashback-indicators"
 
@@ -103,7 +104,7 @@ export function IndicatorPicker({
           </div>
         </div>
 
-        <div className="max-h-[min(460px,60vh)] overflow-auto px-2 py-2">
+        <ScrollArea className="max-h-[min(460px,60vh)]" viewportClassName="px-2 py-2">
           {loading ? (
             <div className="space-y-2 px-2 py-2" role="status" aria-label="Đang tải chỉ báo">
               <Skeleton className="h-9 w-full" />
@@ -133,7 +134,7 @@ export function IndicatorPicker({
               ))}
             </ul>
           )}
-        </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   )

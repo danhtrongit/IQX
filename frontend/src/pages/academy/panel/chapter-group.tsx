@@ -6,8 +6,9 @@ import type { CatalogChapter, ItemState, ProgressResponse } from "../content-typ
 import { ItemRow } from "./item-row"
 
 /**
- * One published chapter: "Chương c · Tên chương" in bold foreground, its required-lesson count and,
- * when open, every item (lessons, the chapter exam and, for chapter 3, the optional practice room).
+ * One chapter of the learner's program: "Chương c · Tên chương" in bold foreground (c is his `display_no`,
+ * spec v4.1 §2), its required-lesson count and, when open, every item (lessons, the chapter exam and, for the
+ * personal-brand chapter, the optional practice room).
  */
 export function ChapterGroup({
   chapter,
@@ -27,10 +28,10 @@ export function ChapterGroup({
   onSelect: (itemId: string) => void
 }) {
   const listId = useId()
-  const counts = progress?.chapters?.find((candidate) => candidate.no === chapter.no)
+  const counts = progress?.chapters?.find((candidate) => candidate.chapter_id === chapter.chapter_id)
   const total = counts?.total ?? chapter.lesson_count
   return (
-    <section data-chapter={chapter.no} className="overflow-hidden rounded-lg border border-border bg-card">
+    <section data-chapter={chapter.display_no} data-chapter-id={chapter.chapter_id} className="overflow-hidden rounded-lg border border-border bg-card">
       <h3 className="m-0">
         <button
           type="button"
@@ -44,7 +45,7 @@ export function ChapterGroup({
             aria-hidden="true"
           />
           <b className="min-w-0 flex-1 text-xs leading-snug font-bold text-foreground">
-            Chương {chapter.no} · {chapter.title}
+            Chương {chapter.display_no} · {chapter.title}
           </b>
           <span
             className="shrink-0 text-[11px] text-academy-subtle tabular-nums"

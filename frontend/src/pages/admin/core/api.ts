@@ -342,7 +342,12 @@ export type AcademyLesson = {
 }
 
 export type AcademyChapter = {
-  no: number
+  /** Mã chương cố định (`ch03`), không đổi theo cấu hình. */
+  chapterId: string
+  /** Số chương người dùng này thấy (đã đánh lại theo cấu hình của họ); null khi chương đã bị bỏ khỏi cấu hình. */
+  displayNo: number | null
+  /** Chương còn trong cấu hình của người dùng (tính vào x / N). */
+  inProgram: boolean
   title: string
   completed: number
   total: number
@@ -352,18 +357,32 @@ export type AcademyChapter = {
 
 export type AcademyLessonRef = {
   lessonId: string
-  chapter: number
+  chapterId: string
+  /** Số chương người dùng thấy ("Chương c · Bài n"), theo cấu hình của họ. */
+  chapterDisplayNo: number
   order: number
   name: string
   label: string
 }
 
-/** Tab Học viện (§5.1.4): chỉ các chương đã phát hành của catalog hiện tại. */
+/** Cấu hình Học viện áp dụng cho người dùng (v4.1 §1.1): mặc định, của trưởng nhóm, hoặc quản trị viên (đủ 12 chương). */
+export type AcademyConfigInfo = {
+  source: "default" | "leader" | "admin"
+  mode: "free" | "sequential"
+  chapterCount: number
+  chapterTotal: number
+}
+
+/**
+ * Tab Học viện (§5.1.4, v4.1 §8.4): các chương trong cấu hình của người dùng theo số đã đánh lại, rồi các chương
+ * đã bị bỏ mà họ có học (lịch sử, không tính vào x / N).
+ */
 export type AcademyProgress = {
   started: boolean
   allDone: boolean
   completed: number
   total: number
+  config: AcademyConfigInfo
   chapterExams: { passed: number; total: number }
   currentLesson: AcademyLessonRef | null
   lastCompletion: (AcademyLessonRef & { completedAt: string; rewardCoins: number | null }) | null
@@ -514,7 +533,7 @@ export function adaptLoginHistoryRow(raw: WireLoginHistoryRow): LoginHistoryRow 
 
 type WireTradingInsight = LegacyUser360Response["demo_trading"] & { as_of?: string | null }
 type WireAcademy = LegacyUser360Response["academy"]
-type WireAcademyLessonRef = Pick<NonNullable<WireAcademy["current_lesson"]>, "lesson_id" | "chapter" | "order" | "name" | "label">
+type WireAcademyLessonRef = Pick<NonNullable<WireAcademy["current_lesson"]>, "lesson_id" | "chapter_id" | "chapter_display_no" | "order" | "name" | "label">
 
 function adaptTradingInsight(raw: WireTradingInsight | null | undefined): TradingInsight | null {
   if (!raw) return null
@@ -530,7 +549,14 @@ function adaptTradingInsight(raw: WireTradingInsight | null | undefined): Tradin
 }
 
 function adaptLessonRef(raw: WireAcademyLessonRef): AcademyLessonRef {
-  return { lessonId: raw.lesson_id, chapter: raw.chapter, order: raw.order, name: raw.name, label: raw.label }
+  return {
+    lessonId: raw.lesson_id,
+    chapterId: raw.chapter_id,
+    chapterDisplayNo: raw.chapter_display_no,
+    order: raw.order,
+    name: raw.name,
+    label: raw.label,
+  }
 }
 
 export function adaptAcademyProgress(raw: WireAcademy | null | undefined): AcademyProgress | null {
@@ -540,6 +566,12 @@ export function adaptAcademyProgress(raw: WireAcademy | null | undefined): Acade
     allDone: raw.all_done,
     completed: raw.completed,
     total: raw.total,
+    config: {
+      source: raw.config.source,
+      mode: raw.config.mode,
+      chapterCount: raw.config.chapter_count,
+      chapterTotal: raw.config.chapter_total,
+    },
     chapterExams: { passed: raw.chapter_exams?.passed ?? 0, total: raw.chapter_exams?.total ?? 0 },
     currentLesson: raw.current_lesson ? adaptLessonRef(raw.current_lesson) : null,
     lastCompletion: raw.last_completion
@@ -551,7 +583,9 @@ export function adaptAcademyProgress(raw: WireAcademy | null | undefined): Acade
       : null,
     learningCoins: raw.learning_coins ?? 0,
     chapters: (raw.chapters ?? []).map((chapter) => ({
-      no: chapter.no,
+      chapterId: chapter.chapter_id,
+      displayNo: chapter.display_no ?? null,
+      inProgram: chapter.in_program,
       title: chapter.title,
       completed: chapter.completed,
       total: chapter.total,

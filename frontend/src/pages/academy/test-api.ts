@@ -1,8 +1,10 @@
 /**
- * A small in-memory Học viện v4 backend for the tests. Plug `handler` into the mocked `api()` of
+ * A small in-memory Học viện v4.1 backend for the tests. Plug `handler` into the mocked `api()` of
  * `@/lib/api`; every call is recorded in `calls` ("GET /academy/catalog") and `bodies`.
- * Learning is free (nothing is locked) unless `mode: "sequential"`, which applies the server's prefix rule;
- * answers are graded here and never sent to the client.
+ * The account's program is its group config: `chapters` (original chapter numbers, renumbered from 1 as
+ * `display_no`) and `mode`. Learning is free (nothing is locked) unless `mode: "sequential"`, which applies the
+ * server's prefix rule; an item of a chapter outside the program answers 404 ACADEMY_ITEM_NOT_IN_PROGRAM.
+ * Answers are graded here and never sent to the client.
  */
 import { ApiError } from "@/lib/api"
 import type { AccessMode, AttemptResponse, CatalogItem, LessonContent, LinkResponse, NotesResponse, ResumeResponse } from "./content-types"
@@ -27,6 +29,8 @@ type AttemptRecord = { attempt: AttemptResponse; item: CatalogItem; key: string;
 export type FakeOptions = {
   /** `free` (default): every item is open; `sequential`: an item opens once every earlier required item is passed. */
   mode?: AccessMode
+  /** ORIGINAL numbers of the chapters of the account's config (default: all 12), numbered again from 1 for the learner. */
+  chapters?: readonly number[]
   /** Lesson keys already completed (e.g. "concept:ch01_l01", "technical:rsi"). */
   completed?: string[]
   lessons?: Record<string, Partial<LessonContent>>
@@ -39,13 +43,16 @@ export type FakeOptions = {
 }
 
 const notFound = () => new ApiError("Không tìm thấy bài học.", 404, "LESSON_NOT_FOUND")
-const locked = () => new ApiError("Bài này chưa mở.", 403, "ACADEMY_ITEM_LOCKED")
+const locked = () => new ApiError("Học lần lượt để mở bài này.", 403, "ACADEMY_ITEM_LOCKED")
+const notInProgram = () => new ApiError("Bài này không còn trong chương trình học của bạn.", 404, "ACADEMY_ITEM_NOT_IN_PROGRAM")
+/** Every item of the 12-chapter catalog, to tell "not in the program" from "unknown". */
+const KNOWN_ITEM_IDS: ReadonlySet<string> = new Set(catalogItemsOf(buildCatalog()).map((item) => item.id))
 
 export function createFakeAcademyApi(options: FakeOptions = {}) {
-  const catalog = buildCatalog()
+  const mode: AccessMode = options.mode ?? "free"
+  const catalog = buildCatalog({ chapters: options.chapters, mode })
   const byId = new Map(catalogItemsOf(catalog).map((item) => [item.id, item] as const))
   const completed = new Set(options.completed ?? [])
-  const mode: AccessMode = options.mode ?? "free"
   /** The item opened last (a required lesson or exam): the server's "bài đang học". */
   let openedId: string | null = null
   const calls: string[] = []
@@ -87,9 +94,15 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
     }
   }
 
-  function requireOpenItem(id: string): CatalogItem {
+  /** An item of the program, or the 404 the server answers; with `sequential` it must also be open (403). */
+  function requireProgramItem(id: string): CatalogItem {
     const item = byId.get(id)
-    if (!item) throw notFound()
+    if (!item) throw KNOWN_ITEM_IDS.has(id) ? notInProgram() : notFound()
+    return item
+  }
+
+  function requireOpenItem(id: string): CatalogItem {
+    const item = requireProgramItem(id)
     if (statesOf(catalog, completed, mode).get(id) === "locked") throw locked()
     return item
   }
@@ -107,10 +120,12 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
       return {
         found: true,
         metric,
-        item_id: hit.item.id,
+        lesson_id: hit.item.id,
+        locked: statesOf(catalog, completed, mode).get(hit.item.id) === "locked",
         lesson_key: hit.item.lesson_key,
         metric_key: hit.item.metric_key,
-        chapter: hit.item.chapter,
+        chapter_id: hit.item.chapter_id,
+        chapter_display_no: hit.item.chapter_display_no,
         title: hit.item.name,
         matched_by: hit.by as LinkResponse["matched_by"],
         url: `/hoc-vien/${hit.item.id}`,
@@ -119,10 +134,12 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
     return {
       found: false,
       metric,
-      item_id: current,
+      lesson_id: current,
+      locked: false,
       lesson_key: null,
       metric_key: null,
-      chapter: null,
+      chapter_id: null,
+      chapter_display_no: null,
       title: null,
       matched_by: null as unknown as LinkResponse["matched_by"],
       url: current ? `/hoc-vien/${current}` : "/hoc-vien",
@@ -188,8 +205,7 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
     match = /^\/academy\/lessons\/(ch\d{2}-(?:l\d{2}|exam|practice))\/attempt$/.exec(path)
     if (match) {
       check("resume")
-      const item = byId.get(match[1])
-      if (!item) throw notFound()
+      const item = requireProgramItem(match[1])
       const record = open ? attempts.get(open) : undefined
       const current = record && record.item.id === item.id ? record : undefined
       const result: ResumeResponse = {
@@ -203,8 +219,7 @@ export function createFakeAcademyApi(options: FakeOptions = {}) {
     match = /^\/academy\/lessons\/(ch\d{2}-(?:l\d{2}|exam|practice))\/attempts$/.exec(path)
     if (match) {
       check("history")
-      const item = byId.get(match[1])
-      if (!item) throw notFound()
+      const item = requireProgramItem(match[1])
       const items = [...attempts.entries()]
         .filter(([, record]) => record.answers && record.item.id === item.id)
         .map(([id, record]) => {

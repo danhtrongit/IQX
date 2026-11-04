@@ -122,6 +122,9 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   "group.member_add": "Thêm người dùng vào nhóm",
   "group.member_move": "Chuyển người dùng sang nhóm khác",
   "group.member_remove": "Loại người dùng khỏi nhóm",
+  "academy_config.create": "Tạo cấu hình Học viện",
+  "academy_config.update": "Cập nhật cấu hình Học viện",
+  "academy_config.delete": "Xóa cấu hình Học viện",
   "system.referral_offer_grant": "Cấp Premium ưu đãi giới thiệu",
   // Lead sale và CTV đã bỏ ở v1.1 (§3.6); nhãn giữ lại để đọc bản ghi cũ.
   "referral.enroll": "Đăng ký đối tác giới thiệu (cũ)",
@@ -186,6 +189,7 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   vt_account: "Tài khoản giao dịch ảo",
   vt_config: "Cấu hình giao dịch ảo",
   team_lead: "Trưởng nhóm",
+  academy_config: "Cấu hình Học viện",
 }
 
 /** Falls back to the raw action so an unmapped action is still readable. */

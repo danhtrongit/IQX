@@ -55,10 +55,11 @@ const openApi = (schema: z.ZodType) =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
 
 /**
- * Học viện v4: 12 chapters, lessons, chapter exams and the optional ch3 practice. Learning is free
- * for every authenticated user (every item is open, spec §4.1) and no tool is gated by it (§4.2).
- * The owner always comes from the session: no endpoint accepts a user id, score, pass flag or
- * capability, and no response carries an answer key or explanation.
+ * Học viện v4: 12 chapters, lessons, chapter exams and the optional ch3 practice. Học viện v4.1: every learner
+ * sees the chapters of the Academy config of his group (renumbered from 1) in Học tự do (every item open, v4 §4.1)
+ * or Học lần lượt (the v3.3 prefix rule); no tool is gated by it (v4 §4.2). The owner always comes from the
+ * session: no endpoint accepts a user id, score, pass flag, capability or config, and no response carries an
+ * answer key or explanation.
  */
 @ApiTags('Academy')
 @UseGuards(AcademyEnabledGuard, ApiAuthGuard)
@@ -70,18 +71,18 @@ export class AcademyController {
   @ApiOperation({
     operationId: 'academyCatalog',
     summary:
-      'The published chapters with their lessons, chapter exam and optional practice, plus retired lesson names',
+      'The chapters of the learner’s Academy config, numbered again from 1 (display_no), with their lessons, chapter exam and optional practice, the access mode, the number of required lessons N and the retired lesson names',
   })
   @ApiOkResponse({ schema: openApi(catalogResponseSchema) })
-  catalog() {
-    return this.academy.catalog();
+  catalog(@CurrentUser() user: AuthenticatedUser) {
+    return this.academy.catalog(user.id);
   }
 
   @Get('progress')
   @ApiOperation({
     operationId: 'academyProgress',
     summary:
-      'Server-computed state (passed/open; locked only in the sequential access mode) of every item, course and chapter progress, the current item (the one opened last) and the access mode',
+      'Server-computed state (passed/open; locked only in the sequential access mode) of every item of the learner’s chapters, course (x / N) and chapter progress, the current item (the one opened last), the next item to learn and the access mode',
   })
   @ApiOkResponse({ schema: openApi(progressResponseSchema) })
   progress(@CurrentUser() user: AuthenticatedUser) {
@@ -92,7 +93,7 @@ export class AcademyController {
   @ApiOperation({
     operationId: 'academyLink',
     summary:
-      'Deep link to the lesson of a metric (the "Học" button): by metric_key, else exact lesson title, else a title starting with "name ·". Never an error: found=false answers with the lesson the learner was last on',
+      'Deep link to the lesson of a metric among the learner’s chapters (the "Học" button): by metric_key, else exact lesson title, else a title starting with "name ·"; lesson_id and locked (sequential mode, not yet its turn). Never an error: found=false answers with the lesson the learner was last on',
   })
   @ApiOkResponse({ schema: openApi(linkResponseSchema) })
   link(
@@ -106,7 +107,7 @@ export class AcademyController {
   @ApiOperation({
     operationId: 'academyLesson',
     summary:
-      'A lesson or practice (typed blocks, chart models, summary, scenario choice) or a chapter exam intro; opening it makes it the current lesson; 403 ACADEMY_ITEM_LOCKED only in the sequential access mode',
+      'A lesson or practice (typed blocks, chart models, summary, scenario choice) or a chapter exam intro, in the learner’s chapter numbering; opening it makes it the current lesson; 404 ACADEMY_ITEM_NOT_IN_PROGRAM when its chapter is not in the learner’s config; 403 ACADEMY_ITEM_LOCKED only in the sequential access mode (no content is returned)',
   })
   @ApiOkResponse({ schema: openApi(itemResponseSchema) })
   lesson(

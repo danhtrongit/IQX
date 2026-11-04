@@ -4,7 +4,11 @@
  * v2 · Phòng chơi (docs/flashback-v2-rooms): `FlashbackRoomsController/Service/Job`. Bản v1.x (đề
  * chung 2 ngày) giữ lại để đọc dữ liệu lịch sử và quản trị; tác vụ đổi đề không còn chạy theo lịch.
  *
- * Module này dùng `MarketDataModule` (nến ngày), `MarketIntegrationModule` (VN30 hiện hành) và
+ * v2.2 · Kho dữ liệu (IQX-Flashback-SPEC-DuLieu.md): `FlashbackDatasetBuilder/Cuts/Job` dựng kho VN100
+ * (DNSE, dự phòng VCI) theo phiên bản và cắt đề từ kho thay cho bộ dựng đề v1 trên đường của phòng
+ * chơi; `FlashbackDatasetAdminController` là mục "Kho dữ liệu Flashback" của trang Quản trị.
+ *
+ * Module này dùng `MarketDataModule` (nến ngày), `MarketIntegrationModule` (rổ chỉ số) và
  * `DatabaseModule` (kho Flashback + ví xu). Nó không sửa dữ liệu của các module khác ngoài hai bảng
  * `coin_wallets` / `coin_ledger` với kind riêng (`flashback_fee`, `flashback_reward` của v1;
  * `flashback_stake`, `flashback_win`, `flashback_refund` của v2). Mở đủ 16 chỉ báo cho mọi người,
@@ -27,6 +31,19 @@ import { MarketFlashbackMarketData } from './flashback.market-data.js';
 import { FLASHBACK_REPOSITORY, PgFlashbackRepository } from './flashback.repository.js';
 import { FlashbackRoundBuilder, FLASHBACK_VN30 } from './flashback.round-builder.js';
 import { FLASHBACK_CLOCK, FlashbackService, systemFlashbackClock } from './flashback.service.js';
+import { FlashbackDatasetAdminService } from './flashback-dataset-admin.service.js';
+import { FlashbackDatasetBuilder } from './flashback-dataset.builder.js';
+import { FlashbackDatasetAdminController } from './flashback-dataset.controller.js';
+import { FlashbackDatasetCuts } from './flashback-dataset.cuts.js';
+import { FlashbackDatasetJob } from './flashback-dataset.job.js';
+import {
+  FLASHBACK_DATASET_REPOSITORY,
+  PgFlashbackDatasetRepository,
+} from './flashback-dataset.repository.js';
+import {
+  FLASHBACK_DATASET_SOURCE,
+  MarketFlashbackDatasetSource,
+} from './flashback-dataset.source.js';
 import { FlashbackRoomsController } from './flashback-rooms.controller.js';
 import { FlashbackRoomDataset } from './flashback-rooms.dataset.js';
 import { FlashbackRoomsJob } from './flashback-rooms.job.js';
@@ -41,7 +58,12 @@ export const FLASHBACK_MARKET_DATA = 'FLASHBACK_MARKET_DATA';
 
 @Module({
   imports: [DatabaseModule, AuthModule, MarketDataModule, MarketIntegrationModule],
-  controllers: [FlashbackController, FlashbackRoomsController, FlashbackAdminController],
+  controllers: [
+    FlashbackController,
+    FlashbackRoomsController,
+    FlashbackAdminController,
+    FlashbackDatasetAdminController,
+  ],
   providers: [
     PgFlashbackRepository,
     MarketFlashbackMarketData,
@@ -63,6 +85,14 @@ export const FLASHBACK_MARKET_DATA = 'FLASHBACK_MARKET_DATA';
     FlashbackJob,
     PgFlashbackRoomsRepository,
     { provide: FLASHBACK_ROOMS_REPOSITORY, useExisting: PgFlashbackRoomsRepository },
+    PgFlashbackDatasetRepository,
+    { provide: FLASHBACK_DATASET_REPOSITORY, useExisting: PgFlashbackDatasetRepository },
+    MarketFlashbackDatasetSource,
+    { provide: FLASHBACK_DATASET_SOURCE, useExisting: MarketFlashbackDatasetSource },
+    FlashbackDatasetBuilder,
+    FlashbackDatasetCuts,
+    FlashbackDatasetJob,
+    FlashbackDatasetAdminService,
     FlashbackRoomDataset,
     { provide: FB_DATASET, useExisting: FlashbackRoomDataset },
     FlashbackRoomsService,
@@ -74,6 +104,9 @@ export const FLASHBACK_MARKET_DATA = 'FLASHBACK_MARKET_DATA';
     FlashbackJob,
     FlashbackRoomsService,
     FlashbackRoomsJob,
+    FlashbackDatasetJob,
+    FlashbackDatasetBuilder,
+    FlashbackDatasetCuts,
     FLASHBACK_REPOSITORY,
   ],
 })

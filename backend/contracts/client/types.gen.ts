@@ -11076,8 +11076,11 @@ export type LegacyUser360Response = {
       total: number;
     };
     chapters: Array<{
+      chapter_id: string;
       completed: number;
+      display_no: number | null;
       exam_passed: boolean;
+      in_program: boolean;
       lessons: Array<{
         attempts: number;
         completed_at: string | null;
@@ -11092,13 +11095,19 @@ export type LegacyUser360Response = {
         status:
           "completed" | "in_progress" | "failed" | "not_started" | "locked";
       }>;
-      no: number;
       title: string;
       total: number;
     }>;
     completed: number;
+    config: {
+      chapter_count: number;
+      chapter_total: number;
+      mode: "free" | "sequential";
+      source: "default" | "leader" | "admin";
+    };
     current_lesson: {
-      chapter: number;
+      chapter_display_no: number;
+      chapter_id: string;
       kind: "lesson" | "chapter_exam";
       label: string;
       lesson_id: string;
@@ -11106,7 +11115,8 @@ export type LegacyUser360Response = {
       order: number;
     } | null;
     last_completion: {
-      chapter: number;
+      chapter_display_no: number;
+      chapter_id: string;
       completed_at: string;
       label: string;
       lesson_id: string;
@@ -26889,6 +26899,65 @@ export type ReferralsControllerMine0Responses = {
 export type ReferralsControllerMine0Response =
   ReferralsControllerMine0Responses[keyof ReferralsControllerMine0Responses];
 
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v1/team/academy-config";
+};
+
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigErrors = {
+  /**
+   * Bad request
+   */
+  400: LegacyApiError;
+  /**
+   * Authentication required
+   */
+  401: LegacyApiError;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: LegacyApiError;
+  /**
+   * Request validation failed
+   */
+  422: LegacyApiError;
+  /**
+   * Rate limit exceeded
+   */
+  429: LegacyApiError;
+  /**
+   * Service temporarily unavailable
+   */
+  503: LegacyApiError;
+};
+
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigError =
+  TeamAcademyConfigGetApiV1TeamAcademyConfigErrors[keyof TeamAcademyConfigGetApiV1TeamAcademyConfigErrors];
+
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigResponses = {
+  200: {
+    chapter_count: number;
+    chapter_total: number;
+    chapters: Array<{
+      chapter_id: string;
+      display_no: number;
+      has_practice: boolean;
+      lesson_count: number;
+      title: string;
+    }>;
+    has_own_config: boolean;
+    mode: "free" | "sequential";
+    read_only: true;
+    required_total: number;
+    updated_at: string | null;
+  };
+};
+
+export type TeamAcademyConfigGetApiV1TeamAcademyConfigResponse =
+  TeamAcademyConfigGetApiV1TeamAcademyConfigResponses[keyof TeamAcademyConfigGetApiV1TeamAcademyConfigResponses];
+
 export type TeamControllerMe0Data = {
   body?: never;
   path?: never;
@@ -27094,7 +27163,8 @@ export type TeamControllerUsers0Responses = {
         all_done: boolean;
         completed: number;
         current_lesson: {
-          chapter: number;
+          chapter_display_no: number;
+          chapter_id: string;
           kind: "lesson" | "chapter_exam";
           label: string;
           lesson_id: string;
@@ -27184,8 +27254,11 @@ export type TeamControllerUser0Responses = {
         total: number;
       };
       chapters: Array<{
+        chapter_id: string;
         completed: number;
+        display_no: number | null;
         exam_passed: boolean;
+        in_program: boolean;
         lessons: Array<{
           attempts: number;
           completed_at: string | null;
@@ -27200,13 +27273,19 @@ export type TeamControllerUser0Responses = {
           status:
             "completed" | "in_progress" | "failed" | "not_started" | "locked";
         }>;
-        no: number;
         title: string;
         total: number;
       }>;
       completed: number;
+      config: {
+        chapter_count: number;
+        chapter_total: number;
+        mode: "free" | "sequential";
+        source: "default" | "leader" | "admin";
+      };
       current_lesson: {
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         kind: "lesson" | "chapter_exam";
         label: string;
         lesson_id: string;
@@ -27214,7 +27293,8 @@ export type TeamControllerUser0Responses = {
         order: number;
       } | null;
       last_completion: {
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         completed_at: string;
         label: string;
         lesson_id: string;
@@ -28959,8 +29039,11 @@ export type AcademyCatalogResponses = {
     catalog_version: string;
     chapters: Array<{
       audience: "all";
+      chapter_id: string;
+      display_no: number;
       items: Array<{
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         content_version: string | null;
         has_scenario: boolean;
         id: string;
@@ -28975,9 +29058,9 @@ export type AcademyCatalogResponses = {
         question_count: number;
       }>;
       lesson_count: number;
-      no: number;
       title: string;
     }>;
+    mode: "free" | "sequential";
     required_total: number;
     retired_lessons: Array<{
       lesson_key: string;
@@ -29029,7 +29112,8 @@ export type AcademyLessonResponses = {
         attempts_submitted: number;
         best_score: number | null;
         catalog_version: string;
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         charts: {
           [key: string]: AcademyChartModel;
         };
@@ -29079,7 +29163,8 @@ export type AcademyLessonResponses = {
         attempts_submitted: number;
         best_score: number | null;
         catalog_version: string;
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         chapter_title: string;
         completed_at: string | null;
         content_version: string | null;
@@ -29443,10 +29528,12 @@ export type AcademyLinkError = AcademyLinkErrors[keyof AcademyLinkErrors];
 
 export type AcademyLinkResponses = {
   200: {
-    chapter: number | null;
+    chapter_display_no: number | null;
+    chapter_id: string | null;
     found: boolean;
-    item_id: string | null;
+    lesson_id: string | null;
     lesson_key: string | null;
+    locked: boolean;
     matched_by: "metric_key" | "title" | "title_prefix";
     metric: string;
     metric_key: string | null;
@@ -29496,9 +29583,10 @@ export type AcademyProgressResponses = {
     access_mode: "free" | "sequential";
     catalog_version: string;
     chapters: Array<{
+      chapter_id: string;
+      display_no: number;
       done: number;
       exam_passed: boolean;
-      no: number;
       total: number;
     }>;
     course_done: number;
@@ -29512,12 +29600,435 @@ export type AcademyProgressResponses = {
       id: string;
       state: "passed" | "open" | "locked";
     }>;
+    next_item_id: string | null;
     progress_revision: number;
   };
 };
 
 export type AcademyProgressResponse =
   AcademyProgressResponses[keyof AcademyProgressResponses];
+
+export type AdminAcademyConfigsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/academy-configs";
+};
+
+export type AdminAcademyConfigsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigsError =
+  AdminAcademyConfigsErrors[keyof AdminAcademyConfigsErrors];
+
+export type AdminAcademyConfigsResponses = {
+  200: {
+    catalog_chapters: Array<{
+      chapter_id: string;
+      has_dashboard_metrics: boolean;
+      has_practice: boolean;
+      lesson_count: number;
+      no: number;
+      title: string;
+    }>;
+    catalog_version: string;
+    items: Array<{
+      chapter_count: number;
+      chapter_ids: Array<string>;
+      chapter_total: number;
+      id: string | null;
+      inherits_default: boolean;
+      leader: {
+        full_name: string;
+        status: "active" | "revoked";
+        user_id: string;
+        username: string;
+      } | null;
+      mode: "free" | "sequential";
+      name: string;
+      owner_type: "default" | "leader";
+      required_total: number;
+      updated_at: string | null;
+      updated_by: {
+        full_name: string;
+        id: string;
+        username: string;
+      } | null;
+      user_count: number;
+    }>;
+  };
+};
+
+export type AdminAcademyConfigsResponse =
+  AdminAcademyConfigsResponses[keyof AdminAcademyConfigsResponses];
+
+export type AdminAcademyConfigCreateData = {
+  body: {
+    chapter_ids: Array<string>;
+    leader_id: string;
+    mode: "free" | "sequential";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/academy-configs";
+};
+
+export type AdminAcademyConfigCreateErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigCreateError =
+  AdminAcademyConfigCreateErrors[keyof AdminAcademyConfigCreateErrors];
+
+export type AdminAcademyConfigCreateResponses = {
+  200: {
+    chapter_count: number;
+    chapter_ids: Array<string>;
+    chapter_total: number;
+    id: string | null;
+    inherits_default: boolean;
+    leader: {
+      full_name: string;
+      status: "active" | "revoked";
+      user_id: string;
+      username: string;
+    } | null;
+    mode: "free" | "sequential";
+    name: string;
+    owner_type: "default" | "leader";
+    required_total: number;
+    updated_at: string | null;
+    updated_by: {
+      full_name: string;
+      id: string;
+      username: string;
+    } | null;
+    user_count: number;
+  };
+};
+
+export type AdminAcademyConfigCreateResponse =
+  AdminAcademyConfigCreateResponses[keyof AdminAcademyConfigCreateResponses];
+
+export type AdminAcademyConfigPreviewData = {
+  body: {
+    chapter_ids: Array<string>;
+    mode: "free" | "sequential";
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/academy-configs/preview";
+};
+
+export type AdminAcademyConfigPreviewErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigPreviewError =
+  AdminAcademyConfigPreviewErrors[keyof AdminAcademyConfigPreviewErrors];
+
+export type AdminAcademyConfigPreviewResponses = {
+  200: {
+    chapter_count: number;
+    chapter_total: number;
+    chapters: Array<{
+      chapter_id: string;
+      display_no: number;
+      has_practice: boolean;
+      lesson_count: number;
+      title: string;
+    }>;
+    mode: "free" | "sequential";
+    required_total: number;
+    warnings: Array<{
+      chapter_id: string;
+      code: "DASHBOARD_METRIC_CHAPTER_REMOVED";
+      message: string;
+      title: string;
+    }>;
+  };
+};
+
+export type AdminAcademyConfigPreviewResponse =
+  AdminAcademyConfigPreviewResponses[keyof AdminAcademyConfigPreviewResponses];
+
+export type AdminAcademyConfigDeleteData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/academy-configs/{id}";
+};
+
+export type AdminAcademyConfigDeleteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigDeleteError =
+  AdminAcademyConfigDeleteErrors[keyof AdminAcademyConfigDeleteErrors];
+
+export type AdminAcademyConfigDeleteResponses = {
+  200: {
+    chapter_count: number;
+    chapter_ids: Array<string>;
+    chapter_total: number;
+    id: string | null;
+    inherits_default: boolean;
+    leader: {
+      full_name: string;
+      status: "active" | "revoked";
+      user_id: string;
+      username: string;
+    } | null;
+    mode: "free" | "sequential";
+    name: string;
+    owner_type: "default" | "leader";
+    required_total: number;
+    updated_at: string | null;
+    updated_by: {
+      full_name: string;
+      id: string;
+      username: string;
+    } | null;
+    user_count: number;
+  };
+};
+
+export type AdminAcademyConfigDeleteResponse =
+  AdminAcademyConfigDeleteResponses[keyof AdminAcademyConfigDeleteResponses];
+
+export type AdminAcademyConfigSaveData = {
+  body: {
+    chapter_ids: Array<string>;
+    mode: "free" | "sequential";
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/academy-configs/{id}";
+};
+
+export type AdminAcademyConfigSaveErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigSaveError =
+  AdminAcademyConfigSaveErrors[keyof AdminAcademyConfigSaveErrors];
+
+export type AdminAcademyConfigSaveResponses = {
+  200: {
+    chapter_count: number;
+    chapter_ids: Array<string>;
+    chapter_total: number;
+    id: string | null;
+    inherits_default: boolean;
+    leader: {
+      full_name: string;
+      status: "active" | "revoked";
+      user_id: string;
+      username: string;
+    } | null;
+    mode: "free" | "sequential";
+    name: string;
+    owner_type: "default" | "leader";
+    required_total: number;
+    updated_at: string | null;
+    updated_by: {
+      full_name: string;
+      id: string;
+      username: string;
+    } | null;
+    user_count: number;
+  };
+};
+
+export type AdminAcademyConfigSaveResponse =
+  AdminAcademyConfigSaveResponses[keyof AdminAcademyConfigSaveResponses];
+
+export type AdminAcademyConfigLogsData = {
+  body?: never;
+  path: {
+    id: string;
+  };
+  query?: {
+    limit?: number;
+  };
+  url: "/api/v2/admin/academy-configs/{id}/logs";
+};
+
+export type AdminAcademyConfigLogsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type AdminAcademyConfigLogsError =
+  AdminAcademyConfigLogsErrors[keyof AdminAcademyConfigLogsErrors];
+
+export type AdminAcademyConfigLogsResponses = {
+  200: {
+    items: Array<{
+      action: "create" | "update" | "delete";
+      after: {
+        chapter_ids: Array<string>;
+        mode: "free" | "sequential";
+      } | null;
+      before: {
+        chapter_ids: Array<string>;
+        mode: "free" | "sequential";
+      } | null;
+      changed_at: string;
+      changed_by: {
+        full_name: string;
+        id: string;
+        username: string;
+      } | null;
+      id: string;
+    }>;
+  };
+};
+
+export type AdminAcademyConfigLogsResponse =
+  AdminAcademyConfigLogsResponses[keyof AdminAcademyConfigLogsResponses];
 
 export type AdminAlertsControllerFactorLibrary1Data = {
   body?: never;
@@ -30081,6 +30592,391 @@ export type FlashbackAdminAlertsResponses = {
 
 export type FlashbackAdminAlertsResponse =
   FlashbackAdminAlertsResponses[keyof FlashbackAdminAlertsResponses];
+
+export type FlashbackAdminDatasetData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset";
+};
+
+export type FlashbackAdminDatasetErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetError =
+  FlashbackAdminDatasetErrors[keyof FlashbackAdminDatasetErrors];
+
+export type FlashbackAdminDatasetResponses = {
+  200: {
+    active: {
+      activated_at: string | null;
+      created_at: string;
+      duration_ms: number | null;
+      excluded_count: number;
+      finished_at: string | null;
+      first_date: string | null;
+      last_date: string | null;
+      log: {
+        [key: string]: unknown;
+      };
+      requested_by: string | null;
+      source: string;
+      status: "building" | "active" | "retired" | "failed";
+      symbols_count: number;
+      trigger: "scheduled" | "manual" | "cli";
+      version: number;
+    } | null;
+    alerts: Array<{
+      code: string;
+      level: "high" | "medium" | "low";
+      message: string;
+      run_at: string;
+    }>;
+    building: {
+      heartbeat_at: string;
+      progress: {
+        done: number;
+        excluded: number;
+        ok: number;
+        phase: "basket" | "calendar" | "symbols" | "finalize" | "done";
+        total: number;
+      };
+      stale: boolean;
+      started_at: string;
+      trigger: "scheduled" | "manual" | "cli";
+      version: number;
+    } | null;
+    config: {
+      basket: string;
+      max_gap_sessions: number;
+      max_zero_volume_ratio: number;
+      min_daily_volatility: number;
+      min_liquidity_vnd: number;
+      min_months_ago: number;
+      min_symbols: number;
+      price_sources: Array<"DNSE" | "VCI">;
+      rebalance_dates: Array<string>;
+      refresh_delay_days: number;
+      refresh_months: Array<number>;
+      warmup_sessions: number;
+    };
+    config_defaults: {
+      basket: string;
+      max_gap_sessions: number;
+      max_zero_volume_ratio: number;
+      min_daily_volatility: number;
+      min_liquidity_vnd: number;
+      min_months_ago: number;
+      min_symbols: number;
+      price_sources: Array<"DNSE" | "VCI">;
+      rebalance_dates: Array<string>;
+      refresh_delay_days: number;
+      refresh_months: Array<number>;
+      warmup_sessions: number;
+    };
+    config_invalid: Array<string>;
+    latest_failed: {
+      activated_at: string | null;
+      created_at: string;
+      duration_ms: number | null;
+      excluded_count: number;
+      finished_at: string | null;
+      first_date: string | null;
+      last_date: string | null;
+      log: {
+        [key: string]: unknown;
+      };
+      requested_by: string | null;
+      source: string;
+      status: "building" | "active" | "retired" | "failed";
+      symbols_count: number;
+      trigger: "scheduled" | "manual" | "cli";
+      version: number;
+    } | null;
+    schedule: {
+      anchor: string | null;
+      due: boolean;
+      reason: string;
+    };
+    warnings: Array<{
+      at: string | null;
+      code: string;
+      level: "high" | "medium";
+      message: string;
+    }>;
+  };
+};
+
+export type FlashbackAdminDatasetResponse =
+  FlashbackAdminDatasetResponses[keyof FlashbackAdminDatasetResponses];
+
+export type FlashbackAdminDatasetConfigData = {
+  body: {
+    basket?: string;
+    max_gap_sessions?: number;
+    max_zero_volume_ratio?: number;
+    min_daily_volatility?: number;
+    min_liquidity_vnd?: number;
+    min_months_ago?: number;
+    min_symbols?: number;
+    price_sources?: Array<"DNSE" | "VCI">;
+    rebalance_dates?: Array<string>;
+    refresh_delay_days?: number;
+    refresh_months?: Array<number>;
+    warmup_sessions?: number;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset/config";
+};
+
+export type FlashbackAdminDatasetConfigErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetConfigError =
+  FlashbackAdminDatasetConfigErrors[keyof FlashbackAdminDatasetConfigErrors];
+
+export type FlashbackAdminDatasetConfigResponses = {
+  200: {
+    config: {
+      basket: string;
+      max_gap_sessions: number;
+      max_zero_volume_ratio: number;
+      min_daily_volatility: number;
+      min_liquidity_vnd: number;
+      min_months_ago: number;
+      min_symbols: number;
+      price_sources: Array<"DNSE" | "VCI">;
+      rebalance_dates: Array<string>;
+      refresh_delay_days: number;
+      refresh_months: Array<number>;
+      warmup_sessions: number;
+    };
+    config_invalid: Array<string>;
+  };
+};
+
+export type FlashbackAdminDatasetConfigResponse =
+  FlashbackAdminDatasetConfigResponses[keyof FlashbackAdminDatasetConfigResponses];
+
+export type FlashbackAdminDatasetRefreshData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset/refresh";
+};
+
+export type FlashbackAdminDatasetRefreshErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetRefreshError =
+  FlashbackAdminDatasetRefreshErrors[keyof FlashbackAdminDatasetRefreshErrors];
+
+export type FlashbackAdminDatasetRefreshResponses = {
+  200: {
+    accepted: true;
+    job_id: string | null;
+    mode: "queued" | "inline";
+  };
+};
+
+export type FlashbackAdminDatasetRefreshResponse =
+  FlashbackAdminDatasetRefreshResponses[keyof FlashbackAdminDatasetRefreshResponses];
+
+export type FlashbackAdminDatasetSymbolsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    version?: number;
+  };
+  url: "/api/v2/admin/flashback/dataset/symbols";
+};
+
+export type FlashbackAdminDatasetSymbolsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetSymbolsError =
+  FlashbackAdminDatasetSymbolsErrors[keyof FlashbackAdminDatasetSymbolsErrors];
+
+export type FlashbackAdminDatasetSymbolsResponses = {
+  200: {
+    status: string | null;
+    symbols: Array<{
+      bad_count: number;
+      bars_count: number;
+      first_date: string | null;
+      last_date: string | null;
+      price_source: string | null;
+      reason: string | null;
+      status: "ok" | "excluded";
+      symbol: string;
+      value_basis: string | null;
+    }>;
+    version: number | null;
+  };
+};
+
+export type FlashbackAdminDatasetSymbolsResponse =
+  FlashbackAdminDatasetSymbolsResponses[keyof FlashbackAdminDatasetSymbolsResponses];
+
+export type FlashbackAdminDatasetVersionsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/dataset/versions";
+};
+
+export type FlashbackAdminDatasetVersionsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminDatasetVersionsError =
+  FlashbackAdminDatasetVersionsErrors[keyof FlashbackAdminDatasetVersionsErrors];
+
+export type FlashbackAdminDatasetVersionsResponses = {
+  200: {
+    versions: Array<{
+      activated_at: string | null;
+      created_at: string;
+      duration_ms: number | null;
+      excluded_count: number;
+      finished_at: string | null;
+      first_date: string | null;
+      last_date: string | null;
+      log: {
+        [key: string]: unknown;
+      };
+      requested_by: string | null;
+      source: string;
+      status: "building" | "active" | "retired" | "failed";
+      symbols_count: number;
+      trigger: "scheduled" | "manual" | "cli";
+      version: number;
+    }>;
+  };
+};
+
+export type FlashbackAdminDatasetVersionsResponse =
+  FlashbackAdminDatasetVersionsResponses[keyof FlashbackAdminDatasetVersionsResponses];
 
 export type FlashbackAdminPauseStatusData = {
   body?: never;
@@ -41761,6 +42657,122 @@ export type FlashbackIndicatorsResponses = {
 export type FlashbackIndicatorsResponse =
   FlashbackIndicatorsResponses[keyof FlashbackIndicatorsResponses];
 
+export type FlashbackRoomsLeaderboardData = {
+  body?: never;
+  path?: never;
+  query?: {
+    limit?: number;
+  };
+  url: "/api/v2/flashback/leaderboard";
+};
+
+export type FlashbackRoomsLeaderboardErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsLeaderboardError =
+  FlashbackRoomsLeaderboardErrors[keyof FlashbackRoomsLeaderboardErrors];
+
+export type FlashbackRoomsLeaderboardResponses = {
+  200: {
+    me: {
+      avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
+      games: number;
+      is_me: boolean;
+      level: number;
+      name: string;
+      points: number;
+      rank: number;
+      user_id: string;
+      wins: number;
+    } | null;
+    rows: Array<{
+      avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
+      games: number;
+      is_me: boolean;
+      level: number;
+      name: string;
+      points: number;
+      rank: number;
+      user_id: string;
+      wins: number;
+    }>;
+  };
+};
+
+export type FlashbackRoomsLeaderboardResponse =
+  FlashbackRoomsLeaderboardResponses[keyof FlashbackRoomsLeaderboardResponses];
+
+export type FlashbackRoomsLeaderboardTop3Data = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/leaderboard/top3";
+};
+
+export type FlashbackRoomsLeaderboardTop3Errors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsLeaderboardTop3Error =
+  FlashbackRoomsLeaderboardTop3Errors[keyof FlashbackRoomsLeaderboardTop3Errors];
+
+export type FlashbackRoomsLeaderboardTop3Responses = {
+  200: {
+    users: Array<{
+      avatar_url: string | null;
+      level: number;
+      name: string;
+      points: number;
+      rank: 1 | 2 | 3;
+      user_id: string;
+    }>;
+  };
+};
+
+export type FlashbackRoomsLeaderboardTop3Response =
+  FlashbackRoomsLeaderboardTop3Responses[keyof FlashbackRoomsLeaderboardTop3Responses];
+
 export type FlashbackMatchGetData = {
   body?: never;
   path: {
@@ -41858,8 +42870,10 @@ export type FlashbackMatchGetResponses = {
     }>;
     players: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       finished: boolean;
       is_me: boolean;
+      level: number;
       name: string;
       pnl_pct: number | null;
       pnl_percent: number | null;
@@ -41868,6 +42882,12 @@ export type FlashbackMatchGetResponses = {
     }>;
     playing_count: number;
     pot_xu: number;
+    reactions: Array<{
+      age_ms: number;
+      emoji: string;
+      id: string;
+      user_id: string;
+    }>;
     remaining_ms: number;
     room_id: string;
     server_now: string;
@@ -42148,6 +43168,54 @@ export type FlashbackMatchOrderResponses = {
 export type FlashbackMatchOrderResponse =
   FlashbackMatchOrderResponses[keyof FlashbackMatchOrderResponses];
 
+export type FlashbackMatchReactionData = {
+  body: {
+    emoji: string;
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/matches/{id}/reactions";
+};
+
+export type FlashbackMatchReactionErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMatchReactionError =
+  FlashbackMatchReactionErrors[keyof FlashbackMatchReactionErrors];
+
+export type FlashbackMatchReactionResponses = {
+  200: {
+    emoji: string;
+    id: string;
+    user_id: string;
+  };
+};
+
+export type FlashbackMatchReactionResponse =
+  FlashbackMatchReactionResponses[keyof FlashbackMatchReactionResponses];
+
 export type FlashbackMatchResultData = {
   body?: never;
   path: {
@@ -42197,16 +43265,29 @@ export type FlashbackMatchResultResponses = {
       volume: number;
     }>;
     pot_xu: number;
+    progress: {
+      level: number;
+      level_base: number;
+      leveled_up: boolean;
+      next_level_points: number;
+      points: number;
+      previous_level: number;
+      remaining_points: number;
+      total_points: number;
+    };
     refund: boolean;
     room_id: string;
     rows: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       final_nav: string;
       is_me: boolean;
       is_winner: boolean;
+      level: number;
       name: string;
       pnl_pct: number;
       pnl_percent: number;
+      points: number;
       rank: number;
       refund_xu: number;
       user_id: string;
@@ -42267,8 +43348,10 @@ export type FlashbackMatchStateResponses = {
     my_step: number;
     players: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       finished: boolean;
       is_me: boolean;
+      level: number;
       name: string;
       pnl_pct: number | null;
       pnl_percent: number | null;
@@ -42276,6 +43359,12 @@ export type FlashbackMatchStateResponses = {
       user_id: string;
     }>;
     playing_count: number;
+    reactions: Array<{
+      age_ms: number;
+      emoji: string;
+      id: string;
+      user_id: string;
+    }>;
     remaining_ms: number;
     room_id: string;
     server_now: string;
@@ -42286,6 +43375,202 @@ export type FlashbackMatchStateResponses = {
 
 export type FlashbackMatchStateResponse =
   FlashbackMatchStateResponses[keyof FlashbackMatchStateResponses];
+
+export type FlashbackMyHistoryData = {
+  body?: never;
+  path?: never;
+  query?: {
+    result?: "all" | "win" | "lose" | "solo";
+    days?: "7" | "30" | "all";
+    page?: number;
+  };
+  url: "/api/v2/flashback/me/history";
+};
+
+export type FlashbackMyHistoryErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMyHistoryError =
+  FlashbackMyHistoryErrors[keyof FlashbackMyHistoryErrors];
+
+export type FlashbackMyHistoryResponses = {
+  200: {
+    items: Array<{
+      cash_percent: number;
+      end_date: string;
+      ended_at: string;
+      match_id: string;
+      minutes: number;
+      orders: Array<{
+        amount: string;
+        fee: string;
+        id: string;
+        price: string;
+        qty: number;
+        side: "buy" | "sell";
+        step: number;
+        tax: string;
+      }>;
+      play_bars: number;
+      player_count: number;
+      players: Array<{
+        avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
+        is_me: boolean;
+        level: number;
+        name: string;
+        pnl_pct: number;
+        pnl_percent: number;
+        points: number;
+        rank: number;
+        user_id: string;
+        xu: number;
+      }>;
+      pnl_pct: number;
+      pnl_percent: number;
+      points: number;
+      rank: number;
+      result: "win" | "tie" | "lose" | "solo";
+      room_id: string;
+      stake_xu: number;
+      start_date: string;
+      symbol: string;
+      view_bars: number;
+      xu: number;
+    }>;
+    page: number;
+    page_size: number;
+    pages: number;
+    total: number;
+  };
+};
+
+export type FlashbackMyHistoryResponse =
+  FlashbackMyHistoryResponses[keyof FlashbackMyHistoryResponses];
+
+export type FlashbackMyHistorySummaryData = {
+  body?: never;
+  path?: never;
+  query?: {
+    days?: "7" | "30" | "all";
+  };
+  url: "/api/v2/flashback/me/history/summary";
+};
+
+export type FlashbackMyHistorySummaryErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMyHistorySummaryError =
+  FlashbackMyHistorySummaryErrors[keyof FlashbackMyHistorySummaryErrors];
+
+export type FlashbackMyHistorySummaryResponses = {
+  200: {
+    avg_pnl_pct: number;
+    avg_pnl_percent: number;
+    best_pnl_pct: number | null;
+    best_pnl_percent: number | null;
+    best_symbol: string | null;
+    games: number;
+    multi_games: number;
+    points: number;
+    solo_games: number;
+    win_rate: number;
+    wins: number;
+    xu_net: number;
+  };
+};
+
+export type FlashbackMyHistorySummaryResponse =
+  FlashbackMyHistorySummaryResponses[keyof FlashbackMyHistorySummaryResponses];
+
+export type FlashbackMyLevelData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/flashback/me/level";
+};
+
+export type FlashbackMyLevelErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackMyLevelError =
+  FlashbackMyLevelErrors[keyof FlashbackMyLevelErrors];
+
+export type FlashbackMyLevelResponses = {
+  200: {
+    games: number;
+    level: number;
+    level_base: number;
+    next_level_points: number;
+    points: number;
+    rank: number | null;
+    remaining_points: number;
+    wins: number;
+  };
+};
+
+export type FlashbackMyLevelResponse =
+  FlashbackMyLevelResponses[keyof FlashbackMyLevelResponses];
 
 export type FlashbackRoomsListData = {
   body?: never;
@@ -42334,6 +43619,8 @@ export type FlashbackRoomsListResponses = {
       minutes: number;
       owner: {
         avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
+        level: number;
         name: string;
       };
       play_bars: number;
@@ -42404,10 +43691,13 @@ export type FlashbackRoomsCreateResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -42458,6 +43748,7 @@ export type FlashbackRoomsMineError =
 
 export type FlashbackRoomsMineResponses = {
   200: {
+    kicked: boolean;
     notice: string | null;
     room: {
       auto_close_at: string | null;
@@ -42475,10 +43766,13 @@ export type FlashbackRoomsMineResponses = {
       max_players: number;
       members: Array<{
         avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
         is_me: boolean;
         is_owner: boolean;
         joined_at: string;
+        level: number;
         name: string;
+        ready: boolean;
         user_id: string;
       }>;
       minutes: number;
@@ -42545,10 +43839,13 @@ export type FlashbackRoomsRandomJoinResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -42616,10 +43913,13 @@ export type FlashbackRoomsGetResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -42689,10 +43989,13 @@ export type FlashbackRoomsJoinResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -42707,6 +44010,82 @@ export type FlashbackRoomsJoinResponses = {
 
 export type FlashbackRoomsJoinResponse =
   FlashbackRoomsJoinResponses[keyof FlashbackRoomsJoinResponses];
+
+export type FlashbackRoomsKickData = {
+  body: {
+    user_id: string;
+  };
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/kick";
+};
+
+export type FlashbackRoomsKickErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsKickError =
+  FlashbackRoomsKickErrors[keyof FlashbackRoomsKickErrors];
+
+export type FlashbackRoomsKickResponses = {
+  200: {
+    auto_close_at: string | null;
+    created_at: string;
+    id: string;
+    is_owner: boolean;
+    locked: boolean;
+    match: {
+      ends_at: string;
+      id: string;
+      joined: boolean;
+      started_at: string;
+      status: "playing" | "ended";
+    } | null;
+    max_players: number;
+    members: Array<{
+      avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
+      is_me: boolean;
+      is_owner: boolean;
+      joined_at: string;
+      level: number;
+      name: string;
+      ready: boolean;
+      user_id: string;
+    }>;
+    minutes: number;
+    owner_id: string;
+    play_bars: number;
+    server_now: string;
+    stake_xu: number;
+    status: "waiting" | "playing";
+    view_bars: number;
+  };
+};
+
+export type FlashbackRoomsKickResponse =
+  FlashbackRoomsKickResponses[keyof FlashbackRoomsKickResponses];
 
 export type FlashbackRoomsLeaveData = {
   body?: never;
@@ -42751,6 +44130,82 @@ export type FlashbackRoomsLeaveResponses = {
 
 export type FlashbackRoomsLeaveResponse =
   FlashbackRoomsLeaveResponses[keyof FlashbackRoomsLeaveResponses];
+
+export type FlashbackRoomsReadyData = {
+  body: {
+    ready: boolean;
+  };
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/ready";
+};
+
+export type FlashbackRoomsReadyErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackRoomsReadyError =
+  FlashbackRoomsReadyErrors[keyof FlashbackRoomsReadyErrors];
+
+export type FlashbackRoomsReadyResponses = {
+  200: {
+    auto_close_at: string | null;
+    created_at: string;
+    id: string;
+    is_owner: boolean;
+    locked: boolean;
+    match: {
+      ends_at: string;
+      id: string;
+      joined: boolean;
+      started_at: string;
+      status: "playing" | "ended";
+    } | null;
+    max_players: number;
+    members: Array<{
+      avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
+      is_me: boolean;
+      is_owner: boolean;
+      joined_at: string;
+      level: number;
+      name: string;
+      ready: boolean;
+      user_id: string;
+    }>;
+    minutes: number;
+    owner_id: string;
+    play_bars: number;
+    server_now: string;
+    stake_xu: number;
+    status: "waiting" | "playing";
+    view_bars: number;
+  };
+};
+
+export type FlashbackRoomsReadyResponse =
+  FlashbackRoomsReadyResponses[keyof FlashbackRoomsReadyResponses];
 
 export type FlashbackRoomsReplayData = {
   body?: never;
@@ -42804,10 +44259,13 @@ export type FlashbackRoomsReplayResponses = {
     max_players: number;
     members: Array<{
       avatar_url: string | null;
+      crown: 1 | 2 | 3 | null;
       is_me: boolean;
       is_owner: boolean;
       joined_at: string;
+      level: number;
       name: string;
+      ready: boolean;
       user_id: string;
     }>;
     minutes: number;
@@ -42921,8 +44379,10 @@ export type FlashbackRoomsStartResponses = {
       }>;
       players: Array<{
         avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
         finished: boolean;
         is_me: boolean;
+        level: number;
         name: string;
         pnl_pct: number | null;
         pnl_percent: number | null;
@@ -42931,6 +44391,12 @@ export type FlashbackRoomsStartResponses = {
       }>;
       playing_count: number;
       pot_xu: number;
+      reactions: Array<{
+        age_ms: number;
+        emoji: string;
+        id: string;
+        user_id: string;
+      }>;
       remaining_ms: number;
       room_id: string;
       server_now: string;
@@ -42968,10 +44434,13 @@ export type FlashbackRoomsStartResponses = {
       max_players: number;
       members: Array<{
         avatar_url: string | null;
+        crown: 1 | 2 | 3 | null;
         is_me: boolean;
         is_owner: boolean;
         joined_at: string;
+        level: number;
         name: string;
+        ready: boolean;
         user_id: string;
       }>;
       minutes: number;
@@ -58443,6 +59912,65 @@ export type StrategyConfigListRevisionsResponses = {
 export type StrategyConfigListRevisionsResponse =
   StrategyConfigListRevisionsResponses[keyof StrategyConfigListRevisionsResponses];
 
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/team/academy-config";
+};
+
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigError =
+  TeamAcademyConfigGetApiV2TeamAcademyConfigErrors[keyof TeamAcademyConfigGetApiV2TeamAcademyConfigErrors];
+
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigResponses = {
+  200: {
+    chapter_count: number;
+    chapter_total: number;
+    chapters: Array<{
+      chapter_id: string;
+      display_no: number;
+      has_practice: boolean;
+      lesson_count: number;
+      title: string;
+    }>;
+    has_own_config: boolean;
+    mode: "free" | "sequential";
+    read_only: true;
+    required_total: number;
+    updated_at: string | null;
+  };
+};
+
+export type TeamAcademyConfigGetApiV2TeamAcademyConfigResponse =
+  TeamAcademyConfigGetApiV2TeamAcademyConfigResponses[keyof TeamAcademyConfigGetApiV2TeamAcademyConfigResponses];
+
 export type TeamControllerMe1Data = {
   body?: never;
   path?: never;
@@ -58648,7 +60176,8 @@ export type TeamControllerUsers1Responses = {
         all_done: boolean;
         completed: number;
         current_lesson: {
-          chapter: number;
+          chapter_display_no: number;
+          chapter_id: string;
           kind: "lesson" | "chapter_exam";
           label: string;
           lesson_id: string;
@@ -58738,8 +60267,11 @@ export type TeamControllerUser1Responses = {
         total: number;
       };
       chapters: Array<{
+        chapter_id: string;
         completed: number;
+        display_no: number | null;
         exam_passed: boolean;
+        in_program: boolean;
         lessons: Array<{
           attempts: number;
           completed_at: string | null;
@@ -58754,13 +60286,19 @@ export type TeamControllerUser1Responses = {
           status:
             "completed" | "in_progress" | "failed" | "not_started" | "locked";
         }>;
-        no: number;
         title: string;
         total: number;
       }>;
       completed: number;
+      config: {
+        chapter_count: number;
+        chapter_total: number;
+        mode: "free" | "sequential";
+        source: "default" | "leader" | "admin";
+      };
       current_lesson: {
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         kind: "lesson" | "chapter_exam";
         label: string;
         lesson_id: string;
@@ -58768,7 +60306,8 @@ export type TeamControllerUser1Responses = {
         order: number;
       } | null;
       last_completion: {
-        chapter: number;
+        chapter_display_no: number;
+        chapter_id: string;
         completed_at: string;
         label: string;
         lesson_id: string;

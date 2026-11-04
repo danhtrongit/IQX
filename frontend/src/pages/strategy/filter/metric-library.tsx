@@ -20,9 +20,10 @@ type LibraryTab = "basic" | "technical"
 const NOTE = "text-[11px] leading-4 text-muted-foreground"
 
 /**
- * Left library of the Bộ lọc, two tabs. Cơ bản lists the fundamental metrics in the order, groups and
- * names of the Dashboard phân tích cơ bản (an unopened metric is shown locked); Kỹ thuật lists the 16
- * indicators of the Bot, all open, each added once ("+" becomes ✓). Adding closes the drawer on narrow screens.
+ * Left library of the Bộ lọc, two tabs. Cơ bản lists the metrics the account can use, in the order, groups
+ * and names of the Dashboard phân tích cơ bản (first level groups per Học viện v4.1 §6.2, never a chapter name,
+ * no "Đã mở" label); Kỹ thuật lists the 16 indicators of the Bot, each added once ("+" becomes ✓). Adding closes
+ * the drawer on narrow screens. The full list of 42 metrics, with what each is missing, is in "Danh mục 42 chỉ tiêu".
  */
 export function MetricLibrary({
   metrics,
@@ -54,8 +55,9 @@ export function MetricLibrary({
 }) {
   const [tab, setTab] = useState<LibraryTab>("basic")
   const [query, setQuery] = useState("")
-  const usableCount = metrics.filter(isMetricUsable).length
-  const blocks = useMemo(() => libraryBlocks(metrics, query), [metrics, query])
+  const learned = useMemo(() => metrics.filter((metric) => metric.learned), [metrics])
+  const usableCount = learned.filter(isMetricUsable).length
+  const blocks = useMemo(() => libraryBlocks(learned, query), [learned, query])
   const groups = useMemo(
     () => technicalLibrary(registry).map((group) => ({ ...group, indicators: group.indicators.filter((indicator) => matchesQuery(indicator.name, query)) })).filter((group) => group.indicators.length > 0),
     [registry, query],
@@ -70,7 +72,7 @@ export function MetricLibrary({
           <TabsTrigger value="technical">Kỹ thuật</TabsTrigger>
         </TabsList>
         <LibraryHead
-          title={tab === "basic" ? "Chỉ tiêu đã mở" : "Chỉ báo kỹ thuật"}
+          title={tab === "basic" ? "Chỉ tiêu" : "Chỉ báo kỹ thuật"}
           count={tab === "basic" ? usableCount : technicalCount}
           searchLabel="Tìm trong thư viện"
           placeholder={tab === "basic" ? "Tìm chỉ tiêu…" : "Tìm chỉ báo…"}
@@ -79,8 +81,8 @@ export function MetricLibrary({
         />
 
         <TabsContent value="basic" className="space-y-4">
-          {metrics.length === 0 ? (
-            <p className="text-xs leading-5 text-muted-foreground">Chưa có danh mục chỉ tiêu.</p>
+          {learned.length === 0 ? (
+            <p className="text-xs leading-5 text-muted-foreground">Chưa có chỉ tiêu nào để dùng trong Bộ lọc.</p>
           ) : blocks.length === 0 ? (
             <p className="text-xs text-muted-foreground">Không có chỉ tiêu phù hợp.</p>
           ) : (
@@ -103,26 +105,22 @@ export function MetricLibrary({
                           >
                             <div className="min-w-0">
                               <div className="text-[13px] font-semibold break-words">{name}</div>
-                              {metric.learned && !usable && (
+                              {!usable && (
                                 <div className="mt-0.5 text-[11px] leading-4 text-muted-foreground">
                                   Chưa dùng được: {metric.unsupported_reason ?? "chưa có định nghĩa hoặc nguồn dữ liệu"}
                                 </div>
                               )}
                             </div>
-                            {metric.learned ? (
-                              <Button
-                                type="button"
-                                variant={added ? "secondary" : "outline"}
-                                size="icon-sm"
-                                disabled={!usable || added}
-                                aria-label={added ? `${name} đã có trong điều kiện` : `Thêm ${name} vào điều kiện lọc`}
-                                onClick={() => { onAdd(metric); onOpenChange(false) }}
-                              >
-                                {added ? <Check aria-hidden="true" /> : <Plus aria-hidden="true" />}
-                              </Button>
-                            ) : (
-                              <span className="shrink-0 text-[11px] font-medium text-muted-foreground" title={metric.lesson_id ? `Hoàn thành bài ${metric.lesson_id} để mở` : undefined}>Chưa mở</span>
-                            )}
+                            <Button
+                              type="button"
+                              variant={added ? "secondary" : "outline"}
+                              size="icon-sm"
+                              disabled={!usable || added}
+                              aria-label={added ? `${name} đã có trong điều kiện` : `Thêm ${name} vào điều kiện lọc`}
+                              onClick={() => { onAdd(metric); onOpenChange(false) }}
+                            >
+                              {added ? <Check aria-hidden="true" /> : <Plus aria-hidden="true" />}
+                            </Button>
                           </li>
                         )
                       })}
@@ -175,7 +173,7 @@ export function MetricLibrary({
               </section>
             ))
           )}
-          <p className={NOTE}>{technicalCount > 0 ? `${technicalCount} mục` : "Các mục"} mở hết, không cần học bài. Điều kiện giống hệt Bot và Backtest.</p>
+          <p className={NOTE}>Điều kiện giống hệt Bot và Backtest: cùng dòng, cùng cách tính.</p>
         </TabsContent>
       </Tabs>
     </LibraryShell>

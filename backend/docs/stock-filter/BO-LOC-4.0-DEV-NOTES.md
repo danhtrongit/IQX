@@ -70,6 +70,10 @@ Hệ quả:
 
 Kho rỗng nên lần lọc đầu trả 503 `MARKET_DATA_UNAVAILABLE` cho tới khi `market.daily-bars` chạy xong một vòng (khoảng 1.650 lệnh DNSE; đo được 0,06 đến 0,3 giây mỗi mã tùy thời điểm, song song 6 nên một vòng khoảng 1 đến 2 phút). Cột Ngành và Vốn hóa cần `market.symbol-attributes` (2 lệnh VCI mỗi mã, 500 mã mỗi lượt 10 phút: khoảng 40 phút cho cả thị trường). Có thể chạy tay hai job đó ngay sau khi triển khai. Mã chưa có thuộc tính chỉ bị loại khỏi phạm vi **khi** bộ lọc đang dùng đúng mục đó (đếm trong `data_quality.market.excluded_missing`).
 
+### Thứ tự migration
+
+Số `0041` nằm giữa `0040_academy_configs` và `0042_flashback_ready_kick` của main. Máy chủ thật đã áp `0042`, nên `0041` sẽ được áp **sau** nó: `scripts/migrate.ts` áp mọi file chưa ghi trong `iqx_v2_migrations` theo thứ tự tên file, không kiểm tra "mới nhất", nên không vướng. Script triển khai có tham số "migration mới nhất" thì truyền `0042_flashback_ready_kick.sql` (file cao nhất), không phải `0041`.
+
 ---
 
 ## 4. Trả lời mục 9 và mục 10
@@ -118,6 +122,8 @@ Kho rỗng nên lần lọc đầu trả 503 `MARKET_DATA_UNAVAILABLE` cho tới
 - **Giá điều chỉnh**: nến lưu là giá điều chỉnh (như Bot), nên lịch sử chỉ báo khớp Bot; chuỗi của một mã được thay mới toàn bộ mỗi lần làm mới vì giá điều chỉnh đổi khi có quyền.
 - **Sắp xếp** thực hiện ở máy chủ trên toàn bộ kết quả đã lưu; kết quả không đổi giữa các lần đổi thứ tự.
 - **`HSX`** được đọc là `HOSE` ở cả bộ lọc lẫn dữ liệu mã.
+- **Thư viện Cơ bản theo Học viện v4.1** (đã có trên main, hợp nhất vào đây): tiêu đề nhóm cấp 1 là "Chỉ tiêu chung" và "Chỉ tiêu doanh nghiệp sản xuất" (§6.2, thay cho "Phân tích cơ bản chung" và "Doanh nghiệp sản xuất" của Dashboard v2); thư viện **chỉ liệt kê chỉ tiêu tài khoản dùng được**, không có nhãn "Chưa mở", "Đã mở" hay "học bài ..." (mẫu HTML vẽ hàng khoá "Chưa mở", nhưng quy tắc v4.1 mới hơn và spec §2.5 nói mở khoá "như hiện tại"); chỉ tiêu chưa dùng được chỉ hiện trong "Danh mục 42 chỉ tiêu" với chữ "Chưa dùng được". Thứ tự, nhóm cấp 2 và tên hiển thị vẫn theo Dashboard (§2.5).
+- **DNSE provider**: main cũng thêm `DnseMarketProvider` (Flashback v2.2, `fetchFullHistory` trả dòng thô). Đã gộp thành một lớp: giữ nguyên phương thức của Flashback, thêm `fetchDailyBars` (nến đã gắn ngày giao dịch, kiểm tra lỗi trong thân phản hồi, không dùng cache 15 giây của transport) cho kho nến của bộ lọc.
 
 ---
 
@@ -137,7 +143,7 @@ Kho rỗng nên lần lọc đầu trả 503 `MARKET_DATA_UNAVAILABLE` cho tới
 - Bộ lọc `src/pages/strategy/filter/`: `filter-tab.tsx`, `conditions.tsx` (Thị trường, Cơ bản, Kỹ thuật), `metric-library.tsx` (2 tab), `metric-names.ts` (khối, nhóm, tên theo Dashboard), `market.ts`, `technical.ts`, `technical-cell.ts`, `sort.ts`, `definition.ts`, `types.ts`, `units.ts`, `hooks.ts`, `api.ts`, `reasons.ts`, `results-panel.tsx`, `detail-dialogs.tsx`, `catalog-dialog.tsx`, `snapshot-table.tsx`, `save-dialogs.tsx`, `saved-filters-dialog.tsx`, `saved-lists-dialog.tsx`, `saved-results-dialog.tsx`.
 - Dùng lại của Bot: `src/pages/demo-trading/bot/config/condition-rows.tsx` (thêm `labels` tùy chọn).
 - Hợp đồng sinh tự động: `contracts/*`, `src/lib/generated/backend-v2.ts`.
-- Test: `filter-v4.test.tsx` (mới, 41 ca), `definition.test.ts`, `market.test.ts`, `sort.test.ts`, `technical-cell.test.ts`, `technical.test.ts`, `metric-names.test.ts`, `units.test.ts`, `filter-tab.test.tsx`, `strategy-page.test.tsx`, `test-support.ts`.
+- Test: `filter-v4.test.tsx` (mới, 42 ca), `definition.test.ts`, `market.test.ts`, `sort.test.ts`, `technical-cell.test.ts`, `technical.test.ts`, `metric-names.test.ts`, `units.test.ts`, `filter-tab.test.tsx`, `strategy-page.test.tsx`, `test-support.ts`.
 
 ---
 
@@ -180,9 +186,20 @@ Cùng file kiểm tra: **không nhìn trước** (kết quả tại T bằng k�
 - §11.3 lưu: bộ lọc 4.0 lưu đủ mọi dòng kỹ thuật kể cả dòng tắt và mở lại đúng; kết quả đã lưu và danh mục giữ cột Thị trường, Kỹ thuật, `session_date`; Áp dụng cho Bot chạy được từ kết quả có điều kiện kỹ thuật.
 - SQL thật: `strategy-sql.pg.test.ts` chạy trên PostgreSQL thật với migration đến 0041 (5 ca); thêm một lượt thử tay trên cùng DB cho `DailyBarsService` (khởi tạo kho, phiên T, tick thứ hai không gọi lại nhà cung cấp), `SymbolAttributesService` (một mã lỗi không làm hỏng các mã khác) và truy vấn `universe`/`loadBars` của `ScreenerMarketDataService`.
 
-### 7.3 Kết quả chạy cổng
+### 7.3 Kết quả chạy cổng (sau khi hợp nhất `main` c4b6dd86)
 
-Xem phần cuối commit hợp nhất; số liệu cuối cùng được ghi trong báo cáo bàn giao.
+| Cổng | Kết quả |
+|---|---|
+| Backend `npm test` | 184 file đạt, 2 bỏ qua; 2.928 ca đạt, 15 bỏ qua |
+| Backend `npm run lint`, `npm run typecheck`, `npm run build` | sạch |
+| Backend `npm run contracts:check` | hiện hành |
+| System spec: route-matrix (827 route), domain-runtime, runtime-worker, bot-policy, bot-universe, strategy-config-http, academy-v4 (`TESTCONTAINERS_RYUK_DISABLED=true npx vitest run --config vitest.system.config.ts ...`) | 7 file, 47 ca đạt |
+| SQL thật `strategy-sql.pg.test.ts` trên PostgreSQL với migration đến 0041 (chạy trước khi hợp nhất; các migration 0038 đến 0042 của main không đụng cùng bảng với 0041) | 5 ca đạt |
+| Frontend `npm test` | 149 file, 2.295 ca đạt |
+| Frontend `npm run lint`, `npm run build` | sạch |
+| Frontend `npm run contracts:check` | hiện hành |
+
+Chưa kiểm tra bằng trình duyệt thật ở độ rộng 390 px (§11.1 mục 7): phần cuộn ngang của bảng và ngăn kéo thư viện được kiểm bằng cấu trúc DOM trong test, chưa nhìn bằng mắt.
 
 ---
 
