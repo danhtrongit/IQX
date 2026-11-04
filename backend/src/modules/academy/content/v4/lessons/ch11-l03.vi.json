@@ -1,0 +1,463 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l3-g1": {
+      "alt": "Tăng trưởng dư nợ bằng dư nợ cuối Q2/26 là 19.060 tỷ trừ dư nợ cuối Q2/25 là 19.500 tỷ, chia cho 19.500 tỷ, bằng âm 2,3%",
+      "edges": [
+        {
+          "from": "now",
+          "label": "trừ",
+          "to": "prev"
+        },
+        {
+          "from": "prev",
+          "label": "bằng",
+          "to": "growth"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "now",
+          "sub": "Bảng cân đối kế toán",
+          "title": "Dư nợ cuối Q2/26",
+          "tone": "p1",
+          "value": "19.060 tỷ"
+        },
+        {
+          "id": "prev",
+          "sub": "Cùng kỳ năm trước",
+          "title": "Dư nợ cuối Q2/25",
+          "tone": "warn",
+          "value": "19.500 tỷ"
+        },
+        {
+          "emph": true,
+          "id": "growth",
+          "sub": "(19.060 − 19.500) ÷ 19.500",
+          "title": "Tăng trưởng",
+          "tone": "neg",
+          "value": "-2,3%"
+        }
+      ]
+    },
+    "c11l3-g2": {
+      "alt": "Trên bảng cân đối kế toán, mục Các khoản cho vay nằm trong phần tài sản và gồm hai khoản: cho vay ký quỹ (margin) để mua chứng khoán và ứng trước tiền bán chứng khoán",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "children": [
+            {
+              "title": "Tiền và tương đương tiền"
+            },
+            {
+              "title": "Tài sản tài chính FVTPL, HTM, AFS"
+            },
+            {
+              "title": "Các khoản cho vay",
+              "tone": "p1"
+            },
+            {
+              "title": "Phải thu và tài sản khác"
+            }
+          ],
+          "id": "assets",
+          "title": "Bảng cân đối kế toán · Tài sản"
+        },
+        {
+          "children": [
+            {
+              "sub": "Vay tiền để mua chứng khoán",
+              "title": "Cho vay ký quỹ (margin)",
+              "tone": "p1"
+            },
+            {
+              "sub": "Nhận trước tiền bán chứng khoán",
+              "title": "Ứng trước tiền bán",
+              "tone": "p1"
+            }
+          ],
+          "id": "loans",
+          "title": "Các khoản cho vay",
+          "tone": "p1"
+        }
+      ]
+    },
+    "c11l3-g3": {
+      "items": [
+        {
+          "model": {
+            "alt": "Thị trường sôi động: nhà đầu tư vay thêm, dư nợ cho vay tăng, lãi cho vay tăng",
+            "edges": "sequential",
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "up-1",
+                "title": "Thị trường sôi động",
+                "tone": "pos"
+              },
+              {
+                "id": "up-2",
+                "title": "Nhà đầu tư vay thêm",
+                "tone": "pos"
+              },
+              {
+                "id": "up-3",
+                "title": "Dư nợ cho vay tăng",
+                "tone": "pos"
+              },
+              {
+                "id": "up-4",
+                "title": "Lãi cho vay tăng",
+                "tone": "pos"
+              }
+            ]
+          }
+        },
+        {
+          "model": {
+            "alt": "Thị trường trầm lắng: nhà đầu tư giảm vay, dư nợ cho vay giảm, lãi cho vay giảm",
+            "edges": "sequential",
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "down-1",
+                "title": "Thị trường trầm lắng",
+                "tone": "neg"
+              },
+              {
+                "id": "down-2",
+                "title": "Nhà đầu tư giảm vay",
+                "tone": "neg"
+              },
+              {
+                "id": "down-3",
+                "title": "Dư nợ cho vay giảm",
+                "tone": "neg"
+              },
+              {
+                "id": "down-4",
+                "title": "Lãi cho vay giảm",
+                "tone": "neg"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack"
+    },
+    "c11l3-rep": {
+      "alt": "Tăng trưởng dư nợ cho vay: -2,3%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng so với cùng kỳ",
+            "v": [
+              18.311,
+              1.358,
+              -12.5,
+              -22.343,
+              -27.353,
+              -26.464,
+              -18.378,
+              -2.255
+            ]
+          }
+        ],
+        "name": "Tăng trưởng dư nợ cho vay",
+        "sub": {
+          "series": [
+            {
+              "name": "Dư nợ cuối quý",
+              "v": [
+                24667.439,
+                23347.338,
+                21473.685,
+                19499.879,
+                17920.164,
+                17168.731,
+                17527.221,
+                19060.143
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                20849.737,
+                23034.451,
+                24541.229,
+                25110.254,
+                24667.439,
+                23347.338,
+                21473.685,
+                19499.879
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l03",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Tăng trưởng dư nợ cho vay đo tốc độ mở rộng mảng cho vay margin so với cùng kỳ năm trước. Dư nợ tăng hay giảm phản ánh trực tiếp mức sôi động của thị trường.",
+  "lesson_key": "fundamental:margin_loan_growth",
+  "order": 3,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l3-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Dư nợ cho vay</b> là dòng <b>các khoản cho vay</b> trên <b>bảng cân đối kế toán</b>, gồm cho vay margin và ứng trước tiền bán chứng khoán. Tăng trưởng lấy dư nợ cuối quý so với cuối <b>cùng quý năm trước</b>.",
+          "type": "paragraph"
+        },
+        {
+          "text": "So cùng kỳ giúp loại bỏ yếu tố mùa vụ giữa các quý trong năm.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tăng trưởng dư nợ cho vay là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l3-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Nhà đầu tư vay tiền công ty để mua thêm chứng khoán, dùng chính chứng khoán làm tài sản bảo đảm.",
+              "title": "Cho vay margin"
+            },
+            {
+              "text": "Nhà đầu tư nhận trước tiền bán chứng khoán khi tiền chưa về tài khoản.",
+              "title": "Ứng trước tiền bán"
+            },
+            {
+              "text": "Dùng số dư cuối quý của dòng các khoản cho vay, so với số dư cùng quý năm trước.",
+              "title": "Lấy số cuối kỳ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Dư nợ cho vay nằm ở đâu"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l3-rep",
+          "title": "Tăng trưởng dư nợ cho vay",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng dư nợ so với cùng kỳ năm trước, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Dư nợ cho vay cuối quý, đơn vị tỷ đồng.",
+              "title": "Cột bên trái mỗi quý"
+            },
+            {
+              "text": "Dư nợ cùng quý năm trước, mốc để so sánh.",
+              "title": "Cột bên phải mỗi quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Dư nợ tăng đều cùng thanh khoản thị trường, vốn chủ và nợ vay tăng tương ứng. Lãi cho vay tăng theo.",
+              "title": "Tăng trưởng lành mạnh",
+              "tone": "pos"
+            },
+            {
+              "text": "Dư nợ tăng quá nhanh vượt xa vốn chủ, hoặc giảm sâu nhiều quý liền làm thu nhập lãi co lại.",
+              "title": "Tín hiệu cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Dư nợ cho vay chạy theo chu kỳ thị trường. Chiều tăng và chiều giảm đều truyền thẳng vào lãi cho vay.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l3-g3",
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dư nợ quay lại tăng sau nhiều quý giảm thường đi cùng thị trường hồi phục.",
+              "title": "Đọc chu kỳ"
+            },
+            {
+              "text": "Dư nợ tăng nhanh cần đi kèm vốn chủ hoặc nợ vay tăng để tài trợ.",
+              "title": "Đối chiếu nguồn vốn"
+            },
+            {
+              "text": "Dư nợ tăng nhưng lợi suất giảm có thể do công ty hạ lãi để giành khách.",
+              "title": "Kết hợp lợi suất"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu có dư nợ cho vay cuối quý như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Dư nợ cuối quý"
+            },
+            {
+              "label": "Cùng kỳ năm trước"
+            },
+            {
+              "label": "Tăng trưởng"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "24.667",
+                "20.850",
+                {
+                  "rating": "good",
+                  "text": "+18,3%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Q3/25",
+                "17.920",
+                "24.667",
+                {
+                  "rating": "bad",
+                  "text": "−27,4%"
+                }
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "19.060",
+                "19.500",
+                {
+                  "rating": "mid",
+                  "text": "−2,3%"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Dư nợ giảm sâu nhất ở Q3/25 rồi hồi lại. Đến Q2/26, mức giảm so với cùng kỳ chỉ còn 2,3%.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dễ bị nhiễu bởi mùa vụ. So cùng kỳ năm trước cho bức tranh rõ hơn.",
+              "title": "So với quý liền trước"
+            },
+            {
+              "text": "Dư nợ tăng quá nóng làm rủi ro lớn khi thị trường giảm mạnh.",
+              "title": "Coi tăng nhanh luôn tốt"
+            },
+            {
+              "text": "Dòng các khoản cho vay gồm cả ứng trước tiền bán, không chỉ margin.",
+              "title": "Bỏ qua ứng trước"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Dư nợ cho vay là dòng <b>các khoản cho vay</b> trên bảng cân đối kế toán.",
+    "Tăng trưởng so dư nợ cuối quý với <b>cùng quý năm trước</b>.",
+    "Dư nợ chạy theo <b>chu kỳ thị trường</b>, kéo theo lãi cho vay.",
+    "Tăng trưởng lành mạnh cần <b>nguồn vốn đi kèm</b> để tài trợ."
+  ],
+  "title": "Tăng trưởng dư nợ cho vay · quy mô cho vay margin"
+}

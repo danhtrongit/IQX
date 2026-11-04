@@ -6,7 +6,7 @@ import { AdminScopeRoute } from "@/components/layout/admin-scope-route"
 import { AppShell } from "@/components/layout/app-shell"
 import { demoChrome, emptyChrome } from "@/config/chrome"
 import { demoRouteRedirect } from "@/lib/demo-route-redirect"
-import { AcademyRedirect } from "@/pages/demo-trading/academy-redirect"
+import { AcademyMetricRedirect, AcademyRedirect } from "@/pages/demo-trading/academy-redirect"
 import { demoTradingLoader } from "@/pages/demo-trading/workspace-url"
 import { MaintenancePage, NotFoundPage } from "@/pages/system/route-states"
 
@@ -120,7 +120,9 @@ export const routes: RouteObject[] = [
       { path: "bai-hoc/:slug", Component: CourseDetailPage, handle: { chrome: emptyChrome } },
       { path: "bai-hoc/:slug/:episodeId", Component: EpisodeViewerPage, handle: { chrome: emptyChrome } },
       { path: "hoc-vien", Component: AcademyRedirect, handle: { chrome: emptyChrome } },
+      { path: "hoc-vien/bai/:metric", Component: AcademyMetricRedirect, handle: { chrome: emptyChrome } },
       { path: "hoc-vien/:lessonId", Component: AcademyRedirect, handle: { chrome: emptyChrome } },
+      { path: "academy", Component: AcademyRedirect, handle: { chrome: emptyChrome } },
       { path: "kien-thuc", Component: CatalogPage, handle: { chrome: emptyChrome } },
       { path: "cai-dat", Component: SettingsPage, handle: { chrome: emptyChrome } },
       { path: "nang-cap", Component: PremiumPage, handle: { chrome: emptyChrome } },

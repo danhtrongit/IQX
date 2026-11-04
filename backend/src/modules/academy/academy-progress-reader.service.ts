@@ -7,24 +7,25 @@ import {
   type AcademyContentSource,
   type AcademyItem,
 } from './academy.content.types.js';
-import { currentItemId, itemStates, type ItemKind } from './content/v3/schema.js';
+import { currentItemId, itemStates, type ItemKind } from './content/v4/schema.js';
 
 /**
  * Read-only Học viện progress of other users, for the admin and team-lead user views (admin
- * spec v1.1 §5.1.3 / §5.1.4, Học viện spec v3.2 §5). It is exported from AcademyModule and is
+ * spec v1.1 §5.1.3 / §5.1.4, Học viện spec v4 §4.1 / §7). It is exported from AcademyModule and is
  * NOT behind AcademyEnabledGuard: staff can see what a member learned even while the Academy is
  * hidden.
  *
  * Only published chapters of the current catalog are listed. Every chapter shows its lessons,
  * its chapter exam and, for chapter 3, the optional practice (Phòng tập thực chiến). Totals
- * (`completed / total`, x / 87) count required lessons only: exams are reported through
+ * (`completed / total`, x / 116) count required lessons only: exams are reported through
  * `chapter_exams` and `exam_passed`, and the optional practice never counts.
  *
- * Item states follow the learner's prefix rule (`itemStates` in content/v3/schema.ts): a
- * completion of any catalog version passes an item; an item is open only when every earlier
- * required item is passed, else locked. "Bài đang học" is the first open required item
- * (`currentItemId`), which can be a chapter exam. A user with no completion on a catalog item and
- * no attempt in the current catalog has not started (no current item).
+ * Learning is free (spec v4 §4.1): a completion of any catalog version passes an item (the
+ * durable lesson key), every other item is open, none is locked. "Bài đang học" is the lesson or
+ * exam the learner opened last (`academy_last_opened`, found by its durable key); a learner who
+ * never opened one has the first required item still to pass (`currentItemId`), which can be a
+ * chapter exam. A user with no completion on a catalog item, no attempt in the current catalog and
+ * no opened item has not started (no current item).
  */
 
 export type AcademyLessonStatus = 'completed' | 'in_progress' | 'failed' | 'not_started' | 'locked';
@@ -107,9 +108,16 @@ export type AcademyAttemptFact = {
   open_at: Date | string | null;
 };
 
+/** The item the learner opened last (`academy_last_opened`), by its durable lesson key. */
+export type AcademyLastOpenedFact = {
+  lesson_key: string;
+  opened_at: Date | string;
+};
+
 export type AcademyUserFacts = {
   completions: AcademyCompletionFact[];
   attempts: AcademyAttemptFact[];
+  last_opened?: AcademyLastOpenedFact | null;
 };
 
 const EMPTY_FACTS: AcademyUserFacts = { completions: [], attempts: [] };
@@ -141,7 +149,7 @@ export class AcademyProgressReader {
   ): Promise<Map<string, AcademyUserFacts>> {
     const result = new Map<string, AcademyUserFacts>();
     if (userIds.length === 0) return result;
-    const [completions, attempts] = await Promise.all([
+    const [completions, attempts, lastOpened] = await Promise.all([
       this.database.query<AcademyCompletionFact & { user_id: string }>(
         `select user_id, lesson_key, completed_at, source->'reward' as reward
            from academy_completions where user_id = any($1::uuid[])`,
@@ -165,15 +173,22 @@ export class AcademyProgressReader {
           group by user_id, lesson_key`,
         [userIds, content.catalog.catalog_version],
       ),
+      this.database.query<AcademyLastOpenedFact & { user_id: string }>(
+        `select user_id, lesson_key, opened_at
+           from academy_last_opened where user_id = any($1::uuid[])`,
+        [userIds],
+      ),
     ]);
     const entry = (userId: string): AcademyUserFacts => {
       let facts = result.get(userId);
       if (!facts) {
-        facts = { completions: [], attempts: [] };
+        facts = { completions: [], attempts: [], last_opened: null };
         result.set(userId, facts);
       }
       return facts;
     };
+    for (const row of lastOpened)
+      entry(row.user_id).last_opened = { lesson_key: row.lesson_key, opened_at: row.opened_at };
     for (const row of completions) entry(row.user_id).completions.push(row);
     for (const row of attempts)
       entry(row.user_id).attempts.push({
@@ -249,8 +264,13 @@ export function buildAcademyProgress(
     if (publishedKeys.has(row.lesson_key)) attempts.set(row.lesson_key, row);
 
   const states = itemStates(content.sequence, new Set(completions.keys()));
-  const started = completions.size > 0 || attempts.size > 0;
-  const currentId = currentItemId(content.sequence, states);
+  // The item opened last, when it is still a required item of the catalog (the optional practice never is "current").
+  const opened = facts.last_opened
+    ? content.itemsByKey.get(facts.last_opened.lesson_key)
+    : undefined;
+  const openedId = opened && !opened.optional ? opened.id : null;
+  const started = completions.size > 0 || attempts.size > 0 || openedId !== null;
+  const currentId = currentItemId(content.sequence, states, openedId);
   const current = started && currentId !== null ? content.items.get(currentId) : undefined;
   const isRequiredLesson = (item: AcademyItem) => item.kind === 'lesson' && !item.optional;
   const passedLessons = (items: readonly AcademyItem[]) =>
@@ -278,7 +298,8 @@ export function buildAcademyProgress(
     started,
     completed: passedLessons(published),
     total: content.requiredTotal,
-    all_done: currentId === null,
+    // Done = no required item left to pass (what the learner opened last does not matter).
+    all_done: currentItemId(content.sequence, states) === null,
     current_lesson:
       current && current.kind !== 'practice' ? { ...itemRef(current), kind: current.kind } : null,
     chapter_exams: {

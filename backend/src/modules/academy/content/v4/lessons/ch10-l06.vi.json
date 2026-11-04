@@ -1,0 +1,395 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l6-g1": {
+      "alt": "Chi phí tín dụng bằng chi phí dự phòng 4 quý 18.329 tỷ đồng chia cho cho vay khách hàng bình quân 1.580 nghìn tỷ đồng, bằng 1,16%",
+      "edges": [
+        {
+          "from": "chi-phi-du-phong",
+          "label": "÷",
+          "to": "cho-vay-binh-quan"
+        },
+        {
+          "from": "cho-vay-binh-quan",
+          "label": "=",
+          "to": "chi-phi-tin-dung"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "chi-phi-du-phong",
+          "sub": "Kết quả kinh doanh",
+          "title": "Chi phí dự phòng 4 quý",
+          "tone": "neg",
+          "value": "18.329 tỷ"
+        },
+        {
+          "id": "cho-vay-binh-quan",
+          "sub": "Bảng cân đối · (1.450 + 1.709) ÷ 2",
+          "title": "Cho vay KH bình quân",
+          "tone": "p1",
+          "value": "1.580 nghìn tỷ"
+        },
+        {
+          "emph": true,
+          "id": "chi-phi-tin-dung",
+          "sub": "100 đồng cho vay trích 1,16 đồng mỗi năm",
+          "title": "Chi phí tín dụng",
+          "tone": "warn",
+          "value": "1,16%"
+        }
+      ]
+    },
+    "c10l6-g2": {
+      "alt": "Lợi nhuận trước dự phòng 4 quý là 83.161 tỷ đồng, gồm 18.329 tỷ chi phí dự phòng (22%) và 64.832 tỷ lợi nhuận trước thuế (78%); cứ 100 đồng lợi nhuận trước dự phòng thì 22 đồng dành cho rủi ro cho vay",
+      "kind": "segment_bar",
+      "max": 83161,
+      "rows": [
+        {
+          "label": "Lợi nhuận trước dự phòng 4 quý",
+          "segments": [
+            {
+              "label": "Chi phí dự phòng · 22%",
+              "sub": "18.329 tỷ",
+              "tone": "neg",
+              "value": 18329
+            },
+            {
+              "label": "Lợi nhuận trước thuế · 78%",
+              "sub": "64.832 tỷ",
+              "tone": "pos",
+              "value": 64832
+            }
+          ],
+          "sub": "Cứ 100 đồng lợi nhuận trước dự phòng, 22 đồng dành cho rủi ro cho vay",
+          "total": {
+            "text": "83.161 tỷ đồng"
+          }
+        }
+      ],
+      "unit": "tỷ đồng"
+    },
+    "c10l6-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Ngân hàng A · ổn định (%)",
+          "tone": "pos",
+          "values": [
+            1.1,
+            1.15,
+            1.1,
+            1.2,
+            1.15,
+            1.1,
+            1.2,
+            1.15
+          ]
+        },
+        {
+          "name": "Ngân hàng B · tăng nhanh (%)",
+          "tone": "neg",
+          "values": [
+            1,
+            1.1,
+            1.3,
+            1.5,
+            1.8,
+            2.1,
+            2.4,
+            2.7
+          ]
+        }
+      ],
+      "threshold": {
+        "label": "Mức 2%",
+        "value": 2
+      },
+      "unit": "%",
+      "value_labels": "none"
+    },
+    "c10l6-rep": {
+      "alt": "Chi phí tín dụng: 1,2%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Chi phí tín dụng (4 quý)",
+            "v": [
+              1.153,
+              1.179,
+              1.153,
+              1.166,
+              1.186,
+              1.21,
+              1.199,
+              1.16
+            ]
+          }
+        ],
+        "name": "Chi phí tín dụng",
+        "sub": {
+          "series": [
+            {
+              "name": "Chi phí dự phòng 4 quý",
+              "v": [
+                14371.947,
+                15152.355,
+                15465.96,
+                15825.332,
+                17035.665,
+                17721.574,
+                18710.346,
+                18329.484
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l06",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Mỗi năm ngân hàng phải trích một phần lợi nhuận để phòng các khoản vay có thể không thu hồi được. Chi phí tín dụng cho biết phần trích này lớn đến đâu so với quy mô cho vay.",
+  "lesson_key": "fundamental:credit_cost",
+  "order": 6,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l6-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Chi phí tín dụng</b> (Credit Cost) bằng <b>chi phí dự phòng rủi ro tín dụng 4 quý</b> chia cho <b>cho vay khách hàng bình quân</b>. Tử số lấy từ báo cáo kết quả kinh doanh, mẫu số lấy từ bảng cân đối kế toán, bình quân đầu kỳ và cuối kỳ.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Chi phí tín dụng 1,16% nghĩa là mỗi năm ngân hàng trích 1,16 đồng dự phòng cho mỗi 100 đồng cho vay.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Chi phí tín dụng là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Chi phí dự phòng nằm ngay sau lợi nhuận trước dự phòng trên báo cáo kết quả kinh doanh. Phần còn lại mới là lợi nhuận trước thuế.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l6-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Khi khách hàng trả nợ khó khăn, ngân hàng phải trích thêm, lợi nhuận giảm.",
+              "title": "Trích nhiều hơn"
+            },
+            {
+              "text": "Khi chất lượng khoản vay tốt lên, ngân hàng trích ít đi, lợi nhuận tăng.",
+              "title": "Trích ít hơn"
+            },
+            {
+              "text": "Thu hồi được khoản vay đã trích dự phòng, chi phí tín dụng có thể rất thấp trong kỳ đó.",
+              "title": "Hoàn nhập"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Dự phòng lấy đi bao nhiêu lợi nhuận"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l6-rep",
+          "title": "Chi phí tín dụng",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi phí tín dụng tính theo 4 quý gần nhất, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Chi phí dự phòng rủi ro tín dụng cộng dồn 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tăng mà đường đi ngang nghĩa là dự phòng chỉ tăng theo quy mô cho vay.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 1% đến 1,5% và đi ngang qua nhiều quý. Đây là mức tham khảo thường gặp ở các ngân hàng Việt Nam.",
+              "title": "Ổn định",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên khoảng 2% hoặc tăng nhanh. Chất lượng khoản vay có thể đang xấu đi.",
+              "title": "Cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Chi phí tín dụng giảm mạnh cũng cần xem kỹ. Lợi nhuận tăng nhờ trích ít dự phòng có thể phải trả lại ở các năm sau.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l6-g3",
+          "legend": [
+            {
+              "label": "Ngân hàng A · ổn định (%)",
+              "tone": "pos"
+            },
+            {
+              "label": "Ngân hàng B · tăng nhanh (%)",
+              "tone": "neg"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "NIM trừ chi phí tín dụng cho biết biên lãi còn lại sau rủi ro.",
+              "title": "Đọc cùng NIM"
+            },
+            {
+              "text": "Chi phí tín dụng tăng nhiều quý liền là cảnh báo về chất lượng cho vay.",
+              "title": "Theo dõi xu hướng"
+            },
+            {
+              "text": "Trích ít dự phòng mà tỷ lệ dự phòng trên dư nợ giảm là bộ đệm đang mỏng đi.",
+              "title": "Đối chiếu bộ đệm dự phòng"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Chi phí dự phòng 4 quý",
+              "text": "18.329 tỷ đồng."
+            },
+            {
+              "term": "Cho vay khách hàng bình quân",
+              "text": "Đầu kỳ 1.450 nghìn tỷ, cuối kỳ 1.709 nghìn tỷ. Bình quân khoảng 1.580 nghìn tỷ."
+            },
+            {
+              "term": "Chi phí tín dụng",
+              "text": "18.329 ÷ 1.580.000 ≈ 1,16%."
+            },
+            {
+              "term": "Đọc cùng NIM",
+              "text": "NIM 4,27% trừ chi phí tín dụng 1,16% còn khoảng 3,1%. Biên lãi sau rủi ro vẫn khá rộng."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Trích quá ít làm lợi nhuận đẹp trong ngắn hạn nhưng bộ đệm rủi ro mỏng đi.",
+              "title": "Coi chi phí thấp luôn là tốt"
+            },
+            {
+              "text": "Chi phí tín dụng là phần trích trong năm. Tỷ lệ dự phòng là số dư tích lũy trên bảng cân đối.",
+              "title": "Nhầm với tỷ lệ dự phòng"
+            },
+            {
+              "text": "Ngân hàng thường trích dồn vào cuối năm. Dùng số 4 quý để so sánh.",
+              "title": "Chỉ xem một quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Chi phí tín dụng</b> = chi phí dự phòng rủi ro tín dụng 4 quý ÷ <b>cho vay khách hàng bình quân</b>.",
+    "Là phần lợi nhuận trước dự phòng bị <b>dành ra cho rủi ro</b> cho vay.",
+    "Mức tham khảo <b>khoảng 1% đến 1,5%</b>, tăng nhanh là dấu hiệu cần chú ý.",
+    "Đọc cùng <b>NIM</b> để thấy biên lãi còn lại sau khi trừ rủi ro."
+  ],
+  "title": "Chi phí tín dụng · giá phải trả cho rủi ro cho vay"
+}

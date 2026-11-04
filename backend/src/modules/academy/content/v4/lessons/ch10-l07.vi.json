@@ -1,0 +1,471 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l7-g1": {
+      "items": [
+        {
+          "model": {
+            "alt": "Cho vay khách hàng 1.709.127 tỷ đồng trừ dự phòng rủi ro cho vay 28.983 tỷ đồng (ghi trong ngoặc vì là số trừ) còn cho vay khách hàng thuần 1.680.144 tỷ đồng",
+            "edges": [
+              {
+                "from": "cho-vay",
+                "label": "+",
+                "to": "du-phong"
+              },
+              {
+                "from": "du-phong",
+                "label": "=",
+                "to": "cho-vay-thuan"
+              }
+            ],
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "cho-vay",
+                "title": "Cho vay khách hàng",
+                "tone": "p1",
+                "value": "1.709.127"
+              },
+              {
+                "id": "du-phong",
+                "title": "Dự phòng rủi ro cho vay",
+                "tone": "neg",
+                "value": "(28.983)"
+              },
+              {
+                "id": "cho-vay-thuan",
+                "title": "Cho vay khách hàng thuần",
+                "value": "1.680.144"
+              }
+            ]
+          },
+          "title": "Bảng cân đối Q2/26 · tỷ đồng"
+        },
+        {
+          "model": {
+            "alt": "Tỷ lệ dự phòng trên dư nợ bằng 28.983 chia cho 1.709.127, bằng 1,70%: bộ đệm cho 100 đồng cho vay",
+            "edges": [
+              {
+                "from": "du-phong",
+                "label": "÷",
+                "to": "du-no"
+              },
+              {
+                "from": "du-no",
+                "label": "=",
+                "to": "ty-le"
+              }
+            ],
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "id": "du-phong",
+                "title": "Dự phòng rủi ro cho vay",
+                "tone": "neg",
+                "value": "28.983"
+              },
+              {
+                "id": "du-no",
+                "title": "Cho vay khách hàng",
+                "tone": "p1",
+                "value": "1.709.127"
+              },
+              {
+                "emph": true,
+                "id": "ty-le",
+                "sub": "Bộ đệm cho 100 đồng cho vay",
+                "title": "Tỷ lệ dự phòng / Dư nợ",
+                "tone": "warn",
+                "value": "1,70%"
+              }
+            ]
+          },
+          "title": "Tỷ lệ dự phòng / Dư nợ",
+          "tone": "warn"
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack"
+    },
+    "c10l7-g2": {
+      "alt": "Bể dự phòng: chi phí dự phòng trích trong kỳ ở kết quả kinh doanh chảy vào số dư dự phòng trên bảng cân đối, là tử số của tỷ lệ; số dư này được dùng để xử lý khoản vay không thu hồi được",
+      "edges": "sequential",
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "caption": "Kết quả kinh doanh",
+          "id": "chay-vao",
+          "sub": "Chi phí dự phòng trích trong kỳ",
+          "title": "Chảy vào",
+          "tone": "pos"
+        },
+        {
+          "caption": "Tử số của tỷ lệ",
+          "emph": true,
+          "id": "so-du-du-phong",
+          "sub": "Bảng cân đối",
+          "title": "Số dư dự phòng",
+          "tone": "warn"
+        },
+        {
+          "id": "chay-ra",
+          "sub": "Dùng để xử lý khoản vay không thu hồi được",
+          "title": "Chảy ra",
+          "tone": "neg"
+        }
+      ]
+    },
+    "c10l7-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Ngân hàng A · bộ đệm dày lên (%)",
+          "tone": "pos",
+          "values": [
+            1.4,
+            1.5,
+            1.6,
+            1.7,
+            1.8,
+            1.9,
+            2,
+            2.1
+          ]
+        },
+        {
+          "name": "Ngân hàng B · bộ đệm mỏng đi (%)",
+          "tone": "neg",
+          "values": [
+            1.5,
+            1.4,
+            1.3,
+            1.2,
+            1.1,
+            1,
+            0.9,
+            0.85
+          ]
+        }
+      ],
+      "threshold": {
+        "label": "Mức 1%",
+        "value": 1
+      },
+      "unit": "%",
+      "value_labels": "none"
+    },
+    "c10l7-rep": {
+      "alt": "Tỷ lệ dự phòng / Dư nợ: 1,7%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Dự phòng / Cho vay khách hàng",
+            "v": [
+              1.751,
+              1.764,
+              1.77,
+              1.768,
+              1.759,
+              1.743,
+              1.722,
+              1.696
+            ]
+          }
+        ],
+        "name": "Tỷ lệ dự phòng / Dư nợ",
+        "sub": {
+          "series": [
+            {
+              "name": "Dự phòng rủi ro cho vay",
+              "v": [
+                23515.722,
+                24415.816,
+                25508.724,
+                25641.749,
+                26926.222,
+                26947.35,
+                28896.932,
+                28983.371
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l07",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Số dư dự phòng là khoản ngân hàng đã để dành sẵn để bù cho các khoản vay có thể mất. Tỷ lệ dự phòng trên dư nợ cho biết bộ đệm này dày hay mỏng so với quy mô cho vay.",
+  "lesson_key": "fundamental:provision_to_loans",
+  "order": 7,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l7-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Tỷ lệ dự phòng trên dư nợ</b> bằng <b>dự phòng rủi ro cho vay khách hàng</b> chia cho <b>cho vay khách hàng</b>. Cả hai dòng nằm cạnh nhau trên bảng cân đối kế toán. Dự phòng được ghi là một số âm, trừ thẳng vào cho vay khách hàng.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Đây là <b>bộ đệm</b>, không phải tỷ lệ nợ xấu. Tỷ lệ 1,70% nghĩa là ngân hàng đã dành sẵn 1,70 đồng cho mỗi 100 đồng cho vay.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ lệ dự phòng / Dư nợ là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Hai khái niệm dễ nhầm. Chi phí dự phòng là dòng chảy vào mỗi kỳ. Số dư dự phòng là lượng còn lại trong bể.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l7-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi phí dự phòng trích trong kỳ, nằm trên báo cáo kết quả kinh doanh.",
+              "title": "Chảy vào"
+            },
+            {
+              "text": "Dùng dự phòng để xử lý các khoản vay không thu hồi được.",
+              "title": "Chảy ra"
+            },
+            {
+              "text": "Số dư dự phòng trên bảng cân đối, là tử số của tỷ lệ này.",
+              "title": "Còn lại trong bể"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Chi phí dự phòng và số dư dự phòng"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l7-rep",
+          "title": "Tỷ lệ dự phòng / Dư nợ",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dự phòng rủi ro cho vay chia cho vay khách hàng cuối mỗi quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Số dư dự phòng rủi ro cho vay cuối mỗi quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tăng mà đường giảm nghĩa là cho vay tăng nhanh hơn dự phòng, bộ đệm mỏng dần.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 1,5% trở lên và ổn định hoặc tăng. Đây là mức tham khảo thường gặp ở các ngân hàng Việt Nam.",
+              "title": "Bộ đệm dày",
+              "tone": "pos"
+            },
+            {
+              "text": "Dưới khoảng 1% hoặc giảm liên tục trong khi cho vay tăng nhanh.",
+              "title": "Bộ đệm mỏng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Bộ đệm dày giúp ngân hàng chịu được giai đoạn khó khăn mà không phải trích dự phòng đột ngột, lợi nhuận ít bị sốc hơn.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l7-g3",
+          "legend": [
+            {
+              "label": "Ngân hàng A · bộ đệm dày lên (%)",
+              "tone": "pos"
+            },
+            {
+              "label": "Ngân hàng B · bộ đệm mỏng đi (%)",
+              "tone": "neg"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Chi phí tín dụng giảm và bộ đệm cũng giảm là lợi nhuận đang được làm đẹp.",
+              "title": "Đọc cùng chi phí tín dụng"
+            },
+            {
+              "text": "Cho vay tăng nhanh mà dự phòng không theo kịp thì tỷ lệ sẽ giảm.",
+              "title": "Đọc cùng tăng trưởng tín dụng"
+            },
+            {
+              "text": "Ngân hàng cho vay tiêu dùng nhiều thường cần bộ đệm dày hơn.",
+              "title": "So với ngân hàng cùng mô hình"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "columns": [
+            {
+              "label": "Bảng cân đối"
+            },
+            {
+              "label": "Q2/25"
+            },
+            {
+              "label": "Q2/26"
+            },
+            {
+              "label": "Thay đổi"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Cho vay khách hàng",
+                "1.450.261",
+                "1.709.127",
+                "+17,9%"
+              ]
+            },
+            {
+              "cells": [
+                "Dự phòng rủi ro cho vay",
+                "25.642",
+                "28.983",
+                "+13,0%"
+              ]
+            },
+            {
+              "cells": [
+                "Tỷ lệ dự phòng / Dư nợ",
+                "1,77%",
+                "1,70%",
+                {
+                  "rating": "mid",
+                  "text": "Giảm nhẹ"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Đơn vị tỷ đồng. Dự phòng vẫn tăng nhưng chậm hơn cho vay, nên bộ đệm mỏng đi một chút. Mức 1,70% vẫn nằm trong vùng tham khảo tốt.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Đây là phần đã dành sẵn để bù rủi ro, không phải phần khoản vay có vấn đề.",
+              "title": "Coi là tỷ lệ nợ xấu"
+            },
+            {
+              "text": "Một bên là số dư tích lũy, một bên là phần trích trong năm.",
+              "title": "Nhầm với chi phí tín dụng"
+            },
+            {
+              "text": "Số dư dự phòng tăng chưa chắc bộ đệm dày hơn nếu cho vay tăng nhanh hơn.",
+              "title": "Chỉ xem số dư tuyệt đối"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Tỷ lệ dự phòng / Dư nợ</b> = dự phòng rủi ro cho vay ÷ <b>cho vay khách hàng</b>, cùng trên bảng cân đối.",
+    "Đây là <b>bộ đệm chống rủi ro</b>, không phải tỷ lệ nợ xấu.",
+    "Mức tham khảo <b>khoảng 1,5% trở lên</b> là bộ đệm khá dày.",
+    "Tỷ lệ giảm khi <b>cho vay tăng nhanh hơn dự phòng</b>."
+  ],
+  "title": "Tỷ lệ dự phòng / Dư nợ · bộ đệm chống rủi ro"
+}

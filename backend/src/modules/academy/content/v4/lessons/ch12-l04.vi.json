@@ -1,0 +1,400 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l4-g1": {
+      "alt": "Tỷ lệ chi phí bằng chi phí 4 quý 3.354 tỷ chia phí thuần 4 quý 8.119 tỷ, bằng 41,3%: 100 đồng phí thuần tốn 41,3 đồng chi phí",
+      "edges": [
+        {
+          "from": "chi-phi",
+          "label": "÷",
+          "to": "phi-thuan"
+        },
+        {
+          "from": "phi-thuan",
+          "label": "=",
+          "to": "ty-le-chi-phi"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "chi-phi",
+          "sub": "Kinh doanh và quản lý",
+          "title": "Chi phí 4 quý",
+          "tone": "p4",
+          "value": "3.354 tỷ"
+        },
+        {
+          "id": "phi-thuan",
+          "sub": "Phí đã giữ lại",
+          "title": "Phí thuần 4 quý",
+          "tone": "p1",
+          "value": "8.119 tỷ"
+        },
+        {
+          "id": "ty-le-chi-phi",
+          "sub": "100 đồng phí thuần tốn 41,3 đồng chi phí",
+          "title": "Tỷ lệ chi phí",
+          "tone": "warn",
+          "value": "41,3%"
+        }
+      ]
+    },
+    "c12l4-g2": {
+      "caption_tone": "warn",
+      "caption_value": "Chi phí bằng 41,3% phí bảo hiểm thuần",
+      "kind": "category",
+      "labels": [
+        "Phí bảo hiểm thuần",
+        "Chi phí KD và quản lý"
+      ],
+      "mode": "stacked",
+      "series": [
+        {
+          "name": "Phí bảo hiểm thuần",
+          "tone": "p1",
+          "values": [
+            8119,
+            null
+          ]
+        },
+        {
+          "name": "Chi phí khác KD bảo hiểm · 2.030",
+          "tone": "warn",
+          "values": [
+            null,
+            2030
+          ]
+        },
+        {
+          "name": "Bán hàng và quản lý · 1.324",
+          "tone": "p4",
+          "values": [
+            null,
+            1324
+          ]
+        }
+      ],
+      "unit": "tỷ đồng",
+      "value_format": {
+        "suffix": " tỷ"
+      },
+      "value_labels": "all"
+    },
+    "c12l4-g3": {
+      "alt": "100 đồng phí thuần của công ty mẫu: 56,8 đồng bồi thường, 41,3 đồng chi phí và 1,9 đồng lãi nghiệp vụ. Bồi thường cộng chi phí là combined ratio 98,1%",
+      "brackets": [
+        {
+          "from": 0,
+          "label": "Bồi thường + chi phí = combined ratio 98,1%",
+          "row": 0,
+          "to": 98.1,
+          "tone": "warn"
+        }
+      ],
+      "kind": "segment_bar",
+      "max": 100,
+      "rows": [
+        {
+          "label": "100 đồng phí thuần của công ty mẫu được dùng như sau",
+          "segments": [
+            {
+              "label": "Bồi thường 56,8 đồng",
+              "tone": "p1",
+              "value": 56.8
+            },
+            {
+              "label": "Chi phí 41,3 đồng",
+              "tone": "p5",
+              "value": 41.3
+            },
+            {
+              "label": "Lãi nghiệp vụ 1,9 đồng",
+              "tone": "pos",
+              "value": 1.9
+            }
+          ]
+        }
+      ],
+      "unit": "đồng"
+    },
+    "c12l4-rep": {
+      "alt": "Tỷ lệ chi phí: 41,3%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tỷ lệ chi phí (4 quý)",
+            "v": [
+              42.766,
+              42.633,
+              42.911,
+              42.157,
+              42.327,
+              42.006,
+              41.396,
+              41.304
+            ]
+          }
+        ],
+        "name": "Tỷ lệ chi phí",
+        "sub": {
+          "series": [
+            {
+              "name": "Chi phí kinh doanh và quản lý 4 quý",
+              "v": [
+                2866.29,
+                2964.631,
+                3051.842,
+                3018.583,
+                3136.998,
+                3208.814,
+                3259.272,
+                3353.566
+              ]
+            },
+            {
+              "name": "Phí bảo hiểm thuần 4 quý",
+              "v": [
+                6702.234,
+                6953.888,
+                7112.089,
+                7160.419,
+                7411.254,
+                7639.006,
+                7873.37,
+                8119.28
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Ngoài bồi thường, công ty bảo hiểm còn tốn tiền hoa hồng cho đại lý, chi phí khai thác hợp đồng và chi phí bộ máy. Tỷ lệ chi phí cho biết phần này chiếm bao nhiêu trong phí giữ lại.",
+  "lesson_key": "fundamental:expense_ratio",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l4-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Tỷ lệ chi phí</b> (expense ratio) bằng <b>chi phí kinh doanh và quản lý 4 quý</b> chia cho <b>doanh thu phí bảo hiểm thuần 4 quý</b>. Số liệu lấy từ <b>báo cáo kết quả kinh doanh</b>.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 41,3% nghĩa là mỗi 100 đồng phí giữ lại, công ty tốn 41,3 đồng để bán hàng và vận hành.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tỷ lệ chi phí là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Tử số gộp hai nhóm chi phí trên báo cáo kết quả kinh doanh.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l4-g2",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Hoa hồng đại lý, chi phí khai thác, giám định, đề phòng hạn chế tổn thất.",
+              "title": "Chi phí khác hoạt động kinh doanh bảo hiểm"
+            },
+            {
+              "text": "Phần phân bổ cho hoạt động bảo hiểm: lương, văn phòng, công nghệ.",
+              "title": "Chi phí bán hàng và quản lý"
+            },
+            {
+              "text": "Doanh thu phí bảo hiểm thuần, cùng mẫu số với tỷ lệ bồi thường.",
+              "title": "Mẫu số"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Chi phí gồm những gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l4-rep",
+          "title": "Tỷ lệ chi phí",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ chi phí tính theo 4 quý gần nhất.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hai cột: chi phí kinh doanh và quản lý 4 quý, phí bảo hiểm thuần 4 quý, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Phí tăng nhanh hơn chi phí thì đường tỷ lệ đi xuống, công ty vận hành hiệu quả hơn.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Trong khoảng 30-40% với công ty phi nhân thọ và giảm dần khi quy mô phí lớn lên.",
+              "title": "Tỷ lệ chi phí tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên 45% hoặc tăng liên tục, thường do hoa hồng cao để giành khách hoặc bộ máy cồng kềnh.",
+              "title": "Tỷ lệ chi phí xấu",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Mức tham khảo ở Việt Nam. Ghép tỷ lệ chi phí với tỷ lệ bồi thường cho thấy 100 đồng phí thuần được dùng vào đâu.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l4-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Công ty lớn chia chi phí cố định cho nhiều phí hơn nên tỷ lệ thấp hơn.",
+              "title": "Đo lợi thế quy mô"
+            },
+            {
+              "text": "Tỷ lệ chi phí tăng cùng lúc phí tăng mạnh là dấu hiệu mua doanh thu.",
+              "title": "Phát hiện chạy đua hoa hồng"
+            },
+            {
+              "text": "Tổng hai tỷ lệ là combined ratio, quyết định mảng bảo hiểm lãi hay lỗ.",
+              "title": "Ghép với bồi thường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bảo hiểm mẫu, số liệu 4 quý từ Q3/25 đến Q2/26 (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Chi phí kinh doanh và quản lý 4 quý",
+              "text": "3.354 tỷ đồng."
+            },
+            {
+              "term": "Phí bảo hiểm thuần 4 quý",
+              "text": "8.119 tỷ đồng."
+            },
+            {
+              "term": "Tỷ lệ chi phí",
+              "text": "3.354 ÷ 8.119 ≈ 41,3%."
+            },
+            {
+              "term": "Xu hướng",
+              "text": "Giảm từ 42,8% ở Q3/24 xuống 41,3% ở Q2/26. Vẫn cao hơn mức tham khảo nhưng đang cải thiện đều."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Giảm hoa hồng quá mức có thể làm mất kênh bán và giảm phí.",
+              "title": "Chỉ cắt giảm chi phí"
+            },
+            {
+              "text": "Chỉ tính hoa hồng sẽ làm tỷ lệ chi phí thấp hơn thực tế.",
+              "title": "Bỏ sót chi phí quản lý"
+            },
+            {
+              "text": "Chi phí thấp nhưng bồi thường cao vẫn có thể làm mảng bảo hiểm lỗ.",
+              "title": "Xem riêng một tỷ lệ"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Tỷ lệ chi phí = <b>chi phí kinh doanh và quản lý 4 quý ÷ phí thuần 4 quý</b>.",
+    "Gồm <b>chi phí khác hoạt động kinh doanh bảo hiểm</b> và chi phí bán hàng, quản lý phân bổ.",
+    "Phi nhân thọ: <b>30-40%</b> là mức tham khảo, trên 45% là cao.",
+    "Tỷ lệ chi phí <b>giảm dần khi quy mô tăng</b> là dấu hiệu tốt."
+  ],
+  "title": "Tỷ lệ chi phí · chi phí để bán và vận hành"
+}

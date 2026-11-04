@@ -2,8 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react"
 import { createMemoryRouter, RouterProvider, useLocation } from "react-router"
 import { describe, expect, it } from "vitest"
 
-import { AcademyRedirect } from "./academy-redirect"
-import { academyWorkspaceLocation, demoTradingLoader, normalizeWorkspaceSearch } from "./workspace-url"
+import { AcademyMetricRedirect, AcademyRedirect } from "./academy-redirect"
+import { academyWorkspaceLocation, demoTradingLoader, normalizeWorkspaceSearch, parseMetricParam } from "./workspace-url"
 
 function Where() {
   const location = useLocation()
@@ -15,7 +15,9 @@ function renderRoutes(initial: string) {
     [
       { path: "/demo-trading", loader: demoTradingLoader, element: <Where /> },
       { path: "/hoc-vien", element: <AcademyRedirect /> },
+      { path: "/hoc-vien/bai/:metric", element: <AcademyMetricRedirect /> },
       { path: "/hoc-vien/:lessonId", element: <AcademyRedirect /> },
+      { path: "/academy", element: <AcademyRedirect /> },
     ],
     { initialEntries: [initial] },
   )
@@ -114,6 +116,30 @@ describe("/hoc-vien redirect", () => {
     await waitFor(() => expect(screen.getByLabelText("where").textContent).toBe("/demo-trading?view=academy&lesson=ch01-l01"))
   })
 
+  it("sends /hoc-vien/bai/:metric to the tool with the metric name (spec v4 §6)", async () => {
+    renderRoutes("/hoc-vien/bai/NIM")
+    await waitFor(() => expect(screen.getByLabelText("where").textContent).toBe("/demo-trading?view=academy&metric=NIM"))
+  })
+
+  it("decodes a metric name with accents, spaces and a slash", async () => {
+    renderRoutes(`/hoc-vien/bai/${encodeURIComponent("Tỷ lệ dự phòng / Dư nợ")}`)
+    await waitFor(() => {
+      const where = screen.getByLabelText("where").textContent ?? ""
+      expect(new URLSearchParams(where.split("?")[1]).get("metric")).toBe("Tỷ lệ dự phòng / Dư nợ")
+      expect(where.startsWith("/demo-trading?view=academy&")).toBe(true)
+    })
+  })
+
+  it("keeps ?metric= from /hoc-vien and from the /academy alias, with the other parameters", async () => {
+    renderRoutes("/hoc-vien?metric=roe")
+    await waitFor(() => expect(screen.getByLabelText("where").textContent).toBe("/demo-trading?metric=roe&view=academy"))
+  })
+
+  it("serves /academy?metric= like /hoc-vien?metric=", async () => {
+    renderRoutes("/academy?metric=ldr&from=dashboard")
+    await waitFor(() => expect(screen.getByLabelText("where").textContent).toBe("/demo-trading?metric=ldr&from=dashboard&view=academy"))
+  })
+
   it("keeps other query params and drops a lesson id that is not a plausible id", () => {
     expect(academyWorkspaceLocation("ch02-l14", "?from=chien-luoc", "#x")).toEqual({
       pathname: "/demo-trading",
@@ -122,5 +148,25 @@ describe("/hoc-vien redirect", () => {
     })
     expect(academyWorkspaceLocation("../etc/passwd").search).toBe("?view=academy")
     expect(academyWorkspaceLocation(undefined).search).toBe("?view=academy")
+  })
+
+  it("keeps a usable metric (argument first, else the query) and drops an empty or oversized one", () => {
+    expect(academyWorkspaceLocation(undefined, "", "", "NIM").search).toBe("?view=academy&metric=NIM")
+    expect(academyWorkspaceLocation(undefined, "?metric=old", "", "  new  ").search).toBe("?metric=new&view=academy")
+    expect(academyWorkspaceLocation(undefined, "?metric=roe").search).toBe("?metric=roe&view=academy")
+    expect(academyWorkspaceLocation(undefined, "?metric=%20%20").search).toBe("?view=academy")
+    expect(academyWorkspaceLocation(undefined, "", "", "x".repeat(121)).search).toBe("?view=academy")
+    expect(academyWorkspaceLocation("ch10-l01", "", "", "nim").search).toBe("?view=academy&lesson=ch10-l01&metric=nim")
+  })
+})
+
+describe("parseMetricParam", () => {
+  it("trims, and refuses empty, missing and oversized values", () => {
+    expect(parseMetricParam(" NIM ")).toBe("NIM")
+    expect(parseMetricParam("x".repeat(120))).toBe("x".repeat(120))
+    expect(parseMetricParam("x".repeat(121))).toBeNull()
+    expect(parseMetricParam("   ")).toBeNull()
+    expect(parseMetricParam(null)).toBeNull()
+    expect(parseMetricParam(undefined)).toBeNull()
   })
 })

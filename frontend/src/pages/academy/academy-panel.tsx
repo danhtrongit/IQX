@@ -20,7 +20,9 @@ import { loadPanelState, savePanelState } from "./view-state"
 /**
  * «Học viện» tool panel: "Học viện", "{required_total} bài học", the progress card and one group per
  * published chapter. Every row shows the server-computed state (`progress.items[].state`): "Xem lại",
- * "Học bài" / "Làm bài", or a lock with "Chưa mở". No switch, no configuration and no practice tool.
+ * "Học bài" / "Làm bài". Learning is free (spec v4 §4.1), so no row is locked; only an account switched
+ * to `sequential` mode (spec v4.1) still gets a lock with "Chưa mở". No switch, no configuration and no
+ * practice tool.
  *
  * Until the learner decides, the chapter of the open item (or of the current item) is open; after that
  * the learner's own open/closed choice is kept for the session and a refetch never re-opens anything.
@@ -45,7 +47,7 @@ export function AcademyPanel() {
   const defaultChapter = chapterOfItem(openItemId) ?? chapterOfItem(progress?.current_item_id ?? null) ?? 1
   const openSet = new Set(openChapters ?? [defaultChapter])
 
-  // An item was opened (row or deep link, e.g. from a locked Bot indicator): show its chapter once.
+  // An item was opened (row or deep link, e.g. the Dashboard's "Học" button): show its chapter once.
   const openChapter = chapterOfItem(openItemId)
   if (openItemId && openChapter !== null && revealedFor !== openItemId) {
     setRevealedFor(openItemId)

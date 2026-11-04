@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l08",
+  "questions": [
+    {
+      "correct_option_id": "e37136fd59",
+      "id": "ch09-l08-q01",
+      "options": [
+        {
+          "id": "e37136fd59",
+          "text": "EBIT 4 quý chia cho chi phí lãi vay 4 quý"
+        },
+        {
+          "id": "c66ab0f816",
+          "text": "Lợi nhuận sau thuế chia cho nợ vay"
+        },
+        {
+          "id": "49b007f54c",
+          "text": "Chi phí lãi vay 4 quý chia cho doanh thu 4 quý"
+        }
+      ],
+      "prompt": "Interest Coverage được tính như thế nào?"
+    },
+    {
+      "correct_option_id": "741328a312",
+      "id": "ch09-l08-q02",
+      "options": [
+        {
+          "id": "741328a312",
+          "text": "Lợi nhuận trước lãi vay và thuế"
+        },
+        {
+          "id": "8205923ee0",
+          "text": "Lợi nhuận sau khi đã trừ thuế"
+        },
+        {
+          "id": "6c7cd5e173",
+          "text": "Doanh thu trước khi trừ giá vốn hàng bán"
+        }
+      ],
+      "prompt": "EBIT là gì?"
+    },
+    {
+      "correct_option_id": "7a519ad573",
+      "id": "ch09-l08-q03",
+      "options": [
+        {
+          "id": "7a519ad573",
+          "text": "Để loại bỏ ảnh hưởng mùa vụ giữa các quý"
+        },
+        {
+          "id": "96caee6e42",
+          "text": "Vì doanh nghiệp chỉ trả lãi mỗi năm một lần"
+        },
+        {
+          "id": "292aaa8225",
+          "text": "Vì lãi vay của từng quý luôn bằng không"
+        }
+      ],
+      "prompt": "Vì sao Interest Coverage dùng số liệu 4 quý?"
+    },
+    {
+      "correct_option_id": "bd24059278",
+      "id": "ch09-l08-q04",
+      "options": [
+        {
+          "id": "bd24059278",
+          "text": "Lợi nhuận kinh doanh không đủ trả lãi vay"
+        },
+        {
+          "id": "bbe4a55f5d",
+          "text": "Doanh nghiệp đã trả hết toàn bộ các khoản nợ vay"
+        },
+        {
+          "id": "5a216ec755",
+          "text": "Doanh nghiệp trả lãi rất dễ dàng"
+        }
+      ],
+      "prompt": "Interest Coverage dưới 1 lần nghĩa là gì?"
+    },
+    {
+      "chart_id": "c9l8-rep",
+      "correct_option_id": "964a4c0bbc",
+      "id": "ch09-l08-q05",
+      "options": [
+        {
+          "id": "964a4c0bbc",
+          "text": "Tăng dần"
+        },
+        {
+          "id": "f27c2b8680",
+          "text": "Giảm dần"
+        },
+        {
+          "id": "11a6448938",
+          "text": "Đi ngang"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, lãi vay quý gần như không đổi còn EBIT tăng dần thì hệ số thế nào?"
+    }
+  ],
+  "salt": "02c6375cf8e39344aac02df2e9d7e3253e99fd36a71d656c593845e11bba4740"
+}

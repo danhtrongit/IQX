@@ -7,7 +7,7 @@ import { axisIndexes, barPath, linePath, niceScale } from "./geometry"
 export type PanelLine = {
   name: string
   values: (number | null)[]
-  /** Màu chuỗi (token `--s1`, `--s2`, `--s3`, `--ref-line`). */
+  /** Màu chuỗi (token `--s1`, `--line2`, `--ref-line`). */
   color: string
   /** Nét đứt, dùng cho đường tham chiếu. */
   dash?: string
@@ -33,7 +33,7 @@ export type PanelProps = {
   bars?: PanelBars
   /** Dải trung vị ± độ lệch chuẩn của giai đoạn đang hiện. */
   band?: [number, number]
-  /** Đường tham chiếu cố định (khuôn F2: PEG = 1). */
+  /** Đường tham chiếu cố định nét đứt (khuôn F2: PEG = 1; khuôn B: Combined ratio 100%). Trục luôn chứa mốc này. */
   reference?: number
   /** Trục có mốc 0. */
   zero?: boolean
@@ -50,7 +50,11 @@ export type PanelProps = {
   onHover: (index: number | null, x: number) => void
 }
 
-const PADDING_LEFT = 44
+/**
+ * Lề trái chung của mọi tấm vẽ (cả hai tầng của một biểu đồ phải thẳng cột nên không đổi theo tấm).
+ * Đủ cho nhãn trục dài nhất của chỉ tiêu tính bằng tỷ đồng ("100.000" ở cỡ 10,5px ≈ 41px).
+ */
+const PADDING_LEFT = 48
 const PADDING_RIGHT = 8
 const PADDING_TOP = 8
 const PADDING_BOTTOM = 20

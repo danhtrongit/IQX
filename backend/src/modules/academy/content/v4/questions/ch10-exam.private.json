@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch10-exam",
+  "questions": [
+    {
+      "correct_option_id": "de8c7b4b22",
+      "id": "ch10-exam-q01",
+      "options": [
+        {
+          "id": "de8c7b4b22",
+          "text": "Thu nhập lãi thuần 4 quý"
+        },
+        {
+          "id": "6a954dabaf",
+          "text": "Lợi nhuận sau thuế 4 quý"
+        },
+        {
+          "id": "27ef50fc16",
+          "text": "Tổng thu nhập hoạt động 4 quý"
+        }
+      ],
+      "prompt": "Tử số của NIM là gì?"
+    },
+    {
+      "correct_option_id": "1da87ad6a8",
+      "id": "ch10-exam-q02",
+      "options": [
+        {
+          "id": "1da87ad6a8",
+          "text": "Cho vay khách hàng và chứng khoán đầu tư"
+        },
+        {
+          "id": "18210d810a",
+          "text": "Tiền mặt, vàng bạc đá quý và tài sản cố định"
+        },
+        {
+          "id": "329089492e",
+          "text": "Tài sản cố định và tài sản khác"
+        }
+      ],
+      "prompt": "Nhóm nào gồm toàn tài sản sinh lãi?"
+    },
+    {
+      "correct_option_id": "4f0ee34c5b",
+      "id": "ch10-exam-q03",
+      "options": [
+        {
+          "id": "4f0ee34c5b",
+          "text": "Tổng tài sản gồm cả phần không sinh lãi"
+        },
+        {
+          "id": "73d8c83f80",
+          "text": "Tổng tài sản không có trên bảng cân đối"
+        },
+        {
+          "id": "86bc6c9d35",
+          "text": "Tổng tài sản luôn nhỏ hơn tài sản sinh lãi"
+        }
+      ],
+      "prompt": "Vì sao không nên chia thu nhập lãi thuần cho tổng tài sản khi tính NIM?"
+    },
+    {
+      "correct_option_id": "abe7b9a744",
+      "id": "ch10-exam-q04",
+      "options": [
+        {
+          "id": "abe7b9a744",
+          "text": "Chênh lệch lãi cho vay và lãi huy động thu hẹp"
+        },
+        {
+          "id": "8cae7991cb",
+          "text": "Ngân hàng đang tăng mạnh thu nhập từ dịch vụ và ngoại hối"
+        },
+        {
+          "id": "48a09da111",
+          "text": "Bộ đệm dự phòng đang dày lên"
+        }
+      ],
+      "prompt": "NIM giảm liên tục nhiều quý thường cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "39695428f7",
+      "id": "ch10-exam-q05",
+      "options": [
+        {
+          "id": "39695428f7",
+          "text": "Mức lãi bình quân phải trả cho nguồn vốn chịu lãi"
+        },
+        {
+          "id": "c634442362",
+          "text": "Mức lãi bình quân ngân hàng thu từ cho vay khách hàng"
+        },
+        {
+          "id": "8b3fc4e2dc",
+          "text": "Phần chi phí trích lập dự phòng mỗi năm"
+        }
+      ],
+      "prompt": "Chi phí vốn là gì?"
+    },
+    {
+      "correct_option_id": "3067bbe1ef",
+      "id": "ch10-exam-q06",
+      "options": [
+        {
+          "id": "3067bbe1ef",
+          "text": "Giảm"
+        },
+        {
+          "id": "1326294d2b",
+          "text": "Tăng"
+        },
+        {
+          "id": "b2f4a16703",
+          "text": "Không bị ảnh hưởng"
+        }
+      ],
+      "prompt": "Chi phí vốn tăng nhanh mà lợi suất không theo kịp thì NIM thường thế nào?"
+    },
+    {
+      "correct_option_id": "6812736f65",
+      "id": "ch10-exam-q07",
+      "options": [
+        {
+          "id": "6812736f65",
+          "text": "Tiền gửi của khách hàng"
+        },
+        {
+          "id": "bc2aa7de16",
+          "text": "Phát hành giấy tờ có giá"
+        },
+        {
+          "id": "062601f604",
+          "text": "Tiền vay các tổ chức tín dụng khác"
+        }
+      ],
+      "prompt": "Nguồn vốn chịu lãi nào thường lớn nhất ở ngân hàng?"
+    },
+    {
+      "correct_option_id": "52425808eb",
+      "id": "ch10-exam-q08",
+      "options": [
+        {
+          "id": "52425808eb",
+          "text": "Tổng thu nhập hoạt động"
+        },
+        {
+          "id": "767d8b495a",
+          "text": "Tổng tài sản sinh lãi"
+        },
+        {
+          "id": "a009058b94",
+          "text": "Tổng nợ chịu lãi"
+        }
+      ],
+      "prompt": "TOI là viết tắt của chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "98dc1abe5d",
+      "id": "ch10-exam-q09",
+      "options": [
+        {
+          "id": "98dc1abe5d",
+          "text": "Xem thu nhập có tăng theo sau hay không"
+        },
+        {
+          "id": "ef2bdb0b3c",
+          "text": "Kết luận ngay rằng ngân hàng đang vận hành kém hiệu quả"
+        },
+        {
+          "id": "9fcf653a2b",
+          "text": "Bỏ qua vì CIR không quan trọng"
+        }
+      ],
+      "prompt": "CIR tăng tạm thời khi ngân hàng đầu tư công nghệ nên được theo dõi thế nào?"
+    },
+    {
+      "correct_option_id": "361f5bb7ab",
+      "id": "ch10-exam-q10",
+      "options": [
+        {
+          "id": "361f5bb7ab",
+          "text": "Khoảng 35% trở xuống"
+        },
+        {
+          "id": "f7f3ceeaf1",
+          "text": "Khoảng 60% trở lên"
+        },
+        {
+          "id": "0c83bb51b7",
+          "text": "Đúng bằng 100%"
+        }
+      ],
+      "prompt": "Mức CIR nào thường được xem là tốt, theo tham khảo ở Việt Nam?"
+    },
+    {
+      "correct_option_id": "471dd096ca",
+      "id": "ch10-exam-q11",
+      "options": [
+        {
+          "id": "471dd096ca",
+          "text": "Lãi thuần từ kinh doanh ngoại hối"
+        },
+        {
+          "id": "d8fd03e46c",
+          "text": "Thu nhập lãi cho vay khách hàng cá nhân"
+        },
+        {
+          "id": "5415ebcccf",
+          "text": "Chi phí lãi tiền gửi"
+        }
+      ],
+      "prompt": "Dòng nào thuộc thu nhập ngoài lãi?"
+    },
+    {
+      "correct_option_id": "0ad6d319d3",
+      "id": "ch10-exam-q12",
+      "options": [
+        {
+          "id": "0ad6d319d3",
+          "text": "Đều đặn và ít phụ thuộc thị trường"
+        },
+        {
+          "id": "66daab8cf7",
+          "text": "Luôn lớn hơn thu nhập lãi thuần"
+        },
+        {
+          "id": "514adba27a",
+          "text": "Không phải chịu chi phí hoạt động"
+        }
+      ],
+      "prompt": "Thu nhập ngoài lãi đến từ dịch vụ được đánh giá cao vì sao?"
+    },
+    {
+      "correct_option_id": "8fc4ab42b0",
+      "id": "ch10-exam-q13",
+      "options": [
+        {
+          "id": "8fc4ab42b0",
+          "text": "Thu hồi nợ đã xử lý"
+        },
+        {
+          "id": "64b27cd128",
+          "text": "Phí thanh toán và thẻ"
+        },
+        {
+          "id": "dbf2f2ddeb",
+          "text": "Lãi cho vay tiêu dùng"
+        }
+      ],
+      "prompt": "Lãi thuần từ hoạt động khác của ngân hàng thường đến từ đâu?"
+    },
+    {
+      "correct_option_id": "7b70536f6a",
+      "id": "ch10-exam-q14",
+      "options": [
+        {
+          "id": "7b70536f6a",
+          "text": "Chi phí hoạt động"
+        },
+        {
+          "id": "b79632a286",
+          "text": "Chi phí dự phòng rủi ro tín dụng"
+        },
+        {
+          "id": "c38ac50808",
+          "text": "Thuế thu nhập doanh nghiệp"
+        }
+      ],
+      "prompt": "PPOP bằng tổng thu nhập hoạt động trừ khoản nào?"
+    },
+    {
+      "correct_option_id": "78f56f7002",
+      "id": "ch10-exam-q15",
+      "options": [
+        {
+          "id": "78f56f7002",
+          "text": "Kết quả ngân hàng có tính mùa vụ"
+        },
+        {
+          "id": "c82be5a992",
+          "text": "PPOP chỉ được công bố mỗi năm một lần"
+        },
+        {
+          "id": "8400ad01a5",
+          "text": "Hai quý liền nhau luôn có PPOP bằng nhau"
+        }
+      ],
+      "prompt": "Vì sao so sánh PPOP giữa hai quý liền nhau dễ sai lệch?"
+    },
+    {
+      "correct_option_id": "f320ec14e7",
+      "id": "ch10-exam-q16",
+      "options": [
+        {
+          "id": "f320ec14e7",
+          "text": "Trích ít dự phòng hơn"
+        },
+        {
+          "id": "51cb74747a",
+          "text": "Tăng thu nhập lãi thuần"
+        },
+        {
+          "id": "8bb0ef7ec9",
+          "text": "Giảm chi phí hoạt động"
+        }
+      ],
+      "prompt": "Ngân hàng có thể làm đẹp lợi nhuận trước thuế bằng cách nào mà PPOP không bị ảnh hưởng?"
+    },
+    {
+      "correct_option_id": "4cf3dc89f3",
+      "id": "ch10-exam-q17",
+      "options": [
+        {
+          "id": "4cf3dc89f3",
+          "text": "Ít giá trị hơn nhiều quý tăng đều"
+        },
+        {
+          "id": "1f3c4ba8f1",
+          "text": "Chắc chắn sẽ lặp lại ở quý sau"
+        },
+        {
+          "id": "78cce1aa3b",
+          "text": "Là dấu hiệu chi phí vốn giảm"
+        }
+      ],
+      "prompt": "Một quý PPOP tăng vọt nhờ lãi chứng khoán nên được hiểu thế nào?"
+    },
+    {
+      "correct_option_id": "8f1f208a06",
+      "id": "ch10-exam-q18",
+      "options": [
+        {
+          "id": "8f1f208a06",
+          "text": "Mỗi 100 đồng cho vay, trích 1,2 đồng dự phòng mỗi năm"
+        },
+        {
+          "id": "af3bc55581",
+          "text": "Mỗi 100 đồng tiền gửi, ngân hàng trả 1,2 đồng lãi mỗi năm"
+        },
+        {
+          "id": "1942b64e79",
+          "text": "Mỗi 100 đồng tài sản có 1,2 đồng vốn chủ"
+        }
+      ],
+      "prompt": "Chi phí tín dụng 1,2% có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "365ccb38ad",
+      "id": "ch10-exam-q19",
+      "options": [
+        {
+          "id": "365ccb38ad",
+          "text": "Cho vay khách hàng bình quân"
+        },
+        {
+          "id": "5dcc06ed48",
+          "text": "Tổng tài sản bình quân"
+        },
+        {
+          "id": "af3202914a",
+          "text": "Tiền gửi khách hàng bình quân"
+        }
+      ],
+      "prompt": "Mẫu số của chi phí tín dụng là gì?"
+    },
+    {
+      "correct_option_id": "f1ee7b8efd",
+      "id": "ch10-exam-q20",
+      "options": [
+        {
+          "id": "f1ee7b8efd",
+          "text": "Lợi nhuận có thể đang được làm đẹp"
+        },
+        {
+          "id": "4baaa97b73",
+          "text": "Ngân hàng đang tăng bộ đệm rủi ro"
+        },
+        {
+          "id": "f08bbc2093",
+          "text": "Nguồn vốn của ngân hàng đang căng"
+        }
+      ],
+      "prompt": "Chi phí tín dụng giảm mạnh và tỷ lệ dự phòng cũng giảm cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "368125ea57",
+      "id": "ch10-exam-q21",
+      "options": [
+        {
+          "id": "368125ea57",
+          "text": "Là số âm trừ vào cho vay khách hàng"
+        },
+        {
+          "id": "b4295a265c",
+          "text": "Là một khoản trong vốn chủ sở hữu"
+        },
+        {
+          "id": "1bf1aa3948",
+          "text": "Là một khoản trong tiền gửi khách hàng"
+        }
+      ],
+      "prompt": "Dự phòng rủi ro cho vay khách hàng được trình bày thế nào trên bảng cân đối?"
+    },
+    {
+      "correct_option_id": "b2e1b597f0",
+      "id": "ch10-exam-q22",
+      "options": [
+        {
+          "id": "b2e1b597f0",
+          "text": "Đây là bộ đệm chống rủi ro, không phải tỷ lệ nợ xấu"
+        },
+        {
+          "id": "dc76760df4",
+          "text": "Đây chính là tỷ lệ nợ xấu của ngân hàng tại cuối kỳ báo cáo"
+        },
+        {
+          "id": "96a7c146e1",
+          "text": "Đây là chi phí trích trong năm"
+        }
+      ],
+      "prompt": "Nhận định nào đúng về tỷ lệ dự phòng trên dư nợ?"
+    },
+    {
+      "correct_option_id": "7144aae3db",
+      "id": "ch10-exam-q23",
+      "options": [
+        {
+          "id": "7144aae3db",
+          "text": "Thừa vốn, phần dư sinh lời thấp hơn cho vay"
+        },
+        {
+          "id": "bc8f28db2c",
+          "text": "Ngân hàng phải vay thêm nhiều trên thị trường liên ngân hàng"
+        },
+        {
+          "id": "46f18e582b",
+          "text": "Chi phí dự phòng tăng mạnh"
+        }
+      ],
+      "prompt": "Huy động tăng nhanh hơn tín dụng nhiều quý thường dẫn đến điều gì?"
+    },
+    {
+      "correct_option_id": "fdc4dc8dd9",
+      "id": "ch10-exam-q24",
+      "options": [
+        {
+          "id": "fdc4dc8dd9",
+          "text": "Dễ đi kèm nới lỏng điều kiện cho vay"
+        },
+        {
+          "id": "2febab1c95",
+          "text": "Làm vốn chủ sở hữu tăng quá nhanh"
+        },
+        {
+          "id": "dada5cb23a",
+          "text": "Làm thu nhập lãi giảm ngay lập tức"
+        }
+      ],
+      "prompt": "Tăng trưởng tín dụng quá nhanh so với mặt bằng chung cần xem kỹ vì sao?"
+    },
+    {
+      "correct_option_id": "d93d5d35e1",
+      "id": "ch10-exam-q25",
+      "options": [
+        {
+          "id": "d93d5d35e1",
+          "text": "LDR"
+        },
+        {
+          "id": "211bf5a886",
+          "text": "CIR"
+        },
+        {
+          "id": "a22d57d688",
+          "text": "Tỷ trọng thu nhập ngoài lãi"
+        }
+      ],
+      "prompt": "Khoảng chênh giữa tăng trưởng tín dụng và huy động ảnh hưởng trực tiếp đến chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "085b4e8a25",
+      "id": "ch10-exam-q26",
+      "options": [
+        {
+          "id": "085b4e8a25",
+          "text": "Khoảng 80% đến 95%"
+        },
+        {
+          "id": "563715ccbb",
+          "text": "Khoảng 30% đến 50%"
+        },
+        {
+          "id": "ff2261e501",
+          "text": "Khoảng 130% đến 150%"
+        }
+      ],
+      "prompt": "Mức LDR đơn giản nào thường được xem là cân bằng, theo tham khảo?"
+    },
+    {
+      "correct_option_id": "c7eb0ec463",
+      "id": "ch10-exam-q27",
+      "options": [
+        {
+          "id": "c7eb0ec463",
+          "text": "Nguồn vốn đang căng dần"
+        },
+        {
+          "id": "1bedd2ede6",
+          "text": "Ngân hàng đang thừa vốn"
+        },
+        {
+          "id": "8b70a20bd5",
+          "text": "Chi phí hoạt động đang giảm"
+        }
+      ],
+      "prompt": "LDR tăng nhiều quý liền thường cho thấy điều gì?"
+    },
+    {
+      "correct_option_id": "cda906c4b0",
+      "id": "ch10-exam-q28",
+      "options": [
+        {
+          "id": "cda906c4b0",
+          "text": "Lãi dự thu có thể đang tăng nhanh"
+        },
+        {
+          "id": "ff3f40e78b",
+          "text": "Ngân hàng đang trích dự phòng nhiều hơn"
+        },
+        {
+          "id": "dfe668b11c",
+          "text": "Ngân hàng đang giảm chi phí vốn"
+        }
+      ],
+      "prompt": "Thu nhập lãi tăng mạnh nhưng tiền lãi thực thu trên lưu chuyển tiền tệ tăng chậm là tín hiệu gì?"
+    },
+    {
+      "correct_option_id": "304e414efa",
+      "id": "ch10-exam-q29",
+      "options": [
+        {
+          "id": "304e414efa",
+          "text": "Khoảng 11 lần"
+        },
+        {
+          "id": "ce25d88eae",
+          "text": "Khoảng 2 lần"
+        },
+        {
+          "id": "4d707bef59",
+          "text": "Khoảng 50 lần"
+        }
+      ],
+      "prompt": "VCSH / Tổng tài sản 9% tương ứng đòn bẩy khoảng bao nhiêu?"
+    },
+    {
+      "correct_option_id": "7516e68fdf",
+      "id": "ch10-exam-q30",
+      "options": [
+        {
+          "id": "7516e68fdf",
+          "text": "Kém bền hơn ROE cao nhờ ROA tốt"
+        },
+        {
+          "id": "c916b1b3e6",
+          "text": "Luôn tốt hơn ROE cao nhờ ROA tốt"
+        },
+        {
+          "id": "dc89ab4103",
+          "text": "Không liên quan đến rủi ro của ngân hàng"
+        }
+      ],
+      "prompt": "ROE cao nhờ đệm vốn mỏng nên được đánh giá thế nào?"
+    }
+  ],
+  "salt": "b0af9cdf64a86be96b8b6cd16b4f4d440e86aa07f2a5a46d378436b53703b747"
+}

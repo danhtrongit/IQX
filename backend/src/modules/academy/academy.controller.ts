@@ -31,6 +31,8 @@ import {
   historyResponseSchema,
   itemResponseSchema,
   lessonIdParamSchema,
+  linkQuerySchema,
+  linkResponseSchema,
   notesResponseSchema,
   notesSaveRequestSchema,
   progressResponseSchema,
@@ -42,6 +44,7 @@ import {
   type AttemptCreateRequest,
   type DraftSaveRequest,
   type HistoryQuery,
+  type LinkQuery,
   type NotesSaveRequest,
   type ScenarioChoiceRequest,
   type SubmitRequest,
@@ -52,10 +55,10 @@ const openApi = (schema: z.ZodType) =>
   z.toJSONSchema(schema, { target: 'openapi-3.0' }) as SchemaObject;
 
 /**
- * Học viện v3.2: 14 chapters (1-5 published), lessons, chapter exams and the optional ch3 practice
- * in one prefix-unlocked chain. Learning is free for every authenticated user; strategy usage is
- * gated elsewhere. The owner always comes from the session: no endpoint accepts a user id, score,
- * pass flag or capability, and no response carries an answer key or explanation.
+ * Học viện v4: 12 chapters, lessons, chapter exams and the optional ch3 practice. Learning is free
+ * for every authenticated user (every item is open, spec §4.1) and no tool is gated by it (§4.2).
+ * The owner always comes from the session: no endpoint accepts a user id, score, pass flag or
+ * capability, and no response carries an answer key or explanation.
  */
 @ApiTags('Academy')
 @UseGuards(AcademyEnabledGuard, ApiAuthGuard)
@@ -78,18 +81,32 @@ export class AcademyController {
   @ApiOperation({
     operationId: 'academyProgress',
     summary:
-      'Server-computed state (passed/open/locked) of every item, course and chapter progress, current item and opened capabilities',
+      'Server-computed state (passed/open; locked only in the sequential access mode) of every item, course and chapter progress, the current item (the one opened last) and the access mode',
   })
   @ApiOkResponse({ schema: openApi(progressResponseSchema) })
   progress(@CurrentUser() user: AuthenticatedUser) {
     return this.academy.progress(user.id);
   }
 
+  @Get('link')
+  @ApiOperation({
+    operationId: 'academyLink',
+    summary:
+      'Deep link to the lesson of a metric (the "Học" button): by metric_key, else exact lesson title, else a title starting with "name ·". Never an error: found=false answers with the lesson the learner was last on',
+  })
+  @ApiOkResponse({ schema: openApi(linkResponseSchema) })
+  link(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query({ schema: linkQuerySchema }) query: LinkQuery,
+  ) {
+    return this.academy.link(user.id, query.metric);
+  }
+
   @Get('lessons/:lessonId')
   @ApiOperation({
     operationId: 'academyLesson',
     summary:
-      'A lesson or practice (typed blocks, chart models, summary, scenario choice) or a chapter exam intro; 403 ACADEMY_ITEM_LOCKED when locked',
+      'A lesson or practice (typed blocks, chart models, summary, scenario choice) or a chapter exam intro; opening it makes it the current lesson; 403 ACADEMY_ITEM_LOCKED only in the sequential access mode',
   })
   @ApiOkResponse({ schema: openApi(itemResponseSchema) })
   lesson(

@@ -102,6 +102,11 @@
       "requestType": "AcademyLessonNotesData",
       "responseType": "AcademyLessonNotesResponses"
     },
+    "GET /api/v2/academy/link": {
+      "operationId": "academyLink",
+      "requestType": "AcademyLinkData",
+      "responseType": "AcademyLinkResponses"
+    },
     "GET /api/v2/academy/progress": {
       "operationId": "academyProgress",
       "requestType": "AcademyProgressData",
@@ -666,6 +671,11 @@
       "operationId": "dashboardCatalog",
       "requestType": "DashboardCatalogData",
       "responseType": "DashboardCatalogResponses"
+    },
+    "GET /api/v2/dashboard/industry/{symbol}": {
+      "operationId": "dashboardIndustry",
+      "requestType": "DashboardIndustryData",
+      "responseType": "DashboardIndustryResponses"
     },
     "GET /api/v2/dashboard/settings": {
       "operationId": "dashboardSettings",
@@ -2277,7 +2287,7 @@
       "requestType": "SaveChartDrawingV2Data",
       "responseType": "SaveChartDrawingV2Responses"
     },
-    "PUT /api/v2/dashboard/settings": {
+    "PUT /api/v2/dashboard/settings/{nganh}": {
       "operationId": "dashboardSaveSettings",
       "requestType": "DashboardSaveSettingsData",
       "responseType": "DashboardSaveSettingsResponses"

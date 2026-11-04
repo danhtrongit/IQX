@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l10",
+  "questions": [
+    {
+      "correct_option_id": "6a60469285",
+      "id": "ch09-l10-q01",
+      "options": [
+        {
+          "id": "6a60469285",
+          "text": "Dòng tiền thuần từ hoạt động kinh doanh"
+        },
+        {
+          "id": "6a6c498709",
+          "text": "Lợi nhuận sau thuế của doanh nghiệp"
+        },
+        {
+          "id": "adaa8aaf3f",
+          "text": "Tổng tiền mặt cuối kỳ trên bảng cân đối"
+        }
+      ],
+      "prompt": "CFO là gì?"
+    },
+    {
+      "correct_option_id": "a026dc45af",
+      "id": "ch09-l10-q02",
+      "options": [
+        {
+          "id": "a026dc45af",
+          "text": "Kinh doanh, đầu tư và tài chính"
+        },
+        {
+          "id": "ddef8864f1",
+          "text": "Doanh thu, chi phí và lợi nhuận"
+        },
+        {
+          "id": "ed71a1db22",
+          "text": "Tài sản, nợ phải trả và vốn chủ"
+        }
+      ],
+      "prompt": "Báo cáo lưu chuyển tiền tệ chia dòng tiền thành những nhóm nào?"
+    },
+    {
+      "correct_option_id": "bbd2606b6a",
+      "id": "ch09-l10-q03",
+      "options": [
+        {
+          "id": "bbd2606b6a",
+          "text": "Doanh thu ghi nhận khi giao hàng, chưa chắc đã thu tiền"
+        },
+        {
+          "id": "a87147c7e3",
+          "text": "Lợi nhuận luôn được tính sau khi trừ cổ tức"
+        },
+        {
+          "id": "ac6b3551ce",
+          "text": "Dòng tiền chỉ tính các giao dịch với ngân hàng"
+        }
+      ],
+      "prompt": "Vì sao lợi nhuận của doanh nghiệp có thể khác dòng tiền từ kinh doanh?"
+    },
+    {
+      "correct_option_id": "87990526e4",
+      "id": "ch09-l10-q04",
+      "options": [
+        {
+          "id": "87990526e4",
+          "text": "CFO chia cho doanh thu"
+        },
+        {
+          "id": "dc6c811667",
+          "text": "CFO chia cho lợi nhuận sau thuế"
+        },
+        {
+          "id": "4d6dbe4e18",
+          "text": "Lợi nhuận sau thuế chia cho doanh thu"
+        }
+      ],
+      "prompt": "CFO Margin được tính như thế nào?"
+    },
+    {
+      "chart_id": "c9l10-rep",
+      "correct_option_id": "4cb2a584aa",
+      "id": "ch09-l10-q05",
+      "options": [
+        {
+          "id": "4cb2a584aa",
+          "text": "CFO cộng dồn 4 quý gần nhất"
+        },
+        {
+          "id": "6056ac16c8",
+          "text": "Doanh thu của từng quý riêng lẻ"
+        },
+        {
+          "id": "92a7e89e06",
+          "text": "Lợi nhuận gộp cộng dồn 4 quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện CFO Margin, các cột bên dưới thể hiện gì?"
+    }
+  ],
+  "salt": "dedafc4d0336b5e33c8efc40f9a20f69c8a106a3abc897c5e7c354cb51a308de"
+}

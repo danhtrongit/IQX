@@ -1,134 +1,83 @@
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
 import { describe, expect, it } from 'vitest';
 
 import {
+  ALL_TOOL_CAPABILITIES,
   AcademyGrantsService,
-  capabilitiesFromCompletions,
 } from '../../src/modules/academy/academy-grants.service.js';
-import { MemoryAcademy, USER, OTHER_USER } from './academy-test-kit.js';
-import { academyV3Fixture, academyV3Source } from './academy-v3-fixture.js';
+import { CURRENT_INDICATOR_IDS } from '../../src/modules/quant/v2/types.js';
+import {
+  SCREENER_METRIC_IDS,
+  loadFundamentalRegistry,
+} from '../../src/modules/screener/screener.registry.js';
+import { MemoryAcademy, OTHER_USER, USER } from './academy-test-kit.js';
+import { academyV4Fixture } from './academy-v4-fixture.js';
 
-const here = dirname(fileURLToPath(import.meta.url));
-const content = academyV3Fixture();
+const content = academyV4Fixture();
 
-type OldLesson = {
-  lesson_key: string;
-  capability_binding: { kind: 'technical' | 'fundamental'; id: string } | null;
-};
-const oldCatalog = JSON.parse(
-  readFileSync(join(here, '../fixtures/academy/catalog-13ch.v1.json'), 'utf8'),
-) as { chapters: Array<{ lessons: OldLesson[] }> };
-const oldLessons = oldCatalog.chapters.flatMap((chapter) => chapter.lessons);
-
-const keys = (lessonKeys: readonly string[]) => lessonKeys.map((lesson_key) => ({ lesson_key }));
-
-describe('academy grants (design §5)', () => {
-  it('keeps every capability of the 13-chapter catalog for a user holding all 71 old keys', () => {
-    expect(oldLessons).toHaveLength(71);
-    const old = new Set(
-      oldLessons.flatMap((lesson) =>
-        lesson.capability_binding
-          ? [
-              `${lesson.capability_binding.kind === 'technical' ? 'indicator' : 'metric'}:${lesson.capability_binding.id}`,
-            ]
-          : [],
-      ),
-    );
-    const next = capabilitiesFromCompletions(content, keys(oldLessons.map((l) => l.lesson_key)));
-    expect([...next].sort()).toEqual([...old].sort());
-    expect([...next].filter((capability) => capability.startsWith('indicator:'))).toHaveLength(16);
-    expect([...next].filter((capability) => capability.startsWith('metric:'))).toHaveLength(42);
-  });
-
-  it('opens exactly the 16 indicators and 33 metrics for a user who passed every v3.3 item', () => {
-    /* Spec v3.3 §4.2: 16 chỉ báo kỹ thuật, 33 chỉ tiêu cơ bản. */
-    const technical = [
-      'bollinger',
-      'cci',
-      'cmf',
-      'donchian',
-      'dmi',
-      'ema',
-      'macd',
-      'ma',
-      'ma_cross',
-      'mfi',
-      'obv',
-      'roc',
-      'rsi',
-      'stochastic',
-      'volume',
-      'williams_r',
-    ];
-    const fundamental = [
-      'asset_turnover',
-      'capex_revenue',
-      'ccc',
-      'cfo_margin',
-      'cfo_profit',
-      'current_ratio',
-      'debt_equity',
-      'eps_cagr3',
-      'eps_growth_stability',
-      'eps_yoy',
-      'ev_ebitda',
-      'fcf_margin',
-      'fcf_positive_streak',
-      'fcf_yield',
-      'gross_margin',
-      'interest_coverage',
-      'net_debt_ebitda',
-      'net_margin',
-      'net_margin_stability',
-      'pb',
-      'pe',
-      'peg',
-      'profit_cagr3',
-      'profit_positive_streak',
-      'profit_yoy',
-      'ps',
-      'revenue_cagr3',
-      'revenue_growth_stability',
-      'revenue_yoy',
-      'roa',
-      'roe',
-      'roic',
-      'roic_stability',
-    ];
-    const expected = [
-      ...technical.map((id) => `indicator:${id}`),
-      ...fundamental.map((id) => `metric:${id}`),
-    ].sort();
-    const all = [...content.items.values()].map((item) => item.lesson_key);
-    expect([...capabilitiesFromCompletions(content, keys(all))].sort()).toEqual(expected);
-    // The reachable set of a learner: every published item grants its own capability.
-    const reachable = new Set([...content.items.values()].flatMap((item) => item.capabilities));
-    expect([...reachable].sort()).toEqual(expected);
-    expect([...content.items.values()].filter((item) => item.capabilities.length)).toHaveLength(49);
-  });
-
-  it('concept, exam, guide and unknown keys open nothing', () => {
+describe('academy grants (spec v4 §4.2: no tool is tied to a lesson)', () => {
+  it('lists every tool capability: the 16 indicators and the 42 screener metrics, sorted', () => {
+    expect(ALL_TOOL_CAPABILITIES).toHaveLength(58);
+    expect([...ALL_TOOL_CAPABILITIES]).toEqual([...ALL_TOOL_CAPABILITIES].sort());
     expect(
-      capabilitiesFromCompletions(
-        content,
-        keys(['concept:hop_luu', 'exam:ch01', 'guide:ch02-l01', 'concept:dca', 'technical:']),
-      ).size,
-    ).toBe(0);
+      ALL_TOOL_CAPABILITIES.filter((capability) => capability.startsWith('indicator:')),
+    ).toEqual(CURRENT_INDICATOR_IDS.map((id) => `indicator:${id}`).sort());
+    expect(ALL_TOOL_CAPABILITIES.filter((capability) => capability.startsWith('metric:'))).toEqual(
+      SCREENER_METRIC_IDS.map((id) => `metric:${id}`).sort(),
+    );
+    expect(Object.isFrozen(ALL_TOOL_CAPABILITIES)).toBe(true);
   });
 
-  it('adds the legacy lesson:* capabilities of legacy holders, per user', async () => {
+  it('grants every capability to a user who completed nothing', async () => {
+    const grants = new AcademyGrantsService(new MemoryAcademy());
+    const granted = await grants.grantedCapabilities(USER);
+    expect([...granted]).toEqual([...ALL_TOOL_CAPABILITIES]);
+    // What each consumer asks for: `indicator:<id>` per registry indicator, `metric:<id>` per screener metric.
+    for (const id of CURRENT_INDICATOR_IDS) expect(granted.has(`indicator:${id}`), id).toBe(true);
+    for (const metric of loadFundamentalRegistry())
+      expect(granted.has(`metric:${metric.id}`), metric.id).toBe(true);
+  });
+
+  it('completions change nothing: a learner who passed everything has the same capabilities', async () => {
     const memory = new MemoryAcademy();
-    memory.complete(USER, ['technical:rsi', 'fundamental:roe', 'concept:dca']);
+    const grants = new AcademyGrantsService(memory);
+    const before = [...(await grants.grantedCapabilities(USER))];
+    memory.complete(
+      USER,
+      [...content.items.values()].map((item) => item.lesson_key),
+    );
+    expect([...(await grants.grantedCapabilities(USER))]).toEqual(before);
+    memory.completionRows = [];
+    memory.complete(USER, ['concept:hop_luu', 'exam:ch01', 'guide:ch02-l01']);
+    expect([...(await grants.grantedCapabilities(USER))]).toEqual(before);
+  });
+
+  it('keeps the legacy lesson:* capabilities of legacy holders (advanced backtest), per user', async () => {
+    const memory = new MemoryAcademy();
     memory.legacyCapabilities.set(USER, ['lesson:ch02-l14']);
-    const grants = new AcademyGrantsService(memory, academyV3Source);
-    expect([...(await grants.grantedCapabilities(USER))]).toEqual([
-      'indicator:rsi',
-      'lesson:ch02-l14',
-      'metric:roe',
-    ]);
-    expect((await grants.grantedCapabilities(OTHER_USER)).size).toBe(0);
+    const grants = new AcademyGrantsService(memory);
+    const holder = await grants.grantedCapabilities(USER);
+    expect(holder.has('lesson:ch02-l14')).toBe(true);
+    expect(holder.size).toBe(ALL_TOOL_CAPABILITIES.length + 1);
+    // A learner without legacy rows never gets a lesson:* capability, whatever they finish.
+    const other = await grants.grantedCapabilities(OTHER_USER);
+    expect([...other].some((capability) => capability.startsWith('lesson:'))).toBe(false);
+    expect(other.size).toBe(ALL_TOOL_CAPABILITIES.length);
+  });
+});
+
+describe('screener registry lesson links follow the v4 catalog', () => {
+  it('points every metric that has a lesson at the v4 lesson whose key is fundamental:<id>', () => {
+    const registry = loadFundamentalRegistry();
+    const withLesson = registry.filter((metric) => metric.lesson_id !== null);
+    expect(withLesson).toHaveLength(33);
+    for (const metric of withLesson) {
+      const lesson = content.itemsByKey.get(`fundamental:${metric.id}`);
+      expect(lesson?.id, metric.id).toBe(metric.lesson_id);
+      expect(lesson?.chapter, metric.id).toBe(metric.chapter);
+      expect(lesson?.metric_key, metric.id).toBe(metric.id);
+    }
+    // The 9 metrics without a lesson are not in the catalog under any key.
+    for (const metric of registry.filter((candidate) => candidate.lesson_id === null))
+      expect(content.itemsByKey.has(`fundamental:${metric.id}`), metric.id).toBe(false);
   });
 });

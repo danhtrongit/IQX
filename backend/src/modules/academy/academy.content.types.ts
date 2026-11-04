@@ -4,11 +4,11 @@ import type {
   CatalogItem,
   LessonFile,
   SequenceItem,
-} from './content/v3/schema.js';
+} from './content/v4/schema.js';
 
 /**
- * Loader output of Học viện v3.3 (design §1.2). `academy.content.ts` implements
- * `buildAcademyContent` / `loadAcademyContent` against these types; the service, grants and the
+ * Loader output of Học viện v4 (design §1.2). `academy.content.ts` implements
+ * `buildAcademyContent` / `loadAcademyContent` against these types; the service, the deep link and the
  * staff progress reader consume exactly these fields.
  */
 
@@ -18,11 +18,6 @@ export interface AcademyItem extends CatalogItem {
   chapter_title: string;
   /** 1..lesson_count for kind 'lesson', else null. */
   position: number | null;
-  /**
-   * `['indicator:<id>']` for a technical unlock, `['metric:<id>']` for a fundamental one,
-   * `[]` when the item unlocks nothing (spec §4.2).
-   */
-  capabilities: string[];
   /** null for chapter exams. `content_version = canonicalHash(file).slice(0, 16)`. */
   lesson: { file: LessonFile; content_version: string } | null;
   /** Private bank. `version = canonicalHash(bankFile)` (salt included, never served). */
@@ -37,14 +32,16 @@ export interface AcademyContent {
   items: ReadonlyMap<string, AcademyItem>;
   /** By lesson_key. */
   itemsByKey: ReadonlyMap<string, AcademyItem>;
-  /** Required lessons of published chapters (87). */
+  /** By `metric_key` (chapter 8-12 lessons, spec v4 §5.1). */
+  itemsByMetricKey: ReadonlyMap<string, AcademyItem>;
+  /** Required lessons of published chapters (116). */
   requiredTotal: number;
   /** lesson_key -> name of keys no longer in the catalog (shop ledger labels). */
   retired: ReadonlyMap<string, string>;
 }
 
 /**
- * Raw parsed JSON of `content/v3`, validated by `buildAcademyContent` (catalog.json,
+ * Raw parsed JSON of `content/v4`, validated by `buildAcademyContent` (catalog.json,
  * lessons/*.vi.json, questions/*.private.json, retired-lessons.json).
  */
 export interface AcademyContentFiles {
@@ -57,11 +54,11 @@ export interface AcademyContentFiles {
 /** Pure; throws on any inconsistency between catalog, lesson files and banks. */
 export type BuildAcademyContent = (files: AcademyContentFiles) => AcademyContent;
 
-/** Memoized reader of `content/v3` (the default `ACADEMY_CONTENT` provider). */
+/** Memoized reader of `content/v4` (the default `ACADEMY_CONTENT` provider). */
 export type AcademyContentSource = () => AcademyContent;
 
 /**
  * Injection token of the content source (`AcademyContentSource`). Consumers outside the request
- * path (staff progress reader) inject it so unit tests can pass `test/unit/academy-v3-fixture.ts`.
+ * path (staff progress reader) inject it so unit tests can pass `test/unit/academy-v4-fixture.ts`.
  */
 export const ACADEMY_CONTENT = Symbol('ACADEMY_CONTENT');

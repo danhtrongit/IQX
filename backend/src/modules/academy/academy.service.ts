@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   Inject,
   Injectable,
+  Logger,
   NotFoundException,
   Optional,
   UnprocessableEntityException,
@@ -16,8 +17,6 @@ import {
   LESSON_REWARD_PORT,
   type LessonRewardPort,
 } from '../../platform/ports/lesson-reward.port.js';
-import { sortedCapabilities } from './academy-grants.service.js';
-import { INDICATOR_CAPABILITY_PREFIX, METRIC_CAPABILITY_PREFIX } from './academy.capabilities.js';
 import { loadAcademyContent } from './academy.content.js';
 import type { AcademyContent, AcademyContentSource, AcademyItem } from './academy.content.types.js';
 import {
@@ -30,6 +29,7 @@ import {
   type RandomInt,
 } from './academy.grading.js';
 import { canonicalHash } from './academy.hash.js';
+import { ACADEMY_ACCESS_MODE, type AcademyAccessModePort } from './academy.ports.js';
 import {
   AcademyRepository,
   type AcademyStore,
@@ -38,6 +38,7 @@ import {
   type AttemptStats,
   type CompletionRow,
   type DraftRow,
+  type LastOpenedRow,
   type NotesPatch,
   type PracticeNotesRow,
 } from './academy.repository.js';
@@ -52,6 +53,7 @@ import type {
   HistoryQuery,
   HistoryResponse,
   ItemResponse,
+  LinkResponse,
   NotesResponse,
   NotesSaveRequest,
   ProgressResponse,
@@ -64,24 +66,29 @@ import type {
 } from './academy.schemas.js';
 import {
   currentItemId,
+  DEFAULT_ACADEMY_ACCESS_MODE,
   interactiveKeysOf,
   itemStates,
   nextRequiredItemId,
   NOTES_TOTAL_MAX_BYTES,
   scenarioOf,
+  type AcademyAccessMode,
   type BankQuestion,
   type ItemState,
   type ScenarioBlock,
-} from './content/v3/schema.js';
+} from './content/v4/schema.js';
 
 /**
- * Học viện v3.2 (design §2-§4): 14 chapters (1-5 published) of lessons, a chapter exam per
- * chapter and the optional chapter 3 practice, in one prefix-unlocked chain. Every state is
- * computed here from the learner's completions; quizzes are graded server-side against private
- * banks and only the score is ever returned (no answer key, no explanation, no review).
+ * Học viện v4 (spec §3-§6): 12 chapters of lessons, a chapter exam per chapter and the optional
+ * chapter 3 practice. Learning is free (spec §4.1): every item is open whatever the learner
+ * passed; the v3.3 prefix rule survives only as the `sequential` access mode a per-user setting
+ * can switch on later (`ACADEMY_ACCESS_MODE`, default `free`). Every state is computed here from
+ * the learner's completions; quizzes are graded server-side against private banks and only the
+ * score is ever returned (no answer key, no explanation, no review).
  */
 @Injectable()
 export class AcademyService implements OnModuleInit {
+  private readonly logger = new Logger(AcademyService.name);
   protected readonly content: AcademyContentSource = loadAcademyContent;
   /** Source of the per-attempt question and option shuffles (overridden by seeded tests). */
   protected readonly random: RandomInt = secureRandomInt;
@@ -90,6 +97,8 @@ export class AcademyService implements OnModuleInit {
     @Inject(AcademyRepository) private readonly repository: AcademyStoreProvider,
     /** Learning-coin hook (Shop module); absent or failing hooks never change completion rules. */
     @Optional() @Inject(LESSON_REWARD_PORT) private readonly rewards?: LessonRewardPort,
+    /** Per-learner access mode (v4.1 hook); without a provider everybody is in the default `free` mode. */
+    @Optional() @Inject(ACADEMY_ACCESS_MODE) private readonly accessModes?: AcademyAccessModePort,
   ) {}
 
   /** Content is validated at boot: broken content stops the API, not a learner's request. */
@@ -122,27 +131,78 @@ export class AcademyService implements OnModuleInit {
     };
   }
 
-  /** Server-computed states of every item; `course_done` counts passed required lessons only. */
+  /**
+   * Server-computed states of every item; `course_done` counts passed required lessons only. The
+   * current item ("bài đang học") is the one the learner opened last.
+   */
   async progress(userId: string): Promise<ProgressResponse> {
     const content = this.content();
     const store = this.repository.store();
-    const [completions, stats] = await Promise.all([
+    const [completions, stats, mode, lastOpened] = await Promise.all([
       store.completions(userId),
       store.attemptStatsAll(userId, content.catalog.catalog_version),
+      this.modeOf(userId),
+      store.lastOpened(userId),
     ]);
-    return buildProgress(content, completions, stats);
+    return buildProgress(content, completions, stats, mode, lastOpened);
+  }
+
+  /**
+   * Deep link (spec §6): the lesson that teaches a metric, by `metric_key`, else by exact lesson
+   * title, else by a title starting with `name + " ·"`. Never an error: when nothing matches the
+   * answer is `found: false` with the lesson the learner was last on, so the front-end opens that.
+   */
+  async link(userId: string, metric: string): Promise<LinkResponse> {
+    const content = this.content();
+    const hit = resolveMetricLink(content, metric);
+    if (hit)
+      return {
+        found: true,
+        metric,
+        item_id: hit.item.id,
+        lesson_key: hit.item.lesson_key,
+        metric_key: hit.item.metric_key,
+        chapter: hit.item.chapter,
+        title: hit.item.name,
+        matched_by: hit.matchedBy,
+        url: itemUrl(hit.item.id),
+      };
+    const store = this.repository.store();
+    const [completions, lastOpened] = await Promise.all([
+      store.completions(userId),
+      store.lastOpened(userId),
+    ]);
+    const current = currentOf(
+      content,
+      itemStates(content.sequence, new Set(completions.map((row) => row.lesson_key))),
+      lastOpened,
+    );
+    return {
+      found: false,
+      metric,
+      item_id: current,
+      lesson_key: null,
+      metric_key: null,
+      chapter: null,
+      title: null,
+      matched_by: null,
+      url: current ? itemUrl(current) : ITEMS_URL,
+    };
   }
 
   /**
    * A lesson or practice (typed blocks, chart models, summary, scenario choice) or an exam intro.
-   * 403 ACADEMY_ITEM_LOCKED while an earlier required item is not passed.
+   * Every item is open in the default `free` mode; 403 ACADEMY_ITEM_LOCKED only in `sequential`
+   * mode while an earlier required item is not passed. Opening an item remembers it as the
+   * learner's current lesson.
    */
   async lesson(userId: string, lessonId: string): Promise<ItemResponse> {
     const content = this.content();
     const item = requireItem(content, lessonId);
     const store = this.repository.store();
-    const completions = await store.completions(userId);
-    const state = stateOf(content, completions, item);
+    const [completions, mode] = await Promise.all([store.completions(userId), this.modeOf(userId)]);
+    const state = stateOf(content, completions, item, mode);
+    await this.rememberOpened(store, userId, content, item);
     const completion = completions.find((row) => row.lesson_key === item.lesson_key) ?? null;
     const stats = await store.attemptStats(
       userId,
@@ -201,7 +261,7 @@ export class AcademyService implements OnModuleInit {
     const content = this.content();
     const item = requireItem(content, lessonId);
     const store = this.repository.store();
-    stateOf(content, await store.completions(userId), item);
+    await this.assertOpen(userId, store, content, item);
     const scenario = item.has_scenario && item.lesson ? scenarioOf(item.lesson.file) : null;
     if (!scenario)
       throw new UnprocessableEntityException({
@@ -230,7 +290,7 @@ export class AcademyService implements OnModuleInit {
     const item = requireItem(content, lessonId);
     notesKeys(item);
     const store = this.repository.store();
-    stateOf(content, await store.completions(userId), item);
+    await this.assertOpen(userId, store, content, item);
     return notesView(item, await store.practiceNotes(userId, item.lesson_key));
   }
 
@@ -246,7 +306,7 @@ export class AcademyService implements OnModuleInit {
     const content = this.content();
     const item = requireItem(content, lessonId);
     const keys = notesKeys(item);
-    stateOf(content, await this.repository.store().completions(userId), item);
+    await this.assertOpen(userId, this.repository.store(), content, item);
 
     const patch: NotesPatch = {
       ...(input.texts ? { texts: input.texts } : {}),
@@ -301,7 +361,7 @@ export class AcademyService implements OnModuleInit {
     if (existing) return this.replayAttempt(content, existing, input);
 
     const item = requireItem(content, input.lesson_id);
-    stateOf(content, await store.completions(userId), item);
+    await this.assertOpen(userId, store, content, item);
     if (item.has_scenario && !(await store.scenarioChoice(userId, item.lesson_key)))
       throw new ForbiddenException({
         code: 'ACADEMY_SCENARIO_REQUIRED',
@@ -529,6 +589,56 @@ export class AcademyService implements OnModuleInit {
     });
   }
 
+  /** The learner's access mode; a failing resolver falls back to the default `free` mode. */
+  private async modeOf(userId: string): Promise<AcademyAccessMode> {
+    if (!this.accessModes) return DEFAULT_ACADEMY_ACCESS_MODE;
+    try {
+      return await this.accessModes.accessModeOf(userId);
+    } catch (error) {
+      this.logger.warn(
+        `access mode lookup failed, using ${DEFAULT_ACADEMY_ACCESS_MODE}: ${String(error)}`,
+      );
+      return DEFAULT_ACADEMY_ACCESS_MODE;
+    }
+  }
+
+  /**
+   * 403 ACADEMY_ITEM_LOCKED when the item is locked for this learner. `free` mode never locks, so it
+   * reads nothing; `sequential` mode needs the learner's completions.
+   */
+  private async assertOpen(
+    userId: string,
+    store: AcademyStore,
+    content: AcademyContent,
+    item: AcademyItem,
+  ): Promise<void> {
+    if ((await this.modeOf(userId)) === DEFAULT_ACADEMY_ACCESS_MODE) return;
+    stateOf(content, await store.completions(userId), item, 'sequential');
+  }
+
+  /**
+   * Remembers the required item the learner opened (their "bài đang học", spec §4.1). Best effort:
+   * a failed write never fails the page. The optional practice does not replace the current lesson.
+   */
+  private async rememberOpened(
+    store: AcademyStore,
+    userId: string,
+    content: AcademyContent,
+    item: AcademyItem,
+  ): Promise<void> {
+    if (item.optional) return;
+    try {
+      await store.recordOpened({
+        user_id: userId,
+        lesson_key: item.lesson_key,
+        lesson_id: item.id,
+        catalog_version: content.catalog.catalog_version,
+      });
+    } catch (error) {
+      this.logger.warn(`could not record the opened item ${item.id}: ${String(error)}`);
+    }
+  }
+
   /** Calls the optional reward hook in the caller's transaction and keeps its outcome with the evidence. */
   private async creditReward(
     store: AcademyStore,
@@ -582,7 +692,6 @@ export class AcademyService implements OnModuleInit {
     const score = attempt.score ?? 0;
     const passed = attempt.passed === true;
     const created = completion !== null && completion.attempt_id === attempt.id;
-    const newlyGranted = created && item ? [...item.capabilities] : [];
     return {
       attempt_id: attempt.id,
       lesson_id: attempt.lesson_id,
@@ -600,9 +709,6 @@ export class AcademyService implements OnModuleInit {
         newly_completed: created,
         completed_at: completion?.completed_at.toISOString() ?? null,
       },
-      granted_capabilities: sortedCapabilities(content, completions),
-      newly_granted: newlyGranted,
-      unlocked_labels: passed && item?.unlock ? [item.unlock.label] : [],
       chapter_completed: item && passed && item.kind === 'chapter_exam' ? item.chapter : null,
       next_item_id: item && passed ? nextRequiredItemId(content.sequence, item.id) : null,
       progress_revision: completions.length,
@@ -643,6 +749,50 @@ function scenarioHash(scenario: ScenarioBlock): string {
   return hash;
 }
 
+/** Front-end location of the Học viện tool; `/hoc-vien/<item id>` opens one item (the workspace redirect keeps the id). */
+const ITEMS_URL = '/hoc-vien';
+const itemUrl = (itemId: string) => `${ITEMS_URL}/${itemId}`;
+
+/** Case-, accent-form- and whitespace-insensitive comparison key of a metric or lesson name. */
+const nameKey = (text: string) => text.normalize('NFC').replace(/\s+/g, ' ').trim().toLowerCase();
+
+/**
+ * Finds the lesson of a metric (spec §6): `metric_key` first, then a lesson title equal to the
+ * name, then a title that starts with `name + " ·"`. The dashboard metric lessons (chapters 8-12)
+ * are searched before every other lesson, in catalog order.
+ */
+function resolveMetricLink(
+  content: AcademyContent,
+  metric: string,
+): { item: AcademyItem; matchedBy: LinkResponse['matched_by'] } | null {
+  const query = nameKey(metric);
+  if (!query) return null;
+  const byKey = content.itemsByMetricKey.get(query);
+  if (byKey) return { item: byKey, matchedBy: 'metric_key' };
+  const lessons = [...content.items.values()].filter((item) => item.kind === 'lesson');
+  const ordered = [
+    ...lessons.filter((item) => item.metric_key !== null),
+    ...lessons.filter((item) => item.metric_key === null),
+  ];
+  const exact = ordered.find((item) => nameKey(item.name) === query);
+  if (exact) return { item: exact, matchedBy: 'title' };
+  const prefixed = ordered.find((item) => nameKey(item.name).startsWith(`${query} ·`));
+  return prefixed ? { item: prefixed, matchedBy: 'title_prefix' } : null;
+}
+
+/**
+ * "Bài đang học": the item opened last (found by its durable lesson key, so a pick made under an
+ * older catalog still resolves), else the first required item still to pass.
+ */
+function currentOf(
+  content: AcademyContent,
+  states: ReadonlyMap<string, ItemState>,
+  lastOpened: Pick<LastOpenedRow, 'lesson_key'> | null,
+): string | null {
+  const opened = lastOpened ? content.itemsByKey.get(lastOpened.lesson_key) : undefined;
+  return currentItemId(content.sequence, states, opened?.id ?? null);
+}
+
 /** Catalog metadata of one item, field by field (an item also holds its private bank). */
 export function catalogItemView(item: AcademyItem): CatalogItemResponse {
   return {
@@ -655,32 +805,26 @@ export function catalogItemView(item: AcademyItem): CatalogItemResponse {
     name: item.name,
     optional: item.optional,
     question_count: item.question_count,
-    unlock: item.unlock
-      ? {
-          kind: item.unlock.kind,
-          id: item.unlock.id,
-          label: item.unlock.label,
-          capability_id: `${
-            item.unlock.kind === 'technical'
-              ? INDICATOR_CAPABILITY_PREFIX
-              : METRIC_CAPABILITY_PREFIX
-          }${item.unlock.id}`,
-        }
-      : null,
+    metric_key: item.metric_key,
     has_scenario: item.has_scenario,
     intro: item.intro,
     content_version: item.lesson?.content_version ?? null,
   };
 }
 
-/** Progress of one learner: states from completions (any catalog), stats of the current catalog. */
+/**
+ * Progress of one learner: states from completions (any catalog), stats of the current catalog.
+ * `current_item_id` is the item opened last, else the first required item still to pass.
+ */
 export function buildProgress(
   content: AcademyContent,
   completions: readonly CompletionRow[],
   stats: ReadonlyMap<string, AttemptStats> = new Map(),
+  mode: AcademyAccessMode = DEFAULT_ACADEMY_ACCESS_MODE,
+  lastOpened: Pick<LastOpenedRow, 'lesson_key'> | null = null,
 ): ProgressResponse {
   const byKey = new Map(completions.map((row) => [row.lesson_key, row]));
-  const states = itemStates(content.sequence, new Set(byKey.keys()));
+  const states = itemStates(content.sequence, new Set(byKey.keys()), mode);
   const passed = (id: string) => states.get(id) === 'passed';
   const items = content.sequence.map((entry) => {
     const row = byKey.get(entry.lesson_key);
@@ -712,10 +856,10 @@ export function buildProgress(
     progress_revision: completions.length,
     course_done: chapters.reduce((sum, chapter) => sum + chapter.done, 0),
     course_total: content.requiredTotal,
-    current_item_id: currentItemId(content.sequence, states),
+    current_item_id: currentOf(content, states, lastOpened),
+    access_mode: mode,
     items,
     chapters,
-    granted_capabilities: sortedCapabilities(content, completions),
   };
 }
 
@@ -842,15 +986,20 @@ function requireItem(content: AcademyContent, itemId: string): AcademyItem {
   return item;
 }
 
-/** The item's state for this learner; 403 ACADEMY_ITEM_LOCKED when locked. */
+/**
+ * The item's state for this learner in the given access mode; 403 ACADEMY_ITEM_LOCKED when locked
+ * (only possible in `sequential` mode: `free` never locks).
+ */
 function stateOf(
   content: AcademyContent,
   completions: readonly Pick<CompletionRow, 'lesson_key'>[],
   item: AcademyItem,
+  mode: AcademyAccessMode,
 ): ItemState {
   const state =
-    itemStates(content.sequence, new Set(completions.map((row) => row.lesson_key))).get(item.id) ??
-    'locked';
+    itemStates(content.sequence, new Set(completions.map((row) => row.lesson_key)), mode).get(
+      item.id,
+    ) ?? 'locked';
   if (state === 'locked')
     throw new ForbiddenException({
       code: 'ACADEMY_ITEM_LOCKED',

@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-l01",
+  "questions": [
+    {
+      "correct_option_id": "af821db6bc",
+      "id": "ch12-l01-q01",
+      "options": [
+        {
+          "id": "af821db6bc",
+          "text": "Phí thu từ hợp đồng công ty trực tiếp bán cho khách hàng"
+        },
+        {
+          "id": "7acc05fe8d",
+          "text": "Phí còn lại sau khi trừ phần nhượng tái bảo hiểm"
+        },
+        {
+          "id": "5bec9a1ede",
+          "text": "Lãi thu được từ tiền gửi ngân hàng"
+        }
+      ],
+      "prompt": "Doanh thu phí bảo hiểm gốc là gì?"
+    },
+    {
+      "correct_option_id": "13792033a5",
+      "id": "ch12-l01-q02",
+      "options": [
+        {
+          "id": "13792033a5",
+          "text": "Cùng quý năm trước"
+        },
+        {
+          "id": "f77e1c753e",
+          "text": "Quý liền trước"
+        },
+        {
+          "id": "235d3674d8",
+          "text": "Quý đầu tiên của năm"
+        }
+      ],
+      "prompt": "Tăng trưởng phí gốc thường được so với kỳ nào?"
+    },
+    {
+      "correct_option_id": "b1f42ff737",
+      "id": "ch12-l01-q03",
+      "options": [
+        {
+          "id": "b1f42ff737",
+          "text": "Phí bảo hiểm có tính mùa vụ"
+        },
+        {
+          "id": "88e81939f2",
+          "text": "Quý liền trước chưa được kiểm toán"
+        },
+        {
+          "id": "0f622a6c41",
+          "text": "Phí gốc chỉ công bố mỗi năm một lần"
+        }
+      ],
+      "prompt": "Vì sao không nên so phí gốc với quý liền trước?"
+    },
+    {
+      "correct_option_id": "59f14ad61a",
+      "id": "ch12-l01-q04",
+      "options": [
+        {
+          "id": "59f14ad61a",
+          "text": "Công ty hạ phí để giành khách"
+        },
+        {
+          "id": "6606d5744e",
+          "text": "Công ty định phí rất sát rủi ro"
+        },
+        {
+          "id": "59041f2901",
+          "text": "Công ty đã nhượng hết rủi ro"
+        }
+      ],
+      "prompt": "Phí tăng nhanh kèm tỷ lệ bồi thường tăng vọt thường là dấu hiệu gì?"
+    },
+    {
+      "chart_id": "c12l1-rep",
+      "correct_option_id": "5ff6a0fcf0",
+      "id": "ch12-l01-q05",
+      "options": [
+        {
+          "id": "5ff6a0fcf0",
+          "text": "Phí gốc quý này và phí gốc cùng kỳ năm trước"
+        },
+        {
+          "id": "c9e3ab3962",
+          "text": "Phí gốc và phí nhượng tái bảo hiểm"
+        },
+        {
+          "id": "858656acd4",
+          "text": "Bồi thường thuần và phí thuần"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện, hai cột cạnh nhau ở phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "de48964addf93aa942d5ba7d196b61d1a10c35bac34a0778424595e9db0158ed"
+}

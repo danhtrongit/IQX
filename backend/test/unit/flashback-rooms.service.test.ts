@@ -390,37 +390,87 @@ describe('Flashback v2 · Phòng chơi: bắt đầu, xu cược, kết thúc', 
     expect(code(await rejection(h.service.next('a', match.match_id)))).toBe('MATCH_ENDED');
   });
 
-  it('% người khác không vượt quá phiên mình đang xem; % đổi khi mua bán và khi sang phiên', async () => {
+  it('v2.1 §6.2: trong lúc chơi state chỉ trả phiên và trạng thái xong, không trả tài sản hay % của ai; hết ván mới có %', async () => {
     const h = setup();
     const room = await roomOf(h, ['a', 'b']);
     const { match } = await h.service.startRoom('a', room.id);
     await h.service.placeOrder('b', match.match_id, { side: 'buy', qty: 100 });
-    const afterBuy = await h.service.state('b', match.match_id);
-    const me = afterBuy.players.find((p) => p.is_me)!;
-    expect(me.pnl_pct).toBeLessThan(0); // phí mua làm % âm ngay
     await playTo(h, 'b', match.match_id, 20);
     await playTo(h, 'a', match.match_id, 5);
-    const seenByA = (await h.service.state('a', match.match_id)).players.find(
-      (p) => p.user_id === 'b',
-    )!;
-    const seenByB = (await h.service.state('b', match.match_id)).players.find(
-      (p) => p.user_id === 'b',
-    )!;
-    const fee = 1_500n; // 0,15% của 100 × 10.000
-    const navAt = (step: number) =>
-      CASH - 100n * 10_000n - fee + 100n * BigInt(10_000 + step * 100);
-    expect(seenByA.pnl_pct).toBeCloseTo(Number(navAt(5) - CASH) / Number(CASH), 12);
-    expect(seenByB.pnl_pct).toBeCloseTo(Number(navAt(20) - CASH) / Number(CASH), 12);
-    // a đã ở phiên 25 thì thấy b (đang ở 20) tại phiên 20.
-    await playTo(h, 'a', match.match_id, 25);
-    const later = (await h.service.state('a', match.match_id)).players.find(
-      (p) => p.user_id === 'b',
-    )!;
-    expect(later.pnl_pct).toBeCloseTo(Number(navAt(20) - CASH) / Number(CASH), 12);
+
+    // Cả hai người xem đều thấy cùng một thứ: phiên của từng người, chưa ai xong, không có %.
+    for (const viewer of ['a', 'b']) {
+      const state = await h.service.state(viewer, match.match_id);
+      expect(state.status).toBe('playing');
+      expect(
+        state.players.map((p) => [p.user_id, p.is_me, p.step, p.finished, p.pnl_pct, p.pnl_percent]),
+      ).toEqual([
+        ['a', viewer === 'a', 5, false, null, null],
+        ['b', viewer === 'b', 20, false, null, null],
+      ]);
+      expect(JSON.stringify(state)).not.toMatch(/total_assets|final_nav|nav_by_step|pnl_pct":[-\d]/);
+    }
+    // Ảnh chụp ván (dùng khi vào lại) cũng không lộ % của ai trong danh sách người chơi.
+    const snapshot = await h.service.matchSnapshot('a', match.match_id);
+    expect(snapshot.players.map((p) => p.pnl_pct)).toEqual([null, null]);
+    // Tổng tài sản của chính mình vẫn có ở `me` (ô Tổng tài sản).
+    expect(Number(snapshot.me.total_assets)).toBe(Number(CASH));
+
+    // Người bấm Hoàn thành thì mọi người thấy "đã xong"; % vẫn ẩn tới khi cả ván kết thúc.
+    await playTo(h, 'b', match.match_id, 30);
+    await h.service.finish('b', match.match_id);
+    const afterFinish = await h.service.state('a', match.match_id);
+    expect(afterFinish.status).toBe('playing');
+    expect(afterFinish.playing_count).toBe(1);
+    expect(afterFinish.players.map((p) => [p.user_id, p.finished, p.pnl_pct])).toEqual([
+      ['a', false, null],
+      ['b', true, null],
+    ]);
+
     // Đồng hồ chung giống nhau ở mọi người.
     expect((await h.service.state('a', match.match_id)).ends_at).toBe(
       (await h.service.state('b', match.match_id)).ends_at,
     );
+
+    // Người cuối cùng xong thì ván kết thúc: lúc này mới có % cuối của mọi người.
+    await playTo(h, 'a', match.match_id, 30);
+    await h.service.finish('a', match.match_id);
+    const ended = await h.service.state('a', match.match_id);
+    expect(ended.status).toBe('ended');
+    const fee = 1_500n; // 0,15% của 100 × 10.000
+    const finalNav = CASH - 100n * 10_000n - fee + 100n * 13_000n; // giá phiên 30 = 13.000
+    const bySeen = Object.fromEntries(ended.players.map((p) => [p.user_id, p]));
+    expect(bySeen.a!.pnl_pct).toBe(0);
+    expect(bySeen.b!.pnl_pct).toBeCloseTo(Number(finalNav - CASH) / Number(CASH), 12);
+    expect(bySeen.b!.pnl_percent).toBeCloseTo(Number(bySeen.b!.pnl_pct) * 100, 12);
+  });
+
+  it('v2.1 §1: phòng 30 người trừ cược, chạy hết ván, trả xu đúng cho cả 30 người', async () => {
+    const h = setup();
+    const ids = Array.from({ length: 30 }, (_, index) => `u${String(index).padStart(2, '0')}`);
+    const room = await roomOf(h, ids, { max_players: 30, stake_xu: 10, play_bars: 30, view_bars: 60 });
+    expect(room.max_players).toBe(30);
+    expect((await h.service.getRoom('u29', room.id)).members).toHaveLength(30);
+    const { match } = await h.service.startRoom('u00', room.id);
+    expect(match.pot_xu).toBe(300);
+    expect(match.players).toHaveLength(30);
+    for (const id of ids) expect(h.repository.balanceOf(id)).toBe(990);
+
+    // u07 mua 100 cổ phiếu ở phiên 0 (giá đi lên) nên là người thắng duy nhất.
+    await h.service.placeOrder('u07', match.match_id, { side: 'buy', qty: 100 });
+    for (const id of ids) {
+      await playTo(h, id, match.match_id, 30);
+      await h.service.finish(id, match.match_id);
+    }
+    const result = await h.service.result('u00', match.match_id);
+    expect(result.rows).toHaveLength(30);
+    expect(result.rows[0]).toMatchObject({ rank: 1, is_winner: true, win_xu: 300 });
+    expect(h.repository.balanceOf('u07')).toBe(1290);
+    expect(h.repository.balanceOf('u00')).toBe(990);
+    expect(h.repository.balanceOf('u29')).toBe(990);
+    const ledger = h.repository.state.ledger;
+    expect(ledger.filter((row) => row.kind === 'flashback_stake')).toHaveLength(30);
+    expect(ledger.filter((row) => row.kind === 'flashback_win')).toHaveLength(1);
   });
 
   it('không có mã, ngày hay nến tương lai trong mọi phản hồi trước khi ván kết thúc', async () => {
@@ -451,10 +501,12 @@ describe('Flashback v2 · Phòng chơi: bắt đầu, xu cược, kết thúc', 
     // b đang ở phiên 0: không có nến phiên chơi nào trong dữ liệu của b.
     const snapshotB = responses[2] as { played_bars: unknown[]; history_bars: unknown[] };
     expect(snapshotB.played_bars).toHaveLength(0);
-    // a đã hoàn thành (mua ở phiên 1) nhưng b còn ở phiên 0: b thấy % của a tại phiên 0.
-    const stateB = responses[6] as { players: { user_id: string; pnl_pct: number }[] };
+    // a đã hoàn thành nhưng ván còn chạy: b chỉ thấy a "đã xong", không thấy % của a (v2.1 §6.2).
+    const stateB = responses[6] as {
+      players: { user_id: string; finished: boolean; pnl_pct: number | null }[];
+    };
     const aSeenByB = stateB.players.find((p) => p.user_id === 'a')!;
-    expect(aSeenByB.pnl_pct).toBe(0);
+    expect(aSeenByB).toMatchObject({ finished: true, pnl_pct: null });
 
     await playTo(h, 'b', matchId, 30);
     await h.service.finish('b', matchId);

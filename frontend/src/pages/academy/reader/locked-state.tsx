@@ -2,7 +2,7 @@ import { Lock } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 
-/** A locked item (403 ACADEMY_ITEM_LOCKED, or a deep link past the learner's progress). */
+/** A locked item (403 ACADEMY_ITEM_LOCKED): only an account in `sequential` mode (spec v4.1) can meet it. */
 export function LockedState({ currentItemId, onOpen }: { currentItemId: string | null; onOpen: (itemId: string) => void }) {
   return (
     <section

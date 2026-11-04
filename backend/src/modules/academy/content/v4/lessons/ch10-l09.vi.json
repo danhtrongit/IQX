@@ -1,0 +1,471 @@
+{
+  "chapter": 10,
+  "charts": {
+    "c10l9-g1": {
+      "alt": "LDR đơn giản bằng cho vay khách hàng 1.709 nghìn tỷ đồng chia cho tiền gửi khách hàng 1.697 nghìn tỷ đồng, bằng 100,7%: cho vay nhiều hơn tiền gửi",
+      "edges": [
+        {
+          "from": "cho-vay",
+          "label": "÷",
+          "to": "tien-gui"
+        },
+        {
+          "from": "tien-gui",
+          "label": "=",
+          "to": "ldr"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "cho-vay",
+          "sub": "Bảng cân đối Q2/26",
+          "title": "Cho vay khách hàng",
+          "tone": "p1",
+          "value": "1.709 nghìn tỷ"
+        },
+        {
+          "id": "tien-gui",
+          "sub": "Bảng cân đối Q2/26",
+          "title": "Tiền gửi khách hàng",
+          "tone": "warn",
+          "value": "1.697 nghìn tỷ"
+        },
+        {
+          "emph": true,
+          "id": "ldr",
+          "sub": "Cho vay nhiều hơn tiền gửi khách hàng",
+          "title": "LDR đơn giản",
+          "tone": "neg",
+          "value": "100,7%"
+        }
+      ]
+    },
+    "c10l9-g2": {
+      "alt": "Vùng tham khảo của LDR đơn giản cho ngân hàng mẫu: thấp từ 60% đến 80%, vừa phải từ 80% đến 95%, cao từ 95% đến 120%. Q2/25 ở 90,4% (vừa phải), Q2/26 ở 100,7% (vùng cao). Ngưỡng chỉ để tham khảo, khác LDR theo quy định của Ngân hàng Nhà nước",
+      "domain": [
+        60,
+        120
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Q2/25",
+          "side": "a",
+          "sub": "90,4%",
+          "tone": "price",
+          "v": 90.4
+        },
+        {
+          "label": "Q2/26",
+          "side": "a",
+          "sub": "100,7%",
+          "tone": "warn",
+          "v": 100.7
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "60%",
+          "v": 60
+        },
+        {
+          "label": "70%",
+          "v": 70
+        },
+        {
+          "label": "80%",
+          "v": 80
+        },
+        {
+          "label": "90%",
+          "v": 90
+        },
+        {
+          "label": "100%",
+          "v": 100
+        },
+        {
+          "label": "110%",
+          "v": 110
+        },
+        {
+          "label": "120%",
+          "v": 120
+        }
+      ],
+      "zones": [
+        {
+          "from": 60,
+          "label": "Thấp",
+          "to": 80,
+          "tone": "p1"
+        },
+        {
+          "from": 80,
+          "label": "Vừa phải",
+          "to": 95,
+          "tone": "pos"
+        },
+        {
+          "from": 95,
+          "label": "Cao",
+          "to": 120,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c10l9-g3": {
+      "items": [
+        {
+          "model": {
+            "bounds": [
+              0,
+              120
+            ],
+            "caption_tone": "p1",
+            "caption_value": "Còn 25 đồng tiền gửi chưa cho vay",
+            "kind": "category",
+            "labels": [
+              "Tiền gửi",
+              "Cho vay"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Số dư trên 100 đồng tiền gửi",
+                "per_bar_tones": [
+                  "warn",
+                  "p1"
+                ],
+                "tone": "warn",
+                "values": [
+                  100,
+                  75
+                ]
+              }
+            ],
+            "threshold": {
+              "label": "100",
+              "value": 100
+            },
+            "unit": "đồng",
+            "value_labels": "all"
+          },
+          "title": "Ngân hàng A · LDR 75%",
+          "tone": "p1"
+        },
+        {
+          "model": {
+            "bounds": [
+              0,
+              120
+            ],
+            "caption_tone": "neg",
+            "caption_value": "Thiếu 10 đồng, phải vay nguồn khác",
+            "kind": "category",
+            "labels": [
+              "Tiền gửi",
+              "Cho vay"
+            ],
+            "mode": "grouped",
+            "series": [
+              {
+                "name": "Số dư trên 100 đồng tiền gửi",
+                "per_bar_tones": [
+                  "warn",
+                  "p1"
+                ],
+                "tone": "warn",
+                "values": [
+                  100,
+                  110
+                ]
+              }
+            ],
+            "threshold": {
+              "label": "100",
+              "value": 100
+            },
+            "unit": "đồng",
+            "value_labels": "all"
+          },
+          "title": "Ngân hàng B · LDR 110%",
+          "tone": "neg"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c10l9-rep": {
+      "alt": "LDR: 100,7%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Cho vay / Tiền gửi khách hàng",
+            "v": [
+              93.013,
+              91.654,
+              93.195,
+              90.354,
+              89.098,
+              94.64,
+              93.175,
+              100.725
+            ]
+          }
+        ],
+        "name": "LDR",
+        "sub": {
+          "series": [
+            {
+              "name": "Cho vay khách hàng",
+              "v": [
+                1343.006,
+                1384.212,
+                1441.416,
+                1450.261,
+                1530.668,
+                1545.706,
+                1678.282,
+                1709.127
+              ]
+            },
+            {
+              "name": "Tiền gửi khách hàng",
+              "v": [
+                1443.888,
+                1510.262,
+                1546.674,
+                1605.09,
+                1717.953,
+                1633.243,
+                1801.222,
+                1696.82
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "nghìn tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch10-l09",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "LDR cho biết ngân hàng đã đem bao nhiêu phần tiền gửi của khách hàng đi cho vay. Đây là thước đo nhanh về mức độ căng của nguồn vốn và thanh khoản.",
+  "lesson_key": "fundamental:ldr",
+  "order": 9,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l9-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>LDR</b> (Loan to Deposit Ratio) trong bài này được tính đơn giản: <b>cho vay khách hàng</b> chia cho <b>tiền gửi của khách hàng</b>, cả hai lấy từ bảng cân đối kế toán cuối quý.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Đây là <b>cách tính đơn giản từ bảng cân đối</b>, khác với LDR theo quy định của Ngân hàng Nhà nước. LDR theo quy định có cách tính riêng về các khoản được đưa vào tử số và mẫu số, nên hai con số không giống nhau.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "LDR là gì"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l9-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Còn nhiều tiền gửi chưa cho vay. Thanh khoản dồi dào nhưng tiền chưa sinh lời tốt.",
+              "title": "Thấp"
+            },
+            {
+              "text": "Phần lớn tiền gửi đã được cho vay, vẫn còn khoảng dự trữ.",
+              "title": "Vừa phải"
+            },
+            {
+              "text": "Cho vay xấp xỉ hoặc vượt tiền gửi, phải dựa vào nguồn vốn khác.",
+              "title": "Cao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Ba vùng của LDR"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c10l9-rep",
+          "title": "LDR",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Cho vay khách hàng chia tiền gửi khách hàng cuối mỗi quý, đơn vị %.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hai cột mỗi quý: cho vay khách hàng và tiền gửi khách hàng, đơn vị nghìn tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột cho vay cao hơn cột tiền gửi thì đường LDR vượt mức 100%.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "LDR đơn giản khoảng 80% đến 95% và ổn định. Đây là mức tham khảo thường gặp ở các ngân hàng Việt Nam.",
+              "title": "Cân bằng",
+              "tone": "pos"
+            },
+            {
+              "text": "LDR vượt 100% hoặc tăng nhanh. Ngân hàng đang cho vay nhiều hơn số tiền gửi khách hàng.",
+              "title": "Căng",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "LDR quá thấp cũng không hẳn tốt. Tiền gửi nằm yên hoặc gửi lại ngân hàng khác thường sinh lời thấp, làm NIM giảm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c10l9-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "LDR thấp cho thấy ngân hàng còn khả năng tăng cho vay mà chưa cần thêm vốn.",
+              "title": "Xem dư địa cho vay"
+            },
+            {
+              "text": "LDR tăng nhiều quý liền là dấu hiệu nguồn vốn đang căng dần.",
+              "title": "Theo dõi xu hướng"
+            },
+            {
+              "text": "LDR cao mà vay liên ngân hàng cũng tăng nhanh là phụ thuộc nhiều vào vốn ngắn hạn.",
+              "title": "Đọc cùng nguồn vốn khác"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "items": [
+            {
+              "term": "Cho vay khách hàng Q2/26",
+              "text": "1.709 nghìn tỷ đồng."
+            },
+            {
+              "term": "Tiền gửi khách hàng Q2/26",
+              "text": "1.697 nghìn tỷ đồng."
+            },
+            {
+              "term": "LDR đơn giản",
+              "text": "1.709 ÷ 1.697 ≈ 100,7%."
+            },
+            {
+              "term": "So với một năm trước",
+              "text": "LDR Q2/25 là 90,4%. Mức tăng đến từ tín dụng tăng 17,9% trong khi tiền gửi chỉ tăng 5,7%."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "LDR đơn giản dùng số trên bảng cân đối, không thay cho LDR theo quy định của Ngân hàng Nhà nước.",
+              "title": "Đồng nhất với LDR quy định"
+            },
+            {
+              "text": "LDR thấp an toàn hơn nhưng có thể làm biên lãi giảm.",
+              "title": "Coi LDR thấp luôn là tốt"
+            },
+            {
+              "text": "Tiền gửi cuối quý có thể tăng giảm đột ngột. Xem xu hướng nhiều quý.",
+              "title": "Chỉ xem một quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>LDR đơn giản</b> = cho vay khách hàng ÷ <b>tiền gửi khách hàng</b>, lấy từ bảng cân đối.",
+    "Cách tính này <b>khác LDR theo quy định</b> của Ngân hàng Nhà nước.",
+    "Mức tham khảo <b>khoảng 80% đến 95%</b>, vượt 100% là nguồn vốn căng.",
+    "LDR thay đổi theo <b>khoảng chênh</b> giữa tăng trưởng tín dụng và huy động."
+  ],
+  "title": "LDR · tỷ lệ cho vay trên tiền gửi"
+}

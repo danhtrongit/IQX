@@ -1,24 +1,85 @@
 import { describe, expect, it } from "vitest"
 
-import { AXIS_HEIGHT, CHART_TOP, LEGEND_ROW, PANE_GAP, PLOT_HEIGHT, axisTicks, chartLayout } from "./flashback-chart-layout"
+import {
+  AXIS_HEIGHT,
+  CHART_HEIGHT_MIN,
+  CHART_HEIGHT_MOBILE,
+  CHART_TOP,
+  LEGEND_ROW,
+  PANE_GAP,
+  PLOT_TOTAL_MIN,
+  PLOT_WEIGHT,
+  axisTicks,
+  chartLayout,
+  chartTotalHeight,
+} from "./flashback-chart-layout"
 
-const base = { narrow: false, overlayCount: 0, volumeCount: 0, indicatorKeys: [] as string[] }
+const base = { narrow: false, overlayCount: 0, volumeCount: 0, indicatorKeys: [] as string[], totalHeight: 600 }
+const keys = (count: number) => Array.from({ length: count }, (_, index) => `k${index}`)
 
-describe("chartLayout: chiều cao các khung (spec §6.4)", () => {
-  it("chiều cao phần vẽ cố định: chỉ báo 130, giá 300, khối lượng 90 trên máy tính", () => {
-    expect(PLOT_HEIGHT.desktop).toEqual({ indicator: 130, price: 300, volume: 90 })
-    const layout = chartLayout({ ...base, indicatorKeys: ["a"] })
-    expect(layout.panes.map((pane) => [pane.kind, pane.height])).toEqual([
-      ["price", 300],
-      ["volume", 90],
-      ["indicator", 130],
-    ])
+describe("chartTotalHeight: tổng chiều cao biểu đồ (spec v2.1 §8)", () => {
+  it("điện thoại: cao cố định 380px, không phụ thuộc chiều cao màn hình", () => {
+    expect(CHART_HEIGHT_MOBILE).toBe(380)
+    expect(chartTotalHeight({ fixed: true, available: 900 })).toBe(380)
+    expect(chartTotalHeight({ fixed: true, available: null })).toBe(380)
   })
 
-  it("trên điện thoại: chỉ báo 110, giá 240, khối lượng 70", () => {
-    expect(PLOT_HEIGHT.mobile).toEqual({ indicator: 110, price: 240, volume: 70 })
-    const layout = chartLayout({ ...base, narrow: true, indicatorKeys: ["a"] })
-    expect(layout.panes.map((pane) => pane.height)).toEqual([240, 70, 110])
+  it("máy tính: lấy hết chiều cao còn trống, không dưới 300px", () => {
+    expect(CHART_HEIGHT_MIN).toBe(300)
+    expect(chartTotalHeight({ fixed: false, available: 612.7 })).toBe(612)
+    expect(chartTotalHeight({ fixed: false, available: 120 })).toBe(300)
+    expect(chartTotalHeight({ fixed: false, available: -40 })).toBe(300)
+    expect(chartTotalHeight({ fixed: false, available: null })).toBe(300)
+  })
+})
+
+describe("chartLayout: chiều cao các khung (spec v2.1 §8)", () => {
+  it("tỷ lệ phần vẽ: giá 3,2 · khối lượng 1 · mỗi chỉ báo riêng 1,15", () => {
+    expect(PLOT_WEIGHT).toEqual({ price: 3.2, volume: 1, indicator: 1.15 })
+    const layout = chartLayout({ ...base, totalHeight: 900, indicatorKeys: keys(2) })
+    const [price, volume, first, second] = layout.panes.map((pane) => pane.height)
+    expect(price / volume).toBeCloseTo(3.2, 1)
+    expect(first / volume).toBeCloseTo(1.15, 1)
+    expect(second).toBe(first)
+  })
+
+  it("tổng chiều cao biểu đồ đúng bằng chiều cao cho trước, với mọi số chỉ báo", () => {
+    for (const count of [0, 1, 2, 3, 5]) {
+      const layout = chartLayout({ ...base, totalHeight: 560, indicatorKeys: keys(count) })
+      expect(layout.height).toBe(560)
+    }
+    const mobile = chartLayout({ ...base, narrow: true, totalHeight: CHART_HEIGHT_MOBILE, indicatorKeys: keys(3) })
+    expect(mobile.height).toBe(380)
+    const [price, volume, indicator] = mobile.panes.map((pane) => pane.height)
+    expect(price / volume).toBeCloseTo(3.2, 0)
+    expect(indicator / volume).toBeCloseTo(1.15, 0)
+  })
+
+  it("thêm chỉ báo thì các khung chia lại, biểu đồ không dài thêm và ô giá bị thu nhỏ", () => {
+    const priceHeights: number[] = []
+    for (let count = 0; count <= 5; count += 1) {
+      const layout = chartLayout({ ...base, totalHeight: 560, indicatorKeys: keys(count) })
+      expect(layout.height).toBe(560)
+      priceHeights.push(layout.panes[0].height)
+    }
+    for (let index = 1; index < priceHeights.length; index += 1) {
+      expect(priceHeights[index]).toBeLessThan(priceHeights[index - 1])
+    }
+  })
+
+  it("máy tính 1440×900 bật 5 chỉ báo riêng: biểu đồ vẫn vừa chiều cao còn trống, mọi khung có chỗ vẽ", () => {
+    const available = 480
+    const layout = chartLayout({ ...base, totalHeight: chartTotalHeight({ fixed: false, available }), indicatorKeys: keys(5) })
+    expect(layout.height).toBe(available)
+    expect(layout.panes).toHaveLength(7)
+    for (const pane of layout.panes) expect(pane.height).toBeGreaterThan(0)
+  })
+
+  it("quá nhiều chỉ báo thì tổng phần vẽ không dưới mức tối thiểu: biểu đồ dài thêm chứ không bị bóp", () => {
+    const layout = chartLayout({ ...base, totalHeight: 300, indicatorKeys: keys(12) })
+    const plotTotal = layout.panes.reduce((sum, pane) => sum + pane.height, 0)
+    expect(plotTotal).toBe(PLOT_TOTAL_MIN)
+    expect(layout.height).toBeGreaterThan(300)
   })
 
   it("mỗi khung có dải chú giải riêng nằm trên phần vẽ, không đè lên đường vẽ", () => {
@@ -46,20 +107,6 @@ describe("chartLayout: chiều cao các khung (spec §6.4)", () => {
     }
     const last = layout.panes[layout.panes.length - 1]
     expect(layout.height).toBe(last.top + last.height + AXIS_HEIGHT)
-  })
-
-  it("thêm chỉ báo thì biểu đồ dài thêm, các khung không bao giờ bị ép nhỏ lại", () => {
-    const heights: number[] = []
-    for (let count = 0; count <= 6; count += 1) {
-      const layout = chartLayout({ ...base, indicatorKeys: Array.from({ length: count }, (_, index) => `k${index}`) })
-      heights.push(layout.height)
-      expect(layout.panes.filter((pane) => pane.kind === "indicator").every((pane) => pane.height === 130)).toBe(true)
-      expect(layout.panes[0].height).toBe(300)
-      expect(layout.panes[1].height).toBe(90)
-    }
-    for (let index = 1; index < heights.length; index += 1) {
-      expect(heights[index] - heights[index - 1]).toBe(130 + 24 + 4 + PANE_GAP)
-    }
   })
 
   it("khoá mỗi khung theo khoá của chỉ báo", () => {

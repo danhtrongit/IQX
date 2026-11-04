@@ -1,0 +1,548 @@
+{
+  "chapter": 12,
+  "charts": {
+    "c12l1-g1": {
+      "alt": "Tăng trưởng phí bảo hiểm gốc: phí gốc Q2/26 là 3.255 tỷ chia phí gốc Q2/25 là 2.933 tỷ rồi trừ 1, bằng tăng 11,0% so với cùng kỳ",
+      "edges": [
+        {
+          "from": "phi-q2-26",
+          "label": "÷",
+          "to": "phi-q2-25"
+        },
+        {
+          "from": "phi-q2-25",
+          "to": "tang-truong"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "phi-q2-26",
+          "sub": "Quý này",
+          "title": "Phí gốc Q2/26",
+          "tone": "p1",
+          "value": "3.255 tỷ"
+        },
+        {
+          "id": "phi-q2-25",
+          "sub": "Cùng quý năm trước",
+          "title": "Phí gốc Q2/25",
+          "tone": "warn",
+          "value": "2.933 tỷ"
+        },
+        {
+          "id": "tang-truong",
+          "sub": "3.255 ÷ 2.933 − 1 · so với cùng kỳ",
+          "title": "Tăng trưởng",
+          "tone": "pos",
+          "value": "+11,0%"
+        }
+      ]
+    },
+    "c12l1-g2": {
+      "alt": "Phí bảo hiểm gốc 8 quý từ Q3/24 đến Q2/26 có tính mùa vụ. Q2/26 đạt 3.255 tỷ, tăng 11,0% so với cùng kỳ Q2/25 là 2.933 tỷ nhưng giảm 5,6% so với quý trước Q1/26 là 3.449 tỷ",
+      "axes": {
+        "x": {
+          "ticks": [
+            {
+              "label": "Q3/24",
+              "v": 0
+            },
+            {
+              "label": "Q4/24",
+              "v": 1
+            },
+            {
+              "label": "Q1/25",
+              "v": 2
+            },
+            {
+              "label": "Q2/25",
+              "v": 3
+            },
+            {
+              "label": "Q3/25",
+              "v": 4
+            },
+            {
+              "label": "Q4/25",
+              "v": 5
+            },
+            {
+              "label": "Q1/26",
+              "v": 6
+            },
+            {
+              "label": "Q2/26",
+              "v": 7
+            }
+          ]
+        },
+        "y": {
+          "ticks": [
+            {
+              "label": "0",
+              "v": 0
+            },
+            {
+              "label": "1.000",
+              "v": 1000
+            },
+            {
+              "label": "2.000",
+              "v": 2000
+            },
+            {
+              "label": "3.000",
+              "v": 3000
+            },
+            {
+              "label": "4.000",
+              "v": 4000
+            }
+          ]
+        }
+      },
+      "domain": {
+        "x": [
+          -0.5,
+          7.5
+        ],
+        "y": [
+          0,
+          5700
+        ]
+      },
+      "kind": "schematic",
+      "layers": [
+        {
+          "base": 0,
+          "h": [
+            2929,
+            3277,
+            3114,
+            2933,
+            3306,
+            3656,
+            3449,
+            3255
+          ],
+          "t": "bars",
+          "tones": [
+            "p3",
+            "p3",
+            "p3",
+            "p1",
+            "p3",
+            "p3",
+            "p1",
+            "p1"
+          ],
+          "x": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ]
+        },
+        {
+          "label": "+11,0% so với cùng kỳ",
+          "t": "bracket",
+          "tone": "pos",
+          "x": [
+            3,
+            7
+          ],
+          "y": 5100
+        },
+        {
+          "label": "−5,6% so với quý trước",
+          "t": "bracket",
+          "tone": "neg",
+          "x": [
+            6,
+            7
+          ],
+          "y": 4400
+        }
+      ]
+    },
+    "c12l1-g3": {
+      "items": [
+        {
+          "model": {
+            "alt": "Công ty A có phí tăng 25% nhưng tỷ lệ bồi thường lên 72%: tăng nhờ hạ phí nên bồi thường tăng vọt",
+            "brackets": [
+              {
+                "from": 0,
+                "label": "Tăng nhờ hạ phí, bồi thường tăng vọt",
+                "row": 1,
+                "to": 100,
+                "tone": "neg"
+              }
+            ],
+            "kind": "segment_bar",
+            "max": 100,
+            "rows": [
+              {
+                "label": "Tăng trưởng phí",
+                "segments": [
+                  {
+                    "tone": "p1",
+                    "value": 25
+                  }
+                ],
+                "total": {
+                  "text": "+25%"
+                }
+              },
+              {
+                "label": "Tỷ lệ bồi thường",
+                "segments": [
+                  {
+                    "tone": "p5",
+                    "value": 72
+                  }
+                ],
+                "total": {
+                  "text": "72%"
+                }
+              }
+            ],
+            "unit": "%"
+          },
+          "title": "Công ty A · phí tăng nhanh",
+          "tone": "neg"
+        },
+        {
+          "model": {
+            "alt": "Công ty B có phí tăng 11% và tỷ lệ bồi thường 54%: tăng vừa phải và giữ được chất lượng",
+            "brackets": [
+              {
+                "from": 0,
+                "label": "Tăng vừa phải, giữ được chất lượng",
+                "row": 1,
+                "to": 100,
+                "tone": "pos"
+              }
+            ],
+            "kind": "segment_bar",
+            "max": 100,
+            "rows": [
+              {
+                "label": "Tăng trưởng phí",
+                "segments": [
+                  {
+                    "tone": "p1",
+                    "value": 11
+                  }
+                ],
+                "total": {
+                  "text": "+11%"
+                }
+              },
+              {
+                "label": "Tỷ lệ bồi thường",
+                "segments": [
+                  {
+                    "tone": "p5",
+                    "value": 54
+                  }
+                ],
+                "total": {
+                  "text": "54%"
+                }
+              }
+            ],
+            "unit": "%"
+          },
+          "title": "Công ty B · phí tăng đều",
+          "tone": "pos"
+        }
+      ],
+      "kind": "compare",
+      "layout": "row"
+    },
+    "c12l1-rep": {
+      "alt": "Tăng trưởng doanh thu phí bảo hiểm gốc: 11,0%",
+      "chart": {
+        "kind": "A",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tăng trưởng so với cùng kỳ",
+            "v": [
+              10.953,
+              12.325,
+              11.696,
+              11.731,
+              12.849,
+              11.562,
+              10.749,
+              10.971
+            ]
+          }
+        ],
+        "name": "Tăng trưởng doanh thu phí bảo hiểm gốc",
+        "sub": {
+          "series": [
+            {
+              "name": "Quý này",
+              "v": [
+                2929.431,
+                3276.722,
+                3114.201,
+                2933.163,
+                3305.827,
+                3655.581,
+                3448.959,
+                3254.969
+              ]
+            },
+            {
+              "name": "Cùng kỳ năm trước",
+              "v": [
+                2640.241,
+                2917.167,
+                2788.115,
+                2625.201,
+                2929.431,
+                3276.722,
+                3114.201,
+                2933.163
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch12-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Doanh thu phí bảo hiểm gốc là số tiền khách hàng trả cho các hợp đồng công ty trực tiếp bán ra. Tốc độ tăng của khoản này cho biết công ty đang mở rộng kinh doanh nhanh hay chậm.",
+  "lesson_key": "fundamental:gwp_growth",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l1-g1",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Phí bảo hiểm gốc</b> là phí thu từ hợp đồng công ty trực tiếp ký với khách hàng, chưa trừ phần chuyển cho nhà tái bảo hiểm. Số liệu lấy ở dòng <b>doanh thu phí bảo hiểm gốc</b> trên <b>báo cáo kết quả kinh doanh</b>.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tăng trưởng được tính bằng cách so phí gốc của quý này với <b>cùng quý năm trước</b>. Mức +11,0% nghĩa là quý này công ty thu phí nhiều hơn 11,0% so với cùng kỳ.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Tăng trưởng doanh thu phí bảo hiểm gốc là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Phí bảo hiểm có tính <b>mùa vụ</b>. Quý cuối năm thường cao vì doanh nghiệp gia hạn hợp đồng và mua bảo hiểm cho năm mới. So với quý liền trước dễ cho kết luận sai.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l1-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Q2/26 so với Q2/25 loại bỏ được ảnh hưởng mùa vụ.",
+              "title": "So cùng kỳ"
+            },
+            {
+              "text": "Q2/26 thấp hơn Q1/26 nhưng không có nghĩa là kinh doanh đi xuống.",
+              "title": "So quý liền trước"
+            },
+            {
+              "text": "Phí gốc phản ánh sức bán, chưa bị ảnh hưởng bởi quyết định nhượng tái bảo hiểm.",
+              "title": "Dùng phí gốc"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Vì sao so với cùng kỳ"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c12l1-rep",
+          "title": "Tăng trưởng doanh thu phí bảo hiểm gốc",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tốc độ tăng phí gốc của từng quý so với cùng quý năm trước.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Hai cột cạnh nhau: phí gốc quý này và phí gốc cùng kỳ năm trước, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột quý này cao hơn cột cùng kỳ là phí đang tăng. Khoảng cách càng rộng, tăng trưởng càng nhanh.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Tăng đều 10-15% mỗi năm, bằng hoặc nhỉnh hơn mức chung của ngành, tỷ lệ bồi thường không xấu đi. Mức tham khảo ở Việt Nam.",
+              "title": "Tăng trưởng tốt",
+              "tone": "pos"
+            },
+            {
+              "text": "Phí giảm nhiều quý liên tiếp, hoặc tăng đột biến kèm tỷ lệ bồi thường tăng vọt do hạ phí để giành khách.",
+              "title": "Tăng trưởng đáng lo",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Phí tăng nhanh chưa chắc là tốt. Công ty có thể bán rẻ để tăng doanh thu, rồi phải trả bồi thường lớn ở các quý sau.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c12l1-g3",
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tăng trưởng ổn định qua 6-8 quý đáng tin hơn một quý tăng vọt.",
+              "title": "Xem nhiều quý liên tiếp"
+            },
+            {
+              "text": "Phí tăng mà tỷ lệ bồi thường giữ được mới là tăng trưởng có chất lượng.",
+              "title": "Đi kèm tỷ lệ bồi thường"
+            },
+            {
+              "text": "So công ty phi nhân thọ với phi nhân thọ, nhân thọ với nhân thọ.",
+              "title": "So trong cùng nhóm"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty bảo hiểm mẫu có số liệu từ báo cáo kết quả kinh doanh như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "items": [
+            {
+              "term": "Phí gốc Q2/26",
+              "text": "3.255 tỷ đồng."
+            },
+            {
+              "term": "Phí gốc Q2/25",
+              "text": "2.933 tỷ đồng."
+            },
+            {
+              "term": "Tăng trưởng",
+              "text": "3.255 ÷ 2.933 − 1 ≈ +11,0%."
+            },
+            {
+              "term": "Nhìn 8 quý",
+              "text": "Tăng trưởng dao động trong khoảng 10,7% đến 12,8%, đều và không có quý đột biến. Phí gốc 4 quý đạt 13.665 tỷ đồng."
+            }
+          ],
+          "type": "definitions"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Phí bảo hiểm có mùa vụ, so quý liền trước dễ thấy tăng giảm giả.",
+              "title": "So với quý liền trước"
+            },
+            {
+              "text": "Doanh thu tăng nhờ hạ phí sẽ quay lại thành bồi thường cao.",
+              "title": "Chỉ nhìn doanh thu"
+            },
+            {
+              "text": "Phí thuần đã trừ phần nhượng tái bảo hiểm nên thấp hơn phí gốc.",
+              "title": "Nhầm phí gốc với phí thuần"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Tăng trưởng = phí gốc quý này ÷ phí gốc <b>cùng quý năm trước</b> − 1.",
+    "Lấy dòng <b>doanh thu phí bảo hiểm gốc</b> trên báo cáo kết quả kinh doanh.",
+    "Tăng <b>đều 10-15% mỗi năm</b> là mức tham khảo ổn định ở Việt Nam.",
+    "Luôn đọc cùng <b>tỷ lệ bồi thường</b> để biết tăng trưởng có chất lượng."
+  ],
+  "title": "Tăng trưởng doanh thu phí bảo hiểm gốc · tốc độ bán bảo hiểm"
+}

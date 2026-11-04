@@ -1,0 +1,465 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l4-g1": {
+      "alt": "Dư nợ cho vay trên vốn chủ sở hữu bằng 19.060 tỷ chia 29.588 tỷ, bằng 0,64 lần: 100 đồng vốn chủ đang cho vay 64 đồng",
+      "edges": [
+        {
+          "from": "loans",
+          "label": "chia",
+          "to": "equity"
+        },
+        {
+          "from": "equity",
+          "label": "bằng",
+          "to": "ratio"
+        }
+      ],
+      "kind": "flow",
+      "layout": "row",
+      "nodes": [
+        {
+          "id": "loans",
+          "sub": "Cuối Q2/26",
+          "title": "Dư nợ cho vay",
+          "tone": "p1",
+          "value": "19.060 tỷ"
+        },
+        {
+          "id": "equity",
+          "sub": "Cuối Q2/26",
+          "title": "Vốn chủ sở hữu",
+          "tone": "warn",
+          "value": "29.588 tỷ"
+        },
+        {
+          "emph": true,
+          "id": "ratio",
+          "sub": "100 đồng vốn chủ đang cho vay 64 đồng",
+          "title": "Dư nợ / VCSH",
+          "tone": "pos",
+          "value": "0,64 lần"
+        }
+      ]
+    },
+    "c11l4-g2": {
+      "alt": "Mức tham khảo của dư nợ cho vay trên vốn chủ sở hữu, tính bằng lần: dưới 0,5 là thận trọng, từ 0,5 đến 1 vừa phải, từ 1 đến 1,5 cao, từ 1,5 đến 2 rất cao. Quý 2 năm 2026 ở 0,64 lần, quý 3 năm 2024 ở 0,99 lần. Càng gần giới hạn pháp lý, công ty càng ít dư địa để cho vay thêm",
+      "domain": [
+        0,
+        2
+      ],
+      "kind": "scale",
+      "markers": [
+        {
+          "label": "Q2/26 · 0,64",
+          "side": "a",
+          "tone": "pos",
+          "v": 0.64
+        },
+        {
+          "label": "Q3/24 · 0,99",
+          "side": "b",
+          "tone": "warn",
+          "v": 0.99
+        }
+      ],
+      "orientation": "h",
+      "ticks": [
+        {
+          "label": "0,0",
+          "v": 0
+        },
+        {
+          "label": "0,5",
+          "v": 0.5
+        },
+        {
+          "label": "1,0",
+          "v": 1
+        },
+        {
+          "label": "1,5",
+          "v": 1.5
+        },
+        {
+          "label": "2,0 lần",
+          "v": 2
+        }
+      ],
+      "zones": [
+        {
+          "from": 0,
+          "label": "Thận trọng",
+          "to": 0.5,
+          "tone": "p1"
+        },
+        {
+          "from": 0.5,
+          "label": "Vừa phải",
+          "to": 1,
+          "tone": "pos"
+        },
+        {
+          "from": 1,
+          "label": "Cao",
+          "to": 1.5,
+          "tone": "warn"
+        },
+        {
+          "from": 1.5,
+          "label": "Rất cao",
+          "to": 2,
+          "tone": "neg"
+        }
+      ]
+    },
+    "c11l4-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q2/26"
+      ],
+      "mode": "grouped",
+      "series": [
+        {
+          "name": "Dư nợ cho vay",
+          "tone": "p1",
+          "values": [
+            24.7,
+            19.1
+          ]
+        },
+        {
+          "name": "Vốn chủ sở hữu",
+          "tone": "p5",
+          "values": [
+            24.9,
+            29.6
+          ]
+        }
+      ],
+      "sublabels": [
+        "Tỷ lệ 0,99 lần",
+        "Tỷ lệ 0,64 lần"
+      ],
+      "unit": "nghìn tỷ",
+      "value_labels": "all"
+    },
+    "c11l4-rep": {
+      "alt": "Dư nợ cho vay / VCSH: 0,64 lần",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Dư nợ cho vay / VCSH",
+            "v": [
+              0.991,
+              0.915,
+              0.821,
+              0.727,
+              0.652,
+              0.61,
+              0.607,
+              0.644
+            ]
+          }
+        ],
+        "name": "Dư nợ cho vay / VCSH",
+        "sub": {
+          "series": [
+            {
+              "name": "Dư nợ cho vay",
+              "v": [
+                24667.439,
+                23347.338,
+                21473.685,
+                19499.879,
+                17920.164,
+                17168.731,
+                17527.221,
+                19060.143
+              ]
+            },
+            {
+              "name": "Vốn chủ sở hữu",
+              "v": [
+                24890.981,
+                25513.255,
+                26151.087,
+                26804.864,
+                27474.985,
+                28161.86,
+                28865.906,
+                29587.554
+              ]
+            }
+          ],
+          "type": "grouped",
+          "unit": "tỷ đồng"
+        },
+        "unit": "lần"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l04",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Dư nợ cho vay / VCSH cho biết công ty chứng khoán đang cho vay margin gấp bao nhiêu lần vốn chủ sở hữu. Tỷ lệ này đo mức tận dụng vốn và cả rủi ro của mảng cho vay.",
+  "lesson_key": "fundamental:margin_loan_to_equity",
+  "order": 4,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l4-g1",
+          "type": "chart"
+        },
+        {
+          "text": "Lấy <b>các khoản cho vay</b> chia cho <b>vốn chủ sở hữu</b>, cả hai đều là số cuối quý trên <b>bảng cân đối kế toán</b>. <b>VCSH</b> là viết tắt của vốn chủ sở hữu.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Tỷ lệ 0,64 lần nghĩa là mỗi 100 đồng vốn chủ đang tương ứng với 64 đồng cho vay.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Dư nợ cho vay / VCSH là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Pháp luật giới hạn tổng dư nợ cho vay margin theo một bội số của vốn chủ sở hữu. Tỷ lệ càng gần giới hạn, công ty càng ít khả năng cho vay thêm.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l4-g2",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Còn nhiều dư địa cho vay khi thị trường sôi động trở lại.",
+              "title": "Tỷ lệ thấp"
+            },
+            {
+              "text": "Vốn được dùng hiệu quả, rủi ro trong tầm kiểm soát.",
+              "title": "Tỷ lệ vừa phải"
+            },
+            {
+              "text": "Ít dư địa, thường phải vay thêm nợ, rủi ro lớn khi giá giảm mạnh.",
+              "title": "Tỷ lệ cao"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s2",
+      "title": "Giới hạn và dư địa"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l4-rep",
+          "title": "Dư nợ cho vay / VCSH",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Dư nợ cho vay chia vốn chủ sở hữu, đơn vị lần.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Dư nợ cho vay cuối quý, đơn vị tỷ đồng.",
+              "title": "Cột bên trái mỗi quý"
+            },
+            {
+              "text": "Vốn chủ sở hữu cuối quý, đơn vị tỷ đồng.",
+              "title": "Cột bên phải mỗi quý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Khoảng 0,5 đến 1,5 lần (tham khảo), dư nợ và vốn chủ cùng tăng.",
+              "title": "Mức vừa phải",
+              "tone": "pos"
+            },
+            {
+              "text": "Trên 1,5 lần và tăng nhanh, công ty dựa nhiều vào nợ vay để cho vay margin.",
+              "title": "Mức cần chú ý",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Tỷ lệ giảm có thể vì dư nợ giảm, vì vốn chủ tăng, hoặc cả hai. Cần nhìn cả hai cột.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l4-g3",
+          "legend": [
+            {
+              "label": "Dư nợ cho vay (nghìn tỷ)",
+              "tone": "p1"
+            },
+            {
+              "label": "Vốn chủ sở hữu (nghìn tỷ)",
+              "tone": "p5"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ thấp cho thấy công ty còn chỗ để mở rộng cho vay.",
+              "title": "Đo dư địa tăng trưởng"
+            },
+            {
+              "text": "Tỷ lệ tăng nhanh cho thấy công ty đẩy mạnh cho vay.",
+              "title": "Theo dõi khẩu vị rủi ro"
+            },
+            {
+              "text": "Hai tỷ lệ thường đi cùng nhau vì nợ vay tài trợ cho vay margin.",
+              "title": "Đọc cùng Nợ vay / VCSH"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu có số liệu cuối quý như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Quý"
+            },
+            {
+              "label": "Dư nợ cho vay"
+            },
+            {
+              "label": "Vốn chủ sở hữu"
+            },
+            {
+              "label": "Tỷ lệ"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Q3/24",
+                "24.667",
+                "24.891",
+                "0,99 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q4/25",
+                "17.169",
+                "28.162",
+                "0,61 lần"
+              ]
+            },
+            {
+              "cells": [
+                "Q2/26",
+                "19.060",
+                "29.588",
+                {
+                  "rating": "good",
+                  "text": "0,64 lần"
+                }
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Vốn chủ tăng đều trong khi dư nợ giảm, nên tỷ lệ giảm từ 0,99 xuống 0,61 lần. Từ Q1/26, dư nợ tăng trở lại kéo tỷ lệ lên 0,64 lần.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ lệ giảm vì dư nợ co lại khác hẳn với tỷ lệ giảm vì vốn chủ tăng.",
+              "title": "Chỉ nhìn tỷ lệ"
+            },
+            {
+              "text": "Tỷ lệ cao làm thu lãi lớn nhưng rủi ro mất vốn cũng lớn.",
+              "title": "Coi càng cao càng tốt"
+            },
+            {
+              "text": "Gần giới hạn, công ty khó tăng dư nợ dù nhu cầu vay cao.",
+              "title": "Quên giới hạn pháp lý"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "<b>Dư nợ cho vay / VCSH</b> = các khoản cho vay ÷ vốn chủ sở hữu, số cuối quý.",
+    "Cả hai dòng lấy từ <b>bảng cân đối kế toán</b>.",
+    "Mức <b>0,5 đến 1,5 lần</b> thường gặp, ghi nhận như tham khảo.",
+    "Pháp luật <b>giới hạn</b> dư nợ margin theo bội số vốn chủ."
+  ],
+  "title": "Dư nợ cho vay / VCSH · mức dùng vốn cho margin"
+}

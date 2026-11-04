@@ -1,0 +1,103 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch09-l02",
+  "questions": [
+    {
+      "correct_option_id": "47ba0ae7a4",
+      "id": "ch09-l02-q01",
+      "options": [
+        {
+          "id": "47ba0ae7a4",
+          "text": "EBIT nhân với (1 − thuế suất)"
+        },
+        {
+          "id": "96032cf393",
+          "text": "Lợi nhuận sau thuế cộng khấu hao"
+        },
+        {
+          "id": "6a1e094c01",
+          "text": "Doanh thu trừ giá vốn hàng bán"
+        }
+      ],
+      "prompt": "NOPAT trong công thức ROIC là gì?"
+    },
+    {
+      "correct_option_id": "535cccab13",
+      "id": "ch09-l02-q02",
+      "options": [
+        {
+          "id": "535cccab13",
+          "text": "Vốn chủ cộng nợ vay trừ tiền mặt"
+        },
+        {
+          "id": "2114fc617d",
+          "text": "Tổng tài sản trừ đi vốn chủ sở hữu bình quân"
+        },
+        {
+          "id": "63639bc030",
+          "text": "Vốn chủ cộng tiền mặt trừ nợ vay"
+        }
+      ],
+      "prompt": "Vốn đầu tư trong ROIC được tính thế nào?"
+    },
+    {
+      "correct_option_id": "fe5b3dae12",
+      "id": "ch09-l02-q03",
+      "options": [
+        {
+          "id": "fe5b3dae12",
+          "text": "Doanh nghiệp đang tạo ra giá trị"
+        },
+        {
+          "id": "f27ebbd792",
+          "text": "Doanh nghiệp đang phá hủy giá trị"
+        },
+        {
+          "id": "c7e0f7ea20",
+          "text": "Doanh nghiệp không cần vay nợ"
+        }
+      ],
+      "prompt": "ROIC cao hơn chi phí vốn có ý nghĩa gì?"
+    },
+    {
+      "correct_option_id": "1eb0ca7e3e",
+      "id": "ch09-l02-q04",
+      "options": [
+        {
+          "id": "1eb0ca7e3e",
+          "text": "Để không bị ảnh hưởng bởi cách vay nợ"
+        },
+        {
+          "id": "ac549b5b74",
+          "text": "Vì EBIT luôn nhỏ hơn lợi nhuận sau thuế"
+        },
+        {
+          "id": "a2c6095242",
+          "text": "Vì EBIT đã trừ toàn bộ lãi vay"
+        }
+      ],
+      "prompt": "Vì sao ROIC dùng EBIT thay vì lợi nhuận sau thuế?"
+    },
+    {
+      "chart_id": "c9l2-rep",
+      "correct_option_id": "c8e0a0a5ca",
+      "id": "ch09-l02-q05",
+      "options": [
+        {
+          "id": "c8e0a0a5ca",
+          "text": "NOPAT cộng dồn 4 quý"
+        },
+        {
+          "id": "9dbc66f5d7",
+          "text": "Vốn đầu tư cuối mỗi quý"
+        },
+        {
+          "id": "fb19c0dacc",
+          "text": "Chi phí lãi vay từng quý"
+        }
+      ],
+      "prompt": "Trên biểu đồ đại diện của ROIC, cột phía dưới thể hiện gì?"
+    }
+  ],
+  "salt": "5a7108c96ccddfe3694cec1bed17c354315e41c2b68b44a977edcf6eec45dcb5"
+}

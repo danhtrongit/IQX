@@ -6,18 +6,20 @@
  * các chỉ báo có ô riêng nằm dưới. Không có ngày thật, không có tên mã.
  *
  * Mỗi khung có dải đầu riêng cho dòng chú giải (tên, thông số, giá trị, nút Ẩn / Cài đặt / Xóa);
- * đường vẽ nằm bên dưới dải này nên không đè lên chữ. Chiều cao các khung cố định, thêm chỉ báo
- * thì biểu đồ dài thêm (xem `flashback-chart-layout.ts`).
+ * đường vẽ nằm bên dưới dải này nên không đè lên chữ. Biểu đồ gói gọn trong màn hình (máy tính) hoặc
+ * cao cố định 380px (điện thoại); thêm chỉ báo thì các khung tự chia lại chiều cao theo tỷ lệ giá 3,2 :
+ * khối lượng 1 : mỗi chỉ báo riêng 1,15 (v2.1 §8, xem `flashback-chart-layout.ts`).
  */
-import { memo, useMemo, useState } from "react"
+import { memo, useCallback, useMemo, useState, type RefCallback } from "react"
 import { Eye, EyeOff, Settings2, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { useChartWidth } from "@/pages/academy/charts/use-chart-width"
 import type { FlashbackBar, FlashbackOrder } from "./flashback-api"
-import { LEGEND_ROW, NARROW_WIDTH, PANE_GAP, axisTicks, chartLayout, type PaneBox } from "./flashback-chart-layout"
+import { LEGEND_ROW, NARROW_WIDTH, PANE_GAP, axisTicks, chartLayout, chartTotalHeight, type PaneBox } from "./flashback-chart-layout"
 import type { ChartIndicator } from "./flashback-context"
 import { formatNumber, formatPercent, formatSignedPercent, sessionLabel } from "./flashback-model"
+import { useChartFit } from "./use-chart-fit"
 
 export type { ChartIndicator }
 
@@ -74,9 +76,23 @@ export const FlashbackChart = memo(function FlashbackChart({
   onSettings,
   onRemove,
 }: Props) {
-  const [measure, width] = useChartWidth()
+  const [measureWidth, width] = useChartWidth()
+  const [fitRef, fit] = useChartFit()
+  const measure = useCallback<RefCallback<HTMLElement>>(
+    (element) => {
+      const stopWidth = measureWidth(element)
+      const stopFit = fitRef(element)
+      return () => {
+        if (typeof stopWidth === "function") stopWidth()
+        if (typeof stopFit === "function") stopFit()
+      }
+    },
+    [measureWidth, fitRef],
+  )
   const [hover, setHover] = useState<number | null>(null)
   const narrow = width < NARROW_WIDTH
+  // Điện thoại và cửa sổ hẹp: cao cố định 380px. Máy tính: gói gọn trong màn hình (v2.1 §8).
+  const totalHeight = chartTotalHeight({ fixed: narrow || fit.pageNarrow, available: fit.available })
   const totalSlots = viewBars + playBars
 
   const overlays = useMemo(() => indicators.filter((indicator) => indicator.plot.kind === "over"), [indicators])
@@ -90,8 +106,9 @@ export const FlashbackChart = memo(function FlashbackChart({
         overlayCount: overlays.length,
         volumeCount: volumeIndicators.length,
         indicatorKeys: ownPanes.map((indicator) => indicator.key),
+        totalHeight,
       }),
-    [narrow, overlays.length, volumeIndicators.length, ownPanes],
+    [narrow, overlays.length, volumeIndicators.length, ownPanes, totalHeight],
   )
   const height = layout.height
   const pricePane = layout.panes[0]

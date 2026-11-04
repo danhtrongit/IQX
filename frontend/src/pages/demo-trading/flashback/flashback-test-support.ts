@@ -49,7 +49,8 @@ export type RoomSettings = {
 
 export const DEFAULT_SETTINGS: RoomSettings = { view_bars: 60, play_bars: 30, minutes: 10, max_players: 4, stake_xu: 100 }
 
-type Rival = { person: Person; pnl: number; finished: boolean }
+/** `step` là phiên hiện tại của người này; mặc định 0, người đã xong thì ở phiên cuối. */
+type Rival = { person: Person; pnl: number; finished: boolean; step?: number }
 
 type MatchSim = {
   id: string
@@ -305,30 +306,41 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
     }
   }
 
-  function players(match: MatchSim): FlashbackPlayer[] {
-    const mine: FlashbackPlayer = {
+  /** Bảng xếp hạng đầy đủ của server giả (có % thật); chỉ dùng để chốt kết quả khi ván kết thúc. */
+  function standings(room: RoomSim, match: MatchSim) {
+    const mine = {
       avatar_url: null,
       finished: match.finished,
       is_me: true,
       name: ME.name,
       pnl_pct: pnlPercent(match) / 100,
       pnl_percent: pnlPercent(match),
+      step: match.step,
       user_id: ME.user_id,
     }
-    const others = match.rivals.map<FlashbackPlayer>((rival) => ({
+    const others = match.rivals.map((rival) => ({
       avatar_url: rival.person.avatar_url,
       finished: rival.finished,
       is_me: false,
       name: rival.person.name,
       pnl_pct: rival.pnl / 100,
       pnl_percent: rival.pnl,
+      step: rival.step ?? (rival.finished ? room.settings.play_bars : 0),
       user_id: rival.person.user_id,
     }))
     return [mine, ...others]
   }
 
-  const playingCount = (match: MatchSim) =>
-    match.status === "ended" ? 0 : players(match).filter((player) => !player.finished).length
+  /** Như server thật (v2.1 §6.2): trong lúc chơi chỉ có phiên và trạng thái xong, % là null. */
+  function players(room: RoomSim, match: MatchSim): FlashbackPlayer[] {
+    const ended = match.status === "ended"
+    return standings(room, match).map((player) =>
+      ended ? player : { ...player, pnl_pct: null, pnl_percent: null },
+    )
+  }
+
+  const playingCount = (room: RoomSim, match: MatchSim) =>
+    match.status === "ended" ? 0 : standings(room, match).filter((player) => !player.finished).length
 
   function roomView(room: RoomSim): FlashbackRoom {
     return {
@@ -378,8 +390,8 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       my_step: match.step,
       play_bars: room.settings.play_bars,
       played_bars: Array.from({ length: match.step }, (_, index) => playedBar(view, index)),
-      players: players(match),
-      playing_count: playingCount(match),
+      players: players(room, match),
+      playing_count: playingCount(room, match),
       pot_xu: room.settings.stake_xu * room.members.length,
       remaining_ms: remaining(match),
       room_id: room.code,
@@ -398,8 +410,8 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
       match_id: match.id,
       my_finished: match.finished || match.status === "ended",
       my_step: match.step,
-      players: players(match),
-      playing_count: playingCount(match),
+      players: players(room, match),
+      playing_count: playingCount(room, match),
       remaining_ms: match.status === "ended" ? 0 : remaining(match),
       room_id: room.code,
       server_now: "2026-10-30T01:00:30.000Z",
@@ -410,7 +422,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
 
   function result(room: RoomSim, match: MatchSim): FlashbackMatchResult {
     if (match.status !== "ended") throw new ApiError("Ván chưa kết thúc", 409, "RESULT_NOT_READY")
-    const everyone = players(match).sort((left, right) => right.pnl_percent - left.pnl_percent)
+    const everyone = standings(room, match).sort((left, right) => right.pnl_percent - left.pnl_percent)
     const best = everyone[0].pnl_percent
     const solo = everyone.length === 1
     const winners = everyone.filter((player) => Math.abs(player.pnl_percent - best) < 0.005)
@@ -638,7 +650,7 @@ export function createFlashbackBackend(options: BackendOptions = {}) {
           }
           match.finished = true
           settle(match)
-          return { ended: match.status === "ended", me: me(room, match), playing_count: playingCount(match) }
+          return { ended: match.status === "ended", me: me(room, match), playing_count: playingCount(room, match) }
         }
         default:
           break

@@ -1,0 +1,494 @@
+{
+  "chapter": 11,
+  "charts": {
+    "c11l1-g1": {
+      "alt": "Doanh thu hoạt động quý 2 năm 2026 là 1.092 tỷ đồng, chia bốn mảng: cho vay margin 500 tỷ đồng chiếm 45,8%, môi giới 332 tỷ đồng chiếm 30,4%, tự doanh 190 tỷ đồng chiếm 17,4%, ngân hàng đầu tư và khác 70 tỷ đồng chiếm 6,4%",
+      "kind": "segment_bar",
+      "max": 1092.4,
+      "rows": [
+        {
+          "label": "Doanh thu hoạt động Q2/26",
+          "segments": [
+            {
+              "label": "Cho vay margin",
+              "sub": "500 tỷ đồng · 45,8%",
+              "tone": "p5",
+              "value": 500.3
+            },
+            {
+              "label": "Môi giới",
+              "sub": "332 tỷ đồng · 30,4%",
+              "tone": "p1",
+              "value": 332.4
+            },
+            {
+              "label": "Tự doanh",
+              "sub": "190 tỷ đồng · 17,4%",
+              "tone": "pos",
+              "value": 189.7
+            },
+            {
+              "label": "Ngân hàng đầu tư và khác",
+              "sub": "70 tỷ đồng · 6,4%",
+              "tone": "p4",
+              "value": 70
+            }
+          ],
+          "total": {
+            "text": "1.092 tỷ đồng"
+          }
+        }
+      ]
+    },
+    "c11l1-g2": {
+      "items": [
+        {
+          "model": {
+            "alt": "Môi giới chứng khoán lấy từ doanh thu nghiệp vụ môi giới và phụ thuộc giá trị giao dịch của thị trường; cho vay margin lấy từ lãi các khoản cho vay và phải thu, gồm cho vay ký quỹ và ứng trước tiền bán",
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "caption": "Phụ thuộc giá trị giao dịch của thị trường",
+                "id": "moigioi",
+                "sub": "Doanh thu nghiệp vụ môi giới chứng khoán",
+                "title": "Môi giới chứng khoán",
+                "tone": "p1"
+              },
+              {
+                "caption": "Cho vay ký quỹ và ứng trước tiền bán",
+                "id": "margin",
+                "sub": "Lãi từ các khoản cho vay và phải thu",
+                "title": "Cho vay margin",
+                "tone": "p5"
+              }
+            ]
+          }
+        },
+        {
+          "model": {
+            "alt": "Tự doanh lấy từ lãi tài sản tài chính FVTPL, HTM, AFS và lên xuống mạnh theo giá chứng khoán; ngân hàng đầu tư và khác gồm bảo lãnh phát hành, tư vấn, lưu ký và phụ thuộc số thương vụ trong kỳ",
+            "kind": "flow",
+            "layout": "row",
+            "nodes": [
+              {
+                "caption": "Lên xuống mạnh theo giá chứng khoán",
+                "id": "tudoanh",
+                "sub": "Lãi từ tài sản tài chính FVTPL, HTM, AFS",
+                "title": "Tự doanh",
+                "tone": "pos"
+              },
+              {
+                "caption": "Phụ thuộc số thương vụ trong kỳ",
+                "id": "ibanking",
+                "sub": "Bảo lãnh phát hành, tư vấn, lưu ký",
+                "title": "Ngân hàng đầu tư và khác",
+                "tone": "p4"
+              }
+            ]
+          }
+        }
+      ],
+      "kind": "compare",
+      "layout": "stack"
+    },
+    "c11l1-g3": {
+      "kind": "category",
+      "labels": [
+        "Q3/24",
+        "Q4/24",
+        "Q1/25",
+        "Q2/25",
+        "Q3/25",
+        "Q4/25",
+        "Q1/26",
+        "Q2/26"
+      ],
+      "mode": "line",
+      "series": [
+        {
+          "name": "Cho vay margin",
+          "tone": "p5",
+          "values": [
+            647.5,
+            612.9,
+            563.7,
+            511.9,
+            470.4,
+            450.7,
+            460.1,
+            500.3
+          ]
+        },
+        {
+          "name": "Tự doanh",
+          "tone": "pos",
+          "values": [
+            551.9,
+            395.2,
+            441.2,
+            403.6,
+            44.4,
+            284.6,
+            159.6,
+            189.7
+          ]
+        }
+      ],
+      "unit": "tỷ đồng",
+      "value_labels": "none"
+    },
+    "c11l1-rep": {
+      "alt": "Cơ cấu doanh thu hoạt động: 17,4%",
+      "chart": {
+        "kind": "B",
+        "labels": [
+          "Q3/24",
+          "Q4/24",
+          "Q1/25",
+          "Q2/25",
+          "Q3/25",
+          "Q4/25",
+          "Q1/26",
+          "Q2/26"
+        ],
+        "main": [
+          {
+            "name": "Tỷ trọng tự doanh",
+            "v": [
+              28.41,
+              22.906,
+              25.673,
+              27.296,
+              4.657,
+              24.196,
+              14.739,
+              17.367
+            ]
+          }
+        ],
+        "name": "Cơ cấu doanh thu hoạt động",
+        "sub": {
+          "series": [
+            {
+              "name": "Môi giới",
+              "v": [
+                686.763,
+                654.76,
+                628.27,
+                467.832,
+                377.249,
+                343.891,
+                390.275,
+                332.396
+              ]
+            },
+            {
+              "name": "Cho vay margin",
+              "v": [
+                647.52,
+                612.868,
+                563.684,
+                511.872,
+                470.404,
+                450.679,
+                460.09,
+                500.329
+              ]
+            },
+            {
+              "name": "Tự doanh",
+              "v": [
+                551.858,
+                395.204,
+                441.217,
+                403.634,
+                44.381,
+                284.629,
+                159.596,
+                189.719
+              ]
+            },
+            {
+              "name": "Ngân hàng đầu tư và khác",
+              "v": [
+                56.355,
+                62.462,
+                85.423,
+                95.366,
+                61.026,
+                97.133,
+                72.826,
+                69.959
+              ]
+            }
+          ],
+          "type": "stacked",
+          "unit": "tỷ đồng"
+        },
+        "unit": "%"
+      },
+      "kind": "fundamental"
+    }
+  },
+  "format": "iqx-academy-lesson-v3",
+  "id": "ch11-l01",
+  "intro_blocks": [],
+  "kind": "lesson",
+  "lead": "Cơ cấu doanh thu hoạt động cho biết công ty chứng khoán kiếm tiền từ đâu. Nguồn thu ổn định hay phụ thuộc vào giá chứng khoán quyết định chất lượng lợi nhuận.",
+  "lesson_key": "fundamental:revenue_mix",
+  "order": 1,
+  "sections": [
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l1-g1",
+          "table_toggle": true,
+          "type": "chart"
+        },
+        {
+          "text": "<b>Doanh thu hoạt động</b> là dòng tổng trên <b>báo cáo kết quả hoạt động</b> của công ty chứng khoán. Chỉ tiêu này chia dòng đó thành <b>bốn mảng</b>: môi giới, cho vay margin, tự doanh, ngân hàng đầu tư và khác.",
+          "type": "paragraph"
+        },
+        {
+          "text": "Mỗi mảng chịu tác động khác nhau từ thị trường. Biết tỷ trọng từng mảng giúp đoán được lợi nhuận sẽ phản ứng thế nào khi thị trường đổi chiều.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s1",
+      "title": "Cơ cấu doanh thu hoạt động là gì"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Cả bốn mảng đều lấy từ các dòng con của mục doanh thu hoạt động trên báo cáo kết quả hoạt động.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l1-g2",
+          "type": "chart"
+        },
+        {
+          "text": "<b>Margin</b> (cho vay ký quỹ) là khoản công ty cho nhà đầu tư vay để mua chứng khoán. <b>FVTPL</b>, <b>HTM</b>, <b>AFS</b> là ba loại tài sản tài chính công ty tự đầu tư, sẽ học kỹ ở bài Tỷ trọng tài sản tự doanh.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s2",
+      "title": "Bốn mảng lấy từ dòng nào"
+    },
+    {
+      "blocks": [
+        {
+          "chart_id": "c11l1-rep",
+          "title": "Cơ cấu doanh thu hoạt động",
+          "type": "chart"
+        },
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ trọng tự doanh trong doanh thu hoạt động của từng quý.",
+              "title": "Đường phía trên"
+            },
+            {
+              "text": "Cột chồng bốn mảng: môi giới, cho vay margin, tự doanh, ngân hàng đầu tư và khác, đơn vị tỷ đồng.",
+              "title": "Cột phía dưới"
+            },
+            {
+              "text": "Cột tự doanh co giãn mạnh làm tổng doanh thu và đường tỷ trọng nhảy theo.",
+              "title": "Đọc cùng nhau"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s3",
+      "title": "Biểu đồ đại diện"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 2,
+          "items": [
+            {
+              "text": "Môi giới và cho vay margin chiếm phần lớn, tự doanh khoảng dưới 30% doanh thu (tham khảo). Doanh thu ít bị giật theo giá chứng khoán.",
+              "title": "Cơ cấu cân bằng",
+              "tone": "pos"
+            },
+            {
+              "text": "Tự doanh chiếm phần lớn và lên xuống mạnh qua các quý. Lợi nhuận phụ thuộc vào việc thị trường tăng hay giảm.",
+              "title": "Cơ cấu lệch về tự doanh",
+              "tone": "neg"
+            }
+          ],
+          "style": "card",
+          "type": "cards"
+        },
+        {
+          "text": "Lãi cho vay margin đi tương đối đều. Lãi tự doanh có quý rơi gần về 0 khi thị trường điều chỉnh.",
+          "type": "paragraph"
+        },
+        {
+          "chart_id": "c11l1-g3",
+          "legend": [
+            {
+              "label": "Lãi cho vay margin (tỷ đồng)",
+              "tone": "p5"
+            },
+            {
+              "label": "Lãi tự doanh (tỷ đồng)",
+              "tone": "pos"
+            }
+          ],
+          "table_toggle": true,
+          "type": "chart"
+        }
+      ],
+      "id": "s4",
+      "title": "Đọc chỉ tiêu"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tỷ trọng một quý dễ bị méo bởi biến động giá. Nhìn 8 quý để thấy cơ cấu thật.",
+              "title": "So nhiều quý liên tiếp"
+            },
+            {
+              "text": "Mảng chiếm tỷ trọng lớn nhất là mảng cần theo dõi kỹ nhất ở các bài sau.",
+              "title": "Xác định mảng chủ lực"
+            },
+            {
+              "text": "Thị trường sôi động có lợi cho môi giới, margin và tự doanh. Thị trường trầm lắng làm cả ba cùng giảm.",
+              "title": "Gắn với chu kỳ thị trường"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s5",
+      "title": "Cách sử dụng"
+    },
+    {
+      "blocks": [
+        {
+          "text": "Công ty chứng khoán mẫu có doanh thu hoạt động từng quý như sau (đơn vị tỷ đồng).",
+          "type": "paragraph"
+        },
+        {
+          "columns": [
+            {
+              "label": "Mảng"
+            },
+            {
+              "label": "Q2/25"
+            },
+            {
+              "label": "Q3/25"
+            },
+            {
+              "label": "Q2/26"
+            }
+          ],
+          "rows": [
+            {
+              "cells": [
+                "Môi giới",
+                "468",
+                "377",
+                "332"
+              ]
+            },
+            {
+              "cells": [
+                "Cho vay margin",
+                "512",
+                "470",
+                "500"
+              ]
+            },
+            {
+              "cells": [
+                "Tự doanh",
+                "404",
+                "44",
+                "190"
+              ]
+            },
+            {
+              "cells": [
+                "Ngân hàng đầu tư và khác",
+                "95",
+                "61",
+                "70"
+              ]
+            },
+            {
+              "cells": [
+                "Tổng doanh thu hoạt động",
+                "1.479",
+                "953",
+                "1.092"
+              ]
+            },
+            {
+              "cells": [
+                "Tỷ trọng tự doanh",
+                "27,3%",
+                {
+                  "rating": "mid",
+                  "text": "4,7%"
+                },
+                "17,4%"
+              ]
+            }
+          ],
+          "type": "table",
+          "variant": "grid"
+        },
+        {
+          "text": "Tự doanh giảm từ 404 xuống 44 tỷ chỉ trong một quý, trong khi cho vay margin gần như giữ nguyên. Cho vay margin hiện là mảng lớn nhất với 45,8% doanh thu Q2/26.",
+          "type": "paragraph"
+        }
+      ],
+      "id": "s6",
+      "title": "Ví dụ cụ thể"
+    },
+    {
+      "blocks": [
+        {
+          "columns": 3,
+          "items": [
+            {
+              "text": "Tổng doanh thu tăng nhờ một quý tự doanh thắng lớn khó lặp lại.",
+              "title": "Chỉ nhìn tổng doanh thu"
+            },
+            {
+              "text": "Lãi tự doanh phụ thuộc giá chứng khoán, có thể rơi mạnh ngay quý sau.",
+              "title": "Coi tự doanh là thu nhập đều"
+            },
+            {
+              "text": "Margin thường là nguồn thu lớn và đều nhất, nhưng kéo theo rủi ro nợ vay.",
+              "title": "Bỏ qua mảng cho vay"
+            }
+          ],
+          "style": "tip",
+          "type": "cards"
+        }
+      ],
+      "id": "s7",
+      "title": "Sai lầm thường gặp"
+    }
+  ],
+  "summary": [
+    "Doanh thu hoạt động gồm <b>môi giới, cho vay margin, tự doanh, ngân hàng đầu tư và khác</b>.",
+    "Số liệu lấy từ các dòng con của <b>doanh thu hoạt động</b> trên báo cáo kết quả hoạt động.",
+    "<b>Tự doanh</b> dao động mạnh nhất vì phụ thuộc giá chứng khoán.",
+    "Cơ cấu thiên về <b>môi giới và cho vay</b> cho lợi nhuận ổn định hơn."
+  ],
+  "title": "Cơ cấu doanh thu hoạt động · nguồn thu của công ty chứng khoán"
+}

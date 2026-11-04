@@ -1,0 +1,577 @@
+{
+  "format": "iqx-academy-bank-v3",
+  "item_id": "ch12-exam",
+  "questions": [
+    {
+      "correct_option_id": "20f1d0cb55",
+      "id": "ch12-exam-q01",
+      "options": [
+        {
+          "id": "20f1d0cb55",
+          "text": "Báo cáo kết quả kinh doanh"
+        },
+        {
+          "id": "23ccd0f87b",
+          "text": "Bảng cân đối kế toán"
+        },
+        {
+          "id": "82eba8b914",
+          "text": "Báo cáo lưu chuyển tiền tệ"
+        }
+      ],
+      "prompt": "Dòng doanh thu phí bảo hiểm gốc nằm trên báo cáo nào?"
+    },
+    {
+      "correct_option_id": "45ba592914",
+      "id": "ch12-exam-q02",
+      "options": [
+        {
+          "id": "45ba592914",
+          "text": "Tỷ lệ bồi thường"
+        },
+        {
+          "id": "14b3f8265c",
+          "text": "Lợi suất đầu tư"
+        },
+        {
+          "id": "c98346e3f5",
+          "text": "Dự phòng nghiệp vụ / VCSH"
+        }
+      ],
+      "prompt": "Tăng trưởng phí gốc nên được đọc cùng chỉ tiêu nào để biết chất lượng?"
+    },
+    {
+      "correct_option_id": "18bf0ddc48",
+      "id": "ch12-exam-q03",
+      "options": [
+        {
+          "id": "18bf0ddc48",
+          "text": "Doanh nghiệp gia hạn và mua bảo hiểm cho năm mới"
+        },
+        {
+          "id": "420bc4dbec",
+          "text": "Công ty nhượng tái ít hơn vào cuối năm"
+        },
+        {
+          "id": "ed33c09172",
+          "text": "Lãi suất tiền gửi tăng vào cuối năm"
+        }
+      ],
+      "prompt": "Quý cuối năm thường có phí cao hơn vì lý do gì?"
+    },
+    {
+      "correct_option_id": "31e8d4f214",
+      "id": "ch12-exam-q04",
+      "options": [
+        {
+          "id": "31e8d4f214",
+          "text": "Tăng đều khoảng 10-15% mỗi năm"
+        },
+        {
+          "id": "5b1f2d9fba",
+          "text": "Tăng trên 40% mỗi năm"
+        },
+        {
+          "id": "1b7f7b7ab8",
+          "text": "Giảm nhẹ qua mỗi quý"
+        }
+      ],
+      "prompt": "Tăng trưởng phí gốc thế nào được xem là ổn định ở Việt Nam?"
+    },
+    {
+      "correct_option_id": "7c64dbd82f",
+      "id": "ch12-exam-q05",
+      "options": [
+        {
+          "id": "7c64dbd82f",
+          "text": "Đã trừ phần nhượng tái bảo hiểm"
+        },
+        {
+          "id": "cc186faac4",
+          "text": "Đã trừ chi phí hoa hồng đại lý"
+        },
+        {
+          "id": "aa7e72d75c",
+          "text": "Đã cộng lãi đầu tư trong kỳ"
+        }
+      ],
+      "prompt": "Phí bảo hiểm thuần khác phí bảo hiểm gốc ở điểm nào?"
+    },
+    {
+      "correct_option_id": "4817e5d9b6",
+      "id": "ch12-exam-q06",
+      "options": [
+        {
+          "id": "4817e5d9b6",
+          "text": "Rất cao, thường trên 95%"
+        },
+        {
+          "id": "34deab26f1",
+          "text": "Rất thấp, dưới 30%"
+        },
+        {
+          "id": "8c5c2747be",
+          "text": "Luôn bằng đúng 50%"
+        }
+      ],
+      "prompt": "Công ty bảo hiểm nhân thọ thường có tỷ lệ giữ lại thế nào?"
+    },
+    {
+      "correct_option_id": "1dcf5a114c",
+      "id": "ch12-exam-q07",
+      "options": [
+        {
+          "id": "1dcf5a114c",
+          "text": "Ít hơn vì nhà tái bảo hiểm gánh nhiều"
+        },
+        {
+          "id": "d07da291ee",
+          "text": "Nhiều hơn vì phải tự trả toàn bộ"
+        },
+        {
+          "id": "0c1abb735f",
+          "text": "Không đổi vì tái bảo hiểm không chia tổn thất"
+        }
+      ],
+      "prompt": "Khi xảy ra tổn thất lớn, công ty có tỷ lệ giữ lại thấp chịu ảnh hưởng thế nào?"
+    },
+    {
+      "correct_option_id": "e922117466",
+      "id": "ch12-exam-q08",
+      "options": [
+        {
+          "id": "e922117466",
+          "text": "Giảm bồi thường thuần của công ty"
+        },
+        {
+          "id": "a72f46b390",
+          "text": "Tăng doanh thu phí bảo hiểm gốc"
+        },
+        {
+          "id": "8e208bfb35",
+          "text": "Tăng vốn chủ sở hữu ngay lập tức"
+        }
+      ],
+      "prompt": "Phần thu đòi tái bảo hiểm làm thay đổi chỉ tiêu nào?"
+    },
+    {
+      "correct_option_id": "d39114c11b",
+      "id": "ch12-exam-q09",
+      "options": [
+        {
+          "id": "d39114c11b",
+          "text": "Khoảng 40-55% và ổn định"
+        },
+        {
+          "id": "9203587e4e",
+          "text": "Trên 80% và tăng dần"
+        },
+        {
+          "id": "f309db7590",
+          "text": "Đúng 100%"
+        }
+      ],
+      "prompt": "Mức tỷ lệ bồi thường tham khảo được xem là tốt với phi nhân thọ?"
+    },
+    {
+      "correct_option_id": "9574c28dec",
+      "id": "ch12-exam-q10",
+      "options": [
+        {
+          "id": "9574c28dec",
+          "text": "Một vụ tổn thất lớn có thể làm một quý tăng vọt"
+        },
+        {
+          "id": "e5ac1e1875",
+          "text": "Báo cáo quý không có số bồi thường"
+        },
+        {
+          "id": "8c5991a2a7",
+          "text": "Tỷ lệ một quý luôn bằng 0"
+        }
+      ],
+      "prompt": "Vì sao nên xem tỷ lệ bồi thường theo 4 quý thay vì một quý?"
+    },
+    {
+      "correct_option_id": "8d3e03ddcd",
+      "id": "ch12-exam-q11",
+      "options": [
+        {
+          "id": "8d3e03ddcd",
+          "text": "Phí bảo hiểm thuần"
+        },
+        {
+          "id": "31793a93b5",
+          "text": "Phí bảo hiểm gốc"
+        },
+        {
+          "id": "d8624ddb6f",
+          "text": "Tổng tài sản"
+        }
+      ],
+      "prompt": "Tỷ lệ bồi thường dùng bồi thường thuần làm tử số thì mẫu số phải là gì?"
+    },
+    {
+      "correct_option_id": "78ecd1977a",
+      "id": "ch12-exam-q12",
+      "options": [
+        {
+          "id": "78ecd1977a",
+          "text": "Phần phân bổ cho hoạt động bảo hiểm"
+        },
+        {
+          "id": "0300d62abb",
+          "text": "Toàn bộ chi phí của công ty mẹ"
+        },
+        {
+          "id": "39a960b0b0",
+          "text": "Không đưa vào tỷ lệ chi phí"
+        }
+      ],
+      "prompt": "Chi phí bán hàng và quản lý được đưa vào tỷ lệ chi phí theo cách nào?"
+    },
+    {
+      "correct_option_id": "04de586a7e",
+      "id": "ch12-exam-q13",
+      "options": [
+        {
+          "id": "04de586a7e",
+          "text": "Khoảng 30-40%"
+        },
+        {
+          "id": "179deaa997",
+          "text": "Khoảng 70-80%"
+        },
+        {
+          "id": "0a2e8d66e0",
+          "text": "Dưới 5%"
+        }
+      ],
+      "prompt": "Tỷ lệ chi phí tham khảo tốt cho phi nhân thọ ở Việt Nam là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "0a5ccc9962",
+      "id": "ch12-exam-q14",
+      "options": [
+        {
+          "id": "0a5ccc9962",
+          "text": "Mất kênh bán và giảm phí bảo hiểm"
+        },
+        {
+          "id": "8e6d819bf9",
+          "text": "Tỷ lệ bồi thường giảm ngay"
+        },
+        {
+          "id": "435cbf87da",
+          "text": "Dự phòng nghiệp vụ tăng mạnh"
+        }
+      ],
+      "prompt": "Cắt giảm hoa hồng quá mức có thể gây ra hậu quả gì?"
+    },
+    {
+      "correct_option_id": "813961b1bc",
+      "id": "ch12-exam-q15",
+      "options": [
+        {
+          "id": "813961b1bc",
+          "text": "Khoảng 2 đồng"
+        },
+        {
+          "id": "3c766ee0e6",
+          "text": "Khoảng 98 đồng"
+        },
+        {
+          "id": "fe48c4e39b",
+          "text": "Không còn đồng nào"
+        }
+      ],
+      "prompt": "Combined ratio 98% nghĩa là mỗi 100 đồng phí thuần còn lại bao nhiêu cho lãi nghiệp vụ?"
+    },
+    {
+      "correct_option_id": "8e6a73f39c",
+      "id": "ch12-exam-q16",
+      "options": [
+        {
+          "id": "8e6a73f39c",
+          "text": "Lỗ nghiệp vụ khoảng 8 đồng trên 100 đồng phí"
+        },
+        {
+          "id": "2424c3ab0b",
+          "text": "Lãi nghiệp vụ khoảng 8 đồng trên 100 đồng phí"
+        },
+        {
+          "id": "b5fdbd25df",
+          "text": "Lợi suất đầu tư bằng 8%"
+        }
+      ],
+      "prompt": "Combined ratio 108% có nghĩa là gì?"
+    },
+    {
+      "correct_option_id": "e4bfab17b4",
+      "id": "ch12-exam-q17",
+      "options": [
+        {
+          "id": "e4bfab17b4",
+          "text": "Dưới 95% và ổn định"
+        },
+        {
+          "id": "cf8681e5b6",
+          "text": "Trên 105% và ổn định"
+        },
+        {
+          "id": "8c548a9bb5",
+          "text": "Đúng 100% mọi quý"
+        }
+      ],
+      "prompt": "Mức combined ratio tham khảo tốt cho phi nhân thọ là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "f328ae0f32",
+      "id": "ch12-exam-q18",
+      "options": [
+        {
+          "id": "f328ae0f32",
+          "text": "Tỷ lệ bồi thường và tỷ lệ chi phí"
+        },
+        {
+          "id": "153d29e839",
+          "text": "Phí gốc và lợi suất đầu tư"
+        },
+        {
+          "id": "fa28048014",
+          "text": "Vốn chủ và dự phòng nghiệp vụ"
+        }
+      ],
+      "prompt": "Combined ratio tăng, cần tách thành phần nào để tìm nguyên nhân?"
+    },
+    {
+      "correct_option_id": "b10042bdc3",
+      "id": "ch12-exam-q19",
+      "options": [
+        {
+          "id": "b10042bdc3",
+          "text": "100%"
+        },
+        {
+          "id": "f126610cfb",
+          "text": "50%"
+        },
+        {
+          "id": "a8eb708f79",
+          "text": "200%"
+        }
+      ],
+      "prompt": "Vạch mốc trên biểu đồ đại diện của combined ratio nằm ở mức nào?"
+    },
+    {
+      "correct_option_id": "d60a5471fc",
+      "id": "ch12-exam-q20",
+      "options": [
+        {
+          "id": "d60a5471fc",
+          "text": "Tiền gửi chiếm phần lớn danh mục"
+        },
+        {
+          "id": "5e71c0f3a1",
+          "text": "Công ty chỉ đầu tư cổ phiếu"
+        },
+        {
+          "id": "1cd7f488b9",
+          "text": "Công ty không được gửi tiền ngân hàng"
+        }
+      ],
+      "prompt": "Vì sao danh mục đầu tư của công ty bảo hiểm Việt Nam đi theo lãi suất ngân hàng?"
+    },
+    {
+      "correct_option_id": "263d191d7e",
+      "id": "ch12-exam-q21",
+      "options": [
+        {
+          "id": "263d191d7e",
+          "text": "Danh mục thay đổi trong năm"
+        },
+        {
+          "id": "b9ffd40079",
+          "text": "Số cuối kỳ không được công bố"
+        },
+        {
+          "id": "f0273eca3f",
+          "text": "Để lợi suất luôn cao hơn"
+        }
+      ],
+      "prompt": "Mẫu số của lợi suất đầu tư dùng số bình quân vì lý do gì?"
+    },
+    {
+      "correct_option_id": "1d3d6e1102",
+      "id": "ch12-exam-q22",
+      "options": [
+        {
+          "id": "1d3d6e1102",
+          "text": "Khoảng 5-7% mỗi năm"
+        },
+        {
+          "id": "1846206fd4",
+          "text": "Khoảng 20-25% mỗi năm"
+        },
+        {
+          "id": "154a083f70",
+          "text": "Dưới 1% mỗi năm"
+        }
+      ],
+      "prompt": "Mức lợi suất đầu tư tham khảo ở Việt Nam thường là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "84d6fac5be",
+      "id": "ch12-exam-q23",
+      "options": [
+        {
+          "id": "84d6fac5be",
+          "text": "Lợi suất đủ lớn để bù lỗ nghiệp vụ"
+        },
+        {
+          "id": "a3238dc87f",
+          "text": "Danh mục đầu tư nhỏ lại"
+        },
+        {
+          "id": "7d78799410",
+          "text": "Ngừng gửi tiền ngân hàng"
+        }
+      ],
+      "prompt": "Combined ratio cao đòi hỏi điều gì từ mảng đầu tư?"
+    },
+    {
+      "correct_option_id": "75fd352cac",
+      "id": "ch12-exam-q24",
+      "options": [
+        {
+          "id": "75fd352cac",
+          "text": "Lợi nhuận bảo hiểm đang giảm"
+        },
+        {
+          "id": "2ff49b987c",
+          "text": "Phí gốc đang tăng nhanh"
+        },
+        {
+          "id": "618b6d12df",
+          "text": "Tỷ lệ giữ lại đang giảm"
+        }
+      ],
+      "prompt": "Tỷ trọng lợi nhuận đầu tư tăng mạnh thường là dấu hiệu gì?"
+    },
+    {
+      "correct_option_id": "bfaec3848c",
+      "id": "ch12-exam-q25",
+      "options": [
+        {
+          "id": "bfaec3848c",
+          "text": "Hoạt động tài chính"
+        },
+        {
+          "id": "e0af74fc7f",
+          "text": "Hoạt động kinh doanh bảo hiểm"
+        },
+        {
+          "id": "b26bb51ff7",
+          "text": "Hoạt động khác"
+        }
+      ],
+      "prompt": "Lợi nhuận đầu tư lấy từ hoạt động nào trên báo cáo kết quả kinh doanh?"
+    },
+    {
+      "correct_option_id": "a0f71cd264",
+      "id": "ch12-exam-q26",
+      "options": [
+        {
+          "id": "a0f71cd264",
+          "text": "Lợi nhuận bền hơn trước biến động lãi suất"
+        },
+        {
+          "id": "f49f356cd3",
+          "text": "Công ty không cần mua tái bảo hiểm"
+        },
+        {
+          "id": "550c5bbdda",
+          "text": "Combined ratio luôn bằng 0"
+        }
+      ],
+      "prompt": "Cơ cấu lợi nhuận cân đối có lợi ích gì?"
+    },
+    {
+      "correct_option_id": "163cd7cb7a",
+      "id": "ch12-exam-q27",
+      "options": [
+        {
+          "id": "163cd7cb7a",
+          "text": "Tổn thất đã xảy ra nhưng chưa trả xong"
+        },
+        {
+          "id": "7a3036e93c",
+          "text": "Phí đã thu cho thời gian chưa hết"
+        },
+        {
+          "id": "ca099dd625",
+          "text": "Quyền lợi dài hạn của hợp đồng nhân thọ"
+        }
+      ],
+      "prompt": "Dự phòng bồi thường là gì?"
+    },
+    {
+      "correct_option_id": "c735832ae2",
+      "id": "ch12-exam-q28",
+      "options": [
+        {
+          "id": "c735832ae2",
+          "text": "Bảo hiểm nhân thọ"
+        },
+        {
+          "id": "6dab0cb5f3",
+          "text": "Bảo hiểm phi nhân thọ"
+        },
+        {
+          "id": "8b7d73ea06",
+          "text": "Tái bảo hiểm hàng không"
+        }
+      ],
+      "prompt": "Dự phòng toán học xuất hiện chủ yếu ở loại hình nào?"
+    },
+    {
+      "correct_option_id": "0e74a5b7fd",
+      "id": "ch12-exam-q29",
+      "options": [
+        {
+          "id": "0e74a5b7fd",
+          "text": "Khoảng 1-2 lần và ổn định"
+        },
+        {
+          "id": "b2112c81b4",
+          "text": "Khoảng 10-15 lần"
+        },
+        {
+          "id": "758347c5b8",
+          "text": "Luôn dưới 0,1 lần"
+        }
+      ],
+      "prompt": "Mức dự phòng nghiệp vụ / VCSH tham khảo cho phi nhân thọ là bao nhiêu?"
+    },
+    {
+      "correct_option_id": "89a81e638f",
+      "id": "ch12-exam-q30",
+      "options": [
+        {
+          "id": "89a81e638f",
+          "text": "Tạo ra khoản tiền tạm giữ để đầu tư"
+        },
+        {
+          "id": "f01832f199",
+          "text": "Làm giảm doanh thu tài chính"
+        },
+        {
+          "id": "adb87a3414",
+          "text": "Thay thế cho vốn chủ sở hữu"
+        }
+      ],
+      "prompt": "Dự phòng nghiệp vụ lớn còn có vai trò gì với hoạt động đầu tư?"
+    }
+  ],
+  "salt": "e11cfb6647d479c562ce41e32664f332f1649a5d7b8abbf0a6a0cf45bd56b903"
+}

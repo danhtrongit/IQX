@@ -5,6 +5,8 @@ import type {
   AcademyItem,
 } from '../../src/modules/academy/academy.content.types.js';
 import type { RandomInt } from '../../src/modules/academy/academy.grading.js';
+import type { AcademyAccessModePort } from '../../src/modules/academy/academy.ports.js';
+import type { AcademyAccessMode } from '../../src/modules/academy/content/v4/schema.js';
 import {
   NOTES_SIZE_LIMIT,
   notesPatchIsNoop,
@@ -15,6 +17,8 @@ import {
   type AttemptStats,
   type CompletionRow,
   type DraftRow,
+  type LastOpenedRow,
+  type NewLastOpened,
   type NewScenarioChoice,
   type NotesPatch,
   type PracticeNotesRow,
@@ -28,7 +32,7 @@ import type {
   LessonRewardPort,
   LessonRewardResult,
 } from '../../src/platform/ports/lesson-reward.port.js';
-import { academyV3Fixture } from './academy-v3-fixture.js';
+import { academyV4Fixture } from './academy-v4-fixture.js';
 
 /** Shared doubles for the academy unit tests (service, grants, attempts). */
 export const USER = '00000000-0000-4000-8000-000000000001';
@@ -60,6 +64,9 @@ export class MemoryAcademy implements AcademyStoreProvider, AcademyStore {
   completionRows: CompletionRow[] = [];
   scenarioRows: ScenarioChoiceRow[] = [];
   notesRows: PracticeNotesRow[] = [];
+  lastOpenedRows: LastOpenedRow[] = [];
+  /** Makes `recordOpened` fail, to prove that reading a lesson never depends on it. */
+  failRecordOpened = false;
   legacyCapabilities = new Map<string, string[]>();
   readonly tx = { query: () => Promise.resolve([]) } as unknown as SqlClient;
   private queue: Promise<unknown> = Promise.resolve();
@@ -305,6 +312,20 @@ export class MemoryAcademy implements AcademyStoreProvider, AcademyStore {
     return this.legacyCapabilities.get(userId) ?? [];
   }
 
+  async lastOpened(userId: string) {
+    await Promise.resolve();
+    const row = this.lastOpenedRows.find((item) => item.user_id === userId);
+    return row ? structuredClone(row) : null;
+  }
+
+  async recordOpened(input: NewLastOpened) {
+    await Promise.resolve();
+    if (this.failRecordOpened) throw new Error('last opened write failed');
+    const stored = this.lastOpenedRows.find((item) => item.user_id === input.user_id);
+    if (stored) Object.assign(stored, input, { opened_at: new Date() });
+    else this.lastOpenedRows.push({ ...input, opened_at: new Date() });
+  }
+
   async scenarioChoice(userId: string, lessonKey: string) {
     await Promise.resolve();
     const row = this.scenarioRows.find(
@@ -453,36 +474,56 @@ export class TestAcademyService extends AcademyService {
     rewards: LessonRewardPort | undefined,
     private readonly fixture?: AcademyContent,
     private readonly seeded?: RandomInt,
+    accessModes?: AcademyAccessModePort,
   ) {
-    super(repository, rewards);
+    super(repository, rewards, accessModes);
   }
-  protected override readonly content = (): AcademyContent => this.fixture ?? academyV3Fixture();
+  protected override readonly content = (): AcademyContent => this.fixture ?? academyV4Fixture();
   protected override readonly random: RandomInt = (maxExclusive) =>
     this.seeded ? this.seeded(maxExclusive) : Math.floor(Math.random() * maxExclusive);
 }
 
+/** Access-mode resolver double: everybody (or the listed users) in `mode`; the others stay `free`. */
+export function accessModeOf(
+  mode: AcademyAccessMode,
+  users?: readonly string[],
+): AcademyAccessModePort {
+  return {
+    accessModeOf: (userId) => Promise.resolve(!users || users.includes(userId) ? mode : 'free'),
+  };
+}
+
 export function setup(
-  options: { rewards?: boolean; content?: AcademyContent; random?: RandomInt } = {},
+  options: {
+    rewards?: boolean;
+    content?: AcademyContent;
+    random?: RandomInt;
+    /** Puts every user in this access mode; the default (no resolver) is `free`. */
+    mode?: AcademyAccessMode;
+    accessModes?: AcademyAccessModePort;
+  } = {},
 ) {
   const memory = new MemoryAcademy();
   const rewards = options.rewards === false ? undefined : new FakeRewards();
-  const content = options.content ?? academyV3Fixture();
+  const content = options.content ?? academyV4Fixture();
+  const accessModes =
+    options.accessModes ?? (options.mode ? accessModeOf(options.mode) : undefined);
   return {
     memory,
     rewards,
     content,
-    service: new TestAcademyService(memory, rewards, content, options.random),
-    grants: new AcademyGrantsService(memory, () => content),
+    service: new TestAcademyService(memory, rewards, content, options.random, accessModes),
+    grants: new AcademyGrantsService(memory),
   };
 }
 
-export function item(itemId: string, content: AcademyContent = academyV3Fixture()): AcademyItem {
+export function item(itemId: string, content: AcademyContent = academyV4Fixture()): AcademyItem {
   const found = content.items.get(itemId);
   if (!found) throw new Error(`unknown item ${itemId}`);
   return found;
 }
 
-export function answerKey(itemId: string, content: AcademyContent = academyV3Fixture()) {
+export function answerKey(itemId: string, content: AcademyContent = academyV4Fixture()) {
   return item(itemId, content).bank.questions;
 }
 
@@ -506,7 +547,7 @@ export function answersScoring(itemId: string, wrong: number, content?: AcademyC
 }
 
 /** Lesson keys of every required item before `itemId` in the learning sequence. */
-export function keysBefore(itemId: string, content: AcademyContent = academyV3Fixture()) {
+export function keysBefore(itemId: string, content: AcademyContent = academyV4Fixture()) {
   const at = content.sequence.findIndex((entry) => entry.id === itemId);
   if (at < 0) throw new Error(`unknown item ${itemId}`);
   return content.sequence
@@ -515,12 +556,15 @@ export function keysBefore(itemId: string, content: AcademyContent = academyV3Fi
     .map((entry) => entry.lesson_key);
 }
 
-/** Seeds the learner's chain so `itemId` is open (and stores its scenario choice when needed). */
+/**
+ * Seeds the learner's chain so `itemId` is open even in the `sequential` mode (and stores its scenario choice when
+ * needed). In the default `free` mode only the scenario choice matters.
+ */
 export function openItem(
   memory: MemoryAcademy,
   itemId: string,
   userId = USER,
-  content: AcademyContent = academyV3Fixture(),
+  content: AcademyContent = academyV4Fixture(),
 ): void {
   memory.complete(userId, keysBefore(itemId, content));
   const target = item(itemId, content);

@@ -1,4 +1,4 @@
-import { screen, waitFor, within } from "@testing-library/react"
+import { cleanup, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -41,17 +41,17 @@ async function ready() {
 }
 
 describe("AcademyPanel structure", () => {
-  it("shows Học viện, 87 bài học, the progress x / 87 and the thirteen published chapters", async () => {
+  it("shows Học viện, 116 bài học, the progress x / 116 and the twelve published chapters", async () => {
     install({ completed: ["concept:ch01_l01", "concept:ch01_l02"] })
     renderAcademy("/demo-trading?view=academy", { main: false })
     await ready()
 
     expect(within(panel()).getByRole("heading", { name: "Học viện" })).toBeTruthy()
-    expect(within(panel()).getByText("87 bài học")).toBeTruthy()
-    expect(within(panel()).getByText("2 / 87")).toBeTruthy()
+    expect(within(panel()).getByText("116 bài học")).toBeTruthy()
+    expect(within(panel()).getByText("2 / 116")).toBeTruthy()
     const bar = within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })
     expect(bar.getAttribute("aria-valuenow")).toBe("2")
-    expect(bar.getAttribute("aria-valuemax")).toBe("87")
+    expect(bar.getAttribute("aria-valuemax")).toBe("116")
 
     const groups = [...panel().querySelectorAll<HTMLElement>("[data-chapter]")]
     expect(groups.map((group) => within(group).getAllByRole("button")[0].textContent)).toEqual([
@@ -62,23 +62,47 @@ describe("AcademyPanel structure", () => {
       expect.stringContaining("Chương 5 · Phương pháp cơ bản"),
       expect.stringContaining("Chương 6 · Chỉ báo xu hướng"),
       expect.stringContaining("Chương 7 · Chỉ báo động lượng và dòng tiền"),
-      expect.stringContaining("Chương 8 · Tốc độ tăng trưởng"),
-      expect.stringContaining("Chương 9 · Độ ổn định"),
-      expect.stringContaining("Chương 10 · Hiệu quả và biên lợi nhuận"),
-      expect.stringContaining("Chương 11 · Nợ và khả năng thanh toán"),
-      expect.stringContaining("Chương 12 · Dòng tiền"),
-      expect.stringContaining("Chương 13 · Định giá"),
+      expect.stringContaining("Chương 8 · Phân tích cơ bản chung"),
+      expect.stringContaining("Chương 9 · Phân tích doanh nghiệp sản xuất"),
+      expect.stringContaining("Chương 10 · Phân tích ngân hàng"),
+      expect.stringContaining("Chương 11 · Phân tích công ty chứng khoán"),
+      expect.stringContaining("Chương 12 · Phân tích công ty bảo hiểm"),
     ])
     // Every item of every chapter is listed: lessons + exam (+ the practice room in chapter 3).
     const sizes = groups.map((group) => group.querySelectorAll("[data-academy-row]").length)
-    expect(sizes).toEqual([11, 11, 11, 11, 5, 5, 8, 7, 6, 8, 5, 6, 7])
+    expect(sizes).toEqual([11, 11, 11, 11, 5, 5, 8, 18, 17, 12, 11, 9])
     expect(within(chapter(1)).getByText("2/10")).toBeTruthy()
     expect(within(chapter(5)).getByText("0/4")).toBeTruthy()
-    expect(within(chapter(13)).getByText("0/6")).toBeTruthy()
+    expect(within(chapter(8)).getByText("0/17")).toBeTruthy()
+    expect(within(chapter(12)).getByText("0/8")).toBeTruthy()
   })
 
-  it("renders the server states: Xem lại for passed, Học bài for the open lesson, a lock for the rest", async () => {
+  it("learning is free: Xem lại for passed, Học bài for every other lesson, Làm bài for every exam, no lock anywhere", async () => {
     install({ completed: ["concept:ch01_l01"] })
+    const user = userEvent.setup()
+    renderAcademy("/demo-trading?view=academy", { main: false })
+    await ready()
+
+    expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Xem lại")
+    for (const id of ["ch01-l02", "ch01-l03", "ch01-l10"]) expect(within(row(id)).getByRole("button").textContent).toBe("Học bài")
+    expect(within(row("ch01-exam")).getByRole("button").textContent).toBe("Làm bài")
+    // A later chapter is as open as the first one, and so is its exam.
+    await user.click(chapterButton(10))
+    expect(within(row("ch10-l01")).getByRole("button").textContent).toBe("Học bài")
+    expect(within(row("ch10-exam")).getByRole("button").textContent).toBe("Làm bài")
+    expect(panel().textContent).not.toContain("Chưa mở")
+    expect(panel().querySelector("svg.lucide-lock")).toBeNull()
+    expect(panel().querySelector("[aria-disabled]")).toBeNull()
+    // Exactly one control per row, never a switch or a config control.
+    for (const element of panel().querySelectorAll<HTMLElement>("[data-academy-row]")) {
+      expect(within(element).queryAllByRole("button", { hidden: true }).length).toBeLessThanOrEqual(1)
+    }
+    expect(panel().querySelector('[role="switch"], input[type="checkbox"]')).toBeNull()
+    expect(panel().textContent).not.toMatch(/Cấu hình|Luyện tập|\bON\b|\bOFF\b/)
+  })
+
+  it("an account in sequential mode (spec v4.1) still gets the lock with Chưa mở and no button on a later item", async () => {
+    install({ mode: "sequential", completed: ["concept:ch01_l01"] })
     renderAcademy("/demo-trading?view=academy", { main: false })
     await ready()
 
@@ -88,16 +112,9 @@ describe("AcademyPanel structure", () => {
       expect(within(row(id)).queryByRole("button")).toBeNull()
       expect(within(row(id)).getByText("Chưa mở").closest("[aria-disabled]")?.getAttribute("aria-disabled")).toBe("true")
     }
-    // Exactly one control per row, never a switch or a config control.
-    for (const element of panel().querySelectorAll<HTMLElement>("[data-academy-row]")) {
-      expect(within(element).queryAllByRole("button", { hidden: true }).length).toBeLessThanOrEqual(1)
-    }
-    expect(panel().querySelector('[role="switch"], input[type="checkbox"]')).toBeNull()
-    expect(panel().textContent).not.toMatch(/Cấu hình|Luyện tập|\bON\b|\bOFF\b/)
   })
 
-  it("shows Làm bài on an open exam, and the practice room with Tự chọn after the chapter 3 exam", async () => {
-    install({ completed: keysBefore("ch04-l01") })
+  it("shows the practice room with Tự chọn right after the chapter 3 exam, open at once", async () => {
     const user = userEvent.setup()
     renderAcademy("/demo-trading?view=academy", { main: false })
     await ready()
@@ -109,46 +126,49 @@ describe("AcademyPanel structure", () => {
     // The practice room comes right after "Bài thi Chương 3".
     const ids = [...chapter(3).querySelectorAll("[data-academy-row]")].map((element) => element.getAttribute("data-academy-row"))
     expect(ids.slice(-2)).toEqual(["ch03-exam", "ch03-practice"])
-    // Chapter 4 lesson 1 opened at the same time.
-    expect(within(row("ch04-l01")).getByRole("button").textContent).toBe("Học bài")
+    // The chapter 3 exam is open as well; nothing waits for it.
+    expect(within(row("ch03-exam")).getByRole("button").textContent).toBe("Làm bài")
   })
 
-  it("labels an open chapter exam Làm bài", async () => {
-    install({ completed: keysBefore("ch01-exam") })
+  it("labels a chapter exam Làm bài before any lesson of its chapter is passed", async () => {
     renderAcademy("/demo-trading?view=academy", { main: false })
     await ready()
     expect(within(row("ch01-exam")).getByText("Bài thi Chương 1")).toBeTruthy()
     expect(within(row("ch01-exam")).getByRole("button").textContent).toBe("Làm bài")
-    expect(within(row("ch02-l01")).queryByRole("button")).toBeNull()
+    expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Học bài")
+    expect(within(row("ch01-l05")).getByRole("button").textContent).toBe("Học bài")
   })
 
-  it("keeps a migrated indicator lesson reviewable while the chain before it is locked", async () => {
+  it("keeps a lesson passed out of order reviewable while the lessons before it stay open", async () => {
     install({ completed: [keyOf("ch04-l06")] })
+    const user = userEvent.setup()
     renderAcademy("/demo-trading?view=academy", { main: false })
     await ready()
+    await user.click(chapterButton(4))
     expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Học bài")
     expect(row("ch04-l06").getAttribute("data-state")).toBe("passed")
-    expect(within(row("ch04-l05")).queryByRole("button")).toBeNull()
+    expect(within(row("ch04-l05")).getByRole("button").textContent).toBe("Học bài")
+    expect(within(panel()).getByText("1 / 116")).toBeTruthy()
   })
 
-  it("never shows a fake 0 / 87 while progress is loading or failed, and keeps the confirmed value when a refresh fails", async () => {
+  it("never shows a fake 0 / 116 while progress is loading or failed, and keeps the confirmed value when a refresh fails", async () => {
     install({ completed: ["concept:ch01_l01", "concept:ch01_l02"] })
     fake.fail("progress", new ApiError("Dịch vụ tạm thời không khả dụng", 503, "SERVICE_UNAVAILABLE"))
     const user = userEvent.setup()
     renderAcademy("/demo-trading?view=academy", { main: false })
     await within(panel()).findByText("Chương 1 · Nền tảng")
-    expect(within(panel()).queryByText("0 / 87")).toBeNull()
+    expect(within(panel()).queryByText("0 / 116")).toBeNull()
     expect(await within(panel()).findByText("Chưa tải được tiến độ.")).toBeTruthy()
     // Without progress no row offers a control (states are never guessed on the client).
     expect(within(row("ch01-l01")).queryByRole("button")).toBeNull()
 
     await user.click(within(panel()).getByRole("button", { name: "Thử lại" }))
-    expect(await within(panel()).findByText("2 / 87")).toBeTruthy()
+    expect(await within(panel()).findByText("2 / 116")).toBeTruthy()
 
     fake.fail("progress", new ApiError("Lỗi", 503, "SERVICE_UNAVAILABLE"))
     await user.click(within(panel()).getByRole("button", { name: "Làm mới Học viện" }))
     expect(await within(panel()).findByText("Chưa làm mới được tiến độ.")).toBeTruthy()
-    expect(within(panel()).getByText("2 / 87")).toBeTruthy()
+    expect(within(panel()).getByText("2 / 116")).toBeTruthy()
     expect(within(row("ch01-l01")).getByRole("button").textContent).toBe("Xem lại")
   })
 
@@ -160,7 +180,7 @@ describe("AcademyPanel structure", () => {
     expect(panel().querySelectorAll("[data-chapter]")).toHaveLength(0)
     await user.click(within(panel()).getAllByRole("button", { name: "Thử lại" }).at(-1) as HTMLElement)
     await ready()
-    expect(panel().querySelectorAll("[data-chapter]")).toHaveLength(13)
+    expect(panel().querySelectorAll("[data-chapter]")).toHaveLength(12)
   })
 })
 
@@ -170,7 +190,7 @@ describe("AcademyPanel chapter open state", () => {
     renderAcademy("/demo-trading?view=academy", { main: false })
     await ready()
     await waitFor(() => expect(chapterButton(2).getAttribute("aria-expanded")).toBe("true"))
-    for (let no = 1; no <= 13; no += 1) {
+    for (let no = 1; no <= 12; no += 1) {
       if (no === 2) continue
       expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
     }
@@ -188,12 +208,12 @@ describe("AcademyPanel chapter open state", () => {
     expect(chapterButton(3).getAttribute("aria-expanded")).toBe("true")
     expect(chapterButton(5).getAttribute("aria-expanded")).toBe("true")
     for (const no of [1, 3, 5]) await user.click(chapterButton(no))
-    for (let no = 1; no <= 13; no += 1) expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
+    for (let no = 1; no <= 12; no += 1) expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
 
     const catalogCalls = fake.count("GET /academy/catalog")
     await user.click(within(panel()).getByRole("button", { name: "Làm mới Học viện" }))
     await waitFor(() => expect(fake.count("GET /academy/catalog")).toBeGreaterThan(catalogCalls))
-    for (let no = 1; no <= 13; no += 1) expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
+    for (let no = 1; no <= 12; no += 1) expect(chapterButton(no).getAttribute("aria-expanded")).toBe("false")
   })
 
   it("remembers the open chapters for the session when the panel is remounted", async () => {
@@ -207,6 +227,25 @@ describe("AcademyPanel chapter open state", () => {
     renderAcademy("/demo-trading?view=academy", { main: false })
     await ready()
     expect(chapterButton(4).getAttribute("aria-expanded")).toBe("true")
+    expect(chapterButton(1).getAttribute("aria-expanded")).toBe("false")
+  })
+})
+
+describe("AcademyPanel chapter shown first", () => {
+  it("opens the chapter of the lesson opened last, not the first one still to pass (spec v4 §4.1)", async () => {
+    const user = userEvent.setup()
+    renderAcademy("/demo-trading?view=academy")
+    await ready()
+    await user.click(chapterButton(10))
+    await user.click(within(row("ch10-l03")).getByRole("button", { name: "Học bài Bài học 10.3" }))
+    await screen.findByRole("heading", { level: 2, name: "Bài học 10.3" })
+    await waitFor(() => expect(fake.count("GET /academy/lessons/ch10-l03")).toBe(1))
+    // A fresh visit of the tool (the session memory is gone) lands on that chapter.
+    resetAcademyViewState()
+    cleanup()
+    renderAcademy("/demo-trading?view=academy", { main: false })
+    await ready()
+    await waitFor(() => expect(chapterButton(10).getAttribute("aria-expanded")).toBe("true"))
     expect(chapterButton(1).getAttribute("aria-expanded")).toBe("false")
   })
 })

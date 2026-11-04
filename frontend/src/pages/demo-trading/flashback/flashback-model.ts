@@ -161,7 +161,17 @@ export function isRoomCode(value: string): boolean {
 export const ROOM_BARS_MIN = 30
 export const ROOM_BARS_MAX = 120
 export const ROOM_MINUTE_OPTIONS = [5, 10, 15, 20, 30, 45, 60] as const
-export const ROOM_PLAYER_OPTIONS = [1, 2, 3, 4] as const
+/** Số người tối đa của một phòng: 1 đến 30 (v2.1 §1). */
+export const ROOM_PLAYERS_MIN = 1
+export const ROOM_PLAYERS_MAX = 30
+export const ROOM_PLAYER_OPTIONS: readonly number[] = Array.from(
+  { length: ROOM_PLAYERS_MAX - ROOM_PLAYERS_MIN + 1 },
+  (_, index) => ROOM_PLAYERS_MIN + index,
+)
+/** Từ ngần này người trở lên, lưới ô người chơi của phòng chờ thu nhỏ (v2.1 §1). */
+export const ROOM_MANY_PLAYERS = 9
+/** Phòng chờ luôn có ít nhất ngần này ô người chơi (v2.1 §1). */
+export const ROOM_MIN_SLOTS = 4
 export const ROOM_STAKE_MIN = 10
 export const ROOM_STAKE_STEP = 10
 export const ROOM_PASSWORD_MIN = 4
@@ -217,8 +227,8 @@ export function validateRoomForm(
   if (!(ROOM_MINUTE_OPTIONS as readonly number[]).includes(minutes)) {
     return { ok: false, message: "Thời gian chơi phải là 5, 10, 15, 20, 30, 45 hoặc 60 phút" }
   }
-  if (!inRange(maxPlayers, 1, 4)) {
-    return { ok: false, message: "Số người tối đa phải từ 1 đến 4" }
+  if (!inRange(maxPlayers, ROOM_PLAYERS_MIN, ROOM_PLAYERS_MAX)) {
+    return { ok: false, message: `Số người tối đa phải từ ${ROOM_PLAYERS_MIN} đến ${ROOM_PLAYERS_MAX}` }
   }
   if (!solo && (form.stake.trim() === "" || !Number.isInteger(stake) || stake < ROOM_STAKE_MIN || stake % ROOM_STAKE_STEP !== 0)) {
     return { ok: false, message: "Số xu cược tối thiểu 10, là bội số của 10" }
@@ -252,11 +262,53 @@ export function clockText(remainingMs: number): string {
   return `${minutes}:${rest}`
 }
 
-/** Những người đang dẫn đầu: chỉ có nghĩa khi từ hai người trở lên, hoà trong 0,005 điểm % (§6.1). */
+/**
+ * Những người đang dẫn đầu: chỉ có nghĩa khi từ hai người trở lên, hoà trong 0,005 điểm % (§6.1).
+ * Trong lúc chơi server không trả % của ai (v2.1 §6.2) nên không có người dẫn đầu; chỉ khi ván kết
+ * thúc mới có.
+ */
 export function leaderIds(players: readonly FlashbackPlayer[]): ReadonlySet<string> {
   if (players.length < 2) return new Set()
-  const best = Math.max(...players.map((player) => player.pnl_percent))
-  return new Set(players.filter((player) => Math.abs(player.pnl_percent - best) < 0.005).map((player) => player.user_id))
+  const percents: number[] = []
+  for (const player of players) {
+    if (player.pnl_percent === null) return new Set()
+    percents.push(player.pnl_percent)
+  }
+  const best = Math.max(...percents)
+  return new Set(players.filter((_, index) => Math.abs(percents[index] - best) < 0.005).map((player) => player.user_id))
+}
+
+/** Dòng trạng thái của một người ở thanh người chơi (v2.1 §6.2). */
+export type PlayerStatus =
+  | { kind: "playing"; text: string }
+  | { kind: "done"; text: string }
+  | { kind: "result"; text: string; percent: number }
+
+/**
+ * Trong lúc chơi: "Đang chơi · {phiên}/{số phiên chơi}" hoặc "✓ Đã xong", không có % của ai. Khi ván
+ * kết thúc server mới trả %, dòng này đổi thành % lợi nhuận.
+ */
+export function playerStatus(player: FlashbackPlayer, playBars: number): PlayerStatus {
+  if (player.pnl_percent !== null) {
+    return { kind: "result", text: formatSignedPercent(player.pnl_percent), percent: player.pnl_percent }
+  }
+  if (player.finished) return { kind: "done", text: "✓ Đã xong" }
+  return { kind: "playing", text: `Đang chơi · ${player.step}/${playBars}` }
+}
+
+/** Các nút cộng nhanh số cổ phiếu ở khung đặt lệnh (v2.1 §9). */
+export const QTY_QUICK_ADD = [10, 100] as const
+
+/** Cộng thêm `amount` vào số cổ phiếu đang nhập; ô trống hoặc không phải số coi như 0 (v2.1 §9). */
+export function addQty(current: string, amount: number): string {
+  const parsed = Number.parseInt(current, 10)
+  const base = Number.isFinite(parsed) && parsed > 0 ? parsed : 0
+  return String(base + amount)
+}
+
+/** Số ô người chơi của phòng chờ: bằng số người tối đa, tối thiểu 4 ô (v2.1 §1). */
+export function roomSlotCount(maxPlayers: number): number {
+  return Math.max(ROOM_MIN_SLOTS, maxPlayers)
 }
 
 /** "2026-01-31" thành "31/01/2026", không qua múi giờ nên không lệch ngày. */
