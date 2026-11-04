@@ -10,8 +10,8 @@
  * Biểu cảm hiện to ở avatar người gửi, bay xuống nhẹ rồi mờ dần trong khoảng 2,5 giây. Bong bóng nằm
  * trong thẻ của người gửi nên thẻ bị cuộn khuất thì bong bóng cũng không hiện.
  */
-import { useEffect, useState } from "react"
-import { Check, Smile } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
+import { Check, Smile, Volume2, VolumeX } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils"
 import type { FlashbackPlayer } from "./flashback-api"
 import { PlayerAvatar } from "./flashback-avatar"
 import type { MatchApi, ReactionBubble } from "./flashback-context"
+import { MATCH_VOICES, clockCue, playCue, preloadVoices, useSoundEnabled } from "./flashback-sound"
 import {
   FLASHBACK_LOW_TIME_MS,
   REACTION_EMOJIS,
@@ -53,7 +54,9 @@ export function PlayerBar({ match }: { match: MatchApi }) {
           </span>
         </div>
         <MatchClock clock={match.clock} ended={match.ended} onExpire={match.expireClock} />
-        <div className="flex-1" aria-hidden="true" />
+        <div className="flex flex-1 justify-end">
+          <SoundToggle />
+        </div>
       </div>
       <div className="flex gap-1.5 overflow-x-auto pt-2.5 pb-1" data-testid="flashback-player-list">
         {players.map((player) => (
@@ -210,6 +213,21 @@ function MatchClock({
 
   const remaining = Math.max(0, clock.remainingMs - Math.max(0, now - clock.receivedAt))
   const expired = !ended && remaining <= 0
+
+  // Giọng đọc và tick theo đồng hồ: còn 5..1 phút, 30 giây, tick 10 giây cuối, đếm 5-4-3-2-1, hết giờ.
+  const seconds = Math.max(0, Math.ceil(remaining / 1000))
+  const previousSeconds = useRef<number | null>(null)
+  useEffect(() => {
+    preloadVoices(MATCH_VOICES)
+  }, [])
+  useEffect(() => {
+    if (ended) {
+      previousSeconds.current = null
+      return
+    }
+    playCue(clockCue(previousSeconds.current, seconds))
+    previousSeconds.current = seconds
+  }, [seconds, ended])
   // Hết giờ theo đồng hồ: hỏi server ngay để biết ván đã kết thúc chưa.
   useEffect(() => {
     if (expired) onExpire()
@@ -227,5 +245,24 @@ function MatchClock({
         {ended ? "Kết thúc" : clockText(remaining)}
       </b>
     </div>
+  )
+}
+
+/** Nút loa: bật/tắt giọng đọc và hiệu ứng âm thanh của Flashback (nhớ trong trình duyệt). */
+function SoundToggle() {
+  const [enabled, setEnabled] = useSoundEnabled()
+  const label = enabled ? "Tắt âm thanh" : "Bật âm thanh"
+  return (
+    <button
+      type="button"
+      onClick={() => setEnabled(!enabled)}
+      aria-label={label}
+      aria-pressed={enabled}
+      title={label}
+      data-testid="flashback-sound-toggle"
+      className="inline-flex size-8 shrink-0 items-center justify-center rounded-md text-text-secondary hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:outline-none"
+    >
+      {enabled ? <Volume2 className="size-4" aria-hidden="true" /> : <VolumeX className="size-4" aria-hidden="true" />}
+    </button>
   )
 }
