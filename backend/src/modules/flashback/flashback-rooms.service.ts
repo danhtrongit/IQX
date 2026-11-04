@@ -77,7 +77,7 @@ import type { FlashbackBar, FlashbackLotRow, FlashbackOrderRow } from './flashba
 
 // ------------------------------------------------------------------ cổng dữ liệu ván
 
-/** Bộ dữ liệu một ván: mã VN30 và giai đoạn đã điều chỉnh (§5). Chỉ server. */
+/** Bộ dữ liệu một ván: một mã VN100 và một đoạn W + H + P phiên đã điều chỉnh của kho (v2.2 §3). Chỉ server. */
 export interface FbMatchDataset {
   readonly symbol: string;
   readonly warmupBars: readonly FlashbackBar[];
@@ -464,7 +464,7 @@ export class FlashbackRoomsService {
 
   /**
    * Bắt đầu ván (§4, §5, §8): chỉ chủ phòng; kiểm tra lại xu từng người (ai thiếu bị đưa ra kèm
-   * thông báo), một mình thì không cược, trừ cược mỗi người đúng một lần, chọn mã VN30 và giai
+   * thông báo), một mình thì không cược, trừ cược mỗi người đúng một lần, cắt mã VN100 và giai
    * đoạn ngẫu nhiên, tạo ván. Trả nến lịch sử và nến khởi tạo chỉ báo, không có mã hay ngày.
    */
   async startRoom(userId: string, code: string): Promise<FbStartResult> {
