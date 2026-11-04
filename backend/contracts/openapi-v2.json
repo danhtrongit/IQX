@@ -106200,9 +106200,14 @@
                             "type": "string"
                           },
                           "pnl_pct": {
+                            "nullable": true,
                             "type": "number"
                           },
                           "pnl_percent": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "step": {
                             "type": "number"
                           },
                           "user_id": {
@@ -106215,6 +106220,7 @@
                           "avatar_url",
                           "is_me",
                           "finished",
+                          "step",
                           "pnl_pct",
                           "pnl_percent"
                         ],
@@ -107556,9 +107562,14 @@
                             "type": "string"
                           },
                           "pnl_pct": {
+                            "nullable": true,
                             "type": "number"
                           },
                           "pnl_percent": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "step": {
                             "type": "number"
                           },
                           "user_id": {
@@ -107571,6 +107582,7 @@
                           "avatar_url",
                           "is_me",
                           "finished",
+                          "step",
                           "pnl_pct",
                           "pnl_percent"
                         ],
@@ -109625,9 +109637,14 @@
                                 "type": "string"
                               },
                               "pnl_pct": {
+                                "nullable": true,
                                 "type": "number"
                               },
                               "pnl_percent": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "step": {
                                 "type": "number"
                               },
                               "user_id": {
@@ -109640,6 +109657,7 @@
                               "avatar_url",
                               "is_me",
                               "finished",
+                              "step",
                               "pnl_pct",
                               "pnl_percent"
                             ],

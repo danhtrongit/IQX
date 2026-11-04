@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest"
 
 import type { FlashbackPlayer, FlashbackPosition } from "./flashback-api"
 import {
+  QTY_QUICK_ADD,
   ROOM_FORM_DEFAULTS,
+  ROOM_PLAYER_OPTIONS,
+  addQty,
   avatarTone,
   clockText,
   formatMatchDate,
@@ -17,6 +20,8 @@ import {
   orderCashChange,
   orderError,
   orderPreview,
+  playerStatus,
+  roomSlotCount,
   sellableQty,
   sessionLabel,
   validateRoomForm,
@@ -47,7 +52,9 @@ describe("validateRoomForm (spec §3)", () => {
     expect(failure({ playBars: "29" })).toBe("Số phiên chơi phải từ 30 đến 120")
     expect(failure({ playBars: "200" })).toBe("Số phiên chơi phải từ 30 đến 120")
     expect(failure({ minutes: "12" })).toBe("Thời gian chơi phải là 5, 10, 15, 20, 30, 45 hoặc 60 phút")
-    expect(failure({ maxPlayers: "5" })).toBe("Số người tối đa phải từ 1 đến 4")
+    expect(failure({ maxPlayers: "31" })).toBe("Số người tối đa phải từ 1 đến 30")
+    expect(failure({ maxPlayers: "0" })).toBe("Số người tối đa phải từ 1 đến 30")
+    expect(failure({ maxPlayers: "2.5" })).toBe("Số người tối đa phải từ 1 đến 30")
     expect(failure({ stake: "5" })).toBe("Số xu cược tối thiểu 10, là bội số của 10")
     expect(failure({ stake: "15" })).toBe("Số xu cược tối thiểu 10, là bội số của 10")
     expect(failure({ stake: "" })).toBe("Số xu cược tối thiểu 10, là bội số của 10")
@@ -68,6 +75,21 @@ describe("validateRoomForm (spec §3)", () => {
     expect(failure({ stake: "2000" }, 1000)).toBe("Bạn chỉ có 1.000 xu")
     expect(validateRoomForm(form({ stake: "500" }), null).ok).toBe(true)
     expect(validateRoomForm(form({ stake: "120" }), 120).ok).toBe(true)
+  })
+
+  it("v2.1 §1: chọn được từ 1 đến 30 người, mặc định 4", () => {
+    expect(ROOM_PLAYER_OPTIONS[0]).toBe(1)
+    expect(ROOM_PLAYER_OPTIONS[ROOM_PLAYER_OPTIONS.length - 1]).toBe(30)
+    expect(ROOM_PLAYER_OPTIONS).toHaveLength(30)
+    expect(ROOM_FORM_DEFAULTS.maxPlayers).toBe("4")
+    for (const count of [2, 5, 9, 29, 30]) {
+      const checked = validateRoomForm(form({ maxPlayers: String(count) }), null)
+      expect(checked.ok && checked.body.max_players).toBe(count)
+    }
+  })
+
+  it("v2.1 §1: phòng chờ có số ô bằng số người tối đa, tối thiểu 4 ô", () => {
+    expect([1, 2, 4, 5, 8, 9, 30].map(roomSlotCount)).toEqual([4, 4, 4, 5, 8, 9, 30])
   })
 
   it("1 người: ván chơi một mình không cược, ô cược bị bỏ qua và gửi stake_xu null", () => {
@@ -160,6 +182,24 @@ describe("orderError: ba câu của spec", () => {
   })
 })
 
+describe("addQty: ô cộng nhanh số cổ phiếu (v2.1 §9)", () => {
+  it("hai ô +10 và +100", () => {
+    expect([...QTY_QUICK_ADD]).toEqual([10, 100])
+  })
+
+  it("cộng thêm vào số đang có, ô trống coi như 0: +10, +10 ra 20, +100 ra 120", () => {
+    expect(addQty("", 10)).toBe("10")
+    expect(addQty(addQty("", 10), 10)).toBe("20")
+    expect(addQty("20", 100)).toBe("120")
+  })
+
+  it("giá trị không phải số hoặc âm coi như 0, số lẻ lấy phần nguyên", () => {
+    expect(addQty("abc", 100)).toBe("100")
+    expect(addQty("-5", 10)).toBe("10")
+    expect(addQty("7.9", 10)).toBe("17")
+  })
+})
+
 describe("đồng hồ, dẫn đầu, nhãn trục và ngày", () => {
   it("clockText: mm:ss, làm tròn lên và không bao giờ âm", () => {
     expect(clockText(600_000)).toBe("10:00")
@@ -170,14 +210,16 @@ describe("đồng hồ, dẫn đầu, nhãn trục và ngày", () => {
     expect(clockText(3_599_000)).toBe("59:59")
   })
 
-  const player = (id: string, pnl: number): FlashbackPlayer => ({
+  const player = (id: string, pnl: number | null, overrides: Partial<FlashbackPlayer> = {}): FlashbackPlayer => ({
     avatar_url: null,
     finished: false,
     is_me: false,
     name: id,
-    pnl_pct: pnl / 100,
+    pnl_pct: pnl === null ? null : pnl / 100,
     pnl_percent: pnl,
+    step: 0,
     user_id: id,
+    ...overrides,
   })
 
   it("người dẫn đầu chỉ có nghĩa từ hai người; hoà trong 0,005 điểm % thì cùng dẫn đầu", () => {
@@ -185,6 +227,20 @@ describe("đồng hồ, dẫn đầu, nhãn trục và ngày", () => {
     expect([...leaderIds([player("a", 5), player("b", 3)])]).toEqual(["a"])
     expect([...leaderIds([player("a", 0), player("b", 0)])].sort()).toEqual(["a", "b"])
     expect([...leaderIds([player("a", 1.2), player("b", 1.2004), player("c", -2)])].sort()).toEqual(["a", "b"])
+  })
+
+  it("trong lúc chơi server không trả % nên không ai dẫn đầu (v2.1 §6.2)", () => {
+    expect(leaderIds([player("a", null), player("b", null)]).size).toBe(0)
+    expect(leaderIds([player("a", 5), player("b", null)]).size).toBe(0)
+  })
+
+  it("playerStatus: Đang chơi · phiên/tổng, ✓ Đã xong, và chỉ khi hết ván mới là % lợi nhuận", () => {
+    expect(playerStatus(player("a", null, { step: 7 }), 30)).toEqual({ kind: "playing", text: "Đang chơi · 7/30" })
+    expect(playerStatus(player("a", null, { step: 0 }), 45)).toEqual({ kind: "playing", text: "Đang chơi · 0/45" })
+    expect(playerStatus(player("a", null, { step: 30, finished: true }), 30)).toEqual({ kind: "done", text: "✓ Đã xong" })
+    expect(playerStatus(player("a", 2.5, { finished: true }), 30)).toEqual({ kind: "result", text: "+2,50%", percent: 2.5 })
+    expect(playerStatus(player("a", -1, { finished: true }), 30)).toMatchObject({ kind: "result", text: "−1,00%" })
+    expect(playerStatus(player("a", 0), 30)).toMatchObject({ kind: "result", text: "0,00%" })
   })
 
   it("sessionLabel: n phiên trước, Phiên 0 ở nến xem cuối, rồi Phiên 1 trở đi", () => {

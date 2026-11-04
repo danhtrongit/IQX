@@ -2,9 +2,9 @@
  * Panel phải của Flashback v2 (spec v2 §6.3): khung đặt lệnh, cổ phiếu đang giữ và lệnh đã khớp.
  * Không có tab Xếp hạng; % của từng người nằm ở thanh người chơi trên màn chơi.
  *
- * Khung đặt lệnh: Mua/Bán, giá khớp (giá đóng cửa phiên đang hiện), Mua tối đa hoặc Bán được,
- * xem trước giá trị lệnh, phí và thuế. Lỗi hiện ngay dưới khung. Sau khi Hoàn thành hoặc hết giờ
- * thì không đặt lệnh được nữa.
+ * Khung đặt lệnh: Mua/Bán, giá khớp (giá đóng cửa phiên đang hiện), Mua tối đa hoặc Bán được, ô
+ * +10 / +100 cộng nhanh số cổ phiếu (v2.1 §9), xem trước giá trị lệnh, phí và thuế. Lỗi hiện ngay
+ * dưới khung. Sau khi Hoàn thành hoặc hết giờ thì không đặt lệnh được nữa.
  */
 import { useEffect, useRef } from "react"
 
@@ -19,6 +19,8 @@ import { useFlashback, type MatchApi } from "./flashback-context"
 import {
   FLASHBACK_FEE_RATE,
   FLASHBACK_TAX_RATE,
+  QTY_QUICK_ADD,
+  addQty,
   formatMoney,
   formatNumber,
   formatSignedMoney,
@@ -113,6 +115,23 @@ function OrderSections({ match }: { match: MatchApi }) {
             }}
             className="tabular-nums placeholder:text-text-secondary"
           />
+          {/* Cộng nhanh vào số đang có (ô trống là 0); không đặt lệnh, người chơi vẫn bấm Đặt mua / Đặt bán (v2.1 §9). */}
+          <div className="grid grid-cols-2 gap-2">
+            {QTY_QUICK_ADD.map((amount) => (
+              <Button
+                key={amount}
+                type="button"
+                variant="outline"
+                size="sm"
+                className="tabular-nums"
+                disabled={locked}
+                data-testid={`flashback-qty-add-${amount}`}
+                onClick={() => match.setQty(addQty(match.qty, amount))}
+              >
+                +{amount}
+              </Button>
+            ))}
+          </div>
         </div>
 
         <Row label="Giá trị lệnh" value={formatMoney(preview.value)} />

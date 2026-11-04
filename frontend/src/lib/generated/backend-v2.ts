@@ -41371,8 +41371,9 @@ export type FlashbackMatchGetResponses = {
       finished: boolean;
       is_me: boolean;
       name: string;
-      pnl_pct: number;
-      pnl_percent: number;
+      pnl_pct: number | null;
+      pnl_percent: number | null;
+      step: number;
       user_id: string;
     }>;
     playing_count: number;
@@ -41779,8 +41780,9 @@ export type FlashbackMatchStateResponses = {
       finished: boolean;
       is_me: boolean;
       name: string;
-      pnl_pct: number;
-      pnl_percent: number;
+      pnl_pct: number | null;
+      pnl_percent: number | null;
+      step: number;
       user_id: string;
     }>;
     playing_count: number;
@@ -42432,8 +42434,9 @@ export type FlashbackRoomsStartResponses = {
         finished: boolean;
         is_me: boolean;
         name: string;
-        pnl_pct: number;
-        pnl_percent: number;
+        pnl_pct: number | null;
+        pnl_percent: number | null;
+        step: number;
         user_id: string;
       }>;
       playing_count: number;
