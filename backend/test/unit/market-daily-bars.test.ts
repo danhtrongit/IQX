@@ -327,7 +327,7 @@ describe('DailyBarsService', () => {
       });
     });
 
-    it('bootstraps an empty store from the benchmark session, refreshes stale symbols once and backs off for an hour', async () => {
+    it('bootstraps an empty store from the benchmark session, refreshes stale symbols once and retries a failed one after ten minutes', async () => {
       const stale = ['AAA', 'BBB', 'CCC'];
       const { database } = fakeDatabase((sql) => {
         if (sql.includes('group by last_date')) return [];
@@ -346,14 +346,25 @@ describe('DailyBarsService', () => {
       const service = new DailyBarsService(database as never, dnse as never);
       const first = await service.ensureFresh(AFTER_CLOSE);
       expect(first).toMatchObject({ status: 'refreshed', session: '2025-05-30', summary: { requested: 3, stored: 2, failed: 1 } });
-      // Within the hour the same stragglers are not asked again (no hammering of a failing symbol).
+      // Within ten minutes the failed straggler is not asked again (no hammering of a failing symbol).
       const calls = dnse.fetchDailyBars.mock.calls.length;
-      const second = await service.ensureFresh(new Date(AFTER_CLOSE.getTime() + 10 * 60_000));
+      const second = await service.ensureFresh(new Date(AFTER_CLOSE.getTime() + 5 * 60_000));
       expect(second.status).toBe('up_to_date');
       expect(dnse.fetchDailyBars.mock.calls.length).toBe(calls + 1); // only the benchmark probe
-      // After an hour they are asked again.
-      const third = await service.ensureFresh(new Date(AFTER_CLOSE.getTime() + 61 * 60_000));
-      expect(third.status).toBe('refreshed');
+      // After ten minutes only the failed symbol is asked again; the stored ones wait for the hour.
+      const third = await service.ensureFresh(new Date(AFTER_CLOSE.getTime() + 11 * 60_000));
+      expect(third).toMatchObject({ status: 'refreshed', summary: { requested: 1, failed: 1 } });
+    });
+
+    it('counts a symbol DNSE does not list (HTTP 400 "invalid symbol") as no data, not a failure', async () => {
+      const { database } = fakeDatabase(() => []);
+      const dnse = {
+        fetchDailyBars: vi.fn(async () =>
+          Promise.reject(new MarketTransportError('DNSE rejected ABA: invalid symbol', 400)),
+        ),
+      };
+      const service = new DailyBarsService(database as never, dnse as never);
+      await expect(service.refreshSymbols(['ABA'], AFTER_CLOSE)).resolves.toMatchObject({ no_data: 1, failed: 0 });
     });
   });
 });

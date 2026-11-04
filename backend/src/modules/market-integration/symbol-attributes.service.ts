@@ -87,6 +87,7 @@ export class SymbolAttributesService {
           where is_active = true
             and coalesce(is_index, false) = false
             and lower(asset_type) = 'stock'
+            and upper(coalesce(exchange, '')) in ('HOSE', 'HNX', 'UPCOM')
             and (statement_template is null or statement_template_at is null
                  or statement_template_at < $1::timestamptz - ($2::bigint * interval '1 millisecond')
                  or shares_outstanding is null or shares_at is null
