@@ -214,7 +214,8 @@ describe("DemoTradingPage for a brand-new user", () => {
     // The panel lists the real catalog and the learner's progress.
     expect(await within(panel()).findByText("Chương 1 · Nền tảng")).toBeTruthy()
     expect(within(panel()).getByRole("progressbar", { name: "Tiến độ học tập" })).toBeTruthy()
-    expect(await within(panel()).findByRole("button", { name: /^Học bài/ })).toBeTruthy()
+    // Free learning: every lesson of the opened chapter offers its own "Học bài" button.
+    expect(await within(panel()).findByRole("button", { name: "Học bài Bài học 1.1" })).toBeTruthy()
     expect(screen.queryByTestId("academy-empty")).toBeNull()
     // The main area is the tool's own view: no tablist, no page heading block.
     expect(screen.queryByRole("tablist", { name: "Nội dung demo trading" })).toBeNull()

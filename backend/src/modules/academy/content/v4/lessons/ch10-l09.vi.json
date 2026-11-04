@@ -51,14 +51,16 @@
       "kind": "scale",
       "markers": [
         {
-          "label": "Q2/25 · 90,4%",
+          "label": "Q2/25",
           "side": "a",
+          "sub": "90,4%",
           "tone": "price",
           "v": 90.4
         },
         {
-          "label": "Q2/26 · 100,7%",
+          "label": "Q2/26",
           "side": "a",
+          "sub": "100,7%",
           "tone": "warn",
           "v": 100.7
         }

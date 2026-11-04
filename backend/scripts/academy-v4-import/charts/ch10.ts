@@ -749,8 +749,8 @@ const ch10: Record<string, Builder> = {
       { from: 95, to: 120, tone: DN, label: 'Cao' },
     ],
     markers: [
-      { v: 90.4, label: 'Q2/25 · 90,4%', tone: 'price', side: 'a' },
-      { v: 100.7, label: 'Q2/26 · 100,7%', tone: GD, side: 'a' },
+      { v: 90.4, label: 'Q2/25', sub: '90,4%', tone: 'price', side: 'a' },
+      { v: 100.7, label: 'Q2/26', sub: '100,7%', tone: GD, side: 'a' },
     ],
     alt: 'Vùng tham khảo của LDR đơn giản cho ngân hàng mẫu: thấp từ 60% đến 80%, vừa phải từ 80% đến 95%, cao từ 95% đến 120%. Q2/25 ở 90,4% (vừa phải), Q2/26 ở 100,7% (vùng cao). Ngưỡng chỉ để tham khảo, khác LDR theo quy định của Ngân hàng Nhà nước',
   }),
