@@ -70,9 +70,9 @@ export function sortRows(
       const bBlank = b.value === null || b.value === undefined || (typeof b.value === 'number' && !Number.isFinite(b.value));
       if (aBlank !== bBlank) return aBlank ? 1 : -1;
       if (!aBlank) {
-        let diff = 0;
-        if (text) diff = String(a.value).localeCompare(String(b.value), 'vi');
-        else diff = (a.value as number) - (b.value as number);
+        const diff = text
+          ? String(a.value).localeCompare(String(b.value), 'vi')
+          : (a.value as number) - (b.value as number);
         if (diff !== 0) return diff * direction;
       }
       return compareSymbol(a.row, b.row);
