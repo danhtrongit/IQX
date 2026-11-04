@@ -9,8 +9,11 @@
  * đường vẽ nằm bên dưới dải này nên không đè lên chữ. Biểu đồ gói gọn trong màn hình (máy tính) hoặc
  * cao cố định 380px (điện thoại); thêm chỉ báo thì các khung tự chia lại chiều cao theo tỷ lệ giá 3,2 :
  * khối lượng 1 : mỗi chỉ báo riêng 1,15 (v2.1 §8, xem `flashback-chart-layout.ts`).
+ *
+ * Công cụ vẽ (v2.1 §7): Đường xu hướng và Fibonacci vẽ trên khung giá, neo theo (phiên, giá), cắt trong
+ * khung giá; bấm điểm đầu rồi điểm cuối hoặc nhấn giữ và kéo; chọn, kéo tay nắm, Delete để xoá.
  */
-import { memo, useCallback, useMemo, useState, type RefCallback } from "react"
+import { memo, useCallback, useId, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type RefCallback } from "react"
 import { Eye, EyeOff, Settings2, Trash2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -18,7 +21,23 @@ import { useChartWidth } from "@/pages/academy/charts/use-chart-width"
 import type { FlashbackBar, FlashbackOrder } from "./flashback-api"
 import { LEGEND_ROW, NARROW_WIDTH, PANE_GAP, axisTicks, chartLayout, chartTotalHeight, type PaneBox } from "./flashback-chart-layout"
 import type { ChartIndicator } from "./flashback-context"
+import {
+  FIB_LEVELS,
+  FIB_ZONE,
+  TREND_COLOR,
+  anchors,
+  fibLabel,
+  fibPrice,
+  hitDrawing,
+  hitHandle,
+  type Drawing,
+  type DrawingHandle,
+  type DrawingMap,
+  type DrawingPoint,
+  type ScreenPoint,
+} from "./flashback-drawings"
 import { formatNumber, formatPercent, formatSignedPercent, sessionLabel } from "./flashback-model"
+import type { ChartDrawings } from "./use-chart-drawings"
 import { useChartFit } from "./use-chart-fit"
 
 export type { ChartIndicator }
@@ -29,10 +48,14 @@ type Props = {
   orders: readonly FlashbackOrder[]
   viewBars: number
   playBars: number
+  drawings: ChartDrawings
   onToggle: (key: string) => void
   onSettings: (key: string) => void
   onRemove: (key: string) => void
 }
+
+/** Kéo từ điểm đầu quá ngần này pixel rồi thả thì coi là vẽ bằng cách kéo (v2.1 §7.2). */
+const DRAG_DRAW_DISTANCE = 10
 
 const PAD_LEFT = 6
 const PAD_RIGHT = 62
@@ -72,6 +95,7 @@ export const FlashbackChart = memo(function FlashbackChart({
   orders,
   viewBars,
   playBars,
+  drawings,
   onToggle,
   onSettings,
   onRemove,
@@ -90,6 +114,11 @@ export const FlashbackChart = memo(function FlashbackChart({
     [measureWidth, fitRef],
   )
   const [hover, setHover] = useState<number | null>(null)
+  // Xem trước hình đang vẽ theo con trỏ, điểm bấm xuống (phân biệt bấm với kéo) và tay nắm đang kéo.
+  const [preview, setPreview] = useState<ScreenPoint | null>(null)
+  const downAt = useRef<ScreenPoint | null>(null)
+  const dragging = useRef<{ id: number; handle: DrawingHandle } | null>(null)
+  const clipId = `fb-clip-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`
   const narrow = width < NARROW_WIDTH
   // Điện thoại và cửa sổ hẹp: cao cố định 380px. Máy tính: gói gọn trong màn hình (v2.1 §8).
   const totalHeight = chartTotalHeight({ fixed: narrow || fit.pageNarrow, available: fit.available })
@@ -166,6 +195,94 @@ export const FlashbackChart = memo(function FlashbackChart({
 
   const volumeY = (value: number) => volumePane.top + volumePane.height - (value / volumeMax) * volumePane.height
 
+  // ---- công cụ vẽ (v2.1 §7)
+  const drawingMap: DrawingMap = { x, y: priceY, right: width - PAD_RIGHT }
+  const { state: drawState, dispatch: drawDispatch } = drawings
+  const drawMode = drawState.tool !== null
+
+  function toScreen(clientX: number, clientY: number, target: SVGSVGElement): ScreenPoint {
+    const rect = target.getBoundingClientRect()
+    return {
+      x: ((clientX - rect.left) / (rect.width || width)) * width,
+      y: ((clientY - rect.top) / (rect.height || height)) * height,
+    }
+  }
+
+  /** Điểm màn hình thành (phiên, giá); `inPane` cho biết điểm có nằm trong khung giá không. */
+  function toData(point: ScreenPoint): { point: DrawingPoint; inPane: boolean } {
+    const session = Math.max(0, Math.min(totalSlots - 1, (point.x - PAD_LEFT) / slot - 0.5))
+    const price = priceScale.high - ((point.y - pricePane.top) / pricePane.height) * (priceScale.high - priceScale.low)
+    const inPane =
+      point.x >= PAD_LEFT && point.x <= width - PAD_RIGHT && point.y >= pricePane.top && point.y <= pricePane.top + pricePane.height
+    return { point: { session, price }, inPane }
+  }
+
+  function finishDrawing(point: ScreenPoint) {
+    drawDispatch({ type: "finish", b: toData(point).point })
+    setPreview(null)
+    downAt.current = null
+  }
+
+  function onDrawPointerDown(event: ReactPointerEvent<SVGSVGElement>) {
+    const point = toScreen(event.clientX, event.clientY, event.currentTarget)
+    const where = toData(point)
+    if (drawState.tool) {
+      // Chỉ vẽ được trên khung giá, cả điểm đầu lẫn điểm cuối.
+      if (!where.inPane) return
+      event.preventDefault()
+      event.currentTarget.setPointerCapture?.(event.pointerId)
+      if (drawState.pending) {
+        finishDrawing(point)
+        return
+      }
+      drawDispatch({ type: "start", a: where.point })
+      setPreview(point)
+      downAt.current = point
+      return
+    }
+    const selected = drawState.shapes.find((shape) => shape.id === drawState.selectedId)
+    const handle = hitHandle(selected, point, drawingMap)
+    if (selected && handle) {
+      dragging.current = { id: selected.id, handle }
+      event.currentTarget.setPointerCapture?.(event.pointerId)
+      event.preventDefault()
+      return
+    }
+    const hit = where.inPane ? hitDrawing(drawState.shapes, point, drawingMap) : null
+    drawDispatch({ type: "select", id: hit ? hit.id : null })
+  }
+
+  function onDrawPointerMove(event: ReactPointerEvent<SVGSVGElement>) {
+    const drag = dragging.current
+    if (!drag && !drawState.pending) return
+    const point = toScreen(event.clientX, event.clientY, event.currentTarget)
+    if (drag) drawDispatch({ type: "move", id: drag.id, handle: drag.handle, point: toData(point).point })
+    else setPreview(point)
+  }
+
+  function onDrawPointerUp(event: ReactPointerEvent<SVGSVGElement>) {
+    if (dragging.current) {
+      dragging.current = null
+      return
+    }
+    const start = downAt.current
+    downAt.current = null
+    if (!drawState.pending || !start) return
+    // Nhấn giữ tại điểm đầu, kéo tới điểm cuối rồi thả: vẽ xong ngay.
+    const point = toScreen(event.clientX, event.clientY, event.currentTarget)
+    if (Math.hypot(point.x - start.x, point.y - start.y) > DRAG_DRAW_DISTANCE) finishDrawing(point)
+  }
+
+  function onDrawPointerCancel() {
+    dragging.current = null
+    downAt.current = null
+  }
+
+  const previewShape: Drawing | null =
+    drawState.pending && preview
+      ? { id: -1, kind: drawState.pending.kind, a: drawState.pending.a, b: toData(preview).point }
+      : null
+
   if (current < 0) return <div className="w-full" style={{ minHeight: height }} ref={measure} />
 
   const plotBottom = height - AXIS_PAD
@@ -207,8 +324,14 @@ export const FlashbackChart = memo(function FlashbackChart({
         role="img"
         aria-label="Biểu đồ nến Flashback"
         viewBox={`0 0 ${width} ${height}`}
-        className="block w-full touch-pan-y"
+        // Đang vẽ thì chạm vào biểu đồ không cuộn trang (v2.1 §7.2) và con trỏ là dấu cộng.
+        className={cn("block w-full", drawMode ? "cursor-crosshair touch-none" : "touch-pan-y")}
         style={{ height }}
+        data-draw-mode={drawState.tool ?? "none"}
+        onPointerDown={onDrawPointerDown}
+        onPointerMove={onDrawPointerMove}
+        onPointerUp={onDrawPointerUp}
+        onPointerCancel={onDrawPointerCancel}
         onMouseMove={(event) => updateHover(event.clientX, event.currentTarget)}
         onMouseLeave={() => setHover(null)}
         onTouchStart={(event) => {
@@ -303,6 +426,19 @@ export const FlashbackChart = memo(function FlashbackChart({
           const y = priceY(bar.high) - 6
           return <path key={order.id} d={`M${x(index)},${y} l6,-10 h-12z`} fill={TONE_DOWN} stroke="var(--background)" strokeWidth={1} />
         })}
+
+        {/* Hình vẽ: cắt trong khung giá, kể cả vùng phiên chưa mở (v2.1 §7.2) */}
+        <defs>
+          <clipPath id={clipId}>
+            <rect x={PAD_LEFT} y={pricePane.top} width={plotWidth} height={pricePane.height} />
+          </clipPath>
+        </defs>
+        <g clipPath={`url(#${clipId})`} data-testid="flashback-drawings">
+          {drawState.shapes.map((shape) => (
+            <DrawingShape key={shape.id} drawing={shape} map={drawingMap} selected={shape.id === drawState.selectedId} />
+          ))}
+          {previewShape ? <DrawingShape drawing={previewShape} map={drawingMap} selected={false} preview /> : null}
+        </g>
 
         {/* Giá đóng cửa hiện tại */}
         <line x1={PAD_LEFT} x2={PAD_LEFT + plotWidth} y1={priceY(bars[current].close)} y2={priceY(bars[current].close)} stroke="var(--chart-1)" strokeDasharray="2 3" />
@@ -466,6 +602,69 @@ function PriceTag({ x, y, text }: { x: number; y: number; text: string }) {
       <text x={x + 4} y={y + 4} className="fill-primary-foreground text-[10.5px] font-bold tabular-nums">
         {text}
       </text>
+    </g>
+  )
+}
+
+/** Một hình vẽ: đường xu hướng (vàng) hoặc Fibonacci (7 mức, vùng 38,2 đến 61,8% tô nhạt, nét đứt nối hai điểm). */
+function DrawingShape({
+  drawing,
+  map,
+  selected,
+  preview = false,
+}: {
+  drawing: Drawing
+  map: DrawingMap
+  selected: boolean
+  preview?: boolean
+}) {
+  const { a, b } = anchors(drawing, map)
+  return (
+    <g data-testid="flashback-drawing" data-kind={drawing.kind} data-selected={selected} data-preview={preview}>
+      {drawing.kind === "trend" ? (
+        <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke={TREND_COLOR} strokeWidth={selected ? 2.6 : 1.7} strokeLinecap="round" />
+      ) : (
+        <FibShape drawing={drawing} map={map} selected={selected} />
+      )}
+      {selected || preview
+        ? [a, b].map((point, index) => (
+            <circle
+              key={index}
+              cx={point.x}
+              cy={point.y}
+              r={5}
+              fill="var(--card)"
+              stroke={TREND_COLOR}
+              strokeWidth={2}
+              data-testid="flashback-drawing-handle"
+            />
+          ))
+        : null}
+    </g>
+  )
+}
+
+function FibShape({ drawing, map, selected }: { drawing: Drawing; map: DrawingMap; selected: boolean }) {
+  const { a, b } = anchors(drawing, map)
+  const left = Math.min(a.x, b.x)
+  const zoneA = map.y(fibPrice(drawing, FIB_ZONE[0]))
+  const zoneB = map.y(fibPrice(drawing, FIB_ZONE[1]))
+  return (
+    <g>
+      <rect x={left} y={Math.min(zoneA, zoneB)} width={Math.max(0, map.right - left)} height={Math.abs(zoneA - zoneB)} fill="var(--chart-1)" opacity={0.1} />
+      <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} stroke="var(--chart-5)" strokeWidth={1} strokeDasharray="4 4" />
+      {FIB_LEVELS.map(({ level, color }) => {
+        const price = fibPrice(drawing, level)
+        const y = map.y(price)
+        return (
+          <g key={level} data-level={level}>
+            <line x1={left} x2={map.right} y1={y} y2={y} stroke={color} strokeWidth={selected ? 1.8 : 1.1} />
+            <text x={left + 4} y={y - 3} style={{ fill: color }} className="text-[10.5px] font-bold tabular-nums">
+              {fibLabel(level, price)}
+            </text>
+          </g>
+        )
+      })}
     </g>
   )
 }

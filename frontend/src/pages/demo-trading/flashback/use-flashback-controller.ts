@@ -30,11 +30,13 @@ import {
   placeOrder,
   randomJoinRoom,
   replayRoom,
+  sendReaction as sendReactionRequest,
   startRoom,
   type FlashbackCreateRoomBody,
   type FlashbackIndicatorParams,
   type FlashbackMatchState,
   type FlashbackOrderSide,
+  type FlashbackReaction,
   type FlashbackRoom,
   type FlashbackRoomFilter,
   type FlashbackSnapshot,
@@ -46,10 +48,14 @@ import type {
   JoinOutcome,
   LocalIndicator,
   MatchApi,
+  ReactionBubble,
 } from "./flashback-context"
 import { loadStoredIndicators, saveStoredIndicators } from "./flashback-indicator-store"
 import { computeIndicator, defaultParams, validateParams } from "./flashback-indicators"
 import {
+  REACTION_BUBBLE_MS,
+  REACTION_COOLDOWN_MS,
+  REACTION_TOO_FAST,
   ROOM_CODE_ERROR,
   formatNumber,
   indicatorColor,
@@ -65,6 +71,10 @@ import {
   flashbackKeys,
   useFlashbackIndicators,
 } from "./use-flashback"
+import { invalidateFlashbackProgress } from "./use-flashback-progress"
+
+/** Bong bóng còn sống dưới ngần này mili giây thì không đáng hiện (đã gần mờ hết). */
+const BUBBLE_MIN_LIFE_MS = 300
 
 type Place =
   | { phase: "boot" }
@@ -261,6 +271,53 @@ export function useFlashbackController(): FlashbackContextValue {
 
   // ------------------------------------------------------------------ ván chơi
 
+  // Biểu cảm (v2.1 §6.4): người khác gửi thì tới máy này qua lần hỏi trạng thái kế tiếp (2 giây một lần);
+  // mỗi biểu cảm có ID nên chỉ hiện một lần. Của mình hiện ngay khi bấm (không chờ server).
+  const [bubbles, setBubbles] = useState<ReactionBubble[]>([])
+  const seenReactions = useRef(new Set<string>())
+  const bubbleTimers = useRef(new Set<ReturnType<typeof setTimeout>>())
+  const lastReactionAt = useRef(0)
+  const reactionCount = useRef(0)
+
+  useEffect(() => {
+    const timers = bubbleTimers.current
+    return () => {
+      for (const timer of timers) clearTimeout(timer)
+      timers.clear()
+    }
+  }, [])
+
+  const removeBubble = useCallback((key: string) => {
+    setBubbles((current) => current.filter((bubble) => bubble.key !== key))
+  }, [])
+
+  const addBubble = useCallback(
+    (bubble: ReactionBubble, lifeMs: number) => {
+      setBubbles((current) => [...current, bubble])
+      const timer = setTimeout(() => {
+        bubbleTimers.current.delete(timer)
+        removeBubble(bubble.key)
+      }, lifeMs)
+      bubbleTimers.current.add(timer)
+    },
+    [removeBubble],
+  )
+
+  const ingestReactions = useCallback(
+    (reactions: readonly FlashbackReaction[]) => {
+      for (const reaction of reactions) {
+        if (seenReactions.current.has(reaction.id)) continue
+        seenReactions.current.add(reaction.id)
+        // Của chính mình đã hiện lúc bấm.
+        if (reaction.user_id === userId) continue
+        const life = REACTION_BUBBLE_MS - reaction.age_ms
+        if (life < BUBBLE_MIN_LIFE_MS) continue
+        addBubble({ key: reaction.id, userId: reaction.user_id, emoji: reaction.emoji, ageMs: reaction.age_ms }, life)
+      }
+    },
+    [addBubble, userId],
+  )
+
   const sawPlaying = useRef(new Set<string>())
   const snapshotQuery = useQuery({
     queryKey: flashbackKeys.match(userId, matchId ?? ""),
@@ -275,7 +332,11 @@ export function useFlashbackController(): FlashbackContextValue {
     enabled: !!userId && matchId !== null,
     staleTime: 0,
     retry: false,
-    queryFn: ({ signal }) => guarded(() => fetchMatchState(matchId ?? "", signal)),
+    queryFn: async ({ signal }) => {
+      const state = await guarded(() => fetchMatchState(matchId ?? "", signal))
+      ingestReactions(state.reactions)
+      return state
+    },
     // Ván đã kết thúc thì thôi hỏi: trạng thái không còn đổi.
     refetchInterval: (query) => (query.state.data?.status === "ended" ? false : 2_000),
   })
@@ -294,10 +355,12 @@ export function useFlashbackController(): FlashbackContextValue {
     if (matchId && playingSeen) sawPlaying.current.add(matchId)
   }, [matchId, playingSeen])
 
-  // Ván vừa kết thúc: lấy lại ảnh chụp cuối (tài khoản chốt, đủ nến) và số dư xu mới.
+  // Ván vừa kết thúc: lấy lại ảnh chụp cuối (tài khoản chốt, đủ nến), số dư xu mới và điểm, cấp,
+  // hạng, lịch sử đấu (đã cộng điểm lúc chốt ván).
   useEffect(() => {
     if (!ended || !matchId) return
     void queryClient.invalidateQueries({ queryKey: SHOP_QUERY_ROOT })
+    void invalidateFlashbackProgress(queryClient)
   }, [ended, matchId, queryClient])
   useEffect(() => {
     if (!ended || snapshotEnded || !matchId) return
@@ -524,6 +587,34 @@ export function useFlashbackController(): FlashbackContextValue {
     onError: (error) => failMatchAction(error, "Chưa chốt được kết quả."),
   })
 
+  // Biểu cảm: mỗi người 1 cái mỗi 1,5 giây; bấm nhanh hơn thì báo và không gửi (v2.1 §6.4).
+  const reactionMutation = useMutation({
+    mutationFn: (emoji: string) => sendReactionRequest(matchId ?? "", emoji),
+  })
+  const reactionMutate = reactionMutation.mutate
+  const sendReaction = useCallback(
+    (emoji: string) => {
+      if (!matchId || ended) return
+      const now = Date.now()
+      if (now - lastReactionAt.current < REACTION_COOLDOWN_MS) {
+        toast.info(REACTION_TOO_FAST)
+        return
+      }
+      lastReactionAt.current = now
+      reactionCount.current += 1
+      const key = `mine-${reactionCount.current}`
+      addBubble({ key, userId, emoji, ageMs: 0 }, REACTION_BUBBLE_MS)
+      reactionMutate(emoji, {
+        onError: (error) => {
+          removeBubble(key)
+          if (codeOf(error) === "MATCH_ENDED") refreshMatch()
+          else toast.info(messageOf(error, "Chưa gửi được biểu cảm."))
+        },
+      })
+    },
+    [addBubble, ended, matchId, reactionMutate, refreshMatch, removeBubble, userId],
+  )
+
   // ------------------------------------------------------------------ chỉ báo (chỉ ở trình duyệt)
 
   const indicatorList = useFlashbackIndicators(true)
@@ -646,6 +737,9 @@ export function useFlashbackController(): FlashbackContextValue {
       playingCount: matchState?.playing_count ?? snapshot.playing_count,
       clock: ended ? { remainingMs: 0, receivedAt: clockSource.receivedAt } : clockSource,
       expireClock,
+      bubbles,
+      canReact: !ended,
+      sendReaction,
       side,
       setSide,
       qty,

@@ -1,7 +1,9 @@
 /**
- * Sảnh Flashback (spec v2 §2): thanh trên (nhập ID phòng, Chơi phòng bất kỳ, Tạo phòng), bộ lọc
- * Tất cả · Đang chờ · Đang chơi và danh sách phòng tự làm mới mỗi vài giây. Vùng chính rộng hết cỡ,
- * không có panel phải.
+ * Sảnh Flashback (spec v2 §2, v2.1 §2): đầu sảnh có tiêu đề "Flashback" và thẻ cấp (chỉ để xem), rồi
+ * ba tab Phòng chơi · Bảng xếp hạng · Lịch sử đấu (mặc định Phòng chơi). Tab Phòng chơi giữ nguyên
+ * nội dung sảnh của v2: thanh trên (nhập ID phòng, Chơi phòng bất kỳ, Tạo phòng), bộ lọc Tất cả ·
+ * Đang chờ · Đang chơi và danh sách phòng tự làm mới mỗi vài giây. Vùng chính rộng hết cỡ, không có
+ * panel phải.
  */
 import { useState, type FormEvent } from "react"
 import { Lock, Plus } from "lucide-react"
@@ -11,13 +13,29 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { cn } from "@/lib/utils"
 import { COIN_TEXT } from "../shop/shop-ui"
 import type { FlashbackRoomFilter, FlashbackRoomListItem } from "./flashback-api"
 import { useFlashback } from "./flashback-context"
 import { PlayerAvatar } from "./flashback-avatar"
+import { HistoryTab } from "./flashback-history"
+import { LeaderboardTab } from "./flashback-leaderboard"
+import { LevelCard } from "./flashback-level-card"
 import { CreateRoomDialog, PasswordDialog } from "./flashback-room-dialogs"
 import { formatNumber } from "./flashback-model"
+
+type LobbyTab = "rooms" | "leaderboard" | "history"
+
+const TABS: { id: LobbyTab; label: string }[] = [
+  { id: "rooms", label: "Phòng chơi" },
+  { id: "leaderboard", label: "Bảng xếp hạng" },
+  { id: "history", label: "Lịch sử đấu" },
+]
+
+/** Chữ tab dùng màu chữ phụ có độ tương phản đủ, không dùng chữ xám nhạt của shadcn. */
+const TAB_TRIGGER =
+  "px-2 text-[13px] text-text-secondary hover:text-foreground data-active:text-foreground sm:px-4 sm:text-sm dark:text-text-secondary dark:data-active:text-foreground"
 
 const FILTERS: { id: FlashbackRoomFilter; label: string }[] = [
   { id: "all", label: "Tất cả" },
@@ -29,6 +47,38 @@ const FILTERS: { id: FlashbackRoomFilter; label: string }[] = [
 const ROW_COLUMNS = "md:grid-cols-[110px_minmax(0,1.3fr)_minmax(0,1.5fr)_96px_120px_96px]"
 
 export function FlashbackLobby() {
+  const [tab, setTab] = useState<LobbyTab>("rooms")
+  return (
+    <div className="mx-auto w-full max-w-[1080px] space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2.5">
+        <h2 className="font-heading text-xl font-bold">Flashback</h2>
+        <LevelCard />
+      </div>
+
+      <Tabs value={tab} onValueChange={(next) => setTab(next as LobbyTab)} className="gap-3">
+        <TabsList aria-label="Sảnh Flashback" className="h-9 w-full sm:w-fit">
+          {TABS.map((item) => (
+            <TabsTrigger key={item.id} value={item.id} className={TAB_TRIGGER}>
+              {item.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContent value="rooms" className="min-w-0 space-y-3 focus-visible:outline-none">
+          <RoomsTab />
+        </TabsContent>
+        <TabsContent value="leaderboard" className="min-w-0 focus-visible:outline-none">
+          <LeaderboardTab />
+        </TabsContent>
+        <TabsContent value="history" className="min-w-0 focus-visible:outline-none">
+          <HistoryTab />
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
+
+/** Tab Phòng chơi: toàn bộ nội dung sảnh của v2 §2. */
+function RoomsTab() {
   const { lobby } = useFlashback()
   const [roomId, setRoomId] = useState("")
   const [createOpen, setCreateOpen] = useState(false)
@@ -51,9 +101,7 @@ export function FlashbackLobby() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1080px] space-y-3">
-      <h2 className="font-heading text-xl font-bold">Flashback</h2>
-
+    <>
       <section
         aria-label="Vào phòng"
         className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-card p-3"
@@ -122,7 +170,7 @@ export function FlashbackLobby() {
           onClose={() => setPasswordFor(null)}
         />
       ) : null}
-    </div>
+    </>
   )
 }
 
@@ -203,7 +251,14 @@ function RoomRow({
         {room.locked ? <Lock className="size-4 shrink-0" role="img" aria-label="Phòng có mật khẩu" /> : null}
       </span>
       <span className="col-start-1 row-start-2 flex min-w-0 items-center gap-2 md:col-auto md:row-auto">
-        <PlayerAvatar name={room.owner.name} avatarUrl={room.owner.avatar_url} seed={room.owner.name} size="sm" />
+        <PlayerAvatar
+          name={room.owner.name}
+          avatarUrl={room.owner.avatar_url}
+          seed={room.owner.name}
+          size="sm"
+          level={room.owner.level}
+          crown={room.owner.crown}
+        />
         <span className="truncate text-sm font-semibold">{room.owner.name}</span>
       </span>
       <span className="col-span-2 row-start-3 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-[12.5px] font-semibold md:contents md:text-sm">

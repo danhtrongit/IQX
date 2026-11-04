@@ -136,9 +136,14 @@ export interface OperationMap {
   "GET /api/v2/flashback/current": { request: T.FlashbackCurrentData; response: T.FlashbackCurrentResponses[keyof T.FlashbackCurrentResponses] }
   "GET /api/v2/flashback/current/leaderboard": { request: T.FlashbackLeaderboardData; response: T.FlashbackLeaderboardResponses[keyof T.FlashbackLeaderboardResponses] }
   "GET /api/v2/flashback/indicators": { request: T.FlashbackIndicatorsData; response: T.FlashbackIndicatorsResponses[keyof T.FlashbackIndicatorsResponses] }
+  "GET /api/v2/flashback/leaderboard": { request: T.FlashbackRoomsLeaderboardData; response: T.FlashbackRoomsLeaderboardResponses[keyof T.FlashbackRoomsLeaderboardResponses] }
+  "GET /api/v2/flashback/leaderboard/top3": { request: T.FlashbackRoomsLeaderboardTop3Data; response: T.FlashbackRoomsLeaderboardTop3Responses[keyof T.FlashbackRoomsLeaderboardTop3Responses] }
   "GET /api/v2/flashback/matches/{id}": { request: T.FlashbackMatchGetData; response: T.FlashbackMatchGetResponses[keyof T.FlashbackMatchGetResponses] }
   "GET /api/v2/flashback/matches/{id}/result": { request: T.FlashbackMatchResultData; response: T.FlashbackMatchResultResponses[keyof T.FlashbackMatchResultResponses] }
   "GET /api/v2/flashback/matches/{id}/state": { request: T.FlashbackMatchStateData; response: T.FlashbackMatchStateResponses[keyof T.FlashbackMatchStateResponses] }
+  "GET /api/v2/flashback/me/history": { request: T.FlashbackMyHistoryData; response: T.FlashbackMyHistoryResponses[keyof T.FlashbackMyHistoryResponses] }
+  "GET /api/v2/flashback/me/history/summary": { request: T.FlashbackMyHistorySummaryData; response: T.FlashbackMyHistorySummaryResponses[keyof T.FlashbackMyHistorySummaryResponses] }
+  "GET /api/v2/flashback/me/level": { request: T.FlashbackMyLevelData; response: T.FlashbackMyLevelResponses[keyof T.FlashbackMyLevelResponses] }
   "GET /api/v2/flashback/rooms": { request: T.FlashbackRoomsListData; response: T.FlashbackRoomsListResponses[keyof T.FlashbackRoomsListResponses] }
   "GET /api/v2/flashback/rooms/{code}": { request: T.FlashbackRoomsGetData; response: T.FlashbackRoomsGetResponses[keyof T.FlashbackRoomsGetResponses] }
   "GET /api/v2/flashback/rooms/me": { request: T.FlashbackRoomsMineData; response: T.FlashbackRoomsMineResponses[keyof T.FlashbackRoomsMineResponses] }
@@ -399,6 +404,7 @@ export interface OperationMap {
   "POST /api/v2/flashback/matches/{id}/finish": { request: T.FlashbackMatchFinishData; response: T.FlashbackMatchFinishResponses[keyof T.FlashbackMatchFinishResponses] }
   "POST /api/v2/flashback/matches/{id}/next": { request: T.FlashbackMatchNextData; response: T.FlashbackMatchNextResponses[keyof T.FlashbackMatchNextResponses] }
   "POST /api/v2/flashback/matches/{id}/orders": { request: T.FlashbackMatchOrderData; response: T.FlashbackMatchOrderResponses[keyof T.FlashbackMatchOrderResponses] }
+  "POST /api/v2/flashback/matches/{id}/reactions": { request: T.FlashbackMatchReactionData; response: T.FlashbackMatchReactionResponses[keyof T.FlashbackMatchReactionResponses] }
   "POST /api/v2/flashback/rooms": { request: T.FlashbackRoomsCreateData; response: T.FlashbackRoomsCreateResponses[keyof T.FlashbackRoomsCreateResponses] }
   "POST /api/v2/flashback/rooms/{code}/join": { request: T.FlashbackRoomsJoinData; response: T.FlashbackRoomsJoinResponses[keyof T.FlashbackRoomsJoinResponses] }
   "POST /api/v2/flashback/rooms/{code}/leave": { request: T.FlashbackRoomsLeaveData; response: T.FlashbackRoomsLeaveResponses[keyof T.FlashbackRoomsLeaveResponses] }
@@ -595,9 +601,14 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "GET /api/v2/flashback/current": { request: "FlashbackCurrentData", response: "FlashbackCurrentResponses" },
   "GET /api/v2/flashback/current/leaderboard": { request: "FlashbackLeaderboardData", response: "FlashbackLeaderboardResponses" },
   "GET /api/v2/flashback/indicators": { request: "FlashbackIndicatorsData", response: "FlashbackIndicatorsResponses" },
+  "GET /api/v2/flashback/leaderboard": { request: "FlashbackRoomsLeaderboardData", response: "FlashbackRoomsLeaderboardResponses" },
+  "GET /api/v2/flashback/leaderboard/top3": { request: "FlashbackRoomsLeaderboardTop3Data", response: "FlashbackRoomsLeaderboardTop3Responses" },
   "GET /api/v2/flashback/matches/{id}": { request: "FlashbackMatchGetData", response: "FlashbackMatchGetResponses" },
   "GET /api/v2/flashback/matches/{id}/result": { request: "FlashbackMatchResultData", response: "FlashbackMatchResultResponses" },
   "GET /api/v2/flashback/matches/{id}/state": { request: "FlashbackMatchStateData", response: "FlashbackMatchStateResponses" },
+  "GET /api/v2/flashback/me/history": { request: "FlashbackMyHistoryData", response: "FlashbackMyHistoryResponses" },
+  "GET /api/v2/flashback/me/history/summary": { request: "FlashbackMyHistorySummaryData", response: "FlashbackMyHistorySummaryResponses" },
+  "GET /api/v2/flashback/me/level": { request: "FlashbackMyLevelData", response: "FlashbackMyLevelResponses" },
   "GET /api/v2/flashback/rooms": { request: "FlashbackRoomsListData", response: "FlashbackRoomsListResponses" },
   "GET /api/v2/flashback/rooms/{code}": { request: "FlashbackRoomsGetData", response: "FlashbackRoomsGetResponses" },
   "GET /api/v2/flashback/rooms/me": { request: "FlashbackRoomsMineData", response: "FlashbackRoomsMineResponses" },
@@ -858,6 +869,7 @@ export const operationMap: Record<keyof OperationMap, { request: string; respons
   "POST /api/v2/flashback/matches/{id}/finish": { request: "FlashbackMatchFinishData", response: "FlashbackMatchFinishResponses" },
   "POST /api/v2/flashback/matches/{id}/next": { request: "FlashbackMatchNextData", response: "FlashbackMatchNextResponses" },
   "POST /api/v2/flashback/matches/{id}/orders": { request: "FlashbackMatchOrderData", response: "FlashbackMatchOrderResponses" },
+  "POST /api/v2/flashback/matches/{id}/reactions": { request: "FlashbackMatchReactionData", response: "FlashbackMatchReactionResponses" },
   "POST /api/v2/flashback/rooms": { request: "FlashbackRoomsCreateData", response: "FlashbackRoomsCreateResponses" },
   "POST /api/v2/flashback/rooms/{code}/join": { request: "FlashbackRoomsJoinData", response: "FlashbackRoomsJoinResponses" },
   "POST /api/v2/flashback/rooms/{code}/leave": { request: "FlashbackRoomsLeaveData", response: "FlashbackRoomsLeaveResponses" },
