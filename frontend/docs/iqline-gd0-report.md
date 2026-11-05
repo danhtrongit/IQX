@@ -6,11 +6,10 @@ Ngày đo: 2026-11-05. Thiết kế: [iqline-design.md](iqline-design.md). Bản
 
 **Canvas 2D đủ nhanh, không cần Worker, WASM hay WebGL.** Trên Chrome có GPU, mọi tình huống đều giữ 120 khung hình mỗi giây, kể cả 50.000 nến.
 
-Giai đoạn 0 **chưa đóng**, còn ba việc:
+Giai đoạn 0 **chưa đóng**, còn hai việc:
 
 | Việc còn lại | Lý do | Ảnh hưởng |
 |---|---|---|
-| Thống kê layout đã lưu | Chưa được phép đọc database production | Chưa chốt danh sách §9, §10 và chưa xác minh cấu trúc layout TradingView |
 | Kiểm tra realtime trong giờ giao dịch | Không nhận được khung dữ liệu nào (xem dưới) | Chưa dùng được kênh `ohlc` |
 | Đo trên điện thoại thật | Mới có giả lập CPU, không giả lập được GPU | Chưa kết luận mục tiêu điện thoại |
 
@@ -98,21 +97,43 @@ Mọi tình huống gồm nến, khối lượng, MA, EMA, Bollinger, RSI, MACD 
 
 Vì vậy, IQLine 1.0 **giữ thăm dò 15 giây làm đường chính** như TradingView hiện tại. Kênh `ohlc` chỉ bật khi đã kiểm chứng.
 
+## Layout đã lưu trên production
+
+Đọc ngày 2026-11-05 bằng `spike/iqline/layout-stats.sql`: giao dịch chỉ đọc, chỉ xuất số đếm.
+
+120 layout của 27 người dùng trên 61 mã, tất cả đều có `charts`. p95 25,8 KB, lớn nhất 40,8 KB. Kiểu hiển thị của cả 120 layout đều là nến.
+
+| Chỉ báo | Lượt thêm | Số người | Trong danh sách IQLine |
+|---|---|---|---|
+| Volume | 120 | 27 | Có |
+| RSI | 12 | 5 | Có |
+| Moving Average | 11 | 5 | Có |
+| Volume Profile theo vùng nhìn thấy | 5 | 2 | Thêm mới |
+| Bollinger Bands | 4 | 3 | Có |
+| MACD | 3 | 3 | Có |
+| BB Width, Donchian, Chaikin Money Flow | 1 mỗi loại | 1 | Có |
+| Ichimoku Cloud, Volatility O-H-L-C | 1 mỗi loại | 1 | Không chuyển |
+
+| Hình vẽ | Số hình | Số người | Trong danh sách IQLine |
+|---|---|---|---|
+| Đường xu hướng | 3 | 2 | Có |
+| Thước đo giá | 1 | 1 | Có |
+| Hình chữ nhật | 1 | 1 | Có |
+| Volume Profile cố định | 1 | 1 | Không chuyển |
+
+**Kết luận:** danh sách §9 và §10 đã chốt. Việc chuyển dữ liệu nhỏ hơn dự kiến, chỉ 6 hình vẽ trên toàn hệ thống, nên bộ chuyển đổi chỉ cần xử lý 3 loại hình và 9 loại chỉ báo.
+
+**Giới hạn:** mẫu nhỏ, chỉ gồm người đã lưu, không cho biết tần suất dùng và không gồm bản lưu trên trình duyệt của khách. Vì vậy số liệu không đủ để bỏ các tính năng chưa ai lưu; phạm vi đầy đủ giữ nguyên, chỉ xếp chúng ưu tiên sau.
+
 ## Việc tiếp theo
 
-1. **Thống kê layout:** chạy lệnh dưới đây. Lệnh chỉ đọc (`default_transaction_read_only=on`) và chỉ xuất số đếm, không xuất nội dung của từng người. Script này chưa từng chạy nên có thể cần sửa.
-
-   ```bash
-   ssh -i ~/.ssh/vps_ed25519 root@103.199.18.160 'cd /srv/iqx-v2 && set -a && . shared/runtime.env && set +a && PGOPTIONS="-c default_transaction_read_only=on" psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f -' < frontend/spike/iqline/layout-stats.sql
-   ```
-
-2. **Realtime:** chạy lại trong phiên khớp liên tục, 09:00 đến 11:30 hoặc 13:00 đến 14:30.
+1. **Realtime:** chạy lại trong phiên khớp liên tục, 09:00 đến 11:30 hoặc 13:00 đến 14:30.
 
    ```bash
    node frontend/spike/iqline/ws-probe.mjs /tmp/ws-frames.json 120
    ```
 
-3. **Điện thoại thật:** mở bản thử qua mạng nội bộ trên một máy tầm trung, gọi `window.iqlineSpike.cadence({ visible: 5000 })`.
+2. **Điện thoại thật:** mở bản thử qua mạng nội bộ trên một máy tầm trung, gọi `window.iqlineSpike.cadence({ visible: 5000 })`.
 
 ## Chạy lại bản thử
 

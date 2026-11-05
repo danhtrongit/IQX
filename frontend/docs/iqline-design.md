@@ -30,7 +30,7 @@ Xây thư viện biểu đồ nến riêng của IQX, theo đúng `frontend/DESI
 | Trục thời gian | Bỏ khoảng trống nghỉ trưa, cuối tuần và ngày nghỉ; múi giờ `Asia/Ho_Chi_Minh` | `market` |
 | Trục giá | Tuyến tính, log, phần trăm; tự co giãn hoặc kéo tay | `market` |
 | Dữ liệu | Nạp thêm lịch sử khi kéo về trái, cập nhật nến cuối theo realtime | `market` |
-| Chỉ báo | 23 chỉ báo (§9), nhiều ô, kéo đổi chiều cao ô, hộp thoại thêm và sửa, ẩn, xoá | `market`, `flashback` (16) |
+| Chỉ báo | 24 chỉ báo (§9), nhiều ô, kéo đổi chiều cao ô, hộp thoại thêm và sửa, ẩn, xoá | `market`, `flashback` (16) |
 | Công cụ vẽ | 14 công cụ (§10), kéo tay nắm, khoá, ẩn, nhân bản, hút vào OHLC, danh sách hình, mẫu kiểu | `market`; Flashback 3 công cụ |
 | Lưu trữ | Hình vẽ và chỉ báo theo từng mã, theo tài khoản, giữ cả dữ liệu đã lưu từ TradingView (§11) | `market` |
 | Đánh dấu | Tin AI theo sắc thái, điểm đặt lệnh, mẫu hình AI vẽ đè | `market`, `flashback` |
@@ -82,7 +82,7 @@ iqline/
   scene/         dữ liệu + viewport -> danh sách lệnh vẽ (thuần)
   render/        adapter Canvas, bốn lớp canvas, DPR, đọc token màu
   interaction/   bộ giảm trạng thái cho zoom, kéo, crosshair, phím, hoàn tác
-  indicators/    23 chỉ báo và registerIndicator (thuần)
+  indicators/    24 chỉ báo và registerIndicator (thuần)
   drawings/      14 công cụ, chọn hình, kéo tay nắm, chuyển đổi layout cũ (thuần)
   labels/        đặt nhãn tránh đè (chuyển từ series-panels-labels.ts)
   react/         <IQLine />, chú giải, thanh công cụ, hộp thoại
@@ -257,7 +257,9 @@ Chuyển nguyên `IndicatorPlot` và các hàm trong `flashback-indicators.ts`.
 
 **7 chỉ báo bổ sung (chỉ ở `market`):** ATR, ATR%, ADX, Keltner, BB Width, Parabolic SAR, Relative Volume. Đây là những chỉ báo đã bị bỏ khỏi luật Bot nhưng vẫn còn công thức trong `calcLegacy`, nên đối chiếu được và không cần dữ liệu ngoài bộ nến. Việc hiển thị trên biểu đồ không đưa chúng trở lại luật Bot. Các chỉ báo cần dữ liệu toàn thị trường (`rs_market`, `rs_sector`, `ad_line`, `breadth_ma50`, `new_high_low`, `index_ma`) không thuộc nhóm này.
 
-Giai đoạn 0 đếm các chỉ báo trong layout đã lưu. Chỉ báo được dùng nhiều mà chưa có trong danh sách (ví dụ VWAP, Ichimoku) sẽ được thêm trước khi phát hành.
+**Volume Profile theo vùng nhìn thấy (chỉ ở `market`):** thêm vì layout đã lưu có 2 người dùng chỉ báo này, là chỉ báo duy nhất ngoài danh sách được từ 2 người trở lên dùng. Chia khối lượng từng nến đều theo biên độ giá của nến đó, nên chỉ là ước lượng. Vẽ thành cột ngang trên ô giá.
+
+**Danh sách đã chốt theo số liệu Giai đoạn 0, tổng cộng 24 chỉ báo.** Ichimoku và Volatility O-H-L-C mỗi loại chỉ có 1 người dùng nên không thêm; hai chỉ báo này báo là không chuyển được (§11). Trong 7 chỉ báo bổ sung, chỉ BB Width có người dùng, nên các chỉ báo còn lại được cắt đầu tiên nếu thiếu thời gian.
 
 **Mở rộng bằng code:**
 
@@ -276,7 +278,7 @@ registerIndicator({
 - Kết quả tính được ghi nhớ theo `(id, tham số, độ dài dữ liệu)`, nên zoom và kéo không tính lại.
 - Cập nhật nến cuối chỉ tính lại phần đuôi nếu công thức cho phép; nếu không thì tính lại cả chuỗi.
 
-**Đối chiếu số liệu.** Vì chưa có package dùng chung giữa frontend và backend, thêm một bộ dữ liệu mẫu JSON sinh từ `quant/v2/indicators.ts` rồi kiểm tra cả 23 chỉ báo ở frontend. Bước này có thể phát hiện chỗ lệch đang có, và mỗi chỗ lệch phải được xử lý riêng vì Bot đang chạy theo công thức backend.
+**Đối chiếu số liệu.** Vì chưa có package dùng chung giữa frontend và backend, thêm một bộ dữ liệu mẫu JSON sinh từ `quant/v2/indicators.ts` rồi kiểm tra 23 chỉ báo ở frontend. Volume Profile không có công thức ở backend nên có test riêng. Bước này có thể phát hiện chỗ lệch đang có, và mỗi chỗ lệch phải được xử lý riêng vì Bot đang chạy theo công thức backend.
 
 ## 10. Công cụ vẽ
 
@@ -292,7 +294,9 @@ registerIndicator({
 
 Tổng cộng 14 công cụ. Flashback dùng ba công cụ: xu hướng, Fibonacci thoái lui, đường ngang.
 
-Mọi công cụ dùng chung một mô tả: danh sách điểm neo, cách vẽ, cách chọn. Danh sách cuối chốt theo số liệu Giai đoạn 0: công cụ người dùng đang dùng nhiều thì phải có mặt.
+Mọi công cụ dùng chung một mô tả: danh sách điểm neo, cách vẽ, cách chọn.
+
+Danh sách đã chốt. Layout đã lưu chỉ có 6 hình: 3 đường xu hướng, 1 thước đo giá, 1 hình chữ nhật, 1 Volume Profile cố định. Ba loại đầu đều có trong danh sách. Volume Profile cố định không có (§11).
 
 ## 11. Lưu trữ và chuyển dữ liệu từ TradingView
 
@@ -317,7 +321,15 @@ Bản sao trên trình duyệt chuyển sang khoá `iqx.iqline_drawings_v1_*`. G
 
 **Quay lại an toàn.** Giữ nguyên `charts` để quay về TradingView không mất dữ liệu. Nếu tổng vượt 512 KB thì bỏ `charts` của mã đó. Hình vẽ mới tạo trong IQLine sẽ không hiện khi quay lại TradingView, và điều này được chấp nhận. Cần test TradingView nhận được `state` có thêm khoá `iqline`.
 
-Cấu trúc layout cũ phải xác minh trên dữ liệu thật ở Giai đoạn 0, bằng một script chỉ đọc và chỉ đếm số lượng theo loại hình và loại chỉ báo, không xuất nội dung của từng người dùng.
+**Phạm vi chuyển đổi, đã xác minh trên production.** Cả 120 layout đều có `charts`; lớn nhất 40,8 KB, nên giữ `charts` không chạm giới hạn 512 KB ở hiện tại. Hình vẽ nằm ở `charts[].panes[].sources[]`, loại `LineTool*`, điểm neo gồm `time_t`, `offset`, `price`, `interval`. `time_t` đổi thẳng sang `time` của IQLine, phần `offset` đổi theo bước của `interval`.
+
+| Loại trong layout | Chuyển thành |
+|---|---|
+| `LineToolTrendLine`, `LineToolPriceRange`, `LineToolRectangle` | Đường xu hướng, thước đo, hình chữ nhật |
+| Volume, RSI, Moving Average, Bollinger Bands, BB Width, MACD, Donchian, Chaikin Money Flow, `VbPVisible` | Chỉ báo tương ứng ở §9 |
+| `LineToolVbPFixed`, Ichimoku Cloud, Volatility O-H-L-C | Không chuyển, báo cho người dùng |
+
+Số liệu này không gồm bản lưu trên trình duyệt của khách.
 
 **Flashback** không dùng `store`: hình chỉ nằm ở trình duyệt, mất khi sang ván mới, đúng như spec v2.1 §7.
 
@@ -385,10 +397,10 @@ Làm theo giai đoạn nhưng phát hành một lần. Trong lúc làm, mỗi n�
 
 | GĐ | Việc | Xong khi |
 |---|---|---|
-| 0 | Bản thử Canvas trên dữ liệu thật; đo tải và hiệu năng TradingView; thống kê layout đã lưu; kiểm tra kênh `ohlc` và `tabular-nums`. Còn: thống kê layout, đo realtime trong giờ giao dịch, đo điện thoại thật | Có số đo so với §14, chốt danh sách §9 và §10 |
+| 0 | Bản thử Canvas trên dữ liệu thật; đo tải và hiệu năng TradingView; thống kê layout đã lưu; kiểm tra kênh `ohlc` và `tabular-nums`. Còn: đo realtime trong giờ giao dịch, đo điện thoại thật | Có số đo so với §14, chốt danh sách §9 và §10 |
 | 1 | `core`, `scene`, `render`: mọi kiểu hiển thị, nhiều ô, hai loại trục, ba thang giá, giao diện | Ảnh chụp khớp Flashback hiện tại ở cả hai giao diện |
-| 2 | 23 chỉ báo, `registerIndicator`, test đối chiếu backend | Khớp bộ mẫu, hoặc mọi chỗ lệch đã được quyết định |
-| 3 | Tương tác, 14 công cụ vẽ, hoàn tác, lưu trữ, chuyển đổi layout cũ | Layout thật mở được, tỉ lệ hình chuyển được đạt mức đã chốt ở GĐ 0 |
+| 2 | 24 chỉ báo, `registerIndicator`, test đối chiếu backend | Khớp bộ mẫu, hoặc mọi chỗ lệch đã được quyết định |
+| 3 | Tương tác, 14 công cụ vẽ, hoàn tác, lưu trữ, chuyển đổi layout cũ | Mở được bản sao ẩn danh của layout thật, chuyển đúng theo bảng ở §11 |
 | 4 | Lắp vào `market`: datafeed, realtime, đánh dấu tin, lớp AI, trần sàn, thanh công cụ, điện thoại | Đủ mọi dòng `market` ở §2 |
 | 5 | Lắp vào Flashback | Test qua, chơi thử đủ một ván nhiều người |
 | 6 | Chế độ `static`, thay `series_panels`, nút "Thử trên biểu đồ" | Đủ 96 biểu đồ, duyệt ảnh chụp |
@@ -403,7 +415,7 @@ Các điểm dưới đây đã có lựa chọn mặc định. Tài liệu đi 
 1. **Flashback bật zoom và kéo** (§12). Đây là thay đổi so với hiện tại, và bản nháp trước đề xuất tắt.
 2. **Học viện nằm trong IQLine 1.0** (§13). Đây là phần có thể tách ra nếu cần phát hành sớm hơn, vì TradingView không phụ thuộc vào nó.
 3. **Danh sách không làm** ở §2, đặc biệt là ngôn ngữ viết chỉ báo cho người dùng.
-4. **Mất các công cụ vẽ ít dùng.** TradingView có nhiều công cụ hơn 14 công cụ ở §10. Hình thuộc công cụ không có sẽ không chuyển được, và ngưỡng chấp nhận được chốt theo số liệu Giai đoạn 0.
+4. **Những thứ người dùng mất khi chuyển.** Trên production, 1 trong 6 hình vẽ (Volume Profile cố định) và 2 chỉ báo mỗi loại 1 người dùng (Ichimoku, Volatility O-H-L-C) sẽ không chuyển được. TradingView cũng có nhiều công cụ vẽ hơn 14 công cụ ở §10.
 5. **Tên IQLine.** Nên tra cứu nhãn hiệu tại Cục Sở hữu trí tuệ trước khi đưa tên ra ngoài. Không ảnh hưởng việc code.
 
 ## 17. Rủi ro
