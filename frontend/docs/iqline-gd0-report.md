@@ -10,7 +10,7 @@ Giai đoạn 0 **chưa đóng**, còn hai việc:
 
 | Việc còn lại | Lý do | Ảnh hưởng |
 |---|---|---|
-| Kiểm tra realtime trong giờ giao dịch | Không nhận được khung dữ liệu nào (xem dưới) | Chưa dùng được kênh `ohlc` |
+| Kiểm tra kênh `ohlc` | Luồng DNSE trên production đã ngắt từ 2026-10-26 (xem dưới), phải khôi phục trước | Chưa dùng được kênh `ohlc` |
 | Đo trên điện thoại thật | Mới có giả lập CPU, không giả lập được GPU | Chưa kết luận mục tiêu điện thoại |
 
 ## So với mục tiêu §14
@@ -87,7 +87,9 @@ Mọi tình huống gồm nến, khối lượng, MA, EMA, Bollinger, RSI, MACD 
 | VNINDEX 1 phút có nến lúc 12 giờ và 15 giờ, ngoài phiên `0900-1130,1300-1445` | Không dùng chuỗi phiên để lọc nến, chỉ để ngoại suy phần tương lai |
 | Dữ liệu 4 file kiểm tra không có nến sai, trùng hay lệch thứ tự | Vẫn giữ bước lọc như `datafeed.ts` |
 
-**5. Realtime chưa dùng được.** Nghe `wss://iqx.vn/api/v2/market-data/ws` từ 14:28:40 đến 14:31:40 với VCB, FPT, VNINDEX, VN30 ở các kênh `ohlc`, `tick` và VNINDEX ở kênh `index`: kết nối mở, trả `pong`, không báo lỗi, nhưng **không có khung dữ liệu nào**, dù khoảng 80 giây đầu còn phiên khớp liên tục. REST vẫn có nến 14:29. Chưa rõ nguyên nhân, cần xem log `iqx-v2-market-ingest` và đo lại trong giờ giao dịch. Bảng giá cũng dùng WebSocket này và có đường dự phòng REST, nên lỗi có thể đang bị che.
+**5. Realtime chưa dùng được.** Nghe `wss://iqx.vn/api/v2/market-data/ws` từ 14:28:40 đến 14:31:40 với VCB, FPT, VNINDEX, VN30 ở các kênh `ohlc`, `tick` và VNINDEX ở kênh `index`: kết nối mở, trả `pong`, không báo lỗi, nhưng **không có khung dữ liệu nào**, dù khoảng 80 giây đầu còn phiên khớp liên tục. REST vẫn có nến 14:29.
+
+Log cho biết lý do: `iqx-v2-market-ingest` không kết nối được DNSE, ghi `Realtime upstream unavailable: Error` khoảng 20 giây một lần (khoảng 4.280 dòng mỗi ngày) từ 2026-10-26 05:29 UTC, ngay sau lần khởi động lại khi phát hành bản `20261026-userfix`. Trước đó tiến trình chạy không có cảnh báo. Thư mục `modules/realtime` không có commit nào kể từ 2026-10-15, và từ máy chủ vẫn gọi tới được các máy của DNSE. **Chưa biết lỗi cụ thể**, vì `realtime.bridge.ts` chỉ ghi `error.name`, không ghi nội dung lỗi. Khả năng đăng nhập DNSE bị từ chối là giả thuyết, chưa kiểm chứng. API và Redis vẫn hoạt động, nên bảng giá chạy bằng đường dự phòng REST trong suốt thời gian này.
 
 Đọc code cho thấy thêm:
 
@@ -127,7 +129,7 @@ Vì vậy, IQLine 1.0 **giữ thăm dò 15 giây làm đường chính** như Tr
 
 ## Việc tiếp theo
 
-1. **Realtime:** chạy lại trong phiên khớp liên tục, 09:00 đến 11:30 hoặc 13:00 đến 14:30.
+1. **Realtime:** sau khi khôi phục luồng DNSE, chạy lại trong phiên khớp liên tục, 09:00 đến 11:30 hoặc 13:00 đến 14:30.
 
    ```bash
    node frontend/spike/iqline/ws-probe.mjs /tmp/ws-frames.json 120

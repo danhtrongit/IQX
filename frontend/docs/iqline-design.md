@@ -53,7 +53,7 @@ Xây thư viện biểu đồ nến riêng của IQX, theo đúng `frontend/DESI
 | Vỏ TradingView | `tv-chart.tsx`, `tradingview.ts`, `datafeed.ts`, tổng khoảng 1.000 dòng | Thay bằng `<IQLine />` và adapter; các quy tắc vòng đời trong `tv-chart.tsx` phải giữ (§6) |
 | Dữ liệu nến | `GET /market-data/quotes/{symbol}/ohlcv`, tham số `interval`, `start`, `end` theo ngày | Dùng lại, không đổi backend |
 | Tìm mã | `SymbolPicker` và `searchSymbols` | Dùng lại `SymbolPicker` |
-| Realtime | `DataPulse` thăm dò 15 giây. Backend có WebSocket với kênh `tick`, `orderbook`, `ohlc`, `index`, nhưng lần đo ở Giai đoạn 0 không nhận được khung dữ liệu nào | Giữ thăm dò làm đường chính; chỉ bật `ohlc` khi đã kiểm chứng (§8) |
+| Realtime | `DataPulse` thăm dò 15 giây. Backend có WebSocket với kênh `tick`, `orderbook`, `ohlc`, `index`, nhưng luồng DNSE trên production đã ngắt từ 2026-10-26 | Giữ thăm dò làm đường chính; chỉ bật `ohlc` khi đã kiểm chứng (§8) |
 | Đánh dấu tin | `getMarks`, `NewsMarkPopover`, màu theo sắc thái | Giữ popover, thư viện chỉ vẽ điểm và báo sự kiện bấm |
 | Hình vẽ đã lưu | `/chart-drawings/{symbol}` lưu nguyên JSON của `widget.save`, tối đa 512 KB; bản sao ở `iqx.tv_drawings_v2_*` | Bắt buộc có bộ chuyển đổi, nếu không người dùng mất hình vẽ (§11) |
 | Biểu đồ Flashback | SVG, `flashback-chart.tsx` 1.029 dòng, trộn tính toán, vẽ và tương tác | Tách lớp là lợi ích lớn nhất ở phần này |
@@ -397,7 +397,7 @@ Làm theo giai đoạn nhưng phát hành một lần. Trong lúc làm, mỗi n�
 
 | GĐ | Việc | Xong khi |
 |---|---|---|
-| 0 | Bản thử Canvas trên dữ liệu thật; đo tải và hiệu năng TradingView; thống kê layout đã lưu; kiểm tra kênh `ohlc` và `tabular-nums`. Còn: đo realtime trong giờ giao dịch, đo điện thoại thật | Có số đo so với §14, chốt danh sách §9 và §10 |
+| 0 | Bản thử Canvas trên dữ liệu thật; đo tải và hiệu năng TradingView; thống kê layout đã lưu; kiểm tra kênh `ohlc` và `tabular-nums`. Còn: đo kênh `ohlc` sau khi khôi phục luồng DNSE, đo điện thoại thật | Có số đo so với §14, chốt danh sách §9 và §10 |
 | 1 | `core`, `scene`, `render`: mọi kiểu hiển thị, nhiều ô, hai loại trục, ba thang giá, giao diện | Ảnh chụp khớp Flashback hiện tại ở cả hai giao diện |
 | 2 | 24 chỉ báo, `registerIndicator`, test đối chiếu backend | Khớp bộ mẫu, hoặc mọi chỗ lệch đã được quyết định |
 | 3 | Tương tác, 14 công cụ vẽ, hoàn tác, lưu trữ, chuyển đổi layout cũ | Mở được bản sao ẩn danh của layout thật, chuyển đúng theo bảng ở §11 |
