@@ -46,6 +46,12 @@ export { AXIS_RIGHT } from "./chart-helpers"
 /** Số nến mặc định hiện ở `market` và số ô trống chừa bên phải. */
 export const DEFAULT_VISIBLE = 120
 const DEFAULT_RIGHT_PAD = 5
+/** Nến mặc định rộng ít nhất chừng này CSS px, để màn hình hẹp không biến thân nến thành đường kẻ. */
+const MIN_DEFAULT_BAR_WIDTH = 5
+
+export function defaultVisible(plotWidth: number): number {
+  return Math.min(DEFAULT_VISIBLE, Math.max(20, Math.floor(plotWidth / MIN_DEFAULT_BAR_WIDTH)))
+}
 /** `market` cho kéo ra khoảng trống hai đầu; `flashback` không. */
 export const MARKET_LEFT_PAD = 10
 export const MARKET_RIGHT_PAD = 50
@@ -233,7 +239,7 @@ export function useIQLineChart(options: IQLineChartOptions): IQLineChart {
   const config = useMemo<InteractionConfig>(() => {
     if (!market) return flashbackConfig({ warmup, barCount: bars.length, totalSlots, zoom: zoomOption, pan: panOption })
     const limits = viewportLimits({ slots: realCount, leftPad: MARKET_LEFT_PAD, rightPad: MARKET_RIGHT_PAD, plotWidth })
-    const initial = clampViewport(defaultViewport({ slots: realCount, visible: Math.min(DEFAULT_VISIBLE, Math.max(1, realCount)), rightPad: DEFAULT_RIGHT_PAD }, limits), limits)
+    const initial = clampViewport(defaultViewport({ slots: realCount, visible: Math.min(defaultVisible(plotWidth), Math.max(1, realCount)), rightPad: DEFAULT_RIGHT_PAD }, limits), limits)
     const base = marketConfig({ barCount: realCount, defaultViewport: initial, leftPad: MARKET_LEFT_PAD, rightPad: MARKET_RIGHT_PAD })
     return { ...base, zoom: zoomOption ?? true, pan: panOption ?? true }
   }, [market, warmup, bars.length, totalSlots, realCount, plotWidth, zoomOption, panOption])

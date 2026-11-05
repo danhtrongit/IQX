@@ -7,7 +7,7 @@ import { makeTimedBars } from "../scene/test-support"
 import type { Drawing, TimedBar } from "../types"
 import { IQLineCanvasView } from "./IQLineCanvas"
 import { installCanvasEnv, type CanvasEnv } from "./test-env"
-import { useIQLineChart, type IQLineChart, type MarketChartOptions } from "./use-iqline-chart"
+import { defaultVisible, useIQLineChart, type IQLineChart, type MarketChartOptions } from "./use-iqline-chart"
 
 let env: CanvasEnv
 beforeEach(() => {
@@ -228,5 +228,13 @@ describe("ChartController", () => {
     expect(calls.indexOf("fillRect")).toBeLessThan(calls.indexOf("drawImage"))
     view.unmount()
     await expect(chart.controller.snapshot("#fff")).rejects.toThrow()
+  })
+})
+
+describe("defaultVisible", () => {
+  it("máy tính giữ 120 nến, màn hình hẹp hiện ít hơn để nến còn có thân", () => {
+    expect(defaultVisible(850)).toBe(120)
+    expect(defaultVisible(230)).toBe(46)
+    expect(defaultVisible(1)).toBe(20)
   })
 })

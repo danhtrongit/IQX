@@ -227,8 +227,8 @@ for (const scheme of ["dark", "light"] as const) {
       near(await dominantAlpha(page, 5, 50, volumeTop + 2, volumeTop + volumeHeight - 2), Math.round(0.45 * 255))
       near(await dominantAlpha(page, 60, 66, volumeTop + 2, volumeTop + volumeHeight - 2), Math.round(0.7 * 255))
 
-      // Cùng dữ liệu, biểu đồ SVG cũ (mặc định): để so bằng mắt.
-      await page.goto("/demo-trading?view=flashback")
+      // Cùng dữ liệu, biểu đồ SVG cũ: để so bằng mắt.
+      await page.goto("/demo-trading?view=flashback&iqline=0")
       await expect(page.getByRole("img", { name: "Biểu đồ nến Flashback" })).toBeVisible()
       await expect(page.getByTestId("flashback-session")).toHaveText("Phiên " + START_STEP)
       await expect(page.locator("canvas[data-iqline-layer]")).toHaveCount(0)
