@@ -7,7 +7,7 @@
  * book, company/fundamental overview, and the KBS statements + forensic BCTC
  * analysis. "AI Phân tích" opens the 6-layer briefing (premium).
  */
-import { useState } from "react"
+import { lazy, Suspense, useState } from "react"
 import { useNavigate, useParams, useSearchParams } from "react-router"
 import { ArrowLeftRight, ChartCandlestick, Info, Sparkles, Wallet } from "lucide-react"
 
@@ -17,9 +17,11 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/hooks/use-auth"
 import { useResolvedTheme } from "@/hooks/use-resolved-theme"
+import type { Interval } from "@/lib/iqline/types"
 
 import { ChartShell } from "./chart-shell"
 import { getDrawingPersistence } from "./chart/drawing-persistence"
+import { iqlineMarketEnabled } from "./chart/iqline-flag"
 import { NewsMarkPopover } from "./chart/news-mark-popover"
 import { TVChart } from "./chart/tv-chart"
 import { BctcAnalysis } from "./stock/components/bctc-analysis"
@@ -38,6 +40,10 @@ const TABS: { id: StockTab; label: string; icon: typeof ChartCandlestick }[] = [
 ]
 
 const SYMBOL_PATTERN = /^[A-Z0-9]{1,10}$/
+
+// IQLine (Canvas) chỉ tải khi URL bật `?iqline=1`; mặc định vẫn là TradingView.
+const IQLineMarketChart = lazy(() => import("./chart/iqline-chart"))
+const IQLINE_INTERVALS: readonly string[] = ["1", "5", "15", "30", "60", "D", "W", "M"]
 
 function readTab(value: string | null): StockTab {
   return value === "financials" || value === "overview" || value === "orderbook"
@@ -62,6 +68,14 @@ export function StockDetailPage() {
     const clean = next.trim().toUpperCase()
     if (!SYMBOL_PATTERN.test(clean) || clean === code) return
     navigate(`/co-phieu/${clean}`, { replace: true })
+  }
+
+  const iqlineInterval = (IQLINE_INTERVALS.includes(params.get("interval") ?? "") ? params.get("interval") : "D") as Interval
+
+  function selectInterval(next: Interval) {
+    const nextParams = new URLSearchParams(params)
+    nextParams.set("interval", next)
+    setParams(nextParams, { replace: true })
   }
 
   function selectTab(next: string) {
@@ -109,15 +123,28 @@ export function StockDetailPage() {
           </TabsList>
 
           <TabsContent value="chart" className="flex min-h-0 flex-1 flex-col">
-            <TVChart
-              key={user?.id ?? "guest"}
-              symbol={code}
-              interval="D"
-              theme={theme}
-              onSymbolChanged={selectSymbol}
-              onMarkClick={setActiveMarkId}
-              persistence={getDrawingPersistence()}
-            />
+            {iqlineMarketEnabled(params) ? (
+              <Suspense fallback={<div role="status" className="flex min-h-0 flex-1 items-center justify-center text-xs text-muted-foreground">Đang tải biểu đồ…</div>}>
+                <IQLineMarketChart
+                  key={user?.id ?? "guest"}
+                  symbol={code}
+                  interval={iqlineInterval}
+                  theme={theme}
+                  onIntervalChange={selectInterval}
+                  onMarkClick={setActiveMarkId}
+                />
+              </Suspense>
+            ) : (
+              <TVChart
+                key={user?.id ?? "guest"}
+                symbol={code}
+                interval="D"
+                theme={theme}
+                onSymbolChanged={selectSymbol}
+                onMarkClick={setActiveMarkId}
+                persistence={getDrawingPersistence()}
+              />
+            )}
           </TabsContent>
 
           <TabsContent value="orderbook" className="min-h-0 flex-1">

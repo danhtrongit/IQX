@@ -50,3 +50,4 @@ export {
   type PendingDrawing,
 } from "./state"
 export { fromTradingViewLayout, intervalStepSeconds, type TradingViewConversion } from "./tradingview"
+export { AI_OVERLAY_TOKEN, aiOverlayCommands, type AiOverlayOptions } from "./overlays"

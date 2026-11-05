@@ -14,7 +14,7 @@
 import { memo, useEffect, useRef, useState } from "react"
 
 import { createDataFeed } from "./datafeed"
-import type { DrawingPersistence } from "./drawing-persistence"
+import { carryIQLineState, type DrawingPersistence } from "./drawing-persistence"
 import {
   buildThemeOverrides,
   buildWidgetOptions,
@@ -85,11 +85,14 @@ function TVChartInner({
       // (a `charts` array) — a stale/foreign object would wedge the widget on
       // its loading spinner. A load error never blocks the chart.
       let savedData: Record<string, unknown> | undefined
+      // The IQLine document lives next to the TradingView layout in the same stored state; keep it through every save.
+      let iqlineState: unknown
       const persist = persistenceRef.current
       const activeSymbol = symbol
       if (persist) {
         try {
           const loaded = await persist.load(activeSymbol)
+          iqlineState = loaded?.iqline
           if (loaded && Array.isArray(loaded.charts)) savedData = loaded
         } catch {
           // start with a fresh chart
@@ -141,7 +144,7 @@ function TVChartInner({
             clearTimeout(saveTimer)
             saveTimer = setTimeout(() => {
               try {
-                widget.save((state) => persist.save(activeSymbol, state))
+                widget.save((state) => persist.save(activeSymbol, carryIQLineState(state, iqlineState)))
               } catch {
                 // never let persistence break the chart
               }

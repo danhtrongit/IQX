@@ -2,6 +2,16 @@
  * Hợp đồng chung của IQLine (docs/iqline-design.md §4-§7). Mọi thư mục con chỉ phụ thuộc nhau qua file này
  * và qua hướng `react -> render, interaction -> scene -> core, indicators, drawings, labels`.
  * File này không chạm DOM. Sửa hợp đồng phải cập nhật mọi nơi dùng.
+ *
+ * Quy ước đơn vị (mọi adapter đổi về đây trước khi đưa dữ liệu vào thư viện):
+ * - Thời gian: Unix GIÂY, UTC (`TimedBar.time`, `Anchor.time`, `ChartMark.time`, tham số `to` của `getBars`). Chỉ code
+ *   TradingView cũ (`datafeed.ts`) dùng mili giây; không để mili giây lọt vào thư viện.
+ * - Giá cổ phiếu: nghìn đồng, như REST `/market-data/quotes/{symbol}/ohlcv` (58 là 58.000đ). `trading/price-board` trả
+ *   đồng và WebSocket nhân 1.000: chia 1.000 trước khi dùng cho `priceLevels` hay nến.
+ * - Giá chỉ số: điểm chỉ số, không nhân. Khối lượng: số cổ phiếu.
+ * - Chỉ số nến (viewport, `PaneCoords`): số nguyên là TÂM nến, nến `i` chiếm `[i - 0.5, i + 0.5]`; lẻ được.
+ * - Toạ độ trên màn hình (`PaneCoords`, `PointerInput`): CSS pixel. Lệnh vẽ (`DrawCommand`): pixel thiết bị, đã nhân `dpr`.
+ * - Màu: chỉ tên token (`ColorToken`), không bao giờ `var(--x)` hay mã màu thô.
  */
 
 /** Nến không có thời gian: chế độ `flashback` chỉ dùng kiểu này nên không thể lộ ngày thật. */
@@ -113,6 +123,21 @@ export type DrawingTool =
 export type DrawingStyle = { color: ColorToken; width: number; dash?: "solid" | "dashed"; fill?: boolean }
 export type Drawing = { id: string; tool: DrawingTool; anchors: Anchor[]; style: DrawingStyle; text?: string; locked?: boolean; hidden?: boolean }
 
+// --- Lớp AI (§2 "Đánh dấu", §7) ---
+/**
+ * Mẫu hình AI vẽ đè lên ô giá. Chỉ dùng màu `chart-7` (màu dành riêng cho AI), nét phẳng, không tương tác. Điểm neo theo
+ * `time` ở `market`. Không phải hình của người dùng: không lưu, không chọn, không xoá.
+ */
+export type AiOverlay =
+  /** Đường gãy qua các điểm (dự báo hoặc đường viền mẫu hình). */
+  | { id: string; kind: "path"; points: readonly Anchor[]; label?: string; dashed?: boolean }
+  /** Mức giá ngang qua cả ô giá. */
+  | { id: string; kind: "level"; price: number; label?: string }
+  /** Vùng chữ nhật giữa hai góc. */
+  | { id: string; kind: "zone"; from: Anchor; to: Anchor; label?: string }
+  /** Một điểm đánh dấu có nhãn. */
+  | { id: string; kind: "marker"; anchor: Anchor; label?: string }
+
 // --- Lưu trữ (§11) ---
 export type ChartDocument = {
   iqline: { version: 1; drawings: Drawing[]; indicators: ChartIndicatorInput[]; chartType: ChartType }
@@ -133,4 +158,14 @@ export type IQLineDatafeed = {
 export type IQLineStore = {
   load(symbol: string): Promise<ChartDocument | null>
   save(symbol: string, doc: ChartDocument): void
+}
+
+/** Lấy qua ref, cho thanh công cụ bên ngoài (§6). */
+export type IQLineHandle = {
+  /** Về khung mặc định: viewport và thang giá tự co giãn. */
+  fitContent(): void
+  /** Ảnh PNG của biểu đồ (bốn lớp canvas trên nền giao diện hiện tại). */
+  screenshot(): Promise<Blob>
+  undo(): void
+  redo(): void
 }

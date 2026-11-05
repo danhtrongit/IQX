@@ -1,115 +1,28 @@
 /**
- * Vỏ React tối thiểu của IQLine (docs/iqline-design.md §6-§7): bốn lớp canvas, `ResizeObserver`, DPR, và vừa đủ
- * tương tác để chạy demo (crosshair, lăn chuột để zoom, kéo để di chuyển, kéo đường ngăn để đổi chiều cao ô, nhấp
- * đúp để về khung mặc định, phím mũi tên và +/-). Chưa có thanh công cụ, hộp thoại, chú giải DOM hay công cụ vẽ.
+ * Lớp view của IQLine (docs/iqline-design.md §6-§7): bốn lớp canvas, đổi sự kiện DOM (con trỏ, chạm, con lăn, phím) sang hành động
+ * của `interactionReducer` qua `chart.controller`, và kéo đường ngăn để đổi chiều cao ô (`market`). Mọi tính toán nằm ở
+ * `use-iqline-chart.ts`, `core/`, `scene/` và `interaction/`; component này không giữ trạng thái nào.
  *
- * Mọi tính toán hình học nằm ở `core/` và `scene/`; component này chỉ giữ trạng thái viewport, đo kích thước và gọi
- * `render/`. Di chuột không render lại React: con trỏ nằm trong ref và chỉ lớp trên cùng được vẽ lại.
+ * `IQLineCanvas` là dạng gọn: tự gọi `useIQLineChart` rồi dựng `IQLineCanvasView`. Trang cần chú giải, thanh công cụ hay hộp thoại thì
+ * gọi hook riêng và dùng `IQLineCanvasView` (xem `IQLine.tsx`).
+ *
+ * Chạm: `touch-action: pan-y` để vuốt dọc cuộn trang; vuốt ngang một ngón là kéo, hai ngón là chụm để zoom, nhấn giữ `LONG_PRESS_MS` rồi
+ * kéo là crosshair. Đang chọn công cụ vẽ thì `touch-action: none` (như Flashback hiện tại).
  */
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef } from "react"
 
-import { AXIS_HEIGHT, findPaneBoundary, resizePanes } from "../core/layout"
-import {
-  clampViewport,
-  defaultViewport,
-  fitViewport,
-  followAppend,
-  panViewport,
-  panViewportByPixels,
-  prependedCount,
-  shiftForPrepend,
-  viewportLimits,
-  zoomViewport,
-} from "../core/viewport"
-import { createCanvasStack, resolveDpr, type CanvasStack } from "../render/canvas-stack"
-import { SceneBuilder, indexAtPointer, type Pointer } from "../scene/builder"
-import { markPositions, MARK_RADIUS } from "../scene/marks"
-import {
-  createChartData,
-  createFrame,
-  naturalHeight,
-  type ChartDataInput,
-  type ChartFrame,
-  type SceneIndicator,
-} from "../scene/model"
-import type { PriceLevels } from "../scene/colors"
-import { valuesAtIndex, type IndexValues } from "../scene/values"
-import type { Bar, ChartMark, ChartType, Interval, PriceScaleMode, Scene, SessionMarker, TimedBar, Viewport } from "../types"
+import { findPaneBoundary, resizePanes, type ChartLayout } from "../core/layout"
+import { LONG_PRESS_MS, LONG_PRESS_SLOP, type CursorHint, type PointerInput, type PointerKind } from "../interaction"
+import { createCanvasStack } from "../render/canvas-stack"
+import { MARK_RADIUS, markPositions } from "../scene/marks"
+import type { ChartType } from "../types"
+import { useIQLineChart, type IQLineChart, type IQLineChartOptions } from "./use-iqline-chart"
 
-/** Độ rộng cột giá bên phải (CSS pixel), như `PAD_RIGHT` của biểu đồ Flashback hiện tại. */
-export const AXIS_RIGHT = 62
-/** Số nến mặc định hiện ở `market` và số ô trống chừa bên phải. */
-const DEFAULT_VISIBLE = 120
-const DEFAULT_RIGHT_PAD = 5
-/** `market` cho kéo ra khoảng trống hai đầu; `flashback` không. */
-const MARKET_LEFT_PAD = 10
-const MARKET_RIGHT_PAD = 50
-const WHEEL_SENSITIVITY = 0.0015
-const KEY_ZOOM = 1.25
+export { AXIS_RIGHT } from "./chart-helpers"
+export type { FlashbackChartOptions as FlashbackCanvasProps, IQLineChartOptions as IQLineCanvasProps, MarketChartOptions as MarketCanvasProps } from "./use-iqline-chart"
+
 /** Kéo quá ngần này pixel thì coi là kéo chứ không phải bấm. */
 const CLICK_SLOP = 4
-
-type CanvasCommon = {
-  theme: "light" | "dark"
-  chartType?: ChartType
-  priceScaleMode?: PriceScaleMode
-  indicators?: readonly SceneIndicator[]
-  /** Đổi giá trị này khi đổi mã hoặc khung để về viewport mặc định thay vì giữ vị trí cũ. */
-  resetKey?: string
-  /** Viewport điều khiển từ ngoài; bỏ qua thì component tự giữ. */
-  viewport?: Viewport | null
-  onViewportChange?: (viewport: Viewport) => void
-  /** Chiều cao ô đã kéo đổi (khoá ô: `v`, `i{khoá}`). */
-  paneHeights?: Readonly<Record<string, number>>
-  onPaneHeightsChange?: (heights: Record<string, number>) => void
-  labelToken?: "muted-foreground" | "academy-label"
-  formatPrice?: (price: number) => string
-  interaction?: { zoom?: boolean; pan?: boolean }
-  /** Lớp hình vẽ do `drawings/` dựng từ `frame.price.coords`; gọi lại mỗi khi lớp này cần vẽ. */
-  renderDrawings?: (frame: ChartFrame) => Scene
-  /** Đổi giá trị này để vẽ lại lớp hình vẽ khi hình thay đổi mà `renderDrawings` vẫn là hàm cũ. */
-  drawingsVersion?: number
-  /** Giá trị tại nến dưới con trỏ (cho chú giải DOM); null khi con trỏ rời hoặc ở ô tương lai. */
-  onCrosshairChange?: (values: IndexValues | null) => void
-  className?: string
-  ariaLabel?: string
-}
-
-export type MarketCanvasProps = CanvasCommon & {
-  mode: "market"
-  bars: readonly TimedBar[]
-  interval: Interval
-  priceLevels?: PriceLevels
-  marks?: readonly ChartMark[]
-  onMarkClick?: (id: string | number) => void
-  warmup?: never
-  totalSlots?: never
-  formatX?: never
-  markers?: never
-  divider?: never
-  available?: never
-}
-
-export type FlashbackCanvasProps = CanvasCommon & {
-  mode: "flashback"
-  /** Toàn bộ nến đã mở, gồm `warmup` nến đầu chỉ để tính chỉ báo. Không có trường thời gian. */
-  bars: readonly Bar[]
-  warmup: number
-  totalSlots: number
-  formatX: (session: number) => string
-  markers?: readonly SessionMarker[]
-  divider?: number
-  /** Chiều cao màn hình còn trống cho biểu đồ (null khi chưa đo): ô giá lấy phần còn lại. */
-  available?: number | null
-  interval?: never
-  priceLevels?: never
-  marks?: never
-  onMarkClick?: never
-}
-
-export type IQLineCanvasProps = MarketCanvasProps | FlashbackCanvasProps
-
-type Size = { width: number; height: number; dpr: number }
 
 const CHART_TYPE_LABEL: Record<ChartType, string> = {
   candles: "nến",
@@ -120,320 +33,208 @@ const CHART_TYPE_LABEL: Record<ChartType, string> = {
   "heikin-ashi": "Heikin Ashi",
 }
 
-/** Mọi thứ cần cho khung hình kế tiếp, để trình xử lý sự kiện đọc mà không phải đăng ký lại. */
-type Live = {
-  frame: ChartFrame | null
-  viewport: Viewport | null
-  limits: ReturnType<typeof viewportLimits> | null
-  fit: Viewport | null
-  props: IQLineCanvasProps
-  commitViewport: (viewport: Viewport) => void
-  commitHeights: (heights: Record<string, number>) => void
+const CURSOR: Record<CursorHint, string> = {
+  default: "crosshair",
+  crosshair: "crosshair",
+  pointer: "pointer",
+  grabbing: "grabbing",
+  "ns-resize": "ns-resize",
+  "ew-resize": "ew-resize",
 }
 
-export function IQLineCanvas(props: IQLineCanvasProps) {
-  const {
-    mode,
-    bars,
-    interval,
-    warmup,
-    totalSlots,
-    theme,
-    chartType = "candles",
-    priceScaleMode = "linear",
-    indicators,
-    priceLevels,
-    marks,
-    markers,
-    divider,
-    available,
-    resetKey,
-    labelToken,
-    formatPrice,
-    formatX,
-    paneHeights: controlledHeights,
-    viewport: controlledViewport,
-    className,
-    ariaLabel,
-  } = props
+const kindOf = (type: string | undefined): PointerKind => (type === "touch" ? "touch" : type === "pen" ? "pen" : "mouse")
 
-  const hostRef = useRef<HTMLDivElement>(null)
-  const stackRef = useRef<CanvasStack | null>(null)
-  const liveRef = useRef<Live | null>(null)
-  const pointerRef = useRef<Pointer | null>(null)
-  const lastIndexRef = useRef<number | null>(null)
-  const [builder] = useState(() => new SceneBuilder())
-  const [size, setSize] = useState<Size>({ width: 0, height: 0, dpr: 1 })
-  const [viewportState, setViewportState] = useState<Viewport | null>(null)
-  const [heightsState, setHeightsState] = useState<Record<string, number>>({})
-  const [tracked, setTracked] = useState<{ resetKey: string | undefined; mode: string; interval: string | undefined; first: number | null; count: number }>({
-    resetKey,
-    mode,
-    interval,
-    first: null,
-    count: 0,
-  })
+type PaneDrag = { boundary: number; y: number; layout: ChartLayout }
 
-  // ---- dữ liệu: chỉ tính lại khi dữ liệu hoặc kiểu hiển thị đổi, không tính lại khi zoom và kéo.
-  const data = useMemo(() => {
-    const common = { chartType, indicators: indicators ?? [] }
-    const input: ChartDataInput =
-      mode === "market"
-        ? { ...common, mode, bars: bars as readonly TimedBar[], interval: interval as Interval, priceLevels, marks }
-        : { ...common, mode, bars, warmup: warmup as number, totalSlots: totalSlots as number, markers, divider }
-    return createChartData(input)
-  }, [mode, bars, interval, warmup, totalSlots, chartType, indicators, priceLevels, marks, markers, divider])
+export function IQLineCanvasView({ chart }: { chart: IQLineChart }) {
+  const { controller, hostRef, mode, options } = chart
+  const hoverBoundary = useRef(false)
 
-  const plotWidth = Math.max(1, size.width - AXIS_RIGHT)
-  const market = mode === "market"
-  const limits = useMemo(
-    () => viewportLimits({ slots: data.slots, leftPad: market ? MARKET_LEFT_PAD : 0, rightPad: market ? MARKET_RIGHT_PAD : 0, plotWidth }),
-    [data.slots, market, plotWidth],
-  )
-  const fit = useMemo(() => fitViewport(limits), [limits])
-  const initial = useMemo(
-    () => (market ? defaultViewport({ slots: data.slots, visible: Math.min(DEFAULT_VISIBLE, Math.max(1, data.count)), rightPad: DEFAULT_RIGHT_PAD }, limits) : fit),
-    [market, data.slots, data.count, limits, fit],
-  )
-
-  // ---- nạp thêm lịch sử, nến mới, đổi mã hoặc khung: điều chỉnh viewport ngay trong lượt render, trước khi vẽ.
-  const first = data.timeScale.kind === "market" && data.count > 0 ? data.timeScale.times[0] : null
-  if (tracked.resetKey !== resetKey || tracked.mode !== mode || tracked.interval !== interval || tracked.first !== first || tracked.count !== data.count) {
-    const sameSeries = tracked.resetKey === resetKey && tracked.mode === mode && tracked.interval === interval
-    setTracked({ resetKey, mode, interval, first, count: data.count })
-    if (!sameSeries) {
-      setViewportState(null)
-    } else if (viewportState) {
-      const added = data.timeScale.kind === "market" ? prependedCount(tracked.first, data.timeScale.times) : 0
-      if (added > 0) setViewportState(shiftForPrepend(viewportState, added))
-      else if (tracked.first === first) setViewportState(followAppend(viewportState, tracked.count, data.count))
-    }
-  }
-
-  const rawViewport = controlledViewport ?? viewportState ?? initial
-  const viewport = useMemo(() => clampViewport(rawViewport, limits), [rawViewport, limits])
-  const paneHeights = controlledHeights ?? heightsState
-
-  const height = mode === "flashback" ? naturalHeight(data, { width: size.width, available: available ?? null, paneHeights }) : size.height
-  const frame = useMemo(
-    () =>
-      size.width > 0 && height > 0
-        ? createFrame(data, {
-            viewport,
-            geometry: { width: size.width, height, dpr: size.dpr, axisRight: AXIS_RIGHT, axisBottom: AXIS_HEIGHT },
-            priceScaleMode,
-            paneHeights,
-            labelToken,
-            formatPrice,
-            formatX,
-          })
-        : null,
-    [data, viewport, size.width, size.dpr, height, priceScaleMode, paneHeights, labelToken, formatPrice, formatX],
-  )
-
-  const onViewportChange = props.onViewportChange
-  const onPaneHeightsChange = props.onPaneHeightsChange
-  const controlled = controlledViewport !== undefined && controlledViewport !== null
-  const controlledHeightsSet = controlledHeights !== undefined
-
-  // Trình xử lý sự kiện đọc trạng thái mới nhất qua ref; ghi ref chỉ trong effect.
-  useEffect(() => {
-    liveRef.current = {
-      frame,
-      viewport,
-      limits,
-      fit,
-      props,
-      commitViewport: (next) => {
-        if (liveRef.current) liveRef.current.viewport = next
-        if (!controlled) setViewportState(next)
-        onViewportChange?.(next)
-      },
-      commitHeights: (next) => {
-        if (!controlledHeightsSet) setHeightsState(next)
-        onPaneHeightsChange?.(next)
-      },
-    }
-  })
-
-  // ---- tạo bốn lớp canvas, theo dõi kích thước, gắn tương tác.
+  // ---- bốn lớp canvas và sự kiện; chỉ tạo một lần, trạng thái mới nhất đi qua `controller`.
   useEffect(() => {
     const host = hostRef.current
     if (!host) return undefined
-    const stack = createCanvasStack(host, {
-      build: (layer) => {
-        const live = liveRef.current
-        const current = live?.frame
-        if (!live || !current) return null
-        if (layer === "base") return builder.base(current)
-        if (layer === "data") return builder.data(current)
-        if (layer === "top") return builder.top(current, pointerRef.current)
-        return live.props.renderDrawings ? live.props.renderDrawings(current) : builder.drawings()
-      },
-    })
-    stackRef.current = stack
-
-    const measure = (entry?: ResizeObserverEntry) => {
-      const box = entry?.contentRect
-      const width = Math.round(box?.width ?? host.clientWidth)
-      const nextHeight = Math.round(box?.height ?? host.clientHeight)
-      setSize((previous) => {
-        const dpr = resolveDpr(undefined)
-        return previous.width === width && previous.height === nextHeight && previous.dpr === dpr ? previous : { width, height: nextHeight, dpr }
-      })
-    }
-    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver((entries) => measure(entries[0]))
-    observer?.observe(host)
-
+    const stack = createCanvasStack(host, { build: (layer) => controller.buildLayer(layer) })
+    controller.attach(stack)
     const canvas = stack.interactive
-    let drag: { kind: "pan"; x: number; moved: number } | { kind: "pane"; boundary: number; y: number; layout: ChartFrame["layout"] } | null = null
-    let pressed = false
 
-    const local = (event: { clientX: number; clientY: number }): Pointer => {
+    let paneDrag: PaneDrag | null = null
+    let press: { id: number; x: number; y: number; moved: number } | null = null
+    let longPress: ReturnType<typeof setTimeout> | undefined
+    const touchIds = new Set<number>()
+
+    const local = (event: { clientX: number; clientY: number }) => {
       const rect = canvas.getBoundingClientRect()
       return { x: event.clientX - rect.left, y: event.clientY - rect.top }
     }
-
-    const announce = (point: Pointer | null) => {
-      const live = liveRef.current
-      const callback = live?.props.onCrosshairChange
-      if (!callback || !live?.frame) return
-      const index = point ? indexAtPointer(live.frame, point) : null
-      if (index === lastIndexRef.current) return
-      lastIndexRef.current = index
-      callback(index === null ? null : valuesAtIndex(live.frame.data, index))
+    const pointerOf = (event: PointerEvent | MouseEvent, point: { x: number; y: number }): PointerInput => ({
+      pointerId: (event as PointerEvent).pointerId ?? 1,
+      pointerType: kindOf((event as PointerEvent).pointerType),
+      x: point.x,
+      y: point.y,
+      target: controller.targetAt(point.x, point.y),
+      button: event.button,
+    })
+    const applyCursor = () => {
+      canvas.style.cursor = hoverBoundary.current ? "ns-resize" : CURSOR[controller.getState().cursor]
     }
-
-    const onMove = (event: PointerEvent) => {
-      const live = liveRef.current
-      if (!live?.frame || !live.viewport || !live.limits) return
-      const point = local(event)
-      if (drag?.kind === "pan") {
-        if (live.props.interaction?.pan === false) return
-        const dx = point.x - drag.x
-        drag.moved += Math.abs(dx)
-        drag.x = point.x
-        live.commitViewport(panViewportByPixels(live.viewport, dx, live.frame.plot.width, live.limits))
-        return
-      }
-      if (drag?.kind === "pane") {
-        live.commitHeights(resizePanes(drag.layout, drag.boundary, point.y - drag.y))
-        return
-      }
-      pointerRef.current = point
-      canvas.style.cursor = findPaneBoundary(live.frame.layout, point.y) !== null ? "ns-resize" : "crosshair"
-      announce(point)
-      stack.invalidate("top")
+    const clearLongPress = () => {
+      clearTimeout(longPress)
+      longPress = undefined
     }
 
     const onDown = (event: PointerEvent) => {
-      const live = liveRef.current
-      if (!live?.frame || event.button > 0) return
+      if (event.pointerType !== "touch" && event.button > 0) return
+      host.focus({ preventScroll: true })
       const point = local(event)
-      pressed = true
-      const boundary = live.props.mode === "market" ? findPaneBoundary(live.frame.layout, point.y) : null
-      drag = boundary !== null ? { kind: "pane", boundary, y: point.y, layout: live.frame.layout } : { kind: "pan", x: point.x, moved: 0 }
+      const frame = controller.getFrame()
+      const live = controller.getOptions()
+      const resizable = live?.mode === "market" && live.resizablePanes !== false
+      if (resizable && frame && point.x <= frame.plot.right && controller.getState().drawings.tool === null) {
+        const boundary = findPaneBoundary(frame.layout, point.y)
+        if (boundary !== null) {
+          paneDrag = { boundary, y: point.y, layout: frame.layout }
+          canvas.setPointerCapture?.(event.pointerId)
+          return
+        }
+      }
+      press = { id: event.pointerId ?? 1, x: point.x, y: point.y, moved: 0 }
+      if (event.pointerType === "touch") {
+        touchIds.add(event.pointerId)
+        clearLongPress()
+        if (touchIds.size === 1) {
+          const id = event.pointerId
+          longPress = setTimeout(() => {
+            controller.dispatch({ type: "long-press", pointerId: id })
+            applyCursor()
+          }, LONG_PRESS_MS)
+        }
+      }
+      controller.dispatch({ type: "pointer-down", pointer: pointerOf(event, point) })
       canvas.setPointerCapture?.(event.pointerId)
-      if (drag.kind === "pan") canvas.style.cursor = "grabbing"
+      applyCursor()
+    }
+
+    const onMove = (event: PointerEvent) => {
+      const point = local(event)
+      if (paneDrag) {
+        controller.setPaneHeights(resizePanes(paneDrag.layout, paneDrag.boundary, point.y - paneDrag.y))
+        return
+      }
+      if (press && press.id === (event.pointerId ?? 1)) {
+        press.moved = Math.max(press.moved, Math.hypot(point.x - press.x, point.y - press.y))
+        if (press.moved > LONG_PRESS_SLOP) clearLongPress()
+      }
+      if (!press) {
+        const frame = controller.getFrame()
+        const live = controller.getOptions()
+        const resizable = live?.mode === "market" && live.resizablePanes !== false
+        hoverBoundary.current = Boolean(resizable && frame && point.x <= frame.plot.right && controller.getState().drawings.tool === null && findPaneBoundary(frame.layout, point.y) !== null)
+      }
+      controller.dispatch({ type: "pointer-move", pointer: pointerOf(event, point) })
+      applyCursor()
     }
 
     const onUp = (event: PointerEvent) => {
-      const live = liveRef.current
-      const wasClick = drag?.kind === "pan" && drag.moved < CLICK_SLOP
-      drag = null
-      if (!pressed) return
-      pressed = false
-      canvas.style.cursor = "crosshair"
+      clearLongPress()
+      touchIds.delete(event.pointerId)
       canvas.releasePointerCapture?.(event.pointerId)
-      if (wasClick && live?.frame && live.props.mode === "market" && live.props.onMarkClick) {
-        const point = local(event)
-        const hit = markPositions(live.frame).find((mark) => Math.hypot(mark.x - point.x, mark.y - point.y) <= MARK_RADIUS + 3)
-        if (hit) live.props.onMarkClick(hit.id)
+      if (paneDrag) {
+        paneDrag = null
+        return
+      }
+      const point = local(event)
+      const current = press
+      press = null
+      if (event.type === "pointercancel") controller.dispatch({ type: "pointer-cancel", pointerId: event.pointerId ?? 1 })
+      else controller.dispatch({ type: "pointer-up", pointer: pointerOf(event, point) })
+      applyCursor()
+      const frame = controller.getFrame()
+      const live = controller.getOptions()
+      if (current && current.moved < CLICK_SLOP && event.type !== "pointercancel" && frame && live?.mode === "market" && live.onMarkClick && controller.getState().drawings.tool === null) {
+        const hit = markPositions(frame).find((mark) => Math.hypot(mark.x - point.x, mark.y - point.y) <= MARK_RADIUS + 3)
+        if (hit) live.onMarkClick(hit.id)
       }
     }
 
     const onLeave = () => {
-      if (drag) return
-      pointerRef.current = null
-      announce(null)
-      stack.invalidate("top")
+      hoverBoundary.current = false
+      controller.dispatch({ type: "pointer-leave" })
+      applyCursor()
+    }
+
+    const onDouble = (event: MouseEvent) => {
+      controller.dispatch({ type: "double-click", pointer: pointerOf(event, local(event)) })
     }
 
     const onWheel = (event: WheelEvent) => {
-      const live = liveRef.current
-      if (!live?.frame || !live.viewport || !live.limits) return
-      const { interaction } = live.props
-      // `market` dùng con lăn để zoom; `flashback` cho trang cuộn nên chỉ zoom khi giữ Ctrl (docs/iqline-design.md §7).
-      if (live.props.mode === "flashback" && !event.ctrlKey) return
-      if (interaction?.zoom === false) return
-      event.preventDefault()
       const point = local(event)
-      const anchor = live.frame.price.coords.indexOfX(point.x)
-      live.commitViewport(zoomViewport(live.viewport, Math.exp(event.deltaY * WHEEL_SENSITIVITY), anchor, live.limits))
+      const handled = controller.wheel({
+        x: point.x,
+        y: point.y,
+        deltaX: event.deltaX,
+        deltaY: event.deltaY,
+        deltaMode: event.deltaMode === 1 || event.deltaMode === 2 ? event.deltaMode : 0,
+        ctrlKey: event.ctrlKey,
+        shiftKey: event.shiftKey,
+      })
+      if (handled) event.preventDefault()
     }
 
-    const onDouble = () => {
-      const live = liveRef.current
-      if (live?.fit && live.limits) live.commitViewport(live.props.mode === "market" ? clampViewport(defaultViewport({ slots: live.frame?.data.slots ?? 0, visible: DEFAULT_VISIBLE, rightPad: DEFAULT_RIGHT_PAD }, live.limits), live.limits) : live.fit)
+    // Đang kéo crosshair bằng ngón tay hoặc đang vẽ thì không để trang cuộn theo.
+    const onTouchMove = (event: TouchEvent) => {
+      const state = controller.getState()
+      if (event.cancelable && (state.drag?.kind === "crosshair" || state.drag?.kind === "draw" || state.drawings.tool !== null)) event.preventDefault()
     }
 
     const onKey = (event: KeyboardEvent) => {
-      const live = liveRef.current
-      if (!live?.viewport || !live.limits || !live.frame) return
-      const span = live.viewport.to - live.viewport.from
-      const anchor = (live.viewport.from + live.viewport.to) / 2
-      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-        if (live.props.interaction?.pan === false) return
-        event.preventDefault()
-        live.commitViewport(panViewport(live.viewport, (event.key === "ArrowLeft" ? -1 : 1) * (event.shiftKey ? Math.max(1, span / 4) : 1), live.limits))
-      } else if (event.key === "+" || event.key === "=" || event.key === "-") {
-        if (live.props.interaction?.zoom === false) return
-        event.preventDefault()
-        live.commitViewport(zoomViewport(live.viewport, event.key === "-" ? KEY_ZOOM : 1 / KEY_ZOOM, anchor, live.limits))
-      }
+      const target = event.target as Element | null
+      if (target?.closest?.("input, textarea, select, [contenteditable='true']")) return
+      if (controller.key({ key: event.key, ctrlKey: event.ctrlKey, metaKey: event.metaKey, shiftKey: event.shiftKey, altKey: event.altKey })) event.preventDefault()
     }
 
-    canvas.addEventListener("pointermove", onMove)
     canvas.addEventListener("pointerdown", onDown)
+    canvas.addEventListener("pointermove", onMove)
     canvas.addEventListener("pointerup", onUp)
     canvas.addEventListener("pointercancel", onUp)
     canvas.addEventListener("pointerleave", onLeave)
     canvas.addEventListener("dblclick", onDouble)
     canvas.addEventListener("wheel", onWheel, { passive: false })
+    canvas.addEventListener("touchmove", onTouchMove, { passive: false })
     host.addEventListener("keydown", onKey)
 
     return () => {
-      canvas.removeEventListener("pointermove", onMove)
+      clearLongPress()
       canvas.removeEventListener("pointerdown", onDown)
+      canvas.removeEventListener("pointermove", onMove)
       canvas.removeEventListener("pointerup", onUp)
       canvas.removeEventListener("pointercancel", onUp)
       canvas.removeEventListener("pointerleave", onLeave)
       canvas.removeEventListener("dblclick", onDouble)
       canvas.removeEventListener("wheel", onWheel)
+      canvas.removeEventListener("touchmove", onTouchMove)
       host.removeEventListener("keydown", onKey)
-      observer?.disconnect()
+      controller.attach(null)
       stack.destroy()
-      stackRef.current = null
     }
-    // Chỉ tạo một lần; trạng thái mới nhất đi qua `liveRef`.
-  }, [builder])
+  }, [controller, hostRef])
 
-  // ---- đầu vào đổi thì đặt lại kích thước và yêu cầu vẽ lại mọi lớp (gom vào một rAF trong CanvasStack).
+  // ---- đổi kích thước canvas (xoá nội dung nên vẽ lại mọi lớp).
+  const { width, dpr } = chart.size
+  const { height } = chart
+  const hasFrame = chart.frame !== null
   useEffect(() => {
-    const stack = stackRef.current
-    if (!stack || !frame) return
-    stack.resize(size.width, height, size.dpr)
-  }, [frame, size.width, size.dpr, height])
+    if (hasFrame) controller.resize(width, height, dpr)
+  }, [controller, hasFrame, width, height, dpr])
 
+  // ---- con trỏ và cử chỉ theo trạng thái.
+  const { cursor, drawings, drag } = chart.state
+  const drawingActive = drawings.tool !== null || drag?.kind === "draw"
   useEffect(() => {
-    stackRef.current?.invalidate("drawings")
-  }, [props.renderDrawings, props.drawingsVersion, frame])
+    controller.setCanvasStyle(drawingActive ? "none" : "pan-y", hoverBoundary.current ? null : CURSOR[cursor])
+  }, [controller, cursor, drawingActive])
 
-  useEffect(() => {
-    stackRef.current?.refreshPalette()
-  }, [theme])
-
-  const label = ariaLabel ?? `Biểu đồ ${CHART_TYPE_LABEL[chartType]}${mode === "flashback" ? " Flashback" : ""}`
+  const label = options.ariaLabel ?? `Biểu đồ ${CHART_TYPE_LABEL[options.chartType ?? "candles"]}${mode === "flashback" ? " Flashback" : ""}`
   return (
     <div
       ref={hostRef}
@@ -441,8 +242,14 @@ export function IQLineCanvas(props: IQLineCanvasProps) {
       aria-label={label}
       tabIndex={0}
       data-iqline-mode={mode}
-      className={className}
-      style={{ position: "relative", width: "100%", height: mode === "flashback" ? height || undefined : "100%", minHeight: mode === "flashback" ? height || undefined : undefined, outline: "none" }}
+      className={options.className}
+      style={{ position: "relative", width: "100%", height: mode === "flashback" ? chart.height || undefined : "100%", minHeight: mode === "flashback" ? chart.height || undefined : undefined, outline: "none" }}
     />
   )
+}
+
+/** Dạng gọn: biểu đồ không có chú giải, thanh công cụ hay hộp thoại. */
+export function IQLineCanvas(props: IQLineChartOptions) {
+  const chart = useIQLineChart(props)
+  return <IQLineCanvasView chart={chart} />
 }

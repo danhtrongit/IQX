@@ -7,7 +7,7 @@
  * symbol inside TradingView the URL follows, and when the URL changes the widget
  * is rebuilt for that symbol's drawings.
  */
-import { useCallback, useState } from "react"
+import { lazy, Suspense, useCallback, useState } from "react"
 import { useNavigate, useSearchParams } from "react-router"
 import { ExternalLink } from "lucide-react"
 
@@ -23,14 +23,19 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { useAuth } from "@/hooks/use-auth"
 import { useResolvedTheme } from "@/hooks/use-resolved-theme"
+import type { Interval } from "@/lib/iqline/types"
 import { SymbolPicker } from "@/pages/demo-trading/market/symbol-picker"
 
 import { AiInsightSymbolDialog } from "./chart/ai-insight-symbol-dialog"
 import { getDrawingPersistence } from "./chart/drawing-persistence"
+import { iqlineMarketEnabled } from "./chart/iqline-flag"
 import { INDEX_SYMBOLS } from "./chart/market-symbols"
 import { NewsMarkPopover } from "./chart/news-mark-popover"
 import { TVChart } from "./chart/tv-chart"
 import { ChartShell } from "./chart-shell"
+
+// IQLine (Canvas) chỉ tải khi URL bật `?iqline=1`; mặc định vẫn là TradingView.
+const IQLineMarketChart = lazy(() => import("./chart/iqline-chart"))
 
 const DEFAULT_SYMBOL = "VNINDEX"
 const SYMBOL_PATTERN = /^[A-Z0-9]{1,10}$/
@@ -117,7 +122,13 @@ export function ChartPage({ embedded = false }: { embedded?: boolean }) {
     </>
   )
 
-  const chart = <TVChart key={user?.id ?? "guest"} symbol={symbol} interval={interval} theme={theme} onSymbolChanged={selectSymbol} onMarkClick={setActiveMarkId} persistence={getDrawingPersistence()} />
+  const chart = iqlineMarketEnabled(params) ? (
+    <Suspense fallback={<div role="status" className="flex min-h-0 flex-1 items-center justify-center text-xs text-muted-foreground">Đang tải biểu đồ…</div>}>
+      <IQLineMarketChart key={user?.id ?? "guest"} symbol={symbol} interval={interval as Interval} theme={theme} onIntervalChange={selectInterval} onMarkClick={setActiveMarkId} />
+    </Suspense>
+  ) : (
+    <TVChart key={user?.id ?? "guest"} symbol={symbol} interval={interval} theme={theme} onSymbolChanged={selectSymbol} onMarkClick={setActiveMarkId} persistence={getDrawingPersistence()} />
+  )
   const content = (
     <>
       {embedded ? <section aria-label="Khu vực biểu đồ" className="flex min-h-0 min-w-0 flex-1 flex-col">{chart}</section> : <ChartShell symbol={symbol} onSymbolChange={selectSymbol} onAiInsight={() => setInsightOpen(true)}>{chart}</ChartShell>}

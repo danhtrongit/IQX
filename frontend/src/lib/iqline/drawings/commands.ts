@@ -2,7 +2,8 @@
  * Dựng lệnh vẽ (`DrawCommand[]`) từ hình vẽ và phép đổi toạ độ của ô giá. Hàm thuần, không chạm DOM.
  *
  * Quy ước: `PaneCoords` tính theo CSS pixel, còn lệnh vẽ tính theo pixel thiết bị nên mọi toạ độ, độ dày, bán kính,
- * nét đứt và cỡ chữ đều nhân với `dpr` (mặc định 1). `count` của mỗi lệnh là số phần tử (đoạn, hình chữ nhật, đỉnh), không phải số số thực.
+ * nét đứt và cỡ chữ đều nhân với `dpr` (mặc định 1). `count` của mỗi lệnh là số phần tử dùng được trong `data` (số thực), đúng hợp đồng của `DrawCommand` và của `paintScene`:
+ * 4 cho mỗi đoạn hoặc hình chữ nhật, 2 cho mỗi đỉnh.
  * Chữ dùng đường cơ sở (baseline) tại `y`.
  */
 import type { Anchor, ColorToken, DrawCommand, Drawing, DrawingStyle, DrawingTool, PaneCoords } from "../types"
@@ -55,7 +56,7 @@ function lines(token: ColorToken, width: number, segments: readonly Segment[], d
   segments.forEach((segment, index) => {
     for (let k = 0; k < 4; k++) data[index * 4 + k] = segment[k] * dpr
   })
-  return [{ op: "lines", token, width: width * dpr, dash: dash ? dash.map((value) => value * dpr) : undefined, data, count: segments.length }]
+  return [{ op: "lines", token, width: width * dpr, dash: dash ? dash.map((value) => value * dpr) : undefined, data, count: data.length }]
 }
 
 function polyline(token: ColorToken, width: number, points: readonly ScreenPoint[], dpr: number): DrawCommand[] {
@@ -65,7 +66,7 @@ function polyline(token: ColorToken, width: number, points: readonly ScreenPoint
     data[index * 2] = point.x * dpr
     data[index * 2 + 1] = point.y * dpr
   })
-  return [{ op: "polyline", token, width: width * dpr, data, count: points.length }]
+  return [{ op: "polyline", token, width: width * dpr, data, count: data.length }]
 }
 
 function polygon(token: ColorToken, alpha: number, points: readonly ScreenPoint[], dpr: number): DrawCommand[] {
@@ -75,12 +76,12 @@ function polygon(token: ColorToken, alpha: number, points: readonly ScreenPoint[
     data[index * 2] = point.x * dpr
     data[index * 2 + 1] = point.y * dpr
   })
-  return [{ op: "polygon", token, alpha, data, count: points.length }]
+  return [{ op: "polygon", token, alpha, data, count: data.length }]
 }
 
 function rect(token: ColorToken, alpha: number, x: number, y: number, width: number, height: number, dpr: number): DrawCommand[] {
   if (width <= 0 || height <= 0) return []
-  return [{ op: "rects", token, alpha, data: Float64Array.of(x * dpr, y * dpr, width * dpr, height * dpr), count: 1 }]
+  return [{ op: "rects", token, alpha, data: Float64Array.of(x * dpr, y * dpr, width * dpr, height * dpr), count: 4 }]
 }
 
 function text(

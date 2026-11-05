@@ -49,14 +49,14 @@ describe("lệnh vẽ", () => {
       expect(commands.at(-1), tool).toEqual({ op: "unclip" })
       expect(commands.length, tool).toBeGreaterThan(2)
       for (const command of commands) {
-        if ("data" in command) expect([...command.data.subarray(0, command.count * (command.op === "lines" ? 4 : command.op === "rects" ? 4 : 2))].every(Number.isFinite), tool).toBe(true)
+        if ("data" in command) expect([...command.data.subarray(0, command.count)].every(Number.isFinite), tool).toBe(true)
       }
     }
   })
 
   it("đường xu hướng: một đoạn đúng toạ độ, màu là tên token, độ dày theo style", () => {
     const [, line] = drawingCommands([shape("a", "trend", [[5, 100], [30, 200]])], COORDS)
-    expect(line).toMatchObject({ op: "lines", token: "chart-2", count: 1 })
+    expect(line).toMatchObject({ op: "lines", token: "chart-2", count: 4 })
     expect(line.op === "lines" && Array.from(line.data)).toEqual([55, 200, 305, 100])
     expect(line.op === "lines" && line.width).toBe(1.7)
   })
@@ -98,7 +98,7 @@ describe("lệnh vẽ", () => {
     expect(labels[4]).toBe("61,8% · 138.2")
     expect(labels[6]).toBe("100% · 100.0")
     const zone = commands.find((command) => command.op === "rects")
-    expect(zone).toMatchObject({ token: "chart-1", alpha: 0.1, count: 1 })
+    expect(zone).toMatchObject({ token: "chart-1", alpha: 0.1, count: 4 })
     for (const token of tokensOf(commands)) expect(FIB_FORBIDDEN_TOKENS).not.toContain(token)
     expect(commands.filter((command) => command.op === "lines")).toHaveLength(8)
   })

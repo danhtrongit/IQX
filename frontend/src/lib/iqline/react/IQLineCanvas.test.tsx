@@ -185,7 +185,7 @@ describe("IQLineCanvas: vỏ React tối thiểu", () => {
     expect(onCrosshairChange).toHaveBeenLastCalledWith(null)
   })
 
-  it("kéo chuột di chuyển viewport; nhấp đúp về khung mặc định", () => {
+  it("kéo chuột di chuyển viewport; nhấp đúp vào trục thời gian về khung mặc định (nhấp đúp vào khung vẽ thì không)", () => {
     const onViewportChange = vi.fn<(viewport: Viewport) => void>()
     const { container } = render(<IQLineCanvas {...marketProps({ onViewportChange })} />)
     measure(800, 500)
@@ -197,7 +197,10 @@ describe("IQLineCanvas: vỏ React tối thiểu", () => {
     const initial = { from: 300 - 0.5 + 5 - 120, to: 300 - 0.5 + 5 }
     expect(dragged.from).toBeLessThan(initial.from)
     act(() => void canvas.dispatchEvent(new MouseEvent("pointerup", { clientX: 480, clientY: 100 })))
-    act(() => void canvas.dispatchEvent(new MouseEvent("dblclick", { bubbles: true })))
+    const calls = onViewportChange.mock.calls.length
+    act(() => void canvas.dispatchEvent(new MouseEvent("dblclick", { clientX: 480, clientY: 100, bubbles: true })))
+    expect(onViewportChange.mock.calls.length).toBe(calls)
+    act(() => void canvas.dispatchEvent(new MouseEvent("dblclick", { clientX: 480, clientY: 495, bubbles: true })))
     const reset = onViewportChange.mock.calls.at(-1)![0]
     expect(reset.from).toBeCloseTo(initial.from)
     expect(reset.to).toBeCloseTo(initial.to)

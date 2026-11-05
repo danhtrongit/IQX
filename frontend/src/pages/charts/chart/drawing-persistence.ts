@@ -35,7 +35,7 @@ const LS_PREFIX = "iqx.tv_drawings_v2_"
 const SAVE_DEBOUNCE_MS = 1500
 
 /** JWT subject is only a cache namespace; API authorization stays server-side. */
-function currentOwner(): string | null {
+export function currentOwner(): string | null {
   const token = getAccessToken()
   if (!token) return "guest"
   try {
@@ -51,7 +51,8 @@ function lsKey(owner: string, symbol: string): string {
   return `${LS_PREFIX}${owner}:${symbol.toUpperCase()}`
 }
 
-function lsLoad(owner: string, symbol: string): DrawingState | null {
+/** Đọc bản đệm TradingView (`iqx.tv_drawings_v2_*`); `iqline-store.ts` dùng lại để chuyển layout cũ. */
+export function lsLoad(owner: string, symbol: string): DrawingState | null {
   try {
     const raw = localStorage.getItem(lsKey(owner, symbol))
     return raw ? (JSON.parse(raw) as DrawingState) : null
@@ -66,6 +67,15 @@ function lsSave(owner: string, symbol: string, state: DrawingState): void {
   } catch {
     /* quota / private mode — ignore */
   }
+}
+
+/**
+ * IQLine keeps its document under the `iqline` key of the same `/chart-drawings/{symbol}` state (docs/iqline-design.md §11). A TradingView
+ * save replaces the whole state with `widget.save`'s payload, which has no such key, so re-attach what was loaded: switching back to
+ * TradingView and editing there must not wipe the IQLine drawings and indicators of that symbol.
+ */
+export function carryIQLineState(state: DrawingState, iqline: unknown): DrawingState {
+  return iqline === undefined || iqline === null ? state : { ...state, iqline }
 }
 
 /** Shared singleton so every chart mount shares one debounce-timer map. */
