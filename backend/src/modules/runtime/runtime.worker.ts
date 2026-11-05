@@ -19,6 +19,10 @@ import {
 
 /** Lock per active job; BullMQ renews it every half while the job runs. */
 export const RUNTIME_LOCK_DURATION_MS = 5 * 60_000;
+export const JOB_MEMORY_LOG_RSS_DELTA_BYTES = 32 * 1024 * 1024;
+export const JOB_MEMORY_LOG_MIN_ELAPSED_MS = 30_000;
+
+const mebibytes = (bytes: number): number => Math.round(bytes / (1024 * 1024));
 
 function ictDate(date: Date): string {
   return new Date(date.getTime() + 7 * 60 * 60 * 1_000).toISOString().slice(0, 10);
@@ -124,6 +128,28 @@ export class RuntimeWorker implements OnModuleInit, OnApplicationShutdown {
   }
 
   private async process(job: Job): Promise<JobOutcome> {
+    const memoryBefore = process.memoryUsage();
+    const startedAt = Date.now();
+    try {
+      return await this.run(job);
+    } finally {
+      const elapsedMs = Date.now() - startedAt;
+      const memoryAfter = process.memoryUsage();
+      // Sweeps run every few seconds: only a job that moved memory or ran long is worth a line.
+      if (
+        Math.abs(memoryAfter.rss - memoryBefore.rss) >= JOB_MEMORY_LOG_RSS_DELTA_BYTES ||
+        elapsedMs >= JOB_MEMORY_LOG_MIN_ELAPSED_MS
+      ) {
+        this.logger.log(
+          `Job memory ${this.jobs.jobName(job)}: rss ${mebibytes(memoryBefore.rss)} -> ${mebibytes(memoryAfter.rss)} MB, ` +
+            `heap ${mebibytes(memoryAfter.heapUsed)} MB, external ${mebibytes(memoryAfter.external)} MB, ` +
+            `arrayBuffers ${mebibytes(memoryAfter.arrayBuffers)} MB in ${elapsedMs} ms`,
+        );
+      }
+    }
+  }
+
+  private async run(job: Job): Promise<JobOutcome> {
     const name = this.jobs.jobName(job);
     const scheduledFor = scheduledForJob(job);
     const statusBase = {

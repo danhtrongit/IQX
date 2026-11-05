@@ -1,4 +1,5 @@
 import type { Job } from 'bullmq';
+import { Logger } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
 import { RuntimeWorker, scheduledForJob } from '../../src/modules/runtime/runtime.worker.js';
@@ -18,6 +19,65 @@ function schedulerJob(overrides: Record<string, unknown> = {}): Job {
     ...overrides,
   } as unknown as Job;
 }
+
+describe('RuntimeWorker job memory log', () => {
+  const memory = (rssMb: number) => ({
+    rss: rssMb * 1024 * 1024,
+    heapTotal: 0,
+    heapUsed: 50 * 1024 * 1024,
+    external: 5 * 1024 * 1024,
+    arrayBuffers: 1024 * 1024,
+  });
+  const workerFor = (handler: () => Promise<unknown>) =>
+    new RuntimeWorker(
+      {
+        enabled: true,
+        consumeJobs: true,
+        handlers: { 'market.daily-bars': handler },
+        calendar: { isTradingDay: vi.fn().mockResolvedValue(true) },
+        schedules: [
+          { name: 'market.daily-bars', description: 'bars', enabled: true, everyMs: 600_000 },
+        ],
+      } as unknown as RuntimeOptions,
+      { jobName: () => 'market.daily-bars' } as never,
+      { put: vi.fn().mockResolvedValue(undefined) } as never,
+    );
+
+  it('logs a job that moved memory, also when it fails', async () => {
+    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    const usage = vi
+      .spyOn(process, 'memoryUsage')
+      .mockReturnValueOnce(memory(200))
+      .mockReturnValueOnce(memory(900));
+    try {
+      await expect(
+        workerFor(async () => {
+          throw new Error('boom');
+        })['process'](schedulerJob()),
+      ).rejects.toThrow('boom');
+      expect(log).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Job memory market.daily-bars: rss 200 -> 900 MB, heap 50 MB, external 5 MB, arrayBuffers 1 MB',
+        ),
+      );
+    } finally {
+      usage.mockRestore();
+      log.mockRestore();
+    }
+  });
+
+  it('stays quiet for a short job that moved no memory', async () => {
+    const log = vi.spyOn(Logger.prototype, 'log').mockImplementation(() => undefined);
+    const usage = vi.spyOn(process, 'memoryUsage').mockReturnValue(memory(200));
+    try {
+      await workerFor(async () => ({ status: 'completed' }))['process'](schedulerJob());
+      expect(log).not.toHaveBeenCalled();
+    } finally {
+      usage.mockRestore();
+      log.mockRestore();
+    }
+  });
+});
 
 describe('RuntimeWorker scheduled occurrence', () => {
   it('uses BullMQ prevMillis for cron scheduler jobs', () => {

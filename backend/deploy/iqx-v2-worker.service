@@ -15,6 +15,12 @@ Restart=on-failure
 RestartSec=5
 TimeoutStopSec=30
 KillSignal=SIGTERM
+# Normal peak is about 350 MB. A runaway job must kill this worker, not stall the whole box
+# (API, nginx and Postgres share it): --max-old-space-size would not help, the 2026-11-05 OOM was
+# native memory outside the V8 heap. systemd restarts it through Restart=on-failure.
+MemoryHigh=1G
+MemoryMax=1500M
+MemorySwapMax=256M
 UMask=0077
 NoNewPrivileges=true
 PrivateTmp=true

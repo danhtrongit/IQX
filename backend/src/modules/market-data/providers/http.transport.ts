@@ -57,6 +57,9 @@ interface CacheEntry {
   value: unknown;
 }
 
+/** Most responses kept; each can be a whole financial statement, and keys are per symbol. */
+const MAX_CACHE_ENTRIES = 256;
+
 /** Shared bounded HTTP transport. It never accepts an origin outside the compile-time allowlist. */
 @Injectable()
 export class MarketHttpTransport {
@@ -113,11 +116,25 @@ export class MarketHttpTransport {
     this.inFlight.set(cacheKey, promise);
     void promise
       .then(
-        (value) => this.cache.set(cacheKey, { expiresAt: Date.now() + ttl, value }),
+        (value) => this.remember(cacheKey, { expiresAt: Date.now() + ttl, value }),
         () => undefined,
       )
       .finally(() => this.inFlight.delete(cacheKey));
     return promise;
+  }
+
+  /** An expired entry is otherwise only dropped when its exact key is read again, which may be never. */
+  private remember(key: string, entry: CacheEntry): void {
+    this.cache.delete(key);
+    if (this.cache.size >= MAX_CACHE_ENTRIES) {
+      const now = Date.now();
+      for (const [cachedKey, cached] of this.cache)
+        if (cached.expiresAt <= now) this.cache.delete(cachedKey);
+      // Map keeps insertion order, so the first key is the oldest response.
+      if (this.cache.size >= MAX_CACHE_ENTRIES)
+        this.cache.delete(this.cache.keys().next().value as string);
+    }
+    this.cache.set(key, entry);
   }
 
   private async fetchWithBudget<T>(
