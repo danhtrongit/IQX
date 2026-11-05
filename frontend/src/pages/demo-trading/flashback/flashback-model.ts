@@ -16,6 +16,7 @@ import type {
   FlashbackPlayer,
   FlashbackPosition,
   FlashbackResultProgress,
+  FlashbackRoom,
 } from "./flashback-api"
 
 /** Vốn mỗi người mỗi ván (§6.3). */
@@ -189,6 +190,8 @@ export type RoomForm = {
   maxPlayers: string
   stake: string
   password: string
+  /** "Chat trong phòng: Bật / Tắt" (v2.4 §3.5). */
+  chat: "on" | "off"
 }
 
 /** Mặc định của hộp tạo phòng (§3). */
@@ -199,6 +202,7 @@ export const ROOM_FORM_DEFAULTS: RoomForm = {
   maxPlayers: "4",
   stake: "100",
   password: "",
+  chat: "on",
 }
 
 function inRange(value: number, min: number, max: number): boolean {
@@ -252,11 +256,71 @@ export function validateRoomForm(
       max_players: maxPlayers,
       stake_xu: solo ? null : stake,
       password: password || null,
+      chat_enabled: form.chat !== "off",
     },
   }
 }
 
+// ------------------------------------------------------------------ phòng chờ: Sẵn sàng (v2.4 §5)
+
+/** Những con số và câu chữ của phòng chờ theo trạng thái Sẵn sàng. */
+export function roomReadiness(room: FlashbackRoom) {
+  const others = room.members.filter((member) => !member.is_owner)
+  const readyCount = others.filter((member) => member.ready).length
+  const waiting = others.length - readyCount
+  const meReady = room.members.some((member) => member.is_me && member.ready)
+  return {
+    waiting,
+    /** Góc phải ô ID phòng (§5.1). */
+    summary: `${room.members.length}/${room.max_players} người · ${readyCount}/${others.length} sẵn sàng`,
+    /** Nhãn nút Bắt đầu của chủ phòng (§5.3). */
+    startLabel: waiting > 0 ? `Bắt đầu (chờ ${waiting} người)` : "Bắt đầu",
+    /** Dòng gợi ý cạnh nút Bắt đầu (§5.3). */
+    ownerHint:
+      others.length === 0
+        ? "Chỉ có bạn: ván chơi một mình, không cược."
+        : waiting > 0
+          ? "Mọi người sẵn sàng thì mới bắt đầu được."
+          : "Tất cả đã sẵn sàng.",
+    /** Dòng gợi ý cạnh nút Sẵn sàng (§5.2). */
+    playerHint: !meReady
+      ? "Bấm Sẵn sàng để chủ phòng bắt đầu được."
+      : waiting > 0
+        ? `Chờ ${waiting} người khác sẵn sàng, rồi chủ phòng bắt đầu.`
+        : "Chờ chủ phòng bắt đầu.",
+  }
+}
+
+// ------------------------------------------------------------------ chat phòng (v2.4 §3)
+
+export const CHAT_MAX_LENGTH = 200
+export const CHAT_COOLDOWN_MS = 2_000
+export const CHAT_TOO_FAST = "Từ từ thôi 😄 Mỗi 2 giây một tin."
+/** Câu nhanh: bấm là gửi luôn (§3.3). */
+export const CHAT_QUICK_REPLIES = ["Chơi đẹp!", "Gồng thôi 💪", "Cẩn thận nhé", "Ngon!", "GG 🤝", "😂", "🚀", "📉"] as const
+
+/** Nhãn của một tin: "Phòng chờ" hoặc "Phiên N" (§3.3). */
+export function chatMessageLabel(message: { waiting: boolean; phien: number }): string {
+  return message.waiting ? "Phòng chờ" : `Phiên ${message.phien}`
+}
+
+// ------------------------------------------------------------------ cửa sổ kết quả (v2.4 §4)
+
+/** Về sảnh và Chơi lại khoá bấy nhiêu giây khi cửa sổ kết quả hiện lần đầu. */
+export const RESULT_LOCK_SECONDS = 5
+
 // ------------------------------------------------------------------ màn chơi
+
+/**
+ * % lợi nhuận của mình: `Tổng tài sản / vốn − 1`, làm tròn 2 chữ số (v2.4 §2). Sau khi làm tròn mới so
+ * với 0 nên không bao giờ thành −0,00%.
+ */
+export function profitPercent(totalAssets: number, initialCash: number): number {
+  if (!initialCash) return 0
+  const rounded = Math.round((totalAssets / initialCash - 1) * 10_000) / 100
+  return rounded === 0 ? 0 : rounded
+}
+
 
 /** "mm:ss" của thời gian còn lại; không bao giờ âm. */
 export function clockText(remainingMs: number): string {

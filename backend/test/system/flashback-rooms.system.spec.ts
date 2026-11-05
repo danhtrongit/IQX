@@ -12,6 +12,7 @@ import { FlashbackDatasetBuilder } from '../../src/modules/flashback/flashback-d
 import { FLASHBACK_NO_DATA_MESSAGE } from '../../src/modules/flashback/flashback-dataset.config.js';
 import type { DatasetRawRow } from '../../src/modules/flashback/flashback-dataset.logic.js';
 import { FLASHBACK_DATASET_SOURCE } from '../../src/modules/flashback/flashback-dataset.source.js';
+import { FlashbackChatService } from '../../src/modules/flashback/flashback-chat.service.js';
 import { compareRank } from '../../src/modules/flashback/flashback-rooms.logic.js';
 import { FlashbackRoomsService } from '../../src/modules/flashback/flashback-rooms.service.js';
 import { weekdaysFrom } from '../unit/helpers/flashback-dataset-fixtures.js';
@@ -538,9 +539,9 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       await user('rk-b', 500),
       await user('rk-c', 500),
     ] as [Session, Session, Session];
-    const room = (
-      await call(a, 'POST', 'rooms', { max_players: 4, stake_xu: 50 })
-    ).json() as { id: string };
+    const room = (await call(a, 'POST', 'rooms', { max_players: 4, stake_xu: 50 })).json() as {
+      id: string;
+    };
     for (const session of [b, c]) await call(session, 'POST', `rooms/${room.id}/join`, {});
     const readyAt = (session: Session) =>
       stack.query<{ ready_at: Date | null }>(
@@ -568,11 +569,17 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     ).toEqual({ [a.id]: true, [b.id]: true, [c.id]: false });
     expect((await readyAt(b))[0]!.ready_at).not.toBeNull();
     // Body sai bị từ chối ở lớp validate.
-    expect((await call(b, 'POST', `rooms/${room.id}/ready`, { ready: 'yes' })).statusCode).toBe(422);
+    expect((await call(b, 'POST', `rooms/${room.id}/ready`, { ready: 'yes' })).statusCode).toBe(
+      422,
+    );
 
     // Chỉ chủ phòng đuổi; không tự đuổi mình.
-    expect((await call(b, 'POST', `rooms/${room.id}/kick`, { user_id: c.id })).statusCode).toBe(403);
-    expect((await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: a.id })).statusCode).toBe(409);
+    expect((await call(b, 'POST', `rooms/${room.id}/kick`, { user_id: c.id })).statusCode).toBe(
+      403,
+    );
+    expect((await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: a.id })).statusCode).toBe(
+      409,
+    );
 
     const kicked = await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: c.id });
     expect(kicked.statusCode, kicked.body).toBe(200);
@@ -614,7 +621,9 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
       ),
     ).toEqual([{ ready_at: null }, { ready_at: null }]);
     // Đang chơi: không đuổi, không bấm sẵn sàng.
-    expect((await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: b.id })).statusCode).toBe(409);
+    expect((await call(a, 'POST', `rooms/${room.id}/kick`, { user_id: b.id })).statusCode).toBe(
+      409,
+    );
     expect((await call(b, 'POST', `rooms/${room.id}/ready`, { ready: true })).statusCode).toBe(409);
 
     // Chơi xong ván: để tác vụ định kỳ của các test sau (đẩy đồng hồ giả) không chốt ván này.
@@ -1069,5 +1078,210 @@ describe('system acceptance: Flashback v2 · Phòng chơi', () => {
     expect(JSON.stringify([await read(), await stats(x), await stats(y), await stats(z)])).toBe(
       snapshot,
     );
+  });
+
+  it('v2.4 chat: giao tin theo phiên, giới hạn 2 giây song song, từ cấm, tắt tiếng, báo cáo, xoá sau 7 ngày', async () => {
+    const savedClock = clock.at;
+    const tick = () => {
+      clock.at = new Date(clock.at.getTime() + 2100);
+    };
+    const [a, b, admin] = [
+      await user('fb-chat-a', 1000),
+      await user('fb-chat-b', 1000),
+      await user('fb-chat-admin', 0),
+    ] as [Session, Session, Session];
+    await stack.query("update users set role = 'admin', is_email_verified = true where id = $1", [
+      admin.id,
+    ]);
+    const adminCall = (method: 'GET' | 'PUT' | 'POST', url: string, payload?: object) =>
+      app.inject({
+        method,
+        url: `/api/v2/admin/flashback/chat/${url}`,
+        headers: authHeader(admin.accessToken),
+        ...(payload ? { payload } : {}),
+      });
+    // Người chơi thường không vào được API quản trị.
+    const denied = await app.inject({
+      method: 'GET',
+      url: '/api/v2/admin/flashback/chat/reports',
+      headers: authHeader(a.accessToken),
+    });
+    expect(denied.statusCode).toBe(403);
+
+    const words = await adminCall('PUT', 'banned-words', { words: ['  Từ Xấu ', 'từ xấu', 'ngu'] });
+    expect(words.statusCode, words.body).toBe(200);
+    expect(words.json()).toEqual({ words: ['ngu', 'từ xấu'] });
+    await adminCall('PUT', 'banned-words', { words: ['ngu', 'từ xấu', 'điên'] });
+    expect((await adminCall('GET', 'banned-words')).json()).toEqual({
+      words: ['điên', 'ngu', 'từ xấu'],
+    });
+
+    const created = await call(a, 'POST', 'rooms', {
+      view_bars: 40,
+      play_bars: 30,
+      minutes: 10,
+      max_players: 4,
+      stake_xu: 100,
+    });
+    const room = created.json() as { id: string; chat_enabled: boolean };
+    expect(room.chat_enabled).toBe(true);
+    expect((await call(b, 'POST', `rooms/${room.id}/join`, {})).statusCode).toBe(200);
+    const stranger = await user('fb-chat-c', 1000);
+    expect((await call(stranger, 'GET', `rooms/${room.id}/chat`)).statusCode).toBe(403);
+
+    const say = async (session: Session, text: string) => {
+      tick();
+      const response = await call(session, 'POST', `rooms/${room.id}/chat`, { text });
+      expect(response.statusCode, response.body).toBe(200);
+      return response.json() as { id: string; phien: number; waiting: boolean; text: string };
+    };
+    const read = async (session: Session) =>
+      (await call(session, 'GET', `rooms/${room.id}/chat`)).json() as {
+        enabled: boolean;
+        messages: { id: string; text: string; phien: number; waiting: boolean }[];
+        muted: { user_id: string; name: string }[];
+      };
+    const texts = async (session: Session) => (await read(session)).messages.map((m) => m.text);
+
+    const lobby = await say(a, 'Đồ NGU, từ xấu quá');
+    expect(lobby).toMatchObject({ phien: 0, waiting: true, text: 'Đồ ***, *** quá' });
+    expect(await texts(b)).toEqual(['Đồ ***, *** quá']);
+
+    // Hai tin gửi cùng lúc: khoá theo người gửi chỉ cho một tin lọt qua.
+    tick();
+    const both = await Promise.all([
+      call(a, 'POST', `rooms/${room.id}/chat`, { text: 'song song 1' }),
+      call(a, 'POST', `rooms/${room.id}/chat`, { text: 'song song 2' }),
+    ]);
+    expect(both.map((r) => r.statusCode).sort()).toEqual([200, 429]);
+    expect(both.find((r) => r.statusCode === 429)?.json()).toMatchObject({
+      error: { code: 'CHAT_TOO_FAST', message: 'Từ từ thôi 😄 Mỗi 2 giây một tin.' },
+    });
+
+    tick();
+    const tooLong = await call(a, 'POST', `rooms/${room.id}/chat`, { text: 'x'.repeat(201) });
+    expect(tooLong.statusCode).toBe(422);
+    expect(tooLong.json()).toMatchObject({ error: { code: 'CHAT_TOO_LONG' } });
+
+    await ready([b], room.id);
+    const started = await call(a, 'POST', `rooms/${room.id}/start`);
+    expect(started.statusCode, started.body).toBe(200);
+    const matchId = (started.json() as { match: { match_id: string } }).match.match_id;
+    for (let i = 0; i < 22; i += 1)
+      expect((await call(a, 'POST', `matches/${matchId}/next`)).statusCode).toBe(200);
+    for (let i = 0; i < 14; i += 1)
+      expect((await call(b, 'POST', `matches/${matchId}/next`)).statusCode).toBe(200);
+
+    const secret = await say(a, 'Bollinger thắt lại rồi kìa');
+    expect(secret).toMatchObject({ phien: 22, waiting: false });
+    const hidden = await call(b, 'GET', `rooms/${room.id}/chat`);
+    expect(hidden.body).not.toContain('Bollinger');
+    expect(hidden.body).not.toContain(secret.id);
+    // Báo cáo cũng không dùng để dò được tin chưa tới lượt.
+    const probe = await call(b, 'POST', `rooms/${room.id}/chat/report`, { message_id: secret.id });
+    expect(probe.statusCode).toBe(404);
+
+    for (let i = 0; i < 7; i += 1) await call(b, 'POST', `matches/${matchId}/next`);
+    expect(await texts(b)).not.toContain('Bollinger thắt lại rồi kìa');
+    await call(b, 'POST', `matches/${matchId}/next`);
+    const delivered = await read(b);
+    expect(delivered.messages.at(-1)).toMatchObject({
+      text: 'Bollinger thắt lại rồi kìa',
+      phien: 22,
+      waiting: false,
+    });
+
+    // Báo cáo kèm các tin trước đó; báo lại không tạo thêm.
+    for (const reported of [1, 2]) {
+      const response = await call(b, 'POST', `rooms/${room.id}/chat/report`, {
+        message_id: secret.id,
+      });
+      expect(response.statusCode, `lần ${reported}: ${response.body}`).toBe(200);
+    }
+    const reports = (await adminCall('GET', 'reports')).json() as {
+      reports: {
+        id: string;
+        text: string;
+        reporter_name: string;
+        context: { text: string; waiting: boolean }[];
+      }[];
+    };
+    const report = reports.reports.find((row) => row.text === 'Bollinger thắt lại rồi kìa');
+    expect(reports.reports.filter((row) => row.text === 'Bollinger thắt lại rồi kìa')).toHaveLength(
+      1,
+    );
+    expect(report?.context.map((item) => item.text)).toContain('Đồ ***, *** quá');
+    expect(report?.context[0]?.waiting).toBe(true);
+    const decided = await adminCall('POST', `reports/${report!.id}/decide`, { status: 'resolved' });
+    expect(decided.statusCode, decided.body).toBe(200);
+    expect(
+      ((await adminCall('GET', 'reports')).json() as { reports: { id: string }[] }).reports.some(
+        (row) => row.id === report!.id,
+      ),
+    ).toBe(false);
+    const flagged = await stack.query<{ reported: boolean }>(
+      'select reported from fb_chat_messages where id = $1',
+      [secret.id],
+    );
+    expect(flagged[0]?.reported).toBe(true);
+
+    // Tắt tiếng: chỉ người tắt không thấy; bỏ thì thấy lại.
+    const muted = await call(b, 'POST', `rooms/${room.id}/chat/mute`, {
+      user_id: a.id,
+      muted: true,
+    });
+    expect(muted.statusCode, muted.body).toBe(200);
+    expect((await read(b)).messages).toEqual([]);
+    expect((await read(b)).muted.map((row) => row.user_id)).toEqual([a.id]);
+    expect((await read(a)).muted).toEqual([]);
+    await call(b, 'POST', `rooms/${room.id}/chat/mute`, { user_id: a.id, muted: false });
+    expect((await read(b)).messages.length).toBeGreaterThan(0);
+
+    // Hết giờ: mọi tin giao cho tất cả; tin gửi lúc này mang phiên cuối.
+    const late = await say(a, 'tin cuối ván');
+    expect(late.phien).toBe(22);
+    clock.at = new Date(clock.at.getTime() + 11 * 60_000);
+    const afterEnd = await say(b, 'GG');
+    expect(afterEnd).toMatchObject({ phien: 30, waiting: false });
+    expect(await texts(a)).toContain('GG');
+    expect(await texts(b)).toContain('tin cuối ván');
+
+    // Chơi lại: luồng giữ nguyên, tin phòng chờ mới đứng sau tin của ván cũ dù phien = 0.
+    const replay = await call(a, 'POST', `rooms/${room.id}/replay`);
+    expect(replay.statusCode, replay.body).toBe(200);
+    const again = await say(b, 'ván nữa nhé');
+    expect(again).toMatchObject({ phien: 0, waiting: true });
+    expect((await texts(a)).at(-1)).toBe('ván nữa nhé');
+    expect((await texts(a))[0]).toBe('Đồ ***, *** quá');
+
+    // Lưu 7 ngày: tác vụ xoá tin cũ, báo cáo vẫn đọc được.
+    const chatService = app.get(FlashbackChatService);
+    expect(
+      await chatService.purgeExpired(new Date(clock.at.getTime() + 8 * 86_400_000)),
+    ).toBeGreaterThan(0);
+    expect(await texts(a)).toEqual([]);
+    const kept = await stack.query<{ message_id: string | null; message_text: string }>(
+      'select message_id, message_text from fb_chat_reports where id = $1',
+      [report!.id],
+    );
+    expect(kept[0]).toEqual({ message_id: null, message_text: 'Bollinger thắt lại rồi kìa' });
+
+    // Chủ phòng tắt chat.
+    await call(b, 'POST', `rooms/${room.id}/leave`);
+    await call(a, 'POST', `rooms/${room.id}/leave`);
+    const silent = await call(a, 'POST', 'rooms', {
+      max_players: 2,
+      stake_xu: 100,
+      chat_enabled: false,
+    });
+    expect(silent.statusCode, silent.body).toBe(200);
+    const silentRoom = silent.json() as { id: string; chat_enabled: boolean };
+    expect(silentRoom.chat_enabled).toBe(false);
+    tick();
+    const refused = await call(a, 'POST', `rooms/${silentRoom.id}/chat`, { text: 'alo' });
+    expect(refused.statusCode).toBe(409);
+    expect(refused.json()).toMatchObject({ error: { code: 'CHAT_DISABLED' } });
+    await call(a, 'POST', `rooms/${silentRoom.id}/leave`);
+    clock.at = savedClock;
   });
 });

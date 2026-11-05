@@ -59,7 +59,7 @@ describe("validateRoomForm (spec §3)", () => {
   it("giá trị mặc định hợp lệ: 60 xem, 30 chơi, 10 phút, 4 người, cược 100, không mật khẩu", () => {
     expect(validateRoomForm(form(), null)).toEqual({
       ok: true,
-      body: { view_bars: 60, play_bars: 30, minutes: 10, max_players: 4, stake_xu: 100, password: null },
+      body: { view_bars: 60, play_bars: 30, minutes: 10, max_players: 4, stake_xu: 100, password: null, chat_enabled: true },
     })
   })
 
@@ -115,7 +115,7 @@ describe("validateRoomForm (spec §3)", () => {
     const checked = validateRoomForm(form({ maxPlayers: "1", stake: "7" }), 0)
     expect(checked).toEqual({
       ok: true,
-      body: { view_bars: 60, play_bars: 30, minutes: 10, max_players: 1, stake_xu: null, password: null },
+      body: { view_bars: 60, play_bars: 30, minutes: 10, max_players: 1, stake_xu: null, password: null, chat_enabled: true },
     })
   })
 

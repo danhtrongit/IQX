@@ -30593,6 +30593,218 @@ export type FlashbackAdminAlertsResponses = {
 export type FlashbackAdminAlertsResponse =
   FlashbackAdminAlertsResponses[keyof FlashbackAdminAlertsResponses];
 
+export type FlashbackAdminChatBannedWordsData = {
+  body?: never;
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/chat/banned-words";
+};
+
+export type FlashbackAdminChatBannedWordsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminChatBannedWordsError =
+  FlashbackAdminChatBannedWordsErrors[keyof FlashbackAdminChatBannedWordsErrors];
+
+export type FlashbackAdminChatBannedWordsResponses = {
+  200: {
+    words: Array<string>;
+  };
+};
+
+export type FlashbackAdminChatBannedWordsResponse =
+  FlashbackAdminChatBannedWordsResponses[keyof FlashbackAdminChatBannedWordsResponses];
+
+export type FlashbackAdminChatBannedWordsReplaceData = {
+  body: {
+    words: Array<string>;
+  };
+  path?: never;
+  query?: never;
+  url: "/api/v2/admin/flashback/chat/banned-words";
+};
+
+export type FlashbackAdminChatBannedWordsReplaceErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminChatBannedWordsReplaceError =
+  FlashbackAdminChatBannedWordsReplaceErrors[keyof FlashbackAdminChatBannedWordsReplaceErrors];
+
+export type FlashbackAdminChatBannedWordsReplaceResponses = {
+  200: {
+    words: Array<string>;
+  };
+};
+
+export type FlashbackAdminChatBannedWordsReplaceResponse =
+  FlashbackAdminChatBannedWordsReplaceResponses[keyof FlashbackAdminChatBannedWordsReplaceResponses];
+
+export type FlashbackAdminChatReportsData = {
+  body?: never;
+  path?: never;
+  query?: {
+    status?: "open" | "resolved" | "dismissed";
+  };
+  url: "/api/v2/admin/flashback/chat/reports";
+};
+
+export type FlashbackAdminChatReportsErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminChatReportsError =
+  FlashbackAdminChatReportsErrors[keyof FlashbackAdminChatReportsErrors];
+
+export type FlashbackAdminChatReportsResponses = {
+  200: {
+    reports: Array<{
+      context: Array<{
+        at: string;
+        name: string;
+        phien: number;
+        text: string;
+        waiting: boolean;
+      }>;
+      created_at: string;
+      decided_at: string | null;
+      id: string;
+      message_at: string;
+      phien: number;
+      reported_name: string;
+      reported_user_id: string;
+      reporter_name: string;
+      room_code: string;
+      status: "open" | "resolved" | "dismissed";
+      text: string;
+    }>;
+  };
+};
+
+export type FlashbackAdminChatReportsResponse =
+  FlashbackAdminChatReportsResponses[keyof FlashbackAdminChatReportsResponses];
+
+export type FlashbackAdminChatReportDecideData = {
+  body: {
+    status: "resolved" | "dismissed";
+  };
+  path: {
+    id: string;
+  };
+  query?: never;
+  url: "/api/v2/admin/flashback/chat/reports/{id}/decide";
+};
+
+export type FlashbackAdminChatReportDecideErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Insufficient role or entitlement
+   */
+  403: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackAdminChatReportDecideError =
+  FlashbackAdminChatReportDecideErrors[keyof FlashbackAdminChatReportDecideErrors];
+
+export type FlashbackAdminChatReportDecideResponses = {
+  200: {
+    id: string;
+    status: "resolved" | "dismissed";
+  };
+};
+
+export type FlashbackAdminChatReportDecideResponse =
+  FlashbackAdminChatReportDecideResponses[keyof FlashbackAdminChatReportDecideResponses];
+
 export type FlashbackAdminDatasetData = {
   body?: never;
   path?: never;
@@ -43636,6 +43848,7 @@ export type FlashbackRoomsListResponse =
 
 export type FlashbackRoomsCreateData = {
   body: {
+    chat_enabled?: boolean | null;
     max_players?: number;
     minutes?: number;
     password?: string | null;
@@ -43677,6 +43890,7 @@ export type FlashbackRoomsCreateError =
 export type FlashbackRoomsCreateResponses = {
   200: {
     auto_close_at: string | null;
+    chat_enabled: boolean;
     created_at: string;
     id: string;
     is_owner: boolean;
@@ -43752,6 +43966,7 @@ export type FlashbackRoomsMineResponses = {
     notice: string | null;
     room: {
       auto_close_at: string | null;
+      chat_enabled: boolean;
       created_at: string;
       id: string;
       is_owner: boolean;
@@ -43825,6 +44040,7 @@ export type FlashbackRoomsRandomJoinError =
 export type FlashbackRoomsRandomJoinResponses = {
   200: {
     auto_close_at: string | null;
+    chat_enabled: boolean;
     created_at: string;
     id: string;
     is_owner: boolean;
@@ -43899,6 +44115,7 @@ export type FlashbackRoomsGetError =
 export type FlashbackRoomsGetResponses = {
   200: {
     auto_close_at: string | null;
+    chat_enabled: boolean;
     created_at: string;
     id: string;
     is_owner: boolean;
@@ -43934,6 +44151,213 @@ export type FlashbackRoomsGetResponses = {
 
 export type FlashbackRoomsGetResponse =
   FlashbackRoomsGetResponses[keyof FlashbackRoomsGetResponses];
+
+export type FlashbackChatListData = {
+  body?: never;
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/chat";
+};
+
+export type FlashbackChatListErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackChatListError =
+  FlashbackChatListErrors[keyof FlashbackChatListErrors];
+
+export type FlashbackChatListResponses = {
+  200: {
+    enabled: boolean;
+    messages: Array<{
+      created_at: string;
+      id: string;
+      is_me: boolean;
+      name: string;
+      phien: number;
+      text: string;
+      user_id: string;
+      waiting: boolean;
+    }>;
+    muted: Array<{
+      name: string;
+      user_id: string;
+    }>;
+  };
+};
+
+export type FlashbackChatListResponse =
+  FlashbackChatListResponses[keyof FlashbackChatListResponses];
+
+export type FlashbackChatSendData = {
+  body: {
+    text: string;
+  };
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/chat";
+};
+
+export type FlashbackChatSendErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackChatSendError =
+  FlashbackChatSendErrors[keyof FlashbackChatSendErrors];
+
+export type FlashbackChatSendResponses = {
+  200: {
+    created_at: string;
+    id: string;
+    is_me: boolean;
+    name: string;
+    phien: number;
+    text: string;
+    user_id: string;
+    waiting: boolean;
+  };
+};
+
+export type FlashbackChatSendResponse =
+  FlashbackChatSendResponses[keyof FlashbackChatSendResponses];
+
+export type FlashbackChatMuteData = {
+  body: {
+    muted: boolean;
+    user_id: string;
+  };
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/chat/mute";
+};
+
+export type FlashbackChatMuteErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackChatMuteError =
+  FlashbackChatMuteErrors[keyof FlashbackChatMuteErrors];
+
+export type FlashbackChatMuteResponses = {
+  200: {
+    muted: Array<{
+      name: string;
+      user_id: string;
+    }>;
+  };
+};
+
+export type FlashbackChatMuteResponse =
+  FlashbackChatMuteResponses[keyof FlashbackChatMuteResponses];
+
+export type FlashbackChatReportData = {
+  body: {
+    message_id: string;
+  };
+  path: {
+    code: string;
+  };
+  query?: never;
+  url: "/api/v2/flashback/rooms/{code}/chat/report";
+};
+
+export type FlashbackChatReportErrors = {
+  /**
+   * Bad request
+   */
+  400: ApiErrorV2;
+  /**
+   * Authentication required
+   */
+  401: ApiErrorV2;
+  /**
+   * Request validation failed
+   */
+  422: ApiErrorV2;
+  /**
+   * Rate limit exceeded
+   */
+  429: ApiErrorV2;
+  /**
+   * Service temporarily unavailable
+   */
+  503: ApiErrorV2;
+};
+
+export type FlashbackChatReportError =
+  FlashbackChatReportErrors[keyof FlashbackChatReportErrors];
+
+export type FlashbackChatReportResponses = {
+  200: {
+    reported: true;
+  };
+};
+
+export type FlashbackChatReportResponse =
+  FlashbackChatReportResponses[keyof FlashbackChatReportResponses];
 
 export type FlashbackRoomsJoinData = {
   body: {
@@ -43975,6 +44399,7 @@ export type FlashbackRoomsJoinError =
 export type FlashbackRoomsJoinResponses = {
   200: {
     auto_close_at: string | null;
+    chat_enabled: boolean;
     created_at: string;
     id: string;
     is_owner: boolean;
@@ -44051,6 +44476,7 @@ export type FlashbackRoomsKickError =
 export type FlashbackRoomsKickResponses = {
   200: {
     auto_close_at: string | null;
+    chat_enabled: boolean;
     created_at: string;
     id: string;
     is_owner: boolean;
@@ -44171,6 +44597,7 @@ export type FlashbackRoomsReadyError =
 export type FlashbackRoomsReadyResponses = {
   200: {
     auto_close_at: string | null;
+    chat_enabled: boolean;
     created_at: string;
     id: string;
     is_owner: boolean;
@@ -44245,6 +44672,7 @@ export type FlashbackRoomsReplayError =
 export type FlashbackRoomsReplayResponses = {
   200: {
     auto_close_at: string | null;
+    chat_enabled: boolean;
     created_at: string;
     id: string;
     is_owner: boolean;
@@ -44420,6 +44848,7 @@ export type FlashbackRoomsStartResponses = {
     }>;
     room: {
       auto_close_at: string | null;
+      chat_enabled: boolean;
       created_at: string;
       id: string;
       is_owner: boolean;

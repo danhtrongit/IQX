@@ -354,6 +354,7 @@ describe("Flashback: hộp tạo phòng", () => {
       max_players: 1,
       stake_xu: null,
       password: null,
+      chat_enabled: true,
     })
   })
 
@@ -464,7 +465,7 @@ describe("Flashback: phòng chờ", () => {
     expect(within(slots).getAllByTestId("flashback-slot")).toHaveLength(1)
     expect(within(slots).getAllByTestId("flashback-slot-empty")).toHaveLength(3)
     expect(within(slots).getByText("Linh")).toBeTruthy()
-    expect(within(slots).getByText("Chủ phòng")).toBeTruthy()
+    expect(within(slots).getByText("👑 Chủ phòng")).toBeTruthy()
     expect(screen.getAllByText("Đang chờ người chơi")).toHaveLength(3)
   })
 
@@ -530,6 +531,7 @@ describe("Flashback: phòng chờ", () => {
     setup({ room: { status: "waiting", members: [ME] } })
     const { unmount } = renderFlashback()
     expect(await screen.findByRole("button", { name: "Bắt đầu" })).toBeTruthy()
+    expect(screen.getByTestId("flashback-ready-hint").textContent).toBe("Chỉ có bạn: ván chơi một mình, không cược.")
     expect(screen.getByRole("button", { name: "Rời phòng" })).toBeTruthy()
     unmount()
 
@@ -537,8 +539,8 @@ describe("Flashback: phòng chờ", () => {
     renderFlashback()
     await screen.findByTestId("flashback-room-id")
     expect(screen.getByRole("button", { name: "Rời phòng" })).toBeTruthy()
-    expect(screen.queryByRole("button", { name: "Bắt đầu" })).toBeNull()
-    expect(screen.getByText("Chủ phòng").closest("[data-testid='flashback-slot']")?.textContent).toContain("Minh")
+    expect(screen.queryByRole("button", { name: /^Bắt đầu/ })).toBeNull()
+    expect(screen.getByText("👑 Chủ phòng").closest("[data-testid='flashback-slot']")?.textContent).toContain("Minh")
   })
 
   it("Sao chép ID chép đúng ID phòng và báo bằng toast", async () => {
@@ -647,7 +649,7 @@ describe("Flashback: phòng chờ", () => {
 })
 
 describe("Flashback: Sẵn sàng và Đuổi khỏi phòng", () => {
-  const startButton = () => screen.getByRole("button", { name: "Bắt đầu" })
+  const startButton = () => screen.getByRole("button", { name: /^Bắt đầu/ })
   const slotOf = (name: string) =>
     screen.getAllByTestId("flashback-slot").find((slot) => slot.textContent?.includes(name)) as HTMLElement
 
@@ -657,16 +659,16 @@ describe("Flashback: Sẵn sàng và Đuổi khỏi phòng", () => {
     renderFlashback()
     await screen.findByTestId("flashback-room-id")
     expect(screen.queryByTestId("flashback-ready-badge")).toBeNull()
-    expect(screen.queryByRole("button", { name: "Huỷ sẵn sàng" })).toBeNull()
+    expect(screen.queryByRole("button", { name: "✓ Đã sẵn sàng · Huỷ" })).toBeNull()
 
     await user.click(screen.getByRole("button", { name: "Sẵn sàng" }))
-    expect(await screen.findByRole("button", { name: "Huỷ sẵn sàng" })).toBeTruthy()
+    expect(await screen.findByRole("button", { name: "✓ Đã sẵn sàng · Huỷ" })).toBeTruthy()
     expect(backend.callsTo("POST", `/flashback/rooms/${ROOM_CODE}/ready`)[0]?.body).toEqual({ ready: true })
-    expect(within(slotOf("Linh")).getByTestId("flashback-ready-badge").textContent).toBe("Sẵn sàng")
+    expect(within(slotOf("Linh")).getByTestId("flashback-ready-badge").textContent).toBe("✓ Sẵn sàng")
     // Chủ phòng có huy hiệu Chủ phòng, không có huy hiệu Sẵn sàng.
     expect(within(slotOf("Minh")).queryByTestId("flashback-ready-badge")).toBeNull()
 
-    await user.click(screen.getByRole("button", { name: "Huỷ sẵn sàng" }))
+    await user.click(screen.getByRole("button", { name: "✓ Đã sẵn sàng · Huỷ" }))
     expect(await screen.findByRole("button", { name: "Sẵn sàng" })).toBeTruthy()
     expect(backend.callsTo("POST", `/flashback/rooms/${ROOM_CODE}/ready`)[1]?.body).toEqual({ ready: false })
     expect(screen.queryByTestId("flashback-ready-badge")).toBeNull()
@@ -694,13 +696,16 @@ describe("Flashback: Sẵn sàng và Đuổi khỏi phòng", () => {
     renderFlashback()
     await screen.findByTestId("flashback-room-id")
     expect(startButton().hasAttribute("disabled")).toBe(true)
-    expect(screen.getByTestId("flashback-ready-wait").textContent).toBe("Chờ 2 người sẵn sàng")
+    expect(startButton().textContent).toBe("Bắt đầu (chờ 2 người)")
+    expect(screen.getByTestId("flashback-ready-hint").textContent).toBe("Mọi người sẵn sàng thì mới bắt đầu được.")
+    expect(screen.getByTestId("flashback-room-summary").textContent).toBe("3/4 người · 0/2 sẵn sàng")
 
     backend.setReady(MINH.user_id)
     await act(async () => {
       await vi.advanceTimersByTimeAsync(2_100)
     })
-    await waitFor(() => expect(screen.getByTestId("flashback-ready-wait").textContent).toBe("Chờ 1 người sẵn sàng"))
+    await waitFor(() => expect(startButton().textContent).toBe("Bắt đầu (chờ 1 người)"))
+    expect(mocks.toast.info).toHaveBeenCalledWith("Minh đã sẵn sàng")
     expect(startButton().hasAttribute("disabled")).toBe(true)
 
     backend.setReady(HOA.user_id)
@@ -708,7 +713,8 @@ describe("Flashback: Sẵn sàng và Đuổi khỏi phòng", () => {
       await vi.advanceTimersByTimeAsync(2_100)
     })
     await waitFor(() => expect(startButton().hasAttribute("disabled")).toBe(false))
-    expect(screen.queryByTestId("flashback-ready-wait")).toBeNull()
+    expect(startButton().textContent).toBe("Bắt đầu")
+    expect(screen.getByTestId("flashback-ready-hint").textContent).toBe("Tất cả đã sẵn sàng.")
 
     // Một người huỷ sẵn sàng thì nút tắt lại.
     backend.setReady(HOA.user_id, false)
@@ -724,7 +730,6 @@ describe("Flashback: Sẵn sàng và Đuổi khỏi phòng", () => {
     renderFlashback()
     await screen.findByTestId("flashback-room-id")
     expect(startButton().hasAttribute("disabled")).toBe(false)
-    expect(screen.queryByTestId("flashback-ready-wait")).toBeNull()
   })
 
   it("server từ chối bắt đầu (FB_PLAYERS_NOT_READY) thì hiện đúng câu của server", async () => {

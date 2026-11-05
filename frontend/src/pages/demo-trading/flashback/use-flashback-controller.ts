@@ -73,6 +73,7 @@ import {
   flashbackKeys,
   useFlashbackIndicators,
 } from "./use-flashback"
+import { useFlashbackChat } from "./use-flashback-chat"
 import { playEffect, playOrderSound, playVoice, sellOutcome } from "./flashback-sound"
 import { invalidateFlashbackProgress } from "./use-flashback-progress"
 
@@ -447,8 +448,8 @@ export function useFlashbackController(): FlashbackContextValue {
     setPlace({ phase: "room", code: place.code })
   }
 
-  // Có người vào hoặc rời phòng chờ: báo ngắn (§4). Lần tải đầu chỉ lấy mốc so sánh.
-  const knownMembers = useRef<{ code: string; members: Map<string, string> } | null>(null)
+  // Có người vào, rời phòng chờ hoặc vừa bấm Sẵn sàng: báo ngắn (§4, v2.4 §5.4). Lần tải đầu chỉ lấy mốc so sánh.
+  const knownMembers = useRef<{ code: string; members: Map<string, { name: string; ready: boolean }> } | null>(null)
   // Người vừa bị chính mình đuổi: đã có toast riêng, không báo thêm "đã rời phòng".
   const kickedByMe = useRef(new Set<string>())
   useEffect(() => {
@@ -456,15 +457,18 @@ export function useFlashbackController(): FlashbackContextValue {
       knownMembers.current = null
       return
     }
-    const members = new Map(room.members.map((member) => [member.user_id, member.name]))
+    const members = new Map(room.members.map((member) => [member.user_id, { name: member.name, ready: member.ready }]))
     const previous = knownMembers.current
     knownMembers.current = { code: room.id, members }
     if (!previous || previous.code !== room.id) return
     for (const member of room.members) {
-      if (!previous.members.has(member.user_id) && !member.is_me) toast.info(`${member.name} đã vào phòng`)
+      if (member.is_me) continue
+      const before = previous.members.get(member.user_id)
+      if (!before) toast.info(`${member.name} đã vào phòng`)
+      else if (!before.ready && member.ready && !member.is_owner) toast.info(`${member.name} đã sẵn sàng`)
     }
-    for (const [id, name] of previous.members) {
-      if (!members.has(id) && !kickedByMe.current.delete(id)) toast.info(`${name} đã rời phòng`)
+    for (const [id, member] of previous.members) {
+      if (!members.has(id) && !kickedByMe.current.delete(id)) toast.info(`${member.name} đã rời phòng`)
     }
   }, [place, room])
 
@@ -796,6 +800,7 @@ export function useFlashbackController(): FlashbackContextValue {
       step: me.step,
       cash,
       totalAssets: Number(me.total_assets),
+      initialCash: Number(snapshot.initial_cash),
       price,
       finished,
       playingCount: matchState?.playing_count ?? snapshot.playing_count,
@@ -845,6 +850,15 @@ export function useFlashbackController(): FlashbackContextValue {
     }
   }
 
+  const chat = useFlashbackChat({
+    userId,
+    roomCode,
+    phase,
+    roomChatEnabled: room?.chat_enabled,
+    step: snapshot?.my_step ?? null,
+    ended,
+  })
+
   return {
     phase,
     showPanel: place.phase === "match",
@@ -877,6 +891,7 @@ export function useFlashbackController(): FlashbackContextValue {
       kick,
       kickBusy: kickMutation.isPending,
     },
+    chat,
     match,
     matchLoading: place.phase === "match" && snapshotQuery.isPending,
     matchFailed: place.phase === "match" && snapshotQuery.isError && !snapshot,

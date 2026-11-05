@@ -41,6 +41,7 @@ export const fbCreateRoomBodySchema = z
     max_players: z.number().optional(),
     stake_xu: z.number().nullable().optional(),
     password: z.string().max(64).nullable().optional(),
+    chat_enabled: z.boolean().nullable().optional(),
   })
   .default({});
 export type FbCreateRoomBody = z.infer<typeof fbCreateRoomBodySchema>;
@@ -145,6 +146,7 @@ const roomListItemSchema = z.object({
 const roomSchema = z.object({
   id: z.string(),
   locked: z.boolean(),
+  chat_enabled: z.boolean(),
   owner_id: z.string(),
   is_owner: z.boolean(),
   view_bars: z.number(),

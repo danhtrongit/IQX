@@ -158,6 +158,7 @@ export class MemoryRoomsRepository extends FlashbackRoomsRepository {
       maxPlayers: input.maxPlayers,
       stakeXu: input.stakeXu,
       passwordHash: input.passwordHash,
+      chatEnabled: input.chatEnabled,
       status: 'waiting',
       currentMatchId: null,
       matchCount: 0,

@@ -90,6 +90,7 @@ async function seedMatch(
     maxPlayers: 30,
     stakeXu,
     passwordHash: null,
+    chatEnabled: true,
     status: 'closed',
     currentMatchId: matchId,
     matchCount: 1,

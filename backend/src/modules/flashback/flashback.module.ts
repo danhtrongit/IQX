@@ -44,6 +44,15 @@ import {
   FLASHBACK_DATASET_SOURCE,
   MarketFlashbackDatasetSource,
 } from './flashback-dataset.source.js';
+import {
+  FlashbackChatAdminController,
+  FlashbackChatController,
+} from './flashback-chat.controller.js';
+import {
+  FLASHBACK_CHAT_REPOSITORY,
+  PgFlashbackChatRepository,
+} from './flashback-chat.repository.js';
+import { FlashbackChatService } from './flashback-chat.service.js';
 import { FlashbackRoomsController } from './flashback-rooms.controller.js';
 import { FlashbackRoomDataset } from './flashback-rooms.dataset.js';
 import { FlashbackRoomsJob } from './flashback-rooms.job.js';
@@ -61,6 +70,8 @@ export const FLASHBACK_MARKET_DATA = 'FLASHBACK_MARKET_DATA';
   controllers: [
     FlashbackController,
     FlashbackRoomsController,
+    FlashbackChatController,
+    FlashbackChatAdminController,
     FlashbackAdminController,
     FlashbackDatasetAdminController,
   ],
@@ -96,6 +107,9 @@ export const FLASHBACK_MARKET_DATA = 'FLASHBACK_MARKET_DATA';
     FlashbackRoomDataset,
     { provide: FB_DATASET, useExisting: FlashbackRoomDataset },
     FlashbackRoomsService,
+    PgFlashbackChatRepository,
+    { provide: FLASHBACK_CHAT_REPOSITORY, useExisting: PgFlashbackChatRepository },
+    FlashbackChatService,
     FlashbackRoomsJob,
   ],
   exports: [

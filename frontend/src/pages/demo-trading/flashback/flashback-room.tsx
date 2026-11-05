@@ -1,8 +1,9 @@
 /**
- * Phòng chờ Flashback (spec v2 §4, v2.1 §1): ID phòng cỡ lớn kèm ổ khoá, nút Sao chép ID, 4 ô thông
+ * Phòng chờ Flashback (spec v2 §4, v2.1 §1, v2.4 §3.2 và §5): ID phòng cỡ lớn kèm ổ khoá, nút Sao chép ID, 4 ô thông
  * số, các ô người chơi (bằng số người tối đa, tối thiểu 4; từ 9 người trở lên ô thu nhỏ, lưới 6 cột
  * và cuộn trong khung; mỗi ô có avatar kèm cấp và vương miện, v2.1 §3.3 và §4.3), Rời phòng và Bắt
- * đầu (chỉ chủ phòng). Không có khung hướng dẫn hay chữ giải thích.
+ * đầu (chỉ chủ phòng, mở khi mọi người đã Sẵn sàng). Khung chat luôn mở ở cột phải (máy tính) hoặc dưới
+ * các nút (điện thoại).
  */
 import { useState } from "react"
 import { Copy, Lock, UserX } from "lucide-react"
@@ -14,15 +15,16 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { COIN_TEXT } from "../shop/shop-ui"
 import type { FlashbackRoom, FlashbackRoomMember } from "./flashback-api"
+import { FlashbackChatBox } from "./flashback-chat"
 import { useFlashback } from "./flashback-context"
 import { PlayerAvatar } from "./flashback-avatar"
 import { KickMemberDialog } from "./flashback-room-dialogs"
-import { ROOM_MANY_PLAYERS, formatNumber, roomSlotCount } from "./flashback-model"
+import { ROOM_MANY_PLAYERS, formatNumber, roomReadiness, roomSlotCount } from "./flashback-model"
 
 type KickTarget = { userId: string; name: string }
 
 export function FlashbackRoomScreen() {
-  const { room: api } = useFlashback()
+  const { room: api, chat } = useFlashback()
   const room = api.room
   const [kickTarget, setKickTarget] = useState<KickTarget | null>(null)
 
@@ -48,13 +50,18 @@ export function FlashbackRoomScreen() {
 
   const compact = room.max_players >= ROOM_MANY_PLAYERS
   const me = room.members.find((member) => member.is_me)
-  // Chủ phòng luôn được tính là sẵn sàng (server trả ready=true); chỉ đếm người còn lại.
-  const notReady = room.members.filter((member) => !member.ready).length
+  const readiness = roomReadiness(room)
   // Đuổi người chỉ ở phòng chờ (màn này chỉ hiện khi phòng đang chờ) và chỉ chủ phòng.
   const canKick = room.is_owner && room.status === "waiting"
   return (
-    <div className="mx-auto w-full max-w-[820px] space-y-3">
-      <section className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
+    <div
+      className={cn(
+        "mx-auto grid w-full items-start gap-3",
+        chat.enabled ? "max-w-[1240px] min-[901px]:grid-cols-[minmax(0,1fr)_360px]" : "max-w-[820px]",
+      )}
+    >
+      <div className="min-w-0 space-y-3">
+      <section className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-4">
         <h2
           className="flex items-center gap-2.5 font-heading text-4xl font-extrabold tracking-wide tabular-nums"
           aria-label={`Phòng ${room.id}`}
@@ -69,6 +76,9 @@ export function FlashbackRoomScreen() {
           <Copy aria-hidden="true" />
           Sao chép ID
         </Button>
+        <span className="ml-auto text-[13px] font-semibold tabular-nums" data-testid="flashback-room-summary">
+          {readiness.summary}
+        </span>
       </section>
 
       <section aria-label="Thông số phòng" className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
@@ -105,44 +115,51 @@ export function FlashbackRoomScreen() {
       </section>
       </ScrollArea>
 
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button type="button" variant="outline" className="flex-1 sm:flex-none" disabled={api.leaveBusy} onClick={api.leave}>
           Rời phòng
         </Button>
         {me && !room.is_owner ? (
-          <Button
-            type="button"
-            variant={me.ready ? "outline" : "default"}
-            className="flex-1 sm:flex-none"
-            disabled={api.readyBusy}
-            aria-pressed={me.ready}
-            onClick={() => api.setReady(!me.ready)}
-          >
-            {me.ready ? "Huỷ sẵn sàng" : "Sẵn sàng"}
-          </Button>
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              className={cn(
+                "flex-1 sm:flex-none",
+                me.ready
+                  ? "border-emerald-600 text-emerald-700 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-400"
+                  : "border-emerald-600 bg-emerald-600 text-white hover:bg-emerald-700 hover:text-white dark:bg-emerald-600 dark:hover:bg-emerald-700",
+              )}
+              disabled={api.readyBusy}
+              aria-pressed={me.ready}
+              onClick={() => api.setReady(!me.ready)}
+            >
+              {me.ready ? "✓ Đã sẵn sàng · Huỷ" : "Sẵn sàng"}
+            </Button>
+            <span className="w-full text-[13px] font-semibold sm:w-auto" data-testid="flashback-ready-hint" role="status">
+              {readiness.playerHint}
+            </span>
+          </>
         ) : null}
         {room.is_owner ? (
           <>
             <Button
               type="button"
               className="flex-1 sm:flex-none"
-              disabled={api.startBusy || notReady > 0}
+              disabled={api.startBusy || readiness.waiting > 0}
               onClick={api.start}
             >
-              Bắt đầu
+              {readiness.startLabel}
             </Button>
-            {notReady > 0 ? (
-              <span
-                className="flex items-center text-xs font-semibold text-text-secondary"
-                data-testid="flashback-ready-wait"
-                role="status"
-              >
-                Chờ {notReady} người sẵn sàng
-              </span>
-            ) : null}
+            <span className="w-full text-[13px] font-semibold sm:w-auto" data-testid="flashback-ready-hint" role="status">
+              {readiness.ownerHint}
+            </span>
           </>
         ) : null}
       </div>
+      </div>
+
+      {chat.enabled ? <FlashbackChatBox chat={chat} inMatch={false} className="h-[440px] min-[901px]:h-[600px]" /> : null}
 
       {kickTarget ? (
         <KickMemberDialog
@@ -186,7 +203,11 @@ function Slot({
         className={cn(
           "relative flex min-w-0 flex-col items-center gap-1.5 rounded-lg border bg-card text-center",
           compact ? "min-h-[92px] px-1.5 py-2.5" : "px-2 py-3",
-          member.is_me ? "border-primary" : "border-border",
+          member.ready && !member.is_owner
+            ? "border-emerald-600 ring-1 ring-emerald-600"
+            : member.is_me
+              ? "border-primary"
+              : "border-border",
         )}
         data-testid="flashback-slot"
       >
@@ -202,16 +223,23 @@ function Slot({
         <b className="w-full truncate text-sm font-bold">{member.name}</b>
         {member.is_owner ? (
           <span className="rounded-sm bg-chart-2/15 px-1.5 py-0.5 text-[11px] font-semibold text-amber-700 dark:text-chart-2">
-            Chủ phòng
+            👑 Chủ phòng
           </span>
         ) : member.ready ? (
           <span
             className="rounded-sm bg-emerald-600/15 px-1.5 py-0.5 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400"
             data-testid="flashback-ready-badge"
           >
-            Sẵn sàng
+            ✓ Sẵn sàng
           </span>
-        ) : null}
+        ) : (
+          <span
+            className="rounded-sm bg-destructive/10 px-1.5 py-0.5 text-[11px] font-semibold text-destructive"
+            data-testid="flashback-unready-badge"
+          >
+            Chưa sẵn sàng
+          </span>
+        )}
         {onKick && !member.is_owner && !member.is_me ? (
           <Button
             type="button"

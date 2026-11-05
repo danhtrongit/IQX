@@ -27,6 +27,7 @@ export const flashbackKeys = {
   state: (userId: string, matchId: string) => ["flashback", "state", userId, matchId] as const,
   result: (userId: string, matchId: string) => ["flashback", "result", userId, matchId] as const,
   indicators: (userId: string) => ["flashback", "indicators", userId] as const,
+  chat: (userId: string, code: string) => ["flashback", "chat", userId, code] as const,
 }
 
 /** Metadata của đủ 16 chỉ báo: tên, tham số và miền cho phép. */

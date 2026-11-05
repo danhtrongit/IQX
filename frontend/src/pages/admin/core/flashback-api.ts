@@ -230,3 +230,35 @@ export async function fetchFlashbackSettings(signal?: AbortSignal): Promise<Flas
   const response = await requestOperation("GET /api/v2/admin/flashback/settings", {}, { signal })
   return response.settings.map(adaptSetting)
 }
+
+// ------------------------------------------------------------------ chat phòng (spec v2.4 §3.5)
+
+type FlashbackChatReportsResponse = ApiResponseFor<"GET /api/v2/admin/flashback/chat/reports">
+export type FlashbackChatReport = FlashbackChatReportsResponse["reports"][number]
+
+export function fetchFlashbackChatBannedWords(signal?: AbortSignal): Promise<string[]> {
+  return requestOperation("GET /api/v2/admin/flashback/chat/banned-words", {}, signal ? { signal } : {}).then(
+    (response) => response.words,
+  )
+}
+
+export function saveFlashbackChatBannedWords(words: string[]): Promise<string[]> {
+  return requestOperation("PUT /api/v2/admin/flashback/chat/banned-words", { body: { words } }).then(
+    (response) => response.words,
+  )
+}
+
+export function fetchFlashbackChatReports(signal?: AbortSignal): Promise<FlashbackChatReport[]> {
+  return requestOperation(
+    "GET /api/v2/admin/flashback/chat/reports",
+    { query: { status: "open" } },
+    signal ? { signal } : {},
+  ).then((response) => response.reports)
+}
+
+export function decideFlashbackChatReport(id: string, status: "resolved" | "dismissed") {
+  return requestOperation("POST /api/v2/admin/flashback/chat/reports/{id}/decide", {
+    path: { id },
+    body: { status },
+  })
+}

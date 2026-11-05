@@ -174,6 +174,7 @@ export interface FbRoomMemberView extends FbPlayerRef {
 export interface FbRoomView {
   readonly id: string;
   readonly locked: boolean;
+  readonly chat_enabled: boolean;
   readonly owner_id: string;
   readonly is_owner: boolean;
   readonly view_bars: number;
@@ -536,6 +537,7 @@ export class FlashbackRoomsService {
           maxPlayers: settings.maxPlayers,
           stakeXu: settings.stakeXu,
           passwordHash,
+          chatEnabled: settings.chatEnabled,
           now,
         });
       }
@@ -686,7 +688,18 @@ export class FlashbackRoomsService {
       if (!members.some((member) => member.userId === userId))
         throw forbidden('NOT_IN_ROOM', 'Bạn không ở trong phòng này');
       if (room.status !== 'waiting') throw conflict('ROOM_PLAYING', 'Phòng đang chơi');
-      if (room.ownerId !== userId) await this.repository.setMemberReady(tx, room.id, userId, ready, now);
+      if (room.ownerId !== userId) {
+        // Không đủ xu cược thì không bấm Sẵn sàng được (v2.4 §5.2); huỷ thì luôn được.
+        if (ready && room.stakeXu > 0) {
+          const balance = await this.repository.balance(tx, userId);
+          if (balance < room.stakeXu)
+            throw conflict(
+              'XU_INSUFFICIENT',
+              `Không đủ ${formatXu(room.stakeXu)} xu để chơi phòng này`,
+            );
+        }
+        await this.repository.setMemberReady(tx, room.id, userId, ready, now);
+      }
       return this.roomView(tx, room, userId);
     });
   }
@@ -713,7 +726,15 @@ export class FlashbackRoomsService {
         throw conflict('ROOM_PLAYING', 'Đang chơi, chưa mời người ra khỏi phòng được');
       if (!members.some((member) => member.userId === targetUserId))
         throw notFound('FB_MEMBER_NOT_FOUND', 'Người chơi này không còn ở trong phòng');
-      await this.dropMember(tx, room, members, targetUserId, FB_KICKED_REASON, FB_KICKED_NOTICE, now);
+      await this.dropMember(
+        tx,
+        room,
+        members,
+        targetUserId,
+        FB_KICKED_REASON,
+        FB_KICKED_NOTICE,
+        now,
+      );
       return this.roomView(tx, room, ownerId);
     });
   }
@@ -1935,6 +1956,7 @@ export class FlashbackRoomsService {
     return {
       id: fresh.code,
       locked: fresh.passwordHash !== null,
+      chat_enabled: fresh.chatEnabled,
       owner_id: fresh.ownerId,
       is_owner: fresh.ownerId === userId,
       view_bars: fresh.viewBars,

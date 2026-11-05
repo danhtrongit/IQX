@@ -19,7 +19,8 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import type { FlashbackPlayer } from "./flashback-api"
 import { PlayerAvatar } from "./flashback-avatar"
-import type { MatchApi, ReactionBubble } from "./flashback-context"
+import { ChatToggleButton } from "./flashback-chat"
+import type { ChatApi, MatchApi, ReactionBubble } from "./flashback-context"
 import { MATCH_VOICES, clockCue, playCue, preloadVoices, useSoundEnabled } from "./flashback-sound"
 import {
   FLASHBACK_LOW_TIME_MS,
@@ -31,7 +32,7 @@ import {
   playerStatus,
 } from "./flashback-model"
 
-export function PlayerBar({ match }: { match: MatchApi }) {
+export function PlayerBar({ match, chat }: { match: MatchApi; chat: ChatApi }) {
   const players = orderPlayers(match.players)
   const leaders = leaderIds(match.players)
   const done = finishedCount(match.players)
@@ -55,8 +56,9 @@ export function PlayerBar({ match }: { match: MatchApi }) {
           </span>
         </div>
         <MatchClock clock={match.clock} ended={match.ended} onExpire={match.expireClock} />
-        <div className="flex flex-1 justify-end">
+        <div className="flex flex-1 items-center justify-end gap-1.5">
           <SoundToggle />
+          {chat.enabled ? <ChatToggleButton chat={chat} /> : null}
         </div>
       </div>
       <ScrollArea orientation="horizontal">

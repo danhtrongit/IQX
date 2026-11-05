@@ -8,6 +8,8 @@ import { createContext, useContext } from "react"
 
 import type {
   FlashbackBar,
+  FlashbackChat,
+  FlashbackChatMessage,
   FlashbackCreateRoomBody,
   FlashbackIndicatorMeta,
   FlashbackIndicatorParams,
@@ -86,6 +88,25 @@ export type RoomApi = {
   kickBusy: boolean
 }
 
+/** Chat của phòng đang ở (v2.4 §3): dùng chung cho phòng chờ, trong ván và cửa sổ kết quả. */
+export type ChatApi = {
+  /** Chủ phòng bật chat khi tạo phòng; tắt thì không có khung chat và nút Chat ở mọi màn. */
+  enabled: boolean
+  /** Đúng những tin server đã giao cho mình, theo thứ tự hiện. */
+  messages: FlashbackChatMessage[]
+  muted: FlashbackChat["muted"]
+  /** Số tin chưa đọc của người khác khi khung đang đóng. */
+  unread: number
+  /** Khung chat trong ván đang mở. */
+  open: boolean
+  setOpen: (open: boolean) => void
+  /** Gửi một tin; true khi đã gửi (để xoá ô nhập). */
+  send: (text: string) => Promise<boolean>
+  sendBusy: boolean
+  setMuted: (userId: string, name: string, muted: boolean) => void
+  report: (messageId: string) => void
+}
+
 export type MatchApi = {
   snapshot: FlashbackSnapshot
   me: FlashbackMe
@@ -101,6 +122,8 @@ export type MatchApi = {
   step: number
   cash: number
   totalAssets: number
+  /** Tiền vốn đầu ván, để tính % lợi nhuận của mình (v2.4 §2). */
+  initialCash: number
   /** Giá khớp: giá đóng cửa phiên đang hiện. */
   price: number
   /** Mình đã bấm Hoàn thành (hoặc đã bị kéo tới phiên cuối khi hết giờ). */
@@ -153,6 +176,7 @@ export type FlashbackContextValue = {
   retryBoot: () => void
   lobby: LobbyApi
   room: RoomApi
+  chat: ChatApi
   /** Ván đang mở: null khi chưa ở màn chơi hoặc ảnh chụp ván chưa về. */
   match: MatchApi | null
   matchLoading: boolean

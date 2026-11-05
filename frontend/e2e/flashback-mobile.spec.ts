@@ -42,6 +42,7 @@ const member = (id: string, name: string, owner: boolean) => ({
 function room(stage: "waiting" | "playing") {
   return {
     auto_close_at: null,
+    chat_enabled: true,
     created_at: "2026-10-30T01:00:00.000Z",
     id: ROOM_ID,
     is_owner: true,
@@ -116,6 +117,23 @@ async function json(route: Route, body: unknown, status = 200) {
   await route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) })
 }
 
+const chatMessage = (id: string, mine: boolean, waiting: boolean, phien: number, text: string) => ({
+  created_at: "2026-10-30T01:00:10.000Z",
+  id,
+  is_me: mine,
+  name: mine ? "Nhà đầu tư thử nghiệm" : "Minh",
+  phien,
+  text,
+  user_id: mine ? "member-1" : "member-2",
+  waiting,
+})
+
+const CHAT_MESSAGES = [
+  chatMessage("c1", false, true, 0, "Chào cả phòng, chơi đẹp nhé!"),
+  chatMessage("c2", true, true, 0, "Gồng thôi 💪"),
+  chatMessage("c3", false, false, 0, "Một tin rất dài để xem bong bóng có xuống dòng đúng và không làm tràn khung chat ở màn hình hẹp hay không nhé mọi người"),
+]
+
 /** Route Flashback v2 giả: sảnh, tạo phòng, phòng chờ, bắt đầu rồi màn chơi. */
 async function mockFlashback(page: Page) {
   let stage: "lobby" | "waiting" | "playing" = "lobby"
@@ -167,6 +185,9 @@ async function mockFlashback(page: Page) {
     if (path === `/flashback/rooms/${ROOM_ID}/start`) {
       stage = "playing"
       return json(route, { match: snapshot(0), room: room("playing"), removed: [] })
+    }
+    if (path === `/flashback/rooms/${ROOM_ID}/chat`) {
+      return json(route, { enabled: true, messages: stage === "lobby" ? [] : CHAT_MESSAGES, muted: [] })
     }
     if (path === `/flashback/matches/${MATCH_ID}` && method === "GET") return json(route, snapshot(step))
     if (path === `/flashback/matches/${MATCH_ID}/state`) {
@@ -276,7 +297,7 @@ for (const theme of ["dark", "light"] as const) {
     await page.emulateMedia({ colorScheme: theme })
     await page.addInitScript((value) => {
       try {
-        localStorage.setItem("iqx.v2.theme", value)
+        localStorage.setItem("theme", value)
       } catch {
         // Bỏ qua khi trình duyệt chặn localStorage.
       }
@@ -341,4 +362,96 @@ for (const theme of ["dark", "light"] as const) {
     await page.getByRole("button", { name: "Đóng công cụ" }).click()
     await expect(panel).toBeHidden()
   })
+}
+
+for (const theme of ["dark", "light"] as const) {
+  for (const [width, height] of [
+    [1366, 768],
+    [390, 844],
+  ] as const) {
+    test(`Flashback v2.4 ở ${width}px (${theme}): chat ở phòng chờ và trong ván, 4 ô số liệu, không tràn ngang, chữ rõ`, async ({ page }) => {
+      const shot = process.env.FLASHBACK_SHOTS
+      await page.setViewportSize({ width, height })
+      await page.emulateMedia({ colorScheme: theme })
+      await page.addInitScript((value) => {
+        try {
+          localStorage.setItem("theme", value)
+        } catch {
+          // Bỏ qua khi trình duyệt chặn localStorage.
+        }
+      }, theme)
+      await seedMember(page)
+      await mockFlashback(page)
+      await page.goto("/demo-trading?view=flashback")
+      await page.getByRole("button", { name: "Tạo phòng" }).first().click()
+      await expect(page.getByLabel("Chat trong phòng")).toBeVisible()
+      await page.getByTestId("flashback-create-room").getByRole("button", { name: "Tạo phòng" }).click()
+
+      // Phòng chờ: khung chat luôn mở, cao 600 px ở cột phải (máy tính) hoặc 440 px dưới các nút (điện thoại).
+      const lobbyChat = page.getByTestId("flashback-chat")
+      await expect(lobbyChat).toBeVisible()
+      await expect(lobbyChat.getByText("Chào cả phòng, chơi đẹp nhé!")).toBeVisible()
+      const box = await lobbyChat.boundingBox()
+      expect(box?.height).toBe(width > 900 ? 600 : 440)
+      if (width > 900) expect(box?.width).toBe(360)
+      const start = await page.getByRole("button", { name: /^Bắt đầu/ }).boundingBox()
+      if (width <= 900) expect(box!.y).toBeGreaterThan(start!.y)
+      expect(await noHorizontalOverflow(page)).toBe(true)
+      expect(await lowContrastTexts(page)).toEqual([])
+      if (shot) await page.screenshot({ path: `${shot}/room-${width}-${theme}.png`, fullPage: true })
+
+      await page.getByRole("button", { name: /^Bắt đầu/ }).click()
+      await expect(page.getByTestId("flashback-clock")).toBeVisible()
+      await expect(page.getByTestId("flashback-profit")).toHaveText("0,00%")
+      await expect(page.getByTestId("flashback-session")).toBeVisible()
+      expect(await noHorizontalOverflow(page)).toBe(true)
+      expect(await lowContrastTexts(page)).toEqual([])
+
+      // Chú giải không có ô nền, có viền chữ cùng màu nền khung.
+      const legend = page.locator(".fb-legend").first()
+      await expect(legend).toBeVisible()
+      const look = await legend.evaluate((element) => {
+        const style = getComputedStyle(element)
+        return { background: style.backgroundColor, shadow: style.textShadow, size: style.fontSize, weight: style.fontWeight }
+      })
+      expect(look.background).toBe("rgba(0, 0, 0, 0)")
+      expect(look.shadow).not.toBe("none")
+      expect(look.size).toBe("12.5px")
+      expect(look.weight).toBe("700")
+      if (shot) await page.screenshot({ path: `${shot}/match-${width}-${theme}.png` })
+
+      // 4 ô số liệu: một hàng trên máy tính, 2 × 2 trên điện thoại.
+      const tiles = page.getByRole("region", { name: "Số liệu ván chơi" }).locator(":scope > div")
+      await expect(tiles).toHaveCount(4)
+      const first = await tiles.nth(0).boundingBox()
+      const second = await tiles.nth(1).boundingBox()
+      const third = await tiles.nth(2).boundingBox()
+      expect(first!.y).toBe(second!.y)
+      if (width > 900) expect(third!.y).toBe(first!.y)
+      else expect(third!.y).toBeGreaterThan(first!.y)
+
+      // Khung chat trong ván.
+      const open = page.getByTestId(width > 900 ? "flashback-chat-toggle" : "flashback-chat-mobile")
+      await expect(open).toBeVisible()
+      await open.click()
+      const chat = page.getByTestId("flashback-chat")
+      await expect(chat).toBeVisible()
+      await expect(chat.getByText("Tin của người đi trước hiện khi bạn tới cùng phiên")).toBeVisible()
+      if (width <= 900) {
+        const opened = await chat.boundingBox()
+        expect(Math.round(opened!.height)).toBe(Math.round(height * 0.72))
+      } else {
+        // Khung chat phủ đúng phần trong của panel công cụ, trừ 1px viền (đợi hết hiệu ứng trượt vào).
+        const panel = await page.getByRole("complementary", { name: "Flashback" }).boundingBox()
+        await expect
+          .poll(async () => Math.abs((await chat.boundingBox())!.x - panel!.x))
+          .toBeLessThanOrEqual(1)
+      }
+      await expect(page.getByTestId("flashback-chat-quick")).toBeVisible()
+      await expect(page.locator("html")).toHaveClass(new RegExp(theme))
+      expect(await noHorizontalOverflow(page)).toBe(true)
+      expect(await lowContrastTexts(page)).toEqual([])
+      if (shot) await page.screenshot({ path: `${shot}/chat-${width}-${theme}.png` })
+    })
+  }
 }

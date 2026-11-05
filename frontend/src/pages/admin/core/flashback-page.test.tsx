@@ -123,6 +123,8 @@ function install() {
       return { ...HOLDS[0], status: "released", decided_at: "2026-10-21T00:00:00.000Z", decided_by: "admin-1" }
     }
     if (path === "/admin/flashback/settings") return { settings: SETTINGS }
+    if (path === "/admin/flashback/chat/banned-words") return { words: [] }
+    if (path === "/admin/flashback/chat/reports?status=open") return { reports: [] }
     // Mục "Kho dữ liệu Flashback" (spec v2.2) nằm cùng trang; test riêng của nó ở flashback-dataset-section.test.tsx.
     if (path === "/admin/flashback/dataset") return datasetStatusWire()
     if (path === "/admin/flashback/dataset/symbols") return datasetSymbolsWire()
@@ -312,6 +314,7 @@ describe("màn quản trị Flashback", () => {
     renderPage()
     expect(await screen.findByText("Thời lượng một đề (giờ)")).toBeTruthy()
     expect(screen.getByText("entry_fee_xu")).toBeTruthy()
-    expect(screen.queryByRole("textbox")).toBeNull()
+    // Ô nhập duy nhất của màn là ô thêm từ cấm của chat; bảng tham số không có ô sửa.
+    expect(screen.getAllByRole("textbox").map((box) => box.getAttribute("aria-label"))).toEqual(["Thêm từ cấm"])
   })
 })

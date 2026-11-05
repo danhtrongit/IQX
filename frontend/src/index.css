@@ -35,6 +35,8 @@
 }
 
 .fb-reaction { animation: iqx-reaction 2.5s ease-out both; }
+/* Chú giải biểu đồ Flashback: không có ô nền, viền chữ cùng màu nền khung để đọc được khi đè lên nến (v2.4 §1). */
+.fb-legend { text-shadow: 0 0 2px var(--card), 0 0 2px var(--card), 0 0 3px var(--card), 0 0 4px var(--card); }
 
 @media (prefers-reduced-motion: reduce) {
   .fb-reaction { animation-name: iqx-reaction-fade; }

@@ -35149,7 +35149,7 @@
   },
   "info": {
     "contact": {},
-    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 809 typed response bodies, 18 verified empty responses, 0 untyped operations.",
+    "description": "IQX backend-v2 modular API. Database migrations are explicit and guarded for fresh v2 databases.\n\nOpenAPI metadata coverage: 817 typed response bodies, 18 verified empty responses, 0 untyped operations.",
     "title": "IQX backend-v2",
     "version": "0.2.0"
   },
@@ -78692,6 +78692,585 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/admin/flashback/chat/banned-words": {
+      "get": {
+        "operationId": "flashbackAdminChatBannedWords",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "words": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "words"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Danh sách từ cấm của chat",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      },
+      "put": {
+        "operationId": "flashbackAdminChatBannedWordsReplace",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "words": {
+                    "items": {
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "maxItems": 2000,
+                    "type": "array"
+                  }
+                },
+                "required": [
+                  "words"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "words": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "words"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Thay danh sách từ cấm của chat",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/chat/reports": {
+      "get": {
+        "operationId": "flashbackAdminChatReports",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "default": "open",
+              "enum": [
+                "open",
+                "resolved",
+                "dismissed"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "reports": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "context": {
+                            "items": {
+                              "additionalProperties": false,
+                              "properties": {
+                                "at": {
+                                  "type": "string"
+                                },
+                                "name": {
+                                  "type": "string"
+                                },
+                                "phien": {
+                                  "type": "number"
+                                },
+                                "text": {
+                                  "type": "string"
+                                },
+                                "waiting": {
+                                  "type": "boolean"
+                                }
+                              },
+                              "required": [
+                                "name",
+                                "phien",
+                                "waiting",
+                                "text",
+                                "at"
+                              ],
+                              "type": "object"
+                            },
+                            "type": "array"
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "decided_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "message_at": {
+                            "type": "string"
+                          },
+                          "phien": {
+                            "type": "number"
+                          },
+                          "reported_name": {
+                            "type": "string"
+                          },
+                          "reported_user_id": {
+                            "type": "string"
+                          },
+                          "reporter_name": {
+                            "type": "string"
+                          },
+                          "room_code": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "enum": [
+                              "open",
+                              "resolved",
+                              "dismissed"
+                            ],
+                            "type": "string"
+                          },
+                          "text": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "room_code",
+                          "reporter_name",
+                          "reported_user_id",
+                          "reported_name",
+                          "text",
+                          "phien",
+                          "message_at",
+                          "context",
+                          "status",
+                          "created_at",
+                          "decided_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "reports"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Báo cáo tin nhắn chat",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/admin/flashback/chat/reports/{id}/decide": {
+      "post": {
+        "operationId": "flashbackAdminChatReportDecide",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "status": {
+                    "enum": [
+                      "resolved",
+                      "dismissed"
+                    ],
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "status"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "enum": [
+                        "resolved",
+                        "dismissed"
+                      ],
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "status"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Insufficient role or entitlement"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Đánh dấu báo cáo là đã xử lý hoặc bỏ qua",
+        "tags": [
+          "Flashback Admin"
+        ],
+        "x-auth-level": "roles:admin",
+        "x-required-roles": [
+          "admin"
+        ],
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/admin/flashback/dataset": {
       "get": {
         "operationId": "flashbackAdminDataset",
@@ -113195,6 +113774,10 @@
                 "additionalProperties": false,
                 "default": {},
                 "properties": {
+                  "chat_enabled": {
+                    "nullable": true,
+                    "type": "boolean"
+                  },
                   "max_players": {
                     "type": "number"
                   },
@@ -113233,6 +113816,9 @@
                     "auto_close_at": {
                       "nullable": true,
                       "type": "string"
+                    },
+                    "chat_enabled": {
+                      "type": "boolean"
                     },
                     "created_at": {
                       "type": "string"
@@ -113379,6 +113965,7 @@
                   "required": [
                     "id",
                     "locked",
+                    "chat_enabled",
                     "owner_id",
                     "is_owner",
                     "view_bars",
@@ -113488,6 +114075,9 @@
                         "auto_close_at": {
                           "nullable": true,
                           "type": "string"
+                        },
+                        "chat_enabled": {
+                          "type": "boolean"
                         },
                         "created_at": {
                           "type": "string"
@@ -113634,6 +114224,7 @@
                       "required": [
                         "id",
                         "locked",
+                        "chat_enabled",
                         "owner_id",
                         "is_owner",
                         "view_bars",
@@ -113740,6 +114331,9 @@
                     "auto_close_at": {
                       "nullable": true,
                       "type": "string"
+                    },
+                    "chat_enabled": {
+                      "type": "boolean"
                     },
                     "created_at": {
                       "type": "string"
@@ -113886,6 +114480,7 @@
                   "required": [
                     "id",
                     "locked",
+                    "chat_enabled",
                     "owner_id",
                     "is_owner",
                     "view_bars",
@@ -113996,6 +114591,9 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "chat_enabled": {
+                      "type": "boolean"
+                    },
                     "created_at": {
                       "type": "string"
                     },
@@ -114141,6 +114739,7 @@
                   "required": [
                     "id",
                     "locked",
+                    "chat_enabled",
                     "owner_id",
                     "is_owner",
                     "view_bars",
@@ -114225,6 +114824,577 @@
         "x-response-schema-status": "explicit"
       }
     },
+    "/api/v2/flashback/rooms/{code}/chat": {
+      "get": {
+        "operationId": "flashbackChatList",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "enabled": {
+                      "type": "boolean"
+                    },
+                    "messages": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "is_me": {
+                            "type": "boolean"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "phien": {
+                            "type": "number"
+                          },
+                          "text": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          },
+                          "waiting": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "user_id",
+                          "name",
+                          "is_me",
+                          "waiting",
+                          "phien",
+                          "text",
+                          "created_at"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    },
+                    "muted": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "enabled",
+                    "messages",
+                    "muted"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Các tin đã tới lượt người đọc (tin của phiên sau không được trả về)",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      },
+      "post": {
+        "operationId": "flashbackChatSend",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "text": {
+                    "maxLength": 2000,
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "is_me": {
+                      "type": "boolean"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "phien": {
+                      "type": "number"
+                    },
+                    "text": {
+                      "type": "string"
+                    },
+                    "user_id": {
+                      "type": "string"
+                    },
+                    "waiting": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "user_id",
+                    "name",
+                    "is_me",
+                    "waiting",
+                    "phien",
+                    "text",
+                    "created_at"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Gửi tin vào chat phòng; server tự gắn phiên của người gửi",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms/{code}/chat/mute": {
+      "post": {
+        "operationId": "flashbackChatMute",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "muted": {
+                    "type": "boolean"
+                  },
+                  "user_id": {
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "user_id",
+                  "muted"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "muted": {
+                      "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "user_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "user_id",
+                          "name"
+                        ],
+                        "type": "object"
+                      },
+                      "type": "array"
+                    }
+                  },
+                  "required": [
+                    "muted"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Tắt tiếng hoặc bỏ tắt tiếng một người trong phòng này",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
+    "/api/v2/flashback/rooms/{code}/chat/report": {
+      "post": {
+        "operationId": "flashbackChatReport",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "code",
+            "required": true,
+            "schema": {
+              "maxLength": 32,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "additionalProperties": false,
+                "properties": {
+                  "message_id": {
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "message_id"
+                ],
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "reported": {
+                      "enum": [
+                        true
+                      ],
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "reported"
+                  ],
+                  "type": "object"
+                }
+              }
+            },
+            "description": ""
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Request validation failed"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiErrorV2"
+                }
+              }
+            },
+            "description": "Service temporarily unavailable"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Báo cáo một tin nhắn cho quản trị",
+        "tags": [
+          "Flashback Rooms"
+        ],
+        "x-auth-level": "authenticated",
+        "x-response-schema-status": "explicit"
+      }
+    },
     "/api/v2/flashback/rooms/{code}/join": {
       "post": {
         "operationId": "flashbackRoomsJoin",
@@ -114269,6 +115439,9 @@
                     "auto_close_at": {
                       "nullable": true,
                       "type": "string"
+                    },
+                    "chat_enabled": {
+                      "type": "boolean"
                     },
                     "created_at": {
                       "type": "string"
@@ -114415,6 +115588,7 @@
                   "required": [
                     "id",
                     "locked",
+                    "chat_enabled",
                     "owner_id",
                     "is_owner",
                     "view_bars",
@@ -114546,6 +115720,9 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "chat_enabled": {
+                      "type": "boolean"
+                    },
                     "created_at": {
                       "type": "string"
                     },
@@ -114691,6 +115868,7 @@
                   "required": [
                     "id",
                     "locked",
+                    "chat_enabled",
                     "owner_id",
                     "is_owner",
                     "view_bars",
@@ -114922,6 +116100,9 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "chat_enabled": {
+                      "type": "boolean"
+                    },
                     "created_at": {
                       "type": "string"
                     },
@@ -115067,6 +116248,7 @@
                   "required": [
                     "id",
                     "locked",
+                    "chat_enabled",
                     "owner_id",
                     "is_owner",
                     "view_bars",
@@ -115177,6 +116359,9 @@
                       "nullable": true,
                       "type": "string"
                     },
+                    "chat_enabled": {
+                      "type": "boolean"
+                    },
                     "created_at": {
                       "type": "string"
                     },
@@ -115322,6 +116507,7 @@
                   "required": [
                     "id",
                     "locked",
+                    "chat_enabled",
                     "owner_id",
                     "is_owner",
                     "view_bars",
@@ -115902,6 +117088,9 @@
                           "nullable": true,
                           "type": "string"
                         },
+                        "chat_enabled": {
+                          "type": "boolean"
+                        },
                         "created_at": {
                           "type": "string"
                         },
@@ -116047,6 +117236,7 @@
                       "required": [
                         "id",
                         "locked",
+                        "chat_enabled",
                         "owner_id",
                         "is_owner",
                         "view_bars",
@@ -171582,11 +172772,11 @@
   "servers": [],
   "tags": [],
   "x-metadata-quality": {
-    "authenticatedOperations": 620,
+    "authenticatedOperations": 628,
     "noContentResponses": 18,
-    "operations": 827,
+    "operations": 835,
     "publicOperations": 207,
-    "responseSchemas": 809,
+    "responseSchemas": 817,
     "untypedResponses": 0
   }
 }

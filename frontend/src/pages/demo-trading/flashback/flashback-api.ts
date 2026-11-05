@@ -27,6 +27,7 @@ type LeaderboardResponse = ApiResponseFor<"GET /api/v2/flashback/leaderboard">
 type HistoryResponse = ApiResponseFor<"GET /api/v2/flashback/me/history">
 type HistorySummaryResponse = ApiResponseFor<"GET /api/v2/flashback/me/history/summary">
 type ReactionResponse = ApiResponseFor<"POST /api/v2/flashback/matches/{id}/reactions">
+type ChatResponse = ApiResponseFor<"GET /api/v2/flashback/rooms/{code}/chat">
 
 /** Một nến gửi cho trình duyệt: không có ngày thật, không có mã. */
 export type FlashbackBar = SnapshotResponse["history_bars"][number]
@@ -52,6 +53,10 @@ export type FlashbackPlayer = StateResponse["players"][number]
 /** Một biểu cảm vừa gửi trong ván: server giữ vài giây rồi bỏ (v2.1 §6.4). */
 export type FlashbackReaction = StateResponse["reactions"][number]
 export type FlashbackReactionSent = ReactionResponse
+
+/** Chat phòng (v2.4 §3): chỉ gồm các tin server đã cho phép mình đọc. */
+export type FlashbackChat = ChatResponse
+export type FlashbackChatMessage = ChatResponse["messages"][number]
 
 export type FlashbackMatchResult = ResultResponse
 export type FlashbackResultRow = ResultResponse["rows"][number]
@@ -94,6 +99,7 @@ export type FlashbackCreateRoomBody = {
   max_players: number
   stake_xu: number | null
   password: string | null
+  chat_enabled: boolean
 }
 
 /** Một chỉ báo đã chọn: id chỉ báo + bộ tham số đã chọn. */
@@ -224,6 +230,31 @@ export function finishMatch(matchId: string): Promise<FlashbackFinishResult> {
 /** Gửi một biểu cảm tới cả phòng; server chỉ nhận 12 biểu cảm trong danh sách và 1 cái mỗi 1,5 giây. */
 export function sendReaction(matchId: string, emoji: string): Promise<FlashbackReactionSent> {
   return requestOperation("POST /api/v2/flashback/matches/{id}/reactions", { path: { id: matchId }, body: { emoji } })
+}
+
+// ------------------------------------------------------------------ chat phòng
+
+export function fetchChat(code: string, signal?: AbortSignal): Promise<FlashbackChat> {
+  return requestOperation("GET /api/v2/flashback/rooms/{code}/chat", { path: { code } }, signal ? { signal } : {})
+}
+
+/** Gửi một tin; server tự gắn phiên của người gửi và lọc từ cấm. */
+export function sendChatMessage(code: string, text: string): Promise<FlashbackChatMessage> {
+  return requestOperation("POST /api/v2/flashback/rooms/{code}/chat", { path: { code }, body: { text } })
+}
+
+export function muteChatUser(code: string, userId: string, muted: boolean) {
+  return requestOperation("POST /api/v2/flashback/rooms/{code}/chat/mute", {
+    path: { code },
+    body: { user_id: userId, muted },
+  })
+}
+
+export function reportChatMessage(code: string, messageId: string) {
+  return requestOperation("POST /api/v2/flashback/rooms/{code}/chat/report", {
+    path: { code },
+    body: { message_id: messageId },
+  })
 }
 
 // ------------------------------------------------------------------ cấp, bảng xếp hạng, lịch sử

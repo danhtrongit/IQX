@@ -36,6 +36,11 @@ vi.mock("@/hooks/use-auth", () => ({
 }))
 vi.mock("../shop/use-shop", () => ({ useShopState: () => ({ data: { wallet: { balance: 5_000 } } }) }))
 vi.mock("sonner", () => ({ toast: mocks.toast }))
+// Khoá 5 giây của cửa sổ kết quả có bài kiểm tra riêng (flashback-chat.test.tsx); ở đây các nút mở ngay.
+vi.mock("./flashback-model", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./flashback-model")>()),
+  RESULT_LOCK_SECONDS: 0,
+}))
 
 let backend: FlashbackBackend
 
