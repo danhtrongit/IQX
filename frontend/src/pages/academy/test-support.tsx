@@ -19,6 +19,7 @@ export function renderAcademy(initial: string, options: { panel?: boolean; main?
     [
       { path: "/demo-trading", element: <AcademyLayout panel={options.panel ?? true} main={options.main ?? true} frame={options.frame}>{options.children}</AcademyLayout> },
       { path: "/chien-luoc", element: <Where /> },
+      { path: "/bieu-do", element: <Where /> },
     ],
     { initialEntries: [initial] },
   )

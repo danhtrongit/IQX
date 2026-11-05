@@ -1,7 +1,7 @@
 /**
  * Flashback với IQLine (`?iqline=1`) trên Canvas thật, API giả lập (không cần backend): máy tính 1366x768 và điện thoại 390x844,
  * giao diện sáng và tối; zoom, kéo, về khung mặc định, vẽ đường xu hướng, thêm chỉ báo, nến tương lai không đọc được, và mặc định
- * (không có `?iqline=1`) không tải mã IQLine.
+ * (`?iqline=0`) không tải mã IQLine.
  *
  * Ảnh chụp chỉ ghi khi đặt FLASHBACK_SHOTS=<thư mục> (để xem bằng mắt, không ghi vào repo).
  */
@@ -154,12 +154,12 @@ async function pointOf(page: Page, session: number, y: number) {
   return { x: box.x + ((session - from) / (to - from)) * (box.width - AXIS_RIGHT), y: box.y + y }
 }
 
-/** Mở màn chơi: sảnh, tạo phòng, bắt đầu. `iqline` thêm `?iqline=1`. */
+/** Mở màn chơi: sảnh, tạo phòng, bắt đầu. `iqline` chọn `?iqline=1` hoặc bản cũ `?iqline=0`. */
 async function openMatch(page: Page, iqline: boolean) {
   await recordCanvasText(page)
   await seedMember(page)
   await mockFlashback(page)
-  await page.goto(`/demo-trading?view=flashback${iqline ? "&iqline=1" : ""}`)
+  await page.goto(`/demo-trading?view=flashback&iqline=${iqline ? "1" : "0"}`)
   await page.getByRole("button", { name: "Tạo phòng" }).first().click()
   await page.getByTestId("flashback-create-room").getByRole("button", { name: "Tạo phòng" }).click()
   await expect(page.getByTestId("flashback-room-id")).toBeVisible()
@@ -594,7 +594,7 @@ test.describe("máy tính bảng cảm ứng nằm ngang (1366px, khung biểu �
   })
 })
 
-test("mặc định (không có ?iqline=1) vẫn là biểu đồ SVG và không tải mã Canvas của IQLine", async ({ page }) => {
+test("?iqline=0 quay lại biểu đồ SVG và không tải mã Canvas của IQLine", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 })
   const requested: string[] = []
   page.on("request", (request) => requested.push(request.url()))
@@ -606,9 +606,9 @@ test("mặc định (không có ?iqline=1) vẫn là biểu đồ SVG và không
   // (Các chế độ khác của thư viện, như `IQLineStatic` của Học viện, có thể được tải vì lý do riêng nên không xét ở đây.)
   const loaded = requested.filter((url) => /flashback-chart-iqline|IQLineFlashback|flashback-legend|session-drawings|\/lib\/iqline\/interaction\/|use-iqline-chart/i.test(url))
   expect(loaded).toEqual([])
-  // Ngược lại, bật công tắc (cùng trang, ván đang chơi) thì tải biểu đồ IQLine của Flashback.
+  // Không có tham số là đường mặc định: tải biểu đồ IQLine của Flashback (cùng trang, ván đang chơi).
   requested.length = 0
-  await page.goto("/demo-trading?view=flashback&iqline=1")
+  await page.goto("/demo-trading?view=flashback")
   await expect(page.locator("[data-iqline-root]")).toBeVisible()
   expect(requested.some((url) => /flashback-chart-iqline|IQLineFlashback/i.test(url))).toBe(true)
 })

@@ -13,6 +13,7 @@ import { useQuote } from "@/pages/demo-trading/market/use-quote"
 import { createIQLineDatafeed, iqlinePriceFormatter } from "./iqline-datafeed"
 import { priceLevelsFromQuote } from "./iqline-levels"
 import { getIQLineStore } from "./iqline-store"
+import { withTryIndicators } from "./iqline-try-indicator"
 import { INDEX_SYMBOLS } from "./market-symbols"
 
 export type IQLineMarketChartProps = {
@@ -22,6 +23,8 @@ export type IQLineMarketChartProps = {
   /** Có thì thanh công cụ của biểu đồ hiện ô chọn khung thời gian. */
   onIntervalChange?: (interval: Interval) => void
   onMarkClick?: (id: string | number) => void
+  /** Id chỉ báo từ `?chi-bao=` ("Thử trên biểu đồ" của Học viện). Thêm vào bản đang xem, không ghi đè layout đã lưu. Id lạ bị bỏ qua. */
+  tryIndicators?: readonly string[]
 }
 
 let datafeed: ReturnType<typeof createIQLineDatafeed> | null = null
@@ -31,7 +34,9 @@ function sharedDatafeed() {
   return datafeed
 }
 
-export default function IQLineMarketChart({ symbol, interval, theme, onIntervalChange, onMarkClick }: IQLineMarketChartProps) {
+export default function IQLineMarketChart({ symbol, interval, theme, onIntervalChange, onMarkClick, tryIndicators }: IQLineMarketChartProps) {
+  const tryKey = tryIndicators?.join(",") ?? ""
+  const store = useMemo(() => withTryIndicators(getIQLineStore(), tryKey ? tryKey.split(",") : []), [tryKey])
   const [indicators, setIndicators] = useState<readonly ChartIndicatorInput[]>(DEFAULT_INDICATORS)
   const isIndex = INDEX_SYMBOLS[symbol.toUpperCase()] === true
   const quote = useQuote(isIndex ? "" : symbol)
@@ -49,7 +54,7 @@ export default function IQLineMarketChart({ symbol, interval, theme, onIntervalC
         interval={interval}
         onIntervalChange={onIntervalChange}
         datafeed={sharedDatafeed()}
-        store={getIQLineStore()}
+        store={store}
         indicators={indicators}
         onIndicatorsChange={setIndicators}
         priceLevels={priceLevels}

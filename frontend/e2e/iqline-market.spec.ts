@@ -126,7 +126,7 @@ async function useScheme(page: Page, scheme: "light" | "dark") {
   await page.addInitScript((value) => localStorage.setItem("theme", value), scheme)
 }
 
-const URL_CHART = "/demo-trading?content=chart&symbol=FPT&interval=D&iqline=1"
+const URL_CHART = "/demo-trading?content=chart&symbol=FPT&interval=D"
 const host = (page: Page) => page.locator('[data-iqline-mode="market"]')
 
 async function openChart(page: Page, url = URL_CHART) {
@@ -262,11 +262,18 @@ test("thêm RSI từ hộp thoại chỉ báo", async ({ page }) => {
   await expect(page.getByRole("group", { name: "Chú giải biểu đồ" })).toContainText("RSI (21)")
 })
 
-test("trang chi tiết cổ phiếu bật IQLine bằng ?iqline=1 và mặc định vẫn là TradingView", async ({ page }) => {
+test("trang chi tiết cổ phiếu mặc định dùng IQLine, ?iqline=0 quay lại TradingView", async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await mockMarket(page)
-  await openChart(page, "/co-phieu/FPT?iqline=1")
+  await openChart(page, "/co-phieu/FPT")
   await shot(page, "stock-detail")
-  await page.goto("/co-phieu/FPT")
+  await page.goto("/co-phieu/FPT?iqline=0")
   await expect(host(page)).toHaveCount(0)
+})
+
+test("/bieu-do mở từ nút Thử trên biểu đồ giữ tham số chi-bao qua chuyển hướng và thêm đúng chỉ báo", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await mockMarket(page)
+  await openChart(page, "/bieu-do?chi-bao=rsi")
+  await expect(page.getByRole("group", { name: "Chú giải biểu đồ" })).toContainText("RSI")
 })

@@ -3,6 +3,7 @@
  *
  * Owns the chart's own context: symbol + interval live in the URL (`?symbol=`,
  * `?interval=`, `?tool=`), so a reload or a shared link restores the exact view.
+ * `?chi-bao=<id>` ("Thử trên biểu đồ" of the Học viện lessons) adds that indicator to the IQLine view.
  * The widget is the source of truth for what it draws; when the user switches
  * symbol inside TradingView the URL follows, and when the URL changes the widget
  * is rebuilt for that symbol's drawings.
@@ -31,6 +32,7 @@ import { getDrawingPersistence } from "./chart/drawing-persistence"
 import { iqlineMarketEnabled } from "./chart/iqline-flag"
 import { INDEX_SYMBOLS } from "./chart/market-symbols"
 import { NewsMarkPopover } from "./chart/news-mark-popover"
+import { readTryIndicatorParam } from "./chart/try-indicator-param"
 import { TVChart } from "./chart/tv-chart"
 import { ChartShell } from "./chart-shell"
 
@@ -124,7 +126,7 @@ export function ChartPage({ embedded = false }: { embedded?: boolean }) {
 
   const chart = iqlineMarketEnabled(params) ? (
     <Suspense fallback={<div role="status" className="flex min-h-0 flex-1 items-center justify-center text-xs text-muted-foreground">Đang tải biểu đồ…</div>}>
-      <IQLineMarketChart key={user?.id ?? "guest"} symbol={symbol} interval={interval as Interval} theme={theme} onIntervalChange={selectInterval} onMarkClick={setActiveMarkId} />
+      <IQLineMarketChart key={user?.id ?? "guest"} symbol={symbol} interval={interval as Interval} theme={theme} onIntervalChange={selectInterval} onMarkClick={setActiveMarkId} tryIndicators={readTryIndicatorParam(params)} />
     </Suspense>
   ) : (
     <TVChart key={user?.id ?? "guest"} symbol={symbol} interval={interval} theme={theme} onSymbolChanged={selectSymbol} onMarkClick={setActiveMarkId} persistence={getDrawingPersistence()} />

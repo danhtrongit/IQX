@@ -11,6 +11,7 @@ import { LessonInteractiveProvider } from "../interactive/lesson-interactive-con
 import { ItemPager } from "./item-pager"
 import { LessonQuizGate } from "./lesson-quiz-gate"
 import { SummaryList } from "./summary-list"
+import { TryOnChart } from "./try-on-chart"
 
 function StatusTags({ lesson }: { lesson: LessonContent }) {
   if (lesson.state !== "passed") return null
@@ -32,7 +33,7 @@ function StatusTags({ lesson }: { lesson: LessonContent }) {
 }
 
 /**
- * A lesson or the practice room: title, lead and status, the typed blocks of every section (the
+ * A lesson or the practice room: title, lead and status ("Thử trên biểu đồ" in the lessons that teach an indicator), the typed blocks of every section (the
  * interactive ones through `renderInteractiveBlock`), "Tóm tắt", the quiz gate and the pager over
  * the flat learning chain.
  */
@@ -67,6 +68,7 @@ export function LessonView({
         </h2>
         {lesson.lead && <InlineText as="p" html={lesson.lead} className="mt-3 block max-w-[70ch] text-sm leading-7 text-foreground" />}
         <StatusTags lesson={lesson} />
+        <TryOnChart lessonId={lesson.id} />
       </header>
 
       {lesson.intro_blocks.length > 0 && (
