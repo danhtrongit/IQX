@@ -1,23 +1,19 @@
 /**
- * Phép tính viewport mà bộ giảm trạng thái cần: kẹp, zoom quanh một vị trí, kéo. Đây là bản tối thiểu nằm trong `interaction/`
- * để thư mục này tự chạy và test được; `InteractionConfig.ops` nhận hàm của `core/` khi nó có (cùng kiểu `ViewportOps`).
+ * Cầu nối giữa bộ giảm trạng thái và phép tính viewport của `core/viewport.ts` (cùng quy ước: số nguyên là tâm nến, nến `i` chiếm
+ * `[i - 0.5, i + 0.5]`, vừa khít `n` nến là `{ from: -0.5, to: n - 0.5 }`). Hướng phụ thuộc `interaction -> scene -> core` cho phép
+ * import này; `drawings/` thì không được import `core/`.
  *
- * Viewport là `{ from, to }` theo chỉ số nến, có thể lẻ. Giới hạn là luật công bằng của Flashback (§12): không kéo qua warmup
- * (`minFrom`) và không kéo qua ô cuối của trục (`maxTo`).
+ * Giới hạn của `core` phụ thuộc bề rộng khung vẽ (số nến hiện tối thiểu theo pixel), nên `ViewportSpec` trong cấu hình chỉ giữ
+ * số ô và phần chừa trống, còn `ViewportOps` được dựng mỗi lần giảm từ bề rộng hiện tại.
  */
+import { clampViewport, panViewport, viewportLimits, zoomViewport, type ViewportLimits } from "../core/viewport"
 import type { Viewport } from "../types"
 
-export type ViewBounds = {
-  /** Mép trái nhỏ nhất của viewport. */
-  minFrom: number
-  /** Mép phải lớn nhất của viewport. */
-  maxTo: number
-  minSpan: number
-  maxSpan: number
-}
+/** Số ô trên trục và số ô trống được kéo quá hai đầu. Flashback đặt cả hai phần chừa bằng 0 (§12). */
+export type ViewportSpec = { slots: number; leftPad: number; rightPad: number; minSpan?: number }
 
 export type ViewportOps = {
-  /** Đưa viewport về trong giới hạn: độ rộng trong [minSpan, maxSpan], hai mép trong [minFrom, maxTo]. */
+  /** Đưa viewport về trong giới hạn: độ rộng và hai mép. */
   clamp(viewport: Viewport): Viewport
   /** Đổi độ rộng theo `factor` (lớn hơn 1 là phóng to, tức hẹp lại), giữ nguyên chỉ số tại vị trí `ratio` (0 là mép trái, 1 là mép phải). */
   zoom(viewport: Viewport, ratio: number, factor: number): Viewport
@@ -25,50 +21,32 @@ export type ViewportOps = {
   pan(viewport: Viewport, bars: number): Viewport
 }
 
-const bound = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value))
+export function limitsOf(spec: ViewportSpec, plotWidth: number): ViewportLimits {
+  return viewportLimits({ slots: spec.slots, leftPad: spec.leftPad, rightPad: spec.rightPad, plotWidth, minSpan: spec.minSpan })
+}
 
-export function createViewportOps(bounds: ViewBounds): ViewportOps {
-  const room = bounds.maxTo - bounds.minFrom
-  const maxSpan = Math.max(Math.min(bounds.maxSpan, room), 1e-6)
-  const minSpan = Math.min(bounds.minSpan, maxSpan)
+const valid = (viewport: Viewport) => Number.isFinite(viewport.from) && Number.isFinite(viewport.to) && viewport.to > viewport.from
 
-  const clamp = (viewport: Viewport): Viewport => {
-    if (room <= 0) return { from: bounds.minFrom, to: bounds.minFrom + Math.max(minSpan, 1) }
-    const rawSpan = viewport.to - viewport.from
-    const span = bound(Number.isFinite(rawSpan) ? rawSpan : maxSpan, minSpan, maxSpan)
-    const from = bound(Number.isFinite(viewport.from) ? viewport.from : bounds.minFrom, bounds.minFrom, bounds.maxTo - span)
-    return { from, to: from + span }
-  }
-
+export function createViewportOps(limits: ViewportLimits): ViewportOps {
+  // Viewport hỏng (NaN, đảo ngược) được coi là nhìn hết trục, để không bao giờ lan NaN vào trạng thái.
+  const safe = (viewport: Viewport): Viewport => (valid(viewport) ? viewport : { from: limits.min, to: limits.max })
   return {
-    clamp,
+    clamp: (viewport) => clampViewport(safe(viewport), limits),
     zoom(viewport, ratio, factor) {
-      if (!Number.isFinite(factor) || factor <= 0) return clamp(viewport)
-      const span = viewport.to - viewport.from
-      const nextSpan = bound(span / factor, minSpan, maxSpan)
-      const r = bound(ratio, 0, 1)
-      const pivot = viewport.from + r * span
-      const from = pivot - r * nextSpan
-      return clamp({ from, to: from + nextSpan })
+      const current = safe(viewport)
+      if (!Number.isFinite(factor) || factor <= 0) return clampViewport(current, limits)
+      const span = current.to - current.from
+      const r = Math.min(1, Math.max(0, Number.isFinite(ratio) ? ratio : 0.5))
+      return zoomViewport(current, 1 / factor, current.from + r * span, limits)
     },
     pan(viewport, bars) {
-      if (!Number.isFinite(bars)) return clamp(viewport)
-      return clamp({ from: viewport.from + bars, to: viewport.to + bars })
+      const current = safe(viewport)
+      return Number.isFinite(bars) ? panViewport(current, bars, limits) : clampViewport(current, limits)
     },
   }
 }
 
-/** Giới hạn của `market`: chừa một ít chỗ trống hai đầu (nến cuối không dính mép, kéo tới đầu dữ liệu vẫn thấy ranh giới). */
-export function marketBounds(input: { barCount: number; paddingLeft?: number; paddingRight?: number; minSpan?: number }): ViewBounds {
-  const { barCount, paddingLeft = 10, paddingRight = 20, minSpan = 5 } = input
-  return { minFrom: -paddingLeft, maxTo: barCount + paddingRight, minSpan, maxSpan: barCount + paddingLeft + paddingRight }
-}
-
-/**
- * Giới hạn của `flashback`: từ phiên đầu tiên được hiện (sau warmup) tới ô cuối của trục. Nến warmup không bao giờ vào được
- * viewport, nên không hiện, không crosshair và không kéo tới được (§12).
- */
-export function flashbackBounds(input: { warmup: number; totalSlots: number; minSpan?: number }): ViewBounds {
-  const { warmup, totalSlots, minSpan = 10 } = input
-  return { minFrom: warmup, maxTo: totalSlots, minSpan, maxSpan: totalSlots - warmup }
+/** `ViewportOps` cho một cấu hình và bề rộng khung vẽ hiện tại. */
+export function opsFor(spec: ViewportSpec, plotWidth: number): ViewportOps {
+  return createViewportOps(limitsOf(spec, plotWidth))
 }

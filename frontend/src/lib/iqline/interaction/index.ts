@@ -1,5 +1,5 @@
 /** Tương tác IQLine: bộ giảm trạng thái thuần cho zoom, kéo, co giãn trục, crosshair, phím, công cụ vẽ, cử chỉ chạm, hoàn tác. */
-export { createInteractionState, flashbackConfig, marketConfig, staticConfig, type FlashbackConfigInput, type MarketConfigInput, type StaticConfigInput } from "./config"
+export { MARKET_LEFT_PAD, MARKET_RIGHT_PAD, createInteractionState, flashbackConfig, marketConfig, staticConfig, type FlashbackConfigInput, type MarketConfigInput, type StaticConfigInput } from "./config"
 export {
   DRAW_DRAG_SLOP,
   KEY_PAN_BARS,
@@ -34,4 +34,5 @@ export type {
   TouchPoint,
   WheelInput,
 } from "./types"
-export { createViewportOps, flashbackBounds, marketBounds, type ViewBounds, type ViewportOps } from "./viewport-ops"
+export { manualPriceRange } from "./price-adjust"
+export { createViewportOps, limitsOf, opsFor, type ViewportOps, type ViewportSpec } from "./viewport-ops"

@@ -1,7 +1,8 @@
 /**
  * Phép đổi toạ độ giả cho test, đủ để thử hình vẽ mà không cần `core/`.
  * `market` neo theo `time` qua danh sách mốc thời gian của nến (nội suy giữa hai nến, ngoại suy ngoài hai đầu);
- * `session` neo theo `session` và chỉ số trùng số phiên. Tâm nến nằm ở `index + 0.5` trên trục, như Flashback.
+ * `session` neo theo `session` và chỉ số trùng số phiên. Cùng quy ước với `core/coords.ts`: số nguyên là tâm nến, nến `i` chiếm
+ * `[i - 0.5, i + 0.5]`, nên vừa khít `n` nến là viewport `{ from: -0.5, to: n - 0.5 }`.
  */
 import type { Anchor, PaneCoords, Viewport } from "../../types"
 
@@ -50,8 +51,8 @@ export function makeCoords(options: FixtureOptions): PaneCoords {
   const height = plot.bottom - plot.top
   return {
     plot,
-    xOfIndex: (index) => plot.left + (index - viewport.from + 0.5) * pxPerBar,
-    indexOfX: (x) => (x - plot.left) / pxPerBar + viewport.from - 0.5,
+    xOfIndex: (index) => plot.left + (index - viewport.from) * pxPerBar,
+    indexOfX: (x) => (x - plot.left) / pxPerBar + viewport.from,
     yOfPrice: (p) => plot.top + ((price.high - p) / (price.high - price.low)) * height,
     priceOfY: (y) => price.high - ((y - plot.top) / height) * (price.high - price.low),
     indexOfAnchor: (anchor: Anchor) => {

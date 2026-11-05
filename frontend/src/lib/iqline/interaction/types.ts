@@ -5,7 +5,7 @@
 import type { Anchor, Bar, ChartMode, Drawing, DrawingTool, PaneCoords, PaneKind, Viewport } from "../types"
 import type { DrawingsAction, DrawingsState } from "../drawings"
 import type { History } from "./history"
-import type { ViewportOps } from "./viewport-ops"
+import type { ViewportSpec } from "./viewport-ops"
 
 export type PointerKind = "mouse" | "touch" | "pen"
 /** Vùng dưới con trỏ: khung vẽ của một ô, trục giá bên phải, trục thời gian ở đáy, hoặc ngoài biểu đồ. */
@@ -52,14 +52,18 @@ export type InteractionConfig = {
   doubleClickPlotResets: boolean
   /** Công cụ được dùng; rỗng nghĩa là không vẽ được (`static`). */
   allowedTools: readonly DrawingTool[]
-  ops: ViewportOps
+  /** Giới hạn kéo và zoom, theo `core/viewport.ts`. */
+  viewport: ViewportSpec
   /** Khung hiện khi bấm "về khung mặc định". */
   defaultViewport: Viewport
-  /** Chỉ số nến đọc được (gồm hai đầu); null là không có nến nào. Flashback: từ warmup tới nến đã mở cuối cùng. */
+  /**
+   * Chỉ số nến đọc được (gồm hai đầu), theo chỉ số của scene; null là không có nến nào. Chỉ số của `flashback` đã bỏ warmup
+   * (0 là nến đầu tiên được hiện), nên warmup không có chỉ số nào để kéo tới hay đọc.
+   */
   readable: { first: number; last: number } | null
   /** `market` cho crosshair đứng ở ô chưa có nến (chỉ có nhãn thời gian); `flashback` thì không (§12). */
   crosshairBeyondData: boolean
-  /** Giới hạn chỉ số của điểm neo hình vẽ; null là không giới hạn. */
+  /** Giới hạn chỉ số của điểm neo hình vẽ (Flashback: các ô của trục, kể cả ô tương lai); null là không giới hạn. */
   anchorRange: { min: number; max: number } | null
   historyLimit: number
   /** Khoảng hút vào OHLC, pixel. */
@@ -139,11 +143,13 @@ export type InteractionAction =
   | { type: "move-crosshair"; bars: number }
   | { type: "clear-crosshair" }
 
-/** Đầu vào của mỗi lần giảm: cấu hình, phép đổi toạ độ ô giá hiện tại và các nến (để hút vào OHLC và crosshair bàn phím). */
+/**
+ * Đầu vào của mỗi lần giảm: cấu hình, phép đổi toạ độ ô giá hiện tại (`ChartFrame.price.coords`) và các nến để hút vào OHLC và
+ * đặt crosshair bàn phím (`ChartData.raw`: nến thật, đã bỏ warmup ở Flashback, `bars[i]` ở chỉ số `i`).
+ */
 export type InteractionEnv = {
   config: InteractionConfig
   /** `xOfIndex` và `indexOfX` dùng được cho mọi ô; công cụ vẽ chỉ dùng ở ô giá. */
   coords: PaneCoords
-  /** `bars[i]` là nến ở chỉ số `i` của trục. */
   bars?: ArrayLike<Bar>
 }

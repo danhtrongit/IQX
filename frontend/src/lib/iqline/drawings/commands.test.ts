@@ -7,7 +7,7 @@ import type { Anchor, DrawCommand, Drawing, DrawingTool } from "../types"
 
 const COORDS = makeCoords({
   mode: "session",
-  viewport: { from: 0, to: 50 },
+  viewport: { from: -0.5, to: 49.5 },
   plot: { left: 0, top: 0, right: 500, bottom: 300 },
   price: { low: 0, high: 300 },
 })

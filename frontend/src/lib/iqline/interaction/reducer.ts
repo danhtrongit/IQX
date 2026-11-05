@@ -19,6 +19,7 @@ import {
 import { DRAW_DRAG_SLOP, LONG_PRESS_SLOP, ZOOM_STEP, pinchViewport, wheelIntent, wheelPanBars, wheelZoomFactor } from "./gestures"
 import { recordHistory, redoHistory, undoHistory } from "./history"
 import { keyToAction } from "./keyboard"
+import { opsFor, type ViewportOps } from "./viewport-ops"
 import type {
   Crosshair,
   CursorHint,
@@ -38,6 +39,8 @@ const PRICE_SCALE_MAX = 10
 
 const plotWidth = (env: InteractionEnv) => Math.max(env.coords.plot.right - env.coords.plot.left, 1)
 const canDraw = (env: InteractionEnv) => env.config.allowedTools.length > 0
+/** Phép tính viewport theo bề rộng khung vẽ hiện tại (giới hạn zoom của `core` tính theo pixel). */
+const opsOf = (env: InteractionEnv): ViewportOps => opsFor(env.config.viewport, plotWidth(env))
 
 function sameViewport(a: Viewport, b: Viewport): boolean {
   return a.from === b.from && a.to === b.to
@@ -149,7 +152,7 @@ function applyPinch(state: InteractionState, env: InteractionEnv): InteractionSt
   const pair = touchPair(state, pinch.ids)
   if (!pair) return state
   const [a, b] = pair
-  const viewport = pinchViewport(pinch, { distance: Math.hypot(a.x - b.x, a.y - b.y) }, (a.x + b.x) / 2, plotWidth(env), env.config.ops)
+  const viewport = pinchViewport(pinch, { distance: Math.hypot(a.x - b.x, a.y - b.y) }, (a.x + b.x) / 2, plotWidth(env), opsOf(env))
   return withViewport(state, viewport)
 }
 
@@ -220,12 +223,12 @@ function applyDrag(state: InteractionState, drag: DragState, p: PointerInput, en
   switch (drag.kind) {
     case "pan": {
       const span = drag.startViewport.to - drag.startViewport.from
-      const moved = withViewport(state, config.ops.pan(drag.startViewport, (-(p.x - drag.startX) * span) / plotWidth(env)))
+      const moved = withViewport(state, opsOf(env).pan(drag.startViewport, (-(p.x - drag.startX) * span) / plotWidth(env)))
       return p.pointerType === "touch" ? moved : withCrosshair(moved, p, "pointer", env)
     }
     case "scale-time":
       // Kéo sang phải thu nhỏ, sang trái phóng to; mép phải (nến mới nhất) đứng yên.
-      return withViewport(state, config.ops.zoom(drag.startViewport, 1, Math.exp(-(p.x - drag.startX) * AXIS_DRAG_RATE)))
+      return withViewport(state, opsOf(env).zoom(drag.startViewport, 1, Math.exp(-(p.x - drag.startX) * AXIS_DRAG_RATE)))
     case "scale-price": {
       // Kéo xuống thu nhỏ (khoảng giá rộng ra), kéo lên phóng to.
       const scale = Math.min(PRICE_SCALE_MAX, Math.max(PRICE_SCALE_MIN, drag.startScale * Math.exp((p.y - drag.startY) * AXIS_DRAG_RATE)))
@@ -311,7 +314,8 @@ function pointerCancel(state: InteractionState, pointerId: number): InteractionS
 }
 
 function resetView(state: InteractionState, env: InteractionEnv): InteractionState {
-  return { ...withViewport(state, env.config.ops.clamp(env.config.defaultViewport)), priceScale: {} }
+  if (env.config.mode === "static") return state
+  return { ...withViewport(state, opsOf(env).clamp(env.config.defaultViewport)), priceScale: {} }
 }
 
 function doubleClick(state: InteractionState, p: PointerInput, env: InteractionEnv): InteractionState {
@@ -351,9 +355,9 @@ function wheel(state: InteractionState, input: Extract<InteractionAction, { type
   const { config, coords } = env
   const intent = wheelIntent(input, config)
   if (intent === "none") return state
-  if (intent === "pan") return withViewport(state, config.ops.pan(state.viewport, wheelPanBars(input, state.viewport, plotWidth(env))))
+  if (intent === "pan") return withViewport(state, opsOf(env).pan(state.viewport, wheelPanBars(input, state.viewport, plotWidth(env))))
   const ratio = (input.x - coords.plot.left) / plotWidth(env)
-  return withViewport(state, config.ops.zoom(state.viewport, ratio, wheelZoomFactor(input)))
+  return withViewport(state, opsOf(env).zoom(state.viewport, ratio, wheelZoomFactor(input)))
 }
 
 function moveCrosshair(state: InteractionState, bars: number, env: InteractionEnv): InteractionState {
@@ -361,17 +365,21 @@ function moveCrosshair(state: InteractionState, bars: number, env: InteractionEn
   const readable = config.readable
   if (!readable) return state
   const bound = (value: number) => Math.min(readable.last, Math.max(readable.first, value))
-  // Lần bấm đầu chỉ hiện crosshair ở nến cuối nhìn thấy; các lần sau mới dịch.
+  // Lần bấm đầu chỉ hiện crosshair ở nến cuối nhìn thấy trọn; các lần sau mới dịch.
   const previous = state.crosshair?.bar
-  const bar = previous == null ? bound(Math.floor(state.viewport.to) - 1) : bound(previous + bars)
+  const bar = previous == null ? bound(Math.floor(state.viewport.to - 0.5)) : bound(previous + bars)
   let viewport = state.viewport
   if (config.pan) {
-    if (bar < viewport.from) viewport = config.ops.pan(viewport, bar - viewport.from)
-    else if (bar > viewport.to - 1) viewport = config.ops.pan(viewport, bar - (viewport.to - 1))
+    // Nến `i` chiếm [i - 0.5, i + 0.5]: kéo viewport tới khi nến hiện trọn.
+    const ops = opsOf(env)
+    if (bar - 0.5 < viewport.from) viewport = ops.pan(viewport, bar - 0.5 - viewport.from)
+    else if (bar + 0.5 > viewport.to) viewport = ops.pan(viewport, bar + 0.5 - viewport.to)
   }
   const close = env.bars?.[bar]?.close
   const y = close !== undefined ? coords.yOfPrice(close) : (state.crosshair?.y ?? (coords.plot.top + coords.plot.bottom) / 2)
-  const crosshair: Crosshair = { x: coords.xOfIndex(bar), y, paneKey: state.crosshair?.paneKey ?? "price", bar, source: "keyboard" }
+  // `x` tính theo viewport MỚI (coords còn là của viewport cũ).
+  const x = coords.plot.left + ((bar - viewport.from) / (viewport.to - viewport.from)) * plotWidth(env)
+  const crosshair: Crosshair = { x, y, paneKey: state.crosshair?.paneKey ?? "price", bar, source: "keyboard" }
   return { ...withViewport(state, viewport), crosshair }
 }
 
@@ -411,13 +419,13 @@ export function interactionReducer(state: InteractionState, action: InteractionA
       return mapped ? interactionReducer(state, mapped, env) : state
     }
     case "zoom":
-      return config.zoom ? withViewport(state, config.ops.zoom(state.viewport, 0.5, action.direction === "in" ? ZOOM_STEP : 1 / ZOOM_STEP)) : state
+      return config.zoom ? withViewport(state, opsOf(env).zoom(state.viewport, 0.5, action.direction === "in" ? ZOOM_STEP : 1 / ZOOM_STEP)) : state
     case "pan":
-      return config.pan ? withViewport(state, config.ops.pan(state.viewport, action.bars)) : state
+      return config.pan ? withViewport(state, opsOf(env).pan(state.viewport, action.bars)) : state
     case "reset":
       return resetView(state, env)
     case "set-viewport":
-      return withViewport(state, config.ops.clamp(action.viewport))
+      return config.mode === "static" ? state : withViewport(state, opsOf(env).clamp(action.viewport))
     case "reset-price-scale": {
       if (!(action.paneKey in state.priceScale)) return state
       const priceScale = { ...state.priceScale }

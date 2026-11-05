@@ -19,7 +19,7 @@ import { TOOL_SPECS } from "./tools"
 /** 10px mỗi phiên (tâm nến ở index + 0.5), giá trên cao: y = 1000 - giá. */
 const COORDS = makeCoords({
   mode: "session",
-  viewport: { from: 0, to: 40 },
+  viewport: { from: -0.5, to: 39.5 },
   plot: { left: 0, top: 0, right: 400, bottom: 1000 },
   price: { low: 0, high: 1000 },
 })

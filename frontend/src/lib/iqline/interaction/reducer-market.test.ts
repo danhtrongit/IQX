@@ -51,7 +51,8 @@ describe("zoom bằng con lăn và phím", () => {
   it("zoom dừng ở độ rộng tối thiểu", () => {
     const h = market()
     for (let i = 0; i < 80; i++) h.send({ type: "wheel", wheel: wheelAt(250, -300) })
-    expect(h.state.viewport.to - h.state.viewport.from).toBeCloseTo(5, 9)
+    // Tối thiểu theo core: plotWidth / 40 = 12,5 nến.
+    expect(h.state.viewport.to - h.state.viewport.from).toBeCloseTo(12.5, 9)
   })
 
   it("phím + và - zoom quanh tâm, về đúng độ rộng cũ sau một vòng", () => {
@@ -86,7 +87,7 @@ describe("kéo", () => {
     h.send({ type: "key", key: { key: "ArrowLeft", shiftKey: true } })
     expect(h.state.viewport.from).toBe(229)
     for (let i = 0; i < 40; i++) h.send({ type: "key", key: { key: "ArrowRight", shiftKey: true } })
-    expect(h.state.viewport.to).toBe(320)
+    expect(h.state.viewport.to).toBe(319.5)
   })
 
   it("kéo ở ô khác (khối lượng, chỉ báo) cũng kéo biểu đồ", () => {
@@ -105,7 +106,7 @@ describe("kéo", () => {
   it("viewport từ bên ngoài (nạp thêm lịch sử) vẫn bị kẹp theo giới hạn", () => {
     const h = market()
     h.send({ type: "set-viewport", viewport: { from: 500, to: 560 } })
-    expect(h.state.viewport).toEqual({ from: 260, to: 320 })
+    expect(h.state.viewport).toEqual({ from: 259.5, to: 319.5 })
   })
 })
 
