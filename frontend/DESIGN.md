@@ -156,7 +156,9 @@ Chart chrome:
 |---|---|---|
 | Headings | Space Grotesk Variable | `font-heading`, concise, strong hierarchy |
 | UI and prose | Be Vietnam Pro | `font-sans`, Vietnamese copy |
-| Prices and quantities | Be Vietnam Pro | Add `tabular-nums`, right-align in tables |
+| Prices and quantities | Be Vietnam Pro | Add `tabular-nums`, right-align in tables. Digits in a column then line up (`tnum` is added by our patch, see below) |
+
+Be Vietnam Pro ships without a `tnum` feature, so `src/assets/fonts/be-vietnam-pro` holds a patched latin subset, built by `scripts/patch-be-vietnam-tnum.py`. Import the font only through `src/index.css`, never `@fontsource/be-vietnam-pro/*.css` directly. Rerun the script after upgrading that package. Canvas text cannot use `tabular-nums`, so align digits by hand there.
 
 Use weights 400, 500, 600, and 700. Functional text must remain readable at 12px or larger. Ten and eleven pixel text is limited to compact metadata, chart axes, and table overlines.
 

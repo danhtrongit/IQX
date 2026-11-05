@@ -2,10 +2,7 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/space-grotesk";
-@import "@fontsource/be-vietnam-pro/400.css";
-@import "@fontsource/be-vietnam-pro/500.css";
-@import "@fontsource/be-vietnam-pro/600.css";
-@import "@fontsource/be-vietnam-pro/700.css";
+@import "./assets/fonts/be-vietnam-pro/index.css";
 
 @custom-variant dark (&:is(.dark *));
 

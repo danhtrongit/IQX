@@ -74,7 +74,7 @@ Mọi tình huống gồm nến, khối lượng, MA, EMA, Bollinger, RSI, MACD 
 
 **2. Máy không có GPU là điểm yếu.** Chrome không GPU vẫn giữ 60 khung hình khi hiện tới 1.000 nến, nhưng còn 12 đến 20 khung hình khi thu nhỏ toàn bộ. Giai đoạn 1 nên thử giới hạn DPR về 2, và bỏ tô vùng Bollinger khi đang gộp nến. Hai cách này chưa được đo.
 
-**3. Be Vietnam Pro không có chữ số đều, `tabular-nums` không có tác dụng.** Ở cả ba trình duyệt và bốn độ đậm 400 đến 700, chữ số trong DOM có bật `tabular-nums` vẫn chênh nhau 3,2 đến 3,6 px ở cỡ 11px, bằng đúng khi không bật. Ví dụ ở độ đậm 400: số `1` rộng 4,2 px, số `4` rộng 7,8 px. Canvas cũng vậy, và đặt `font-variant-numeric` hay `font-feature-settings` trên phần tử canvas không đổi gì. IQLine tự căn từng chữ số theo bề rộng lớn nhất; đã đo, không tốn thêm thời gian thấy được (0,2 ms mỗi khung ở cả hai cách). Yêu cầu `tabular-nums` trong `DESIGN.md` cũng không có tác dụng ở các bảng số trên toàn ứng dụng; đây là vấn đề riêng ngoài IQLine.
+**3. Be Vietnam Pro không có chữ số đều, `tabular-nums` không có tác dụng.** Ở cả ba trình duyệt và bốn độ đậm 400 đến 700, chữ số trong DOM có bật `tabular-nums` vẫn chênh nhau 3,2 đến 3,6 px ở cỡ 11px, bằng đúng khi không bật. Ví dụ ở độ đậm 400: số `1` rộng 4,2 px, số `4` rộng 7,8 px. Canvas cũng vậy, và đặt `font-variant-numeric` hay `font-feature-settings` trên phần tử canvas không đổi gì. IQLine tự căn từng chữ số theo bề rộng lớn nhất; đã đo, không tốn thêm thời gian thấy được (0,2 ms mỗi khung ở cả hai cách). Yêu cầu `tabular-nums` trong `DESIGN.md` cũng không có tác dụng ở các bảng số trên toàn ứng dụng; đây là vấn đề riêng ngoài IQLine. Đã sửa ở DOM ngày 05/11/2026, xem `be-vietnam-tnum-report.md`; Canvas vẫn phải tự căn.
 
 **4. API nến khác giả định ở §8:**
 
