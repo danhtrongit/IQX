@@ -27,6 +27,7 @@
  */
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type Dispatch, type RefObject, type SetStateAction } from "react"
 
+import { NARROW_WIDTH } from "../core/layout"
 import { clampViewport, defaultViewport, followAppend, prependedCount, shiftForPrepend, viewportLimits } from "../core/viewport"
 import { canRedo, canUndo, createInteractionState, flashbackConfig, interactionReducer, keyToAction, marketConfig, wheelIntent, limitsOf } from "../interaction"
 import type { InteractionAction, InteractionConfig, InteractionState, PointerTarget } from "../interaction"
@@ -99,6 +100,8 @@ export type MarketChartOptions = ChartCommon & {
   markers?: never
   divider?: never
   available?: never
+  pageNarrow?: never
+  indicatorTitle?: never
 }
 
 export type FlashbackChartOptions = ChartCommon & {
@@ -112,6 +115,10 @@ export type FlashbackChartOptions = ChartCommon & {
   divider?: number
   /** Chiều cao màn hình còn trống cho biểu đồ (null khi chưa đo): ô giá lấy phần còn lại. */
   available?: number | null
+  /** Cửa sổ hẹp (trang dùng bố cục điện thoại): chiều cao các ô theo cột điện thoại dù biểu đồ rộng hơn `NARROW_WIDTH`. */
+  pageNarrow?: boolean
+  /** Đổi tên hiển thị của chỉ báo ("RSI 14" của Flashback thay vì "RSI (14)"); bỏ trống thì theo `indicatorTitle`. */
+  indicatorTitle?: (input: ChartIndicatorInput, fallback: string) => string
   interval?: never
   priceLevels?: never
   marks?: never
@@ -270,11 +277,12 @@ export function useIQLineChart(options: IQLineChartOptions): IQLineChart {
   const hasProfile = (inputs ?? []).some((input) => input.id === VOLUME_PROFILE_ID && !input.hidden)
   const profileFrom = hasProfile ? Math.ceil(state.viewport.from) : 0
   const profileTo = hasProfile ? Math.floor(state.viewport.to) : 0
+  const titleOf = options.mode === "flashback" ? options.indicatorTitle : undefined
   const sceneIndicators = useMemo(
     () =>
       precomputed ??
-      sceneIndicatorsFor(inputs ?? [], bars, cache, palette, { profile: hasProfile ? { from: profileFrom, to: profileTo } : null, flashback: !market }),
-    [precomputed, inputs, bars, cache, palette, hasProfile, profileFrom, profileTo, market],
+      sceneIndicatorsFor(inputs ?? [], bars, cache, palette, { profile: hasProfile ? { from: profileFrom, to: profileTo } : null, flashback: !market, titleOf }),
+    [precomputed, inputs, bars, cache, palette, hasProfile, profileFrom, profileTo, market, titleOf],
   )
   const chartType = options.chartType ?? "candles"
   const marks = options.mode === "market" ? options.marks : undefined
@@ -291,13 +299,15 @@ export function useIQLineChart(options: IQLineChartOptions): IQLineChart {
 
   const paneHeights = options.paneHeights ?? heightsState
   const available = options.mode === "flashback" ? options.available : undefined
-  const height = market ? size.height : naturalHeight(data, { width: size.width, available: available ?? null, paneHeights })
+  const pageNarrow = options.mode === "flashback" ? options.pageNarrow === true : false
+  const mobile = size.width < NARROW_WIDTH || pageNarrow
+  const height = market ? size.height : naturalHeight(data, { width: size.width, available: available ?? null, paneHeights, mobile })
   const priceScaleMode = options.priceScaleMode ?? "linear"
   const { labelToken, formatPrice } = options
   const formatX = options.mode === "flashback" ? options.formatX : undefined
   const frame = useMemo(
-    () => buildFrame(data, state.viewport, state.priceScale, { width: size.width, height, dpr: size.dpr, priceScaleMode, paneHeights, labelToken, formatPrice, formatX }),
-    [data, state.viewport, state.priceScale, size.width, size.dpr, height, priceScaleMode, paneHeights, labelToken, formatPrice, formatX],
+    () => buildFrame(data, state.viewport, state.priceScale, { width: size.width, height, dpr: size.dpr, priceScaleMode, paneHeights, labelToken, formatPrice, formatX, mobile: market ? undefined : mobile }),
+    [data, state.viewport, state.priceScale, size.width, size.dpr, height, priceScaleMode, paneHeights, labelToken, formatPrice, formatX, market, mobile],
   )
 
   // Trình xử lý sự kiện đọc trạng thái mới nhất qua ref; ghi ref chỉ trong effect và trong trình xử lý.
@@ -367,6 +377,7 @@ function frameInputsOf(l: Live): FrameInputs {
     labelToken: l.options.labelToken,
     formatPrice: l.options.formatPrice,
     formatX: l.options.mode === "flashback" ? l.options.formatX : undefined,
+    mobile: l.options.mode === "flashback" ? l.size.width < NARROW_WIDTH || l.options.pageNarrow === true : undefined,
   }
 }
 

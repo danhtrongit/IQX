@@ -4,7 +4,7 @@
  * tiếp" và các phím tắt. Trên điện thoại có thanh nút cố định ở đáy. Mỗi người tự bấm "Phiên tiếp",
  * không chờ người khác; ở phiên cuối nút đổi thành "Hoàn thành".
  */
-import { useCallback, useEffect, useState, type ReactNode } from "react"
+import { Suspense, lazy, useCallback, useEffect, useState, type ReactNode } from "react"
 import { Play, Sigma } from "lucide-react"
 
 import { PanelState } from "@/components/layout/panel-state"
@@ -12,6 +12,7 @@ import { useWorkspaceFrame } from "@/components/layout/workspace-frame-context"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 import { ChatUnreadBadge } from "./flashback-chat"
 import { useChatOpener } from "./use-flashback-chat"
 import { FlashbackChatSheet } from "./flashback-chat-sheet"
@@ -19,12 +20,17 @@ import { FlashbackChart } from "./flashback-chart"
 import { useFlashback, type ChatApi, type MatchApi } from "./flashback-context"
 import { DrawingToolbar } from "./flashback-drawing-toolbar"
 import { IndicatorPicker, IndicatorSettings } from "./flashback-indicator-dialogs"
+import { MAX_INDICATORS } from "./flashback-indicator-store"
 import { defaultParams } from "./flashback-indicators"
+import { iqlineFlashbackEnabled } from "./iqline-flag"
 import { formatMoney, formatSignedPercent, profitPercent } from "./flashback-model"
 import { PlayerBar } from "./flashback-player-bar"
 import { FlashbackResult } from "./flashback-result"
 import { useResultLock } from "./use-result-lock"
 import { useChartDrawings } from "./use-chart-drawings"
+
+/** Biểu đồ IQLine (`?iqline=1`) tải chậm: ở đường mặc định thư viện Canvas không được tải. */
+const FlashbackIqlineChart = lazy(() => import("./flashback-chart-iqline"))
 
 export function FlashbackMatchScreen() {
   const { match, chat, matchLoading, matchFailed, retryMatch } = useFlashback()
@@ -61,8 +67,12 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
   const lockSeconds = useResultLock(resultOpen)
   const openChat = useChatOpener(chat)
   const closeChat = chat.setOpen
+  // Biểu đồ IQLine khi URL có `?iqline=1`, còn lại là biểu đồ SVG cũ (công tắc ở `iqline-flag.ts`).
+  const iqline = iqlineFlashbackEnabled()
+  const dialogsClosed = !pickerOpen && settingsKey === null && !resultOpen
   // Hình vẽ của riêng mình, giữ trong suốt ván (kể cả khi "Xem lại biểu đồ"); phím tắt tắt khi có hộp thoại.
-  const drawings = useChartDrawings(!pickerOpen && settingsKey === null && !resultOpen)
+  // Biểu đồ IQLine giữ hình ở bộ điều khiển riêng của nó nên hook này tắt phím tắt để không xử lý hai lần.
+  const drawings = useChartDrawings(!iqline && dialogsClosed)
 
   /**
    * Hiện khung đặt lệnh (mở lớp trên điện thoại, bung lại cột đã thu gọn trên màn hình rộng) và đưa
@@ -114,6 +124,13 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
   const settingsInstance = match.indicators.find((item) => item.key === settingsKey) ?? null
   const settingsMeta = match.indicatorMetas.find((indicator) => indicator.id === settingsInstance?.id) ?? null
 
+  const indicatorsButton = (
+    <Button type="button" variant="outline" size="sm" onClick={() => setPickerOpen(true)} aria-label="Các chỉ báo">
+      <Sigma className="size-3.5" aria-hidden="true" />
+      Các chỉ báo
+    </Button>
+  )
+
   const next = nextButton(match, atLastBar)
   // Chỉ của mình, tính từ tài khoản của mình; server không trả % của người khác trong lúc chơi (v2.4 §2).
   const profit = profitPercent(match.totalAssets, match.initialCash)
@@ -146,25 +163,50 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
       </section>
 
       <section className="relative flex flex-col gap-2 rounded-lg border border-border bg-card p-2.5">
-        <div className="flex flex-wrap items-center gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={() => setPickerOpen(true)} aria-label="Các chỉ báo">
-            <Sigma className="size-3.5" aria-hidden="true" />
-            Các chỉ báo
-          </Button>
-          <DrawingToolbar drawings={drawings} />
-        </div>
+        {iqline ? (
+          <Suspense
+            fallback={
+              <>
+                <div className="flex flex-wrap items-center gap-2">{indicatorsButton}</div>
+                <Skeleton className="h-[420px] w-full" role="status" aria-label="Đang tải biểu đồ" />
+              </>
+            }
+          >
+            <FlashbackIqlineChart
+              leading={indicatorsButton}
+              bars={match.bars}
+              warmup={match.warmup}
+              indicators={match.indicators}
+              orders={match.me.orders}
+              viewBars={match.viewBars}
+              playBars={match.playBars}
+              legacyShapes={drawings.state.shapes}
+              drawingKeys={dialogsClosed}
+              onToggle={match.toggleIndicator}
+              onSettings={setSettingsKey}
+              onRemove={match.removeIndicator}
+            />
+          </Suspense>
+        ) : (
+          <>
+            <div className="flex flex-wrap items-center gap-2">
+              {indicatorsButton}
+              <DrawingToolbar drawings={drawings} />
+            </div>
 
-        <FlashbackChart
-          bars={match.bars}
-          indicators={match.indicators}
-          orders={match.me.orders}
-          viewBars={match.viewBars}
-          playBars={match.playBars}
-          drawings={drawings}
-          onToggle={match.toggleIndicator}
-          onSettings={setSettingsKey}
-          onRemove={match.removeIndicator}
-        />
+            <FlashbackChart
+              bars={match.bars}
+              indicators={match.indicators}
+              orders={match.me.orders}
+              viewBars={match.viewBars}
+              playBars={match.playBars}
+              drawings={drawings}
+              onToggle={match.toggleIndicator}
+              onSettings={setSettingsKey}
+              onRemove={match.removeIndicator}
+            />
+          </>
+        )}
 
         {match.finished && !match.ended ? (
           <div className="absolute inset-0 z-10 grid place-items-center rounded-lg bg-background/85 p-4" data-testid="flashback-waiting">
@@ -239,6 +281,12 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
         indicators={match.indicatorMetas}
         loading={match.indicatorsLoading}
         onPick={(indicator) => {
+          // Biểu đồ IQLine kiểm tra trần chỉ báo ở đây (biểu đồ SVG cũ chỉ cắt khi nạp từ trình duyệt).
+          if (iqline && match.indicators.length >= MAX_INDICATORS) {
+            toast.info(`Tối đa ${MAX_INDICATORS} chỉ báo`)
+            setPickerOpen(false)
+            return
+          }
           match.addIndicator(indicator.id, defaultParams(indicator))
           setPickerOpen(false)
         }}

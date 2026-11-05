@@ -36,7 +36,7 @@ export function sceneIndicatorsFor(
   bars: readonly Bar[],
   cache: IndicatorCache,
   palette: readonly ColorToken[],
-  options: { profile: ProfileRange | null; flashback?: boolean },
+  options: { profile: ProfileRange | null; flashback?: boolean; /** Đổi tên hiển thị (Flashback giữ tên "RSI 14" của bản SVG cũ); mặc định `indicatorTitle`. */ titleOf?: (input: ChartIndicatorInput, fallback: string) => string },
 ): SceneIndicator[] {
   const out: SceneIndicator[] = []
   for (const input of inputs) {
@@ -51,7 +51,8 @@ export function sceneIndicatorsFor(
       plot = cache.get(input, bars, palette)
     }
     if (!plot) continue
-    out.push({ key: input.key, id: input.id, name: indicatorTitle(definition, input, definition.params), plot, hidden: input.hidden === true })
+    const title = indicatorTitle(definition, input, definition.params)
+    out.push({ key: input.key, id: input.id, name: options.titleOf ? options.titleOf(input, title) : title, plot, hidden: input.hidden === true })
   }
   return out
 }
@@ -65,6 +66,8 @@ export type FrameInputs = {
   labelToken?: "muted-foreground" | "academy-label"
   formatPrice?: (price: number) => string
   formatX?: (session: number) => string
+  /** Bố cục điện thoại do trang quyết (cửa sổ hẹp dù biểu đồ rộng); bỏ trống thì theo độ rộng biểu đồ. */
+  mobile?: boolean
 }
 
 /**
@@ -81,6 +84,7 @@ export function buildFrame(data: ChartData, viewport: InteractionState["viewport
     labelToken: inputs.labelToken,
     formatPrice: inputs.formatPrice,
     formatX: inputs.formatX,
+    mobile: inputs.mobile,
   }
   const auto = createFrame(data, view)
   const manual = manualPriceRange(auto.price.range, priceScale.p)

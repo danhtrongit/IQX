@@ -8,7 +8,7 @@ import type { LocalIndicator } from "./flashback-context"
 
 const STORAGE_KEY = "iqx.flashback.indicators.v2"
 /** Trần số instance để một giá trị lạ trong localStorage không làm biểu đồ nặng. */
-const MAX_INDICATORS = 12
+export const MAX_INDICATORS = 12
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)

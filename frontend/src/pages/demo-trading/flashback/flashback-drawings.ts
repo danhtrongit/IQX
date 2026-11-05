@@ -5,7 +5,12 @@
  * kéo tay nắm và bộ giảm trạng thái của hình vẽ. Điểm neo của hình là (phiên, giá) chứ không phải
  * toạ độ màn hình, nên hình đi theo dữ liệu khi biểu đồ đổi tỷ lệ hoặc có phiên mới. Hình chỉ nằm ở
  * trình duyệt của từng người: giữ trong suốt ván, mất khi sang ván mới, không gửi server.
+ *
+ * Phép tính hình học và Fibonacci thuần (`distanceToSegment`, `fibPrice`, `fibLabel`, `FIB_ZONE`) nằm ở thư viện IQLine và được
+ * dùng chung; phần còn lại (kiểu hình vẽ theo SVG, màu từng mức, chọn hình, bộ giảm trạng thái) vẫn riêng của đường SVG cũ.
  */
+import { FIB_ZONE as LIB_FIB_ZONE, fibLabel as libFibLabel, fibRetracementPrice } from "@/lib/iqline/drawings/fib"
+import { distanceToSegment as libDistanceToSegment } from "@/lib/iqline/drawings/geometry"
 import { formatNumber } from "./flashback-model"
 
 export type DrawingTool = "trend" | "fib"
@@ -27,21 +32,19 @@ export const FIB_LEVELS: readonly { level: number; color: string }[] = [
   { level: 1, color: "var(--chart-5)" },
 ]
 
-/** Vùng 38,2 đến 61,8% được tô nhạt. */
-export const FIB_ZONE = [0.382, 0.618] as const
+/** Vùng 38,2 đến 61,8% được tô nhạt (cùng hằng số với thư viện IQLine). */
+export const FIB_ZONE = LIB_FIB_ZONE
 
 export const TREND_COLOR = "var(--chart-2)"
 
 /** Giá tại mức L = Giá cuối − (Giá cuối − Giá đầu) × L (v2.1 §7.3). */
 export function fibPrice(drawing: Pick<Drawing, "a" | "b">, level: number): number {
-  return drawing.b.price - (drawing.b.price - drawing.a.price) * level
+  return fibRetracementPrice(drawing.a.price, drawing.b.price, level)
 }
 
 /** "61,8% · 25.630": mức 0, 50 và 100 không có số lẻ; còn lại một chữ số thập phân. */
 export function fibLabel(level: number, price: number): string {
-  const percent = Math.round(level * 1000) / 10
-  const text = Number.isInteger(percent) ? String(percent) : percent.toFixed(1).replace(".", ",")
-  return `${text}% · ${formatNumber(price)}`
+  return libFibLabel(level, price, formatNumber)
 }
 
 /** Phép đổi giữa (phiên, giá) và toạ độ SVG của khung giá, do biểu đồ cung cấp. */
@@ -55,13 +58,7 @@ export type DrawingMap = {
 export type ScreenPoint = { x: number; y: number }
 
 /** Khoảng cách từ một điểm tới đoạn thẳng. */
-export function distanceToSegment(point: ScreenPoint, from: ScreenPoint, to: ScreenPoint): number {
-  const dx = to.x - from.x
-  const dy = to.y - from.y
-  const lengthSquared = dx * dx + dy * dy
-  const t = lengthSquared === 0 ? 0 : Math.max(0, Math.min(1, ((point.x - from.x) * dx + (point.y - from.y) * dy) / lengthSquared))
-  return Math.hypot(point.x - (from.x + t * dx), point.y - (from.y + t * dy))
-}
+export const distanceToSegment: (point: ScreenPoint, from: ScreenPoint, to: ScreenPoint) => number = libDistanceToSegment
 
 /** Toạ độ màn hình của hai điểm neo. */
 export function anchors(drawing: Drawing, map: DrawingMap): { a: ScreenPoint; b: ScreenPoint } {

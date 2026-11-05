@@ -221,9 +221,15 @@ export function axisTicks(viewBars: number, playBars: number, narrow: boolean): 
   ]
 }
 
+/** Bề rộng ước lượng của một ký tự nhãn trục (chữ 12px), để bỏ nhãn đè lên nhau khi nhãn dài như "39 phiên trước". */
+const TICK_GLYPH_PX = 7
+/** Khoảng trống tối thiểu giữa hai nhãn liền kề. */
+const TICK_LABEL_GAP = 8
+
 /**
  * Vạch chia theo phiên khi đã zoom: bước nguyên 1-2-5 nhân luỹ thừa 10 sao cho các nhãn cách nhau ít nhất
  * `minSpacing` pixel. Chỉ số theo phiên (đã bỏ warmup), gồm cả ô tương lai vì nhãn chỉ suy ra từ chỉ số.
+ * Nhãn do bên dùng quyết định nên có thể rất dài ("39 phiên trước"): nhãn nào chạm nhãn đã giữ trước nó thì bỏ.
  */
 export function sessionTicks(viewport: Viewport, slots: number, plotWidth: number, formatX: (session: number) => string, minSpacing = 76): TimeTick[] {
   const span = viewport.to - viewport.from
@@ -233,10 +239,15 @@ export function sessionTicks(viewport: Viewport, slots: number, plotWidth: numbe
   const first = Math.max(0, Math.floor(viewport.from + 0.5))
   const last = Math.min(slots - 1, Math.ceil(viewport.to + 0.5) - 1)
   const ticks: TimeTick[] = []
+  let previous: { x: number; half: number } | null = null
   for (let index = Math.ceil(first / step) * step; index <= last; index += step) {
     const x = (index - viewport.from) * barPx
     if (x < 24 || x > plotWidth - 24) continue
-    ticks.push({ index, label: formatX(index) })
+    const label = formatX(index)
+    const half = (label.length * TICK_GLYPH_PX) / 2
+    if (previous && x - previous.x < previous.half + half + TICK_LABEL_GAP) continue
+    ticks.push({ index, label })
+    previous = { x, half }
   }
   return ticks
 }

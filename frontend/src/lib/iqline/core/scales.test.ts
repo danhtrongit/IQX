@@ -154,6 +154,18 @@ describe("nhãn trục theo phiên (Flashback)", () => {
     expect(ticks.every((tick) => tick.index >= 0 && tick.index < 90)).toBe(true)
   })
 
+  it("nhãn dài như \"39 phiên trước\" không đè lên nhau trên khung hẹp", () => {
+    const label = (session: number) => (session < 60 ? `${59 - session} phiên trước` : `Phiên ${session - 59}`)
+    const ticks = sessionTicks({ from: -0.5, to: 89.5 }, 90, 328, label)
+    expect(ticks.length).toBeGreaterThan(1)
+    const barPx = 328 / 90
+    for (let index = 1; index < ticks.length; index += 1) {
+      const gap = (ticks[index].index - ticks[index - 1].index) * barPx
+      const needed = ((ticks[index].label.length + ticks[index - 1].label.length) * 7) / 2
+      expect(gap).toBeGreaterThanOrEqual(needed)
+    }
+  })
+
   it("không có phiên nào quá totalSlots", () => {
     const scale = createSessionTimeScale(40, 90)
     expect(scale.slots).toBe(90)
