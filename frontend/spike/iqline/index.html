@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="vi" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>IQLine GĐ 0</title>
+    <style>
+      html, body, #chart { margin: 0; height: 100%; }
+      body { background: var(--background); overflow: hidden; }
+      #chart { position: relative; touch-action: pan-y; }
+      #chart canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+    </style>
+  </head>
+  <body>
+    <div id="chart"></div>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 # Thiết kế thư viện biểu đồ IQLine
 
-Trạng thái: thiết kế để triển khai, còn các điểm cần xác nhận ở §16.
+Trạng thái: thiết kế để triển khai, còn các điểm cần xác nhận ở §16. Số đo Giai đoạn 0: [iqline-gd0-report.md](iqline-gd0-report.md).
 
 Tên hiển thị là **IQLine**. Trong code dùng `iqline` cho thư mục và khoá lưu trữ, `IQLine` cho component và kiểu.
 
@@ -53,7 +53,7 @@ Xây thư viện biểu đồ nến riêng của IQX, theo đúng `frontend/DESI
 | Vỏ TradingView | `tv-chart.tsx`, `tradingview.ts`, `datafeed.ts`, tổng khoảng 1.000 dòng | Thay bằng `<IQLine />` và adapter; các quy tắc vòng đời trong `tv-chart.tsx` phải giữ (§6) |
 | Dữ liệu nến | `GET /market-data/quotes/{symbol}/ohlcv`, tham số `interval`, `start`, `end` theo ngày | Dùng lại, không đổi backend |
 | Tìm mã | `SymbolPicker` và `searchSymbols` | Dùng lại `SymbolPicker` |
-| Realtime | `DataPulse` thăm dò 15 giây. Backend đã có WebSocket với kênh `tick`, `orderbook`, `ohlc`, `index` | Chuyển sang kênh `ohlc`, giữ thăm dò làm dự phòng; cần kiểm tra dữ liệu kênh ở Giai đoạn 0 |
+| Realtime | `DataPulse` thăm dò 15 giây. Backend có WebSocket với kênh `tick`, `orderbook`, `ohlc`, `index`, nhưng lần đo ở Giai đoạn 0 không nhận được khung dữ liệu nào | Giữ thăm dò làm đường chính; chỉ bật `ohlc` khi đã kiểm chứng (§8) |
 | Đánh dấu tin | `getMarks`, `NewsMarkPopover`, màu theo sắc thái | Giữ popover, thư viện chỉ vẽ điểm và báo sự kiện bấm |
 | Hình vẽ đã lưu | `/chart-drawings/{symbol}` lưu nguyên JSON của `widget.save`, tối đa 512 KB; bản sao ở `iqx.tv_drawings_v2_*` | Bắt buộc có bộ chuyển đổi, nếu không người dùng mất hình vẽ (§11) |
 | Biểu đồ Flashback | SVG, `flashback-chart.tsx` 1.029 dòng, trộn tính toán, vẽ và tương tác | Tách lớp là lợi ích lớn nhất ở phần này |
@@ -196,7 +196,7 @@ Mọi thay đổi gom vào một `requestAnimationFrame`. Chỉ vẽ phần tron
 
 **Màu.** Canvas không hiểu `var(--x)`, nên `render` đọc token qua `getComputedStyle` rồi đổi sang `rgb()`, dùng lại cách `toRgbColor` đang có ở `tradingview.ts`. Dùng một `MutationObserver` chung theo dõi class giao diện trên `<html>`. Danh sách lệnh vẽ chỉ chứa tên token.
 
-**Chữ trên Canvas.** Đợi `document.fonts.ready` rồi đo và vẽ lại. `DESIGN.md` yêu cầu `tabular-nums` cho trục, trong khi Canvas không bảo đảm tùy chọn này trên mọi trình duyệt. Giai đoạn 0 phải kiểm tra; nếu không được thì tự căn từng chữ số theo bề rộng lớn nhất.
+**Chữ trên Canvas.** Tải đủ các độ đậm cần dùng qua `document.fonts.load` rồi mới đo và vẽ, nếu không số đo rơi vào font dự phòng. Be Vietnam Pro không có chữ số đều và `tabular-nums` không có tác dụng, cả trong DOM (báo cáo Giai đoạn 0). IQLine tự căn từng chữ số theo bề rộng lớn nhất trên Canvas.
 
 **Luật từ `DESIGN.md` phải giữ:**
 
@@ -224,9 +224,10 @@ Vuốt dọc phải để cho trang cuộn (`touch-action: pan-y`), trừ lúc �
 ## 8. Dữ liệu `market`
 
 - `iqline-datafeed.ts` chuyển logic từ `datafeed.ts`: đổi `interval`, kẹp thời gian, lọc nến lỗi, sắp xếp, gộp nhóm tin theo sắc thái.
-- API nhận `start` và `end` theo ngày, không có `countBack`. Adapter đổi `countBack` sang khoảng ngày theo khung, và lọc lại ở phía client.
-- Không có API gốc cho `noMoreHistory`: trả về `true` khi khoảng đã chạm `MIN_TIMESTAMP` hoặc nhiều lần liền không có nến.
-- Nến realtime: kênh `ohlc` cập nhật nến cuối hoặc mở nến mới. Mất kết nối thì quay về thăm dò 15 giây, kết nối lại thì nạp lại nến cuối để bù.
+- API nhận `start` và `end` theo ngày, không có `countBack` và không phân trang: một yêu cầu 1 phút có thể trả 3,5 MB trong 4 giây. Adapter đổi `countBack` sang khoảng ngày ngắn theo khung, không xin cả lịch sử, và lọc lại ở phía client.
+- Không có API gốc cho `noMoreHistory`: trả về `true` khi khoảng đã chạm `MIN_TIMESTAMP` hoặc nhiều lần liền không có nến. Khung trong ngày chỉ về tới 5 năm trước.
+- Dữ liệu 1 phút có các ngày rời rạc, nên trục cách đều phải có vạch ngăn khi nhảy ngày.
+- Nến realtime: IQLine 1.0 thăm dò 15 giây như hiện tại. Kênh `ohlc` chỉ bật khi đã kiểm chứng trong giờ giao dịch, và khi đó adapter phải đổi giá về cùng đơn vị với REST (WebSocket nhân 1.000), tự gộp từ nến 1 phút cho các khung khác, và tiếp tục thăm dò cho chỉ số vì `ohlc` chỉ có cổ phiếu.
 - Giá chỉ số và giá cổ phiếu có độ chính xác khác nhau (`pricescale` 100 và 1000 hiện tại), do `formatPrice` xử lý. Chữ số thập phân hiển thị đúng như TradingView đang hiện.
 
 ## 9. Chỉ báo
@@ -350,7 +351,7 @@ Thêm nút "Thử trên biểu đồ" trong bài chỉ báo, mở `<IQLine mode=
 
 ## 14. Hiệu năng
 
-Mục tiêu đề xuất, đo lại ở Giai đoạn 0:
+Bản thử Giai đoạn 0 đã đạt các mục tiêu máy tính trên Chrome, chưa đo trên điện thoại thật (xem báo cáo):
 
 | Chỉ số | Mục tiêu |
 |---|---|
@@ -359,9 +360,11 @@ Mục tiêu đề xuất, đo lại ở Giai đoạn 0:
 | 50.000 nến 1 phút có gộp theo pixel: một khung hình, máy tính | Dưới 16 ms |
 | Lõi vẽ, tải theo trang | Dưới 60 KB gzip |
 | Công cụ vẽ và hộp thoại, tải khi cần | Dưới 60 KB gzip |
-| Thời gian hiện biểu đồ `/bieu-do` | Không chậm hơn TradingView đo được ở Giai đoạn 0 |
+| Thời gian hiện biểu đồ `/bieu-do` | Không chậm hơn TradingView, mốc đo được là 1,3 đến 1,7 giây |
 
-26 MB của `public/charting_library` là dung lượng trong repo, không phải dung lượng người dùng tải. So sánh tải trang phải dùng số đo thật ở Giai đoạn 0.
+26 MB của `public/charting_library` là dung lượng trong repo. Người dùng thực tế tải 1.252 KB của thư viện qua 104 yêu cầu.
+
+Điểm yếu đã biết là máy không có GPU: còn 12 đến 20 khung hình mỗi giây khi thu nhỏ toàn bộ. Giai đoạn 1 thử giới hạn DPR về 2 và bỏ tô vùng khi đang gộp nến.
 
 Chỉ cân nhắc Web Worker hoặc WASM nếu không đạt các số này sau khi đã tối ưu.
 
@@ -382,7 +385,7 @@ Làm theo giai đoạn nhưng phát hành một lần. Trong lúc làm, mỗi n�
 
 | GĐ | Việc | Xong khi |
 |---|---|---|
-| 0 | Bản thử Canvas trên dữ liệu thật; đo tải và hiệu năng TradingView; thống kê layout đã lưu; kiểm tra kênh `ohlc` và `tabular-nums` | Có số đo so với §14, chốt danh sách §9 và §10 |
+| 0 | Bản thử Canvas trên dữ liệu thật; đo tải và hiệu năng TradingView; thống kê layout đã lưu; kiểm tra kênh `ohlc` và `tabular-nums`. Còn: thống kê layout, đo realtime trong giờ giao dịch, đo điện thoại thật | Có số đo so với §14, chốt danh sách §9 và §10 |
 | 1 | `core`, `scene`, `render`: mọi kiểu hiển thị, nhiều ô, hai loại trục, ba thang giá, giao diện | Ảnh chụp khớp Flashback hiện tại ở cả hai giao diện |
 | 2 | 23 chỉ báo, `registerIndicator`, test đối chiếu backend | Khớp bộ mẫu, hoặc mọi chỗ lệch đã được quyết định |
 | 3 | Tương tác, 14 công cụ vẽ, hoàn tác, lưu trữ, chuyển đổi layout cũ | Layout thật mở được, tỉ lệ hình chuyển được đạt mức đã chốt ở GĐ 0 |
