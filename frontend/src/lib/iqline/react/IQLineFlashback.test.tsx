@@ -7,6 +7,7 @@ import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { ALL_TOOLS } from "../drawings"
 import { named } from "../render/test-support"
 import { makeBars } from "../scene/test-support"
 import type { Bar, ChartIndicatorInput } from "../types"
@@ -392,17 +393,28 @@ describe("IQLineFlashback: zoom và kéo trong giới hạn nến đã mở (§1
     expect(root(container).querySelector('[data-testid="flashback-zoom-controls"]')!.getAttribute("data-zoomed")).toBe("false")
   })
 
-  it("lăn chuột thường để trang cuộn (không chặn, không zoom); Ctrl + lăn zoom quanh con trỏ và chặn cuộn trang", () => {
+  it("lăn chuột zoom quanh con trỏ và chặn trang cuộn theo (preventDefault); Ctrl + lăn cũng zoom; lăn ngang kéo khung", () => {
     const { container } = setup()
     const top = topCanvas(container)
     const plain = wheel(top, { deltaY: -300 })
-    expect(plain.defaultPrevented).toBe(false)
-    expect(viewport(container)).toEqual([-0.5, SLOTS - 0.5])
-    const zoom = wheel(top, { deltaY: -300, ctrlKey: true })
-    expect(zoom.defaultPrevented).toBe(true)
+    expect(plain.defaultPrevented).toBe(true)
     const [from, to] = viewport(container)
     expect(to - from).toBeLessThan(SLOTS)
     expect(root(container).querySelector('[data-testid="flashback-zoom-controls"]')!.getAttribute("data-zoomed")).toBe("true")
+    const zoom = wheel(top, { deltaY: -300, ctrlKey: true })
+    expect(zoom.defaultPrevented).toBe(true)
+    const [from2, to2] = viewport(container)
+    expect(to2 - from2).toBeLessThan(to - from)
+    const sideways = wheel(top, { deltaX: -400, deltaY: 0 })
+    expect(sideways.defaultPrevented).toBe(true)
+    expect(viewport(container)[0]).toBeLessThan(from2)
+  })
+
+  it("tắt zoom (interaction.zoom = false) thì lăn dọc để trang cuộn: không chặn, không đổi khung", () => {
+    const { container } = setup({ interaction: { zoom: false } })
+    const plain = wheel(topCanvas(container), { deltaY: -300 })
+    expect(plain.defaultPrevented).toBe(false)
+    expect(viewport(container)).toEqual([-0.5, SLOTS - 0.5])
   })
 
   it("không zoom ra ngoài trục và không kéo qua warmup hay quá ô cuối, dù kéo hay lăn rất mạnh", () => {
@@ -506,21 +518,28 @@ describe("IQLineFlashback: hình vẽ theo ván", () => {
     click(canvas, B.x, B.y)
   }
 
-  it("chỉ ba công cụ: xu hướng, Fibonacci thoái lui, đường ngang; công cụ khác bị bỏ qua", () => {
+  it("đủ 36 công cụ: bật được từng công cụ, bấm lại thì huỷ; tên lạ bị bỏ qua", () => {
     const { container, drawings } = setup()
-    act(() => drawings.toggleTool("trend"))
-    expect(snapshot(drawings).tool).toBe("trend")
-    act(() => drawings.toggleTool("fib-retracement"))
-    expect(snapshot(drawings).tool).toBe("fib-retracement")
-    act(() => drawings.toggleTool("horizontal"))
-    expect(snapshot(drawings).tool).toBe("horizontal")
-    act(() => drawings.toggleTool("horizontal"))
-    expect(snapshot(drawings).tool).toBeNull()
-    for (const tool of ["rectangle", "ray", "extended", "channel", "fib-extension", "elliott-5", "note", "measure", "vertical"] as const) {
+    for (const tool of ALL_TOOLS) {
       act(() => drawings.toggleTool(tool))
-      expect(snapshot(drawings).tool).toBeNull()
+      expect(snapshot(drawings).tool, tool).toBe(tool)
+      act(() => drawings.toggleTool(tool))
+      expect(snapshot(drawings).tool, tool).toBeNull()
     }
+    act(() => drawings.toggleTool("khong-co" as never))
+    expect(snapshot(drawings).tool).toBeNull()
     expect(topCanvas(container)).toBeTruthy()
+  })
+
+  it("snapshot có nam châm và hình đang vẽ dở, dispatch đổi nam châm của biểu đồ đang gắn", () => {
+    const { container, drawings } = setup()
+    expect(snapshot(drawings)).toMatchObject({ magnet: "off", draft: null })
+    act(() => drawings.dispatch({ type: "magnet", on: "strong" }))
+    expect(snapshot(drawings).magnet).toBe("strong")
+    act(() => drawings.toggleTool("path"))
+    click(topCanvas(container), A.x, A.y)
+    expect(snapshot(drawings).draft).toMatchObject({ tool: "path" })
+    expect(snapshot(drawings).draft?.anchors).toHaveLength(1)
   })
 
   it("bấm lại công cụ đang sáng thì huỷ; vẽ xong tự về chế độ bình thường và hình đang được chọn", () => {

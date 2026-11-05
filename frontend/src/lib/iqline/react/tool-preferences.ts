@@ -53,8 +53,12 @@ export function sanitizeFavorites(value: unknown, allowed?: readonly DrawingTool
   return out
 }
 
-export function readFavorites(scope: string, allowed?: readonly DrawingTool[]): DrawingTool[] {
-  return sanitizeFavorites(readJson(`${FAVORITES_KEY}:${scope}`), allowed)
+/**
+ * `fallback` chỉ dùng khi máy chưa lưu danh sách nào cho `scope` (khác với danh sách rỗng do người dùng bỏ hết yêu thích, vẫn là rỗng).
+ */
+export function readFavorites(scope: string, allowed?: readonly DrawingTool[], fallback?: readonly DrawingTool[]): DrawingTool[] {
+  const stored = readJson(`${FAVORITES_KEY}:${scope}`)
+  return sanitizeFavorites(stored === null && fallback ? fallback : stored, allowed)
 }
 
 export function writeFavorites(scope: string, tools: readonly DrawingTool[]): void {

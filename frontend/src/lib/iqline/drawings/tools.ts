@@ -1,5 +1,5 @@
 /**
- * Mô tả chung của 14 công cụ vẽ (docs/iqline-design.md §10): số điểm neo, nhóm, nhãn và kiểu mặc định.
+ * Mô tả chung của 36 công cụ vẽ (docs/iqline-design.md §10): số điểm neo, nhóm, nhãn và kiểu mặc định.
  * Mọi công cụ dùng chung một mô tả: danh sách điểm neo, cách vẽ (`commands.ts`), cách chọn (`hit-test.ts`).
  */
 import type { Anchor, DrawingStyle, DrawingTool } from "../types"
@@ -58,7 +58,7 @@ export const TOOL_SPECS: Readonly<Record<DrawingTool, ToolSpec>> = {
   ...BASIC_TOOL_SPECS,
 }
 
-/** 14 công cụ theo thứ tự ở §10. */
+/** 36 công cụ theo thứ tự hiện trong menu: 23 công cụ có trước, rồi 13 công cụ của đợt 1. */
 export const ALL_TOOLS: readonly DrawingTool[] = [
   "trend",
   "ray",
@@ -86,8 +86,12 @@ export const ALL_TOOLS: readonly DrawingTool[] = [
   ...BASIC_TOOLS,
 ]
 
-/** Flashback chỉ có ba công cụ (§10, §12). */
-export const FLASHBACK_TOOLS: readonly DrawingTool[] = ["trend", "fib-retracement", "horizontal"]
+/**
+ * Flashback dùng đủ 36 công cụ như `market` (§10, §12). Không có công cụ nào đọc thời gian thật hay nến chưa mở: điểm neo của Flashback
+ * là `session`, nhãn khoảng thời gian chỉ có số nến (`rangeLabel`), nam châm chỉ hút vào nến đã mở (`snapToOhlc`). Test ở
+ * `flashback-fairness.test.ts` kiểm từng công cụ. Biểu đồ SVG cũ (`?iqline=0`) không dùng thư viện này và vẫn chỉ có hai công cụ.
+ */
+export const FLASHBACK_TOOLS: readonly DrawingTool[] = ALL_TOOLS
 
 export function isDrawingTool(value: unknown): value is DrawingTool {
   return typeof value === "string" && Object.prototype.hasOwnProperty.call(TOOL_SPECS, value)

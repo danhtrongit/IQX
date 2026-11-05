@@ -124,9 +124,8 @@ describe("mô tả chín công cụ", () => {
     }
   })
 
-  it("Flashback vẫn chỉ có ba công cụ cũ", () => {
-    expect([...FLASHBACK_TOOLS].sort()).toEqual(["fib-retracement", "horizontal", "trend"])
-    for (const tool of ADVANCED_TOOLS) expect(FLASHBACK_TOOLS).not.toContain(tool)
+  it("Flashback dùng cả chín công cụ đợt 2 (vùng thời gian chỉ ghi số đơn vị, không có ngày: flashback-fairness.test.ts)", () => {
+    for (const tool of ADVANCED_TOOLS) expect(FLASHBACK_TOOLS).toContain(tool)
   })
 
   it("mọi màu trong lệnh vẽ là token hợp lệ và không dùng chart-3, chart-4, chart-7", () => {

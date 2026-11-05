@@ -11,8 +11,9 @@
  * - Chiều cao ô theo `chartLayout` (v2.3 §2), chú giải nổi không chiếm chiều cao ô.
  * - `MAX_INDICATORS` do trang kiểm tra: thư viện nhận bao nhiêu chỉ báo thì tính bấy nhiêu.
  *
- * Zoom và kéo bật trong giới hạn nến đã mở: Ctrl + lăn chuột, phím + và -, chụm hai ngón; nút "Về khung mặc định" và nhấp đúp
- * vào biểu đồ đưa về khung mặc định. Hình vẽ nằm ở `drawings` (`SessionDrawingController`), chỉ trong bộ nhớ của ván.
+ * Zoom và kéo bật trong giới hạn nến đã mở: lăn chuột zoom quanh con trỏ (trang không cuộn theo khi con trỏ ở trên biểu đồ), lăn ngang
+ * hoặc Shift + lăn để kéo, phím + và -, chụm hai ngón; nút "Về khung mặc định" và nhấp đúp vào biểu đồ đưa về khung mặc định.
+ * Hình vẽ (đủ 36 công cụ như `market`) nằm ở `drawings` (`SessionDrawingController`), chỉ trong bộ nhớ của ván.
  */
 import { useEffect, useImperativeHandle, useLayoutEffect, type Ref } from "react"
 import { Maximize2, ZoomIn, ZoomOut } from "lucide-react"
@@ -111,9 +112,10 @@ export function IQLineFlashback(props: IQLineFlashbackProps) {
     return () => drawings.attach(null)
   }, [drawings, controller])
   const shapes = chart.state.drawings
+  const magnet = chart.state.magnet
   useEffect(() => {
-    drawings.report(shapes)
-  }, [drawings, shapes])
+    drawings.report({ ...shapes, magnet })
+  }, [drawings, shapes, magnet])
 
   const handle: IQLineFlashbackHandle = {
     fitContent: () => controller.dispatch({ type: "reset" }),

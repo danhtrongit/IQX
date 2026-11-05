@@ -142,22 +142,22 @@ describe("IQLineCanvas: vỏ React tối thiểu", () => {
     expect(widest.to - widest.from).toBeCloseTo(300 + 10 + 50 + 0, 0)
   })
 
-  it("flashback: con lăn không zoom (để trang cuộn), Ctrl + lăn thì zoom trong các ô thật", () => {
+  it("flashback: lăn chuột zoom trong các ô thật và chặn trang cuộn theo; Ctrl + lăn cũng zoom", () => {
     const onViewportChange = vi.fn<(viewport: Viewport) => void>()
     const { container } = render(<IQLineCanvas {...flashbackProps({ onViewportChange })} />)
     measure(800, 400)
     const plain = new WheelEvent("wheel", { deltaY: -200, clientX: 300, cancelable: true })
     act(() => void top(container).dispatchEvent(plain))
-    expect(plain.defaultPrevented).toBe(false)
-    expect(onViewportChange).not.toHaveBeenCalled()
+    expect(plain.defaultPrevented).toBe(true)
+    expect(onViewportChange).toHaveBeenCalledTimes(1)
     const ctrl = new WheelEvent("wheel", { deltaY: -400, ctrlKey: true, clientX: 300, cancelable: true })
     act(() => void top(container).dispatchEvent(ctrl))
     expect(ctrl.defaultPrevented).toBe(true)
-    const zoomed = onViewportChange.mock.calls[0][0]
+    const zoomed = onViewportChange.mock.calls[1][0]
     expect(zoomed.from).toBeGreaterThanOrEqual(-0.5)
     expect(zoomed.to).toBeLessThanOrEqual(89.5)
     // Zoom ra hết cỡ cũng không vượt khỏi trục.
-    for (let index = 0; index < 40; index += 1) act(() => void top(container).dispatchEvent(new WheelEvent("wheel", { deltaY: 4000, ctrlKey: true, clientX: 10, cancelable: true })))
+    for (let index = 0; index < 40; index += 1) act(() => void top(container).dispatchEvent(new WheelEvent("wheel", { deltaY: 4000, clientX: 10, cancelable: true })))
     expect(onViewportChange.mock.calls.at(-1)![0]).toEqual({ from: -0.5, to: 89.5 })
   })
 

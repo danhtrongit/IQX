@@ -381,15 +381,11 @@ describe("công cụ đợt 1 khác", () => {
   })
 })
 
-describe("Flashback chỉ có ba công cụ cũ", () => {
-  it("các công cụ đợt 1 bị từ chối; ba công cụ cũ vẫn bật được", () => {
+describe("Flashback dùng cả công cụ đợt 1", () => {
+  it("13 công cụ đợt 1 và ba công cụ cũ đều bật được", () => {
     const config = flashbackConfig({ warmup: 0, barCount: 60, totalSlots: 80 })
     const h = harness(config, { kind: "session", barCount: 60 })
-    for (const tool of ["long-position", "short-position", "brush", "arrow", "arrow-up", "arrow-down", "price-label", "callout", "date-range", "date-price-range", "ellipse", "triangle", "path"] as const) {
-      h.send({ type: "tool", tool })
-      expect(h.state.drawings.tool, tool).toBeNull()
-    }
-    for (const tool of ["trend", "fib-retracement", "horizontal"] as const) {
+    for (const tool of ["long-position", "short-position", "brush", "arrow", "arrow-up", "arrow-down", "price-label", "callout", "date-range", "date-price-range", "ellipse", "triangle", "path", "trend", "fib-retracement", "horizontal"] as const) {
       h.send({ type: "tool", tool })
       expect(h.state.drawings.tool, tool).toBe(tool)
       h.send({ type: "tool", tool: null })

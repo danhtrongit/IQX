@@ -18,7 +18,7 @@ export type MarketConfigInput = {
   historyLimit?: number
 }
 
-/** `market`: zoom bằng lăn chuột, đủ 14 công cụ, co giãn trục, hoàn tác và làm lại. */
+/** `market`: zoom bằng lăn chuột, đủ 36 công cụ, co giãn trục, hoàn tác và làm lại. */
 export function marketConfig(input: MarketConfigInput): InteractionConfig {
   return {
     mode: "market",
@@ -54,9 +54,10 @@ export type FlashbackConfigInput = {
 }
 
 /**
- * `flashback`: chỉ Ctrl + lăn mới zoom, ba công cụ, không co giãn trục, không hoàn tác. Dùng chỉ số của scene (đã bỏ warmup, 0 là
- * nến đầu tiên được hiện): viewport nằm trong `[-0.5, totalSlots - 0.5]` không chừa ô trống nào nên không kéo qua warmup hay quá
- * ô cuối của trục, và crosshair chỉ đọc được các nến đã mở (§12).
+ * `flashback`: lăn chuột zoom quanh con trỏ (trang không cuộn theo khi con trỏ ở trên biểu đồ), đủ 36 công cụ, không co giãn trục,
+ * không hoàn tác. Dùng chỉ số của scene (đã bỏ warmup, 0 là nến đầu tiên được hiện): viewport nằm trong `[-0.5, totalSlots - 0.5]`
+ * không chừa ô trống nào nên không kéo qua warmup hay quá ô cuối của trục, crosshair và nam châm chỉ đọc và hút vào các nến đã mở
+ * (`readable`, `crosshairBeyondData: false`), còn điểm neo của hình vẽ nằm trong các ô của trục (§12).
  */
 export function flashbackConfig(input: FlashbackConfigInput): InteractionConfig {
   const { totalSlots } = input
@@ -67,7 +68,7 @@ export function flashbackConfig(input: FlashbackConfigInput): InteractionConfig 
     pan: input.pan ?? true,
     axisScaling: false,
     history: false,
-    wheelNeedsCtrl: true,
+    wheelNeedsCtrl: false,
     doubleClickPlotResets: true,
     allowedTools: FLASHBACK_TOOLS,
     viewport: { slots: totalSlots, leftPad: 0, rightPad: 0 },

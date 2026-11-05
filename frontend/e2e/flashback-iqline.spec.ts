@@ -246,11 +246,14 @@ test("zoom, kéo và về khung mặc định chỉ trong các nến đã mở",
   expect(await viewportOf(page)).toEqual([-0.5, TOTAL_SLOTS - 0.5])
   const initial = await dataHash(page)
 
-  // Lăn chuột thường không zoom (để trang cuộn); Ctrl + lăn thì zoom quanh con trỏ.
+  // Lăn chuột thường zoom quanh con trỏ (không cần Ctrl; việc trang không cuộn theo kiểm ở flashback-tools.spec.ts); Ctrl + lăn cũng zoom.
   await drawnLabels(page, true)
   await page.mouse.move(centre.x, centre.y)
   await page.mouse.wheel(0, -400)
-  expect(await viewportOf(page)).toEqual([-0.5, TOTAL_SLOTS - 0.5])
+  await expect.poll(async () => (await viewportOf(page))[1] - (await viewportOf(page))[0]).toBeLessThan(TOTAL_SLOTS - 5)
+  await page.mouse.dblclick(centre.x, centre.y)
+  await expect.poll(() => viewportOf(page)).toEqual([-0.5, TOTAL_SLOTS - 0.5])
+  await drawnLabels(page, true)
   await page.keyboard.down("Control")
   await page.mouse.wheel(0, -500)
   await page.keyboard.up("Control")
@@ -258,8 +261,13 @@ test("zoom, kéo và về khung mặc định chỉ trong các nến đã mở",
   await expect.poll(() => dataHash(page)).not.toBe(initial)
   await shot(page, "iqline-zoomed")
   // Đã zoom thì trục đổi sang nhãn theo phiên ("n phiên trước", "Phiên n"), nhãn cố định của khung mặc định biến mất.
-  await expect.poll(async () => (await drawnLabels(page)).some((label) => /phiên trước$/.test(label))).toBe(true)
-  expect(await drawnLabels(page)).not.toContain("Lịch sử 60 phiên")
+  // Đọc và xoá bản ghi mỗi lần thăm dò để chỉ xét lần vẽ mới nhất (bản ghi cũ còn nhãn của khung mặc định trước khi zoom).
+  await expect.poll(async () => (await drawnLabels(page, true)).some((label) => /phiên trước$/.test(label))).toBe(true)
+  await page.mouse.move(centre.x + 3, centre.y + 3)
+  await expect.poll(async () => {
+    const labels = await drawnLabels(page, true)
+    return labels.length > 0 && !labels.includes("Lịch sử 60 phiên")
+  }).toBe(true)
 
   // Nút Về khung mặc định đang sáng khi đã zoom.
   const fit = page.getByRole("button", { name: "Về khung mặc định" })
@@ -289,9 +297,7 @@ test("zoom, kéo và về khung mặc định chỉ trong các nến đã mở",
   }
   expect((await viewportOf(page))[1]).toBe(TOTAL_SLOTS - 0.5)
   // Zoom ra hết cỡ: không bao giờ rộng hơn trục.
-  await page.keyboard.down("Control")
   for (let step = 0; step < 10; step += 1) await page.mouse.wheel(0, 900)
-  await page.keyboard.up("Control")
   await expect.poll(() => viewportOf(page)).toEqual([-0.5, TOTAL_SLOTS - 0.5])
 
   // Nhấp đúp vào khung vẽ về khung mặc định; nút phóng to cũng hoạt động.
@@ -308,11 +314,12 @@ test("zoom, kéo và về khung mặc định chỉ trong các nến đã mở",
 test("vẽ đường xu hướng bằng hai cú bấm, xoá bằng Delete; Fibonacci và đường ngang; Esc huỷ; nút Xoá", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 })
   await openMatch(page, true)
-  const trend = page.getByTestId("flashback-draw-trend")
-  const fib = page.getByTestId("flashback-draw-fib")
-  const horizontal = page.getByTestId("flashback-draw-horizontal")
+  // Ba công cụ cũ là yêu thích mặc định trên màn hình rộng: vẫn bấm một lần. Cả 36 công cụ nằm ở bảy nhóm (flashback-tools.spec.ts).
+  const trend = page.locator('[data-favorite-tool="trend"]')
+  const fib = page.locator('[data-favorite-tool="fib-retracement"]')
+  const horizontal = page.locator('[data-favorite-tool="horizontal"]')
   const clear = page.getByTestId("flashback-draw-clear")
-  await expect(page.getByRole("group", { name: "Công cụ vẽ" }).getByRole("button")).toHaveCount(4)
+  await expect(page.getByRole("toolbar", { name: "Công cụ vẽ" }).getByRole("button")).toHaveCount(3 + 7)
   expect(await layerInk(page, "drawings")).toBe(0)
 
   // Đường xu hướng: bấm điểm đầu, rê, bấm điểm cuối; vẽ xong tự về chế độ bình thường.
@@ -435,7 +442,7 @@ test("nến tương lai không đọc được: crosshair và chú giải dừng
     await expect.poll(() => layerInk(page, "top")).toBe(0)
   }
   // Bấm vào phiên chưa mở với công cụ vẽ: neo bị kẹp, không có hình ngoài trục.
-  await page.getByTestId("flashback-draw-horizontal").click()
+  await page.locator('[data-favorite-tool="horizontal"]').click()
   const edge = await pointOf(page, TOTAL_SLOTS - 1, 100)
   await page.mouse.click(edge.x, edge.y)
   await expect.poll(() => layerInk(page, "drawings")).toBeGreaterThan(0)
@@ -465,7 +472,7 @@ test("nến tương lai không đọc được: crosshair và chú giải dừng
 test("kéo neo và kéo cả đường xu hướng: hình vẽ đi theo con trỏ", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 })
   await openMatch(page, true)
-  const trend = page.getByTestId("flashback-draw-trend")
+  const trend = page.locator('[data-favorite-tool="trend"]')
   const A = await pointOf(page, 20, 120)
   const B = await pointOf(page, 45, 200)
   await trend.click()
@@ -543,7 +550,9 @@ test.describe("điện thoại cảm ứng", () => {
     await expect(buttons).toBeHidden()
 
     // Bật công cụ vẽ thì canvas chặn cuộn trang.
-    await page.getByTestId("flashback-draw-trend").tap()
+    // Điện thoại không có yêu thích mặc định: mở nhóm "Đường" rồi chọn Đường xu hướng.
+    await page.locator('[data-tool-group="line"]').tap()
+    await page.getByRole("menuitem", { name: "Đường xu hướng" }).tap()
     expect(await canvasTop(page).evaluate((element) => getComputedStyle(element).touchAction)).toBe("none")
   })
 

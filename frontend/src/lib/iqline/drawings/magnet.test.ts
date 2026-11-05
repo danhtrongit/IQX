@@ -48,6 +48,35 @@ describe("snapToOhlc: mạnh", () => {
   })
 })
 
+describe("snapToOhlc: dải nến đọc được (Flashback)", () => {
+  // Hai nến đã mở (0 và 1); nến 2 là nến "lẫn vào" mà nam châm không được chạm tới.
+  const readable = { first: 0, last: 1 }
+  const strongHere = { x: px(2), y: 300 - 70 }
+
+  it("không hút vào nến ngoài dải, dù mảng nến có và dù Mạnh hay Yếu", () => {
+    expect(snapToOhlc(strongHere, COORDS, BARS, SNAP_TOLERANCE, "weak", { readable })).toBeNull()
+    expect(snapToOhlc(strongHere, COORDS, BARS, SNAP_TOLERANCE, "strong", { readable, clampOutside: false })).toBeNull()
+    expect(snapToOhlc({ x: px(20), y: 100 }, COORDS, BARS, SNAP_TOLERANCE, "strong", { readable, clampOutside: false })).toBeNull()
+  })
+
+  it("clampOutside mặc định (market): Mạnh hút về nến cuối của dải ở ngoài vùng có nến, không vượt ra khỏi dải", () => {
+    expect(snapToOhlc(strongHere, COORDS, BARS, SNAP_TOLERANCE, "strong", { readable })).toMatchObject({ index: 1 })
+    expect(snapToOhlc({ x: px(20), y: 100 }, COORDS, BARS, SNAP_TOLERANCE, "strong", { readable })).toMatchObject({ index: 1 })
+  })
+
+  it("trong dải vẫn hút như thường, và dải rỗng thì không hút gì", () => {
+    expect(snapToOhlc({ x: px(1), y: 300 - 215 }, COORDS, BARS, SNAP_TOLERANCE, "strong", { readable, clampOutside: false })).toMatchObject({ index: 1, price: 230 })
+    expect(snapToOhlc({ x: px(0), y: 100 }, COORDS, BARS, SNAP_TOLERANCE, "strong", { readable: null })).toMatchObject({ index: 0 })
+    expect(snapToOhlc({ x: px(0), y: 100 }, COORDS, BARS, SNAP_TOLERANCE, "strong", { readable: { first: 2, last: 1 } })).toBeNull()
+  })
+
+  it("anchorFromPoint: ngoài dải thì giữ nguyên điểm bấm (chỉ số và giá)", () => {
+    const anchor = anchorFromPoint(strongHere, COORDS, { snap: { bars: BARS, strength: "strong", readable, clampOutside: false } })
+    expect(anchor).toMatchObject({ session: 2 })
+    expect((anchor as { price: number }).price).toBeCloseTo(70, 6)
+  })
+})
+
 describe("anchorFromPoint theo chế độ nam châm", () => {
   const point = { x: px(1), y: 300 - 215 }
   it("tắt: giữ nguyên điểm bấm; yếu: xa ngưỡng thì giữ; mạnh: hút", () => {

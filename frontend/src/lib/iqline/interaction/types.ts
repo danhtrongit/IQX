@@ -46,7 +46,10 @@ export type InteractionConfig = {
   axisScaling: boolean
   /** Có hoàn tác và làm lại không (chỉ `market`). */
   history: boolean
-  /** `flashback`: lăn chuột thường để trang cuộn, chỉ Ctrl + lăn mới zoom. */
+  /**
+   * true: lăn chuột thường để trang cuộn, chỉ Ctrl + lăn mới zoom (`static`, để không chặn việc cuộn bài học). false: lăn dọc trên biểu đồ
+   * zoom quanh con trỏ và trang không cuộn theo (`market`, `flashback`); lăn ngang hoặc Shift + lăn là kéo.
+   */
   wheelNeedsCtrl: boolean
   /** Nhấp đúp vào khung vẽ để về khung mặc định (`flashback`). Nhấp đúp vào trục thời gian luôn làm việc này. */
   doubleClickPlotResets: boolean
@@ -61,7 +64,10 @@ export type InteractionConfig = {
    * (0 là nến đầu tiên được hiện), nên warmup không có chỉ số nào để kéo tới hay đọc.
    */
   readable: { first: number; last: number } | null
-  /** `market` cho crosshair đứng ở ô chưa có nến (chỉ có nhãn thời gian); `flashback` thì không (§12). */
+  /**
+   * `market` cho crosshair đứng ở ô chưa có nến (chỉ có nhãn thời gian) và cho nam châm Mạnh hút về nến gần nhất ở hai đầu;
+   * `flashback` thì không cả hai: ô chưa mở không có crosshair và nam châm không làm gì ở đó (§12).
+   */
   crosshairBeyondData: boolean
   /** Giới hạn chỉ số của điểm neo hình vẽ (Flashback: các ô của trục, kể cả ô tương lai); null là không giới hạn. */
   anchorRange: { min: number; max: number } | null

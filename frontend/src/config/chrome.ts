@@ -37,6 +37,9 @@ export type RouteChrome = {
 /** "Bài học" stays routable but is off the header unless `VITE_SHOW_LESSONS_NAV=true`. */
 const SHOW_LESSONS_NAV = import.meta.env.VITE_SHOW_LESSONS_NAV === "true"
 
+/** "Văn phòng ảo" tạm gỡ (2026-11-05): ẩn khỏi header và `/van-phong-ao` về trang chủ, trừ khi build với `VITE_SHOW_VIRTUAL_OFFICE=true`. */
+export const SHOW_VIRTUAL_OFFICE = import.meta.env.VITE_SHOW_VIRTUAL_OFFICE === "true"
+
 export const HEADER_NAV: readonly { to: string; label: string; hidden?: boolean }[] = [
   { to: "/", label: "Giới thiệu" },
   { to: "/demo-trading?view=trading", label: "Demo Trading" },
@@ -44,7 +47,7 @@ export const HEADER_NAV: readonly { to: string; label: string; hidden?: boolean 
   { to: "/bai-hoc", label: "Bài học", hidden: !SHOW_LESSONS_NAV },
   // The HỌC VIỆN section of the workspace (the old /hoc-vien route redirects here).
   { to: "/demo-trading?view=academy", label: "Học viện" },
-  { to: "/van-phong-ao", label: "Văn phòng ảo" },
+  { to: "/van-phong-ao", label: "Văn phòng ảo", hidden: !SHOW_VIRTUAL_OFFICE },
 ]
 
 /**
