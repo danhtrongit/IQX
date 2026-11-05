@@ -1,6 +1,6 @@
 # Thiết kế thư viện biểu đồ IQLine
 
-Trạng thái: thiết kế để triển khai, còn các điểm cần xác nhận ở §16. Số đo Giai đoạn 0: [iqline-gd0-report.md](iqline-gd0-report.md).
+Trạng thái: IQLine 1.0 đã làm xong Giai đoạn 1 đến 7, bật mặc định cả bốn nơi. Code TradingView và SVG cũ còn giữ để quay lại, chưa dọn. Còn các điểm chưa kiểm chứng ở §18 và các điểm cần xác nhận ở §16. Số đo Giai đoạn 0: [iqline-gd0-report.md](iqline-gd0-report.md).
 
 Tên hiển thị là **IQLine**. Trong code dùng `iqline` cho thư mục và khoá lưu trữ, `IQLine` cho component và kiểu.
 
@@ -431,3 +431,22 @@ Các điểm dưới đây đã có lựa chọn mặc định. Tài liệu đi 
 | Realtime sai nến cuối hoặc hở dữ liệu khi mất kết nối | Thăm dò dự phòng, nạp lại nến cuối sau khi kết nối lại |
 | Canvas khó kiểm thử hơn SVG | Tách `scene`, thêm ảnh chụp Playwright |
 | Xung đột cử chỉ với cuộn trang trên điện thoại | `touch-action: pan-y`, nhấn giữ để bật crosshair, thử trên máy thật |
+
+## 18. Trạng thái phát hành 1.0
+
+**Công tắc** nằm ở một chỗ, `pages/charts/chart/iqline-flag.ts`: mặc định bật; `VITE_IQLINE_OFF=market,flashback,static` lúc build để tắt theo nơi; `?iqline=0` để xem bản cũ trong một lượt, `?iqline=1` luôn bật. Vitest chạy với cờ tắt vì jsdom không có Canvas; test IQLine tự bật, đường mặc định được kiểm ở `iqline-flag.test.ts` và e2e.
+
+**Đã kiểm chứng:** test thuần và Testing Library, e2e trên Canvas thật với API giả lập, chạy thử `/bieu-do` và `/co-phieu` với dữ liệu thật của iqx.vn qua proxy (cổ phiếu, chỉ số, 5 phút, RSI, điện thoại), so toạ độ 96 biểu đồ Học viện với bản SVG. Đo trên Canvas và ảnh chụp đều có ở Chromium.
+
+**Chưa kiểm chứng trước khi phát hành:**
+
+- Ván Flashback nhiều người trên backend thật, và trang Học viện thật đã đăng nhập.
+- Điện thoại thật: chụm hai ngón, nhấn giữ, hiệu năng theo mục tiêu §14. Mới có giả lập cảm ứng của Playwright.
+- Safari và Firefox.
+- `fromTradingViewLayout` trên layout `widget.save` thật. Mới dùng mẫu tự viết theo cấu trúc đã thống kê ở Giai đoạn 0.
+- TradingView thật có nhận `state` có thêm khoá `iqline` khi quay lại hay không.
+- Dữ liệu cho `AiOverlay`: mới có lớp vẽ, chưa có nguồn.
+
+**Chỗ lệch công thức với backend** (ghi trong `KNOWN_DIVERGENCES`, giữ nguyên số của Flashback cũ, chưa quyết): MACD và Stochastic đổi `null` đầu chuỗi thành 0 trước khi làm mượt, nên lệch ở đoạn đầu; CMF cho `null` cả cửa sổ nếu có phiên high bằng low, nên trống nhiều với mã hay kịch trần, kịch sàn. Bot chạy theo backend.
+
+**Dọn dẹp** (§15) làm sau thời gian theo dõi, chưa làm.
