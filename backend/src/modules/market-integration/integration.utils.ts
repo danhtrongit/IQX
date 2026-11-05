@@ -80,25 +80,33 @@ export async function mapLimit<T, R>(
   return result;
 }
 
+/**
+ * Shared on purpose. `isCompletedVietnamSession` runs once per bar of every symbol, and each
+ * `new Intl.DateTimeFormat` allocates native ICU memory V8 does not see, so a GC never comes in
+ * time: creating one per call took the worker past 3 GB and got it OOM-killed (2026-11-05).
+ */
+const VN_DATE_FORMAT = new Intl.DateTimeFormat('en-CA', {
+  timeZone: 'Asia/Ho_Chi_Minh',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+const VN_TIME_FORMAT = new Intl.DateTimeFormat('en-GB', {
+  timeZone: 'Asia/Ho_Chi_Minh',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+});
+
 export function vnToday(now = new Date()): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Ho_Chi_Minh',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(now);
+  return VN_DATE_FORMAT.format(now);
 }
 
 export function isCompletedVietnamSession(date: string, now = new Date()): boolean {
   const today = vnToday(now);
   if (date < today) return true;
   if (date > today) return false;
-  const parts = new Intl.DateTimeFormat('en-GB', {
-    timeZone: 'Asia/Ho_Chi_Minh',
-    hour: '2-digit',
-    minute: '2-digit',
-    hourCycle: 'h23',
-  }).formatToParts(now);
+  const parts = VN_TIME_FORMAT.formatToParts(now);
   const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? -1);
   const minute = Number(parts.find((part) => part.type === 'minute')?.value ?? -1);
   return hour > 15 || (hour === 15 && minute >= 15);

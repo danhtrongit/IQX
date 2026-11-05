@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { RealtimeBridge } from '../../src/modules/realtime/realtime.bridge.js';
+import { describeUpstreamError, RealtimeBridge } from '../../src/modules/realtime/realtime.bridge.js';
 import type {
   MarketStreamPort,
   RealtimeSubscription,
@@ -23,6 +23,29 @@ class IdleStream implements MarketStreamPort {
     this.finish?.();
   }
 }
+
+describe('describeUpstreamError', () => {
+  it('keeps the reason a connection failed', () => {
+    expect(describeUpstreamError(new Error('DNSE authentication failed (401)'))).toBe(
+      'Error: DNSE authentication failed (401)',
+    );
+    expect(
+      describeUpstreamError(
+        new TypeError('fetch failed', { cause: Object.assign(new Error('x'), { code: 'ECONNRESET' }) }),
+      ),
+    ).toBe('TypeError: fetch failed (ECONNRESET)');
+    expect(describeUpstreamError('nope')).toBe('unknown');
+  });
+
+  it('removes URLs and tokens a driver message may quote', () => {
+    const text = describeUpstreamError(
+      new Error(
+        'failed wss://user:secret@host/wss?token=abc Bearer abc.def header eyJhbGciOi.eyJzdWIi.c2ln',
+      ),
+    );
+    expect(text).toBe('Error: failed [url] [token] header [token]');
+  });
+});
 
 describe('RealtimeBridge leadership control loop', () => {
   it('renews leadership and reconciles demand while the upstream is idle', async () => {

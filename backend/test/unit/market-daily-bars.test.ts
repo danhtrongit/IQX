@@ -19,6 +19,9 @@ import {
 import { SymbolAttributesService } from '../../src/modules/market-integration/symbol-attributes.service.js';
 import { DomainRuntimeJobs } from '../../src/platform/domain-runtime.module.js';
 
+const daysFromEpoch = (days: number): string =>
+  new Date(Date.UTC(2023, 0, 1) + days * 86_400_000).toISOString().slice(0, 10);
+
 /** 2025-05-30 (Friday) 16:00 ICT: the session of that day is closed. */
 const AFTER_CLOSE = new Date('2025-05-30T09:00:00Z');
 /** The same Friday at 14:00 ICT: still trading, the day's bar is not final. */
@@ -127,6 +130,24 @@ describe('daily bar store helpers', () => {
       { close: 12 },
     ])
       expect(acceptBar(bar(patch)), JSON.stringify(patch)).toBe(false);
+  });
+
+  it('toStoredColumns creates no Intl.DateTimeFormat per bar (native memory, OOM of 2026-11-05)', () => {
+    const constructed = vi.spyOn(Intl, 'DateTimeFormat');
+    const bars = Array.from({ length: 600 }, (_, index) => ({
+      date: daysFromEpoch(index),
+      open: 10,
+      high: 11,
+      low: 9,
+      close: 10,
+      volume: 100,
+    }));
+    try {
+      expect(toStoredColumns(bars, MID_SESSION).d).toHaveLength(520);
+      expect(constructed).not.toHaveBeenCalled();
+    } finally {
+      constructed.mockRestore();
+    }
   });
 
   it('toStoredColumns keeps closed sessions only, drops invalid bars, caps at the newest N', () => {

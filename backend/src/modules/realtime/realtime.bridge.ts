@@ -14,6 +14,22 @@ import { eventChannel } from './protocol.js';
 import { RealtimePubSub } from './realtime.pubsub.js';
 import { REALTIME_OPTIONS, type MarketStreamPort, type RealtimeOptions } from './realtime.types.js';
 
+/**
+ * The reason a connection failed, safe for the log: DNSE auth and MQTT errors say why, but a driver
+ * message may quote a URL or a token, so those are removed first.
+ */
+export function describeUpstreamError(error: unknown): string {
+  if (!(error instanceof Error)) return 'unknown';
+  const cause = (error as { cause?: { code?: unknown } }).cause;
+  const code = typeof cause?.code === 'string' ? ` (${cause.code})` : '';
+  const message = error.message
+    .replace(/\b[a-z][a-z0-9+.-]*:\/\/\S+/gi, '[url]')
+    .replace(/\bbearer\s+\S+/gi, '[token]')
+    .replace(/\beyJ[\w-]+\.[\w-]+(?:\.[\w-]+)?/g, '[token]')
+    .slice(0, 300);
+  return `${error.name}: ${message}${code}`;
+}
+
 @Injectable()
 export class RealtimeBridge implements OnModuleInit, OnApplicationShutdown {
   private readonly logger = new Logger(RealtimeBridge.name);
@@ -64,7 +80,7 @@ export class RealtimeBridge implements OnModuleInit, OnApplicationShutdown {
       } catch (error) {
         if (!this.stopSignal) {
           this.logger.warn(
-            `Realtime upstream unavailable: ${error instanceof Error ? error.name : 'unknown'}`,
+            `Realtime upstream unavailable: ${describeUpstreamError(error)}`,
           );
         }
       } finally {

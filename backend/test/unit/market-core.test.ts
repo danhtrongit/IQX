@@ -85,6 +85,51 @@ describe('MarketHttpTransport', () => {
     ).resolves.toEqual({ value: 1 });
     expect(fetch).toHaveBeenCalledTimes(1);
   });
+
+  it('bounds the cache: never-reread responses do not stay forever', async () => {
+    const fetch = vi.fn(async () => Response.json({ value: 1 }));
+    vi.stubGlobal('fetch', fetch);
+    const transport = new MarketHttpTransport();
+    const read = (index: number) =>
+      transport.requestJson(
+        `https://trading.vietcap.com.vn/api/item${index}`,
+        {},
+        { cacheTtlMs: 60_000 },
+      );
+    for (let index = 0; index < 300; index += 1) await read(index);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(transport['cache'].size).toBeLessThanOrEqual(256);
+
+    fetch.mockClear();
+    await read(299);
+    expect(fetch).not.toHaveBeenCalled();
+    await read(0);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('drops expired responses first when the cache is full', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json({ value: 1 })));
+    const transport = new MarketHttpTransport();
+    const read = (index: number, cacheTtlMs: number) =>
+      transport.requestJson(
+        `https://trading.vietcap.com.vn/api/item${index}`,
+        {},
+        { cacheTtlMs },
+      );
+    const realNow = Date.now();
+    const clock = vi.spyOn(Date, 'now');
+    try {
+      clock.mockReturnValue(realNow);
+      for (let index = 0; index < 256; index += 1) await read(index, 1_000);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      clock.mockReturnValue(realNow + 2_000);
+      await read(1_000, 60_000);
+      await new Promise((resolve) => setTimeout(resolve, 0));
+      expect(transport['cache'].size).toBe(1);
+    } finally {
+      clock.mockRestore();
+    }
+  });
 });
 
 describe('VCI normalization', () => {
