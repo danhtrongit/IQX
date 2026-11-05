@@ -11,6 +11,7 @@ import userEvent from "@testing-library/user-event"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { ALL_TOOLS, TOOL_SPECS } from "@/lib/iqline/drawings"
 import { named } from "@/lib/iqline/render/test-support"
 import { installCanvasEnv, type CanvasEnv } from "@/lib/iqline/react/test-env"
 
@@ -61,6 +62,20 @@ function renderGame() {
   )
 }
 
+/** jsdom không có `matchMedia`: trang chỉ hỏi `(min-width: 640px)` để biết có đặt ba công cụ cũ làm yêu thích mặc định hay không. */
+function stubMedia(wide: boolean) {
+  vi.stubGlobal("matchMedia", (query: string) => ({
+    matches: wide && query.includes("min-width: 640px"),
+    media: query,
+    onchange: null,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+    addListener: () => undefined,
+    removeListener: () => undefined,
+    dispatchEvent: () => false,
+  }))
+}
+
 /** jsdom không có bố cục: bề rộng khung chứa của biểu đồ là giá trị giả này. */
 function stubChartWidth(width: number) {
   Object.defineProperty(HTMLElement.prototype, "clientWidth", { configurable: true, get: () => width })
@@ -72,7 +87,8 @@ function stubViewportHeight(height: number) {
 
 async function findGame() {
   await screen.findByTestId("flashback-clock")
-  await waitFor(() => expect(screen.getByTestId("flashback-session")).toBeTruthy())
+  // Gói IQLine tải chậm (cả thanh công cụ đầy đủ): lần đầu vitest phải biên dịch nó nên chờ lâu hơn mặc định 1 giây.
+  await waitFor(() => expect(screen.getByTestId("flashback-session")).toBeTruthy(), { timeout: 8000 })
 }
 
 type User = ReturnType<typeof userEvent.setup>
@@ -366,10 +382,12 @@ describe("Flashback IQLine: công cụ vẽ", () => {
   const B = at(50, 200)
 
   const top = () => document.querySelector<HTMLCanvasElement>('canvas[data-iqline-layer="top"]')!
-  const trend = () => screen.getByTestId("flashback-draw-trend")
-  const fib = () => screen.getByTestId("flashback-draw-fib")
-  const horizontal = () => screen.getByTestId("flashback-draw-horizontal")
+  // Máy chưa lưu yêu thích nào và cửa sổ rộng (>= 640px): ba công cụ cũ là yêu thích mặc định, bấm một lần như trước.
+  const trend = () => screen.getByRole("button", { name: "Đường xu hướng" })
+  const fib = () => screen.getByRole("button", { name: "Fibonacci thoái lui" })
+  const horizontal = () => screen.getByRole("button", { name: "Đường ngang" })
   const clear = () => screen.getByTestId("flashback-draw-clear")
+  const groupButtons = () => within(screen.getByRole("toolbar", { name: "Công cụ vẽ" })).getAllByRole("button").filter((button) => button.dataset.toolGroup)
   /** Các lệnh vẽ đường thẳng trên lớp hình vẽ của canvas giả: mỗi hình chọn hoặc không có đúng một đường nối hai neo. */
   const strokes = () => env.context.calls.filter((call) => call[0] === "stroke").length
 
@@ -382,10 +400,11 @@ describe("Flashback IQLine: công cụ vẽ", () => {
     pointer("pointerup", point)
   }
 
-  async function playing() {
+  async function playing(wide = true) {
     window.history.replaceState(null, "", "/?iqline=1")
     stubChartWidth(1000)
     stubViewportHeight(300)
+    stubMedia(wide)
     setup()
     const user = userEvent.setup()
     renderGame()
@@ -395,18 +414,87 @@ describe("Flashback IQLine: công cụ vẽ", () => {
     return user
   }
 
-  it("ba nút Xu hướng, Fibonacci, Đường ngang rồi Xoá, cùng hàng với nút Các chỉ báo; không có nút Con trỏ", async () => {
+  it("thanh công cụ có bảy nhóm, ba công cụ cũ là yêu thích mặc định, nam châm, danh sách hình vẽ và Xoá, cùng hàng với nút Các chỉ báo; không có nút Con trỏ", async () => {
     await playing()
-    const toolbar = screen.getByRole("group", { name: "Công cụ vẽ" })
-    expect(within(toolbar).getAllByRole("button").map((button) => button.getAttribute("data-testid"))).toEqual([
-      "flashback-draw-trend",
-      "flashback-draw-fib",
-      "flashback-draw-horizontal",
-      "flashback-draw-clear",
-    ])
-    expect(within(toolbar).getByRole("button", { name: "Đường ngang" })).toBeTruthy()
+    const toolbar = screen.getByRole("toolbar", { name: "Công cụ vẽ" })
+    expect(groupButtons().map((button) => button.dataset.toolGroup)).toEqual(["line", "fib", "pitchfork", "pattern", "shape", "position", "annotation"])
+    expect(within(toolbar).getAllByRole("button").filter((button) => button.dataset.favoriteTool).map((button) => button.dataset.favoriteTool)).toEqual(["trend", "fib-retracement", "horizontal"])
+    const extras = screen.getByRole("toolbar", { name: "Nam châm và danh sách hình vẽ" })
+    expect(within(extras).getByRole("button", { name: /^Nam châm/ })).toBeTruthy()
+    expect(within(extras).getByRole("button", { name: "Danh sách hình vẽ" })).toBeTruthy()
+    expect(within(extras).getByTestId("flashback-draw-clear")).toBeTruthy()
     expect(screen.queryByRole("button", { name: /con trỏ/i })).toBeNull()
-    expect(toolbar.parentElement?.contains(screen.getByRole("button", { name: "Các chỉ báo" }))).toBe(true)
+    const row = screen.getByTestId("flashback-draw-toolbar")
+    for (const part of [toolbar, extras, screen.getByRole("button", { name: "Các chỉ báo" })]) expect(row.contains(part)).toBe(true)
+  })
+
+  it("điện thoại (< 640px): không có yêu thích mặc định, bảy nhóm vẫn đủ; nút Xoá ở cùng cụm với nam châm", async () => {
+    await playing(false)
+    expect(document.querySelector("[data-favorites]")).toBeNull()
+    expect(groupButtons()).toHaveLength(7)
+    // Hàng dưới (bảy nhóm) xuống dòng riêng, hàng trên có nút chỉ báo, nam châm, danh sách và Xoá (xếp bằng lớp max-sm của trang).
+    const toolbar = screen.getByRole("toolbar", { name: "Công cụ vẽ" })
+    expect(toolbar.className).toContain("max-sm:order-last")
+    expect(toolbar.className).toContain("max-sm:basis-full")
+    expect(screen.getByRole("toolbar", { name: "Nam châm và danh sách hình vẽ" }).className).toContain("max-sm:ml-auto")
+  })
+
+  it("menu của bảy nhóm liệt kê đủ 36 công cụ, mỗi công cụ đúng một lần, và chọn được từng công cụ", async () => {
+    const user = await playing()
+    const names: string[] = []
+    for (const group of groupButtons()) {
+      await user.click(group)
+      const items = screen.getAllByRole("menuitem")
+      names.push(...items.map((item) => item.textContent ?? ""))
+      await user.keyboard("{Escape}")
+    }
+    expect(names).toHaveLength(36)
+    expect(names.sort()).toEqual(ALL_TOOLS.map((tool) => TOOL_SPECS[tool].label).sort())
+    // Chọn một công cụ ở nhóm "Vị thế và đo": nút nhóm sáng, chọn lại thì tắt.
+    await user.click(groupButtons().find((button) => button.dataset.toolGroup === "position")!)
+    await user.click(screen.getByRole("menuitem", { name: "Vị thế mua" }))
+    expect(screen.getByRole("button", { name: "Vị thế và đo: Vị thế mua" }).getAttribute("aria-pressed")).toBe("true")
+    expect(top().style.touchAction).toBe("none")
+  })
+
+  it("vị thế mua: hai cú bấm đặt đủ ba mức, thanh kiểu nổi trong khung biểu đồ; Delete xoá hình", async () => {
+    const user = await playing()
+    await user.click(groupButtons().find((button) => button.dataset.toolGroup === "position")!)
+    await user.click(screen.getByRole("menuitem", { name: "Vị thế mua" }))
+    const before = strokes()
+    clickAt(A)
+    expect(screen.queryByRole("toolbar", { name: /^Kiểu của/ })).toBeNull()
+    clickAt(B)
+    expect(strokes()).toBeGreaterThan(before)
+    const bar = screen.getByRole("toolbar", { name: "Kiểu của Vị thế mua" })
+    // Thanh kiểu nằm trong khung của biểu đồ (không đè lên nút Mua, Bán, Phiên tiếp bên ngoài khung).
+    expect(top().closest("[data-iqline-root]")!.parentElement!.contains(bar)).toBe(true)
+    expect(within(bar).getByRole("button", { name: "Nhân bản hình" })).toBeTruthy()
+    await user.keyboard("{Delete}")
+    expect(screen.queryByRole("toolbar", { name: /^Kiểu của/ })).toBeNull()
+  })
+
+  it("đường gấp khúc: có thanh Xong và Huỷ trên điện thoại không có phím Enter; Xong chốt hình", async () => {
+    const user = await playing()
+    await user.click(groupButtons().find((button) => button.dataset.toolGroup === "shape")!)
+    await user.click(screen.getByRole("menuitem", { name: "Đường gấp khúc" }))
+    clickAt(A)
+    clickAt(at(35, 160))
+    const done = screen.getByRole("toolbar", { name: "Hoàn tất Đường gấp khúc" })
+    expect(within(done).getByText(/2 điểm/)).toBeTruthy()
+    await user.click(within(done).getByRole("button", { name: /Xong/ }))
+    expect(screen.queryByRole("toolbar", { name: /^Hoàn tất/ })).toBeNull()
+    expect(screen.getByRole("toolbar", { name: "Kiểu của Đường gấp khúc" })).toBeTruthy()
+  })
+
+  it("nam châm: chọn mức Mạnh thì nút đổi theo và được nhớ cho lần sau", async () => {
+    const user = await playing()
+    const extras = () => within(screen.getByRole("toolbar", { name: "Nam châm và danh sách hình vẽ" }))
+    expect(extras().getByRole("button", { name: /^Nam châm/ }).getAttribute("data-magnet")).toBe("off")
+    await user.click(extras().getByRole("button", { name: /^Nam châm/ }))
+    await user.click(screen.getByRole("menuitemradio", { name: /^Mạnh/ }))
+    expect(extras().getByRole("button", { name: /^Nam châm/ }).getAttribute("data-magnet")).toBe("strong")
+    expect(window.localStorage.getItem("iqx.iqline_magnet_v1")).toBe('"strong"')
   })
 
   it("công cụ đang bật thì nút sáng, bấm lại thì huỷ, chọn công cụ khác thì chuyển; canvas chặn cuộn trang khi đang vẽ", async () => {
@@ -517,6 +605,7 @@ describe("Flashback IQLine: công cụ vẽ", () => {
     window.history.replaceState(null, "", "/?iqline=1")
     stubChartWidth(1000)
     stubViewportHeight(300)
+    stubMedia(true)
     setup({ match: { status: "ended", finished: true, step: 30, rivals: [{ person: MINH, pnl: 2, finished: true }] } })
     const user = userEvent.setup()
     renderGame()

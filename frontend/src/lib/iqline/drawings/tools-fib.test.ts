@@ -42,8 +42,10 @@ describe("14 công cụ (§10)", () => {
     })
   })
 
-  it("Flashback chỉ có ba công cụ: xu hướng, Fibonacci thoái lui, đường ngang", () => {
-    expect([...FLASHBACK_TOOLS].sort()).toEqual(["fib-retracement", "horizontal", "trend"])
+  it("Flashback dùng đủ 36 công cụ như market, gồm ba công cụ cũ: xu hướng, Fibonacci thoái lui, đường ngang", () => {
+    expect(FLASHBACK_TOOLS).toHaveLength(36)
+    expect([...FLASHBACK_TOOLS].sort()).toEqual([...ALL_TOOLS].sort())
+    for (const tool of ["trend", "fib-retracement", "horizontal"] as const) expect(FLASHBACK_TOOLS).toContain(tool)
   })
 
   it("kiểu mặc định không dùng màu tăng giảm hay màu dành cho lớp AI", () => {

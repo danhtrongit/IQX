@@ -8,7 +8,8 @@ const shape = (id: string): Drawing => ({ id, tool: "trend", anchors: [{ session
 describe("SessionDrawingController", () => {
   it("bắt đầu rỗng; không có biểu đồ gắn thì mọi thao tác bị bỏ qua và không báo lỗi", () => {
     const drawings = createSessionDrawings()
-    expect(drawings.getSnapshot()).toEqual({ tool: null, selectedId: null, shapes: [], pending: false })
+    expect(drawings.getSnapshot()).toEqual({ tool: null, selectedId: null, shapes: [], pending: false, draft: null, magnet: "off" })
+    drawings.dispatch({ type: "magnet", on: "strong" })
     drawings.toggleTool("trend")
     drawings.cancel()
     expect(drawings.removeSelected()).toBe(false)
@@ -64,5 +65,22 @@ describe("SessionDrawingController", () => {
     drawings.attach(null)
     drawings.toggleTool("trend")
     expect(first).toHaveBeenCalledTimes(1)
+  })
+
+  it("gắn lại vào biểu đồ mới thì nạp lại cả nam châm đang bật; dispatch đi thẳng vào biểu đồ đang gắn", () => {
+    const drawings = createSessionDrawings()
+    drawings.report({ tool: null, selectedId: null, shapes: [], pending: null, magnet: "strong" })
+    expect(drawings.getSnapshot().magnet).toBe("strong")
+    const sink = vi.fn()
+    drawings.attach({ dispatch: sink })
+    expect(sink).toHaveBeenCalledWith({ type: "magnet", on: "strong" })
+    drawings.dispatch({ type: "drawing", action: { type: "hide", id: "d1" } })
+    expect(sink).toHaveBeenLastCalledWith({ type: "drawing", action: { type: "hide", id: "d1" } })
+    drawings.attach(null)
+    drawings.dispatch({ type: "magnet", on: "off" })
+    expect(sink).toHaveBeenCalledTimes(2)
+    // Báo cáo không kèm nam châm giữ mức đã có.
+    drawings.report({ tool: "trend", selectedId: null, shapes: [], pending: null })
+    expect(drawings.getSnapshot().magnet).toBe("strong")
   })
 })

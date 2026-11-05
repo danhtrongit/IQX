@@ -5,6 +5,7 @@
 import { describe, expect, it } from "vitest"
 
 import { harness, ptr, target, touch } from "./__fixtures__/harness"
+import { ALL_TOOLS } from "../drawings"
 import { flashbackConfig, staticConfig, wheelIntent } from "./index"
 
 /**
@@ -98,16 +99,55 @@ describe("flashback: viewport không qua warmup hay vào tương lai", () => {
   })
 })
 
-describe("flashback: zoom bằng Ctrl + lăn, không co giãn trục, không hoàn tác", () => {
-  it("lăn chuột thường không zoom (để trang cuộn); Ctrl + lăn mới zoom", () => {
+describe("flashback: zoom bằng lăn chuột, không co giãn trục, không hoàn tác", () => {
+  it("lăn dọc zoom quanh con trỏ (không cần Ctrl); lăn ngoài khung vẽ thì để trang cuộn", () => {
     const h = flashback()
+    expect(h.config.wheelNeedsCtrl).toBe(false)
     const wheel = { x: 250, y: 100, deltaX: 0, deltaY: -100, target: target() }
-    expect(wheelIntent(wheel, h.config)).toBe("none")
+    expect(wheelIntent(wheel, h.config)).toBe("zoom")
     h.send({ type: "wheel", wheel })
-    expect(h.state.viewport).toEqual(FULL)
-    expect(wheelIntent({ ...wheel, ctrlKey: true }, h.config)).toBe("zoom")
-    h.send(ctrlWheel(-100))
     expect(h.state.viewport.to - h.state.viewport.from).toBeLessThan(SLOTS)
+    expect(wheelIntent({ ...wheel, ctrlKey: true }, h.config)).toBe("zoom")
+    expect(wheelIntent({ ...wheel, target: target("none") }, h.config)).toBe("none")
+  })
+
+  it("zoom quanh con trỏ: ô dưới con trỏ đứng yên; zoom ra hết cỡ về đúng khung mặc định, không rộng hơn trục", () => {
+    const h = flashback()
+    const before = h.coords().indexOfX(125)
+    h.send({ type: "wheel", wheel: { x: 125, y: 100, deltaX: 0, deltaY: -300, target: target() } })
+    expect(h.state.viewport.to - h.state.viewport.from).toBeLessThan(SLOTS)
+    expect(h.coords().indexOfX(125)).toBeCloseTo(before, 6)
+    for (let step = 0; step < 40; step += 1) h.send({ type: "wheel", wheel: { x: 125, y: 100, deltaX: 0, deltaY: 900, target: target() } })
+    expect(h.state.viewport).toEqual(FULL)
+  })
+
+  it("Shift + lăn và lăn ngang là kéo, không zoom", () => {
+    const h = flashback()
+    h.send({ type: "wheel", wheel: { x: 250, y: 100, deltaX: 0, deltaY: -400, target: target() } })
+    const zoomed = h.state.viewport
+    const width = zoomed.to - zoomed.from
+    expect(wheelIntent({ deltaX: 0, deltaY: 120, shiftKey: true, target: target() }, h.config)).toBe("pan")
+    h.send({ type: "wheel", wheel: { x: 250, y: 100, deltaX: 0, deltaY: 120, shiftKey: true, target: target() } })
+    expect(h.state.viewport.from).toBeGreaterThan(zoomed.from)
+    expect(h.state.viewport.to - h.state.viewport.from).toBeCloseTo(width, 9)
+  })
+
+  it("zoom bằng lăn không đưa khung ra ngoài các ô của trục, kể cả khi lăn sát mép", () => {
+    const h = flashback()
+    for (const x of [0, 5, 495, 500]) {
+      for (let step = 0; step < 8; step += 1) h.send({ type: "wheel", wheel: { x, y: 100, deltaX: 0, deltaY: -600, target: target() } })
+      expect(h.state.viewport.from).toBeGreaterThanOrEqual(FIRST)
+      expect(h.state.viewport.to).toBeLessThanOrEqual(LAST)
+      h.send({ type: "reset" })
+    }
+  })
+
+  it("Học viện (`static`) và biểu đồ tắt zoom vẫn để trang cuộn: lăn dọc không đổi gì", () => {
+    expect(wheelIntent({ deltaX: 0, deltaY: -100, target: target() }, staticConfig({ barCount: 40, viewport: { from: -0.5, to: 39.5 } }))).toBe("none")
+    const noZoom = flashback({ zoom: false })
+    expect(wheelIntent({ deltaX: 0, deltaY: -100, target: target() }, noZoom.config)).toBe("none")
+    noZoom.send({ type: "wheel", wheel: { x: 250, y: 100, deltaX: 0, deltaY: -100, target: target() } })
+    expect(noZoom.state.viewport).toEqual(FULL)
   })
 
   it("lăn ngang vẫn kéo được; tắt `interaction.zoom` hoặc `pan` thì không zoom hoặc không kéo", () => {
@@ -157,18 +197,17 @@ describe("flashback: zoom bằng Ctrl + lăn, không co giãn trục, không ho�
   })
 })
 
-describe("flashback: ba công cụ, điểm neo theo phiên", () => {
-  it("chỉ nhận trend, fib-retracement và horizontal", () => {
+describe("flashback: đủ 36 công cụ, điểm neo theo phiên", () => {
+  it("nhận cả 36 công cụ và từ chối tên lạ", () => {
     const h = flashback()
-    for (const tool of ["ray", "extended", "channel", "fib-extension", "rectangle", "elliott-5", "note", "measure", "vertical", "horizontal-ray", "elliott-abc"] as const) {
-      h.send({ type: "tool", tool })
-      expect(h.state.drawings.tool, tool).toBeNull()
-    }
-    for (const tool of ["trend", "fib-retracement", "horizontal"] as const) {
+    expect(h.config.allowedTools).toHaveLength(36)
+    for (const tool of ALL_TOOLS) {
       h.send({ type: "tool", tool })
       expect(h.state.drawings.tool, tool).toBe(tool)
       h.send({ type: "tool", tool: null })
     }
+    h.send({ type: "tool", tool: "khong-co" as never })
+    expect(h.state.drawings.tool).toBeNull()
   })
 
   it("điểm neo vẽ ra là {session, price}, không có trường thời gian, và không rơi trước nến đầu hay ngoài trục", () => {

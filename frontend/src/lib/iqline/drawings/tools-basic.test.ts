@@ -100,9 +100,8 @@ describe("mô tả 13 công cụ đợt 1", () => {
     expect(maxAnchorsOf("trend")).toBe(2)
   })
 
-  it("Flashback vẫn chỉ có ba công cụ cũ", () => {
-    expect([...FLASHBACK_TOOLS].sort()).toEqual(["fib-retracement", "horizontal", "trend"])
-    for (const tool of BASIC_TOOLS) expect(FLASHBACK_TOOLS).not.toContain(tool)
+  it("Flashback dùng cả 13 công cụ đợt 1 (nhãn khoảng thời gian chỉ có số nến: flashback-fairness.test.ts)", () => {
+    for (const tool of BASIC_TOOLS) expect(FLASHBACK_TOOLS).toContain(tool)
   })
 
   it("màu mặc định là token thật, không dùng chart-3, chart-4 hay chart-7", () => {

@@ -4,7 +4,7 @@
  * của hình đang chọn (màu, nét, tô, khoá, ẩn, nhân bản, xoá, mẫu kiểu). Thanh dọc cao hơn khung thì cuộn trong chính nó, không bao giờ làm trang tràn.
  * Chỉ là DOM: mọi thay đổi đi qua `chart.controller.dispatch`, nên hoàn tác và phím tắt chạy như nhau cho cả hai.
  */
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import {
   Activity,
   ArrowBigDown,
@@ -73,7 +73,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { cn } from "@/lib/utils"
 
-import { ALL_TOOLS, TOOL_SPECS, isVariableTool, listDrawings, normalizeMagnet, type MagnetMode, type ToolGroup } from "../drawings"
+import { ALL_TOOLS, TOOL_SPECS, isVariableTool, listDrawings, normalizeMagnet, type DrawingsState, type MagnetMode, type ToolGroup } from "../drawings"
+import type { InteractionAction } from "../interaction"
 import type { ColorToken, Drawing, DrawingStyle, DrawingTool } from "../types"
 import {
   MAX_FAVORITES,
@@ -85,7 +86,6 @@ import {
   writeLastTools,
   writeMagnet,
 } from "./tool-preferences"
-import type { IQLineChart } from "./use-iqline-chart"
 
 const TOOL_ICONS: Readonly<Record<DrawingTool, LucideIcon>> = {
   trend: TrendingUp,
@@ -209,7 +209,26 @@ const MARKER_COLORS: readonly { token: ColorToken; label: string }[] = [
 const colorLabel = (token: ColorToken): string => [...DRAWING_COLORS, ...MARKER_COLORS].find((item) => item.token === token)?.label ?? token
 const templateLabel = (style: DrawingStyle): string => `${colorLabel(style.color)}, ${style.width.toLocaleString("vi-VN")} px, ${style.dash === "dashed" ? "nét đứt" : "nét liền"}${style.fill ? ", tô vùng" : ""}`
 
-type Props = { chart: IQLineChart }
+/**
+ * Phần của biểu đồ mà thanh công cụ cần: hình vẽ, nam châm, công cụ được phép và nơi gửi hành động. `IQLineChart` của `market` đáp ứng đủ;
+ * Flashback dựng cùng hình dạng từ `SessionDrawingController` (`session-toolbar.tsx`) vì thanh công cụ của ván nằm ngoài biểu đồ.
+ */
+export type ToolbarChart = {
+  state: { drawings: Pick<DrawingsState, "tool" | "selectedId" | "shapes" | "pending">; magnet: MagnetMode }
+  config: { allowedTools: readonly DrawingTool[] }
+  controller: { dispatch(action: InteractionAction): void }
+}
+
+type Props = { chart: ToolbarChart }
+
+/**
+ * Cách bày thanh: `vertical` là thanh dọc bên trái khung của `market`, menu mở sang phải; `horizontal` là hàng nút phía trên biểu đồ
+ * của Flashback, menu mở xuống dưới. `menuPadding` là khoảng chừa của menu so với mép màn hình (Flashback chừa chỗ cho thanh Mua, Bán
+ * cố định ở đáy điện thoại để menu không che vùng đặt lệnh).
+ */
+export type ToolbarLayout = { orientation: "vertical" | "horizontal"; menuPadding?: number | { top?: number; right?: number; bottom?: number; left?: number } }
+
+const VERTICAL: ToolbarLayout = { orientation: "vertical" }
 
 function DrawingList({ chart }: Props) {
   const { drawings } = chart.state
@@ -311,15 +330,26 @@ function ToolMenuItem({ tool, favorite, canAdd, onPick, onToggleFavorite }: { to
   )
 }
 
-/** Thanh công cụ dọc bên trái khung biểu đồ. `scope` là chủ sở hữu layout (người dùng hay khách): yêu thích lưu riêng theo đó. */
-export default function DrawingToolbar({ chart, className, scope = "guest" }: Props & { className?: string; scope?: string }) {
-  const { drawings, magnet } = chart.state
+const menuSide = (layout: ToolbarLayout) => (layout.orientation === "vertical" ? "right" : "bottom")
+const menuPadding = (layout: ToolbarLayout) => layout.menuPadding ?? 8
+
+/** Vạch ngăn giữa hai cụm nút: ngang trên thanh dọc, dọc trên hàng ngang. */
+function Divider({ layout }: { layout: ToolbarLayout }) {
+  return <span aria-hidden="true" className={layout.orientation === "vertical" ? "my-0.5 h-px w-5 shrink-0 bg-border" : "mx-0.5 h-5 w-px shrink-0 bg-border"} />
+}
+
+/**
+ * Hàng yêu thích và bảy nút nhóm công cụ. `scope` là chủ sở hữu layout (người dùng hay khách): yêu thích lưu riêng theo đó.
+ * `defaultFavorites` chỉ dùng khi máy chưa lưu danh sách yêu thích nào (Flashback đặt ba công cụ cũ làm yêu thích trên màn hình rộng).
+ */
+function ToolGroups({ chart, scope, layout, defaultFavorites }: Props & { scope: string; layout: ToolbarLayout; defaultFavorites?: readonly DrawingTool[] }) {
+  const { drawings } = chart.state
   const allowed = chart.config.allowedTools.length > 0 ? chart.config.allowedTools : ALL_TOOLS
   // Đọc kho một lần khi dựng; kho không dùng được thì danh sách rỗng và mọi thay đổi vẫn sống trong phiên (tool-preferences.ts).
-  const [stored, setStored] = useState<{ scope: string; tools: DrawingTool[] }>(() => ({ scope, tools: readFavorites(scope, allowed) }))
+  const [stored, setStored] = useState<{ scope: string; tools: DrawingTool[] }>(() => ({ scope, tools: readFavorites(scope, allowed, defaultFavorites) }))
   const [lastOfGroup, setLastOfGroup] = useState<Record<string, DrawingTool>>(readLastTools)
   // Đổi tài khoản (đăng nhập hoặc đăng xuất) thì nạp danh sách của tài khoản mới, không mang danh sách cũ sang.
-  if (stored.scope !== scope) setStored({ scope, tools: readFavorites(scope, allowed) })
+  if (stored.scope !== scope) setStored({ scope, tools: readFavorites(scope, allowed, defaultFavorites) })
   const favorites = stored.scope === scope ? stored.tools : []
   const setFavorites = (tools: DrawingTool[]) => setStored({ scope, tools })
   const pick = (tool: DrawingTool) => {
@@ -336,26 +366,13 @@ export default function DrawingToolbar({ chart, className, scope = "guest" }: Pr
     setFavorites(next)
     writeFavorites(scope, next)
   }
-  // Nhớ chế độ nam châm từ lần trước (layout cũ lưu boolean thì `true` thành yếu).
-  useEffect(() => {
-    const saved = readMagnet()
-    if (saved !== "off") chart.controller.dispatch({ type: "magnet", on: saved })
-    // Chỉ khi dựng thanh: sau đó người dùng là nguồn duy nhất.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  const chooseMagnet = (value: string) => {
-    const mode = normalizeMagnet(value)
-    writeMagnet(mode)
-    chart.controller.dispatch({ type: "magnet", on: mode })
-  }
-  const magnetInfo = MAGNET_MODES.find((item) => item.mode === magnet) ?? MAGNET_MODES[0]
   const favoriteTools = favorites.filter((tool) => allowed.includes(tool))
 
   return (
-    <div role="toolbar" aria-label="Công cụ vẽ" aria-orientation="vertical" className={cn("flex w-9 shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden border-r border-border bg-card py-1", className)}>
+    <>
       {favoriteTools.length > 0 ? (
         <>
-          <div role="group" aria-label="Công cụ yêu thích" data-favorites className="flex flex-col items-center gap-1">
+          <div role="group" aria-label="Công cụ yêu thích" data-favorites className={cn("flex items-center gap-1", layout.orientation === "vertical" && "flex-col")}>
             {favoriteTools.map((tool) => {
               const ToolIcon = TOOL_ICONS[tool]
               const active = drawings.tool === tool
@@ -366,7 +383,7 @@ export default function DrawingToolbar({ chart, className, scope = "guest" }: Pr
               )
             })}
           </div>
-          <span aria-hidden="true" className="my-0.5 h-px w-5 shrink-0 bg-border" />
+          <Divider layout={layout} />
         </>
       ) : null}
 
@@ -385,7 +402,7 @@ export default function DrawingToolbar({ chart, className, scope = "guest" }: Pr
                 <Icon aria-hidden="true" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent side="right" align="start" collisionPadding={8} className="max-h-[min(24rem,var(--radix-dropdown-menu-content-available-height))] w-60 max-w-[calc(100vw-3.5rem)] overflow-y-auto">
+            <DropdownMenuContent side={menuSide(layout)} align="start" collisionPadding={menuPadding(layout)} className="max-h-[min(24rem,var(--radix-dropdown-menu-content-available-height))] w-60 max-w-[calc(100vw-3.5rem)] overflow-y-auto">
               <DropdownMenuLabel>{label}</DropdownMenuLabel>
               {sectionTools.map(({ section, tools: inSection }, index) => (
                 <DropdownMenuGroup key={section}>
@@ -406,16 +423,36 @@ export default function DrawingToolbar({ chart, className, scope = "guest" }: Pr
           </DropdownMenu>
         )
       })}
+    </>
+  )
+}
 
-      <span aria-hidden="true" className="my-0.5 h-px w-5 shrink-0 bg-border" />
-
+/** Nút nam châm (ba mức) và nút danh sách hình vẽ. */
+function ToolExtras({ chart, layout }: Props & { layout: ToolbarLayout }) {
+  const { drawings, magnet } = chart.state
+  // Nhớ chế độ nam châm từ lần trước (layout cũ lưu boolean thì `true` thành yếu).
+  useEffect(() => {
+    const saved = readMagnet()
+    if (saved !== "off") chart.controller.dispatch({ type: "magnet", on: saved })
+    // Chỉ khi dựng thanh: sau đó người dùng là nguồn duy nhất.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+  const chooseMagnet = (value: string) => {
+    const mode = normalizeMagnet(value)
+    writeMagnet(mode)
+    chart.controller.dispatch({ type: "magnet", on: mode })
+  }
+  const magnetInfo = MAGNET_MODES.find((item) => item.mode === magnet) ?? MAGNET_MODES[0]
+  const horizontal = layout.orientation === "horizontal"
+  return (
+    <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button type="button" variant={magnet === "strong" ? "default" : magnet === "weak" ? "secondary" : "ghost"} size="icon-sm" aria-label={`Nam châm hút vào giá OHLC: ${magnetInfo.label}`} aria-pressed={magnet !== "off"} title={`Nam châm: ${magnetInfo.label}`} data-magnet={magnet}>
             <Magnet aria-hidden="true" />
           </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent side="right" align="start" collisionPadding={8} className="w-64 max-w-[calc(100vw-3.5rem)]">
+        <DropdownMenuContent side={menuSide(layout)} align={horizontal ? "end" : "start"} collisionPadding={menuPadding(layout)} className="w-64 max-w-[calc(100vw-3.5rem)]">
           <DropdownMenuLabel>Nam châm</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuRadioGroup value={magnet} onValueChange={chooseMagnet}>
@@ -438,10 +475,43 @@ export default function DrawingToolbar({ chart, className, scope = "guest" }: Pr
             {drawings.shapes.length > 0 ? <span className="sr-only">{drawings.shapes.length} hình</span> : null}
           </Button>
         </PopoverTrigger>
-        <PopoverContent side="right" align="start" className="w-auto p-3">
+        <PopoverContent side={menuSide(layout)} align={horizontal ? "end" : "start"} collisionPadding={menuPadding(layout)} className="w-auto p-3">
           <DrawingList chart={chart} />
         </PopoverContent>
       </Popover>
+    </>
+  )
+}
+
+/** Thanh công cụ dọc bên trái khung biểu đồ của `market`. `scope` là chủ sở hữu layout (người dùng hay khách): yêu thích lưu riêng theo đó. */
+export default function DrawingToolbar({ chart, className, scope = "guest" }: Props & { className?: string; scope?: string }) {
+  return (
+    <div role="toolbar" aria-label="Công cụ vẽ" aria-orientation="vertical" className={cn("flex w-9 shrink-0 flex-col items-center gap-1 overflow-y-auto overflow-x-hidden border-r border-border bg-card py-1", className)}>
+      <ToolGroups chart={chart} scope={scope} layout={VERTICAL} />
+      <Divider layout={VERTICAL} />
+      <ToolExtras chart={chart} layout={VERTICAL} />
+    </div>
+  )
+}
+
+/**
+ * Hai hàng nút ngang của Flashback: `groups` (yêu thích và bảy nhóm công cụ) và `extras` (nam châm, danh sách hình vẽ, và `trailing`).
+ * Tách làm hai để trang xếp chúng: máy tính một hàng cùng nút "Các chỉ báo", điện thoại hai hàng (nút chỉ báo cùng nam châm và danh sách
+ * ở hàng trên, bảy nhóm công cụ ở hàng dưới) nên không hàng nào tràn ngang 390px.
+ */
+export function HorizontalToolGroups({ chart, className, scope = "guest", layout, defaultFavorites }: Props & { className?: string; scope?: string; layout?: Omit<ToolbarLayout, "orientation">; defaultFavorites?: readonly DrawingTool[] }) {
+  return (
+    <div role="toolbar" aria-label="Công cụ vẽ" aria-orientation="horizontal" className={cn("flex min-w-0 flex-wrap items-center gap-1", className)}>
+      <ToolGroups chart={chart} scope={scope} layout={{ ...layout, orientation: "horizontal" }} defaultFavorites={defaultFavorites} />
+    </div>
+  )
+}
+
+export function HorizontalToolExtras({ chart, className, layout, trailing }: Props & { className?: string; layout?: Omit<ToolbarLayout, "orientation">; trailing?: ReactNode }) {
+  return (
+    <div role="toolbar" aria-label="Nam châm và danh sách hình vẽ" aria-orientation="horizontal" className={cn("flex items-center gap-1", className)}>
+      <ToolExtras chart={chart} layout={{ ...layout, orientation: "horizontal" }} />
+      {trailing}
     </div>
   )
 }

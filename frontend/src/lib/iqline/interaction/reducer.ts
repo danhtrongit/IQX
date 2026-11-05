@@ -60,7 +60,10 @@ function withViewport(state: InteractionState, viewport: Viewport): InteractionS
 
 function anchorOptions(state: InteractionState, env: InteractionEnv): AnchorOptions {
   return {
-    snap: state.magnet !== "off" && env.bars ? { bars: env.bars, tolerance: env.config.snapTolerance, strength: state.magnet } : undefined,
+    snap:
+      state.magnet !== "off" && env.bars
+        ? { bars: env.bars, tolerance: env.config.snapTolerance, strength: state.magnet, readable: env.config.readable, clampOutside: env.config.crosshairBeyondData }
+        : undefined,
     indexRange: env.config.anchorRange ?? undefined,
   }
 }

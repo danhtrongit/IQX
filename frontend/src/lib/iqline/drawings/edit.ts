@@ -26,8 +26,23 @@ export function normalizeMagnet(value: unknown): MagnetMode {
   return "off"
 }
 
-/** `bars[i]` là nến ở chỉ số `i` của trục (Flashback: gồm cả warmup, vì phiên 0 là nến đầu tiên). */
-export type SnapOptions = { bars: ArrayLike<Bar>; tolerance?: number; /** Bỏ trống là yếu. */ strength?: "weak" | "strong" }
+/**
+ * `bars[i]` là nến ở chỉ số `i` của trục (Flashback: đã bỏ warmup, phiên 0 là nến đầu tiên được hiện).
+ *
+ * `readable` là dải chỉ số nến được hút vào (gồm hai đầu); bỏ trống là mọi nến trong `bars`. Flashback đặt đúng dải nến đã mở
+ * (`InteractionConfig.readable`), nên dù mảng `bars` có thừa nến thì nam châm cũng không bao giờ hút vào nến chưa mở (§12).
+ * `clampOutside` (mặc định true, như `market`): con trỏ ở ngoài vùng có nến thì nam châm Mạnh hút về nến gần nhất ở hai đầu.
+ * Đặt false (Flashback) thì ngoài vùng nến đã mở nam châm không làm gì, điểm vẽ giữ đúng chỗ con trỏ: ô tương lai chưa có nến nào để hút,
+ * và hút về nến cuối sẽ chặn người chơi kéo hình sang phải.
+ */
+export type SnapOptions = {
+  bars: ArrayLike<Bar>
+  tolerance?: number
+  /** Bỏ trống là yếu. */
+  strength?: "weak" | "strong"
+  readable?: { first: number; last: number } | null
+  clampOutside?: boolean
+}
 export type AnchorOptions = {
   snap?: SnapOptions
   /** Giới hạn chỉ số của điểm neo (Flashback: từ warmup tới ô cuối của trục). Market không giới hạn. */
@@ -46,14 +61,19 @@ export function snapToOhlc(
   bars: ArrayLike<Bar>,
   tolerance: number = SNAP_TOLERANCE,
   strength: "weak" | "strong" = "weak",
+  range: Pick<SnapOptions, "readable" | "clampOutside"> = {},
 ): SnapResult | null {
-  if (bars.length === 0) return null
+  // Chỉ số nến được phép hút: trong `bars` và trong dải đọc được (nếu có), không bao giờ quá nến cuối đã mở.
+  const first = Math.max(0, range.readable?.first ?? 0)
+  const last = Math.min(bars.length - 1, range.readable?.last ?? bars.length - 1)
+  if (last < first) return null
   const raw = coords.indexOfX(point.x)
   if (!Number.isFinite(raw)) return null
   const strong = strength === "strong"
+  const rounded = Math.round(raw)
   // Mạnh: nến gần nhất (kể cả khi con trỏ ở ngoài vùng có nến) và giá gần nhất, không cần trong ngưỡng.
-  const index = strong ? Math.min(bars.length - 1, Math.max(0, Math.round(raw))) : Math.round(raw)
-  if (index < 0 || index >= bars.length) return null
+  const index = strong && range.clampOutside !== false ? Math.min(last, Math.max(first, rounded)) : rounded
+  if (index < first || index > last) return null
   const bar = bars[index]
   let best: SnapResult | null = null
   let bestDistance = strong ? Infinity : tolerance
@@ -77,7 +97,7 @@ function clampIndex(index: number, range: IndexRange | undefined): number {
 export function anchorFromPoint(point: ScreenPoint, coords: PaneCoords, options: AnchorOptions = {}): Anchor {
   let index = coords.indexOfX(point.x)
   let price = coords.priceOfY(point.y)
-  const snapped = options.snap ? snapToOhlc(point, coords, options.snap.bars, options.snap.tolerance, options.snap.strength) : null
+  const snapped = options.snap ? snapToOhlc(point, coords, options.snap.bars, options.snap.tolerance, options.snap.strength, options.snap) : null
   if (snapped) {
     index = snapped.index
     price = snapped.price

@@ -7,12 +7,13 @@
  * còn hình và công cụ đang bật nằm trong bộ giảm trạng thái của biểu đồ. Controller là cầu nối hai phía và giữ danh sách
  * hình để biểu đồ dựng lại (đổi bố cục, tải chậm) không làm mất hình.
  *
- * - Phía trang: `getSnapshot`/`subscribe` (dùng với `useSyncExternalStore`), `toggleTool`, `cancel`, `removeSelected`, `clear`.
+ * - Phía trang: `getSnapshot`/`subscribe` (dùng với `useSyncExternalStore`), `toggleTool`, `cancel`, `removeSelected`, `clear`, và `dispatch`
+ *   cho thanh công cụ đầy đủ (`session-toolbar.tsx`: nhóm công cụ, nam châm, danh sách hình, thanh kiểu và thanh Xong, Huỷ).
  * - Phía biểu đồ: `attach` đưa vào một `sink` nhận hành động, `report` báo trạng thái hình mỗi khi đổi.
  *
  * Không chạm DOM và không biết luật game.
  */
-import { clearOutcome, type DrawingsState } from "../drawings"
+import { clearOutcome, type DrawingsState, type MagnetMode, type PendingDrawing } from "../drawings"
 import type { InteractionAction } from "../interaction"
 import type { Drawing, DrawingTool } from "../types"
 
@@ -23,6 +24,10 @@ export type SessionDrawingsSnapshot = {
   shapes: readonly Drawing[]
   /** Đã bấm điểm đầu, đang chờ điểm cuối. */
   pending: boolean
+  /** Các điểm đã bấm của hình đang vẽ dở (thanh Xong và Huỷ của đường gấp khúc cần số điểm); null khi không vẽ. */
+  draft: PendingDrawing | null
+  /** Nam châm đang bật: nút nam châm của thanh công cụ hiện đúng mức. */
+  magnet: MagnetMode
 }
 
 /** Nơi nhận hành động: bộ điều khiển của biểu đồ đang gắn. */
@@ -39,15 +44,17 @@ export type SessionDrawingController = {
   removeSelected(): boolean
   /** Nút Xoá (v2.1 §7.4): hình đang chọn, không thì tất cả; trả về câu báo cho người chơi. */
   clear(): { message: string }
+  /** Gửi một hành động thẳng vào biểu đồ đang gắn (đổi nam châm, khoá, ẩn, đổi kiểu hình...); bỏ qua nếu chưa có biểu đồ. */
+  dispatch(action: InteractionAction): void
   /** Nạp hình có sẵn (hình của biểu đồ cũ chuyển sang); bỏ qua nếu đã có hình. */
   seed(shapes: readonly Drawing[]): void
   /** Phía biểu đồ: gắn hoặc gỡ nơi nhận hành động; gắn lại thì nạp lại hình đã giữ. */
   attach(sink: DrawingSink | null): void
   /** Phía biểu đồ: trạng thái hình mới nhất. */
-  report(state: Pick<DrawingsState, "tool" | "selectedId" | "shapes" | "pending">): void
+  report(state: Pick<DrawingsState, "tool" | "selectedId" | "shapes" | "pending"> & { magnet?: MagnetMode }): void
 }
 
-const EMPTY: SessionDrawingsSnapshot = { tool: null, selectedId: null, shapes: [], pending: false }
+const EMPTY: SessionDrawingsSnapshot = { tool: null, selectedId: null, shapes: [], pending: false, draft: null, magnet: "off" }
 
 export function createSessionDrawings(): SessionDrawingController {
   let snapshot = EMPTY
@@ -85,6 +92,9 @@ export function createSessionDrawings(): SessionDrawingController {
       if (outcome.action) sink?.dispatch({ type: "drawing", action: outcome.action })
       return { message: outcome.message }
     },
+    dispatch(action) {
+      sink?.dispatch(action)
+    },
     seed(shapes) {
       if (snapshot.shapes.length > 0 || shapes.length === 0) return
       snapshot = { ...snapshot, shapes }
@@ -95,10 +105,27 @@ export function createSessionDrawings(): SessionDrawingController {
       sink = next
       // Biểu đồ dựng lại: nạp hình đã giữ (không ghi vào lịch sử, không báo ngược `onDrawingsChange`).
       if (next && snapshot.shapes.length > 0) next.dispatch({ type: "set-drawings", drawings: snapshot.shapes })
+      if (next && snapshot.magnet !== "off") next.dispatch({ type: "magnet", on: snapshot.magnet })
     },
     report(state) {
-      const next: SessionDrawingsSnapshot = { tool: state.tool, selectedId: state.selectedId, shapes: state.shapes, pending: state.pending !== null }
-      if (next.tool === snapshot.tool && next.selectedId === snapshot.selectedId && next.shapes === snapshot.shapes && next.pending === snapshot.pending) return
+      const next: SessionDrawingsSnapshot = {
+        tool: state.tool,
+        selectedId: state.selectedId,
+        shapes: state.shapes,
+        pending: state.pending !== null,
+        draft: state.pending,
+        magnet: state.magnet ?? snapshot.magnet,
+      }
+      if (
+        next.tool === snapshot.tool &&
+        next.selectedId === snapshot.selectedId &&
+        next.shapes === snapshot.shapes &&
+        next.pending === snapshot.pending &&
+        next.draft === snapshot.draft &&
+        next.magnet === snapshot.magnet
+      ) {
+        return
+      }
       snapshot = next
       emit()
     },

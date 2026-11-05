@@ -320,7 +320,9 @@ registerIndicator({
 | Sóng | Elliott 5 sóng, Elliott ABC | Học viện dạy ở ch04-l10 |
 | Chú thích | Ghi chú chữ, thước đo giá và thời gian | |
 
-Tổng cộng 14 công cụ. Flashback dùng ba công cụ: xu hướng, Fibonacci thoái lui, đường ngang.
+Bảng trên là 14 công cụ gốc; cùng với đợt 1 và đợt 2 (§18.1) thư viện có 36 công cụ. **Flashback dùng đủ 36 công cụ như `market`** (`FLASHBACK_TOOLS = ALL_TOOLS`), hình vẽ vẫn chỉ nằm trong bộ nhớ của ván. Biểu đồ SVG cũ (`?iqline=0`) không dùng thư viện này và giữ nguyên: hai công cụ Xu hướng, Fibonacci và nút Xoá.
+
+**Thanh công cụ của Flashback** dùng lại phần của `market` (`drawing-toolbar.tsx`: `HorizontalToolGroups`, `HorizontalToolExtras`): bảy nút nhóm, hàng yêu thích (lưu theo tài khoản, như `market`), nam châm ba mức, danh sách hình vẽ, thanh kiểu và thanh Xong, Huỷ của đường gấp khúc. Khác `market` ở chỗ xếp ngang phía trên biểu đồ (thanh dọc sẽ ăn 36px bề rộng khung) và nối vào ván qua `SessionDrawingController` (`dispatch`, snapshot có nam châm và hình đang vẽ dở; `session-toolbar.ts`). Máy tính: một hàng cùng nút "Các chỉ báo", ba công cụ cũ (Xu hướng, Fibonacci thoái lui, Đường ngang) là yêu thích mặc định khi máy chưa lưu danh sách nào. Điện thoại (dưới 640px): hàng trên là "Các chỉ báo", nam châm, danh sách, Xoá; hàng dưới là bảy nhóm (vừa khít 390px, không có yêu thích mặc định); menu chừa 72px phía dưới để không che thanh Mua, Bán cố định; thanh kiểu nổi ở đáy khung biểu đồ, trong khung nên không che vùng đặt lệnh.
 
 Mọi công cụ dùng chung một mô tả: danh sách điểm neo, cách vẽ, cách chọn.
 
@@ -328,7 +330,7 @@ Danh sách đã chốt. Layout đã lưu chỉ có 6 hình: 3 đường xu hư�
 
 ### Công cụ đợt 2: Fibonacci, Pitchfork, Gann, mẫu hình
 
-Chín công cụ nằm trong `src/lib/iqline/drawings/tools-advanced.ts`; `commands.ts` và `hit-test.ts` chỉ gọi sang đó. Cùng cơ chế với các công cụ khác: chọn, tay nắm ở từng điểm neo, kéo, khoá, ẩn, nhân bản, lưu và nạp lại. Flashback vẫn chỉ có ba công cụ cũ. Màu Fibonacci không dùng `chart-3`, `chart-4`, `chart-7`.
+Chín công cụ nằm trong `src/lib/iqline/drawings/tools-advanced.ts`; `commands.ts` và `hit-test.ts` chỉ gọi sang đó. Cùng cơ chế với các công cụ khác: chọn, tay nắm ở từng điểm neo, kéo, khoá, ẩn, nhân bản, lưu và nạp lại. Flashback cũng dùng chín công cụ này. Màu Fibonacci không dùng `chart-3`, `chart-4`, `chart-7`.
 
 | Công cụ | Điểm neo | Hình vẽ |
 |---|---|---|
@@ -393,9 +395,10 @@ Các luật này là ràng buộc công bằng của game, phải có test:
 - Nến warmup không vẽ và không kéo tới được, kể cả khi kéo hết về bên trái.
 - Crosshair và chú giải không đọc được giá trị ở ô tương lai.
 - Không có chụp ảnh, tìm mã, hay bất kỳ đường nào từ `market` sang.
+- **Công cụ vẽ (đủ 36 công cụ) không được lộ gì ngoài những gì người chơi tự đặt.** Điểm neo chỉ là `{ session, price }` trong các ô của trục (`anchorRange`), không có `time`. Nhãn khoảng thời gian (Khoảng thời gian, Khoảng giá và thời gian, Thước đo) chỉ ghi số nến giữa hai neo ("65 nến"): `rangeLabel` chỉ thêm số ngày khi neo có `time`, mà Flashback không bao giờ có. Vùng thời gian Fibonacci chỉ ghi số đơn vị (0, 1, 2, 3, 5, ...). Hình kéo vào ô tương lai chỉ dùng toạ độ người chơi bấm: không công cụ nào đọc nến, khoảng giá của khung do nến đã mở quyết định, crosshair và chú giải vẫn dừng ở nến cuối. **Nam châm chỉ hút vào nến đã mở**: `SnapOptions.readable` đặt đúng dải `InteractionConfig.readable`, nên dù mảng nến có thừa nến thì không hút vào chúng; ngoài dải (ô tương lai) nam châm Mạnh không hút (`crosshairBeyondData: false`), điểm vẽ giữ đúng chỗ con trỏ thay vì nhảy về nến cuối và chặn người chơi kéo hình sang phải (`market` vẫn hút về nến gần nhất ở hai đầu). Test: `drawings/flashback-fairness.test.ts` (nhãn của từng công cụ trên trục thật, có đối chứng với `market` hiện "35 ngày"), `interaction/flashback-tools.test.ts` (vẽ cả 36 công cụ bằng chuột kể cả sang tương lai, môi trường cố ý lẫn nến tương lai giá cực đoan), `drawings/magnet.test.ts`, `e2e/flashback-tools.spec.ts`.
 - Giữ nguyên chiều cao ô v2.3 §2 (`chartLayout`), luật chú giải nổi và `MAX_INDICATORS = 12` (bên dùng kiểm tra).
 
-**Zoom và kéo: bật, trong giới hạn nến đã mở.** Zoom diễn ra ở từng máy và không thêm thông tin vì phạm vi vẫn bị chặn bởi warmup và tương lai, nên không ảnh hưởng công bằng. Biểu đồ mở với đúng khung như hiện tại, nút và nhấp đúp để về khung mặc định. Có tùy chọn `interaction.zoom` để tắt nếu chơi thử cho thấy không hợp (§16).
+**Zoom và kéo: bật, trong giới hạn nến đã mở.** Zoom diễn ra ở từng máy và không thêm thông tin vì phạm vi vẫn bị chặn bởi warmup và tương lai, nên không ảnh hưởng công bằng. Biểu đồ mở với đúng khung như hiện tại, nút và nhấp đúp để về khung mặc định. **Lăn chuột zoom quanh con trỏ** (`wheelNeedsCtrl: false`, như `market`): lăn dọc trên vùng biểu đồ zoom, lăn ngang hoặc Shift + lăn kéo khung, và trang không cuộn theo khi con trỏ ở trên biểu đồ (`preventDefault` trên listener không passive; kể cả khi đã zoom hết cỡ, con trỏ phải rời biểu đồ thì trang mới cuộn). Ngoài biểu đồ trang cuộn bình thường; tắt `interaction.zoom` thì lăn dọc để trang cuộn. Điện thoại giữ nguyên hành vi chạm (`touch-action: pan-y`, chụm hai ngón). Học viện (`staticConfig`) vẫn cần Ctrl + lăn để không chặn việc cuộn bài học. Có tùy chọn `interaction.zoom` để tắt nếu chơi thử cho thấy không hợp (§16).
 
 ## 13. Chế độ Học viện (`static`)
 
@@ -506,7 +509,7 @@ Các điểm dưới đây đã có lựa chọn mặc định. Tài liệu đi 
 
 ### 18.1 Bổ sung công cụ (đợt 1 và 2)
 
-- **Công cụ vẽ:** 36 công cụ (14 cũ, 13 đợt 1 ở `drawings/tools-basic.ts`, 9 đợt 2 ở `drawings/tools-advanced.ts`). Thanh công cụ chia 7 nhóm, nhớ công cụ dùng gần nhất của nhóm, có cột yêu thích (tối đa 8, lưu `localStorage` theo tài khoản) và nam châm ba mức Tắt, Yếu, Mạnh (`magnet: true` của layout cũ thành Yếu).
+- **Công cụ vẽ:** 36 công cụ (14 cũ, 13 đợt 1 ở `drawings/tools-basic.ts`, 9 đợt 2 ở `drawings/tools-advanced.ts`), dùng cho cả `market` và Flashback (§10, §12). Thanh công cụ chia 7 nhóm, nhớ công cụ dùng gần nhất của nhóm, có cột yêu thích (tối đa 8, lưu `localStorage` theo tài khoản) và nam châm ba mức Tắt, Yếu, Mạnh (`magnet: true` của layout cũ thành Yếu).
 - **Chỉ báo:** 40 (thêm 16, đều `flashback: false`); công thức mới viết theo định nghĩa công khai, chưa đối chiếu nguồn ngoài.
 - **Bộ điều khiển:** `isStaleState` giữ trạng thái dispatch mới nhất khi một lần render cũ hơn commit sau, nên bấm liền nhau không mất điểm neo; e2e bấm không chờ.
 - **Chưa kiểm chứng thêm:** chuyển layout TradingView cho công cụ đợt 2 và các tên `LineToolGannComplex`, `LineToolGannSquare` mới thử trên mẫu tự viết; tay nắm thứ hai của callout nằm giữa hộp, che một phần chữ khi đang chọn.

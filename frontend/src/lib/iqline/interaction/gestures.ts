@@ -18,9 +18,9 @@ export const KEY_PAN_BARS_FAST = 10
 export type WheelIntent = "zoom" | "pan" | "none"
 
 /**
- * Cách xử lý một cú lăn chuột. `market` zoom bằng lăn chuột; `flashback` chỉ zoom khi giữ Ctrl (trình duyệt cũng gửi cử chỉ chụm
+ * Cách xử lý một cú lăn chuột. `market` và `flashback` zoom bằng lăn dọc; `static` chỉ zoom khi giữ Ctrl (trình duyệt cũng gửi cử chỉ chụm
  * trên bàn di chuột dưới dạng Ctrl + lăn). Lăn ngang hoặc giữ Shift là kéo. `none` nghĩa là để trang cuộn: bên dùng chỉ gọi
- * `preventDefault` khi kết quả khác `none`.
+ * `preventDefault` khi kết quả khác `none`, nên trên biểu đồ zoom được thì trang không cuộn theo con trỏ.
  */
 export function wheelIntent(wheel: Pick<WheelInput, "deltaX" | "deltaY" | "ctrlKey" | "shiftKey" | "target">, config: Pick<InteractionConfig, "zoom" | "pan" | "wheelNeedsCtrl">): WheelIntent {
   if (wheel.target.region === "none") return "none"
