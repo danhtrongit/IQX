@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { FlashbackCallBar } from "./flashback-call-bar"
 import { ChatUnreadBadge } from "./flashback-chat"
 import { useChatOpener } from "./use-flashback-chat"
 import { FlashbackChatSheet } from "./flashback-chat-sheet"
@@ -138,6 +139,8 @@ function MatchView({ match, chat }: { match: MatchApi; chat: ChatApi }) {
   return (
     <div className="space-y-3 max-[900px]:pb-16">
       <PlayerBar match={match} chat={chat} />
+
+      <FlashbackCallBar inMatch />
 
       <section className="grid grid-cols-2 gap-2.5 sm:grid-cols-4" aria-label="Số liệu ván chơi">
         <StatTile label="Phiên" value={`${match.step} / ${match.playBars}`}>

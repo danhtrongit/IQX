@@ -18,6 +18,7 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  Optional,
   ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
@@ -30,6 +31,7 @@ import {
   FLASHBACK_TAX_BPS,
 } from './flashback.constants.js';
 import { FLASHBACK_NO_DATA_MESSAGE } from './flashback-dataset.config.js';
+import { FlashbackRoomEvents } from './flashback-room-events.js';
 import {
   FB_INITIAL_CASH_VND,
   FB_KICKED_NOTICE,
@@ -483,6 +485,7 @@ export class FlashbackRoomsService {
     @Inject(FLASHBACK_ROOMS_REPOSITORY) private readonly repository: FlashbackRoomsRepository,
     @Inject(FB_DATASET) private readonly dataset: FbDatasetPort,
     @Inject(FLASHBACK_CLOCK) private readonly clock: FlashbackClock,
+    @Optional() private readonly events?: FlashbackRoomEvents,
   ) {}
 
   // ================================================================== sảnh
@@ -663,14 +666,16 @@ export class FlashbackRoomsService {
   async leaveRoom(userId: string, code: string): Promise<{ left: true }> {
     this.assertCode(code);
     const now = this.clock.now();
-    await this.database.transaction(async (tx) => {
+    const room = await this.database.transaction(async (tx) => {
       const room = await this.repository.roomByCode(tx, code, true);
       if (!room) throw roomNotFound(code);
       const members = await this.repository.activeMembers(tx, room.id);
       if (!members.some((member) => member.userId === userId))
         throw forbidden('NOT_IN_ROOM', 'Bạn không ở trong phòng này');
       await this.dropMember(tx, room, members, userId, 'leave', null, now);
+      return room;
     });
+    await this.announceDeparture(room, [userId]);
     return { left: true };
   }
 
@@ -712,7 +717,8 @@ export class FlashbackRoomsService {
   async kickMember(ownerId: string, code: string, targetUserId: string): Promise<FbRoomView> {
     this.assertCode(code);
     const now = this.clock.now();
-    return this.database.transaction(async (tx) => {
+    let kickedFrom: FbRoomRow | null = null;
+    const view = await this.database.transaction(async (tx) => {
       const room = await this.repository.roomByCode(tx, code, true);
       if (!room) throw roomNotFound(code);
       const members = await this.repository.activeMembers(tx, room.id);
@@ -735,8 +741,11 @@ export class FlashbackRoomsService {
         FB_KICKED_NOTICE,
         now,
       );
+      kickedFrom = room;
       return this.roomView(tx, room, ownerId);
     });
+    if (kickedFrom) await this.announceDeparture(kickedFrom, [targetUserId]);
+    return view;
   }
 
   /**
@@ -857,6 +866,11 @@ export class FlashbackRoomsService {
       return { match, room: updated ?? room, removed };
     });
 
+    if (outcome.removed.length > 0)
+      await this.announceDeparture(
+        outcome.room,
+        outcome.removed.map((item) => item.user_id),
+      );
     return {
       match: await this.matchSnapshot(userId, outcome.match.id),
       room: await this.roomView(this.database, outcome.room, userId),
@@ -874,7 +888,11 @@ export class FlashbackRoomsService {
     if (before?.currentMatchId) await this.settleIfDue(before.currentMatchId);
     const now = this.clock.now();
     const result = await this.database.transaction(
-      async (tx): Promise<{ view: FbRoomView; error: null } | { view: null; error: string }> => {
+      async (
+        tx,
+      ): Promise<
+        { view: FbRoomView; error: null } | { view: null; error: string; room: FbRoomRow }
+      > => {
         const room = await this.repository.roomByCode(tx, code, true);
         if (!room) throw roomNotFound(code);
         const members = await this.repository.activeMembers(tx, room.id);
@@ -912,13 +930,20 @@ export class FlashbackRoomsService {
               members.filter((m) => m.userId !== userId),
               now,
             );
-            return { view: null, error: `Không đủ ${formatXu(current.stakeXu)} xu để chơi lại` };
+            return {
+              view: null,
+              error: `Không đủ ${formatXu(current.stakeXu)} xu để chơi lại`,
+              room: current,
+            };
           }
         }
         return { view: await this.roomView(tx, current, userId), error: null };
       },
     );
-    if (result.view === null) throw conflict('XU_INSUFFICIENT', result.error);
+    if (result.view === null) {
+      if (result.room) await this.announceDeparture(result.room, [userId]);
+      throw conflict('XU_INSUFFICIENT', result.error);
+    }
     return result.view;
   }
 
@@ -954,10 +979,12 @@ export class FlashbackRoomsService {
   /** Phiên tiếp (§6.2, §9): ghi nhận bước mới rồi mới trả nến của bước đó. */
   async next(userId: string, matchId: string): Promise<{ bar: FbPublicBar; me: FbEntryView }> {
     await this.settleIfDue(matchId);
-    return this.database.transaction(async (tx) => {
+    let roomId = '';
+    const result = await this.database.transaction(async (tx) => {
       const entry = await this.repository.entryByMatchUser(tx, matchId, userId, true);
       if (!entry) throw matchNotFound();
       const match = await this.playableMatch(tx, matchId);
+      roomId = match.roomId;
       if (entry.status === 'finished')
         throw conflict('ALREADY_FINISHED', 'Bạn đã hoàn thành ván này');
       if (entry.step >= match.playBars)
@@ -975,6 +1002,9 @@ export class FlashbackRoomsService {
         me: await this.entryView(tx, match, updated),
       };
     });
+    // Sang phiên mới: ảnh trong chat của người đi trước có thể tới lượt (v2.4 §3.4).
+    this.events?.positionChanged({ roomId, userId });
+    return result;
   }
 
   /** Đặt lệnh (§6.3): giá đóng cửa phiên đang hiện, phí 0,15%, thuế bán 0,1%, T+2. */
@@ -1407,9 +1437,23 @@ export class FlashbackRoomsService {
    * khoản xu có khoá ledger `<kind>:<match>:<user>`.
    */
   async settle(matchId: string): Promise<boolean> {
+    let roomId: string | null = null;
+    const settled = await this.settleInTransaction(matchId, (id) => {
+      roomId = id;
+    });
+    // Ván kết thúc: mọi người đổi trạng thái, ảnh đang chờ của ván này được giao hết.
+    if (settled && roomId) this.events?.positionChanged({ roomId });
+    return settled;
+  }
+
+  private async settleInTransaction(
+    matchId: string,
+    onRoom: (roomId: string) => void,
+  ): Promise<boolean> {
     return this.database.transaction(async (tx) => {
       const match = await this.repository.matchById(tx, matchId, true);
       if (!match || match.status !== 'playing') return false;
+      onRoom(match.roomId);
       const now = this.clock.now();
       const entries = await this.repository.entriesByMatch(tx, matchId, true);
       const allFinished =
@@ -1578,9 +1622,9 @@ export class FlashbackRoomsService {
     )) {
       const done = await this.database.transaction(async (tx) => {
         const room = await this.repository.roomById(tx, roomId, true);
-        if (!room || room.status === 'closed') return false;
+        if (!room || room.status === 'closed') return null;
         if (room.status === 'waiting' && room.waitingSince.getTime() > waitingBefore.getTime())
-          return false;
+          return null;
         if (room.status === 'playing') {
           const match = room.currentMatchId
             ? await this.repository.matchById(tx, room.currentMatchId)
@@ -1591,7 +1635,7 @@ export class FlashbackRoomsService {
             !match.paidAt ||
             match.paidAt.getTime() > endedBefore.getTime()
           )
-            return false;
+            return null;
         }
         await this.closeRoom(
           tx,
@@ -1599,9 +1643,12 @@ export class FlashbackRoomsService {
           room.status === 'waiting' ? 'waiting_timeout' : 'ended_timeout',
           now,
         );
-        return true;
+        return room;
       });
-      if (done) closed += 1;
+      if (done) {
+        closed += 1;
+        this.events?.roomClosed({ roomId: done.id, code: done.code });
+      }
     }
     return { settled, closed };
   }
@@ -1625,6 +1672,25 @@ export class FlashbackRoomsService {
     if (!(error instanceof HttpException)) return null;
     const body = error.getResponse();
     return body && typeof body === 'object' && 'code' in body ? String(body.code) : null;
+  }
+
+  /**
+   * Báo cho máy chủ thời gian thực (sau khi transaction đã commit) rằng người chơi đã rời phòng, và
+   * phòng đã đóng nếu đó là người cuối. Lỗi ở đây không được làm hỏng thao tác của người chơi.
+   */
+  private async announceDeparture(
+    room: { id: string; code: string },
+    userIds: readonly string[],
+  ): Promise<void> {
+    if (!this.events) return;
+    for (const userId of userIds)
+      this.events.memberLeft({ roomId: room.id, code: room.code, userId });
+    try {
+      const fresh = await this.repository.roomById(this.database, room.id);
+      if (fresh?.status === 'closed') this.events.roomClosed({ roomId: room.id, code: room.code });
+    } catch {
+      // Máy chủ thời gian thực tự đối chiếu phòng đã đóng định kỳ.
+    }
   }
 
   private async codeOfRoom(db: SqlClient, roomId: string | null): Promise<string | null> {

@@ -43,6 +43,24 @@ const isSecureOrLoopbackUrl = (value: string) => {
   );
 };
 
+export type IceServerConfig = {
+  urls: string | string[];
+  username?: string | undefined;
+  credential?: string | undefined;
+};
+
+const iceUrl = z.string().regex(/^(stun|stuns|turn|turns):/i, 'Expected a stun: or turn: URL');
+const iceServersSchema = z
+  .array(
+    z.object({
+      urls: z.union([iceUrl, z.array(iceUrl).min(1).max(8)]),
+      username: z.string().max(512).optional(),
+      credential: z.string().max(512).optional(),
+    }),
+  )
+  .min(1)
+  .max(8);
+
 export const environmentSchema = z
   .object({
     APP_ENV: z.enum(['development', 'test', 'production']).default('development'),
@@ -242,6 +260,31 @@ export const environmentSchema = z
           : value,
       z.array(z.string().regex(/^[a-z][a-z0-9_.]*$/)).default([]),
     ),
+    // Máy chủ ICE cho cuộc gọi trong phòng Flashback (JSON: mảng {urls, username?, credential?}).
+    // Bỏ trống thì dùng STUN công khai của Google. Thêm TURN ở đây khi cần (người dùng sau NAT đối xứng).
+    FLASHBACK_ICE_SERVERS: z
+      .string()
+      .trim()
+      .optional()
+      .transform((value, ctx): IceServerConfig[] => {
+        if (!value) return [{ urls: 'stun:stun.l.google.com:19302' }];
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(value);
+        } catch {
+          ctx.addIssue({ code: 'custom', message: 'FLASHBACK_ICE_SERVERS must be valid JSON' });
+          return z.NEVER;
+        }
+        const result = iceServersSchema.safeParse(parsed);
+        if (!result.success) {
+          ctx.addIssue({
+            code: 'custom',
+            message: 'FLASHBACK_ICE_SERVERS must be an array of { urls, username?, credential? }',
+          });
+          return z.NEVER;
+        }
+        return result.data;
+      }),
     SHUTDOWN_TIMEOUT_MS: z.coerce.number().int().min(1000).max(60_000).default(10_000),
     MEDIA_ROOT: z.preprocess(
       (value) => (value === '' ? undefined : value),

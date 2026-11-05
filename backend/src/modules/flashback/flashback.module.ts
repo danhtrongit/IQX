@@ -53,6 +53,13 @@ import {
   PgFlashbackChatRepository,
 } from './flashback-chat.repository.js';
 import { FlashbackChatService } from './flashback-chat.service.js';
+import {
+  FLASHBACK_MEDIA_OPTIONS,
+  FlashbackMediaHub,
+  type FbMediaHubOptions,
+} from './flashback-media.hub.js';
+import { FlashbackRoomEvents } from './flashback-room-events.js';
+import { FlashbackWsGateway } from './flashback-ws.gateway.js';
 import { FlashbackRoomsController } from './flashback-rooms.controller.js';
 import { FlashbackRoomDataset } from './flashback-rooms.dataset.js';
 import { FlashbackRoomsJob } from './flashback-rooms.job.js';
@@ -90,6 +97,16 @@ export const FLASHBACK_MARKET_DATA = 'FLASHBACK_MARKET_DATA';
       useFactory: (config: ConfigService<Environment, true>) =>
         config.get('SUPER_ADMIN_USER_IDS', { infer: true }) ?? [],
     },
+    FlashbackRoomEvents,
+    {
+      provide: FLASHBACK_MEDIA_OPTIONS,
+      inject: [ConfigService],
+      useFactory: (config: ConfigService<Environment, true>): FbMediaHubOptions => ({
+        iceServers: config.get('FLASHBACK_ICE_SERVERS', { infer: true }),
+      }),
+    },
+    FlashbackMediaHub,
+    FlashbackWsGateway,
     FlashbackService,
     FlashbackAdminService,
     FlashbackRoundBuilder,

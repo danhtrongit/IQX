@@ -3,8 +3,9 @@
  * gửi, nhãn "Phòng chờ" hoặc "Phiên N", bong bóng chữ; tin của mình bên phải), hàng câu nhanh, ô nhập
  * tối đa 200 ký tự. Bấm tên người gửi mở menu Tắt tiếng / Báo cáo.
  */
-import { useEffect, useRef, useState, type FormEvent } from "react"
-import { MessageCircle, X } from "lucide-react"
+import { useEffect, useMemo, useRef, useState, type ClipboardEvent, type DragEvent, type FormEvent } from "react"
+import { ImagePlus, Loader2, MessageCircle, X } from "lucide-react"
+import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -16,6 +17,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
+import { dragHasFiles, IMAGE_NOT_SUPPORTED, imageFromClipboard, imageFromDrop, mergeTimeline, type ChatImageItem } from "./chat-image"
+import { ChatImageBubble, ChatImageViewer } from "./flashback-chat-image"
 import type { FlashbackChatMessage } from "./flashback-api"
 import type { ChatApi } from "./flashback-context"
 import { CHAT_MAX_LENGTH, CHAT_QUICK_REPLIES, chatMessageLabel } from "./flashback-model"
@@ -67,29 +70,74 @@ export function FlashbackChatBox({
   className?: string
 }) {
   const [draft, setDraft] = useState("")
+  const [dragging, setDragging] = useState(false)
+  const [viewing, setViewing] = useState<ChatImageItem | null>(null)
   const viewport = useRef<HTMLDivElement | null>(null)
-  const lastId = chat.messages.at(-1)?.id
+  const fileInput = useRef<HTMLInputElement | null>(null)
+  const timeline = useMemo(() => mergeTimeline(chat.messages, chat.images), [chat.messages, chat.images])
+  const lastKey = timeline.at(-1)?.key
 
-  // Có tin mới thì cuộn xuống cuối.
+  // Có tin hoặc ảnh mới thì cuộn xuống cuối.
   useEffect(() => {
     const element = viewport.current
     if (element) element.scrollTop = element.scrollHeight
-  }, [lastId, chat.messages.length])
+  }, [lastKey, timeline.length])
 
   async function submit(event: FormEvent) {
     event.preventDefault()
     if (await chat.send(draft)) setDraft("")
   }
 
+  // Dán ảnh (Ctrl+V hoặc Cmd+V) khi đang ở trong khung chat; dán chữ thì để nguyên như thường.
+  function onPaste(event: ClipboardEvent) {
+    const file = imageFromClipboard(event.clipboardData)
+    if (!file) return
+    event.preventDefault()
+    void chat.sendImage(file)
+  }
+
+  function onDragOver(event: DragEvent) {
+    if (!dragHasFiles(event.dataTransfer)) return
+    event.preventDefault()
+    setDragging(true)
+  }
+
+  function onDragLeave(event: DragEvent) {
+    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setDragging(false)
+  }
+
+  function onDrop(event: DragEvent) {
+    if (!dragHasFiles(event.dataTransfer)) return
+    event.preventDefault()
+    setDragging(false)
+    const file = imageFromDrop(event.dataTransfer)
+    if (file) void chat.sendImage(file)
+    else toast.error(IMAGE_NOT_SUPPORTED)
+  }
+
   return (
     <section
       aria-label="Chat phòng"
       data-testid="flashback-chat"
-      className={cn("flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card", className)}
+      tabIndex={-1}
+      className={cn("relative flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card outline-none", className)}
       onKeyDown={(event) => {
         if (event.key === "Escape" && onClose && !event.defaultPrevented) onClose()
       }}
+      onPaste={onPaste}
+      onDragEnter={onDragOver}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
     >
+      {dragging ? (
+        <div
+          className="pointer-events-none absolute inset-0 z-10 grid place-items-center rounded-lg border-2 border-dashed border-primary bg-background/80 text-sm font-bold text-primary"
+          data-testid="flashback-chat-dropzone"
+        >
+          Thả ảnh để gửi
+        </div>
+      ) : null}
       <header className="flex shrink-0 items-start justify-between gap-2 border-b border-border px-3 py-2.5">
         <div className="min-w-0">
           <h3 className="font-heading text-sm font-bold">Chat phòng</h3>
@@ -125,12 +173,16 @@ export function FlashbackChatBox({
 
       <ScrollArea className="h-0 min-h-0 flex-1" viewportRef={viewport}>
         <ol className="m-0 flex list-none flex-col gap-2 p-3" aria-label="Tin nhắn" data-testid="flashback-chat-messages">
-          {chat.messages.length === 0 ? (
+          {timeline.length === 0 ? (
             <li className="py-6 text-center text-sm font-semibold text-text-secondary">Chưa có tin nhắn</li>
           ) : null}
-          {chat.messages.map((message) => (
-            <ChatMessage key={message.id} message={message} chat={chat} />
-          ))}
+          {timeline.map((entry) =>
+            entry.kind === "message" ? (
+              <ChatMessage key={entry.key} message={entry.message} chat={chat} />
+            ) : (
+              <ChatImageBubble key={entry.key} image={entry.image} chat={chat} onOpen={setViewing} />
+            ),
+          )}
         </ol>
       </ScrollArea>
 
@@ -150,6 +202,29 @@ export function FlashbackChatBox({
       </div>
 
       <form onSubmit={(event) => void submit(event)} className="flex shrink-0 gap-1.5 px-3 pt-1 pb-1.5">
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          hidden
+          data-testid="flashback-chat-file"
+          onChange={(event) => {
+            const file = event.target.files?.[0]
+            event.target.value = ""
+            if (file) void chat.sendImage(file)
+          }}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="icon"
+          aria-label="Gửi ảnh"
+          title={chat.imagesReady ? "Gửi ảnh (hoặc dán bằng Ctrl+V)" : "Đang kết nối phòng để gửi ảnh"}
+          disabled={!chat.imagesReady || chat.imageBusy}
+          onClick={() => fileInput.current?.click()}
+        >
+          {chat.imageBusy ? <Loader2 className="animate-spin" aria-hidden="true" /> : <ImagePlus aria-hidden="true" />}
+        </Button>
         <Input
           aria-label="Nhập tin nhắn"
           placeholder="Nhắn cho cả phòng…"
@@ -166,6 +241,7 @@ export function FlashbackChatBox({
       <p className="m-0 min-h-4 shrink-0 px-3 pb-1 text-right text-[11px] font-semibold tabular-nums" data-testid="flashback-chat-count">
         {draft.length > 0 ? `${draft.length}/${CHAT_MAX_LENGTH}` : ""}
       </p>
+      <ChatImageViewer image={viewing} onClose={() => setViewing(null)} />
     </section>
   )
 }

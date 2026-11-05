@@ -134,4 +134,30 @@ describe('environment boundary', () => {
     for (const value of ['true', '*', '0.0.0.0/0', '::/0', 'evil.example'])
       expect(() => parseEnvironment({ TRUST_PROXY_CIDRS: value })).toThrow('TRUST_PROXY_CIDRS');
   });
+  it('FLASHBACK_ICE_SERVERS: mặc định là STUN của Google, nhận JSON hợp lệ, từ chối JSON hỏng', () => {
+    const stun = [{ urls: 'stun:stun.l.google.com:19302' }];
+    expect(parseEnvironment({}).FLASHBACK_ICE_SERVERS).toEqual(stun);
+    expect(parseEnvironment({ FLASHBACK_ICE_SERVERS: '' }).FLASHBACK_ICE_SERVERS).toEqual(stun);
+    const turn = [
+      { urls: 'stun:stun.example.org:3478' },
+      {
+        urls: ['turn:turn.example.org:3478', 'turns:turn.example.org:5349'],
+        username: 'u',
+        credential: 'p',
+      },
+    ];
+    expect(
+      parseEnvironment({ FLASHBACK_ICE_SERVERS: JSON.stringify(turn) }).FLASHBACK_ICE_SERVERS,
+    ).toEqual(turn);
+    for (const value of [
+      'không phải json',
+      '{}',
+      '[]',
+      '[{"urls":"http://x"}]',
+      '[{"username":"u"}]',
+    ])
+      expect(() => parseEnvironment({ FLASHBACK_ICE_SERVERS: value })).toThrow(
+        'FLASHBACK_ICE_SERVERS',
+      );
+  });
 });

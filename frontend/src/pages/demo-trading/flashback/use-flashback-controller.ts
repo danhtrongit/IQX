@@ -73,6 +73,7 @@ import {
   flashbackKeys,
   useFlashbackIndicators,
 } from "./use-flashback"
+import { useFlashbackCall } from "./use-flashback-call"
 import { useFlashbackChat } from "./use-flashback-chat"
 import { playEffect, playOrderSound, playVoice, sellOutcome } from "./flashback-sound"
 import { invalidateFlashbackProgress } from "./use-flashback-progress"
@@ -859,6 +860,13 @@ export function useFlashbackController(): FlashbackContextValue {
     ended,
   })
 
+  // Gọi nhóm WebRTC (v2.5): một bộ gọi cho mỗi phòng, sống tiếp từ phòng chờ sang trong ván.
+  const call = useFlashbackCall({
+    roomId: roomCode,
+    userId,
+    userName: user?.full_name || user?.username || "Người chơi",
+  })
+
   return {
     phase,
     showPanel: place.phase === "match",
@@ -892,6 +900,7 @@ export function useFlashbackController(): FlashbackContextValue {
       kickBusy: kickMutation.isPending,
     },
     chat,
+    call,
     match,
     matchLoading: place.phase === "match" && snapshotQuery.isPending,
     matchFailed: place.phase === "match" && snapshotQuery.isError && !snapshot,

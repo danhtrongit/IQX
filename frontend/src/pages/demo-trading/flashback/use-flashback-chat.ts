@@ -5,7 +5,7 @@
  * Danh sách tin luôn do server tính theo phiên của mình (§3.4). Trình duyệt chỉ hiện đúng những gì
  * server trả, và hỏi lại ngay khi mình sang phiên mới hoặc ván kết thúc để tin vừa tới lượt hiện ra.
  */
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 
@@ -21,6 +21,7 @@ import {
 } from "./flashback-api"
 import type { ChatApi, FlashbackPhase } from "./flashback-context"
 import { CHAT_COOLDOWN_MS, CHAT_TOO_FAST } from "./flashback-model"
+import { useChatImages } from "./use-chat-images"
 import { flashbackKeys } from "./use-flashback"
 
 const NO_MESSAGES: FlashbackChatMessage[] = []
@@ -84,6 +85,10 @@ export function useFlashbackChat({
   }
   const unread =
     watching || readIds === null ? 0 : messages.filter((message) => !message.is_me && !readIds.has(message.id)).length
+
+  // Ảnh qua WebSocket của phòng: cùng quy tắc phiên, tắt tiếng và bật/tắt chat như tin chữ (do server áp).
+  const mutedIds = useMemo(() => new Set((data?.muted ?? NO_MUTED).map((user) => user.user_id)), [data?.muted])
+  const imagesApi = useChatImages({ roomCode, enabled: enabled && roomCode !== null, userId, mutedIds, watching })
 
   const refresh = useCallback(() => {
     void queryClient.invalidateQueries({ queryKey: flashbackKeys.chat(userId, roomCode ?? "") })
@@ -149,7 +154,12 @@ export function useFlashbackChat({
     enabled,
     messages,
     muted: data?.muted ?? NO_MUTED,
-    unread,
+    unread: unread + imagesApi.imageUnread,
+    images: imagesApi.images,
+    imagesReady: imagesApi.imagesReady,
+    imageBusy: imagesApi.imageBusy,
+    sendImage: imagesApi.sendImage,
+    dismissImage: imagesApi.dismissImage,
     open: open && enabled,
     setOpen,
     send,

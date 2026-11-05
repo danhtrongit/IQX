@@ -23,6 +23,8 @@ import type {
   FlashbackSnapshot,
 } from "./flashback-api"
 import type { IndicatorPlot } from "./flashback-indicators"
+import type { ChatImagesApi } from "./use-chat-images"
+import type { CallApi } from "./use-flashback-call"
 
 /** Một instance chỉ báo trong ván: khoá ổn định phía client + id + tham số. */
 export type LocalIndicator = {
@@ -105,7 +107,7 @@ export type ChatApi = {
   sendBusy: boolean
   setMuted: (userId: string, name: string, muted: boolean) => void
   report: (messageId: string) => void
-}
+} & Omit<ChatImagesApi, "imageUnread">
 
 export type MatchApi = {
   snapshot: FlashbackSnapshot
@@ -177,6 +179,8 @@ export type FlashbackContextValue = {
   lobby: LobbyApi
   room: RoomApi
   chat: ChatApi
+  /** Gọi nhóm WebRTC của phòng đang ở (v2.5): dùng chung cho phòng chờ và trong ván. */
+  call: CallApi
   /** Ván đang mở: null khi chưa ở màn chơi hoặc ảnh chụp ván chưa về. */
   match: MatchApi | null
   matchLoading: boolean

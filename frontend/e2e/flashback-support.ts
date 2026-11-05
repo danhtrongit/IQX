@@ -99,7 +99,7 @@ function me(step: number) {
   }
 }
 
-function snapshot(step: number) {
+export function snapshot(step: number) {
   return {
     ends_at: "2026-10-30T01:10:00.000Z",
     history_bars: bars(VIEW_BARS, 0, WARMUP_BARS),

@@ -3,7 +3,7 @@
  * số, các ô người chơi (bằng số người tối đa, tối thiểu 4; từ 9 người trở lên ô thu nhỏ, lưới 6 cột
  * và cuộn trong khung; mỗi ô có avatar kèm cấp và vương miện, v2.1 §3.3 và §4.3), Rời phòng và Bắt
  * đầu (chỉ chủ phòng, mở khi mọi người đã Sẵn sàng). Khung chat luôn mở ở cột phải (máy tính) hoặc dưới
- * các nút (điện thoại).
+ * các nút (điện thoại). Thanh gọi nhóm (v2.5) nằm ngay dưới ID phòng.
  */
 import { useState } from "react"
 import { Copy, Lock, UserX } from "lucide-react"
@@ -15,6 +15,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { cn } from "@/lib/utils"
 import { COIN_TEXT } from "../shop/shop-ui"
 import type { FlashbackRoom, FlashbackRoomMember } from "./flashback-api"
+import { FlashbackCallBar } from "./flashback-call-bar"
 import { FlashbackChatBox } from "./flashback-chat"
 import { useFlashback } from "./flashback-context"
 import { PlayerAvatar } from "./flashback-avatar"
@@ -80,6 +81,8 @@ export function FlashbackRoomScreen() {
           {readiness.summary}
         </span>
       </section>
+
+      <FlashbackCallBar inMatch={false} />
 
       <section aria-label="Thông số phòng" className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <Tile label="Phiên xem" value={String(room.view_bars)} />

@@ -95,6 +95,19 @@ export interface FbChatReportView {
   readonly decided_at: string | null;
 }
 
+/** Mọi thứ máy chủ thời gian thực cần biết về một người trong một phòng (ảnh, cuộc gọi). */
+export interface FbMediaContext {
+  readonly roomId: string;
+  readonly name: string;
+  readonly chatEnabled: boolean;
+  /** Phiên hiện tại của người này, dùng để quyết định ảnh nào đã tới lượt (§3.4). */
+  readonly viewer: FbChatViewer;
+  /** Vị trí gắn vào ảnh người này gửi lúc này, giống tin chữ. */
+  readonly position: { matchId: string | null; phien: number };
+  /** Những người mà người này đã tắt tiếng trong phòng. */
+  readonly muted: readonly string[];
+}
+
 const roomNotFound = (code: string) =>
   new NotFoundException({ code: 'ROOM_NOT_FOUND', message: `Không tìm thấy phòng ${code}` });
 const notInRoom = () =>
@@ -239,6 +252,36 @@ export class FlashbackChatService {
       await this.chat.markReported(tx, message.id);
     });
     return { reported: true };
+  }
+
+  // ================================================================== ảnh và cuộc gọi (WebSocket)
+
+  /**
+   * Ngữ cảnh của một thành viên cho máy chủ thời gian thực: cùng nguồn sự thật với chat chữ (thành
+   * viên, `chat_enabled`, tắt tiếng, phiên). Ném `ROOM_NOT_FOUND` / `NOT_IN_ROOM` như các API chat.
+   */
+  async mediaContext(userId: string, code: string): Promise<FbMediaContext> {
+    const room = await this.rooms.roomByCode(this.database, code);
+    if (!room) throw roomNotFound(code);
+    const members = await this.rooms.activeMembers(this.database, room.id);
+    const me = members.find((member) => member.userId === userId);
+    if (!me) throw notInRoom();
+    const viewer = await this.viewer(room, userId);
+    const position = await this.senderPosition(this.database, room, userId);
+    const muted = await this.chat.mutedUsers(this.database, room.id, userId);
+    return {
+      roomId: room.id,
+      name: me.name,
+      chatEnabled: room.chatEnabled,
+      viewer,
+      position,
+      muted: muted.map((user) => user.userId),
+    };
+  }
+
+  /** Id của phòng đang mở có mã này; null nếu không còn (đã đóng). */
+  async mediaRoomId(code: string): Promise<string | null> {
+    return (await this.rooms.roomByCode(this.database, code))?.id ?? null;
   }
 
   // ================================================================== quản trị
