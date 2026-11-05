@@ -47,6 +47,8 @@ export type IQLineMarketProps = {
   priceLevels?: PriceLevels
   overlays?: readonly AiOverlay[]
   onMarkClick?: (id: string | number) => void
+  /** Chủ sở hữu layout đang lưu (người dùng hoặc khách): công cụ yêu thích của thanh vẽ lưu riêng theo giá trị này. Bỏ trống là khách. */
+  preferencesScope?: string
   labelToken?: "muted-foreground" | "academy-label"
   formatPrice?: (price: number) => string
   className?: string
@@ -63,7 +65,7 @@ const isAbort = (error: unknown): boolean => error instanceof DOMException && er
 const nowSeconds = (): number => Math.floor(Date.now() / 1000)
 
 export function IQLine(props: IQLineProps) {
-  const { ref, symbol, interval, onIntervalChange, datafeed, store, theme, indicators, onIndicatorsChange, priceLevels, overlays, onMarkClick, labelToken, formatPrice, className } = props
+  const { ref, symbol, interval, onIntervalChange, datafeed, store, theme, indicators, onIndicatorsChange, priceLevels, overlays, onMarkClick, preferencesScope, labelToken, formatPrice, className } = props
   const dataKey = `${symbol}|${interval}`
 
   // ---- dữ liệu nến. Đổi khoá thì dọn ngay trong lượt render, trước khi hook dựng dữ liệu cho mã mới.
@@ -300,7 +302,7 @@ export function IQLine(props: IQLineProps) {
       />
       <div className="flex min-h-0 flex-1">
         <Suspense fallback={<div aria-hidden="true" className="w-9 shrink-0 border-r border-border bg-card" />}>
-          <DrawingToolbar chart={chart} />
+          <DrawingToolbar chart={chart} scope={preferencesScope} />
         </Suspense>
         <div className="relative min-h-0 min-w-0 flex-1">
           <div className="absolute inset-0">
@@ -315,7 +317,7 @@ export function IQLine(props: IQLineProps) {
             onEditIndicator={(key) => setDialog({ kind: "edit", key })}
             onRemoveIndicator={(key) => commitIndicators(indicators.filter((item) => item.key !== key))}
           />
-          {chart.state.drawings.selectedId !== null ? (
+          {chart.state.drawings.selectedId !== null || chart.state.drawings.pending !== null ? (
             <div className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center px-2">
               <Suspense fallback={null}>
                 <DrawingStyleBar chart={chart} />

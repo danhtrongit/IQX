@@ -15,6 +15,11 @@ export type IndicatorOptions = {
    * nghĩa là phụ thuộc cả chuỗi (EMA, Wilder...), khi nến cuối đổi thì tính lại cả chuỗi.
    */
   tailMemory?: (params: IndicatorParams) => number | null
+  /**
+   * Chỉ báo cần thời gian nến (`IndicatorContext`): VWAP đặt lại theo phiên, Pivot Points theo kỳ. Chỉ có ở `market`; thiếu `context`
+   * thì `compute` trả biểu đồ rỗng. Chỉ báo này không bao giờ tính phần đuôi (kỳ có thể dài tuỳ ý) và khoá ghi nhớ gồm cả khung.
+   */
+  needsTime?: boolean
 }
 
 type Entry = { definition: IndicatorDefinition; options: IndicatorOptions }
@@ -151,6 +156,11 @@ export function indicatorTailMemory(id: string, resolved: IndicatorParams): numb
   if (!memory) return null
   const value = memory(resolved)
   return value !== null && Number.isFinite(value) && value >= 0 ? value : null
+}
+
+/** Chỉ báo có cần `IndicatorContext` (thời gian nến) không; id lạ là false. */
+export function indicatorNeedsTime(id: string): boolean {
+  return entries.get(id)?.options.needsTime === true
 }
 
 /** Khoá ổn định của một bộ tham số đã điền đủ mặc định, theo thứ tự spec; dùng làm khoá ghi nhớ. */

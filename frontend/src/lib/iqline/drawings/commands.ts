@@ -21,7 +21,9 @@ import {
 } from "./fib"
 import { clipLine, resolveAnchors, type ScreenAnchor, type ScreenPoint } from "./geometry"
 import type { PendingDrawing } from "./state"
+import { advancedCommands } from "./tools-advanced"
 import { TOOL_SPECS } from "./tools"
+import { basicHandlePoints, basicShapeCommands, isBasicTool } from "./tools-basic"
 
 export type DrawingRenderOptions = {
   /** Định dạng giá của nhãn; mặc định theo vi-VN. */
@@ -164,6 +166,8 @@ function elliottLabels(points: readonly ScreenAnchor[], names: readonly string[]
 
 /** Lệnh vẽ của một hình, chịu được hình chưa đủ điểm neo (bản xem trước khi đang vẽ). */
 function shapeCommands(tool: DrawingTool, points: readonly ScreenAnchor[], style: DrawingStyle, noteText: string | undefined, ctx: Ctx): DrawCommand[] {
+  // Đợt 1 (vị thế, vẽ tự do, chú thích, đo, hình): nằm trọn trong tools-basic.ts. Type guard thu hẹp `tool` cho `switch` bên dưới.
+  if (isBasicTool(tool)) return basicShapeCommands(tool, points, style, noteText, ctx)
   const { plot, dpr } = ctx
   const dash = dashOf(style)
   const width = widthOf(style, ctx)
@@ -262,6 +266,17 @@ function shapeCommands(tool: DrawingTool, points: readonly ScreenAnchor[], style
         ...text(style.color, measureLabel(p0, p1, ctx.format), (left + right) / 2, labelY, "center", dpr, true),
       ]
     }
+    // Đợt 2 (Fibonacci, Pitchfork, Gann, mẫu hình): hình học nằm trọn trong tools-advanced.ts.
+    case "fib-time-zones":
+    case "fib-fan":
+    case "fib-channel":
+    case "pitchfork":
+    case "gann-fan":
+    case "gann-box":
+    case "xabcd":
+    case "head-shoulders":
+    case "triangle-pattern":
+      return advancedCommands(tool, points, style, ctx)
   }
 }
 
@@ -293,7 +308,7 @@ export function drawingCommands(drawings: readonly Drawing[], coords: PaneCoords
   return [clipOf(coords, options.dpr ?? 1), ...body, { op: "unclip" }]
 }
 
-function handleCircles(points: readonly ScreenAnchor[], color: ColorToken, dpr: number): DrawCommand[] {
+function handleCircles(points: readonly ScreenPoint[], color: ColorToken, dpr: number): DrawCommand[] {
   return points.flatMap((point): DrawCommand[] => [
     { op: "circle", token: "background", x: point.x * dpr, y: point.y * dpr, radius: HANDLE_DRAW_RADIUS * dpr, fill: true },
     { op: "circle", token: color, x: point.x * dpr, y: point.y * dpr, radius: HANDLE_DRAW_RADIUS * dpr, fill: false, width: 2 * dpr },
@@ -304,7 +319,9 @@ function handleCircles(points: readonly ScreenAnchor[], color: ColorToken, dpr: 
 export function handleCommands(drawing: Drawing | null | undefined, coords: PaneCoords, options: DrawingRenderOptions = {}): DrawCommand[] {
   if (!drawing || drawing.locked || !isRenderable(drawing)) return []
   const points = resolveAnchors(drawing.anchors, coords)
-  return points ? handleCircles(points, drawing.style.color, options.dpr ?? 1) : []
+  if (!points) return []
+  const own = isBasicTool(drawing.tool) ? basicHandlePoints(drawing.tool, points) : null
+  return handleCircles(own ?? points, drawing.style.color, options.dpr ?? 1)
 }
 
 /** Bản xem trước khi đang vẽ: các điểm đã bấm cộng điểm con trỏ, kèm tay nắm ở các điểm đã bấm. Cho lớp "top". */
@@ -316,13 +333,19 @@ export function previewCommands(
 ): DrawCommand[] {
   if (!pending) return []
   const spec = TOOL_SPECS[pending.tool]
-  const anchors = (cursor ? [...pending.anchors, cursor] : [...pending.anchors]).slice(0, spec.anchorCount)
+  const needed = spec.clicks ?? spec.anchorCount
+  // Hình nhiều điểm: mọi điểm đã gom cộng điểm con trỏ (trừ nét bút, đang kéo thì chỉ có các điểm đã gom).
+  let anchors = spec.variable
+    ? [...pending.anchors, ...(cursor && !spec.variable.stroke ? [cursor] : [])]
+    : (cursor ? [...pending.anchors, cursor] : [...pending.anchors]).slice(0, needed)
   if (anchors.length === 0) return []
+  if (!spec.variable && spec.expand && anchors.length >= needed) anchors = spec.expand(anchors)
   const points = resolveAnchors(anchors, coords)
   if (!points) return []
   const ctx = contextOf(coords, options, false)
   const body = shapeCommands(pending.tool, points, spec.defaultStyle, undefined, ctx)
-  const placed = points.slice(0, pending.anchors.length)
+  // Nét bút đang kéo có hàng trăm điểm: không vẽ tay nắm cho từng điểm.
+  const placed = spec.variable?.stroke ? [] : points.slice(0, pending.anchors.length)
   return [
     ...(body.length > 0 ? [clipOf(coords, ctx.dpr), ...body, { op: "unclip" } as DrawCommand] : []),
     ...handleCircles(placed, spec.defaultStyle.color, ctx.dpr),

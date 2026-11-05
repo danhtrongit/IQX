@@ -3,7 +3,7 @@ import type { Bar, ColorToken, IndicatorPlot } from "../types"
 import { atr } from "./legacy-series"
 import { cmf, columnsOf, ema, obv, rsi, slidingExtreme, sma, volumeThreshold } from "./series"
 import { computeIndicator, listIndicators } from "./index"
-import { GOLDEN, goldenBars, isClose } from "./test-support"
+import { contextFor, GOLDEN, goldenBars, isClose } from "./test-support"
 
 const BARS = goldenBars()
 const PROFILE_ID = "volume_profile"
@@ -11,7 +11,7 @@ const formulaIndicators = () => listIndicators().filter((definition) => definiti
 const bar = (open: number, high: number, low: number, close: number, volume: number): Bar => ({ open, high, low, close, volume })
 
 function plotOf(id: string, params: Record<string, number> = {}, palette?: readonly ColorToken[], bars: readonly Bar[] = BARS): IndicatorPlot {
-  const plot = computeIndicator({ id, params }, bars, palette)
+  const plot = computeIndicator({ id, params }, bars, palette, contextFor(bars.length))
   if (!plot) throw new Error(`Không tính được ${id}`)
   return plot
 }
@@ -127,12 +127,12 @@ describe("cửa sổ trượt thay cho slice và quét lặp", () => {
   })
 })
 
-describe("hình dạng kết quả của cả 24 chỉ báo", () => {
+describe("hình dạng kết quả của cả 40 chỉ báo", () => {
   it("không ném lỗi và mỗi chuỗi dài đúng bằng số nến, với 0, 1, 2, 3, 10 và 60 nến", () => {
     for (const definition of formulaIndicators()) {
       for (const count of [0, 1, 2, 3, 10, 60]) {
         const bars = goldenBars(count)
-        const plot = definition.compute(bars, {}, ["chart-1", "chart-6"])
+        const plot = definition.compute(bars, {}, ["chart-1", "chart-6"], contextFor(count))
         expect(plot.kind, definition.id).toBe(definition.kind)
         for (const series of plot.series) expect(series.values, `${definition.id}.${series.key} @${count}`).toHaveLength(count)
         if (plot.histogram) expect(plot.histogram.values, `${definition.id} histogram @${count}`).toHaveLength(count)
@@ -142,7 +142,7 @@ describe("hình dạng kết quả của cả 24 chỉ báo", () => {
 
   it("mọi giá trị là số hữu hạn hoặc null, không có NaN hay Infinity", () => {
     for (const definition of formulaIndicators()) {
-      const plot = definition.compute(BARS, {}, ["chart-1"])
+      const plot = definition.compute(BARS, {}, ["chart-1"], contextFor(BARS.length))
       const all = [...plot.series.map((series) => series.values), ...(plot.histogram ? [plot.histogram.values] : [])]
       for (const values of all) expect(values.every((value) => value === null || Number.isFinite(value)), definition.id).toBe(true)
     }
@@ -150,8 +150,9 @@ describe("hình dạng kết quả của cả 24 chỉ báo", () => {
 
   it("mọi chuỗi có khoá và nhãn, khoá không trùng trong một chỉ báo", () => {
     for (const definition of formulaIndicators()) {
-      const plot = definition.compute(BARS, {}, ["chart-1"])
-      expect(plot.series.length, definition.id).toBeGreaterThan(0)
+      const plot = definition.compute(BARS, {}, ["chart-1"], contextFor(BARS.length))
+      // Awesome Oscillator chỉ có histogram; mọi chỉ báo khác có ít nhất một chuỗi.
+      expect(plot.series.length + (plot.histogram ? 1 : 0), definition.id).toBeGreaterThan(0)
       const keys = plot.series.map((series) => series.key)
       expect(new Set(keys).size, definition.id).toBe(keys.length)
       for (const series of plot.series) expect(series.label.length, `${definition.id}.${series.key}`).toBeGreaterThan(0)
@@ -160,10 +161,11 @@ describe("hình dạng kết quả của cả 24 chỉ báo", () => {
 
   it("chỉ báo có đủ dữ liệu thì có giá trị ở nến cuối", () => {
     for (const definition of formulaIndicators()) {
-      const plot = definition.compute(BARS, {}, ["chart-1"])
+      const plot = definition.compute(BARS, {}, ["chart-1"], contextFor(BARS.length))
       const last = BARS.length - 1
+      // Chuỗi lệch (Senkou, Chikou) có thể trống ở nến cuối nhưng Tenkan và Kijun thì không; mọi chỉ báo phải có giá trị ở nến cuối.
       expect(
-        plot.series.some((series) => series.values[last] !== null),
+        plot.series.some((series) => series.values[last] !== null) || (plot.histogram?.values[last] ?? null) !== null,
         definition.id,
       ).toBe(true)
     }
@@ -178,7 +180,7 @@ describe("màu theo token và bảng màu truyền vào", () => {
 
   it("không bao giờ có var(--x) hay màu thô", () => {
     for (const definition of formulaIndicators()) {
-      const text = JSON.stringify(definition.compute(goldenBars(40), {}, ["chart-1", "chart-6", "chart-8"]))
+      const text = JSON.stringify(definition.compute(goldenBars(40), {}, ["chart-1", "chart-6", "chart-8"], contextFor(40)))
       expect(text, definition.id).not.toContain("var(")
       expect(text, definition.id).not.toMatch(/#[0-9a-f]{3,6}\b/i)
       expect(text, definition.id).not.toMatch(/rgb|hsl|oklch/)
@@ -188,10 +190,11 @@ describe("màu theo token và bảng màu truyền vào", () => {
   it("chuỗi lấy màu từ bảng màu, vòng lại khi hết; chỉ +DI/-DI và histogram MACD dùng price-up/price-down", () => {
     const palette: ColorToken[] = ["chart-1", "chart-2", "chart-5"]
     for (const definition of formulaIndicators()) {
-      const plot = definition.compute(BARS, {}, palette)
+      const plot = definition.compute(BARS, {}, palette, contextFor(BARS.length))
       for (const token of tokensOf(plot)) {
         if (token === "price-up" || token === "price-down") {
-          expect(["dmi", "macd"], definition.id).toContain(definition.id)
+          // Tăng giảm có nghĩa cố định: +DI/-DI, histogram MACD và Awesome Oscillator, SuperTrend (tăng/giảm), Aroon Up/Down.
+          expect(["dmi", "macd", "supertrend", "aroon", "awesome_oscillator"], definition.id).toContain(definition.id)
           continue
         }
         expect(palette, `${definition.id}: ${token}`).toContain(token)
@@ -201,14 +204,14 @@ describe("màu theo token và bảng màu truyền vào", () => {
 
   it("bảng màu khi có đường trần sàn (chart-1, chart-2, chart-5) không để lọt chart-6, 7, 8", () => {
     for (const definition of formulaIndicators()) {
-      const tokens = tokensOf(definition.compute(BARS, {}, ["chart-1", "chart-2", "chart-5"]))
+      const tokens = tokensOf(definition.compute(BARS, {}, ["chart-1", "chart-2", "chart-5"], contextFor(BARS.length)))
       for (const token of tokens) expect(["chart-6", "chart-7", "chart-8"], `${definition.id}: ${token}`).not.toContain(token)
     }
   })
 
   it("chart-7 chỉ dành cho lớp AI nên không chỉ báo nào tự dùng", () => {
     for (const definition of formulaIndicators()) {
-      expect(tokensOf(definition.compute(BARS, {}, ["chart-1", "chart-6", "chart-8", "chart-2", "chart-5"])), definition.id).not.toContain("chart-7")
+      expect(tokensOf(definition.compute(BARS, {}, ["chart-1", "chart-6", "chart-8", "chart-2", "chart-5"], contextFor(BARS.length))), definition.id).not.toContain("chart-7")
     }
   })
 
@@ -284,7 +287,7 @@ describe("cấu trúc vẽ của từng nhóm chỉ báo", () => {
   it("danh mục dữ liệu mẫu có phiên kịch trần/sàn nên các chỉ báo xử lý nến phẳng mà không lỗi", () => {
     const flat = GOLDEN.bars.map((item, index) => (item.high === item.low ? index : -1)).filter((index) => index >= 0)
     expect(flat.length).toBeGreaterThanOrEqual(5)
-    for (const definition of formulaIndicators()) expect(() => definition.compute(BARS, {}, ["chart-1"])).not.toThrow()
+    for (const definition of formulaIndicators()) expect(() => definition.compute(BARS, {}, ["chart-1"], contextFor(BARS.length))).not.toThrow()
   })
 })
 

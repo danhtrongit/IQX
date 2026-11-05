@@ -4,6 +4,10 @@
  *
  * Quy ước vùng tô của chuỗi `style: "area"`: hai chuỗi `area` liên tiếp tô vùng giữa chúng (dải Bollinger,
  * kênh Donchian); chuỗi `area` lẻ loi tô xuống vạch 0 (ô có vạch 0) hoặc đáy ô. Vùng tô bỏ khi nến hẹp dưới 1px.
+ *
+ * Chuỗi có `offset` (Senkou, Chikou của Ichimoku) được vẽ lệch: giá trị của nến `j` nằm ở chỉ số `j + offset`, kể cả vùng ngoại suy sau
+ * nến cuối. Chỉ có tác dụng trên toạ độ vẽ: trục giá chỉ theo nến (đường chỉ báo không kéo giãn trục) và `values` không đổi độ dài.
+ * `plot.cloud` tô mây giữa hai chuỗi, `upToken` khi chuỗi `a` không thấp hơn `b`, `downToken` khi thấp hơn, tách đúng ở chỗ cắt nhau.
  */
 import type { ColorToken, DrawCommand, IndicatorSeries, Scene } from "../types"
 import { decimalsForStep, formatVi } from "../core/ticks"
@@ -152,6 +156,146 @@ function emitFill(
   if (used >= 6) scene.push({ op: "polygon", token, alpha: BAND_ALPHA, data, count: used })
 }
 
+/** Số `index` cuối cùng còn nằm trong viewport, KHÔNG kẹp theo số nến (gồm vùng ngoại suy sau nến cuối). */
+function lastDrawnIndex(frame: ChartFrame): number {
+  return Math.ceil(frame.view.viewport.to + 0.5) - 1
+}
+
+/**
+ * Khoảng chỉ số vẽ của một chuỗi lệch `offset`: từ nến thấy đầu tiên tới nến thấy cuối cùng, kể cả vùng ngoại suy, nhưng không quá chỗ
+ * mà giá trị cuối của chuỗi (nến `count - 1`) được vẽ tới. Null nếu không có gì để vẽ.
+ */
+function drawnRange(d: PaneDraw, frame: ChartFrame, offset: number): { first: number; last: number } | null {
+  const first = Math.max(d.first, offset)
+  const last = Math.min(lastDrawnIndex(frame), frame.data.count - 1 + offset)
+  return last >= first ? { first, last } : null
+}
+
+/** `d` thu hẹp theo một khoảng chỉ số vẽ: các hàm emit chỉ đọc `first`, `last` và `xOf`, nên dùng lại được cho chuỗi lệch. */
+const within = (d: PaneDraw, range: { first: number; last: number }): PaneDraw => (range.first === d.first && range.last === d.last ? d : { ...d, first: range.first, last: range.last })
+
+/** Giá trị được vẽ tại chỉ số `index` của một chuỗi lệch; null ngoài chuỗi. */
+function drawnValue(series: IndicatorSeries, index: number): number | null {
+  const value = series.values[index - (series.offset ?? 0)]
+  return isValue(value) ? value : null
+}
+
+/** Chuỗi `style: "dots"` và `"line"` cho chuỗi lệch: đọc qua `values` đã dời để các hàm vẽ có sẵn không phải biết `offset`. */
+function shifted(series: IndicatorSeries, offset: number, first: number, last: number): readonly (number | null)[] {
+  if (offset === 0) return series.values
+  const out = new Array<number | null>(last + 1).fill(null)
+  for (let index = first; index <= last; index += 1) out[index] = drawnValue(series, index)
+  return out
+}
+
+/**
+ * Chuỗi `style: "step"`: mỗi đoạn liên tiếp có cùng giá trị là một đoạn ngang, kéo từ mép trái của nến đầu tới mép phải của nến cuối đoạn đó,
+ * không nối sang đoạn kế khi giá trị đổi (Pivot Points đổi mức đúng ở đầu kỳ mới). Một lệnh `lines` chứa mọi đoạn.
+ */
+function emitSteps(scene: Scene, d: PaneDraw, key: string, values: readonly (number | null)[], series: IndicatorSeries): void {
+  const count = d.last - d.first + 1
+  const data = d.bufs.get(key, count * 4 + 8)
+  const half = d.barPx / 2
+  let used = 0
+  let runValue: number | null = null
+  let runFrom = 0
+  const flush = (endIndex: number) => {
+    if (runValue === null) return
+    const y = Math.round(d.yOf(runValue))
+    data[used++] = d.xOf(runFrom) - half
+    data[used++] = y
+    data[used++] = d.xOf(endIndex) + half
+    data[used++] = y
+    runValue = null
+  }
+  for (let index = d.first; index <= d.last; index += 1) {
+    const value = values[index]
+    if (!isValue(value)) {
+      flush(index - 1)
+      continue
+    }
+    if (runValue !== null && value !== runValue) flush(index - 1)
+    if (runValue === null) {
+      runValue = value
+      runFrom = index
+    }
+  }
+  flush(d.last)
+  if (used > 0) scene.push({ op: "lines", token: series.color, width: lineWidth(series, d.dpr, false), data, count: used })
+}
+
+const CLOUD_ALPHA = 0.14
+
+/**
+ * Mây giữa hai chuỗi `a` và `b` (đã tính `offset` của từng chuỗi): mỗi đoạn liên tiếp mà `a >= b` hoặc `a < b` là một đa giác một màu; ở chỗ hai
+ * chuỗi cắt nhau đoạn được cắt đúng tại giao điểm (nội suy tuyến tính theo chỉ số) nên không có tam giác sai màu. Chỗ thiếu giá trị ngắt mây.
+ */
+function emitCloud(scene: Scene, d: PaneDraw, frame: ChartFrame, key: string, a: IndicatorSeries, b: IndicatorSeries, upToken: ColorToken, downToken: ColorToken): void {
+  const offsets = [a.offset ?? 0, b.offset ?? 0]
+  const first = Math.max(d.first, Math.max(...offsets))
+  const last = Math.min(lastDrawnIndex(frame), frame.data.count - 1 + Math.max(...offsets))
+  if (last < first) return
+  const count = last - first + 1
+  const scratch = count * 2 + 8
+  const ax = d.bufs.get(`${key}.a`, scratch)
+  const bx = d.bufs.get(`${key}.b`, scratch)
+  const out = d.bufs.get(`${key}.poly`, count * 8 + 32)
+  let aUsed = 0
+  let bUsed = 0
+  let used = 0
+  let rising: boolean | null = null
+  let previous: { x: number; a: number; b: number; ya: number; yb: number; index: number } | null = null
+
+  const flush = () => {
+    if (rising !== null && aUsed >= 2 && aUsed + bUsed >= 6) {
+      const start = used
+      for (let at = 0; at < aUsed; at += 1) out[used++] = ax[at]
+      for (let at = bUsed - 2; at >= 0; at -= 2) {
+        out[used++] = bx[at]
+        out[used++] = bx[at + 1]
+      }
+      scene.push({ op: "polygon", token: rising ? upToken : downToken, alpha: CLOUD_ALPHA, data: out.subarray(start, used), count: used - start })
+    }
+    aUsed = 0
+    bUsed = 0
+    rising = null
+  }
+
+  for (let index = first; index <= last; index += 1) {
+    const av = drawnValue(a, index)
+    const bv = drawnValue(b, index)
+    if (av === null || bv === null) {
+      flush()
+      previous = null
+      continue
+    }
+    const x = d.xOf(index)
+    const ya = d.yOf(av)
+    const yb = d.yOf(bv)
+    const up = av >= bv
+    if (rising !== null && up !== rising && previous) {
+      // Cắt nhau giữa nến trước và nến này: giao điểm ở phần t của đoạn.
+      const before = previous.a - previous.b
+      const t = before / (before - (av - bv))
+      const cx = previous.x + t * (x - previous.x)
+      const cy = previous.ya + t * (ya - previous.ya)
+      ax[aUsed++] = cx
+      ax[aUsed++] = cy
+      flush()
+      ax[aUsed++] = cx
+      ax[aUsed++] = cy
+      rising = up
+    }
+    if (rising === null) rising = up
+    ax[aUsed++] = x
+    ax[aUsed++] = ya
+    bx[bUsed++] = x
+    bx[bUsed++] = yb
+    previous = { x, a: av, b: bv, ya, yb, index }
+  }
+  flush()
+}
+
 function levelText(level: { value: number; label: string }): string {
   if (level.label && level.label.length <= 6) return level.label
   return formatVi(level.value, Number.isInteger(level.value) ? 0 : decimalsForStep(0.01))
@@ -249,6 +393,13 @@ export function drawIndicatorPlot(scene: Scene, after: DrawCommand[], frame: Cha
     pushRects(scene, downToken, down, n, HISTOGRAM_ALPHA)
   }
 
+  // Mây giữa hai chuỗi (Ichimoku): tô trước các đường để đường nằm trên.
+  if (!d.merged && plot.cloud) {
+    const upper = plot.series.find((series) => series.key === plot.cloud!.a)
+    const lower = plot.series.find((series) => series.key === plot.cloud!.b)
+    if (upper && lower) emitCloud(scene, d, frame, k("cloud"), upper, lower, plot.cloud.upToken, plot.cloud.downToken)
+  }
+
   // Vùng tô của chuỗi `area`.
   if (!d.merged) {
     const areas = plot.series.filter((series) => series.style === "area")
@@ -261,8 +412,15 @@ export function drawIndicatorPlot(scene: Scene, after: DrawCommand[], frame: Cha
   }
 
   plot.series.forEach((series, order) => {
-    if (series.style === "dots") emitDots(scene, d, k(`dots${order}`), series.values, series.color)
-    else emitLine(scene, d, k(`line${order}`), series.values, series)
+    const offset = series.offset ?? 0
+    // Chuỗi lệch vẽ trên khoảng chỉ số riêng (có thể vượt nến cuối); chuỗi thường giữ đường đi cũ.
+    const range = offset === 0 ? { first: d.first, last: d.last } : drawnRange(d, frame, offset)
+    if (!range) return
+    const view = within(d, range)
+    const values = shifted(series, offset, range.first, range.last)
+    if (series.style === "dots") emitDots(scene, view, k(`dots${order}`), values, series.color)
+    else if (series.style === "step" && !d.merged) emitSteps(scene, view, k(`step${order}`), values, series)
+    else emitLine(scene, view, k(`line${order}`), values, series)
   })
 
   drawMarkers(scene, d, frame, indicator)

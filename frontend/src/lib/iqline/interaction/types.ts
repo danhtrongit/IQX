@@ -3,7 +3,7 @@
  * Lớp `react/` đổi sự kiện DOM sang các kiểu này, xác định `target` bằng bố cục ô, rồi gọi `interactionReducer`.
  */
 import type { Anchor, Bar, ChartMode, Drawing, DrawingTool, PaneCoords, PaneKind, Viewport } from "../types"
-import type { DrawingsAction, DrawingsState } from "../drawings"
+import type { DrawingsAction, DrawingsState, MagnetMode } from "../drawings"
 import type { History } from "./history"
 import type { ViewportSpec } from "./viewport-ops"
 
@@ -85,6 +85,8 @@ export type DragState =
   | { kind: "handle"; pointerId: number; id: string; handle: number; before: readonly Drawing[] }
   | { kind: "move"; pointerId: number; id: string; origin: Drawing; startX: number; startY: number; before: readonly Drawing[] }
   | { kind: "draw"; pointerId: number; startX: number; startY: number }
+  /** Nét bút đang kéo: mỗi lần đủ xa điểm trước (`lastX`, `lastY`) thì thêm một điểm; thả là xong. */
+  | { kind: "stroke"; pointerId: number; lastX: number; lastY: number }
   | { kind: "crosshair"; pointerId: number }
 
 export type TouchPoint = { pointer: PointerInput; startX: number; startY: number }
@@ -106,8 +108,8 @@ export type InteractionState = {
   priceScale: Readonly<Record<string, number>>
   drawings: DrawingsState
   history: History<readonly Drawing[]>
-  /** Hút vào OHLC khi vẽ và kéo tay nắm. */
-  magnet: boolean
+  /** Nam châm khi vẽ và kéo tay nắm: tắt, yếu (hút khi trong ngưỡng) hoặc mạnh (luôn hút về O, H, L, C gần nhất). */
+  magnet: MagnetMode
   /** Điểm con trỏ đang chờ làm điểm neo kế tiếp (bản xem trước khi vẽ). */
   preview: Anchor | null
   cursor: CursorHint
@@ -132,7 +134,8 @@ export type InteractionAction =
   | { type: "set-viewport"; viewport: Viewport }
   | { type: "reset-price-scale"; paneKey: string }
   | { type: "tool"; tool: DrawingTool | null }
-  | { type: "magnet"; on: boolean }
+  /** `boolean` còn nhận để tương thích: `true` là yếu, `false` là tắt. */
+  | { type: "magnet"; on: boolean | MagnetMode }
   | { type: "undo" }
   | { type: "redo" }
   /** Thao tác trên hình có sẵn: chọn, khoá, ẩn, nhân bản, sửa kiểu, xoá. Không gồm `tool`, `anchor` và `load`. */

@@ -10,7 +10,7 @@
  * tự `chart-1, chart-6, chart-8, chart-2, chart-5`, bỏ `chart-6/7/8` khi biểu đồ có đường trần sàn), chỉ báo không tự
  * chọn màu ngoài hai chỗ có nghĩa cố định: +DI/-DI và cột histogram MACD dùng `price-up`/`price-down`.
  */
-import type { Bar, ColorToken, IndicatorDefinition, IndicatorKind, IndicatorParamSpec, IndicatorParams, IndicatorPlot, IndicatorSeries } from "../types"
+import type { Bar, ColorToken, IndicatorContext, IndicatorDefinition, IndicatorKind, IndicatorParamSpec, IndicatorParams, IndicatorPlot, IndicatorSeries } from "../types"
 import { adx, atr, atrPercent, bbWidth, keltner, parabolicSar, relativeVolume } from "./legacy-series"
 import { emptyPlot, registerIndicator, resolveParamSpecs, validateParamSpecs, getIndicator, type IndicatorOptions } from "./registry"
 import { bollinger, cci, cmf, columnsOf, donchian, dmi, ema, macd, mfi, obv, roc, rsi, sma, stochastic, volumeThreshold, williamsR, type Columns } from "./series"
@@ -18,18 +18,18 @@ import { bollinger, cci, cmf, columnsOf, donchian, dmi, ema, macd, mfi, obv, roc
 type Palette = readonly ColorToken[]
 const FALLBACK: ColorToken = "chart-1"
 const colorAt = (palette: Palette, slot: number): ColorToken => (palette.length ? palette[slot % palette.length] : FALLBACK)
-const num = (params: IndicatorParams, key: string): number => {
+export const num = (params: IndicatorParams, key: string): number => {
   const value = params[key]
   return typeof value === "number" ? value : Number.NaN
 }
 
-function line(key: string, label: string, values: readonly (number | null)[], color: ColorToken, extra: Partial<IndicatorSeries> = {}): IndicatorSeries {
+export function line(key: string, label: string, values: readonly (number | null)[], color: ColorToken, extra: Partial<IndicatorSeries> = {}): IndicatorSeries {
   return { key, label, values, color, ...extra }
 }
 
-type Builder = (input: { columns: Columns; bars: readonly Bar[]; params: IndicatorParams; color: (slot: number) => ColorToken }) => IndicatorPlot
+type Builder = (input: { columns: Columns; bars: readonly Bar[]; params: IndicatorParams; color: (slot: number) => ColorToken; context: IndicatorContext | undefined }) => IndicatorPlot
 
-type BuiltinSpec = {
+export type BuiltinSpec = {
   id: string
   name: string
   kind: IndicatorKind
@@ -39,13 +39,13 @@ type BuiltinSpec = {
   build: Builder
 }
 
-type Builtin = { definition: IndicatorDefinition; options: IndicatorOptions }
+export type Builtin = { definition: IndicatorDefinition; options: IndicatorOptions }
 
 /**
  * Bọc công thức thành một `IndicatorDefinition`. Tham số sai không ném lỗi (một layout lưu hỏng không được làm hỏng
  * biểu đồ) mà trả về biểu đồ rỗng; `validateIndicatorParams` cho biết lý do.
  */
-function builtin(spec: BuiltinSpec): Builtin {
+export function builtin(spec: BuiltinSpec): Builtin {
   const options = spec.options ?? {}
   const definition: IndicatorDefinition = {
     id: spec.id,
@@ -53,13 +53,16 @@ function builtin(spec: BuiltinSpec): Builtin {
     kind: spec.kind,
     params: spec.params,
     flashback: spec.flashback,
-    compute(bars, params, palette) {
+    compute(bars, params, palette, context) {
       if (validateParamSpecs(spec.name, spec.params, params, options.validate)) return emptyPlot(spec.kind)
+      // Chỉ báo cần thời gian không đoán thời gian từ nến: thiếu `context` (hoặc lệch độ dài) là biểu đồ rỗng.
+      if (options.needsTime && (!context || context.times.length !== bars.length)) return emptyPlot(spec.kind)
       return spec.build({
         columns: columnsOf(bars),
         bars,
         params: resolveParamSpecs(spec.params, params),
         color: (slot) => colorAt(palette, slot),
+        context,
       })
     },
   }
@@ -68,20 +71,20 @@ function builtin(spec: BuiltinSpec): Builtin {
 
 // ---------------------------------------------------------------- spec tham số
 
-type NumberSpec = { key: string; label: string; min: number; max: number; step: number; default: number }
-const numberSpec = (value: NumberSpec): IndicatorParamSpec => value
-const period = (key: string, label: string, min: number, max: number, def: number): IndicatorParamSpec => numberSpec({ key, label, min, max, step: 1, default: def })
+export type NumberSpec = { key: string; label: string; min: number; max: number; step: number; default: number }
+export const numberSpec = (value: NumberSpec): IndicatorParamSpec => value
+export const period = (key: string, label: string, min: number, max: number, def: number): IndicatorParamSpec => numberSpec({ key, label, min, max, step: 1, default: def })
 
 /** Hai ngưỡng dưới và trên của một chỉ báo (RSI 30/70, CCI -100/100...). */
-function levelSpecs(labelLower: string, labelUpper: string, min: number, max: number, step: number, lower: number, upper: number): IndicatorParamSpec[] {
+export function levelSpecs(labelLower: string, labelUpper: string, min: number, max: number, step: number, lower: number, upper: number): IndicatorParamSpec[] {
   return [numberSpec({ key: "lower", label: labelLower, min, max, step, default: lower }), numberSpec({ key: "upper", label: labelUpper, min, max, step, default: upper })]
 }
 
-const lowerBelowUpper = (params: IndicatorParams): string | null => (num(params, "lower") < num(params, "upper") ? null : "Ngưỡng dưới phải nhỏ hơn ngưỡng trên.")
-const fastBelowSlow = (fast: string, slow: string, fastLabel: string, slowLabel: string) => (params: IndicatorParams): string | null =>
+export const lowerBelowUpper = (params: IndicatorParams): string | null => (num(params, "lower") < num(params, "upper") ? null : "Ngưỡng dưới phải nhỏ hơn ngưỡng trên.")
+export const fastBelowSlow = (fast: string, slow: string, fastLabel: string, slowLabel: string) => (params: IndicatorParams): string | null =>
   num(params, fast) < num(params, slow) ? null : `${fastLabel} phải nhỏ hơn ${slowLabel}.`
 
-function thresholds(params: IndicatorParams, labels: readonly [string, string]): Pick<IndicatorPlot, "levels" | "levelBand"> {
+export function thresholds(params: IndicatorParams, labels: readonly [string, string]): Pick<IndicatorPlot, "levels" | "levelBand"> {
   const lower = num(params, "lower")
   const upper = num(params, "upper")
   return {
@@ -93,7 +96,7 @@ function thresholds(params: IndicatorParams, labels: readonly [string, string]):
   }
 }
 
-const NGUONG: readonly [string, string] = ["Ngưỡng dưới", "Ngưỡng trên"]
+export const NGUONG: readonly [string, string] = ["Ngưỡng dưới", "Ngưỡng trên"]
 const DUOI_TREN: readonly [string, string] = ["Dưới", "Trên"]
 
 // ---------------------------------------------------------------- 16 chỉ báo trong danh mục

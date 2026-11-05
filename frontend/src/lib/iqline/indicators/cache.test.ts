@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import type { Bar, IndicatorPlot } from "../types"
 import { computeIndicator, createIndicatorCache, DEFAULT_PALETTE, indicatorTailMemory, listIndicators } from "./index"
-import { GOLDEN, goldenBars, inputOf, isClose } from "./test-support"
+import { contextFor, GOLDEN, goldenBars, inputOf, isClose } from "./test-support"
 
 const ALL = goldenBars()
 const TOLERANCE = 1e-9
@@ -206,17 +206,20 @@ describe("nến cuối đổi giá cho kết quả đúng", () => {
 })
 
 describe("khi nào tính phần đuôi, khi nào tính lại cả chuỗi", () => {
-  it("công thức cửa sổ hữu hạn tính đuôi; công thức đệ quy tính lại cả chuỗi", () => {
-    const windowed = ["volume", "ma", "bollinger", "ma_cross", "donchian", "stochastic", "cci", "roc", "williams_r", "mfi", "cmf", "bb_width", "relative_volume"]
-    const recursive = ["ema", "rsi", "macd", "dmi", "obv", "atr", "atr_percent", "adx", "keltner", "psar"]
-    for (const id of [...windowed, ...recursive]) {
+  it("công thức cửa sổ hữu hạn tính đuôi; công thức đệ quy và công thức theo thời gian tính lại cả chuỗi", () => {
+    const windowed = ["volume", "ma", "bollinger", "ma_cross", "donchian", "stochastic", "cci", "roc", "williams_r", "mfi", "cmf", "bb_width", "relative_volume", "ichimoku", "wma", "hma", "vwma", "envelope", "aroon", "ultimate_oscillator", "awesome_oscillator", "momentum", "std_dev", "volatility_ohlc"]
+    const recursive = ["ema", "rsi", "macd", "dmi", "obv", "atr", "atr_percent", "adx", "keltner", "psar", "supertrend", "trix", "accum_dist"]
+    // Cần thời gian nến: kỳ có thể dài tuỳ ý nên không bao giờ tính đuôi.
+    const timed = ["vwap", "pivot_points"]
+    const context = contextFor(200)
+    for (const id of [...windowed, ...recursive, ...timed]) {
       const cache = createIndicatorCache()
       const input = { id, params: {} }
-      cache.get(input, ALL.slice(0, 200))
-      cache.get(input, revise(ALL.slice(0, 200), 1.03))
+      cache.get(input, ALL.slice(0, 200), DEFAULT_PALETTE, context)
+      cache.get(input, revise(ALL.slice(0, 200), 1.03), DEFAULT_PALETTE, context)
       expect(cache.stats, id).toEqual(windowed.includes(id) ? { hits: 0, tails: 1, fulls: 1 } : { hits: 0, tails: 0, fulls: 2 })
     }
-    expect(windowed.length + recursive.length).toBe(listIndicators().length - 1)
+    expect(windowed.length + recursive.length + timed.length).toBe(listIndicators().length - 1)
   })
 
   it("số nến phía trước theo từng công thức", () => {

@@ -2,6 +2,8 @@
 import { describe, expect, it } from "vitest"
 
 import { makeCoords } from "./__fixtures__/coords"
+import { ADVANCED_SAMPLE } from "./__fixtures__/advanced-samples"
+import { BASIC_SAMPLE } from "./__fixtures__/basic-samples"
 import { ALL_TOOLS, TOOL_SPECS, FIB_FORBIDDEN_TOKENS, drawingCommands, handleCommands, measureLabel, previewCommands } from "./index"
 import type { Anchor, DrawCommand, Drawing, DrawingTool } from "../types"
 
@@ -32,6 +34,10 @@ const SAMPLE: Record<DrawingTool, [number, number][]> = {
   "elliott-abc": [[2, 100], [10, 220], [18, 160], [30, 250]],
   note: [[10, 150]],
   measure: [[5, 100], [30, 200]],
+  // Đợt 2: điểm mẫu dùng chung (tools-advanced.ts).
+  ...ADVANCED_SAMPLE,
+  // Đợt 1: điểm mẫu dùng chung (tools-basic.ts).
+  ...BASIC_SAMPLE,
 }
 
 const tokensOf = (commands: DrawCommand[]) => commands.flatMap((command) => ("token" in command ? [command.token] : []))

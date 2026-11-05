@@ -4,8 +4,9 @@
  *
  * + hoặc =: phóng to. - hoặc _: thu nhỏ. Mũi tên trái và phải: kéo 1 nến (Shift: 10 nến); khi không kéo được (static,
  * hoặc Flashback tắt kéo) hoặc giữ Alt thì mũi tên di chuyển crosshair từng nến (§7 "Tiếp cận"). Esc: huỷ vẽ, rồi bỏ chọn, rồi tắt
- * crosshair. Delete hoặc Backspace: xoá hình đang chọn. Ctrl hoặc Cmd + Z: hoàn tác; thêm Shift hoặc Ctrl + Y: làm lại.
+ * crosshair. Enter: hoàn tất đường gấp khúc đang vẽ. Delete hoặc Backspace: xoá hình đang chọn. Ctrl hoặc Cmd + Z: hoàn tác; thêm Shift hoặc Ctrl + Y: làm lại.
  */
+import { isVariableTool } from "../drawings"
 import type { InteractionAction, InteractionConfig, InteractionState, KeyInput } from "./types"
 import { KEY_PAN_BARS, KEY_PAN_BARS_FAST } from "./gestures"
 
@@ -45,6 +46,12 @@ export function keyToAction(
         if (drawings.selectedId !== null) return { type: "drawing", action: { type: "select", id: null } }
       }
       return state.crosshair ? { type: "clear-crosshair" } : null
+    }
+    case "Enter": {
+      // Hoàn tất hình nhiều điểm đang vẽ (đường gấp khúc).
+      const { pending } = state.drawings
+      if (config.allowedTools.length === 0 || !pending || !isVariableTool(pending.tool)) return null
+      return { type: "drawing", action: { type: "finish" } }
     }
     case "Delete":
     case "Backspace":

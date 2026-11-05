@@ -19,12 +19,12 @@ const bars = makeTimedBars(400)
 const definitions = listIndicators()
 
 describe("mọi chỉ báo đăng ký đều dựng được cảnh", () => {
-  it("có đủ 24 chỉ báo để kiểm tra", () => {
-    expect(definitions).toHaveLength(24)
+  it("có đủ 40 chỉ báo để kiểm tra", () => {
+    expect(definitions).toHaveLength(40)
   })
 
   it.each(definitions.map((definition) => [definition.id, definition] as const))("%s: cảnh hữu hạn, clip cân bằng, ô đúng loại", (id, definition) => {
-    const plot = computeIndicator({ id, params: {} }, bars, indicatorPalette())
+    const plot = computeIndicator({ id, params: {} }, bars, indicatorPalette(), { times: bars.map((bar) => bar.time), interval: "5" })
     expect(plot).not.toBeNull()
     const indicators: SceneIndicator[] = [{ key: id, id, name: definition.name, plot: plot! }]
     const out = build(marketInput({ bars, indicators }))
@@ -43,7 +43,7 @@ describe("mọi chỉ báo đăng ký đều dựng được cảnh", () => {
     const mid = bars[399].close
     const indicators = definitions
       .filter((definition) => definition.kind === "over")
-      .map<SceneIndicator>((definition) => ({ key: definition.id, id: definition.id, name: definition.name, plot: computeIndicator({ id: definition.id, params: {} }, bars, DEFAULT_PALETTE)! }))
+      .map<SceneIndicator>((definition) => ({ key: definition.id, id: definition.id, name: definition.name, plot: computeIndicator({ id: definition.id, params: {} }, bars, DEFAULT_PALETTE, { times: bars.map((bar) => bar.time), interval: "5" })! }))
     const scene = build(marketInput({ bars, indicators, priceLevels: { ceiling: mid + 3, floor: mid - 3 } })).scene()
     const used = new Set(tokens(scene))
     for (const forbidden of ["chart-6", "chart-7", "chart-8"]) expect(used.has(forbidden)).toBe(false)

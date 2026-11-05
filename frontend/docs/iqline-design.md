@@ -1,6 +1,6 @@
 # Thiết kế thư viện biểu đồ IQLine
 
-Trạng thái: IQLine 1.0 đã làm xong Giai đoạn 1 đến 7, bật mặc định cả bốn nơi. Code TradingView và SVG cũ còn giữ để quay lại, chưa dọn. Còn các điểm chưa kiểm chứng ở §18 và các điểm cần xác nhận ở §16. Số đo Giai đoạn 0: [iqline-gd0-report.md](iqline-gd0-report.md).
+Trạng thái: IQLine 1.0 đã làm xong Giai đoạn 1 đến 7, bật mặc định cả bốn nơi. Code TradingView và SVG cũ còn giữ để quay lại, chưa dọn. Sau đó thêm đợt chỉ báo thứ hai (16 chỉ báo, nay có 40; §9). Còn các điểm chưa kiểm chứng ở §18 và các điểm cần xác nhận ở §16. Số đo Giai đoạn 0: [iqline-gd0-report.md](iqline-gd0-report.md).
 
 Tên hiển thị là **IQLine**. Trong code dùng `iqline` cho thư mục và khoá lưu trữ, `IQLine` cho component và kiểu.
 
@@ -30,7 +30,7 @@ Xây thư viện biểu đồ nến riêng của IQX, theo đúng `frontend/DESI
 | Trục thời gian | Bỏ khoảng trống nghỉ trưa, cuối tuần và ngày nghỉ; múi giờ `Asia/Ho_Chi_Minh` | `market` |
 | Trục giá | Tuyến tính, log, phần trăm; tự co giãn hoặc kéo tay | `market` |
 | Dữ liệu | Nạp thêm lịch sử khi kéo về trái, cập nhật nến cuối theo realtime | `market` |
-| Chỉ báo | 24 chỉ báo (§9), nhiều ô, kéo đổi chiều cao ô, hộp thoại thêm và sửa, ẩn, xoá | `market`, `flashback` (16) |
+| Chỉ báo | 40 chỉ báo (§9), nhiều ô, kéo đổi chiều cao ô, hộp thoại thêm và sửa, ẩn, xoá | `market`, `flashback` (16) |
 | Công cụ vẽ | 14 công cụ (§10), kéo tay nắm, khoá, ẩn, nhân bản, hút vào OHLC, danh sách hình, mẫu kiểu | `market`; Flashback 3 công cụ |
 | Lưu trữ | Hình vẽ và chỉ báo theo từng mã, theo tài khoản, giữ cả dữ liệu đã lưu từ TradingView (§11) | `market` |
 | Đánh dấu | Tin AI theo sắc thái, điểm đặt lệnh, mẫu hình AI vẽ đè | `market`, `flashback` |
@@ -82,7 +82,7 @@ iqline/
   scene/         dữ liệu + viewport -> danh sách lệnh vẽ (thuần)
   render/        adapter Canvas, bốn lớp canvas, DPR, đọc token màu
   interaction/   bộ giảm trạng thái cho zoom, kéo, crosshair, phím, hoàn tác
-  indicators/    24 chỉ báo và registerIndicator (thuần)
+  indicators/    40 chỉ báo và registerIndicator (thuần)
   drawings/      14 công cụ, chọn hình, kéo tay nắm, chuyển đổi layout cũ (thuần)
   labels/        đặt nhãn tránh đè (chuyển từ series-panels-labels.ts)
   react/         <IQLine />, chú giải, thanh công cụ, hộp thoại
@@ -259,7 +259,35 @@ Chuyển nguyên `IndicatorPlot` và các hàm trong `flashback-indicators.ts`.
 
 **Volume Profile theo vùng nhìn thấy (chỉ ở `market`):** thêm vì layout đã lưu có 2 người dùng chỉ báo này, là chỉ báo duy nhất ngoài danh sách được từ 2 người trở lên dùng. Chia khối lượng từng nến đều theo biên độ giá của nến đó, nên chỉ là ước lượng. Vẽ thành cột ngang trên ô giá.
 
-**Danh sách đã chốt theo số liệu Giai đoạn 0, tổng cộng 24 chỉ báo.** Ichimoku và Volatility O-H-L-C mỗi loại chỉ có 1 người dùng nên không thêm; hai chỉ báo này báo là không chuyển được (§11). Trong 7 chỉ báo bổ sung, chỉ BB Width có người dùng, nên các chỉ báo còn lại được cắt đầu tiên nếu thiếu thời gian.
+**Danh sách đã chốt theo số liệu Giai đoạn 0 gồm 24 chỉ báo.** Lúc đó Ichimoku và Volatility O-H-L-C mỗi loại chỉ có 1 người dùng nên chưa thêm. Trong 7 chỉ báo bổ sung, chỉ BB Width có người dùng, nên các chỉ báo còn lại được cắt đầu tiên nếu thiếu thời gian. Đợt hai bên dưới đưa tổng lên 40.
+
+**Đợt hai: 16 chỉ báo, chỉ ở `market` (`flashback: false`).** Viết từ định nghĩa công khai của từng chỉ báo, không có công thức ở backend để đối chiếu. Mọi công thức nằm trong `indicators/series-extra.ts`, khai báo ở `indicators/definitions-extra.ts`; hộp thoại thêm chỉ báo có ô tìm (bỏ dấu, nhiều từ, cả tên tiếng Anh đầy đủ) và lọc theo nhóm.
+
+| Nơi vẽ | Chỉ báo | Tham số (mặc định) | Cách tính và quy ước |
+|---|---|---|---|
+| Trên giá | Ichimoku Cloud | Tenkan 9, Kijun 26, Senkou B 52, dời 26 | Tenkan, Kijun, Senkou B là trung điểm cao nhất và thấp nhất của cửa sổ tương ứng. Senkou A = (Tenkan + Kijun) / 2. Senkou A và B dời 26 nến về tương lai, Chikou (giá đóng) dời 26 nến về quá khứ. Mây tô giữa Senkou A và B: màu tăng khi A >= B, màu giảm khi A < B, cắt đúng tại điểm hai đường giao nhau |
+| Trên giá | VWAP | Kỳ đặt lại: tự động, phiên, tuần, tháng, năm | Tổng(giá điển hình x khối lượng) / tổng(khối lượng) cộng dồn từ đầu kỳ, giá điển hình = (cao + thấp + đóng) / 3 của nến. Khung phút đặt lại mỗi phiên. **Khung ngày trở lên một nến đã là cả phiên, nên "theo phiên" vô nghĩa: tự động đặt lại mỗi tháng ở khung ngày và mỗi năm ở khung tuần, tháng.** Đây là lựa chọn của IQLine, nhãn trong chú giải ghi rõ kỳ ("VWAP theo tháng") và có thể đổi trong cài đặt |
+| Trên giá | SuperTrend | ATR 10, hệ số 3 | ATR Wilder, dải trên chỉ hạ và dải dưới chỉ nâng khi giá chưa phá. Hai đường: tăng (nằm dưới giá, màu tăng) và giảm (nằm trên giá, màu giảm), đứt đúng lúc đảo chiều |
+| Trên giá | WMA, HMA, VWMA | Chu kỳ 9 (WMA, HMA), 20 (VWMA) | WMA trọng số tuyến tính; HMA = WMA(căn N) của (2 x WMA(N/2) - WMA(N)); VWMA trung bình có trọng số khối lượng. Cùng nhóm với MA và EMA nên không kéo giãn trục giá. WMA, HMA, VWMA, Envelope, TRIX, Momentum, Standard Deviation có thêm tham số nguồn giá (đóng, mở, cao, thấp, hl2, hlc3, ohlc4) |
+| Trên giá | Envelope | Chu kỳ 20, 10%, nền SMA hoặc EMA | Đường nền cộng và trừ phần trăm cố định |
+| Trên giá | Pivot Points | Kỳ: tự động, ngày, tuần, tháng, năm | Standard (cổ điển) tính từ cao H, thấp L, đóng C của **kỳ trước**: P = (H + L + C) / 3, R1 = 2P - L, S1 = 2P - H, R2 = P + (H - L), S2 = P - (H - L), R3 = H + 2(P - L), S3 = L - 2(H - P). Vẽ thành bậc ngang theo kỳ (`style: "step"`). Kỳ tự động: khung 1, 5, 15 phút theo ngày; 30, 60 phút theo tuần; ngày theo tháng; tuần, tháng theo năm (lựa chọn của IQLine). Kỳ đầu của dữ liệu chưa có kỳ trước nên để trống |
+| Ô riêng | Aroon | 25 | Up = 100 x (N - số nến từ đỉnh cao nhất) / N, Down tương tự với đáy thấp nhất, cửa sổ N + 1 nến; thang 0 đến 100 |
+| Ô riêng | TRIX | 18 | Phần trăm thay đổi 1 nến của EMA ba lần |
+| Ô riêng | Ultimate Oscillator | 7, 14, 28 | Trung bình có trọng số 4:2:1 của ba tỉ lệ buying pressure, thang 0 đến 100, ngưỡng 30 và 70 |
+| Ô riêng | Awesome Oscillator | không | SMA 5 trừ SMA 34 của (cao + thấp) / 2, chỉ có cột: trên 0 màu tăng, dưới 0 màu giảm |
+| Ô riêng | Momentum | 10 | Đóng hôm nay trừ đóng N nến trước |
+| Ô riêng | Standard Deviation | 20 | Độ lệch chuẩn tổng thể của giá đóng trong cửa sổ |
+| Ô riêng | Accumulation/Distribution | không | Cộng dồn (money flow multiplier x khối lượng); nến cao bằng thấp đóng góp 0 |
+| Ô riêng | Volatility O-H-L-C | 10, 252 nến mỗi năm | **Ước lượng Garman-Klass** (1980) từ định nghĩa công khai: mỗi nến g = 0,5 x ln(cao/thấp)^2 - (2 ln 2 - 1) x ln(đóng/mở)^2; kết quả = 100 x căn(trung bình g của N nến x số nến mỗi năm). Đây KHÔNG phải mã của chỉ báo cùng tên trên TradingView (không đọc được), nên số có thể lệch một hệ số quy năm hay cách lấy trung bình so với layout cũ |
+
+**Mở rộng hợp đồng (cộng thêm, không đổi 24 chỉ báo cũ):**
+
+- `IndicatorSeries.offset`: giá trị của nến j được vẽ ở nến j + offset (dương là vùng tương lai, âm là quá khứ). `values` luôn dài đúng bằng số nến. `scene/` vẽ phần ngoại suy ở vùng trống sau nến cuối mà không kéo giãn trục giá (trục chỉ dựa vào nến, v2.3 §3); crosshair và chú giải đọc `values[i - offset]`, nên chú giải vẫn đúng.
+- `IndicatorPlot.cloud`: tô giữa hai chuỗi (theo `key`) với hai token màu tăng và giảm, tách đa giác tại điểm giao. Ẩn khi chỉ báo bị gộp thang.
+- `IndicatorSeries.style: "step"`: đoạn ngang theo từng chuỗi giá trị bằng nhau liên tiếp.
+- `IndicatorParamSpec.optionLabels`: nhãn tiếng Việt cho lựa chọn chuỗi (kỳ của VWAP và Pivot).
+- `IndicatorContext { times, interval }` là tham số thứ tư của `compute`, **chỉ `market` truyền** (`TimedBar.time`). Chỉ báo khai báo `needsTime` trả biểu đồ rỗng nếu không có ngữ cảnh khớp số nến. Flashback không bao giờ nhận (`Bar` của nó không có `time`, §12): `sceneIndicatorsFor` không truyền cho Flashback, các chỉ báo này có `flashback: false` nên bị bỏ ngay từ đầu, và nếu lọt qua vẫn rỗng. Có test cho cả ba đường. Giờ của kỳ theo ICT (UTC+7), tuần bắt đầu thứ hai.
+- Bộ nhớ đệm: `tailMemory` đúng theo công thức (cửa sổ hữu hạn chỉ tính phần đuôi; đệ quy như TRIX, SuperTrend, A/D và EMA tính lại cả chuỗi); chỉ báo cần thời gian luôn tính lại cả chuỗi và khoá đệm có khung thời gian. Có test đi từng nến so với tính lại từ đầu cho mọi chỉ báo.
 
 **Mở rộng bằng code:**
 
@@ -278,7 +306,7 @@ registerIndicator({
 - Kết quả tính được ghi nhớ theo `(id, tham số, độ dài dữ liệu)`, nên zoom và kéo không tính lại.
 - Cập nhật nến cuối chỉ tính lại phần đuôi nếu công thức cho phép; nếu không thì tính lại cả chuỗi.
 
-**Đối chiếu số liệu.** Vì chưa có package dùng chung giữa frontend và backend, thêm một bộ dữ liệu mẫu JSON sinh từ `quant/v2/indicators.ts` rồi kiểm tra 23 chỉ báo ở frontend. Volume Profile không có công thức ở backend nên có test riêng. Bước này có thể phát hiện chỗ lệch đang có, và mỗi chỗ lệch phải được xử lý riêng vì Bot đang chạy theo công thức backend.
+**Đối chiếu số liệu.** Vì chưa có package dùng chung giữa frontend và backend, thêm một bộ dữ liệu mẫu JSON sinh từ `quant/v2/indicators.ts` rồi kiểm tra 23 chỉ báo ở frontend. Volume Profile không có công thức ở backend nên có test riêng. **16 chỉ báo đợt hai cũng không có công thức ở backend: chúng được kiểm bằng giá trị tính tay trên chuỗi ngắn, không đối chiếu với nguồn ngoài nào (TradingView hay thư viện khác).** Bước này có thể phát hiện chỗ lệch đang có, và mỗi chỗ lệch phải được xử lý riêng vì Bot đang chạy theo công thức backend.
 
 ## 10. Công cụ vẽ
 
@@ -297,6 +325,28 @@ Tổng cộng 14 công cụ. Flashback dùng ba công cụ: xu hướng, Fibonac
 Mọi công cụ dùng chung một mô tả: danh sách điểm neo, cách vẽ, cách chọn.
 
 Danh sách đã chốt. Layout đã lưu chỉ có 6 hình: 3 đường xu hướng, 1 thước đo giá, 1 hình chữ nhật, 1 Volume Profile cố định. Ba loại đầu đều có trong danh sách. Volume Profile cố định không có (§11).
+
+### Công cụ đợt 2: Fibonacci, Pitchfork, Gann, mẫu hình
+
+Chín công cụ nằm trong `src/lib/iqline/drawings/tools-advanced.ts`; `commands.ts` và `hit-test.ts` chỉ gọi sang đó. Cùng cơ chế với các công cụ khác: chọn, tay nắm ở từng điểm neo, kéo, khoá, ẩn, nhân bản, lưu và nạp lại. Flashback vẫn chỉ có ba công cụ cũ. Màu Fibonacci không dùng `chart-3`, `chart-4`, `chart-7`.
+
+| Công cụ | Điểm neo | Hình vẽ |
+|---|---|---|
+| Vùng thời gian Fibonacci (`fib-time-zones`) | 2 | Khoảng cách giữa hai điểm là một đơn vị. Vạch dọc ở 0, 1, 2, 3, 5, 8, 13, ... đơn vị tính từ điểm đầu (dãy Fibonacci), số ghi ở chân vạch. Phần ở tương lai dùng ngoại suy của thang thời gian |
+| Quạt Fibonacci (`fib-fan`) | 2 | Tia từ điểm đầu qua giá `a + (b - a) * mức` tại hoành độ điểm hai, mức 0,382, 0,5, 0,618. Đường nối hai điểm là tia 100% |
+| Kênh Fibonacci (`fib-channel`) | 3 | Đường nền nối hai điểm đầu; điểm thứ ba định độ rộng. Bảy đường song song ở 0, 0,236, 0,382, 0,5, 0,618, 0,786, 1; vùng giữa 38,2% và 61,8% được tô |
+| Pitchfork Andrews (`pitchfork`) | 3 | Đường giữa từ điểm cán qua trung điểm hai mũi, hai nhánh song song qua từng mũi, kéo dài về bên phải; hai dải tô bắt đầu từ đoạn nối hai mũi |
+| Quạt Gann (`gann-fan`) | 2 | Chín tia 1x8, 1x4, 1x3, 1x2, 1x1, 2x1, 3x1, 4x1, 8x1, có nhãn. Đường 1x1 đi qua điểm hai; các tia khác đổi độ dốc theo tỷ lệ giá trên thời gian của góc đó |
+| Hộp Gann (`gann-box`) | 2 | Lưới ở 0, 0,25, 0,382, 0,5, 0,618, 0,75, 1 theo cả hai chiều, đường chéo nét đứt. Nhãn ngang ghi tỷ lệ và giá; nhãn dọc ghi tỷ lệ, bỏ khi hộp rộng dưới 240px |
+| Mẫu hình XABCD (`xabcd`) | 5 | Các nét X-A, A-B, B-C, C-D; nét đứt X-B, A-C, B-D, X-D; hai tam giác XAB và BCD được tô. Chữ X A B C D và bốn tỷ lệ: XAB = \|AB\| / \|XA\|, ABC = \|BC\| / \|AB\|, BCD = \|CD\| / \|BC\|, XAD = \|AD\| / \|XA\|, ghi ở giữa X-B, A-C, B-D, X-D |
+| Vai đầu vai (`head-shoulders`) | 7 | Đường gấp khúc qua bảy điểm; đường cổ nối điểm 3 và điểm 5, kéo dài nét đứt tới điểm cuối; ba phần vai trái, đầu, vai phải được tô. Nhãn Vai trái, Đầu, Vai phải, Đường cổ |
+| Mẫu hình tam giác (`triangle-pattern`) | 4 | Đường gấp khúc mảnh A-B-C-D, hai đường A-C và B-D nét chính, kéo tới giao điểm nếu hai đường hội tụ; vùng giữa hai đường được tô. Nhãn A B C D |
+
+**Quy ước toạ độ trên thang log và phần trăm.** Đường xiên (kênh, nhánh Pitchfork, các tia, các cạnh mẫu hình) tính trên toạ độ màn hình của các điểm neo, nên hai đầu luôn nằm đúng giá ở mọi thang. Đường ngang theo mức (Hộp Gann, đoạn dọc của quạt Fibonacci) nội suy tuyến tính theo giá rồi mới đổi sang toạ độ màn hình, như thoái lui Fibonacci. Tỷ lệ XABCD tính trên giá tuyệt đối, không theo log. Khoảng cách ngang tính theo chỉ số nến và không bị chặn ở nến cuối. Điểm neo giữ `time` (Flashback giữ `session`) nên hình không trôi khi nạp thêm lịch sử hay đổi khung. Nét, vùng tô hoặc nhãn có số không hữu hạn (điểm trùng nhau, khoảng giá bằng 0) bị bỏ, không sinh NaN.
+
+**Chuyển từ TradingView.** `fromTradingViewLayout` chuyển `LineToolFibTimeZone`, `LineToolFibSpeedResistanceFan`, `LineToolFibChannel`, `LineToolPitchfork`, `LineToolGannFan`, `LineToolGannComplex`, `LineTool5PointsPattern`, `LineToolHeadAndShoulders`, `LineToolTrianglePattern` theo `points[]` như các công cụ đã có. `LineToolGannSquare` cũng về Hộp Gann nhưng chỉ gần đúng (cùng hai điểm góc, mức khác). Các biến thể Pitchfork (Schiff, Schiff cải tiến, bên trong) và Gann cố định chưa có tương ứng nên bị bỏ và báo như mọi loại không chuyển được. **Chưa thử trên layout TradingView thật:** tên loại và số điểm lấy từ tên công cụ công khai, test dùng mẫu tự viết (`tradingview-advanced.test.ts`). Production hiện chưa có hình nào thuộc nhóm này (§11 chỉ có 6 hình), nên việc chuyển chưa có số liệu để đối chiếu.
+
+**Kiểm thử.** Giá trị tính tay cho các mức Fibonacci, góc Gann, tỷ lệ XABCD, giao điểm tam giác; trúng và trượt khi chọn, kéo tay nắm, trường hợp suy biến, thang log và phần trăm, đổi khung và nạp thêm lịch sử; Canvas thật qua `e2e/iqline-tools-advanced.spec.ts` (máy tính và điện thoại, sáng và tối). Công thức hình học viết từ định nghĩa toán học công khai; chưa đối chiếu hình vẽ với TradingView.
 
 ## 11. Lưu trữ và chuyển dữ liệu từ TradingView
 
@@ -327,7 +377,8 @@ Bản sao trên trình duyệt chuyển sang khoá `iqx.iqline_drawings_v1_*`. G
 |---|---|
 | `LineToolTrendLine`, `LineToolPriceRange`, `LineToolRectangle` | Đường xu hướng, thước đo, hình chữ nhật |
 | Volume, RSI, Moving Average, Bollinger Bands, BB Width, MACD, Donchian, Chaikin Money Flow, `VbPVisible` | Chỉ báo tương ứng ở §9 |
-| `LineToolVbPFixed`, Ichimoku Cloud, Volatility O-H-L-C | Không chuyển, báo cho người dùng |
+| Ichimoku Cloud, Volatility O-H-L-C, VWAP, SuperTrend, WMA, HMA, VWMA, Envelope, Pivot Points Standard, Aroon, TRIX, Ultimate Oscillator, Awesome Oscillator, Momentum, Standard Deviation, Accumulation/Distribution | Chỉ báo tương ứng ở §9 (đợt hai); tham số đọc từ `inputs` của layout, thiếu thì dùng mặc định |
+| `LineToolVbPFixed` | Không chuyển, báo cho người dùng |
 
 Số liệu này không gồm bản lưu trên trình duyệt của khách.
 
@@ -399,7 +450,7 @@ Làm theo giai đoạn nhưng phát hành một lần. Trong lúc làm, mỗi n�
 |---|---|---|
 | 0 | Bản thử Canvas trên dữ liệu thật; đo tải và hiệu năng TradingView; thống kê layout đã lưu; kiểm tra kênh `ohlc` và `tabular-nums`. Còn: đo kênh `ohlc` sau khi khôi phục luồng DNSE, đo điện thoại thật | Có số đo so với §14, chốt danh sách §9 và §10 |
 | 1 | `core`, `scene`, `render`: mọi kiểu hiển thị, nhiều ô, hai loại trục, ba thang giá, giao diện | Ảnh chụp khớp Flashback hiện tại ở cả hai giao diện |
-| 2 | 24 chỉ báo, `registerIndicator`, test đối chiếu backend | Khớp bộ mẫu, hoặc mọi chỗ lệch đã được quyết định |
+| 2 | 24 chỉ báo (sau đó thêm 16, §9), `registerIndicator`, test đối chiếu backend | Khớp bộ mẫu, hoặc mọi chỗ lệch đã được quyết định |
 | 3 | Tương tác, 14 công cụ vẽ, hoàn tác, lưu trữ, chuyển đổi layout cũ | Mở được bản sao ẩn danh của layout thật, chuyển đúng theo bảng ở §11 |
 | 4 | Lắp vào `market`: datafeed, realtime, đánh dấu tin, lớp AI, trần sàn, thanh công cụ, điện thoại | Đủ mọi dòng `market` ở §2 |
 | 5 | Lắp vào Flashback | Test qua, chơi thử đủ một ván nhiều người |
@@ -415,7 +466,7 @@ Các điểm dưới đây đã có lựa chọn mặc định. Tài liệu đi 
 1. **Flashback bật zoom và kéo** (§12). Đây là thay đổi so với hiện tại, và bản nháp trước đề xuất tắt.
 2. **Học viện nằm trong IQLine 1.0** (§13). Đây là phần có thể tách ra nếu cần phát hành sớm hơn, vì TradingView không phụ thuộc vào nó.
 3. **Danh sách không làm** ở §2, đặc biệt là ngôn ngữ viết chỉ báo cho người dùng.
-4. **Những thứ người dùng mất khi chuyển.** Trên production, 1 trong 6 hình vẽ (Volume Profile cố định) và 2 chỉ báo mỗi loại 1 người dùng (Ichimoku, Volatility O-H-L-C) sẽ không chuyển được. TradingView cũng có nhiều công cụ vẽ hơn 14 công cụ ở §10.
+4. **Những thứ người dùng mất khi chuyển.** Trên production, 1 trong 6 hình vẽ (Volume Profile cố định) sẽ không chuyển được. Ichimoku và Volatility O-H-L-C (mỗi loại 1 người dùng) nay đã chuyển được nhờ đợt hai, nhưng số của Volatility O-H-L-C có thể lệch bản gốc (§9). TradingView cũng có nhiều công cụ vẽ hơn 14 công cụ ở §10.
 5. **Tên IQLine.** Nên tra cứu nhãn hiệu tại Cục Sở hữu trí tuệ trước khi đưa tên ra ngoài. Không ảnh hưởng việc code.
 
 ## 17. Rủi ro
@@ -446,7 +497,17 @@ Các điểm dưới đây đã có lựa chọn mặc định. Tài liệu đi 
 - `fromTradingViewLayout` trên layout `widget.save` thật. Mới dùng mẫu tự viết theo cấu trúc đã thống kê ở Giai đoạn 0.
 - TradingView thật có nhận `state` có thêm khoá `iqline` khi quay lại hay không.
 - Dữ liệu cho `AiOverlay`: mới có lớp vẽ, chưa có nguồn.
+- **16 chỉ báo đợt hai chưa đối chiếu với nguồn ngoài nào.** Công thức viết từ định nghĩa công khai và kiểm bằng giá trị tính tay; chưa so với TradingView hay thư viện khác. Điểm dễ lệch nhất: Volatility O-H-L-C (Garman-Klass, hệ số quy năm), kỳ tự động của VWAP và Pivot Points (là lựa chọn của IQLine), Aroon (cửa sổ N + 1), Ultimate Oscillator (trọng số 4:2:1), Hull MA và SuperTrend (cách khởi tạo nến đầu).
+- Chú giải ở màn hình hẹp (dưới 600 px): hàng chỉ báo tự xuống dòng. Dòng đầu là tên (bỏ tham số) và ba nút ẩn, cài đặt, xoá; giá trị nối sau và xuống dòng khi hết chỗ, nên Ichimoku (5 giá trị) và Pivot Points (7) đọc được hết ở 390 px mà không cuộn. Đổi lại hai hàng này cao 40 px thay vì 24 px, che thêm một phần góc trên bên trái ô giá (nền chú giải trong suốt 70%).
 
 **Chỗ lệch công thức với backend** (ghi trong `KNOWN_DIVERGENCES`, giữ nguyên số của Flashback cũ, chưa quyết): MACD và Stochastic đổi `null` đầu chuỗi thành 0 trước khi làm mượt, nên lệch ở đoạn đầu; CMF cho `null` cả cửa sổ nếu có phiên high bằng low, nên trống nhiều với mã hay kịch trần, kịch sàn. Bot chạy theo backend.
 
 **Dọn dẹp** (§15) làm sau thời gian theo dõi, chưa làm.
+
+### 18.1 Bổ sung công cụ (đợt 1 và 2)
+
+- **Công cụ vẽ:** 36 công cụ (14 cũ, 13 đợt 1 ở `drawings/tools-basic.ts`, 9 đợt 2 ở `drawings/tools-advanced.ts`). Thanh công cụ chia 7 nhóm, nhớ công cụ dùng gần nhất của nhóm, có cột yêu thích (tối đa 8, lưu `localStorage` theo tài khoản) và nam châm ba mức Tắt, Yếu, Mạnh (`magnet: true` của layout cũ thành Yếu).
+- **Chỉ báo:** 40 (thêm 16, đều `flashback: false`); công thức mới viết theo định nghĩa công khai, chưa đối chiếu nguồn ngoài.
+- **Bộ điều khiển:** `isStaleState` giữ trạng thái dispatch mới nhất khi một lần render cũ hơn commit sau, nên bấm liền nhau không mất điểm neo; e2e bấm không chờ.
+- **Chưa kiểm chứng thêm:** chuyển layout TradingView cho công cụ đợt 2 và các tên `LineToolGannComplex`, `LineToolGannSquare` mới thử trên mẫu tự viết; tay nắm thứ hai của callout nằm giữa hộp, che một phần chữ khi đang chọn.
+

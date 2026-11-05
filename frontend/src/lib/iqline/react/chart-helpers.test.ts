@@ -46,6 +46,33 @@ describe("sceneIndicatorsFor", () => {
     expect(out.map((item) => item.id)).toEqual(["rsi"])
   })
 
+  it("market truyền thời gian nến: VWAP và Pivot Points có giá trị", () => {
+    const time = { times: bars.map((bar) => bar.time), interval: "D" as const }
+    const out = sceneIndicatorsFor([input("vwap"), input("pivot_points", { timeframe: "week" })], bars, createIndicatorCache(), palette, { profile: null, time })
+    expect(out.map((item) => item.id)).toEqual(["vwap", "pivot_points"])
+    expect(out[0].plot.series[0].values.some((value) => value !== null)).toBe(true)
+    expect(out[0].plot.series[0].label).toBe("VWAP theo tháng")
+    expect(out[1].plot.series.find((item) => item.key === "pp")?.values.some((value) => value !== null)).toBe(true)
+  })
+
+  it("không có thời gian (market chưa truyền) thì chỉ báo cần thời gian cho chuỗi rỗng, không đoán", () => {
+    const out = sceneIndicatorsFor([input("vwap"), input("pivot_points")], bars, createIndicatorCache(), palette, { profile: null })
+    expect(out.map((item) => item.plot.series)).toEqual([[], []])
+  })
+
+  it("Flashback không bao giờ nhận thời gian: VWAP và Pivot Points bị bỏ dù có truyền `time`", () => {
+    const time = { times: bars.map((bar) => bar.time), interval: "D" as const }
+    const out = sceneIndicatorsFor([input("vwap"), input("pivot_points"), input("ichimoku"), input("rsi")], bars, createIndicatorCache(), palette, { profile: null, flashback: true, time })
+    expect(out.map((item) => item.id)).toEqual(["rsi"])
+  })
+
+  it("tên hiển thị của chỉ báo mới kèm tham số số, bỏ tham số chuỗi", () => {
+    const [ichimoku, envelope, ultimate] = sceneIndicatorsFor([input("ichimoku"), input("envelope"), input("ultimate_oscillator")], bars, createIndicatorCache(), palette, { profile: null })
+    expect(ichimoku.name).toBe("Ichimoku Cloud (9, 26, 52, 26)")
+    expect(envelope.name).toBe("Envelope (20, 10)")
+    expect(ultimate.name).toBe("Ultimate Oscillator (7, 14, 28)")
+  })
+
   it("Volume Profile tính theo khoảng đang thấy và dùng lại kết quả khi khoảng không đổi", () => {
     const cache = createIndicatorCache()
     const profile = input("volume_profile", { rows: 24 })

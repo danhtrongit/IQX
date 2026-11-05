@@ -99,7 +99,13 @@ export type IndicatorKind = "over" | "vol" | "pane"
 export type IndicatorParamValue = number | string | boolean
 export type IndicatorParams = Record<string, IndicatorParamValue>
 export type ChartIndicatorInput = { key: string; id: string; params: IndicatorParams; hidden?: boolean }
-export type IndicatorSeries = { key: string; label: string; values: readonly (number | null)[]; color: ColorToken; style?: "line" | "dash" | "dots" | "area"; width?: number }
+/**
+ * Một đường của chỉ báo. `values` luôn dài đúng bằng số nến; `offset` chỉ dời chỗ VẼ (và chỗ đọc ở crosshair, chú giải):
+ * giá trị tính từ nến `j` được vẽ ở chỉ số `j + offset`. `offset > 0` đẩy về tương lai (Senkou của Ichimoku, vẽ vào vùng
+ * ngoại suy sau nến cuối, không kéo giãn trục); `offset < 0` kéo về quá khứ (Chikou). `style: "step"` vẽ mỗi đoạn có cùng giá
+ * trị thành một đoạn ngang riêng, không nối sang đoạn kế tiếp khi giá trị đổi (Pivot Points theo kỳ).
+ */
+export type IndicatorSeries = { key: string; label: string; values: readonly (number | null)[]; color: ColorToken; style?: "line" | "dash" | "dots" | "area" | "step"; width?: number; offset?: number }
 export type IndicatorPlot = {
   kind: IndicatorKind
   series: IndicatorSeries[]
@@ -112,8 +118,26 @@ export type IndicatorPlot = {
   range?: readonly [number, number]
   levelBand?: { lower: number; upper: number }
   cross?: readonly [string, string]
+  /** Mây tô giữa hai chuỗi (theo `key`, tính cả `offset` của chúng): `upToken` khi `a >= b`, `downToken` khi `a < b` (Ichimoku). */
+  cloud?: { a: string; b: string; upToken: ColorToken; downToken: ColorToken }
 }
-export type IndicatorParamSpec = { key: string; label?: string; min?: number; max?: number; step?: number; default: IndicatorParamValue; options?: readonly string[] }
+export type IndicatorParamSpec = {
+  key: string
+  label?: string
+  min?: number
+  max?: number
+  step?: number
+  default: IndicatorParamValue
+  options?: readonly string[]
+  /** Tên tiếng Việt của từng `options` ở hộp thoại; thiếu thì hiện chính giá trị. */
+  optionLabels?: Readonly<Record<string, string>>
+}
+/**
+ * Thông tin ngoài nến mà một số chỉ báo cần (VWAP đặt lại theo phiên, Pivot Points theo kỳ): thời gian từng nến (Unix giây, cùng
+ * thứ tự và độ dài với `bars`) và khung. CHỈ có ở `market`; `flashback` không có đường nào để đọc thời gian (§12), nên chỉ báo cần
+ * `context` trả biểu đồ rỗng khi thiếu nó.
+ */
+export type IndicatorContext = { times: readonly number[]; interval: Interval }
 export type IndicatorDefinition = {
   id: string
   name: string
@@ -121,13 +145,18 @@ export type IndicatorDefinition = {
   params: readonly IndicatorParamSpec[]
   /** Chỉ dùng được ở `market` nếu false. */
   flashback: boolean
-  compute(bars: readonly Bar[], params: IndicatorParams, palette: readonly ColorToken[]): IndicatorPlot
+  compute(bars: readonly Bar[], params: IndicatorParams, palette: readonly ColorToken[], context?: IndicatorContext): IndicatorPlot
 }
 
 // --- Hình vẽ ---
 export type DrawingTool =
   | "trend" | "ray" | "extended" | "horizontal" | "horizontal-ray" | "vertical" | "channel"
   | "fib-retracement" | "fib-extension" | "rectangle" | "elliott-5" | "elliott-abc" | "note" | "measure"
+  // Đợt 1: vị thế, vẽ tự do, chú thích, đo, hình (drawings/tools-basic.ts).
+  | "long-position" | "short-position" | "brush" | "arrow" | "arrow-up" | "arrow-down" | "price-label" | "callout"
+  | "date-range" | "date-price-range" | "ellipse" | "triangle" | "path"
+  // Đợt 2: Fibonacci, Pitchfork, Gann, mẫu hình (drawings/tools-advanced.ts).
+  | "fib-time-zones" | "fib-fan" | "fib-channel" | "pitchfork" | "gann-fan" | "gann-box" | "xabcd" | "head-shoulders" | "triangle-pattern"
 export type DrawingStyle = { color: ColorToken; width: number; dash?: "solid" | "dashed"; fill?: boolean }
 export type Drawing = { id: string; tool: DrawingTool; anchors: Anchor[]; style: DrawingStyle; text?: string; locked?: boolean; hidden?: boolean }
 

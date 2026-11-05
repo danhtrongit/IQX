@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from "vitest"
 import { listIndicators } from "../indicators"
 import type { ChartIndicatorInput } from "../types"
 import IndicatorDialogs, { type IndicatorDialogState } from "./indicator-dialogs"
+import { categoryOf, INDICATOR_CATEGORIES } from "./indicator-categories"
 import { MAX_INDICATORS, newIndicatorKey } from "./market-defaults"
 import { installRadixPolyfills } from "./test-env"
 
@@ -23,11 +24,23 @@ function setup(state: IndicatorDialogState, indicators: readonly ChartIndicatorI
 }
 
 describe("hộp thoại thêm chỉ báo", () => {
-  it("liệt kê đủ chỉ báo của sổ đăng ký, chia ba nhóm", () => {
+  it("liệt kê đủ chỉ báo của sổ đăng ký, chia theo nhóm cách dùng", () => {
     setup({ kind: "add" })
     const dialog = screen.getByRole("dialog", { name: "Thêm chỉ báo" })
-    expect(within(dialog).getAllByRole("button").length).toBe(listIndicators().length + 1) // cộng nút đóng
-    for (const group of ["Vẽ chồng trên giá", "Khối lượng", "Ô riêng bên dưới"]) expect(within(dialog).getByRole("region", { name: group })).toBeTruthy()
+    const groups = within(dialog).getAllByRole("region")
+    expect(groups.map((group) => group.getAttribute("aria-label"))).toEqual(INDICATOR_CATEGORIES.filter((item) => item.id !== "other").map((item) => item.label))
+    // Mọi chỉ báo xuất hiện đúng một lần, trong đúng nhóm của nó.
+    const buttons = groups.flatMap((group) => within(group).getAllByRole("button"))
+    expect(buttons).toHaveLength(listIndicators().length)
+    for (const definition of listIndicators()) {
+      const group = groups.find((item) => item.getAttribute("aria-label") === INDICATOR_CATEGORIES.find((entry) => entry.id === categoryOf(definition.id))?.label)
+      expect(within(group!).getByRole("button", { name: definition.name }), definition.id).toBeTruthy()
+    }
+  })
+
+  it("mọi chỉ báo đăng ký sẵn đều có nhóm, không ai rơi vào Khác", () => {
+    for (const definition of listIndicators()) expect(categoryOf(definition.id), definition.id).not.toBe("other")
+    expect(categoryOf("chi-bao-tu-viet-them")).toBe("other")
   })
 
   it("tìm theo tên lọc danh sách; không khớp thì báo", async () => {
@@ -39,6 +52,66 @@ describe("hộp thoại thêm chỉ báo", () => {
     await user.clear(within(dialog).getByRole("textbox", { name: "Tìm chỉ báo" }))
     await user.type(within(dialog).getByRole("textbox", { name: "Tìm chỉ báo" }), "zzzz")
     expect(within(dialog).getByText("Không có chỉ báo nào khớp.")).toBeTruthy()
+  })
+
+  it("tìm không cần gõ dấu và tìm được theo nhóm: 'dao dong' ra các chỉ báo dao động, 'trung binh' ra đường trung bình", async () => {
+    const { user } = setup({ kind: "add" })
+    const dialog = screen.getByRole("dialog", { name: "Thêm chỉ báo" })
+    const box = within(dialog).getByRole("textbox", { name: "Tìm chỉ báo" })
+    await user.type(box, "dao dong")
+    expect(within(dialog).getByRole("button", { name: "Awesome Oscillator" })).toBeTruthy()
+    expect(within(dialog).getByRole("button", { name: "RSI" })).toBeTruthy()
+    expect(within(dialog).queryByRole("button", { name: "WMA" })).toBeNull()
+    await user.clear(box)
+    await user.type(box, "trung binh")
+    expect(within(dialog).getByRole("button", { name: "HMA" })).toBeTruthy()
+    expect(within(dialog).queryByRole("button", { name: "RSI" })).toBeNull()
+    // Nhiều từ: mỗi từ phải khớp.
+    await user.clear(box)
+    await user.type(box, "ichimoku may")
+    expect(within(dialog).getByRole("button", { name: "Ichimoku Cloud" })).toBeTruthy()
+    await user.clear(box)
+    await user.type(box, "ichimoku rsi")
+    expect(within(dialog).getByText("Không có chỉ báo nào khớp.")).toBeTruthy()
+  })
+
+  it("tìm theo tên đầy đủ hoặc tên gọi khác: 'hull' ra HMA, 'weighted' ra WMA và VWMA, 'garman' ra Volatility O-H-L-C", async () => {
+    const { user } = setup({ kind: "add" })
+    const dialog = screen.getByRole("dialog", { name: "Thêm chỉ báo" })
+    const box = within(dialog).getByRole("textbox", { name: "Tìm chỉ báo" })
+    await user.type(box, "hull")
+    expect(within(dialog).getByRole("button", { name: "HMA" })).toBeTruthy()
+    await user.clear(box)
+    await user.type(box, "weighted")
+    expect(within(dialog).getByRole("button", { name: "WMA" })).toBeTruthy()
+    expect(within(dialog).getByRole("button", { name: "VWMA" })).toBeTruthy()
+    expect(within(dialog).queryByRole("button", { name: "EMA" })).toBeNull()
+    await user.clear(box)
+    await user.type(box, "garman")
+    expect(within(dialog).getByRole("button", { name: "Volatility O-H-L-C" })).toBeTruthy()
+  })
+
+  it("tìm theo id có gạch dưới: 'accum dist' ra Accumulation/Distribution", async () => {
+    const { user } = setup({ kind: "add" })
+    const dialog = screen.getByRole("dialog", { name: "Thêm chỉ báo" })
+    await user.type(within(dialog).getByRole("textbox", { name: "Tìm chỉ báo" }), "accum dist")
+    expect(within(dialog).getByRole("button", { name: "Accumulation/Distribution" })).toBeTruthy()
+  })
+
+  it("lọc theo nhóm bằng nút, kết hợp được với ô tìm; bấm lại nhóm đang chọn thì về Tất cả", async () => {
+    const { user } = setup({ kind: "add" })
+    const dialog = screen.getByRole("dialog", { name: "Thêm chỉ báo" })
+    const filters = within(dialog).getByRole("radiogroup", { name: "Lọc theo nhóm" })
+    await user.click(within(filters).getByRole("radio", { name: "Mức giá" }))
+    expect(within(dialog).getAllByRole("region")).toHaveLength(1)
+    expect(within(dialog).getByRole("button", { name: "Pivot Points" })).toBeTruthy()
+    expect(within(dialog).queryByRole("button", { name: "RSI" })).toBeNull()
+    await user.click(within(filters).getByRole("radio", { name: "Mức giá" }))
+    expect(within(dialog).getAllByRole("region").length).toBeGreaterThan(1)
+    await user.click(within(filters).getByRole("radio", { name: "Động lượng và dao động" }))
+    await user.type(within(dialog).getByRole("textbox", { name: "Tìm chỉ báo" }), "trix")
+    expect(within(dialog).getAllByRole("button").filter((button) => button.textContent?.includes("TRIX"))).toHaveLength(1)
+    expect(within(dialog).queryByRole("button", { name: "Pivot Points" })).toBeNull()
   })
 
   it("chọn một chỉ báo thêm vào cuối với khoá mới duy nhất rồi đóng", async () => {

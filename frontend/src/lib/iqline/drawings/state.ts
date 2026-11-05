@@ -4,7 +4,8 @@
  * Hoàn tác và làm lại nằm ở `interaction/`, không nằm ở đây.
  */
 import type { Anchor, Drawing, DrawingStyle, DrawingTool } from "../types"
-import { TOOL_SPECS } from "./tools"
+import { TOOL_SPECS, clicksOf, maxAnchorsOf } from "./tools"
+import { DOCUMENT_POINT_BUDGET, capPoints, roundAnchor } from "./tools-basic"
 
 export type PendingDrawing = { tool: DrawingTool; anchors: readonly Anchor[] }
 
@@ -23,8 +24,18 @@ export const INITIAL_DRAWINGS: DrawingsState = { shapes: [], nextId: 1, tool: nu
 
 export type DrawingsAction =
   | { type: "tool"; tool: DrawingTool | null }
-  /** Thêm một điểm neo cho hình đang vẽ; đủ số điểm thì hình hoàn tất. */
+  /**
+   * Thêm một điểm neo cho hình đang vẽ; đủ số lần bấm thì hình hoàn tất. Công cụ nhiều điểm (nét bút, đường gấp khúc) chỉ gom điểm
+   * vào `pending`, hoàn tất bằng `finish`.
+   */
   | { type: "anchor"; anchor: Anchor }
+  /**
+   * Hoàn tất hình nhiều điểm đang vẽ (nhấp đúp, Enter, nút Xong, thả bút). `anchors` thay các điểm đang gom (nét bút đã giản lược).
+   * Chưa đủ điểm tối thiểu hoặc hết hạn mức điểm của tài liệu thì giữ nguyên trạng thái.
+   */
+  | { type: "finish"; anchors?: readonly Anchor[] }
+  /** Bỏ các điểm đang gom nhưng giữ công cụ (bấm bút một cái mà không kéo). */
+  | { type: "restart" }
   | { type: "cancel" }
   | { type: "select"; id: string | null }
   /** Thay toàn bộ điểm neo (kéo tay nắm hoặc kéo cả hình). Bỏ qua hình khoá. */
@@ -44,6 +55,13 @@ export type DrawingsAction =
   | { type: "load"; drawings: readonly Drawing[] }
 
 const ID_PATTERN = /^d(\d+)$/
+
+/** Số điểm neo đang dùng bởi các hình nhiều điểm (nét bút, đường gấp khúc), tính vào hạn mức của tài liệu. */
+export function variablePointCount(shapes: readonly Pick<Drawing, "tool" | "anchors">[]): number {
+  let total = 0
+  for (const shape of shapes) if (TOOL_SPECS[shape.tool].variable) total += shape.anchors.length
+  return total
+}
 
 /** Số thứ tự kế tiếp, lớn hơn mọi ID dạng `d<số>` đang có. */
 export function nextIdFor(shapes: readonly Drawing[]): number {
@@ -77,6 +95,13 @@ function mapShape(state: DrawingsState, id: string, update: (shape: Drawing) => 
   return changed ? { ...state, shapes } : state
 }
 
+/** Thêm hình mới đã đủ điểm neo. Vẽ xong tự về chế độ bình thường, hình vừa vẽ ở trạng thái đang chọn (v2.1 §7.2). */
+function complete(state: DrawingsState, tool: DrawingTool, anchors: readonly Anchor[]): DrawingsState {
+  const { id, nextId } = freshId(state)
+  const drawing: Drawing = { id, tool, anchors: anchors.slice(0, maxAnchorsOf(tool)), style: { ...TOOL_SPECS[tool].defaultStyle } }
+  return { shapes: [...state.shapes, drawing], nextId, tool: null, pending: null, selectedId: id }
+}
+
 export function drawingsReducer(state: DrawingsState, action: DrawingsAction): DrawingsState {
   switch (action.type) {
     case "tool": {
@@ -87,13 +112,31 @@ export function drawingsReducer(state: DrawingsState, action: DrawingsAction): D
     case "anchor": {
       if (!state.tool) return state
       const tool = state.pending?.tool ?? state.tool
-      const anchors = [...(state.pending?.anchors ?? []), action.anchor]
-      if (anchors.length < TOOL_SPECS[tool].anchorCount) return { ...state, pending: { tool, anchors } }
-      const { id, nextId } = freshId(state)
-      const drawing: Drawing = { id, tool, anchors, style: { ...TOOL_SPECS[tool].defaultStyle } }
-      // Vẽ xong tự về chế độ bình thường, hình vừa vẽ ở trạng thái đang chọn (v2.1 §7.2).
-      return { shapes: [...state.shapes, drawing], nextId, tool: null, pending: null, selectedId: id }
+      const spec = TOOL_SPECS[tool]
+      const prior = state.pending?.anchors ?? []
+      if (spec.variable) {
+        // Hình nhiều điểm không tự hoàn tất: quá hạn mức điểm khi đang vẽ thì bỏ qua điểm mới.
+        return prior.length >= spec.variable.pendingMax ? state : { ...state, pending: { tool, anchors: [...prior, action.anchor] } }
+      }
+      const clicked = [...prior, action.anchor]
+      if (clicked.length < clicksOf(tool)) return { ...state, pending: { tool, anchors: clicked } }
+      return complete(state, tool, spec.expand ? spec.expand(clicked) : clicked)
     }
+    case "finish": {
+      const { pending } = state
+      if (!pending) return state
+      const spec = TOOL_SPECS[pending.tool]
+      if (!spec.variable) return state
+      const source = action.anchors ?? pending.anchors
+      const room = DOCUMENT_POINT_BUDGET - variablePointCount(state.shapes)
+      const limit = Math.min(spec.variable.max, room)
+      if (source.length < spec.anchorCount) return state
+      // Hết hạn mức điểm của tài liệu: bỏ hình đang vẽ thay vì làm tài liệu vượt giới hạn lưu.
+      if (limit < spec.anchorCount) return { ...state, pending: null }
+      return complete(state, pending.tool, capPoints(source, limit).map(roundAnchor))
+    }
+    case "restart":
+      return state.pending === null ? state : { ...state, pending: null }
     case "cancel":
       return state.tool === null && state.pending === null ? state : { ...state, tool: null, pending: null }
     case "select": {
@@ -102,7 +145,7 @@ export function drawingsReducer(state: DrawingsState, action: DrawingsAction): D
     }
     case "set-anchors":
       return mapShape(state, action.id, (shape) =>
-        shape.locked || action.anchors.length !== shape.anchors.length ? shape : { ...shape, anchors: [...action.anchors] },
+        shape.locked || action.anchors.length !== shape.anchors.length ? shape : { ...shape, anchors: TOOL_SPECS[shape.tool].variable ? action.anchors.map(roundAnchor) : [...action.anchors] },
       )
     case "remove": {
       const target = state.shapes.find((shape) => shape.id === action.id)
@@ -132,6 +175,8 @@ export function drawingsReducer(state: DrawingsState, action: DrawingsAction): D
     case "duplicate": {
       const source = state.shapes.find((shape) => shape.id === action.id)
       if (!source) return state
+      // Bản sao của nét bút hay đường gấp khúc cũng tính vào hạn mức điểm của tài liệu.
+      if (TOOL_SPECS[source.tool].variable && variablePointCount(state.shapes) + source.anchors.length > DOCUMENT_POINT_BUDGET) return state
       const { id, nextId } = freshId(state)
       const copy: Drawing = { ...source, id, anchors: [...(action.anchors ?? source.anchors)], style: { ...source.style } }
       delete copy.locked

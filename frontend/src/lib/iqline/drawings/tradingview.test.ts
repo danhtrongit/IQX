@@ -4,7 +4,9 @@
  */
 import { describe, expect, it } from "vitest"
 
+import { getIndicator, validateIndicatorParams } from "../indicators"
 import { fromTradingViewLayout, intervalStepSeconds } from "./index"
+import { STUDY_RULES } from "./tradingview"
 
 const T0 = 1_700_000_400 // thứ tư 2023-11-15 05:20 giờ Việt Nam, trong tuần giao dịch
 const DAY = 86_400
@@ -52,7 +54,7 @@ function productionLike() {
               line("LineToolPriceRange", [{ time_t: T0, price: 24 }, { time_t: T0 + 5 * DAY, price: 26 }], {}, "pr"),
               line("LineToolRectangle", [{ time_t: T0, price: 23 }, { time_t: T0 + 4 * DAY, price: 25 }], { fillBackground: false }, "rc"),
               line("LineToolVbPFixed", [{ time_t: T0, price: 23 }, { time_t: T0 + 4 * DAY, price: 25 }], {}, "vbp"),
-              study("Ichimoku Cloud", "Ichimoku", { in_0: 9 }),
+              study("Ichimoku Cloud", "Ichimoku", { in_0: 10, in_1: 30, in_2: 60, in_3: 30 }),
               study("Volatility O-H-L-C", "Volatility O-H-L-C"),
             ],
           },
@@ -89,9 +91,9 @@ describe("layout đủ loại như dữ liệu production", () => {
     expect(rectangle.style.fill).toBe(false)
   })
 
-  it("chuyển 9 loại chỉ báo theo bảng §11, kèm tham số đọc được", () => {
+  it("chuyển 11 loại chỉ báo theo bảng §11 (có cả Ichimoku Cloud và Volatility O-H-L-C), kèm tham số đọc được", () => {
     const { indicators } = result.document.iqline
-    expect(indicators.map((indicator) => indicator.id)).toEqual(["ma", "bollinger", "donchian", "volume_profile", "volume", "rsi", "bb_width", "macd", "cmf"])
+    expect(indicators.map((indicator) => indicator.id)).toEqual(["ma", "bollinger", "donchian", "volume_profile", "ichimoku", "volatility_ohlc", "volume", "rsi", "bb_width", "macd", "cmf"])
     const byId = Object.fromEntries(indicators.map((indicator) => [indicator.id, indicator.params]))
     expect(byId.ma).toEqual({ period: 20 })
     expect(byId.bollinger).toEqual({ period: 20, k: 2.5 })
@@ -100,14 +102,23 @@ describe("layout đủ loại như dữ liệu production", () => {
     expect(byId.rsi).toEqual({ period: 14 })
     expect(byId.macd).toEqual({ fast: 12, slow: 26, signal: 9 })
     expect(byId.cmf).toEqual({ period: 21 })
+    expect(byId.ichimoku).toEqual({ conversion: 10, base: 30, spanB: 60, displacement: 30 })
+    expect(byId.volatility_ohlc).toEqual({})
     expect(new Set(indicators.map((indicator) => indicator.key)).size).toBe(indicators.length)
-    expect(result.convertedIndicators).toBe(9)
+    expect(result.convertedIndicators).toBe(11)
   })
 
-  it("không chuyển VbP cố định, Ichimoku Cloud và Volatility O-H-L-C, và báo số lượng bỏ qua", () => {
+  it("mọi chỉ báo chuyển được đều có trong sổ chỉ báo và tham số hợp lệ", () => {
+    for (const indicator of result.document.iqline.indicators) {
+      expect(getIndicator(indicator.id), indicator.id).toBeDefined()
+      expect(validateIndicatorParams(indicator.id, indicator.params), indicator.id).toBeNull()
+    }
+  })
+
+  it("chỉ còn VbP cố định là không chuyển được, và báo số lượng bỏ qua; Ichimoku và Volatility O-H-L-C không còn bị bỏ", () => {
     expect(result.skippedDrawings).toBe(1)
-    expect(result.skippedIndicators).toBe(2)
-    expect(result.skippedByType).toEqual({ LineToolVbPFixed: 1, "Ichimoku Cloud": 1, "Volatility O-H-L-C": 1 })
+    expect(result.skippedIndicators).toBe(0)
+    expect(result.skippedByType).toEqual({ LineToolVbPFixed: 1 })
   })
 
   it("kiểu nến theo MainSeries; giữ nguyên `charts` gốc cùng tham chiếu", () => {
@@ -124,6 +135,61 @@ describe("layout đủ loại như dữ liệu production", () => {
     const snapshot = JSON.stringify(layout)
     fromTradingViewLayout(layout)
     expect(JSON.stringify(layout)).toBe(snapshot)
+  })
+})
+
+describe("chỉ báo đợt 2 có tên rõ ràng trong layout", () => {
+  const convertStudies = (studies: ReturnType<typeof study>[]) =>
+    fromTradingViewLayout({ charts: [{ panes: [{ sources: [main(), ...studies] }] }] })
+
+  it("mỗi tên TradingView chuyển đúng id, kèm tham số đọc được", () => {
+    const result = convertStudies([
+      study("VWAP", "VWAP"),
+      study("SuperTrend", "SuperTrend", { length: 7, factor: 2.5 }),
+      study("Moving Average Weighted", "WMA", { length: 12 }),
+      study("Hull Moving Average", "HMA", { length: 21 }),
+      study("Volume Weighted Moving Average", "VWMA", { length: 30 }),
+      study("Envelopes", "ENV", { length: 25, percent: 5 }),
+      study("Pivot Points Standard", "Pivots"),
+      study("Aroon", "Aroon", { length: 14 }),
+      study("TRIX", "TRIX", { length: 12 }),
+      study("Ultimate Oscillator", "UO", { in_0: 5, in_1: 10, in_2: 20 }),
+      study("Awesome Oscillator", "AO"),
+      study("Momentum", "Mom", { length: 14 }),
+      study("Standard Deviation", "StdDev", { length: 30 }),
+      study("Accumulation/Distribution", "Accum/Dist"),
+      study("Volatility O-H-L-C", "Volatility O-H-L-C", { length: 20 }),
+    ])
+    const byId = Object.fromEntries(result.document.iqline.indicators.map((indicator) => [indicator.id, indicator.params]))
+    expect(Object.keys(byId)).toEqual(["vwap", "supertrend", "wma", "hma", "vwma", "envelope", "pivot_points", "aroon", "trix", "ultimate_oscillator", "awesome_oscillator", "momentum", "std_dev", "accum_dist", "volatility_ohlc"])
+    expect(byId.supertrend).toEqual({ period: 7, multiplier: 2.5 })
+    expect(byId.wma).toEqual({ period: 12 })
+    expect(byId.envelope).toEqual({ period: 25, percent: 5 })
+    expect(byId.ultimate_oscillator).toEqual({ short: 5, mid: 10, long: 20 })
+    expect(byId.volatility_ohlc).toEqual({ period: 20 })
+    expect(result.skippedIndicators).toBe(0)
+    for (const indicator of result.document.iqline.indicators) expect(validateIndicatorParams(indicator.id, indicator.params), indicator.id).toBeNull()
+  })
+
+  it("Moving Average Weighted không bị nhầm với Moving Average (SMA)", () => {
+    const [weighted, plain] = convertStudies([study("Moving Average Weighted", "WMA"), study("Moving Average", "MA")]).document.iqline.indicators
+    expect(weighted.id).toBe("wma")
+    expect(plain.id).toBe("ma")
+  })
+
+  it("Ichimoku không có tham số đọc được thì để chỉ báo dùng mặc định", () => {
+    const [ichimoku] = convertStudies([study("Ichimoku Cloud", "Ichimoku")]).document.iqline.indicators
+    expect(ichimoku).toMatchObject({ id: "ichimoku", params: {} })
+  })
+
+  it("mọi `id` trong bảng chỉ báo có trong sổ đăng ký", () => {
+    for (const rule of STUDY_RULES) expect(getIndicator(rule.id), rule.id).toBeDefined()
+  })
+
+  it("chỉ báo lạ vẫn bị bỏ qua và báo", () => {
+    const result = convertStudies([study("Zig Zag", "ZigZag")])
+    expect(result.skippedIndicators).toBe(1)
+    expect(result.skippedByType).toEqual({ "Zig Zag": 1 })
   })
 })
 
@@ -336,7 +402,7 @@ describe("giới hạn 512 KB", () => {
     expect(result.chartsDropped).toBe(true)
     expect("charts" in result.document).toBe(false)
     expect(result.document.iqline.drawings).toHaveLength(5)
-    expect(result.document.iqline.indicators).toHaveLength(9)
+    expect(result.document.iqline.indicators).toHaveLength(11)
   })
 
   it("đo theo byte UTF-8, không theo số ký tự", () => {

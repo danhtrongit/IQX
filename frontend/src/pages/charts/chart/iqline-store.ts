@@ -11,7 +11,7 @@
 import { toast } from "sonner"
 
 import { api } from "@/lib/api"
-import { TOOL_SPECS, anchorCountOf, fromTradingViewLayout, isDrawingTool, type TradingViewConversion } from "@/lib/iqline/drawings"
+import { TOOL_SPECS, anchorCountOf, fromTradingViewLayout, isDrawingTool, maxAnchorsOf, type TradingViewConversion } from "@/lib/iqline/drawings"
 import { MAX_STATE_BYTES } from "@/lib/iqline/drawings/tradingview"
 import { COLOR_TOKENS } from "@/lib/iqline/render/palette"
 import type {
@@ -124,7 +124,8 @@ function readDrawing(raw: unknown): Drawing | null {
   const required = anchorCountOf(tool)
   if (raw.anchors.length < required) return null
   const anchors: Anchor[] = []
-  for (const item of raw.anchors.slice(0, required)) {
+  // Nét bút và đường gấp khúc có số điểm thay đổi: giữ tới số điểm tối đa của công cụ, các công cụ khác giữ đúng số điểm cần.
+  for (const item of raw.anchors.slice(0, maxAnchorsOf(tool))) {
     const anchor = readAnchor(item)
     if (!anchor) return null
     anchors.push(anchor)

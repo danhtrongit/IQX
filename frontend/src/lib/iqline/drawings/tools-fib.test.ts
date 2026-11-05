@@ -16,15 +16,15 @@ import {
 } from "./index"
 
 describe("14 công cụ (§10)", () => {
-  it("đủ 14 công cụ, không trùng, khớp bảng mô tả", () => {
-    expect(ALL_TOOLS).toHaveLength(14)
-    expect(new Set(ALL_TOOLS).size).toBe(14)
+  it("14 công cụ gốc vẫn ở đầu danh sách; cả danh sách không trùng và khớp bảng mô tả", () => {
+    expect(ALL_TOOLS.length).toBeGreaterThanOrEqual(14)
+    expect(new Set(ALL_TOOLS).size).toBe(ALL_TOOLS.length)
     expect([...ALL_TOOLS].sort()).toEqual(Object.keys(TOOL_SPECS).sort())
     for (const tool of ALL_TOOLS) expect(TOOL_SPECS[tool].tool).toBe(tool)
   })
 
-  it("số điểm neo của từng công cụ", () => {
-    expect(Object.fromEntries(ALL_TOOLS.map((tool) => [tool, anchorCountOf(tool)]))).toEqual({
+  it("số điểm neo của 14 công cụ gốc (công cụ đợt 1 và đợt 2 có test riêng)", () => {
+    expect(Object.fromEntries(ALL_TOOLS.map((tool) => [tool, anchorCountOf(tool)]))).toMatchObject({
       trend: 2,
       ray: 2,
       extended: 2,

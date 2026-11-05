@@ -16,9 +16,9 @@ export type TradingViewConversion = {
   document: ChartDocument
   convertedDrawings: number
   convertedIndicators: number
-  /** Hình vẽ không chuyển được (loại không có trong 14 công cụ, hoặc điểm neo hỏng). */
+  /** Hình vẽ không chuyển được (loại không có trong bảng công cụ, hoặc điểm neo hỏng). */
   skippedDrawings: number
-  /** Chỉ báo không chuyển được (ví dụ Ichimoku Cloud, Volatility O-H-L-C). */
+  /** Chỉ báo không chuyển được (không có trong sổ chỉ báo của IQLine, ví dụ một chỉ báo tuỳ chỉnh hay chỉ báo TradingView chưa có ở §9). */
   skippedIndicators: number
   /** Số nguồn bỏ qua theo tên loại, để báo người dùng "N hình vẽ không chuyển được sang IQLine". */
   skippedByType: Record<string, number>
@@ -99,6 +99,18 @@ const DRAWING_TOOLS: Readonly<Record<string, DrawingTool>> = {
   LineToolTrendLine: "trend",
   LineToolPriceRange: "measure",
   LineToolRectangle: "rectangle",
+  // Công cụ đợt 2. Số điểm theo `state.points` như các công cụ trên; chưa thử trên layout TradingView thật (xem test tradingview-advanced).
+  LineToolFibTimeZone: "fib-time-zones",
+  LineToolFibSpeedResistanceFan: "fib-fan",
+  LineToolFibChannel: "fib-channel",
+  LineToolPitchfork: "pitchfork",
+  LineToolGannFan: "gann-fan",
+  // Hai tên của Gann Box trong TradingView; Gann Square cùng hai điểm góc nhưng mức khác, nên chỉ gần đúng.
+  LineToolGannComplex: "gann-box",
+  LineToolGannSquare: "gann-box",
+  LineTool5PointsPattern: "xabcd",
+  LineToolHeadAndShoulders: "head-shoulders",
+  LineToolTrianglePattern: "triangle-pattern",
 }
 
 function styleFor(tool: DrawingTool, state: UnknownRecord | null): DrawingStyle {
@@ -108,7 +120,8 @@ function styleFor(tool: DrawingTool, state: UnknownRecord | null): DrawingStyle 
   if (width !== null && width >= 1) style.width = Math.min(4, width)
   const lineStyle = finite(state.linestyle)
   if (lineStyle !== null && lineStyle > 0) style.dash = "dashed"
-  if (tool === "rectangle" && state.fillBackground === false) style.fill = false
+  // Công cụ có nền (hình chữ nhật và các công cụ đợt 2 có vùng tô) tắt nền khi TradingView tắt `fillBackground`.
+  if (style.fill === true && state.fillBackground === false) style.fill = false
   return style
 }
 
@@ -148,8 +161,8 @@ type StudyRule = {
 
 /**
  * Bảng chỉ báo (§11). `id` là id trong sổ chỉ báo của IQLine; khoá tham số theo danh mục Flashback
- * (`period`, `k`, `fast`, `slow`, `signal`, `lookback`). BB Width và Volume Profile là chỉ báo mới của `market`,
- * id `bb_width` và `volume_profile` cần khớp với `registerIndicator`.
+ * (`period`, `k`, `fast`, `slow`, `signal`, `lookback`). BB Width, Volume Profile và 16 chỉ báo đợt 2 là chỉ báo của `market`,
+ * id cần khớp với `registerIndicator`.
  */
 export const STUDY_RULES: readonly StudyRule[] = [
   { names: ["volume"], id: "volume", params: { lookback: ["maLength"] } },
@@ -162,6 +175,24 @@ export const STUDY_RULES: readonly StudyRule[] = [
   { names: ["dc", "donch", "donchian", "donchianchannels"], id: "donchian", params: { period: ["length", "in_0"] } },
   { names: ["cmf", "chaikinmoneyflow"], id: "cmf", params: { period: ["length", "in_0"] } },
   { names: ["vbpvisible", "volumeprofilevisiblerange"], id: "volume_profile", params: {} },
+  // Đợt 2: các chỉ báo có tên rõ ràng trong layout. Ichimoku Cloud và Volatility O-H-L-C chuyển được từ khi IQLine có chúng; tham số
+  // thiếu hoặc không đọc được thì để chỉ báo dùng mặc định của IQLine.
+  { names: ["ichimokucloud", "ichimoku"], id: "ichimoku", params: { conversion: ["conversionLinePeriods", "in_0"], base: ["baseLinePeriods", "in_1"], spanB: ["laggingSpan2Periods", "in_2"], displacement: ["displacement", "in_3"] } },
+  { names: ["volatilityohlc"], id: "volatility_ohlc", params: { period: ["length", "in_0"] } },
+  { names: ["vwap", "volumeweightedaverageprice"], id: "vwap", params: {} },
+  { names: ["supertrend"], id: "supertrend", params: { period: ["length", "atrPeriod", "in_0"], multiplier: ["factor", "multiplier", "in_1"] } },
+  { names: ["wma", "weightedmovingaverage", "movingaverageweighted"], id: "wma", params: { period: ["length", "in_0"] } },
+  { names: ["hma", "hullmovingaverage", "hullma"], id: "hma", params: { period: ["length", "in_0"] } },
+  { names: ["vwma", "volumeweightedmovingaverage"], id: "vwma", params: { period: ["length", "in_0"] } },
+  { names: ["env", "envelope", "envelopes"], id: "envelope", params: { period: ["length", "in_0"], percent: ["percent", "in_1"] } },
+  { names: ["pivotpointsstandard", "pivotpoints"], id: "pivot_points", params: {} },
+  { names: ["aroon"], id: "aroon", params: { period: ["length", "in_0"] } },
+  { names: ["trix"], id: "trix", params: { period: ["length", "in_0"] } },
+  { names: ["uo", "ultimateoscillator"], id: "ultimate_oscillator", params: { short: ["in_0", "fastLength"], mid: ["in_1", "middleLength"], long: ["in_2", "slowLength"] } },
+  { names: ["ao", "awesomeoscillator"], id: "awesome_oscillator", params: {} },
+  { names: ["mom", "momentum"], id: "momentum", params: { period: ["length", "in_0"] } },
+  { names: ["stdev", "standarddeviation"], id: "std_dev", params: { period: ["length", "in_0"] } },
+  { names: ["accdist", "accumulationdistribution"], id: "accum_dist", params: {} },
 ]
 
 function normalizeName(value: string): string {

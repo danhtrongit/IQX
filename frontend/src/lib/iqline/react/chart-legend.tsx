@@ -82,26 +82,43 @@ function OhlcRows({ values, symbol, format, narrow, interval }: { values: IndexV
   )
 }
 
-function IndicatorRow({ indicator, values, editable, onToggle, onEdit, onRemove }: { indicator: PreparedIndicator; values: IndexValues | null; editable: boolean; onToggle?: () => void; onEdit?: () => void; onRemove?: () => void }) {
+function IndicatorRow({ indicator, values, editable, narrow, onToggle, onEdit, onRemove }: { indicator: PreparedIndicator; values: IndexValues | null; editable: boolean; narrow: boolean; onToggle?: () => void; onEdit?: () => void; onRemove?: () => void }) {
+  // Hẹp: bỏ phần tham số trong ngoặc ở tên hiện ra để nhường chỗ cho giá trị; trình đọc màn hình và `title` vẫn nghe tên đầy đủ.
+  const shortName = narrow ? indicator.name.replace(/\s*\([^)]*\)\s*$/, "") : indicator.name
   const series = values?.series.filter((item) => item.indicatorKey === indicator.key) ?? []
   return (
-    <div className={cn("group/legend pointer-events-auto flex h-6 w-fit max-w-full items-center gap-x-2 rounded-sm bg-background/70 pl-1.5 pr-1", indicator.hidden && "opacity-60")} data-indicator-key={indicator.key}>
-      <span className="whitespace-nowrap font-medium text-foreground">{indicator.name}</span>
-      {!indicator.hidden && indicator.plot.kind === "vol" && values ? (
-        <span className={cn("inline-flex items-baseline gap-1 whitespace-nowrap tabular-nums", priceTone(values.change))}>
-          <span className="sr-only">Khối lượng</span>
-          {formatCompact(values.bar.volume)}
+    <div
+      className={cn(
+        "group/legend pointer-events-auto flex w-fit max-w-full items-center gap-x-2 rounded-sm bg-background/70 pl-1.5 pr-1",
+        // Hẹp: hàng tự xuống dòng. Dòng đầu là tên và ba nút (luôn thấy), giá trị nối sau và xuống dòng khi hết chỗ, nên Ichimoku (5) và
+        // Pivot Points (7) đọc được hết mà không cuộn; dòng giá trị thấp hơn dòng tên để ít che nến.
+        narrow ? "min-h-6 flex-wrap" : "h-6",
+        indicator.hidden && "opacity-60",
+      )}
+      data-indicator-key={indicator.key}
+    >
+      {/* Rộng: tên và giá trị cùng một nhóm, nhóm co lại nếu thiếu chỗ và nút ẩn, cài đặt, xoá không bị đẩy ra. Hẹp: nhóm biến mất (`contents`) để từng phần tử tự xếp theo `order`. */}
+      <span className={cn("items-center gap-x-2", narrow ? "contents" : "flex min-w-0 overflow-hidden")}>
+        <span className={cn("whitespace-nowrap font-medium text-foreground", narrow && "order-1")} title={indicator.name}>
+          {shortName}
+          {shortName !== indicator.name ? <span className="sr-only">{indicator.name.slice(shortName.length)}</span> : null}
         </span>
-      ) : null}
-      {!indicator.hidden &&
-        series.map((item) => (
-          <span key={item.seriesKey} className="inline-flex items-baseline gap-1 whitespace-nowrap tabular-nums" style={{ color: `var(--${item.token})` }}>
-            <span className="sr-only">{item.label}</span>
-            {item.value === null ? "-" : Math.abs(item.value) >= 10_000 ? formatCompact(item.value) : formatVi(item.value, 2)}
+        {!indicator.hidden && indicator.plot.kind === "vol" && values ? (
+          <span className={cn("inline-flex items-baseline gap-1 whitespace-nowrap tabular-nums", narrow && "order-3 leading-4", priceTone(values.change))}>
+            <span className="sr-only">Khối lượng</span>
+            {formatCompact(values.bar.volume)}
           </span>
-        ))}
+        ) : null}
+        {!indicator.hidden &&
+          series.map((item) => (
+            <span key={item.seriesKey} className={cn("inline-flex items-baseline gap-1 whitespace-nowrap tabular-nums", narrow && "order-3 leading-4")} style={{ color: `var(--${item.token})` }}>
+              <span className="sr-only">{item.label}</span>
+              {item.value === null ? "-" : Math.abs(item.value) >= 10_000 ? formatCompact(item.value) : formatVi(item.value, 2)}
+            </span>
+          ))}
+      </span>
       {editable ? (
-        <span className="inline-flex items-center opacity-0 transition-opacity group-hover/legend:opacity-100 group-focus-within/legend:opacity-100 [@media(pointer:coarse)]:opacity-100">
+        <span className={cn("inline-flex shrink-0 items-center opacity-0 transition-opacity group-hover/legend:opacity-100 group-focus-within/legend:opacity-100 [@media(pointer:coarse)]:opacity-100", narrow && "order-2")}>
           <Button type="button" variant="ghost" size="icon-xs" aria-label={`${indicator.hidden ? "Hiện" : "Ẩn"} ${indicator.name}`} title={indicator.hidden ? "Hiện" : "Ẩn"} aria-pressed={indicator.hidden} onClick={onToggle}>
             {indicator.hidden ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}
           </Button>
@@ -126,6 +143,7 @@ function PaneLegend({ pane, chart, values, props, narrow, format }: { pane: Pane
       indicator={indicator}
       values={values}
       editable={props.editable === true}
+      narrow={narrow}
       onToggle={() => props.onToggleIndicator?.(indicator.key)}
       onEdit={() => props.onEditIndicator?.(indicator.key)}
       onRemove={() => props.onRemoveIndicator?.(indicator.key)}

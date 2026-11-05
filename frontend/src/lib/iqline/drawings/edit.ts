@@ -5,13 +5,29 @@
  */
 import type { Anchor, Bar, Drawing, PaneCoords } from "../types"
 import type { ScreenPoint } from "./geometry"
+import { isBasicTool, moveBasicHandle } from "./tools-basic"
 
 /** Khoảng cách dọc tối đa (pixel) để hút vào một giá O, H, L hoặc C. */
 export const SNAP_TOLERANCE = 12
 
 export type IndexRange = { min: number; max: number }
+/**
+ * Nam châm: tắt, yếu (chỉ hút khi con trỏ trong ngưỡng, như trước) hoặc mạnh (luôn hút về giá O, H, L, C gần nhất của nến gần nhất,
+ * không cần trong ngưỡng).
+ */
+export type MagnetMode = "off" | "weak" | "strong"
+
+/**
+ * Đọc trạng thái nam châm từ bất kỳ nguồn nào, kể cả layout cũ lưu kiểu boolean: `true` thành yếu, `false` và giá trị lạ thành tắt.
+ */
+export function normalizeMagnet(value: unknown): MagnetMode {
+  if (value === "strong") return "strong"
+  if (value === "weak" || value === true) return "weak"
+  return "off"
+}
+
 /** `bars[i]` là nến ở chỉ số `i` của trục (Flashback: gồm cả warmup, vì phiên 0 là nến đầu tiên). */
-export type SnapOptions = { bars: ArrayLike<Bar>; tolerance?: number }
+export type SnapOptions = { bars: ArrayLike<Bar>; tolerance?: number; /** Bỏ trống là yếu. */ strength?: "weak" | "strong" }
 export type AnchorOptions = {
   snap?: SnapOptions
   /** Giới hạn chỉ số của điểm neo (Flashback: từ warmup tới ô cuối của trục). Market không giới hạn. */
@@ -24,14 +40,23 @@ export type SnapResult = { index: number; price: number; field: "open" | "high" 
  * Hút điểm bấm vào giá O, H, L hoặc C gần nhất của nến dưới con trỏ. Trả về null khi con trỏ ngoài vùng có nến
  * hoặc giá gần nhất xa hơn `tolerance` pixel.
  */
-export function snapToOhlc(point: ScreenPoint, coords: PaneCoords, bars: ArrayLike<Bar>, tolerance: number = SNAP_TOLERANCE): SnapResult | null {
+export function snapToOhlc(
+  point: ScreenPoint,
+  coords: PaneCoords,
+  bars: ArrayLike<Bar>,
+  tolerance: number = SNAP_TOLERANCE,
+  strength: "weak" | "strong" = "weak",
+): SnapResult | null {
   if (bars.length === 0) return null
   const raw = coords.indexOfX(point.x)
-  const index = Math.round(raw)
-  if (!Number.isFinite(raw) || index < 0 || index >= bars.length) return null
+  if (!Number.isFinite(raw)) return null
+  const strong = strength === "strong"
+  // Mạnh: nến gần nhất (kể cả khi con trỏ ở ngoài vùng có nến) và giá gần nhất, không cần trong ngưỡng.
+  const index = strong ? Math.min(bars.length - 1, Math.max(0, Math.round(raw))) : Math.round(raw)
+  if (index < 0 || index >= bars.length) return null
   const bar = bars[index]
   let best: SnapResult | null = null
-  let bestDistance = tolerance
+  let bestDistance = strong ? Infinity : tolerance
   for (const field of ["open", "high", "low", "close"] as const) {
     const price = bar[field]
     if (!Number.isFinite(price)) continue
@@ -52,7 +77,7 @@ function clampIndex(index: number, range: IndexRange | undefined): number {
 export function anchorFromPoint(point: ScreenPoint, coords: PaneCoords, options: AnchorOptions = {}): Anchor {
   let index = coords.indexOfX(point.x)
   let price = coords.priceOfY(point.y)
-  const snapped = options.snap ? snapToOhlc(point, coords, options.snap.bars, options.snap.tolerance) : null
+  const snapped = options.snap ? snapToOhlc(point, coords, options.snap.bars, options.snap.tolerance, options.snap.strength) : null
   if (snapped) {
     index = snapped.index
     price = snapped.price
@@ -62,6 +87,11 @@ export function anchorFromPoint(point: ScreenPoint, coords: PaneCoords, options:
 
 /** Kéo một tay nắm tới điểm mới; các điểm neo còn lại giữ nguyên khoá gốc, không bị làm tròn qua chỉ số. */
 export function moveHandle(drawing: Drawing, handle: number, point: ScreenPoint, coords: PaneCoords, options: AnchorOptions = {}): Drawing {
+  // Vị thế và nét bút có cách kéo riêng (tools-basic.ts); các công cụ đợt 1 còn lại dùng cách chung bên dưới.
+  if (isBasicTool(drawing.tool)) {
+    const moved = moveBasicHandle(drawing.tool, drawing, handle, point, anchorFromPoint(point, coords, options), coords)
+    if (moved) return moved
+  }
   if (!Number.isInteger(handle) || handle < 0 || handle >= drawing.anchors.length) return drawing
   const anchors = drawing.anchors.map((anchor, index) => (index === handle ? anchorFromPoint(point, coords, options) : anchor))
   return { ...drawing, anchors }

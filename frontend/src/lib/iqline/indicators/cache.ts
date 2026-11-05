@@ -10,12 +10,16 @@
  * - độ dài giảm, hoặc nến đầu, nến giữa, nến áp chót khác chữ ký cũ (nạp thêm lịch sử về phía trước, đổi mã hay khung):
  *   tính lại cả chuỗi.
  *
+ * - chỉ báo cần thời gian (VWAP, Pivot Points: `needsTime`) nhận thêm `context`; khoá ghi nhớ gồm khung, và mục chỉ dùng lại khi thời
+ *   nến đầu, nến cuối và độ dài không đổi. Chúng không bao giờ tính phần đuôi (kỳ có thể dài tuỳ ý), nên đổi nến cuối là tính lại cả chuỗi. Thiếu
+ *   `context` (Flashback không có) thì trả biểu đồ rỗng và không ghi nhớ gì.
+ *
  * Hợp đồng với người gọi: ngoài nến cuối, chỉ có thể thêm nến ở cuối hoặc thay cả bộ dữ liệu. Ba nến mẫu chỉ là lưới
  * an toàn, không thay được việc gọi `clear()` khi đổi mã hoặc khung. Cache mỗi biểu đồ một cái, không dùng chung.
  */
-import type { Bar, ChartIndicatorInput, ColorToken, IndicatorParams, IndicatorPlot, IndicatorSeries } from "../types"
+import type { Bar, ChartIndicatorInput, ColorToken, IndicatorContext, IndicatorParams, IndicatorPlot, IndicatorSeries } from "../types"
 import { computeVolumeProfile, DEFAULT_PROFILE_ROWS, type ProfileRange } from "./volume-profile"
-import { getIndicator, indicatorTailMemory, paramsKey, resolveIndicatorParams, validateIndicatorParams } from "./registry"
+import { getIndicator, indicatorNeedsTime, indicatorTailMemory, paramsKey, resolveIndicatorParams, validateIndicatorParams } from "./registry"
 
 /** Thứ tự màu chỉ báo theo `DESIGN.md`: `chart-1, chart-6, chart-8, chart-2, chart-5`. */
 export const DEFAULT_PALETTE: readonly ColorToken[] = ["chart-1", "chart-6", "chart-8", "chart-2", "chart-5"]
@@ -31,7 +35,7 @@ export type IndicatorCacheStats = {
 
 export type IndicatorCache = {
   /** Kết quả của một chỉ báo; `null` nếu id lạ hoặc tham số sai (dùng `validateIndicatorParams` để biết lý do). */
-  get(input: Pick<ChartIndicatorInput, "id" | "params">, bars: readonly Bar[], palette?: readonly ColorToken[]): IndicatorPlot | null
+  get(input: Pick<ChartIndicatorInput, "id" | "params">, bars: readonly Bar[], palette?: readonly ColorToken[], context?: IndicatorContext): IndicatorPlot | null
   /** Volume Profile cho các nến trong viewport; nhớ lần tính gần nhất. */
   profile(bars: readonly Bar[], range: ProfileRange, rows?: number): IndicatorPlot
   clear(): void
@@ -40,11 +44,14 @@ export type IndicatorCache = {
 
 type Signature = readonly [number, number, number, number, number]
 type Probes = { first: Signature; middle: Signature; middleIndex: number; beforeLast: Signature | null; last: Signature }
-type Cached = { length: number; probes: Probes; plot: IndicatorPlot }
+/** `stamp` là dấu thời gian của chỉ báo cần `IndicatorContext` (rỗng với chỉ báo khác). */
+type Cached = { length: number; probes: Probes; plot: IndicatorPlot; stamp: string }
 
 const signatureOf = (bar: Bar): Signature => [bar.open, bar.high, bar.low, bar.close, bar.volume]
 const sameSignature = (a: Signature, b: Signature): boolean => a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3] && a[4] === b[4]
 const matches = (bar: Bar | undefined, signature: Signature | null): boolean => bar !== undefined && signature !== null && sameSignature(signatureOf(bar), signature)
+
+const timeStampOf = (context: IndicatorContext): string => `${context.interval}|${context.times.length}|${context.times[0]}|${context.times[context.times.length - 1]}`
 
 function probesOf(bars: readonly Bar[]): Probes {
   const length = bars.length
@@ -112,7 +119,7 @@ export function createIndicatorCache(options: { maxEntries?: number } = {}): Ind
   function computeTail(id: string, params: IndicatorParams, palette: readonly ColorToken[], bars: readonly Bar[], cached: Cached): IndicatorPlot | null {
     const definition = getIndicator(id)
     const memory = indicatorTailMemory(id, params)
-    if (!definition || memory === null) return null
+    if (!definition || memory === null || indicatorNeedsTime(id)) return null
     const from = cached.length - 1
     const start = Math.max(0, from - memory)
     // Lát cắt bắt đầu từ nến đầu thì tính cả chuỗi cũng chỉ vậy.
@@ -122,17 +129,22 @@ export function createIndicatorCache(options: { maxEntries?: number } = {}): Ind
   }
 
   return {
-    get(input, bars, palette = DEFAULT_PALETTE) {
+    get(input, bars, palette = DEFAULT_PALETTE, context) {
       const definition = getIndicator(input.id)
       if (!definition) return null
       const params = resolveIndicatorParams(input.id, input.params)
       if (!params) return null
-      const key = `${paramsKey(input.id, params)}|${palette.join(",")}`
+      const needsTime = indicatorNeedsTime(input.id)
+      // Thời gian chỉ dùng được khi đủ một mốc cho mỗi nến; thiếu thì không đoán.
+      const usable = needsTime && context && context.times.length === bars.length ? context : undefined
+      const key = `${paramsKey(input.id, params)}|${palette.join(",")}|${usable ? usable.interval : needsTime ? "none" : ""}`
       const cached = entries.get(key)
       if (!cached && validateIndicatorParams(input.id, input.params)) return null
-      if (bars.length === 0) return definition.compute(bars, params, palette)
+      if (bars.length === 0) return definition.compute(bars, params, palette, usable)
+      if (needsTime && !usable) return definition.compute(bars, params, palette)
+      const stamp = usable ? timeStampOf(usable) : ""
 
-      if (cached && prefixUnchanged(bars, cached)) {
+      if (cached && cached.stamp === stamp && prefixUnchanged(bars, cached)) {
         if (bars.length === cached.length && matches(bars[bars.length - 1], cached.probes.last)) {
           stats.hits += 1
           remember(key, cached)
@@ -141,13 +153,13 @@ export function createIndicatorCache(options: { maxEntries?: number } = {}): Ind
         const tail = computeTail(input.id, params, palette, bars, cached)
         if (tail) {
           stats.tails += 1
-          remember(key, { length: bars.length, probes: probesOf(bars), plot: tail })
+          remember(key, { length: bars.length, probes: probesOf(bars), plot: tail, stamp })
           return tail
         }
       }
       stats.fulls += 1
-      const plot = definition.compute(bars, params, palette)
-      remember(key, { length: bars.length, probes: probesOf(bars), plot })
+      const plot = definition.compute(bars, params, palette, usable)
+      remember(key, { length: bars.length, probes: probesOf(bars), plot, stamp })
       return plot
     },
 

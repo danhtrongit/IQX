@@ -277,3 +277,163 @@ test("/bieu-do mở từ nút Thử trên biểu đồ giữ tham số chi-bao q
   await openChart(page, "/bieu-do?chi-bao=rsi")
   await expect(page.getByRole("group", { name: "Chú giải biểu đồ" })).toContainText("RSI")
 })
+
+// ---------------------------------------------------------------- chỉ báo đợt 2
+
+/** Số điểm ảnh có nội dung của lớp `data` trong dải cột [fromRatio, toRatio] của bề rộng canvas và trong ô giá (nửa trên). */
+async function dataInkBand(page: Page, fromRatio: number, toRatio: number): Promise<number> {
+  return page.evaluate(
+    ({ from, to }) => {
+      const canvas = document.querySelector<HTMLCanvasElement>('[data-iqline-mode="market"] canvas[data-iqline-layer="data"]')
+      const context = canvas?.getContext("2d")
+      if (!canvas || !context || canvas.width === 0) return 0
+      const x0 = Math.floor(canvas.width * from)
+      const x1 = Math.floor(canvas.width * to)
+      const { data } = context.getImageData(x0, 0, Math.max(1, x1 - x0), Math.floor(canvas.height * 0.55))
+      let ink = 0
+      for (let index = 3; index < data.length; index += 4) if (data[index] > 0) ink += 1
+      return ink
+    },
+    { from: fromRatio, to: toRatio },
+  )
+}
+
+async function addIndicator(page: Page, search: string, name: string) {
+  await page.getByRole("button", { name: "Chỉ báo" }).click()
+  const dialog = page.getByRole("dialog", { name: "Thêm chỉ báo" })
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole("textbox", { name: "Tìm chỉ báo" }).fill(search)
+  await dialog.getByRole("button", { name }).click()
+  await expect(dialog).toBeHidden()
+}
+
+test("Ichimoku vẽ mây và Senkou vào vùng tương lai sau nến cuối khi kéo biểu đồ", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await mockMarket(page)
+  await openChart(page)
+  const legend = page.getByRole("group", { name: "Chú giải biểu đồ" })
+  // Dải bên phải nến cuối: ban đầu chỉ có vạch giá đóng cửa chạy ngang.
+  const before = await dataInkBand(page, 0.8, 0.9)
+  await addIndicator(page, "ichimoku", "Ichimoku Cloud")
+  await expect(legend).toContainText("Ichimoku Cloud (9, 26, 52, 26)")
+  // Senkou dời 26 nến về tương lai: khung mặc định chỉ chừa vài ô trống sau nến cuối, nên kéo sang trái để thấy phần ngoại suy.
+  const box = (await host(page).boundingBox())!
+  await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.3)
+  await page.mouse.down()
+  await page.mouse.move(box.x + box.width * 0.25, box.y + box.height * 0.3, { steps: 10 })
+  await page.mouse.up()
+  const after = await dataInkBand(page, 0.8, 0.9)
+  expect(after).toBeGreaterThan(before + 200)
+  await shot(page, "ichimoku-future")
+  // Chú giải đọc được cả năm đường, kể cả Senkou dời.
+  await expect(legend.getByText("Senkou Span A")).toBeAttached()
+  await expect(legend.getByText("Chikou Span")).toBeAttached()
+})
+
+test("VWAP đặt lại theo phiên ở khung 5 phút, nhãn nói rõ kỳ; khung ngày theo tháng", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  const mocks = await mockMarket(page)
+  await openChart(page)
+  await addIndicator(page, "vwap", "VWAP")
+  const legend = page.getByRole("group", { name: "Chú giải biểu đồ" })
+  await expect(legend).toContainText("VWAP")
+  await expect(legend.getByText("VWAP theo tháng")).toBeAttached()
+  await shot(page, "vwap-daily")
+  await page.getByRole("combobox", { name: "Khung thời gian" }).first().click()
+  await page.getByRole("option", { name: "5 phút", exact: true }).click()
+  await expect.poll(() => mocks.ohlcv.some((entry) => entry === "FPT|5m")).toBe(true)
+  await expect(legend.getByText("VWAP theo phiên")).toBeAttached()
+  await expect.poll(() => inkOf(page)).toBeGreaterThan(200)
+  await shot(page, "vwap-5m")
+})
+
+test("chỉ báo ô riêng (Aroon) thêm một ô và vẽ lên Canvas; hộp thoại tìm không dấu và lọc theo nhóm", async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await mockMarket(page)
+  await openChart(page)
+  await page.getByRole("button", { name: "Chỉ báo" }).click()
+  const dialog = page.getByRole("dialog", { name: "Thêm chỉ báo" })
+  await expect(dialog).toBeVisible()
+  await expect(dialog.getByRole("button", { name: "Ichimoku Cloud" })).toBeVisible()
+  await expect(dialog).toHaveCSS("opacity", "1")
+  await shot(page, "dialog-all")
+  // Tìm không cần gõ dấu
+  await dialog.getByRole("textbox", { name: "Tìm chỉ báo" }).fill("dao dong")
+  await expect(dialog.getByRole("button", { name: "Aroon" })).toHaveCount(0)
+  await expect(dialog.getByRole("button", { name: "Awesome Oscillator" })).toBeVisible()
+  await dialog.getByRole("textbox", { name: "Tìm chỉ báo" }).fill("")
+  // Lọc theo nhóm
+  await dialog.getByRole("radio", { name: "Mức giá" }).click()
+  await expect(dialog.getByRole("button", { name: "Pivot Points" })).toBeVisible()
+  await expect(dialog.getByRole("button", { name: "RSI", exact: true })).toHaveCount(0)
+  await expect(dialog.getByRole("radio", { name: "Mức giá" })).toHaveAttribute("aria-checked", "true")
+  await shot(page, "dialog-filtered")
+  await dialog.getByRole("radio", { name: "Mức giá" }).click()
+  const inkBefore = await layerInk(page, "data")
+  await dialog.getByRole("textbox", { name: "Tìm chỉ báo" }).fill("aroon")
+  await dialog.getByRole("button", { name: "Aroon" }).click()
+  await expect(dialog).toBeHidden()
+  await expect(page.getByRole("group", { name: "Chú giải biểu đồ" })).toContainText("Aroon (25)")
+  await expect.poll(() => layerInk(page, "data")).toBeGreaterThan(inkBefore)
+  await shot(page, "aroon-pane")
+})
+
+test("hộp thoại chỉ báo vừa màn hình điện thoại 390px: cuộn được, không tràn ngang, tìm và thêm được", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await mockMarket(page)
+  await openChart(page)
+  await page.getByRole("button", { name: "Chỉ báo" }).click()
+  const dialog = page.getByRole("dialog", { name: "Thêm chỉ báo" })
+  await expect(dialog).toBeVisible()
+  await expect(dialog).toHaveCSS("opacity", "1")
+  const box = (await dialog.boundingBox())!
+  expect(box.x).toBeGreaterThanOrEqual(0)
+  expect(box.x + box.width).toBeLessThanOrEqual(390)
+  expect(box.y + box.height).toBeLessThanOrEqual(844)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await shot(page, "dialog-phone")
+  await dialog.getByRole("textbox", { name: "Tìm chỉ báo" }).fill("hull")
+  await expect(dialog.getByRole("button", { name: "HMA" })).toBeVisible()
+  await dialog.getByRole("button", { name: "HMA" }).click()
+  await expect(dialog).toBeHidden()
+  await expect(page.getByRole("group", { name: "Chú giải biểu đồ" })).toContainText("HMA (9)")
+})
+
+test("điện thoại 390px: Ichimoku và Pivot Points (nhiều đường) không làm tràn chú giải ra ngoài biểu đồ", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 })
+  await mockMarket(page)
+  await openChart(page)
+  await addIndicator(page, "ichimoku", "Ichimoku Cloud")
+  await addIndicator(page, "pivot", "Pivot Points")
+  const legend = page.getByRole("group", { name: "Chú giải biểu đồ" })
+  await expect(legend).toContainText("Ichimoku Cloud")
+  await expect(legend).toContainText("Pivot Points")
+  // Tên hiện ra bỏ tham số khi hẹp, nút cài đặt vẫn gọi đúng tên đầy đủ.
+  await expect(legend.getByRole("button", { name: "Cài đặt Ichimoku Cloud (9, 26, 52, 26)" })).toBeAttached()
+  const box = (await host(page).boundingBox())!
+  // Mọi giá trị đọc được (xuống dòng, không bị cắt): Ichimoku 5, Pivot Points 7, mỗi giá trị nằm gọn trong hàng của nó.
+  for (const [id, count] of [["ichimoku", 5], ["pivot_points", 7]] as const) {
+    const row = legend.locator(`[data-indicator-key^="${id}"]`).first()
+    const rowRect = (await row.boundingBox())!
+    const cells = row.locator("span[style*='color']")
+    await expect(cells, id).toHaveCount(count)
+    for (let index = 0; index < count; index += 1) {
+      const rect = await cells.nth(index).boundingBox()
+      expect(rect, `${id} giá trị ${index}`).not.toBeNull()
+      expect(rect!.x, `${id} giá trị ${index}`).toBeGreaterThanOrEqual(rowRect.x - 1)
+      expect(rect!.x + rect!.width, `${id} giá trị ${index}`).toBeLessThanOrEqual(rowRect.x + rowRect.width + 1)
+      expect(rect!.y + rect!.height, `${id} giá trị ${index}`).toBeLessThanOrEqual(rowRect.y + rowRect.height + 1)
+    }
+  }
+  for (const id of ["ichimoku", "pivot_points"]) {
+    const rect = await legend.locator(`[data-indicator-key^="${id}"]`).first().boundingBox()
+    expect(rect, id).not.toBeNull()
+    expect(rect!.x + rect!.width, id).toBeLessThanOrEqual(box.x + box.width + 1)
+    // Nút cài đặt vẫn nằm trong khung dù hàng có nhiều giá trị (giá trị bị cắt, nút không bị đẩy ra ngoài).
+    const settings = await legend.locator(`[data-indicator-key^="${id}"]`).first().getByRole("button", { name: /^Cài đặt/ }).boundingBox()
+    expect(settings, `${id} cài đặt`).not.toBeNull()
+    expect(settings!.x + settings!.width, `${id} cài đặt`).toBeLessThanOrEqual(box.x + box.width + 1)
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await shot(page, "phone-ichimoku-pivot")
+})

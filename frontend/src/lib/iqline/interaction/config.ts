@@ -1,6 +1,6 @@
 /** Cấu hình tương tác theo chế độ (docs/iqline-design.md §7, §12) và trạng thái ban đầu. */
 import type { Drawing, Viewport } from "../types"
-import { ALL_TOOLS, FLASHBACK_TOOLS, SNAP_TOLERANCE, createDrawingsState } from "../drawings"
+import { ALL_TOOLS, FLASHBACK_TOOLS, SNAP_TOLERANCE, createDrawingsState, normalizeMagnet } from "../drawings"
 import { DEFAULT_HISTORY_LIMIT, createHistory } from "./history"
 import type { InteractionConfig, InteractionState } from "./types"
 
@@ -103,7 +103,8 @@ export function staticConfig(input: StaticConfigInput): InteractionConfig {
   }
 }
 
-export function createInteractionState(config: Pick<InteractionConfig, "defaultViewport" | "historyLimit">, drawings: readonly Drawing[] = []): InteractionState {
+/** `magnet` nhận cả trạng thái boolean của layout cũ (`true` thành yếu). */
+export function createInteractionState(config: Pick<InteractionConfig, "defaultViewport" | "historyLimit">, drawings: readonly Drawing[] = [], magnet: unknown = "off"): InteractionState {
   return {
     viewport: config.defaultViewport,
     crosshair: null,
@@ -113,7 +114,7 @@ export function createInteractionState(config: Pick<InteractionConfig, "defaultV
     priceScale: {},
     drawings: createDrawingsState(drawings),
     history: createHistory(config.historyLimit),
-    magnet: false,
+    magnet: normalizeMagnet(magnet),
     preview: null,
     cursor: "default",
   }

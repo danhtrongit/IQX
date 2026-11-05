@@ -223,9 +223,10 @@ const LEFT_MARGIN = 0
 /** Ô giá tối thiểu của `market`: nhỏ để vừa các khung chứa thấp, người dùng kéo đổi các ô khác. */
 export const MARKET_PRICE_MIN = 160
 
-function seriesExtent(values: readonly (number | null)[], first: number, last: number, extent: { low: number; high: number }) {
-  const end = Math.min(last, values.length - 1)
-  for (let index = first; index <= end; index += 1) {
+/** `offset`: chuỗi được vẽ lệch (xem `IndicatorSeries.offset`), nên chỉ lấy các giá trị đang nằm trong khoảng nhìn thấy. */
+function seriesExtent(values: readonly (number | null)[], first: number, last: number, extent: { low: number; high: number }, offset = 0) {
+  const end = Math.min(last - offset, values.length - 1)
+  for (let index = Math.max(0, first - offset); index <= end; index += 1) {
     const value = values[index]
     if (value == null || !Number.isFinite(value)) continue
     if (value < extent.low) extent.low = value
@@ -252,7 +253,7 @@ function indicatorRange(indicator: PreparedIndicator, first: number, last: numbe
   const { plot } = indicator
   if (plot.range) return { low: plot.range[0], high: plot.range[1] }
   const extent = { low: Number.POSITIVE_INFINITY, high: Number.NEGATIVE_INFINITY }
-  for (const series of plot.series) seriesExtent(series.values, first, last, extent)
+  for (const series of plot.series) seriesExtent(series.values, first, last, extent, series.offset ?? 0)
   if (plot.histogram) seriesExtent(plot.histogram.values, first, last, extent)
   for (const level of plot.levels ?? []) {
     extent.low = Math.min(extent.low, level.value)
@@ -271,7 +272,7 @@ function volumeRange(data: ChartData, indicators: readonly PreparedIndicator[], 
   let high = 0
   for (let index = first; index <= last; index += 1) high = Math.max(high, data.raw[index].volume)
   const extent = { low: 0, high }
-  for (const indicator of indicators) if (!indicator.hidden) for (const series of indicator.plot.series) seriesExtent(series.values, first, last, extent)
+  for (const indicator of indicators) if (!indicator.hidden) for (const series of indicator.plot.series) seriesExtent(series.values, first, last, extent, series.offset ?? 0)
   return { low: 0, high: extent.high || 1 }
 }
 

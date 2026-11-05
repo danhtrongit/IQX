@@ -29,6 +29,23 @@ const EXPECTED_IDS = [
   "bb_width",
   "psar",
   "relative_volume",
+  // 16 chỉ báo đợt 2: 8 trên ô giá rồi 8 ô riêng
+  "ichimoku",
+  "vwap",
+  "supertrend",
+  "wma",
+  "hma",
+  "vwma",
+  "envelope",
+  "pivot_points",
+  "aroon",
+  "trix",
+  "ultimate_oscillator",
+  "awesome_oscillator",
+  "momentum",
+  "std_dev",
+  "accum_dist",
+  "volatility_ohlc",
   // Volume Profile
   "volume_profile",
 ]
@@ -53,7 +70,7 @@ afterEach(() => {
 })
 
 describe("sổ đăng ký", () => {
-  it("có đúng 24 chỉ báo theo thứ tự §9, 16 trong danh mục và 8 chỉ ở market", () => {
+  it("có đúng 40 chỉ báo theo thứ tự §9, 16 trong danh mục và 24 chỉ ở market", () => {
     const all = listIndicators()
     expect(all.map((definition) => definition.id)).toEqual(EXPECTED_IDS)
     expect(listIndicators({ flashback: true })).toHaveLength(16)
@@ -65,15 +82,35 @@ describe("sổ đăng ký", () => {
       "bb_width",
       "psar",
       "relative_volume",
+      "ichimoku",
+      "vwap",
+      "supertrend",
+      "wma",
+      "hma",
+      "vwma",
+      "envelope",
+      "pivot_points",
+      "aroon",
+      "trix",
+      "ultimate_oscillator",
+      "awesome_oscillator",
+      "momentum",
+      "std_dev",
+      "accum_dist",
+      "volatility_ohlc",
       "volume_profile",
     ])
   })
 
-  it("kind đúng nhóm: 1 ô khối lượng, 6 trên ô giá cộng 2 bổ sung và Volume Profile, còn lại ô riêng", () => {
+  it("16 chỉ báo đợt 2 đều flashback: false, nên không bao giờ vào Flashback", () => {
+    for (const id of EXPECTED_IDS.slice(23, 39)) expect(getIndicator(id)?.flashback, id).toBe(false)
+  })
+
+  it("kind đúng nhóm: 1 ô khối lượng, trên ô giá, còn lại ô riêng", () => {
     const kinds = Object.fromEntries(listIndicators().map((definition) => [definition.id, definition.kind]))
     expect(kinds.volume).toBe("vol")
-    for (const id of ["ma", "bollinger", "ema", "ma_cross", "donchian", "keltner", "psar", "volume_profile"]) expect(kinds[id], id).toBe("over")
-    for (const id of ["rsi", "macd", "dmi", "stochastic", "cci", "roc", "williams_r", "obv", "mfi", "cmf", "atr", "atr_percent", "adx", "bb_width", "relative_volume"]) {
+    for (const id of ["ma", "bollinger", "ema", "ma_cross", "donchian", "keltner", "psar", "volume_profile", "ichimoku", "vwap", "supertrend", "wma", "hma", "vwma", "envelope", "pivot_points"]) expect(kinds[id], id).toBe("over")
+    for (const id of ["rsi", "macd", "dmi", "stochastic", "cci", "roc", "williams_r", "obv", "mfi", "cmf", "atr", "atr_percent", "adx", "bb_width", "relative_volume", "aroon", "trix", "ultimate_oscillator", "awesome_oscillator", "momentum", "std_dev", "accum_dist", "volatility_ohlc"]) {
       expect(kinds[id], id).toBe("pane")
     }
     expect(listIndicators({ kind: "vol" })).toHaveLength(1)

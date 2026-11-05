@@ -58,6 +58,12 @@ function exponential(values: readonly Num[], period: number, alpha: number): Ser
 /** Làm mịn Wilder: EMA với hệ số 1/N. */
 export const wilder = (values: readonly Num[], period: number): Series => exponential(values, period, 1 / period)
 
+/**
+ * EMA (hệ số 2/(N+1)) trên một chuỗi có thể có `null` (kết quả của một chỉ báo khác, như EMA của EMA trong TRIX): khởi tạo bằng
+ * trung bình N giá trị hữu hạn liên tiếp đầu tiên, và khe hở khởi tạo lại. Chỉ báo đợt 2 dùng; không đổi công thức nào có sẵn.
+ */
+export const emaOfSeries = (values: readonly Num[], period: number): Series => exponential(values, period, 2 / (period + 1))
+
 function zip(a: readonly Num[], b: readonly Num[], fn: (x: number, y: number) => Num): Series {
   return a.map((x, index) => {
     const y = b[index]

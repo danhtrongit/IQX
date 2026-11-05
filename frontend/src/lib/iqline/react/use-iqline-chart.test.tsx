@@ -3,11 +3,12 @@ import { useEffect } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { TOOL_SPECS } from "../drawings"
+import { createInteractionState } from "../interaction"
 import { makeTimedBars } from "../scene/test-support"
 import type { Drawing, TimedBar } from "../types"
 import { IQLineCanvasView } from "./IQLineCanvas"
 import { installCanvasEnv, type CanvasEnv } from "./test-env"
-import { defaultVisible, useIQLineChart, type IQLineChart, type MarketChartOptions } from "./use-iqline-chart"
+import { defaultVisible, isStaleState, useIQLineChart, type IQLineChart, type MarketChartOptions } from "./use-iqline-chart"
 
 let env: CanvasEnv
 beforeEach(() => {
@@ -149,6 +150,22 @@ describe("useIQLineChart: chỉ báo và dữ liệu", () => {
     expect(chart.data.indicators[0].name).toBe("EMA (21)")
   })
 
+  it("market đưa thời gian nến cho VWAP và Pivot Points; kéo và zoom không tính lại", () => {
+    setup(ALL.slice(0, 250), { indicatorInputs: [{ key: "vwap", id: "vwap", params: {} }, { key: "pv", id: "pivot_points", params: { timeframe: "week" } }] })
+    const [vwap, pivots] = chart.data.indicators
+    expect(vwap.plot.series[0].values.some((value) => value !== null)).toBe(true)
+    expect(pivots.plot.series.find((item) => item.key === "pp")?.values.some((value) => value !== null)).toBe(true)
+    act(() => chart.controller.dispatch({ type: "pan", bars: -10 }))
+    expect(chart.data.indicators[0].plot).toBe(vwap.plot)
+  })
+
+  it("đổi khung (interval) tính lại VWAP theo kỳ mới", () => {
+    const view = setup(ALL.slice(0, 250), { indicatorInputs: [{ key: "vwap", id: "vwap", params: {} }] })
+    expect(chart.data.indicators[0].plot.series[0].label).toBe("VWAP theo tháng")
+    view.update({ bars: ALL.slice(0, 250), interval: "5", resetKey: "FPT|5", indicatorInputs: [{ key: "vwap", id: "vwap", params: {} }] })
+    expect(chart.data.indicators[0].plot.series[0].label).toBe("VWAP theo phiên")
+  })
+
   it("Volume Profile tính theo viewport: đổi khung nhìn thì đổi profile, không đổi thì giữ nguyên", () => {
     setup(ALL.slice(0, 250), { indicatorInputs: [{ key: "vp", id: "volume_profile", params: {} }] })
     const first = chart.data.indicators[0].plot
@@ -238,3 +255,19 @@ describe("defaultVisible", () => {
     expect(defaultVisible(1)).toBe(20)
   })
 })
+
+describe("isStaleState", () => {
+  const make = () => createInteractionState({ defaultViewport: { from: 0, to: 10 }, historyLimit: 5 })
+  it("bỏ trạng thái render cũ hơn trạng thái dispatch vừa ghi, nhận trạng thái tạo trong lúc render", () => {
+    const a = make()
+    const b = make()
+    const c = make()
+    const order = new WeakMap([[a, 1], [b, 2]])
+    expect(isStaleState(a, b, order)).toBe(true)
+    expect(isStaleState(b, a, order)).toBe(false)
+    expect(isStaleState(b, b, order)).toBe(false)
+    expect(isStaleState(c, b, order)).toBe(false)
+    expect(isStaleState(a, c, order)).toBe(false)
+  })
+})
+

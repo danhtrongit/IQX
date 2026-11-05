@@ -7,14 +7,18 @@
  */
 import type { Anchor, Drawing } from "../types"
 import {
+  TOOL_SPECS,
   anchorFromPoint,
   drawingsReducer,
   hitDrawing,
   hitHandle,
   moveHandle,
+  normalizeMagnet,
+  simplifyStroke,
   translateDrawing,
   type AnchorOptions,
   type DrawingsState,
+  type PendingDrawing,
 } from "../drawings"
 import { DRAW_DRAG_SLOP, LONG_PRESS_SLOP, ZOOM_STEP, pinchViewport, wheelIntent, wheelPanBars, wheelZoomFactor } from "./gestures"
 import { recordHistory, redoHistory, undoHistory } from "./history"
@@ -36,6 +40,10 @@ import type { Viewport } from "../types"
 const AXIS_DRAG_RATE = 0.005
 const PRICE_SCALE_MIN = 0.1
 const PRICE_SCALE_MAX = 10
+/** Nét bút: khoảng cách tối thiểu (pixel) giữa hai điểm thô liên tiếp. */
+const STROKE_MIN_STEP = 2
+/** Đường gấp khúc: bấm gần đỉnh trước hơn chừng này thì không tính là đỉnh mới (hai lần bấm của nhấp đúp). */
+const DUPLICATE_POINT_SLOP = 4
 
 const plotWidth = (env: InteractionEnv) => Math.max(env.coords.plot.right - env.coords.plot.left, 1)
 const canDraw = (env: InteractionEnv) => env.config.allowedTools.length > 0
@@ -52,13 +60,31 @@ function withViewport(state: InteractionState, viewport: Viewport): InteractionS
 
 function anchorOptions(state: InteractionState, env: InteractionEnv): AnchorOptions {
   return {
-    snap: state.magnet && env.bars ? { bars: env.bars, tolerance: env.config.snapTolerance } : undefined,
+    snap: state.magnet !== "off" && env.bars ? { bars: env.bars, tolerance: env.config.snapTolerance, strength: state.magnet } : undefined,
     indexRange: env.config.anchorRange ?? undefined,
   }
 }
 
 function pointAnchor(state: InteractionState, p: PointerInput, env: InteractionEnv): Anchor {
   return anchorFromPoint(p, env.coords, anchorOptions(state, env))
+}
+
+/** Điểm của nét bút: không hút vào OHLC (nét vẽ tay), kẹp trong khung vẽ để kéo ra ngoài vẫn cho nét hợp lệ. */
+function strokePoint(p: { x: number; y: number }, env: InteractionEnv): { x: number; y: number } {
+  const { plot } = env.coords
+  return { x: Math.min(plot.right, Math.max(plot.left, p.x)), y: Math.min(plot.bottom, Math.max(plot.top, p.y)) }
+}
+
+function strokeAnchor(p: { x: number; y: number }, env: InteractionEnv): Anchor {
+  return anchorFromPoint(strokePoint(p, env), env.coords, { indexRange: env.config.anchorRange ?? undefined })
+}
+
+function repeatsLastPoint(pending: PendingDrawing | null, p: PointerInput, env: InteractionEnv): boolean {
+  const last = pending?.anchors.at(-1)
+  if (!last) return false
+  const index = env.coords.indexOfAnchor(last)
+  if (index === null) return false
+  return Math.hypot(p.x - env.coords.xOfIndex(index), p.y - env.coords.yOfPrice(last.price)) < DUPLICATE_POINT_SLOP
 }
 
 /** Đưa trạng thái hình mới vào; ghi một bước hoàn tác nếu danh sách hình đổi. */
@@ -108,7 +134,7 @@ function cursorFor(state: InteractionState, p: PointerInput | null, env: Interac
   if (drag) {
     if (drag.kind === "scale-price") return "ns-resize"
     if (drag.kind === "scale-time") return "ew-resize"
-    return drag.kind === "draw" || drag.kind === "crosshair" ? "crosshair" : "grabbing"
+    return drag.kind === "draw" || drag.kind === "stroke" || drag.kind === "crosshair" ? "crosshair" : "grabbing"
   }
   if (!p) return "default"
   if (p.target.region === "price-axis") return env.config.axisScaling ? "ns-resize" : "default"
@@ -130,6 +156,8 @@ function touchPair(state: InteractionState, ids: readonly [number, number]): [Po
 }
 
 function startPinch(state: InteractionState, env: InteractionEnv): InteractionState {
+  // Ngón thứ hai chạm xuống giữa lúc đang kéo bút: bỏ nét dở thay vì để điểm treo.
+  if (state.drag?.kind === "stroke") state = { ...state, drawings: drawingsReducer(state.drawings, { type: "restart" }) }
   if (!env.config.zoom || env.config.mode === "static") return { ...state, drag: null }
   const ids = Object.keys(state.touches).map(Number).slice(0, 2) as [number, number]
   const pair = touchPair(state, ids)
@@ -164,6 +192,14 @@ function plotDown(state: InteractionState, p: PointerInput, env: InteractionEnv)
   if (canDraw(env) && inPricePane) {
     const { drawings } = state
     if (drawings.tool) {
+      const variable = TOOL_SPECS[drawings.pending?.tool ?? drawings.tool].variable
+      if (variable?.stroke) {
+        // Nét bút: nhấn là điểm đầu, kéo thêm điểm, thả là xong (pointerUp).
+        const started = drawingsReducer(drawingsReducer(drawings, { type: "restart" }), { type: "anchor", anchor: strokeAnchor(p, env) })
+        return { ...state, drawings: started, preview: null, drag: { kind: "stroke", pointerId: p.pointerId, lastX: p.x, lastY: p.y } }
+      }
+      // Đường gấp khúc: hai lần bấm của nhấp đúp không tạo thêm đỉnh trùng.
+      if (variable && repeatsLastPoint(drawings.pending, p, env)) return state
       // Đang vẽ: mỗi lần bấm là một điểm neo. Chưa đủ điểm thì chờ điểm kế, kéo rồi thả cũng chốt được điểm cuối.
       const anchor = pointAnchor(state, p, env)
       const next = applyDrawings(state, drawingsReducer(drawings, { type: "anchor", anchor }), env)
@@ -246,6 +282,12 @@ function applyDrag(state: InteractionState, drag: DragState, p: PointerInput, en
     }
     case "draw":
       return { ...state, preview: pointAnchor(state, p, env) }
+    case "stroke": {
+      const at = strokePoint(p, env)
+      if (Math.hypot(at.x - drag.lastX, at.y - drag.lastY) < STROKE_MIN_STEP) return state
+      const drawings = drawingsReducer(state.drawings, { type: "anchor", anchor: strokeAnchor(at, env) })
+      return { ...state, drawings, drag: { ...drag, lastX: at.x, lastY: at.y } }
+    }
     case "crosshair":
       return withCrosshair(state, p, "touch", env)
   }
@@ -289,6 +331,15 @@ function pointerUp(state: InteractionState, p: PointerInput, env: InteractionEnv
     case "handle":
     case "move":
       return commitDrag(next, drag.before, env)
+    case "stroke": {
+      // Thả bút: giản lược các điểm thô rồi chốt. Bấm một cái mà không kéo thì bỏ nét, giữ công cụ.
+      // Điểm thả cũng là một điểm của nét nếu đã rời điểm cuối.
+      const tail = Math.hypot(p.x - drag.lastX, p.y - drag.lastY) >= 1 ? drawingsReducer(next.drawings, { type: "anchor", anchor: strokeAnchor(p, env) }) : next.drawings
+      const { pending } = tail
+      if (!pending || pending.anchors.length < 2) return { ...next, drawings: drawingsReducer(tail, { type: "restart" }), preview: null }
+      const done = applyDrawings({ ...next, drawings: tail }, drawingsReducer(tail, { type: "finish", anchors: simplifyStroke(pending.anchors, env.coords) }), env)
+      return { ...done, preview: null }
+    }
     case "draw": {
       // Kéo từ điểm đầu rồi thả: điểm thả là điểm neo kế tiếp.
       if (!next.drawings.pending || Math.hypot(p.x - drag.startX, p.y - drag.startY) < DRAW_DRAG_SLOP) return next
@@ -308,8 +359,9 @@ function pointerCancel(state: InteractionState, pointerId: number): InteractionS
   const { drag } = next
   if (!drag || drag.pointerId !== pointerId) return next
   next = { ...next, drag: null }
-  // Huỷ giữa chừng thì trả hình về như trước khi kéo.
+  // Huỷ giữa chừng thì trả hình về như trước khi kéo; nét bút dở thì bỏ.
   if (drag.kind === "handle" || drag.kind === "move") return { ...next, drawings: { ...next.drawings, shapes: drag.before } }
+  if (drag.kind === "stroke") return { ...next, drawings: drawingsReducer(next.drawings, { type: "restart" }), preview: null }
   return next
 }
 
@@ -320,6 +372,12 @@ function resetView(state: InteractionState, env: InteractionEnv): InteractionSta
 
 function doubleClick(state: InteractionState, p: PointerInput, env: InteractionEnv): InteractionState {
   const { config } = env
+  // Nhấp đúp khi đang vẽ đường gấp khúc là hoàn tất hình (đỉnh cuối là điểm nhấp đầu tiên của nhấp đúp).
+  const pending = state.drawings.pending
+  if (pending && canDraw(env) && TOOL_SPECS[pending.tool].variable && !TOOL_SPECS[pending.tool].variable?.stroke) {
+    const drawings = drawingsReducer(state.drawings, { type: "finish" })
+    return drawings === state.drawings ? state : { ...applyDrawings(state, drawings, env), preview: null }
+  }
   switch (p.target.region) {
     case "price-axis": {
       if (!config.axisScaling || !(p.target.paneKey in state.priceScale)) return state
@@ -437,8 +495,10 @@ export function interactionReducer(state: InteractionState, action: InteractionA
       const drawings = drawingsReducer(state.drawings, { type: "tool", tool: action.tool })
       return { ...state, drawings, drag: null, preview: null }
     }
-    case "magnet":
-      return state.magnet === action.on ? state : { ...state, magnet: action.on }
+    case "magnet": {
+      const magnet = normalizeMagnet(action.on)
+      return state.magnet === magnet ? state : { ...state, magnet }
+    }
     case "undo": {
       const result = config.history ? undoHistory(state.history, state.drawings.shapes) : null
       return result ? restore(state, result) : state

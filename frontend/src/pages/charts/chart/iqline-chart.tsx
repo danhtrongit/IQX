@@ -10,6 +10,7 @@ import { DEFAULT_INDICATORS } from "@/lib/iqline/react/market-defaults"
 import type { ChartIndicatorInput, Interval } from "@/lib/iqline/types"
 import { useQuote } from "@/pages/demo-trading/market/use-quote"
 
+import { currentOwner } from "./drawing-persistence"
 import { createIQLineDatafeed, iqlinePriceFormatter } from "./iqline-datafeed"
 import { priceLevelsFromQuote } from "./iqline-levels"
 import { getIQLineStore } from "./iqline-store"
@@ -55,6 +56,7 @@ export default function IQLineMarketChart({ symbol, interval, theme, onIntervalC
         onIntervalChange={onIntervalChange}
         datafeed={sharedDatafeed()}
         store={store}
+        preferencesScope={currentOwner() ?? "guest"}
         indicators={indicators}
         onIndicatorsChange={setIndicators}
         priceLevels={priceLevels}

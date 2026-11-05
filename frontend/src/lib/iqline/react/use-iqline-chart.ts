@@ -290,11 +290,17 @@ export function useIQLineChart(options: IQLineChartOptions): IQLineChart {
   const profileFrom = hasProfile ? Math.ceil(state.viewport.from) : 0
   const profileTo = hasProfile ? Math.floor(state.viewport.to) : 0
   const titleOf = options.mode === "flashback" ? options.indicatorTitle : undefined
+  // Thời gian nến cho VWAP và Pivot Points: chỉ `market`. Flashback không có đường nào đọc `time` (§12), nên ở đó luôn là null.
+  const timeInterval = options.interval
+  const timeContext = useMemo(
+    () => (market && timeInterval ? { times: (bars as readonly TimedBar[]).map((bar) => bar.time), interval: timeInterval } : null),
+    [market, bars, timeInterval],
+  )
   const sceneIndicators = useMemo(
     () =>
       precomputed ??
-      sceneIndicatorsFor(inputs ?? [], bars, cache, palette, { profile: hasProfile ? { from: profileFrom, to: profileTo } : null, flashback: !market, titleOf }),
-    [precomputed, inputs, bars, cache, palette, hasProfile, profileFrom, profileTo, market, titleOf],
+      sceneIndicatorsFor(inputs ?? [], bars, cache, palette, { profile: hasProfile ? { from: profileFrom, to: profileTo } : null, flashback: !market, titleOf, time: timeContext }),
+    [precomputed, inputs, bars, cache, palette, hasProfile, profileFrom, profileTo, market, titleOf, timeContext],
   )
   const chartType = options.chartType ?? "candles"
   const marks = options.mode === "market" ? options.marks : undefined
@@ -380,6 +386,17 @@ export function useIQLineChart(options: IQLineChartOptions): IQLineChart {
   }
 }
 
+/**
+ * Trạng thái của lần render là cũ khi chính dispatch đã tạo ra nó trước trạng thái đang giữ.
+ * Trạng thái không do dispatch tạo (đổi mã, nạp thêm nến trong lúc render) luôn được nhận.
+ */
+export function isStaleState(rendered: InteractionState, held: InteractionState, order: WeakMap<InteractionState, number>): boolean {
+  if (rendered === held) return false
+  const renderedAt = order.get(rendered)
+  const heldAt = order.get(held)
+  return renderedAt !== undefined && heldAt !== undefined && renderedAt < heldAt
+}
+
 function frameInputsOf(l: Live): FrameInputs {
   return {
     width: l.size.width,
@@ -407,11 +424,19 @@ type InternalController = ChartController & { sync(next: Live): void }
 function createController({ builder, setState, setHeightsState }: ControllerDeps): InternalController {
   let current: Live | null = null
   let stack: CanvasStack | null = null
+  // Thứ tự các trạng thái do dispatch tạo ra: lần render đang dở có thể mang trạng thái cũ hơn trạng thái dispatch vừa ghi.
+  const order = new WeakMap<InteractionState, number>()
+  let latest = 0
   const envOf = (l: Live) => ({ config: l.config, coords: l.frame?.price.coords ?? STUB_COORDS, bars: l.data.raw })
 
   const controller: InternalController = {
     sync(next) {
+      const previous = current
       current = next
+      if (!previous || !isStaleState(next.state, previous.state, order)) return
+      // Lần render này bắt đầu trước một dispatch mới hơn: giữ trạng thái mới nhất, để cú bấm kế tiếp không làm mất điểm neo.
+      next.state = previous.state
+      if (next.frame) next.frame = buildFrame(next.data, next.state.viewport, next.state.priceScale, frameInputsOf(next))
     },
     dispatch(action) {
       const l = current
@@ -420,6 +445,8 @@ function createController({ builder, setState, setHeightsState }: ControllerDeps
       const next = interactionReducer(previous, action, envOf(l))
       if (next === previous) return
       l.state = next
+      latest += 1
+      order.set(next, latest)
       const layers = new Set<Layer>()
       const viewChanged = next.viewport !== previous.viewport || next.priceScale !== previous.priceScale
       if (viewChanged) {

@@ -113,4 +113,59 @@ describe("ChartLegend", () => {
     const price = legend().querySelector('[data-legend-pane="p"]')!
     expect(price.querySelectorAll(":scope > div").length).toBeGreaterThanOrEqual(2)
   })
+  describe("nhiều giá trị trên màn hình hẹp", () => {
+    const MANY: ChartIndicatorInput[] = [
+      { key: "ichimoku-1", id: "ichimoku", params: {} },
+      { key: "pivot-1", id: "pivot_points", params: { timeframe: "week" } },
+    ]
+    const rowOf = (key: string) => legend().querySelector<HTMLElement>(`[data-indicator-key="${key}"]`)!
+    /** Ô giá trị: mỗi ô là một span có màu của chuỗi. */
+    const cellsOf = (row: HTMLElement) => row.querySelectorAll("span[style*='color']")
+
+    it("hẹp: hàng cho phép xuống dòng, đủ 5 và 7 giá trị, tên bỏ tham số hiện ra nhưng tên đầy đủ vẫn có cho trình đọc màn hình", () => {
+      render(<Harness editable indicators={MANY} />)
+      env.measure(390, 700)
+      const ichimoku = rowOf("ichimoku-1")
+      const pivot = rowOf("pivot-1")
+      expect(ichimoku.className).toContain("flex-wrap")
+      expect(ichimoku.className.split(" ")).not.toContain("h-6")
+      expect(cellsOf(ichimoku)).toHaveLength(5)
+      expect(cellsOf(pivot)).toHaveLength(7)
+      // Tên hiện ra không còn "(9, 26, 52, 26)" nhưng văn bản của hàng vẫn chứa nó (sr-only) và nút gọi đúng tên đầy đủ.
+      expect(within(ichimoku).getByText("Ichimoku Cloud", { exact: false }).getAttribute("title")).toBe("Ichimoku Cloud (9, 26, 52, 26)")
+      expect(ichimoku.textContent).toContain("(9, 26, 52, 26)")
+      expect(within(ichimoku).getByRole("button", { name: "Cài đặt Ichimoku Cloud (9, 26, 52, 26)" })).toBeTruthy()
+    })
+
+    it("hẹp: nút luôn xếp ngay sau tên (order), giá trị xếp sau nút nên xuống dòng chứ không đẩy nút ra ngoài", () => {
+      render(<Harness editable indicators={MANY} />)
+      env.measure(390, 700)
+      const row = rowOf("pivot-1")
+      const order = (element: Element) => Number(/order-(\d)/.exec(element.className)?.[1] ?? 0)
+      const buttons = within(row).getByRole("button", { name: /^Cài đặt/ }).parentElement!
+      const name = row.querySelector("[title]")!
+      expect(order(name)).toBe(1)
+      expect(order(buttons)).toBe(2)
+      for (const cell of cellsOf(row)) expect(order(cell)).toBe(3)
+    })
+
+    it("rộng: giữ một dòng cao 24 px, nút ở cuối hàng, không xuống dòng", () => {
+      render(<Harness editable indicators={MANY} />)
+      env.measure(900, 700)
+      const row = rowOf("ichimoku-1")
+      expect(row.className.split(" ")).toContain("h-6")
+      expect(row.className).not.toContain("flex-wrap")
+      expect(row.className).not.toContain("order-")
+      expect(cellsOf(row)).toHaveLength(5)
+      expect(within(row).getByText("Ichimoku Cloud (9, 26, 52, 26)")).toBeTruthy()
+    })
+
+    it("hẹp: chỉ báo đang ẩn vẫn một dòng gọn (tên và nút, không giá trị)", () => {
+      render(<Harness editable indicators={[{ key: "ichimoku-1", id: "ichimoku", params: {}, hidden: true }]} />)
+      env.measure(390, 700)
+      const row = rowOf("ichimoku-1")
+      expect(cellsOf(row)).toHaveLength(0)
+      expect(within(row).getByRole("button", { name: /^Hiện Ichimoku/ })).toBeTruthy()
+    })
+  })
 })

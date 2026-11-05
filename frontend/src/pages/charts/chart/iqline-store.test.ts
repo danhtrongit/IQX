@@ -57,7 +57,9 @@ const line = (type: string, id: string) => ({
   ownerSourceId: "_seriesId",
 })
 const layout = (sources: unknown[]) => ({ layout: "s", charts: [{ version: 2, panes: [{ sources }] }] })
-const trendAndIchimoku = () => layout([main(), study("Moving Average", "MA", { length: 20 }), line("LineToolTrendLine", "t1"), study("Ichimoku Cloud", "Ichimoku", { in_0: 9 })])
+// Ichimoku giờ chuyển được; VbP cố định thì vẫn không, nên mẫu có VbP để còn một hình vẽ bị bỏ cần báo.
+const trendIchimokuAndVbp = () =>
+  layout([main(), study("Moving Average", "MA", { length: 20 }), line("LineToolTrendLine", "t1"), study("Ichimoku Cloud", "Ichimoku", { in_0: 9 }), line("LineToolVbPFixed", "v1")])
 
 /** Server trả `state` cho GET và nhận mọi PUT. */
 function mockServer(state: unknown) {
@@ -145,10 +147,10 @@ describe("load: thứ tự nguồn", () => {
 })
 
 describe("load: chuyển layout TradingView", () => {
-  it("Trend Line và Ichimoku: tài liệu đúng, giữ charts, báo đúng một lần dù tải hai lần", async () => {
+  it("Trend Line, Ichimoku và VbP cố định: tài liệu đúng, giữ charts, báo đúng một lần dù tải hai lần", async () => {
     signIn("u1")
     const sym = nextSymbol()
-    const layoutState = trendAndIchimoku()
+    const layoutState = trendIchimokuAndVbp()
     mockServer(layoutState)
     const notify = vi.fn()
     const store = createIQLineStore({ notify })
@@ -159,11 +161,12 @@ describe("load: chuyển layout TradingView", () => {
       { time: T0, price: 25.5 },
       { time: T0 + 10 * DAY, price: 27.25 },
     ])
-    expect(first?.iqline.indicators.map((i) => i.id)).toEqual(["ma"])
+    expect(first?.iqline.indicators.map((i) => i.id)).toEqual(["ma", "ichimoku"])
     expect(first?.iqline.indicators[0].params).toEqual({ period: 20 })
+    expect(first?.iqline.indicators[1].params).toEqual({ conversion: 9 })
     expect(first?.charts).toBe(layoutState.charts)
     expect(notify).toHaveBeenCalledTimes(1)
-    expect(notify).toHaveBeenCalledWith(`1 ${MESSAGE_BOTH}`)
+    expect(notify).toHaveBeenCalledWith(MESSAGE_DRAWINGS)
 
     await store.load(sym)
     await store.load(sym)
@@ -172,7 +175,7 @@ describe("load: chuyển layout TradingView", () => {
 
   it("vẫn chỉ báo một lần khi không ghi được bản đệm nên lần sau phải chuyển lại", async () => {
     const sym = nextSymbol()
-    localStorage.setItem(tradingViewKey("guest", sym), JSON.stringify(trendAndIchimoku()))
+    localStorage.setItem(tradingViewKey("guest", sym), JSON.stringify(trendIchimokuAndVbp()))
     vi.spyOn(Storage.prototype, "setItem").mockImplementation(() => {
       throw new DOMException("quota", "QuotaExceededError")
     })
@@ -187,9 +190,9 @@ describe("load: chuyển layout TradingView", () => {
     const sym = nextSymbol()
     const notify = vi.fn()
     const store = createIQLineStore({ notify })
-    localStorage.setItem(tradingViewKey("guest", sym), JSON.stringify(trendAndIchimoku()))
-    localStorage.setItem(tradingViewKey("user:u7", sym), JSON.stringify(trendAndIchimoku()))
-    localStorage.setItem(tradingViewKey("guest", `${sym}B`), JSON.stringify(trendAndIchimoku()))
+    localStorage.setItem(tradingViewKey("guest", sym), JSON.stringify(trendIchimokuAndVbp()))
+    localStorage.setItem(tradingViewKey("user:u7", sym), JSON.stringify(trendIchimokuAndVbp()))
+    localStorage.setItem(tradingViewKey("guest", `${sym}B`), JSON.stringify(trendIchimokuAndVbp()))
 
     await store.load(sym)
     signIn("u7")
@@ -213,9 +216,10 @@ describe("load: chuyển layout TradingView", () => {
     const b = nextSymbol()
     localStorage.setItem(
       tradingViewKey("guest", b),
-      JSON.stringify(layout([main(), line("LineToolVbPFixed", "v1"), line("LineToolFibRetracement", "f1"), study("Ichimoku Cloud", "Ichimoku")])),
+      JSON.stringify(layout([main(), line("LineToolVbPFixed", "v1"), line("LineToolFibRetracement", "f1"), study("Ichimoku Cloud", "Ichimoku"), study("Chỉ báo tự viết", "Custom")])),
     )
     await bothStore.load(b)
+    // Hai hình vẽ (VbP cố định, Fib Retracement) cộng một chỉ báo tự viết là 3; Ichimoku đã chuyển được nên không tính.
     expect(both).toHaveBeenCalledWith(`3 ${MESSAGE_BOTH}`)
 
     // Không có gì bị bỏ thì không báo.
@@ -236,7 +240,7 @@ describe("load: chuyển layout TradingView", () => {
 
   it("notify ném lỗi cũng không làm hỏng việc nạp", async () => {
     const sym = nextSymbol()
-    localStorage.setItem(tradingViewKey("guest", sym), JSON.stringify(trendAndIchimoku()))
+    localStorage.setItem(tradingViewKey("guest", sym), JSON.stringify(trendIchimokuAndVbp()))
     const store = createIQLineStore({
       notify: () => {
         throw new Error("toast hỏng")
@@ -248,7 +252,7 @@ describe("load: chuyển layout TradingView", () => {
   it("lưu ngay bản đã chuyển: bản đệm có iqline và charts, người đăng nhập đặt lịch PUT, lần nạp sau không chuyển lại", async () => {
     signIn("u1")
     const sym = nextSymbol()
-    const layoutState = trendAndIchimoku()
+    const layoutState = trendIchimokuAndVbp()
     mockServer(layoutState)
     const notify = vi.fn()
     const store = createIQLineStore({ notify })
@@ -272,7 +276,7 @@ describe("load: chuyển layout TradingView", () => {
 
   it("khách chuyển từ bản đệm TradingView cũ, lưu xuống bản đệm iqline và không gọi API", async () => {
     const sym = nextSymbol()
-    localStorage.setItem(tradingViewKey("guest", sym), JSON.stringify(trendAndIchimoku()))
+    localStorage.setItem(tradingViewKey("guest", sym), JSON.stringify(trendIchimokuAndVbp()))
     await createIQLineStore({ notify: vi.fn() }).load(sym)
     expect((stored(iqlineKey("guest", sym)) as ChartDocument).iqline.drawings).toHaveLength(1)
     // Bản đệm TradingView gốc còn nguyên để quay về TradingView.
@@ -527,6 +531,124 @@ describe("save", () => {
   })
 })
 
+describe("công cụ vẽ đợt 1: lưu và nạp lại", () => {
+  const BASIC_POINTS: Record<string, number> = {
+    "long-position": 3,
+    "short-position": 3,
+    brush: 100,
+    arrow: 2,
+    "arrow-up": 1,
+    "arrow-down": 1,
+    "price-label": 1,
+    callout: 2,
+    "date-range": 2,
+    "date-price-range": 2,
+    ellipse: 2,
+    triangle: 3,
+    path: 40,
+  }
+  const basicDoc = (): ChartDocument =>
+    document(
+      Object.entries(BASIC_POINTS).map(([tool, count], index): Drawing => ({
+        id: `b${index + 1}`,
+        tool: tool as Drawing["tool"],
+        anchors: Array.from({ length: count }, (_, k) => ({ time: T0 + (index * 200 + k) * DAY, price: 10 + (k % 7) * 0.5 })),
+        style: { color: "chart-1", width: 2, dash: "solid", fill: true },
+        text: tool === "callout" ? "Hỗ trợ" : undefined,
+        ...(index % 2 === 0 ? { locked: true } : { hidden: true }),
+      })),
+    )
+
+  it("mọi công cụ đợt 1 lưu rồi nạp lại giữ đủ điểm neo (kể cả nét bút 100 điểm), kiểu, chữ, khoá và ẩn", async () => {
+    signIn("u1")
+    mockServer(null)
+    const store = createIQLineStore({ notify: vi.fn() })
+    const sym = nextSymbol()
+    const original = basicDoc()
+    store.save(sym, original)
+    await vi.advanceTimersByTimeAsync(1500)
+    // Từ bản đệm.
+    const fromCache = await store.load(sym)
+    expect(fromCache?.iqline.drawings).toEqual(JSON.parse(JSON.stringify(original.iqline.drawings)))
+    // Từ server (đúng nội dung đã PUT).
+    mockServer(putBody().state)
+    localStorage.clear()
+    const fromServer = await store.load(sym)
+    expect(fromServer?.iqline.drawings.map((d) => [d.tool, d.anchors.length])).toEqual(Object.entries(BASIC_POINTS))
+    expect(fromServer?.iqline.drawings.find((d) => d.tool === "callout")?.text).toBe("Hỗ trợ")
+    expect(fromServer?.iqline.drawings.filter((d) => d.locked)).toHaveLength(7)
+    expect(fromServer?.iqline.drawings.filter((d) => d.hidden)).toHaveLength(6)
+  })
+
+  it("khách lưu và nạp lại từ máy", async () => {
+    const store = createIQLineStore({ notify: vi.fn() })
+    const sym = nextSymbol()
+    store.save(sym, basicDoc())
+    expect((await store.load(sym))?.iqline.drawings).toHaveLength(13)
+  })
+
+  it("công cụ thường không bao giờ có nhiều điểm hơn số cần; nét bút bị cắt ở 160 điểm; thiếu điểm tối thiểu thì bỏ hình", async () => {
+    signIn("u1")
+    const sym = nextSymbol()
+    const points = (count: number) => Array.from({ length: count }, (_, k) => ({ time: T0 + k * DAY, price: 10 + k }))
+    const style = { color: "chart-1", width: 2 }
+    mockServer({
+      iqline: {
+        version: 1,
+        chartType: "candles",
+        indicators: [],
+        drawings: [
+          { id: "t", tool: "trend", anchors: points(9), style },
+          { id: "b", tool: "brush", anchors: points(400), style },
+          { id: "p", tool: "path", anchors: points(200), style },
+          { id: "short", tool: "brush", anchors: points(1), style },
+          { id: "pos", tool: "long-position", anchors: points(2), style },
+        ],
+      },
+    })
+    const loaded = await createIQLineStore({ notify: vi.fn() }).load(sym)
+    const byId = Object.fromEntries((loaded?.iqline.drawings ?? []).map((d) => [d.id, d.anchors.length]))
+    expect(byId).toEqual({ t: 2, b: 160, p: 64 })
+  })
+
+  it("điểm neo hỏng trong nét bút làm cả hình bị bỏ, hình khác không ảnh hưởng", async () => {
+    signIn("u1")
+    const sym = nextSymbol()
+    const good = Array.from({ length: 10 }, (_, k) => ({ time: T0 + k * DAY, price: 10 }))
+    mockServer({
+      iqline: {
+        version: 1,
+        chartType: "candles",
+        indicators: [],
+        drawings: [
+          { id: "bad", tool: "brush", anchors: [...good, { time: "x", price: 1 }], style: { color: "chart-1", width: 2 } },
+          { id: "ok", tool: "brush", anchors: good, style: { color: "chart-1", width: 2 } },
+        ],
+      },
+    })
+    const loaded = await createIQLineStore({ notify: vi.fn() }).load(sym)
+    expect(loaded?.iqline.drawings.map((d) => d.id)).toEqual(["ok"])
+  })
+
+  it("tài liệu đầy hạn mức điểm (6.000 điểm nét bút) vẫn dưới 512 KB nên vẫn được PUT lên server", async () => {
+    signIn("u1")
+    mockServer(null)
+    const store = createIQLineStore({ notify: vi.fn() })
+    const sym = nextSymbol()
+    const strokes = 37
+    const drawings: Drawing[] = Array.from({ length: strokes }, (_, index) => ({
+      id: `d${index + 1}`,
+      tool: "brush",
+      anchors: Array.from({ length: 160 }, (_, k) => ({ time: T0 + (index * 1000 + k) * 60, price: Math.round((27 + Math.sin(k) * 3.123456789) * 1e4) / 1e4 })),
+      style: { color: "chart-1", width: 2 },
+    }))
+    store.save(sym, document(drawings))
+    await vi.advanceTimersByTimeAsync(1500)
+    expect(puts()).toHaveLength(1)
+    expect(String(puts()[0]?.[1]?.body).length).toBeLessThan(512 * 1024)
+  })
+})
+
 describe("đổi tài khoản giữa chừng", () => {
   it("đổi trong lúc tải thì trả null và không ghi nhầm", async () => {
     signIn("u1")
@@ -534,7 +656,7 @@ describe("đổi tài khoản giữa chừng", () => {
     const notify = vi.fn()
     vi.mocked(api).mockImplementation(async () => {
       signIn("u2")
-      return { symbol: sym, state: trendAndIchimoku(), updated_at: null }
+      return { symbol: sym, state: trendIchimokuAndVbp(), updated_at: null }
     })
     expect(await createIQLineStore({ notify }).load(sym)).toBeNull()
     expect(notify).not.toHaveBeenCalled()

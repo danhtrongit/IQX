@@ -39,7 +39,9 @@ export function valuesAtIndex(data: ChartData, index: number): IndexValues | nul
   const series: SeriesValue[] = []
   for (const indicator of data.indicators) {
     for (const line of indicator.plot.series) {
-      series.push({ indicatorKey: indicator.key, paneKey: indicator.paneKey, seriesKey: line.key, label: line.label, token: line.color, value: line.values[at] ?? null })
+      // Chuỗi vẽ lệch (`offset`): giá trị đang nằm dưới nến `at` là giá trị tính từ nến `at - offset`; ngoài chuỗi là null.
+      const source = at - (line.offset ?? 0)
+      series.push({ indicatorKey: indicator.key, paneKey: indicator.paneKey, seriesKey: line.key, label: line.label, token: line.color, value: source >= 0 ? (line.values[source] ?? null) : null })
     }
     const histogram = indicator.plot.histogram
     if (histogram) {

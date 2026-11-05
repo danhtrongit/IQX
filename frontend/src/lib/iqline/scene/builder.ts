@@ -47,7 +47,7 @@ function showsEveryAxisSlot(viewport: { from: number; to: number }, slots: numbe
 }
 /** Ô cách đáy ô giá ít hơn mức này (CSS pixel) thì nhãn lưới nhường chỗ cho nhãn giá khác. */
 const LABEL_CLEARANCE = 14
-const OFFSCALE_IDS: ReadonlySet<string> = new Set(["ma", "ema", "ma_cross"])
+const OFFSCALE_IDS: ReadonlySet<string> = new Set(["ma", "ema", "ma_cross", "wma", "hma", "vwma", "vwap"])
 const PRICE_TAG_HEIGHT = 20
 
 const px = (value: number, dpr: number) => Math.round(value * dpr)

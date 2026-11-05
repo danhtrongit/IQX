@@ -5,6 +5,8 @@
 import type { Drawing, PaneCoords } from "../types"
 import { FIB_EXTENSION_LEVELS, FIB_RETRACEMENT_LEVELS, fibExtensionPrice, fibRetracementPrice } from "./fib"
 import { isRenderable } from "./commands"
+import { advancedDistance } from "./tools-advanced"
+import { basicDistance, basicHandlePoints, isBasicTool } from "./tools-basic"
 import {
   distanceToLine,
   distanceToRay,
@@ -35,6 +37,8 @@ function distanceToLevels(point: ScreenPoint, left: number, right: number, ys: r
 
 function distanceToPoints(drawing: Drawing, points: readonly ScreenAnchor[], point: ScreenPoint, coords: PaneCoords): number {
   const { plot } = coords
+  // Đợt 1 (tools-basic.ts); type guard thu hẹp `drawing.tool` cho `switch` bên dưới.
+  if (isBasicTool(drawing.tool)) return basicDistance(drawing.tool, drawing, points, point, coords)
   const [p0, p1, p2] = points
   switch (drawing.tool) {
     case "trend":
@@ -75,6 +79,17 @@ function distanceToPoints(drawing: Drawing, points: readonly ScreenAnchor[], poi
       return minDistanceToPolyline(point, points)
     case "note":
       return Math.hypot(point.x - p0.x, point.y - p0.y)
+    // Đợt 2: vùng bấm lấy từ chính các nét đã vẽ (tools-advanced.ts).
+    case "fib-time-zones":
+    case "fib-fan":
+    case "fib-channel":
+    case "pitchfork":
+    case "gann-fan":
+    case "gann-box":
+    case "xabcd":
+    case "head-shoulders":
+    case "triangle-pattern":
+      return advancedDistance(drawing.tool, points, drawing.style, point, coords)
   }
 }
 
@@ -113,8 +128,10 @@ export function hitHandle(
   radius: number = HANDLE_RADIUS,
 ): number | null {
   if (!drawing || drawing.locked || !isRenderable({ tool: drawing.tool, anchors: drawing.anchors, hidden: false })) return null
-  const points = resolveAnchors(drawing.anchors, coords)
-  if (!points) return null
+  const resolved = resolveAnchors(drawing.anchors, coords)
+  if (!resolved) return null
+  // Vị thế và nét bút có tay nắm không trùng điểm neo (tools-basic.ts).
+  const points: readonly ScreenPoint[] = (isBasicTool(drawing.tool) ? basicHandlePoints(drawing.tool, resolved) : null) ?? resolved
   let best: number | null = null
   let bestDistance = radius
   points.forEach((anchor, index) => {

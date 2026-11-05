@@ -9,7 +9,7 @@ import type { InteractionState, PointerTarget } from "../interaction"
 import { manualPriceRange } from "../interaction"
 import { SceneBuilder, type Pointer } from "../scene/builder"
 import { createFrame, type ChartData, type ChartFrame, type SceneIndicator, type ViewState } from "../scene/model"
-import type { AiOverlay, SessionAxisLabel, Bar, ChartIndicatorInput, ColorToken, IndicatorDefinition, IndicatorPlot, Layer, PriceScaleMode, Scene } from "../types"
+import type { AiOverlay, SessionAxisLabel, Bar, ChartIndicatorInput, ColorToken, IndicatorContext, IndicatorDefinition, IndicatorPlot, Layer, PriceScaleMode, Scene } from "../types"
 
 /** Độ rộng cột giá bên phải (CSS pixel), như `PAD_RIGHT` của biểu đồ Flashback hiện tại. */
 export const AXIS_RIGHT = 62
@@ -36,7 +36,17 @@ export function sceneIndicatorsFor(
   bars: readonly Bar[],
   cache: IndicatorCache,
   palette: readonly ColorToken[],
-  options: { profile: ProfileRange | null; flashback?: boolean; /** Đổi tên hiển thị (Flashback giữ tên "RSI 14" của bản SVG cũ); mặc định `indicatorTitle`. */ titleOf?: (input: ChartIndicatorInput, fallback: string) => string },
+  options: {
+    profile: ProfileRange | null
+    flashback?: boolean
+    /**
+     * Thời gian nến cho VWAP và Pivot Points. Chỉ `market` truyền (từ `TimedBar.time`); Flashback không bao giờ có, nên các chỉ báo đó
+     * vừa bị bỏ ở đó (`flashback: false`) vừa trả biểu đồ rỗng nếu lọt qua.
+     */
+    time?: IndicatorContext | null
+    /** Đổi tên hiển thị (Flashback giữ tên "RSI 14" của bản SVG cũ); mặc định `indicatorTitle`. */
+    titleOf?: (input: ChartIndicatorInput, fallback: string) => string
+  },
 ): SceneIndicator[] {
   const out: SceneIndicator[] = []
   for (const input of inputs) {
@@ -48,7 +58,7 @@ export function sceneIndicatorsFor(
       const rows = typeof input.params.rows === "number" ? input.params.rows : DEFAULT_PROFILE_ROWS
       plot = options.profile && !input.hidden ? cache.profile(bars, options.profile, rows) : { kind: "over", series: [], profile: { rows: [] } }
     } else {
-      plot = cache.get(input, bars, palette)
+      plot = cache.get(input, bars, palette, options.flashback ? undefined : (options.time ?? undefined))
     }
     if (!plot) continue
     const title = indicatorTitle(definition, input, definition.params)
