@@ -20,6 +20,13 @@ export default defineConfig([
     },
   },
   {
+    // IQLine là thư viện: không phụ thuộc vào trang, không biết luật game (docs/iqline-design.md §5).
+    files: ['src/lib/iqline/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: [{ group: ['**/pages/**', '@/pages/**'], message: 'IQLine không được import từ pages/.' }] }],
+    },
+  },
+  {
     // These modules deliberately colocate components with shared variants,
     // context hooks or domain helpers. Keep the rule active everywhere else.
     files: [
