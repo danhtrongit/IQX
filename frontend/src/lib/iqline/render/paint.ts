@@ -48,6 +48,7 @@ export function paintScene(context: CanvasRenderingContext2D, scene: Scene, opti
       }
       case "lines": {
         context.strokeStyle = palette[command.token]
+        context.globalAlpha = command.alpha ?? 1
         context.lineWidth = command.width
         context.setLineDash(command.dash ? [...command.dash] : [])
         context.beginPath()
@@ -59,11 +60,13 @@ export function paintScene(context: CanvasRenderingContext2D, scene: Scene, opti
         }
         context.stroke()
         context.setLineDash([])
+        context.globalAlpha = 1
         break
       }
       case "polyline": {
         if (command.count < 4) break
         context.strokeStyle = palette[command.token]
+        context.globalAlpha = command.alpha ?? 1
         context.lineWidth = command.width
         context.lineJoin = "bevel"
         context.setLineDash(command.dash ? [...command.dash] : [])
@@ -73,6 +76,7 @@ export function paintScene(context: CanvasRenderingContext2D, scene: Scene, opti
         for (let index = 2; index + 1 < count; index += 2) context.lineTo(data[index], data[index + 1])
         context.stroke()
         context.setLineDash([])
+        context.globalAlpha = 1
         break
       }
       case "polygon": {

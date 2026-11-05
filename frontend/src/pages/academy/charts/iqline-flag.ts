@@ -1,12 +1,11 @@
-/**
- * Bật bản IQLine (Canvas) của biểu đồ `series_panels` khi URL có `?iqline=1`, trong lúc làm Giai đoạn 6. Mặc định
- * vẫn là bản SVG cũ nên người dùng thường không thấy khác biệt.
- */
+import { iqlineEnabled } from "@/pages/charts/chart/iqline-flag"
+
+/** Biểu đồ `series_panels` dùng IQLine trừ khi bị tắt bằng `VITE_IQLINE_OFF` hoặc `?iqline=0`. */
 export function iqlineStaticEnabled(): boolean {
-  if (typeof window === "undefined") return false
+  if (typeof window === "undefined") return true
   try {
-    return new URLSearchParams(window.location.search).get("iqline") === "1"
+    return iqlineEnabled("static", new URLSearchParams(window.location.search))
   } catch {
-    return false
+    return true
   }
 }

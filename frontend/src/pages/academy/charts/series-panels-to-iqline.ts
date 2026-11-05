@@ -17,8 +17,7 @@ import type { ChartTone } from "../content-types"
 import type { SeriesPanelsModel } from "./chart-math"
 
 /**
- * Vai trò màu -> token. `p5` là `var(--s2)` (cam) trong `chart-theme.ts` mà `ColorToken` chưa có token tương
- * ứng, nên tạm dùng `chart-8`; đổi một dòng này khi `types.ts` thêm token cam.
+ * Vai trò màu -> token. `p5` là `var(--s2)` (cam), khớp `chart-theme.ts`.
  */
 const TONE_TOKEN: Record<ChartTone, ColorToken> = {
   price: "foreground",
@@ -26,7 +25,7 @@ const TONE_TOKEN: Record<ChartTone, ColorToken> = {
   p2: "chart-2",
   p3: "chart-5",
   p4: "chart-7",
-  p5: "chart-8",
+  p5: "s2",
   pos: "price-up",
   neg: "price-down",
   warn: "chart-2",

@@ -29,6 +29,7 @@ export type Anchor = { time: number; price: number } | { session: number; price:
 /** Tên token trong `index.css`, không bao giờ là chuỗi `var(--x)` hay màu thô. */
 export type ColorToken =
   | "background"
+  | "card"
   | "foreground"
   | "border"
   | "muted-foreground"
@@ -46,6 +47,8 @@ export type ColorToken =
   | "chart-6"
   | "chart-7"
   | "chart-8"
+  /** Cam của Học viện (`--s2`), chỉ dùng ở chế độ `static`. */
+  | "s2"
 
 /** Viewport theo chỉ số nến, có thể lẻ; `to` lớn hơn `from`. */
 export type Viewport = { from: number; to: number }
@@ -66,8 +69,8 @@ export type Layer = "base" | "data" | "drawings" | "top"
  */
 export type DrawCommand =
   | { op: "rects"; token: ColorToken; alpha?: number; data: Float64Array; count: number }
-  | { op: "lines"; token: ColorToken; width: number; dash?: readonly number[]; data: Float64Array; count: number }
-  | { op: "polyline"; token: ColorToken; width: number; dash?: readonly number[]; data: Float64Array; count: number }
+  | { op: "lines"; token: ColorToken; alpha?: number; width: number; dash?: readonly number[]; data: Float64Array; count: number }
+  | { op: "polyline"; token: ColorToken; alpha?: number; width: number; dash?: readonly number[]; data: Float64Array; count: number }
   | { op: "polygon"; token: ColorToken; alpha: number; data: Float64Array; count: number }
   | { op: "circle"; token: ColorToken; x: number; y: number; radius: number; fill: boolean; width?: number }
   | { op: "text"; token: ColorToken; text: string; x: number; y: number; align: TextAlign; size?: number; weight?: 400 | 500 | 600; tabular?: boolean }

@@ -375,8 +375,8 @@ function createEmitter(dpr: number) {
     lines(token: ColorToken, width: number, dash: readonly number[] | undefined, list: readonly number[]) {
       if (list.length >= 4) commands.push({ op: "lines", token, width: width * dpr, dash: dashed(dash), data: scaled(list), count: list.length })
     },
-    polyline(token: ColorToken, width: number, dash: readonly number[] | undefined, list: readonly number[]) {
-      if (list.length >= 4) commands.push({ op: "polyline", token, width: width * dpr, dash: dashed(dash), data: scaled(list), count: list.length })
+    polyline(token: ColorToken, width: number, dash: readonly number[] | undefined, list: readonly number[], alpha?: number) {
+      if (list.length >= 4) commands.push({ op: "polyline", token, ...(alpha === undefined ? {} : { alpha }), width: width * dpr, dash: dashed(dash), data: scaled(list), count: list.length })
     },
     polygon(token: ColorToken, alpha: number, list: readonly number[]) {
       if (list.length >= 6) commands.push({ op: "polygon", token, alpha, data: scaled(list), count: list.length })
@@ -656,7 +656,7 @@ function emitPanelData(out: Emitter, layout: StaticLayout, panel: StaticPanel, p
     const token = paint(panel.band.token)
     for (const polygon of areaRuns(panel.band.upper, panel.band.lower, x, y)) out.polygon(token, 0.12, polygon)
     // Hai mép dải (dải Bollinger trên và dưới) là hai đường riêng, không chỉ là phần tô.
-    for (const edge of [panel.band.upper, panel.band.lower]) for (const run of lineRuns(edge, x, y)) out.polyline(token, thumbnail ? 1 : 1.3, undefined, run)
+    for (const edge of [panel.band.upper, panel.band.lower]) for (const run of lineRuns(edge, x, y)) out.polyline(token, thumbnail ? 1 : 1.3, undefined, run, 0.8)
   }
   const fill = panel.fill_between
   const fillA = fill ? panel.series[fill.a] : undefined
@@ -754,7 +754,7 @@ function emitPoint(out: Emitter, layout: StaticLayout, point: StaticPoint, pl: S
   if (point.shape === "ring") out.circle(token, cx, cy, pointRadius(point), false, 1.8)
   else {
     out.circle(token, cx, cy, pointRadius(point), true)
-    out.circle("background", cx, cy, pointRadius(point), false, 1)
+    out.circle("card", cx, cy, pointRadius(point), false, 1)
   }
 }
 
@@ -855,7 +855,7 @@ export function buildStaticCrosshair(panels: readonly StaticPanel[], geometry: P
     out.clip(layout.left, pl.top - 2, layout.right - layout.left, pl.bottom - pl.top + 4)
     for (const dot of dots) {
       out.circle(dot.token, x, dot.y, 3.5, true)
-      out.circle("background", x, dot.y, 3.5, false, 1)
+      out.circle("card", x, dot.y, 3.5, false, 1)
     }
     out.unclip()
   })

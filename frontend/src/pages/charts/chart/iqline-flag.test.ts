@@ -1,16 +1,24 @@
 import { describe, expect, it } from "vitest"
 
-import { iqlineMarketEnabled } from "./iqline-flag"
+import { iqlineEnabled } from "./iqline-flag"
 
-describe("iqlineMarketEnabled", () => {
-  it("mặc định tắt: vẫn là TradingView", () => {
-    expect(iqlineMarketEnabled(new URLSearchParams(""))).toBe(false)
-    expect(iqlineMarketEnabled(new URLSearchParams("symbol=FPT&interval=D"))).toBe(false)
+const url = (search: string) => new URLSearchParams(search)
+
+describe("iqlineEnabled", () => {
+  it("mặc định bật ở cả ba loại nơi dùng", () => {
+    for (const place of ["market", "flashback", "static"] as const) expect(iqlineEnabled(place, url(""), [])).toBe(true)
+    expect(iqlineEnabled("market", url("symbol=FPT&interval=D"), [])).toBe(true)
   })
 
-  it("chỉ bật khi iqline=1", () => {
-    expect(iqlineMarketEnabled(new URLSearchParams("iqline=1"))).toBe(true)
-    expect(iqlineMarketEnabled(new URLSearchParams("symbol=FPT&iqline=1"))).toBe(true)
-    for (const value of ["0", "true", "", "2"]) expect(iqlineMarketEnabled(new URLSearchParams(`iqline=${value}`))).toBe(false)
+  it("VITE_IQLINE_OFF tắt đúng nơi được nêu", () => {
+    expect(iqlineEnabled("market", url(""), ["market"])).toBe(false)
+    expect(iqlineEnabled("flashback", url(""), ["market"])).toBe(true)
+    expect(iqlineEnabled("static", url(""), ["market", "static"])).toBe(false)
+  })
+
+  it("tham số URL thắng cờ build; giá trị lạ bị bỏ qua", () => {
+    expect(iqlineEnabled("market", url("iqline=0"), [])).toBe(false)
+    expect(iqlineEnabled("market", url("iqline=1"), ["market"])).toBe(true)
+    for (const value of ["true", "", "2"]) expect(iqlineEnabled("market", url(`iqline=${value}`), [])).toBe(true)
   })
 })

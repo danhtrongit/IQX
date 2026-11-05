@@ -115,7 +115,7 @@ describe("seriesPanelsToIQLine: không mất trường nào", () => {
     expect(price.series.map((series) => [series.name, series.token, series.dash, series.width])).toEqual([
       ["MA", "chart-1", true, 2],
       ["Giá", "foreground", undefined, undefined],
-      ["Cam", "chart-8", undefined, undefined],
+      ["Cam", "s2", undefined, undefined],
     ])
     expect(price.series.map((series) => series.values)).toEqual(source.series.map((series) => series.values))
     expect(price.levels?.map((level) => [level.value, level.role, level.label, level.token, level.labelToken])).toEqual([
@@ -129,7 +129,7 @@ describe("seriesPanelsToIQLine: không mất trường nào", () => {
       { from: 12, to: 13, token: "border", labelToken: "academy-label" },
     ])
     expect(price.segments).toEqual([
-      { from: [11, 10.2], to: [14, 10.9], token: "chart-8", dash: true, extend: 2 },
+      { from: [11, 10.2], to: [14, 10.9], token: "s2", dash: true, extend: 2 },
       { from: [10, 9.5], to: [12, 9.5], token: "chart-2" },
     ])
     expect(price.fib).toEqual({ lo: { i: 11, v: 9.5 }, hi: { i: 16, v: 11.8 }, dir: "down", levels: [0, 0.382, 0.618, 1], zone: [0.382, 0.618], token: "chart-2" })
@@ -233,7 +233,7 @@ describe("96 series_panels thật của Học viện", () => {
 })
 
 /** Mọi số hữu hạn, clip và unclip cân nhau, dữ liệu đủ `count`, không có token ngoài danh sách. */
-const TOKENS: readonly ColorToken[] = ["background", "foreground", "border", "muted-foreground", "academy-label", "price-up", "price-down", "price-ref", "price-ceiling", "price-floor", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "chart-6", "chart-7", "chart-8"]
+const TOKENS: readonly ColorToken[] = ["background", "card", "s2", "foreground", "border", "muted-foreground", "academy-label", "price-up", "price-down", "price-ref", "price-ceiling", "price-floor", "chart-1", "chart-2", "chart-3", "chart-4", "chart-5", "chart-6", "chart-7", "chart-8"]
 function assertWellFormed(scene: readonly DrawCommand[]) {
   let depth = 0
   for (const command of scene) {
@@ -388,7 +388,7 @@ describe("tương đương trực quan với series-panels-chart.tsx", () => {
       })
       const polylines = scene.flatMap((command) => (command.op === "polyline" ? [fixed(command.data.slice(0, command.count))] : []))
       const polygons = scene.flatMap((command) => (command.op === "polygon" ? [fixed(command.data.slice(0, command.count))] : []))
-      const circles = scene.flatMap((command) => (command.op === "circle" && command.token !== "background" ? [fixed([command.x, command.y, command.radius])] : []))
+      const circles = scene.flatMap((command) => (command.op === "circle" && command.token !== "card" ? [fixed([command.x, command.y, command.radius])] : []))
       const shades = scene.flatMap((command) => {
         if (command.op !== "rects" || (command.alpha !== 0.1 && command.alpha !== 0.14)) return []
         return Array.from({ length: command.count / 4 }, (_, k) => `${command.alpha}|${fixed(command.data.slice(k * 4, k * 4 + 4))}`)

@@ -210,9 +210,9 @@ describe("palette: đổi token CSS sang rgb()", () => {
     host.remove()
   })
 
-  it("có đủ 18 token của ColorToken", () => {
-    expect(COLOR_TOKENS).toHaveLength(18)
-    expect(new Set(COLOR_TOKENS).size).toBe(18)
+  it("có đủ 20 token của ColorToken", () => {
+    expect(COLOR_TOKENS).toHaveLength(20)
+    expect(new Set(COLOR_TOKENS).size).toBe(20)
   })
 })
 

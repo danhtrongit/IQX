@@ -8,6 +8,7 @@ import type { ColorToken } from "../types"
 
 export const COLOR_TOKENS: readonly ColorToken[] = [
   "background",
+  "card",
   "foreground",
   "border",
   "muted-foreground",
@@ -25,6 +26,7 @@ export const COLOR_TOKENS: readonly ColorToken[] = [
   "chart-6",
   "chart-7",
   "chart-8",
+  "s2",
 ]
 
 export type Palette = Record<ColorToken, string>

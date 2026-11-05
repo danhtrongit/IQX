@@ -1,8 +1,22 @@
 /**
- * Công tắc bật IQLine (Canvas) cho `/bieu-do` và `/co-phieu/:symbol`. Mặc định vẫn là TradingView; trong lúc làm Giai đoạn 4 chỉ bật
- * khi URL có `?iqline=1`. Mọi nơi trong `pages/charts` hỏi công tắc này, không tự đọc URL, nên Giai đoạn 7 (đổi mặc định, thêm
- * cờ `VITE_IQLINE_OFF` để quay lại TradingView) chỉ sửa đúng hàm này.
+ * Công tắc IQLine cho cả bốn nơi dùng (docs/iqline-design.md GĐ 7). Mặc định bật. Quay lại bản cũ theo từng nơi bằng
+ * `VITE_IQLINE_OFF` lúc build, ví dụ `market,flashback,static`, hoặc `?iqline=0` cho riêng một lượt xem khi cần so sánh.
+ * `?iqline=1` luôn bật. Không nơi nào khác được tự đọc URL hay biến môi trường này.
  */
+export type IQLinePlace = "market" | "flashback" | "static"
+
+function offPlaces(): readonly string[] {
+  const raw: unknown = import.meta.env.VITE_IQLINE_OFF
+  return typeof raw === "string" ? raw.split(",").map((place) => place.trim()) : []
+}
+
+export function iqlineEnabled(place: IQLinePlace, params: Pick<URLSearchParams, "get">, off: readonly string[] = offPlaces()): boolean {
+  const override = params.get("iqline")
+  if (override === "0") return false
+  if (override === "1") return true
+  return !off.includes(place)
+}
+
 export function iqlineMarketEnabled(params: Pick<URLSearchParams, "get">): boolean {
-  return params.get("iqline") === "1"
+  return iqlineEnabled("market", params)
 }
